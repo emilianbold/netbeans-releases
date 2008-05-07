@@ -47,6 +47,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
@@ -63,6 +64,7 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.Document;
+import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.EmbeddingProvider;
@@ -463,6 +465,10 @@ public class TaskProcessor {
                                                 }
                                                 else if (r.task instanceof EmbeddingProvider) {
                                                     //todo: What the embedding provider should do?
+                                                    List<Embedding> embeddings = ((EmbeddingProvider) r.task).getEmbeddings (source);
+//                                                    for (Embedding embedding : embeddings) {
+//                                                        embedding.
+//                                                    }
                                                 }
                                                 else {
                                                     assert false : "Unknown task type: " + r.task.getClass();   //NOI18N

@@ -60,12 +60,22 @@ public abstract class Parser {
      * source based on {@link Source#getText()} method call. 
      * Original document is there for various registration purposes only.
      * 
-     * @param source        A source that should be parsed.
      * @param task          A task asking for parsing result.
      * @return              Result of parsing or null.
      */
-    public abstract Result parse (
-        Source              source,
+    public abstract void parse (
+        Task                task
+    );
+    
+    /**
+     * Called when some client needs some result of parsing. Parser must parse
+     * source based on {@link Source#getText()} method call. 
+     * Original document is there for various registration purposes only.
+     * 
+     * @param task          A task asking for parsing result.
+     * @return              Result of parsing or null.
+     */
+    public abstract Result getResult (
         Task                task
     );
         

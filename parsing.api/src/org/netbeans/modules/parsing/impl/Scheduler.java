@@ -49,6 +49,7 @@ import java.util.Map;
 import java.util.Set;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
+import org.netbeans.modules.parsing.spi.TaskFactory;
 import org.netbeans.modules.parsing.spi.TaskScheduler;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -87,9 +88,11 @@ public class Scheduler {
             if (tasks == null) {
                 tasks = createTasks (source, taskScheduler);
                 sourceToTasks.put (source, tasks);
-            }
-            for (SchedulerTask task : tasks)
-                TaskProcessor.rescheduleTask (task, source);
+                for (SchedulerTask task : tasks)
+                    TaskProcessor.addPhaseCompletionTask (task, source);
+            } else
+                for (SchedulerTask task : tasks)
+                    TaskProcessor.rescheduleTask (task, source);
             oldSources.remove (source);
         }
         for (Source source : oldSources) {
@@ -106,9 +109,11 @@ public class Scheduler {
         List<SchedulerTask> tasks = new ArrayList<SchedulerTask> ();
         String mimeType = source.getMimeType ();
         Lookup lookup = getLookup (mimeType);
-        for (SchedulerTask task : lookup.lookupAll (SchedulerTask.class))
-            if (task.getSchedulerClass () == taskScheduler.getClass ())
-                tasks.add (task);
+        for (TaskFactory factory : lookup.lookupAll (TaskFactory.class)) {
+            for (SchedulerTask task : factory.create (source))
+                if (task.getSchedulerClass () == taskScheduler.getClass ())
+                    tasks.add (task);
+        }
         return tasks;
     }
     
