@@ -303,6 +303,7 @@ public final class CustomizerLibraries extends JPanel implements HelpCtx.Provide
             List<String> libs = new ArrayList<String>();
             List<String> jars = new ArrayList<String>();
             collectLibs(uiProperties.DEBUG_CLASSPATH_MODEL, libs, jars);
+            collectLibs(uiProperties.EAR_CONTENT_ADDITIONAL_MODEL.getDefaultListModel(), libs, jars);
             boolean result = SharableLibrariesUtils.showMakeSharableWizard(uiProperties.getProject().getAntProjectHelper(), uiProperties.getProject().getReferenceHelper(), libs, jars);
             if (result) {
                 isSharable = true;
