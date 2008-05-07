@@ -386,6 +386,7 @@
                 <friend>org.netbeans.modules.ruby.railsprojects</friend>
                 <friend>org.netbeans.modules.ruby.refactoring</friend>
                 <friend>org.netbeans.modules.ruby.rspec</friend>
+                <friend>org.netbeans.modules.ruby.testing</friend>
                 <package>org.netbeans.modules.ruby.rubyproject</package>
                 <package>org.netbeans.modules.ruby.rubyproject.rake</package>
                 <package>org.netbeans.modules.ruby.rubyproject.ui</package>
