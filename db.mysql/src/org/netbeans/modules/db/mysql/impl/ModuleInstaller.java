@@ -77,8 +77,9 @@ public class ModuleInstaller extends ModuleInstall {
         if ( options.isConnectionRegistered() && options.isProviderRegistered()) {
             return;
         }
-            
-        WindowManager.getDefault().invokeWhenUIReady(new RegisterMySQL());
+          
+        // Commenting out until we can track down the deadlock issues.
+        //WindowManager.getDefault().invokeWhenUIReady(new RegisterMySQL());
     }
 
     private static final class RegisterMySQL implements Runnable {
