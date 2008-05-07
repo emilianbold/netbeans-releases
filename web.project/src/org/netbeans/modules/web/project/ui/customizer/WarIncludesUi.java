@@ -256,7 +256,7 @@ public class WarIncludesUi {
 //                if (userInitiatedChange && cpItem.getType() == ClassPathSupport.Item.TYPE_JAR && newPathInWar.startsWith("WEB-INF")) { //NOI18N
                 if (cpItem.getType() == ClassPathSupport.Item.TYPE_JAR && newPathInWar.startsWith("WEB-INF")) { //NOI18N
                     if (newPathInWar.equals("WEB-INF\\lib") || newPathInWar.equals("WEB-INF/lib")) { //NOI18N
-                        if (((File) cpItem.getObject()).isDirectory()) {
+                        if (cpItem.getResolvedFile().isDirectory()) {
                             message = NbBundle.getMessage(WarIncludesUi.class,
                                 "MSG_NO_FOLDER_IN_WEBINF_LIB", newPathInWar); // NOI18N
                         } else {
