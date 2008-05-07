@@ -106,7 +106,7 @@ public class CreatingPropertiesFileFromExplorer1 extends PropertiesEditorTestCas
          * select in appeared context menu New|Other|Properties File.
          */
         log(PACKAGE_PATH);
-        SourcePackagesNode spn = new SourcePackagesNode(defaultProjectName);
+        SourcePackagesNode spn = new SourcePackagesNode(DEFAULT_PROJECT_NAME);
         Node node = new Node(spn,PACKAGE_PATH);
         
         node.select();
