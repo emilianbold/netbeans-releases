@@ -91,11 +91,9 @@ import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import java.util.logging.Logger;
-import java.util.logging.Level;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
-import org.openide.util.Lookup;
 
 /**
  *
@@ -147,21 +145,21 @@ public class GroovyParser implements Parser {
         
         // Register parsing result with parsing-manager:
         
-        Lookup lkp = Lookup.getDefault();
-        
-        if(lkp != null){
-            GroovyParserManager parserManager = lkp.lookup(GroovyParserManager.class);
-            if(parserManager != null){
-                FileObject fo = file.getFileObject();
-                if (fo != null) {
-                    parserManager.registerParsing(fo, parserResult);
-                }
-            } else {
-                LOG.log(Level.FINEST, "Couldn't get GroovyParserManager from global lookup");
-            }
-        } else {
-            LOG.log(Level.FINEST, "Couldn't get global lookup");
-        }
+//        Lookup lkp = Lookup.getDefault();
+//        
+//        if(lkp != null){
+//            GroovyParserManager parserManager = lkp.lookup(GroovyParserManager.class);
+//            if(parserManager != null){
+//                FileObject fo = file.getFileObject();
+//                if (fo != null) {
+//                    parserManager.registerParsing(fo, parserResult);
+//                }
+//            } else {
+//                LOG.log(Level.FINEST, "Couldn't get GroovyParserManager from global lookup");
+//            }
+//        } else {
+//            LOG.log(Level.FINEST, "Couldn't get global lookup");
+//        }
         
         return parserResult;
     }
