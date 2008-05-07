@@ -99,10 +99,7 @@ made subject to such option by the copyright holder.
             tempdir="${test.results.dir}" timeout="${test.timeout}"
         >
             <batchtest todir="${test.results.dir}">
-                <fileset dir="${test.classes.dir}">
-                    <include name="${test.includes}"/>
-                    <exclude name="${test.excludes}"/>
-                </fileset>
+                <fileset dir="${test.classes.dir}" includes="${test.includes}" excludes="${test.excludes}"/>
             </batchtest>
             <classpath refid="test.cp"/>
              <syspropertyset refid="test.properties"/>
