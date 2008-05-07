@@ -28,18 +28,19 @@
 package org.netbeans.modules.groovy.grailsproject.actions;
 
 import java.awt.event.ActionEvent;
-import java.io.File;
-import java.util.logging.Level;
+import java.util.concurrent.Callable;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.groovy.grails.api.ExecutionSupport;
 import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
 import org.netbeans.modules.groovy.grails.api.GrailsRuntime;
-import org.netbeans.modules.groovy.grailsproject.GrailsProcessRunnable;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.RequestProcessor;
+import org.netbeans.modules.groovy.grailsproject.execution.DefaultDescriptor;
+import org.netbeans.modules.groovy.grailsproject.execution.ExecutionService;
+import org.netbeans.modules.groovy.grailsproject.execution.LineSnooper;
+import org.openide.filesystems.FileObject;
 
 public class ShellAction extends AbstractAction {
 
@@ -63,15 +64,13 @@ public class ShellAction extends AbstractAction {
             return;
         }
         
-        try {
-            Process process = ExecutionSupport.getInstance().executeSimpleCommand(
-                    "shell", GrailsProjectConfig.forProject(prj));
-            Runnable runnable = new GrailsProcessRunnable(process, null,
-                    prj.getProjectDirectory().getName(), new File[] {FileUtil.toFile(prj.getProjectDirectory())});
-            // FIXME
-            RequestProcessor.getDefault().post(runnable);
-        } catch (Exception ex) {
-            LOG.log(Level.WARNING, null, ex);
-        }
+        Callable<Process> callable = ExecutionSupport.getInstance().createSimpleCommand("shell",
+                GrailsProjectConfig.forProject(prj));
+        ProjectInformation inf = prj.getLookup().lookup(ProjectInformation.class);
+        String displayName = inf.getDisplayName() + " (shell)"; // NOI18N
+        ExecutionService service = new ExecutionService(callable, displayName,
+                new DefaultDescriptor(prj, true));
+
+        service.run();
     }
 }

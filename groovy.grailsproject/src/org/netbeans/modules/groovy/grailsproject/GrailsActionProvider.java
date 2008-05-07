@@ -39,19 +39,24 @@
 
 package org.netbeans.modules.groovy.grailsproject;
 
-import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.groovy.grails.api.ExecutionSupport;
 import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
 import org.netbeans.modules.groovy.grails.api.GrailsRuntime;
-import org.netbeans.modules.groovy.grailsproject.actions.RunGrailsServerCommandAction;
 import org.netbeans.modules.groovy.grailsproject.actions.ConfigSupport;
+import org.netbeans.modules.groovy.grailsproject.execution.DefaultDescriptor;
+import org.netbeans.modules.groovy.grailsproject.execution.ExecutionService;
+import org.netbeans.modules.groovy.grailsproject.execution.LineSnooper;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.LifecycleManager;
-import org.openide.filesystems.FileUtil;
+import org.openide.awt.HtmlBrowser;
 import org.openide.util.Lookup;
-import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -88,16 +93,9 @@ public class GrailsActionProvider implements ActionProvider {
             LifecycleManager.getDefault().saveAll();
             // FIXME this is just temporary hack - content of the action with stop
             // and rerun has to be wrapped to nice class
-            new RunGrailsServerCommandAction(project).actionPerformed(null);
+            runAction();
         } else if (COMMAND_TEST.equals(command)) {
-            try {
-                Process process = ExecutionSupport.getInstance().executeSimpleCommand("test-app", GrailsProjectConfig.forProject(project)); // NOI18N
-                RequestProcessor.getDefault().post(new GrailsProcessRunnable(process,
-                        null, command, new File[] {FileUtil.toFile(project.getProjectDirectory())}));
-            } catch (Exception ex) {
-                // FIXME
-                LOGGER.log(Level.WARNING, null, ex);
-            }
+            // FIXME
         }
     }
 
@@ -105,5 +103,72 @@ public class GrailsActionProvider implements ActionProvider {
         return true;
     }
 
+    private void runAction() {
+        final GrailsRuntime runtime = GrailsRuntime.getInstance();
+        if (!runtime.isConfigured()) {
+            ConfigSupport.showConfigurationWarning(runtime);
+            return;
+        }
 
+        final GrailsServerState serverState = project.getLookup().lookup(GrailsServerState.class);
+        if (serverState != null && serverState.isRunning()) {
+            return;
+        }
+        Callable<Process> callable = new Callable<Process>() {
+
+            public Process call() throws Exception {
+                Callable<Process> inner = ExecutionSupport.getInstance().createRunApp(GrailsProjectConfig.forProject(project));
+                Process process = inner.call();
+                final GrailsServerState serverState = project.getLookup().lookup(GrailsServerState.class);
+                if (serverState != null) {
+                    serverState.setProcess(process);
+                }
+                return process;
+            }
+        };
+
+        ProjectInformation inf = project.getLookup().lookup(ProjectInformation.class);
+        String displayName = inf.getDisplayName() + " (run-app)"; // NOI18N
+        Runnable runnable = new Runnable() {
+            public void run() {
+                final GrailsServerState serverState = project.getLookup().lookup(GrailsServerState.class);
+                serverState.setProcess(null);
+            }
+        };
+        ExecutionService service = new ExecutionService(callable, displayName,
+                new DefaultDescriptor(project, new HttpSnooper(), runnable, true));
+
+        service.run();
+    }
+
+    private static class HttpSnooper implements LineSnooper {
+
+        private String urlLine;
+
+        public synchronized void lineFilter(String line) throws IOException {
+            if (line.contains("Browse to http:/")) {
+                urlLine = line;
+                startBrowserWithUrl();
+            }
+        }
+
+        public synchronized void reset() {
+            urlLine = null;
+        }
+
+        public synchronized  void startBrowserWithUrl() {
+            if (urlLine == null) {
+                return;
+            }
+
+            String urlString = urlLine.substring(urlLine.indexOf("http://"));
+
+            try {
+                HtmlBrowser.URLDisplayer.getDefault().showURL(new URL(urlString));
+            } catch (MalformedURLException ex) {
+                LOGGER.log(Level.WARNING, "Could not start browser " + ex.getMessage());
+            }
+        }
+
+    }
 }

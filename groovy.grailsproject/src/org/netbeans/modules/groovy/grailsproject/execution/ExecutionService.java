@@ -356,21 +356,4 @@ public class ExecutionService {
         return nonActiveDN;
     }
 
-    public interface Descriptor {
-
-        FileObject getFileObject();
-
-        LineSnooper getOutputSnooper();
-
-        boolean isFrontWindow();
-
-        boolean isInputVisible();
-
-        boolean showSuspended();
-
-        boolean showProgress();
-
-        Runnable getPostExecution();
-    }
-
 }
