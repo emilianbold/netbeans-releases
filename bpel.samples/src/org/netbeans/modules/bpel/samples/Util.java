@@ -77,18 +77,35 @@ public final class Util {
   private Util () {}
 
   public static void unZipFile(InputStream source, FileObject rootFolder) throws IOException {
-    ZipInputStream str = new ZipInputStream(source);
-    ZipEntry entry;
+      try {
+          ZipInputStream str = new ZipInputStream(source);
+          ZipEntry entry;
 
-    while ((entry = str.getNextEntry()) != null) {
-      if (entry.isDirectory()) {
-          continue;
+          while ((entry = str.getNextEntry()) != null) {
+              if (entry.isDirectory()) {
+                  continue;
+              }
+              FileObject fo = FileUtil.createData(rootFolder, entry.getName());
+              FileLock lock = fo.lock();
+
+              try {
+                  OutputStream out = fo.getOutputStream(lock);
+
+                  try {
+                      FileUtil.copy(str, out);
+                  }
+                  finally {
+                      out.close();
+                  }
+              } 
+              finally {
+                  lock.releaseLock();
+              }
+          }
       }
-      FileObject fo = FileUtil.createData(rootFolder, entry.getName());
-      FileLock lock = fo.lock();
-
-      FileUtil.copy(str, fo.getOutputStream(lock));
-    }
+      finally {
+          source.close();
+      }
   }
  
   public static void setProjectName(FileObject prjLoc, String projTypeName, String newName, String defaultName) {
@@ -141,7 +158,6 @@ public final class Util {
           File projXml = FileUtil.toFile(prjLoc.getFileObject(AntProjectHelper.PROJECT_XML_PATH));
           Document doc = XMLUtil.parse(new InputSource(projXml.toURI().toString()), false, true, null, null);
           NodeList nlist = doc.getElementsByTagNameNS(projTypeName, "name");       //NOI18N
-      
           if (nlist != null) {
               for (int i=0; i < nlist.getLength(); i++) {
                   Node n = nlist.item(i);
@@ -154,7 +170,7 @@ public final class Util {
               }
               saveXml(doc, prjLoc, AntProjectHelper.PROJECT_XML_PATH);
           }
-      }
+      } 
       catch (IOException e) {
           ErrorManager.getDefault().notify(e);
       }
