@@ -40,6 +40,7 @@ package org.netbeans.modules.groovy.editor.actions;
 
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
+import java.io.IOException;
 import java.util.MissingResourceException;
 import javax.swing.AbstractAction;
 import javax.swing.text.BadLocationException;
@@ -50,15 +51,14 @@ import java.util.logging.Level;
 import org.netbeans.modules.groovy.editor.NbUtilities;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import javax.swing.text.Document;
-import org.netbeans.modules.groovy.editor.parser.GroovyParserManager;
 import org.netbeans.modules.groovy.editor.parser.GroovyParserResult;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
-import org.openide.util.Lookup;
 import java.util.List;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
 import java.util.ArrayList;
+import java.util.Collections;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ClassIndex.NameKind;
 import java.util.Set;
@@ -83,6 +83,13 @@ import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.netbeans.api.java.source.ui.ElementIcons;
+import org.netbeans.modules.groovy.editor.parser.GroovyParser;
+import org.netbeans.modules.gsf.api.Parser;
+import org.netbeans.modules.gsf.api.ParserFile;
+import org.netbeans.modules.gsf.api.SourceFileReader;
+import org.netbeans.modules.gsf.api.TranslatedSource;
+import org.netbeans.modules.gsf.spi.DefaultParseListener;
+import org.netbeans.modules.gsf.spi.DefaultParserFile;
 
 /**
  *
@@ -119,24 +126,60 @@ public class FixImportsAction extends AbstractAction implements EditorAction, Ru
         }
     }
     
-    GroovyParserResult getParserResultFromGlobalLookup(FileObject fo) {
-        GroovyParserResult result = null;
-        Lookup lkp = Lookup.getDefault();
-        if (lkp != null) {
-            GroovyParserManager parserManager = lkp.lookup(GroovyParserManager.class);
-            if (parserManager != null) {
-                result = parserManager.getParsingResultByFileObject(fo);
-                if (result == null) {
-                    LOG.log(Level.FINEST, "Couldn't get GroovyParserResult");
-                }
-            } else {
-                LOG.log(Level.FINEST, "Couldn't get GroovyParserManager from global lookup");
-            }
-        } else {
-            LOG.log(Level.FINEST, "Couldn't get global lookup");
-        }
+    GroovyParserResult getParserResult(final FileObject fo) {
+        
+        DefaultParseListener listener = new DefaultParseListener();
+        TranslatedSource translatedSource = null;
+        ParserFile parserFile = new DefaultParserFile(fo, null, false);
+        List<ParserFile> files = Collections.singletonList(parserFile);
+        
+        SourceFileReader reader =
+                new SourceFileReader() {
 
-        return result;
+                    public CharSequence read(ParserFile file)
+                            throws IOException {
+                        Document doc = NbUtilities.getBaseDocument(fo, true);
+
+                        if (doc == null) {
+                            return "";
+                        }
+
+                        try {
+                            return doc.getText(0, doc.getLength());
+                        } catch (BadLocationException ble) {
+                            IOException ioe = new IOException();
+                            ioe.initCause(ble);
+                            throw ioe;
+                        }
+                    }
+
+                    public int getCaretOffset(ParserFile fileObject) {
+                        return -1;
+                    }
+                };
+        
+        
+        Parser.Job job = new Parser.Job(files, listener, reader, translatedSource);
+        new GroovyParser().parseFiles(job);
+
+        return (GroovyParserResult) listener.getParserResult();
+
+        
+//        Lookup lkp = Lookup.getDefault();
+//        if (lkp != null) {
+//            GroovyParserManager parserManager = lkp.lookup(GroovyParserManager.class);
+//            if (parserManager != null) {
+//                result = parserManager.getParsingResultByFileObject(fo);
+//                if (result == null) {
+//                    LOG.log(Level.FINEST, "Couldn't get GroovyParserResult");
+//                }
+//            } else {
+//                LOG.log(Level.FINEST, "Couldn't get GroovyParserManager from global lookup");
+//            }
+//        } else {
+//            LOG.log(Level.FINEST, "Couldn't get global lookup");
+//        }
+
     }
     
     
@@ -150,7 +193,7 @@ public class FixImportsAction extends AbstractAction implements EditorAction, Ru
         }
         
         FileObject fo = dob.getPrimaryFile();
-        GroovyParserResult result = getParserResultFromGlobalLookup(fo);
+        GroovyParserResult result = getParserResult(fo);
 
         if (result == null) {
             LOG.log(Level.FINEST, "Could not get GroovyParserResult");
