@@ -55,7 +55,7 @@ import java.io.IOException;
 public class CompilationController extends CompilationInfo {
     
     
-    CompilationController(final CompilationInfoImpl impl) {        
+    CompilationController(final JavaParserResult impl) {        
         super(impl);
 
     }
@@ -76,7 +76,6 @@ public class CompilationController extends CompilationInfo {
      * @throws IOException when the file cannot be red
      */    
     public JavaSource.Phase toPhase(JavaSource.Phase phase ) throws IOException {
-        checkConfinement();
-        return this.impl.toPhase(phase);
+        return impl.toPhase (phase);
     }                
 }

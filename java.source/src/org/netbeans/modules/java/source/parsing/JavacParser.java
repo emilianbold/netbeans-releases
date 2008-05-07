@@ -83,6 +83,7 @@ import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ClasspathInfo.PathKind;
+import org.netbeans.api.java.source.JavaParserResult;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.lexer.TokenChange;
@@ -145,8 +146,12 @@ public class JavacParser extends Parser {
     
     //Cancelling of parser & index
     private final AtomicBoolean canceled = new AtomicBoolean();
-    //Files processed by this javac
-    private final List<FileObject> files;
+    //Source may be null
+    private final Source source;
+    //File processed by this javac
+    private final FileObject file;
+    //Root owning the file
+    private final FileObject root;
     //ClassPaths used by the parser
     private final ClasspathInfo cpInfo;
     //Incremental parsing support
@@ -157,14 +162,37 @@ public class JavacParser extends Parser {
     private MethodTree changedMethod;
     //Incremental parsing support
     private final DocListener listener;    
+    //Cached javac impl
+    private CompilationInfoImpl ciImpl;
+    
+    
+    JavacParser (final Source source) {
+        this.source = source;
+        final FileObject file = this.source.getFileObject();
+        assert file != null;    //tzezula: Not sure what the parsing API provides.
+        this.file = file;
+        cpInfo = ClasspathInfo.create(file);
+        final ClassPath cp = cpInfo.getClassPath(PathKind.SOURCE);
+        assert cp != null;
+        this.root = cp.findOwnerRoot(file);
+        assert root != null;
+        //todo: Init supportsReparse & listener
+    }
         
     @Override
-    public Result parse(final Source source, final Task task) {
+    public void parse(final Task task) {
+        assert task != null;
+        ciImpl = new CompilationInfoImpl(this, source, file, root, null);
+    }
+    
+    @Override
+    public JavaParserResult getResult (final Task task) {
+        assert ciImpl != null;
         final boolean isCancelable = task instanceof ParserResultTask;
         if (isCancelable) {
             Index.cancel.set(canceled);
         }
-        return new JavacResult(source, this, isCancelable);
+        return JavaParserResultAccessor.getINSTANCE().create(this,ciImpl,isCancelable);
     }
     
     @Override
@@ -203,18 +231,19 @@ public class JavacParser extends Parser {
      * Not synchronized, has to be called under Parsing API lock.
      * @param the required {@link JavaSource#Phase}
      * @parma currentInfo - the javac 
-     * @param if true the method checks cancels
+     * @param cancellable when true the method checks cancels
+     * @param hasMoreFile true when the parser processes more files in a batch
      * @return the reached phase
      * @throws IOException when the javac throws an exception
      */
-    Phase moveToPhase (final Phase phase, final CompilationInfoImpl currentInfo, final boolean cancellable) throws IOException {
+    Phase moveToPhase (final Phase phase, final CompilationInfoImpl currentInfo,
+            final boolean cancellable, final boolean hasMoreFiles) throws IOException {
         JavaSource.Phase parserError = currentInfo.parserCrashed;
         assert parserError != null;
         Phase currentPhase = currentInfo.getPhase();        
-        final boolean isMultiFiles = files.size() > 1;
         LowMemoryNotifier lm = null;
         LMListener lmListener = null;
-        if (isMultiFiles) {
+        if (hasMoreFiles) {
             lm = LowMemoryNotifier.getDefault();
             assert lm != null;
             lmListener = new LMListener ();
@@ -316,7 +345,7 @@ public class JavacParser extends Parser {
         }
 
         finally {
-            if (isMultiFiles) {
+            if (hasMoreFiles) {
                 assert lm != null;
                 assert lmListener != null;
                 lm.removeLowMemoryListener (lmListener);
@@ -329,19 +358,15 @@ public class JavacParser extends Parser {
     
     JavacTaskImpl createJavacTask(final DiagnosticListener<? super JavaFileObject> diagnosticListener, ClassNamesForFileOraculum oraculum) {
         String sourceLevel = null;
-        if (!this.files.isEmpty()) {
+        if (this.file != null) {
             if (LOGGER.isLoggable(Level.FINER)) {
-                LOGGER.finer("Created new JavacTask for: " + this.files);
-            }
-            FileObject file = files.iterator().next();
-            
-            sourceLevel = SourceLevelQuery.getSourceLevel(file);
-            
-            FileObject root = getClasspathInfo().getClassPath(PathKind.SOURCE).findOwnerRoot(file);
-            
-            if (root != null && sourceLevel != null) {
+                LOGGER.finer("Created new JavacTask for: " + FileUtil.getFileDisplayName(this.file));
+            }            
+            sourceLevel = SourceLevelQuery.getSourceLevel(this.file);
+                                  
+            if (this.root != null && sourceLevel != null) {
                 try {
-                    RepositoryUpdater.getDefault().verifySourceLevel(root.getURL(), sourceLevel);
+                    RepositoryUpdater.getDefault().verifySourceLevel(this.root.getURL(), sourceLevel);
                 } catch (IOException ex) {
                     LOGGER.log(Level.FINE, null, ex);
                 }

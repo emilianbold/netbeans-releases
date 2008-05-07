@@ -39,34 +39,19 @@
 
 package org.netbeans.modules.java.source.parsing;
 
-import org.netbeans.api.java.source.JavaParserResult;
-import org.openide.util.Exceptions;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.spi.ParserFactory;
 
 /**
  *
  * @author Tomas Zezula
  */
-public abstract class JavaParserResultAccessor {
-    
-    private static volatile JavaParserResultAccessor instance;
-    
-    public static synchronized JavaParserResultAccessor getINSTANCE () {
-        if (instance == null) {
-            try {
-                Class.forName(JavaParserResult.class.getName(), true, JavaParserResult.class.getClassLoader());
-            } catch (ClassNotFoundException cnfe) {
-                Exceptions.printStackTrace(cnfe);
-            }
-        }
-        assert instance != null;
-        return instance;
+public class JavacParserFactory extends ParserFactory {
+
+    @Override
+    public JavacParser createParser(final Source source) {
+        assert source != null;
+        return new JavacParser(source);
     }
-    
-    public static void setINSTANCE (final JavaParserResultAccessor _instance) {
-        assert _instance != null;
-        instance = _instance;
-    }
-    
-    protected abstract JavaParserResult create (JavacParser parser, CompilationInfoImpl ciImpl, boolean cancelable);
 
 }

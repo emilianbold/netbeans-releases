@@ -122,7 +122,20 @@ public final class ElementHandle<T extends Element> {
     @SuppressWarnings ("unchecked")     // NOI18N
     public T resolve (final CompilationInfo compilationInfo) {
         assert compilationInfo != null;
-        return resolveImpl (compilationInfo.impl.getJavacTask());
+        return resolveImpl (compilationInfo.impl.impl.getJavacTask());
+    }
+    
+    /**
+     * Resolves an {@link Element} from the {@link ElementHandle}.
+     * @param compilationInfo representing the {@link javax.tools.CompilationTask}
+     * in which the {@link Element} should be resolved.
+     * @return resolved subclass of {@link Element} or null if the elment does not exist on
+     * the classpath/sourcepath of {@link javax.tools.CompilationTask}.
+     */
+    @SuppressWarnings ("unchecked")     // NOI18N
+    public T resolve (final JavaParserResult result) {
+        assert result != null;
+        return resolveImpl (result.impl.getJavacTask());
     }
     
     private T resolveImpl (final JavacTaskImpl jt) {

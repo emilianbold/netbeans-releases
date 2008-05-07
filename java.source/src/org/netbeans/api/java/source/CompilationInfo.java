@@ -42,26 +42,17 @@
 package org.netbeans.api.java.source;
 
 import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
-import com.sun.tools.javac.model.JavacElements;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.swing.text.Document;
 import javax.tools.Diagnostic;
 import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.modules.java.source.parsing.FileObjects;
-import org.netbeans.modules.java.source.usages.Pair;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 /** Asorted information about the JavaSource.
  *
@@ -69,22 +60,13 @@ import org.openide.filesystems.FileUtil;
  */
 public class CompilationInfo {
     
-    private static final boolean VERIFY_CONFINEMENT = Boolean.getBoolean(CompilationInfo.class.getName()+".vetifyConfinement"); //NOI18N
     
     //INV: never null
-    final CompilationInfoImpl impl;
-    //Expert: set to true when the runUserActionTask(,true), runModificationTask(,true)
-    //ended or when reschedulable task leaved run method to verify confinement
-    private boolean invalid;
-    //@GuarderBy(this)
-    private ElementUtilities elementUtilities;
-    //@GuarderBy(this)
-    private TreeUtilities treeUtilities;
-    //@GuarderBy(this)
-    private TypeUtilities typeUtilities;
+    final JavaParserResult impl;
     
     
-    CompilationInfo (final CompilationInfoImpl impl)  {
+    
+    CompilationInfo (final JavaParserResult impl)  {
         assert impl != null;
         this.impl = impl;
     }
@@ -96,7 +78,6 @@ public class CompilationInfo {
      * @return {@link JavaSource.Phase} the state which was reached by the {@link JavaSource}.
      */
     public JavaSource.Phase getPhase() {
-        checkConfinement();
         return this.impl.getPhase();
     }
     
@@ -114,19 +95,7 @@ public class CompilationInfo {
      * @since 0.31
      */
     public TreePath getChangedTree () {
-        checkConfinement();
-        if (JavaSource.Phase.PARSED.compareTo (impl.getPhase())>0) {
-            return null;
-        }
-        final Pair<JavaSource.DocPositionRegion,MethodTree> changedTree = impl.getChangedTree();
-        if (changedTree == null) {
-            return null;
-        }
-        final CompilationUnitTree cu = impl.getCompilationUnit();
-        if (cu == null) {
-            return null;
-        }
-        return TreePath.getPath(cu, changedTree.second);
+        return this.impl.getChangedTree();
     }       
     
     /**
@@ -136,7 +105,6 @@ public class CompilationInfo {
      * @throws java.lang.IllegalStateException  when the phase is less than {@link JavaSource.Phase#PARSED}
      */
     public CompilationUnitTree getCompilationUnit() {        
-        checkConfinement();
         return this.impl.getCompilationUnit();
     }
     
@@ -145,7 +113,6 @@ public class CompilationInfo {
      * @return String the java source
      */
     public String getText() {
-        checkConfinement();
         return this.impl.getText();
     }
     
@@ -154,7 +121,6 @@ public class CompilationInfo {
      * @return lexer TokenHierarchy
      */
     public TokenHierarchy<?> getTokenHierarchy() {
-        checkConfinement();
         return this.impl.getTokenHierarchy();
     }
     
@@ -163,7 +129,6 @@ public class CompilationInfo {
      * @return an list of {@link Diagnostic} 
      */
     public List<Diagnostic> getDiagnostics() {
-        checkConfinement();
         return this.impl.getDiagnostics();
     }
     
@@ -176,42 +141,7 @@ public class CompilationInfo {
      * @since 0.14
      */
     public List<? extends TypeElement> getTopLevelElements () throws IllegalStateException {
-        checkConfinement();
-        if (this.impl.getPositionConverter() == null) {
-            throw new IllegalStateException ();
-        }
-        final List<TypeElement> result = new ArrayList<TypeElement>();
-        final JavaSource javaSource = this.impl.getJavaSource();
-        if (javaSource.isClassFile()) {
-            Elements elements = getElements();
-            assert elements != null;
-            assert javaSource.rootFo != null;
-            String name = FileObjects.convertFolder2Package(FileObjects.stripExtension(FileUtil.getRelativePath(javaSource.rootFo, getFileObject())));
-            TypeElement e = ((JavacElements)elements).getTypeElementByBinaryName(name);
-            if (e != null) {                
-                result.add (e);
-            }
-        }
-        else {
-            CompilationUnitTree cu = getCompilationUnit();
-            if (cu == null) {
-                return null;
-            }
-            else {
-                final Trees trees = getTrees();
-                assert trees != null;
-                List<? extends Tree> typeDecls = cu.getTypeDecls();
-                TreePath cuPath = new TreePath(cu);
-                for( Tree t : typeDecls ) {
-                    TreePath p = new TreePath(cuPath,t);
-                    Element e = trees.getElement(p);
-                    if ( e != null && ( e.getKind().isClass() || e.getKind().isInterface() ) ) {
-                        result.add((TypeElement)e);
-                    }
-                }
-            }
-        }
-        return Collections.unmodifiableList(result);
+        return this.impl.getTopLevelElements();
     }
         
     
@@ -220,8 +150,7 @@ public class CompilationInfo {
      * @return javac Trees service
      */
     public Trees getTrees() {
-        checkConfinement();
-        return Trees.instance(impl.getJavacTask());
+        return this.impl.getTrees();
     }
     
     /**
@@ -229,8 +158,7 @@ public class CompilationInfo {
      * @return javac Types service
      */
     public Types getTypes() {
-        checkConfinement();
-        return impl.getJavacTask().getTypes();
+        return this.impl.getTypes();
     }
     
     /**
@@ -238,8 +166,7 @@ public class CompilationInfo {
      * @return javac Elements service
      */
     public Elements getElements() {
-        checkConfinement();
-	return impl.getJavacTask().getElements();
+        return this.impl.getElements();
     }
         
     /**
@@ -247,8 +174,8 @@ public class CompilationInfo {
      * @return JavaSource
      */
     public JavaSource getJavaSource() {
-        checkConfinement();
-        return this.impl.getJavaSource();
+        //tzezula: todo
+        throw new UnsupportedOperationException ("Not yet supported");
     }
     
     /**
@@ -256,7 +183,6 @@ public class CompilationInfo {
      * @return ClasspathInfo
      */
     public ClasspathInfo getClasspathInfo() {
-        checkConfinement();
 	return this.impl.getClasspathInfo();
     }
     
@@ -265,7 +191,6 @@ public class CompilationInfo {
      * @return FileObject
      */
     public FileObject getFileObject() {
-        checkConfinement();
         return impl.getFileObject();
     }
     
@@ -278,8 +203,8 @@ public class CompilationInfo {
      * @since 0.21
      */
     public PositionConverter getPositionConverter() {
-        checkConfinement();
-        return this.impl.getPositionConverter();
+        //tzezula: todo
+        throw new UnsupportedOperationException("Not yet supported");
     }
             
     /**
@@ -289,7 +214,6 @@ public class CompilationInfo {
      * @throws java.io.IOException
      */
     public Document getDocument() throws IOException { //XXX cleanup: IOException is no longer required? Used by PositionEstimator, DiffFacility
-        checkConfinement();
         return this.impl.getDocument();
     }
     
@@ -299,11 +223,7 @@ public class CompilationInfo {
      * @return TreeUtilities
      */
     public synchronized TreeUtilities getTreeUtilities() {
-        checkConfinement();
-        if (treeUtilities == null) {
-            treeUtilities = new TreeUtilities(this);
-        }
-        return treeUtilities;
+        return this.impl.getTreeUtilities();
     }
     
     /**
@@ -311,43 +231,13 @@ public class CompilationInfo {
      * @return ElementUtilities
      */
     public synchronized ElementUtilities getElementUtilities() {
-        checkConfinement();
-        if (elementUtilities == null) {
-            elementUtilities = new ElementUtilities(this);
-
-        }
-        return elementUtilities;
+        return this.impl.getElementUtilities();
     }
     
     /**Get the TypeUtilities.
      * @return an instance of TypeUtilities
      */
     public synchronized TypeUtilities getTypeUtilities() {
-        checkConfinement();
-        if (typeUtilities == null) {
-            typeUtilities = new TypeUtilities(this);
-        }
-        return typeUtilities;
-    }
-    
-    
-    /**
-     * Marks this {@link CompilationInfo} as invalid, may be used to
-     * verify confinement.
-     */
-    final void invalidate () {
-        this.invalid = true;
-    }
-    
-    /**
-     * Checks concurrency confinement.
-     * When {@link VERIFY_CONFINEMENT} is enabled & thread accesses the CompilationInfo
-     * outside guarded run() method the {@link IllegalStateException} is thrown
-     * @throws java.lang.IllegalStateException
-     */
-    final void checkConfinement () throws IllegalStateException {
-        if (VERIFY_CONFINEMENT && this.invalid) {
-            throw new IllegalStateException (String.format("Access to the shared %s outside a guarded run method.", this.getClass().getSimpleName()));
-        }
-    }
+        return this.impl.getTypeUtilities();
+    }        
 }

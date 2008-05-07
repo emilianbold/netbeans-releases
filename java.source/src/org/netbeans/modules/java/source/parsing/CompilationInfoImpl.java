@@ -83,6 +83,7 @@ public final class CompilationInfoImpl {
     private JavacTaskImpl javacTask;
     Pair<DocPositionRegion,MethodTree> changedMethod;
     private final FileObject file;
+    private final FileObject root;
     final JavaFileObject jfo;    
     private final Source source;
     private final JavacParser parser;
@@ -99,6 +100,8 @@ public final class CompilationInfoImpl {
         assert source != null;
         this.parser = parser;
         this.source = source;
+        this.file = file;
+        this.root = root;
         assert file == null || root != null;
         this.jfo = file != null ? JavacParser.jfoProvider.createJavaFileObject(file, root, JavaFileFilterQuery.getFilter(file)) : null;
         this.javacTask = javacTask;
@@ -213,8 +216,17 @@ public final class CompilationInfoImpl {
      * Returns the {@link FileObject} represented by this {@link CompilationInfo}.
      * @return FileObject
      */
-    FileObject getFileObject () {
+    public FileObject getFileObject () {
         return this.file;
+    }
+    
+    public FileObject getRoot () {
+        return this.root;
+    }
+    
+    public boolean isClassFile () {
+        //tzezula todo: implement me. Probably separate parser for class files
+        return false;
     }
     
     /**
@@ -261,7 +273,7 @@ public final class CompilationInfoImpl {
      *         reached using this method
      * @throws IOException when the file cannot be red
      */    
-    JavaSource.Phase toPhase(JavaSource.Phase phase ) throws IOException {
+    public JavaSource.Phase toPhase(JavaSource.Phase phase ) throws IOException {
         if (phase == JavaSource.Phase.MODIFIED) {
             throw new IllegalArgumentException( "Invalid phase: " + phase );    //NOI18N
         }
@@ -274,7 +286,7 @@ public final class CompilationInfoImpl {
             return currentPhase;
         }
         else {
-            JavaSource.Phase currentPhase = parser.moveToPhase(phase, this, false);
+            JavaSource.Phase currentPhase = parser.moveToPhase(phase, this, false, false);
             return currentPhase.compareTo (phase) < 0 ? currentPhase : phase;
         }
     }
@@ -310,7 +322,7 @@ public final class CompilationInfoImpl {
      * it's created.
      * @return JavacTaskImpl
      */
-    synchronized JavacTaskImpl getJavacTask() {	
+    public synchronized JavacTaskImpl getJavacTask() {	
         if (javacTask == null) {
             javacTask = parser.createJavacTask(new DiagnosticListenerImpl(this.jfo), null);
         }
