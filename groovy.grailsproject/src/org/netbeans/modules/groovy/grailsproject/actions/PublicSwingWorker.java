@@ -60,6 +60,7 @@ import java.util.concurrent.CountDownLatch;
 import org.netbeans.modules.groovy.grails.api.ExecutionSupport;
 import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
 import org.netbeans.modules.groovy.grailsproject.GrailsServerState;
+import org.openide.filesystems.FileUtil;
 
 
 /**
@@ -212,16 +213,19 @@ import org.netbeans.modules.groovy.grailsproject.GrailsServerState;
             writer.close();
             io.getErr().close();
 
-            } catch (Exception e) {
-                LOG.log(Level.WARNING, "problem with process: " + e);
-                LOG.log(Level.WARNING, "message " + e.getLocalizedMessage());
-                
-                writer.close();
-                io.getErr().close();
-                
-                displayGrailsProcessError(e);
-            }
+        } catch (Exception e) {
+            LOG.log(Level.WARNING, "problem with process: " + e);
+            LOG.log(Level.WARNING, "message " + e.getLocalizedMessage());
+
+            writer.close();
+            io.getErr().close();
+
+            displayGrailsProcessError(e);
+        } finally {
+            // temporary fix
+            FileUtil.refreshFor(FileUtil.toFile(prj.getProjectDirectory()));
         }
+    }
         
     void displayGrailsProcessError(Exception reason) {
         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
