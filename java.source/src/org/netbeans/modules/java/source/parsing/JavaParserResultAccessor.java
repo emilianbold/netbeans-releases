@@ -37,52 +37,36 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.api.java.source;
+package org.netbeans.modules.java.source.parsing;
 
-import org.netbeans.modules.java.source.parsing.CompilationInfoImpl;
-import org.netbeans.modules.java.source.parsing.JavaParserResultAccessor;
-import org.netbeans.modules.java.source.parsing.JavacParser;
-import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.api.java.source.JavaParserResult;
+import org.openide.util.Exceptions;
 
 /**
  *
  * @author Tomas Zezula
  */
-public class JavaParserResult extends Parser.Result {
+public abstract class JavaParserResultAccessor {
     
+    private static volatile JavaParserResultAccessor instance;
     
-    static {
-        JavaParserResultAccessor.setINSTANCE(new MyAccessor());
-    }
-    
-    private final CompilationInfoImpl impl;
-    private final JavacParser parser;
-    private final boolean isCancelable;
-    
-    JavaParserResult (final CompilationInfoImpl impl,
-            final JavacParser parser,
-            final boolean isCancelable) {
-        assert impl != null;
-        assert parser != null;
-        this.impl = impl;
-        this.parser = parser;
-        this.isCancelable = isCancelable;
-    }
-
-    @Override
-    public void invalidate() {
-        if (isCancelable) {
-            parser.resultFinished (this, isCancelable);
+    public static synchronized JavaParserResultAccessor getINSTANCE () {
+        if (instance == null) {
+            try {
+                Class.forName(JavaParserResult.class.getName(), true, JavaParserResult.class.getClassLoader());
+            } catch (ClassNotFoundException cnfe) {
+                Exceptions.printStackTrace(cnfe);
+            }
         }
+        assert instance != null;
+        return instance;
     }
     
-    private static class MyAccessor extends JavaParserResultAccessor {
-
-        @Override
-        protected JavaParserResult create() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-        
+    public static void setINSTANCE (final JavaParserResultAccessor _instance) {
+        assert _instance != null;
+        instance = _instance;
     }
+    
+    protected abstract JavaParserResult create ();
 
 }
