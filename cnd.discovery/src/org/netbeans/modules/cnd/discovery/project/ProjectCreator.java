@@ -371,6 +371,8 @@ public class ProjectCreator {
         if (is != null) {
             FileOutputStream os = new FileOutputStream(toFile);
             FileUtil.copy(is, os);
+            is.close();
+            os.close();
         }
     }
 
