@@ -41,14 +41,17 @@
 
 package org.netbeans.modules.languages.features;
 
-import org.netbeans.modules.languages.*;
-import org.netbeans.api.languages.ParseException;
-import org.netbeans.api.languages.ASTNode;
+import java.util.Collections;
 import java.awt.event.ActionEvent;
 import javax.swing.text.JTextComponent;
+
+import org.netbeans.modules.languages.*;
 import org.netbeans.editor.BaseAction;
-import org.netbeans.api.languages.ParseException;
-import org.openide.ErrorManager;
+import org.netbeans.api.languages.ParserResult;
+import org.netbeans.modules.parsing.api.MultiLanguageUserTask;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
 
 
 /**
@@ -84,31 +87,35 @@ public class GenericAction extends BaseAction {
         return enabler;
     }
     
-    private ASTNode getASTNode(JTextComponent comp) {
-        return ParserManagerImpl.getImpl (comp.getDocument ()).getAST();
-    }
+//!    private ASTNode getASTNode(JTextComponent comp) {
+//        return ParserManagerImpl.getImpl (comp.getDocument ()).getAST();
+//    }
     
     
-    public void actionPerformed(ActionEvent e, JTextComponent comp) {
-        ASTNode node = getASTNode(comp);
-        if (node != null) {
-            getPerformer().getValue (new Object[] {node, comp});
-        }
+    public void actionPerformed(ActionEvent e, final JTextComponent comp) {
+        Source source = Source.create (comp.getDocument ());
+        ParserManager.parse (Collections.<Source>singleton (source), new MultiLanguageUserTask<ParserResult> () {
+            @Override
+            public void run (ResultIterator<ParserResult> resultIterator) {
+                getPerformer().getValue (new Object[] {resultIterator.getParserResult ().getRootNode (), comp});
+            }
+        });
     }
     
     public boolean isEnabled() {
-        JTextComponent comp = getTextComponent(null);
-        if (comp == null)
-            return false;
-        ASTNode node = getASTNode(comp);
-        if (node == null)
-            return false;
-        Feature em = getEnabler();
-        if (em == null) {
-            return super.isEnabled();
-        }
-        Object result = em.getValue (new Object[] {node, comp});
-        return result != null && ((Boolean)result).booleanValue();
+        return true;
+//!        JTextComponent comp = getTextComponent(null);
+//        if (comp == null)
+//            return false;
+//        ASTNode node = getASTNode(comp);
+//        if (node == null)
+//            return false;
+//        Feature em = getEnabler();
+//        if (em == null) {
+//            return super.isEnabled();
+//        }
+//        Object result = em.getValue (new Object[] {node, comp});
+//        return result != null && ((Boolean)result).booleanValue();
     }
     
 }

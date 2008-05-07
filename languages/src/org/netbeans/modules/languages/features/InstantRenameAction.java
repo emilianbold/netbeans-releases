@@ -45,6 +45,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.SwingUtilities;
@@ -65,14 +66,17 @@ import org.netbeans.api.languages.ASTItem;
 import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.Highlighting;
 import org.netbeans.api.languages.Highlighting.Highlight;
-import org.netbeans.api.languages.ParserManager.State;
+import org.netbeans.api.languages.ParserResult;
 import org.netbeans.api.languages.database.DatabaseContext;
 import org.netbeans.api.languages.database.DatabaseUsage;
 import org.netbeans.api.languages.database.DatabaseDefinition;
 import org.netbeans.api.languages.database.DatabaseItem;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.modules.editor.NbEditorDocument;
-import org.netbeans.modules.languages.ParserManagerImpl;
+import org.netbeans.modules.parsing.api.MultiLanguageUserTask;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
 import org.openide.util.RequestProcessor;
 
 
@@ -91,25 +95,28 @@ public class InstantRenameAction extends BaseAction {
     
     public void actionPerformed (ActionEvent evt, final JTextComponent editor) {
         if (renameImplementation != null) return;
-        int offset = editor.getCaretPosition ();
-        ParserManagerImpl parserManager = ParserManagerImpl.getImpl (editor.getDocument ());
-        if (parserManager.getState () == State.PARSING) {
-            return;
-        }
-        try {
-            ASTNode node = parserManager.getAST ();
-            DatabaseContext root = DatabaseManager.getRoot (node);
-            if (root == null) return;
-            DatabaseItem databaseItem = root.getDatabaseItem (offset);
-            if (databaseItem == null)
-                databaseItem = root.getDatabaseItem (offset - 1);
-            if (databaseItem == null) {
-                return;
+        final int offset = editor.getCaretPosition ();
+        Source source = Source.create (editor.getDocument ());
+        ParserManager.parse (Collections.<Source>singleton (source), new MultiLanguageUserTask<ParserResult> () {
+            @Override
+            public void run (ResultIterator<ParserResult> resultIterator) {
+                try {
+                    ParserResult parserResult = resultIterator.getParserResult ();
+                    ASTNode node = parserResult.getRootNode ();
+                    DatabaseContext root = parserResult.getSemanticStructure ();
+                    if (root == null) return;
+                    DatabaseItem databaseItem = root.getDatabaseItem (offset);
+                    if (databaseItem == null)
+                        databaseItem = root.getDatabaseItem (offset - 1);
+                    if (databaseItem == null) {
+                        return;
+                    }
+                    renameImplementation = new RenameImplementation (databaseItem, editor, node);
+                } catch (BadLocationException ex) {
+                    ex.printStackTrace ();
+                }
             }
-            renameImplementation = new RenameImplementation (databaseItem, editor, node);
-        } catch (BadLocationException ex) {
-            ex.printStackTrace ();
-        }
+        });
     }
     
     private class RenameImplementation implements KeyListener, DocumentListener {

@@ -43,6 +43,7 @@ package org.netbeans.modules.languages.features;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -54,9 +55,6 @@ import javax.swing.text.Document;
 import org.netbeans.api.languages.ASTItem;
 import org.netbeans.api.languages.CompletionItem.Type;
 import org.netbeans.api.languages.ASTPath;
-import org.netbeans.api.languages.ParserManager;
-import org.netbeans.api.languages.ParserManager.State;
-import org.netbeans.api.languages.ParserManagerListener;
 import org.netbeans.api.languages.ASTToken;
 import org.netbeans.api.languages.SyntaxContext;
 import org.netbeans.api.languages.ASTNode;
@@ -67,6 +65,7 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.languages.Context;
+import org.netbeans.api.languages.ParserResult;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.editor.NbEditorDocument;
@@ -74,8 +73,10 @@ import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.languages.Language;
 import org.netbeans.modules.languages.LanguagesManager;
-import org.netbeans.modules.languages.LanguagesManager;
-import org.netbeans.modules.languages.ParserManagerImpl;
+import org.netbeans.modules.parsing.api.MultiLanguageUserTask;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionProvider;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
@@ -345,32 +346,25 @@ public class CompletionProviderImpl implements CompletionProvider {
         }
 
         private boolean addParserTags (final Result resultSet, final Language language) {
-            final ParserManager parserManager = ParserManager.get (doc);
-            if (parserManager.getState () == State.PARSING) {
-                //S ystem.out.println("CodeCompletion: parsing...");
-                parserManager.addListener (new ParserManagerListener () {
-                    public void parsed (State state, ASTNode ast) {
-                        //S ystem.out.println("CodeCompletion: parsed " + state);
-                        parserManager.removeListener (this);
-                        if (resultSet.isFinished ()) return;
-                        addParserTags (ast, resultSet, language);
-                        resultSet.finish ();
-                    }
-                });
-                return false;
-            } else {
-                addParserTags (ParserManagerImpl.getImpl (doc).getAST (), resultSet, language);
-                return true;
-            }
+            Source source = Source.create (doc);
+            ParserManager.parse (Collections.<Source>singleton(source), new MultiLanguageUserTask () {
+                public void parsed (ParserResult parserResult, Source source) {
+                    if (resultSet.isFinished ()) return;
+                    addParserTags (parserResult, resultSet, language);
+                    resultSet.finish ();
+                }
+
+                @Override
+                public void run(ResultIterator resultIterator) {
+                    throw new UnsupportedOperationException("Not supported yet.");
+                }
+            });
+            return false;
         }
         
-        private void addParserTags (ASTNode node, Result resultSet, Language language) {
-            if (node == null) {
-                //S ystem.out.println("CodeCompletion: No AST");
-                return;
-            }
+        private void addParserTags (ParserResult parserResult, Result resultSet, Language language) {
             int offset = component.getCaret ().getDot ();
-            ASTPath path = node.findPath (offset - 1);
+            ASTPath path = parserResult.getRootNode ().findPath (offset - 1);
             if (path == null) return;
             ASTItem item = path.getLeaf ();
             if (item instanceof ASTNode) return;
@@ -402,7 +396,7 @@ public class CompletionProviderImpl implements CompletionProvider {
                 }
             }
             
-            DatabaseContext context = DatabaseManager.getRoot (node);
+            DatabaseContext context = parserResult.getSemanticStructure ();
             if (context == null) return;
             List<DatabaseDefinition> definitions = context.getAllVisibleDefinitions (offset);
             String completionType = getCompletionType (null, token.getTypeName ());

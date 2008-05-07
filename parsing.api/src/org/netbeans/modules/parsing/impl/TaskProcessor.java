@@ -172,7 +172,7 @@ public class TaskProcessor {
                     if (parser == null) {
                         throw new IllegalAccessException();
                     }                    
-                    currentResult = parser.parse(source, userTask);
+                    parser.parse(source.createSnapshot(), userTask);
                     if (shared) {
                         synchronized (source) {
                             final Parser.Result tmpResult = SourceAccessor.getINSTANCE().getResult(source);
@@ -440,7 +440,7 @@ public class TaskProcessor {
                                         if (currentResult == null) {
                                             final Parser parser = ParserManagerImpl.getParser(source);
                                             assert parser != null;
-                                            currentResult = parser.parse(source, r.task);
+                                            parser.parse(source.createSnapshot(), r.task);
                                             synchronized (source) {                                                
                                                 final Parser.Result tmpResult = SourceAccessor.getINSTANCE().getResult(source);                                            
                                                 if (tmpResult == null) {
@@ -461,11 +461,11 @@ public class TaskProcessor {
                                             try {
                                                 final long startTime = System.currentTimeMillis();
                                                 if (r.task instanceof ParserResultTask) {
-                                                    ((ParserResultTask)r.task).run (currentResult,source);
+                                                    ((ParserResultTask)r.task).run (currentResult,source.createSnapshot());
                                                 }
                                                 else if (r.task instanceof EmbeddingProvider) {
                                                     //todo: What the embedding provider should do?
-                                                    List<Embedding> embeddings = ((EmbeddingProvider) r.task).getEmbeddings (source);
+                                                    List<Embedding> embeddings = ((EmbeddingProvider) r.task).getEmbeddings (source.createSnapshot());
 //                                                    for (Embedding embedding : embeddings) {
 //                                                        embedding.
 //                                                    }

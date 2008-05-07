@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.parsing.api;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.parsing.impl.UserTaskImpl;
@@ -101,7 +102,7 @@ public final class ParserManager {
      * @param userTask      A task that will be started when parsing is done.
      */
     public static void parse (
-        List<Source>        sources, 
+        Collection<Source>  sources, 
         MultiLanguageUserTask 
                             userTask
     ) {

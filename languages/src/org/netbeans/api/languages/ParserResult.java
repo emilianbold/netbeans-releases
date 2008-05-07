@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,61 +31,79 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.languages.features;
+
+package org.netbeans.api.languages;
 
 import java.util.List;
-import javax.swing.text.AttributeSet;
 import javax.swing.text.Document;
-
-import org.netbeans.api.languages.ASTEvaluator;
-import org.netbeans.api.languages.ASTItem;
-import org.netbeans.api.languages.ASTPath;
-import org.netbeans.api.languages.ParserResult;
-import org.netbeans.api.languages.SyntaxContext;
-import org.netbeans.modules.languages.ASTEvaluatorFactory;
-import org.netbeans.modules.languages.Feature;
-
+import org.netbeans.api.languages.database.DatabaseContext;
+import org.netbeans.modules.languages.features.DatabaseManager;
+import org.netbeans.modules.languages.parser.SyntaxError;
+import org.netbeans.modules.parsing.spi.Parser;
 
 /**
  *
  * @author hanz
  */
-public class ColorsASTEvaluator extends ASTEvaluator {
+public class ParserResult extends Parser.Result {
 
     
-    private Document document;
-
-    private ColorsASTEvaluator (Document document) {
-        this.document = document;
+    public static ParserResult create (
+        Document            document,
+        ASTNode             rootNode, 
+        List<SyntaxError>   syntaxErrors
+    ) {
+        return new ParserResult (
+            document, 
+            rootNode, 
+            syntaxErrors
+        );
     }
 
-    public String getFeatureName () {
-        return "COLOR";
+    private boolean         valid = true;
+    
+    @Override
+    public void invalidate () {
+        valid = false;
+    }
+    
+    private Document        document;
+    private ASTNode         rootNode;
+    private List<SyntaxError> 
+                            syntaxErrors;
+
+    private ParserResult (
+        Document            document,
+        ASTNode             rootNode, 
+        List<SyntaxError>   syntaxErrors
+    ) {
+        this.document =     document;
+        this.rootNode =     rootNode;
+        this.syntaxErrors = syntaxErrors;
     }
 
-    public void beforeEvaluation (ParserResult parserResult) {
+    public ASTNode getRootNode () {
+        if (!valid) throw new IllegalStateException ();
+        return rootNode;
     }
 
-    public void afterEvaluation (ParserResult parserResult) {
+    public List<SyntaxError> getSyntaxErrors () {
+        if (!valid) throw new IllegalStateException ();
+        return syntaxErrors;
     }
-
-    public void evaluate (List<ASTItem> path, Feature feature) {
-        AttributeSet attributeSet = null;
-        ASTItem leaf = path.get (path.size () - 1);
-        SyntaxContext context = SyntaxContext.create (document, ASTPath.create (path));
-        if (feature.getBoolean ("condition", context, true)) {
-            attributeSet = ColorsManager.createColoring (feature, null);
-            SemanticHighlightsLayer.addHighlight (document, leaf.getOffset (), leaf.getEndOffset (), attributeSet);
+    
+    private DatabaseContext semanticRoot;
+    
+    public synchronized DatabaseContext getSemanticStructure () {
+        if (!valid) throw new IllegalStateException ();
+        if (semanticRoot == null) {
+            semanticRoot = DatabaseManager.parse (getRootNode (), document);
         }
-    }
-
-    
-    // innerclasses ............................................................
-    
-    public static class AASTEvaluatorFactory implements ASTEvaluatorFactory {
-        public ASTEvaluator create (Document document) {
-            return new ColorsASTEvaluator (document);
-        }
+        return semanticRoot;
     }
 }

@@ -40,7 +40,8 @@
 package org.netbeans.modules.parsing.api;
 
 import java.util.Iterator;
-import org.netbeans.modules.parsing.spi.Parser.Result;
+import org.netbeans.modules.parsing.spi.Parser;
+
 
 /**
  * ResultIterator allows to iterate tree of embedded blocks of sources, and 
@@ -51,7 +52,7 @@ import org.netbeans.modules.parsing.spi.Parser.Result;
  * 
  * @author Jan Jancura
  */
-public final class ResultIterator {
+public final class ResultIterator<T extends Parser.Result> {
     
     private ResultIterator () {}
     
@@ -60,7 +61,7 @@ public final class ResultIterator {
      * 
      * @return              parse {@link Result} for current source.
      */
-    public Result getParserResult () {
+    public T getParserResult () {
         return null;
     }
     

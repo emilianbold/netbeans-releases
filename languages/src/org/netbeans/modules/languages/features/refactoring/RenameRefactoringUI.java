@@ -47,7 +47,7 @@ import org.netbeans.api.languages.ASTItem;
 import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.ASTPath;
 import org.netbeans.api.languages.ASTToken;
-import org.netbeans.api.languages.ASTToken;
+import org.netbeans.api.languages.ParserResult;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
@@ -68,8 +68,15 @@ public class RenameRefactoringUI implements RefactoringUI {
     private RenamePanel panel;
     private ASTPath path;
 
-    public RenameRefactoringUI(ASTPath path, FileObject fileObject, Document doc) {
-        this.refactoring = new RenameRefactoring(Lookups.fixed(path, doc));
+    public RenameRefactoringUI (
+        ParserResult parserResult, 
+        ASTPath path, 
+        FileObject fileObject, 
+        Document doc
+    ) {
+        this.refactoring = new RenameRefactoring (Lookups.fixed (
+            parserResult, path, doc
+        ));
         this.path = path;
         ASTItem item = path.getLeaf();
         this.oldName = item instanceof ASTToken ? ((ASTToken)item).getIdentifier() : ((ASTNode) item).getNT();

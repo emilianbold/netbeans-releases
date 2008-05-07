@@ -41,10 +41,11 @@
 
 package org.netbeans.modules.languages.features;
 
-import java.util.Iterator;
-import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.awt.event.ActionEvent;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import javax.swing.text.BadLocationException;
@@ -54,12 +55,15 @@ import org.netbeans.api.languages.ASTItem;
 import org.netbeans.api.languages.ASTPath;
 import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.ASTToken;
-import org.netbeans.api.languages.ASTToken;
+import org.netbeans.api.languages.ParserResult;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.languages.Language;
-import org.netbeans.modules.languages.ParserManagerImpl;
+import org.netbeans.modules.parsing.api.MultiLanguageUserTask;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
 import org.openide.ErrorManager;
 
 
@@ -74,28 +78,32 @@ public class FormatAction extends BaseAction {
     }
     
     public void actionPerformed (ActionEvent e, JTextComponent component) {
-        try {
-            NbEditorDocument doc = (NbEditorDocument) component.getDocument ();
-            ASTNode root = ParserManagerImpl.getImpl (doc).getAST ();
-            if (root == null) return;
-            StringBuilder sb = new StringBuilder ();
-            Map<String,String> indents = new HashMap<String,String> ();
-            indents.put ("i", ""); // NOI18N
-            indents.put ("ii", "    "); // NOI18N
-            indent (
-                root,
-                new ArrayList<ASTItem> (),
-                sb,
-                indents,
-                null,
-                false,
-                doc
-            );
-            doc.remove (0, doc.getLength ());
-            doc.insertString (0, sb.toString (), null);
-        } catch (BadLocationException ex) {
-            ErrorManager.getDefault ().notify (ex);
-        }
+            final NbEditorDocument doc = (NbEditorDocument) component.getDocument ();
+            Source source = Source.create (doc);
+            ParserManager.parse (Collections.<Source>singleton (source), new MultiLanguageUserTask<ParserResult> () {
+                @Override
+                public void run (ResultIterator<ParserResult> resultIterator) {
+                    try {
+                        StringBuilder sb = new StringBuilder ();
+                        Map<String,String> indents = new HashMap<String,String> ();
+                        indents.put ("i", ""); // NOI18N
+                        indents.put ("ii", "    "); // NOI18N
+                        indent (
+                            resultIterator.getParserResult ().getRootNode (),
+                            new ArrayList<ASTItem> (),
+                            sb,
+                            indents,
+                            null,
+                            false,
+                            doc
+                        );
+                        doc.remove (0, doc.getLength ());
+                        doc.insertString (0, sb.toString (), null);
+                    } catch (BadLocationException ex) {
+                        ErrorManager.getDefault ().notify (ex);
+                    }
+                }
+            });
     }
     
     // uncomment to disable the action for languages without grammar definition
