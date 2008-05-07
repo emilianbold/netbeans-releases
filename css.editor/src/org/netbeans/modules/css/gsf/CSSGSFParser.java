@@ -68,6 +68,8 @@ import org.netbeans.modules.gsf.spi.DefaultError;
  */
 public class CSSGSFParser implements Parser, PositionManager {
 
+    private static final String PREFIX = "GENERATED_";
+    
     private static CSSParser PARSER;
 
     private static synchronized CSSParser parser() {
@@ -117,11 +119,14 @@ public class CSSGSFParser implements Parser, PositionManager {
                     int from = errorToken.offset;
                     int to = from + errorToken.image.length();
 
-                    Error error =
-                            new DefaultError(pe.getMessage(), pe.getLocalizedMessage(), null, file.getFileObject(),
-                            from, from, Severity.ERROR);
+                    if(!(containsGeneratedCode(lastSuccessToken.image)
+                            || containsGeneratedCode(errorToken.image))) {
+                        Error error =
+                                new DefaultError(pe.getMessage(), pe.getLocalizedMessage(), null, file.getFileObject(),
+                                from, from, Severity.ERROR);
 
-                    job.listener.error(error);
+                        job.listener.error(error);
+                    }
                     
                 }
 
@@ -139,13 +144,15 @@ public class CSSGSFParser implements Parser, PositionManager {
                 int from = errorToken.offset;
                 int to = from + errorToken.image.length();
 
-                Error error =
-                        new DefaultError(ex.getMessage(), ex.getLocalizedMessage(), null, file.getFileObject(),
-                        from, from, Severity.ERROR);
-
+                if(!(containsGeneratedCode(lastSuccessToken.image)
+                            || containsGeneratedCode(errorToken.image))) {
+                    Error error =
+                            new DefaultError(ex.getMessage(), ex.getLocalizedMessage(), null, file.getFileObject(),
+                            from, from, Severity.ERROR);
+                    job.listener.error(error);
+                }
+                
                 result = new CSSParserResult(this, file, null);
-
-                job.listener.error(error);
             } catch (TokenMgrError tme) {
                 //a bad things happened during the lexical analysis -> report lexical analysis error
                 Error error =
@@ -164,6 +171,10 @@ public class CSSGSFParser implements Parser, PositionManager {
         }
     }
 
+    private boolean containsGeneratedCode(String text) {
+        return text.contains(PREFIX);
+    }
+    
     public PositionManager getPositionManager() {
         return this;
     }

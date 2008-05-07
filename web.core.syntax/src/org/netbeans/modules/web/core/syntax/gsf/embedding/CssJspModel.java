@@ -190,6 +190,8 @@ public class CssJspModel extends CssModel {
 //
 //                LOGGER.log(Level.FINE, "Parser Error " + from + " -  " + to + ": " + pe.getMessage());
 //            }
+            final boolean[] cleared = new boolean[1];
+            
             NodeVisitor visitor = new NodeVisitor() {
 
                 public void visit(SimpleNode node) {
@@ -200,18 +202,21 @@ public class CssJspModel extends CssModel {
 
                         if (parent.kind() == CSSParserTreeConstants.JJTDECLARATION) {
                             //possibly clear also the semicolon which is not part of the declaration node
-                            char justAfterDeclarationNode = buff.charAt(parent.endOffset()); 
+                            char justAfterDeclarationNode = buff.length() == parent.endOffset() ? ' ' : buff.charAt(parent.endOffset()); 
                             
                             //possibly clear the declaration even there is no generated code inside
                             //the error may be caused by previous incorrectly fixed declaration
-                            boolean forceClear = false;
+                            boolean fixesInPreviousDeclaration = false;
                             SimpleNode siblingBefore = SimpleNodeUtil.getSibling(parent, true);
                             if(siblingBefore != null && siblingBefore.kind() == CSSParserTreeConstants.JJTDECLARATION) {
-                                forceClear = containsGeneratedCode(siblingBefore, buff);
+                                fixesInPreviousDeclaration = containsGeneratedCode(siblingBefore, buff);
                             }
                             
-                            if(clearNode(parent, buff, 0, justAfterDeclarationNode == ';' ? 1 : 0, templatingBlocks, forceClear)) {
-                                exit();
+                            if(justAfterDeclarationNode == ';') {
+                                //clear only if the previous declaration has been fixed and the error ends with ;
+                                if(clearNode(parent, buff, 0, 1, templatingBlocks, fixesInPreviousDeclaration)) {
+                                    cleared[0] = true;
+                                }
                             }
                         }
                         if (parent.kind() == CSSParserTreeConstants.JJTSTYLERULE) {
@@ -222,7 +227,7 @@ public class CssJspModel extends CssModel {
                                     boolean modif = clearNode(siblingBefore, buff, 0, 0, templatingBlocks, false); //clear the last declaration node
                                     modif = modif || clearNode(node, buff, 0, -1, templatingBlocks, true); //clear the skipblock itself, exclude closing symbol
                                     if(modif) {
-                                        exit();
+                                        cleared[0] = true;
                                     }
                                 } else if(siblingBefore.kind() == CSSParserTreeConstants.JJTSELECTORLIST) {
                                     //error in selector list
@@ -231,7 +236,7 @@ public class CssJspModel extends CssModel {
                                     int curlyBracketIndex = buff.indexOf("{", from);
                                     if(curlyBracketIndex > 0) {
                                         clearAndWrite(buff, from, curlyBracketIndex, FIXED_SELECTOR);
-                                        exit();
+                                        cleared[0] = true;
                                     }
                                     
                                 }
@@ -246,26 +251,20 @@ public class CssJspModel extends CssModel {
             long startTime = System.currentTimeMillis();
             
             //parse the buffer until the templating issue gets fixed.
-            //have a limit since we may easily break the code by fixing different errror
             int i = 0;
-            for(; i < 30; i++) {
-                try {
-                    //parse the buffer
-                    parser().errors().clear();
-                    parser().ReInit(new ASCII_CharStream(new StringReader(buff.toString())));
-                    SimpleNode root = parser().styleSheet();
-                    root.visitChildren(visitor);
+            for(; i < 4; i++) {
+                cleared[0] = false;
+                //parse the buffer
+                parser().errors().clear();
+                parser().ReInit(new ASCII_CharStream(new StringReader(buff.toString())));
+                SimpleNode root = parser().styleSheet();
+                root.visitChildren(visitor);
 
+                if(!cleared[0]) {
                     //source checking finished without any correction => finish
                     break;
-                }catch(RuntimeException e) {
-                    String msg = e.getMessage();
-                    if(!CODE_FIXED.equals(msg)) {
-                        System.out.println(buff.toString());
-                        throw e;
-                    }
-                    continue;
                 }
+                
             }
             
             long endTime = System.currentTimeMillis();
@@ -282,18 +281,35 @@ public class CssJspModel extends CssModel {
         }
 
     }
-
-    private void exit() {
-        throw new RuntimeException(CODE_FIXED);
+    
+    /** returns a distance of the first occurance of the searched char from the end of the node image or 0 if the char hasn't been found */
+    private int charEndDelta(SimpleNode node, StringBuilder buff, char searched) {
+        int from = node.startOffset();
+        int to = node.endOffset();
+        int index = buff.substring(from, to).indexOf(searched);
+        return index == -1 ? 0 : node.image().length() - index;
     }
     
     private boolean clearNode(SimpleNode node, StringBuilder buff, 
             int startDelta, int endDelta, 
             List<OffsetRange> templatingBlocks,
             boolean forceClear) {
-        int from = node.startOffset() + startDelta;
-        int to = node.endOffset() + endDelta;
+        int from = node.startOffset();
+        int to = node.endOffset();
+        
+        if(from >= to) {
+            System.err.println("clearNode from >= to! node: " + node);
+            return false;
+        }
+        
+        from += startDelta;
+        to += endDelta;
 
+        if(from >= to) {
+            System.err.println("clearNode from+startDelta >= to+endDelta! node: " + node);
+            return false;
+        }
+        
         if(forceClear || containsGeneratedCode(node, buff)) {
             LOGGER.log(Level.FINE, "CLEARING NODE " + node + " [" + buff.substring(from, to) + "]");
             clear(buff, from, to);
