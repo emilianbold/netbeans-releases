@@ -44,7 +44,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.groovy.grails.api.ExecutionSupport;
 import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
+import org.netbeans.modules.groovy.grails.api.GrailsRuntime;
 import org.netbeans.modules.groovy.grailsproject.actions.RunGrailsServerCommandAction;
+import org.netbeans.modules.groovy.grailsproject.actions.ConfigSupport;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.LifecycleManager;
 import org.openide.filesystems.FileUtil;
@@ -58,7 +60,7 @@ import org.openide.util.RequestProcessor;
 public class GrailsActionProvider implements ActionProvider {
 
     private static final Logger LOGGER = Logger.getLogger(GrailsActionProvider.class.getName());
-    
+
     private static final String[] supportedActions = {
         COMMAND_RUN,
         COMMAND_TEST
@@ -76,6 +78,12 @@ public class GrailsActionProvider implements ActionProvider {
     }
 
     public void invokeAction(String command, Lookup context) throws IllegalArgumentException {
+        final GrailsRuntime runtime = GrailsRuntime.getInstance();
+        if (!runtime.isConfigured()) {
+            ConfigSupport.showConfigurationWarning(runtime);
+            return;
+        }
+
         if (COMMAND_RUN.equals(command)) {
             LifecycleManager.getDefault().saveAll();
             // FIXME this is just temporary hack - content of the action with stop

@@ -15,6 +15,7 @@ import javax.swing.Action;
 import org.openide.awt.DynamicMenuContent;
 import javax.swing.JMenuItem;
 import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.modules.groovy.grails.api.GrailsRuntime;
 import org.openide.awt.Actions;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
 
@@ -23,9 +24,16 @@ public final class GenerateAllAction extends NodeAction {
     private final Logger LOG = Logger.getLogger(GenerateAllAction.class.getName());
     
     protected void performAction(Node[] activatedNodes) {
+        final GrailsRuntime runtime = GrailsRuntime.getInstance();
+        if (!runtime.isConfigured()) {
+            ConfigSupport.showConfigurationWarning(runtime);
+            return;
+        }        
+        
         DataObject dataObject = activatedNodes[0].getLookup().lookup(DataObject.class);
         
         GrailsProject prj = (GrailsProject)FileOwnerQuery.getOwner(dataObject.getFolder().getPrimaryFile());
+       
         String command = "generate-all " + dataObject.getPrimaryFile().getName();
 
         assert prj != null;

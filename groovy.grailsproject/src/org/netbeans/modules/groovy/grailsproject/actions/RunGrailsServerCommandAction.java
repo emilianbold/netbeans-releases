@@ -41,6 +41,7 @@ import java.util.concurrent.Callable;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.groovy.grails.api.ExecutionSupport;
 import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
+import org.netbeans.modules.groovy.grails.api.GrailsRuntime;
 import org.netbeans.modules.groovy.grailsproject.execution.ExecutionService;
 import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileObject;
@@ -62,6 +63,12 @@ public class RunGrailsServerCommandAction extends AbstractAction /*implements Ou
     }
 
     public void actionPerformed(ActionEvent e) {
+        final GrailsRuntime runtime = GrailsRuntime.getInstance();
+        if (!runtime.isConfigured()) {
+            ConfigSupport.showConfigurationWarning(runtime);
+            return;
+        }
+        
         final GrailsServerState serverState = project.getLookup().lookup(GrailsServerState.class);
         if (serverState != null && serverState.isRunning()) {
             return;

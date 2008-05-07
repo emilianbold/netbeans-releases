@@ -5,7 +5,6 @@
 package org.netbeans.modules.groovy.grailsproject.actions;
 
 import java.awt.Dialog;
-import java.io.IOException;
 import java.util.Set;
 import javax.swing.JComponent;
 import org.openide.loaders.DataObject;
@@ -14,11 +13,11 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
 import java.util.logging.Logger;
-import java.util.logging.Level;
 import javax.swing.Action;
 import org.openide.awt.DynamicMenuContent;
 import javax.swing.JMenuItem;
 import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.modules.groovy.grails.api.GrailsRuntime;
 import org.netbeans.modules.groovy.grailsproject.SourceCategory;
 import org.netbeans.modules.groovy.grailsproject.ui.wizards.NewArtifactWizardIterator;
 import org.openide.DialogDisplayer;
@@ -31,11 +30,16 @@ public final class CreateViewAction extends NodeAction {
     private final Logger LOG = Logger.getLogger(CreateViewAction.class.getName());
 
     protected void performAction(Node[] activatedNodes) {
-        DataObject dataObject = activatedNodes[0].getLookup().lookup(DataObject.class);
-        GrailsProject project = null;
+        final GrailsRuntime runtime = GrailsRuntime.getInstance();
+        if (!runtime.isConfigured()) {
+            ConfigSupport.showConfigurationWarning(runtime);
+            return;
+        }
         
-        project = (GrailsProject)FileOwnerQuery.getOwner(dataObject.getFolder().getPrimaryFile());
+        DataObject dataObject = activatedNodes[0].getLookup().lookup(DataObject.class);
+        GrailsProject project =  (GrailsProject)FileOwnerQuery.getOwner(dataObject.getFolder().getPrimaryFile());
 
+        
         assert project != null;
         
         WizardDescriptor wiz =  null;

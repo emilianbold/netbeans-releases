@@ -36,6 +36,7 @@ import javax.swing.AbstractAction;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.groovy.grails.api.ExecutionSupport;
 import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
+import org.netbeans.modules.groovy.grails.api.GrailsRuntime;
 import org.netbeans.modules.groovy.grailsproject.GrailsProcessRunnable;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.RequestProcessor;
@@ -56,6 +57,12 @@ public class ShellAction extends AbstractAction {
     }
 
     public void actionPerformed(ActionEvent e) {
+        final GrailsRuntime runtime = GrailsRuntime.getInstance();
+        if (!runtime.isConfigured()) {
+            ConfigSupport.showConfigurationWarning(runtime);
+            return;
+        }
+        
         try {
             Process process = ExecutionSupport.getInstance().executeSimpleCommand(
                     "shell", GrailsProjectConfig.forProject(prj));

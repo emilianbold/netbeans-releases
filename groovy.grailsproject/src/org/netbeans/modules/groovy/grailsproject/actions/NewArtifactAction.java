@@ -39,6 +39,7 @@ import java.util.logging.Level;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
 import org.netbeans.modules.groovy.grailsproject.SourceCategory;
 import java.util.logging.Logger;
+import org.netbeans.modules.groovy.grails.api.GrailsRuntime;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -61,11 +62,14 @@ public class NewArtifactAction extends AbstractAction {
     }
 
     public void actionPerformed(ActionEvent e) {
-        
-        // LOG.log(Level.WARNING, "hitting actionPerformed()");
-        
         assert cat != null;
         assert project != null;
+        
+        final GrailsRuntime runtime = GrailsRuntime.getInstance();
+        if (!runtime.isConfigured()) {
+            ConfigSupport.showConfigurationWarning(runtime);
+            return;
+        }
         
         WizardDescriptor wiz =  null;
         

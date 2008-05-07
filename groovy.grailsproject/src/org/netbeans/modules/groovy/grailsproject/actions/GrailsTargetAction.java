@@ -31,6 +31,7 @@ import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import org.netbeans.api.project.Project;
 import java.util.logging.Logger;
+import org.netbeans.modules.groovy.grails.api.GrailsRuntime;
 
 public class GrailsTargetAction extends AbstractAction {
 
@@ -51,6 +52,11 @@ public class GrailsTargetAction extends AbstractAction {
         }
             
     public void actionPerformed(ActionEvent e) {
+        final GrailsRuntime runtime = GrailsRuntime.getInstance();
+        if (!runtime.isConfigured()) {
+            ConfigSupport.showConfigurationWarning(runtime);
+            return;
+        }
         new PublicSwingWorker(prj, command).start();
 
     }
