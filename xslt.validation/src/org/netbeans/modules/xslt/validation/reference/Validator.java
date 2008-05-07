@@ -69,28 +69,24 @@ public final class Validator extends XsltValidator {
   public XslVisitor getVisitor() { return new XslVisitorAdapter() {
 
   @Override
-  public void visit(CallTemplate callTemplate)
-  {
+  public void visit(CallTemplate callTemplate) {
 //out();
 //out("callTemplate: " + callTemplate);
 
-// todo a    
-//checkReference(callTemplate, callTemplate.getName());
+    checkReference(callTemplate, callTemplate.getName());
 //todo r
 //addError("FIX_Reference", callTemplate);
   }
 
   @Override
-  public void visit(TypeSpec typeSpec)
-  {
+  public void visit(TypeSpec typeSpec) {
 //out();
 //out("typeSpec: " + typeSpec);
     checkReference(typeSpec, typeSpec.getType());
   }
 
   @Override
-  public void visit(UseAttributesSetsSpec useAttributesSetsSpec)
-  {
+  public void visit(UseAttributesSetsSpec useAttributesSetsSpec) {
 //out();
 //out("useAttributesSetsSpec: " + useAttributesSetsSpec);
     List<XslReference<AttributeSet>> sets = useAttributesSetsSpec.getUseAttributeSets();
@@ -101,8 +97,7 @@ public final class Validator extends XsltValidator {
   }
 
   @Override
-  public void visit(UseCharacterMapsSpec useCharacterMapsSpec)
-  {
+  public void visit(UseCharacterMapsSpec useCharacterMapsSpec) {
 //out();
 //out("useCharacterMapsSpec: " + useCharacterMapsSpec);
     List<XslReference<CharacterMap>> sets = useCharacterMapsSpec.getUseCharacterMaps();
@@ -113,8 +108,7 @@ public final class Validator extends XsltValidator {
   }
 
   @Override
-  public void visit(WithParam withParam)
-  {
+  public void visit(WithParam withParam) {
 //out();
 //out("withParam: " + withParam);
     checkReference(withParam, withParam.getName());
