@@ -1648,9 +1648,13 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
   
   <!-- keep this target name at least for a while for backward compat -jglick -->
   <target name="commitValidation" depends="all-commitValidation,check-commit-validation" if="run.validation">
+    <property name="build.test.results.dir" location="build/test/results"/>
+    <mkdir dir="${build.test.results.dir}"/>
     <subant target="test" >
         <property name="test.config" value="commit"/>
         <property name="continue.after.failing.tests" value="true"/>
+        <property name="build.test.unit.results.dir" location="${build.test.results.dir}"/>
+        <property name="build.test.qa-functional.results.dir" location="${build.test.results.dir}"/>
         <dirset dir="..">
             <include name="o.n.core"/>
             <include name="core.windows"/>
@@ -1659,6 +1663,26 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
             <include name="editor"/>
         </dirset>
     </subant>
+    <pathconvert property="failed.tests" pathsep="${line.separator}">
+        <fileset dir="${build.test.results.dir}">
+            <not>
+                <and>
+                    <contains text='errors="0"'/>
+                    <contains text='failures="0"'/>
+                </and>
+            </not>
+        </fileset>
+    </pathconvert>
+    <fail message="There were failed tests:${line.separator}${failed.tests}">
+        <condition>
+            <not>
+                <or>
+                    <equals arg1="${failed.tests}" arg2=""/>
+                    <equals arg1="${continue.after.failing.tests}" arg2="true"/>
+                </or>
+            </not>
+        </condition>
+    </fail>
   </target>
 
   <!-- Needs to be run separately from commitValidation, since that target will abort if there are any failures. -->
