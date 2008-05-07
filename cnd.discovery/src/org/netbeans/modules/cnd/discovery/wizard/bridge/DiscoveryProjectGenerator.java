@@ -219,7 +219,6 @@ public class DiscoveryProjectGenerator {
                 sorted.put(item.getPath(),item);
             }
         }
-        Map<String,Item> unused = new HashMap<String,Item>();
         for (Map.Entry<String,Item> entry : sorted.entrySet()){
             String path = entry.getKey();
             Item item = entry.getValue();
@@ -227,7 +226,6 @@ public class DiscoveryProjectGenerator {
             if (!(relatives.contains(path) || used.contains(path) ||
                   relatives.contains(canonicalPath) || used.contains(canonicalPath))) {
                 // remove item;
-                Folder parent = item.getFolder();
                 if (DEBUG) System.out.println("Exclude Item "+path); // NOI18N
                 projectBridge.setExclude(item,true);
             }
@@ -409,7 +407,6 @@ public class DiscoveryProjectGenerator {
             // reconsolidate folders;
             Map<Folder,Set<FileConfiguration>> folders = new HashMap<Folder,Set<FileConfiguration>>();
             for(Map.Entry<String,Set<Pair>> entry : configurationStructure.entrySet()){
-                String path = entry.getKey();
                 Set<Pair> files = entry.getValue();
                 for(Pair pair : files){
                     if (pair.item != null) {
@@ -511,7 +508,6 @@ public class DiscoveryProjectGenerator {
         Map<String,Folder> preffered = prefferedFolders();
         List<Pair> orphan = new ArrayList<Pair>();
         for(Map.Entry<String,Set<Pair>> entry : configurationStructure.entrySet()){
-            String path = entry.getKey();
             Set<Pair> files = entry.getValue();
             Folder folder = null;
             List<Pair> list = new ArrayList<Pair>();
