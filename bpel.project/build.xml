@@ -43,4 +43,10 @@
     </target>
 
     <target name="netbeans-extra" depends="ant-extra"/>
+
+    <target name="check">
+        <ant dir="../../_code" inheritAll="true">
+            <property name="check.dir" value="${basedir}"/>
+        </ant>
+    </target>
 </project>

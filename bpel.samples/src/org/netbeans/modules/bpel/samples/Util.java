@@ -52,6 +52,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+import org.xml.sax.SAXException;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
@@ -71,49 +72,23 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 import org.xml.sax.InputSource;
 
-public class Util {
+public final class Util {
 
   private Util () {}
 
   public static void unZipFile(InputStream source, FileObject rootFolder) throws IOException {
-      try {
-          ZipInputStream str = new ZipInputStream(source);
-          ZipEntry entry;
+    ZipInputStream str = new ZipInputStream(source);
+    ZipEntry entry;
 
-          while ((entry = str.getNextEntry()) != null) {
-              if (entry.isDirectory()) {
-                  continue;
-              }
-              FileObject fo = FileUtil.createData(rootFolder, entry.getName());
-              FileLock lock = fo.lock();
+    while ((entry = str.getNextEntry()) != null) {
+      if (entry.isDirectory()) {
+          continue;
+      }
+      FileObject fo = FileUtil.createData(rootFolder, entry.getName());
+      FileLock lock = fo.lock();
 
-              try {
-                  OutputStream out = fo.getOutputStream(lock);
-
-                  try {
-                      FileUtil.copy(str, out);
-                  }
-                  catch (Exception e) {
-                    e.printStackTrace();
-                  }
-                  finally {
-                      out.close();
-                  }
-              } 
-              catch (Exception e) {
-                e.printStackTrace();
-              }
-              finally {
-                  lock.releaseLock();
-              }
-          }
-      }
-      catch (Exception e) {
-        e.printStackTrace();
-      }
-      finally {
-          source.close();
-      }
+      FileUtil.copy(str, fo.getOutputStream(lock));
+    }
   }
  
   public static void setProjectName(FileObject prjLoc, String projTypeName, String newName, String defaultName) {
@@ -122,7 +97,7 @@ public class Util {
   }
 
   public static void renameInProperties(FileObject prjLoc, String newName, String defaultName) {
-    FileObject propertiesFile = prjLoc.getFileObject("nbproject/project.properties");
+    FileObject propertiesFile = prjLoc.getFileObject("nbproject/project.properties"); // NOI18N
 
     try {
       String text = readContent(propertiesFile);
@@ -166,6 +141,7 @@ public class Util {
           File projXml = FileUtil.toFile(prjLoc.getFileObject(AntProjectHelper.PROJECT_XML_PATH));
           Document doc = XMLUtil.parse(new InputSource(projXml.toURI().toString()), false, true, null, null);
           NodeList nlist = doc.getElementsByTagNameNS(projTypeName, "name");       //NOI18N
+      
           if (nlist != null) {
               for (int i=0; i < nlist.getLength(); i++) {
                   Node n = nlist.item(i);
@@ -178,8 +154,11 @@ public class Util {
               }
               saveXml(doc, prjLoc, AntProjectHelper.PROJECT_XML_PATH);
           }
-          
-      } catch (Exception e) {
+      }
+      catch (IOException e) {
+          ErrorManager.getDefault().notify(e);
+      }
+      catch (SAXException e) {
           ErrorManager.getDefault().notify(e);
       }
   }
@@ -260,7 +239,7 @@ public class Util {
       }
   }
 
-  private static String [] JAVAEE_ARTIFACT_TYPES = new String [] {
+  private static final String [] JAVAEE_ARTIFACT_TYPES = new String [] {
     "j2ee_archive", // NOI18N
     "war", // NOI18N
     JbiProjectConstants.ARTIFACT_TYPE_JBI_ASA
