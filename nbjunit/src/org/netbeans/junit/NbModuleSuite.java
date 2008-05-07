@@ -432,6 +432,10 @@ public class NbModuleSuite {
                         // Otherwise will get DuplicateException.
                         continue;
                     }
+                    if (jar.getParentFile().getName().equals("core")) {
+                        // Otherwise will get DuplicateException.
+                        continue;
+                    }
                     String xml =
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
 "<!DOCTYPE module PUBLIC \"-//NetBeans//DTD Module Status 1.0//EN\"\n" +
