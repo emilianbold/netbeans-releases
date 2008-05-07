@@ -41,14 +41,15 @@ package org.netbeans.modules.parsing.spi;
 
 import java.util.List;
 import org.netbeans.modules.parsing.api.Embedding;
-import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.Snapshot;
+
 
 /**
  * ParserBasedEmbeddingProvider returns sources for embedded 
- * languages based on parser result for current language and source. Embedded
- * source can consist from one or more blocks of original source and it can contain
+ * languages based on parser result for current language and snapshot. Embedded
+ * snapshot can consist from one or more blocks of original snapshot and it can contain
  * some generated parts that has no mirror in the original text. See 
- * {@link Source} class for more information how to create embedded source.
+ * {@link Snapshot} class for more information how to create embedded snapshot.
  *
  * @author Jan Jancura
  */
@@ -61,7 +62,7 @@ public abstract class ParserBasedEmbeddingProvider<T extends Parser.Result> exte
      * @param source        A source that should be scanned for embeddings.
      * @return              List of embedded sources.
      */
-    public abstract List<Embedding> getSources (T result, Source source);
+    public abstract List<Embedding> getSources (T result, Snapshot snapshot);
     
     /**
      * Returns priority of this source provider.

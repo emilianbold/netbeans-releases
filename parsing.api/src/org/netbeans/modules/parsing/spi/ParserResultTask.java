@@ -39,7 +39,8 @@
 
 package org.netbeans.modules.parsing.spi;
 
-import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.Snapshot;
+
 
 /**
  * SchedulerTask that process result of parsing. 
@@ -54,9 +55,9 @@ public abstract class ParserResultTask<T extends Parser.Result> extends Schedule
      * Called when parser is finished.
      * 
      * @param result        A result of parsing.
-     * @param source        A source that was parsed.
+     * @param snapshot      A snapshot that was parsed.
      */
-    public abstract void run (T result, Source source);
+    public abstract void run (T result, Snapshot snapshot);
 
     /**
      * A priority. Less number wins.

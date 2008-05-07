@@ -41,7 +41,7 @@ package org.netbeans.modules.parsing.spi;
 
 import javax.swing.event.ChangeListener;
 
-import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Task;
 
 
@@ -57,13 +57,14 @@ public abstract class Parser {
     
     /**
      * Called when some client needs some result of parsing. Parser must parse
-     * source based on {@link Source#getText()} method call. 
-     * Original document is there for various registration purposes only.
+     * source based on {@link Snapshot#getText()} method call. 
      * 
+     * @param snapshot      A snapshot that should be parsed.
      * @param task          A task asking for parsing result.
      * @return              Result of parsing or null.
      */
     public abstract void parse (
+        Snapshot            snapshot,
         Task                task
     );
     

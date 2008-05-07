@@ -41,14 +41,15 @@ package org.netbeans.modules.parsing.spi;
 
 import java.util.List;
 import org.netbeans.modules.parsing.api.Embedding;
-import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.Snapshot;
+
 
 /**
  * EmbeddingProvider returns sources for embedded languages ({@link Embedding}s)
- * based on lexical analyse of current source. Embedded
+ * based on lexical analyse of current snapshot. Embedded
  * source can consist from one or more blocks of original source and it can contain
  * some generated parts that has no mirror in the original text. See 
- * {@link Source} class for more information how to create embedded source.
+ * {@link Snapshot} class for more information how to create embedded source.
  *
  * @author Jan Jancura
  */
@@ -58,10 +59,10 @@ public abstract class EmbeddingProvider extends SchedulerTask {
     /**
      * Returns list of {@link Embedding}s based on lexical analyse.
      * 
-     * @param source        A source that should be scanned for embeddings.
+     * @param snapshot      A snapshot that should be scanned for embeddings.
      * @return              List of {@link Embedding}s.
      */
-    public abstract List<Embedding> getEmbeddings (Source source);
+    public abstract List<Embedding> getEmbeddings (Snapshot snapshot);
     
     /**
      * Returns priority of this source provider.

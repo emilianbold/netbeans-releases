@@ -41,9 +41,6 @@ package org.netbeans.modules.parsing.api;
 
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.text.Document;
-
-import org.openide.filesystems.FileObject;
 
 
 /**
