@@ -68,6 +68,7 @@ import org.netbeans.api.ruby.platform.RubyPlatformManager;
 import org.netbeans.modules.ruby.platform.RubyExecution;
 import org.netbeans.modules.ruby.platform.execution.OutputRecognizer;
 import org.netbeans.modules.ruby.platform.gems.GemManager;
+import org.netbeans.modules.ruby.rubyproject.spi.TestRunner;
 import org.netbeans.modules.ruby.rubyproject.ui.customizer.RubyProjectProperties;
 import org.netbeans.modules.ruby.rubyproject.ui.customizer.MainClassChooser;
 import org.netbeans.modules.ruby.rubyproject.ui.customizer.MainClassWarning;
@@ -673,8 +674,13 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
                 return;
             }
             
-            runRubyScript(file, FileUtil.toFile(file).getAbsolutePath(),
-                    file.getNameExt(), context, isDebug, new OutputRecognizer[] { new TestNotifier(true, true) });
+            TestRunner testRunner = Lookup.getDefault().lookup(TestRunner.class);
+            if (testRunner != null) {
+                testRunner.getInstance().runTest(file);
+            } else {
+                runRubyScript(file, FileUtil.toFile(file).getAbsolutePath(),
+                        file.getNameExt(), context, isDebug, new OutputRecognizer[]{new TestNotifier(true, true)});
+            }
         }
 
         if (COMMAND_TEST.equals(command)) {
