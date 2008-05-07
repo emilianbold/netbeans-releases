@@ -85,6 +85,30 @@ public final class ExecutionSupport {
         return execute(descriptor);
     }
 
+    public Callable<Process> createRunApp(final GrailsProjectConfig config) {
+        return new Callable<Process>() {
+
+            public Process call() throws Exception {
+                File directory = FileUtil.toFile(config.getProject().getProjectDirectory());
+
+                Properties props = new Properties();
+                String port = config.getPort();
+                if (port != null) {
+                    props.setProperty("server.port", port); // NOI18N
+                }
+
+                // FIXME fix this hack
+                String argument = Utilities.isWindows() ? " REM NB:" +  // NOI18N
+                            config.getProject().getProjectDirectory().getName() : "";
+
+                GrailsRuntime.CommandDescriptor descriptor = new GrailsRuntime.CommandDescriptor(
+                        "run-app", directory, config.getEnvironment(), new String[] {argument}, props);
+
+                return GrailsRuntime.getInstance().createCommand(descriptor).call();
+            }
+        };
+    }
+
     public Process executeRunApp(GrailsProjectConfig config) throws Exception {
         File directory = FileUtil.toFile(config.getProject().getProjectDirectory());
 
@@ -101,6 +125,18 @@ public final class ExecutionSupport {
         GrailsRuntime.CommandDescriptor descriptor = new GrailsRuntime.CommandDescriptor(
                 "run-app", directory, config.getEnvironment(), new String[] {argument}, props);
         return execute(descriptor);
+    }
+
+    public Callable<Process> createSimpleCommand(final String command, final GrailsProjectConfig config) {
+        return new Callable<Process>() {
+
+            public Process call() throws Exception {
+                File directory = FileUtil.toFile(config.getProject().getProjectDirectory());
+                GrailsRuntime.CommandDescriptor descriptor = new GrailsRuntime.CommandDescriptor(
+                        command, directory, config.getEnvironment());
+                return GrailsRuntime.getInstance().createCommand(descriptor).call();
+            }
+        };
     }
 
     public Process executeSimpleCommand(String command, GrailsProjectConfig config) throws Exception {

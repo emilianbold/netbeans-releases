@@ -27,6 +27,7 @@
  */
 package org.netbeans.modules.groovy.grailsproject.actions;
 
+import org.netbeans.modules.groovy.grailsproject.execution.LineSnooper;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import java.io.File;

@@ -100,6 +100,8 @@ public final class GrailsInstanceProvider implements ServerInstanceProvider {
     }
 
     public void serverStarted(Project project, Process process) {
+        assert process != null;
+
         synchronized (this) {
             running.put(process, project);
             PROCESS_EXECUTOR.submit(new ProcessHandler(this, process));

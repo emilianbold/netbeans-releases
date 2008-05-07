@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.groovy.grailsproject.actions;
 
+import org.netbeans.modules.groovy.grailsproject.execution.LineSnooper;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
@@ -46,8 +47,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.groovy.grailsproject.StreamInputThread;
-import org.netbeans.modules.groovy.grailsproject.StreamRedirectThread;
+import org.netbeans.modules.groovy.grailsproject.execution.StreamInputThread;
+import org.netbeans.modules.groovy.grailsproject.execution.StreamRedirectThread;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.windows.IOProvider;

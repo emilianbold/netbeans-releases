@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.groovy.grailsproject;
 
+import org.netbeans.modules.groovy.grailsproject.execution.StreamRedirectThread;
+import org.netbeans.modules.groovy.grailsproject.execution.StreamInputThread;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -47,7 +49,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.groovy.grailsproject.actions.LineSnooper;
+import org.netbeans.modules.groovy.grailsproject.execution.LineSnooper;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
@@ -90,6 +92,11 @@ public class GrailsProcessRunnable implements Runnable, Cancellable {
     }
 
     public final void run() {
+        try {
+            io.getOut().reset();
+        } catch (IOException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+        }
         io.select();
 
         synchronized (this) {
@@ -148,12 +155,7 @@ public class GrailsProcessRunnable implements Runnable, Cancellable {
 
             FileUtil.refreshFor(toRefresh);
             finishProgress();
-            finish();
         }
-    }
-
-    public void finish() {
-
     }
 
     public final boolean cancel() {

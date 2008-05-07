@@ -197,7 +197,9 @@ public final class GrailsRuntime {
     }
 
     private static void checkForServer(CommandDescriptor descriptor, Process process) {
-        if ("run-app".equals(descriptor.getName()) || "run-app-https".equals(descriptor.getName())) { // NOI18N
+        if ("run-app".equals(descriptor.getName()) // NOI18N
+                || "run-app-https".equals(descriptor.getName()) // NOI18N
+                || "run-war".equals(descriptor.getName())) { // NOI18N
             Project project = FileOwnerQuery.getOwner(
                     FileUtil.toFileObject(descriptor.getDirectory()));
             if (project != null) {

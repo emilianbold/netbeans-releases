@@ -39,17 +39,16 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.groovy.grailsproject;
+package org.netbeans.modules.groovy.grailsproject.execution;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Reader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.openide.util.Exceptions;
+import org.openide.windows.OutputWriter;
 import java.util.logging.Logger;
-import java.util.logging.Level;
 
 /** 
  * This class is a thread used for listening a redirecting
@@ -58,30 +57,35 @@ import java.util.logging.Level;
  *
  * @author Petr Hamernik
  */
-public class StreamInputThread extends Thread {
+public class StreamRedirectThread extends Thread {
 
     private static final AtomicInteger COUNTER = new AtomicInteger(0);
     
     /** Input stream where to read */
-    private OutputStream os;
+    private InputStream is;
      
     /** OutputWriter of NetBeans' InputOutput - where to write
      */
-    private Reader rd;
+    private OutputWriter ow;
     
     /** Create new stream redirector 
      * 
      * @param dataObject DataObject which is executed 
      * @param is Input stream where to read
      * @param ow OutputWriter of NetBeans' InputOutput - where to write
+     * 
+     * 
      */
+    private  final Logger LOG = Logger.getLogger(StreamRedirectThread.class.getName());
     
-    private  final Logger LOG = Logger.getLogger(StreamInputThread.class.getName());
     
-    public StreamInputThread(OutputStream os, Reader rd) {
-        super("Stream Input Thread " + COUNTER.incrementAndGet());
-        this.os = os;
-        this.rd = rd;
+    public StreamRedirectThread(InputStream is, OutputWriter ow) {
+        super("Stream Redirect Thread " + COUNTER.incrementAndGet());
+        
+        this.is = is;
+        this.ow = ow;
+        
+        
     }
     
     /** Starts this thread.
@@ -89,34 +93,25 @@ public class StreamInputThread extends Thread {
     @Override
     public void run() {
         try {
-            
-            BufferedReader br = new BufferedReader(rd);
+            BufferedReader br = new BufferedReader(new InputStreamReader(is));
             try {
-                OutputStreamWriter outw = new OutputStreamWriter(os);
-                try {
-                    int b;
-                    String line; 
+                int input;
+                while ((input = br.read()) != -1 && !this.isInterrupted()) {
+                    // LOG.log(Level.WARNING, "Output: " + input);
 
-                    while ((line = br.readLine()) != null && !this.isInterrupted()) {
-
-                        // LOG.log(Level.WARNING, "Input: " + line);
-
-                        outw.write(line);
-                        outw.write("\n");
-                        outw.flush();
-
-                    }
-                } finally {
-                    outw.close();
+                    if (input == 10) {
+                        ow.print("\n");
+                    } else {
+                        ow.write(input);
+                    }  
                 }
             } finally {
                 br.close();
             }
         } catch (IOException ioe) {
-            // if we are getting a java.io.IOException: Broken pipe
-            // this is most likely caused while shutting down the InputOutput tab.
-            // therefore we ignore this for now.
-            // Exceptions.printStackTrace(ioe);
+            //Exceptions.printStackTrace(ioe);
+        } finally {
+            ow.close();
         }
     }
 }

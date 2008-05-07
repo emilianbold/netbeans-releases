@@ -37,7 +37,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.groovy.grailsproject.actions;
+package org.netbeans.modules.groovy.grailsproject.execution;
 
 import java.io.IOException;
 
