@@ -27,17 +27,9 @@ import org.netbeans.modules.xslt.model.XslModel;
  */
 public interface MapperContext {
     
-//    T getTransformDesc();
-    
     XslModel getXSLModel();
-    
     AXIComponent getTargetType();
-    
     AXIComponent getSourceType();
-
     void addMapperContextChangeListener(MapperContextChangeListener listener);
-    
     void removeMapperContextChangeListener(MapperContextChangeListener listener);
-    
-    String getValidationMessage();
 }

@@ -91,10 +91,11 @@ public abstract class ModelBridge implements ComponentListener, PropertyChangeLi
     protected boolean checkErrors() {
         String errorMessages = "";
         if (getMapper().getContext() != null) {
-            String valMessage = getMapper().getContext().getValidationMessage();
-            if (valMessage != null) {
-                errorMessages += valMessage;
-            }
+// todo r
+//          String valMessage = getMapper().getContext().getValidationMessage();
+//          if (valMessage != null) {
+//              errorMessages += valMessage;
+//          }
             
             XslModel xslModel = getMapper().getContext().getXSLModel();
             if (xslModel == null || xslModel.getState() != XslModel.State.VALID) {
