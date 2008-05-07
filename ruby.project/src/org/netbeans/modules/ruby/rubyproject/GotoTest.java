@@ -123,7 +123,7 @@ public class GotoTest implements TestLocator {
 
     private boolean isZenTestInstalled(final Project project) {
         GemManager gemManager = RubyPlatform.gemManagerFor(project);
-        return gemManager != null && gemManager.getVersion("ZenTest") != null; // NOI18N
+        return gemManager != null && gemManager.getLatestVersion("ZenTest") != null; // NOI18N
     }
 
     private boolean isRSpecInstalled(final Project project) {

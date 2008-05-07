@@ -318,7 +318,7 @@ public class GeneratorPanel extends javax.swing.JPanel implements Runnable {
                         }
 
                         if (gem.endsWith("_generator")) { // NOI18N
-                            String version = gemManager.getVersion(gem);
+                            String version = gemManager.getLatestVersion(gem);
                             if (version != null) {
                                 File f = new File(gemDir, gem + "-" + version); // NOI18N
                                 if (f.exists()) {
@@ -360,7 +360,7 @@ public class GeneratorPanel extends javax.swing.JPanel implements Runnable {
             scan(generators, railsInstall, 
                 "lib/rails_generator/generators/components", null, added); // NOI18N
         } else if (gemManager != null) {
-            railsVersion = gemManager.getVersion("rails"); // NOI18N
+            railsVersion = gemManager.getLatestVersion("rails"); // NOI18N
             if (railsVersion != null) {
                 for (File repo : gemManager.getRepositories()) {
                     File gemDir = new File(repo, "gems"); // NOI18N
