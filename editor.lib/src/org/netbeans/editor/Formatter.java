@@ -57,6 +57,7 @@ import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.netbeans.modules.editor.lib.EditorPreferencesDefaults;
 import org.netbeans.modules.editor.lib.SettingsConversions;
 import org.openide.util.WeakListeners;
 
@@ -188,7 +189,7 @@ public class Formatter {
             String key = evt == null ? null : evt.getKey();
             if (!inited || key == null || SimpleValueNames.TAB_SIZE.equals(key)) {
                 if (!customTabSize) {
-                    tabSize = prefs.getInt(SimpleValueNames.TAB_SIZE, 8);
+                    tabSize = prefs.getInt(SimpleValueNames.TAB_SIZE, EditorPreferencesDefaults.defaultTabSize);
                 }
             }
 
@@ -202,13 +203,13 @@ public class Formatter {
 
             if (!inited || key == null || SimpleValueNames.EXPAND_TABS.equals(key)) {
                 if (!customExpandTabs) {
-                    expandTabs = prefs.getBoolean(SimpleValueNames.EXPAND_TABS, true);
+                    expandTabs = prefs.getBoolean(SimpleValueNames.EXPAND_TABS, EditorPreferencesDefaults.defaultExpandTabs);
                 }
             }
             
             if (!inited || key == null || SimpleValueNames.SPACES_PER_TAB.equals(key)) {
                 if (!customSpacesPerTab) {
-                    spacesPerTab = prefs.getInt(SimpleValueNames.SPACES_PER_TAB, 4);
+                    spacesPerTab = prefs.getInt(SimpleValueNames.SPACES_PER_TAB, EditorPreferencesDefaults.defaultSpacesPerTab);
                 }
             }
 

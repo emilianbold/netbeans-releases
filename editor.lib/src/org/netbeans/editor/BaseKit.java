@@ -80,6 +80,7 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.KeyBindingSettings;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.netbeans.modules.editor.lib.EditorPreferencesDefaults;
 import org.netbeans.modules.editor.lib.EditorPreferencesKeys;
 import org.netbeans.modules.editor.lib.NavigationHistory;
 import org.netbeans.modules.editor.lib.SettingsConversions;
@@ -730,7 +731,7 @@ public class BaseKit extends DefaultEditorKit {
             enableIM = !Boolean.getBoolean(propName);
         } else {
             Preferences prefs = MimeLookup.getLookup(getContentType()).lookup(Preferences.class);
-            enableIM = prefs.getBoolean(EditorPreferencesKeys.INPUT_METHODS_ENABLED, true); //NOI18N
+            enableIM = prefs.getBoolean(EditorPreferencesKeys.INPUT_METHODS_ENABLED, EditorPreferencesDefaults.defaultInputMethodsEnabled); //NOI18N
         }
 
         c.enableInputMethods(enableIM);

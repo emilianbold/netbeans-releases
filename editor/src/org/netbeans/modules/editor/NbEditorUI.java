@@ -89,6 +89,7 @@ import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.modules.editor.impl.CustomizableSideBar;
 import org.netbeans.modules.editor.impl.CustomizableSideBar.SideBarPosition;
 import org.netbeans.modules.editor.impl.SearchBar;
+import org.netbeans.modules.editor.lib.EditorPreferencesDefaults;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
@@ -224,12 +225,12 @@ public class NbEditorUI extends EditorUI {
 
     public @Override boolean isLineNumberEnabled() {
         Preferences prefs = MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class);
-        return prefs.getBoolean(SimpleValueNames.LINE_NUMBER_VISIBLE, false);
+        return prefs.getBoolean(SimpleValueNames.LINE_NUMBER_VISIBLE, EditorPreferencesDefaults.defaultLineNumberVisible);
     }
 
     public @Override void setLineNumberEnabled(boolean lineNumberEnabled) {
         Preferences prefs = MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class);
-        boolean visible = prefs.getBoolean(SimpleValueNames.LINE_NUMBER_VISIBLE, false);
+        boolean visible = prefs.getBoolean(SimpleValueNames.LINE_NUMBER_VISIBLE, EditorPreferencesDefaults.defaultLineNumberVisible);
         prefs.putBoolean(SimpleValueNames.LINE_NUMBER_VISIBLE, !visible);
     }
     

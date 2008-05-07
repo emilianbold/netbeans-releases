@@ -58,6 +58,7 @@ import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.netbeans.modules.editor.lib.EditorPreferencesDefaults;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.awt.DynamicMenuContent;
@@ -144,7 +145,7 @@ public  class NbCodeFoldingAction extends GlobalContextAction implements Present
                     JTextComponent component = NbCodeFoldingAction.getComponent();
                     MimePath mimePath = component == null ? MimePath.EMPTY : MimePath.parse(DocumentUtilities.getMimeType(component));
                     Preferences prefs = MimeLookup.getLookup(mimePath).lookup(Preferences.class);
-                    boolean foldingAvailable = prefs.getBoolean(SimpleValueNames.CODE_FOLDING_ENABLE, true);
+                    boolean foldingAvailable = prefs.getBoolean(SimpleValueNames.CODE_FOLDING_ENABLE, EditorPreferencesDefaults.defaultCodeFoldingEnable);
                     
                     if (foldingAvailable){
                         ActionMap contextActionmap = getContextActionMap();

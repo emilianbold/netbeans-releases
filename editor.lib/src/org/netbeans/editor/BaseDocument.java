@@ -87,6 +87,7 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.lib.editor.util.swing.DocumentListenerPriority;
+import org.netbeans.modules.editor.lib.EditorPreferencesDefaults;
 import org.netbeans.modules.editor.lib.EditorPreferencesKeys;
 import org.netbeans.modules.editor.lib.FormatterOverride;
 import org.netbeans.modules.editor.lib.SettingsConversions;
@@ -325,7 +326,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         public void preferenceChange(PreferenceChangeEvent evt) {
             String key = evt == null ? null : evt.getKey();
             if (key == null || SimpleValueNames.TAB_SIZE.equals(key)) {
-                tabSize = prefs.getInt(SimpleValueNames.TAB_SIZE, 8);
+                tabSize = prefs.getInt(SimpleValueNames.TAB_SIZE, EditorPreferencesDefaults.defaultTabSize);
             }
 
             if (key == null || SimpleValueNames.INDENT_SHIFT_WIDTH.equals(key)) {
@@ -338,7 +339,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
             if (key == null || EditorPreferencesKeys.READ_BUFFER_SIZE.equals(key)) {
                 int readBufferSize = prefs.getInt(EditorPreferencesKeys.READ_BUFFER_SIZE, -1);
                 if (readBufferSize <= 0) {
-                    readBufferSize = 16384;
+                    readBufferSize = EditorPreferencesDefaults.defaultReadBufferSize;
                 }
                 putProperty(EditorPreferencesKeys.READ_BUFFER_SIZE, new Integer(readBufferSize));
             }
@@ -346,7 +347,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
             if (key == null || EditorPreferencesKeys.WRITE_BUFFER_SIZE.equals(key)) {
                 int writeBufferSize = prefs.getInt(EditorPreferencesKeys.WRITE_BUFFER_SIZE, -1);
                 if (writeBufferSize <= 0) {
-                    writeBufferSize = 16384;
+                    writeBufferSize = EditorPreferencesDefaults.defaultWriteBufferSize;
                 }
                 putProperty(EditorPreferencesKeys.WRITE_BUFFER_SIZE, new Integer(writeBufferSize));
             }
@@ -354,7 +355,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
             if (key == null || EditorPreferencesKeys.MARK_DISTANCE.equals(key)) {
                 int markDistance = prefs.getInt(EditorPreferencesKeys.MARK_DISTANCE, -1);
                 if (markDistance <= 0) {
-                    markDistance = 100;
+                    markDistance = EditorPreferencesDefaults.defaultMarkDistance;
                 }
                 putProperty(EditorPreferencesKeys.MARK_DISTANCE, new Integer(markDistance));
             }
@@ -362,7 +363,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
             if (key == null || EditorPreferencesKeys.MAX_MARK_DISTANCE.equals(key)) {
                 int maxMarkDistance = prefs.getInt(EditorPreferencesKeys.MAX_MARK_DISTANCE, -1);
                 if (maxMarkDistance <= 0) {
-                    maxMarkDistance = 150;
+                    maxMarkDistance = EditorPreferencesDefaults.defaultMaxMarkDistance;
                 }
                 putProperty(EditorPreferencesKeys.MAX_MARK_DISTANCE, new Integer(maxMarkDistance));
             }
@@ -370,7 +371,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
             if (key == null || EditorPreferencesKeys.MIN_MARK_DISTANCE.equals(key)) {
                 int minMarkDistance = prefs.getInt(EditorPreferencesKeys.MIN_MARK_DISTANCE, -1);
                 if (minMarkDistance <=0 ) {
-                    minMarkDistance = 50;
+                    minMarkDistance = EditorPreferencesDefaults.defaultMinMarkDistance;
                 }
                 putProperty(EditorPreferencesKeys.MIN_MARK_DISTANCE, new Integer(minMarkDistance));
             }
@@ -378,7 +379,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
             if (key == null || EditorPreferencesKeys.READ_MARK_DISTANCE.equals(key)) {
                 int readMarkDistance = prefs.getInt(EditorPreferencesKeys.READ_MARK_DISTANCE, -1);
                 if (readMarkDistance <= 0) {
-                    readMarkDistance = 180;
+                    readMarkDistance = EditorPreferencesDefaults.defaultReadMarkDistance;
                 }
                 putProperty(EditorPreferencesKeys.READ_MARK_DISTANCE, new Integer(readMarkDistance));
             }
@@ -394,7 +395,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
             if (key == null || LINE_BATCH_SIZE.equals(key)) {
                 int lineBatchSize = prefs.getInt(LINE_BATCH_SIZE, -1);
                 if (lineBatchSize <= 0) {
-                    lineBatchSize = 2;
+                    lineBatchSize = EditorPreferencesDefaults.defaultLineBatchSize;
                 }
                 putProperty(LINE_BATCH_SIZE, new Integer(lineBatchSize));
             }
@@ -407,7 +408,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
                 whitespaceAcceptor = (Acceptor) SettingsConversions.callFactory(prefs, MimePath.parse(mimeType), EditorPreferencesKeys.WHITESPACE_ACCEPTOR, AcceptorFactory.WHITESPACE);
             }
 
-            boolean stopOnEOL = prefs.getBoolean(EditorPreferencesKeys.WORD_MOVE_NEWLINE_STOP, true);
+            boolean stopOnEOL = prefs.getBoolean(EditorPreferencesKeys.WORD_MOVE_NEWLINE_STOP, EditorPreferencesDefaults.defaultWordMoveNewlineStop);
             
             if (key == null || EditorPreferencesKeys.NEXT_WORD_FINDER.equals(key)) {
                 Finder finder = (Finder) SettingsConversions.callFactory(prefs, MimePath.parse(mimeType), EditorPreferencesKeys.NEXT_WORD_FINDER, null);

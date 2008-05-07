@@ -66,6 +66,7 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.modules.editor.lib2.EditorApiPackageAccessor;
 import org.netbeans.editor.view.spi.LockView;
+import org.netbeans.modules.editor.lib.EditorPreferencesDefaults;
 import org.netbeans.modules.editor.lib.EditorPreferencesKeys;
 import org.netbeans.modules.editor.lib.SettingsConversions;
 import org.openide.util.WeakListeners;
@@ -99,7 +100,7 @@ public class BaseTextUI extends BasicTextUI implements PropertyChangeListener, D
     private final PreferenceChangeListener prefsListener = new PreferenceChangeListener() {
         public void preferenceChange(PreferenceChangeEvent evt) {
             if (evt == null || SimpleValueNames.CODE_FOLDING_ENABLE.equals(evt.getKey())) {
-                foldingEnabled = prefs.getBoolean(SimpleValueNames.CODE_FOLDING_ENABLE, false);
+                foldingEnabled = prefs.getBoolean(SimpleValueNames.CODE_FOLDING_ENABLE, EditorPreferencesDefaults.defaultCodeFoldingEnable);
                 JTextComponent component = getComponent();
                 if (component != null) {
                     component.putClientProperty(SimpleValueNames.CODE_FOLDING_ENABLE, foldingEnabled);
@@ -215,7 +216,7 @@ public class BaseTextUI extends BasicTextUI implements PropertyChangeListener, D
         component.setMargin(margin != null ? margin : EditorUI.NULL_INSETS);
 
         getEditorUI().installUI(component);
-        foldingEnabled  = prefs.getBoolean(SimpleValueNames.CODE_FOLDING_ENABLE, false);
+        foldingEnabled  = prefs.getBoolean(SimpleValueNames.CODE_FOLDING_ENABLE, EditorPreferencesDefaults.defaultCodeFoldingEnable);
         component.putClientProperty(SimpleValueNames.CODE_FOLDING_ENABLE, foldingEnabled);
         
         // attach to the model and component
@@ -234,7 +235,7 @@ public class BaseTextUI extends BasicTextUI implements PropertyChangeListener, D
         component.setCaret(caret);
         
         // assign blink rate
-        int br = prefs.getInt(SimpleValueNames.CARET_BLINK_RATE, 300);
+        int br = prefs.getInt(SimpleValueNames.CARET_BLINK_RATE, EditorPreferencesDefaults.defaultCaretBlinkRate);
         caret.setBlinkRate(br);
 
         SwingUtilities.replaceUIInputMap(c, JComponent.WHEN_FOCUSED, null);

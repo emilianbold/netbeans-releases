@@ -90,6 +90,7 @@ import org.netbeans.modules.editor.impl.PopupMenuActionsProvider;
 import org.netbeans.modules.editor.impl.actions.NavigationHistoryBackAction;
 import org.netbeans.modules.editor.impl.actions.NavigationHistoryForwardAction;
 import org.netbeans.modules.editor.impl.actions.NavigationHistoryLastEditAction;
+import org.netbeans.modules.editor.lib.EditorPreferencesDefaults;
 import org.openide.ErrorManager;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
@@ -256,13 +257,13 @@ public class NbEditorKit extends ExtKit {
 
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
             Preferences prefs = MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class);
-            boolean toolbarVisible = prefs.getBoolean(SimpleValueNames.TOOLBAR_VISIBLE_PROP, true);
+            boolean toolbarVisible = prefs.getBoolean(SimpleValueNames.TOOLBAR_VISIBLE_PROP, EditorPreferencesDefaults.defaultToolbarVisible);
             prefs.putBoolean(SimpleValueNames.TOOLBAR_VISIBLE_PROP, !toolbarVisible);
         }
         
         public @Override JMenuItem getPopupMenuItem(JTextComponent target) {
             Preferences prefs = MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class);
-            boolean toolbarVisible = prefs.getBoolean(SimpleValueNames.TOOLBAR_VISIBLE_PROP, true);
+            boolean toolbarVisible = prefs.getBoolean(SimpleValueNames.TOOLBAR_VISIBLE_PROP, EditorPreferencesDefaults.defaultToolbarVisible);
             
             JCheckBoxMenuItem item = new JCheckBoxMenuItem(
                 NbBundle.getBundle(ToggleToolbarAction.class).getString("PROP_base_toolbarVisible"), //NOI18N
@@ -531,12 +532,12 @@ public class NbEditorKit extends ExtKit {
         
         protected @Override boolean isLineNumbersVisible() {
             Preferences prefs = MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class);
-            return prefs.getBoolean(SimpleValueNames.LINE_NUMBER_VISIBLE, false);
+            return prefs.getBoolean(SimpleValueNames.LINE_NUMBER_VISIBLE, EditorPreferencesDefaults.defaultLineNumberVisible);
         }
         
         protected @Override void toggleLineNumbers() {
             Preferences prefs = MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class);
-            boolean visible = prefs.getBoolean(SimpleValueNames.LINE_NUMBER_VISIBLE, false);
+            boolean visible = prefs.getBoolean(SimpleValueNames.LINE_NUMBER_VISIBLE, EditorPreferencesDefaults.defaultLineNumberVisible);
             prefs.putBoolean(SimpleValueNames.LINE_NUMBER_VISIBLE, !visible);
         }
     }
@@ -633,7 +634,7 @@ public class NbEditorKit extends ExtKit {
             boolean foldingEnabled = false;
             if (target != null) {
                 Preferences prefs = MimeLookup.getLookup(DocumentUtilities.getMimeType(target)).lookup(Preferences.class);
-                foldingEnabled = prefs.getBoolean(SimpleValueNames.CODE_FOLDING_ENABLE, true);
+                foldingEnabled = prefs.getBoolean(SimpleValueNames.CODE_FOLDING_ENABLE, EditorPreferencesDefaults.defaultCodeFoldingEnable);
             }
             
             Action a = kit.getActionByName(actionName);

@@ -83,6 +83,7 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.FontColorNames;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.api.editor.settings.SimpleValueNames;
+import org.netbeans.modules.editor.lib.EditorPreferencesDefaults;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 
@@ -157,14 +158,14 @@ public class StatusBar implements PropertyChangeListener, DocumentListener {
             });
             
             if (evt == null || SimpleValueNames.STATUS_BAR_CARET_DELAY.equals(evt.getKey())) {
-                caretDelay = prefs.getInt(SimpleValueNames.STATUS_BAR_CARET_DELAY, 200);
+                caretDelay = prefs.getInt(SimpleValueNames.STATUS_BAR_CARET_DELAY, EditorPreferencesDefaults.defaultStatusBarCaretDelay);
                 if (caretL != null) {
                     caretL.setDelay(caretDelay);
                 }
             }
 
             if (evt == null || SimpleValueNames.STATUS_BAR_VISIBLE.equals(evt.getKey())) {
-                boolean wantVisible = prefs.getBoolean(SimpleValueNames.STATUS_BAR_VISIBLE, true);
+                boolean wantVisible = prefs.getBoolean(SimpleValueNames.STATUS_BAR_VISIBLE, EditorPreferencesDefaults.defaultStatusBarVisible);
                 setVisible(wantVisible);
             }
         }

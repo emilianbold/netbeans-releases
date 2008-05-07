@@ -63,6 +63,7 @@ import org.netbeans.editor.Registry;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.netbeans.modules.editor.lib.EditorPreferencesDefaults;
 import org.openide.awt.Mnemonics;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -263,7 +264,7 @@ public abstract class MainMenuAction extends GlobalContextAction implements Pres
             JTextComponent c = getComponent();
             MimePath mimePath = c == null ? MimePath.EMPTY : MimePath.parse(DocumentUtilities.getMimeType(c));
             Preferences prefs = MimeLookup.getLookup(mimePath).lookup(Preferences.class);
-            boolean visible = prefs.getBoolean(SimpleValueNames.TOOLBAR_VISIBLE_PROP, true);
+            boolean visible = prefs.getBoolean(SimpleValueNames.TOOLBAR_VISIBLE_PROP, EditorPreferencesDefaults.defaultToolbarVisible);
             SHOW_TOOLBAR_MENU.setState(visible);
         }
         
@@ -305,7 +306,7 @@ public abstract class MainMenuAction extends GlobalContextAction implements Pres
             JTextComponent c = getComponent();
             MimePath mimePath = c == null ? MimePath.EMPTY : MimePath.parse(DocumentUtilities.getMimeType(c));
             Preferences prefs = MimeLookup.getLookup(mimePath).lookup(Preferences.class);
-            boolean visible = prefs.getBoolean(SimpleValueNames.LINE_NUMBER_VISIBLE, false);
+            boolean visible = prefs.getBoolean(SimpleValueNames.LINE_NUMBER_VISIBLE, EditorPreferencesDefaults.defaultLineNumberVisible);
             SHOW_LINE_MENU.setState(visible);
         }
         

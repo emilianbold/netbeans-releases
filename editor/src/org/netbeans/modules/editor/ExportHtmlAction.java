@@ -71,6 +71,7 @@ import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.FontColorNames;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.api.editor.settings.SimpleValueNames;
+import org.netbeans.modules.editor.lib.EditorPreferencesDefaults;
 
 public class ExportHtmlAction extends CookieAction {
 
@@ -118,7 +119,7 @@ public class ExportHtmlAction extends CookieAction {
             Preferences prefs = MimeLookup.getLookup(mimePath).lookup(Preferences.class);
             
             Boolean bool = (Boolean)EditorState.get(SHOW_LINES_HIST);            
-            boolean showLineNumbers = bool != null ? bool : prefs.getBoolean(SimpleValueNames.LINE_NUMBER_VISIBLE, false);
+            boolean showLineNumbers = bool != null ? bool : prefs.getBoolean(SimpleValueNames.LINE_NUMBER_VISIBLE, EditorPreferencesDefaults.defaultLineNumberVisible);
             p.setShowLines (showLineNumbers);
             
             p.setSelectionActive (jtc != null && jtc.getSelectionStart()!=jtc.getSelectionEnd());

@@ -59,8 +59,12 @@ import org.netbeans.api.editor.settings.SimpleValueNames;
  * Fields with names of deprecated settings should be deprecated too.
  * 
  */
-public class EditorPreferencesKeys {
+public final class EditorPreferencesKeys {
 
+    private EditorPreferencesKeys() {
+        //no-op
+    }
+    
     // -----------------------------------------------------------------------
     // --- from SettingsNames
     // -----------------------------------------------------------------------

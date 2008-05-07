@@ -52,6 +52,7 @@ import javax.swing.text.Position;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.modules.editor.lib.EditorPreferencesDefaults;
 import org.netbeans.modules.editor.lib.EditorPreferencesKeys;
 import org.openide.util.WeakListeners;
 
@@ -140,11 +141,11 @@ public class WordMatch extends FinderFactory.AbstractFinder implements PropertyC
             if (evt != null) { // real change event
                 staticWordsDocs.clear();
             }
-            maxSearchLen = prefs.getInt(EditorPreferencesKeys.WORD_MATCH_SEARCH_LEN, Integer.MAX_VALUE);
-            wrapSearch = prefs.getBoolean(EditorPreferencesKeys.WORD_MATCH_WRAP_SEARCH, true);
-            matchOneChar = prefs.getBoolean(EditorPreferencesKeys.WORD_MATCH_MATCH_ONE_CHAR, true);
-            matchCase = prefs.getBoolean(EditorPreferencesKeys.WORD_MATCH_MATCH_CASE, false);
-            smartCase = prefs.getBoolean(EditorPreferencesKeys.WORD_MATCH_SMART_CASE, false);
+            maxSearchLen = prefs.getInt(EditorPreferencesKeys.WORD_MATCH_SEARCH_LEN, EditorPreferencesDefaults.defaultWordMatchSearchLen);
+            wrapSearch = prefs.getBoolean(EditorPreferencesKeys.WORD_MATCH_WRAP_SEARCH, EditorPreferencesDefaults.defaultWordMatchWrapSearch);
+            matchOneChar = prefs.getBoolean(EditorPreferencesKeys.WORD_MATCH_MATCH_ONE_CHAR, EditorPreferencesDefaults.defaultWordMatchMatchOneChar);
+            matchCase = prefs.getBoolean(EditorPreferencesKeys.WORD_MATCH_MATCH_CASE, EditorPreferencesDefaults.defaultWordMatchMatchCase);
+            smartCase = prefs.getBoolean(EditorPreferencesKeys.WORD_MATCH_SMART_CASE, EditorPreferencesDefaults.defaultWordMatchSmartCase);
         }
     };
     private PreferenceChangeListener weakListener = null;

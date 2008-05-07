@@ -80,6 +80,7 @@ import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.editor.ext.ToolTipSupport;
 import org.netbeans.modules.editor.lib.ColoringMap;
+import org.netbeans.modules.editor.lib.EditorPreferencesDefaults;
 import org.netbeans.modules.editor.lib.EditorPreferencesKeys;
 import org.netbeans.modules.editor.lib.EditorRenderingHints;
 import org.netbeans.modules.editor.lib.SettingsConversions;
@@ -1527,7 +1528,7 @@ public class EditorUI implements ChangeListener, PropertyChangeListener {
             settingsChangeImpl(settingName);
             
             if (settingName == null || SimpleValueNames.LINE_NUMBER_VISIBLE.equals(settingName)) {
-                lineNumberVisibleSetting = prefs.getBoolean(SimpleValueNames.LINE_NUMBER_VISIBLE, false);
+                lineNumberVisibleSetting = prefs.getBoolean(SimpleValueNames.LINE_NUMBER_VISIBLE, EditorPreferencesDefaults.defaultLineNumberVisible);
                 lineNumberVisible = lineNumberEnabled && lineNumberVisibleSetting;
 
                 // if this is printing, the drawing of original line numbers must be enabled
@@ -1542,11 +1543,11 @@ public class EditorUI implements ChangeListener, PropertyChangeListener {
             if (doc != null) {
 
                 if (settingName == null || SimpleValueNames.TEXT_LEFT_MARGIN_WIDTH.equals(settingName)) {
-                    textLeftMarginWidth = prefs.getInt(SimpleValueNames.TEXT_LEFT_MARGIN_WIDTH, 2);
+                    textLeftMarginWidth = prefs.getInt(SimpleValueNames.TEXT_LEFT_MARGIN_WIDTH, EditorPreferencesDefaults.defaultTextLeftMarginWidth);
                 }
 
                 if (settingName == null || SimpleValueNames.LINE_HEIGHT_CORRECTION.equals(settingName)) {
-                    float newLineHeightCorrection = prefs.getFloat(SimpleValueNames.LINE_HEIGHT_CORRECTION, 1.0f);
+                    float newLineHeightCorrection = prefs.getFloat(SimpleValueNames.LINE_HEIGHT_CORRECTION, EditorPreferencesDefaults.defaultLineHeightCorrection);
                     if (newLineHeightCorrection != lineHeightCorrection){
                         lineHeightCorrection = newLineHeightCorrection;
                         updateLineHeight(getComponent());
@@ -1554,11 +1555,11 @@ public class EditorUI implements ChangeListener, PropertyChangeListener {
                 }
 
                 if (settingName == null || SimpleValueNames.TEXT_LIMIT_LINE_VISIBLE.equals(settingName)) {
-                    textLimitLineVisible = prefs.getBoolean(SimpleValueNames.TEXT_LIMIT_LINE_VISIBLE, true);
+                    textLimitLineVisible = prefs.getBoolean(SimpleValueNames.TEXT_LIMIT_LINE_VISIBLE, EditorPreferencesDefaults.defaultTextLimitLineVisible);
                 }
 
                 if (settingName == null || SimpleValueNames.TEXT_LIMIT_WIDTH.equals(settingName)) {
-                    textLimitWidth = prefs.getInt(SimpleValueNames.TEXT_LIMIT_WIDTH, 80);
+                    textLimitWidth = prefs.getInt(SimpleValueNames.TEXT_LIMIT_WIDTH, EditorPreferencesDefaults.defaultTextLimitWidth);
                 }
 
                 // component only properties
@@ -1566,19 +1567,19 @@ public class EditorUI implements ChangeListener, PropertyChangeListener {
                     if (settingName == null || SimpleValueNames.SCROLL_JUMP_INSETS.equals(settingName)) {
                         String value = prefs.get(SimpleValueNames.SCROLL_JUMP_INSETS, null);
                         Insets insets = value != null ? SettingsConversions.parseInsets(value) : null;
-                        scrollJumpInsets = insets != null ? insets : NULL_INSETS;
+                        scrollJumpInsets = insets != null ? insets : EditorPreferencesDefaults.defaultScrollJumpInsets;
                     }
 
                     if (settingName == null || SimpleValueNames.SCROLL_FIND_INSETS.equals(settingName)) {
                         String value = prefs.get(SimpleValueNames.SCROLL_FIND_INSETS, null);
                         Insets insets = value != null ? SettingsConversions.parseInsets(value) : null;
-                        scrollFindInsets = insets != null ? insets : NULL_INSETS;
+                        scrollFindInsets = insets != null ? insets : EditorPreferencesDefaults.defaultScrollFindInsets;
                     }
 
                     if (settingName == null || EditorPreferencesKeys.COMPONENT_SIZE_INCREMENT.equals(settingName)) { //NOI18N
                         String value = prefs.get(EditorPreferencesKeys.COMPONENT_SIZE_INCREMENT, null); //NOI18N
                         Dimension increment = value != null ? SettingsConversions.parseDimension(value) : null;
-                        componentSizeIncrement = increment != null ? increment : NULL_DIMENSION;
+                        componentSizeIncrement = increment != null ? increment : EditorPreferencesDefaults.defaultComponentSizeIncrement;
                     }
 
                     Utilities.runInEventDispatchThread(new Runnable() {

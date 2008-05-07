@@ -99,9 +99,11 @@ import org.netbeans.api.editor.fold.FoldHierarchyListener;
 import org.netbeans.api.editor.fold.FoldStateChange;
 import org.netbeans.api.editor.fold.FoldUtilities;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.settings.FontColorNames;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.lib.editor.util.swing.DocumentListenerPriority;
+import org.netbeans.modules.editor.lib.EditorPreferencesDefaults;
 import org.netbeans.modules.editor.lib.SettingsConversions;
 import org.openide.util.WeakListeners;
 
@@ -247,7 +249,7 @@ AtomicLockListener, FoldHierarchyListener {
     private final PreferenceChangeListener prefsListener = new PreferenceChangeListener() {
         public void preferenceChange(PreferenceChangeEvent evt) {
             SettingsConversions.callSettingsChange(BaseCaret.this);
-            setBlinkRate(prefs.getInt(SimpleValueNames.CARET_BLINK_RATE, 300));
+            setBlinkRate(prefs.getInt(SimpleValueNames.CARET_BLINK_RATE, EditorPreferencesDefaults.defaultCaretBlinkRate));
             refresh();
         }
     };
@@ -267,16 +269,16 @@ AtomicLockListener, FoldHierarchyListener {
             Color caretColor = Color.black;
             
             if (overwriteMode) {
-                newType = prefs.get(SimpleValueNames.CARET_TYPE_OVERWRITE_MODE, LINE_CARET);
-                newItalic = prefs.getBoolean(SimpleValueNames.CARET_ITALIC_OVERWRITE_MODE, false);
+                newType = prefs.get(SimpleValueNames.CARET_TYPE_OVERWRITE_MODE, EditorPreferencesDefaults.defaultCaretTypeOverwriteMode);
+                newItalic = prefs.getBoolean(SimpleValueNames.CARET_ITALIC_OVERWRITE_MODE, EditorPreferencesDefaults.defaultCaretItalicOverwriteMode);
             } else { // insert mode
-                newType = prefs.get(SimpleValueNames.CARET_TYPE_INSERT_MODE, LINE_CARET);
-                newItalic = prefs.getBoolean(SimpleValueNames.CARET_ITALIC_INSERT_MODE, false);
+                newType = prefs.get(SimpleValueNames.CARET_TYPE_INSERT_MODE, EditorPreferencesDefaults.defaultCaretTypeInsertMode);
+                newItalic = prefs.getBoolean(SimpleValueNames.CARET_ITALIC_INSERT_MODE, EditorPreferencesDefaults.defaultCaretItalicInsertMode);
             }
 
             FontColorSettings fcs = MimeLookup.getLookup(org.netbeans.lib.editor.util.swing.DocumentUtilities.getMimeType(c)).lookup(FontColorSettings.class);
             if (fcs != null) {
-                AttributeSet attribs = fcs.getFontColors("caret-color-insert-mode"); //NOI18N
+                AttributeSet attribs = fcs.getFontColors(FontColorNames.CARET_COLOR_INSERT_MODE); //NOI18N
                 if (attribs != null) {
                     caretColor = (Color) attribs.getAttribute(StyleConstants.Foreground);
                 }

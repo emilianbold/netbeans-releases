@@ -82,6 +82,7 @@ import org.netbeans.api.editor.settings.AttributesUtilities;
 import org.netbeans.api.editor.settings.FontColorNames;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.api.editor.settings.SimpleValueNames;
+import org.netbeans.modules.editor.lib.EditorPreferencesDefaults;
 import org.netbeans.modules.editor.lib.SettingsConversions;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -129,7 +130,7 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
         public void preferenceChange(PreferenceChangeEvent evt) {
             String key = evt == null ? null : evt.getKey();
             if (key == null || SimpleValueNames.CODE_FOLDING_ENABLE.equals(key)) {
-                boolean newEnabled = prefs.getBoolean(SimpleValueNames.CODE_FOLDING_ENABLE, false);
+                boolean newEnabled = prefs.getBoolean(SimpleValueNames.CODE_FOLDING_ENABLE, EditorPreferencesDefaults.defaultCodeFoldingEnable);
                 if (enabled != newEnabled) {
                     enabled = newEnabled;
                     updatePreferredSize();

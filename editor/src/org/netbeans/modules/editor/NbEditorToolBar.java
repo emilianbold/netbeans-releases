@@ -87,6 +87,7 @@ import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.impl.ToolbarActionsProvider;
+import org.netbeans.modules.editor.lib.EditorPreferencesDefaults;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -286,7 +287,7 @@ import org.openide.util.lookup.ProxyLookup;
         JTextComponent c = getComponent();
         String mimeType = c == null ? null : DocumentUtilities.getMimeType(c);
         Preferences prefs = MimeLookup.getLookup(mimeType == null ? MimePath.EMPTY : MimePath.parse(mimeType)).lookup(Preferences.class);
-        return prefs.getBoolean(SimpleValueNames.TOOLBAR_VISIBLE_PROP, false);
+        return prefs.getBoolean(SimpleValueNames.TOOLBAR_VISIBLE_PROP, EditorPreferencesDefaults.defaultToolbarVisible);
     }
     
     private void refreshToolbarButtons() {
