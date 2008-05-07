@@ -68,6 +68,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.WildcardType;
+import org.netbeans.modules.java.source.parsing.CompilationInfoImpl;
 
 /**
  * Represents a handle for {@link TypeMirror} which can be kept and later resolved
@@ -215,7 +216,7 @@ public final class TypeMirrorHandle<T extends TypeMirror> {
      * resolved in this {@link javax.tools.CompilationTask}.
      */
     public T resolve(CompilationInfo info) {
-        return resolve(info, new HashMap<TypeMirrorHandle, PlaceholderType>());
+        return resolve(info);
     }
     
     private T resolve(CompilationInfo info, Map<TypeMirrorHandle, PlaceholderType> map) {

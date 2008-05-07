@@ -105,6 +105,7 @@ import org.netbeans.modules.java.source.usages.SymbolClassReader;
 import org.netbeans.modules.java.source.util.LowMemoryEvent;
 import org.netbeans.modules.java.source.util.LowMemoryListener;
 import org.netbeans.modules.java.source.util.LowMemoryNotifier;
+import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.Task;
 import org.netbeans.modules.parsing.spi.Parser;
@@ -113,6 +114,7 @@ import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
+import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.WeakListeners;
 
@@ -144,6 +146,8 @@ public class JavacParser extends Parser {
         phase2Message.put (Phase.RESOLVED, "Attributed");                       //NOI18N
     }
     
+    //Listener support
+    private final ChangeSupport listeners = new ChangeSupport(this);
     //Cancelling of parser & index
     private final AtomicBoolean canceled = new AtomicBoolean();
     //Source may be null
@@ -180,7 +184,7 @@ public class JavacParser extends Parser {
     }
         
     @Override
-    public void parse(final Task task) {
+    public void parse(final Snapshot snapshot, final Task task) {
         assert task != null;
         ciImpl = new CompilationInfoImpl(this, source, file, root, null);
     }
@@ -209,12 +213,14 @@ public class JavacParser extends Parser {
 
     @Override
     public void addChangeListener(ChangeListener changeListener) {
-        //tzezula: No idea what to fire,  when I cannot do anything in this class.
+        assert changeListener != null;
+        this.listeners.addChangeListener(changeListener);
     }
  
     @Override
     public void removeChangeListener(ChangeListener changeListener) {
-        //tzezula: No idea what to fire,  when I cannot do anything in this class.
+        assert changeListener != null;
+        this.listeners.removeChangeListener(changeListener);
     }
     
     

@@ -54,12 +54,12 @@ import javax.lang.model.type.TypeMirror;
  */
 public final class TypeUtilities {
 
-    private final JavaParserResult result;
+    private final CompilationInfo info;
 
     /** Creates a new instance of CommentUtilities */
-    TypeUtilities(final JavaParserResult result) {
-        assert result != null;
-        this.result = result;
+    TypeUtilities(final CompilationInfo info) {
+        assert info != null;
+        this.info = info;
     }
 
     /**Check if type t1 can be cast to t2.
@@ -71,7 +71,7 @@ public final class TypeUtilities {
      * @since 0.6
      */
     public boolean isCastable(TypeMirror t1, TypeMirror t2) {
-        return Types.instance(result.impl.getJavacTask().getContext()).isCastable((Type) t1, (Type) t2);
+        return Types.instance(info.impl.getJavacTask().getContext()).isCastable((Type) t1, (Type) t2);
     }
     
 }

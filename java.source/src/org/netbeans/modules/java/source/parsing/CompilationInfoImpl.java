@@ -204,6 +204,14 @@ public final class CompilationInfoImpl {
     }
     
     /**
+     * Returns the parser which created this {@link CompilationInfoImpl}
+     * @return the parser
+     */
+    public JavacParser getParser () {
+        return this.parser;
+    }
+    
+    /**
      * Returns {@link ClasspathInfo} for which this {@link CompilationInfoImpl} was created.
      * @return ClasspathInfo
      */

@@ -104,13 +104,13 @@ public final class ElementUtilities {
     
     private final Context ctx;
     private final ElementsService delegate;
-    private final JavaParserResult result;
+    private final CompilationInfo info;
     
     /** Creates a new instance of ElementUtilities */
-    ElementUtilities(final JavaParserResult result) {
-        assert result != null;
-        JavacTask task = result.impl.getJavacTask();
-        this.result = result;
+    ElementUtilities(final CompilationInfo info) {
+        assert info != null;
+        JavacTask task = info.impl.getJavacTask();
+        this.info = info;
         this.ctx = ((JavacTaskImpl)task).getContext();
         this.delegate = ElementsService.instance(ctx);
     }
@@ -393,7 +393,7 @@ public final class ElementUtilities {
         HashMap<CharSequence, ArrayList<Element>> hiders = new HashMap<CharSequence, ArrayList<Element>>();
         Trees trees = JavacTrees.instance(ctx);
         Types types = JavacTypes.instance(ctx);
-        for (CompilationUnitTree unit : Collections.singletonList(result.getCompilationUnit())) {
+        for (CompilationUnitTree unit : Collections.singletonList(info.getCompilationUnit())) {
             TreePath path = new TreePath(unit);
             Scope scope = trees.getScope(path);
             while (scope != null && scope instanceof JavacScope && !((JavacScope)scope).isStarImportScope()) {
@@ -586,7 +586,7 @@ public final class ElementUtilities {
     private DeclaredType findCommonSubtype(DeclaredType type1, DeclaredType type2, Env<AttrContext> env) {
         List<DeclaredType> subtypes1 = getSubtypes(type1, env);
         List<DeclaredType> subtypes2 = getSubtypes(type2, env);
-        Types types = result.getTypes();
+        Types types = info.getTypes();
         for (DeclaredType subtype1 : subtypes1) {
             for (DeclaredType subtype2 : subtypes2) {
                 if (types.isSubtype(subtype1, subtype2))
@@ -603,9 +603,9 @@ public final class ElementUtilities {
         HashSet<TypeElement> elems = new HashSet<TypeElement>();
         LinkedList<DeclaredType> bases = new LinkedList<DeclaredType>();
         bases.add(baseType);
-        ClassIndex index = result.getClasspathInfo().getClassIndex();
-        Trees trees = result.getTrees();
-        Types types = result.getTypes();
+        ClassIndex index = info.getClasspathInfo().getClassIndex();
+        Trees trees = info.getTrees();
+        Types types = info.getTypes();
         Resolve resolve = Resolve.instance(ctx);
         while(!bases.isEmpty()) {
             DeclaredType head = bases.remove();
@@ -617,7 +617,7 @@ public final class ElementUtilities {
             boolean isRaw = !tas.iterator().hasNext();
             subtypes:
             for (ElementHandle<TypeElement> eh : index.getElements(ElementHandle.create(elem), EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS), EnumSet.allOf(ClassIndex.SearchScope.class))) {
-                TypeElement e = eh.resolve(result);
+                TypeElement e = eh.resolve(info);
                 if (e != null) {
                     if (resolve.isAccessible(env, (TypeSymbol)e)) {
                         if (isRaw) {
