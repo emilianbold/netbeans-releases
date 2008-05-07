@@ -87,6 +87,7 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.lib.editor.util.swing.DocumentListenerPriority;
+import org.netbeans.modules.editor.lib.EditorPreferencesKeys;
 import org.netbeans.modules.editor.lib.FormatterOverride;
 import org.netbeans.modules.editor.lib.SettingsConversions;
 import org.openide.util.Lookup;
@@ -101,106 +102,6 @@ import org.openide.util.WeakListeners;
 
 public class BaseDocument extends AbstractDocument implements AtomicLockDocument {
 
-    // --- These constants were copied from deprecated SettingsNames ---
-    
-    /** Buffer size for reading into the document from input stream or reader.
-    * Values: java.lang.Integer
-    * WARNING! This is critical parameter for editor functionality.
-    * Please see DefaultSettings.java for values of this setting
-    */
-    /* package */ static final String READ_BUFFER_SIZE = "read-buffer-size"; // NOI18N
-
-    /** Buffer size for writing from the document to output stream or writer.
-    * Values: java.lang.Integer instances
-    * WARNING! This is critical parameter for editor functionality.
-    * Please see DefaultSettings.java for values of this setting
-    */
-    /* package */ static final String WRITE_BUFFER_SIZE = "write-buffer-size"; // NOI18N
-
-    /** Read mark distance is used when performing initial read
-    * of the document. It denotes the distance in chars of two adjacent
-    * syntax marks inserted into the document.
-    * Values: java.lang.Integer instances
-    * WARNING! This is critical parameter for editor functionality.
-    * Please see DefaultSettings.java for values of this setting
-    */
-    /* package */ static final String READ_MARK_DISTANCE = "read-mark-distance"; // NOI18N
-
-    /** Implicit mark distance for inserting to the document.
-    * If the insert is made then the distance between nearest syntax
-    * marks around insertion point is checked and if it's greater
-    * than the max mark distance then another mark(s) are inserted
-    * automatically with the distance given by this setting.
-    * Values: java.lang.Integer instances instances
-    * WARNING! This is critical parameter for editor functionality.
-    * Please see DefaultSettings.java for values of this setting
-    */
-    /* package */ static final String MARK_DISTANCE = "mark-distance"; // NOI18N
-
-    /** Maximum mark distance. When there is an insertion done in document
-    * and the distance between marks gets greater than this setting, another
-    * mark will be inserted automatically.
-    * Values: java.lang.Integer instances
-    * WARNING! This is critical parameter for editor functionality.
-    * Please see DefaultSettings.java for values of this setting
-    */
-    /* package */ static final String MAX_MARK_DISTANCE = "max-mark-distance"; // NOI18N
-
-    /** Minimum mark distance for removals. When there is a removal done
-    * in document and it makes the marks to get closer than this value, then
-    * the marks the additional marks that are closer than the distance
-    * given by this setting are removed automatically.
-    * Values: java.lang.Integer instances
-    * WARNING! This is critical parameter for editor functionality.
-    * Please see DefaultSettings.java for values of this setting
-    */
-    /* package */ static final String MIN_MARK_DISTANCE = "min-mark-distance"; // NOI18N
-
-    /** Size of one batch of characters loaded into syntax segment
-    * when updating syntax marks. It prevents checking and loading
-    * of syntax segment at every syntax mark. Instead it loads
-    * at least the amount of characters given by this setting.
-    * This whole process is done only in case the changes in syntax
-    * extend the end of current line. If the syntax changes don't
-    * extend to the next line, this setting has no effect.
-    * Values: java.lang.Integer instances
-    * WARNING! This is critical parameter for editor functionality.
-    * Please see DefaultSettings.java for values of this setting
-    */
-    /* package */ static final String SYNTAX_UPDATE_BATCH_SIZE = "syntax-update-batch-size"; // NOI18N
-
-    /** Acceptor that recognizes the identifier characters.
-    * If set it's used instead of the default Syntax.isIdentifierPart() call.
-    * Values: org.netbeans.editor.Acceptor instances
-    */
-    /* package */ static final String IDENTIFIER_ACCEPTOR = "identifier-acceptor"; // NOI18N
-
-    /** Acceptor that recognizes the whitespace characters.
-    * If set it's used instead of the default Syntax.isWhitespace() call.
-    * Values: org.netbeans.editor.Acceptor instances
-    */
-    /* package */ static final String WHITESPACE_ACCEPTOR = "whitespace-acceptor"; // NOI18N
-    
-    /** Finder for finding the next word. If it's not set,
-     * the <tt>FinderFactory.NextWordFwdFinder</tt> is used.
-     * Values: org.netbeans.editor.Finder
-     */
-    /* package */ static final String NEXT_WORD_FINDER = "next-word-finder"; // NOI18N
-
-    /** Finder for finding the previous word. If it's not set,
-     * the <tt>FinderFactory.WordStartBwdFinder</tt> is used.
-     * Values: org.netbeans.editor.Finder
-     */
-    /* package */ static final String PREVIOUS_WORD_FINDER = "previous-word-finder"; // NOI18N
-
-    /** Whether the word move should stop on the '\n' character. This setting
-    * affects both the 
-    * Values: java.lang.Boolean
-    */
-    /* package */ static final String WORD_MOVE_NEWLINE_STOP = "word-move-newline-stop"; // NOI18N
-    
-    // --- End of copied constants ---
-    
     // -J-Dorg.netbeans.editor.BaseDocument.level=FINE
     private static final Logger LOG = Logger.getLogger(BaseDocument.class.getName());
     
@@ -434,60 +335,60 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
                 }
             }
 
-            if (key == null || READ_BUFFER_SIZE.equals(key)) {
-                int readBufferSize = prefs.getInt(READ_BUFFER_SIZE, -1);
+            if (key == null || EditorPreferencesKeys.READ_BUFFER_SIZE.equals(key)) {
+                int readBufferSize = prefs.getInt(EditorPreferencesKeys.READ_BUFFER_SIZE, -1);
                 if (readBufferSize <= 0) {
                     readBufferSize = 16384;
                 }
-                putProperty(READ_BUFFER_SIZE, new Integer(readBufferSize));
+                putProperty(EditorPreferencesKeys.READ_BUFFER_SIZE, new Integer(readBufferSize));
             }
 
-            if (key == null || WRITE_BUFFER_SIZE.equals(key)) {
-                int writeBufferSize = prefs.getInt(WRITE_BUFFER_SIZE, -1);
+            if (key == null || EditorPreferencesKeys.WRITE_BUFFER_SIZE.equals(key)) {
+                int writeBufferSize = prefs.getInt(EditorPreferencesKeys.WRITE_BUFFER_SIZE, -1);
                 if (writeBufferSize <= 0) {
                     writeBufferSize = 16384;
                 }
-                putProperty(WRITE_BUFFER_SIZE, new Integer(writeBufferSize));
+                putProperty(EditorPreferencesKeys.WRITE_BUFFER_SIZE, new Integer(writeBufferSize));
             }
 
-            if (key == null || MARK_DISTANCE.equals(key)) {
-                int markDistance = prefs.getInt(MARK_DISTANCE, -1);
+            if (key == null || EditorPreferencesKeys.MARK_DISTANCE.equals(key)) {
+                int markDistance = prefs.getInt(EditorPreferencesKeys.MARK_DISTANCE, -1);
                 if (markDistance <= 0) {
                     markDistance = 100;
                 }
-                putProperty(MARK_DISTANCE, new Integer(markDistance));
+                putProperty(EditorPreferencesKeys.MARK_DISTANCE, new Integer(markDistance));
             }
 
-            if (key == null || MAX_MARK_DISTANCE.equals(key)) {
-                int maxMarkDistance = prefs.getInt(MAX_MARK_DISTANCE, -1);
+            if (key == null || EditorPreferencesKeys.MAX_MARK_DISTANCE.equals(key)) {
+                int maxMarkDistance = prefs.getInt(EditorPreferencesKeys.MAX_MARK_DISTANCE, -1);
                 if (maxMarkDistance <= 0) {
                     maxMarkDistance = 150;
                 }
-                putProperty(MAX_MARK_DISTANCE, new Integer(maxMarkDistance));
+                putProperty(EditorPreferencesKeys.MAX_MARK_DISTANCE, new Integer(maxMarkDistance));
             }
 
-            if (key == null || MIN_MARK_DISTANCE.equals(key)) {
-                int minMarkDistance = prefs.getInt(MIN_MARK_DISTANCE, -1);
+            if (key == null || EditorPreferencesKeys.MIN_MARK_DISTANCE.equals(key)) {
+                int minMarkDistance = prefs.getInt(EditorPreferencesKeys.MIN_MARK_DISTANCE, -1);
                 if (minMarkDistance <=0 ) {
                     minMarkDistance = 50;
                 }
-                putProperty(MIN_MARK_DISTANCE, new Integer(minMarkDistance));
+                putProperty(EditorPreferencesKeys.MIN_MARK_DISTANCE, new Integer(minMarkDistance));
             }
 
-            if (key == null || READ_MARK_DISTANCE.equals(key)) {
-                int readMarkDistance = prefs.getInt(READ_MARK_DISTANCE, -1);
+            if (key == null || EditorPreferencesKeys.READ_MARK_DISTANCE.equals(key)) {
+                int readMarkDistance = prefs.getInt(EditorPreferencesKeys.READ_MARK_DISTANCE, -1);
                 if (readMarkDistance <= 0) {
                     readMarkDistance = 180;
                 }
-                putProperty(READ_MARK_DISTANCE, new Integer(readMarkDistance));
+                putProperty(EditorPreferencesKeys.READ_MARK_DISTANCE, new Integer(readMarkDistance));
             }
 
-            if (key == null || SYNTAX_UPDATE_BATCH_SIZE.equals(key)) {
-                int syntaxUpdateBatchSize = prefs.getInt(SYNTAX_UPDATE_BATCH_SIZE, -1);
+            if (key == null || EditorPreferencesKeys.SYNTAX_UPDATE_BATCH_SIZE.equals(key)) {
+                int syntaxUpdateBatchSize = prefs.getInt(EditorPreferencesKeys.SYNTAX_UPDATE_BATCH_SIZE, -1);
                 if (syntaxUpdateBatchSize <= 0) {
-                    syntaxUpdateBatchSize = 7 * (Integer) getProperty(MARK_DISTANCE);
+                    syntaxUpdateBatchSize = 7 * (Integer) getProperty(EditorPreferencesKeys.MARK_DISTANCE);
                 }
-                putProperty(SYNTAX_UPDATE_BATCH_SIZE, new Integer(syntaxUpdateBatchSize));
+                putProperty(EditorPreferencesKeys.SYNTAX_UPDATE_BATCH_SIZE, new Integer(syntaxUpdateBatchSize));
             }
 
             if (key == null || LINE_BATCH_SIZE.equals(key)) {
@@ -498,24 +399,24 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
                 putProperty(LINE_BATCH_SIZE, new Integer(lineBatchSize));
             }
 
-            if (key == null || IDENTIFIER_ACCEPTOR.equals(key)) {
-                identifierAcceptor = (Acceptor) SettingsConversions.callFactory(prefs, MimePath.parse(mimeType), IDENTIFIER_ACCEPTOR, AcceptorFactory.LETTER_DIGIT);
+            if (key == null || EditorPreferencesKeys.IDENTIFIER_ACCEPTOR.equals(key)) {
+                identifierAcceptor = (Acceptor) SettingsConversions.callFactory(prefs, MimePath.parse(mimeType), EditorPreferencesKeys.IDENTIFIER_ACCEPTOR, AcceptorFactory.LETTER_DIGIT);
             }
 
-            if (key == null || WHITESPACE_ACCEPTOR.equals(key)) {
-                whitespaceAcceptor = (Acceptor) SettingsConversions.callFactory(prefs, MimePath.parse(mimeType), WHITESPACE_ACCEPTOR, AcceptorFactory.WHITESPACE);
+            if (key == null || EditorPreferencesKeys.WHITESPACE_ACCEPTOR.equals(key)) {
+                whitespaceAcceptor = (Acceptor) SettingsConversions.callFactory(prefs, MimePath.parse(mimeType), EditorPreferencesKeys.WHITESPACE_ACCEPTOR, AcceptorFactory.WHITESPACE);
             }
 
-            boolean stopOnEOL = prefs.getBoolean(WORD_MOVE_NEWLINE_STOP, true);
+            boolean stopOnEOL = prefs.getBoolean(EditorPreferencesKeys.WORD_MOVE_NEWLINE_STOP, true);
             
-            if (key == null || NEXT_WORD_FINDER.equals(key)) {
-                Finder finder = (Finder) SettingsConversions.callFactory(prefs, MimePath.parse(mimeType), NEXT_WORD_FINDER, null);
-                putProperty(NEXT_WORD_FINDER, finder != null ? finder : new FinderFactory.NextWordFwdFinder(BaseDocument.this, stopOnEOL, false));
+            if (key == null || EditorPreferencesKeys.NEXT_WORD_FINDER.equals(key)) {
+                Finder finder = (Finder) SettingsConversions.callFactory(prefs, MimePath.parse(mimeType), EditorPreferencesKeys.NEXT_WORD_FINDER, null);
+                putProperty(EditorPreferencesKeys.NEXT_WORD_FINDER, finder != null ? finder : new FinderFactory.NextWordFwdFinder(BaseDocument.this, stopOnEOL, false));
             }
 
-            if (key == null || PREVIOUS_WORD_FINDER.equals(key)) {
-                Finder finder = (Finder) SettingsConversions.callFactory(prefs, MimePath.parse(mimeType), PREVIOUS_WORD_FINDER, null);
-                putProperty(PREVIOUS_WORD_FINDER, finder != null ? finder : new FinderFactory.PreviousWordBwdFinder(BaseDocument.this, stopOnEOL, false));
+            if (key == null || EditorPreferencesKeys.PREVIOUS_WORD_FINDER.equals(key)) {
+                Finder finder = (Finder) SettingsConversions.callFactory(prefs, MimePath.parse(mimeType), EditorPreferencesKeys.PREVIOUS_WORD_FINDER, null);
+                putProperty(EditorPreferencesKeys.PREVIOUS_WORD_FINDER, finder != null ? finder : new FinderFactory.PreviousWordBwdFinder(BaseDocument.this, stopOnEOL, false));
             }
 
             // Refresh formatter

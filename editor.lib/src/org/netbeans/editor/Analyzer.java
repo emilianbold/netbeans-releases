@@ -49,6 +49,7 @@ import java.io.IOException;
 
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Segment;
+import org.netbeans.modules.editor.lib.EditorPreferencesKeys;
 
 /**
 * Various text analyzes over the document
@@ -485,7 +486,7 @@ public class Analyzer {
         // for valid reader read the document
         if (reader != null) {
             // Size of the read buffer
-            int readBufferSize = ((Integer)doc.getProperty(BaseDocument.READ_BUFFER_SIZE)).intValue();
+            int readBufferSize = ((Integer)doc.getProperty(EditorPreferencesKeys.READ_BUFFER_SIZE)).intValue();
 
             if (testLS) {
                 // Construct a reader that searches for initial line separator type
@@ -575,7 +576,7 @@ public class Analyzer {
     /** Read from some reader and insert into document */
     static void read(BaseDocument doc, Reader reader, int pos)
     throws BadLocationException, IOException {
-        int readBufferSize = ((Integer)doc.getProperty(BaseDocument.READ_BUFFER_SIZE)).intValue();
+        int readBufferSize = ((Integer)doc.getProperty(EditorPreferencesKeys.READ_BUFFER_SIZE)).intValue();
         LineSeparatorConversion.ToLineFeed toLF
             = new LineSeparatorConversion.ToLineFeed(reader, readBufferSize);
         
@@ -597,7 +598,7 @@ public class Analyzer {
                 lsType = BaseDocument.LS_LF;
             }
         }
-        int writeBufferSize = ((Integer)doc.getProperty(BaseDocument.WRITE_BUFFER_SIZE)).intValue();
+        int writeBufferSize = ((Integer)doc.getProperty(EditorPreferencesKeys.WRITE_BUFFER_SIZE)).intValue();
         char[] getBuf = new char[writeBufferSize];
         char[] writeBuf = new char[2 * writeBufferSize];
         int actLen = 0;

@@ -80,6 +80,7 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.KeyBindingSettings;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.netbeans.modules.editor.lib.EditorPreferencesKeys;
 import org.netbeans.modules.editor.lib.NavigationHistory;
 import org.netbeans.modules.editor.lib.SettingsConversions;
 import org.openide.awt.StatusDisplayer;
@@ -729,7 +730,7 @@ public class BaseKit extends DefaultEditorKit {
             enableIM = !Boolean.getBoolean(propName);
         } else {
             Preferences prefs = MimeLookup.getLookup(getContentType()).lookup(Preferences.class);
-            enableIM = prefs.getBoolean("input-methods-enabled", true); //NOI18N
+            enableIM = prefs.getBoolean(EditorPreferencesKeys.INPUT_METHODS_ENABLED, true); //NOI18N
         }
 
         c.enableInputMethods(enableIM);
@@ -766,7 +767,7 @@ public class BaseKit extends DefaultEditorKit {
     protected void executeInstallActions(JEditorPane c) {
         Preferences prefs = MimeLookup.getLookup(getContentType()).lookup(Preferences.class);
         List<String> actionNamesList = new  ArrayList<String>();
-        String actionNames = prefs.get("kit-install-action-name-list", ""); //NOI18N
+        String actionNames = prefs.get(EditorPreferencesKeys.KIT_INSTALL_ACTION_NAME_LIST, ""); //NOI18N
         for(StringTokenizer t = new StringTokenizer(actionNames, ","); t.hasMoreTokens(); ) { //NOI18N
             String actionName = t.nextToken().trim();
             actionNamesList.add(actionName);
@@ -805,7 +806,7 @@ public class BaseKit extends DefaultEditorKit {
     protected void executeDeinstallActions(JEditorPane c) {
         Preferences prefs = MimeLookup.getLookup(getContentType()).lookup(Preferences.class);
         List<String> actionNamesList = new  ArrayList<String>();
-        String actionNames = prefs.get("kit-deinstall-action-name-list", ""); //NOI18N
+        String actionNames = prefs.get(EditorPreferencesKeys.KIT_DEINSTALL_ACTION_NAME_LIST, ""); //NOI18N
         for(StringTokenizer t = new StringTokenizer(actionNames, ","); t.hasMoreTokens(); ) { //NOI18N
             String actionName = t.nextToken().trim();
             actionNamesList.add(actionName);

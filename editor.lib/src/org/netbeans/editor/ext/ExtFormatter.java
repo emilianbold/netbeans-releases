@@ -65,6 +65,7 @@ import org.netbeans.editor.Acceptor;
 import org.netbeans.editor.AcceptorFactory;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.Syntax;
+import org.netbeans.modules.editor.lib.EditorPreferencesKeys;
 import org.netbeans.modules.editor.lib.SettingsConversions;
 import org.openide.util.Lookup;
 import org.openide.util.WeakListeners;
@@ -102,17 +103,6 @@ public class ExtFormatter extends Formatter implements FormatLayer {
     /** Use this instead of testing by containsKey() */
     private static final Object NULL_VALUE = new Object();
 
-    /** Acceptor sensitive to characters that cause that
-     * that the current line will be reformatted immediately.
-     */
-    private static final String INDENT_HOT_CHARS_ACCEPTOR = "indent-hot-chars-acceptor"; // NOI18N
-
-    /** Whether lines should be indented on an indent hot key if there is non whitespace before
-     * the typed hot key. See editor issue #10771.
-     * Values: java.lang.Boolean
-     */
-    private static final String REINDENT_WITH_TEXT_BEFORE = "reindent-with-text-before"; // NOI18N
-    
     /** Map that contains the requested [setting-name, setting-value] pairs */
     private final HashMap settingsMap = new HashMap();
 
@@ -124,12 +114,13 @@ public class ExtFormatter extends Formatter implements FormatLayer {
     private final PreferenceChangeListener prefsListener = new PreferenceChangeListener() {
         public void preferenceChange(PreferenceChangeEvent evt) {
             String key = evt == null ? null : evt.getKey();
-            if (key == null || INDENT_HOT_CHARS_ACCEPTOR.equals(key)) {
-                indentHotCharsAcceptor = (Acceptor) SettingsConversions.callFactory(prefs, MimePath.parse(mimeType), INDENT_HOT_CHARS_ACCEPTOR, AcceptorFactory.FALSE);
+            if (key == null || EditorPreferencesKeys.INDENT_HOT_CHARS_ACCEPTOR.equals(key)) {
+                indentHotCharsAcceptor = (Acceptor) SettingsConversions.callFactory(
+                    prefs, MimePath.parse(mimeType), EditorPreferencesKeys.INDENT_HOT_CHARS_ACCEPTOR, AcceptorFactory.FALSE);
             }
 
-            if (key == null || REINDENT_WITH_TEXT_BEFORE.equals(key)) {
-                reindentWithTextBefore = prefs.getBoolean(REINDENT_WITH_TEXT_BEFORE, false);
+            if (key == null || EditorPreferencesKeys.REINDENT_WITH_TEXT_BEFORE.equals(key)) {
+                reindentWithTextBefore = prefs.getBoolean(EditorPreferencesKeys.REINDENT_WITH_TEXT_BEFORE, false);
             }
         }
     };

@@ -52,6 +52,7 @@ import javax.swing.text.Position;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.modules.editor.lib.EditorPreferencesKeys;
 import org.openide.util.WeakListeners;
 
 /** Word matching support enables to fill in the rest of the word
@@ -133,60 +134,17 @@ public class WordMatch extends FinderFactory.AbstractFinder implements PropertyC
     /** Document where to start from */
     BaseDocument startDoc;
 
-    /** Number of characters that can be searched. If the value is larger
-     * than the document size, the document is used but the next document
-     * will not be used. The zero value disables the word match completely.
-     * Specify Integer.MAX_VALUE to search all the documents regardless
-     * of the size.
-     * Values: java.lang.Integer instances
-     */
-    public static final String WORD_MATCH_SEARCH_LEN = "word-match-search-len"; // NOI18N
-
-    /** Wrap the word match searching
-     * on current document after it reaches the end/begining of
-     * current document. All the other documents except the current (first) one
-     * are searched from begining in forward direction.
-     * Values: java.lang.Boolean instances
-     */
-    public static final String WORD_MATCH_WRAP_SEARCH = "word-match-wrap-search"; // NOI18N
-    
-    /** Whether the word matching should return the match even if the matching
-     * word has only one char. The WORD_MATCH_MATCH_CASE setting is ignored
-     * in case this setting is on.
-     * Values: java.lang.Boolean instances
-     */
-    public static final String WORD_MATCH_MATCH_ONE_CHAR = "word-match-match-one-char"; // NOI18N
-    
-    /** Whether to use case sensitive search or not.
-     * Values: java.lang.Boolean instances
-     */
-    public static final String WORD_MATCH_MATCH_CASE = "word-match-match-case"; // NOI18N
-
-    /** Whether to use case insensitive search if all the letters are small
-     * and case sensitive search if at least one letter is capital.
-     * Values: java.lang.Boolean instances
-     */
-    public static final String WORD_MATCH_SMART_CASE = "word-match-smart-case"; // NOI18N
-    
-    /** Word list that is searched as last resort in word matching.
-     * It can contain the words that are used often by the user.
-     * If this property is set, these words are searched regardless
-     * of WORD_MATCH_SEARCH_LEN setting.
-     * Values: java.lang.String instances
-     */
-    public static final String WORD_MATCH_STATIC_WORDS = "word-match-static-words"; // NOI18N
-    
     private Preferences prefs = null;
     private final PreferenceChangeListener prefsListener = new PreferenceChangeListener() {
         public void preferenceChange(PreferenceChangeEvent evt) {
             if (evt != null) { // real change event
                 staticWordsDocs.clear();
             }
-            maxSearchLen = prefs.getInt(WORD_MATCH_SEARCH_LEN, Integer.MAX_VALUE);
-            wrapSearch = prefs.getBoolean(WORD_MATCH_WRAP_SEARCH, true);
-            matchOneChar = prefs.getBoolean(WORD_MATCH_MATCH_ONE_CHAR, true);
-            matchCase = prefs.getBoolean(WORD_MATCH_MATCH_CASE, false);
-            smartCase = prefs.getBoolean(WORD_MATCH_SMART_CASE, false);
+            maxSearchLen = prefs.getInt(EditorPreferencesKeys.WORD_MATCH_SEARCH_LEN, Integer.MAX_VALUE);
+            wrapSearch = prefs.getBoolean(EditorPreferencesKeys.WORD_MATCH_WRAP_SEARCH, true);
+            matchOneChar = prefs.getBoolean(EditorPreferencesKeys.WORD_MATCH_MATCH_ONE_CHAR, true);
+            matchCase = prefs.getBoolean(EditorPreferencesKeys.WORD_MATCH_MATCH_CASE, false);
+            smartCase = prefs.getBoolean(EditorPreferencesKeys.WORD_MATCH_SMART_CASE, false);
         }
     };
     private PreferenceChangeListener weakListener = null;
@@ -506,7 +464,7 @@ public class WordMatch extends FinderFactory.AbstractFinder implements PropertyC
         }
         BaseDocument doc = (BaseDocument)val;
         if (doc == null && prefs != null) {
-            String staticWords = prefs.get(WORD_MATCH_STATIC_WORDS, null);
+            String staticWords = prefs.get(EditorPreferencesKeys.WORD_MATCH_STATIC_WORDS, null);
             if (staticWords != null) {
                 doc = new BaseDocument(BaseKit.class, false); // don't add to registry
                 try {

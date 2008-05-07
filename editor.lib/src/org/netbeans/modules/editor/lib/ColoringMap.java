@@ -356,7 +356,7 @@ public final class ColoringMap {
         List<String> legacyNonTokenColoringNames = null;
 
         Preferences prefs = MimeLookup.getLookup(mimePath).lookup(Preferences.class);
-        String namesList = prefs.get("coloring-name-list", null); //NOI18N
+        String namesList = prefs.get(EditorPreferencesKeys.COLORING_NAME_LIST, null); //NOI18N
         
         if (namesList != null && namesList.length() > 0) {
             legacyNonTokenColoringNames = new ArrayList<String>();

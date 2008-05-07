@@ -66,6 +66,7 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.modules.editor.lib2.EditorApiPackageAccessor;
 import org.netbeans.editor.view.spi.LockView;
+import org.netbeans.modules.editor.lib.EditorPreferencesKeys;
 import org.netbeans.modules.editor.lib.SettingsConversions;
 import org.openide.util.WeakListeners;
 
@@ -164,7 +165,7 @@ public class BaseTextUI extends BasicTextUI implements PropertyChangeListener, D
                 BaseKit baseKit = Utilities.getKit(component);
                 if (baseKit != null && prefs != null) {
                     List<String> actionNamesList = new  ArrayList<String>();
-                    String actionNames = prefs.get("doc-install-action-name-list", ""); //NOI18N
+                    String actionNames = prefs.get(EditorPreferencesKeys.DOC_INSTALL_ACTION_NAME_LIST, ""); //NOI18N
                     for(StringTokenizer t = new StringTokenizer(actionNames, ","); t.hasMoreTokens(); ) { //NOI18N
                         String actionName = t.nextToken().trim();
                         actionNamesList.add(actionName);

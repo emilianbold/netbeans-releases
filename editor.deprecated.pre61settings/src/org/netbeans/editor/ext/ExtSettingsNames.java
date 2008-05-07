@@ -42,6 +42,7 @@
 package org.netbeans.editor.ext;
 
 import org.netbeans.editor.SettingsNames;
+import org.netbeans.modules.editor.lib.EditorPreferencesKeys;
 
 /**
 * Names of the extended editor settings.
@@ -55,157 +56,157 @@ public class ExtSettingsNames extends SettingsNames {
     * Null name means separator.
     * Values: java.util.List containing java.lang.String instances
     */
-    public static final String POPUP_MENU_ACTION_NAME_LIST = "popup-menu-action-name-list"; // NOI18N
+    public static final String POPUP_MENU_ACTION_NAME_LIST = EditorPreferencesKeys.POPUP_MENU_ACTION_NAME_LIST; // NOI18N
 
     /** List of the action names that should be shown in the popup menu
      * when JEditorPane is shown in the dialogs. It corresponds
      * Null name means separator.
      * Values: java.util.List containing java.lang.String instances
      */
-    public static final String DIALOG_POPUP_MENU_ACTION_NAME_LIST = "dialog-popup-menu-action-name-list"; // NOI18N
+    public static final String DIALOG_POPUP_MENU_ACTION_NAME_LIST = EditorPreferencesKeys.DIALOG_POPUP_MENU_ACTION_NAME_LIST; // NOI18N
 
     /** Whether popup menu will be displayed on mouse right-click or not.
      * It's set to true by default.
      * Values: java.lang.Boolean
      */
-    public static final String POPUP_MENU_ENABLED = "popup-menu-enabled"; // NOI18N
+    public static final String POPUP_MENU_ENABLED = EditorPreferencesKeys.POPUP_MENU_ENABLED; // NOI18N
 
     /** Highlight the row where the caret currently is. The ExtCaret must be used.
      * Values: java.lang.Boolean 
      * @deprecated Without any replacement.
      */
-    public static final String HIGHLIGHT_CARET_ROW = "highlight-caret-row"; // NOI18N
+    public static final String HIGHLIGHT_CARET_ROW = EditorPreferencesKeys.HIGHLIGHT_CARET_ROW; // NOI18N
 
     /** Highlight the matching brace (if the caret currently stands after the brace).
      * The ExtCaret must be used.
      * Values: java.lang.Boolean 
      * @deprecated Without any replacement.
      */
-    public static final String HIGHLIGHT_MATCH_BRACE = "highlight-match-brace"; // NOI18N
+    public static final String HIGHLIGHT_MATCH_BRACE = EditorPreferencesKeys.HIGHLIGHT_MATCH_BRACE; // NOI18N
 
     /** 
      * Coloring used to highlight the row where the caret resides
      * @deprecated Without any replacement.
      */
-    public static final String HIGHLIGHT_CARET_ROW_COLORING = "highlight-caret-row"; // NOI18N
+    public static final String HIGHLIGHT_CARET_ROW_COLORING = EditorPreferencesKeys.HIGHLIGHT_CARET_ROW_COLORING; // NOI18N
 
     /** 
      * Coloring used to highlight the matching brace
      * @deprecated Without any replacement.
      */
-    public static final String HIGHLIGHT_MATCH_BRACE_COLORING = "highlight-match-brace"; // NOI18N
+    public static final String HIGHLIGHT_MATCH_BRACE_COLORING = EditorPreferencesKeys.HIGHLIGHT_MATCH_BRACE_COLORING; // NOI18N
 
     /** Delay (milliseconds) after which the matching brace
      * will be updated. This is intended to eliminate flicker
      * if the user holds the arrow key pressed.
      * @deprecated Without any replacement.
      */
-    public static final String HIGHLIGHT_MATCH_BRACE_DELAY = "highlight-match-brace-delay"; // NOI18N
+    public static final String HIGHLIGHT_MATCH_BRACE_DELAY = EditorPreferencesKeys.HIGHLIGHT_MATCH_BRACE_DELAY; // NOI18N
 
     /** Whether the fast and simple matching should be used for higlighting
      * the matching brace. Its disadvantage is that it doesn't ignore the comments
      * and string and character constants in the search.
      * @deprecated Without any replacement.
      */
-    public static final String CARET_SIMPLE_MATCH_BRACE = "caret-simple-match-brace"; // NOI18N
+    public static final String CARET_SIMPLE_MATCH_BRACE = EditorPreferencesKeys.CARET_SIMPLE_MATCH_BRACE; // NOI18N
 
     /** Whether the code completion window should popup automatically.
     * Values: java.lang.Boolean
     */
-    public static final String COMPLETION_AUTO_POPUP = "completion-auto-popup"; // NOI18N
+    public static final String COMPLETION_AUTO_POPUP = EditorPreferencesKeys.COMPLETION_AUTO_POPUP; // NOI18N
 
     /** Whether the code completion query search will be case  sensitive
     * Values: java.lang.Boolean
     */
-    public static final String COMPLETION_CASE_SENSITIVE = "completion-case-sensitive"; // NOI18N
+    public static final String COMPLETION_CASE_SENSITIVE = EditorPreferencesKeys.COMPLETION_CASE_SENSITIVE; // NOI18N
 
     /** Whether the code completion sorting will be natural
     * Values: java.lang.Boolean
     */
-    public static final String COMPLETION_NATURAL_SORT = "completion-natural-sort"; // NOI18N
+    public static final String COMPLETION_NATURAL_SORT = EditorPreferencesKeys.COMPLETION_NATURAL_SORT; // NOI18N
     
     /** Whether perform instant substitution, if the search result contains only one item
     * Values: java.lang.Boolean
     */
-    public static final String COMPLETION_INSTANT_SUBSTITUTION = "completion-instant-substitution"; // NOI18N
+    public static final String COMPLETION_INSTANT_SUBSTITUTION = EditorPreferencesKeys.COMPLETION_INSTANT_SUBSTITUTION; // NOI18N
 
     /** The delay after which the completion window is shown automatically.
     * Values: java.lang.Integer
     */
-    public static final String COMPLETION_AUTO_POPUP_DELAY = "completion-auto-popup-delay"; // NOI18N
+    public static final String COMPLETION_AUTO_POPUP_DELAY = EditorPreferencesKeys.COMPLETION_AUTO_POPUP_DELAY; // NOI18N
 
     /** The delay after which the completion window is refreshed.
     * Values: java.lang.Integer
     */
-    public static final String COMPLETION_REFRESH_DELAY = "completion-refresh-delay"; // NOI18N
+    public static final String COMPLETION_REFRESH_DELAY = EditorPreferencesKeys.COMPLETION_REFRESH_DELAY; // NOI18N
 
     /** The minimum size of the completion pane component.
     * Values: java.awt.Dimension
     */
-    public static final String COMPLETION_PANE_MIN_SIZE = "completion-pane-min-size"; // NOI18N
+    public static final String COMPLETION_PANE_MIN_SIZE = EditorPreferencesKeys.COMPLETION_PANE_MIN_SIZE; // NOI18N
 
     /** The maximum size of the completion pane component.
     * Values: java.awt.Dimension
     */
-    public static final String COMPLETION_PANE_MAX_SIZE = "completion-pane-max-size"; // NOI18N
+    public static final String COMPLETION_PANE_MAX_SIZE = EditorPreferencesKeys.COMPLETION_PANE_MAX_SIZE; // NOI18N
 
     /** Acceptor sensitive to characters that cause that
      * that the current line will be reformatted immediately.
      */
-    public static final String INDENT_HOT_CHARS_ACCEPTOR = "indent-hot-chars-acceptor"; // NOI18N
+    public static final String INDENT_HOT_CHARS_ACCEPTOR = EditorPreferencesKeys.INDENT_HOT_CHARS_ACCEPTOR; // NOI18N
 
     /** Whether lines should be indented on an indent hot key if there is non whitespace before
      * the typed hot key. See editor issue #10771.
      * Values: java.lang.Boolean
      */
-    public static final String REINDENT_WITH_TEXT_BEFORE = "reindent-with-text-before"; // NOI18N
+    public static final String REINDENT_WITH_TEXT_BEFORE = EditorPreferencesKeys.REINDENT_WITH_TEXT_BEFORE; // NOI18N
 
     /** Whether the fast import should offer packages instead of classes
      * Values: java.lang.Integer
      */
-    public static final String FAST_IMPORT_SELECTION = "fast-import-selection"; // NOI18N
+    public static final String FAST_IMPORT_SELECTION = EditorPreferencesKeys.FAST_IMPORT_SELECTION; // NOI18N
     
     /** Whether the fast import should offer packages instead of classes
      * Values: java.lang.Boolean
      * @deprecated replaced by FAST_IMPORT_SELECTION
      */
-    public static final String FAST_IMPORT_PACKAGE = "fast-import-package"; // NOI18N
+    public static final String FAST_IMPORT_PACKAGE = EditorPreferencesKeys.FAST_IMPORT_PACKAGE; // NOI18N
     
     /** Background color of javaDoc popup window 
      *  Values: java.awt.Color
      * @deprecated Use Editor Settings and Settings Storage APIs.
      */
-    public static final String JAVADOC_BG_COLOR = "javadoc-bg-color"; //NOI18N
+    public static final String JAVADOC_BG_COLOR = EditorPreferencesKeys.JAVADOC_BG_COLOR; //NOI18N
     
     /** The delay after which the javaDoc window is shown automatically.
     *   Values: java.lang.Integer
     */
-    public static final String JAVADOC_AUTO_POPUP_DELAY = "javadoc-auto-popup-delay"; //NOI18N
+    public static final String JAVADOC_AUTO_POPUP_DELAY = EditorPreferencesKeys.JAVADOC_AUTO_POPUP_DELAY; //NOI18N
     
     /** The preferred size of javaDoc popup window
     *   Values: java.awt.Dimension
     */ 
-    public static final String JAVADOC_PREFERRED_SIZE = "javadoc-preferred-size"; //NOI18N
+    public static final String JAVADOC_PREFERRED_SIZE = EditorPreferencesKeys.JAVADOC_PREFERRED_SIZE; //NOI18N
 
     /** Whether the javaDoc window should popup automatically.
     * Values: java.lang.Boolean
     */
-    public static final String JAVADOC_AUTO_POPUP = "javadoc-auto-popup"; // NOI18N
+    public static final String JAVADOC_AUTO_POPUP = EditorPreferencesKeys.JAVADOC_AUTO_POPUP; // NOI18N
     
     /** Whether show deprecated members in code completion popup window
     * Values: java.lang.Boolean
     */
-    public static final String SHOW_DEPRECATED_MEMBERS = "show-deprecated-members"; // NOI18N
+    public static final String SHOW_DEPRECATED_MEMBERS = EditorPreferencesKeys.SHOW_DEPRECATED_MEMBERS; // NOI18N
     
     /**
      * The Code Completion DB is always updated after mounting a new filesystem.
      * @deprecated Without any replacement.
      */
-    public static final String ALWAYS = "pd_always";//NOI18N
+    public static final String ALWAYS = EditorPreferencesKeys.ALWAYS;//NOI18N
     /** 
      * The Code Completion DB is never updated after mounting a new filesystem.
      * @deprecated Without any replacement.
      */
-    public static final String NEVER = "pd_never";//NOI18N
+    public static final String NEVER = EditorPreferencesKeys.NEVER;//NOI18N
     
 }

@@ -80,6 +80,7 @@ import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.editor.ext.ToolTipSupport;
 import org.netbeans.modules.editor.lib.ColoringMap;
+import org.netbeans.modules.editor.lib.EditorPreferencesKeys;
 import org.netbeans.modules.editor.lib.EditorRenderingHints;
 import org.netbeans.modules.editor.lib.SettingsConversions;
 import org.openide.util.WeakListeners;
@@ -1574,8 +1575,8 @@ public class EditorUI implements ChangeListener, PropertyChangeListener {
                         scrollFindInsets = insets != null ? insets : NULL_INSETS;
                     }
 
-                    if (settingName == null || "component-size-increment".equals(settingName)) { //NOI18N
-                        String value = prefs.get("component-size-increment", null); //NOI18N
+                    if (settingName == null || EditorPreferencesKeys.COMPONENT_SIZE_INCREMENT.equals(settingName)) { //NOI18N
+                        String value = prefs.get(EditorPreferencesKeys.COMPONENT_SIZE_INCREMENT, null); //NOI18N
                         Dimension increment = value != null ? SettingsConversions.parseDimension(value) : null;
                         componentSizeIncrement = increment != null ? increment : NULL_DIMENSION;
                     }
