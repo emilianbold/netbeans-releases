@@ -378,6 +378,10 @@ public final class TabDisplayer extends JComponent implements Accessible {
     public final Dimension getPreferredSize() {
         return getUI().getPreferredSize(this);
     }
+    
+    public final Font getFont() {
+        return getUI().getTxtFont();
+    }
 
     public final Dimension getMinimumSize() {
         return getUI().getMinimumSize(this);

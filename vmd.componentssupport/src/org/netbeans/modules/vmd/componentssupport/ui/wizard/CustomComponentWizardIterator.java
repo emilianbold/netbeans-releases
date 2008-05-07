@@ -108,10 +108,16 @@ public class CustomComponentWizardIterator implements
     public static final String PROJECT_DIR  = "projdir";                         // NOI18N
     public static final String PROJECT_NAME = "projname";                        // NOI18N
     public static final String LAYER_PATH   = "layer";                           // NOI18N
-    public static final String BUNDLE_PATH  = "bundle";
+    public static final String BUNDLE_PATH  = "bundle";                          // NOI18N
+    public static final String JAVA_LIB_ACCEPTED
+                                            = "javaLibsAccepted";                // NOI18N
     public static final String CODE_BASE_NAME
                                             = "codeBaseName";                    // NOI18N
     public static final String DISPLAY_NAME = "displayName";                     // NOI18N
+    
+    public static final String LIBRARIES    = "library";                         // NOI18N
+    public static final String DISPLAY_NAMES= "displayName";                     // NOI18N
+    public static final String LIB_NAMES    = "libName";                         // NOI18N
 
 
     // parameters for project
@@ -160,13 +166,13 @@ public class CustomComponentWizardIterator implements
             throws IOException
     {
         Set<FileObject> resultSet = new LinkedHashSet<FileObject>();
-        File dirF = FileUtil.normalizeFile((File) wiz
+        File dirF = FileUtil.normalizeFile((File) myWizard
                 .getProperty(PROJECT_DIR));
         dirF.mkdirs();
 
-        FileObject template = Templates.getTemplate(wiz);
+        FileObject template = Templates.getTemplate(myWizard);
         FileObject dir = FileUtil.toFileObject(dirF);
-        unZipFile(template.getInputStream(), dir , wiz );
+        unZipFile(template.getInputStream(), dir , myWizard );
 
         // Always open top dir as a project:
         resultSet.add(dir);
@@ -183,12 +189,18 @@ public class CustomComponentWizardIterator implements
         if (parent != null && parent.exists()) {
             ProjectChooser.setProjectsFolder(parent);
         }
+        
+        if ( myWizard.getProperty( JAVA_LIB_ACCEPTED )!= null && 
+                (Boolean)myWizard.getProperty( JAVA_LIB_ACCEPTED ) )
+        {
+            configureJavaMELibs();
+        }
 
         return resultSet;
     }
 
     public void initialize( WizardDescriptor wiz ) {
-        wiz = wiz;
+        myWizard = wiz;
         index = 0;
         panels = createPanels();
         // Make sure list of steps is accurate.
@@ -257,6 +269,15 @@ public class CustomComponentWizardIterator implements
     }
 
     public final void removeChangeListener( ChangeListener l ) {
+    }
+    
+    /*
+     * Adds library descriptor generated from template "libdescripttemplate.xml"
+     * and generate necessary files, change Bundle.properties, layer.xml if needed.   
+     */
+    private void configureJavaMELibs() {
+        // TODO Auto-generated method stub
+        
     }
 
     private static void unZipFile( InputStream source, FileObject projectRoot ,
@@ -450,5 +471,5 @@ public class CustomComponentWizardIterator implements
     
     private int index;
     private WizardDescriptor.Panel[] panels;
-    private WizardDescriptor wiz;
+    private WizardDescriptor myWizard;
 }

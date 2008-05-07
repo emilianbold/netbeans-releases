@@ -36,7 +36,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.php.project.PhpProject;
-import org.netbeans.modules.php.project.api.PhpOptions;
+import org.netbeans.modules.php.project.ui.options.PhpOptions;
 import org.openide.awt.HtmlBrowser;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -51,7 +51,7 @@ import org.openide.util.NbBundle;
  */
 public class RunLocalCommand extends Command implements Displayable {
 
-    public static final String ID = "run.local";//NOI18N
+    public static final String ID = "run.local"; //NOI18N
 
     public RunLocalCommand(PhpProject project) {
         super(project);
@@ -114,14 +114,14 @@ public class RunLocalCommand extends Command implements Displayable {
     }
 
     public String getDisplayName() {
-        return NbBundle.getMessage(RunCommand.class, "LBL_RunLocalCommand");//NOI18N
+        return NbBundle.getMessage(RunCommand.class, "LBL_RunLocalCommand");
 
     }
 
     //designed to set env.variables for debugger to resuse this code
     protected  void initProcessBuilder(ProcessBuilder processBuilder) {
     }
-    
+
     private void processError(Process process, File scriptFile, Charset encoding) throws IOException {
         BufferedReader errorReader = reader(process.getErrorStream(), encoding);
         BufferedWriter outputWriter = outputTabWriter(scriptFile);
@@ -142,7 +142,7 @@ public class RunLocalCommand extends Command implements Displayable {
     }
 
     private File tempFileForScript(File scriptFile) throws IOException {
-        File retval = File.createTempFile(scriptFile.getName(), ".html");//NOI18N
+        File retval = File.createTempFile(scriptFile.getName(), ".html"); //NOI18N
         retval.deleteOnExit();
         return retval;
     }

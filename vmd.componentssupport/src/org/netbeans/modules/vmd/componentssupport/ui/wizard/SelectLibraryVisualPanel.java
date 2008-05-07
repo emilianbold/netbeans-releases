@@ -89,7 +89,8 @@ final class SelectLibraryVisualPanel extends JPanel {
     }
     
     void storeData() {
-        //data.setLibrary(getSelectedLibrary());
+        mySettings.putProperty( NewLibraryDescriptor.LIBRARY , 
+                getSelectedLibrary());
     }
     
     void readData( WizardDescriptor settings ) {

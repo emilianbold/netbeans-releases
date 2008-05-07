@@ -43,6 +43,7 @@ public enum Platform {
     /////////////////////////////////////////////////////////////////////////////////
     // Values
     GENERIC(null, null, null, null, "Generic"),
+    UNIX(OS_FAMILY_UNIX, null, null, null, "Unix"),
     
     WINDOWS(OS_FAMILY_WINDOWS, null, null, null, "Windows"),
     WINDOWS_X86(OS_FAMILY_WINDOWS, HARDWARE_X86, null, null, "Windows X86"),
@@ -51,6 +52,8 @@ public enum Platform {
     LINUX(OS_FAMILY_LINUX, null, null, null, "Linux"),
     LINUX_X86(OS_FAMILY_LINUX, HARDWARE_X86, null, null, "Linux X86"),
     LINUX_X64(OS_FAMILY_LINUX, HARDWARE_X64, null, null, "Linux X64"),
+    LINUX_PPC(OS_FAMILY_LINUX, HARDWARE_PPC, null, null, "Linux PowerPC"),
+    LINUX_PPC64(OS_FAMILY_LINUX, HARDWARE_PPC64, null, null, "Linux PowerPC X64"),
     
     SOLARIS(OS_FAMILY_SOLARIS, null, null, null, "Solaris"),
     SOLARIS_X86(OS_FAMILY_SOLARIS, HARDWARE_X86, null, null, "Solaris X86"),
@@ -129,8 +132,10 @@ public enum Platform {
     }
     
     public boolean isCompatibleWith(final Platform platform) {
-        if (!platform.osFamily.equals(osFamily)) {
-            return false;
+        if (platform.osFamily!=null &&
+                !platform.osFamily.equals(osFamily)) {
+            return (platform.osFamily.equals(OS_FAMILY_UNIX) && 
+                    !OS_FAMILY_WINDOWS.equals(osFamily));
         }
         
         if ((platform.hardwareArch != null) &&

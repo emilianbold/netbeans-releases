@@ -53,6 +53,7 @@ made subject to such option by the copyright holder.
                 <file name="PHPProject.php" url="nbresloc:/org/netbeans/modules/php/project/ui/resources/index.php">
                     <attr name="position" intvalue="100"/>
                     <attr name="template" boolvalue="true"/>
+                    <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                     <attr name="templateWizardIterator" newvalue="org.netbeans.modules.php.project.ui.wizards.NewPhpProjectWizardIterator"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.project.ui.wizards.Bundle"/>
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/php/project/ui/resources/phpProject.png"/>
@@ -76,6 +77,7 @@ made subject to such option by the copyright holder.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.project.ui.wizards.Bundle"/>
                 <attr name="instantiatingIterator" newvalue="org.netbeans.modules.php.project.ui.wizards.NewFileWizardIterator"/>
                 <attr name="template" boolvalue="true" />
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/php/project/ui/resources/emptyPHPWebPageDescription.html"/>
                 <attr name="templateCategory" stringvalue="PHP"/>
                 <attr name="position" intvalue="200"/>
@@ -112,7 +114,7 @@ made subject to such option by the copyright holder.
             <file name="runtime.php" url="nbres:/org/netbeans/modules/php/project/resources/runtime.php"/>
         </folder>
     </folder>
-    
+
     <folder name="Loaders">
         <folder name="text">
             <folder name="x-php5">
@@ -128,7 +130,7 @@ made subject to such option by the copyright holder.
                     <file name="CutAction.instance">
                         <attr name="instanceClass" stringvalue="org.openide.actions.CutAction"/>
                         <attr name="position" intvalue="300"/>
-                    </file>     
+                    </file>
                     <file name="CopyAction.instance">
                         <attr name="instanceClass" stringvalue="org.openide.actions.CopyAction"/>
                         <attr name="position" intvalue="400"/>
@@ -172,18 +174,18 @@ made subject to such option by the copyright holder.
                     <file name="Separator5.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="1400"/>
-                    </file> 
+                    </file>
                     <file name="ToolsAction.instance">
                         <attr name="instanceClass" stringvalue="org.openide.actions.ToolsAction"/>
                         <attr name="position" intvalue="1500"/>
-                    </file> 
+                    </file>
                     <file name="PropertiesAction.instance">
                         <attr name="instanceClass" stringvalue="org.openide.actions.PropertiesAction"/>
                         <attr name="position" intvalue="1600"/>
-                    </file> 
-                </folder>            
+                    </file>
+                </folder>
             </folder>
         </folder>
-    </folder>    
+    </folder>
 
 </filesystem>

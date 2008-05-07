@@ -686,6 +686,7 @@ public class RegistriesManagerImpl implements RegistriesManager {
                 "nb-soa",
                 "nb-uml",
                 "nb-ruby",
+                "nb-php",
                 "glassfish",
                 "openesb",
                 "sjsam",

@@ -35,8 +35,9 @@ import org.openide.util.NbBundle;
 /**
  * @author Radek Matous
  */
-public class DebugLocalCommand  extends RunLocalCommand {    
-    public static final String ID = "debug.local";//NOI18N
+public class DebugLocalCommand  extends RunLocalCommand {
+    public static final String ID = "debug.local"; //NOI18N
+
     public DebugLocalCommand(PhpProject project) {
         super(project);
     }
@@ -54,7 +55,7 @@ public class DebugLocalCommand  extends RunLocalCommand {
             dbgStarter.start(getProject(), runnable, fileForContext(context));
         }
     }
-        
+
     @Override
     public boolean isActionEnabled(Lookup context) throws IllegalArgumentException {
         return fileForContext(context) != null && XDebugStarterFactory.getInstance() != null;
@@ -64,14 +65,15 @@ public class DebugLocalCommand  extends RunLocalCommand {
     public String getCommandId() {
         return ID;
     }
-    
+
+    @Override
     public String getDisplayName() {
-        return NbBundle.getMessage(RunCommand.class, "LBL_DebugLocalCommand");//NOI18N
+        return NbBundle.getMessage(RunCommand.class, "LBL_DebugLocalCommand");
     }
 
     @Override
     protected void initProcessBuilder(ProcessBuilder processBuilder) {
         super.initProcessBuilder(processBuilder);
-        processBuilder.environment().put("XDEBUG_CONFIG", "idekey="+PhpSourcePath.DEBUG_SESSION); //NOI18N        
-    }        
+        processBuilder.environment().put("XDEBUG_CONFIG", "idekey=" + PhpSourcePath.DEBUG_SESSION); //NOI18N
+    }
 }

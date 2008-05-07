@@ -77,7 +77,7 @@ class JavaMELibsWizardPanel implements Panel, ValidatingPanel {
      */
     public Component getComponent() {
         if (myComponent == null) {
-            myComponent = new JavaMELibsVisualPanel();
+            myComponent = new JavaMELibsVisualPanel( );
             myComponent.setName(
                     NbBundle.getMessage(BasicModuleConfWizardPanel.class, 
                     CustomComponentWizardIterator.LBL_LIBRARIES));
@@ -103,9 +103,9 @@ class JavaMELibsWizardPanel implements Panel, ValidatingPanel {
     /* (non-Javadoc)
      * @see org.openide.WizardDescriptor.Panel#readSettings(java.lang.Object)
      */
-    public void readSettings( Object arg0 ) {
-        // TODO Auto-generated method stub
-        
+    public void readSettings( Object settings  ) {
+        myWizardDescriptor = (WizardDescriptor)settings;
+        myComponent.readData( myWizardDescriptor );
     }
 
     /* (non-Javadoc)
@@ -118,9 +118,9 @@ class JavaMELibsWizardPanel implements Panel, ValidatingPanel {
     /* (non-Javadoc)
      * @see org.openide.WizardDescriptor.Panel#storeSettings(java.lang.Object)
      */
-    public void storeSettings( Object arg0 ) {
-        // TODO Auto-generated method stub
-        
+    public void storeSettings( Object settings ) {
+        //myWizardDescriptor = (WizardDescriptor)settings;
+        myComponent.storeData( myWizardDescriptor );
     }
 
     /* (non-Javadoc)
