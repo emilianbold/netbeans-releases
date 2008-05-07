@@ -1650,6 +1650,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
   <target name="commitValidation" depends="all-commitValidation,check-commit-validation" if="run.validation">
     <subant target="test" >
         <property name="test.config" value="commit"/>
+        <property name="continue.after.failing.tests" value="true"/>
         <dirset dir="..">
             <include name="o.n.core"/>
             <include name="core.windows"/>
