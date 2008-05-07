@@ -47,6 +47,8 @@ import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.EditorKit;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.rtf.RTFEditorKit;
+import junit.framework.Test;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.openide.text.CloneableEditorSupport;
 
@@ -59,6 +61,13 @@ public class EditorKitsRegistryTest extends NbTestCase {
     /** Creates a new instance of EditorKitsRegistryTest */
     public EditorKitsRegistryTest(String name) {
         super(name);
+    }
+
+    public static Test suite() {
+        return NbModuleSuite.create(
+            NbModuleSuite.createConfiguration(EditorKitsRegistryTest.class).
+                clusters(".*").enableModules(".*").gui(false)
+        );
     }
     
     public void testHTMLEditorKits() {

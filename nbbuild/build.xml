@@ -1648,19 +1648,16 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
   
   <!-- keep this target name at least for a while for backward compat -jglick -->
   <target name="commitValidation" depends="all-commitValidation,check-commit-validation" if="run.validation">
-    <property name="xtest.home" location="../xtest"/>
-    <ant dir="${xtest.home}" target="clean"/>
-    <ant dir="${xtest.home}"/>
-    <ant dir="${xtest.home}/instance" target="cleanresults">
-        <property name="xtest.config" value="commit-validation-nb"/>
-    </ant>
-    <ant dir="${xtest.home}/instance" target="cleantests">
-        <property name="xtest.config" value="commit-validation-nb"/>
-    </ant>
-    <ant dir="${xtest.home}/instance" target="runtests">
-        <property name="xtest.config" value="commit-validation-nb"/>
-        <property name="xtest.fail.on.failure" value="true"/>
-    </ant>
+    <subant target="test" >
+        <property name="test.config" value="commit"/>
+        <dirset dir="..">
+            <include name="o.n.core"/>
+            <include name="core.windows"/>
+            <include name="javahelp"/>
+            <include name="ide.kit"/>
+            <include name="editor"/>
+        </dirset>
+    </subant>
   </target>
 
   <!-- Needs to be run separately from commitValidation, since that target will abort if there are any failures. -->
