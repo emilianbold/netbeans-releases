@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.editor.lib;
 
+import org.netbeans.api.editor.settings.SimpleValueNames;
+
 /**
  * This class contains settings names copied over from SettingsNames and ExtSettingsNames.
  * It exists merely to allow editor infrastructure to use these constants for
@@ -62,36 +64,32 @@ public class EditorPreferencesKeys {
     // -----------------------------------------------------------------------
     // --- from SettingsNames
     // -----------------------------------------------------------------------
+
+    public static final String CARET_BLINK_RATE = SimpleValueNames.CARET_BLINK_RATE;
+    public static final @Deprecated String CARET_COLOR_INSERT_MODE = SimpleValueNames.CARET_COLOR_INSERT_MODE;
+    public static final @Deprecated String CARET_COLOR_OVERWRITE_MODE = SimpleValueNames.CARET_COLOR_OVERWRITE_MODE;
+    public static final String CARET_ITALIC_INSERT_MODE = SimpleValueNames.CARET_ITALIC_INSERT_MODE;
+    public static final String CARET_ITALIC_OVERWRITE_MODE = SimpleValueNames.CARET_ITALIC_OVERWRITE_MODE;
+    public static final String CARET_TYPE_INSERT_MODE = SimpleValueNames.CARET_TYPE_INSERT_MODE;
+    public static final String CARET_TYPE_OVERWRITE_MODE = SimpleValueNames.CARET_TYPE_OVERWRITE_MODE;
+    public static final String CODE_FOLDING_ENABLE = SimpleValueNames.CODE_FOLDING_ENABLE;
+    public static final String EXPAND_TABS = SimpleValueNames.EXPAND_TABS;
+    public static final String HYPERLINK_ACTIVATION_MODIFIERS = SimpleValueNames.HYPERLINK_ACTIVATION_MODIFIERS;
+    public static final String INDENT_SHIFT_WIDTH = SimpleValueNames.INDENT_SHIFT_WIDTH;
+    public static final String LINE_HEIGHT_CORRECTION = SimpleValueNames.LINE_HEIGHT_CORRECTION;
+    public static final String LINE_NUMBER_VISIBLE = SimpleValueNames.LINE_NUMBER_VISIBLE;
+    public static final String MARGIN = SimpleValueNames.MARGIN;
+    public static final String SCROLL_FIND_INSETS = SimpleValueNames.SCROLL_FIND_INSETS;
+    public static final String SCROLL_JUMP_INSETS = SimpleValueNames.SCROLL_JUMP_INSETS;
+    public static final String SPACES_PER_TAB = SimpleValueNames.SPACES_PER_TAB;
+    public static final String STATUS_BAR_CARET_DELAY = SimpleValueNames.STATUS_BAR_CARET_DELAY;
+    public static final String STATUS_BAR_VISIBLE = SimpleValueNames.STATUS_BAR_VISIBLE;
+    public static final String TAB_SIZE = SimpleValueNames.TAB_SIZE;
+    public static final String TEXT_LEFT_MARGIN_WIDTH = SimpleValueNames.TEXT_LEFT_MARGIN_WIDTH;
+    public static final @Deprecated String TEXT_LIMIT_LINE_COLOR = SimpleValueNames.TEXT_LIMIT_LINE_COLOR;
+    public static final String TEXT_LIMIT_LINE_VISIBLE = SimpleValueNames.TEXT_LIMIT_LINE_VISIBLE;
+    public static final String TEXT_LIMIT_WIDTH = SimpleValueNames.TEXT_LIMIT_WIDTH;
     
-    /** Number of spaces to draw when the '\t' character
-    * is found in the text. Better said when the drawing-engine
-    * finds a '\t' character it computes the next multiple
-    * of TAB_SIZE and continues drawing from that position.
-    * Values: java.lang.Integer instances
-    */
-    public static final String TAB_SIZE = "tab-size"; // NOI18N
-
-    /** Whether expand typed tabs to spaces. The number of spaces to substitute
-    * per one typed tab is determined by SPACES_PER_TAB setting.
-    * Values: java.lang.Boolean instances
-    */
-    public static final String EXPAND_TABS = "expand-tabs"; // NOI18N
-
-    /** How many spaces substitute per one typed tab. This parameter has
-    * effect only when EXPAND_TABS setting is set to true.
-    * This parameter has no influence on how
-    * the existing tabs are displayed.
-    * Values: java.lang.Integer instances
-    */
-    public static final String SPACES_PER_TAB = "spaces-per-tab"; // NOI18N
-
-    /** Shift-width says how many spaces should the formatter use
-    * to indent the more inner level of code. This setting is independent of <tt>TAB_SIZE</tt>
-    * and <tt>SPACES_PER_TAB</tt>.
-    * Values: java.lang.Integer instances
-    */
-    public static final String INDENT_SHIFT_WIDTH = "indent-shift-width"; // NOI18N
-
     /** Acceptor that recognizes the identifier characters.
     * If set it's used instead of the default Syntax.isIdentifierPart() call.
     * Values: org.netbeans.editor.Acceptor instances
@@ -160,58 +158,6 @@ public class EditorPreferencesKeys {
     */
     public static final String ABBREV_RESET_ACCEPTOR = "abbrev-reset-acceptor"; // NOI18N
 
-    /** Type of caret for insert mode.
-    * Values: java.lang.String instances
-    *   Currently supported types are:
-    *     org.netbeans.editor.BaseCaret.LINE_CARET - default 2point caret
-    *     org.netbeans.editor.BaseCaret.THIN_LINE_CARET - swing like thin caret
-    *     org.netbeans.editor.BaseCaret.BLOCK_CARET - block covering whole character
-    */
-    public static final String CARET_TYPE_INSERT_MODE = "caret-type-insert-mode"; // NOI18N
-
-    /** Type of caret for over write mode.
-    * Values: java.lang.String instances
-    *   Currently supported types are:
-    *     org.netbeans.editor.BaseCaret.LINE_CARET - default 2point caret
-    *     org.netbeans.editor.BaseCaret.THIN_LINE_CARET - swing like thin caret
-    *     org.netbeans.editor.BaseCaret.BLOCK_CARET - block covering whole character
-    */
-    public static final String CARET_TYPE_OVERWRITE_MODE = "caret-type-overwrite-mode"; // NOI18N
-
-    /** Will the insert mode caret be italicized if the underlying font
-    * is italic?
-    * Values: java.lang.Boolean instances
-    */
-    public static final String CARET_ITALIC_INSERT_MODE = "caret-italic-insert-mode"; // NOI18N
-
-    /** Will the overwrite mode caret be italicized if the underlying font
-    * is italic?
-    * Values: java.lang.Boolean instances
-    */
-    public static final String CARET_ITALIC_OVERWRITE_MODE = "caret-italic-overwrite-mode"; // NOI18N
-
-    /** Caret color for insert mode.
-     * Values: java.awt.Color instances
-     * @deprecated Use {@link org.netbeans.api.editor.settings.FontColorNames} instead.
-     */
-    public static final String CARET_COLOR_INSERT_MODE = "caret-color-insert-mode"; // NOI18N
-
-    /** Caret color for overwrite mode.
-     * Values: java.awt.Color instances
-     * @deprecated Use {@link org.netbeans.api.editor.settings.FontColorNames} instead.
-     */
-    public static final String CARET_COLOR_OVERWRITE_MODE = "caret-color-overwrite-mode"; // NOI18N
-
-    /** Caret blink rate in milliseconds.
-    * Values: java.lang.Integer
-    */
-    public static final String CARET_BLINK_RATE = "caret-blink-rate"; // NOI18N
-
-    /** Whether to display line numbers on the left part of the screen.
-    * Values: java.lang.Boolean instances
-    */
-    public static final String LINE_NUMBER_VISIBLE = "line-number-visible"; // NOI18N
-
     /** Completion of { } [ ] " " ' ' and tags */
     public static final String PAIR_CHARACTERS_COMPLETION 
       = "pair-characters-completion"; // NOI18N
@@ -220,31 +166,6 @@ public class EditorPreferencesKeys {
     * Values: java.lang.Boolean instances
     */
     public static final String PRINT_LINE_NUMBER_VISIBLE = "print-line-number-visible"; // NOI18N
-
-    /** How much should the view jump when scrolling goes off the screen.
-    * Insets are used so that it can be specified for each direction specifically.
-    * Each inset value can be positive or negative. The positive value means
-    * the number of lines for the top and the bottom and the number of characters
-    * for the left and the right. The negative value means percentage of the editor
-    * component height for the top and the bottom and percentage of the editor
-    * component width for the left and the right.
-    * Values: java.awt.Insets instances
-    * @deprecated value of this property is ignored.
-    */
-    public static final String SCROLL_JUMP_INSETS = "scroll-jump-insets"; // NOI18N
-
-    /** How much space must be reserved in each direction for the find operation.
-    * It's here to ensure the found information will be visible in some
-    * context around it.
-    * Insets are used so that it can be specified for each direction specifically.
-    * Each inset value can be positive or negative. The positive value means
-    * the number of lines for the top and the bottom and the number of characters
-    * for the left and the right. The negative value means percentage of the editor
-    * component height for the top and the bottom and percentage of the editor
-    * component width for the left and the right.
-    * Values: java.awt.Insets instances
-    */
-    public static final String SCROLL_FIND_INSETS = "scroll-find-insets"; // NOI18N
 
     /** How much space will be added additionaly when the component needs to be
     * resized.
@@ -256,16 +177,6 @@ public class EditorPreferencesKeys {
     * Values: java.awt.Dimension instances
     */
     public static final String COMPONENT_SIZE_INCREMENT = "component-size-increment"; // NOI18N
-
-    /** Margin for the editor component
-    * Values: java.awt.Insets instances
-    */
-    public static final String MARGIN = "margin"; // NOI18N
-
-    /** Width of the margin on the left side of the text just after the line-number bar.
-    * Values: java.awt.Integer instances
-    */
-    public static final String TEXT_LEFT_MARGIN_WIDTH = "text-left-margin-width"; // NOI18N
 
     /** Rendering hints to be used for the painting.
     * Values: java.util.Map instances
@@ -284,12 +195,6 @@ public class EditorPreferencesKeys {
     * Values: java.lang.Boolean
     */
     public static final String INPUT_METHODS_ENABLED = "input-methods-enabled"; // NOI18N
-
-    /** Float constant by which the height of the character obtained from
-    * the font is multiplied. It defaults to 1.
-    * Values: java.lang.Float instances
-    */
-    public static final String LINE_HEIGHT_CORRECTION = "line-height-correction"; // NOI18N
 
     /* Find properties.
     * They are read by FindSupport when its instance is being initialized.
@@ -417,32 +322,6 @@ public class EditorPreferencesKeys {
     * Values: java.util.List instances
     */
     public static final String DOC_INSTALL_ACTION_NAME_LIST = "doc-install-action-name-list"; // NOI18N
-
-    /** Whether status bar should be visible or not.
-    * Values: java.lang.Boolean instances
-    */
-    public static final String STATUS_BAR_VISIBLE = "status-bar-visible"; // NOI18N
-
-    /** Delay for updating information about caret in the status bar.
-    * Values: java.lang.Integer instances
-    */
-    public static final String STATUS_BAR_CARET_DELAY = "status-bar-caret-delay"; // NOI18N
-
-    /** Whether the line displaying the text limit should be displayed.
-    * Values: java.lang.Boolean instances
-    */
-    public static final String TEXT_LIMIT_LINE_VISIBLE = "text-limit-line-visible"; // NOI18N
-
-    /** Which color should be used for the line showing the text limit.
-     * Values: java.awt.Color instances
-     * @deprecated Use {@link org.netbeans.api.editor.settings.FontColorNames} instead.
-     */
-    public static final String TEXT_LIMIT_LINE_COLOR = "text-limit-line-color"; // NOI18N
-
-    /** After how many characters the text limit line should be displayed.
-    * Values: java.awt.Integer instances
-    */
-    public static final String TEXT_LIMIT_WIDTH = "text-limit-width"; // NOI18N
 
     /** Whether the home key should go to column 1 or first go to text start
     * on the given line and then to the column 1.
@@ -644,17 +523,26 @@ public class EditorPreferencesKeys {
      */
     public static final String STATUS_BAR_BOLD_COLORING = "status-bar-bold"; // NOI18N
 
-    /** Enable/Disable code folding */
-    public static final String CODE_FOLDING_ENABLE = "code-folding-enable"; //NOI18N
-    
-    /**Modifiers for which the hyperlinks should be enabled.
-     */
-    public static final String HYPERLINK_ACTIVATION_MODIFIERS = "hyperlink-activation-modifiers"; //NOI18N
-
     
     // -----------------------------------------------------------------------
     // --- from ExtSettingsNames
     // -----------------------------------------------------------------------
+
+    public static final String COMPLETION_AUTO_POPUP = SimpleValueNames.COMPLETION_AUTO_POPUP;
+    public static final String COMPLETION_AUTO_POPUP_DELAY = SimpleValueNames.COMPLETION_AUTO_POPUP_DELAY;
+    public static final String COMPLETION_CASE_SENSITIVE = SimpleValueNames.COMPLETION_CASE_SENSITIVE;
+    public static final String COMPLETION_INSTANT_SUBSTITUTION = SimpleValueNames.COMPLETION_INSTANT_SUBSTITUTION;
+    public static final String COMPLETION_NATURAL_SORT = SimpleValueNames.COMPLETION_NATURAL_SORT;
+    public static final String COMPLETION_PANE_MAX_SIZE = SimpleValueNames.COMPLETION_PANE_MAX_SIZE;
+    public static final String COMPLETION_PANE_MIN_SIZE = SimpleValueNames.COMPLETION_PANE_MIN_SIZE;
+    public static final String HIGHLIGHT_CARET_ROW = SimpleValueNames.HIGHLIGHT_CARET_ROW;
+    public static final String HIGHLIGHT_MATCH_BRACE = SimpleValueNames.HIGHLIGHT_MATCH_BRACE;
+    public static final String JAVADOC_AUTO_POPUP = SimpleValueNames.JAVADOC_AUTO_POPUP;
+    public static final String JAVADOC_AUTO_POPUP_DELAY = SimpleValueNames.JAVADOC_AUTO_POPUP_DELAY;
+    public static final @Deprecated String JAVADOC_BG_COLOR = SimpleValueNames.JAVADOC_BG_COLOR;
+    public static final String JAVADOC_PREFERRED_SIZE = SimpleValueNames.JAVADOC_PREFERRED_SIZE;
+    public static final String POPUP_MENU_ENABLED = SimpleValueNames.POPUP_MENU_ENABLED;
+    public static final String SHOW_DEPRECATED_MEMBERS = SimpleValueNames.SHOW_DEPRECATED_MEMBERS;
     
     /** List of the action names that should be shown in the popup menu.
     * Null name means separator.
@@ -668,25 +556,6 @@ public class EditorPreferencesKeys {
      * Values: java.util.List containing java.lang.String instances
      */
     public static final String DIALOG_POPUP_MENU_ACTION_NAME_LIST = "dialog-popup-menu-action-name-list"; // NOI18N
-
-    /** Whether popup menu will be displayed on mouse right-click or not.
-     * It's set to true by default.
-     * Values: java.lang.Boolean
-     */
-    public static final String POPUP_MENU_ENABLED = "popup-menu-enabled"; // NOI18N
-
-    /** Highlight the row where the caret currently is. The ExtCaret must be used.
-     * Values: java.lang.Boolean 
-     * @deprecated Without any replacement.
-     */
-    public static final String HIGHLIGHT_CARET_ROW = "highlight-caret-row"; // NOI18N
-
-    /** Highlight the matching brace (if the caret currently stands after the brace).
-     * The ExtCaret must be used.
-     * Values: java.lang.Boolean 
-     * @deprecated Without any replacement.
-     */
-    public static final String HIGHLIGHT_MATCH_BRACE = "highlight-match-brace"; // NOI18N
 
     /** 
      * Coloring used to highlight the row where the caret resides
@@ -714,45 +583,10 @@ public class EditorPreferencesKeys {
      */
     public static final String CARET_SIMPLE_MATCH_BRACE = "caret-simple-match-brace"; // NOI18N
 
-    /** Whether the code completion window should popup automatically.
-    * Values: java.lang.Boolean
-    */
-    public static final String COMPLETION_AUTO_POPUP = "completion-auto-popup"; // NOI18N
-
-    /** Whether the code completion query search will be case  sensitive
-    * Values: java.lang.Boolean
-    */
-    public static final String COMPLETION_CASE_SENSITIVE = "completion-case-sensitive"; // NOI18N
-
-    /** Whether the code completion sorting will be natural
-    * Values: java.lang.Boolean
-    */
-    public static final String COMPLETION_NATURAL_SORT = "completion-natural-sort"; // NOI18N
-    
-    /** Whether perform instant substitution, if the search result contains only one item
-    * Values: java.lang.Boolean
-    */
-    public static final String COMPLETION_INSTANT_SUBSTITUTION = "completion-instant-substitution"; // NOI18N
-
-    /** The delay after which the completion window is shown automatically.
-    * Values: java.lang.Integer
-    */
-    public static final String COMPLETION_AUTO_POPUP_DELAY = "completion-auto-popup-delay"; // NOI18N
-
     /** The delay after which the completion window is refreshed.
     * Values: java.lang.Integer
     */
     public static final String COMPLETION_REFRESH_DELAY = "completion-refresh-delay"; // NOI18N
-
-    /** The minimum size of the completion pane component.
-    * Values: java.awt.Dimension
-    */
-    public static final String COMPLETION_PANE_MIN_SIZE = "completion-pane-min-size"; // NOI18N
-
-    /** The maximum size of the completion pane component.
-    * Values: java.awt.Dimension
-    */
-    public static final String COMPLETION_PANE_MAX_SIZE = "completion-pane-max-size"; // NOI18N
 
     /** Acceptor sensitive to characters that cause that
      * that the current line will be reformatted immediately.
@@ -775,32 +609,6 @@ public class EditorPreferencesKeys {
      * @deprecated replaced by FAST_IMPORT_SELECTION
      */
     public static final String FAST_IMPORT_PACKAGE = "fast-import-package"; // NOI18N
-    
-    /** Background color of javaDoc popup window 
-     *  Values: java.awt.Color
-     * @deprecated Use Editor Settings and Settings Storage APIs.
-     */
-    public static final String JAVADOC_BG_COLOR = "javadoc-bg-color"; //NOI18N
-    
-    /** The delay after which the javaDoc window is shown automatically.
-    *   Values: java.lang.Integer
-    */
-    public static final String JAVADOC_AUTO_POPUP_DELAY = "javadoc-auto-popup-delay"; //NOI18N
-    
-    /** The preferred size of javaDoc popup window
-    *   Values: java.awt.Dimension
-    */ 
-    public static final String JAVADOC_PREFERRED_SIZE = "javadoc-preferred-size"; //NOI18N
-
-    /** Whether the javaDoc window should popup automatically.
-    * Values: java.lang.Boolean
-    */
-    public static final String JAVADOC_AUTO_POPUP = "javadoc-auto-popup"; // NOI18N
-    
-    /** Whether show deprecated members in code completion popup window
-    * Values: java.lang.Boolean
-    */
-    public static final String SHOW_DEPRECATED_MEMBERS = "show-deprecated-members"; // NOI18N
     
     /**
      * The Code Completion DB is always updated after mounting a new filesystem.
