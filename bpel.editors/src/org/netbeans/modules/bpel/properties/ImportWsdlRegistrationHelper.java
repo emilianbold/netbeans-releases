@@ -42,15 +42,12 @@ import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.openide.filesystems.FileObject;
-import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.netbeans.modules.soa.ui.SoaUtil;
 
 /**
- *
  * @author Vitaly Bychkov
  * @version 1.0
- *
  */
 public class ImportWsdlRegistrationHelper {
     
