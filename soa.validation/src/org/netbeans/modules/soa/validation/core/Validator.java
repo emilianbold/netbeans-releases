@@ -40,11 +40,9 @@
  */
 package org.netbeans.modules.soa.validation.core;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.netbeans.modules.xml.xam.Component;
@@ -61,9 +59,7 @@ import org.netbeans.modules.xml.xam.spi.Validator.ResultType;
 import org.netbeans.modules.xml.schema.model.Schema;
 import org.netbeans.modules.xml.schema.model.visitor.DeepSchemaVisitor;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
-import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.GlobalType;
-import org.netbeans.modules.xml.schema.model.SimpleType;
 import org.netbeans.modules.xml.schema.model.TypeContainer;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.schema.model.GlobalComplexType;
@@ -85,7 +81,7 @@ public abstract class Validator implements org.netbeans.modules.xml.xam.spi.Vali
     String name = getName();
     StringBuffer spaces = new StringBuffer();
 
-    for (int i=name.length(); i < 57; i++) {
+    for (int i=name.length(); i < MAX_LEN; i++) {
       spaces.append(" "); // NOI18N
     }
     return "Validator " + name + spaces; // NOI18N
@@ -209,7 +205,7 @@ public abstract class Validator implements org.netbeans.modules.xml.xam.spi.Vali
 //out("3");
     if (component instanceof DocumentComponent && component instanceof SchemaComponent) {
       DocumentComponent document = (DocumentComponent) component;
-      String typeName = document.getPeer().getAttribute("type");
+      String typeName = document.getPeer().getAttribute("type"); // NOI18N
       typeName = removePrefix(typeName);
       type = findType(typeName, (SchemaComponent) component);
     }
@@ -226,7 +222,7 @@ public abstract class Validator implements org.netbeans.modules.xml.xam.spi.Vali
       return null;
     }
     SchemaModel model = component.getModel();
-    Collection<Schema> schemas = model.findSchemas("http://www.w3.org/2001/XMLSchema");
+    Collection<Schema> schemas = model.findSchemas("http://www.w3.org/2001/XMLSchema"); // NOI18N
     GlobalType type = null;
 
     for (Schema schema : schemas) {
@@ -292,4 +288,5 @@ public abstract class Validator implements org.netbeans.modules.xml.xam.spi.Vali
   private Validation myValidation;
   private GlobalType myGlobalType;
   private Set<ResultItem> myValidationResult;
+  private static final int MAX_LEN = 57;
 }

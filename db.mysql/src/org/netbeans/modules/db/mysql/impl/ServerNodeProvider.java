@@ -74,12 +74,16 @@ public class ServerNodeProvider implements NodeProvider {
     }
 
     public List<Node> getNodes() {
+        /**
+         * Temporarily disable until we track down deadlock issues
          if ( options.isProviderRegistered() ) {
-            DatabaseServerManager.getDatabaseServer().reconnectAsync(true /* quiet */);
+            DatabaseServerManager.getDatabaseServer().reconnectAsync(true);
             return nodes;
         } else {
             return emptyNodeList;
         }
+        */
+        return emptyNodeList;
     } 
     
     public synchronized void setRegistered(boolean registered) {

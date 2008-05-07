@@ -45,7 +45,6 @@ import java.util.List;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Reference;
 import org.netbeans.modules.xml.xam.dom.DocumentComponent;
-import org.netbeans.modules.xml.schema.model.GlobalType;
 
 import org.netbeans.modules.xslt.model.AttributeSet;
 import org.netbeans.modules.xslt.model.CallTemplate;
@@ -54,7 +53,6 @@ import org.netbeans.modules.xslt.model.TypeSpec;
 import org.netbeans.modules.xslt.model.UseAttributesSetsSpec;
 import org.netbeans.modules.xslt.model.UseCharacterMapsSpec;
 import org.netbeans.modules.xslt.model.WithParam;
-import org.netbeans.modules.xslt.model.XslComponent;
 import org.netbeans.modules.xslt.model.XslReference;
 import org.netbeans.modules.xslt.model.XslVisitor;
 import org.netbeans.modules.xslt.model.XslVisitorAdapter;

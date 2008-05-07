@@ -41,7 +41,6 @@
 package org.netbeans.modules.soa.validation.util;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Frame;
@@ -52,18 +51,13 @@ import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.KeyStroke;
 
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -99,8 +93,8 @@ public final class DurationDialog extends JDialog {
     pack();
     
     Rectangle r = Utilities.getUsableScreenBounds();
-    int maxW = (r.width * 9) / 10;
-    int maxH = (r.height * 9) / 10;
+    int maxW = (r.width * FACTOR_9) / FACTOR_10;
+    int maxH = (r.height * FACTOR_9) / FACTOR_10;
     Dimension d = getPreferredSize();
     d.width = Math.min(d.width, maxW);
     d.height = Math.min(d.height, maxH);
@@ -161,14 +155,14 @@ public final class DurationDialog extends JDialog {
   private JTextField createField(String key, String a11y, GridBagConstraints c, JPanel panel) {
     c.weightx = 0.0;
     c.fill = GridBagConstraints.NONE;
-    c.insets = new Insets(10, 10, 0, 0);
+    c.insets = new Insets(INSET, INSET, 0, 0);
     c.anchor = GridBagConstraints.EAST;
     JLabel label = createLabel(i18n(DurationDialog.class, key));
     panel.add(label, c);
 
     c.weightx = 1.0;
     c.fill = GridBagConstraints.HORIZONTAL;
-    c.insets = new Insets(10, 10, 0, 0);
+    c.insets = new Insets(INSET, INSET, 0, 0);
     c.anchor = GridBagConstraints.WEST;
     JTextField field = new JTextField(DEFAULT_VALUE);
     a11y(field, i18n(DurationDialog.class, a11y));
@@ -237,4 +231,7 @@ public final class DurationDialog extends JDialog {
 
   private static final int TEXT_WIDTH = 60;
   private static final String DEFAULT_VALUE = "0"; // NOI18N
+  private static final int INSET = 10;
+  private static final int FACTOR_9 = 9;
+  private static final int FACTOR_10 = 10;
 }

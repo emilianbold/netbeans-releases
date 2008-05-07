@@ -40,8 +40,6 @@
  */
 package org.netbeans.modules.bpel.documentation;
 
-import java.util.HashMap;
-import java.util.Map;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.ExtensibleElements;
 import org.netbeans.modules.bpel.model.api.support.UniqueId;
@@ -51,7 +49,6 @@ import org.netbeans.modules.bpel.design.decoration.ComponentsDescriptor;
 import org.netbeans.modules.bpel.design.decoration.Decoration;
 import org.netbeans.modules.bpel.design.decoration.DecorationProvider;
 import org.netbeans.modules.bpel.design.decoration.DecorationProviderFactory;
-import org.netbeans.modules.bpel.design.decoration.Descriptor;
 import org.netbeans.modules.bpel.design.selection.DiagramSelectionListener;
 import static org.netbeans.modules.xml.ui.UI.*;
 
