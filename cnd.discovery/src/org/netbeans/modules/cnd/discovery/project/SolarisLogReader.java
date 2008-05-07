@@ -41,7 +41,6 @@ package org.netbeans.modules.cnd.discovery.project;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
@@ -400,8 +399,9 @@ public class SolarisLogReader {
        
         if (li.compilerType != CompilerType.UNKNOWN) {
             li.compileLine = line.substring(start);
-            while(end < line.length() && (line.charAt(end) == ' ' || line.charAt(end) == '\t'))
+            while(end < line.length() && (line.charAt(end) == ' ' || line.charAt(end) == '\t')) {
                 end++;
+            }
             if (end >= line.length() || line.charAt(end)!='-') {
                 // suspected compiler invocation has no options or a part of a path?? -- noway
                 li.compilerType =  CompilerType.UNKNOWN;
@@ -453,8 +453,7 @@ public class SolarisLogReader {
        
        LineInfo li = testCompilerInvocation(line);
        if (li.compilerType != CompilerType.UNKNOWN) {
-           gatherLine(li.compileLine, line.startsWith("+"), li.compilerType == CompilerType.CPP);
-           return true;
+           return gatherLine(li.compileLine, line.startsWith("+"), li.compilerType == CompilerType.CPP);
        }
        return false;
     }
@@ -516,17 +515,28 @@ public class SolarisLogReader {
             if (TRACE)  {
                 System.err.println("**** Not found "+file); //NOI18N
             }
-            
+            String relative = "";
             if (!what.startsWith("/")){  //NOI18N
-                String search = findFiles(what);
+                int i = what.lastIndexOf('/'); //NOI18N
+                if (i > 0) {
+                    relative = what.substring(0,i);
+                    what = what.substring(i+1);
+                    file = getWorkingDir()+"/"+what;  //NOI18N
+                    f = new File(file);
+                    if (f.exists() && f.isFile()) {
+                        addToResult(new CommandLineSource(isCPP, getWorkingDir(), what, userIncludesCached, userMacrosCached));
+                        return true;
+                    }
+                }
+                String search = findFiles(what, getWorkingDir(), relative);
                 if (search != null) {
-                    addToResult(new CommandLineSource(isCPP, search, what, userIncludesCached, userMacrosCached));
+                    setWorkingDir(search);
+                    addToResult(new CommandLineSource(isCPP, getWorkingDir(), what, userIncludesCached, userMacrosCached));
                     if (TRACE) System.err.println("** Gotcha: " + search + File.separator + what);
                     // kinda adventure but it works
-                    setWorkingDir(search);
+                    return true;
                 }
             } 
-            
             if (TRACE) System.err.println(""+ (line.length() > 120 ? line.substring(0,117) + ">>>" : line) + " [" + what + "]"); //NOI18N
             return false;
         } else if (TRACE) {
@@ -553,23 +563,23 @@ public class SolarisLogReader {
         result.add(source);
     }
     
-    private String findFiles(String name) {
+    private String findFiles(String name, String wd, String relative) {
         if (findBase == null) {
             findBase = initSearchMap();
-        }
-        int i = name.lastIndexOf('/'); //NOI18N
-        if (i > 0) {
-            name = name.substring(i+1);
         }
         List<String> res = findBase.get(name);
         if (res != null && res.size()==1) {
             return res.get(0);
-        } else if (TRACE) {
-            if (res != null) {
-                System.out.println("More then one "+name); //NOI18N
-            } else {
-                System.out.println("Not found "+name); //NOI18N
+        } else if (res != null) {
+            if (TRACE) System.out.println("More then one "+name); //NOI18N
+            for (String r: res){
+                if (r.startsWith(wd)) {
+                    return r;
+                }
+                return null;
             }
+        } else {
+            if (TRACE) System.out.println("Not found "+name); //NOI18N
         }
         return null;
     }
