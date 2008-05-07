@@ -40,12 +40,14 @@ package org.netbeans.modules.test.refactoring;
 
 import java.lang.String;
 import javax.swing.JLabel;
+import javax.swing.JToggleButton;
 import javax.swing.JTree;
 import javax.swing.tree.TreeModel;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.jemmy.operators.JToggleButtonOperator;
 import org.netbeans.modules.test.refactoring.operators.FindUsagesAction;
 import org.netbeans.modules.test.refactoring.operators.FindUsagesClassOperator;
 import org.netbeans.modules.test.refactoring.operators.FindUsagesResultOperator;
@@ -156,38 +158,139 @@ public class FindUsagesTestCase extends RefactoringTestCase {
         findUsagesClassOperator = new FindUsagesClassOperator();
         ref(findUsagesClassOperator.getSearchInComments().isSelected());
         ref(findUsagesClassOperator.getFindUsages().isSelected());
-        ref(((JLabel)findUsagesClassOperator.getScope().getSelectedItem()).getText()+"\n");                
+        ref(((JLabel)findUsagesClassOperator.getScope().getSelectedItem()).getText()+"\n");
+        findUsagesClassOperator.getCancel().push();
     }
     
-//    public void testCollapseTree() {
-//        
-//    }
-//    
-//    public void testShowLogical() {
-//        
-//    }
-//    
-//    public void testShowPhysical() {
-//        
-//    }
-//    
-//    public void testNextPrev() {
-//        
-//    }
-//    
-//    public void testOpenOnSelecting() {
-//        
-//    }
-//        
-//    public void testCancel() {
-//        
-//    }
-//    
-//    public void testTabNames() {
-//        
-//    }
+    public void testCollapseTree() {
+        String fileName = "FindUsagesClass";
+        openSourceFile("fu", fileName);
+        EditorOperator editor = new EditorOperator(fileName);
+        editor.setCaretPosition(12, 19);
+        new FindUsagesAction().performPopup(editor);
+        new EventTool().waitNoEvent(1000);
+        FindUsagesClassOperator findUsagesClassOperator = new FindUsagesClassOperator();
+        findUsagesClassOperator.getFind().pushNoBlock();
+        new EventTool().waitNoEvent(2000);
+        FindUsagesResultOperator result = new FindUsagesResultOperator();
+        int rowCount = result.getPreviewTree().getRowCount();
+        ref(rowCount);
+        JToggleButtonOperator jtbo = new JToggleButtonOperator(result.getCollapse());
+        jtbo.pushNoBlock();
+        new EventTool().waitNoEvent(1000);
+        rowCount = result.getPreviewTree().getRowCount();
+        ref(rowCount);
+        jtbo.pushNoBlock();
+        new EventTool().waitNoEvent(1000);
+        rowCount = result.getPreviewTree().getRowCount();
+        ref(rowCount);
+                
+    }
+    
+    public void testShowLogical() {
+        String fileName = "FindUsagesClass";        
+        openSourceFile("fu", fileName);
+        EditorOperator editor = new EditorOperator(fileName);
+        editor.setCaretPosition(12, 19);
+        new FindUsagesAction().performPopup(editor);
+        new EventTool().waitNoEvent(1000);
+        FindUsagesClassOperator findUsagesClassOperator = new FindUsagesClassOperator();
+        if(findUsagesClassOperator.getSearchInComments().isSelected())
+            findUsagesClassOperator.getSearchInComments().pushNoBlock();
+        findUsagesClassOperator.getFind().pushNoBlock();
+        new EventTool().waitNoEvent(2000);
+        FindUsagesResultOperator result = new FindUsagesResultOperator();
+        JToggleButtonOperator jtbol = new JToggleButtonOperator(result.getLogical());
+        JToggleButtonOperator jtbop = new JToggleButtonOperator(result.getPhysical());
+        jtbol.pushNoBlock();
+        new EventTool().waitNoEvent(1000);
+        ref(jtbop.isSelected());
+        JTree previewTree = result.getPreviewTree();
+        browseChildren(previewTree.getModel(), previewTree.getModel().getRoot(), 0);
+        jtbop.pushNoBlock();
+        new EventTool().waitNoEvent(1000);
+        ref(jtbop.isSelected());
+        previewTree = result.getPreviewTree();
+        browseChildren(previewTree.getModel(), previewTree.getModel().getRoot(), 0);        
+    }
+    
+    public void testNext() {
+        String fileName = "FindSubtype";
+        EditorOperator.closeDiscardAll();
+        openSourceFile("fu", fileName);
+        EditorOperator editor = new EditorOperator(fileName);
+        editor.setCaretPosition(11, 19);
+        new FindUsagesAction().performPopup(editor);
+        new EventTool().waitNoEvent(1000);
+        FindUsagesClassOperator findUsagesClassOperator = new FindUsagesClassOperator();
+        if(findUsagesClassOperator.getSearchInComments().isSelected())
+            findUsagesClassOperator.getSearchInComments().pushNoBlock();
+        findUsagesClassOperator.getFind().pushNoBlock();
+        new EventTool().waitNoEvent(2000);
+        FindUsagesResultOperator result = new FindUsagesResultOperator();
+        JButtonOperator next= new JButtonOperator(result.getNext());
+        JTree preview = result.getPreviewTree();               
+        for(int i = 0;i<6;i++) {
+            next.push();
+            int[] selectionRows = preview.getSelectionRows();
+            for (int j = 0; j < selectionRows.length; j++) {
+                int k = selectionRows[j];
+                ref("Selected row:"+k+"\n");
+            }
+            EditorOperator edt = new EditorOperator((i==4)?"Subtype1":"Subtype2");
+            int start = edt.txtEditorPane().getSelectionStart();
+            int end = edt.txtEditorPane().getSelectionEnd();
+            String txt  = edt.txtEditorPane().getSelectedText();
+            ref(start+" "+end+" "+txt+"\n");
+        }        
+    }
+    
+    public void testPrev() {
+        String fileName = "FindSubtype";
+        EditorOperator.closeDiscardAll();
+        openSourceFile("fu", fileName);
+        EditorOperator editor = new EditorOperator(fileName);
+        editor.setCaretPosition(11, 19);
+        new FindUsagesAction().performPopup(editor);
+        new EventTool().waitNoEvent(1000);
+        FindUsagesClassOperator findUsagesClassOperator = new FindUsagesClassOperator();
+        if(findUsagesClassOperator.getSearchInComments().isSelected())
+            findUsagesClassOperator.getSearchInComments().pushNoBlock();
+        findUsagesClassOperator.getFind().pushNoBlock();
+        new EventTool().waitNoEvent(2000);
+        FindUsagesResultOperator result = new FindUsagesResultOperator();
+        JButtonOperator prev= new JButtonOperator(result.getPrev());
+        JTree preview = result.getPreviewTree();               
+        for(int i = 0;i<6;i++) {
+            prev.push();
+            int[] selectionRows = preview.getSelectionRows();
+            for (int j = 0; j < selectionRows.length; j++) {
+                int k = selectionRows[j];
+                ref("Selected row:"+k+"\n");
+            }
+            EditorOperator edt = new EditorOperator((i==0||i==4)?"Subtype1":"Subtype2");
+            int start = edt.txtEditorPane().getSelectionStart();
+            int end = edt.txtEditorPane().getSelectionEnd();
+            String txt  = edt.txtEditorPane().getSelectedText();
+            ref(start+" "+end+" "+txt+"\n");
+        }
+        
+    }
+    
+    public void testOpenOnSelecting() {
+        
+    }
+        
+    public void testCancel() {
+        
+    }
+    
+    public void testTabNames() {
+        
+    }
     
     public static void main(String[] args) {        
+        //TestRunner.run(new FindUsagesTestCase("testCollapseTree"));        
         TestRunner.run(FindUsagesTestCase.class);
     }
 }
