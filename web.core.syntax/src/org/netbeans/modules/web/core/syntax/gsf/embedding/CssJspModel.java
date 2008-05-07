@@ -225,8 +225,8 @@ public class CssJspModel extends CssModel {
                                 siblingBefore = SimpleNodeUtil.getSibling(siblingBefore, true);
                                 if (siblingBefore.kind() == CSSParserTreeConstants.JJTDECLARATION) {
                                     boolean modif = clearNode(siblingBefore, buff, 0, 0, templatingBlocks, false); //clear the last declaration node
-                                    modif = modif || clearNode(node, buff, 0, -1, templatingBlocks, true); //clear the skipblock itself, exclude closing symbol
-                                    if(modif) {
+                                    if (modif) {
+                                        clearNode(node, buff, 0, -1, templatingBlocks, true); //clear the skipblock itself, exclude closing symbol
                                         cleared[0] = true;
                                     }
                                 } else if(siblingBefore.kind() == CSSParserTreeConstants.JJTSELECTORLIST) {
