@@ -70,6 +70,8 @@ public class CSSGSFParser implements Parser, PositionManager {
 
     private static final String PREFIX = "GENERATED_";
     
+    private static final String ERROR_MESSAGE_PREFIX = "Unexpected symbol(s) found: ";
+    
     private static CSSParser PARSER;
 
     private static synchronized CSSParser parser() {
@@ -121,8 +123,9 @@ public class CSSGSFParser implements Parser, PositionManager {
 
                     if(!(containsGeneratedCode(lastSuccessToken.image)
                             || containsGeneratedCode(errorToken.image))) {
+                        String errorMessage = buildErrorMessage(pe);
                         Error error =
-                                new DefaultError(pe.getMessage(), pe.getLocalizedMessage(), null, file.getFileObject(),
+                                new DefaultError(errorMessage, errorMessage, null, file.getFileObject(),
                                 from, from, Severity.ERROR);
 
                         job.listener.error(error);
@@ -146,8 +149,9 @@ public class CSSGSFParser implements Parser, PositionManager {
 
                 if(!(containsGeneratedCode(lastSuccessToken.image)
                             || containsGeneratedCode(errorToken.image))) {
+                    String errorMessage = buildErrorMessage(ex);
                     Error error =
-                            new DefaultError(ex.getMessage(), ex.getLocalizedMessage(), null, file.getFileObject(),
+                            new DefaultError(errorMessage, errorMessage, null, file.getFileObject(),
                             from, from, Severity.ERROR);
                     job.listener.error(error);
                 }
@@ -171,6 +175,33 @@ public class CSSGSFParser implements Parser, PositionManager {
         }
     }
 
+    
+    private String buildErrorMessage(ParseException pe) {
+        StringBuilder buff = new StringBuilder();
+        buff.append(ERROR_MESSAGE_PREFIX);
+        
+        int maxSize = 0;
+        for (int i = 0; i < pe.expectedTokenSequences.length; i++) {
+          if (maxSize < pe.expectedTokenSequences[i].length) {
+            maxSize = pe.expectedTokenSequences[i].length;
+          }
+        }
+        
+        Token tok = pe.currentToken.next;
+        buff.append('"');
+        for (int i = 0; i < maxSize; i++) {
+          buff.append(tok.image);
+          if(i < maxSize - 1) {
+              buff.append(',');
+              buff.append(' ');
+          }
+          tok = tok.next; 
+        }
+        buff.append('"');
+        
+        return buff.toString();
+    }
+    
     private boolean containsGeneratedCode(String text) {
         return text.contains(PREFIX);
     }
