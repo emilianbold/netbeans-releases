@@ -83,6 +83,7 @@ import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.jemmy.operators.Operator.StringComparator;
 //import org.netbeans.junit.ide.ProjectSupport;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+
 /*
 import org.netbeans.progress.module.Controller;
 import org.netbeans.progress.spi.InternalHandle;
@@ -644,12 +645,28 @@ public class CommonUtilities {
         }
         return null;
     }
-  */  
+  */ 
+    
+    public static void waitProjectTasksFinished() {
+        String status=MainWindowOperator.getDefault().getStatusText();
+        boolean tasks=true;
+        
+        for (int i=0;i<50;i++) {
+            tasks=true;
+            while(tasks) {
+                if (status.equals("Indexing")||status.equals("Compiling")||status.equals("Collecting")||status.equals("Scanning"))
+                {System.err.println("+++>"+status);}
+                else {tasks=false;}
+            }
+          new QueueTool().waitEmpty(100);  
+        }    
+    }
+    
     /**
      * Wait finished scan - repeatedly
      */
     public static void waitScanFinished(){
-        //ProjectSupport.waitScanFinished();
+          //ProjectSupport.waitScanFinished();
         try {
             new QueueTool().waitEmpty(1000);
         } catch (TimeoutExpiredException tee) {            
@@ -657,7 +674,8 @@ public class CommonUtilities {
             tee.printStackTrace(getLog());
         }
         //ProjectSupport.waitScanFinished();
-    }
+     }
+    
     public static void initLog(PerformanceTestCase testCase) {
         test = testCase;
     }

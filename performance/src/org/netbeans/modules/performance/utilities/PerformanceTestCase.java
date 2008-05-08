@@ -60,7 +60,7 @@ import org.netbeans.jemmy.operators.WindowOperator;
 import org.netbeans.jemmy.util.PNGEncoder;
 
 import org.netbeans.junit.NbPerformanceTest;
-
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.modules.performance.guitracker.ActionTracker;
 import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
 import org.netbeans.modules.performance.guitracker.LoggingEventQueue;
@@ -218,7 +218,15 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
         checkScanFinished();
 // has to be resolved in new test model execution        
 // doesn't work now      
-//        checkWarmup();
+ //       checkWarmup();
+            for (int i=20; i>0; i--) {
+                try {
+                    log("checkWarmup - waiting");
+                    Thread.sleep(1000);
+                } catch (InterruptedException ie) {
+                    ie.printStackTrace(System.err);
+                }
+            }        
         data = new java.util.ArrayList<NbPerformanceTest.PerformanceData>();
     }
 
@@ -816,9 +824,14 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
      * (just to be sure check it twice after short delay)
      */
     public void checkScanFinished() {
-//        org.netbeans.junit.ide.ProjectSupport.waitScanFinished();
+       try {
+       SourceUtils.waitScanFinished();
         waitNoEvent(1000);
-//        org.netbeans.junit.ide.ProjectSupport.waitScanFinished();
+       SourceUtils.waitScanFinished();
+        } catch (InterruptedException ie)
+        {
+            System.err.println(ie);
+        } 
     }
 
 
