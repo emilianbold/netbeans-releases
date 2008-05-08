@@ -269,9 +269,12 @@ public class TreeModelEditor extends PropertyEditorSupport
         return null;
     }
 
+    /**
+     * Raises version of the form file to the NB release where this
+     * property editor was added.
+     */
     public void updateFormVersionLevel() {
-        // PENDING
-        // formModel.raiseVersionLevel(minVersion, upgradeTo);
+        formModel.raiseVersionLevel(FormModel.FormVersion.NB65, FormModel.FormVersion.NB65);
     }
 
     /** XML element used to store the tree model. */
