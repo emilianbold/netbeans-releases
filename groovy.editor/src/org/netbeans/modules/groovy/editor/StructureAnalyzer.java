@@ -258,7 +258,7 @@ public class StructureAnalyzer implements StructureScanner {
             
             boolean startSet = false;
             
-            while (ts.moveNext()) {
+            while (ts.isValid() && ts.moveNext()) {
                 Token t = ts.token();
                 if (t.id() == GroovyTokenId.LITERAL_import) {
                     int offset = ts.offset();
