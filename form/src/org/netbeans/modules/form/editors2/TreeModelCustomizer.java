@@ -128,19 +128,21 @@ public class TreeModelCustomizer extends javax.swing.JPanel {
         splitPane.setDividerLocation(150);
 
         scrollPane1.setViewportView(textArea);
+        textArea.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TreeModelCustomizer.class, "ACSD_TreeModelEditor_TextArea")); // NOI18N
 
         splitPane.setLeftComponent(scrollPane1);
 
         scrollPane2.setViewportView(tree);
+        tree.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TreeModelCustomizer.class, "ACSD_TreeModelEditor_Tree")); // NOI18N
 
         splitPane.setRightComponent(scrollPane2);
 
         label.setLabelFor(textArea);
-        label.setText(org.openide.util.NbBundle.getMessage(TreeModelCustomizer.class, "TreeModelCustomizer.label.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(label, org.openide.util.NbBundle.getMessage(TreeModelCustomizer.class, "TreeModelCustomizer.label.text")); // NOI18N
 
         warningLabel.setFont(warningLabel.getFont().deriveFont(warningLabel.getFont().getSize()-2f));
         warningLabel.setLabelFor(tree);
-        warningLabel.setText(org.openide.util.NbBundle.getMessage(TreeModelCustomizer.class, "TreeModelCustomizer.warningLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(warningLabel, org.openide.util.NbBundle.getMessage(TreeModelCustomizer.class, "TreeModelCustomizer.warningLabel.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -160,7 +162,7 @@ public class TreeModelCustomizer extends javax.swing.JPanel {
                 .addContainerGap()
                 .add(label)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(splitPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 121, Short.MAX_VALUE)
+                .add(splitPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 71, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(warningLabel)
                 .addContainerGap())
