@@ -40,15 +40,17 @@ import java.util.logging.Logger;
 import org.codehaus.groovy.ast.ASTNode;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.groovy.editor.AstUtilities;
+import org.netbeans.modules.groovy.editor.hints.spi.EditList;
 import org.netbeans.modules.groovy.editor.hints.spi.Fix;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 public class CommentOutRule implements SelectionRule {
     
     public static final Logger LOG = Logger.getLogger(CommentOutRule.class.getName()); // NOI18N
     
-    String bulbDesc = "Comment out selected text";
+    String bulbDesc = NbBundle.getMessage(CommentOutRule.class, "CommentOutRuleHintDescription");
 
     public void run(RuleContext context, List<Description> result) {
         CompilationInfo info = context.compilationInfo;
@@ -57,15 +59,15 @@ public class CommentOutRule implements SelectionRule {
         
         assert start < end;
         
-        BaseDocument doc;
+        BaseDocument baseDoc;
         try {
-            doc = (BaseDocument) info.getDocument();
+            baseDoc = (BaseDocument) info.getDocument();
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
             return;
         }
         
-        if (end > doc.getLength()) {
+        if (end > baseDoc.getLength()) {
             return;
         }
 
@@ -81,8 +83,9 @@ public class CommentOutRule implements SelectionRule {
             return;
         }
         
-        // this is just a dummy fix to see the lightbulb ...
-        Fix fix = new SimpleFix(bulbDesc);
+        // create only but one fix to comment-out the selection
+        
+        Fix fix = new SimpleFix(bulbDesc, baseDoc, context);
         OffsetRange range = new OffsetRange(start, end);
         
         List<Fix> fixList = new ArrayList<Fix>(1);
@@ -107,15 +110,19 @@ public class CommentOutRule implements SelectionRule {
     }
 
     public HintSeverity getDefaultSeverity() {
-        return HintSeverity.CURRENT_LINE_WARNING;
+        return HintSeverity.WARNING;
     }
     
+    
     private class SimpleFix implements Fix {
-        
+        BaseDocument baseDoc;
         String desc;
+        RuleContext context;
 
-        public SimpleFix(String desc) {
+        public SimpleFix(String desc, BaseDocument baseDoc, RuleContext context) {
             this.desc = desc;
+            this.baseDoc = baseDoc;
+            this.context = context;
         }
 
         public String getDescription() {
@@ -123,11 +130,20 @@ public class CommentOutRule implements SelectionRule {
         }
 
         public void implement() throws Exception {
+            EditList edits = new EditList(baseDoc);
+            
+            int start = context.selectionStart;
+            int end = context.selectionEnd;
+            
+            edits.replace(end, 0, "*/", false, 0);
+            edits.replace(start, 0, "/*", false, 1);
+            edits.apply();
+            
             return;
         }
 
         public boolean isSafe() {
-            return true;
+            return false;
         }
 
         public boolean isInteractive() {
