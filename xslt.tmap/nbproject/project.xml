@@ -271,6 +271,7 @@
                 <package>org.netbeans.modules.xslt.tmap.model.spi</package>
                 <package>org.netbeans.modules.xslt.tmap.model.impl</package>
                 <package>org.netbeans.modules.xslt.tmap.model.xsltmap</package>
+                <package>org.netbeans.modules.xslt.tmap.model.validation</package>
                 <package>org.netbeans.modules.xslt.tmap.util</package>
             </friend-packages>
         </data>
