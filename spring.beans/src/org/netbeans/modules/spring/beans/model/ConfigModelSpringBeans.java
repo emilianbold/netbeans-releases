@@ -44,8 +44,10 @@ package org.netbeans.modules.spring.beans.model;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.netbeans.modules.spring.api.beans.model.FileSpringBeans;
 import org.netbeans.modules.spring.api.beans.model.SpringBean;
 import org.netbeans.modules.spring.api.beans.model.SpringBeans;
@@ -73,6 +75,15 @@ public class ConfigModelSpringBeans implements SpringBeans {
                 return bean;
             }
         }
+        
+        // handle aliases
+        for(SpringBeanSource beanSource : file2BeanSource.values()) {
+            String pName = beanSource.findAliasSource(name);
+            if (pName != null) {
+                return findBean(pName);
+            }
+        }
+        
         return null;
     }
 
@@ -92,5 +103,14 @@ public class ConfigModelSpringBeans implements SpringBeans {
             result.addAll(beanSource.getBeans());
         }
         return Collections.unmodifiableList(result);
+    }
+
+    public Set<String> getAliases() {
+        assert ExclusiveAccess.getInstance().isCurrentThreadAccess() : "The SpringBeans instance has escaped the Action.run() method";
+        Set<String> aliases = new HashSet<String>(file2BeanSource.size() * 5);
+        for (SpringBeanSource beanSource : file2BeanSource.values()) {
+            aliases.addAll(beanSource.getAliases());
+        }
+        return Collections.unmodifiableSet(aliases);
     }
 }

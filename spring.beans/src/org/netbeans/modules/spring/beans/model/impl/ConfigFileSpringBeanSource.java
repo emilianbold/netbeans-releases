@@ -48,6 +48,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
@@ -78,6 +79,7 @@ public class ConfigFileSpringBeanSource implements SpringBeanSource {
 
     private final Map<String, ConfigFileSpringBean> id2Bean = new HashMap<String, ConfigFileSpringBean>();
     private final Map<String, ConfigFileSpringBean> name2Bean = new HashMap<String, ConfigFileSpringBean>();
+    private final Map<String, String> alias2Name = new HashMap<String, String>();
     private final List<ConfigFileSpringBean> beans = new ArrayList<ConfigFileSpringBean>();
 
     /**
@@ -118,6 +120,14 @@ public class ConfigFileSpringBeanSource implements SpringBeanSource {
         return bean;
     }
 
+    public String findAliasSource(String alias) {
+        return alias2Name.get(alias);
+    }
+    
+    public Set<String> getAliases() {
+        return alias2Name.keySet();
+    }
+
     /**
      * This is the actual document parser.
      */
@@ -135,6 +145,7 @@ public class ConfigFileSpringBeanSource implements SpringBeanSource {
             id2Bean.clear();
             name2Bean.clear();
             beans.clear();
+            alias2Name.clear();
             Node rootNode = SpringXMLConfigEditorUtils.getDocumentRoot(document);
             if (rootNode == null) {
                 return;
@@ -142,10 +153,20 @@ public class ConfigFileSpringBeanSource implements SpringBeanSource {
             NodeList childNodes = rootNode.getChildNodes();
             for (int i = 0; i < childNodes.getLength(); i++) {
                 Node node = childNodes.item(i);
-                if (!BeansElements.BEAN.equals(node.getNodeName())) { 
-                    continue;
+                String nodeName = node.getNodeName();
+                if(BeansElements.ALIAS.equals(nodeName)) {
+                    parseAlias(node);
+                } else if (BeansElements.BEAN.equals(node.getNodeName())) { 
+                    parseBean(node);
                 }
-                parseBean(node);
+            }
+        }
+        
+        private void parseAlias(Node node) {
+            String name = getTrimmedAttr(node, BeansAttributes.NAME);
+            String alias = getTrimmedAttr(node, BeansAttributes.ALIAS);
+            if(StringUtils.hasText(name) && StringUtils.hasText(alias)) {
+                alias2Name.put(alias, name);
             }
         }
 
