@@ -246,7 +246,6 @@ public final class RubyPlatform {
         if (isRubinius()) {
             return getRubiniusLibDir();
         }
-        assert !isRubinius() : "RubyPlatform#getLib must not be called for Rubinius";
         String lib = info.getLibDir();
         if (lib == null) {
             LOGGER.warning("rubylibdir not found for " + interpreter + ", was: " + lib);
@@ -428,7 +427,7 @@ public final class RubyPlatform {
     }
 
     public boolean isValid() {
-        return new File(interpreter).isFile();
+        return new File(interpreter).isFile() && getLibDir() != null;
     }
 
     /**
