@@ -120,6 +120,15 @@ public final class GrailsRuntime {
         return RuntimeHelper.isValidRuntime(new File(grailsBase));
     }
 
+    public File getGrailsHome() {
+        String grailsBase = GrailsSettings.getInstance().getGrailsBase();
+        File grailsBaseFile = new File(grailsBase);
+        if (grailsBase != null && RuntimeHelper.isValidRuntime(grailsBaseFile)) {
+            return grailsBaseFile;
+        }
+        return null;
+    }
+    
     // TODO not public API unless it is really needed
     private String getVersion() {
         synchronized (this) {

@@ -53,8 +53,9 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
-import org.netbeans.modules.groovy.support.api.GroovySettings;
+import org.netbeans.modules.groovy.grails.api.GrailsRuntime;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.openide.filesystems.FileUtil;
 
@@ -119,23 +120,19 @@ final class BootClassPathImplementation implements ClassPathImplementation {
     private List<PathResourceImplementation> findGroovyPlatform() {
         List<PathResourceImplementation> result = new ArrayList<PathResourceImplementation>();
         
-        GroovySettings groovySettings = new GroovySettings();
-        File groovyHome = new File(groovySettings.getGroovyHome());
-        if (!groovyHome.exists()) {
+        File grailsHome = GrailsRuntime.getInstance().getGrailsHome();
+        if (!grailsHome.exists()) {
             return Collections.<PathResourceImplementation>emptyList();
         }
-        File embeddableDir = new File(groovyHome, "embeddable"); // NOI18N
-        if (!embeddableDir.exists()) {
-            return Collections.<PathResourceImplementation>emptyList();
-        }
-        File[] jars = embeddableDir.listFiles();
-        if (jars == null || jars.length == 0) {
-            File libDir = new File(groovyHome, "lib"); // NOI18N
-            if (!libDir.exists()) {
-                return Collections.<PathResourceImplementation>emptyList();
-            }
-            jars = libDir.listFiles();
-        }
+        
+        List<File> jars = new ArrayList<File>();
+        
+        File distDir = new File(grailsHome, "dist"); // NOI18N
+        jars.addAll(Arrays.asList(distDir.listFiles()));
+        
+        File libDir = new File(grailsHome, "lib"); // NOI18N
+        jars.addAll(Arrays.asList(libDir.listFiles()));
+        
         for (File f : jars) {
             try {
                 if (f.isFile()) {
