@@ -82,13 +82,14 @@ import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.jemmy.operators.Operator.StringComparator;
 //import org.netbeans.junit.ide.ProjectSupport;
+import org.netbeans.modules.project.ui.test.ProjectSupport;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase; 
 
 import org.netbeans.progress.module.Controller;
 import org.netbeans.progress.spi.InternalHandle;
 import org.netbeans.progress.spi.TaskModel;
 
-import org.netbeans.junit.ide.ProjectSupport;
+//import org.netbeans.junit.ide.ProjectSupport;
 //import org.netbeans.modules.java.j2seproject.test.
 
 /**
@@ -651,14 +652,14 @@ public class Utilities {
      * Wait finished scan - repeatedly
      */
     public static void waitScanFinished(){
-        ProjectSupport.waitScanFinished();
+        //ProjectSupport.waitScanFinished();
         try {
             new QueueTool().waitEmpty(1000);
         } catch (TimeoutExpiredException tee) {            
             getLog().println("The following exception is ignored");
             tee.printStackTrace(getLog());
         }
-        ProjectSupport.waitScanFinished();
+        //ProjectSupport.waitScanFinished();
     }
     public static void initLog(PerformanceTestCase testCase) {
         test = testCase;

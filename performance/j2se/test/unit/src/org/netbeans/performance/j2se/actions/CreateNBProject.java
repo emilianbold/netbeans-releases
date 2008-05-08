@@ -49,8 +49,8 @@ import org.netbeans.modules.performance.guitracker.ActionTracker;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.ComponentOperator;
-//import org.netbeans.modules.project.ui.test.ProjectSupport;
-import org.netbeans.junit.ide.ProjectSupport;
+import org.netbeans.modules.project.ui.test.ProjectSupport;
+//import org.netbeans.junit.ide.ProjectSupport;
 //import org.netbeans.junit.ide.ProjectSupport;
 
 import java.util.logging.Logger;

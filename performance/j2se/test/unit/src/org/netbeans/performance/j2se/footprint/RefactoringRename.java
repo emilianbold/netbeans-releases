@@ -55,8 +55,8 @@ import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.QueueTool;
 import org.netbeans.modules.performance.utilities.MemoryFootprintTestCase;
-//import org.netbeans.modules.project.ui.test.ProjectSupport;
-import org.netbeans.junit.ide.ProjectSupport;
+import org.netbeans.modules.project.ui.test.ProjectSupport;
+//import org.netbeans.junit.ide.ProjectSupport;
 //import org.netbeans.junit.ide.ProjectSupport;
 
 /**
