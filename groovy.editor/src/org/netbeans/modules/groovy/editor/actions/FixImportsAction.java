@@ -298,6 +298,10 @@ public class FixImportsAction extends AbstractAction implements EditorAction, Ru
         LOG.log(Level.FINEST, "actionPerformed(ActionEvent e)");
 
         JTextComponent pane = NbUtilities.getOpenPane();
+        
+        LOG.log(Level.FINEST, "NAME               : " + NAME + " : " + getValue(NAME));
+        LOG.log(Level.FINEST, "ACCELERATOR_KEY    : " + ACCELERATOR_KEY + " : " + getValue(ACCELERATOR_KEY));
+        LOG.log(Level.FINEST, "ACTION_COMMAND_KEY : " + ACTION_COMMAND_KEY + " : " + getValue(ACTION_COMMAND_KEY));
 
         if (pane != null) {
             actionPerformed(pane);
@@ -312,7 +316,7 @@ public class FixImportsAction extends AbstractAction implements EditorAction, Ru
     }
 
     public String getActionName() {
-        return NAME;
+        return NbBundle.getMessage(FixImportsAction.class, "FixImportsActionName");
     }
 
     public Class getShortDescriptionBundleClass() {

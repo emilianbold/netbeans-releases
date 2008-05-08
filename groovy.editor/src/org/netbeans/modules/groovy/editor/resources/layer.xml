@@ -2,6 +2,20 @@
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
     
+    <folder name="Actions">
+        <folder name="Groovy">
+            <file name="org-netbeans-modules-groovy-editor-actions-FixImportsAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.groovy.editor.actions.FixImportsAction"/>
+            </file>
+        </folder>
+    </folder>
+    
+    <folder name="Shortcuts">   
+        <file name="DS-A.shadow">
+            <attr name="originalFile" stringvalue="Actions/Groovy/org-netbeans-modules-groovy-editor-actions-FixImportsAction.instance"/>
+        </file>           
+    </folder>  
+    
     <folder name="org-netbeans-modules-groovy-editor-hints">
         <folder name="rules">
             <folder name="selection">
@@ -34,6 +48,8 @@
             </folder -->    
         </folder>
     </folder>
+
+
     
     <folder name="Services">
         <folder name="MIMEResolver">
@@ -83,6 +99,17 @@
                         <folder name="Defaults">
                             <file name="coloring.xml" url="fontsColors.xml">
                                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.groovy.editor.resources.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
+                </folder>
+
+                <folder name="Keybindings">
+                    <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-groovy-keybindings.xml" url="DefaultKeyBindings.xml"/>
+                            <file name="org-netbeans-modules-groovy-keybindings-mac.xml" url="DefaultKeyBindings-Mac.xml">
+                                <attr name="nbeditor-settings-targetOS" stringvalue="OS_MAC"/>
                             </file>
                         </folder>
                     </folder>
