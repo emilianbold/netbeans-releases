@@ -87,7 +87,7 @@ public interface FileSpringBeans {
      * @param name alias name
      * @return name of bean or alias; {@code null} if no such alias was found
      */
-    String findAliasSource(String alias);
+    String findAliasName(String alias);
     
     /**
      * Returns all registered aliases in this beans config file

@@ -83,7 +83,7 @@ public class ConfigFileSpringBeanSourceTest extends ConfigFileTestCase {
         assertEquals("factory", bean.getFactoryBean());
         assertEquals("createMe", bean.getFactoryMethod());
         assertEquals(1, source.getAliases().size());
-        assertEquals("foo", source.findAliasSource("xyz"));
+        assertEquals("foo", source.findAliasName("xyz"));
         int offset = contents.indexOf("<bean ");
         Location location = bean.getLocation();
         assertEquals(offset, location.getOffset());

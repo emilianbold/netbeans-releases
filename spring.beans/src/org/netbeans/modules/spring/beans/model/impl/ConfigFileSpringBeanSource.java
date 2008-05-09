@@ -120,7 +120,7 @@ public class ConfigFileSpringBeanSource implements SpringBeanSource {
         return bean;
     }
 
-    public String findAliasSource(String alias) {
+    public String findAliasName(String alias) {
         return alias2Name.get(alias);
     }
     
@@ -156,7 +156,7 @@ public class ConfigFileSpringBeanSource implements SpringBeanSource {
                 String nodeName = node.getNodeName();
                 if(BeansElements.ALIAS.equals(nodeName)) {
                     parseAlias(node);
-                } else if (BeansElements.BEAN.equals(node.getNodeName())) { 
+                } else if (BeansElements.BEAN.equals(nodeName)) { 
                     parseBean(node);
                 }
             }

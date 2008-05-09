@@ -69,18 +69,27 @@ public class ConfigModelSpringBeans implements SpringBeans {
 
     public SpringBean findBean(String name) {
         assert ExclusiveAccess.getInstance().isCurrentThreadAccess() : "The SpringBeans instance has escaped the Action.run() method";
+        return findBean(name, new HashSet<String>());
+    }
+    
+    private SpringBean findBean(String name, Set<String> visitedNames) {
+        if(visitedNames.contains(name)) {
+            return null; // loop, break!
+        }
+        
         for (SpringBeanSource beanSource : file2BeanSource.values()) {
             SpringBean bean = beanSource.findBean(name);
             if (bean != null) {
                 return bean;
             }
         }
-        
+
+        visitedNames.add(name);
         // handle aliases
         for(SpringBeanSource beanSource : file2BeanSource.values()) {
-            String pName = beanSource.findAliasSource(name);
-            if (pName != null) {
-                return findBean(pName);
+            String aliasName = beanSource.findAliasName(name);
+            if (aliasName != null) {
+                return findBean(aliasName, visitedNames);
             }
         }
         
