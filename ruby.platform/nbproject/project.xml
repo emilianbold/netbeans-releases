@@ -234,6 +234,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.ruby.project</friend>
                 <friend>org.netbeans.modules.ruby.railsprojects</friend>
                 <friend>org.netbeans.modules.ruby.rspec</friend>
+                <friend>org.netbeans.modules.ruby.testrunner</friend>
                 <friend>org.netbeans.modules.glassfish.jruby</friend>
                 <package>org.netbeans.api.ruby.platform</package>
                 <package>org.netbeans.modules.ruby.platform</package>
