@@ -67,15 +67,20 @@ import static org.netbeans.modules.xml.ui.UI.*;
  */
 public abstract class BpelValidator extends Validator {
 
-  public abstract SimpleBpelModelVisitor getVisitor();
+  protected abstract SimpleBpelModelVisitor getVisitor();
 
   public synchronized ValidationResult validate(Model m, Validation validation, ValidationType type) {
     if ( !(m instanceof BpelModel)) {
       return null;
     }
-    final BpelModel model = (BpelModel) m;
+    BpelModel model = (BpelModel) m;
     
     if (model.getState() == Model.State.NOT_WELL_FORMED) {
+      return null;
+    }
+    final Process process = model.getProcess();
+    
+    if (process == null) {
       return null;
     }
     init(validation, type);
@@ -83,11 +88,7 @@ public abstract class BpelValidator extends Validator {
     Runnable run = new Runnable() {
       public void run() {
         startTime();
-        Process process = model.getProcess();
-
-        if (process != null) {
-          process.accept(getVisitor());
-        }
+        process.accept(getVisitor());
         endTime(getDisplayName());
       }
     };

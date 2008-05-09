@@ -38,10 +38,10 @@
  */
 package org.netbeans.modules.spring.beans.completion.completors;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.io.IOException;
 import org.netbeans.modules.spring.beans.completion.CompletionContext;
 import org.netbeans.modules.spring.beans.completion.Completor;
+import org.netbeans.modules.spring.beans.completion.QueryProgress;
 import org.netbeans.modules.spring.beans.completion.SpringXMLConfigCompletionItem;
 
 /**
@@ -60,20 +60,23 @@ public class AttributeValueCompletor extends Completor {
         this.itemTextAndDocs = itemTextAndDocs;
     }
 
-    public List<SpringXMLConfigCompletionItem> doCompletion(CompletionContext context) {
-        List<SpringXMLConfigCompletionItem> results = new ArrayList<SpringXMLConfigCompletionItem>();
+    @Override
+    protected void computeCompletionItems(CompletionContext context, QueryProgress progress) throws IOException {
         int caretOffset = context.getCaretOffset();
         String typedChars = context.getTypedPrefix();
-
+        
         for (int i = 0; i < itemTextAndDocs.length; i += 2) {
+            if(progress.isCancelled()) {
+                return;
+            }
+            
             if (itemTextAndDocs[i].startsWith(typedChars)) {
                 SpringXMLConfigCompletionItem item = SpringXMLConfigCompletionItem.createAttribValueItem(caretOffset - typedChars.length(),
                         itemTextAndDocs[i], itemTextAndDocs[i + 1]);
-                results.add(item);
+                addItem(item);
             }
         }
-
+        
         setAnchorOffset(context.getCurrentToken().getOffset() + 1);
-        return results;
     }
 }

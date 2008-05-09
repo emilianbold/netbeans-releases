@@ -262,5 +262,6 @@ public class VersioningButtonsTest extends JellyTestCase {
     public void removeAllData() throws Exception {
         TestKit.closeProject(projectName);
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", "");
+        TestKit.deleteRecursively(getDataDir().getAbsoluteFile());
     }
 }

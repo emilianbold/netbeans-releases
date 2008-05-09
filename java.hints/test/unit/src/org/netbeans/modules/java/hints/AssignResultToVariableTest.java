@@ -122,6 +122,38 @@ public class AssignResultToVariableTest extends TreeRuleTestBase {
                        "package test; public class Test {public void t() { /*t*/ String get = get(); } String get() {return null;}}");
     }
     
+    public void testNewClass1() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test; public class Test {public void t() { new Te|st(); } private static class Test {} }",
+                       "0:55-0:59:hint:Assign Return Value To New Variable",
+                       "FixImpl",
+                       "package test; public class Test {public void t() {Test test = new Test(); } private static class Test {} }");
+    }
+    
+    public void testNewClass2() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test; public class Test {public void t() { new te|st(); } private static class test {} }",
+                       "0:55-0:59:hint:Assign Return Value To New Variable",
+                       "FixImpl",
+                       "package test; public class Test {public void t() {test test = new test(); } private static class test {} }");
+    }
+    
+    public void testNewClass133825a() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test; public class Test {public void t() { new Te|st<String>(); } private static class Test<T> {}}",
+                       "0:55-0:67:hint:Assign Return Value To New Variable",
+                       "FixImpl",
+                       "package test; public class Test {public void t() {Test<String> test = new Test<String>(); } private static class Test<T> {}}");
+    }
+    
+    public void testNewClass133825b() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test; public class Test {public void t() { new Test.In|ner(); } private static class Inner {} }",
+                       "0:55-0:65:hint:Assign Return Value To New Variable",
+                       "FixImpl",
+                       "package test; public class Test {public void t() {Inner inner = new Test.Inner(); } private static class Inner {} }");
+    }
+    
     protected List<ErrorDescription> computeErrors(CompilationInfo info, TreePath path) {
         int offset = (int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), path.getLeaf());
         

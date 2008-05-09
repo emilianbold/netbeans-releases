@@ -1732,8 +1732,9 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             ieex.initCause(itsex);
             throw new IllegalStateException(ieex);
         } catch (InvocationException iex) {
-            InvalidExpressionException ieex = new InvalidExpressionException (iex);
-            ieex.initCause(iex);
+            Throwable ex = new InvocationExceptionTranslated(iex, evaluationContext.getDebugger());
+            InvalidExpressionException ieex = new InvalidExpressionException (ex);
+            ieex.initCause(ex);
             throw new IllegalStateException(ieex);
         } catch (UnsupportedOperationException uoex) {
             InvalidExpressionException ieex = new InvalidExpressionException (uoex);
@@ -2383,9 +2384,10 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             ieex.initCause(itsex);
             throw new IllegalStateException(ieex);
         } catch (InvocationException iex) {
-            InvalidExpressionException ieex = new InvalidExpressionException (iex);
-            ieex.initCause(iex);
-            throw new IllegalStateException(ieex);
+            Throwable ex = new InvocationExceptionTranslated(iex, evaluationContext.getDebugger());
+            InvalidExpressionException ieex = new InvalidExpressionException (ex);
+            ieex.initCause(ex);
+            throw new IllegalStateException(iex.getLocalizedMessage(), ieex);
         } catch (UnsupportedOperationException uoex) {
             InvalidExpressionException ieex = new InvalidExpressionException (uoex);
             ieex.initCause(uoex);
@@ -2485,8 +2487,9 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             ieex.initCause(itsex);
             throw new IllegalStateException(ieex);
         } catch (InvocationException iex) {
-            InvalidExpressionException ieex = new InvalidExpressionException (iex);
-            ieex.initCause(iex);
+            Throwable ex = new InvocationExceptionTranslated(iex, evaluationContext.getDebugger());
+            InvalidExpressionException ieex = new InvalidExpressionException (ex);
+            ieex.initCause(ex);
             throw new IllegalStateException(ieex);
         } catch (UnsupportedOperationException uoex) {
             InvalidExpressionException ieex = new InvalidExpressionException (uoex);
@@ -2575,8 +2578,9 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             ieex.initCause(itsex);
             throw new IllegalStateException(ieex);
         } catch (InvocationException iex) {
-            InvalidExpressionException ieex = new InvalidExpressionException (iex);
-            ieex.initCause(iex);
+            Throwable ex = new InvocationExceptionTranslated(iex, evaluationContext.getDebugger());
+            InvalidExpressionException ieex = new InvalidExpressionException (ex);
+            ieex.initCause(ex);
             throw new IllegalStateException(ieex);
         } catch (UnsupportedOperationException uoex) {
             InvalidExpressionException ieex = new InvalidExpressionException (uoex);

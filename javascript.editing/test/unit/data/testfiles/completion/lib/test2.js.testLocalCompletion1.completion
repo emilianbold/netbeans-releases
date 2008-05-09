@@ -44,6 +44,8 @@ CLASS      CSSStyleRule                               DOM
 CLASS      CSSStyleSheet                              DOM
 CLASS      CSSValue                                   DOM
 CLASS      CSSValueList                               DOM
+CLASS      CanvasGradient                             DOM
+CLASS      CanvasRenderingContext2D                   DOM
 CLASS      CharacterData                              DOM
 CLASS      Counter                                    DOM
 CLASS      DOMConfiguration                           DOM
@@ -85,6 +87,7 @@ CLASS      HTMLBaseFontElement                        DOM
 CLASS      HTMLBlockquoteElement                      DOM
 CLASS      HTMLBodyElement                            DOM
 CLASS      HTMLButtonElement                          DOM
+CLASS      HTMLCanvasElement                          DOM
 CLASS      HTMLCollection                             DOM
 CLASS      HTMLDListElement                           DOM
 CLASS      HTMLDirectoryElement                       DOM
@@ -133,6 +136,7 @@ CLASS      HTMLTableSectionElement                    DOM
 CLASS      HTMLTextAreaElement                        DOM
 CLASS      HTMLTitleElement                           DOM
 CLASS      HTMLUListElement                           DOM
+CLASS      ImageData                                  DOM
 CLASS      JavaArray                                  Core JS
 CLASS      LinkStyle                                  DOM
 CLASS      Math                                       Core JS
@@ -229,6 +233,9 @@ PROPERTY   CSSStyleSheet                              DOM
 PROPERTY   CSSUnknownRule                             DOM
 PROPERTY   CSSValue                                   DOM
 PROPERTY   CSSValueList                               DOM
+PROPERTY   CanvasGradient                             DOM
+PROPERTY   CanvasPattern                              DOM
+PROPERTY   CanvasRenderingContext2D                   DOM
 PROPERTY   CharacterData                              DOM
 PROPERTY   Comment                                    DOM
 PROPERTY   Counter                                    DOM
@@ -281,6 +288,7 @@ PROPERTY   HTMLBaseFontElement                        DOM
 PROPERTY   HTMLBlockquoteElement                      DOM
 PROPERTY   HTMLBodyElement                            DOM
 PROPERTY   HTMLButtonElement                          DOM
+PROPERTY   HTMLCanvasElement                          DOM
 PROPERTY   HTMLCollection                             DOM
 PROPERTY   HTMLDListElement                           DOM
 PROPERTY   HTMLDirectoryElement                       DOM
@@ -329,6 +337,7 @@ PROPERTY   HTMLTableSectionElement                    DOM
 PROPERTY   HTMLTextAreaElement                        DOM
 PROPERTY   HTMLTitleElement                           DOM
 PROPERTY   HTMLUListElement                           DOM
+PROPERTY   ImageData                                  DOM
 PROPERTY   Infinity                                   Core JS
 PROPERTY   IsFinite                                   Core JS
 PROPERTY   IsNaN                                      Core JS

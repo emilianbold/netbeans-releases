@@ -47,7 +47,6 @@ import java.util.Collection;
 import java.util.Collections;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiProjectConstants;
 import org.netbeans.modules.compapp.projects.jbi.ui.customizer.JbiProjectProperties;
-import org.netbeans.modules.compapp.projects.jbi.ui.NoSelectedServerWarning;
 import org.netbeans.modules.compapp.jbiserver.JbiManager;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.modules.compapp.projects.jbi.ui.customizer.VisualClassPathItem;
@@ -66,7 +65,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.awt.Dialog;
 import java.io.*;
 import java.util.Arrays;
 import javax.swing.SwingUtilities;
@@ -75,9 +73,6 @@ import org.netbeans.modules.compapp.projects.jbi.api.JbiBuildListener;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiBuildTask;
 import org.netbeans.modules.compapp.projects.jbi.api.ProjectValidator;
 import org.netbeans.modules.compapp.test.ui.TestcaseNode;
-import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
-import org.netbeans.modules.j2ee.deployment.impl.ServerString;
-import org.netbeans.modules.j2ee.deployment.impl.ServerTarget;
 import org.netbeans.modules.sun.manager.jbi.management.JBIMBeanTaskResultHandler;
 import org.netbeans.modules.sun.manager.jbi.management.wrapper.api.RuntimeManagementServiceWrapper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -255,6 +250,22 @@ public class JbiActionProvider implements ActionProvider {
                     } else if (!JbiManager.isSelectedServer(project)) {
                         return;
                     }
+
+                    // IZ#133733 Missing WSIT call back project when deploying CompApp                    
+                    if (command.equals(JbiProjectConstants.COMMAND_DEPLOY) ||
+                        command.equals(JbiProjectConstants.COMMAND_REDEPLOY)) {
+                        saveCasaChanges(project);
+
+                        // call WSIT Java Callback Project...
+                        String cbProjects = callWSITJavaCallbackProject(project);
+                        if (cbProjects != null) {
+                            if (p == null) {
+                                p = new Properties();
+                            }
+                            p.setProperty("WsitCallbackProjects", cbProjects);
+                        }
+                    }
+
                     if (!validateSubProjects()) {
                         return;
                     }

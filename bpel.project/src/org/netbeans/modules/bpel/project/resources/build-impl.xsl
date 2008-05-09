@@ -117,6 +117,8 @@
               <pathelement location="${{netbeans.home}}/../platform8/lib/org-openide-util.jar"/>
               <pathelement location="${{netbeans.home}}/../platform8/modules/org-openide-dialogs.jar"/>
               <pathelement location="${{netbeans.home}}/../platform8/modules/org-openide-loaders.jar"/>
+              <pathelement location="${{netbeans.home}}/../platform8/modules/org-openide-nodes.jar"/>
+              <pathelement location="${{netbeans.home}}/../platform8/modules/org-openide-text.jar"/>
               <pathelement location="${{netbeans.home}}/../platform8/modules/org-netbeans-modules-masterfs.jar"/>
               <pathelement location="${{netbeans.home}}/../platform8/modules/org-netbeans-modules-queries.jar"/>
               <pathelement location="${{netbeans.home}}/../soa2/modules/org-netbeans-modules-soa-validation.jar"/>
@@ -168,7 +170,7 @@
         <xsl:attribute name="depends">init,-pre-dist</xsl:attribute>
         <mkdir dir="${{build.dir}}"/>
         
-        <xsl:comment> run the validation task here. </xsl:comment>
+        <xsl:comment>validation</xsl:comment>
         <validate-project buildDirectory="${{basedir}}/${{build.dir}}" sourceDirectory="${{basedir}}/${{src.dir}}" projectClassPath="${{javac.classpath}}" buildDependentProjectDir="${{basedir}}/${{build.dir}}/dependentProjectFiles" classpathRef="ant.task.classpath" allowBuildWithError="${{allow.build.with.error}}"/>
         
         <xsl:comment> copy all files from project source directory to build directory. </xsl:comment>

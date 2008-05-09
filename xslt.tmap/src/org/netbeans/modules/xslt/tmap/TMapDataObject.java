@@ -27,6 +27,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.xml.transform.Source;
+import org.netbeans.modules.soa.validation.core.Controller;
 import org.netbeans.modules.xslt.tmap.model.api.TMapModel;
 import org.netbeans.modules.xslt.tmap.multiview.TMapMultiViewSupport;
 import org.netbeans.spi.xml.cookies.DataObjectAdapters;
@@ -155,24 +156,28 @@ public class TMapDataObject extends MultiDataObject {
 
             list.add(Lookups.fixed( new Object[]{
                     super.getLookup(), 
-                    this
-                    }));
+                    this}));
 
             list.add(getCookieSet().getLookup());
 
             // add lazy initialization
-            InstanceContent.Convertor<Class, Object> conv =
-                    new InstanceContent.Convertor<Class, Object>() {
-                
+            InstanceContent.Convertor<Class, Object> conv = new InstanceContent.Convertor<Class, Object>() {
+                private AtomicReference<Controller> valControllerRef = new AtomicReference<Controller>();
+
                 public Object convert(Class obj) {
                     if (obj == TMapModel.class) {
                         return getEditorSupport().getTMapModel();
                     }
+                    if (obj == Controller.class) {
+                        valControllerRef.compareAndSet(null, new Controller(getEditorSupport().getTMapModel()));
+                        return valControllerRef.get();
+                    }
+
+
 
                     if (obj == TMapDataEditorSupport.class) {
                         return getEditorSupport();
                     }
-                    
                     return null;
                 }
 
@@ -188,18 +193,11 @@ public class TMapDataObject extends MultiDataObject {
                     return obj.getName();
                 }
             };
-            
             list.add(Lookups.fixed(
-                    new Class[] {TMapModel.class, TMapDataEditorSupport.class}
-                    , conv));
-            //
-                    
-            //
-            // WARNING
-            // CANNOT add Lookups.singleton(getNodeDelegate()) or will stack
-            // overflow
-            // WARNING
-            //
+                    new Class[] { TMapModel.class,
+                    Controller.class,
+
+                    TMapDataEditorSupport.class}, conv));
             lookup = new ProxyLookup(list.toArray(new Lookup[list.size()]));
 
             myLookup.compareAndSet(null, lookup);

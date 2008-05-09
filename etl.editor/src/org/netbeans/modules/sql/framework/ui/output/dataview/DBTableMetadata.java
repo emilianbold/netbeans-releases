@@ -44,8 +44,10 @@ package org.netbeans.modules.sql.framework.ui.output.dataview;
 
 import com.sun.sql.framework.exception.BaseException;
 import com.sun.sql.framework.exception.DBSQLException;
+import com.sun.sql.framework.jdbc.DBConstants;
 import java.sql.Connection;
 import java.util.List;
+import org.axiondb.AxionException;
 import org.netbeans.modules.sql.framework.codegen.AbstractGeneratorFactory;
 import org.netbeans.modules.sql.framework.codegen.DB;
 import org.netbeans.modules.sql.framework.codegen.DBFactory;
@@ -77,6 +79,17 @@ public class DBTableMetadata {
             genFactory = db.getGeneratorFactory();
         } catch (BaseException ex) {
             throw new RuntimeException(ex.getMessage());
+        }
+    }
+    
+    public void shutdownIfAxion() {
+        if (isDBType(DBConstants.AXION)) {
+            try {
+                String url = DBExplorerUtil.adjustDatabaseURL(connDef.getConnectionURL());
+                DBExplorerUtil.getAxionDBFromURL(url).shutdown();
+            } catch (AxionException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
     }
     

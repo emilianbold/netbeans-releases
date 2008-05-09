@@ -747,21 +747,19 @@ public class MapperContextImpl implements MapperContext {
 
     public String getValidationMessage() {
         String result = null;
-
         TransformmapValidator validator = TransformmapValidatorImpl.getInstance();
+
         if (myXslFo != null) {
             result = validator.validate(Util.getTransformationDescriptor(Util.getProject(myXslFo)));
 
             if (result == null) {
                 result = validator.validate(myTMapModel, myXslFo);
             }
-            
             if (result == null) {
                 AXIComponent typeIn = getSourceType();
                 result = validator.validate(typeIn, "source"); // NOI18N
 
             }
-            
             if (result == null) {
                 AXIComponent typeOut = getTargetType();
                 result = validator.validate(typeOut, "target"); // NOI18N

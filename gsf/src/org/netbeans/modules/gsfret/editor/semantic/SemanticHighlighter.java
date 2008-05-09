@@ -128,6 +128,7 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
         LanguageRegistry registry = LanguageRegistry.getInstance();
         
         for (String mimeType : mimeTypes) {
+            long startTime = System.currentTimeMillis();
             Language language = registry.getLanguageByMimeType(mimeType);
             if (language == null) {
                 continue;
@@ -166,6 +167,9 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
                     }
                 }
             }
+            long endTime = System.currentTimeMillis();
+            Logger.getLogger("TIMER").log(Level.FINE, "Semantic (" + mimeType + ")",
+                    new Object[] {info.getFileObject(), endTime - startTime});
         }
         
         //TimesCollector.getDefault().reportTime(((DataObject) doc.getProperty(Document.StreamDescriptionProperty)).getPrimaryFile(), "semantic", "Semantic", (System.currentTimeMillis() - start));

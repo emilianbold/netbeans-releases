@@ -2439,17 +2439,18 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             CachingArchiveProvider.getDefault().clearArchive(root);                       
             File cacheFolder = Index.getClassFolder(root);
             FileObjects.deleteRecursively(cacheFolder);
-            final BinaryAnalyser ba = ClassIndexManager.getDefault().createUsagesQuery(root, false).getBinaryAnalyser();            
-            //todo: may also need interruption.
-            try {
-                BinaryAnalyser.Result finished = ba.start(root, handle, new AtomicBoolean(false), new AtomicBoolean(false));
-                while (finished == BinaryAnalyser.Result.CANCELED) {
-                    finished = ba.resume();
+            final BinaryAnalyser ba = ClassIndexManager.getDefault().createUsagesQuery(root, false).getBinaryAnalyser(); 
+            if (ba != null) {   //ba == null => IDE is exiting, indexing will be done on IDE restart
+                //todo: may also need interruption.
+                try {
+                    BinaryAnalyser.Result finished = ba.start(root, handle, new AtomicBoolean(false), new AtomicBoolean(false));
+                    while (finished == BinaryAnalyser.Result.CANCELED) {
+                        finished = ba.resume();
+                    }
+                } finally {
+                    ba.finish();
                 }
-            } finally {
-                ba.finish();
             }
-            
         }                
         
         private void recompile() throws IOException {

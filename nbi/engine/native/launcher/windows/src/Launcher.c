@@ -49,7 +49,7 @@
 #include "ExtractUtils.h"
 #include "Main.h"
 
-const DWORD NUMBER_OF_HELP_ARGUMENTS = 10;
+const DWORD NUMBER_OF_HELP_ARGUMENTS = 11;
 const DWORD READ_WRITE_BUFSIZE = 65536;
 const WCHAR * outputFileArg       = L"--output";
 const WCHAR * javaArg             = L"--javahome";
@@ -732,6 +732,7 @@ DWORD isOnlyHelp(LauncherProperties * props) {
         help->items[counter++] = formatMessageW(getI18nProperty(props, ARG_CPP_PROP), 1, classPathPrepend);
         help->items[counter++] = formatMessageW(getI18nProperty(props, ARG_DISABLE_SPACE_CHECK), 1, nospaceCheckArg);
         help->items[counter++] = formatMessageW(getI18nProperty(props, ARG_LOCALE_PROP), 1, localeArg);
+        help->items[counter++] = formatMessageW(getI18nProperty(props, ARG_SILENT_PROP), 1, silentArg);
         help->items[counter++] = formatMessageW(getI18nProperty(props, ARG_HELP_PROP), 1, helpArg);
         
         

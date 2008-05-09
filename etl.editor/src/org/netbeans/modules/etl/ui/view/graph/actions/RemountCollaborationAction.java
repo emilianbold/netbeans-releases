@@ -55,7 +55,7 @@ public class RemountCollaborationAction extends GraphAction {
         //action tooltip
         String nbBundle2 = mLoc.t("BUND028: Drops and re-creates all the tables.");
         this.putValue(Action.SHORT_DESCRIPTION,nbBundle2.substring(15));
-   
+        // Acceleratot Shift-M
     }
 
     /**

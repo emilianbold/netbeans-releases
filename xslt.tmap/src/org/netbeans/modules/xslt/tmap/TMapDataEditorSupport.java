@@ -27,7 +27,11 @@ import java.util.Set;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.xml.cookies.CookieObserver;
+import org.netbeans.api.xml.cookies.ValidateXMLCookie;
+import org.netbeans.modules.soa.validation.core.Controller;
+import org.netbeans.modules.soa.validation.util.LineUtil;
 import org.netbeans.core.api.multiview.MultiViewHandler;
+import org.netbeans.core.api.multiview.MultiViewPerspective;
 import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.core.spi.multiview.CloseOperationHandler;
 import org.netbeans.core.spi.multiview.CloseOperationState;
@@ -53,6 +57,7 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.MultiDataObject;
+import org.openide.text.Line;
 import org.openide.text.CloneableEditor;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.CloneableEditorSupport.Pane;
@@ -71,9 +76,8 @@ import org.openide.util.UserCancelException;
  * @author Vitaly Bychkov
  */
 public class TMapDataEditorSupport extends DataEditorSupport  implements
-        OpenCookie, EditCookie, EditorCookie.Observable, ShowCookie,
-        UndoRedoManagerProvider
-{
+        OpenCookie, EditCookie, EditorCookie.Observable, ShowCookie, ValidateXMLCookie, UndoRedoManagerProvider {
+
     public TMapDataEditorSupport(TMapDataObject dObj) {
         super(dObj, new TMapEnv(dObj));
         setMIMEType(TMapDataLoader.MIME_TYPE);
@@ -168,9 +172,9 @@ public class TMapDataEditorSupport extends DataEditorSupport  implements
                     }
                 }
 
-//TODO a                
                 // Set annotation or select element in the multiview.
-//                MultiViewPerspective mvp = mvh.getSelectedPerspective();
+                MultiViewPerspective mvp = mvh.getSelectedPerspective();
+//TODO a                
 //                if (mvp.preferredID().equals("tmap-designer")) {
 //                    List<TopComponent> list = getAssociatedTopComponents();
 //                    for (TopComponent topComponent : list) {
@@ -205,27 +209,18 @@ public class TMapDataEditorSupport extends DataEditorSupport  implements
 //                            selectElement.select(XSLTComponent);
 //                        }
 //                    }
-//                } else if (mvp.preferredID().equals(
-//                        XSLTSourceMultiViewElementDesc.PREFERED_ID)) {
-//                        
-//                    // Get the line number.
-//                    int lineNum;
-//                    if(resultItem.getComponents() != null) {
-//                        lineNum = getLineNumber((XSLTComponent)resultItem.getComponents());
-//                    } else {
-//                        lineNum = resultItem.getLineNumber() - 1;
-//                    }
-//                    if (lineNum < 1) {
-//                        return;
-//                    }
-//                    Line l = lc.getLineSet().getCurrent(lineNum);
-//                    l.show(Line.SHOW_GOTO);
-//                    annotation.show(l, resultItem.getDescription());
-//                    
-//                }
+//                } else 
+                if (mvp.preferredID().equals(
+                        TMapSourceMultiViewElementDesc.PREFERED_ID)) 
+                {
+                    Line line = LineUtil.getLine(resultItem);
+
+                    if (line != null) {
+                      line.show(Line.SHOW_GOTO);
+                    }
+                }
             }
         });
-        
     }
     
     private List<TopComponent> getAssociatedTopComponents() {
@@ -268,6 +263,18 @@ public class TMapDataEditorSupport extends DataEditorSupport  implements
     }
     
     @Override
+    public void initializeCloneableEditor(CloneableEditor editor) {
+        super.initializeCloneableEditor(editor);
+ 
+        EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                updateTitles();
+            }
+        });
+        getValidationController().attach();
+    }
+
+    @Override
     protected void notifyClosed() {
         QuietUndoManager undo = getUndoManager();
         StyledDocument doc = getDocument();
@@ -278,8 +285,8 @@ public class TMapDataEditorSupport extends DataEditorSupport  implements
                 undo.endCompound();
                 undo.setDocument(null);
             }
-
             TMapModel model = getTMapModel();
+
             if (model != null) {
                 model.removeUndoableEditListener(undo);
             }
@@ -289,14 +296,19 @@ public class TMapDataEditorSupport extends DataEditorSupport  implements
         }
         super.notifyClosed();
         getUndoManager().discardAllEdits();
-
-        // all editors are closed so we don't need to keep this task.
         prepareTask = null;
+        getValidationController().detach();
     }
     
-    /*
-     * Update presence of SaveCookie on first keystroke.
-     */
+    public boolean validateXML(CookieObserver cookieObserver) {
+      getValidationController().runValidation();
+      return true;
+    }
+
+    private Controller getValidationController() {
+      return (Controller) getEnv().getTMapDataObject().getLookup().lookup(Controller.class);
+    }
+
     @Override
     protected boolean notifyModified() {
         boolean notify = super.notifyModified();
@@ -399,20 +411,6 @@ public class TMapDataEditorSupport extends DataEditorSupport  implements
         }
     }
 
-    @Override
-    public void initializeCloneableEditor(CloneableEditor editor) {
-        super.initializeCloneableEditor(editor);
-        // Force the title to update so the * left over from when the
-        // modified data object was discarded is removed from the title.
-//        if (!getEnv().getTMapDataObject().isModified()) {
-            // Update later to avoid an infinite loop.
-            EventQueue.invokeLater(new Runnable() {
-                public void run() {
-                    updateTitles();
-                }
-            });
-    }
-    
    @Override
     public Task prepareDocument()
     {

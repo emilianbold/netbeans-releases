@@ -56,6 +56,11 @@ public class JbiExtensionInfo implements Serializable {
      * Name of the extension, e.x., "ConfigExtension".
      */
     private String name;
+    
+    /**
+     * Display name of the extension, e.x., "Config Extension".
+     */
+    private String displayName;
 
     /**
      * Name of the extension schema file.
@@ -68,7 +73,8 @@ public class JbiExtensionInfo implements Serializable {
     private String type;
 
     /**
-     * Name of the target component, e.x., "sun-http-binding", "all"
+     * Name of the target component in regular expression, 
+     * e.x., "sun-http-binding", ".*".
      */
     private String target;
 
@@ -101,18 +107,21 @@ public class JbiExtensionInfo implements Serializable {
      * DOCUMENT ME!
      *
      * @param name      extension name, e.x., "ConfigExtension"
+     * @param dsiplayName  extension diplay name, e.x., "Config Extension"
      * @param type      extension type, e.x., "endpoint", "connection"
-     * @param target    extension target, e.x., "sun-http-binding", "all".
+     * @param target    extension target component name in regular expression, 
+     *                  e.x., "sun-http-binding", ".*".
      * @param file      schema file
      * @param ns        extension namespace
      * @param description   extension description
      * @param icon      extension icon resource
      * @param elements  a list of extension elements
      */
-    public JbiExtensionInfo(String name, String type, String target,
+    public JbiExtensionInfo(String name, String displayName, String type, String target,
                             String file, String ns, String description, URL icon,
                             String provider, List<JbiExtensionElement> elements) {
         this.name = name;
+        this.displayName = displayName;
         this.type = type;
         this.target = target;
         this.file = file;
@@ -146,14 +155,23 @@ public class JbiExtensionInfo implements Serializable {
      *
      * @return the description
      */
-    public String getType() {
-        return this.type;
+    public String getDisplayName() {
+        return this.displayName;
     }
 
     /**
      * DOCUMENT ME!
      *
      * @return the description
+     */
+    public String getType() {
+        return this.type;
+    }
+
+    /**
+     * Gets the regular expression of the extension target component name.
+     *
+     * @return the extension target component name in regular expression
      */
     public String getTarget() {
         return this.target;
@@ -210,6 +228,7 @@ public class JbiExtensionInfo implements Serializable {
         StringBuilder sb = new StringBuilder();
         sb.append("JbiExtensionInfo:")
                 .append(" name=").append(getName())
+                .append(" displayName=").append(getDisplayName())
                 .append(" type=").append(getType())
                 .append(" file=").append(getFile())
                 .append(" ns=").append(getNameSpace())

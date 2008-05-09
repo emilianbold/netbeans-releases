@@ -40,7 +40,6 @@ package org.netbeans.modules.spring.beans.completion.completors;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,12 +51,11 @@ import org.netbeans.modules.spring.beans.BeansAttributes;
 import org.netbeans.modules.spring.beans.BeansElements;
 import org.netbeans.modules.spring.beans.completion.CompletionContext;
 import org.netbeans.modules.spring.beans.completion.Completor;
+import org.netbeans.modules.spring.beans.completion.QueryProgress;
 import org.netbeans.modules.spring.beans.completion.SpringXMLConfigCompletionItem;
 import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils;
 import org.netbeans.modules.spring.beans.utils.StringUtils;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -72,13 +70,13 @@ public class BeansRefCompletor extends Completor {
     }
 
     @Override
-    public List<SpringXMLConfigCompletionItem> doCompletion(final CompletionContext context) {
+    protected void computeCompletionItems(final CompletionContext context, QueryProgress progress) throws IOException {
         final FileObject fo = context.getFileObject();
         SpringConfigModel model = SpringConfigModel.forFileObject(fo);
         if (model == null) {
-            return Collections.emptyList();
+            return;
         }
-        final List<SpringXMLConfigCompletionItem> results = new ArrayList<SpringXMLConfigCompletionItem>();
+        
         final String prefix = context.getTypedPrefix();
 
         final List<String> cNames = new ArrayList<String>();
@@ -95,49 +93,47 @@ public class BeansRefCompletor extends Completor {
             cNames.addAll(names);
         }
 
-        try {
-            model.runReadAction(new Action<SpringBeans>() {
-
-                public void run(SpringBeans sb) {
-                    List<SpringBean> beans = includeGlobal ? sb.getBeans() : sb.getBeans(FileUtil.toFile(fo));
-                    Map<String, SpringBean> name2Bean = getName2Beans(beans, includeGlobal); // if local beans, then add only bean ids;
-
-                    for (String beanName : name2Bean.keySet()) {
-                        if (!beanName.startsWith(prefix) || cNames.contains(beanName)) {
-                            continue;
-                        }
-                        SpringBean bean = name2Bean.get(beanName);
-                        SpringXMLConfigCompletionItem item =
-                                SpringXMLConfigCompletionItem.createBeanRefItem(context.getCurrentToken().getOffset() + 1,
-                                beanName, bean, fo);
-                        results.add(item);
-                    }
-                }
-
-                private Map<String, SpringBean> getName2Beans(List<SpringBean> beans, boolean addNames) {
-                    Map<String, SpringBean> name2Bean = new HashMap<String, SpringBean>();
-                    for (SpringBean bean : beans) {
-                        String beanId = bean.getId();
-                        if (beanId != null) {
-                            name2Bean.put(beanId, bean);
-                        }
-                        if (addNames) {
-                            List<String> beanNames = bean.getNames();
-                            for (String beanName : beanNames) {
-                                name2Bean.put(beanName, bean);
-                            }
-                        }
-                    }
-
-                    return name2Bean;
-                }
-            });
-
-            setAnchorOffset(context.getCurrentToken().getOffset() + 1);
-        } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
+        if(progress.isCancelled()) {
+            return;
         }
+        
+        model.runReadAction(new Action<SpringBeans>() {
 
-        return results;
+            public void run(SpringBeans sb) {
+                List<SpringBean> beans = includeGlobal ? sb.getBeans() : sb.getFileBeans(fo).getBeans();
+                Map<String, SpringBean> name2Bean = getName2Beans(beans, includeGlobal); // if local beans, then add only bean ids;
+
+                for (String beanName : name2Bean.keySet()) {
+                    if (!beanName.startsWith(prefix) || cNames.contains(beanName)) {
+                        continue;
+                    }
+                    SpringBean bean = name2Bean.get(beanName);
+                    SpringXMLConfigCompletionItem item =
+                            SpringXMLConfigCompletionItem.createBeanRefItem(context.getCurrentToken().getOffset() + 1,
+                            beanName, bean, fo);
+                    addItem(item);
+                }
+            }
+
+            private Map<String, SpringBean> getName2Beans(List<SpringBean> beans, boolean addNames) {
+                Map<String, SpringBean> name2Bean = new HashMap<String, SpringBean>();
+                for (SpringBean bean : beans) {
+                    String beanId = bean.getId();
+                    if (beanId != null) {
+                        name2Bean.put(beanId, bean);
+                    }
+                    if (addNames) {
+                        List<String> beanNames = bean.getNames();
+                        for (String beanName : beanNames) {
+                            name2Bean.put(beanName, bean);
+                        }
+                    }
+                }
+
+                return name2Bean;
+            }
+        });
+
+        setAnchorOffset(context.getCurrentToken().getOffset() + 1);
     }
 }

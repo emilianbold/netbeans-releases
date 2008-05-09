@@ -368,10 +368,9 @@ made subject to such option by the copyright holder.
                 <Option name="Pipeline" value="1" />
                 <Option name="Staging" value="2" />
             </OptionProperty>
-            <Property name="sourceModelName" valueType="java.lang.String" position="3" readOnly="true" />
-            <Property name="targetModelName" valueType="java.lang.String" position="4" readOnly="true" />
-            <Property name="workingFolder" valueType="java.lang.String" position="5"/>
-            <Property name="dbInstanceName" valueType="java.lang.String" position="6"/>
+            <Property name="sourceConnections" valueType="java.lang.String" position="3" readOnly="true" customEditor="true"/>
+            <Property name="targetConnections" valueType="java.lang.String" position="4" readOnly="true" customEditor="true"/>
+            <Property name="axiondbWorkingDirectory" valueType="java.lang.String" position="5"/>
         </PropertyGroup>
     </Template>
     

@@ -38,55 +38,91 @@
  */
 package org.netbeans.modules.test.refactoring;
 
+import java.io.File;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
 import java.util.StringTokenizer;
-import junit.textui.TestRunner;
-import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.JellyTestCase;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.tree.TreeModel;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
-import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
-import org.netbeans.modules.test.refactoring.operators.FindUsagesAction;
-import org.netbeans.modules.test.refactoring.operators.FindUsagesClassOperator;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.diff.LineDiff;
 
 /**
  *
  * @author Jiri Prox Jiri.Prox@Sun.COM
  */
-public class RefactoringTestCase extends JellyTestCase {
+public abstract class RefactoringTestCase extends NbTestCase {
 
-    public static String projectName = "RefactoringTest";
     public static final char treeSeparator = '|';
+    
+    /**
+     * The distance from the root of preview tree. Nodes located 
+     * closer to the root then this values will be sorted before dumping 
+     * to ref file
+     */
+    public static int sortLevel = 2;
 
     public RefactoringTestCase(String name) {
         super(name);
     }
+    
+    public void ref(String text) {
+        getRef().print(text);
+    }
+    
+    public void ref(Object o) {
+        getRef().println(o);
+    }
 
-    public void testBasic() {
-        final String fileName = "FindUsagesClass";        
-        openSourceFile("fu",fileName);
-        EditorOperator editor = new EditorOperator(fileName);
-        editor.setCaretPosition(12, 19);
-        new FindUsagesAction().performPopup(editor);
-        new EventTool().waitNoEvent(1000);
-        FindUsagesClassOperator findUsagesClassOperator = new FindUsagesClassOperator();
-        findUsagesClassOperator.getFind().push();
+    protected void browseChildren(TreeModel model, Object parent, int level) {
+        Object invoke = getPreviewItemLabel(parent);
+        for (int i = 0; i < level; i++) ref("    ");
+        ref(invoke.toString() + "\n");
+
+        int childs = model.getChildCount(parent);
+        ArrayList<Object> al = new ArrayList<Object>(childs);  //storing childs for sorting        
+        
+        for (int i = 0; i < childs; i++) {
+            Object child = model.getChild(parent, i);
+            al.add(child);
+        }
+        System.out.println(al);
+        System.out.println(level+" "+sortLevel);
+        if ((level+1) <= sortLevel) {
+            sortChilds(al);
+        }
+        System.out.println(al);
+
+        while(!al.isEmpty()) {            
+            Object child = al.remove(0);
+            browseChildren(model, child, level + 1);                    
+        }
         
     }
 
+    
+    
     protected  void openFile(String treeSubPackagePathToFile, String fileName) {
         // debug info, to be removed
         //this.treeSubPackagePathToFile = treeSubPackagePathToFile;
         ProjectsTabOperator pto = new ProjectsTabOperator();
         pto.invoke();        
-        ProjectRootNode prn = pto.getProjectRootNode(projectName);
-        prn.select();
-        
+        ProjectRootNode prn = pto.getProjectRootNode(getProjectName());
+        prn.select();        
         StringTokenizer st = new StringTokenizer(treeSubPackagePathToFile, treeSeparator + "");
         String token = "";
         String oldtoken = "";
@@ -110,9 +146,44 @@ public class RefactoringTestCase extends JellyTestCase {
 
     }
 
+    private Object getPreviewItemLabel(Object parent)  {
+        try {
+            Method method = parent.getClass().getDeclaredMethod("getLabel", null);
+            method.setAccessible(true);
+            Object invoke = method.invoke(parent, null);
+            return invoke;
+        } catch (IllegalAccessException ex) {
+            Logger.getLogger(RefactoringTestCase.class.getName()).log(Level.SEVERE, null, ex);            
+        } catch (IllegalArgumentException ex) {
+            Logger.getLogger(RefactoringTestCase.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InvocationTargetException ex) {
+            Logger.getLogger(RefactoringTestCase.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (NoSuchMethodException ex) {
+            Logger.getLogger(RefactoringTestCase.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SecurityException ex) {
+            Logger.getLogger(RefactoringTestCase.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        fail("Error in reflection");
+        return null;
+    }
+        
+    private void sortChilds(List<Object> al) {
+        final HashMap<Object,String> hashMap = new HashMap<Object, String>();
+        for (Object object : al) {
+            hashMap.put(object,(String) getPreviewItemLabel(object));
+        }
+                        
+        Collections.<Object>sort(al,new Comparator() {
+
+            public int compare(Object o1, Object o2) {
+                return hashMap.get(o1).compareTo(hashMap.get(o2));
+            }
+        });
+    }
+
     private void waitForChildNode(String parentPath, String childName) {
         ProjectsTabOperator pto = new ProjectsTabOperator();
-        ProjectRootNode prn = pto.getProjectRootNode(projectName);
+        ProjectRootNode prn = pto.getProjectRootNode(getProjectName());
         prn.select();
         Node parent = new Node(prn, parentPath);      
         final String finalFileName = childName;
@@ -138,7 +209,21 @@ public class RefactoringTestCase extends JellyTestCase {
         openFile(org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.java.j2seproject.Bundle", "NAME_src.dir")+treeSeparator+dir, srcName);
     }
     
-    public static void main(String[] args) {
-        TestRunner.run(RefactoringTestCase.class);
+    @Override
+    protected void setUp() throws Exception {
+        System.out.println("Test "+getName()+" started");
     }
+
+    @Override
+    protected void tearDown() throws Exception {        
+        getRef().close();
+        System.out.println();
+        assertFile("Golden file differs ", new File(getWorkDir(),getName()+".ref"), getGoldenFile(), getWorkDir(), new LineDiff());
+        System.out.println("Test "+getName()+" finished");
+        
+    }
+
+    public abstract String getProjectName();
+        
 }
+

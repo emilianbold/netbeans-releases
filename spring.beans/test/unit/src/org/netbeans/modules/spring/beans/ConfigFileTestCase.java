@@ -43,11 +43,15 @@ package org.netbeans.modules.spring.beans;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Enumeration;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.spring.api.beans.ConfigFileGroup;
 import org.netbeans.modules.spring.api.beans.SpringConstants;
+import org.netbeans.modules.spring.api.beans.model.SpringConfigModel;
 import org.netbeans.modules.spring.beans.loader.SpringXMLConfigDataLoader;
+import org.netbeans.modules.spring.beans.model.SpringConfigFileModelManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.MIMEResolver;
@@ -78,6 +82,12 @@ public class ConfigFileTestCase extends NbTestCase {
 
     protected File createConfigFileName(String name) throws IOException {
         return new File(getWorkDir(), name);
+    }
+
+    protected SpringConfigModel createConfigModel(File... files) {
+        SpringConfigFileModelManager fileModelManager = new SpringConfigFileModelManager();
+        ConfigFileGroup group = ConfigFileGroup.create(Arrays.asList(files));
+        return SpringConfigModelAccessor.getDefault().createSpringConfigModel(fileModelManager, group);
     }
 
     public static final class DataLoaderPoolImpl extends DataLoaderPool {

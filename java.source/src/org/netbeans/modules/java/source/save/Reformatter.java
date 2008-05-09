@@ -2492,8 +2492,6 @@ public class Reformatter implements ReformatTask {
                         break;
                     case LINE_COMMENT:
                         if (lastToken != null) {
-                            if (count >= 0 && tokens.index() > 1 && after != 1)
-                                count++;
                             int offset = tokens.offset() - lastToken.length();
                             String text = lastToken.text().toString();
                             int idx = 0;

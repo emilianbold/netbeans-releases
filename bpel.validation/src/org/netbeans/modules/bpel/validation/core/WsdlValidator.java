@@ -67,7 +67,7 @@ import static org.netbeans.modules.xml.ui.UI.*;
  */
 public abstract class WsdlValidator extends Validator {
 
-  public abstract WSDLVisitor getVisitor();
+  protected abstract WSDLVisitor getVisitor();
 
   public synchronized ValidationResult validate(Model m, Validation validation, ValidationType type) {
     if ( !(m instanceof WSDLModel)) {
@@ -84,7 +84,7 @@ public abstract class WsdlValidator extends Validator {
 //out("22");
     init(validation, type);
 
-    if ( !isValidationComplete()) {
+    if ( !isComplete()) {
 //out("33");
       return null;
     }

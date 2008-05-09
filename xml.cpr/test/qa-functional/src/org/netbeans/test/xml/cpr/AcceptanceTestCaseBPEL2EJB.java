@@ -96,11 +96,10 @@ public class AcceptanceTestCaseBPEL2EJB extends AcceptanceTestCaseXMLCPR {
         "CreateBluePrint1Sample",
         "AddProjectReference",
         "DeleteProjectReference",
-
         "ImportReferencedSchema",
         "ImportReferencedSchema2",
         "DeleteReferencedSchema",
-        "FindUsages", // TODO : How to find find usages output?
+        "FindUsages",
         "ValidateAndBuild",
         "AddAttribute",
         "ExploreAttribute",
@@ -127,9 +126,9 @@ public class AcceptanceTestCaseBPEL2EJB extends AcceptanceTestCaseXMLCPR {
 
         "ValidateAndBuild",
         "BuildCompositeApplication",
-        //"DeployCompositeApplication", // This will failed, followed skipped
-        //"CreateNewTest",
-        //"RunNewTest",
+        "DeployCompositeApplication", // This will failed, followed skipped
+        "CreateNewTest",
+        "RunNewTest",
     };
 
     static final String SAMPLE_CATEGORY_NAME = "Samples|SOA|BPEL BluePrints";
@@ -219,6 +218,8 @@ public class AcceptanceTestCaseBPEL2EJB extends AcceptanceTestCaseXMLCPR {
 
       ImportReferencedSchemaInternal(
           SAMPLE_NAME,
+          PURCHASE_SCHEMA_FILE_PATH,
+          PURCHASE_SCHEMA_FILE_NAME,
           MODULE_NAME + "/com/sun/test",
           false,
           acliImport
@@ -244,6 +245,8 @@ public class AcceptanceTestCaseBPEL2EJB extends AcceptanceTestCaseXMLCPR {
 
       ImportReferencedSchemaInternal(
           SAMPLE_NAME,
+          PURCHASE_SCHEMA_FILE_PATH,
+          PURCHASE_SCHEMA_FILE_NAME,
           MODULE_NAME,
           true,
           acliImport
@@ -357,6 +360,7 @@ public class AcceptanceTestCaseBPEL2EJB extends AcceptanceTestCaseXMLCPR {
       startTest( );
 
       AddItInternal(
+          PURCHASE_SCHEMA_FILE_NAME,
           "Attributes",
           "Add Attribute",
           null, 
@@ -395,6 +399,7 @@ public class AcceptanceTestCaseBPEL2EJB extends AcceptanceTestCaseXMLCPR {
       startTest( );
 
       AddItInternal(
+          PURCHASE_SCHEMA_FILE_NAME,
           "Complex Types",
           "Add Complex Type",
           "Use Existing Definition", 
@@ -437,6 +442,7 @@ public class AcceptanceTestCaseBPEL2EJB extends AcceptanceTestCaseXMLCPR {
       startTest( );
 
       AddItInternal(
+          PURCHASE_SCHEMA_FILE_NAME,
           "Elements",
           "Add Element",
           "Use Existing Type",
@@ -479,6 +485,7 @@ public class AcceptanceTestCaseBPEL2EJB extends AcceptanceTestCaseXMLCPR {
       startTest( );
 
       AddItInternal(
+          PURCHASE_SCHEMA_FILE_NAME,
           "Simple Types",
           "Add Simple Type",
           null, 
@@ -552,7 +559,11 @@ public class AcceptanceTestCaseBPEL2EJB extends AcceptanceTestCaseXMLCPR {
     {
       startTest( );
       
-      BuildCompositeApplicationInternal( COMPOSITE_APPLICATION_NAME );
+      BuildInternal(
+          COMPOSITE_APPLICATION_NAME,
+          false,
+          "jbi-build"
+        );
 
       endTest( );
     }
@@ -570,7 +581,7 @@ public class AcceptanceTestCaseBPEL2EJB extends AcceptanceTestCaseXMLCPR {
     {
       startTest( );
 
-
+      CreateNewTestInternal( SAMPLE_NAME, COMPOSITE_APPLICATION_NAME );
 
       endTest( );
     }
@@ -579,7 +590,7 @@ public class AcceptanceTestCaseBPEL2EJB extends AcceptanceTestCaseXMLCPR {
     {
       startTest( );
 
-
+      RunTestInternal( COMPOSITE_APPLICATION_NAME, "TestCase1" );
 
       endTest( );
     }

@@ -1079,6 +1079,7 @@ public final class ModuleList {
      * @return the matching module, or null if there is none such
      */
     public ModuleEntry getEntry(String codeNameBase) {
+        // XXX for a nb.org entry, try to look it up by dir name...
         ModuleEntry e = entries.get(codeNameBase);
         if (e != null) {
             return e;

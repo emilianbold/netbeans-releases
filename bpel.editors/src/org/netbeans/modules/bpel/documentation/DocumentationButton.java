@@ -48,6 +48,7 @@ import javax.swing.ToolTipManager;
 
 import org.netbeans.modules.bpel.model.api.ExtensibleElements;
 import org.netbeans.modules.bpel.model.api.events.VetoException;
+import org.netbeans.modules.bpel.model.api.support.UniqueId;
 
 import org.netbeans.modules.bpel.design.decoration.components.AbstractGlassPaneButton;
 import static org.netbeans.modules.xml.ui.UI.*;
@@ -56,30 +57,28 @@ import static org.netbeans.modules.xml.ui.UI.*;
  * @author Vladimir Yaroslavskiy
  * @version 2007.08.15
  */
-public final class DocumentationButton extends AbstractGlassPaneButton {
+final class DocumentationButton extends AbstractGlassPaneButton {
 
-  public DocumentationButton(final ExtensibleElements element, String text) {
+  public DocumentationButton(final UniqueId id, String text) {
     super(ICON, text, true, new ActionListener() {
       public void actionPerformed(ActionEvent event) {
+        String text = event.getSource().toString().trim();
+        String documentation = getExtensibleElement(id).getDocumentation();
 //out();
-//out("event: '" + event.getSource().toString() + "'");
-        try {
-          if (element.getModel() == null) { // is deleted
-            return;
-          }
-          String documentation = event.getSource().toString();
+//out("text: '" + text + "'");
 
-          if ( !documentation.equals(element.getDocumentation())) {
-            element.setDocumentation(documentation);
+        try {
+          if (documentation == null || !text.equals(documentation.trim())) {
+            getExtensibleElement(id).setDocumentation(text);
           }
-//out("get: '" + element.getDocumentation() + "'");
+//out("get: '" + getExtensibleElement(id).getDocumentation() + "'");
         }
         catch (VetoException e) {
           e.printStackTrace();
         }
       }
     });
-    myElement = element;
+    myID = id;
     addTitle(ICON, TITLE, Color.BLUE);
     ToolTipManager.sharedInstance().registerComponent(this);
   }
@@ -87,19 +86,26 @@ public final class DocumentationButton extends AbstractGlassPaneButton {
   @Override
   public String getToolTipText()
   {
-    String text = myElement.getDocumentation();
+    String text = getExtensibleElement(myID).getDocumentation();
 
     if (text != null) {
+      text = text.trim();
+
+      if (text.length() > MAX_LENGHT) {
+        text = text.substring(0, MAX_LENGHT) + "..."; // NOI18N
+      }
       return "<html>" + text + "</html>"; // NOI18N
     }
     return null;
   }
 
-  private ExtensibleElements myElement;
+  private static ExtensibleElements getExtensibleElement(UniqueId id) {
+    return (ExtensibleElements) id.getModel().getEntity(id);
+  }
 
-  private static final String TITLE =
-    i18n(DocumentationButton.class, "LBL_Documentation"); // NOI18N
+  private UniqueId myID;
 
-  private static final Icon ICON =
-    icon(DocumentationButton.class, "documentation"); // NOI18N
+  private static final int MAX_LENGHT = 60;
+  private static final String TITLE = i18n(DocumentationButton.class, "LBL_Documentation"); // NOI18N
+  private static final Icon ICON = icon(DocumentationButton.class, "documentation"); // NOI18N
 }

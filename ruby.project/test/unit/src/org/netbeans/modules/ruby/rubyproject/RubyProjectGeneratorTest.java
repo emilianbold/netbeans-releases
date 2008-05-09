@@ -42,9 +42,9 @@ package org.netbeans.modules.ruby.rubyproject;
 
 import java.io.File;
 import java.util.List;
-import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
+import org.netbeans.modules.ruby.rubyproject.rake.RakeSupport;
 import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectHelper;
 import org.openide.filesystems.FileObject;
 
@@ -73,12 +73,12 @@ public class RubyProjectGeneratorTest extends RubyProjectTestBase {
 
             assertNotNull("has README", prjDirFO.getFileObject("README"));
             assertNotNull("has LICENSE", prjDirFO.getFileObject("LICENSE"));
-            
-            Project p = ProjectManager.getDefault().findProject(prjDirFO);
+
+            RubyBaseProject p = (RubyBaseProject) ProjectManager.getDefault().findProject(prjDirFO);
             assertNotNull("has project", p);
-            List<?> targets = RakeTargetsAction.getRakeTargets(p);
-            assertSame("correct Rakefile", 10, targets.size());
-            
+            List<?> tasks = RakeSupport.getRakeTaskTree(p);
+            assertSame("correct Rakefile", 11, tasks.size());
+
             // test main class without extension in the next run
             name = "another_script";
             expectedName = "another_script.rb";
@@ -86,4 +86,26 @@ public class RubyProjectGeneratorTest extends RubyProjectTestBase {
         }
     }
 
+    public void testGeneratedSourceRoots() throws Exception {
+        RubyProject project = createTestProject();
+        FileObject projectDir = project.getProjectDirectory();
+        FileObject[] roots = project.getSourceRoots().getRoots();
+        FileObject[] testRoots = project.getTestSourceRoots().getRoots();
+
+        assertEquals("one source root", 1, roots.length);
+        assertEquals("has lib", roots[0], projectDir.getFileObject("lib"));
+
+        assertEquals("two test roots", 2, testRoots.length);
+        assertEquals("has test", testRoots[0], projectDir.getFileObject("test"));
+        assertEquals("has spec", testRoots[1], projectDir.getFileObject("spec"));
+    }
+
+    public void testGeneratedRakeFile() throws Exception {
+        registerLayer();
+        RubyProject project = createTestProject();
+        List<?> tasks = RakeSupport.getRakeTaskTree(project);
+        assertSame("correct Rakefile", 11, tasks.size());
+        assertNotNull("has 'spec' task", RakeSupport.getRakeTask(project, "spec"));
+        assertNotNull("has 'test' task", RakeSupport.getRakeTask(project, "test"));
+    }
 }

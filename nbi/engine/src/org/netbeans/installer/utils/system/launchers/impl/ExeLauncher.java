@@ -63,7 +63,7 @@ import org.netbeans.installer.utils.system.NativeUtils;
  */
 public class ExeLauncher extends CommonLauncher {
     private static final String EXE_EXT = ".exe"; //NOI18N
-    private static final int EXE_STUB_FILL_SIZE = 420000;
+    private static final int EXE_STUB_FILL_SIZE = 450000;
     private static final long MAXDWORD = 4294967296L; // actually it is MAXDWORD + 1
     
     public static final String DEFAULT_WINDOWS_RESOURCE_SUFFIX =
@@ -81,10 +81,15 @@ public class ExeLauncher extends CommonLauncher {
      */
     public static final String MIN_JAVA_VERSION_WINDOWS       = "1.5.0_03";
     public static final String MIN_JAVA_VERSION_WINDOWS_VISTA = "1.5.0_11";
+
+    /* Actually even 1.5.0_15 does not officially support Windows Server 2008 */
+    public static final String MIN_JAVA_VERSION_WINDOWS_2K8   = "1.5.0_15";
+
     public static final String OSNAME_WINDOWS_XP = "XP";
     public static final String OSNAME_WINDOWS_VISTA = "Vista";
     public static final String OSNAME_WINDOWS_2K = "2000";
     public static final String OSNAME_WINDOWS_2K3 = "2003";
+    public static final String OSNAME_WINDOWS_2K8 = "2008";
     
     public ExeLauncher(LauncherProperties props) {
         super(props);
@@ -202,6 +207,8 @@ public class ExeLauncher extends CommonLauncher {
                 MIN_JAVA_VERSION_WINDOWS, null, null, OSNAME_WINDOWS_2K, null));
         list.add(new JavaCompatibleProperties(
                 MIN_JAVA_VERSION_WINDOWS, null, null, OSNAME_WINDOWS_2K3, null));
+        list.add(new JavaCompatibleProperties(
+                MIN_JAVA_VERSION_WINDOWS_2K8, null, null, OSNAME_WINDOWS_2K8, null));
         return list;
     }
     
