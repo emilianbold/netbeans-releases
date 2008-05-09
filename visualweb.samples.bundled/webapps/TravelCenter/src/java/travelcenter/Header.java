@@ -67,60 +67,6 @@ public class Header extends AbstractFragmentBean {
      */
     private void _init() throws Exception {
     }
-    private ImageComponent image1 = new ImageComponent();
-
-    public ImageComponent getImage1() {
-        return image1;
-    }
-
-    public void setImage1(ImageComponent ic) {
-        this.image1 = ic;
-    }
-    private HtmlPanelGrid bottomPanel = new HtmlPanelGrid();
-
-    public HtmlPanelGrid getBottomPanel() {
-        return bottomPanel;
-    }
-
-    public void setBottomPanel(HtmlPanelGrid hpg) {
-        this.bottomPanel = hpg;
-    }
-    private ImageHyperlink home = new ImageHyperlink();
-
-    public ImageHyperlink getHome() {
-        return home;
-    }
-
-    public void setHome(ImageHyperlink ih) {
-        this.home = ih;
-    }
-    private ImageHyperlink help = new ImageHyperlink();
-
-    public ImageHyperlink getHelp() {
-        return help;
-    }
-
-    public void setHelp(ImageHyperlink ih) {
-        this.help = ih;
-    }
-    private PanelLayout leftPanel = new PanelLayout();
-
-    public PanelLayout getLeftPanel() {
-        return leftPanel;
-    }
-
-    public void setLeftPanel(PanelLayout pl) {
-        this.leftPanel = pl;
-    }
-    private StaticText poweredBy = new StaticText();
-
-    public StaticText getPoweredBy() {
-        return poweredBy;
-    }
-
-    public void setPoweredBy(StaticText st) {
-        this.poweredBy = st;
-    }
     // </editor-fold>
 
     public Header() {

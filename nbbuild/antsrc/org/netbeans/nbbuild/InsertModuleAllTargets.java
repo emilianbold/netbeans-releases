@@ -84,17 +84,17 @@ public final class InsertModuleAllTargets extends Task {
         checkModules = check;
     }
 
-    public void execute() throws BuildException {
+    public @Override void execute() throws BuildException {
         try {
-            Project project = getProject();
+            Project prj = getProject();
             @SuppressWarnings("unchecked")
-            Set<String> existingTargets = project.getTargets().keySet();
-            if (existingTargets.contains("all-openide/util")) {
+            Set<String> existingTargets = prj.getTargets().keySet();
+            if (existingTargets.contains("all-openide.util")) {
                 log("Already seem to have inserted targets into this project; will not do it twice", Project.MSG_VERBOSE);
                 return;
             }
             @SuppressWarnings("unchecked")
-            Hashtable<String,String> props = project.getProperties();
+            Hashtable<String,String> props = prj.getProperties();
 
             if (checkModules) {
                 boolean missingModules = false;
@@ -131,7 +131,7 @@ public final class InsertModuleAllTargets extends Task {
                     clustersOfModules.put(module, cluster);
                 }
             }
-            ModuleListParser mlp = new ModuleListParser(props, ParseProjectXml.TYPE_NB_ORG, project);
+            ModuleListParser mlp = new ModuleListParser(props, ParseProjectXml.TYPE_NB_ORG, prj);
             SortedMap<String,ModuleListParser.Entry> entries = new TreeMap<String,ModuleListParser.Entry>();
             for (ModuleListParser.Entry entry : mlp.findAll()) {
                 String path = entry.getNetbeansOrgPath();
@@ -142,9 +142,9 @@ public final class InsertModuleAllTargets extends Task {
             for (ModuleListParser.Entry entry : entries.values()) {
                 String path = entry.getNetbeansOrgPath();
                 assert path != null : entry;
-                String target = "all-" + path;
-                if (existingTargets.contains(target)) {
-                    log("Not adding target " + target + " because one already exists", Project.MSG_INFO);
+                String trg = "all-" + path;
+                if (existingTargets.contains(trg)) {
+                    log("Not adding target " + trg + " because one already exists", Project.MSG_INFO);
                     continue;
                 }
                 String[] prereqsAsCnb = entry.getBuildPrerequisites();
@@ -165,14 +165,14 @@ public final class InsertModuleAllTargets extends Task {
                     }
                 }
                 String namedDepsS = namedDeps.toString();
-                log("Adding target " + target + " with depends=\"" + namedDepsS + "\"", Project.MSG_VERBOSE);
+                log("Adding target " + trg + " with depends=\"" + namedDepsS + "\"", Project.MSG_VERBOSE);
                 Target t = new Target();
-                t.setName(target);
+                t.setName(trg);
                 t.setLocation(getLocation());
                 t.setDepends(namedDepsS);
-                project.addTarget(t);
+                prj.addTarget(t);
                 if (myCluster != null) {
-                    CallTarget call = (CallTarget) project.createTask("antcall");
+                    CallTarget call = (CallTarget) prj.createTask("antcall");
                     call.setTarget("build-one-cluster-dependencies");
                     call.setInheritAll(false);
                     Property param = call.createParam();
@@ -183,11 +183,11 @@ public final class InsertModuleAllTargets extends Task {
                     param.setValue("this-cluster");
                     t.addTask(call);
                 }
-                Echo echo = (Echo) project.createTask("echo");
+                Echo echo = (Echo) prj.createTask("echo");
                 echo.setMessage("Building " + path + "...");
                 t.addTask(echo);
-                Ant ant = (Ant) project.createTask("ant");
-                ant.setDir(project.resolveFile("../" + path));
+                Ant ant = (Ant) prj.createTask("ant");
+                ant.setDir(prj.resolveFile("../" + path));
                 ant.setTarget("netbeans");
                 t.addTask(ant);
             }

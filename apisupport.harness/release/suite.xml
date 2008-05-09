@@ -64,6 +64,7 @@ made subject to such option by the copyright holder.
         <property name="disabled.clusters" value=""/>
         <property name="app.version" value="0.1"/>
         <property name="branding.dir" location="branding"/>
+        <property name="dist.dir" location="dist"/>
         <condition property="run.branding"> <!-- #84689 -->
             <and>
                 <available file="${branding.dir}" type="dir"/>
@@ -206,8 +207,8 @@ made subject to such option by the copyright holder.
     </target>
     
     <target name="build-zip" depends="build,build-launchers" description="Builds a ZIP distribution of the suite, launchers, and selected modules from the platform.">
-        <mkdir dir="dist"/>
-        <zip destfile="dist/${app.name}.zip">
+        <mkdir dir="${dist.dir}"/>
+        <zip destfile="${dist.dir}/${app.name}.zip">
             <zipfileset dir="${build.launcher.dir}/bin/" filemode="755" prefix="${app.name}/bin"/>
             <zipfileset dir="${build.launcher.dir}/etc/" prefix="${app.name}/etc"/>
             <zipfileset dir="${netbeans.dest.dir}" filemode="755" prefix="${app.name}">
@@ -231,26 +232,26 @@ made subject to such option by the copyright holder.
         </zip>
     </target>
     <target name="create-platform" depends="build-zip" description="Creates an unzipped platform from the suite, launchers, and selected modules from the platform.">
-        <mkdir dir="dist/${app.name}"/>
-        <unzip src="dist/${app.name}.zip" dest="dist/${app.name}">
+        <mkdir dir="${dist.dir}/${app.name}"/>
+        <unzip src="${dist.dir}/${app.name}.zip" dest="${dist.dir}/${app.name}">
             <globmapper from="${app.name}/*" to="*"/>
         </unzip>
     </target>
     
     <target name="build-mac" depends="build,build-launchers" description="Builds a ZIP distribution of the suite, launchers, and selected modules from the platform.">
-        <mkdir dir="dist"/>
-        <mkdir dir="dist/${app.name}.app"/>
-        <mkdir dir="dist/${app.name}.app/Contents"/>
-        <mkdir dir="dist/${app.name}.app/Contents/MacOS"/>
-        <mkdir dir="dist/${app.name}.app/Contents/Resources"/>
-        <copy file="${harness.dir}/etc/applicationIcon.icns" tofile="dist/${app.name}.app/Contents/Resources/${app.name}.icns"/>
-        <copy todir="dist/${app.name}.app/Contents/Resources/${app.name}/bin">
+        <mkdir dir="${dist.dir}"/>
+        <mkdir dir="${dist.dir}/${app.name}.app"/>
+        <mkdir dir="${dist.dir}/${app.name}.app/Contents"/>
+        <mkdir dir="${dist.dir}/${app.name}.app/Contents/MacOS"/>
+        <mkdir dir="${dist.dir}/${app.name}.app/Contents/Resources"/>
+        <copy file="${harness.dir}/etc/applicationIcon.icns" tofile="${dist.dir}/${app.name}.app/Contents/Resources/${app.name}.icns"/>
+        <copy todir="${dist.dir}/${app.name}.app/Contents/Resources/${app.name}/bin">
             <fileset dir="${build.launcher.dir}/bin/" />
         </copy>
-        <copy todir="dist/${app.name}.app/Contents/Resources/${app.name}/etc">
+        <copy todir="${dist.dir}/${app.name}.app/Contents/Resources/${app.name}/etc">
             <fileset dir="${build.launcher.dir}/etc/" />
         </copy>
-        <copy todir="dist/${app.name}.app/Contents/Resources/${app.name}">
+        <copy todir="${dist.dir}/${app.name}.app/Contents/Resources/${app.name}">
             <fileset dir="${netbeans.dest.dir}">
                 <include name="**/lib/nbexec*"/>
             </fileset>
@@ -264,21 +265,21 @@ made subject to such option by the copyright holder.
                 </and>
             </fileset>
         </copy>
-        <copy todir="dist/${app.name}.app/Contents/Resources/${app.name}/${app.name}">
+        <copy todir="${dist.dir}/${app.name}.app/Contents/Resources/${app.name}/${app.name}">
             
             <fileset dir="${cluster}"/>
         </copy>
         
         <copy verbose="true" failonerror="false" 
-              file="dist/${app.name}.app/Contents/Resources/${app.name}/${app.name}/etc/${app.name}.icns" 
-              tofile="dist/${app.name}.app/Contents/Resources/${app.name}.icns"/>
+              file="${dist.dir}/${app.name}.app/Contents/Resources/${app.name}/${app.name}/etc/${app.name}.icns" 
+              tofile="${dist.dir}/${app.name}.app/Contents/Resources/${app.name}.icns"/>
         
-        <delete file="${basedir}/dist/${app.name}.app/Contents/MacOS/${app.name}"/>
-        <symlink link="${basedir}/dist/${app.name}.app/Contents/MacOS/${app.name}" resource="../Resources/${app.name}/bin/${app.name}"/>
-        <chmod file="dist/${app.name}.app/Contents/Resources/${app.name}/bin/${app.name}" perm="755"/>
-        <chmod dir="dist" includes="${app.name}.app/Contents/Resources/${app.name}/platform*/lib/nbexec" perm="755"/>
+        <delete file="${dist.dir}/${app.name}.app/Contents/MacOS/${app.name}"/>
+        <symlink link="${dist.dir}/${app.name}.app/Contents/MacOS/${app.name}" resource="../Resources/${app.name}/bin/${app.name}"/>
+        <chmod file="${dist.dir}/${app.name}.app/Contents/Resources/${app.name}/bin/${app.name}" perm="755"/>
+        <chmod dir="${dist.dir}" includes="${app.name}.app/Contents/Resources/${app.name}/platform*/lib/nbexec" perm="755"/>
         
-        <copy file="${harness.dir}/etc/Info.plist" tofile="dist/${app.name}.app/Contents/Info.plist">
+        <copy file="${harness.dir}/etc/Info.plist" tofile="${dist.dir}/${app.name}.app/Contents/Info.plist">
             <filterchain>
                 <replacestring from="$${app.name}" to="${app.name}"/>
                 <replacestring from="$${app.version}" to="${app.version}"/>
@@ -288,9 +289,9 @@ made subject to such option by the copyright holder.
             </filterchain>
         </copy>
         <!-- zipping in ant doesn't preserve symlinks that seem to be required.
-        zip destfile="dist/${app.name}-MacOS.zip" basedir="dist" includes="${app.name}.app/**" duplicate="preserve"/-->
+        zip destfile="${dist.dir}/${app.name}-MacOS.zip" basedir="${dist.dir}" includes="${app.name}.app/**" duplicate="preserve"/-->
         <echo>
-You MacOS Application bundle was created at dist/${app.name}.app. For final packaging, use hdiutil or other tools to create a .dmg image.
+You MacOS Application bundle was created at ${dist.dir}/${app.name}.app. For final packaging, use hdiutil or other tools to create a .dmg image.
 Alternatively use "zip -yr ${app.name}.app" to create a simple zipped distribution.
         </echo>    
     </target>    
@@ -318,7 +319,7 @@ Alternatively use "zip -yr ${app.name}.app" to create a simple zipped distributi
             </fileset>
         </delete>
         <subant target="clean" buildpath="${modules.sorted}" inheritrefs="false" inheritall="false"/>
-        <delete dir="dist"/>
+        <delete dir="${dist.dir}"/>
     </target>
 
     <target name="branding" depends="-init" if="run.branding">
@@ -348,6 +349,11 @@ Alternatively use "zip -yr ${app.name}.app" to create a simple zipped distributi
     
     <target name="debug-jnlp" depends="build,-jdk-init,-jdk-presetdef-nbjpdastart" description="Runs this suite as a JNLP application in the debugger.">
         <ant antfile="${harness.dir}/jnlp.xml" target="debug"/>
+    </target>
+    
+    <target name="test" depends="build" description="Runs tests for all modules in the suite.">
+        <sortsuitemodules unsortedmodules="${modules}" sortedmodulesproperty="modules.test.sorted" sorttests="true"/>
+        <subant target="test" buildpath="${modules.test.sorted}" inheritrefs="false" inheritall="false"/>
     </target>
     
 </project>

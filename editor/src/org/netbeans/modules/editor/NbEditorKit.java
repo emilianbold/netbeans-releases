@@ -56,6 +56,7 @@ import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 import java.util.prefs.Preferences;
+import java.util.concurrent.Callable;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
@@ -82,11 +83,14 @@ import org.openide.windows.TopComponent;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.BaseAction;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.MacroDialogSupport;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.impl.ActionsList;
+import org.netbeans.modules.editor.impl.CustomizableSideBar;
 import org.netbeans.modules.editor.impl.SearchBar;
 import org.netbeans.modules.editor.impl.PopupMenuActionsProvider;
+import org.netbeans.modules.editor.impl.ToolbarActionsProvider;
 import org.netbeans.modules.editor.impl.actions.NavigationHistoryBackAction;
 import org.netbeans.modules.editor.impl.actions.NavigationHistoryForwardAction;
 import org.netbeans.modules.editor.impl.actions.NavigationHistoryLastEditAction;
@@ -107,7 +111,7 @@ import org.openide.util.NbBundle;
 * @version 1.00
 */
 
-public class NbEditorKit extends ExtKit {
+public class NbEditorKit extends ExtKit implements Callable {
 
     /** Action property that stores the name of the corresponding nb-system-action */
     public static final String SYSTEM_ACTION_CLASS_NAME_PROPERTY = "systemActionClassName"; // NOI18N
@@ -503,10 +507,15 @@ public class NbEditorKit extends ExtKit {
     public static class NbUndoAction extends ActionFactory.UndoAction {
 
         public @Override void actionPerformed(ActionEvent evt, JTextComponent target) {
-            // Delegate to system undo action
-            UndoAction ua = (UndoAction)SystemAction.get(UndoAction.class);
-            if (ua != null && ua.isEnabled()) {
-                ua.actionPerformed(evt);
+            Document doc = target.getDocument();
+            if (doc.getProperty(BaseDocument.UNDO_MANAGER_PROP) != null) { // Basic way of undo
+                super.actionPerformed(evt, target);
+            } else { // Deleagte to system undo action
+                // Delegate to system undo action
+                UndoAction ua = (UndoAction)SystemAction.get(UndoAction.class);
+                if (ua != null && ua.isEnabled()) {
+                    ua.actionPerformed(evt);
+                }
             }
         }
 
@@ -515,10 +524,15 @@ public class NbEditorKit extends ExtKit {
     public static class NbRedoAction extends ActionFactory.RedoAction {
 
         public @Override void actionPerformed(ActionEvent evt, JTextComponent target) {
-            // Delegate to system redo action
-            RedoAction ra = (RedoAction)SystemAction.get(RedoAction.class);
-            if (ra != null && ra.isEnabled()) {
-                ra.actionPerformed(evt);
+            Document doc = target.getDocument();
+            if (doc.getProperty(BaseDocument.UNDO_MANAGER_PROP) != null) { // Basic way of undo
+                super.actionPerformed(evt, target);
+            } else { // Deleagte to system undo action
+                // Delegate to system redo action
+                RedoAction ra = (RedoAction)SystemAction.get(RedoAction.class);
+                if (ra != null && ra.isEnabled()) {
+                    ra.actionPerformed(evt);
+                }
             }
         }
 
@@ -818,5 +832,14 @@ public class NbEditorKit extends ExtKit {
                 menu.add(item);
             }
         }        
+    }
+
+    public Object call() {
+        CustomizableSideBar.getFactoriesMap(getContentType());
+        NbEditorToolBar.initKeyBindingList(getContentType());
+        ToolbarActionsProvider.getToolbarItems(getContentType());
+        ToolbarActionsProvider.getToolbarItems("text/base"); //NOI18N
+
+        return null;
     }
 }

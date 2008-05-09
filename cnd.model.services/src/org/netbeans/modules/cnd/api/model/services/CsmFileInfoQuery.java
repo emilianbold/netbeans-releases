@@ -46,6 +46,7 @@ import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
+import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.openide.util.Lookup;
 
 /**
@@ -96,6 +97,16 @@ public abstract class CsmFileInfoQuery {
      */
     public abstract List<CsmReference> getMacroUsages(CsmFile file);
 
+    /**
+     * @return dwarf block offset or null if there are no dwarf blocks in file
+     */
+    public abstract CsmOffsetable getGuardOffset(CsmFile file);
+
+    /**
+     * @return native file item associated with model file
+     */
+    public abstract NativeFileItem getNativeFileItem(CsmFile file);
+    
     //
     // Implementation of the default query
     //
@@ -118,5 +129,14 @@ public abstract class CsmFileInfoQuery {
         public List<CsmReference> getMacroUsages(CsmFile file) {
             return Collections.<CsmReference>emptyList();
         }
+
+        public CsmOffsetable getGuardOffset(CsmFile file) {
+            return null;
+        }
+
+        @Override
+        public NativeFileItem getNativeFileItem(CsmFile file) {
+            return null;
+        }                
     } 
 }

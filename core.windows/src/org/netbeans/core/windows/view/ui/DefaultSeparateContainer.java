@@ -43,13 +43,7 @@
 package org.netbeans.core.windows.view.ui;
 
 
-import java.awt.KeyboardFocusManager;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyVetoException;
-import java.beans.VetoableChangeListener;
-import java.io.CharConversionException;
 import java.text.MessageFormat;
-import javax.swing.border.Border;
 import javax.swing.plaf.basic.BasicHTML;
 import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.ModeImpl;
@@ -67,8 +61,11 @@ import org.openide.windows.TopComponent;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.core.windows.options.WinSysPrefs;
 import org.openide.windows.WindowManager;
-import org.openide.xml.XMLUtil;
 
 
 /** 
@@ -248,15 +245,60 @@ public final class DefaultSeparateContainer extends AbstractModeContainer {
      * delegating stuff.
      */     
     private static class ModeDialog extends JDialog implements ModeUIBase {
-
+        
         /** Base helper to delegate to for common things */
         private SharedModeUIBase modeBase;
-    
+        private WindowSnapper snapper;
+        private boolean ignoreMovedEvents = false;
+        
         public ModeDialog (Frame owner, AbstractModeContainer abstractModeContainer, ModeView view) {
             super(owner);
             // To be able to activate on mouse click.
             enableEvents(java.awt.AWTEvent.MOUSE_EVENT_MASK);
             modeBase = new SharedModeUIBaseImpl(abstractModeContainer, view, this);
+            
+            try {
+                snapper = new WindowSnapper();
+            } catch (AWTException e) {
+                snapper = null;
+                Logger.getLogger( ModeDialog.class.getName() ).log( Level.INFO, null, e );
+            }
+            addComponentListener( new ComponentAdapter() {
+                @Override
+                public void componentMoved( ComponentEvent ce ) {
+                    if( ignoreMovedEvents || null == snapper || 
+                            !WinSysPrefs.HANDLER.getBoolean(WinSysPrefs.SNAPPING, true) )
+                        return;
+                    
+                    snapWindow();
+                    
+                    snapper.cursorMoved();
+                }
+            });
+        }
+        
+        private void snapWindow() {
+            Rectangle myBounds = getBounds();
+
+            WindowManagerImpl wm = WindowManagerImpl.getInstance();
+            Set<? extends ModeImpl> modes = wm.getModes();
+            for( ModeImpl m : modes ) {
+                if( m.getState() != Constants.MODE_STATE_SEPARATED )
+                    continue;
+                TopComponent tc = m.getSelectedTopComponent();
+                if( null == tc )
+                    continue;
+                Window w = SwingUtilities.getWindowAncestor( tc );
+                if( w == ModeDialog.this )
+                    continue;
+                Rectangle targetBounds = w.getBounds();
+                if( snapper.snapTo(myBounds, targetBounds) )
+                    return;
+            }
+
+            if( WinSysPrefs.HANDLER.getBoolean(WinSysPrefs.SNAPPING_SCREENEDGES, true) ) {
+                snapper.snapToScreenEdges(myBounds);
+            }
         }
 
         public ModeView getModeView() {
@@ -295,6 +337,33 @@ public final class DefaultSeparateContainer extends AbstractModeContainer {
             // noop - no title for dialogs
         }
 
+        @Override
+        public void setBounds( int x, int y, int w, int h ) {
+            ignoreMovedEvents = true;
+            super.setBounds(x,y,w,h);
+            ignoreMovedEvents = false;
+        }
+        
+        @Override
+        public void setBounds( Rectangle r ) {
+            ignoreMovedEvents = true;
+            super.setBounds(r);
+            ignoreMovedEvents = false;
+        }
+        
+        @Override
+        public void setLocation( Point p ) {
+            ignoreMovedEvents = true;
+            super.setLocation( p );
+            ignoreMovedEvents = false;
+        }
+        
+        @Override
+        public void setLocation( int x, int y ) {
+            ignoreMovedEvents = true;
+            super.setLocation( x, y );
+            ignoreMovedEvents = false;
+        }
     } // end of ModeDialog
 
     /** Defines shared common attributes of UI element for separate mode. */
@@ -342,27 +411,32 @@ public final class DefaultSeparateContainer extends AbstractModeContainer {
 
         private void attachListeners (Window w) {
             w.addWindowListener(new WindowAdapter() {
+                @Override
                 public void windowClosing(WindowEvent evt) {
                     modeView.getController().userClosingMode(modeView);
                     ZOrderManager.getInstance().detachWindow((RootPaneContainer)window);
                 }
 
+                @Override
                 public void windowClosed (WindowEvent evt) {
                     ZOrderManager.getInstance().detachWindow((RootPaneContainer)window);
                 }
 
+                @Override
                 public void windowActivated(WindowEvent event) {
                     if (frametimestamp != 0 && System.currentTimeMillis() > frametimestamp + 500) {
                         modeView.getController().userActivatedModeWindow(modeView);
                     }
                     frametimestamp = System.currentTimeMillis();
                 }
+                @Override
                 public void windowOpened(WindowEvent event) {
                     frametimestamp = System.currentTimeMillis();
                 }
             });  // end of WindowListener
 
             w.addComponentListener(new ComponentAdapter() {
+                @Override
                 public void componentResized(ComponentEvent evt) {
                     /*if(DefaultSeparateContainer.this.frame.getExtendedState() == Frame.MAXIMIZED_BOTH) {
                         // Ignore changes when the frame is in maximized state.
@@ -372,6 +446,7 @@ public final class DefaultSeparateContainer extends AbstractModeContainer {
                     modeView.getController().userResizedModeBounds(modeView, window.getBounds());
                 }
 
+                @Override
                 public void componentMoved(ComponentEvent evt) {
                     /*if(DefaultSeparateContainer.this.frame.getExtendedState() == Frame.MAXIMIZED_BOTH) {
                         // Ignore changes when the frame is in maximized state.

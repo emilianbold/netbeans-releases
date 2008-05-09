@@ -43,13 +43,8 @@ package org.netbeans.modules.bpel.samples;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
-import org.netbeans.spi.project.ui.support.ProjectChooser;
-import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.util.NbBundle;
 
@@ -65,7 +60,7 @@ public class TravelReservationServiceWizardIterator extends SampleWizardIterator
     }
     
     protected String[] createSteps() {
-      return new String[] { NbBundle.getMessage(TravelReservationServicePanelVisual.class, "MSG_CreateTravelReservatioService") };
+      return new String[] { NbBundle.getMessage(TravelReservationServicePanelVisual.class, "MSG_CreateTravelReservatioService")}; // NOI18N
     }
     
     private Set<FileObject> createJ2eeReservationPartnerServicesProjects(FileObject projectDir) throws IOException {
@@ -78,12 +73,12 @@ public class TravelReservationServiceWizardIterator extends SampleWizardIterator
       Util.unZipFile(j2eeSamples.getInputStream(), j2eeProjectDir);
       resultSet.add(j2eeProjectDir);
 
-      // # 125456
-      // jdk 5: j2ee.server.type=JavaEEPlusSIP
-      // jdk 6: j2ee.server.type=GlassFishV1
-      if (System.getProperty("java.version").startsWith("1.5")) {
-        Util.renameInProperties(j2eeProjectDir, /* new */ "j2ee.server.type=JavaEEPlusSIP", /* old */ "j2ee.server.type=GlassFishV1");
-      }
+      // # 125456 vlv
+      // jdk5: j2ee.server.type=JavaEEPlusSIP, J2EE
+      // jdk6: j2ee.server.type=GlassFishV1,   J2EE
+//    if (System.getProperty("java.version").startsWith("1.5")) {
+//      Util.renameInProperties(j2eeProjectDir, /* new */ "j2ee.server.type=J2EE", /* old */ "j2ee.server.type=J2EE");
+//    }
       return resultSet;
     }
     
@@ -92,10 +87,10 @@ public class TravelReservationServiceWizardIterator extends SampleWizardIterator
       FileObject compAppProjectDir = projectDir.createFolder(name);                
       
       FileObject trsCompositeApp = Repository.getDefault().
-              getDefaultFileSystem().findResource("org-netbeans-modules-bpel-samples-resources-zip/TravelReservationServiceApplication.zip");// NOI18N
+              getDefaultFileSystem().findResource("org-netbeans-modules-bpel-samples-resources-zip/TravelReservationServiceApplication.zip"); // NOI18N
 
       Util.unZipFile(trsCompositeApp.getInputStream(), compAppProjectDir);
-      Util.setProjectName(compAppProjectDir, Util.COMPAPP_PROJECT_CONFIGURATION_NAMESPACE, name, "TravelReservationServiceApplication");
+      Util.setProjectName(compAppProjectDir, Util.COMPAPP_PROJECT_CONFIGURATION_NAMESPACE, name, "TravelReservationServiceApplication"); // NOI18N
       
       Util.addJbiModule(compAppProjectDir, getProjectDir());
       resultSet.add(compAppProjectDir);               

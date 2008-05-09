@@ -111,8 +111,86 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
-        <change id="isCommonUIRequired">
+        <change id="j2eePlatformLookup">
 	    <api name="plugins"/>
+	    <summary>
+                Add Lookup to J2eePlatformImpl to make it extensible.
+	    </summary>
+	    <version major="1" minor="44"/>
+	    <date day="6" month="5" year="2008"/>
+	    <author login="phejl"/>
+	    <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
+	    <description>
+                <p>
+                    J2eePlatform should provide Lookup containing support for
+                    other technologies the server can provide (such as web services).
+                </p>
+	    </description>
+	    <class package="org.netbeans.modules.j2ee.deployment.devmodules.api" name="J2eePlatform"/>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.spi" name="J2eePlatformImpl"/>
+            <issue number="133853"/>
+	</change>
+        <change id="removeDefaultServerAPI">
+            <api name="j2eeserver"/>
+            <summary>
+                Default server API residues removed.
+            </summary>
+            <version major="1" minor="42"/>
+            <date day="17" month="4" year="2008"/>
+            <author login="phejl"/>
+            <compatibility binary="incompatible" source="incompatible" semantic="incompatible"/>
+            <description>
+                <p>
+                    In the past, before the J2EE support was added to NetBeans the default server
+                    concept had been used. This concept was then abandoned since it did not work
+                    anymore. The problem could occur for example if the default server was Tomcat
+                    then the EJB project which was set to use the default server could not be
+                    deployed to it, etc.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.j2ee.deployment.devmodules.api" name="Deployment"/>
+            <class package="org.netbeans.modules.j2ee.deployment.devmodules.spi" name="InstanceListener"/>
+            <class package="org.netbeans.modules.j2ee.deployment.devmodules.spi" name="J2eeModuleProvider"/>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="InstanceProperties"/>
+            <issue number="83934"/>
+        </change>        
+        <change id="removeInstance">
+	    <api name="j2eeserver"/>
+	    <summary>
+                Provides a way to remove server without need to invoke UI action.
+	    </summary>
+	    <version major="1" minor="41"/>
+	    <date day="5" month="3" year="2008"/>
+	    <author login="phejl"/>
+	    <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
+	    <description>
+                <p>
+                    Method provides a way to remove server instance for plugins
+                    which don't use the j2eeserver UI.
+                </p>
+	    </description>
+	    <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="InstanceProperties"/>
+	</change>        
+        <change id="createLibrary">
+	    <api name="plugins"/>
+	    <summary>
+                Method that creates the library based on content of the platform.
+	    </summary>
+	    <version major="1" minor="40"/>
+	    <date day="21" month="2" year="2008"/>
+	    <author login="phejl"/>
+	    <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
+	    <description>
+                <p>
+                    Methods allows creation of the library form the platform all
+                    required files are copied to the new location. Requirement
+                    introduced by java ee sharability.
+                </p>
+	    </description>
+	    <class package="org.netbeans.modules.j2ee.deployment.devmodules.api" name="J2eePlatform"/>
+	</change>         
+        <change id="isCommonUIRequired">
+	    <api name="j2eeserver"/>
 	    <summary>
                 OptionalDeploymentManagerFactory declares whether j2eeserver
                 should provide common UI (like wizard for example).
@@ -211,7 +289,7 @@ is the proper place.
                     method will allow to obtain the EJB JNDI name.
                 </p>
 	    </description>
-	    <class package="org.netbeans.modules.j2ee.deployment.deployment.spi" name="J2eeModuleProvider"/>
+	    <class package="org.netbeans.modules.j2ee.deployment.devmodules.spi" name="J2eeModuleProvider"/>
 	    <issue number="108198"/>
 	</change>
 	<change id="isRunning">

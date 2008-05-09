@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -120,11 +120,13 @@ public class EndToEndTest extends JellyTestCase {
     }
     
     /** Called before every test case. */
+    @Override
     public void setUp() {
         System.out.println("########  "+getName()+"  #######");
     }
     
     /** Called after every test case. */
+    @Override
     public void tearDown() {
     }
     
@@ -146,14 +148,15 @@ public class EndToEndTest extends JellyTestCase {
         lop.setProjectName(PROJECT_NAME);
         lop.setProjectLocation(getDataDir().getCanonicalPath());
         lop.next();
+        lop.next();
         NewProjectWizardOperator frameworkStep = new NewProjectWizardOperator();
-        // select Struts within Visual Web JavaServer Faces, JavaServer Faces, Struts 1.2.9
+        // select Struts
         JTableOperator tableOper = new JTableOperator(frameworkStep);
-        if(tableOper.getRowCount() > 2) {
-            // when Visual Web JSF available
-            tableOper.selectCell(2, 0);
-        } else {
-            tableOper.selectCell(1, 0);
+        for(int i=0; i<tableOper.getRowCount(); i++) {
+            if(tableOper.getValueAt(i, 1).toString().startsWith("org.netbeans.modules.web.struts.StrutsFrameworkProvider")) { // NOI18N
+                tableOper.selectCell(i, 0);
+                break;
+            }
         }
         // set ApplicationResource location
         new JTextFieldOperator(

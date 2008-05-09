@@ -184,7 +184,7 @@ public class CompensationTargetEditor extends PropertyEditorSupport
     }
     
     // Recursive method for looking for the set of nearest nested
-    // CompensatonHandlerHolder entities.
+    // CompensationHandlerHolder entities.
     private void populateChHoldersList(BpelContainer container,
             List<CompensationHandlerHolder> chhList) {
         for (BpelEntity child : container.getChildren()) {
@@ -195,6 +195,4 @@ public class CompensationTargetEditor extends PropertyEditorSupport
             }
         }
     }
-    
-    
 }

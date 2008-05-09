@@ -61,8 +61,12 @@ import org.tigris.subversion.svnclientadapter.*;
  */
 class FilesystemHandler extends VCSInterceptor {
         
-    private final Subversion svn;
     private final FileStatusCache   cache;
+    
+    /**
+     * Stores all moved files for a later cache refresh in afterMove
+     */
+    private Set<File> movedFiles = new HashSet<File>();    
     
     /**
      * Stores .svn folders that should be deleted ASAP.
@@ -70,15 +74,15 @@ class FilesystemHandler extends VCSInterceptor {
     private final Set<File> invalidMetadata = new HashSet<File>(5);
     
     public FilesystemHandler(Subversion svn) {
-        this.svn = svn;
         cache = svn.getStatusCache();
     }
 
+    @Override
     public boolean beforeDelete(File file) {     
         Subversion.LOG.fine("beforeDelete " + file);
         if (SvnUtils.isPartOfSubversionMetadata(file)) return true;
-        // calling cache results in SOE, we must check manually
-        return !file.isFile() && hasMetadata(file);
+        // calling cache results in SOE, we must check manually        
+        return hasMetadata(file.getParentFile());
     }
 
     /**
@@ -86,37 +90,35 @@ class FilesystemHandler extends VCSInterceptor {
      * 
      * @param file file to delete
      */ 
-    public void doDelete(File file) throws IOException {
+    @Override
+    public void doDelete(File file) throws IOException { 
         Subversion.LOG.fine("doDelete " + file);
-        boolean isMetadata = SvnUtils.isPartOfSubversionMetadata(file);        
-        if (!isMetadata) {
-            remove(file);
+        if (!SvnUtils.isPartOfSubversionMetadata(file)) {
+            try {                
+                SvnClient client = Subversion.getInstance().getClient(false);                
+                client.remove(new File [] { file }, true); // delete all files recursively                           
+                // with the cache refresh we rely on afterDelete 
+            } catch (SVNClientException e) {                
+                SvnClientExceptionHandler.notifyException(e, false, false); // log this
+                return;
+            }
         }
     }
 
-    public void afterDelete(final File file) {
-        Subversion.LOG.fine("afterDelete " + file);
-        Utils.post(new Runnable() {
-            public void run() {
-                // If a regular file is deleted then update its Entries as if it has been removed.
-                if (file == null) return;
-                int status = cache.getStatus(file).getStatus();
-                if (status != FileInformation.STATUS_NOTVERSIONED_EXCLUDED && status != FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) {
-                    try {
-                        SvnClient client = Subversion.getInstance().getClient(false);
-                        client.remove(new File [] { file }, true);
-
-                    } catch (SVNClientException e) {
-                        // ignore; we do not know what to do here; does no harm, the file was probably Locally New
-                    }
-                }
-                // fire event explicitly because the file is already gone
-                // so svnClientAdapter does not fire ISVNNotifyListener event
-                cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
-            }
-        });
+    @Override
+    public void afterDelete(final File file) {   
+        Subversion.LOG.fine("afterDelete " + file);              
+        if (file == null) return;             
+        
+        // TODO the afterXXX events should not be triggered by the FS listener events
+        //      their order isn't guaranteed when e.g calling fo.delete() a fo.create() 
+        //      in an atomic action
+        if (!SvnUtils.isPartOfSubversionMetadata(file)) {
+            cache.refreshAsync(file);                            
+        }                     
     }
 
+    @Override
     public boolean beforeMove(File from, File to) {
         Subversion.LOG.fine("beforeMove " + from +  " -> " + to);
         File destDir = to.getParentFile();
@@ -124,15 +126,15 @@ class FilesystemHandler extends VCSInterceptor {
             // a direct cache call could, because of the synchrone beforeMove handling, 
             // trigger an reentrant call on FS => we have to check manually            
             if (isVersioned(from)) {
-                return Subversion.getInstance().isManaged(to);
+                return SvnUtils.isManaged(to);
             }
             // else XXX handle file with saved administative
             // right now they have old status in cache but is it guaranteed?
         }
-
         return false;
     }
 
+    @Override
     public void doMove(final File from, final File to) throws IOException {        
         Subversion.LOG.fine("doMove " + from +  " -> " + to);
         if (SwingUtilities.isEventDispatchThread()) {
@@ -168,32 +170,33 @@ class FilesystemHandler extends VCSInterceptor {
             svnMoveImplementation(from, to);
         }
     }
-
+        
+    @Override
     public void afterMove(final File from, final File to) {
         Subversion.LOG.fine("afterMove " + from +  " -> " + to);
-        Utils.post(new Runnable() {
-            public void run() {                
-                // there might have been no notification 
-                // for the children files - refresh them all
-                SvnUtils.refreshRecursively(to);
-                cache.onNotify(to, null); // as if there were an event
-                File parent = to.getParentFile();
-                if (parent != null) {
-                    if (from.equals(to)) {
-                        Subversion.LOG.warning( "Wrong (identity) rename event for " + from.getAbsolutePath());                        
-                    }
-                    cache.onNotify(from, null); // as if there were an event
-                }
+        File[] files;
+        synchronized(movedFiles) {
+            movedFiles.add(from);
+            files = movedFiles.toArray(new File[movedFiles.size()]);
+            movedFiles.clear();
+        }
+        cache.refreshAsync(true, to);  // refresh the whole target tree                         
+        cache.refreshAsync(files);      
+        File parent = to.getParentFile(); 
+        if (parent != null) {
+            if (from.equals(to)) {
+                Subversion.LOG.warning( "Wrong (identity) rename event for " + from.getAbsolutePath());                        
             }
-        });
+        }
     }
     
+    @Override
     public boolean beforeCreate(File file, boolean isDirectory) {
         Subversion.LOG.fine("beforeCreate " + file);
-        if ( SvnUtils.isPartOfSubversionMetadata(file)) {            
+        if (SvnUtils.isPartOfSubversionMetadata(file)) {            
             synchronized(invalidMetadata) {
                 File p = file;
-                while(!p.getName().equals(".svn") && !p.getName().equals("_svn")) {                    
+                while(!SvnUtils.isAdministrative(p.getName())) {                    
                     p = p.getParentFile();
                     assert p != null : "file " + file + " doesn't have a .svn parent";
                 }                            
@@ -203,7 +206,7 @@ class FilesystemHandler extends VCSInterceptor {
         } else {
             if (!file.exists()) {                
                 try {
-                    SvnClient client = Subversion.getInstance().getClient(true);                                        
+                    SvnClient client = Subversion.getInstance().getClient(false);                                        
                     // check if the file wasn't just deleted in this session
                     revertDeleted(client, file, true); 
                 } catch (SVNClientException ex) {
@@ -213,51 +216,38 @@ class FilesystemHandler extends VCSInterceptor {
             return false;
         }
     }
-
-    /**
-     * Returns all direct parent folders from the given file which are scheduled for deletion
-     * 
-     * @param file
-     * @param client
-     * @return a list of folders 
-     * @throws org.tigris.subversion.svnclientadapter.SVNClientException
-     */
-    private static List<File> getDeletedParents(File file, SvnClient client) throws SVNClientException {
-        List<File> ret = new ArrayList<File>();
-        for(File parent = file.getParentFile(); parent != null; parent = parent.getParentFile()) {        
-            ISVNStatus status = getStatus(client, parent);
-            if (status == null || !status.getTextStatus().equals(SVNStatusKind.DELETED)) {                                                            
-                return ret;
-            }
-            ret.add(parent);                                      
-        }        
-        return ret;
-    }        
     
+    @Override
     public void doCreate(File file, boolean isDirectory) throws IOException {
         // do nothing
     }
 
+    @Override
     public void afterCreate(final File file) {   
         Subversion.LOG.fine("afterCreate " + file);
         Utils.post(new Runnable() {
             public void run() {
                 if (file == null) return;
+                // I. refresh cache 
                 int status = cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN).getStatus();
                 if ((status & FileInformation.STATUS_MANAGED) == 0) {
                     return;
+                }                
+                if (file.isDirectory()) {
+                    // II. refresh the whole dir 
+                    cache.directoryContentChanged(file);
                 }
-                if (file.isDirectory()) cache.directoryContentChanged(file);
             }
         });
     }
     
+    @Override
     public void afterChange(final File file) {        
         Subversion.LOG.fine("afterChange " + file);
         Utils.post(new Runnable() {
             public void run() {                
                 if ((cache.getStatus(file).getStatus() & FileInformation.STATUS_MANAGED) != 0) {                    
-                    cache.refreshCached(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);                                        
+                    cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);                                        
                 }
             }
         });
@@ -286,25 +276,33 @@ class FilesystemHandler extends VCSInterceptor {
         return  ( !file.isFile() && hasMetadata(file) ) || ( file.isFile() && hasMetadata(file.getParentFile()) );        
     }
 
-    private boolean remove(File file) {
-        try {
-            SvnClient client = Subversion.getInstance().getClient(false);
-            // funny thing is, the command will delete all files recursively
-            client.remove(new File [] { file }, true);
-            return true;
-        } catch (SVNClientException e) {
-            return false;
-        }
-    }
-
+    /**
+     * Returns all direct parent folders from the given file which are scheduled for deletion
+     * 
+     * @param file
+     * @param client
+     * @return a list of folders 
+     * @throws org.tigris.subversion.svnclientadapter.SVNClientException
+     */
+    private static List<File> getDeletedParents(File file, SvnClient client) throws SVNClientException {
+        List<File> ret = new ArrayList<File>();
+        for(File parent = file.getParentFile(); parent != null; parent = parent.getParentFile()) {        
+            ISVNStatus status = getStatus(client, parent);
+            if (status == null || !status.getTextStatus().equals(SVNStatusKind.DELETED)) {                                                            
+                return ret;
+            }
+            ret.add(parent);                                      
+        }        
+        return ret;
+    }        
+    
     private void revertDeleted(SvnClient client, final File file, boolean checkParents) {
-
         try {
             ISVNStatus status = getStatus(client, file);
-            if (status != null && status.getTextStatus().equals(SVNStatusKind.DELETED)) {
+            if (FilesystemHandler.this.equals(status, SVNStatusKind.DELETED)) {
                 if(checkParents) {
-                    // we have a file scheduled for deletion but it's giong to created again,
-                    // so it's parent folder can't stay deleted either
+                    // we have a file scheduled for deletion but it's going to be created again,
+                    // => it's parent folder can't stay deleted either
                     List<File> deletedParents = getDeletedParents(file, client);
                     client.revert(deletedParents.toArray(new File[deletedParents.size()]), false);                        
                 }        
@@ -320,7 +318,7 @@ class FilesystemHandler extends VCSInterceptor {
         }
     }
 
-    private void svnMoveImplementation(final File srcFile, final File dstFile) throws IOException {
+    private void svnMoveImplementation(final File from, final File to) throws IOException {
         try {                        
             boolean force = true; // file with local changes must be forced
             SvnClient client = Subversion.getInstance().getClient(false);
@@ -331,14 +329,14 @@ class FilesystemHandler extends VCSInterceptor {
                 removeInvalidMetadata();
 
                 File parent;
-                if (dstFile.isDirectory()) {
-                    parent = dstFile;
+                if (to.isDirectory()) {
+                    parent = to;
                 } else {
-                    parent = dstFile.getParentFile();
+                    parent = to.getParentFile();
                 }
 
                 if (parent != null) {
-                    assert Subversion.getInstance().isManaged(parent);  // see implsMove above                                        
+                    assert SvnUtils.isManaged(parent);  // see implsMove above                                        
                     // a direct cache call could, because of the synchrone svnMoveImplementation handling, 
                     // trigger an reentrant call on FS => we have to check manually            
                     if (!hasMetadata(parent)) {
@@ -351,26 +349,33 @@ class FilesystemHandler extends VCSInterceptor {
                 while (true) {
                     try {
                         // check if the file wasn't just deleted in this session
-                        revertDeleted(client, dstFile, false);
+                        revertDeleted(client, to, false);
                         
                         // check the status - if the file isn't in the repository yet ( ADDED | UNVERSIONED )
                         // then it also can't be moved via the svn client
-                        ISVNStatus status = getStatus(client, srcFile);
-                        if (status != null && status.getTextStatus().equals(SVNStatusKind.ADDED)) {                                            
-                            client.revert(srcFile, true);  
-                            renameFile(srcFile, dstFile);                
-                        } else if (status != null && status.getTextStatus().equals(SVNStatusKind.UNVERSIONED)) {                                            
-                            renameFile(srcFile, dstFile);                            
-                        } else {                            
-                            List<File> srcChildren = listAllChildren(srcFile);                
-                            client.move(srcFile, dstFile, force);
-                            
-                            // fire events explicitly for all children which are already gone
-                            for(File f : srcChildren) {
-                                cache.onNotify(f, null);    
-                            }                                 
-                        }                        
-                                                
+                        ISVNStatus status = getStatus(client, from);
+                        
+                        // store all from-s children -> they also have to be refreshed in after move
+                        List<File> srcChildren = null;
+                        try {
+                            srcChildren = SvnUtils.listRecursively(from);
+                            if (status != null && status.getTextStatus().equals(SVNStatusKind.ADDED)) {                                            
+                                client.revert(from, true);  
+                                from.renameTo(to);                
+                            } else if (status != null && status.getTextStatus().equals(SVNStatusKind.UNVERSIONED)) {                                            
+                                from.renameTo(to);                            
+                            } else {                                                        
+                                client.move(from, to, force);    
+                            }                                                       
+                        } finally {
+                            // we moved the files so schedule them a for a refresh 
+                            // in the following afterMove call
+                            synchronized(movedFiles) {
+                                if(srcChildren != null) {
+                                    movedFiles.addAll(srcChildren);
+                                }
+                            }
+                        }
                         break;
                     } catch (SVNClientException e) {                        
                         // svn: Working copy '/tmp/co/svn-prename-19/AnagramGame-pack-rename/src/com/toy/anagrams/ui2' locked
@@ -386,7 +391,7 @@ class FilesystemHandler extends VCSInterceptor {
                             continue;
                         }
                         
-                        IOException ex = new IOException("Subversion failed to rename " + srcFile.getAbsolutePath() + " to: " + dstFile.getAbsolutePath()); // NOI18N
+                        IOException ex = new IOException("Subversion failed to rename " + from.getAbsolutePath() + " to: " + to.getAbsolutePath()); // NOI18N
                         ex.initCause(e);
                         throw ex;
                             
@@ -398,37 +403,10 @@ class FilesystemHandler extends VCSInterceptor {
                 }
             }
         } catch (SVNClientException e) {
-            IOException ex = new IOException("Subversion failed to rename " + srcFile.getAbsolutePath() + " to: " + dstFile.getAbsolutePath()); // NOI18N
+            IOException ex = new IOException("Subversion failed to rename " + from.getAbsolutePath() + " to: " + to.getAbsolutePath()); // NOI18N
             ex.initCause(e);
             throw ex;
         }
-    }
-
-    private void renameFile(File srcFile, File dstFile) {
-        List<File> srcChildren = listAllChildren(srcFile);        
-        srcFile.renameTo(dstFile);
-
-        // notify the cache
-        cache.onNotify(srcFile, null);
-        for(File f : srcChildren) {
-            // fire events explicitly for 
-            // all children which are already gone
-            cache.onNotify(f, null);    
-        }        
-        cache.onNotify(dstFile, null);        
-    }
-        
-    private List<File> listAllChildren(File file) {
-        if(file.isFile()) return new ArrayList<File>(0);        
-        List<File> ret = new ArrayList<File>();     
-        File[] files = file.listFiles();
-        if(files != null) {
-            for(File f : files) {
-                ret.add(f);
-                ret.addAll(listAllChildren(f));
-            }
-        }
-        return ret;
     }
     
     /**
@@ -438,16 +416,12 @@ class FilesystemHandler extends VCSInterceptor {
     private void addDirectories(final File dir) throws SVNClientException  {
         File parent = dir.getParentFile();
         if (parent != null) {            
-            if (Subversion.getInstance().isManaged(parent) && !hasMetadata(parent)) {
+            if (SvnUtils.isManaged(parent) && !hasMetadata(parent)) {
                 addDirectories(parent);  // RECURSION
             }
             SvnClient client = Subversion.getInstance().getClient(false);
             client.addDirectory(dir, false);
-            Utils.post(new Runnable() {
-                public void run() {
-                    cache.refresh(dir, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
-                }
-            });                
+            cache.refreshAsync(dir);
         } else {
             throw new SVNClientException("Reached FS root, but it's still not Subversion versioned!"); // NOI18N
         }
@@ -458,5 +432,8 @@ class FilesystemHandler extends VCSInterceptor {
         // trigger an reentrant call on FS => we have to check manually 
         return client.getSingleStatus(file);
     }
-    
+
+    private boolean equals(ISVNStatus status, SVNStatusKind kind) {
+        return status != null && status.getTextStatus().equals(kind);
+    }
 }

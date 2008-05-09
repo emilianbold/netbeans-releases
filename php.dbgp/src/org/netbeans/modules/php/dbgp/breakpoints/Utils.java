@@ -56,7 +56,6 @@ import org.netbeans.modules.php.dbgp.packets.BrkpntCommandBuilder;
 import org.netbeans.modules.php.dbgp.packets.BrkpntRemoveCommand;
 import org.netbeans.modules.php.dbgp.packets.BrkpntSetCommand;
 import org.netbeans.modules.php.dbgp.packets.BrkpntSetCommand.State;
-import org.netbeans.modules.php.lexer.PhpTokenId;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
@@ -72,6 +71,9 @@ import org.openide.windows.TopComponent;
  *
  */
 public class Utils {
+    
+    private final static String  MIME_TYPE = "text/x-php5"; //NOI18N
+    public static LineFactory lineFactory = new LineFactory();
     
     private Utils(){
         // avoid inst-ion
@@ -264,7 +266,7 @@ public class Utils {
         }
         else {
             String mimeType = fileObject.getMIMEType();
-            return PhpTokenId.MIME_TYPE.equals(mimeType);
+            return MIME_TYPE.equals(mimeType);
         }
     }
 
@@ -277,21 +279,25 @@ public class Utils {
      * @return
      */
     public static Line getLine( int line, String remoteFileName , SessionId id) {
-        DataObject dataObject = id.getDataObjectByRemote( remoteFileName );
-        if ( dataObject == null ){
-            return null;
-        }
-
-        LineCookie lineCookie = (LineCookie) dataObject
-                .getCookie(LineCookie.class);
-        if ( lineCookie == null ){
-            return null;
-        }
-        Line.Set set = lineCookie.getLineSet();
-        if ( set == null ){
-            return null;
-        }
-        return set.getOriginal(line - 1);
+        return lineFactory.getLine(line, remoteFileName, id);
     }
+    
+    public static class LineFactory {
+        public Line getLine(int line, String remoteFileName, SessionId id) {
+            DataObject dataObject = id.getDataObjectByRemote(remoteFileName);
+            if (dataObject == null) {
+                return null;
+            }
 
+            LineCookie lineCookie = (LineCookie) dataObject.getCookie(LineCookie.class);
+            if (lineCookie == null) {
+                return null;
+            }
+            Line.Set set = lineCookie.getLineSet();
+            if (set == null) {
+                return null;
+            }
+            return set.getOriginal(line - 1);
+        }        
+    }
 }

@@ -644,7 +644,7 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
             // covered entirely by subcomponents.
             // OTOH mouse release should cancel the multiselection - if no
             // dragging happened.
-            hitMetaComp = selectedComponentAt(e.getPoint(), 0, false);
+            hitMetaComp = selectedComponentAt(e.getPoint(), 0, true);
             if (hitMetaComp != null) {
                 return hitMetaComp;
             }
@@ -1827,7 +1827,13 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
         {
             java.util.List<Component> subContainers = new ArrayList<Component>();
 
-            Component[] comps = cont.getComponents();
+            Component[] comps;
+            if (cont instanceof JTabbedPane) {
+                Component selectedTab = ((JTabbedPane)cont).getSelectedComponent();
+                comps = (selectedTab == null) ? new Component[0] : new Component[] {selectedTab};
+            } else {
+                comps = cont.getComponents();
+            }
             for (int i=0; i < comps.length; i++) {
                 Component comp = comps[i];
                 Rectangle bounds = convertRectangleFromComponent(

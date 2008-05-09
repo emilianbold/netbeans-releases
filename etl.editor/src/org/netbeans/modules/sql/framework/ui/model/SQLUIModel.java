@@ -57,8 +57,9 @@ import org.netbeans.modules.sql.framework.ui.event.SQLLinkEvent;
 
 import com.sun.sql.framework.exception.BaseException;
 import org.netbeans.modules.sql.framework.model.DBTable;
+import org.netbeans.modules.xml.xam.Model;
 
-public interface SQLUIModel {
+public interface SQLUIModel extends Model {
 
     public void addJavaOperator(SQLOperator javaOp);
 

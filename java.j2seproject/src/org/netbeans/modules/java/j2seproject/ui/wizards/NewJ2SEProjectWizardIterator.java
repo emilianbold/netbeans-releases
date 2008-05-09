@@ -55,6 +55,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.java.j2seproject.J2SEProjectGenerator;
 import org.netbeans.modules.java.j2seproject.ui.FoldersListSettings;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
+import org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
@@ -148,14 +149,15 @@ public class NewJ2SEProjectWizardIterator implements WizardDescriptor.ProgressIn
             if (!librariesDefinition.endsWith(File.separator)) {
                 librariesDefinition += File.separatorChar;
             }
-            librariesDefinition += J2SEProjectProperties.DEFAULT_LIBRARIES_FILENAME;
+            librariesDefinition += SharableLibrariesUtils.DEFAULT_LIBRARIES_FILENAME;
         }
         handle.progress (NbBundle.getMessage (NewJ2SEProjectWizardIterator.class, "LBL_NewJ2SEProjectWizardIterator_WizardProgress_CreatingProject"), 1);
         switch (type) {
         case EXT:
             File[] sourceFolders = (File[])wiz.getProperty("sourceRoot");        //NOI18N
             File[] testFolders = (File[])wiz.getProperty("testRoot");            //NOI18N
-            AntProjectHelper h = J2SEProjectGenerator.createProject(dirF, name, sourceFolders, testFolders, MANIFEST_FILE, librariesDefinition);
+            String buildScriptName = (String) wiz.getProperty("buildScriptName");//NOI18N
+            AntProjectHelper h = J2SEProjectGenerator.createProject(dirF, name, sourceFolders, testFolders, MANIFEST_FILE, librariesDefinition, buildScriptName);
             EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
             String includes = (String) wiz.getProperty(J2SEProjectProperties.INCLUDES);
             if (includes == null) {
@@ -199,23 +201,26 @@ public class NewJ2SEProjectWizardIterator implements WizardDescriptor.ProgressIn
         FileObject dir = FileUtil.toFileObject(dirF);
         switch (type) {
             case APP:
+                createManifest(dir, false);
+                break;
             case EXT:
-                createManifest(dir);
+                createManifest(dir, true);
+                break;
         }
         handle.progress (3);
 
         // Returning FileObject of project diretory. 
         // Project will be open and set as main
-        int index = (Integer) wiz.getProperty(PROP_NAME_INDEX);
+        int ind = (Integer) wiz.getProperty(PROP_NAME_INDEX);
         switch (type) {
             case APP:
-                FoldersListSettings.getDefault().setNewApplicationCount(index);
+                FoldersListSettings.getDefault().setNewApplicationCount(ind);
                 break;
             case LIB:
-                FoldersListSettings.getDefault().setNewLibraryCount(index);
+                FoldersListSettings.getDefault().setNewLibraryCount(ind);
                 break;
             case EXT:
-                FoldersListSettings.getDefault().setNewProjectCount(index);
+                FoldersListSettings.getDefault().setNewProjectCount(ind);
                 break;
         }        
         resultSet.add (dir);
@@ -224,7 +229,8 @@ public class NewJ2SEProjectWizardIterator implements WizardDescriptor.ProgressIn
         if (dirF != null && dirF.exists()) {
             ProjectChooser.setProjectsFolder (dirF);    
         }
-                        
+         
+        SharableLibrariesUtils.setLastProjectSharable(librariesDefinition != null);
         return resultSet;
     }
     
@@ -332,22 +338,27 @@ public class NewJ2SEProjectWizardIterator implements WizardDescriptor.ProgressIn
      * @param dir the directory to create it in
      * @throws IOException in case of problems
      */
-    private static void createManifest(final FileObject dir) throws IOException {
-        FileObject manifest = dir.createData(MANIFEST_FILE);
-        FileLock lock = manifest.lock();
-        try {
-            OutputStream os = manifest.getOutputStream(lock);
+    private static void createManifest(final FileObject dir, final boolean skeepIfExists) throws IOException {
+        if (skeepIfExists && dir.getFileObject(MANIFEST_FILE) != null) {
+            return;
+        }
+        else {
+            FileObject manifest = dir.createData(MANIFEST_FILE);
+            FileLock lock = manifest.lock();
             try {
-                PrintWriter pw = new PrintWriter(os);
-                pw.println("Manifest-Version: 1.0"); // NOI18N
-                pw.println("X-COMMENT: Main-Class will be added automatically by build"); // NOI18N
-                pw.println(); // safest to end in \n\n due to JRE parsing bug
-                pw.flush();
+                OutputStream os = manifest.getOutputStream(lock);
+                try {
+                    PrintWriter pw = new PrintWriter(os);
+                    pw.println("Manifest-Version: 1.0"); // NOI18N
+                    pw.println("X-COMMENT: Main-Class will be added automatically by build"); // NOI18N
+                    pw.println(); // safest to end in \n\n due to JRE parsing bug
+                    pw.flush();
+                } finally {
+                    os.close();
+                }
             } finally {
-                os.close();
+                lock.releaseLock();
             }
-        } finally {
-            lock.releaseLock();
         }
     }
 

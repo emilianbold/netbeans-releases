@@ -155,7 +155,7 @@ public class ScriptWatchEvaluating extends AbstractModelNode
         }
         EvalCommand command = new EvalCommand( session.getTransactionId() );
         command.setData( getExpression() );
-        /* TODO : uncomment later. 
+        /* TODO : uncommented but it may cause following problems: 
          * I found a bug in XDEbug with eval command:
          * after response to eval request it performs two actions:
          * 1) Stops script execution ( and debugging ) unexpectedly
@@ -167,8 +167,9 @@ public class ScriptWatchEvaluating extends AbstractModelNode
          * XDebug bug submitted: 
          * http://bugs.xdebug.org/bug_view_page.php?bug_id=0000313
          * 
-         * session.sendCommandLater(command); 
          */
+         session.sendCommandLater(command); 
+        
     }
     
     protected boolean isTypeApplied( Set<FilterType> set ) {

@@ -109,9 +109,9 @@ public class TransformServlet extends HttpServlet {
      * @param response servlet response
      */
     protected void processRequest (HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        PrintWriter out = response.getWriter();
-        Result outputResult = new StreamResult (out);
-
+//        Charset charset = FileEncodingQuery.getDefaultEncoding();
+        
+        PrintWriter out = null;
         Observer notifier = new Observer();
         try {
             String guessOutputExt = TransformUtil.guessOutputExt (xslSource);
@@ -121,7 +121,7 @@ public class TransformServlet extends HttpServlet {
             } else if (guessOutputExt.equals("xml")) { // NOI18N
                 mimeType = "text/xml"; // NOI18N
             } else if (guessOutputExt.equals("html")) { // NOI18N
-                mimeType = "text/html"; // NOI18N
+                mimeType = "text/html;charset=UTF-8"; // NOI18N
             } else {
                 mimeType = null;
             }
@@ -129,6 +129,8 @@ public class TransformServlet extends HttpServlet {
             if ( mimeType != null ) {
                 response.setContentType (mimeType);
             }
+        out = response.getWriter();
+        Result outputResult = new StreamResult (out);
 
 //            if ( Util.THIS.isLoggable() ) /* then */ {
 //                Util.THIS.debug ("[TransformServlet] Response MIME Type: '" + mimeType + "'");
@@ -167,13 +169,15 @@ public class TransformServlet extends HttpServlet {
             if ( message != null ) {
                 notifier.receive (message);
             }
-
+            
+            assert out != null;
             // create warning page
-            response.setContentType ("text/html");
+            response.setContentType ("text/html;charset=UTF-8");
 
             out.println ("<html><head>");
             out.println ("    <title>" + NbBundle.getMessage(TransformServlet.class, "MSG_error_html_title") + "</title>");
             out.println ("    <style>" + NbBundle.getMessage(TransformServlet.class, "MSG_error_html_style") + "</style>");
+            out.println("     <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\">");
             out.println ("</head><body>");
             out.println ("    <h2>" + NbBundle.getMessage(TransformServlet.class, "MSG_error_page_title") + "</h2>");
             out.println ("    <p>" + NbBundle.getMessage(TransformServlet.class, "MSG_error_page_message") + "</p>");

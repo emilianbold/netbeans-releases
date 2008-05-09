@@ -59,7 +59,7 @@ import org.netbeans.modules.sql.framework.model.impl.ValidationInfoImpl;
 import org.openide.util.NbBundle;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.logger.LogUtil;
+
 
 /**
  * @author Girish Patil
@@ -76,7 +76,7 @@ public class SQLOperatorInfoVisitor {
     // TODO Add flag to warn when Hex operator is being used on SQLServer or Sybase.
     private boolean validate = false;
     private List<ValidationInfo> validationInfoList = new ArrayList<ValidationInfo>();
-    private static transient final Logger mLogger = LogUtil.getLogger(SQLOperatorInfoVisitor.class.getName());
+    private static transient final Logger mLogger = Logger.getLogger(SQLOperatorInfoVisitor.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
     public SQLOperatorInfoVisitor() {
@@ -164,15 +164,15 @@ public class SQLOperatorInfoVisitor {
             if (this.pipelineForced || this.foundValidationCondition || this.foundJavaOperator) {
                 // Pipeline required
                 if (this.foundUserFunction) {
-                    String nbBundle1 = mLoc.t("PRSR001: Can not use User function(s) in pipeline/validation mode.");
-                    String desc = Localizer.parse(nbBundle1); // NOI18N
+                    String nbBundle1 = mLoc.t("BUND300: Can not use User function(s) in pipeline/validation mode.");
+                    String desc = nbBundle1.substring(15); // NOI18N
                     ValidationInfoImpl validationInfo = new ValidationInfoImpl(definition, desc, ValidationInfo.VALIDATION_ERROR);
                     validationInfoList.add(validationInfo);
                 }
             } else {
                 if (this.foundUserFunction) {
-                    String nbBundle2 = mLoc.t("PRSR001: One or more User function is used. Make sure the function is valid and available on appropriate source or target database. ");
-                    String desc =Localizer.parse(nbBundle2);
+                    String nbBundle2 = mLoc.t("BUND301: One or more User function is used. Make sure the function is valid and available on appropriate source or target database. ");
+                    String desc = nbBundle2.substring(15);
                     ValidationInfoImpl validationInfo = new ValidationInfoImpl(definition, desc, ValidationInfo.VALIDATION_WARNING);
                     validationInfoList.add(validationInfo);
                 }
@@ -220,7 +220,7 @@ public class SQLOperatorInfoVisitor {
                 visit(sourceTable);
             }
         } catch (Exception ex) {
-            mLogger.errorNoloc(mLoc.t("PRSR129: Could not find source tables for this target table{0}", LOG_CATEGORY), ex);
+            mLogger.errorNoloc(mLoc.t("EDIT129: Could not find source tables for this target table{0}", LOG_CATEGORY), ex);
         }
     }
 }

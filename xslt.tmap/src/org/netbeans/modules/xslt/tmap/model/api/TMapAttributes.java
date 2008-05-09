@@ -18,11 +18,11 @@
  */
 package org.netbeans.modules.xslt.tmap.model.api;
 
-import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PartnerLinkType;
-import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
 import org.netbeans.modules.xml.wsdl.model.Operation;
+import org.netbeans.modules.xml.wsdl.model.PortType;
 import org.netbeans.modules.xml.xam.dom.Attribute;
 import org.netbeans.modules.xslt.tmap.model.impl.AttributesType;
+import org.netbeans.modules.xslt.tmap.model.impl.AttributesType.AttrType;
 
 /**
  *
@@ -33,8 +33,11 @@ public enum TMapAttributes implements Attribute {
 //    PARTNER_LINK_TYPE(PartnerLinkTypeReference.PARTNER_LINK_TYPE, QName.class),
 //    ROLE_NAME(PartnerLinkTypeReference.ROLE_NAME, String.class, AttributesType.AttrType.NCNAME),
 //    OPERATION_NAME(OperationReference.OPERATION_NAME, String.class, AttributesType.AttrType.NCNAME),
-    PARTNER_LINK_TYPE(PartnerLinkTypeReference.PARTNER_LINK_TYPE, PartnerLinkType.class, AttributesType.AttrType.QNAME),
-    ROLE_NAME(PartnerLinkTypeReference.ROLE_NAME, Role.class, AttributesType.AttrType.NCNAME),
+    TARGET_NAMESPACE( TransformMap.TARGET_NAMESPACE, String.class , AttrType.URI ),
+    LOCATION( Import.LOCATION , String.class , AttrType.URI ),
+    NAMESPACE( Import.NAMESPACE , String.class , AttrType.URI ),
+//    PORT_TYPE(PortTypeReference.PORT_TYPE, PortType.class, AttributesType.AttrType.QNAME),
+    PORT_TYPE(PortTypeReference.PORT_TYPE, PortType.class),
     OPERATION_NAME(OperationReference.OPERATION_NAME, Operation.class, AttributesType.AttrType.NCNAME),
     TRANSFORM_JBI(TransformerDescriptor.TRANSFORM_JBI, Boolean.class),
     INPUT_VARIABLE(VariableDeclarator.INPUT_VARIABLE, String.class),
@@ -42,7 +45,7 @@ public enum TMapAttributes implements Attribute {
     SOURCE(Transform.SOURCE, String.class),
     RESULT(Transform.RESULT, String.class),
     TYPE(Param.TYPE, String.class),
-    NAME(Param.NAME, String.class),
+    NAME(Nameable.NAME_PROPERTY, String.class),
     VALUE(Param.VALUE, String.class),
     FILE(Transform.FILE, String.class);
 

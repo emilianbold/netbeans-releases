@@ -42,7 +42,9 @@
 package org.netbeans.modules.compapp.projects.jbi.ui.actions;
 
 import java.awt.event.ActionEvent;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.compapp.projects.jbi.CasaHelper;
 import org.netbeans.modules.compapp.projects.jbi.JbiProject;
@@ -52,6 +54,7 @@ import org.netbeans.modules.compapp.projects.jbi.ui.customizer.VisualClassPathIt
 
 import org.openide.nodes.Node;
 
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -63,6 +66,8 @@ import org.netbeans.modules.compapp.projects.jbi.JbiSubprojectProvider;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.actions.SystemAction;
 
 
@@ -133,6 +138,30 @@ public class DeleteModuleAction extends SystemAction {
         // No action, to be overridden by Java EE/module specific delete actions
     }
     
+    private void deleteEmbeddedProjects(final Project jbiProject, 
+            List<VisualClassPathItem> deletedProjsList){
+        if ((deletedProjsList != null) && (deletedProjsList.size() > 0)){
+            Iterator<VisualClassPathItem> itr = deletedProjsList.iterator();
+            VisualClassPathItem vcpi = null;
+            Project prj = null;
+            FileObject projDir = null;
+            FileObject jbiPrjDir = jbiProject.getProjectDirectory();
+            while (itr.hasNext()){
+                vcpi = itr.next();
+                prj = vcpi.getAntArtifact().getProject();
+                projDir = prj.getProjectDirectory();
+                if (FileUtil.isParentOf(jbiPrjDir, projDir)){
+                    //DefaultProjectOperations.performDefaultDeleteOperation(prj);
+                    FileObject fo = projDir;
+                    try {
+                        fo.delete();
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            }
+        }
+    }
     
     /**
      * Removes a JBI module from a JBI project.
@@ -149,6 +178,9 @@ public class DeleteModuleAction extends SystemAction {
                 (List) projProperties.get(JbiProjectProperties.JBI_CONTENT_ADDITIONAL);
         List<VisualClassPathItem> newCompProjList = 
                 new ArrayList<VisualClassPathItem>();
+        List<VisualClassPathItem> deletedProjsList = 
+                new ArrayList<VisualClassPathItem>();
+        
         String subProjName = null;        
         int itemRemovedIndex = -1;
         
@@ -162,6 +194,7 @@ public class DeleteModuleAction extends SystemAction {
                 deleteModuleProperties(jbiProject, cp, artifactName);
                 subProjName = cp.getProjectName();  
                 subproject = cp.getAntArtifact().getProject();  
+                deletedProjsList.add(oldCompProjList.get(i));
             } else {
                 newCompProjList.add(oldCompProjList.get(i));
             }
@@ -185,7 +218,7 @@ public class DeleteModuleAction extends SystemAction {
             projProperties.store();   
             
             jbiProject.getLookup().lookup(JbiSubprojectProvider.class).subprojectRemoved(subproject);
-            
+            deleteEmbeddedProjects(jbiProject, deletedProjsList);
             return true;
         } else {
             return false;

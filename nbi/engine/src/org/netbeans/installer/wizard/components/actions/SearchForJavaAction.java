@@ -61,6 +61,7 @@ import org.netbeans.installer.utils.system.windows.WindowsRegistry;
 import static org.netbeans.installer.utils.system.windows.WindowsRegistry.HKLM;
 import static org.netbeans.installer.utils.system.windows.WindowsRegistry.HKCU;
 import org.netbeans.installer.wizard.components.WizardAction;
+import org.netbeans.installer.wizard.components.panels.JdkLocationPanel;
 
 /**
  *
@@ -388,6 +389,18 @@ public class SearchForJavaAction extends WizardAction {
             if (jdk.getStatus() == Status.INSTALLED) {
                 if (!locations.contains(jdk.getInstallationLocation())) {
                     locations.add(jdk.getInstallationLocation());
+                }
+            }
+        }
+        
+        for (Product product: Registry.getInstance().getProducts(Status.TO_BE_INSTALLED)) {
+            final String jdkSysPropName = product.getUid() + StringUtils.DOT +
+                    JdkLocationPanel.JDK_LOCATION_PROPERTY;
+            final String jdkSysProp = System.getProperty(jdkSysPropName);
+            if (jdkSysProp != null) {
+                File sprop = new File(jdkSysProp);
+                if (!locations.contains(sprop)) {
+                    locations.add(sprop);
                 }
             }
         }

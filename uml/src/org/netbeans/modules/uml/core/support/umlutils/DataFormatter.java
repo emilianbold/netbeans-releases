@@ -42,7 +42,9 @@
 package org.netbeans.modules.uml.core.support.umlutils;
 
 import java.io.File;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Map;
@@ -161,15 +163,9 @@ public class DataFormatter implements IDataFormatter
       
 		if( format == null || format.length() == 0 )
 		{
-			IPropertyElement pElem = null;
 			if (elem != null)
 			{
-			   IPropertyDefinition pDef = getDefinition(helper);
-			   if (pDef != null)
-			   {
-				   pElem = getPropertyElement(helper, pDef);
-				   format = formatElement(helper);
-			   }
+                            format = formatElement(helper);
 			}
 		}
       	return format;
@@ -306,8 +302,22 @@ public class DataFormatter implements IDataFormatter
                 File aFile = new File(fileName);
                 if (aFile.exists() && aFile.isFile()) {
                     URI uri = aFile.toURI();
+
                     if (uri != null) {
                         uriFileName = uri.toString();
+
+                        try {
+                            URI uriStrict = new URI(toStrictRFC2396(uriFileName));
+                            if (new File(uri).equals(new File(uriStrict))) 
+                            {
+                                uriFileName = uriStrict.toString();
+                            }
+                        } 
+                        catch (URISyntaxException use) 
+                        {
+                            // something wrong in the "strict" version;
+                            // will continue with non-strict
+                        }
                         proc = new XslTransformer(uriFileName);
                     }
                 }
@@ -323,6 +333,50 @@ public class DataFormatter implements IDataFormatter
 	return proc;
    }
    
+    private String toStrictRFC2396(String path) 
+    {
+        if (path == null) 
+        {
+            return path;
+        }
+        StringBuffer res = new StringBuffer(path.length());
+        String allowed = new String("_-!.~'()*,;:$&+=?/[]@%");
+        char[] hexDigits 
+            = new char[]{'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};  
+        for(int i = 0; i < path.length(); i++) 
+        {
+            char c = path.charAt(i);
+            if ( ( c>='A' && c <= 'Z') 
+                 || ( c>='a' && c <= 'z')
+                 || ( c>='0' && c <= '9')
+                 || (allowed.indexOf(c) > -1)
+               )               
+            {
+                res.append(c);
+            }
+            else
+            {
+                try {
+                    byte[] buf = new String(new char[]{c}).getBytes("UTF-8"); 
+                    for(int j = 0; j < buf.length; j++)
+                    {
+                        res.append('%');
+                        res.append(hexDigits[( buf[j] & 0xF0) >> 4]);
+                        res.append(hexDigits[buf[j] & 0x0F]);                       
+                    } 
+                } 
+                catch (UnsupportedEncodingException uee) 
+                {
+                    // well, utf8 isn't supported - that just isn't suppose to happen;
+                    // but if it happened and we're here - just return unmodified 
+                    // path in that case
+                    return path;
+                }
+            }
+        }
+        return res.toString();        
+    }
+
 
    /**
     *

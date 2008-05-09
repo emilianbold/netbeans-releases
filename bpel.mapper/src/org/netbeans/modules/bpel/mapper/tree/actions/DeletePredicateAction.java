@@ -30,7 +30,6 @@ import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext;
 import org.openide.util.NbBundle;
 
 /**
- * Shows the Expression editor dialog in order to create a new predicate.
  *
  * @author nk160297
  */
@@ -62,7 +61,7 @@ public class DeletePredicateAction extends MapperAction<RestartableIterator<Obje
         assert nextObj instanceof AbstractPredicate;
         AbstractPredicate pred = (AbstractPredicate)nextObj;
         //
-        XPathSchemaContext sContext = pred.getContext();
+        XPathSchemaContext sContext = pred.getSchemaContext();
         if (sContext == null) {
             sContext = PathConverter.constructContext(itr);
         }

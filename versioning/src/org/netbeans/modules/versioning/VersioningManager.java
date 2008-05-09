@@ -146,15 +146,18 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
      * List of versioning systems changed.
      */
     private synchronized void refreshVersioningSystems() {
-        unloadVersioningSystems();
+        // inline unloadVersioningSystems();
+        for (VersioningSystem system : versioningSystems) {
+            system.removePropertyChangeListener(this);
+        }
+        versioningSystems.clear();
+        assert versioningSystems.size() == 0;
+        localHistory = null;
+        // inline unloadVersioningSystems();
+        
         Collection<? extends VersioningSystem> systems = systemsLookupResult.allInstances();
-        loadVersioningSystems(systems);
-        flushFileOwnerCache();
-        refreshDiffSidebars(null);
-        VersioningAnnotationProvider.refreshAllAnnotations();
-    }
 
-    private void loadVersioningSystems(Collection<? extends VersioningSystem> systems) {
+        // inline loadVersioningSystems(systems);
         assert versioningSystems.size() == 0;
         assert localHistory == null;
         versioningSystems.addAll(systems);
@@ -164,14 +167,11 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
             }
             system.addPropertyChangeListener(this);
         }
-    }
-
-    private void unloadVersioningSystems() {
-        for (VersioningSystem system : versioningSystems) {
-            system.removePropertyChangeListener(this);
-        }
-        versioningSystems.clear();
-        localHistory = null;
+        // inline loadVersioningSystems(systems);
+        
+        flushFileOwnerCache();
+        refreshDiffSidebars(null);
+        VersioningAnnotationProvider.refreshAllAnnotations();
     }
 
     InterceptionListener getInterceptionListener() {

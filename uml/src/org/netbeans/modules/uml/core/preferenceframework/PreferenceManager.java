@@ -896,14 +896,7 @@ public class PreferenceManager implements IPreferenceManager2{
 						}
 						if (saveSubElements(doc, ele))
 						{
-							//save the xml node
-							try 
-							{
-								XMLManip.save(doc, file2);
-							} catch (Exception e)
-							{
-								e.printStackTrace();
-							}
+							XMLManip.save(doc, file2);
 						}
 						else
 						{

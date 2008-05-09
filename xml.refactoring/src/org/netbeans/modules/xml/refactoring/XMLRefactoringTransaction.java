@@ -165,6 +165,18 @@ public class XMLRefactoringTransaction implements Transaction {
                             throw (RuntimeException) new RuntimeException().initCause(ex);
                         }
                     }
+                    //fix for bug 106630, if xsd is closed in editor, its not doing a sync. force it to sync 
+                    if(modelsInRefactoring != null ){
+                        Set<Model> mods = modelsInRefactoring.keySet();
+                        for(Model m:mods){
+                            try {
+                                if(m instanceof AbstractDocumentModel)
+                                    ((AbstractDocumentModel)m).sync();
+                            } catch (IOException e) {
+                                   //continue
+                            }
+                        }
+                    }
                
             }  else{
                commited=true;
@@ -200,6 +212,18 @@ public class XMLRefactoringTransaction implements Transaction {
                     throw (RuntimeException) new RuntimeException().initCause(ex);
                 }
             } 
+            //fix for bug 106630, if xsd is closed in editor, it doesnt sync.force sync
+            if(modelsInRefactoring != null ){
+              Set<Model> mods = modelsInRefactoring.keySet();
+              for(Model m:mods){
+                  try {
+                      if(m instanceof AbstractDocumentModel)
+                          ((AbstractDocumentModel)m).sync();
+                  } catch (IOException e) {
+                      //continue
+                  }
+              }
+           } 
                   
         
       }finally {

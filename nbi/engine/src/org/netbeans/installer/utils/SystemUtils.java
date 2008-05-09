@@ -726,31 +726,45 @@ public final class SystemUtils {
     
     public static Platform getCurrentPlatform() {
         if (currentPlatform == null) {
-            boolean is64bit = System.getProperty("os.arch").equals("amd64") ||
-                    System.getProperty("os.arch").equals("sparcv9");
+            final String osArch = System.getProperty("os.arch");
+            final String osName = System.getProperty("os.name");
+            boolean is64bit = 
+                    osArch.equals("amd64") ||
+                    osArch.equals("sparcv9") || 
+                    osArch.equals("ppc64");
             
-            if (System.getProperty("os.name").contains("Windows")) {
+            if (osName.contains("Windows")) {
                 currentPlatform =
                         is64bit ? Platform.WINDOWS_X64 : Platform.WINDOWS_X86;
             }
-            if (System.getProperty("os.name").contains("Linux")) {
-                currentPlatform =
-                        is64bit ? Platform.LINUX_X64 : Platform.LINUX_X86;
+            
+            if (osName.contains("Linux")) {
+                if (osArch.contains("ppc")) {
+                    currentPlatform =
+                            is64bit ? Platform.LINUX_PPC64 : Platform.LINUX_PPC;
+                } else {
+                    currentPlatform =
+                            is64bit ? Platform.LINUX_X64 : Platform.LINUX_X86;
+                }
             }
-            if (System.getProperty("os.name").contains("Mac OS X") &&
-                    System.getProperty("os.arch").contains("ppc")) {
-                currentPlatform = Platform.MACOSX_PPC;
+            
+            if (osName.contains("Mac OS X")) {
+                if(osArch.contains("ppc")) {
+                    currentPlatform = Platform.MACOSX_PPC;
+                } else if(osArch.contains("i386")) {
+                    currentPlatform = Platform.MACOSX_X86;
+                }
             }
-            if (System.getProperty("os.name").contains("Mac OS X") &&
-                    System.getProperty("os.arch").contains("i386")) {
-                currentPlatform = Platform.MACOSX_X86;
-            }
-            if (System.getProperty("os.name").contains("SunOS")) {
-                if(System.getProperty("os.arch").contains("sparc")) {
+            
+            if (osName.contains("SunOS")) {
+                if(osArch.contains("sparc")) {
                     currentPlatform = Platform.SOLARIS_SPARC;
                 } else {
                     currentPlatform = Platform.SOLARIS_X86;
                 }
+            }
+            if(currentPlatform==null) {
+                currentPlatform = Platform.UNIX;
             }
         }
         
@@ -1004,7 +1018,9 @@ public final class SystemUtils {
     public static boolean isSolaris() {
         return getCurrentPlatform().isCompatibleWith(Platform.SOLARIS);
     }
-    
+    public static boolean isUnix() {
+        return getCurrentPlatform().isCompatibleWith(Platform.UNIX);
+    }
     // miscellanea //////////////////////////////////////////////////////////////////
     public static boolean intersects(
             final List<? extends Object> list1,
@@ -1084,6 +1100,8 @@ public final class SystemUtils {
             System.getProperty("java.home");//NOI18N
     public static final String USER_HOME = 
             System.getProperty("user.home");//NOI18N
+    public static final String NO_SPACE_CHECK_PROPERTY = 
+            "no.space.check";//NOI18N
     public static final String ERROR_CANNOT_PARSE_PATTERN_KEY =
             "SU.error.cannot.parse.pattern";//NOI18N
     public static final String ERROR_CANNOT_GET_DEFAULT_APPS_LOCATION_KEY =

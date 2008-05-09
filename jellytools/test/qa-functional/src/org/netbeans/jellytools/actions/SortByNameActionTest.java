@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -40,6 +40,7 @@
  */
 package org.netbeans.jellytools.actions;
 
+import java.io.File;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import junit.textui.TestRunner;
@@ -47,6 +48,9 @@ import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jellytools.properties.PropertySheetOperator;
+import org.netbeans.jemmy.JemmyProperties;
+import org.netbeans.jemmy.QueueTool;
+import org.netbeans.jemmy.util.PNGEncoder;
 import org.netbeans.junit.NbTestSuite;
 
 /** Test of SortByNameAction class.
@@ -82,13 +86,44 @@ public class SortByNameActionTest extends JellyTestCase {
         Node node = new Node(new SourcePackagesNode("SampleProject"), "sample1|SampleClass1.java"); // NOI18N
         new PropertiesAction().perform(node);
         PropertySheetOperator pso = new PropertySheetOperator("SampleClass1.java"); // NOI18N
+        if(pso.tblSheet().getRowCount() == 0) {
+            // property sheet not initialized properly => try it once more
+            pso.close();
+            int oldDispatching = JemmyProperties.getCurrentDispatchingModel();
+            JemmyProperties.setCurrentDispatchingModel(JemmyProperties.ROBOT_MODEL_MASK);
+            try {
+                new QueueTool().waitEmpty(2000);
+                new PropertiesAction().perform(node);
+            } finally {
+                JemmyProperties.setCurrentDispatchingModel(oldDispatching);
+            }
+            pso = new PropertySheetOperator("SampleClass1.java"); // NOI18N
+        }
         // set default sorting
         pso.sortByCategory();
         int oldCount = pso.tblSheet().getRowCount();
+        log("oldCount="+oldCount);
+        assertTrue("Property sheet mustn't be empty.", oldCount != 0); // NOI18N
+        try {
+            PNGEncoder.captureScreen(getWorkDir().getAbsolutePath() + File.separator + "screen1-AfterSortByCategory.png");
+        } catch (Exception e) {
+            // ignore it
+        }
         new SortByNameAction().perform(pso);
         int newCount = pso.tblSheet().getRowCount();
+        log("newCount="+newCount);
+        try {
+            PNGEncoder.captureScreen(getWorkDir().getAbsolutePath() + File.separator + "screen2-AfterSortByName.png");
+        } catch (Exception e) {
+            // ignore it
+        }
         // re-set default sorting
         pso.sortByCategory();
+        try {
+            PNGEncoder.captureScreen(getWorkDir().getAbsolutePath() + File.separator + "screen3-AfterSortByCategory.png");
+        } catch (Exception e) {
+            // ignore it
+        }
         pso.close();
         // if sorted by name there are no categories displayed in property sheet
         assertTrue("Sort by name failed.", oldCount > newCount); // NOI18N

@@ -48,7 +48,6 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import junit.textui.TestRunner;
 import org.netbeans.junit.NbTestSuite;
@@ -59,7 +58,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.MultiFileSystem;
-import org.openide.filesystems.XMLFileSystem;
 /** Test layer cache manager.
  * @author Jesse Glick
  * @see "#20628"
@@ -81,7 +79,7 @@ implements CacheManagerTestBaseHid.ManagerFactory {
         TestRunner.run(new NbTestSuite(BinaryCacheManagerTest.class));
     }
 
-    protected void setUp() throws Exception {
+    protected @Override void setUp() throws Exception {
         super.setUp();
         
         clearWorkDir();
@@ -115,10 +113,9 @@ implements CacheManagerTestBaseHid.ManagerFactory {
         clearWorkDir();
         LayerCacheManager m = new BinaryCacheManager();
         // layer2.xml should override layer1.xml where necessary:
-        List urls = new ArrayList(Arrays.asList(new URL[] {
+        List<URL> urls = new ArrayList<URL>(Arrays.asList(
             BinaryCacheManagerTest.class.getResource("data/layer2.xml"),
-            BinaryCacheManagerTest.class.getResource("data/layer1.xml"),
-        }));
+            BinaryCacheManagerTest.class.getResource("data/layer1.xml")));
         
         FileSystem f = store(m, urls);
         FixedFileSystem base = new FixedFileSystem("ffs", "FFS");
@@ -134,7 +131,7 @@ implements CacheManagerTestBaseHid.ManagerFactory {
         //L l2 = new L();mfs.addFileChangeListener(l2);
         urls.remove(0);
         f = store(m, urls);
-        final FileSystem[] fss = new FileSystem[] {base, f};
+        final FileSystem[] fss = {base, f};
         mfs.runAtomicAction(new FileSystem.AtomicAction() {
             public void run() {
                 mfs._setDelegates(fss);

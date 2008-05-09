@@ -57,8 +57,8 @@ import javax.swing.text.EditorKit;
 import org.netbeans.editor.*;
 import org.netbeans.editor.ext.ExtSettingsDefaults;
 import org.netbeans.editor.ext.ExtSettingsNames;
+import org.netbeans.modules.editor.hints.FixData;
 import org.netbeans.spi.editor.hints.Fix;
-import org.netbeans.spi.editor.hints.LazyFixList;
 
 /**
 * Pane displaying the completion view and accompanying components
@@ -93,11 +93,11 @@ public class ScrollCompletionPane extends JScrollPane implements SettingsChangeL
     private Dimension maxSize;
     private Dimension scrollBarSize;
 
-    public ScrollCompletionPane(JTextComponent component, LazyFixList fixes, String title, ListSelectionListener listener) {
+    public ScrollCompletionPane(JTextComponent component, FixData fixes, String title, ListSelectionListener listener) {
         this( component, fixes, title, listener, null );
     }
     
-    public ScrollCompletionPane(JTextComponent component, LazyFixList fixes, String title, ListSelectionListener listener, Dimension maxSize ) {
+    public ScrollCompletionPane(JTextComponent component, FixData fixes, String title, ListSelectionListener listener, Dimension maxSize ) {
         this.component = component;
         
         // Compute size of the scrollbars
@@ -138,7 +138,7 @@ public class ScrollCompletionPane extends JScrollPane implements SettingsChangeL
         return view;
     }
 
-    public void reset(LazyFixList fixes, String title) {
+    public void reset(FixData fixes, String title) {
         view.setResult(fixes);
         resetViewSize();
         setTitle(title);

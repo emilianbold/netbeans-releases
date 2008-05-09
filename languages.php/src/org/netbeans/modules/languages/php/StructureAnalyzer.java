@@ -48,12 +48,12 @@ import java.util.Map;
 
 import javax.swing.text.AbstractDocument;
 
-import org.netbeans.api.gsf.CompilationInfo;
-import org.netbeans.api.gsf.HtmlFormatter;
-import org.netbeans.api.gsf.OffsetRange;
-import org.netbeans.api.gsf.ParserResult;
-import org.netbeans.api.gsf.StructureItem;
-import org.netbeans.api.gsf.StructureScanner;
+import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.HtmlFormatter;
+import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.gsf.api.ParserResult;
+import org.netbeans.modules.gsf.api.StructureItem;
+import org.netbeans.modules.gsf.api.StructureScanner;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
@@ -69,7 +69,7 @@ import org.netbeans.modules.php.model.PhpModel;
 public class StructureAnalyzer implements StructureScanner {
 
     /* (non-Javadoc)
-     * @see org.netbeans.api.gsf.StructureScanner#folds(org.netbeans.api.gsf.CompilationInfo)
+     * @see org.netbeans.modules.gsf.api.StructureScanner#folds(org.netbeans.modules.gsf.api.CompilationInfo)
      */
     public Map<String,List<OffsetRange>> folds(CompilationInfo info) {
         ParserResult result = info.getParserResult();
@@ -87,7 +87,7 @@ public class StructureAnalyzer implements StructureScanner {
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.api.gsf.StructureScanner#scan(org.netbeans.api.gsf.CompilationInfo, org.netbeans.api.gsf.HtmlFormatter)
+     * @see org.netbeans.modules.gsf.api.StructureScanner#scan(org.netbeans.modules.gsf.api.CompilationInfo, org.netbeans.modules.gsf.api.HtmlFormatter)
      */
     public List<? extends StructureItem> scan( CompilationInfo info,
             HtmlFormatter formatter )

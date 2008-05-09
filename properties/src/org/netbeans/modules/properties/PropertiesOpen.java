@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -41,17 +41,29 @@
 
 package org.netbeans.modules.properties;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.beans.*;
+import java.awt.EventQueue;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Image;
+import java.awt.Rectangle;
+import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import java.beans.PropertyVetoException;
+import java.beans.VetoableChangeListener;
+import java.beans.VetoableChangeSupport;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.Serializable;
-import java.util.*;
+import java.util.Enumeration;
+import java.util.Iterator;
 import javax.swing.Action;
 import javax.swing.event.ChangeListener;
-import javax.swing.*;
+import javax.swing.JPanel;
+import javax.swing.JTable;
+import javax.swing.SwingUtilities;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 
@@ -66,15 +78,18 @@ import org.openide.filesystems.FileStatusEvent;
 import org.openide.filesystems.FileStatusListener;
 import org.openide.filesystems.FileSystem;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.OpenSupport;
 import org.openide.nodes.Node;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
-import org.openide.util.actions.CallbackSystemAction;
+import org.openide.util.HelpCtx;
+import org.openide.util.Mutex;
+import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
+import org.openide.util.WeakSet;
 import org.openide.util.actions.SystemAction;
-import org.openide.util.*;
-import org.openide.windows.*;
+import org.openide.windows.CloneableOpenSupport;
+import org.openide.windows.CloneableTopComponent;
 import org.openide.util.Utilities;
 import org.openide.DialogDescriptor;
 import org.openide.filesystems.FileUtil;
@@ -115,8 +130,9 @@ public class PropertiesOpen extends CloneableOpenSupport
     /** 
      * Tests whether all data is saved, and if not, prompts the user to save.
      *
-     * @return <code>true</code> if everything can be closed
+     * @return {@code true} if everything can be closed
      */
+    @Override
     protected boolean canClose() {
         SaveCookie saveCookie = propDataObject.getCookie(SaveCookie.class);
         if (saveCookie == null) {
@@ -215,10 +231,11 @@ public class PropertiesOpen extends CloneableOpenSupport
 
     /** Gets UndoRedo manager for this OpenSupport. */
     public UndoRedo getUndoRedo () {
-        if(undoRedoManager != null)
+        if (undoRedoManager != null) {
             return undoRedoManager;
-        else
+        } else {
             return new CompoundUndoRedoManager(propDataObject);
+        }
     }
 
     /** Helper method. Closes documents. */
@@ -232,10 +249,10 @@ public class PropertiesOpen extends CloneableOpenSupport
     /** Helper method. Closes entry. */
     private void closeEntry(PropertiesFileEntry entry) {
         PropertiesEditorSupport editorSupport = entry.getPropertiesEditor();
-        if (editorSupport.hasOpenedEditorComponent())
+        if (editorSupport.hasOpenedEditorComponent()) {
             // Has opened editor view for this entry -> don't close document.
             return;
-        else {
+        } else {
             // Hasn't opened editor view for this entry -> close document.
             editorSupport.forceNotifyClosed();
             
@@ -255,21 +272,24 @@ public class PropertiesOpen extends CloneableOpenSupport
         // for each entry : if there is a SaveCookie and no open editor component, return true.
         // if passed for all entries, return false
         PropertiesFileEntry entry = (PropertiesFileEntry)propDataObject.getPrimaryEntry();
-        SaveCookie savec = (SaveCookie)entry.getCookie(SaveCookie.class);
+        SaveCookie savec = entry.getCookie(SaveCookie.class);
         
-        if ((savec != null) && !entry.getPropertiesEditor().hasOpenedEditorComponent())
+        if ((savec != null) && !entry.getPropertiesEditor().hasOpenedEditorComponent()) {
             return true;
+        }
+
         for (Iterator it = propDataObject.secondaryEntries().iterator(); it.hasNext(); ) {
             entry = (PropertiesFileEntry)it.next();
-            savec = (SaveCookie)entry.getCookie(SaveCookie.class);
-            if ((savec != null) && !entry.getPropertiesEditor().hasOpenedEditorComponent())
+            savec = entry.getCookie(SaveCookie.class);
+            if ((savec != null) && !entry.getPropertiesEditor().hasOpenedEditorComponent()) {
                 return true;
+            }
         }
         return false;
     }
 
     
-    /** Nested class. Environment that connects the open support together with <code>DataObject</code>. */
+    /** Environment that connects the open support together with {@code DataObject}. */
     private static class Environment implements CloneableOpenSupport.Env, Serializable,
         PropertyChangeListener, VetoableChangeListener {
             
@@ -299,28 +319,28 @@ public class PropertiesOpen extends CloneableOpenSupport
         }
 
         
-        /** Implements <code>CloneableOpenSupport.Env</code> interface. Adds property listener. */
+        /** Implements {@code CloneableOpenSupport.Env} interface. Adds property listener. */
         public void addPropertyChangeListener(PropertyChangeListener l) {
             prop().addPropertyChangeListener(l);
         }
 
-        /** Implements <code>CloneableOpenSupport.Env</code> interface. Removes property listener. */
+        /** Implements {@code CloneableOpenSupport.Env} interface. Removes property listener. */
         public void removePropertyChangeListener(PropertyChangeListener l) {
             prop().removePropertyChangeListener(l);
         }
 
-        /** Implements <code>CloneableOpenSupport.Env</code> interface. Adds veto listener. */
+        /** Implements {@code CloneableOpenSupport.Env} interface. Adds veto listener. */
         public void addVetoableChangeListener(VetoableChangeListener l) {
             veto().addVetoableChangeListener(l);
         }
 
-        /** Implements <code>CloneableOpenSupport.Env</code> interface. Removes veto listener. */
+        /** Implements {@code CloneableOpenSupport.Env} interface. Removes veto listener. */
         public void removeVetoableChangeListener(VetoableChangeListener l) {
             veto().removeVetoableChangeListener(l);
         }
 
         /** 
-         * Implements <code>CloneableOpenSupport</code> interface.
+         * Implements {@code CloneableOpenSupport} interface.
          * Method that allows environment to find its cloneable open support.
          * @return the support or null if the environemnt is not in valid 
          * state and the CloneableOpenSupport cannot be found for associated
@@ -331,7 +351,7 @@ public class PropertiesOpen extends CloneableOpenSupport
         }
         
         /** 
-         * Implements <code>CloneableOpenSupport.Env</code> interface.
+         * Implements {@code CloneableOpenSupport.Env} interface.
          * Test whether the support is in valid state or not.
          * It could be invalid after deserialization when the object it
          * referenced to does not exist anymore.
@@ -342,7 +362,7 @@ public class PropertiesOpen extends CloneableOpenSupport
         }
         
         /**
-         * Implements <code>CloneableOpenSupport.Env</code> interface. 
+         * Implements {@code CloneableOpenSupport.Env} interface. 
          * Test whether the object is modified or not.
          * @return true if the object is modified
          */
@@ -351,7 +371,7 @@ public class PropertiesOpen extends CloneableOpenSupport
         }
 
         /**
-         * Implements <code>CloneableOpenSupport.Env</code> interface. 
+         * Implements {@code CloneableOpenSupport.Env} interface. 
          * Support for marking the environement modified.
          * @exception IOException if the environment cannot be marked modified
          *   (for example when the file is readonly), when such exception
@@ -362,7 +382,7 @@ public class PropertiesOpen extends CloneableOpenSupport
         }
         
         /** 
-         * Implements <code>CloneableOpenSupport.Env</code> interface.
+         * Implements {@code CloneableOpenSupport.Env} interface.
          * Reverse method that can be called to make the environment unmodified.
          */
         public void unmarkModified() {
@@ -370,8 +390,8 @@ public class PropertiesOpen extends CloneableOpenSupport
         }
         
         /** 
-         * Implements <code>PropertyChangeListener</code> interface.
-         * Accepts property changes from <code>DataObject</code> and fires them to own listeners.
+         * Implements {@code PropertyChangeListener} interface.
+         * Accepts property changes from {@code DataObject} and fires them to own listeners.
          */
         public void propertyChange(PropertyChangeEvent evt) {
             if(DataObject.PROP_MODIFIED.equals(evt.getPropertyName())) {
@@ -383,7 +403,9 @@ public class PropertiesOpen extends CloneableOpenSupport
             } else if(DataObject.PROP_VALID.equals(evt.getPropertyName ())) { 
                 // We will handle the object invalidation here.
                 // Do not check it if old value is not true.
-                if(Boolean.FALSE.equals(evt.getOldValue())) return;
+                if (Boolean.FALSE.equals(evt.getOldValue())) {
+                    return;
+                }
 
                 // Loosing validity.
                 PropertiesOpen support = (PropertiesOpen)findCloneableOpenSupport();
@@ -436,11 +458,9 @@ public class PropertiesOpen extends CloneableOpenSupport
         
         /** Lazy gets property change support. */
         private PropertyChangeSupport prop() {
-            if(propSupp == null) {
-                synchronized(this) {
-                    if(propSupp == null) {
-                        propSupp = new PropertyChangeSupport(this);
-                    }
+            synchronized (this) {
+                if (propSupp == null) {
+                    propSupp = new PropertyChangeSupport(this);
                 }
             }
             return propSupp;
@@ -448,11 +468,9 @@ public class PropertiesOpen extends CloneableOpenSupport
         
         /** Lazy gets vetoable change support. */
         private VetoableChangeSupport veto() {
-            if(vetoSupp == null) {
-                synchronized(this) {
-                    if(vetoSupp == null) {
-                        vetoSupp = new VetoableChangeSupport(this);
-                    }
+            synchronized (this) {
+                if (vetoSupp == null) {
+                    vetoSupp = new VetoableChangeSupport(this);
                 }
             }
             return vetoSupp;
@@ -468,8 +486,9 @@ public class PropertiesOpen extends CloneableOpenSupport
         */
         public void propertyChange(PropertyChangeEvent evt) {
             // Data object changed, reset the UndoRedo manager.
-            if(evt.getSource().equals(propDataObject))
-                ((CompoundUndoRedoManager)PropertiesOpen.this.getUndoRedo()).reset(propDataObject);
+            if (evt.getSource().equals(propDataObject)) {
+                ((CompoundUndoRedoManager) PropertiesOpen.this.getUndoRedo()).reset(propDataObject);
+            }
 
             if ((evt.getSource() == propDataObject) && (DataObject.PROP_MODIFIED.equals(evt.getPropertyName()))) {
                 if (((Boolean)evt.getNewValue()).booleanValue()) {
@@ -480,7 +499,7 @@ public class PropertiesOpen extends CloneableOpenSupport
             }
         }
 
-        /** Implements <code>SaveCookie</code> interface. */
+        /** Implements {@code SaveCookie} interface. */
         public void save() throws IOException {
             stopEditing();
             // do saving job
@@ -493,13 +512,16 @@ public class PropertiesOpen extends CloneableOpenSupport
         */
         public void saveDocument() throws IOException {
             PropertiesFileEntry pfe = (PropertiesFileEntry)propDataObject.getPrimaryEntry();
-            SaveCookie save = (SaveCookie)pfe.getCookie(SaveCookie.class);
-            if (save != null)
+            SaveCookie save = pfe.getCookie(SaveCookie.class);
+            if (save != null) {
                 save.save();
+            }
+
             for (Iterator it = propDataObject.secondaryEntries().iterator(); it.hasNext();) {
-                save = (SaveCookie)((PropertiesFileEntry)it.next()).getCookie(SaveCookie.class);
-                if(save != null)
+                save = ((PropertiesFileEntry) it.next()).getCookie(SaveCookie.class);
+                if (save != null) {
                     save.save();
+                }
             }
         }
 
@@ -541,7 +563,7 @@ public class PropertiesOpen extends CloneableOpenSupport
             this.key = key;
         }
 
-        /** Implememnts <code>OpenCookie</code>. Opens document. */
+        /** Implements {@code OpenCookie}. Opens document. */
         public void open() {
             // Instead of PropertiesOpen.super.open() so we get reference to TopComponent.
             // Note: It is strange for me that calling PropetiesOpen.this.openCloneableTopComponent throw s exception at run-time.
@@ -583,10 +605,10 @@ public class PropertiesOpen extends CloneableOpenSupport
     /** Cloneable top component which represents table view of resource bundles. */
     public static class PropertiesCloneableTopComponent extends CloneableTopComponent {
 
-        /** Reference to underlying <code>PropertiesDataObject</code>. */
+        /** Reference to underlying {@code PropertiesDataObject}. */
         private PropertiesDataObject propDataObject;
         
-        /** Listener for changes on <code>propDataObject</code> name and cookie properties.
+        /** Listener for changes on {@code propDataObject} name and cookie properties.
          * Changes display name of components accordingly. */
         private transient PropertyChangeListener dataObjectListener;
         
@@ -608,6 +630,7 @@ public class PropertiesOpen extends CloneableOpenSupport
 
         /**
          */
+        @Override
         public void open() {
             if (discard()) {
                 return;
@@ -615,11 +638,13 @@ public class PropertiesOpen extends CloneableOpenSupport
             super.open();
         }
 
+        @Override
         public void requestActive() {
             super.requestActive();
             getComponent(0).requestFocusInWindow();
         }
         
+        @Override
         public boolean canClose () {
             ((BundleEditPanel)getComponent(0)).stopEditing();
             return super.canClose();
@@ -848,8 +873,9 @@ public class PropertiesOpen extends CloneableOpenSupport
         
         /** 
          * Overrides superclass method. When closing last view, also close the document.
-         * @return <code>true</code> if close succeeded
+         * @return {@code true} if close succeeded
          */
+        @Override
         protected boolean closeLast () {
             if (!propDataObject.getOpenSupport().canClose ()) {
                 // if we cannot close the last window
@@ -861,42 +887,46 @@ public class PropertiesOpen extends CloneableOpenSupport
         }
 
         /**
-         * Overrides superclass method. 
-         * Is called from the superclass <code>clone<code> method to create new component from this one.
+         * Is called from the superclass {@code clone} method to create new component from this one.
          * This implementation only clones the object by calling super.clone method.
          * @return the copy of this object
          */
+        @Override
         protected CloneableTopComponent createClonedObject () {
             return new PropertiesCloneableTopComponent(propDataObject);
         }
 
-        /** Overrides superclass method. Gets <code>Icon</code>. */
+        /** Gets {@code Icon}. */
+        @Override
         public Image getIcon () {
             return Utilities.loadImage("org/netbeans/modules/properties/propertiesEditorMode.gif"); // NOI18N
         }
 
-        /** Overrides superclass method. Gets help context. */
+        /** Gets help context. */
+        @Override
         public HelpCtx getHelpCtx () {
             return new HelpCtx(Util.HELP_ID_MODIFYING);
         }
         
+        @Override
         protected String preferredID() {
             return getName();
         }
         
+        @Override
         public int getPersistenceType() {
             return PERSISTENCE_ONLY_OPENED;
         }
         
         /** 
-         * Overrides superclass method.
          * Gets compound UndoRedo manager from all UndozRedo managers from all editor supports. 
          */
+        @Override
         public UndoRedo getUndoRedo () {
             return propDataObject.getOpenSupport().getUndoRedo();
         }
 
-        /** Inits the subcomponents. Sets layout for this top component and adds <code>BundleEditPanel</code> to it. 
+        /** Inits the subcomponents. Sets layout for this top component and adds {@code BundleEditPanel} to it. 
          * @see BundleEditPanel */
         private void initComponents() {
             GridBagLayout gridbag = new GridBagLayout();
@@ -921,20 +951,22 @@ public class PropertiesOpen extends CloneableOpenSupport
         
 
         /**
-         * Overrides superclass method. Serialize this top component.
+         * Serialize this top component.
          * Subclasses wishing to store state must call the super method, then write to the stream.
          * @param out the stream to serialize to
          */
+        @Override
         public void writeExternal (ObjectOutput out) throws IOException {
             super.writeExternal(out);
             out.writeObject(propDataObject);
         }
 
         /** 
-         * Overrides superclass method. Deserialize this top component.
+         * Deserialize this top component.
          * Subclasses wishing to store state must call the super method, then read from the stream.
          * @param in the stream to deserialize from
          */
+        @Override
         public void readExternal (ObjectInput in) throws IOException, ClassNotFoundException {
             super.readExternal(in);
 
@@ -946,7 +978,7 @@ public class PropertiesOpen extends CloneableOpenSupport
 
 
     /** 
-     * <code>UndoRedo</code> manager for <code>PropertiesOpen</code> support. It contains weak references 
+     * {@code UndoRedo} manager for {@code PropertiesOpen} support. It contains weak references 
      * to all UndoRedo managers from all PropertiesEditor supports (for each entry of dataobject one manager). 
      * It uses it's "timeStamp" methods to find out which one of these managers comes to play. 
      */
@@ -1010,8 +1042,8 @@ public class PropertiesOpen extends CloneableOpenSupport
             return chosenManager;
         }
         
-        /** Implements <code>UndoRedo</code>. Test whether at least one of managers can Undo.
-         * @return <code>true</code> if undo is allowed
+        /** Implements {@code UndoRedo}. Test whether at least one of managers can Undo.
+         * @return {@code true} if undo is allowed
          */
         public synchronized boolean canUndo () {
             for (Manager manager : managers) {
@@ -1022,8 +1054,8 @@ public class PropertiesOpen extends CloneableOpenSupport
             return false;
         }
 
-        /** Implements <code>UndoRedo</code>. Test whether at least one of managers can Redo.
-         * @return <code>true</code> if redo is allowed
+        /** Implements {@code UndoRedo}. Test whether at least one of managers can Redo.
+         * @return {@code true} if redo is allowed
          */
         public synchronized boolean canRedo () {
             for (Manager manager : managers) {
@@ -1034,20 +1066,20 @@ public class PropertiesOpen extends CloneableOpenSupport
             return false;
         }
 
-        /** Implements <code>UndoRedo</code>. Undo an edit. It finds a manager which next undo edit has the highest 
+        /** Implements {@code UndoRedo}. Undo an edit. It finds a manager which next undo edit has the highest 
          * time stamp and makes undo on it.
          * @exception CannotUndoException if it fails
          */
         public synchronized void undo () throws CannotUndoException {
             PropertiesEditorSupport.UndoRedoStampFlagManager chosenManager = (PropertiesEditorSupport.UndoRedoStampFlagManager)getNextUndo();
 
-            if(chosenManager == null)
+            if (chosenManager == null) {
                 throw new CannotUndoException();
-            else {
+            } else {
                 Object atomicFlag = chosenManager.getAtomicFlagOfEditToBeUndone();
-                if(atomicFlag == null) // not linked with other edits as one atomic action
+                if (atomicFlag == null) {// not linked with other edits as one atomic action
                     chosenManager.undo();
-                else { // atomic undo compound from more edits in underlying managers
+                } else { // atomic undo compound from more edits in underlying managers
                     boolean undone;
                     do { // the atomic action can consists from more undo edits from same manager
                         undone = false;
@@ -1063,20 +1095,20 @@ public class PropertiesOpen extends CloneableOpenSupport
             }
         }
 
-        /** Implements <code>UndoRedo</code>. Redo a previously undone edit. It finds a manager which next undo edit has the highest 
+        /** Implements {@code UndoRedo}. Redo a previously undone edit. It finds a manager which next undo edit has the highest 
          * time stamp and makes undo on it.
          * @exception CannotRedoException if it fails
          */
         public synchronized void redo () throws CannotRedoException {
             PropertiesEditorSupport.UndoRedoStampFlagManager chosenManager = (PropertiesEditorSupport.UndoRedoStampFlagManager)getNextRedo();
 
-            if(chosenManager == null)
+            if (chosenManager == null) {
                 throw new CannotRedoException();
-            else {
+            } else {
                 Object atomicFlag = chosenManager.getAtomicFlagOfEditToBeRedone();
-                if(atomicFlag == null) // not linked with other edits as one atomic action
+                if (atomicFlag == null) {// not linked with other edits as one atomic action
                     chosenManager.redo();
-                else { // atomic redo compound from more edits in underlying managers
+                } else { // atomic redo compound from more edits in underlying managers
                     boolean redone;
                     do { // the atomic action can consists from more redo edits from same manager
                         redone = false;
@@ -1092,14 +1124,14 @@ public class PropertiesOpen extends CloneableOpenSupport
             }
         }
 
-        /** Implements <code>UndoRedo</code>. Empty implementation. Does nothing.
+        /** Implements {@code UndoRedo}. Empty implementation. Does nothing.
          * @param l the listener to add
          */
         public void addChangeListener (ChangeListener l) {
             // PENDING up to now listen on separate managers
         }
 
-        /** Implements <code>UndoRedo</code>. Empty implementation. Does nothing.
+        /** Implements {@code UndoRedo}. Empty implementation. Does nothing.
          * @param l the listener to remove
          * @see #addChangeListener
          */
@@ -1107,29 +1139,31 @@ public class PropertiesOpen extends CloneableOpenSupport
             // PENDING
         }
 
-        /** Implements <code>UndoRedo</code>. Get a human-presentable name describing the
+        /** Implements {@code UndoRedo}. Get a human-presentable name describing the
          * undo operation.
          * @return the name
          */
         public synchronized String getUndoPresentationName () {
             UndoRedo chosenManager = getNextUndo();
 
-            if(chosenManager == null)
+            if (chosenManager == null) {
                 return "Undo"; // NOI18N // AbstractUndoableEdit.UndoName is not accessible
-            else
+            } else {
                 return chosenManager.getUndoPresentationName();
+            }
         }
 
-        /** Implements <code>UndoRedo</code>. Get a human-presentable name describing the
+        /** Implements {@code UndoRedo}. Get a human-presentable name describing the
          * redo operation.
          * @return the name
          */
         public synchronized String getRedoPresentationName () {
             UndoRedo chosenManager = getNextRedo();
-            if(chosenManager == null)
+            if (chosenManager == null) {
                 return "Redo"; // NOI18N // AbstractUndoableEdit.RedoName is not accessible
-            else
+            } else {
                 return chosenManager.getRedoPresentationName();
+            }
         }
         
     } // End of nested class CompoundUndoRedoManager.

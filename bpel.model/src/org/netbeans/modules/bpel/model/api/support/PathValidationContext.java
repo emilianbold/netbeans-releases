@@ -19,12 +19,10 @@
 package org.netbeans.modules.bpel.model.api.support;
 
 import java.text.MessageFormat;
-import java.util.LinkedList;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.api.ContentElement;
 import org.netbeans.modules.bpel.model.api.Import;
-import org.netbeans.modules.bpel.model.api.VariableDeclarationScope;
 import org.netbeans.modules.xml.xpath.ext.XPathExpression;
 import org.netbeans.modules.xml.xpath.ext.XPathModel;
 import org.netbeans.modules.xml.xpath.ext.spi.validation.XPathProblem;
@@ -57,25 +55,18 @@ public class PathValidationContext implements XPathValidationContext {
     private transient SchemaModel contextModel;
     private transient SchemaComponent contextComponent;
     
-    public PathValidationContext(XPathModel xPathModel, 
-            Validator validator, ValidationVisitor vVisitor, 
-            BpelEntity activity, ContentElement contentElement) {
-        myXPathModel = xPathModel;
+    public PathValidationContext(Validator validator, ValidationVisitor vVisitor, ContentElement contentElement) {
         myValidator = validator;
         myVVisitor = vVisitor;
-        myBpelContextActivity = activity;
         myXpathContentElement = contentElement;
     }
     
     public XPathModel getXPathModel() {
         return myXPathModel;
     }
-    
-    /**
-     * Returns the BPEL Activity to which the validation is applied.
-     */
-    public BpelEntity getBpelContextActivity() {
-        return myBpelContextActivity;
+
+    public void setXPathModel(XPathModel model) {
+        myXPathModel = model;
     }
     
     /**
@@ -119,33 +110,24 @@ public class PathValidationContext implements XPathValidationContext {
         return myValidator;
     }
 
-    public ValidationVisitor getVVisitor() {
+    private ValidationVisitor getVVisitor() {
         return myVVisitor;
     }
 
     /**
      * Adds validation result item in current context.
      */ 
-    public void addResultItem(ResultType resultType, String bundleKey,
-            Object... values){
-        //
-        String str = NbBundle.getMessage(PathValidationContext.class, bundleKey);
+    public void addResultItem(ResultType resultType, String str, Object... values){
         addResultItemImpl(null, resultType, str, values);
     }
 
     /**
      * Adds validation result item in current context.
      */ 
-    public void addResultItem(String exprText, ResultType resultType, 
-            String bundleKey, Object... values){
-        //
-        String str = NbBundle.getMessage(PathValidationContext.class, bundleKey);
+    public void addResultItem(String exprText, ResultType resultType, String str, Object... values) {
         addResultItemImpl(exprText, resultType, str, values);
     }
 
-    /**
-     * Implementation of the XPath SPI ValidationContex interface
-     */ 
     public void addResultItem(XPathExpression expr, ResultType resultType, 
             XPathProblem problem, Object... values) {
         //
@@ -163,8 +145,7 @@ public class PathValidationContext implements XPathValidationContext {
         }
     }
     
-    private void addResultItemImpl(String exprText, ResultType resultType, 
-            String template, Object... values){
+    private void addResultItemImpl(String exprText, ResultType resultType, String template, Object... values){
         //
         String str = template;
         if (values != null && values.length > 0) {
@@ -192,26 +173,7 @@ public class PathValidationContext implements XPathValidationContext {
                 getValidator(),
                 resultType,
                 (BpelEntity)ce, 
-                // myContext.getBpelContextActivity(),
                 str);
         getVVisitor().getResultItems().add(resultItem);
     }
-
-    public boolean isSchemaImported(String soughtNamspace) {
-        assert soughtNamspace != null;
-        //
-        BpelModel model = getBpelContextActivity().getBpelModel();
-        if (model.getState() == State.VALID) {
-            for (Import anImport : model.getProcess().getImports()) {
-                if (Import.SCHEMA_IMPORT_TYPE.equals(anImport.getImportType())) {
-                    if (soughtNamspace.equals(anImport.getNamespace())) {
-                        return true;
-                    }
-                }
-            }
-        }
-        //
-        return false;
-    }
-    
 }

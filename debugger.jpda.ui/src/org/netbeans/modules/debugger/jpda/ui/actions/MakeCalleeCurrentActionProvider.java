@@ -64,8 +64,7 @@ public class MakeCalleeCurrentActionProvider extends JPDADebuggerAction {
     
     public MakeCalleeCurrentActionProvider (ContextProvider lookupProvider) {
         super (
-            (JPDADebugger) lookupProvider.lookupFirst 
-                (null, JPDADebugger.class)
+            lookupProvider.lookupFirst(null, JPDADebugger.class)
         );
         this.lookupProvider = lookupProvider;
         getDebuggerImpl ().addPropertyChangeListener 

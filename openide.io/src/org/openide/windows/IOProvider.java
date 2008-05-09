@@ -70,7 +70,7 @@ public abstract class IOProvider {
      * @return the default instance (never null)
      */
     public static IOProvider getDefault() {
-        IOProvider iop = (IOProvider) Lookup.getDefault().lookup(IOProvider.class);
+        IOProvider iop = Lookup.getDefault().lookup(IOProvider.class);
         if (iop == null) {
             iop = new Trivial();
         }
@@ -122,6 +122,10 @@ public abstract class IOProvider {
     /** Fallback implementation. */
     private static final class Trivial extends IOProvider {
         
+        private static final Reader in = new BufferedReader(new InputStreamReader(System.in));
+        private static final PrintStream out = System.out;
+        private static final PrintStream err = System.err;
+
         public Trivial() {}
 
         public InputOutput getIO(String name, boolean newIO) {
@@ -129,31 +133,28 @@ public abstract class IOProvider {
         }
 
         public OutputWriter getStdOut() {
-            return new TrivialOW(System.out, "stdout"); // NOI18N
+            return new TrivialOW(out, "stdout"); // NOI18N
         }
         
+        @SuppressWarnings("deprecation")
         private final class TrivialIO implements InputOutput {
             
             private final String name;
-            private Reader in;
             
             public TrivialIO(String name) {
                 this.name = name;
             }
 
             public Reader getIn() {
-                if (in == null) {
-                    in = new BufferedReader(new InputStreamReader(System.in));
-                }
                 return in;
             }
 
             public OutputWriter getOut() {
-                return new TrivialOW(System.out, name);
+                return new TrivialOW(out, name);
             }
 
             public OutputWriter getErr() {
-                return new TrivialOW(System.err, name);
+                return new TrivialOW(err, name);
             }
 
             public Reader flushReader() {
@@ -220,56 +221,95 @@ public abstract class IOProvider {
 
             public void reset() throws IOException {}
 
+            @Override
             public void println(float x) {
                 prefix(false);
                 stream.println(x);
             }
 
+            @Override
             public void println(double x) {
                 prefix(false);
                 stream.println(x);
             }
 
+            @Override
             public void println() {
                 prefix(false);
                 stream.println();
             }
 
+            @Override
             public void println(Object x) {
                 prefix(false);
                 stream.println(x);
             }
 
+            @Override
             public void println(int x) {
                 prefix(false);
                 stream.println(x);
             }
 
+            @Override
             public void println(char x) {
                 prefix(false);
                 stream.println(x);
             }
 
+            @Override
             public void println(long x) {
                 prefix(false);
                 stream.println(x);
             }
 
+            @Override
             public void println(char[] x) {
                 prefix(false);
                 stream.println(x);
             }
 
+            @Override
             public void println(boolean x) {
                 prefix(false);
                 stream.println(x);
             }
 
+            @Override
             public void println(String x) {
                 prefix(false);
                 stream.println(x);
             }
-            
+
+            @Override
+            public void write(int c) {
+                stream.write(c);
+            }
+
+            @Override
+            public void write(char[] buf, int off, int len) {
+                String s = new String(buf, off, len);
+                if (s.endsWith("\n")) {
+                    println(s.substring(0, s.length() - 1));
+                } else {
+                    try {
+                        stream.write(s.getBytes());
+                    } catch (IOException x) {}
+                }
+            }
+
+            @Override
+            public void write(String s, int off, int len) {
+                s = s.substring(off, off + len);
+                if (s.endsWith("\n")) {
+                    println(s.substring(0, s.length() - 1));
+                } else {
+                    try {
+                        stream.write(s.getBytes());
+                    } catch (IOException x) {}
+                }
+            }
+
         }
         
     }

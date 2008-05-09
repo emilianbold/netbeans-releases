@@ -1315,8 +1315,8 @@ public class SchemaGeneratorUtil {
         } else if(propertyName.equals(Element.PROP_TYPE)) {
             if(newValue instanceof ContentModel) {
                 //remove any inline type
-                LocalComplexType lct = (LocalComplexType) ge.getInlineType();
-                if(lct != null)
+                LocalType lt = (LocalType) ge.getInlineType();
+                if(lt != null)
                     ge.setInlineType(null);
                 
                 //now set type

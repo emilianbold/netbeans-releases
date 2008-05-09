@@ -42,10 +42,10 @@
 package org.netbeans.editor.ext;
 
 import java.awt.Dimension;
-import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import javax.swing.JCheckBox;
 import org.netbeans.modules.editor.lib2.search.EditorFindSupport;
+import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
 /**
@@ -93,14 +93,14 @@ public class FindDialogPanel extends javax.swing.JPanel {
         findWhat = new javax.swing.JComboBox();
         replaceWithLabel = new javax.swing.JLabel();
         replaceWith = new javax.swing.JComboBox();
-        highlightSearch = createCheckBox( EditorFindSupport.FIND_HIGHLIGHT_SEARCH, 'H' );
-        incSearch = createCheckBox( EditorFindSupport.FIND_INC_SEARCH, 'I' );
-        matchCase = createCheckBox( EditorFindSupport.FIND_MATCH_CASE, 'C' );
-        wholeWords = createCheckBox( EditorFindSupport.FIND_WHOLE_WORDS, 'W' );
-        bwdSearch = createCheckBox( EditorFindSupport.FIND_BACKWARD_SEARCH, 'B' );
-        wrapSearch = createCheckBox( EditorFindSupport.FIND_WRAP_SEARCH, 'p' );
-        regExp = createCheckBox( EditorFindSupport.FIND_REG_EXP, 'E' );
-        blockSearch = createCheckBox( EditorFindSupport.FIND_BLOCK_SEARCH, 'l' );
+        highlightSearch = createCheckBox( EditorFindSupport.FIND_HIGHLIGHT_SEARCH );
+        incSearch = createCheckBox( EditorFindSupport.FIND_INC_SEARCH );
+        matchCase = createCheckBox( EditorFindSupport.FIND_MATCH_CASE );
+        wholeWords = createCheckBox( EditorFindSupport.FIND_WHOLE_WORDS );
+        bwdSearch = createCheckBox( EditorFindSupport.FIND_BACKWARD_SEARCH );
+        wrapSearch = createCheckBox( EditorFindSupport.FIND_WRAP_SEARCH );
+        regExp = createCheckBox( EditorFindSupport.FIND_REG_EXP );
+        blockSearch = createCheckBox( EditorFindSupport.FIND_BLOCK_SEARCH );
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -154,8 +154,6 @@ public class FindDialogPanel extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 11, 9, 10);
         add(replaceWith, gridBagConstraints);
-
-        highlightSearch.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 6;
@@ -163,56 +161,42 @@ public class FindDialogPanel extends javax.swing.JPanel {
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(11, 11, 11, 0);
         add(highlightSearch, gridBagConstraints);
-
-        incSearch.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 6;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(11, 11, 11, 10);
         add(incSearch, gridBagConstraints);
-
-        matchCase.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(3, 11, 0, 0);
         add(matchCase, gridBagConstraints);
-
-        wholeWords.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 11, 0, 0);
         add(wholeWords, gridBagConstraints);
-
-        bwdSearch.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 5;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 11, 0, 10);
         add(bwdSearch, gridBagConstraints);
-
-        wrapSearch.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(3, 11, 0, 10);
         add(wrapSearch, gridBagConstraints);
-
-        regExp.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 5;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 11, 0, 0);
         add(regExp, gridBagConstraints);
-
-        blockSearch.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 4;
@@ -239,16 +223,10 @@ public class FindDialogPanel extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
 
 
-    private JCheckBox createCheckBox( String key, char mnemonic ) {
-        JCheckBox box = new JCheckBox( bundle.getString( key ) );
+    private JCheckBox createCheckBox( String key ) {
+        JCheckBox box = new JCheckBox();
+        Mnemonics.setLocalizedText(box, bundle.getString(key));
         box.setToolTipText( bundle.getString( key + "-tooltip" ) );
-        char mnemonicChar;
-        try {
-            mnemonicChar = bundle.getString( key + "-mnemonic").charAt(0);
-        } catch (MissingResourceException e) {
-            mnemonicChar = mnemonic;
-        }
-        box.setMnemonic(mnemonicChar); // NOI18N
         return box;
     }
     

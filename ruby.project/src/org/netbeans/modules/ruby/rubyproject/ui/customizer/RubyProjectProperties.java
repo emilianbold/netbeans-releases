@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -58,8 +58,6 @@ import java.util.Vector;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.api.ruby.platform.RubyPlatform;
@@ -92,99 +90,39 @@ import org.openide.util.Utilities;
  */
 public class RubyProjectProperties extends SharedRubyProjectProperties {
 
-    // Special properties of the project
-    //public static final String Ruby_PROJECT_NAME = "ruby.project.name"; // NOI18N
-    //public static final String RUBY_PLATFORM = "platform.active"; // NOI18N
-    
     // Properties stored in the PROJECT.PROPERTIES    
     // TODO - nuke me!
     public static final String MAIN_CLASS = "main.file"; // NOI18N
-    public static final String JAVAC_COMPILER_ARG = "javac.compilerargs";    //NOI18N
-    public static final String RUN_JVM_ARGS = "run.jvmargs"; // NOI18N
+    public static final String RUBY_OPTIONS = "run.jvmargs"; // NOI18N
     public static final String RUN_WORK_DIR = "work.dir"; // NOI18N
     public static final String DIST_DIR = "dist.dir"; // NOI18N
-    public static final String DIST_JAR = "dist.jar"; // NOI18N
-    public static final String RUN_CLASSPATH = "run.classpath"; // NOI18N
-    public static final String DEBUG_CLASSPATH = "debug.classpath"; // NOI18N
-    public static final String JAR_COMPRESS = "jar.compress"; // NOI18N
-    public static final String JAVAC_SOURCE = "javac.source"; // NOI18N
-    public static final String JAVAC_TARGET = "javac.target"; // NOI18N
-    public static final String JAVAC_TEST_CLASSPATH = "javac.test.classpath"; // NOI18N
-    public static final String RUN_TEST_CLASSPATH = "run.test.classpath"; // NOI18N
     public static final String BUILD_DIR = "build.dir"; // NOI18N
-    public static final String BUILD_CLASSES_DIR = "build.classes.dir"; // NOI18N
-    public static final String BUILD_TEST_CLASSES_DIR = "build.test.classes.dir"; // NOI18N
-    public static final String BUILD_TEST_RESULTS_DIR = "build.test.results.dir"; // NOI18N
-    public static final String BUILD_CLASSES_EXCLUDES = "build.classes.excludes"; // NOI18N
-    public static final String DIST_JAVADOC_DIR = "dist.javadoc.dir"; // NOI18N
-    public static final String NO_DEPENDENCIES="no.dependencies"; // NOI18N
-    public static final String DEBUG_TEST_CLASSPATH = "debug.test.classpath"; // NOI18N
-    
                     
     // Properties stored in the PRIVATE.PROPERTIES
     public static final String APPLICATION_ARGS = "application.args"; // NOI18N
     
-    // Well known paths
-//    public static final String[] WELL_KNOWN_PATHS = new String[] {            
-//            "${" + JAVAC_CLASSPATH + "}", 
-//            "${" + JAVAC_TEST_CLASSPATH  + "}", 
-//            "${" + RUN_CLASSPATH  + "}", 
-//            "${" + RUN_TEST_CLASSPATH  + "}", 
-//            "${" + BUILD_CLASSES_DIR  + "}", 
-//            "${" + BUILD_TEST_CLASSES_DIR  + "}", 
-//    };
-//    
-//    // Prefixes and suffixes of classpath
-//    public static final String LIBRARY_PREFIX = "${libs."; // NOI18N
-//    public static final String LIBRARY_SUFFIX = ".classpath}"; // NOI18N
-//    // XXX looks like there is some kind of API missing in ReferenceHelper?
-//    public static final String ANT_ARTIFACT_PREFIX = "${reference."; // NOI18N
-    
-    // SOURCE ROOTS
-    // public static final String SOURCE_ROOTS = "__virtual_source_roots__";   //NOI18N
-    // public static final String TEST_ROOTS = "__virtual_test_roots__"; // NOI18N
-                        
     // MODELS FOR VISUAL CONTROLS
     
     // CustomizerSources
     DefaultTableModel SOURCE_ROOTS_MODEL;
     DefaultTableModel TEST_ROOTS_MODEL;
      
-//    // CustomizerLibraries
-
-    //    DefaultListModel JAVAC_TEST_CLASSPATH_MODEL;
-//    DefaultListModel RUN_CLASSPATH_MODEL;
-//    DefaultListModel RUN_TEST_CLASSPATH_MODEL;
-//    ComboBoxModel PLATFORM_MODEL;
-//    ListCellRenderer PLATFORM_LIST_RENDERER;
-    
-//    ButtonModel NO_DEPENDENCIES_MODEL;
-    Document JAVAC_COMPILER_ARG_MODEL;
-
-    
-//    // CustomizerJar
-//    Document DIST_JAR_MODEL; 
-//    Document BUILD_CLASSES_EXCLUDES_MODEL; 
-//    ButtonModel JAR_COMPRESS_MODEL;
-                
     // CustomizerRun
     Map<String/*|null*/,Map<String,String/*|null*/>/*|null*/> RUN_CONFIGS;
     String activeConfig;
-    private Map<String,String> additionalProperties;
+    private final Map<String,String> additionalProperties;
 
     // CustomizerRunTest
 
     // Private fields ----------------------------------------------------------------------    
-    private RubyProject project;
-    private HashMap properties;    
-    private UpdateHelper updateHelper;
-    private PropertyEvaluator evaluator;
-    private ReferenceHelper refHelper;
-    private GeneratedFilesHelper genFileHelper;
-    private ProjectPropertyExtender cs;
+    private final RubyProject project;
+    private final UpdateHelper updateHelper;
+    private final PropertyEvaluator evaluator;
+    private final GeneratedFilesHelper genFileHelper;
+    private final ProjectPropertyExtender cs;
     
-    private StoreGroup privateGroup; 
-    private StoreGroup projectGroup;
+    private final StoreGroup privateGroup; 
+    private final StoreGroup projectGroup;
     private RubyPlatform platform;
     
     public RubyProject getProject() {
@@ -206,7 +144,6 @@ public class RubyProjectProperties extends SharedRubyProjectProperties {
         this.project = project;
         this.updateHelper  = updateHelper;
         this.evaluator = evaluator;
-        this.refHelper = refHelper;
         this.genFileHelper = genFileHelper;
         //this.cs = new ClassPathSupport( evaluator, refHelper, updateHelper.getRakeProjectHelper(), WELL_KNOWN_PATHS, LIBRARY_PREFIX, LIBRARY_SUFFIX, ANT_ARTIFACT_PREFIX );
         this.cs = new ProjectPropertyExtender( evaluator, refHelper, updateHelper.getRakeProjectHelper(), WELL_KNOWN_PATHS, LIBRARY_PREFIX, LIBRARY_SUFFIX, ANT_ARTIFACT_PREFIX );
@@ -232,7 +169,6 @@ public class RubyProjectProperties extends SharedRubyProjectProperties {
         // CustomizerSources
         SOURCE_ROOTS_MODEL = RubySourceRootsUi.createModel( project.getSourceRoots() );
         TEST_ROOTS_MODEL = RubySourceRootsUi.createModel( project.getTestSourceRoots() );        
-        JAVAC_COMPILER_ARG_MODEL = projectGroup.createStringDocument( evaluator, JAVAC_COMPILER_ARG );
 
         // CustomizerRun
         RUN_CONFIGS = readRunConfigs();
@@ -350,15 +286,6 @@ public class RubyProjectProperties extends SharedRubyProjectProperties {
         }
     }
   
-    private static String getDocumentText( Document document ) {
-        try {
-            return document.getText( 0, document.getLength() );
-        }
-        catch( BadLocationException e ) {
-            return ""; // NOI18N
-        }
-    }
-        
     private void storeRoots( SourceRoots roots, DefaultTableModel tableModel ) throws MalformedURLException {
         Vector data = tableModel.getDataVector();
         URL[] rootURLs = new URL[data.size()];
@@ -413,7 +340,7 @@ public class RubyProjectProperties extends SharedRubyProjectProperties {
             }
         });
         Map<String,String> def = new TreeMap<String,String>();
-        for (String prop : new String[] {MAIN_CLASS, APPLICATION_ARGS, RUN_JVM_ARGS, RUN_WORK_DIR, RAKE_ARGS}) {
+        for (String prop : new String[] {MAIN_CLASS, APPLICATION_ARGS, RUBY_OPTIONS, RUN_WORK_DIR, RAKE_ARGS, JRUBY_PROPS}) {
             String v = updateHelper.getProperties(RakeProjectHelper.PRIVATE_PROPERTIES_PATH).getProperty(prop);
             if (v == null) {
                 v = updateHelper.getProperties(RakeProjectHelper.PROJECT_PROPERTIES_PATH).getProperty(prop);
@@ -456,7 +383,7 @@ public class RubyProjectProperties extends SharedRubyProjectProperties {
             EditableProperties projectProperties, EditableProperties privateProperties) throws IOException {
         //System.err.println("storeRunConfigs: " + configs);
         Map<String,String> def = configs.get(null);
-        for (String prop : new String[] {MAIN_CLASS, APPLICATION_ARGS, RUN_JVM_ARGS, RUN_WORK_DIR, RAKE_ARGS}) {
+        for (String prop : new String[] {MAIN_CLASS, APPLICATION_ARGS, RUBY_OPTIONS, RUN_WORK_DIR, RAKE_ARGS, JRUBY_PROPS}) {
             String v = def.get(prop);
             EditableProperties ep = (prop.equals(APPLICATION_ARGS) || prop.equals(RUN_WORK_DIR) || prop.equals(RAKE_ARGS)) ?
                 privateProperties : projectProperties;

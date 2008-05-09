@@ -47,11 +47,11 @@ import java.util.Set;
 
 import javax.swing.text.Document;
 
-import org.netbeans.api.gsf.Modifier;
-import org.netbeans.api.gsf.ParserFile;
-import org.netbeans.modules.ruby.AstUtilities;
+import org.netbeans.modules.gsf.api.Modifier;
+import org.netbeans.modules.gsf.api.ParserFile;
+import org.netbeans.modules.ruby.NbUtilities;
 import org.netbeans.modules.ruby.RubyIndex;
-import org.netbeans.spi.gsf.DefaultParserFile;
+import org.netbeans.modules.gsf.spi.DefaultParserFile;
 import org.openide.filesystems.FileObject;
 
 
@@ -125,6 +125,7 @@ public abstract class IndexedElement extends RubyElement {
         return index;
     }
 
+    @Override
     public String getIn() {
         return getClz();
     }
@@ -141,7 +142,7 @@ public abstract class IndexedElement extends RubyElement {
                 return null;
             }
 
-            document = AstUtilities.getBaseDocument(fileObject, true);
+            document = NbUtilities.getBaseDocument(fileObject, true);
         }
 
         return document;
@@ -153,6 +154,7 @@ public abstract class IndexedElement extends RubyElement {
         return new DefaultParserFile(getFileObject(), null, platform);
     }
 
+    @Override
     public FileObject getFileObject() {
         if ((fileObject == null) && (fileUrl != null)) {
             fileObject = RubyIndex.getFileObject(fileUrl);
@@ -166,6 +168,7 @@ public abstract class IndexedElement extends RubyElement {
         return fileObject;
     }
 
+    @Override
     public final Set<Modifier> getModifiers() {
         if (modifiers == null) {
             Modifier access = Modifier.PUBLIC;

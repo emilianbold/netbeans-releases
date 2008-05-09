@@ -62,6 +62,7 @@ public class TableListNodeInfo extends DatabaseNodeInfo implements TableOwnerOpe
     public static final Logger LOGGER = 
             Logger.getLogger(TableListNodeInfo.class.getName());
 
+    @Override
     protected void initChildren(Vector children) throws DatabaseException {
         try {
             String[] types = new String[] {"TABLE"}; // NOI18N
@@ -71,23 +72,18 @@ public class TableListNodeInfo extends DatabaseNodeInfo implements TableOwnerOpe
             
             // issue 76953: do not display tables from the Recycle Bin on Oracle 10 and higher
             DatabaseMetaData dmd = drvSpec.getMetaData();
-            if ("Oracle".equals(dmd.getDatabaseProductName())) {  // NOI18N
-                try {
+            try { 
+                if ("Oracle".equals(dmd.getDatabaseProductName())) {  // NOI18N
                     if (dmd.getDatabaseMajorVersion() >= 10) {
                         recycleBinTables = getOracleRecycleBinTables(dmd);
                     } else {
                         recycleBinTables = Collections.EMPTY_LIST;
                     }
-                } catch (AbstractMethodError ame) {
-                    // Some older versions of Oracle driver throw an exception on getDatabaseMajorVersion()
-                    LOGGER.log(Level.WARNING, "Some older versions of the Oracle driver do not support getDatabaseMajorVersion().  Setting recycleBinTables to an empty list.", ame); // NOI18N
-                    recycleBinTables = Collections.EMPTY_LIST;                
-                } catch (SQLException e) {
-                    LOGGER.log(Level.WARNING, "Some older versions of the Oracle driver do not support getDatabaseMajorVersion().  Setting recycleBinTables to an empty list.", e); // NOI18N
+                } else {
                     recycleBinTables = Collections.EMPTY_LIST;
                 }
-
-            } else {
+            } catch ( Throwable t ) {
+                LOGGER.log(Level.INFO, null, t);
                 recycleBinTables = Collections.EMPTY_LIST;
             }
                 
@@ -169,19 +165,19 @@ public class TableListNodeInfo extends DatabaseNodeInfo implements TableOwnerOpe
         return result;
     }
     
-/*
-    public void dropIndex(DatabaseNodeInfo tinfo) throws DatabaseException {
-        DatabaseNode node = (DatabaseNode)tinfo.getNode();
-        DatabaseNodeChildren chld = (DatabaseNodeChildren)getNode().getChildren();
-        try {
-            String tname = tinfo.getName();
-            Specification spec = (Specification)getSpecification();
-            AbstractCommand cmd = spec.createCommandDropIndex(tname);
-            cmd.execute();
-            getNode().getChildren().remove(new Node[]{node});
-        } catch (Exception e) {
-            throw new DatabaseException(e.getMessage());
-        }
-    }           
-*/
+    @Override
+    public String getDisplayName() {
+        return bundle().getString("NDN_Tables"); //NOI18N
+    }
+
+    @Override
+    public String getShortDescription() {
+        return bundle().getString("ND_TableList"); //NOI18N
+    }
+    
+    @Override
+    protected void notifyChange() {
+        super.notifyChange();
+        fireRefresh();        
+    }
 }

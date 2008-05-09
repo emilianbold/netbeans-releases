@@ -120,6 +120,11 @@
                   <ResourceString bundle="org/netbeans/modules/form/Bundle.properties" key="MSG_BindingCustomizer_Source" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/form/Bundle.properties" key="MSG_BindingCustomizer_Source_ACSD" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+              </AccessibilityProperties>
             </Component>
             <Component class="javax.swing.JComboBox" name="sourceCombo">
               <AccessibilityProperties>
@@ -137,6 +142,11 @@
                   <ResourceString bundle="org/netbeans/modules/form/Bundle.properties" key="MSG_BindingCustomizer_Expression" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/form/Bundle.properties" key="MSG_BindingCustomizer_Expression_ACSD" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+              </AccessibilityProperties>
             </Component>
             <Component class="javax.swing.JComboBox" name="treeCombo">
               <AccessibilityProperties>
@@ -172,6 +182,11 @@
                   <ResourceString bundle="org/netbeans/modules/form/Bundle.properties" key="MSG_BindingCustomizer_DisplayExpression" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/form/Bundle.properties" key="MSG_BindingCustomizer_DisplayExpression_ACSD" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+              </AccessibilityProperties>
             </Component>
             <Component class="javax.swing.JComboBox" name="treeCombo2">
               <AccessibilityProperties>

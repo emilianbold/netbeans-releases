@@ -57,7 +57,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.logger.LogUtil;
+
 
 /**
  * @author Ritesh Adval, Jonathan Giron
@@ -65,7 +65,7 @@ import org.netbeans.modules.etl.logger.LogUtil;
  */
 public class FlatfileTreeTableModel extends NodeTreeModel {
 
-    private static transient final Logger mLogger = LogUtil.getLogger(FlatfileTreeTableModel.class.getName());
+    private static transient final Logger mLogger = Logger.getLogger(FlatfileTreeTableModel.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     /* Log4J category string */
     private static final String LOG_CATEGORY = FlatfileTreeTableModel.class.getName();
@@ -162,11 +162,11 @@ public class FlatfileTreeTableModel extends NodeTreeModel {
                         modelNode.getChildren().add(new Node[]{fileNode});
                     }
                 } catch (IntrospectionException ignore) {
-                    mLogger.errorNoloc(mLoc.t("PRSR071: Caught exception while building FlatfileNode for{0}", table.getName()), ignore);
+                    mLogger.errorNoloc(mLoc.t("EDIT071: Caught exception while building FlatfileNode for{0}", table.getName()), ignore);
                 }
             }
         } catch (IntrospectionException ignore) {
-            mLogger.errorNoloc(mLoc.t("PRSR072: Caught exception while building FlatfileNode for{0}", dbModel.getModelName()), ignore);
+            mLogger.errorNoloc(mLoc.t("EDIT071: Caught exception while building FlatfileNode for{0}", dbModel.getModelName()), ignore);
         }
     }
 

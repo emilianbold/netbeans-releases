@@ -1,0 +1,204 @@
+require "foo/bar"
+ ^r,require
+require "foo/bar"
+  ^re,require
+require "foo/bar"
+   ^req,require
+require "foo/bar"
+    ^requ,require
+require "foo/bar"
+     ^requi,require
+require "foo/bar"
+      ^requir,require
+require "foo/bar"
+       ^require,require
+require "foo/bar"
+         ^"",""
+require "foo/bar"
+          ^"",""
+require "foo/bar"
+           ^"",""
+require "foo/bar"
+            ^"",""
+require "foo/bar"
+             ^"",""
+require "foo/bar"
+              ^"",""
+require "foo/bar"
+               ^"",""
+require "foo/bar"
+                ^"",""
+require "foo/bar"
+                 ^"",""
+require 'foo/bar'
+ ^r,require
+require 'foo/bar'
+  ^re,require
+require 'foo/bar'
+   ^req,require
+require 'foo/bar'
+    ^requ,require
+require 'foo/bar'
+     ^requi,require
+require 'foo/bar'
+      ^requir,require
+require 'foo/bar'
+       ^require,require
+require 'foo/bar'
+         ^"",""
+require 'foo/bar'
+          ^"",""
+require 'foo/bar'
+           ^"",""
+require 'foo/bar'
+            ^"",""
+require 'foo/bar'
+             ^"",""
+require 'foo/bar'
+              ^"",""
+require 'foo/bar'
+               ^"",""
+require 'foo/bar'
+                ^"",""
+require 'foo/bar'
+                 ^"",""
+require("foo/bar")
+ ^r,require
+require("foo/bar")
+  ^re,require
+require("foo/bar")
+   ^req,require
+require("foo/bar")
+    ^requ,require
+require("foo/bar")
+     ^requi,require
+require("foo/bar")
+      ^requir,require
+require("foo/bar")
+       ^require,require
+require("foo/bar")
+         ^"",""
+require("foo/bar")
+          ^"",""
+require("foo/bar")
+           ^"",""
+require("foo/bar")
+            ^"",""
+require("foo/bar")
+             ^"",""
+require("foo/bar")
+              ^"",""
+require("foo/bar")
+               ^"",""
+require("foo/bar")
+                ^"",""
+require("foo/bar")
+                 ^"",""
+x = "a\nb\"c"
+ ^x,x
+x = "a\nb\"c"
+     ^"",""
+x = "a\nb\"c"
+      ^"",""
+x = "a\nb\"c"
+       ^\,\
+x = "a\nb\"c"
+        ^"",""
+x = "a\nb\"c"
+         ^"",""
+x = "a\nb\"c"
+          ^\,\
+x = "a\nb\"c"
+           ^"",""
+x = "a\nb\"c"
+            ^"",""
+x = "a\nb\"c"
+             ^"",""
+y = /d\s\/ef/
+ ^y,y
+y = /d\s\/ef/
+     ^"",""
+y = /d\s\/ef/
+      ^"",""
+y = /d\s\/ef/
+       ^\,\
+y = /d\s\/ef/
+        ^"",""
+y = /d\s\/ef/
+         ^\,\
+y = /d\s\/ef/
+          ^"",""
+y = /d\s\/ef/
+           ^"",""
+y = /d\s\/ef/
+            ^"",""
+y = /d\s\/ef/
+             ^"",""
+z = 'g\'hi'
+ ^z,z
+z = 'g\'hi'
+     ^"",""
+z = 'g\'hi'
+      ^"",""
+z = 'g\'hi'
+       ^\,\
+z = 'g\'hi'
+        ^"",""
+z = 'g\'hi'
+         ^"",""
+z = 'g\'hi'
+          ^"",""
+z = 'g\'hi'
+           ^"",""
+if (true) {
+ ^i,if
+if (true) {
+  ^if,if
+if (true) {
+     ^t,true
+if (true) {
+      ^tr,true
+if (true) {
+       ^tru,true
+if (true) {
+        ^true,true
+function foo() {
+ ^f,function
+function foo() {
+  ^fu,function
+function foo() {
+   ^fun,function
+function foo() {
+    ^func,function
+function foo() {
+     ^funct,function
+function foo() {
+      ^functi,function
+function foo() {
+       ^functio,function
+function foo() {
+        ^function,function
+function foo() {
+          ^f,foo
+function foo() {
+           ^fo,foo
+function foo() {
+            ^foo,foo
+  puts("foo")
+   ^p,puts
+  puts("foo")
+    ^pu,puts
+  puts("foo")
+     ^put,puts
+  puts("foo")
+      ^puts,puts
+  puts("foo")
+        ^"",""
+  puts("foo")
+         ^"",""
+  puts("foo")
+          ^"",""
+  puts("foo")
+           ^"",""
+  puts("foo")
+            ^"",""

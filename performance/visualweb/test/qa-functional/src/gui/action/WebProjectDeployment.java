@@ -84,6 +84,7 @@ public class WebProjectDeployment extends org.netbeans.performance.test.utilitie
         doMeasurement();
     }
     
+    @Override
     public void initialize() {
         log("::initialize");
         VWPUtilities.initLog(this);
@@ -96,9 +97,13 @@ public class WebProjectDeployment extends org.netbeans.performance.test.utilitie
         
         log("App server started in "+(stop-start)+" ms");
         
-        new ProjectsTabOperator().invoke();
-        VWPUtilities.buildproject(targetProject);
+        VWPUtilities.invokePTO();
+        VWPUtilities.verifyAndResolveMissingWebServer(targetProject, asName);
         VWPUtilities.waitForPendingBackgroundTasks();
+        
+        VWPUtilities.buildproject(targetProject);        
+        VWPUtilities.waitForPendingBackgroundTasks();
+        
     }
     
     public void prepare() {

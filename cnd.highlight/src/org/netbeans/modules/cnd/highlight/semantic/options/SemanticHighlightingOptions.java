@@ -53,12 +53,12 @@ public class SemanticHighlightingOptions {
     private SemanticHighlightingOptions() {}
 
     private static final Preferences preferences = NbPreferences.forModule(SemanticHighlightingOptions.class);
-    private static final String ENABLE_MARK_OCCURENCES = "EnableMarkOccurrences";
-    private static final String KEEP_MARKS = "KeepMarks";
-    private static final String ENABLE_MACROS = "Macros";
-    private static final String DIFFER_SYSTEM_MACROS = "SysMacros";
-    private static final String ENABLE_CLASS_FIELDS = "ClassFields";
-    private static final String ENABLE_FUNCTION_NAMES = "FunctionNames";
+    private static final String ENABLE_MARK_OCCURENCES = "EnableMarkOccurrences"; // NOI18N
+    private static final String KEEP_MARKS = "KeepMarks"; // NOI18N
+    private static final String ENABLE_MACROS = "Macros"; // NOI18N
+    private static final String DIFFER_SYSTEM_MACROS = "SysMacros"; // NOI18N
+    private static final String ENABLE_CLASS_FIELDS = "ClassFields"; // NOI18N
+    private static final String ENABLE_FUNCTION_NAMES = "FunctionNames"; // NOI18N
     public static final boolean SEMANTIC_ADVANCED = Boolean.getBoolean("cnd.semantic.advanced"); // NOI18N
     
     private static boolean getOption(String key, boolean defaultValue) {

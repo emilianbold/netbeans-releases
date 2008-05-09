@@ -115,10 +115,7 @@ public class RequestDisplay extends DataDisplay {
 			    topSpacerInsets,
 			    0, 0);
 
-        JLabel requestHeaderLabel = createHeaderLabel(NbBundle.getBundle(RequestDisplay.class).getString("MON_Request_19"));
-        requestHeaderLabel.setDisplayedMnemonic(NbBundle.getBundle(RequestDisplay.class).getString("MON_Request_19_Mnemonic").charAt(0));
-        requestHeaderLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(RequestDisplay.class).getString("ACS_MON_Request_19A11yDesc"));
-        requestHeaderLabel.setLabelFor(dt);
+        JLabel requestHeaderLabel = createHeaderLabel(NbBundle.getBundle(RequestDisplay.class).getString("MON_Request_19"), NbBundle.getBundle(RequestDisplay.class).getString("ACS_MON_Request_19A11yDesc"), dt);
 	addGridBagComponent(this, requestHeaderLabel, 0, ++gridy,
 			    fullGridWidth, 1, 0, 0, 
 			    java.awt.GridBagConstraints.WEST,
@@ -179,7 +176,7 @@ public class RequestDisplay extends DataDisplay {
 
             paramTable.getAccessibleContext().setAccessibleName(NbBundle.getBundle(RequestDisplay.class).getString("ACS_MON_ParametersTableA11yName"));
             paramTable.setToolTipText(NbBundle.getBundle(RequestDisplay.class).getString("ACS_MON_ParametersTableA11yDesc"));
-	    queryDataLabel = createSortButtonLabel(msg2, paramTable, NbBundle.getBundle(RequestDisplay.class).getString("MON_Parameters_Mnemonic").charAt(0), NbBundle.getBundle(RequestDisplay.class).getString("ACS_MON_ParametersA11yDesc"));
+	    queryDataLabel = createSortButtonLabel(msg2, paramTable, NbBundle.getBundle(RequestDisplay.class).getString("ACS_MON_ParametersA11yDesc"));
 	}
 	
 	addGridBagComponent(this, queryDataLabel, 0, ++gridy,
@@ -222,18 +219,15 @@ public class RequestDisplay extends DataDisplay {
 
 	if(param != null && param.length > 0) {
 
+	    dt = new DisplayTable(param);
 	    JLabel requestAttrBeforeLabel =
-		createHeaderLabel(NbBundle.getBundle(RequestDisplay.class).getString("MON_Request_att_before")); 
-	    requestAttrBeforeLabel.setDisplayedMnemonic(NbBundle.getBundle(RequestDisplay.class).getString("MON_Request_att_before_Mnemonic").charAt(0));
-	    requestAttrBeforeLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(RequestDisplay.class).getString("ACS_MON_Request_att_beforeA11yDesc"));
+		createHeaderLabel(NbBundle.getBundle(RequestDisplay.class).getString("MON_Request_att_before"), NbBundle.getBundle(RequestDisplay.class).getString("ACS_MON_Request_att_beforeA11yDesc"), dt); 
 	    addGridBagComponent(this, requestAttrBeforeLabel, 0, ++gridy,
 				fullGridWidth, 1, 0, 0, 
 				java.awt.GridBagConstraints.WEST,
 				java.awt.GridBagConstraints.NONE,
 				labelInsets,
 				0, 0);
-	    dt = new DisplayTable(param);
-	    requestAttrBeforeLabel.setLabelFor(dt);
 	    dt.getAccessibleContext().setAccessibleName(NbBundle.getBundle(RequestDisplay.class).getString("ACS_MON_Request_att_beforeTableA11yName"));
 	    dt.setToolTipText(NbBundle.getBundle(RequestDisplay.class).getString("ACS_MON_Request_att_beforeTableA11yDesc"));
 	    addGridBagComponent(this, dt, 0, ++gridy,
@@ -254,18 +248,15 @@ public class RequestDisplay extends DataDisplay {
 
 	if(param != null && param.length > 0) {
 
+	    dt = new DisplayTable(param);
 	    JLabel requestAttrAfterLabel =
-		createHeaderLabel(NbBundle.getBundle(RequestDisplay.class).getString("MON_Request_att_after")); 
-	    requestAttrAfterLabel.setDisplayedMnemonic(NbBundle.getBundle(RequestDisplay.class).getString("MON_Request_att_after_Mnemonic").charAt(0));
-	    requestAttrAfterLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(RequestDisplay.class).getString("ACS_MON_Request_att_afterA11yDesc"));
+		createHeaderLabel(NbBundle.getBundle(RequestDisplay.class).getString("MON_Request_att_after"),NbBundle.getBundle(RequestDisplay.class).getString("ACS_MON_Request_att_afterA11yDesc"),dt); 
 	    addGridBagComponent(this, requestAttrAfterLabel, 0, ++gridy,
 				fullGridWidth, 1, 0, 0, 
 				java.awt.GridBagConstraints.WEST,
 				java.awt.GridBagConstraints.NONE,
 				labelInsets,
 				0, 0);
-	    dt = new DisplayTable(param);
-	    requestAttrAfterLabel.setLabelFor(dt);
 	    dt.getAccessibleContext().setAccessibleName(NbBundle.getBundle(RequestDisplay.class).getString("ACS_MON_Request_att_afterTableA11yName"));
 	    dt.setToolTipText(NbBundle.getBundle(RequestDisplay.class).getString("ACS_MON_Request_att_afterTableA11yDesc"));
 	    addGridBagComponent(this, dt, 0, ++gridy,

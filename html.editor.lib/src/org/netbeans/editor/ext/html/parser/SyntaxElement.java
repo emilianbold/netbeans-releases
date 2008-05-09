@@ -43,10 +43,8 @@
 package org.netbeans.editor.ext.html.parser;
 
 
-import org.netbeans.editor.ext.html.*;
 import java.util.*;
 import javax.swing.text.*;
-import org.netbeans.editor.ext.*;
 import org.openide.ErrorManager;
 
 /**
@@ -68,17 +66,17 @@ public class SyntaxElement {
     public static final String[] TYPE_NAMES =
             new String[]{"comment","declaration","error","text","tag","endtag","entity reference"};
     
-    private Document document;
+    private ParserSource source;
     
     private int offset;
     private int length;
     private int type;
     
-    SyntaxElement( Document doc, int offset, int length, int type ) {
+    SyntaxElement( ParserSource doc, int offset, int length, int type ) {
         this.offset = offset;
         this.length = length;
         this.type = type;
-        this.document = doc;
+        this.source = doc;
     }
     
     public int offset() {
@@ -95,7 +93,7 @@ public class SyntaxElement {
     
     public String text() {
         try {
-            return document.getText(offset(), length());
+            return source.getText(offset(), length()).toString();
         }catch(BadLocationException ble) {
             ErrorManager.getDefault().notify(ErrorManager.WARNING, ble);
         }
@@ -132,7 +130,7 @@ public class SyntaxElement {
          * @param doctypeFile system identifier for this DOCTYPE, if available.
          *  null otherwise.
          */
-        public Declaration( Document document, int from, int length,
+        public Declaration( ParserSource document, int from, int length,
                 String doctypeRootElement,
                 String doctypePI, String doctypeFile
                 ) {
@@ -172,7 +170,7 @@ public class SyntaxElement {
     public static class Named extends SyntaxElement {
         String name;
         
-        public Named( Document document, int from, int to, int type, String name ) {
+        public Named( ParserSource document, int from, int to, int type, String name ) {
             super( document, from, to, type );
             this.name = name;
         }
@@ -190,7 +188,7 @@ public class SyntaxElement {
         private List<TagAttribute> attribs;
         private boolean empty, openTag;
                 
-        public Tag( Document document, int from, int length, String name, List attribs, boolean openTag, boolean isEmpty ) {
+        public Tag( ParserSource document, int from, int length, String name, List attribs, boolean openTag, boolean isEmpty ) {
             super( document, from, length, openTag ? TYPE_TAG : TYPE_ENDTAG, name );
             this.attribs = attribs;
             this.openTag = openTag;

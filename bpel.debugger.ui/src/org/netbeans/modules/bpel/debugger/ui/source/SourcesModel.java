@@ -61,10 +61,8 @@ NodeActionsProvider {
     private Set                     disabledSourceRoots = new HashSet ();
     
     public SourcesModel (ContextProvider lookupProvider) {
-        sourcePath = (SourcePath) lookupProvider.
-            lookupFirst (null, SourcePath.class);
-        debugger = (BpelDebugger) lookupProvider.
-            lookupFirst (null, BpelDebugger.class);
+        sourcePath = lookupProvider.lookupFirst(null, SourcePath.class);
+        debugger = lookupProvider.lookupFirst(null, BpelDebugger.class);
     }
     
     

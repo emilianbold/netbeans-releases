@@ -1,0 +1,16 @@
+
+
+Document 0
+Delete:  source : <TESTURL>/classprops.js
+
+
+
+Document 1
+Indexed:
+  base : democomplete;;DemoComplete;|PROPERTY|;;0;;;;
+  base : setup;DemoComplete;setup;|FUNCTION|;title;0;;;Boolean;
+  extend : democomplete;DemoComplete;
+  fqn : democomplete.setup;;DemoComplete.setup;|FUNCTION|;title;0;;;Boolean;
+  fqn : democomplete;;DemoComplete;|PROPERTY|;;0;;;;
+
+Not Indexed:

@@ -159,28 +159,8 @@ public final class KeyBindingSettingsImpl extends KeyBindingSettingsFactory {
      * @return List of {@link MultiKeyBinding}
      */
     public List<MultiKeyBinding> getKeyBindings(String profile) {
-        init ();
-        
-        // 1) get real profile
 	profile = getInternalKeymapProfile(profile);
-        
-        Map<Collection<KeyStroke>, MultiKeyBinding> allShortcuts = new HashMap<Collection<KeyStroke>, MultiKeyBinding>();
-
-        // Add base shortcuts
-        if (baseKBS != null) {
-            Map<Collection<KeyStroke>, MultiKeyBinding> baseShortcuts = baseKBS.getShortcuts(profile, false);
-            allShortcuts.putAll(baseShortcuts);
-        }
-
-        // Add local shortcuts
-        Map<Collection<KeyStroke>, MultiKeyBinding> localShortcuts = getShortcuts(profile, false);
-        allShortcuts.putAll(localShortcuts);
-        
-        // Prepare the result
-        List<MultiKeyBinding> result = new ArrayList<MultiKeyBinding>(allShortcuts.values());
-        log ("getKeyBindings", result);
-        
-	return Collections.unmodifiableList(result);
+        return Collections.unmodifiableList(new ArrayList<MultiKeyBinding>(getShortcuts(profile, false).values()));
     }
 
     private Map<Collection<KeyStroke>, MultiKeyBinding> getShortcuts(String profile, boolean defaults) {
@@ -287,10 +267,28 @@ public final class KeyBindingSettingsImpl extends KeyBindingSettingsFactory {
     }
 
     public Object createInstanceForLookup() {
-        List<MultiKeyBinding> keyB = getKeyBindings();
-        return new Immutable(new ArrayList<MultiKeyBinding>(keyB));
-    }
+        init ();
+        
+        // 1) get real profile
+	String profile = getInternalKeymapProfile(EditorSettingsImpl.getInstance().getCurrentKeyMapProfile());
+        
+        Map<Collection<KeyStroke>, MultiKeyBinding> allShortcuts = new HashMap<Collection<KeyStroke>, MultiKeyBinding>();
 
+        // Add base shortcuts
+        if (baseKBS != null) {
+            Map<Collection<KeyStroke>, MultiKeyBinding> baseShortcuts = baseKBS.getShortcuts(profile, false);
+            allShortcuts.putAll(baseShortcuts);
+        }
+
+        // Add local shortcuts
+        Map<Collection<KeyStroke>, MultiKeyBinding> localShortcuts = getShortcuts(profile, false);
+        allShortcuts.putAll(localShortcuts);
+        
+        // Prepare the result
+        List<MultiKeyBinding> result = new ArrayList<MultiKeyBinding>(allShortcuts.values());
+        
+        return new Immutable(result);
+    }
     
     private static class Listener extends WeakReference<KeyBindingSettingsImpl> 
     implements PropertyChangeListener, Runnable {

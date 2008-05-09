@@ -93,10 +93,6 @@ public interface XPathType {
                 //
                 if (XPathMetadataUtils.isTypeDerived(mSchemaType, otherSType) || 
                         XPathMetadataUtils.isTypeDerived(otherSType, mSchemaType)) {
-                    //
-                    // TODO: In some cases a warning can be shown 
-                    // if assignment can lead to a data loss.
-                    //
                     return true;
                 } else {
                     return false;
@@ -107,7 +103,4 @@ public interface XPathType {
         }
         
     }
-    
-    //==========================================================================
-    
 }

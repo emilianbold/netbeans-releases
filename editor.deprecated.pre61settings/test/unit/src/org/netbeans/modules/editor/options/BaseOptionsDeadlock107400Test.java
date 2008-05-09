@@ -43,7 +43,7 @@ package org.netbeans.modules.editor.options;
 
 import java.util.Collection;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.editor.impl.KitsTracker;
+import org.netbeans.modules.editor.lib.KitsTracker;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
 import org.openide.modules.ModuleInfo;

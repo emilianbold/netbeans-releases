@@ -90,7 +90,6 @@ public class TargetListerTest extends NbTestCase {
         assertEquals("correct element name #1", "target", e.getLocalName());
         assertEquals("correct name attribute #1", "-internal", e.getAttribute("name"));
         AntProjectCookie apc = TargetLister.getAntProjectCookie(simple);
-        assertEquals("element in script #1", apc.getDocument(), e.getOwnerDocument());
         assertEquals("correct script #1", apc, t.getScript());
         assertFalse("not described #1", t.isDescribed());
         assertTrue("internal #1", t.isInternal());

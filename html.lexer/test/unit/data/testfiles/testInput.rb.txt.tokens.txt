@@ -1,0 +1,80 @@
+.t.e.s.t. Script
+TAG_OPEN_SYMBOL  "<", la=1, st=8000
+TAG_OPEN        "p", la=1, st=9000
+TAG_CLOSE_SYMBOL  ">", st=0
+TAG_OPEN_SYMBOL  "<", la=1, st=8000
+TAG_OPEN        "script", la=1, st=9001
+TAG_CLOSE_SYMBOL  ">", st=35001
+SCRIPT          "foo bar", la=9, st=0
+TAG_OPEN_SYMBOL  "</", la=7, st=4000
+TAG_CLOSE       "script", la=1, st=6000
+TAG_CLOSE_SYMBOL  ">", st=0
+TAG_OPEN_SYMBOL  "</", st=4000
+TAG_CLOSE       "p", la=1, st=6000
+TAG_CLOSE_SYMBOL  ">", st=0
+----- EOF -----
+
+.t.e.s.t. HTML Attributes
+TAG_OPEN_SYMBOL  "<", la=1, st=8000
+TAG_OPEN        "li", la=1, st=9000
+WS              " ", la=1, st=9000
+ARGUMENT        "style", la=1, st=12000,style
+OPERATOR        "=", st=14000,style
+VALUE           ""foo"", st=9000
+TAG_CLOSE_SYMBOL  ">", st=0
+TEXT            "hello", la=1, st=0
+TAG_OPEN_SYMBOL  "</", st=4000
+TAG_CLOSE       "li", la=1, st=6000
+TAG_CLOSE_SYMBOL  ">", st=0
+TEXT            "\n", la=1, st=0
+TAG_OPEN_SYMBOL  "<", la=1, st=8000
+TAG_OPEN        "span", la=1, st=9000
+WS              " ", la=1, st=9000
+ARGUMENT        "onklikk", la=1, st=12000,onklikk
+OPERATOR        "=", st=14000,onklikk
+VALUE           ""hello"", st=9000
+TAG_CLOSE_SYMBOL  "/>", st=0
+----- EOF -----
+
+.t.e.s.t. JavaScript attributes
+TAG_OPEN_SYMBOL  "<", la=1, st=8000
+TAG_OPEN        "input", la=1, st=9000
+WS              " ", la=1, st=9000
+ARGUMENT        "onblur", la=1, st=12000,onblur
+OPERATOR        "=", st=14000,onblur
+VALUE_JAVASCRIPT  ""foo"", st=9000
+TAG_CLOSE_SYMBOL  "/>", st=0
+TEXT            "\n", la=1, st=0
+TAG_OPEN_SYMBOL  "<", la=1, st=8000
+TAG_OPEN        "input", la=1, st=9000
+WS              " ", la=1, st=9000
+ARGUMENT        "onclick", la=1, st=12000,onclick
+WS              " ", la=1, st=12000,onclick
+OPERATOR        "=", st=14000,onclick
+WS              " ", la=1, st=14000,onclick
+VALUE_JAVASCRIPT  ""hello"", st=9000
+TAG_CLOSE_SYMBOL  "/>", st=0
+TEXT            "\n", la=1, st=0
+TAG_OPEN_SYMBOL  "<", la=1, st=8000
+TAG_OPEN        "input", la=1, st=9000
+WS              " ", la=1, st=9000
+ARGUMENT        "onclick", la=1, st=12000,onclick
+OPERATOR        "=", st=14000,onclick
+VALUE_JAVASCRIPT  "'foo'", st=9000
+TAG_CLOSE_SYMBOL  "/>", st=0
+TEXT            "\n", la=1, st=0
+TAG_OPEN_SYMBOL  "<", la=1, st=8000
+TAG_OPEN        "input", la=1, st=9000
+WS              " ", la=1, st=9000
+ARGUMENT        "onclick", la=1, st=12000,onclick
+WS              " ", la=1, st=12000,onclick
+OPERATOR        "=", st=14000,onclick
+WS              " ", la=1, st=14000,onclick
+VALUE_JAVASCRIPT  "'bar'", st=9000
+WS              " ", la=1, st=9000
+TAG_CLOSE_SYMBOL  "/>", st=0
+----- EOF -----
+
+<Unnamed test>
+----- EOF -----
+

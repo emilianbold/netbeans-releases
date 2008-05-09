@@ -94,7 +94,7 @@ public class SvnConfigFilesTest extends NbTestCase {
     public void testSubversionConfig() {
         String[] wordsActual = {""};
         String[] wordsExpected = {""};
-        String[] proxy = {"my.proxy", "my.proxy", "my.proxy", "", "", "my.proxy", "my.proxy", "my.proxy"};
+        String[] proxy = {"my.proxy", "my.proxy", "my.proxy", "", "", "my.proxy", "my.proxy", "my.proxy", null, null};
         int result = -1;
         
         //for (int i = 1; i < proxy.length + 1; i++) {
@@ -169,16 +169,20 @@ public class SvnConfigFilesTest extends NbTestCase {
         //tmp.deleteOnExit();
         System.setProperty("netbeans.t9y.svn.nb.config.path", svnNbPath);
 
-        //Proxy
-        setProxy(proxyHost, proxyPort);
-        Preferences pref = org.openide.util.NbPreferences.root().node("org/netbeans/core");
-        SvnConfigFiles scf = SvnConfigFiles.getInstance();
-        try {
+        //Proxy        
+        if(proxyHost == null) {
+            proxyPreferences.putInt("proxyType", 1);
+        } else {
+            setProxy(proxyHost, proxyPort);
             if (proxyHost.length() == 0 || proxyPort.length() == 0) {
                 proxyPreferences.putInt("proxyType", 0);
             } else {
                 proxyPreferences.putInt("proxyType", 2);
             }    
+        }
+                
+        SvnConfigFiles scf = SvnConfigFiles.getInstance();
+        try {
             scf.setProxy(new SVNUrl("http://peterp.czech.sun.com/svn"));
         } catch (MalformedURLException me) {
         }

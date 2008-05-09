@@ -119,14 +119,6 @@ public abstract class Children extends Object {
 
     private Reference<ChildrenArray> array = new WeakReference<ChildrenArray>(null);
 
-    /** Obtains references to array holder. If it does not exist, it is
-    * created.
-     *
-     * @param cannotWorkBetter array of size 1 or null, will contain true, if
-     *    the getArray cannot be initialized (we are under read access
-     *    and another thread is responsible for initialization, in such case
-     *    give up on computation of best result
-    */
     private Thread initThread;
 
     /*
@@ -553,7 +545,14 @@ public abstract class Children extends Object {
 
         return (arr == null) ? null : arr.nodes();
     }
-
+    
+    /** Obtains references to array holder. If it does not exist, it is created.
+     *
+     * @param cannotWorkBetter array of size 1 or null, will contain true, if
+     *    the getArray cannot be initialized (we are under read access
+     *    and another thread is responsible for initialization, in such case
+     *    give up on computation of best result
+    */
     private ChildrenArray getArray(boolean[] cannotWorkBetter) {
         final boolean IS_LOG_GET_ARRAY = LOG_GET_ARRAY.isLoggable(Level.FINE);
 

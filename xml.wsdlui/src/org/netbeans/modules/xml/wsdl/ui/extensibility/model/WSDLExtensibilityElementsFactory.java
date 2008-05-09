@@ -47,7 +47,6 @@
  */
 package org.netbeans.modules.xml.wsdl.ui.extensibility.model;
 
-import org.netbeans.modules.xml.wsdl.ui.extensibility.model.impl.WSDLExtensibilityElementsFactoryImpl;
 import org.openide.util.NbBundle;
 
 

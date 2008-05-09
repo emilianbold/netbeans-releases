@@ -189,6 +189,102 @@ public class GeneratorUtilitiesTest extends NbTestCase {
         performTest("package test;\npublic class Test implements XX {\npublic Test(){\n} }\ninterface XX {public <T extends java.util.List> void test(T t);}", new AddAllAbstractMethodsTask(30), null);
     }
     
+    public void testImplementAllAbstractMethodsb() throws Exception {
+        performTest("package test;\npublic class Test implements java.util.List{\npublic Test(){\n} }\n", new AddAllAbstractMethodsTask(30), null);
+    }
+    
+    public void testImplementAllAbstractMethodsc() throws Exception {
+        performTest("package test;\npublic class Test implements java.util.List<String>{\npublic Test(){\n} }\n", new AddAllAbstractMethodsTask(30), null);
+    }
+    
+    public void testImplementAllAbstractMethodsd() throws Exception {
+        performTest("package test;\npublic class Test implements B {\npublic Test(){\n} }\ninterface A {\npublic Number f();}\ninterface B extends A {\npublic Integer f();}", new AddAllAbstractMethodsTask(30), null);
+    }
+    
+    public void testOverrideAnnotation1() throws Exception {
+        performTest("package test;\npublic class Test extends C implements B { }\ninterface A {public void test1(); public void test4();}\ninterface B {public void test2();}\nabstract class C implements A {public abstract void test3(); public abstract void test4();}\n", "1.5", new AddAllAbstractMethodsTask(30), new Validator() {
+            public void validate(CompilationInfo info) {
+                ClassTree ct = (ClassTree) info.getCompilationUnit().getTypeDecls().get(0);
+                
+                for (Tree member : ct.getMembers()) {
+                    MethodTree m = (MethodTree) member;
+                    
+                    if ("test1".equals(m.getName().toString())) {
+                        assertTrue(m.getModifiers().getAnnotations().isEmpty());
+                    }
+                    
+                    if ("test2".equals(m.getName().toString())) {
+                        assertTrue(m.getModifiers().getAnnotations().isEmpty());
+                    }
+                    
+                    if ("test3".equals(m.getName().toString())) {
+                        assertFalse(m.getModifiers().getAnnotations().isEmpty());
+                    }
+                    
+                    if ("test4".equals(m.getName().toString())) {
+                        assertFalse(m.getModifiers().getAnnotations().isEmpty());
+                    }
+                }
+            }
+        });
+    }
+    
+    public void testOverrideAnnotation2() throws Exception {
+        performTest("package test;\npublic class Test extends C implements B { }\ninterface A {public void test1(); public void test4();}\ninterface B {public void test2();}\nabstract class C implements A {public abstract void test3(); public abstract void test4();}\n", "1.6", new AddAllAbstractMethodsTask(30), new Validator() {
+            public void validate(CompilationInfo info) {
+                ClassTree ct = (ClassTree) info.getCompilationUnit().getTypeDecls().get(0);
+                
+                for (Tree member : ct.getMembers()) {
+                    MethodTree m = (MethodTree) member;
+                    
+                    if ("test1".equals(m.getName().toString())) {
+                        assertFalse(m.getModifiers().getAnnotations().isEmpty());
+                    }
+                    
+                    if ("test2".equals(m.getName().toString())) {
+                        assertFalse(m.getModifiers().getAnnotations().isEmpty());
+                    }
+                    
+                    if ("test3".equals(m.getName().toString())) {
+                        assertFalse(m.getModifiers().getAnnotations().isEmpty());
+                    }
+                    
+                    if ("test4".equals(m.getName().toString())) {
+                        assertFalse(m.getModifiers().getAnnotations().isEmpty());
+                    }
+                }
+            }
+        });
+    }
+    
+    public void testOverrideAnnotation3() throws Exception {
+        performTest("package test;\npublic class Test extends C implements B { }\ninterface A {public void test1(); public void test4();}\ninterface B {public void test2();}\nabstract class C implements A {public abstract void test3(); public abstract void test4();}\n", "1.4", new AddAllAbstractMethodsTask(30), new Validator() {
+            public void validate(CompilationInfo info) {
+                ClassTree ct = (ClassTree) info.getCompilationUnit().getTypeDecls().get(0);
+                
+                for (Tree member : ct.getMembers()) {
+                    MethodTree m = (MethodTree) member;
+                    
+                    if ("test1".equals(m.getName().toString())) {
+                        assertTrue(m.getModifiers().getAnnotations().isEmpty());
+                    }
+                    
+                    if ("test2".equals(m.getName().toString())) {
+                        assertTrue(m.getModifiers().getAnnotations().isEmpty());
+                    }
+                    
+                    if ("test3".equals(m.getName().toString())) {
+                        assertTrue(m.getModifiers().getAnnotations().isEmpty());
+                    }
+                    
+                    if ("test4".equals(m.getName().toString())) {
+                        assertTrue(m.getModifiers().getAnnotations().isEmpty());
+                    }
+                }
+            }
+        });
+    }
+    
     public void testOverrideMethods1() throws Exception {
         performTest("package test;\npublic class Test {\npublic Test(){\n}\n }\n", new SimpleOverrideMethodsTask(34), new CloneAndToStringValidator());
     }
@@ -264,6 +360,22 @@ public class GeneratorUtilitiesTest extends NbTestCase {
 
     public void testStaticBooleanSetter() throws Exception {
         performTest("package test;\npublic class Test {\nprivate static boolean test;\npublic Test(){\n}\n }\n", new GetterSetterTask(34, false), new GetterSetterValidator(false));
+    }
+    
+    public void testCreateMethod() throws Exception {
+        performTest("package test;\npublic class Test { }\n", "1.5", new CreateMethodTask(34), new Validator() {
+            public void validate(CompilationInfo info) {
+                assertEquals(1, info.getDiagnostics().size());
+                
+                for (ExecutableElement ee : ElementFilter.methodsIn(info.getElements().getTypeElement("test.Test").getEnclosedElements())) {
+                    assertEquals("toArray", ee.getSimpleName().toString());
+                    assertEquals(1, ee.getTypeParameters().size());
+                    return ;
+                }
+                
+                fail("toArray method not found");
+            }
+        }, false);
     }
     
     public static interface Validator {
@@ -708,7 +820,48 @@ public class GeneratorUtilitiesTest extends NbTestCase {
         
     }
     
-    private void performTest(String sourceCode, final CancellableTask<WorkingCopy> task, final Validator validator) throws Exception {
+    private static class CreateMethodTask implements CancellableTask<WorkingCopy> {        
+    
+        private int offset;
+        
+        public CreateMethodTask(int offset) {
+            this.offset = offset;
+        }
+
+        public void cancel() {
+        }
+    
+        public void run(WorkingCopy copy) throws Exception {
+            copy.toPhase(JavaSource.Phase.RESOLVED);
+            TreePath tp = copy.getTreeUtilities().pathFor(offset);
+            assertTrue(tp.getLeaf().getKind() == Tree.Kind.CLASS);
+            ClassTree ct = (ClassTree)tp.getLeaf();
+            TypeElement te = (TypeElement)copy.getTrees().getElement(tp);
+            DeclaredType dt = (DeclaredType) copy.getTreeUtilities().parseType("java.util.List<java.lang.String>", te);
+            TypeElement list = copy.getElements().getTypeElement("java.util.List");
+            ExecutableElement ee = null;
+            for (ExecutableElement m : ElementFilter.methodsIn(list.getEnclosedElements())) {
+                if (m.getSimpleName().contentEquals("toArray") && !m.getTypeParameters().isEmpty()) {
+                    ee = m;
+                }
+            }
+            assertNotNull(ee);
+            GeneratorUtilities utilities = GeneratorUtilities.get(copy);
+            assertNotNull(utilities);
+            ClassTree newCt = utilities.insertClassMembers(ct, Collections.singletonList(utilities.createMethod(dt, ee)));
+            copy.rewrite(ct, newCt);
+        }
+    }
+    
+    private void performTest(String sourceCode, final Task<WorkingCopy> task, final Validator validator) throws Exception {
+        performTest(sourceCode, "1.5", task, validator);
+    }
+    
+    private void performTest(String sourceCode, String sourceLevel, final Task<WorkingCopy> task, final Validator validator) throws Exception {
+        performTest(sourceCode, sourceLevel, task, validator, true);
+    }
+    
+    private void performTest(String sourceCode, String sourceLevel, final Task<WorkingCopy> task, final Validator validator, final boolean requireNoErrors) throws Exception {
         FileObject root = makeScratchDir(this);
         
         FileObject sourceDir = root.createFolder("src");
@@ -720,6 +873,7 @@ public class GeneratorUtilitiesTest extends NbTestCase {
         writeIntoFile(source, sourceCode);
         
         SourceUtilsTestUtil.prepareTest(sourceDir, buildDir, cacheDir, new FileObject[0]);
+        SourceUtilsTestUtil.setSourceLevel(source, sourceLevel);
         
         JavaSource js = JavaSource.forFileObject(source);
         
@@ -735,7 +889,9 @@ public class GeneratorUtilitiesTest extends NbTestCase {
                 System.err.println(controller.getText());
                 controller.toPhase(JavaSource.Phase.RESOLVED);
                 
-                assertEquals(controller.getDiagnostics().toString(), 0, controller.getDiagnostics().size());
+                if (requireNoErrors) {
+                    assertEquals(controller.getDiagnostics().toString(), 0, controller.getDiagnostics().size());
+                }
                 
                 if (validator != null)
                     validator.validate(controller);

@@ -64,51 +64,6 @@ public class Footer extends AbstractFragmentBean {
      */
     private void _init() throws Exception {
     }
-    private HtmlPanelGrid footer = new HtmlPanelGrid();
-
-    public HtmlPanelGrid getFooter() {
-        return footer;
-    }
-
-    public void setFooter(HtmlPanelGrid hpg) {
-        this.footer = hpg;
-    }
-    private HtmlPanelGrid footerGrid = new HtmlPanelGrid();
-
-    public HtmlPanelGrid getFooterGrid() {
-        return footerGrid;
-    }
-
-    public void setFooterGrid(HtmlPanelGrid hpg) {
-        this.footerGrid = hpg;
-    }
-    private HtmlPanelGrid feedbackCell = new HtmlPanelGrid();
-
-    public HtmlPanelGrid getFeedbackCell() {
-        return feedbackCell;
-    }
-
-    public void setFeedbackCell(HtmlPanelGrid hpg) {
-        this.feedbackCell = hpg;
-    }
-    private Hyperlink feedbackLink = new Hyperlink();
-
-    public Hyperlink getFeedbackLink() {
-        return feedbackLink;
-    }
-
-    public void setFeedbackLink(Hyperlink h) {
-        this.feedbackLink = h;
-    }
-    private Hyperlink powerByLink = new Hyperlink();
-
-    public Hyperlink getPowerByLink() {
-        return powerByLink;
-    }
-
-    public void setPowerByLink(Hyperlink h) {
-        this.powerByLink = h;
-    }
     // </editor-fold>
 
     public Footer() {

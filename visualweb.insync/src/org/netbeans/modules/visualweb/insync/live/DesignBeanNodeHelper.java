@@ -439,7 +439,8 @@ final class DesignBeanNodeHelper {
                             DesignBean bean = InSyncServiceProvider.get().getMarkupDesignBeanForElement(body);
                             
                             LiveUnit lunit = facesModel.getLiveUnit();
-                            if (bean != null) {
+                            // Bugfix:125243
+                          /*  if (bean != null) {
                                 if ((bean.getChildBeanCount() == 0) ||
                                         !((MarkupDesignBean)bean.getChildBean(0)).getElement()
                                         .getTagName().equals(HtmlTag.BR.name)) {
@@ -449,7 +450,7 @@ final class DesignBeanNodeHelper {
 //                                    webform.getDocument().createBean(org.netbeans.modules.visualweb.xhtml.Br.class.getName(), parent, before);
                                     createBean(org.netbeans.modules.visualweb.xhtml.Br.class.getName(), parent, before, lunit);
                                 }
-                            }
+                            }*/
                             
                             // Add one to form too...
                             FacesPageUnit facesUnit = facesModel.getFacesUnit();

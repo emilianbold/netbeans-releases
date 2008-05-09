@@ -1,13 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <application xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
 	     xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+             xmlns:googlegeocoder="urn:google:geocoder" 
 	     xsi:schemaLocation="http://research.sun.com/wadl/2006/10 
                     ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/wadl20061109.xsd"
              xmlns="http://research.sun.com/wadl/2006/10">
-    <grammars/>
+    <grammars>
+        <include href="Geocoder.xsd"/>
+    </grammars>
     <resources base="http://maps.google.com/maps">
 	<resource path="geo">
-	    <method name="GET" id="google.Geocode">
+	    <method name="GET" id="geocode">
 		<doc xml:lang="en">
 		    A GET call to google.Geocode
                     returns a longitude and latitude for a given address. 
@@ -22,9 +25,15 @@
 		    <param name="key" type="xsd:string" style="query" required="true">
 			<doc xml:lang="en">API key that you establish on the Google Geocode site at http://www.google.com/apis/maps/signup.html.</doc>
 		    </param>
+                    <param name="output" type="xsd:string" style="query" required="false" default="xml">
+			<doc xml:lang="en">Output format xml, json, kml, csv.</doc>
+		    </param>
 		</request>
-		<response>
-		</response>
+                <response>
+                    <representation mediaType="application/xml" element="googlegeocoder:kml">
+                        <doc xml:lang="en" title="returns geocode coordinates."/>
+                    </representation>
+                </response>
 		</method>
 	</resource>
     </resources>  

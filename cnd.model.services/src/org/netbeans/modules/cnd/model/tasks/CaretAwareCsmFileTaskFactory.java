@@ -75,7 +75,7 @@ public abstract class CaretAwareCsmFileTaskFactory extends CsmFileTaskFactory {
 
     public synchronized static int getLastPosition(FileObject file) {
         if (file == null) {
-            throw new NullPointerException("Cannot pass null file!");
+            throw new NullPointerException("Cannot pass null file!"); //NOI18N
         }
 
         Integer position = file2LastPosition.get(file);

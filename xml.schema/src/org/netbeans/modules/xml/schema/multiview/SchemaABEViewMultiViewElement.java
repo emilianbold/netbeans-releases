@@ -200,6 +200,10 @@ public class SchemaABEViewMultiViewElement extends TopComponent
         addPropertyChangeListener("activatedNodes", nodesMediator);
         addPropertyChangeListener("activatedNodes", cpl);
         //initUI();
+        
+        //accessbility
+        this.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SchemaColumnViewMultiViewElement.class,"LBL_ABE_View_name"));
+        this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SchemaColumnViewMultiViewElement.class,"LBL_ABE_View_name"));
     }
     
     

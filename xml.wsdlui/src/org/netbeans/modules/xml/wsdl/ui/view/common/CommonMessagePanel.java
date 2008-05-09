@@ -62,7 +62,7 @@ import org.openide.util.Utilities;
 public class CommonMessagePanel extends javax.swing.JPanel {
     private static Color nbErrorForeground;
     private static Color nbWarningForeground;
-    private boolean mValidState = false;
+    private boolean mValidState = true;
 
     static {//Got this from WizardDescriptor
         nbErrorForeground = UIManager.getColor("nb.errorForeground"); //NOI18N

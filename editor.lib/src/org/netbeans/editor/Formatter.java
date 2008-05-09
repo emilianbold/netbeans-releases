@@ -58,6 +58,7 @@ import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.lib.EditorPreferencesDefaults;
+import org.netbeans.modules.editor.lib.KitsTracker;
 import org.netbeans.modules.editor.lib.SettingsConversions;
 import org.openide.util.WeakListeners;
 
@@ -88,7 +89,7 @@ public class Formatter {
      *   in favor of mime types.
      */
     public static synchronized Formatter getFormatter(Class kitClass) {
-        String mimeType = BaseKit.kitsTracker_FindMimeType(kitClass);
+        String mimeType = KitsTracker.getInstance().findMimeType(kitClass);
         if (mimeType != null) {
             return getFormatter(mimeType);
         } else {
@@ -142,7 +143,7 @@ public class Formatter {
      * @deprecated Use Editor Indentation API.
      */
     public static synchronized void setFormatter(Class kitClass, Formatter formatter) {
-        String mimeType = BaseKit.kitsTracker_FindMimeType(kitClass);
+        String mimeType = KitsTracker.getInstance().findMimeType(kitClass);
         if (mimeType != null) {
             setFormatter(mimeType, formatter);
         } else {

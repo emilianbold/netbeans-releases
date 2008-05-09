@@ -102,6 +102,12 @@ public final class ParametrizedTextParser {
                             if (handler != null) {
                                 handler.notifyParameterParsed(paramImpl);
                             } else { // store params locally
+                                for (CodeTemplateParameterImpl impl : paramImpls) {
+                                    if (impl.getName().equals(paramImpl.getName())) {
+                                        paramImpl.markSlave(impl.getParameter());
+                                        break;
+                                    }
+                                }
                                 paramImpls.add(paramImpl);
                             }
                             index = afterClosingBraceIndex;

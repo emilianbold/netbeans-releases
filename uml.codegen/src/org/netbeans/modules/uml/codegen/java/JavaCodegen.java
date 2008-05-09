@@ -54,6 +54,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.uml.core.coreapplication.ICodeGenerator;
@@ -257,9 +258,6 @@ public class JavaCodegen implements ICodeGenerator
                                     domainTemplate.getTemplateFilename());
                         }
                         
-                        templteFileObject.setAttribute(
-                            "javax.script.ScriptEngine", "freemarker"); // NOI18N
-
                         FileMapping fmap = new FileMapping();
                         fmap.templateFileObject = templteFileObject;
                         fmap.domainTemplate = domainTemplate;
@@ -464,7 +462,25 @@ public class JavaCodegen implements ICodeGenerator
                             ScriptEngine engine = engines.get(templFO);
                             if (engine == null) 
                             {
-                                engine = mgr.getEngineByName("freemarker");
+                                String engineID = null;
+                                Object value = templFO.getAttribute("javax.script.ScriptEngine");
+                        
+                                if (value instanceof String) 
+                                {
+                                    engineID = (String) value;
+                                }
+                                if (engineID == null || engineID.length() == 0) 
+                                {
+                                    engineID = "freemarker";
+                                }
+                                engine = mgr.getEngineByName(engineID);
+                                if (engine == null) 
+                                {
+                                    task.log(task.TERSE, getBundleMessage(
+                                        "MSG_ErrorNonExistingScriptingEngine", engineID)); // NOI18N
+                                    errorsCount++;
+                                    continue;
+                                }
                                 engines.put(templFO, engine);
                             }
 
@@ -644,6 +660,7 @@ public class JavaCodegen implements ICodeGenerator
                 {
                     theSameSet = false;
                 }
+                
                 for (FileMapping fmap : fmappings)                    
                 {
                     if (genToTmp)
@@ -658,17 +675,25 @@ public class JavaCodegen implements ICodeGenerator
                     if (fmap.existingSourcePath != null)
                     {
                         File exf = new File(fmap.existingSourcePath);
+                        FileObject fo = null;
                         if (!exf.equals(new File(fmap.targetFilePath)))
                         {
-                            exf.delete();
+                             fo  = FileUtil.toFileObject(exf);
+                             if (fo != null)
+                             {
+                                fo.delete();
+                             }
                         }
                         else
                         {
-
                             if ((!backup) && (fmap.merge) && 
                                 (fmap.existingSourceBackupPath != null))
                             {
-                                new File(fmap.existingSourceBackupPath).delete();
+                                fo = FileUtil.toFileObject(new File(fmap.existingSourceBackupPath));
+                                if (fo != null)
+                                {
+                                    fo.delete();
+                                }
                             }
                         }
                     }
@@ -815,13 +840,18 @@ public class JavaCodegen implements ICodeGenerator
 	    +((int)(Math.random() * 100000));
 	
 	File newTargetFolder = new File(trg);
-	newTargetFolder.mkdirs();
+	//newTargetFolder.mkdirs();
+        FileUtil.createFolder(newTargetFolder);
 	return newTargetFolder.getCanonicalPath();
     }
 
     private void deleteDirs(String topParent, String path) 
     {               
         File topDir = new File(topParent);
+        if (path == null) 
+        {
+            return;
+        }
         File cur = new File(path);
         if (! inSubdir(topDir, cur)) 
         {
@@ -833,14 +863,20 @@ public class JavaCodegen implements ICodeGenerator
             return;
         }
         boolean last = false;
+        FileObject fo = null;
         while(true) 
         {
             if (cur.exists()) 
             {
-                File[] children = cur.listFiles();
+                fo = FileUtil.toFileObject(cur);
+                FileObject[] children = fo.getChildren();
                 if (children == null || children.length == 0) 
                 {
-                    cur.delete();
+                    try {
+                        fo.delete();
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
                 } 
                 else 
                 {

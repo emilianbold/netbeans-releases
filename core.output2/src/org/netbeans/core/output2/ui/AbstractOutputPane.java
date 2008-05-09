@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -71,6 +71,7 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
     private int fontWidth = -1;
     protected JEditorPane textView;
     int lastCaretLine = 0;
+    int caretBlinkRate = 500;
     boolean hadSelection = false;
     boolean recentlyReset = false;
 
@@ -212,8 +213,6 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
         oc.setUpdatePolicy(DefaultCaret.NEVER_UPDATE);
         textView.setCaret (oc);
         
-        getCaret().setVisible(true);
-        getCaret().setBlinkRate(0);
         getCaret().setSelectionVisible(true);
         
         getVerticalScrollBar().getModel().addChangeListener(this);
@@ -290,8 +289,6 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
         textView.setEditorKit(kit);
         textView.setDocument(doc);
         updateKeyBindings();
-        getCaret().setVisible(true);
-        getCaret().setBlinkRate(0);
     }
     
     /**
@@ -409,11 +406,12 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
 //***********************Listener implementations*****************************
 
     public void stateChanged(ChangeEvent e) {
-        if (e.getSource() instanceof JViewport) {
+        /*if (e.getSource() instanceof JViewport) { // #78191
             if (locked) {
                 ensureCaretPosition();
             }
-        } else if (e.getSource() == getVerticalScrollBar().getModel()) {
+        } else*/
+        if (e.getSource() == getVerticalScrollBar().getModel()) {
             if (!locked) { //XXX check if doc is still being written?
                 BoundedRangeModel mdl = getVerticalScrollBar().getModel();
                 if (mdl.getValue() + mdl.getExtent() == mdl.getMaximum()) {
@@ -611,12 +609,21 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
             postPopupMenu (p, this);
         }
     }
-    
+
     public void keyPressed(KeyEvent keyEvent) {
-        if (keyEvent.getKeyCode() == KeyEvent.VK_END) {
-            lockScroll();
-        } else {
-            unlockScroll();
+        switch (keyEvent.getKeyCode()) {
+            case KeyEvent.VK_END:
+                lockScroll();
+                break;
+            case KeyEvent.VK_UP:
+            case KeyEvent.VK_DOWN:
+            case KeyEvent.VK_LEFT:
+            case KeyEvent.VK_RIGHT:
+            case KeyEvent.VK_HOME:
+            case KeyEvent.VK_PAGE_UP:
+            case KeyEvent.VK_PAGE_DOWN:
+                unlockScroll();
+                break;
         }
     }
 
@@ -650,23 +657,6 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
     }
     
     private class OCaret extends DefaultCaret {
-        @Override
-        public void setSelectionVisible(boolean val) {
-            super.setSelectionVisible(true);
-            super.setBlinkRate(0);
-        }
-        @Override
-        public boolean isSelectionVisible() {
-            return true;
-        }
-        @Override
-        public void setBlinkRate(int rate) {
-            super.setBlinkRate(0);
-        }
- 
-        @Override
-        public boolean isVisible() { return true; }
-        
         @Override
         public void paint(Graphics g) {
             JTextComponent component = textView;
@@ -705,7 +695,7 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
 //                    System.err.println("Can't render cursor");
                 }
             }
-        }    
+        }
         
         private boolean _contains(int X, int Y, int W, int H) {
             int w = this.width;
@@ -764,6 +754,17 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
             if( !e.isConsumed() ) {
                 super.mouseReleased(e);
             }
+        }
+
+        @Override
+        public void focusGained(FocusEvent e) {
+            getCaret().setBlinkRate(caretBlinkRate);
+            getCaret().setVisible(true);
+        }
+
+        @Override
+        public void focusLost(FocusEvent e) {
+            getCaret().setVisible(false);
         }
     }
 }

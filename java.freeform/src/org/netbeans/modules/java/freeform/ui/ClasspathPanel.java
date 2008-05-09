@@ -330,6 +330,7 @@ public class ClasspathPanel extends javax.swing.JPanel implements HelpCtx.Provid
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
         add(jPanel1, gridBagConstraints);
@@ -411,6 +412,8 @@ public class ClasspathPanel extends javax.swing.JPanel implements HelpCtx.Provid
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         javaPlatformPanel.add(javaPlatformIntro, gridBagConstraints);
+        javaPlatformIntro.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ClasspathPanel.class, "ACSN_ClasspathPanel_PlatformIntro")); // NOI18N
+        javaPlatformIntro.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ClasspathPanel.class, "ACSD_ClasspathPanel_PlatformIntro")); // NOI18N
 
         javaPlatformLabel.setLabelFor(javaPlatform);
         org.openide.awt.Mnemonics.setLocalizedText(javaPlatformLabel, org.openide.util.NbBundle.getMessage(ClasspathPanel.class, "ClasspathPanel.javaPlatformLabel")); // NOI18N
@@ -469,6 +472,8 @@ public class ClasspathPanel extends javax.swing.JPanel implements HelpCtx.Provid
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(4, 10, 4, 4);
         jPanel2.add(jTextArea2, gridBagConstraints);
+        jTextArea2.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ClasspathPanel.class, "ACSN_Freeform_Warning_Message")); // NOI18N
+        jTextArea2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ClasspathPanel.class, "ACSD_Freeform_Warning_Message")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;

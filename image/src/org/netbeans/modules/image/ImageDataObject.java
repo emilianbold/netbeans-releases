@@ -50,6 +50,7 @@ import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
 import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import javax.swing.Icon;
@@ -170,7 +171,12 @@ public class ImageDataObject extends MultiDataObject implements CookieSet.Factor
      * @return  java.io.IOException  if an error occurs during reading
      */
     public Image getImage() throws IOException {
-        return javax.imageio.ImageIO.read(getPrimaryFile().getInputStream());
+        InputStream input = getPrimaryFile().getInputStream();
+        try {
+            return javax.imageio.ImageIO.read(input);
+        } finally {
+            input.close();
+        }
     }
 
 

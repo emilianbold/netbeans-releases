@@ -152,7 +152,9 @@ public class SchemaParser extends DefaultHandler {
         }        
     }
     
-    public void parseLocation( String uri ) throws SchemaException {
+    public void parseLocation( String uri, String targetNamespace ) throws SchemaException {
+        this.targetNamespace = targetNamespace;
+        
         SAXParserFactory spf = SAXParserFactory.newInstance();
         try {
             spf.setNamespaceAware( true );
@@ -227,7 +229,7 @@ public class SchemaParser extends DefaultHandler {
                 try {
                     URI u = new URI( schemaURI );
                     URI sl = u.resolve( schemaLocation );
-                    sp.parseLocation( sl.toString());
+                    sp.parseLocation( sl.toString(), namespace);
                 } catch( SchemaException ex ) {
                     ex.printStackTrace();
                 } catch( URISyntaxException ex ) {
@@ -241,7 +243,8 @@ public class SchemaParser extends DefaultHandler {
             if( localName.equalsIgnoreCase( SchemaConstants.SCHEMA.getLocalPart())) {
                 state.push( SCHEMA );
 //                System.err.println("<schema>");
-                targetNamespace = targetNamespaceStack.push( attributes.getValue( "targetNamespace" ));
+                targetNamespace = targetNamespaceStack.push( 
+                        attributes.getValue( "targetNamespace" ) != null ? attributes.getValue( "targetNamespace" ) : targetNamespace);
                 if( "qualified".equals( attributes.getValue( "elementFormDefault" ))) {
                     elementFormDefault = true;
                 }

@@ -57,6 +57,7 @@ import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.JPopupMenu;
 import javax.swing.JTabbedPane;
+import org.openide.awt.TabbedPaneFactory;
 import org.openide.util.NbBundle;
 
 /**
@@ -117,7 +118,7 @@ public class RefactoringPanelContainer extends TopComponent {
                 add(panel, BorderLayout.CENTER);
             } else {
                 remove(comp);
-                JTabbedPane pane = new CloseButtonTabbedPane();
+                JTabbedPane pane = TabbedPaneFactory.createCloseButtonTabbedPane();
                 pane.addMouseListener(listener);
                 pane.addPropertyChangeListener(closeL);
                 add(pane, BorderLayout.CENTER);
@@ -276,7 +277,7 @@ public class RefactoringPanelContainer extends TopComponent {
     private class CloseListener implements PropertyChangeListener {
         
         public void propertyChange(java.beans.PropertyChangeEvent evt) {
-            if (CloseButtonTabbedPane.PROP_CLOSE.equals(evt.getPropertyName())) {
+            if (TabbedPaneFactory.PROP_CLOSE.equals(evt.getPropertyName())) {
                 removePanel((JPanel) evt.getNewValue());
             }
         }

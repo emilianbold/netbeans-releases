@@ -70,7 +70,7 @@ public abstract class Index {
     };
     
     private static final int VERSION = 0;
-    private static final int SUBVERSION = 7;
+    private static final int SUBVERSION = 8;
     private static final String NB_USER_DIR = "netbeans.user";   //NOI18N
     private static final String SEGMENTS_FILE = "segments";      //NOI18N
     private static final String CLASSES = "classes";             //NOI18N

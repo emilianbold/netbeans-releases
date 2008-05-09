@@ -19,9 +19,14 @@ import com.sun.sql.framework.utils.StringUtil;
 import java.awt.Dimension;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+
 
 public final class TableDetailsVisualPanel extends JPanel {
 
+    private static transient final Logger mLogger = Logger.getLogger(TableDetailsVisualPanel.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
     private TableDetailsPanel owner;
     private FlatfileDatabaseModel currentModel;
     private FlatfileDBTable currentTable;
@@ -64,7 +69,8 @@ public final class TableDetailsVisualPanel extends JPanel {
 
     @Override
     public String getName() {
-        return "Enter Table Details";
+        String nbBundle1 = mLoc.t("BUND296: Enter Table Details");
+        return nbBundle1.substring(15);
     }
 
     /*

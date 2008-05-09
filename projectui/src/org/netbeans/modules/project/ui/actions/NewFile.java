@@ -48,6 +48,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -60,8 +61,11 @@ import org.netbeans.modules.project.ui.NewFileWizard;
 import org.netbeans.modules.project.ui.NoProjectNew;
 import org.netbeans.modules.project.ui.OpenProjectList;
 import org.netbeans.modules.project.ui.ProjectUtilities;
+import org.netbeans.spi.project.ui.PrivilegedTemplates;
+import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.ErrorManager;
+import org.openide.awt.DynamicMenuContent;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
@@ -77,7 +81,7 @@ import org.openide.util.actions.Presenter.Popup;
 
 /** Action for invoking the project sensitive NewFile Wizard
  */
-public class NewFile extends ProjectAction implements PropertyChangeListener, Popup, PopupMenuListener {
+public class NewFile extends ProjectAction implements PropertyChangeListener, Popup {
 
     private static final Icon ICON = new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/newFile.png" ) ); //NOI18N
     private static final String _NAME = NbBundle.getMessage( NewFile.class, "LBL_NewFileAction_Name" );
@@ -139,7 +143,7 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
         }
 
         NewFileWizard wd = new NewFileWizard( preselectedProject( context ) /* , null */ );
-
+        
         DataFolder preselectedFolder = preselectedFolder( context );
         if ( preselectedFolder != null ) {
             wd.setTargetFolder( preselectedFolder );
@@ -198,12 +202,11 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
     public JMenuItem getSubmenuPopupPresenter() {
         if (subMenu == null) {
             subMenu = new JMenu(POPUP_NAME);
-            subMenu.getPopupMenu().addPopupMenuListener(this);
         }
         return subMenu;
     }
 
-    private void fillSubMenu() {
+    protected void fillSubMenu() {
         Project projects[] = ActionsUtil.getProjectsFromLookup( getLookup(), null );
         if ( projects != null && projects.length > 0 ) {
             fillSubMenu(subMenu, projects[0]);
@@ -273,8 +276,10 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
         menuItem.removeAll();
 
         ActionListener menuListener = new PopupListener();
-
-        List lruList = OpenProjectList.getDefault().getTemplatesLRU( project );
+        
+        // check the action context for recommmended/privileged templates..
+        PrivilegedTemplates privs = getLookup().lookup(PrivilegedTemplates.class);
+        List lruList = OpenProjectList.getDefault().getTemplatesLRU( project, privs );
         boolean itemAdded = false;
         for( Iterator it = lruList.iterator(); it.hasNext(); ) {
             DataObject template = (DataObject)it.next();
@@ -346,18 +351,6 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
 
     }
 
-    // Implementation of PopupMenuListener -------------------------------------
-
-    public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
-        fillSubMenu();
-    }
-
-    public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
-    }
-
-    public void popupMenuCanceled(PopupMenuEvent e) {
-    }
-
     /**
      * Variant for folder context menus that makes a submenu.
      */
@@ -371,7 +364,7 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
 
         @Override
         public JMenuItem getPopupPresenter() {
-            return getSubmenuPopupPresenter();
+            return new DynaMenu(POPUP_NAME);
         }
 
         @Override
@@ -379,6 +372,25 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
             return new WithSubMenu(actionContext);
         }
 
+        private final class DynaMenu extends JMenu implements DynamicMenuContent {
+
+            public DynaMenu(String a) {
+                super(a);
+            }
+
+            public JComponent[] getMenuPresenters() {
+                JComponent jc = getSubmenuPopupPresenter();
+                fillSubMenu();
+                return new JComponent[]{ jc };
+            }
+
+            public JComponent[] synchMenuPresenters(JComponent[] items) {
+                JComponent jc = getSubmenuPopupPresenter();
+                fillSubMenu();
+                return new JComponent[]{ jc };
+            }
+        }
     }
+
 
 }

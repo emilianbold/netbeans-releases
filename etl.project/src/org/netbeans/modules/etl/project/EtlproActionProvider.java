@@ -14,16 +14,20 @@
  * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
+ * Microsystems, Inc. All Rights Reserved. 
  */
 package org.netbeans.modules.etl.project;
 
 import java.awt.Dialog;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import org.apache.tools.ant.module.api.support.ActionUtils;
+import org.axiondb.AxionException;
+import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileObject;
@@ -35,6 +39,7 @@ import org.openide.*;
 
 import org.netbeans.modules.compapp.projects.base.ui.NoSelectedServerWarning;
 import org.netbeans.modules.compapp.projects.base.IcanproConstants;
+import org.netbeans.modules.sql.framework.common.utils.DBExplorerUtil;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 
 /** Action provider of the Web project. This is the place where to do
@@ -48,16 +53,16 @@ class EtlproActionProvider implements ActionProvider {
     private static final String[] supportedActions = {
         COMMAND_BUILD,
         COMMAND_CLEAN,
-        COMMAND_REBUILD,        
+        COMMAND_REBUILD,
         COMMAND_COMPILE_SINGLE,
         EtlproProject.COMMAND_GENWSDL,
         EtlproProject.COMMAND_SCHEMA,
+        EtlproProject.COMMAND_BULK_LOADER,
         COMMAND_DELETE,
         COMMAND_COPY,
         COMMAND_MOVE,
         COMMAND_RENAME,
-      };
-    
+    };
     // Project
     EtlproProject project;
     // Ant project helper of the project
@@ -69,10 +74,16 @@ class EtlproActionProvider implements ActionProvider {
     public EtlproActionProvider(EtlproProject project, AntProjectHelper antProjectHelper, ReferenceHelper refHelper) {
         commands = new HashMap();
         commands.put(COMMAND_BUILD, new String[]{"dist"}); // NOI18N
+
         commands.put(COMMAND_CLEAN, new String[]{"clean"}); // NOI18N
+
         commands.put(COMMAND_REBUILD, new String[]{"clean", "dist"}); // NOI18N
+
         commands.put(EtlproProject.COMMAND_GENWSDL, new String[]{"gen-wsdl"}); // NOI18N
+
         commands.put(EtlproProject.COMMAND_SCHEMA, new String[]{"gen-schema"}); // NOI18N
+
+        commands.put(EtlproProject.COMMAND_BULK_LOADER, new String[]{"etl_bulkloader"}); // NOI18N
         //commands.put(IcanproConstants.COMMAND_REDEPLOY, new String[] {"run"}); // NOI18N
         //commands.put(IcanproConstants.COMMAND_DEPLOY, new String[] {"run"}); // NOI18N
 
@@ -105,16 +116,36 @@ class EtlproActionProvider implements ActionProvider {
         }
 
         if (COMMAND_RENAME.equals(command)) {
+            List<DatabaseConnection> conn = DBExplorerUtil.getDatabasesForCurrentProject();
+            Iterator<DatabaseConnection> it = conn.iterator();
+            while (it.hasNext()) {
+                try {
+                    DatabaseConnection dconn = it.next();
+                    if (dconn.getDriverClass().contains("AxionDriver")) {
+                        DBExplorerUtil.getAxionDBFromURL(dconn.getDatabaseURL()).shutdown();
+                    }
+                } catch (AxionException ex) {
+                    //ignore
+                }
+            }
             DefaultProjectOperations.performDefaultRenameOperation(project, null);
             return;
         }
         if (COMMAND_DELETE.equals(command)) {
-            try {
-                project.getAntProjectHelper().resolveFileObject("data").delete();
-                DefaultProjectOperations.performDefaultDeleteOperation(project);
-                return;
-            } catch (IOException ex) {                
+            List<DatabaseConnection> conn = DBExplorerUtil.getDatabasesForCurrentProject();
+            Iterator<DatabaseConnection> it = conn.iterator();
+            while (it.hasNext()) {
+                try {
+                    DatabaseConnection dconn = it.next();
+                    if (dconn.getDriverClass().contains("AxionDriver")) {
+                        DBExplorerUtil.getAxionDBFromURL(dconn.getDatabaseURL()).shutdown();
+                    }
+                } catch (AxionException ex) {
+                    //ignore
+                }
             }
+            DefaultProjectOperations.performDefaultDeleteOperation(project);
+            return;
         }
         //EXECUTION PART
         if (command.equals(IcanproConstants.COMMAND_DEPLOY) || command.equals(IcanproConstants.COMMAND_REDEPLOY)) {
@@ -122,10 +153,10 @@ class EtlproActionProvider implements ActionProvider {
                 return;
             }
         } /*else {
-            p = null;
-            if (targetNames == null) {
-                throw new IllegalArgumentException(command);
-            }
+        p = null;
+        if (targetNames == null) {
+        throw new IllegalArgumentException(command);
+        }
         }*/
 
         try {
@@ -167,6 +198,7 @@ class EtlproActionProvider implements ActionProvider {
                     NbBundle.getMessage(NoSelectedServerWarning.class, "CTL_NoSelectedServerWarning_Title"), // NOI18N
                     true, options, options[0], DialogDescriptor.DEFAULT_ALIGN, null, null);
             Dialog dlg = DialogDisplayer.getDefault().createDialog(desc);
+            dlg.getAccessibleContext().setAccessibleDescription("This dialog displays warning if no server is selected");
             dlg.setVisible(true);
             if (desc.getValue() != options[0]) {
                 selected = false;

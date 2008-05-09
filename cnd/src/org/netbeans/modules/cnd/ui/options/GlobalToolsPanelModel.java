@@ -42,10 +42,6 @@
 
 package org.netbeans.modules.cnd.ui.options;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.StringTokenizer;
-import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.settings.CppSettings;
 
 /** Manage the data for the ToolsPanel */
@@ -58,52 +54,84 @@ public class GlobalToolsPanelModel extends ToolsPanelModel {
     public String getCompilerSetName() {
         return CppSettings.getDefault().getCompilerSetName();
     }
-    
-    protected void setCCompilerName(String name) {
-        CppSettings.getDefault().setCCompilerName(name);
+//    
+//    protected void setCCompilerName(String name) {
+//        CppSettings.getDefault().setCCompilerName(name);
+//    }
+//    
+//    protected void setCppCompilerName(String name) {
+//        CppSettings.getDefault().setCppCompilerName(name);
+//    }
+//    
+//    protected void setFortranCompilerName(String name) {
+//        CppSettings.getDefault().setFortranCompilerName(name);
+//    }
+    public void setMakeRequired(boolean value) {
+        
     }
     
-    protected void setCppCompilerName(String name) {
-        CppSettings.getDefault().setCppCompilerName(name);
-    }
-    
-    protected void setFortranCompilerName(String name) {
-        CppSettings.getDefault().setFortranCompilerName(name);
+    public boolean isMakeRequired() {
+        return true;
     }
     
     public boolean isGdbRequired() {
-        return CppSettings.getDefault().isGdbRequired();
+        return true;
     }
     
     public void setGdbRequired(boolean value) {
-        CppSettings.getDefault().setGdbRequired(value);
+//        CppSettings.getDefault().setGdbRequired(value);
     }
-    
-    public void setGdbEnabled(boolean enabled) {
-        // Do nothing
-    }
+//    
+//    public void setGdbEnabled(boolean enabled) {
+//        // Do nothing
+//    }
     
     public boolean isCRequired() {
-        return CppSettings.getDefault().isCRequired();
+        return true; //return CppSettings.getDefault().isCRequired();
     }
     
     public void setCRequired(boolean value) {
-        CppSettings.getDefault().setCRequired(value);
+//        CppSettings.getDefault().setCRequired(value);
     }
     
     public boolean isCppRequired() {
-        return CppSettings.getDefault().isCppRequired();
+        return true; //return CppSettings.getDefault().isCppRequired();
     }
     
     public void setCppRequired(boolean value) {
-        CppSettings.getDefault().setCppRequired(value);
+//        CppSettings.getDefault().setCppRequired(value);
     }
     
     public boolean isFortranRequired() {
-        return CppSettings.getDefault().isFortranRequired();
+        return CppSettings.getDefault().isFortranEnabled();
+        //return CppSettings.getDefault().isFortranRequired();
     }
     
     public void setFortranRequired(boolean value) {
-        CppSettings.getDefault().setFortranRequired(value);
+//        CppSettings.getDefault().setFortranRequired(value);
+    }
+    
+    public boolean showRequiredTools() {
+        return false;
+    }
+    
+    public void setRequiredBuildTools(boolean enabled) {
+ 
+    }
+    
+    public void setShowRequiredBuildTools(boolean enabled) {
+        
+    }
+    
+    public boolean showRequiredBuildTools() {
+        return false;
+    }
+    
+    public void setShowRequiredDebugTools(boolean enabled) {
+        
+    }
+    
+    public boolean showRequiredDebugTools() {
+        return false;
     }
 }

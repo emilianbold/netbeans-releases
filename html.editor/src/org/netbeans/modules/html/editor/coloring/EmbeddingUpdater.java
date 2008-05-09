@@ -81,8 +81,7 @@ public class EmbeddingUpdater implements SyntaxParserListener {
 
     //XXX update mimetype once Hanz fixes the mimetype in CSS editor module
 //    private static final String CSS_MIMETYPE = "text/x-css"; //NOI18N
-    private static final String CSS_INLINED_MIMETYPE = "text/x-css-inlined"; //NOI18N
-
+    private static final String CSS_INLINED_MIMETYPE = "text/x-css"; //NOI18N
 //    private static final String CSS_SCRIPT_TAG_NAME = "style"; //NOI18N
 
     private static final Logger LOGGER = Logger.getLogger(EmbeddingUpdater.class.getName());
@@ -132,7 +131,7 @@ public class EmbeddingUpdater implements SyntaxParserListener {
             TagAttribute hrefAttr = sel.getAttribute("href"); //NOI18N
             if(hrefAttr != null) {
                 String hrefVal = unquote(hrefAttr.getValue());
-                boolean quoted = isQuotationChar(hrefAttr.getValue().charAt(0));
+                boolean quoted = hrefAttr.getValue().length() > 0 && isQuotationChar(hrefAttr.getValue().charAt(0));
                 if(hrefVal.startsWith(JAVASCRIPT_HREF_PREFIX)) {
                     createEmbedding(JAVASCRIPT_MIMETYPE,
                             hrefAttr.getValueOffset(),
@@ -237,7 +236,7 @@ public class EmbeddingUpdater implements SyntaxParserListener {
 //    }
 
     private void createEmbedding(String mimeType, SyntaxElement.TagAttribute tagAttr) {
-        if(tagAttr.getValue().charAt(0) == '\'' || tagAttr.getValue().charAt(0) == '"') {
+        if(tagAttr.getValue().length() > 0 && (tagAttr.getValue().charAt(0) == '\'' || tagAttr.getValue().charAt(0) == '"')) {
             //cut off the qutation marks
             createEmbedding(mimeType, tagAttr.getValueOffset(), tagAttr.getValueOffset() + tagAttr.getValueLength(), 1, 1);
         } else {

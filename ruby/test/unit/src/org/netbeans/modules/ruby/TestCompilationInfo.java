@@ -29,119 +29,50 @@ package org.netbeans.modules.ruby;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import javax.swing.text.Document;
-import org.netbeans.api.gsf.CompilationInfo;
-import org.netbeans.api.gsf.Error;
-import org.netbeans.api.gsf.Index;
-import org.netbeans.api.gsf.ParseEvent;
-import org.netbeans.api.gsf.ParseListener;
-import org.netbeans.api.gsf.ParserFile;
-import org.netbeans.api.gsf.ParserResult;
-import org.netbeans.api.gsf.SourceFileReader;
-import org.netbeans.napi.gsfret.source.ClasspathInfo;
-import org.netbeans.napi.gsfret.source.Source;
+import org.netbeans.modules.gsf.api.Error;
+import org.netbeans.modules.gsf.api.ParserFile;
+import org.netbeans.modules.gsf.api.ParserResult;
+import org.netbeans.modules.gsf.api.TranslatedSource;
+import org.netbeans.modules.gsf.GsfTestCompilationInfo;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.spi.gsf.DefaultParserFile;
+import org.netbeans.modules.gsf.spi.DefaultParserFile;
 import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author tor
  */
-class TestCompilationInfo extends CompilationInfo {
-    private final String text;
-    private Document doc;
-    private Source source;
-    private ParserResult result;
-    private int caretOffset = -1;
-    private RubyTestBase test;
-    
+class TestCompilationInfo extends GsfTestCompilationInfo {
     public TestCompilationInfo(RubyTestBase test, FileObject fileObject, BaseDocument doc, String text) throws IOException {
-        super(fileObject);
-        this.test = test;
-        this.text = text;
-        assert text != null;
-        this.doc = doc;
-        setParser(new RubyParser());
-        if (fileObject != null) {
-            //source = Source.forFileObject(fileObject);
-            ClasspathInfo cpInfo = ClasspathInfo.create(fileObject);
-            source = Source.create(cpInfo, Collections.singletonList(fileObject));
-        }
+        super(test, fileObject, doc, text);
     }
     
-    public void setCaretOffset(int caretOffset) {
-        this.caretOffset = caretOffset;
-    }
-
-    public String getText() {
-        return text;
+    public String getPreferredMimeType() {
+        return RubyMimeResolver.RUBY_MIME_TYPE;
     }
     
-    public Source getSource() {
-        return source;
-    }
-
-    public Index getIndex() {
-        ClasspathInfo cpi = source.getClasspathInfo();
-        if (cpi != null) {
-            return cpi.getClassIndex();
-        }
+    @Override
+    public ParserResult getEmbeddedResult(String embeddedMimeType, int offset) {
+        assert embeddedMimeType.equals(getPreferredMimeType());
         
-        return null;
-    }
-
-    @Override
-    public Document getDocument() throws IOException {
-        return this.doc;
-    }
-    
-    @Override
-    public ParserResult getParserResult() {
-        ParserResult r = super.getParserResult();
-        if (r == null) {
-            r = result;
-        }
-        if (r == null) {
-            final ParserResult[] resultHolder = new ParserResult[1];
-
-            ParseListener listener =
-                new ParseListener() {
-                    public void started(ParseEvent e) {
-                        //ParserTaskImpl.this.listener.started(e);
-                    }
-                    
-                    public void error(Error e) {
-                        //ParserTaskImpl.this.listener.error(e);
-                        TestCompilationInfo.this.addError(e);
-                    }
-                    
-                    public void exception(Exception e) {
-                        //ParserTaskImpl.this.listener.exception(e);
-                    }
-                    
-                    public void finished(ParseEvent e) {
-                        // TODO - check state
-                        if (e.getKind() == ParseEvent.Kind.PARSE) {
-                            resultHolder[0] = e.getResult();
-                        }
-                        //ParserTaskImpl.this.listener.finished(e);
-                    }
-                };
-            
+        if (embeddedResults.size() == 0) {
+            GsfTestParseListener listener = new GsfTestParseListener();
             List<ParserFile> sourceFiles = new ArrayList<ParserFile>(1);
             ParserFile file = new DefaultParserFile(getFileObject(), null, false);
             sourceFiles.add(file);
             
-            RubyParser.Context context = new RubyParser.Context(file, listener, text, caretOffset);
+TranslatedSource translatedSource = null; // TODO            
+            RubyParser.Context context = new RubyParser.Context(file, listener, text, caretOffset, translatedSource);
             RubyParser parser = new RubyParser();
-            setPositionManager(parser.getPositionManager());
-            ParserResult pr = parser.parseBuffer(context, RubyParser.Sanitize.NONE);
-            r = result = pr;
+            ParserResult parserResult = ((RubyParser)parser).parseBuffer(context, RubyParser.Sanitize.NONE);
+            for (Error error : listener.getErrors()) {
+                parserResult.addError(error);
+            }
+            embeddedResults.put(RubyMimeResolver.RUBY_MIME_TYPE, parserResult);
+            parserResult.setInfo(this);
         }
         
-        return r;
+        return embeddedResults.get(embeddedMimeType);
     }
 }

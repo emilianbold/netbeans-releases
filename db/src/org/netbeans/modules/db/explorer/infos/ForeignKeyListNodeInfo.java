@@ -90,5 +90,15 @@ public class ForeignKeyListNodeInfo extends DatabaseNodeInfo {
             throw new DatabaseException(e.getMessage());
         }
     }
+    
+    @Override
+    public String getShortDescription() {
+        return bundle().getString("ND_ForeignKeyList"); // NOI18N
+    }
+    
+    @Override
+    public String getDisplayName() {
+        return bundle().getString("NDN_ForeignKeys"); //NOI18N
+    }
 
 }

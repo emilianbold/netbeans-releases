@@ -49,9 +49,8 @@ import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
 
-import org.netbeans.modules.visualweb.gravy.*;
+import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.modules.visualweb.gravy.ProjectNavigatorOperator;
-import org.netbeans.modules.visualweb.gravy.dataconnectivity.ServerNavigatorOperator;
 import org.netbeans.modules.visualweb.gravy.toolbox.PaletteContainerOperator;
 import org.netbeans.modules.visualweb.gravy.designer.DesignerPaneOperator;
 import org.netbeans.modules.visualweb.gravy.properties.SheetTableOperator;
@@ -62,6 +61,11 @@ import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.operators.JTreeOperator;
+import org.netbeans.modules.visualweb.gravy.Bundle;
+import org.netbeans.modules.visualweb.gravy.RaveTestCase;
+import org.netbeans.modules.visualweb.gravy.RaveWindowOperator;
+import org.netbeans.modules.visualweb.gravy.TestUtils;
+import org.netbeans.modules.visualweb.gravy.Util;
 
 /**
  * @author Sherry Zhou (sherry.zhou@sun.com)
@@ -101,26 +105,26 @@ public class AcceptanceTest extends RaveTestCase {
     String image3= imageDir + "rhLogo.png";
     String image4= imageDir + "macLogo.jpg";
     String radioButtonGroupID="radioButtonGroup1";
-    String importStatement="import " + Bundle.getStringTrimmed(_bundle, "optionType")+";";
-    String[] javaCode =  {importStatement};
-    String[] javaCode1={ "platforms = new Option[4]; ",
-    "String selectionData[][ ] = { ",
-    "    {\"1\", \"/resources/solarisLogo.jpg\", \"Solaris 10\", \"Solaris 10 Image\"}, ",
-    "     {\"2\", \"/resources/windowXPLogo.jpg\", \"Window XP\", \"WindowXP Image\"}, ",
-    "     {\"3\", \"/resources/rhLogo.png\", \"Lunix\", \"Linux Image\"}, ",
-    "     {\"4\", \"/resources/macLogo.jpg\", \"MacOS\", \"MacOS Image\"}}  ; ",
-    "    for (int i = 0; i<4; ++i) {  ",
-    "        platforms[i] = new Option();  ",
-    "        platforms[i].setValue(selectionData[i][0]);  ",
-    "        platforms[i].setImage(selectionData[i][1]);  ",
-    "        platforms[i].setLabel(selectionData[i][2]);   ",
-    "        platforms[i].setImageAlt(selectionData[i][3]);  " };
-    String[] javaCode2 = {"String selectedPlatform=\"Selected platform is \" ;",
-    "if (radioButtonGroup1.getSelected()!=null) ",
-    "staticText1.setText(\" You have selected \" + radioButtonGroup1.getSelected().toString()); ",
-    "else ",
-    "staticText1.setText(\"You don't select OS yet\"); "};
-    
+//    String importStatement="import " + Bundle.getStringTrimmed(_bundle, "optionType")+";";
+//    String[] javaCode =  {importStatement};
+//    String[] javaCode1={ "platforms = new Option[4]; ",
+//    "String selectionData[][ ] = { ",
+//    "    {\"1\", \"/resources/solarisLogo.jpg\", \"Solaris 10\", \"Solaris 10 Image\"}, ",
+//    "     {\"2\", \"/resources/windowXPLogo.jpg\", \"Window XP\", \"WindowXP Image\"}, ",
+//    "     {\"3\", \"/resources/rhLogo.png\", \"Lunix\", \"Linux Image\"}, ",
+//    "     {\"4\", \"/resources/macLogo.jpg\", \"MacOS\", \"MacOS Image\"}}  ; ",
+//    "    for (int i = 0; i<4; ++i) {  ",
+//    "        platforms[i] = new Option();  ",
+//    "        platforms[i].setValue(selectionData[i][0]);  ",
+//    "        platforms[i].setImage(selectionData[i][1]);  ",
+//    "        platforms[i].setLabel(selectionData[i][2]);   ",
+//    "        platforms[i].setImageAlt(selectionData[i][3]);  " };
+//    String[] javaCode2 = {"String selectedPlatform=\"Selected platform is \" ;",
+//    "if (radioButtonGroup1.getSelected()!=null) ",
+//    "staticText1.setText(\" You have selected \" + radioButtonGroup1.getSelected().toString()); ",
+//    "else ",
+//    "staticText1.setText(\"You don't select OS yet\"); "};
+//    
     
     public AcceptanceTest(String testName) {
         super(testName);
@@ -249,19 +253,8 @@ public class AcceptanceTest extends RaveTestCase {
         editor.requestFocus();
         TestUtils.wait(2000);
         editor.pushKey(KeyEvent.VK_ENTER);
-        ComponentUtils.insertJavaCode(editor, javaCode1);
+        editor.insert("log(\"Action Performed.\");\n");
         TestUtils.wait(500);
-        
-        log("Enter import statement");
-        editor = new EditorOperator(Util.getMainWindow(), "Page1.java");
-        editor.setCaretPosition("public class " + "Page1", true);
-        editor.pushKey(KeyEvent.VK_ENTER);
-        TestUtils.wait(1000);
- 	log(importStatement);
-        ComponentUtils.insertJavaCode(editor, javaCode);
-        editor.pushKey(KeyEvent.VK_ENTER);
-        editor.pushKey(KeyEvent.VK_ENTER);
-        TestUtils.wait(1000);
         
         Util.saveAllAPICall();
         Util.wait(2000);
@@ -321,21 +314,15 @@ public class AcceptanceTest extends RaveTestCase {
         // Double click at button to open Jave Editor
         designer.clickMouse(xButton+1, yButton+1, 2);
         TestUtils.wait(1000);
-         EditorOperator editor = new EditorOperator(Util.getMainWindow(), "Page1.java");
+        EditorOperator editor = new EditorOperator(Util.getMainWindow(), "Page1.java");
         
         editor.setVerification(false);
         TestUtils.wait(2000);
         editor.requestFocus();
         TestUtils.wait(2000);
         editor.pushKey(KeyEvent.VK_ENTER);
-        ComponentUtils.insertJavaCode(editor, javaCode2);
+        editor.insert("log(\"Action Performed.\");\n");
         TestUtils.wait(200);
-        
-//        log("Reformat code");
-//        editor.clickForPopup();
-//        new JPopupMenuOperator().pushMenu("Reformat Code");
-//        TestUtils.wait(200);
-        
         // Switch to design panel
         designer.makeComponentVisible();
         TestUtils.wait(10000);

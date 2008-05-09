@@ -37,6 +37,8 @@ import java.awt.Dialog;
 import java.text.MessageFormat;
 import javax.swing.JComponent;
 
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
 import org.netbeans.modules.mashup.db.ui.wizard.SelectDatabasePanel;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
@@ -48,15 +50,18 @@ import org.openide.util.actions.CallableSystemAction;
  * @author  ks161616
  */
 public final class FlatfileDBViewerAction extends CallableSystemAction {
-
+    private static transient final Logger mLogger = Logger.getLogger(NewFlatfileTableAction.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
+    public String nbBundle1 = mLoc.t("BUND264: Mashup Database Viewer");
     private WizardDescriptor.Panel[] panels;
 
     public void performAction() {
         WizardDescriptor wizardDescriptor = new WizardDescriptor(getPanels());
         // {0} will be replaced by WizardDesriptor.Panel.getComponent().getName()
         wizardDescriptor.setTitleFormat(new MessageFormat("{0}"));
-        wizardDescriptor.setTitle("Mashup Database Viewer");
+        wizardDescriptor.setTitle(nbBundle1.substring(15));
         Dialog dialog = DialogDisplayer.getDefault().createDialog(wizardDescriptor);
+        dialog.getAccessibleContext().setAccessibleDescription("This is the dialog which displays mashupdb information");
         dialog.setVisible(true);
         dialog.toFront();
         boolean cancelled = wizardDescriptor.getValue() != WizardDescriptor.FINISH_OPTION;
@@ -101,7 +106,7 @@ public final class FlatfileDBViewerAction extends CallableSystemAction {
     }
 
     public String getName() {
-        return "Mashup Database Viewer";
+        return nbBundle1.substring(15);
     }
 
     @Override

@@ -372,7 +372,7 @@ public class JSFConfigEditorSupport extends DataEditorSupport
                 configModel.sync();
             }
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            // Logger.getLogger("global").log(Level.INFO, null, ex);
         }
         
     }

@@ -47,6 +47,7 @@ import java.util.List;
 import java.util.ListIterator;
 
 import org.jruby.ast.Node;
+import org.jruby.ast.NodeType;
 import org.jruby.lexer.yacc.ISourcePosition;
 
 
@@ -107,7 +108,7 @@ public class AstPath implements Iterable<Node> {
      * @param nodeType The nodeType to check
      * @return true if the given nodeType is found in the path
      */
-    public boolean contains(int nodeType) {
+    public boolean contains(NodeType nodeType) {
         for (int i = 0, n = path.size(); i < n; i++) {
             if (path.get(i).nodeId == nodeType) {
                 return true;

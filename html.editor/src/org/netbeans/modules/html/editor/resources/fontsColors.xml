@@ -56,4 +56,54 @@ made subject to such option by the copyright holder.
     <fontcolor name="ws" default="whitespace"/>
     <fontcolor name="css-embedded" bgColor="ffd0e8Ca" default="default"/>
     <fontcolor name="javascript-embedded" bgColor="ffd0e8Ca" default="default"/>
+    
+    <!-- GSF -->
+     <!--"semantic" highlighting:-->
+    <fontcolor name="mod-unused" waveUnderlined="999999"/>
+    <fontcolor name="mod-abstract" />
+    <fontcolor name="mod-field" default="field"/>
+    <fontcolor name="mod-local-variable" />
+    <fontcolor name="mod-parameter" foreColor="A06001"/> 
+
+    <fontcolor name="mod-method">
+        <font style="bold" />
+    </fontcolor>
+    
+    <fontcolor name="mod-constructor" >
+        <font style="bold" />
+    </fontcolor>
+    
+    <fontcolor name="mod-class" />
+    <fontcolor name="mod-interface" />
+    <fontcolor name="mod-annotation-type" />
+    <fontcolor name="mod-enum" />
+    <fontcolor name="mod-deprecated" strikeThrough="404040" />
+    <fontcolor name="mod-static" >
+        <font style="italic" />
+    </fontcolor>
+    <fontcolor name="mod-private" />
+    <fontcolor name="mod-package-private" />
+    <fontcolor name="mod-protected" />
+    <fontcolor name="mod-public" />
+
+    <fontcolor name="mod-regexp" foreColor="9933CC" />
+    
+    <!--currently not used:-->
+<!--    <fontcolor name="mod-type-parameter-declaration" bgColor="lightGray"/>
+    <fontcolor name="mod-type-parameter-use" bgColor="green"/>
+    <fontcolor name="mod-undefined" foreColor="red"/>-->
+
+    <!--mark occurrences:-->
+    <fontcolor name="mark-occurrences" bgColor="ECEBA3"/>
+    
+    <!-- JsCommentTokenId categories -->
+    <fontcolor name="js-comment-tag" default="comment">
+        <font style="bold" />
+    </fontcolor>
+    <fontcolor name="html-tag" default="comment">
+        <font style="bold" />
+    </fontcolor>
+    <fontcolor name="left-curly" default="comment"/>
+    <fontcolor name="right-curly" default="comment"/>
+    
 </fontscolors>

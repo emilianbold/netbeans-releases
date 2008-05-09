@@ -49,10 +49,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
-import org.netbeans.modules.cnd.discovery.api.ItemProperties;
-import org.netbeans.modules.cnd.discovery.api.ProjectProperties;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
-import org.netbeans.modules.cnd.discovery.api.ProjectUtil;
+import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
 import org.netbeans.modules.cnd.discovery.api.ProviderProperty;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
 import org.netbeans.modules.cnd.dwarfdump.CompilationUnit;
@@ -85,35 +83,6 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         isStoped = true;
     }
     
-    protected List<ProjectProperties> divideByLanguage(List<SourceFileProperties> sources){
-        DwarfProject cProp = null;
-        DwarfProject cppProp = null;
-        for (SourceFileProperties source : sources) {
-            ItemProperties.LanguageKind lang = source.getLanguageKind();
-            DwarfProject current = null;
-            if (lang == ItemProperties.LanguageKind.C){
-                if (cProp == null) {
-                    cProp = new DwarfProject(lang);
-                }
-                current = cProp;
-            } else {
-                if (cppProp == null) {
-                    cppProp = new DwarfProject(lang);
-                }
-                current = cppProp;
-            }
-            current.update(source);
-        }
-        List<ProjectProperties> languages = new ArrayList<ProjectProperties>();
-        if (cProp != null) {
-            languages.add(cProp);
-        }
-        if (cppProp != null) {
-            languages.add(cppProp);
-        }
-        return languages;
-    }
-    
     protected List<SourceFileProperties> getSourceFileProperties(String[] objFileName){
         try{
             HashMap<String,SourceFileProperties> map = new HashMap<String,SourceFileProperties>();
@@ -128,14 +97,14 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                     ProviderProperty p = getProperty(RESTRICT_SOURCE_ROOT);
                     if (p != null) {
                         String s = (String)p.getValue();
-                        if (!f.getItemPath().startsWith(s)){
+                        if (s.length() > 0 && f != null && !f.getItemPath().startsWith(s)){
                             continue;
                         }
                     }
                     p = getProperty(RESTRICT_COMPILE_ROOT);
                     if (p != null) {
                         String s = (String)p.getValue();
-                        if (!f.getCompilePath().startsWith(s)){
+                        if (s.length() > 0 && f != null && !f.getCompilePath().startsWith(s)){
                             continue;
                         }
                     }
@@ -151,6 +120,8 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                                 map.put(name,f);
                             }
                         }
+                    } else {
+                        if (FULL_TRACE) System.out.println("Not Exist "+name); //NOI18N
                     }
                 }
             }
@@ -202,7 +173,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         return res;
     }
     
-    private List<SourceFileProperties> getSourceFileProperties(String objFileName, HashMap<String,SourceFileProperties> map){
+    protected List<SourceFileProperties> getSourceFileProperties(String objFileName, Map<String,SourceFileProperties> map){
         List<SourceFileProperties> list = new ArrayList<SourceFileProperties>();
         Dwarf dump = null;
         try{
@@ -220,7 +191,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                     }
                     String lang = cu.getSourceLanguage();
                     if (lang == null) {
-                        if (TRACE_READ_EXCEPTIONS) System.out.println("Compilation unit has unresolved language in file "+objFileName);  // NOI18N
+                        if (TRACE_READ_EXCEPTIONS) System.out.println("Compilation unit has unresolved language in file "+objFileName+ "for "+cu.getSourceFileName());  // NOI18N
                         continue;
                     }
                     DwarfSource source = null;
@@ -243,6 +214,10 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                             continue;
                         }
                         source.process(cu);
+                        if (source.getCompilePath() == null){
+                            if (TRACE_READ_EXCEPTIONS) System.out.println("Compilation unit has NULL compile path in file "+objFileName);  // NOI18N
+                            continue;
+                        }
                         list.add(source);
                     }
                 }
@@ -254,12 +229,13 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
             if (TRACE_READ_EXCEPTIONS) System.out.println("File not found "+objFileName+": "+ex.getMessage());  // NOI18N
         } catch (WrongFileFormatException ex) {
             if (TRACE_READ_EXCEPTIONS) System.out.println("Unsuported format of file "+objFileName+": "+ex.getMessage());  // NOI18N
-            ProviderProperty p = getProperty(RESTRICT_COMPILE_ROOT);
-            String root = "";
-            if (p != null) {
-                root = (String)p.getValue();
-            }
-            list = new LogReader(objFileName, root).getResults();
+            // XXX: OpenSolaris trick not needed due to opening AnalyzeMakeLog to public
+//            ProviderProperty p = getProperty(RESTRICT_COMPILE_ROOT);
+//            String root = "";
+//            if (p != null) {
+//                root = (String)p.getValue();
+//            }
+//            list = AnalyzeMakeLog.runLogReader(objFileName, root);
         } catch (IOException ex) {
             if (TRACE_READ_EXCEPTIONS){
                 System.err.println("Exception in file "+objFileName);  // NOI18N
@@ -299,12 +275,12 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         private String compileDirectory;
         
         public CompilerSettings(ProjectProxy project){
-            systemIncludePathsCpp = ProjectUtil.getSystemIncludePaths(project, true);
-            systemIncludePathsC = ProjectUtil.getSystemIncludePaths(project,false);
-            systemMacroDefinitionsCpp = ProjectUtil.getSystemMacroDefinitions(project, true);
-            systemMacroDefinitionsC = ProjectUtil.getSystemMacroDefinitions(project,false);
-            compileFlavor = ProjectUtil.getCompilerFlavor(project);
-            compileDirectory = ProjectUtil.getCompilerDirectory(project);
+            systemIncludePathsCpp = DiscoveryUtils.getSystemIncludePaths(project, true);
+            systemIncludePathsC = DiscoveryUtils.getSystemIncludePaths(project,false);
+            systemMacroDefinitionsCpp = DiscoveryUtils.getSystemMacroDefinitions(project, true);
+            systemMacroDefinitionsC = DiscoveryUtils.getSystemMacroDefinitions(project,false);
+            compileFlavor = DiscoveryUtils.getCompilerFlavor(project);
+            compileDirectory = DiscoveryUtils.getCompilerDirectory(project);
         }
         
         public List<String> getSystemIncludePaths(boolean isCPP) {

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?><!-- -*- sgml-indent-step: 1 -*- -->
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
@@ -567,6 +567,11 @@ made subject to such option by the copyright holder.
    <api name="netbeans.hack.50423" category="private" group="property" type="export" url="http://www.netbeans.org/issues/show_bug.cgi?id=50423">
         Set this property to <q>true</q> to workaround the bug #50423 which
         appears on some linuxes on JDK 1.5.
+   </api>
+   <api name="netbeans.close.no.exit" category="friend" group="property" type="export">
+        Set this property to <q>true</q> if you do want to cleanup the module system,
+        but not call System.exit at the end. Used from <code>NbModuleSuite</code> from
+        nbjunit library.
    </api>
   </p>
         <api name="java.net.useSystemProxies" category="private" group="property" type="import">

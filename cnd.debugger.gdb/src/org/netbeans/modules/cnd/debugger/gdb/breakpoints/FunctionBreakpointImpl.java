@@ -52,7 +52,6 @@ import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 public class FunctionBreakpointImpl extends BreakpointImpl {
     
     private FunctionBreakpoint  breakpoint;
-    private FunctionBreakpoint  latestBreakpoint = null;
     private String              functionName;
     private BreakpointsReader   reader;
     
@@ -67,23 +66,38 @@ public class FunctionBreakpointImpl extends BreakpointImpl {
     }
     
     protected void setRequests() {
+        String st = getState();
         if (getDebugger().getState().equals(GdbDebugger.STATE_RUNNING)) {
             getDebugger().setSilentStop();
+            setRunWhenValidated(true);
         }
-        if (getState().equals(BPSTATE_UNVALIDATED)) {
+        if (st.equals(BPSTATE_UNVALIDATED) || st.equals(BPSTATE_REVALIDATE)) {
+            if (st.equals(BPSTATE_REVALIDATE) && getBreakpointNumber() > 0) {
+                getDebugger().getGdbProxy().break_delete(getBreakpointNumber());
+            }
             setState(BPSTATE_VALIDATION_PENDING);
             functionName = breakpoint.getFunctionName();
-            int token = getDebugger().getGdbProxy().break_insert(functionName);
+            int token;
+            if (getBreakpoint().getSuspend() == GdbBreakpoint.SUSPEND_THREAD) {
+                token = getDebugger().getGdbProxy().break_insert(GdbBreakpoint.SUSPEND_THREAD,
+                        functionName, getBreakpoint().getThreadID());
+            } else {
+                token = getDebugger().getGdbProxy().break_insert(functionName);
+            }
             getDebugger().addPendingBreakpoint(token, this);
         } else {
-            if (getState().equals(BPSTATE_DELETION_PENDING)) {
+            if (st.equals(BPSTATE_DELETION_PENDING)) {
                 getDebugger().getGdbProxy().break_delete(getBreakpointNumber());
-	    } else if (getState().equals(BPSTATE_VALIDATED)) {
+	    } else if (st.equals(BPSTATE_VALIDATED)) {
                 if (breakpoint.isEnabled()) {
                     getDebugger().getGdbProxy().break_enable(getBreakpointNumber());
                 } else {
                     getDebugger().getGdbProxy().break_disable(getBreakpointNumber());
                 }
+            }
+            if (isRunWhenValidated()) {
+                getDebugger().setRunning();
+                setRunWhenValidated(false);
             }
         }
     }

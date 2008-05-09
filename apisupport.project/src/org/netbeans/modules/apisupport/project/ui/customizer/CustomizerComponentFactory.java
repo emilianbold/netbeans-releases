@@ -46,9 +46,6 @@ import java.io.CharConversionException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
@@ -177,9 +174,6 @@ public final class CustomizerComponentFactory {
     static final class DependencyListModel extends AbstractListModel {
         
         private final Set<ModuleDependency> currentDeps;
-        private final Set<ModuleDependency> addedDeps = new HashSet<ModuleDependency>();
-        private final Set<ModuleDependency> removedDeps = new HashSet<ModuleDependency>();
-        private final Map<ModuleDependency,ModuleDependency> editedDeps = new HashMap<ModuleDependency,ModuleDependency>();
         
         private boolean changed;
         private final boolean invalid;
@@ -215,7 +209,6 @@ public final class CustomizerComponentFactory {
             if (!currentDeps.contains(dep)) {
                 int origSize = currentDeps.size();
                 currentDeps.add(dep);
-                removedDeps.remove(dep); // be sure it won't get removed
                 changed = true;
                 this.fireContentsChanged(this, 0, origSize);
             }
@@ -224,17 +217,11 @@ public final class CustomizerComponentFactory {
         void removeDependencies(Collection<ModuleDependency> deps) {
             int origSize = currentDeps.size();
             currentDeps.removeAll(deps);
-            for (ModuleDependency entry : deps) {
-                if (!addedDeps.remove(entry)) {
-                    removedDeps.add(entry);
-                }
-            }
             changed = true;
             this.fireContentsChanged(this, 0, origSize);
         }
         
         void editDependency(ModuleDependency origDep, ModuleDependency newDep) {
-            editedDeps.put(origDep, newDep);
             currentDeps.remove(origDep);
             currentDeps.add(newDep);
             changed = true;
@@ -243,33 +230,6 @@ public final class CustomizerComponentFactory {
         
         Set<ModuleDependency> getDependencies() {
             return Collections.unmodifiableSet(currentDeps);
-        }
-        
-        Set<ModuleDependency> getRemovedDependencies() {
-            return removedDeps;
-        }
-        
-        Set<ModuleDependency> getAddedDependencies() {
-            return addedDeps;
-        }
-        
-        Map<ModuleDependency, ModuleDependency> getEditedDependencies() {
-            return editedDeps;
-        }
-        
-        /**
-         * Tries to find if a given dependency has already been edited. If yes,
-         * returns the edited counterpart; <code>null</code> otherwise.
-         */
-        ModuleDependency findEdited(ModuleDependency toFind) {
-            for (Iterator it = editedDeps.values().iterator(); it.hasNext(); ) {
-                ModuleDependency curr = (ModuleDependency) it.next();
-                if (curr.getModuleEntry().getCodeNameBase().equals(
-                        toFind.getModuleEntry().getCodeNameBase())) {
-                    return curr;
-                }
-            }
-            return null;
         }
         
         boolean isChanged() {
@@ -317,6 +277,7 @@ public final class CustomizerComponentFactory {
     
     private static class ProjectListCellRenderer extends DefaultListCellRenderer {
         
+        @Override
         public Component getListCellRendererComponent(JList list, Object value,
                 int index, boolean isSelected, boolean cellHasFocus) {
             Component c = super.getListCellRendererComponent(
@@ -329,6 +290,7 @@ public final class CustomizerComponentFactory {
     
     private static class ModuleEntryListCellRenderer extends DefaultListCellRenderer {
         
+        @Override
         public Component getListCellRendererComponent(JList list, Object value,
                 int index, boolean isSelected, boolean cellHasFocus) {
             ModuleEntry me = (ModuleEntry)value;
@@ -375,6 +337,7 @@ public final class CustomizerComponentFactory {
             }
         }
         
+        @Override
         public Class getColumnClass(int columnIndex) {
             if (columnIndex == 0) {
                 return Boolean.class;
@@ -383,6 +346,7 @@ public final class CustomizerComponentFactory {
             }
         }
         
+        @Override
         public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
             assert columnIndex == 0 : "Who is trying to modify second column?"; // NOI18N
             selected[rowIndex] = (Boolean) aValue;

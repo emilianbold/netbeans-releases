@@ -41,11 +41,12 @@
 
 package org.netbeans.modules.refactoring.ruby.plugins;
 
-import org.netbeans.api.fileinfo.NonRecursiveFolder;
-import org.netbeans.modules.refactoring.ruby.RetoucheUtils;
-import org.netbeans.modules.refactoring.api.*;
+import org.netbeans.modules.refactoring.api.AbstractRefactoring;
+import org.netbeans.modules.refactoring.api.RenameRefactoring;
+import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.ruby.RubyElementCtx;
-import org.netbeans.modules.refactoring.spi.*;
+import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
+import org.netbeans.modules.refactoring.spi.RefactoringPluginFactory;
 import org.netbeans.modules.ruby.RubyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
@@ -59,7 +60,6 @@ public class RubyRefactoringsFactory implements RefactoringPluginFactory {
     public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {
         Lookup look = refactoring.getRefactoringSource();
         FileObject file = look.lookup(FileObject.class);
-        NonRecursiveFolder folder = look.lookup(NonRecursiveFolder.class);
         RubyElementCtx handle = look.lookup(RubyElementCtx.class);
         if (refactoring instanceof WhereUsedQuery) {
             if (handle!=null) {
@@ -69,17 +69,7 @@ public class RubyRefactoringsFactory implements RefactoringPluginFactory {
             if (handle!=null || ((file!=null) && RubyUtils.isRubyOrRhtmlFile(file))) {
                 //rename java file, class, method etc..
                 return new RenameRefactoringPlugin((RenameRefactoring)refactoring);
-            } else if (file!=null && RetoucheUtils.isOnSourceClasspath(file) && file.isFolder()) {
-                //rename folder
-                return new MoveRefactoringPlugin((RenameRefactoring)refactoring);
-            } else if (folder!=null && RetoucheUtils.isOnSourceClasspath(folder.getFolder())) {
-                //rename package
-                return new MoveRefactoringPlugin((RenameRefactoring)refactoring);
             }
-        } else if (refactoring instanceof MoveRefactoring) {
-            return new MoveRefactoringPlugin((MoveRefactoring) refactoring);
-//        } else if (refactoring instanceof ExtractInterfaceRefactoring) {
-//            return new ExtractInterfaceRefactoringPlugin((ExtractInterfaceRefactoring) refactoring);
         }
         return null;
     }

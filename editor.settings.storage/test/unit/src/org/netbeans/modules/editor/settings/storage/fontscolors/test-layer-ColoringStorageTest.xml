@@ -67,6 +67,15 @@ made subject to such option by the copyright holder.
                 </folder>
             </folder>
         </folder>
+        <folder name="text">
+            <folder name="x-legacy">
+                <folder name="NetBeans">
+                    <folder name="Defaults">
+                        <file name="coloring.xml" url="legacy-coloring-file.xml"/>
+                    </folder>
+                </folder>
+            </folder>
+        </folder>
     </folder>
 
 </filesystem>

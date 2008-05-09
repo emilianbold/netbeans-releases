@@ -54,7 +54,8 @@ public class FileChooser extends JFileChooser {
 	setFileHidingEnabled(false);
 	setFileSelectionMode(mode);
 	setDialogTitle(titleText); // NOI18N
-	setApproveButtonText(buttonText); // NOI18N
+        if (buttonText != null)
+            setApproveButtonText(buttonText); // NOI18N
 
 	if (filters != null) {
 	    for (int i = 0; i < filters.length; i++) {

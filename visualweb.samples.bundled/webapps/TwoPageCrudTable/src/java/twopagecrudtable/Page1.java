@@ -87,111 +87,6 @@ public class Page1 extends AbstractPageBean {
         personDataProvider.setCachedRowSet((javax.sql.rowset.CachedRowSet) getValue("#{SessionBean1.personRowSet}"));
         tripDataProvider.setCachedRowSet((javax.sql.rowset.CachedRowSet) getValue("#{SessionBean1.tripRowSet}"));
     }
-
-    private Page page1 = new Page();
-    
-    public Page getPage1() {
-        return page1;
-    }
-    
-    public void setPage1(Page p) {
-        this.page1 = p;
-    }
-    
-    private Html html1 = new Html();
-    
-    public Html getHtml1() {
-        return html1;
-    }
-    
-    public void setHtml1(Html h) {
-        this.html1 = h;
-    }
-    
-    private Head head1 = new Head();
-    
-    public Head getHead1() {
-        return head1;
-    }
-    
-    public void setHead1(Head h) {
-        this.head1 = h;
-    }
-    
-    private Link link1 = new Link();
-    
-    public Link getLink1() {
-        return link1;
-    }
-    
-    public void setLink1(Link l) {
-        this.link1 = l;
-    }
-    
-    private Body body1 = new Body();
-    
-    public Body getBody1() {
-        return body1;
-    }
-    
-    public void setBody1(Body b) {
-        this.body1 = b;
-    }
-    
-    private Form form1 = new Form();
-    
-    public Form getForm1() {
-        return form1;
-    }
-    
-    public void setForm1(Form f) {
-        this.form1 = f;
-    }
-    private HtmlPanelGrid mainPanel = new HtmlPanelGrid();
-
-    public HtmlPanelGrid getMainPanel() {
-        return mainPanel;
-    }
-
-    public void setMainPanel(HtmlPanelGrid hpg) {
-        this.mainPanel = hpg;
-    }
-    private HtmlPanelGrid personPanel = new HtmlPanelGrid();
-
-    public HtmlPanelGrid getPersonPanel() {
-        return personPanel;
-    }
-
-    public void setPersonPanel(HtmlPanelGrid hpg) {
-        this.personPanel = hpg;
-    }
-    private HtmlPanelGrid tablePanel = new HtmlPanelGrid();
-
-    public HtmlPanelGrid getTablePanel() {
-        return tablePanel;
-    }
-
-    public void setTablePanel(HtmlPanelGrid hpg) {
-        this.tablePanel = hpg;
-    }
-    private Label label1 = new Label();
-
-    public Label getLabel1() {
-        return label1;
-    }
-
-    public void setLabel1(Label l) {
-        this.label1 = l;
-    }
-    private Label label2 = new Label();
-
-    public Label getLabel2() {
-        return label2;
-    }
-
-    public void setLabel2(Label l) {
-        this.label2 = l;
-    }
     private DropDown personDropDown = new DropDown();
 
     public DropDown getPersonDropDown() {
@@ -201,24 +96,6 @@ public class Page1 extends AbstractPageBean {
     public void setPersonDropDown(DropDown dd) {
         this.personDropDown = dd;
     }
-    private StaticText jobTitleText = new StaticText();
-
-    public StaticText getJobTitleText() {
-        return jobTitleText;
-    }
-
-    public void setJobTitleText(StaticText st) {
-        this.jobTitleText = st;
-    }
-    private Table tripsTable = new Table();
-
-    public Table getTripsTable() {
-        return tripsTable;
-    }
-
-    public void setTripsTable(Table t) {
-        this.tripsTable = t;
-    }
     private TableRowGroup tableRowGroup1 = new TableRowGroup();
 
     public TableRowGroup getTableRowGroup1() {
@@ -227,24 +104,6 @@ public class Page1 extends AbstractPageBean {
 
     public void setTableRowGroup1(TableRowGroup trg) {
         this.tableRowGroup1 = trg;
-    }
-    private Button createButton = new Button();
-
-    public Button getCreateButton() {
-        return createButton;
-    }
-
-    public void setCreateButton(Button b) {
-        this.createButton = b;
-    }
-    private MessageGroup messageGroup1 = new MessageGroup();
-
-    public MessageGroup getMessageGroup1() {
-        return messageGroup1;
-    }
-
-    public void setMessageGroup1(MessageGroup mg) {
-        this.messageGroup1 = mg;
     }
     private CachedRowSetDataProvider personDataProvider = new CachedRowSetDataProvider();
 
@@ -272,105 +131,6 @@ public class Page1 extends AbstractPageBean {
 
     public void setTripDataProvider(CachedRowSetDataProvider crsdp) {
         this.tripDataProvider = crsdp;
-    }
-    private TableColumn tableColumn1 = new TableColumn();
-
-    public TableColumn getTableColumn1() {
-        return tableColumn1;
-    }
-
-    public void setTableColumn1(TableColumn tc) {
-        this.tableColumn1 = tc;
-    }
-    private StaticText staticText1 = new StaticText();
-
-    public StaticText getStaticText1() {
-        return staticText1;
-    }
-
-    public void setStaticText1(StaticText st) {
-        this.staticText1 = st;
-    }
-    private TableColumn tableColumn2 = new TableColumn();
-
-    public TableColumn getTableColumn2() {
-        return tableColumn2;
-    }
-
-    public void setTableColumn2(TableColumn tc) {
-        this.tableColumn2 = tc;
-    }
-    private StaticText staticText2 = new StaticText();
-
-    public StaticText getStaticText2() {
-        return staticText2;
-    }
-
-    public void setStaticText2(StaticText st) {
-        this.staticText2 = st;
-    }
-    private TableColumn tableColumn3 = new TableColumn();
-
-    public TableColumn getTableColumn3() {
-        return tableColumn3;
-    }
-
-    public void setTableColumn3(TableColumn tc) {
-        this.tableColumn3 = tc;
-    }
-    private StaticText staticText3 = new StaticText();
-
-    public StaticText getStaticText3() {
-        return staticText3;
-    }
-
-    public void setStaticText3(StaticText st) {
-        this.staticText3 = st;
-    }
-    private TableColumn tableColumn4 = new TableColumn();
-
-    public TableColumn getTableColumn4() {
-        return tableColumn4;
-    }
-
-    public void setTableColumn4(TableColumn tc) {
-        this.tableColumn4 = tc;
-    }
-    private StaticText staticText4 = new StaticText();
-
-    public StaticText getStaticText4() {
-        return staticText4;
-    }
-
-    public void setStaticText4(StaticText st) {
-        this.staticText4 = st;
-    }
-    private TableColumn tableColumn5 = new TableColumn();
-
-    public TableColumn getTableColumn5() {
-        return tableColumn5;
-    }
-
-    public void setTableColumn5(TableColumn tc) {
-        this.tableColumn5 = tc;
-    }
-    private Button deleteButton = new Button();
-
-    public Button getDeleteButton() {
-        return deleteButton;
-    }
-
-    public void setDeleteButton(Button b) {
-        this.deleteButton = b;
-    }
-    private Button updateButton = new Button();
-
-    public Button getUpdateButton() {
-        return updateButton;
-    }
-
-    public void setUpdateButton(Button b) {
-        this.updateButton = b;
     }
 
     // </editor-fold>

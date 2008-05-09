@@ -348,6 +348,7 @@ made subject to such option by the copyright holder.
                 <file name="org-netbeans-modules-editor-preferences.xml" url="NetBeans-preferences.xml"/>
             </folder>
         </folder>
+            
     </folder>
 
     <folder name="xml">

@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+
+
+The contents of this file are subject to the terms of either the GNU
+General Public License Version 2 only ("GPL") or the Common
+Development and Distribution License("CDDL") (collectively, the
+"License"). You may not use this file except in compliance with the
+License. You can obtain a copy of the License at
+http://www.netbeans.org/cddl-gplv2.html
+or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+specific language governing permissions and limitations under the
+License.  When distributing the software, include this License Header
+Notice in each file and include the License file at
+nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+particular file as subject to the "Classpath" exception as provided
+by Sun in the GPL Version 2 section of the License file that
+accompanied this code. If applicable, add the following below the
+License Header, with the fields enclosed by brackets [] replaced by
+your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+Contributor(s):
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
+
+If you wish your version of this file to be governed by only the CDDL
+or only the GPL Version 2, indicate your decision by adding
+"[Contributor] elects to include this software in this distribution
+under the [CDDL or GPL Version 2] license." If you do not indicate a
+single choice of license, a recipient has the option to distribute
+your version of this file under either the CDDL, the GPL Version 2 or
+to extend the choice of license to its licensees as provided above.
+However, if you add GPL Version 2 code and therefore, elected the GPL
+Version 2 license, then the option applies only if the new code is
+made subject to such option by the copyright holder.
+-->
+
+<!DOCTYPE codetemplates PUBLIC  "-//NetBeans//DTD Editor Code Templates settings 1.0//EN"
+                                "http://www.netbeans.org/dtds/EditorCodeTemplates-1_0.dtd">
+
+<codetemplates>
+    
+    <!-- add alternative abbrev 'class' -->
+    <codetemplate uuid="org.netbeans.modules.php.editor.codetemplate.cls" abbreviation="cls">
+        <code>
+<![CDATA[class ${class_name} {
+    function __construct() {
+        ${cursor};
+    }
+}]]>
+        </code>
+    </codetemplate>
+
+    <codetemplate uuid="org.netbeans.modules.php.editor.codetemplate.cln" abbreviation="cln">
+        <code>
+<![CDATA[$$${new_obj} = clone $$${variable};
+${cursor}]]>
+        </code>
+    </codetemplate>
+
+    <codetemplate uuid="org.netbeans.modules.php.editor.codetemplate.echo" abbreviation="eco">
+        <code>
+<![CDATA[echo("${message}");
+${cursor}
+]]>
+        </code>
+    </codetemplate>
+    
+    <codetemplate uuid="org.netbeans.modules.php.editor.codetemplate.print" abbreviation="pr">
+        <code>
+<![CDATA[print ${message};
+${cursor}]]>
+        </code>
+    </codetemplate>
+
+    <codetemplate uuid="org.netbeans.modules.php.editor.codetemplate.print.newline" abbreviation="prln">
+        <code>
+<![CDATA[print ${message}."\n";
+${cursor}]]>
+        </code>
+    </codetemplate>
+
+    <codetemplate uuid="org.netbeans.modules.php.editor.codetemplate.print.string" abbreviation="prs">
+        <code>
+<![CDATA[print "${message}";
+${cursor}]]>
+        </code>
+    </codetemplate>
+
+    <codetemplate uuid="org.netbeans.modules.php.editor.codetemplate.print.variable" abbreviation="prv">
+        <code>
+<![CDATA[print("\$$${variable} = ". $$${variable});
+${cursor}]]>
+        </code>
+    </codetemplate>
+    
+    <codetemplate uuid="org.netbeans.modules.php.editor.codetemplate.if" abbreviation="if">
+        <code>
+<![CDATA[if (${condition}) {
+	${cursor};
+}]]>
+        </code>
+    </codetemplate>
+
+    <codetemplate uuid="org.netbeans.modules.php.editor.codetemplate.else" abbreviation="els">
+        <code>
+<![CDATA[else {
+    ${cursor};
+}]]>
+        </code>
+    </codetemplate>
+
+    <codetemplate uuid="org.netbeans.modules.php.editor.codetemplate.elif" abbreviation="elif">
+        <code>
+<![CDATA[elseif (${condition}) {
+	${cursor};
+}]]>
+        </code>
+    </codetemplate>
+
+    <codetemplate uuid="org.netbeans.modules.php.editor.codetemplate.switch" abbreviation="swi">
+        <code>
+<![CDATA[switch ($$${variable}) {
+case ${value}:
+    ${cursor};
+    break;
+
+default:
+    break;
+}]]>
+        </code>
+    </codetemplate>
+
+    <codetemplate uuid="org.netbeans.modules.php.editor.codetemplate.instanceof" abbreviation="inst">
+        <code>
+<![CDATA[if ($$${variable} instanceof ${class}) {
+    ${cursor};
+}]]>
+        </code>
+    </codetemplate>
+
+    <!-- add alternative abbrev 'function' -->
+    <codetemplate uuid="org.netbeans.modules.php.editor.codetemplate.fnc" abbreviation="fnc">
+        <code>
+<![CDATA[function ${function_name}() {
+    ${cursor};
+}]]>
+        </code>
+    </codetemplate>
+
+    <codetemplate uuid="org.netbeans.modules.php.editor.codetemplate.foreach" abbreviation="fore">
+        <code>
+<![CDATA[foreach ($$${array_variable} as $$${variable}) {
+    ${cursor};
+}]]>
+        </code>
+    </codetemplate>
+    
+    <codetemplate uuid="org.netbeans.modules.php.editor.codetemplate.foreachkey" abbreviation="forek">
+        <code>
+<![CDATA[foreach ($$${array_variable} as $$${number_variable} => $$${variable}) {
+    ${cursor};
+}]]>
+        </code>
+    </codetemplate>
+
+    <codetemplate uuid="org.netbeans.modules.php.editor.codetemplate.while" abbreviation="while">
+        <code>
+<![CDATA[while (${condition}) {
+    ${cursor};
+}]]>
+        </code>
+    </codetemplate>
+
+    <codetemplate uuid="org.netbeans.modules.php.editor.codetemplate.itdir" abbreviation="itdir">
+        <code>
+<![CDATA[$$${dirh} = opendir(${dirname});
+if ($$${dirh}) {
+    while ($$${dir_element} = readdir($$${dirh})) {
+        ${cursor};
+    }
+    unset($$${dir_element});
+    closedir($$${dirh});
+}]]>
+        </code>
+    </codetemplate>
+
+    <codetemplate uuid="org.netbeans.modules.php.editor.codetemplate.arrayIterator" abbreviation="iter">
+        <code>
+<![CDATA[for ($$${number_variable} = 0 ; $$${number_variable} < count($$${array_variable}) ; $$${number_variable}++) {
+    ${cursor};
+}]]>
+        </code>
+    </codetemplate>
+
+    <codetemplate uuid="org.netbeans.modules.php.editor.codetemplate.mySql.fa" abbreviation="my_fa">
+        <code>
+<![CDATA[while ($$${row} = mysql_fetch_array($$${query})) {
+    ${cursor};
+}]]>
+        </code>
+    </codetemplate>
+
+    <codetemplate uuid="org.netbeans.modules.php.editor.codetemplate.mySql.fo" abbreviation="my_fo">
+        <code>
+<![CDATA[while ($$${row} = mysql_fetch_object($$${query})) {
+    ${cursor};
+}]]>
+        </code>
+    </codetemplate>
+
+    <codetemplate uuid="org.netbeans.modules.php.editor.codetemplate.mySql.fr" abbreviation="my_fr">
+        <code>
+<![CDATA[while ($$${row} = mysql_fetch_row($$${query})) {
+    ${cursor};
+}]]>
+        </code>
+    </codetemplate>
+
+    <codetemplate uuid="org.netbeans.modules.php.editor.codetemplate.my_gc" abbreviation="my_gc">
+        <code>
+<![CDATA[ob_start();
+	
+${cursor};
+
+$$${contents} = ob_get_contents();
+ob_end_clean();]]>
+        </code>
+    </codetemplate>
+
+    <codetemplate uuid="org.netbeans.modules.php.editor.codetemplate.pclon" abbreviation="pclon">
+        <code><![CDATA[parent::__clone();]]></code>
+    </codetemplate>
+
+    <codetemplate uuid="org.netbeans.modules.php.editor.codetemplate.pcon" abbreviation="pcon">
+        <code>
+<![CDATA[parent::__construct();
+${cursor}]]>
+        </code>
+    </codetemplate>
+
+</codetemplates>
+

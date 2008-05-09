@@ -197,7 +197,11 @@ public class wsdlRepository {
         for (File file : jbiASADir.listFiles()) {
             jbiASAChildNames.add(file.getName());
         }
-                
+
+        // 02/12/08, add all CompApp wsdls first...
+        // Add all the WSDLs defined in JBI project (under src/jbiasa/).
+        ret.addAll(MyFileUtil.listFiles(jbiASADir, filter, true));
+
         // Add all WSDLs coming from SU projects
         for (File file : serviceUnitsDir.listFiles()) {
             String fileName = file.getName();
@@ -207,10 +211,7 @@ public class wsdlRepository {
                 ret.addAll(MyFileUtil.listFiles(file, filter, true));
             }
         }
-        
-        // Add all the WSDLs defined in JBI project (under src/jbiasa/).
-        ret.addAll(MyFileUtil.listFiles(jbiASADir, filter, true));
-        
+
         return ret;
     }
     

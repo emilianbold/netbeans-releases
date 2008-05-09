@@ -18,12 +18,13 @@
  */
 package org.netbeans.modules.bpel.nodes;
 
+import org.netbeans.modules.bpel.nodes.BpelNode;
 import java.awt.Image;
 import javax.swing.Action;
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
 import org.netbeans.modules.bpel.editors.api.nodes.images.FolderIcon;
 import org.netbeans.modules.bpel.model.api.Process;
-import org.netbeans.modules.bpel.nodes.actions.ActionType;
+import org.netbeans.modules.bpel.editors.api.nodes.actions.ActionType;
 import org.netbeans.modules.bpel.nodes.actions.AddSchemaImportAction;
 import org.netbeans.modules.bpel.nodes.actions.AddSchemaImportAddAction;
 import org.netbeans.modules.bpel.nodes.actions.AddWsdlImportAction;

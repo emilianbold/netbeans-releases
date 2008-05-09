@@ -107,6 +107,22 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
     }    
 
     // ==================================================================================================
+    // QUERIES
+    // ==================================================================================================
+    
+    @Override
+    public boolean canWrite(File file) {
+        if (file.canWrite()) {
+            return true;
+        }
+        if (!file.exists()) {
+            return false;
+        }
+        // can be optimized by taking out local history from the search
+        return getInterceptor(file, false).isMutable(file);
+    } 
+    
+    // ==================================================================================================
     // CHANGE
     // ==================================================================================================
     
@@ -360,6 +376,10 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
             this.file = file;
             this.to = to;
             this.isDirectory = isDirectory;
+        }
+
+        public boolean isMutable(File file) {
+            return interceptor.isMutable(file);
         }
 
         public boolean beforeDelete() {

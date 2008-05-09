@@ -319,7 +319,7 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
                         } catch (IOException x) {
                             String msg = Exceptions.findLocalizedMessage(x);
                             if (msg == null) {
-                                msg = x.toString();
+                                msg = x.getLocalizedMessage();
                             }
                             jTextFieldProjectName.setText(msg);
                             jTextFieldProjectName.setCaretPosition(0);
@@ -565,12 +565,9 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
 
     private static class ProjectFileView extends FileView {
 
-        private static final Icon BADGE = new ImageIcon(Utilities.loadImage("org/netbeans/modules/project/ui/resources/projectBadge.gif")); // NOI18N
-        private static final Icon EMPTY = new ImageIcon(Utilities.loadImage("org/netbeans/modules/project/ui/resources/empty.gif")); // NOI18N
+        private static final Icon PROJECT = new ImageIcon(Utilities.loadImage("org/netbeans/modules/project/ui/resources/project.png", true)); // NOI18N
 
         private FileSystemView fsv;
-        private Icon lastOriginal;
-        private Icon lastMerged;
 
         public ProjectFileView( FileSystemView fsv ) {
             this.fsv = fsv;
@@ -584,63 +581,14 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
                 return null;
             }
             File f = FileUtil.normalizeFile(_f);
-            Icon original = fsv.getSystemIcon(f);
-            if (original == null) {
-                // L&F (e.g. GTK) did not specify any icon.
-                original = EMPTY;
-            }
             if ( isProjectDir( f ) ) {
-                if ( original.equals( lastOriginal ) ) {
-                    return lastMerged;
-                }
-                lastOriginal = original;
-                lastMerged = new MergedIcon(original, BADGE, -1, -1);
-                return lastMerged;
+                return PROJECT;
             }
             else {
-                return original;
+                return fsv.getSystemIcon(f);
             }
         }
 
-
-    }
-
-    private static class MergedIcon implements Icon {
-
-        private Icon icon1;
-        private Icon icon2;
-        private int xMerge;
-        private int yMerge;
-
-        MergedIcon( Icon icon1, Icon icon2, int xMerge, int yMerge ) {
-
-            this.icon1 = icon1;
-            this.icon2 = icon2;
-
-            if ( xMerge == -1 ) {
-                xMerge = icon1.getIconWidth() - icon2.getIconWidth();
-            }
-
-            if ( yMerge == -1 ) {
-                yMerge = icon1.getIconHeight() - icon2.getIconHeight();
-            }
-
-            this.xMerge = xMerge;
-            this.yMerge = yMerge;
-        }
-
-        public int getIconHeight() {
-            return Math.max( icon1.getIconHeight(), yMerge + icon2.getIconHeight() );
-        }
-
-        public int getIconWidth() {
-            return Math.max( icon1.getIconWidth(), yMerge + icon2.getIconWidth() );
-        }
-
-        public void paintIcon(java.awt.Component c, java.awt.Graphics g, int x, int y) {
-            icon1.paintIcon( c, g, x, y );
-            icon2.paintIcon( c, g, x + xMerge, y + yMerge );
-        }
 
     }
 

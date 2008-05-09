@@ -247,6 +247,8 @@ public class CasaComponentFactoryImpl implements CasaComponentFactory {
                 created = new CasaProvidesImpl(context.getModel(), element);
             } else if (isElementQName(CasaQName.CONSUMES)) {
                 created = new CasaConsumesImpl(context.getModel(), element);
+            } else {
+                created = new CasaGenericExtensibilityElementImpl(context.getModel(), element);
             }
         }
         

@@ -18,7 +18,7 @@ package org.netbeans.modules.bpel.properties.importchooser;
 
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.BpelModel;
-import org.netbeans.modules.bpel.model.api.support.ExNamespaceContext;
+import org.netbeans.modules.xml.xpath.ext.schema.ExNamespaceContext;
 
 /**
  * Utility class to generate uniqiue names for BpelModel

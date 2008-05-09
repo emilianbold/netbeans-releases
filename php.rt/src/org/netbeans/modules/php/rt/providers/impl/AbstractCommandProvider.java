@@ -40,16 +40,10 @@
  */
 package org.netbeans.modules.php.rt.providers.impl;
 
-import java.util.HashMap;
-import java.util.Map;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.Sources;
+import org.netbeans.modules.php.rt.spi.providers.Command;
 import org.netbeans.modules.php.rt.spi.providers.CommandProvider;
 import org.netbeans.modules.php.rt.utils.PhpCommandUtils;
-import org.netbeans.modules.php.rt.utils.PhpProjectUtils;
-import org.openide.filesystems.FileObject;
-import org.openide.nodes.Node;
 
 
 /**
@@ -76,6 +70,15 @@ public abstract class AbstractCommandProvider implements CommandProvider {
     protected boolean isInvokedForSrcRoot(){
         return PhpCommandUtils.isInvokedForSrcRoot();
     }
+    
+    public Command[] getAdditionalCommands( Project project ) {
+        return new Command[] {};
+    }
+
+    public Command[] getAllSupportedCommands(Project project) {
+	return getEnabledCommands(project);
+    }
+    
     
     //public static  String getContext( Project phpProject ) {
         /*EditableProperties props = phpProject.getHelper().getProperties(

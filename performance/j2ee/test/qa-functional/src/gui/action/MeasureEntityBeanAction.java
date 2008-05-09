@@ -42,6 +42,7 @@
 package gui.action;
 
 import gui.Utils;
+import javax.swing.JTextField;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.EditorWindowOperator;
 import org.netbeans.jellytools.MainWindowOperator;
@@ -56,6 +57,7 @@ import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
+import org.netbeans.jemmy.operators.JLabelOperator;
 
 /**
  * Test of finishing dialogs from EJB source editor.
@@ -88,7 +90,7 @@ public class MeasureEntityBeanAction extends org.netbeans.performance.test.utili
     }
     
      public void testAddBusinessMethod(){
-        WAIT_AFTER_OPEN = 3000;
+        WAIT_AFTER_OPEN = 1000;
         popup_menu = "EJB Methods|Add Business Method";
         title = "Add Business Method";
         name = "testBusinessMethod";
@@ -96,7 +98,7 @@ public class MeasureEntityBeanAction extends org.netbeans.performance.test.utili
     }
 
      public void testAddFinderMethod(){
-        WAIT_AFTER_OPEN = 2000;
+        WAIT_AFTER_OPEN = 1000;
         popup_menu = "EJB Methods|Add Finder Method";
         title = "Add Finder Method";
         name = "findByTest";
@@ -104,7 +106,7 @@ public class MeasureEntityBeanAction extends org.netbeans.performance.test.utili
     }
 
      public void testAddSelectMethod(){
-        WAIT_AFTER_OPEN = 2000;
+        WAIT_AFTER_OPEN = 1000;
         popup_menu = "EJB Methods|Add Select Method";
         title = "Add Select Method";
         name = "ejbSelectByTest";
@@ -117,24 +119,29 @@ public class MeasureEntityBeanAction extends org.netbeans.performance.test.utili
         Node openFile = new Node(new ProjectsTabOperator().getProjectRootNode("TestApplication-EJBModule"),"Enterprise Beans|TestEntityEB");
         new OpenAction().performAPI(openFile);
         editor = new EditorWindowOperator().getEditor("TestEntityBean.java");
-        new org.netbeans.jemmy.EventTool().waitNoEvent(5000);
+//        new org.netbeans.jemmy.EventTool().waitNoEvent(5000);
         editor.select(11);
-        JemmyProperties.setCurrentDispatchingModel(JemmyProperties.ROBOT_MODEL_MASK); 
+//        JemmyProperties.setCurrentDispatchingModel(JemmyProperties.ROBOT_MODEL_MASK); 
     }
     
     public void prepare() {
         new ActionNoBlock(null,popup_menu).perform(editor);
         dialog = new NbDialogOperator(title);
-        new JTextFieldOperator(dialog).setText(name+Utils.getTimeIndex());
-        new org.netbeans.jemmy.EventTool().waitNoEvent(2000);
+//        new JTextFieldOperator(dialog).setText(name+Utils.getTimeIndex());
+        JLabelOperator lblOper = new JLabelOperator(dialog, "Name");
+        new JTextFieldOperator((JTextField)lblOper.getLabelFor()).setText(name+Utils.getTimeIndex());
+
+//        new org.netbeans.jemmy.EventTool().waitNoEvent(2000);
    }
     
     public ComponentOperator open(){
+        repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
         dialog.ok();
         return null;
     }
 
     public void shutdown(){
+        repaintManager().resetRegionFilters();   
         new SaveAllAction().performAPI();
         editor.closeDiscard();
     }

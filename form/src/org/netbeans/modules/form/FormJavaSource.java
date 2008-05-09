@@ -40,7 +40,10 @@
  */
 package org.netbeans.modules.form;
 
+import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.SourcePositions;
@@ -57,12 +60,16 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.swing.text.Position;
 import org.netbeans.api.editor.guards.SimpleSection;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.WorkingCopy;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -107,6 +114,18 @@ public class FormJavaSource {
         }
     }
 
+    private void runModificationTask(CancellableTask<WorkingCopy> task) {
+        FileObject javaFileObject = formDataObject.getPrimaryFile();		
+        JavaSource js = JavaSource.forFileObject(javaFileObject);
+        if (js != null) {
+            try {
+                js.runModificationTask(task).commit();
+            } catch (IOException ex) {
+                Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }
+
     public boolean containsField(String name, boolean refresh) {
 	if(refresh) {
 	    refresh();
@@ -125,16 +144,45 @@ public class FormJavaSource {
         }
         return null;
     }
-    
+
+    private static TypeKind primitiveClassToTypeKind(Class clazz) {
+        TypeKind kind = null;
+        if (clazz == char.class) {
+            kind = TypeKind.CHAR;
+        } else if (clazz == boolean.class) {
+            kind = TypeKind.BOOLEAN;
+        } else if (clazz == int.class) {
+            kind = TypeKind.INT;
+        } else if (clazz == long.class) {
+            kind = TypeKind.LONG;
+        } else if (clazz == byte.class) {
+            kind = TypeKind.BYTE;
+        } else if (clazz == short.class) {
+            kind = TypeKind.SHORT;
+        } else if (clazz == float.class) {
+            kind = TypeKind.FLOAT;
+        } else if (clazz == double.class) {
+            kind = TypeKind.DOUBLE;
+        }
+        return kind;
+    }
+
     private List<String> findMethodsByReturnType(CompilationController controller, TypeElement celem, Class returnType) {
         List<String> methods = new ArrayList<String>();
-        String returnTypeName = returnType.getCanonicalName();
-        TypeElement returnTypeElm = controller.getElements().getTypeElement(returnTypeName);
+        TypeMirror type;
+        if (returnType.isPrimitive()) {
+            TypeKind kind = primitiveClassToTypeKind(returnType);
+            type = controller.getTypes().getPrimitiveType(kind);
+        } else {
+            String returnTypeName = returnType.getCanonicalName();
+            TypeElement returnTypeElm = controller.getElements().getTypeElement(returnTypeName);
+            type = returnTypeElm.asType();
+        }
         for (Element el: celem.getEnclosedElements()) {
             if (el.getKind() == ElementKind.METHOD) {
                 ExecutableElement method = (ExecutableElement) el;
                 TypeMirror methodRT = method.getReturnType();
-                if (controller.getTypes().isAssignable(returnTypeElm.asType(), methodRT)) {
+                if (controller.getTypes().isAssignable(type, methodRT)) {
                     methods.add(method.getSimpleName().toString());
                 }
             }
@@ -168,6 +216,44 @@ public class FormJavaSource {
         });
         
         return result[0] == null? new String[0]: (String[]) result[0];
+    }
+
+    public String getAnnotationCode(final String methodName, final Position startPosition, final Position endPosition, final boolean removeAnnotations) {
+        final StringBuilder sb = new StringBuilder();
+        runModificationTask(new CancellableTask<WorkingCopy>() {
+            public void cancel() {
+            }
+            public void run(WorkingCopy wc) throws Exception {
+                wc.toPhase(JavaSource.Phase.RESOLVED);
+                ClassTree ct = findClassTree(wc);
+                int start = startPosition.getOffset();
+                int end = endPosition.getOffset();
+                if (ct != null) {
+                    SourcePositions sp = wc.getTrees().getSourcePositions();
+                    for (Tree member : ct.getMembers()) {
+                        if (Tree.Kind.METHOD == member.getKind()) {
+                            MethodTree method = (MethodTree)member;
+                            if (methodName.equals(method.getName().toString())) {
+                                long methodStart = sp.getStartPosition(wc.getCompilationUnit(), method);
+                                long methodEnd = sp.getEndPosition(wc.getCompilationUnit(), method);
+                                if ((methodStart <= end) && (start <= methodEnd)) {
+                                    for (AnnotationTree annotation : method.getModifiers().getAnnotations()) {
+                                        sb.append(annotation.toString()).append('\n');
+                                    }
+                                }
+                                if (removeAnnotations) {
+                                    ModifiersTree oldModifiers = method.getModifiers();
+                                    TreeMaker make = wc.getTreeMaker();
+                                    ModifiersTree newModifiers = make.Modifiers(oldModifiers.getFlags());
+                                    wc.rewrite(oldModifiers, newModifiers);
+                                }
+                            }
+                        }
+                    }
+                }                
+            }
+        });
+        return (sb.length() == 0) ? null : sb.toString();
     }
 
     /**

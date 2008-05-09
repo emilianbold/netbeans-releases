@@ -43,7 +43,7 @@ made subject to such option by the copyright holder.
 <project xmlns="http://www.netbeans.org/ns/project/1">
     <type>org.netbeans.modules.apisupport.project</type>
     <configuration>
-        <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
+        <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
             <code-name-base>org.netbeans.modules.css.visual</code-name-base>
             <module-dependencies>
                 <dependency>
@@ -53,6 +53,15 @@ made subject to such option by the copyright holder.
                     <run-dependency>
                         <release-version>1</release-version>
                         <specification-version>1.3.2</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.css.editor</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -89,21 +98,6 @@ made subject to such option by the copyright holder.
                     <run-dependency>
                         <release-version>1</release-version>
                         <specification-version>1.4</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.languages</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>0</release-version>
-                        <implementation-version/>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.languages.css</code-name-base>
-                    <run-dependency>
-                        <specification-version>1.12</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -267,16 +261,16 @@ made subject to such option by the copyright holder.
                         <code-name-base>org.openide.filesystems</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
-<!--                    <test-dependency>
-                        <code-name-base>org.netbeans.jellytools</code-name-base>
-                        <compile-dependency/>
-                    </test-dependency>-->
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.css.visual</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
                 </test-type>
             </test-dependencies>
+            <friend-packages>
+                <friend>org.netbeans.modules.visualweb.html</friend>
+                <package>org.netbeans.modules.css.visual.api</package>
+            </friend-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/flute-1.3.jar</runtime-relative-path>
                 <binary-origin>external/flute-1.3.jar</binary-origin>
@@ -285,7 +279,6 @@ made subject to such option by the copyright holder.
                 <runtime-relative-path>ext/sac-1.3.jar</runtime-relative-path>
                 <binary-origin>external/sac-1.3.jar</binary-origin>
             </class-path-extension>
-            <public-packages/>
         </data>
     </configuration>
 </project>

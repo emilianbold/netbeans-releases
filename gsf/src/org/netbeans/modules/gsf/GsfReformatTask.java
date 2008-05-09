@@ -27,24 +27,33 @@
  */
 package org.netbeans.modules.gsf;
 
+import java.io.IOException;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.editor.mimelookup.MimePath;
-import org.netbeans.api.gsf.Formatter;
+import org.netbeans.modules.gsf.api.CancellableTask;
+import org.netbeans.modules.gsf.api.Formatter;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.editor.indent.spi.ExtraLock;
 import org.netbeans.modules.editor.indent.spi.ReformatTask;
+import org.netbeans.modules.gsfret.source.SourceAccessor;
+import org.netbeans.napi.gsfret.source.CompilationController;
+import org.netbeans.napi.gsfret.source.Phase;
+import org.netbeans.napi.gsfret.source.Source;
 
 public class GsfReformatTask implements ReformatTask {
 
     private Context context;
     private Formatter formatter;
+    private CompilationController controller;
+    private Source source;
     
-    GsfReformatTask(Context context) {
+    GsfReformatTask(Source source, Context context) {
         this.context = context;
+        this.source = source;
     }
 
     private synchronized Formatter getFormatter() {
-        if(formatter == null) {
+        if (formatter == null) {
             // XXX: Carefull here, generally context.mimePath() != mimeType. This
             // task's factory was created for a top level language (mimeType), but the task
             // itself can be used for an embedded language.
@@ -68,12 +77,44 @@ public class GsfReformatTask implements ReformatTask {
         Formatter f = getFormatter();
         
         if (f != null) {
-            f.reformat(context.document(), context.startOffset(), context.endOffset(), null);
+            if (!f.needsParserResult()) {
+                controller = null;
+            } else if (controller == null) {
+                try {
+                    source.runUserActionTask(new CancellableTask<CompilationController>() {
+                        public void run(CompilationController controller) throws Exception {
+                            controller.toPhase(Phase.PARSED);
+                            GsfReformatTask.this.controller = controller;
+                        }
+
+                        public void cancel() {
+                        }
+                    }, true);            
+                } catch (IOException ioe) {
+                    //SourceAccessor.getINSTANCE().unlockJavaCompiler();
+                }
+                if (controller == null)
+                    return;
+            }
+            
+            f.reformat(context.document(), context.startOffset(), context.endOffset(), controller);
         }
     }
 
     public ExtraLock reformatLock() {
-        return null;
+        return new Lock();
     }
         
+    private class Lock implements ExtraLock {
+
+        public void lock() {
+            SourceAccessor.getINSTANCE().lockParser();
+        }
+
+        public void unlock() {
+            controller = null;
+            SourceAccessor.getINSTANCE().unlockParser();
+        }        
+    }
+
 }

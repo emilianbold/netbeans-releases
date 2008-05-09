@@ -281,5 +281,3 @@ public abstract class SVGRasterizerPanel extends JPanel implements AnimationRast
     
     protected abstract void updateImage(JComponent source, boolean isOutputChanged);
 }
-    
-    

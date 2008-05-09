@@ -51,9 +51,15 @@ public class ComponentsDescriptor implements Descriptor, Iterable<Component> {
     
     
     public void add(Component component, Positioner positioner) {
+        myComponent = component;
         pairs.add(new PairComponentPositioner(component, positioner));
     }
+
+    private Component myComponent;
     
+    public Component getComponent() {
+      return myComponent;
+    }
     
     public void addAll(ComponentsDescriptor components) {
         int count = components.getComponentCount();

@@ -41,11 +41,12 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-import java.util.Iterator;
+import java.util.Collection;
 import org.netbeans.modules.cnd.api.model.CsmProgressListener;
-import org.netbeans.modules.cnd.api.model.util.WeakList;
+import org.netbeans.modules.cnd.modelimpl.util.WeakList;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -71,14 +72,15 @@ public class ProgressSupport {
         progressListeners.remove(listener);
     }
     
-    /*package-local*/ Iterator<CsmProgressListener> getProgressListeners() {
-        return progressListeners.iterator();
+    private Iterable<? extends CsmProgressListener> getProgressListeners() {
+	Collection<? extends CsmProgressListener> services = Lookup.getDefault().lookupAll(CsmProgressListener.class);
+	return (services.isEmpty()) ? progressListeners : progressListeners.join(services);
     }
    
     
     /*package-local*/ void fireFileInvalidated(FileImpl file) {
         if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("ParserQueue: fireFileInvalidated " + file.getAbsolutePath());
-        for( CsmProgressListener listener : progressListeners ) {
+        for( CsmProgressListener listener : getProgressListeners() ) {
 	    try { // have to do this to not allow a listener to crush code model threads
 		listener.fileInvalidated(file);
 	    }
@@ -90,7 +92,7 @@ public class ProgressSupport {
     
     /*package-local*/ void fireFileParsingStarted(FileImpl file) {
         if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("ParserQueue: fireFileParsingStarted " + file.getAbsolutePath());
-        for( CsmProgressListener listener : progressListeners ) {
+        for( CsmProgressListener listener : getProgressListeners() ) {
 	    try { // have to do this to not allow a listener to crush code model threads
 		listener.fileParsingStarted(file);
 	    } catch(Exception e) {
@@ -102,7 +104,7 @@ public class ProgressSupport {
     
     /*package-local*/ void fireFileParsingFinished(FileImpl file) {
         if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("ParserQueue: fireFileParsingFinished " + file.getAbsolutePath());
-        for( CsmProgressListener listener : progressListeners ) {
+        for( CsmProgressListener listener : getProgressListeners() ) {
 	    try { // have to do this to not allow a listener to crush code model threads
 		listener.fileParsingFinished(file);
 	    } catch(Exception e) {
@@ -113,7 +115,7 @@ public class ProgressSupport {
     
     /*package-local*/ void fireProjectParsingStarted(ProjectBase project) {
         if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("ParserQueue: fireProjectParsingStarted " + project.getName());
-        for( CsmProgressListener listener : progressListeners ) {
+        for( CsmProgressListener listener : getProgressListeners() ) {
 	    try { // have to do this to not allow a listener to crush code model threads
 		listener.projectParsingStarted(project);
 	    } catch(Exception e) {
@@ -123,7 +125,7 @@ public class ProgressSupport {
     }
     
     /*package-local*/ void fireProjectParsingFinished(ProjectBase project) {
-        for( CsmProgressListener listener : progressListeners ) {
+        for( CsmProgressListener listener : getProgressListeners() ) {
 	    try { // have to do this to not allow a listener to crush code model threads
 		listener.projectParsingFinished(project);
 	    } catch(Exception e) {
@@ -133,7 +135,7 @@ public class ProgressSupport {
     }
     
     /*package-local*/ void fireProjectLoaded(ProjectBase project) {
-        for( CsmProgressListener listener : progressListeners ) {
+        for( CsmProgressListener listener : getProgressListeners() ) {
 	    try { // have to do this to not allow a listener to crush code model threads
 		listener.projectLoaded(project);
 	    } catch(Exception e) {
@@ -143,7 +145,7 @@ public class ProgressSupport {
     }
     
    /*package-local*/ void fireIdle() {
-        for( CsmProgressListener listener : progressListeners ) {
+        for( CsmProgressListener listener : getProgressListeners() ) {
 	    try { // have to do this to not allow a listener to crush code model threads
 		listener.parserIdle();
 	    } catch(Exception e) {
@@ -154,7 +156,7 @@ public class ProgressSupport {
     
     /*package-local*/ void fireProjectFilesCounted(ProjectBase project, int cnt){
         if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("ParserQueue: fireProjectFilesCounted " + project.getName() + ' ' + cnt);
-        for( CsmProgressListener listener : progressListeners ) {
+        for( CsmProgressListener listener : getProgressListeners() ) {
 	    try { // have to do this to not allow a listener to crush code model threads
 		listener.projectFilesCounted(project, cnt);
 	    } catch(Exception e) {

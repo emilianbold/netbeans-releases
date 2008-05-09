@@ -45,6 +45,7 @@ import java.util.Collection;
 import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.cnd.api.model.CsmListeners;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.loaders.CCDataObject;
 import org.netbeans.modules.cnd.loaders.CDataObject;
@@ -211,8 +212,8 @@ public class NavigatorComponent implements NavigatorPanel, LookupListener {
     
     private void setNewContentImpl(DataObject cdo, NavigatorPanelUI ui) {
         curModel = new NavigatorModel(cdo, ui, this);
-        CsmModelAccessor.getModel().addProgressListener(curModel);
-        CsmModelAccessor.getModel().addModelListener(curModel);
+        CsmListeners.getDefault().addProgressListener(curModel);
+        CsmListeners.getDefault().addModelListener(curModel);
         ui.getContent().setModel(curModel);
         try {
             curModel.addBusyListener(this);
@@ -224,8 +225,8 @@ public class NavigatorComponent implements NavigatorPanel, LookupListener {
     
     private void detachFromModel(NavigatorModel model) {
 	if( model != null ) {
-	    CsmModelAccessor.getModel().removeProgressListener(model);
-	    CsmModelAccessor.getModel().removeModelListener(model);
+	    CsmListeners.getDefault().removeProgressListener(model);
+	    CsmListeners.getDefault().removeModelListener(model);
 	    model.removeBusyListener(this);
 	    model.removeNotify();
 	}

@@ -3,12 +3,7 @@ Version: 2.7.2
 OSR: 6877
 License: ANTLR-2
 Origin: http://www.antlr.org/
-Description: ANTLR, ANother Tool for Language Recognition,
-             is a language tool that provides a framework
-             for constructing recognizers, interpreters,
-             compilers, and translators from grammatical
-             descriptions containing actions in a variety
-             of target languages.
+Description: ANTLR, ANother Tool for Language Recognition, is a language tool that provides a framework for constructing recognizers, interpreters, compilers, and translators from grammatical descriptions containing actions in a variety of target languages.
 
 ANTLR 2 License
 

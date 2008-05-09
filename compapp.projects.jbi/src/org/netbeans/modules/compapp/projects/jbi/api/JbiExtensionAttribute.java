@@ -49,39 +49,19 @@ import java.io.Serializable;
  * @author jqian
  */
 public class JbiExtensionAttribute implements Serializable {
-
-    public enum Type {
-
-        STRING("String"),
-        INTEGER("Integer"),
-        QNAME("QName"),
-        ENDPOINT("Endpoint");
-        
-        private String type;
-
-        /** @param protocolString */
-        private Type(String type) {
-            this.type = type;
-        }
-
-        public static Type getType(String typeString) {
-            for (Type type : Type.values()) {
-                if (typeString.equalsIgnoreCase(type.toString())) {
-                    return type;
-                }
-            }
-            return null;
-        }
-    }
     
     /**
      * Name of the extension attribute.
      */
     private String name;
     /**
+     * Display name of the extension attribute.
+     */
+    private String displayName;
+    /**
      * Type of the extension attribute. 
      */
-    private Type type;
+    private String type;
     /**
      * Description of the extension attribute.
      */
@@ -95,24 +75,29 @@ public class JbiExtensionAttribute implements Serializable {
      * Constructs a JbiExtensionAttribute.
      *
      * @param name  attribute name
+     * @param displayName  attribute display name
      * @param type  attribute type
      * @param description   attribute description
      */
-    public JbiExtensionAttribute(String name, Type type, String description) {
-        this(name, type, description, true);
+    public JbiExtensionAttribute(String name, String displayName, 
+            String type, String description) {
+        this(name, displayName, type, description, true);
     }
 
     /**
      * Constructs a JbiExtensionAttribute.
      *
      * @param name  attribute name
+     * @param displayName  attribute display name
      * @param type  attribute type
      * @param description   attribute description
      * @param codeGen       whether to generate this attribute in codegen
      */
-    public JbiExtensionAttribute(String name, Type type, String description,
+    public JbiExtensionAttribute(String name, String displayName,
+            String type, String description,
             boolean codeGen) {
         this.name = name;
+        this.displayName = displayName;
         this.type = type;
         this.description = description;
         this.codeGen = codeGen;
@@ -130,9 +115,18 @@ public class JbiExtensionAttribute implements Serializable {
     /**
      * DOCUMENT ME!
      *
+     * @return the display name.
+     */
+    public String getDisplayName() {
+        return this.displayName;
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
      * @return the type.
      */
-    public Type getType() {
+    public String getType() {
         return this.type;
     }
 
@@ -159,6 +153,7 @@ public class JbiExtensionAttribute implements Serializable {
         StringBuilder sb = new StringBuilder();
         sb.append("JbiExtensionAttribute:")
                 .append(" name=").append(getName())
+                .append(" displayName=").append(getDisplayName())
                 .append(" type=").append(getType())
                 .append(" codeGen=").append(getCodeGen())
                 .append(" description=").append(getDescription());

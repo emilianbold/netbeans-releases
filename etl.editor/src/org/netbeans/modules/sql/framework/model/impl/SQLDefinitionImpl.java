@@ -92,8 +92,10 @@ import com.sun.sql.framework.exception.BaseException;
 import com.sun.sql.framework.utils.Attribute;
 import net.java.hulp.i18n.Logger;
 import com.sun.sql.framework.utils.StringUtil;
+import java.io.File;
 import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.logger.LogUtil;
+import org.netbeans.modules.etl.ui.ETLEditorSupport;
+import org.netbeans.modules.etl.ui.ETLEditorSupport;
 import org.netbeans.modules.sql.framework.model.DBColumn;
 import org.netbeans.modules.sql.framework.model.DBTable;
 import org.netbeans.modules.sql.framework.model.DatabaseModel;
@@ -113,7 +115,7 @@ public class SQLDefinitionImpl implements SQLDefinition, Serializable {
     private static final String STAGING = "Staging";
     private static final String BEST_FIT = "Best Fit";
     private static final String PIPELINE = "Pipeline";
-    private static transient final Logger mLogger = LogUtil.getLogger(SQLDefinitionImpl.class.getName());
+    private static transient final Logger mLogger = Logger.getLogger(SQLDefinitionImpl.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
     class SecondParseObjectInfo {
@@ -151,7 +153,7 @@ public class SQLDefinitionImpl implements SQLDefinition, Serializable {
     protected static final String TAG_DEFINITION = "sqlDefinition";
     /* Log category string */
     private static final String LOG_CATEGORY = SQLDefinitionImpl.class.getName();
-    private static String VERSION = "5.2";
+    private static String VERSION = "6.0";
     /**
      * Map of attributes; used by concrete implementations to store class-specific fields
      * without hard coding them as member variables
@@ -427,17 +429,32 @@ public class SQLDefinitionImpl implements SQLDefinition, Serializable {
         return (Integer) this.getAttributeValue(ATTR_EXECUTION_STRATEGY_CODE);
     }
 
-    public String getDBWorkingFolder() {
-        String workingFolder = (String) this.getAttributeValue(AXION_DB_WORKING_FOLDER);
-        workingFolder = (workingFolder == null) ? "" : workingFolder;
+    public String getAxiondbWorkingDirectory() {
+        String fs = File.separator;
+        String workingFolder = (String) this.getAttributeValue(AXION_DB_WORKING_DIR);
+        workingFolder = (workingFolder == null || "".equalsIgnoreCase(workingFolder)) ? System.getProperty("netbeans.user") : workingFolder;
         return workingFolder;
     }
 
-    public String getDbInstanceName() {
-        String dbName = (String) this.getAttributeValue(AXION_DB_INSTANCE_NAME);
-        dbName = (dbName == null) ? "" : dbName;
+    public String getAxiondbDataDirectory() {
+        String dbName = (String) this.getAttributeValue(AXION_DB_DATA_DIR);
+        dbName = (dbName == null) ? ETLEditorSupport.PRJ_PATH + File.separator + "data" + File.separator :  dbName;
         return dbName;
     }
+    
+    public boolean isDynamicFlatFile() {
+        Boolean dynamicFlatFile = (Boolean) this.getAttributeValue(DYNAMIC_FLAT_FILE);
+        boolean flag = false;
+        if(dynamicFlatFile != null) {
+            flag = dynamicFlatFile.booleanValue();
+        }
+        return flag;
+    }
+    
+    public void setDynamicFlatFile(boolean flag) {
+        this.setAttribute(DYNAMIC_FLAT_FILE, Boolean.valueOf(flag));
+    }
+    
 
     public String getExecutionStrategyStr() {
         int code = getExecutionStrategyCode().intValue();
@@ -603,7 +620,7 @@ public class SQLDefinitionImpl implements SQLDefinition, Serializable {
             try {
                 this.addObject(runtimeDbModel);
             } catch (BaseException ex) {
-                mLogger.errorNoloc(mLoc.t("PRSR116: can not add runtime database model to definition{0}", LOG_CATEGORY), ex);
+                mLogger.errorNoloc(mLoc.t("EDIT116: can not add runtime database model to definition{0}", LOG_CATEGORY), ex);
                 runtimeDbModel = null;
             }
             return runtimeDbModel;
@@ -1017,18 +1034,18 @@ public class SQLDefinitionImpl implements SQLDefinition, Serializable {
      * sets the axion database working folder
      * @param appDataRoot
      */
-    public void setWorkingFolder(String appDataRoot) {
-        this.setAttribute(AXION_DB_WORKING_FOLDER, appDataRoot);
+    public void setAxiondbWorkingDirectory(String appDataRoot) {
+        this.setAttribute(AXION_DB_WORKING_DIR, appDataRoot);
     }
 
     /**
      * sets the axion database instance name
      * @param dbInstanceName
      */
-    public void setDbInstanceName(String dbInstanceName) {
-        this.setAttribute(AXION_DB_INSTANCE_NAME, dbInstanceName);
+    public void setAxiondbDataDirectory(String dbInstanceName) {
+        this.setAttribute(AXION_DB_DATA_DIR, dbInstanceName);
     }
-
+    
     /**
      * @see SQLDefinition#setParent
      */

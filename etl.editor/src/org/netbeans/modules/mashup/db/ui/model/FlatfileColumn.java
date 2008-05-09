@@ -48,7 +48,6 @@ import org.netbeans.modules.mashup.db.model.FlatfileDBColumn;
 import com.sun.sql.framework.utils.StringUtil;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.model.DBTable;
 
 /**
@@ -57,7 +56,7 @@ import org.netbeans.modules.sql.framework.model.DBTable;
  */
 public class FlatfileColumn {
 
-    private static transient final Logger mLogger = LogUtil.getLogger(FlatfileColumn.class.getName());
+    private static transient final Logger mLogger = Logger.getLogger(FlatfileColumn.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     private FlatfileDBColumn mDelegate;
 
@@ -118,8 +117,8 @@ public class FlatfileColumn {
 
     public String getDefaultValue() {
         String defaultVal = mDelegate.getDefaultValue();
-        String nbBundle1 = mLoc.t("PRSR001: <None>");
-        return (StringUtil.isNullString(defaultVal)) ? Localizer.parse(nbBundle1) : defaultVal;
+        String nbBundle1 = mLoc.t("BUND182: <None>");
+        return (StringUtil.isNullString(defaultVal)) ? nbBundle1.substring(15) : defaultVal;
     }
 
     public int getOrdinalPosition() {

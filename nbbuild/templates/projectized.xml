@@ -123,7 +123,7 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
         <property name="build.classes.dir" location="build/classes"/>
         <property name="build.classes.dir.ml" location="build/ml/classes"/>
         <property name="nbm" value="${code.name.base.dashes}.nbm"/>
-        <property name="nbm.homepage" value="http://${nbm.domain}.netbeans.org/"/>
+        <property name="nbm.homepage" value="http://www.netbeans.org/"/>
         <property name="nbm.distribution" value="${dist.base}/${nbm}"/>
         <property name="nbm.module.author" value=""/>
         <property name="nbm.release.date" value=""/>

@@ -81,7 +81,7 @@ public class SpecialStepManager {
             LocationStep step) {
         //
         List<Object> parentPath = 
-                PathConverter.constructPredicateLocationtList(parentItr);
+                PathConverter.constructObjectLocationtList(parentItr, true);
         //
         if (parentPath != null) {
             return addStep(parentPath, step);
@@ -93,7 +93,7 @@ public class SpecialStepManager {
     public void removeStep(RestartableIterator<Object> parentItr, 
             LocationStep stepToDelete) {
         List<Object> parentPath = 
-                PathConverter.constructPredicateLocationtList(parentItr);
+                PathConverter.constructObjectLocationtList(parentItr, true);
         //
         if (parentPath != null) {
             for (CachedStep cStep : mSteps) {

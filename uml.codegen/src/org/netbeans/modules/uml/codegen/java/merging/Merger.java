@@ -372,7 +372,8 @@ public class Merger implements IUMLParserEventsSink {
 		{
 		    if (! matchedOld.contains(elem)) 
 		    {
-			if (ElementMatcher.isMarked(elem) || isOverwriteProp()) 
+			if ((ElementMatcher.isMarked(elem) || isOverwriteProp()) 
+                            && ! ElementMatcher.isMarkedByOthers(elem))
 			{
 			    fileBuilder.replace(new ElementDescriptor(newElem.getNode()), 
 						new ElementDescriptor(elem.getNode()),
@@ -424,7 +425,8 @@ public class Merger implements IUMLParserEventsSink {
 		// has been already matched using ID marker
 		continue;
 	    }
-	    if (ElementMatcher.isMarked(oldElem) || isOverwriteProp()) 
+	    if ((ElementMatcher.isMarked(oldElem) || isOverwriteProp())
+                && ! ElementMatcher.isMarkedByOthers(oldElem))
 	    {
 		// the element is regenerateable, 
 		// ie. not having been matched means to be deleted
@@ -526,7 +528,8 @@ public class Merger implements IUMLParserEventsSink {
 		    {
 			if (map[j] != null) 
 			{
-			    if (ElementMatcher.isMarked(map[j].oe) || isOverwriteProp()) 
+			    if ((ElementMatcher.isMarked(map[j].oe) || isOverwriteProp())
+                                && ! ElementMatcher.isMarkedByOthers(map[j].oe))
 			    {
 				fileBuilder.remove(new ElementDescriptor(map[j].oe.getNode()));
 			    } 
@@ -540,8 +543,9 @@ public class Merger implements IUMLParserEventsSink {
 					   false,
 					   j - i);
 		    }
-		    if (ElementMatcher.isMarked(m.oe) || isOverwriteProp()) 
-		    {
+		    if ((ElementMatcher.isMarked(m.oe) || isOverwriteProp()) 
+                        && ! ElementMatcher.isMarkedByOthers(m.oe))
+                    {
 			fileBuilder.replace(new ElementDescriptor(m.ne.getNode()), 
 					    new ElementDescriptor(m.oe.getNode()),
 					    ElementMatcher.isRegenBody(m.oe) 
@@ -565,7 +569,8 @@ public class Merger implements IUMLParserEventsSink {
 		{
 		    if (map[j] != null) 
 		    {
-			if (ElementMatcher.isMarked(map[j].oe) || isOverwriteProp()) 
+			if ((ElementMatcher.isMarked(map[j].oe) || isOverwriteProp()) 
+                            && ! ElementMatcher.isMarkedByOthers(map[j].oe))
 			{
 			    fileBuilder.remove(new ElementDescriptor(map[j].oe.getNode()));
 			} 
@@ -598,7 +603,8 @@ public class Merger implements IUMLParserEventsSink {
 		// has been already matched using ID marker
 		continue;
 	    }
-	    if (ElementMatcher.isMarked(oldElem) || isOverwriteProp()) 
+	    if ((ElementMatcher.isMarked(oldElem) || isOverwriteProp()) 
+                && ! ElementMatcher.isMarkedByOthers(oldElem))
 	    {
 		// the element is regenerateable, 
 		// ie. not having been matched means to be deleted
@@ -974,7 +980,7 @@ public class Merger implements IUMLParserEventsSink {
 	List mrs2 = XMLManip.selectNodeList(pn2, query);
 	
 	if (! compareNodeLists(mrs1, mrs2,
-			       new BySpecificAttributeNodeComparator("collectionType"))) 
+			       new BySpecificAttributeNodeComparator("collectionType", pp))) 
 	{
 	    return false;
 	}
@@ -983,7 +989,7 @@ public class Merger implements IUMLParserEventsSink {
 	mrs1 = XMLManip.selectNodeList(pn1, query);
 	mrs2 = XMLManip.selectNodeList(pn2, query);
 	if (! compareNodeLists(mrs1, mrs2,
-			       new BySpecificAttributeNodeComparator("name"))) 
+			       new BySpecificAttributeNodeComparator("name", pp))) 
 	{
 	    return false;
 	}
@@ -992,7 +998,7 @@ public class Merger implements IUMLParserEventsSink {
 	mrs1 = XMLManip.selectNodeList(pn1, query);
 	mrs2 = XMLManip.selectNodeList(pn2, query);
 	if (! compareNodeLists(mrs1, mrs2,
-			       new BySpecificAttributeNodeComparator("value"))) 
+			       new BySpecificAttributeNodeComparator("value", pp))) 
 	{
 	    return false;
 	}	

@@ -202,6 +202,14 @@ public class XMLSyntaxParser {
 //                        t = tokenSequence.token();
 //                    }
                     tokenType = TokenType.TOKEN_ATTR_VAL;
+                    while(tokenSequence.moveNext()) {
+                        org.netbeans.api.lexer.Token t = tokenSequence.token();
+                        if(t.id() != XMLTokenId.VALUE && t.id() != XMLTokenId.CHARACTER) {
+                            tokenSequence.movePrevious();
+                            break;
+                        }
+                        image = image.concat(t.text().toString());
+                    }
                     currentTokens.add(Token.create(image,tokenType));
                     currentNode.setTokens(new ArrayList<Token>(currentTokens));
                     currentTokens.clear();

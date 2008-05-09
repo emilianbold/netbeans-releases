@@ -63,7 +63,7 @@ public class HtmlFormDesignInfo extends HtmlDesignInfoBase {
     }
 
     public DisplayAction[] getContextItems(DesignBean lbean) {
-        return null;
+        return super.getContextItems(lbean);
     }
 
     public boolean acceptLink(DesignBean targetBean, DesignBean sourceBean, Class sourceClass) {
@@ -72,6 +72,20 @@ public class HtmlFormDesignInfo extends HtmlDesignInfoBase {
 
     public Result linkBeans(DesignBean targetBean, DesignBean sourceBean) {
         return null;
+    }
+    
+    /**
+     * Allow form anywhere, so long as parent is not a form and the parent has
+     * no form ancestor.
+     */
+    public boolean acceptParent(DesignBean parentBean, DesignBean childBean, Class childClass) {        
+        DesignBean thisBean = parentBean;
+        while (thisBean.getBeanParent() != null) {
+            if (thisBean.getInstance() instanceof UIForm)
+                return false;
+            thisBean = thisBean.getBeanParent();
+        }       
+        return true;
     }
 
     /**

@@ -66,7 +66,7 @@ import java.util.List;
  * code templates in
  * <a href="@org-netbeans-lib-editor-codetemplates@/overview-summary.html">Editor Code Templates</a>
  * module. If you are retrieving this class from <code>MimeLookup</code> you should
- * should probably use the Editor Code Templates API instead.
+ * probably use the Editor Code Templates API instead.
  * 
  * @see CodeTemplateSettings
  * @author Miloslav Metelka
@@ -78,6 +78,7 @@ public final class CodeTemplateDescription {
     private final String parametrizedText;
     private final List<String> contexts;    
     private final String uniqueId;
+    private final String mimePath;
     
     /**
      * Creates a new code template description. It call the other constructor
@@ -89,7 +90,7 @@ public final class CodeTemplateDescription {
      *   a user writes the abbreviation in the editor.
      */
     public CodeTemplateDescription(String abbreviation, String description, String parametrizedText) {
-        this(abbreviation, description, parametrizedText, null, null);
+        this(abbreviation, description, parametrizedText, null, null, null);
     }
     
     /**
@@ -117,6 +118,35 @@ public final class CodeTemplateDescription {
         List<String> contexts,
         String uniqueId
     ) {
+        this(abbreviation, description, parametrizedText, contexts, uniqueId, null);
+    }
+    
+    /**
+     * Creates a new code template description. The same as {@link #CodeTemplates(String, String, String, List<String>, String},
+     * but with additional <code>mimePath</code> parameter.
+     * 
+     * @param abbreviation The abbreviation text that expands this code template.
+     * @param description The code template's display text.
+     *   Can be <code>null</code>
+     * @param parametrizedText The actual code template that will get expanded when
+     *   a user writes the abbreviation in the editor.
+     * @param contexts The list of context ids that apply for this code template.
+     *   Can be <code>null</code>
+     * @param uniqueId The id uniquely identifying this template. If you pass
+     *   non-<code>null</code> value, please make sure that it is really a unique
+     *   id for this template. Can be <code>null</code>.
+     * @param mimePath The mime path where this code template description was registered for.
+     * 
+     * @since 1.15
+     */
+    public CodeTemplateDescription(
+        String abbreviation, 
+        String description, 
+        String parametrizedText, 
+        List<String> contexts,
+        String uniqueId,
+        String mimePath
+    ) {
         assert abbreviation != null : "The abbreviation parameter can't be null"; //NOI18N
         assert parametrizedText != null : "The parametrizedText parameter can't be null"; //NOI18N
         
@@ -127,6 +157,7 @@ public final class CodeTemplateDescription {
             Collections.<String>emptyList() : 
             Collections.unmodifiableList(new ArrayList<String>(contexts));
         this.uniqueId = uniqueId;
+        this.mimePath = mimePath;
     }
     
     /**
@@ -199,6 +230,17 @@ public final class CodeTemplateDescription {
         return uniqueId;
     }
     
+    /**
+     * Gets the mime path where this code template was registered.
+     * 
+     * @return The mime path string or <code>null</code> if the registration mime
+     *   path is unknown.
+     * @since 1.15
+     */
+    public String getMimePath() {
+        return mimePath;
+    }
+    
     public @Override String toString() {
         return "abbrev='" + getAbbreviation() + "', parametrizedText='" + getParametrizedText() + "'"; // NOI18N
     }
@@ -206,8 +248,8 @@ public final class CodeTemplateDescription {
     /**
      * Checks whether this code template is equal with a code template passed in
      * as the <code>obj</code> parameter. By definition two code templates are
-     * equal of all their fields are equal - ie. all abbreviation, description,
-     * parametrizedText, contexts, uniqueId fields are equal.
+     * equal if all their fields are equal - ie. all abbreviation, description,
+     * parametrizedText, contexts, uniqueId and mimePath fields are equal.
      * 
      * @param obj The code template to compare with.
      * 
@@ -249,6 +291,12 @@ public final class CodeTemplateDescription {
         ) {
             return false;
         }
+        if ((this.mimePath == null && other.mimePath != null) ||
+            (this.mimePath != null && other.mimePath == null) ||
+            (this.mimePath != null && !this.mimePath.equals(other.mimePath))
+        ) {
+            return false;
+        }
         return true;
     }
 
@@ -259,6 +307,7 @@ public final class CodeTemplateDescription {
         hash = 59 * hash + (this.parametrizedText != null ? this.parametrizedText.hashCode() : 0);
         hash = 59 * hash + (this.contexts != null ? this.contexts.hashCode() : 0);
         hash = 59 * hash + (this.uniqueId != null ? this.uniqueId.hashCode() : 0);
+        hash = 59 * hash + (this.mimePath != null ? this.mimePath.hashCode() : 0);
         return hash;
     }
     

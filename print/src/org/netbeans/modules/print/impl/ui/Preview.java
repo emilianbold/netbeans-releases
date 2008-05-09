@@ -11,9 +11,9 @@
  * http://www.netbeans.org/cddl-gplv2.html
  * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
  * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
+ * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
  * particular file as subject to the "Classpath" exception as provided
  * by Sun in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
@@ -79,7 +79,7 @@ import org.netbeans.modules.print.spi.PrintPage;
 import org.netbeans.modules.print.spi.PrintProvider;
 import org.netbeans.modules.print.impl.util.Option;
 import org.netbeans.modules.print.impl.util.Percent;
-import static org.netbeans.modules.print.impl.util.UI.*;
+import static org.netbeans.modules.print.impl.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -114,7 +114,7 @@ public final class Preview extends Dialog implements Percent.Listener {
   }
 
   public void print(List<PrintProvider> providers, boolean withPreview) {
-    assert providers != null : "Print providers can't be null"; // NOI18N
+    assert providers != null : "Print providers can not be null"; // NOI18N
     assert providers.size() > 0 : "Must be at least one provider"; // NOI18N
 //out();
 //out("Do action");
@@ -136,16 +136,18 @@ public final class Preview extends Dialog implements Percent.Listener {
 
     // navigate
     c.anchor = GridBagConstraints.WEST;
+    c.insets = new Insets(0, 0, 0, TINY_INSET);
     p.add(createNavigatePanel(), c);
 
     // scale
     c.weightx = 1.0;
     c.weighty = 0.0;
+    c.insets = new Insets(0, 0, 0, 0);
     p.add(createScalePanel(), c);
 
     // toggle
     c.anchor = GridBagConstraints.EAST;
-    c.insets = new Insets(TINY_INSET, MEDIUM_INSET, TINY_INSET, MEDIUM_INSET);
+    c.insets = new Insets(TINY_INSET, MEDIUM_INSET, TINY_INSET, 0/*MEDIUM_INSET*/);
     myToggle = createToggleButton(
       new ButtonAction(icon(Option.class, "toggle"), i18n("TLT_Toggle")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
@@ -222,7 +224,7 @@ public final class Preview extends Dialog implements Percent.Listener {
 
     // text field
     myGoto = new JTextField();
-    int width = (int)Math.round(myPrevious.getPreferredSize().width/PREVIEW_FACTOR);
+    int width = (int) Math.round(myPrevious.getPreferredSize().width * GOTO_FACTOR);
     int height = myPrevious.getPreferredSize().height;
     myGoto.setPreferredSize(new Dimension(width, height));
     myGoto.setMinimumSize(new Dimension(width, height));
@@ -230,21 +232,9 @@ public final class Preview extends Dialog implements Percent.Listener {
     InputMap inputMap = myGoto.getInputMap();
     ActionMap actionMap = myGoto.getActionMap();
 
-    inputMap.put(KeyStroke.getKeyStroke('+'), INCREASE);
-    inputMap.put(KeyStroke.getKeyStroke('='), INCREASE);
-    inputMap.put(KeyStroke.getKeyStroke('-'), DECREASE);
-    inputMap.put(KeyStroke.getKeyStroke('_'), DECREASE);
-    
-    actionMap.put(INCREASE, new AbstractAction() {
-      public void actionPerformed(ActionEvent event) {
-        next();
-      }
-    });
-    actionMap.put(DECREASE, new AbstractAction() {
-      public void actionPerformed(ActionEvent event) {
-        previous();
-      }
-    });
+    populateInputMap(inputMap);
+    populateActionMap(actionMap);
+
     myGoto.setHorizontalAlignment(JTextField.CENTER);
     myGoto.setToolTipText(i18n("TLT_Goto")); // NOI18N
     myGoto.addActionListener(new ActionListener() {
@@ -277,6 +267,46 @@ public final class Preview extends Dialog implements Percent.Listener {
     panel.add(myLast, c);
 
     return panel;
+  }
+
+  private void populateInputMap(InputMap inputMap) {
+    inputMap.put(KeyStroke.getKeyStroke('k'), INCREASE);
+    inputMap.put(KeyStroke.getKeyStroke('K'), INCREASE);
+    inputMap.put(KeyStroke.getKeyStroke('+'), INCREASE);
+    inputMap.put(KeyStroke.getKeyStroke('='), INCREASE);
+    inputMap.put(KeyStroke.getKeyStroke('g'), DECREASE);
+    inputMap.put(KeyStroke.getKeyStroke('G'), DECREASE);
+    inputMap.put(KeyStroke.getKeyStroke('-'), DECREASE);
+    inputMap.put(KeyStroke.getKeyStroke('_'), DECREASE);
+    inputMap.put(KeyStroke.getKeyStroke('l'), LAST);
+    inputMap.put(KeyStroke.getKeyStroke('L'), LAST);
+    inputMap.put(KeyStroke.getKeyStroke('*'), LAST);
+    inputMap.put(KeyStroke.getKeyStroke('f'), FIRST);
+    inputMap.put(KeyStroke.getKeyStroke('F'), FIRST);
+    inputMap.put(KeyStroke.getKeyStroke('/'), FIRST);
+  }
+
+  private void populateActionMap(ActionMap actionMap) {
+    actionMap.put(INCREASE, new AbstractAction() {
+      public void actionPerformed(ActionEvent event) {
+        next();
+      }
+    });
+    actionMap.put(DECREASE, new AbstractAction() {
+      public void actionPerformed(ActionEvent event) {
+        previous();
+      }
+    });
+    actionMap.put(LAST, new AbstractAction() {
+      public void actionPerformed(ActionEvent event) {
+        last();
+      }
+    });
+    actionMap.put(FIRST, new AbstractAction() {
+      public void actionPerformed(ActionEvent event) {
+        first();
+      }
+    });
   }
 
   private JComponent createScalePanel() {
@@ -866,9 +896,12 @@ public final class Preview extends Dialog implements Percent.Listener {
 
   private static final int GAP_SIZE = 20;
   private static final int SCROLL_INCREMENT = 40;
+  private static final double GOTO_FACTOR = 1.05;
   private static final double PREVIEW_FACTOR = 0.75;
   private static final int [] PERCENTS = new int [] { 25, 50, 75, 100, 200, 400 };
 
+  private static final String LAST = "last"; // NOI18N
+  private static final String FIRST = "first"; // NOI18N
   private static final String INCREASE = "increase"; // NOI18N
   private static final String DECREASE = "decrease"; // NOI18N
   

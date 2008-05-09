@@ -41,6 +41,8 @@
 
 package org.openide.actions;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import javax.swing.Action;
 import org.netbeans.junit.NbTestCase;
@@ -117,34 +119,63 @@ public class SaveAsActionTest extends NbTestCase {
     }
     
     public void testSaveAsActionDisabledForNonEditorWindows() throws Exception {
+        ContextAwareAction action = SaveAsAction.create();
+        
         viewWithoutSaveAs.requestActive();
         assertTrue( TopComponent.getRegistry().getActivated() == viewWithoutSaveAs );
         
-        ContextAwareAction action = SaveAsAction.create();
         assertFalse( "action is disabled when SaveAsCapable is not present in active TC lookup", action.isEnabled() );
     }
     
     public void testSaveAsActionDisabledForViewsWithSaveAsCapable() throws Exception {
+        ContextAwareAction action = SaveAsAction.create();
+        
         viewWithSaveAs.requestActive();
         assertTrue( TopComponent.getRegistry().getActivated() == viewWithSaveAs );
         
-        ContextAwareAction action = SaveAsAction.create();
         assertFalse( "action is disabled other window than editor is activated", action.isEnabled() );
     }
     
     public void testSaveAsActionEnabledForEditorsOnly() throws Exception {
+        ContextAwareAction action = SaveAsAction.create();
+        
         editorWithSaveAs.requestActive();
         assertTrue( TopComponent.getRegistry().getActivated() == editorWithSaveAs );
         
-        ContextAwareAction action = SaveAsAction.create();
         assertTrue( "action is enabled for editor windows with SaveAsCapable in their Lookup", action.isEnabled() );
     }
     
-    public void testSaveAsActionDisabledForEditorsWithoutSaveAsCapable() throws Exception {
+    public void testSaveAsActionDoesNotRefreshWithoutListeners() throws Exception {
+        SaveAsAction action = (SaveAsAction)SaveAsAction.create();
+        
+        PropertyChangeListener l = new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+            }
+        };
+        
+        action.addPropertyChangeListener( l );
+        assertTrue( "action will not refresh its state when it has no registered listener", action.isEnabled() );
+        
+        editorWithSaveAs.requestActive();
+        assertTrue( TopComponent.getRegistry().getActivated() == editorWithSaveAs );
+        
+        assertTrue( "action will not refresh its state when it has no registered listener", action.isEnabled() );
+        
         editorWithoutSaveAs.requestActive();
         assertTrue( TopComponent.getRegistry().getActivated() == editorWithoutSaveAs );
+        assertFalse( "action will not refresh its state when it has no registered listener", action.isEnabled() );
+        action.removePropertyChangeListener(l);
         
+        editorWithSaveAs.requestActive();
+        assertTrue( TopComponent.getRegistry().getActivated() == editorWithSaveAs );
+        assertFalse( "action will not refresh its state when it has no registered listener", action._isEnabled() );
+    }
+    
+    public void testSaveAsActionDisabledForEditorsWithoutSaveAsCapable() throws Exception {
         ContextAwareAction action = SaveAsAction.create();
+        
+        editorWithoutSaveAs.requestActive();
+        assertTrue( TopComponent.getRegistry().getActivated() == editorWithoutSaveAs );
         assertFalse( "action is disabled for editor windows without SaveAsCapable in their Lookup", action.isEnabled() );
     }
     

@@ -43,57 +43,63 @@ import java.awt.Image;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Action;
-import org.netbeans.modules.websvc.saas.model.CustomSaas;
+import org.netbeans.modules.websvc.saas.model.Saas;
 import org.netbeans.modules.websvc.saas.spi.SaasNodeActionsProvider;
 import org.netbeans.modules.websvc.saas.ui.actions.DeleteServiceAction;
 import org.netbeans.modules.websvc.saas.ui.actions.RefreshServiceAction;
 import org.netbeans.modules.websvc.saas.ui.actions.ViewApiDocAction;
-import org.netbeans.modules.websvc.saas.ui.actions.ViewWadlAction;
 import org.netbeans.modules.websvc.saas.util.SaasUtil;
 import org.openide.nodes.AbstractNode;
+import org.openide.util.Lookup;
 import org.openide.util.actions.SystemAction;
+import org.openide.util.lookup.AbstractLookup;
 
 /**
  *
  * @author nam
  */
-public class SaasNode extends AbstractNode {
-    CustomSaas saas;
+public abstract class SaasNode extends AbstractNode {
+    protected Saas saas;
     
-    public SaasNode(CustomSaas saas) {
-        super(new SaasNodeChildren(saas));
+    public SaasNode(SaasNodeChildren nodeChildren, AbstractLookup lookup, Saas saas) {
+        super(nodeChildren, lookup);
         this.saas = saas;
     }
 
+    public Saas getSaas() {
+        return saas;
+    }
+    
+    @Override
     public String getDisplayName() {
         return saas.getDisplayName();
     }
     
+    @Override
     public String getShortDescription() {
         return saas.getDescription();
     }
-    
-    private static final java.awt.Image ICON =
-       org.openide.util.Utilities.loadImage( "org/netbeans/modules/websvc/saas/ui/resources/restservice.png" ); //NOI18N
-    
-    @Override
-    public java.awt.Image getIcon(int type) {
-        return ICON;
-    }
-    
-    @Override
-    public Image getOpenedIcon(int type){
-        return getIcon( type);
-    }
 
     @Override
-    public Action[] getActions(boolean context) {
+    public Image getIcon(int type) {
+        return getGenericIcon(type);
+    }
+    
+    protected abstract Image getGenericIcon(int type);
+
+    public static List<Action> getActions(Lookup lookup) {
         List<Action> actions = new ArrayList<Action>();
         for (SaasNodeActionsProvider ext : SaasUtil.getSaasNodeActionsProviders()) {
-            for (Action a : ext.getSaasActions(this.getLookup())) {
+            for (Action a : ext.getSaasActions(lookup)) {
                 actions.add(a);
             }
         }
+        return actions;
+    }
+    
+    @Override
+    public Action[] getActions(boolean context) {
+        List<Action> actions = getActions(getLookup());
         actions.add(SystemAction.get(ViewApiDocAction.class));
         actions.add(SystemAction.get(DeleteServiceAction.class));
         actions.add(SystemAction.get(RefreshServiceAction.class));

@@ -313,46 +313,7 @@ made subject to such option by the copyright holder.
         </question>
 -->
     <answer id="dep-nb">
-     	  <defaultanswer generate='none'/>
-        <ul>
-            <li>
-                <p>
-                    <api name="FilesystemsAPI" type="import" category="stable" url="@org-openide-filesystems@/" group="java"/> and
-                    <api name="DatasystemsAPI" type="import" category="stable" url="@org-openide-loaders@/" group="java"/>
-                    for dealing with files including Ant scripts.
-                </p>
-            </li>
-            <li>
-                <p>
-                    <api name="NodesAPI" type="import" category="stable" url="@org-openide-nodes@/" group="java"/>,
-                    <api name="ActionsAPI" type="import" category="stable" url="@org-openide-actions@/" group="java"/>,
-                    <api name="WindowSystemAPI" type="import" category="stable" url="@org-openide-windows@/" group="java"/>,
-                    <api name="OptionsAPI" type="import" category="stable" url="@org-openide-options@/" group="java"/>,
-                    <api name="EditorAPI" type="import" category="stable" url="@org-openide-text@/" group="java"/>,
-                    etc. for providing the various GUI components of the module.
-                </p>
-            </li>
-            <li>
-                <api name="ModulesAPI" type="import" category="stable" url="@org-openide-modules@/" group="java">
-                    for finding enabled modules to possibly load custom definitions from.
-                </api>
-            </li>
-            <li>
-                <api name="ExecutionAPI" type="import" category="stable" url="@org-openide-execution@/" group="java">
-                    for running scripts in the execution engine.
-                </api>
-            </li>
-            <li>
-                <api name="InputOutputAPI" type="import" category="stable" url="@org-openide-io@/" group="java">
-                    for displaying output from Ant in the Output Window.
-                </api>
-            </li>
-            <li>
-                <api name="JavaSupportAPIs" type="import" category="stable" url="@org-netbeans-api-java@/" group="java">
-                    for getting an appropriate class loader from a given source file.
-                </api>
-            </li>
-        </ul>
+     	  <defaultanswer generate='here'/>
     </answer>
 
 

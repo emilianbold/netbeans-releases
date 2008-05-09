@@ -56,7 +56,6 @@ import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.java.hints.spi.ErrorRule;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.Fix;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**

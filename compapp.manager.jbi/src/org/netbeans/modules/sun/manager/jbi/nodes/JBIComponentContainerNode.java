@@ -379,16 +379,12 @@ public abstract class JBIComponentContainerNode
                 Document jbiDoc = builder.parse(
                         new InputSource(new StringReader(jbiXml)));
 
-//                // TMP
-//                File tmpJbiFile = new File("C:\\Temp\\sun-http-binding-jbi.xml");
-//                jbiXml = getContent(tmpJbiFile);
-
                 // Get configuration descriptor from jbi.xml
                 final JBIComponentConfigurationDescriptor rootDescriptor =
                         JBIComponentConfigurationParser.parse(jbiDoc);
-                if (rootDescriptor != null) {
+                if (rootDescriptor != null && rootDescriptor.showDisplayAtInstallation(true)) {
                     String componentName = getComponentIDFromJbiDoc(jbiDoc);
-                    
+
                     // Show installation configuration dialog.
                     JBIComponentInstallationConfigurationDialog dialog =
                             new JBIComponentInstallationConfigurationDialog(
@@ -399,14 +395,17 @@ public abstract class JBIComponentContainerNode
                     if (dialog.isCancelled()) {
                         return null;
                     }
-                    
+
                     properties = dialog.getProperties();
-                    
+
                     logger.info("Install " + componentName + // NOI18N
                             " with these properties:" + properties); // NOI18N
                 }
             } catch (Exception ex) {
                 logger.severe(ex.getMessage());
+                NotifyDescriptor d = new NotifyDescriptor.Message(ex.getMessage(),
+                    NotifyDescriptor.ERROR_MESSAGE);
+                DialogDisplayer.getDefault().notify(d);
             }
 
             return installationService.installComponent(
@@ -506,6 +505,10 @@ public abstract class JBIComponentContainerNode
         protected JBIComponentType getComponentType() {
             return JBIComponentType.SERVICE_ENGINE;
         }
+        
+        protected boolean needRefresh(String notificationSourceType) {
+            return notificationSourceType.equals("ServiceEngine"); // NOI18N
+        }
 
         @Override
         public HelpCtx getHelpCtx() {
@@ -547,6 +550,10 @@ public abstract class JBIComponentContainerNode
 
         protected JBIComponentType getComponentType() {
             return JBIComponentType.BINDING_COMPONENT;
+        }
+        
+        protected boolean needRefresh(String notificationSourceType) {
+            return notificationSourceType.equals("BindingComponent"); // NOI18N
         }
 
         @Override
@@ -605,6 +612,10 @@ public abstract class JBIComponentContainerNode
 
         protected JBIComponentType getComponentType() {
             return JBIComponentType.SHARED_LIBRARY;
+        }
+        
+        protected boolean needRefresh(String notificationSourceType) {
+            return notificationSourceType.equals("SharedLibrary"); // NOI18N
         }
 
         @Override

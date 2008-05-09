@@ -22,6 +22,7 @@ package org.netbeans.modules.bpel.mapper.predicates.editor;
 import java.util.List;
 import javax.swing.Action;
 import javax.swing.tree.TreePath;
+import org.netbeans.modules.bpel.mapper.cast.CastManager;
 import org.netbeans.modules.bpel.mapper.model.BpelMapperModel;
 import org.netbeans.modules.bpel.mapper.multiview.BpelDesignContext;
 import org.netbeans.modules.bpel.mapper.predicates.AbstractPredicate;
@@ -29,6 +30,7 @@ import org.netbeans.modules.bpel.mapper.tree.MapperSwingTreeModel;
 import org.netbeans.modules.bpel.mapper.tree.models.EmptyTreeModel;
 import org.netbeans.modules.bpel.mapper.tree.models.VariableTreeInfoProvider;
 import org.netbeans.modules.bpel.mapper.tree.models.VariableTreeModel;
+import org.netbeans.modules.bpel.mapper.tree.search.TreeFinderProcessor;
 import org.netbeans.modules.bpel.mapper.tree.spi.MapperTcContext;
 import org.netbeans.modules.bpel.mapper.tree.spi.RestartableIterator;
 import org.netbeans.modules.soa.mappercore.model.Graph;
@@ -43,14 +45,15 @@ import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext;
  */
 public class PredicateMapperModelFactory {
 
-    public BpelMapperModel constructEmptyModel(MapperTcContext mapperTcContext) {
+    public BpelMapperModel constructEmptyModel(MapperTcContext mapperTcContext, 
+            CastManager castManager) {
         //
         BpelDesignContext dContext = 
                 mapperTcContext.getDesignContextController().getContext();
         //
         EmptyTreeModel sourceModel = new EmptyTreeModel();
         VariableTreeModel variableModel = new VariableTreeModel(
-                dContext, null, null, new MyTreeInfoProvider());
+                dContext, null, null, castManager, new MyTreeInfoProvider());
         sourceModel.addExtensionModel(variableModel);
         //
         PredicateExprTreeModel targetModel = new PredicateExprTreeModel(1);
@@ -62,14 +65,15 @@ public class PredicateMapperModelFactory {
     }
 
     public BpelMapperModel constructModel(MapperTcContext mapperTcContext, 
-            XPathSchemaContext sContext, AbstractPredicate pred) {
+            XPathSchemaContext sContext, AbstractPredicate pred, 
+            CastManager castManager) {
         //
         BpelDesignContext dContext = 
                 mapperTcContext.getDesignContextController().getContext();
         //
         EmptyTreeModel sourceModel = new EmptyTreeModel();
         VariableTreeModel variableModel = new VariableTreeModel(
-                dContext, null, null, new MyTreeInfoProvider());
+                dContext, null, null, castManager, new MyTreeInfoProvider());
         sourceModel.addExtensionModel(variableModel);
         //
         XPathPredicateExpression[] predicateArr = pred.getPredicates();
@@ -80,8 +84,9 @@ public class PredicateMapperModelFactory {
                 mapperTcContext, null, sourceModel, targetModel);
         //
         MapperSwingTreeModel rightTreeModel = newMapperModel.getRightTreeModel();
+        TreeFinderProcessor findProc = new TreeFinderProcessor(rightTreeModel);
         List<TreePath> targetTreePathList = 
-                rightTreeModel.findChildren(
+                findProc.findChildren(
                 new TreePath(rightTreeModel.getRoot()), 
                 new PredicateFinder());
         assert targetTreePathList.size() == predicateArr.length;
@@ -107,7 +112,7 @@ public class PredicateMapperModelFactory {
         MapperSwingTreeModel leftTreeModel = newMapperModel.getLeftTreeModel();
         PredicateGraphBuilderVisitor graphBuilderVisitor = 
                 new PredicateGraphBuilderVisitor(
-                sContext, newGraph, leftTreeModel, true);
+                sContext, newGraph, leftTreeModel, true, null);
         predicate.accept(graphBuilderVisitor);
         //        
         // Attach the graph to the mapper

@@ -50,6 +50,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.cnd.api.model.CsmInheritance;
+import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
@@ -70,6 +71,8 @@ import org.netbeans.modules.cnd.modelimpl.csm.deep.EmptyCompoundStatementImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionBase;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.LazyCompoundStatementImpl;
 import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
+import org.netbeans.modules.cnd.modelimpl.csm.TemplateParameterImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.TemplateParameterTypeImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.CompoundStatementImpl;
 import org.netbeans.modules.cnd.repository.support.AbstractObjectFactory;
 
@@ -278,7 +281,11 @@ public class PersistentUtils {
 	    
         case TYPE_FUN_PTR_IMPL:
             obj = new TypeFunPtrImpl(stream);
-            break;        
+            break;
+            
+        case TEMPLATE_PARAM_TYPE:
+            obj = new TemplateParameterTypeImpl(stream);
+            break;
             
         default:
             throw new IllegalArgumentException("unknown type handler" + handler);  //NOI18N
@@ -297,9 +304,33 @@ public class PersistentUtils {
         } else if (type instanceof TypeImpl) {
             stream.writeInt(TYPE_IMPL);
             ((TypeImpl)type).write(stream);
+        } else if (type instanceof TemplateParameterTypeImpl) {
+            stream.writeInt(TEMPLATE_PARAM_TYPE);
+            ((TemplateParameterTypeImpl)type).write(stream);
         } else {
             throw new IllegalArgumentException("instance of unknown class " + type.getClass().getName());  //NOI18N
         }       
+    }
+    
+    public static <T extends Collection<CsmType>> void readTypes(T collection, DataInput input) throws IOException {
+        int collSize = input.readInt();
+        assert collSize >= 0;
+        for (int i = 0; i < collSize; ++i) {
+            CsmType type = readType(input);
+            assert type != null;
+            collection.add(type);
+        }
+    }
+    
+    public static void writeTypes(Collection<? extends CsmType> types, DataOutput output) throws IOException {
+        assert types != null;
+        int collSize = types.size();
+        output.writeInt(collSize);
+
+        for (CsmType elem: types) {
+            assert elem != null;
+            writeType(elem, output);
+        }
     }
     
     ////////////////////////////////////////////////////////////////////////////
@@ -337,7 +368,47 @@ public class PersistentUtils {
         for (CsmInheritance elem: inhs) {
             assert elem != null;
             writeInheritance(elem, output);
-        }            
+        }
+    }
+    
+    ////////////////////////////////////////////////////////////////////////////
+    // support template parameters
+    
+    public static void writeTemplateParameter(CsmTemplateParameter param, DataOutput output) throws IOException {
+        assert param != null;
+        if (param instanceof TemplateParameterImpl) {
+            ((TemplateParameterImpl)param).write(output);            
+        } else {
+            throw new IllegalArgumentException("instance of unknown TemplateParameterImpl " + param);  //NOI18N
+        }
+    }
+    
+    public static CsmTemplateParameter readTemplateParameter(DataInput input) throws IOException {
+        CsmTemplateParameter param = new TemplateParameterImpl(input);
+        return param;
+    }
+    
+    public static List<CsmTemplateParameter> readTemplateParameters(DataInput input) throws IOException {
+        List<CsmTemplateParameter> res = new ArrayList<CsmTemplateParameter>();
+        int collSize = input.readInt();
+        assert collSize >= 0;
+        for (int i = 0; i < collSize; ++i) {
+            CsmTemplateParameter param = readTemplateParameter(input);
+            assert param != null;
+            res.add(param);
+        }
+        return res;
+    }
+    
+    public static void writeTemplateParameters(Collection<CsmTemplateParameter> params, DataOutput output) throws IOException {
+        assert params != null;
+        int collSize = params.size();
+        output.writeInt(collSize);
+        
+        for (CsmTemplateParameter param: params) {
+            assert param != null;
+            writeTemplateParameter(param, output);
+        }
     }
     
     ////////////////////////////////////////////////////////////////////////////
@@ -482,9 +553,10 @@ public class PersistentUtils {
     private static final int NO_TYPE                = FILE_BUFFER_FILE + 1;
     private static final int TYPE_IMPL              = NO_TYPE + 1;
     private static final int TYPE_FUN_PTR_IMPL	    = TYPE_IMPL + 1;
+    private static final int TEMPLATE_PARAM_TYPE    = TYPE_FUN_PTR_IMPL + 1;
     
     // state 
-    private static final int PREPROC_STATE_STATE_IMPL = TYPE_IMPL + 1;
+    private static final int PREPROC_STATE_STATE_IMPL = TEMPLATE_PARAM_TYPE + 1;
     
     // compound statements
     private static final int LAZY_COMPOUND_STATEMENT_IMPL = PREPROC_STATE_STATE_IMPL + 1;

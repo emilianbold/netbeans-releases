@@ -51,7 +51,7 @@
   <condition property="build_openesb">
     <and>
     <isset property="openesb_location"/>
-    <isset property="jbicore_location"/>
+    <!--isset property="jbicore_location"/-->
     </and>
   </condition>
 
@@ -133,7 +133,7 @@
     </exec>
   </target>
 
-  <property name="glassfish.appname" value="glassfish-v2ur1"/>
+  <property name="glassfish.appname" value="glassfish-v2ur2"/>
   <target name="build-glassfish-pkg" if="build_glassfish">
     <echo message="Building ${glassfish.appname} into ${basedir}/glassfish"/>
     <ant dir="glassfish" target="build-pkg" inheritAll="false">
@@ -182,13 +182,17 @@
     </ant>
   </target>
 
-  <target name="build-dmg" depends="build-pkg,build-glassfish-pkg,build-tomcat-pkg,build-openesb-pkg,delete-glassfish-pkg,delete-tomcat-pkg,delete-openesb-pkg">
+  <target name="build-dmg" depends="build-pkg,build-glassfish-pkg,build-tomcat-pkg,build-openesb-pkg,delete-glassfish-pkg,delete-tomcat-pkg,delete-openesb-pkg,add-docs">
     <mkdir dir="dist"/>
     <mkdir dir="build/dmg"/>
     <exec executable="sh" failonerror="yes">
       <arg value="-c"/>
       <arg value="sh dmg/createdmg.sh dist/${dmgname} build/dmg build/pkg/"/>
     </exec>
+  </target>
+
+  <target name="add-docs">
+    <copy file="${basedir}/docs/readme.rtf" tofile="${basedir}/build/pkg/Read Before You Install.rtf"/>
   </target>
 
   <target name="clean">

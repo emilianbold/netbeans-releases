@@ -42,6 +42,7 @@
 package org.netbeans.modules.spring.beans.loader;
 
 import java.io.IOException;
+import org.netbeans.modules.spring.api.beans.SpringConstants;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
@@ -50,7 +51,6 @@ import org.openide.util.NbBundle;
 
 public class SpringXMLConfigDataLoader extends UniFileLoader {
 
-    public static final String REQUIRED_MIME = "text/x-springconfig+xml"; // NOI18N
     private static final long serialVersionUID = 1L;
 
     public SpringXMLConfigDataLoader() {
@@ -65,7 +65,7 @@ public class SpringXMLConfigDataLoader extends UniFileLoader {
     @Override
     protected void initialize() {
         super.initialize();
-        getExtensions().addMimeType(REQUIRED_MIME);
+        getExtensions().addMimeType(SpringConstants.CONFIG_MIME_TYPE);
     }
 
     protected MultiDataObject createMultiObject(FileObject primaryFile) throws DataObjectExistsException, IOException {
@@ -74,6 +74,6 @@ public class SpringXMLConfigDataLoader extends UniFileLoader {
 
     @Override
     protected String actionsContext() {
-        return "Loaders/" + REQUIRED_MIME + "/Actions"; // NOI18N
+        return "Loaders/" + SpringConstants.CONFIG_MIME_TYPE + "/Actions"; // NOI18N
     }
 }

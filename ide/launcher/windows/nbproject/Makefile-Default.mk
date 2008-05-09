@@ -2,7 +2,7 @@
 # Gererated Makefile - do not edit!
 #
 # Edit the Makefile in the project folder instead (../Makefile). Each target
-# has a -pre and a -post target defined where you can add custumized code.
+# has a -pre and a -post target defined where you can add customized code.
 #
 # This makefile implements configuration specific macros and targets.
 
@@ -40,7 +40,7 @@ FFLAGS=
 LDLIBSOPTIONS=
 
 # Build Targets
-.build-conf: 
+.build-conf: ${BUILD_SUBPROJECTS} 
 	cd . && make -f Makefile testinst
 
 # Subprojects

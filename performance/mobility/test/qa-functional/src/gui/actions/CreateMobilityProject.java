@@ -38,12 +38,10 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package gui.actions;
 
 import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
-import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
 
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.ComponentOperator;
@@ -56,13 +54,11 @@ import org.netbeans.junit.ide.ProjectSupport;
  * @author  rashid@netbeans.org, mmirilovic@netbeans.org
  */
 public class CreateMobilityProject extends org.netbeans.performance.test.utilities.PerformanceTestCase {
-    
+
     private NewProjectNameLocationStepOperator wizard_location;
-    
-    private String category, project, project_name, project_type;
-    
+    private String category,  project,  project_name,  project_type;
     private int index;
-    
+
     /**
      * Creates a new instance of CreateMobilityProject
      * @param testName the name of the test
@@ -70,9 +66,9 @@ public class CreateMobilityProject extends org.netbeans.performance.test.utiliti
     public CreateMobilityProject(String testName) {
         super(testName);
         expectedTime = 10000;
-        WAIT_AFTER_OPEN=10000;
+        WAIT_AFTER_OPEN = 10000;
     }
-    
+
     /**
      * Creates a new instance of CreateMobilityProject
      * @param testName the name of the test
@@ -81,59 +77,60 @@ public class CreateMobilityProject extends org.netbeans.performance.test.utiliti
     public CreateMobilityProject(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         expectedTime = 10000;
-        WAIT_AFTER_OPEN=10000;
+        WAIT_AFTER_OPEN = 10000;
     }
-    
-    public void testCreateMobilityProject(){
+
+    public void testCreateMobilityProject() {
         category = "Mobility"; // NOI18N
         project = "MIDP Application"; // NOI18N
-        project_type="MobileApp";
-        index=1;
+        project_type = "MobileApp";
+        index = 1;
         doMeasurement();
     }
-    
-      public void testCreateMobilityLibrary(){
+
+    public void testCreateMobilityLibrary() {
         category = "Mobility"; // NOI18N
         project = "Mobile Class Library"; // NOI18N
-        project_type="MobileLib";
-        index=1;
+        project_type = "MobileLib";
+        index = 1;
         doMeasurement();
     }
-    
-    public void initialize(){
+
+    @Override
+    public void initialize() {
     }
-    
-    public void prepare(){
+
+    public void prepare() {
         NewProjectWizardOperator wizard = NewProjectWizardOperator.invoke();
         wizard.selectCategory(category);
         wizard.selectProject(project);
         wizard.next();
         wizard_location = new NewProjectNameLocationStepOperator();
-        
+
         String directory = System.getProperty("xtest.tmpdir") + java.io.File.separator + "createdProjects";
-        log("================= Destination directory={"+directory+"}");
-      //  wizard_location.txtProjectLocation().setText("");
+        log("================= Destination directory={" + directory + "}");
         new EventTool().waitNoEvent(1000);
         wizard_location.txtProjectLocation().setText(directory);
-        
+
         project_name = project_type + "_" + (index++);
-        log("================= Project name="+project_name+"}");
+        log("================= Project name=" + project_name + "}");
         wizard_location.txtProjectName().setText("");
         new EventTool().waitNoEvent(1000);
-        
+
         wizard_location.txtProjectName().typeText(project_name);
     }
-    
-    public ComponentOperator open(){
+
+    public ComponentOperator open() {
         wizard_location.finish();
         return null;
     }
-    
-    public void close(){
+
+    @Override
+    public void close() {
         ProjectSupport.closeProject(project_name);
-        new CloseAllDocumentsAction().performAPI(); //avoid issue 68671 - editors are not closed after closing project by ProjectSupport
+        new EventTool().waitNoEvent(2000);
     }
-    
+
     public static void main(java.lang.String[] args) {
         junit.textui.TestRunner.run(new CreateMobilityProject("testCreateMobilityProject"));
     }

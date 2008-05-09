@@ -134,41 +134,42 @@ public class IgnoreAction extends ContextAction {
         RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(repository.getAbsolutePath());
         HgProgressSupport support = new HgProgressSupport() {
             public void perform() {
+                OutputLogger logger = getLogger();
                 try {
                     mActionStatus = getActionStatus(files);
                     if (mActionStatus == UNDEFINED) {
-                        HgUtils.outputMercurialTabInRed(
+                        logger.outputInRed(
                                 NbBundle.getMessage(IgnoreAction.class, "MSG_IGNORE_TITLE")); // NOI18N
-                        HgUtils.outputMercurialTabInRed(
+                        logger.outputInRed(
                                 NbBundle.getMessage(IgnoreAction.class, "MSG_IGNORE_TITLE_SEP")); // NOI18N
-                        HgUtils.outputMercurialTab(
+                        logger.output(
                                 NbBundle.getMessage(IgnoreAction.class, "MSG_IGNORE_ONLY_LOCALLY_NEW")); // NOI18N
-                        HgUtils.outputMercurialTabInRed(
+                        logger.outputInRed(
                                 NbBundle.getMessage(IgnoreAction.class, "MSG_IGNORE_DONE")); // NOI18N
-                        HgUtils.outputMercurialTab(""); // NOI18N
+                        logger.output(""); // NOI18N
                         return;
                     }
         
                     if (mActionStatus == IGNORING) {
                         HgUtils.addIgnored(repository, files);
-                        HgUtils.outputMercurialTabInRed(
+                        logger.outputInRed(
                                 NbBundle.getMessage(IgnoreAction.class,
                                 "MSG_IGNORE_TITLE")); // NOI18N
-                        HgUtils.outputMercurialTabInRed(
+                        logger.outputInRed(
                                 NbBundle.getMessage(IgnoreAction.class,
                                 "MSG_IGNORE_TITLE_SEP")); // NOI18N
-                        HgUtils.outputMercurialTab(
+                        logger.output(
                                 NbBundle.getMessage(IgnoreAction.class,
                                 "MSG_IGNORE_INIT_SEP", repository.getName())); // NOI18N                          
                     } else {
                         HgUtils.removeIgnored(repository, files);
-                        HgUtils.outputMercurialTabInRed(
+                        logger.outputInRed(
                                 NbBundle.getMessage(IgnoreAction.class,
                                 "MSG_UNIGNORE_TITLE")); // NOI18N
-                        HgUtils.outputMercurialTabInRed(
+                        logger.outputInRed(
                                 NbBundle.getMessage(IgnoreAction.class,
                                 "MSG_UNIGNORE_TITLE_SEP")); // NOI18N
-                        HgUtils.outputMercurialTab(
+                        logger.output(
                                 NbBundle.getMessage(IgnoreAction.class,
                                 "MSG_UNIGNORE_INIT_SEP", repository.getName())); // NOI18N
                     }
@@ -179,18 +180,18 @@ public class IgnoreAction extends ContextAction {
                 // refresh files manually
                 for (File file : files) {
                     Mercurial.getInstance().getFileStatusCache().refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
-                    HgUtils.outputMercurialTab("\t" + file.getAbsolutePath()); // NOI18N
+                    logger.output("\t" + file.getAbsolutePath()); // NOI18N
                 }
                 if (mActionStatus == IGNORING) {
-                    HgUtils.outputMercurialTabInRed(
+                    logger.outputInRed(
                             NbBundle.getMessage(IgnoreAction.class,
                             "MSG_IGNORE_DONE")); // NOI18N
                 } else {
-                    HgUtils.outputMercurialTabInRed(
+                    logger.outputInRed(
                             NbBundle.getMessage(IgnoreAction.class,
                             "MSG_UNIGNORE_DONE")); // NOI18N
                 }
-                HgUtils.outputMercurialTab(""); // NOI18N
+                logger.output(""); // NOI18N
             }
         };
         support.start(rp, repository.getAbsolutePath(), org.openide.util.NbBundle.getMessage(IgnoreAction.class, "LBL_Ignore_Progress")); // NOI18N

@@ -30,73 +30,80 @@
 package org.jruby.lexer.yacc;
 
 import org.jruby.ast.StrNode;
+import org.jruby.lexer.yacc.SyntaxException.PID;
 import org.jruby.parser.Tokens;
 import org.jruby.util.ByteList;
 
 
+/**
+ * A lexing unit for scanning a heredoc element.
+ * Example:
+ * <pre>
+ * foo(<<EOS, bar)
+ * This is heredoc country!
+ * EOF
+ * 
+ * Where:
+ * EOS = marker
+ * ',bar)\n' = lastLine
+ * </pre>
+ *  
+ */
 public class HeredocTerm extends StrTerm {
-	private final String eos;
-	private final int func;
-	private final String lastLine;
+    // Marker delimiting heredoc boundary
+    private final ByteList marker;
+
+    // Expand variables, Indentation of final marker
+    private final int flags;
+
+    // Portion of line right after beginning marker
+    private final ByteList lastLine;
     
-    public HeredocTerm(String eos, int func, String lastLine) {
-        this.eos = eos;
-        this.func = func;
+    public HeredocTerm(ByteList marker, int func, ByteList lastLine) {
+        this.marker = marker;
+        this.flags = func;
         this.lastLine = lastLine;
     }
     
     public int parseString(RubyYaccLexer lexer, LexerSource src) throws java.io.IOException {
-        boolean indent = (func & RubyYaccLexer.STR_FUNC_INDENT) != 0;
-        ByteList str = new ByteList();
+        boolean indent = (flags & RubyYaccLexer.STR_FUNC_INDENT) != 0;
+
+        if (src.peek(RubyYaccLexer.EOF)) syntaxError(src);
+
         // BEGIN NETBEANS MODIFICATIONS
         if (lexer.getPreserveSpaces()) {
-            boolean done = src.matchString(eos, indent);
+            boolean done = src.matchMarker(marker, indent, true);
             if (done) {
-                lexer.yaccValue = new StrNode(lexer.getPosition(), str);
+                lexer.yaccValue = new StrNode(lexer.getPosition(), new ByteList());
                 lexer.setStrTerm(new StringTerm(-1, '\0', '\0'));
                 src.setIsANewLine(true);
                 return Tokens.tSTRING_END;
             }
         }
         // END NETBEANS MODIFICATIONS
-        if (src.peek((char) RubyYaccLexer.EOF)) {
-            throw new SyntaxException(src.getPosition(), "can't find string \"" + eos + "\" anywhere before EOF");
-        }
-        if (src.wasBeginOfLine() && src.matchString(eos, indent)) {
+        
+        // Found end marker for this heredoc
+        if (src.lastWasBeginOfLine() && src.matchMarker(marker, indent, true)) {
+            // Put back lastLine for any elements past start of heredoc marker
             // BEGIN NETBEANS MODIFICATIONS
             if (lastLine != null)
             // END NETBEANS MODIFICATIONS
-               src.unreadMany(lastLine);
-            lexer.yaccValue = new Token(eos, lexer.getPosition());
+              src.unreadMany(lastLine);
+            
+            lexer.yaccValue = new Token(marker, lexer.getPosition());
             return Tokens.tSTRING_END;
         }
 
-        if ((func & RubyYaccLexer.STR_FUNC_EXPAND) == 0) {
-            /*
-             * if (c == '\n') { support.unread(c); }
-             */
+        ByteList str = new ByteList();
 
-            // Something missing here...
-            /*
-             * int lastLineLength = here.getLastLineLength();
-             * 
-             * if (lastLineLength > 0) { // It looks like I needed to append
-             * last line as well...
-             * support.unreadMany(here.getLastLineLength());
-             * str.append(support.readLine()); str.append("\n"); }
-             */
-
+        if ((flags & RubyYaccLexer.STR_FUNC_EXPAND) == 0) {
             do {
                 str.append(src.readLineBytes());
                 str.append('\n');
-
-                if (src.peek('\0')) {
-                    throw new SyntaxException(src.getPosition(), "can't find string \"" + eos + "\" anywhere before EOF");
-                }
-            } while (!src.matchString(eos, indent));
+                if (src.peek(RubyYaccLexer.EOF)) syntaxError(src);
+            } while (!src.matchMarker(marker, indent, true));
         } else {
-            char c = src.read();
-            ByteList buffer = new ByteList();
+            int c = src.read();
             if (c == '#') {
                 switch (c = src.read()) {
                 case '$':
@@ -118,21 +125,22 @@ public class HeredocTerm extends StrTerm {
                     lexer.setValue(new Token("#" + c, lexer.getPosition()));
                     return Tokens.tSTRING_DBEG;
                 }
-                buffer.append('#');
+                str.append('#');
             }
 
             src.unread(c);
 
-            // MRI has extra pointer which makes our code look a little bit more strange in 
+            // MRI has extra pointer which makes our code look a little bit
+            // more strange in
             // comparison
             do {
                 // BEGIN NETBEANS MODIFICATIONS
-                //if ((c = new StringTerm(func, '\n', '\0').parseStringIntoBuffer(src, buffer)) == RubyYaccLexer.EOF) {                
-                StringTerm stringTerm = new StringTerm(func, '\n', '\0');
+                //if ((c = new StringTerm(flags, '\0', '\n').parseStringIntoBuffer(lexer, src, str)) == RubyYaccLexer.EOF) {
+                StringTerm stringTerm = new StringTerm(flags, '\0', '\n');
                 stringTerm.processingEmbedded = processingEmbedded;
-                if ((c = stringTerm.parseStringIntoBuffer(src, buffer)) == RubyYaccLexer.EOF) {
+                if ((c = stringTerm.parseStringIntoBuffer(lexer, src, str)) == RubyYaccLexer.EOF) {
                 // END NETBEANS MODIFICATIONS    
-                    throw new SyntaxException(src.getPosition(), "can't find string \"" + eos + "\" anywhere before EOF");
+                    syntaxError(src);
                 }
                 // BEGIN NETBEANS MODIFICATIONS
                 // Completed expansion token
@@ -141,18 +149,13 @@ public class HeredocTerm extends StrTerm {
                 }
                 // END NETBEANS MODIFICATIONS    
                 if (c != '\n') {
-                    lexer.yaccValue = new StrNode(lexer.getPosition(), buffer);
+                    lexer.yaccValue = new StrNode(lexer.getPosition(), str);
                     return Tokens.tSTRING_CONTENT;
                 }
-                buffer.append(src.read());
-                if ((c = src.read()) == RubyYaccLexer.EOF) {
-                    throw new SyntaxException(src.getPosition(), "can't find string \"" + eos + "\" anywhere before EOF");
-                }
-                // We need to pushback so when whole match looks it did not
-                // lose a char during last EOF
-                src.unread(c);
-            } while (!src.matchString(eos, indent));
-            str = buffer;
+                str.append(src.read());
+                
+                if (src.peek(RubyYaccLexer.EOF)) syntaxError(src);
+            } while (!src.matchMarker(marker, indent, true));
         }
 
         // BEGIN NETBEANS MODIFICATIONS
@@ -164,16 +167,16 @@ public class HeredocTerm extends StrTerm {
 //            processingEmbedded = LOOKING_FOR_EMBEDDED;
         }
         // END NETBEANS MODIFICATIONS
-
+        
         // BEGIN NETBEANS MODIFICATIONS
         if (lastLine != null)
         // END NETBEANS MODIFICATIONS
-            src.unreadMany(lastLine);
+          src.unreadMany(lastLine);
         // BEGIN NETBEANS MODIFICATIONS
         // When handling heredocs in syntax highlighting mode, process the end marker
         // separately
         if (lastLine == null) {
-            src.unreadMany(eos+"\n"); // \r?
+            src.unreadMany(marker+"\n"); // \r?
             //done = true;
         } else {
         // END NETBEANS MODIFICATIONS
@@ -184,14 +187,19 @@ public class HeredocTerm extends StrTerm {
         lexer.yaccValue = new StrNode(lexer.getPosition(), str);
         return Tokens.tSTRING_CONTENT;
     }
-
+    
+    private void syntaxError(LexerSource src) {
+        throw new SyntaxException(PID.STRING_MARKER_MISSING, src.getPosition(), "can't find string \"" + marker
+                + "\" anywhere before EOF", marker);
+    }
+    
     // BEGIN NETBEANS MODIFICATIONS
     /** 
      * Report whether this string should be substituting things like \n into newlines.
      * E.g. are we dealing with a "" string or a '' string (or their alternate representations)
      */
     public boolean isSubstituting() {
-        return (func & RubyYaccLexer.STR_FUNC_EXPAND) != 0;
+        return (flags & RubyYaccLexer.STR_FUNC_EXPAND) != 0;
     }
 
     /**
@@ -262,10 +270,10 @@ public class HeredocTerm extends StrTerm {
             return false;
         final HeredocTerm other = (HeredocTerm) obj;
 
-        if (this.eos != other.eos &&
-            (this.eos == null || !this.eos.equals(other.eos)))
+        if (this.marker != other.marker &&
+            (this.marker == null || !this.marker.equals(other.marker)))
             return false;
-        if (this.func != other.func)
+        if (this.flags != other.flags)
             return false;
         if (this.lastLine != other.lastLine &&
             (this.lastLine == null || !this.lastLine.equals(other.lastLine)))
@@ -276,9 +284,9 @@ public class HeredocTerm extends StrTerm {
     public int hashCode() {
         int hash = 7;
 
-        hash = 83 * hash + (this.eos != null ? this.eos.hashCode()
+        hash = 83 * hash + (this.marker != null ? this.marker.hashCode()
                                              : 0);
-        hash = 83 * hash + this.func;
+        hash = 83 * hash + this.flags;
         hash = 83 * hash + (this.lastLine != null ? this.lastLine.hashCode()
                                                   : 0);
         return hash;
@@ -286,7 +294,7 @@ public class HeredocTerm extends StrTerm {
 
     
     public String toString() {
-        return "HeredocTerm[" + func + "," + eos + "," + lastLine + "," + processingEmbedded + "]";
+        return "HeredocTerm[" + flags + "," + marker + "," + lastLine + "," + processingEmbedded + "]";
     }
 
     // END NETBEANS MODIFICATIONS

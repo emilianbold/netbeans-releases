@@ -404,6 +404,11 @@ public class ProcessInstanceImpl implements ProcessInstance {
                 doWait();
                 myBreakPosition = null;
                 setState(STATE_RUNNING);
+            } else {
+                // This call mught seem redundant, but it triggers a bunch of 
+                // important updates, like BpelDebugger.setCurrentPosition(null)
+                // which causes the annotations to be redrawn.
+                setState(STATE_RUNNING);
             }
         }
     }
@@ -444,7 +449,12 @@ public class ProcessInstanceImpl implements ProcessInstance {
             
             // add the fault to the list, so it can be displayed by the 
             // processes view
-            if (faultData.isWSDLMessage()) {
+            if (faultData == null) {
+                myFaults.add(new FaultImpl(
+                        faultQName, 
+                        position.getXpath(), 
+                        null));
+            } else if (faultData.isWSDLMessage()) {
                 myFaults.add(new FaultImpl(
                         faultQName, 
                         position.getXpath(), 

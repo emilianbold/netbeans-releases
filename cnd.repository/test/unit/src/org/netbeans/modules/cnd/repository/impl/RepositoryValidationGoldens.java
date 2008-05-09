@@ -29,12 +29,8 @@
 package org.netbeans.modules.cnd.repository.impl;
 
 import java.io.File;
-import java.io.File;
-import java.io.IOException;
 import java.io.PrintStream;
-import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.cnd.modelimpl.trace.TraceModelTestBase;
 
 /**
  *
@@ -45,19 +41,23 @@ public class RepositoryValidationGoldens extends RepositoryValidationBase {
     public RepositoryValidationGoldens(String testName) {
         super(testName);
     }
-
+    
+//    static {
+//        System.setProperty("cnd.modelimpl.parser.threads", "1");
+//    }
+    
     @Override
     protected void setUp() throws Exception {
         System.setProperty("cnd.repository.hardrefs", Boolean.TRUE.toString()); //NOI18N
         super.setUp();
     }
 
-    /* package */ static String workingDirectory;
-
     public void testRepository() throws Exception {
+        
         File workDir = getWorkDir();
-        workingDirectory = workDir.getAbsolutePath();
-
+        
+        setGoldenDirectory(workDir.getAbsolutePath());
+        
         PrintStream streamOut = new PrintStream(new File(workDir, nimi + ".out"));
         PrintStream streamErr = new PrintStream(new File(workDir, nimi + ".err"));
 
@@ -65,5 +65,6 @@ public class RepositoryValidationGoldens extends RepositoryValidationBase {
         assert args.size() > 0;
         args.add("-fq"); //NOI18N
         doTest(args.toArray(new String[]{}), streamOut, streamErr);
+        assertNoExceptions();
     }
 }

@@ -5,9 +5,12 @@
 package org.netbeans.modules.bpel.design;
 
 import java.awt.Graphics2D;
+import java.awt.Insets;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import org.netbeans.modules.bpel.model.api.BpelModel;
+import org.netbeans.modules.bpel.model.api.Process;
 import org.netbeans.modules.bpel.design.DesignView;
 import org.netbeans.modules.bpel.design.geometry.FBounds;
 import org.netbeans.modules.bpel.design.model.connections.MessageConnection;
@@ -16,10 +19,8 @@ import org.netbeans.modules.bpel.design.model.patterns.CompositePattern;
 import org.netbeans.modules.bpel.design.model.patterns.PartnerLinksPattern;
 import org.netbeans.modules.bpel.design.model.patterns.Pattern;
 import org.netbeans.modules.bpel.design.selection.PlaceHolder;
-import org.netbeans.modules.bpel.core.helper.api.CoreUtil;
 
 /**
- *
  * @author Alexey
  */
 public class ProcessView extends DiagramView {
@@ -28,7 +29,20 @@ public class ProcessView extends DiagramView {
         super(designView);
 
         // vlv: print
-        putClientProperty(java.awt.print.Printable.class, CoreUtil.getProcessName(designView.getBPELModel()));
+        putClientProperty(java.awt.print.Printable.class, getProcessName(designView.getBPELModel()));
+        putClientProperty(java.lang.Integer.class, new Integer(1));
+    }
+
+    private String getProcessName(BpelModel model) {
+      if (model == null) {
+        return null;
+      }
+      Process process = model.getProcess();
+
+      if (process == null) {
+        return null;
+      }
+      return process.getName();
     }
 
     @Override
@@ -54,6 +68,14 @@ public class ProcessView extends DiagramView {
         return new ListBuilder().getList();
 
     }
+    
+    public Insets getAutoscrollInsets() {
+        Insets insets = super.getAutoscrollInsets();
+        TriScrollPane scrollPane = getDesignView().getScrollPane();
+        insets.left += scrollPane.getLeftPreferredWidth();
+        insets.right += scrollPane.getRightPreferredWidth();
+        return insets;
+    }    
 
     class ListBuilder {
 
@@ -105,5 +127,4 @@ public class ProcessView extends DiagramView {
         }
         return findElementInPattern(pattern, x, y);
     }
-    
 }

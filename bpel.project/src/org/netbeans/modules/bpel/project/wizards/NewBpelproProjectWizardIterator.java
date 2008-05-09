@@ -16,7 +16,6 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.modules.bpel.project.wizards;
 
 import java.io.File;
@@ -47,8 +46,6 @@ public class NewBpelproProjectWizardIterator
 
     @Override
     protected String getDefaultName() {
-        return NbBundle.getMessage(NewBpelproProjectWizardIterator.class, "LBL_NPW1_DefaultProjectName"); //NOI18N
+        return NbBundle.getMessage(NewBpelproProjectWizardIterator.class, "LBL_DefaultProjectName"); //NOI18N
     }
-
 }
-

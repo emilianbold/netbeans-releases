@@ -18,9 +18,13 @@
  */
 package org.netbeans.modules.soa.mappercore;
 
+import java.awt.Cursor;
+import java.awt.Rectangle;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.MouseEvent;
 import javax.swing.tree.TreePath;
+import org.netbeans.modules.soa.mappercore.model.Constant;
+import org.netbeans.modules.soa.mappercore.model.Function;
 import org.netbeans.modules.soa.mappercore.model.Graph;
 import org.netbeans.modules.soa.mappercore.model.GraphItem;
 import org.netbeans.modules.soa.mappercore.model.Link;
@@ -37,8 +41,8 @@ import org.netbeans.modules.soa.mappercore.model.VertexItem;
 public class CanvasEventHandler extends AbstractMapperEventHandler {
 
     private MouseEvent initialEvent = null;
-    private AutoSelectionCanvas  autoSelection;
-
+    private Vertex resizingVertex = null;
+    
     public CanvasEventHandler(Canvas canvas) {
         super(canvas.getMapper(), canvas);
         new AutoSelectionCanvas(canvas);
@@ -46,7 +50,7 @@ public class CanvasEventHandler extends AbstractMapperEventHandler {
 
     private void reset() {
         initialEvent = null;
-
+        resizingVertex = null;
     }
 
     public void mouseReleased(MouseEvent e) {
@@ -103,7 +107,65 @@ public class CanvasEventHandler extends AbstractMapperEventHandler {
     }
 
     public void mouseDragged(MouseEvent e) {
-        if ((initialEvent != null) && (initialEvent.getPoint().distance(e.getPoint()) >= 5)) {
+        if (initialEvent != null && resizingVertex == null) {
+            int x = e.getX();
+            int y = e.getY();
+            
+            CanvasSearchResult searchResult = getCanvas().find(x, y);
+
+            if (searchResult != null) {
+                GraphItem item = searchResult.getGraphItem();
+                Rectangle r = null;
+
+                if (item instanceof Function) {
+                    r = ((Function) item).getBounds();
+                }
+                
+                if (item instanceof VertexItem &&
+                        ((VertexItem) item).getVertex() instanceof Constant) {
+                    r = ((VertexItem) item).getVertex().getBounds();
+                }
+                
+                if (r != null) {
+                    int tx = r.x + r.width;
+                    int ty = r.y + r.height;
+
+                    int step = getCanvas().getStep();
+                    int graphY = getCanvas().toGraphY(y);
+
+                    graphY = graphY + (step - 1) / 2 + 1;
+
+                    tx = getCanvas().toCanvas(tx * step);
+                    ty = ty * step + graphY;
+
+                    int dx = tx - x;
+                    int dy = ty - y;
+
+                    if (dx > 0 && dy > 0 && dx + dy < step) {
+                        if (item instanceof Vertex) {
+                            resizingVertex = (Vertex) item;
+                        } else {
+                            resizingVertex = ((VertexItem) item).getVertex();
+                        }
+                    }
+                }
+            }
+        }
+    
+        
+        if (resizingVertex != null) {
+            int step = getCanvas().getStep();
+            
+            int x =  getCanvas().toGraph(e.getX()) / step;
+            int x0 = resizingVertex.getX();
+            
+            resizingVertex.setWidth(x - x0);
+            
+            getCanvas().repaint();
+            return;
+       }
+
+       if ((initialEvent != null) && (initialEvent.getPoint().distance(e.getPoint()) >= 5)) {
 
             LinkTool linkTool = getMapper().getLinkTool();
             MoveTool moveTool = getMapper().getMoveTool();
@@ -161,6 +223,54 @@ public class CanvasEventHandler extends AbstractMapperEventHandler {
         }
     }
 
+    @Override
+    public void mouseMoved(MouseEvent e) {
+        int x = e.getX();
+        int y = e.getY();
+        
+        CanvasSearchResult searchResult = getCanvas().find(x, y);
+
+        if (searchResult != null) {
+            GraphItem item = searchResult.getGraphItem();
+            Rectangle r = null;
+
+            if (item instanceof Function) {
+                r = ((Function) item).getBounds();
+            }
+
+            if (item instanceof VertexItem &&
+                    ((VertexItem) item).getVertex() instanceof Constant) {
+                r = ((VertexItem) item).getVertex().getBounds();
+            }
+
+            if (r != null) {
+
+                int tx = r.x + r.width;
+                int ty = r.y + r.height;
+
+                int step = getCanvas().getStep();
+                int graphY = getCanvas().toGraphY(y);
+                                
+                graphY = graphY + (step - 1) / 2 + 1;
+                
+                tx = getCanvas().toCanvas(tx * step);
+                ty = ty * step + graphY;
+                
+                int dx = tx - x;
+                int dy = ty - y;
+                
+                if (dx > 0 && dy > 0 && dx + dy < step) {
+                    getCanvas().setCursor(new Cursor(Cursor.W_RESIZE_CURSOR));
+                    return;
+                }
+            }
+            getCanvas().setCursor(null);
+        }
+    }
+
+
+
+    
 
     @Override
     public void mouseClicked(MouseEvent e) {
@@ -178,13 +288,13 @@ public class CanvasEventHandler extends AbstractMapperEventHandler {
             }
             Mapper mapper = getMapper();
             MapperNode node = mapper.getNodeAt(y);
-            if (node != null  && node.getGraph() != null) {
-                if (node.isGraphCollapsed()) {
-                    mapper.setExpandedGraphState(node.getTreePath(), true);
-                } else if (searchResult == null ||
-                        searchResult.getGraphItem() == null) {
-                    mapper.setExpandedGraphState(node.getTreePath(), false);
-                }
+            if (node != null  && node.getGraph() != null 
+                    && !node.getGraph().isEmptyOrOneLink()) 
+            {
+                if (item == null) {
+                    mapper.setExpandedGraphState(node.getTreePath(), 
+                            node.isGraphCollapsed());
+                } 
                 getLinkTool().done();
             }
         }

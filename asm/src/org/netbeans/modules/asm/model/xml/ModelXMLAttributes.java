@@ -43,19 +43,19 @@
 package org.netbeans.modules.asm.model.xml;
 
 class ModelXMLAttributes {
-    public static final String ASM_NAME_ATTRIBUTE = "name";
+    public static final String ASM_NAME_ATTRIBUTE = "name"; // NOI18N
     
-    public static final String INSTR_NAME_ATTRIBUTE = "name";
-    public static final String INSTR_WRITE_ATTRIBUTE = "write";
-    public static final String INSTR_READ_ATTRIBUTE = "read";
-    public static final String INSTR_CLAZZ_ATTRIBUTE = "clazz";
-    public static final String INSTR_DESCR_ATTRIBUTE = "description";
-    public static final String INSTR_ARG_VAL_ATTRIBUTE = "val";
+    public static final String INSTR_NAME_ATTRIBUTE = "name"; // NOI18N
+    public static final String INSTR_WRITE_ATTRIBUTE = "write"; // NOI18N
+    public static final String INSTR_READ_ATTRIBUTE = "read"; // NOI18N
+    public static final String INSTR_CLAZZ_ATTRIBUTE = "clazz"; // NOI18N
+    public static final String INSTR_DESCR_ATTRIBUTE = "description"; // NOI18N
+    public static final String INSTR_ARG_VAL_ATTRIBUTE = "val"; // NOI18N
     
     
-    public static final String REG_NAME_ATTRIBUTE = "name";
-    public static final String REG_OFFSET_ATTRIBUTE = "offset";   
-    public static final String REG_BITWIDTH_ATTRIBUTE = "bitwidth";      
+    public static final String REG_NAME_ATTRIBUTE = "name"; // NOI18N
+    public static final String REG_OFFSET_ATTRIBUTE = "offset"; // NOI18N
+    public static final String REG_BITWIDTH_ATTRIBUTE = "bitwidth"; // NOI18N
     
-    private static final String ARG_DESCR_PREFIX = "arg";
+    private static final String ARG_DESCR_PREFIX = "arg"; // NOI18N
  }

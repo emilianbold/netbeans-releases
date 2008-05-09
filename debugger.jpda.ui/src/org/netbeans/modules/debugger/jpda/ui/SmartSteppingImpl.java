@@ -125,8 +125,7 @@ PropertyChangeListener {
     
     private SourcePath getEngineContext (ContextProvider lookupProvider) {
         if (engineContext == null) {
-            engineContext = (SourcePath) lookupProvider.lookupFirst 
-                (null, SourcePath.class);
+            engineContext = lookupProvider.lookupFirst(null, SourcePath.class);
             engineContext.addPropertyChangeListener (this);
         }
         return engineContext;

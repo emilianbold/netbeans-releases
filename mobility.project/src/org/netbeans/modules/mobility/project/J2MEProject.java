@@ -60,6 +60,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -97,6 +98,7 @@ import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
+import org.openide.util.Lookup.Result;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
@@ -108,10 +110,14 @@ import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.j2me.cdc.platform.CDCPlatform;
 import org.netbeans.modules.mobility.project.classpath.J2MEClassPathProvider;
+import org.netbeans.modules.mobility.project.deployment.DeploymentPropertiesHandler;
+import org.netbeans.modules.mobility.project.deployment.MobilityDeploymentProperties;
 import org.netbeans.modules.mobility.project.queries.SourceLevelQueryImpl;
 import org.netbeans.modules.mobility.project.queries.FileBuiltQueryImpl;
 import org.netbeans.modules.mobility.project.queries.FileEncodingQueryImpl;
+import org.netbeans.modules.mobility.project.security.KeyStoreRepository;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
+import org.netbeans.spi.mobility.deployment.DeploymentPlugin;
 import org.netbeans.spi.mobility.project.ProjectLookupProvider;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
@@ -119,6 +125,9 @@ import org.netbeans.spi.project.support.ant.*;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.openide.ErrorManager;
+import org.openide.modules.InstalledFileLocator;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
@@ -468,11 +477,12 @@ public final class J2MEProject implements Project, AntProjectListener {
         
     }
     
-    private final class ProjectOpenedHookImpl extends ProjectOpenedHook {
+    private final class ProjectOpenedHookImpl extends ProjectOpenedHook implements LookupListener {
         
         private boolean skipCloseHook = false;
         private PropertyChangeListener platformListener;
-        
+        private Lookup.Result deployments;
+
         //We need those listners to be able to check for changes on paltform bootclasspath
         private final class PlatformInstalledListener implements PropertyChangeListener 
         {
@@ -534,6 +544,12 @@ public final class J2MEProject implements Project, AntProjectListener {
         }
         
         protected synchronized void projectOpened() {
+            //inicialize deployment plugins
+            deployments = Lookup.getDefault().lookup(new Lookup.Template<DeploymentPlugin>(DeploymentPlugin.class));
+            deployments.addLookupListener(this);
+            resultChanged(new LookupEvent(deployments));
+            //init keystore, safer than warmup
+            KeyStoreRepository.getDefault();
             // Check up on build scripts.
             addRoots(helper);
             final SourcesHelper sourcesHelper = getLookup().lookup(SourcesHelper.class);
@@ -586,6 +602,9 @@ public final class J2MEProject implements Project, AntProjectListener {
         
         protected synchronized void projectClosed() {
             if (skipCloseHook) return;
+            //do not listen on deployments for this project
+            deployments.removeLookupListener(this);
+
             // Probably unnecessary, but just in case:
             try {
                 ProjectManager.getDefault().saveProject(J2MEProject.this);
@@ -611,6 +630,15 @@ public final class J2MEProject implements Project, AntProjectListener {
             platformListener = new PlatformInstalledListener(installedPlatforms);
             JavaPlatformManager.getDefault().addPropertyChangeListener(platformListener);
         }
+        
+        public void resultChanged(final LookupEvent e) {
+            final Collection<Lookup.Result> result = ((Lookup.Result) e.getSource()).allInstances();
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    DeploymentPropertiesHandler.loadDeploymentProperties(result);
+                }
+            }, 200);
+        }        
     }
     
     private void refreshBuildScripts(final boolean checkForProjectXmlModified) {

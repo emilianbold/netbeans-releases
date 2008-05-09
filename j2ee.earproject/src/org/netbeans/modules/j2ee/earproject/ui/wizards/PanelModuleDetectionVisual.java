@@ -62,6 +62,7 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
+import org.netbeans.modules.j2ee.common.project.ui.ProjectLocationWizardPanel;
 import org.netbeans.modules.j2ee.earproject.ModuleType;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.WizardDescriptor;
@@ -147,7 +148,7 @@ public class PanelModuleDetectionVisual extends JPanel {
     
     /** Get the project directory. */
     private File getProject(WizardDescriptor wizardDescriptor) {
-        return (File) wizardDescriptor.getProperty(WizardProperties.PROJECT_DIR);
+        return (File) wizardDescriptor.getProperty(ProjectLocationWizardPanel.PROJECT_DIR);
     }
     
     // #87604

@@ -59,6 +59,7 @@ public class WebProjectCreateData {
     private String javaEEVersion;
     private String sourceLevel;
     private String javaPlatformName;
+    private String serverLibraryName;
     
     //only for create project
     private String contextPath;
@@ -75,6 +76,8 @@ public class WebProjectCreateData {
     private String buildfile;
     private FileObject webInfFolder;
     private boolean javaSourceBased = true;
+    
+    private String librariesDefinition;
     
     /**
      * Creates a new instance of WebProjectCreateData
@@ -372,4 +375,20 @@ public class WebProjectCreateData {
         return this.javaSourceBased;
     }
 
+    public String getLibrariesDefinition() {
+        return librariesDefinition;
+    }
+
+    public void setLibrariesDefinition(String librariesDefinition) {
+        this.librariesDefinition = librariesDefinition;
+    }
+
+    public String getServerLibraryName() {
+        return serverLibraryName;
+    }
+
+    public void setServerLibraryName(String serverLibraryName) {
+        this.serverLibraryName = serverLibraryName;
+    }
+    
 }

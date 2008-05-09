@@ -48,7 +48,7 @@ public class RestConstants {
 
     public static final String PATH_ANNOTATION = "Path"; //NOI18N
     
-    public static final String URI_PARAM_ANNOTATION = "UriParam";       //NOI18N
+    public static final String PATH_PARAM_ANNOTATION = "PathParam";       //NOI18N
     
     public static final String QUERY_PARAM_ANNOTATION = "QueryParam";       //NOI18N
     
@@ -66,7 +66,7 @@ public class RestConstants {
     
     public static final String CONSUME_MIME_ANNOTATION = "ConsumeMime"; //NOI18N
     
-    public static final String HTTP_CONTEXT_ANNOTATION = "HttpContext";     //NOI18N
+    public static final String CONTEXT_ANNOTATION = "Context";     //NOI18N
     
     public static final String REST_API_PACKAGE = "javax.ws.rs.";       //NOI18N
     
@@ -84,7 +84,7 @@ public class RestConstants {
     
     public static final String CONSUME_MIME = REST_API_PACKAGE + CONSUME_MIME_ANNOTATION;
     
-    public static final String URI_PARAM = REST_API_PACKAGE + URI_PARAM_ANNOTATION;
+    public static final String PATH_PARAM = REST_API_PACKAGE + PATH_PARAM_ANNOTATION;
     
     public static final String QUERY_PARAM = REST_API_PACKAGE + QUERY_PARAM_ANNOTATION;
     

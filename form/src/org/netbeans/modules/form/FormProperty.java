@@ -1162,15 +1162,22 @@ public abstract class FormProperty extends Node.Property {
         private Object value;
         private PropertyEditor propertyEditor;
         private int propertyEditorIndex;
+        private boolean editorSetByUser;
 
         public ValueWithEditor(Object value, PropertyEditor propertyEditor) {
             this.value = value;
             this.propertyEditor = propertyEditor;
         }
 
-        ValueWithEditor(Object value, int propertyEditorIndex) {
+        ValueWithEditor(Object value, PropertyEditor propertyEditor, boolean editorSetByUser) {
+            this(value, propertyEditor);
+            this.editorSetByUser = editorSetByUser;
+        }
+
+        ValueWithEditor(Object value, int propertyEditorIndex, boolean editorSetByUser) {
             this.value = value;
             this.propertyEditorIndex = propertyEditorIndex;
+            this.editorSetByUser = editorSetByUser;
         }
 
         public Object getValue() {
@@ -1179,6 +1186,10 @@ public abstract class FormProperty extends Node.Property {
 
         public PropertyEditor getPropertyEditor() {
             return propertyEditor;
+        }
+
+        boolean getEditorSetByUser() {
+            return editorSetByUser;
         }
 
         PropertyEditor getPropertyEditor(FormProperty property) {

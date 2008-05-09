@@ -98,7 +98,7 @@ public final class ConfigFileGroup {
      * Returns the list of config files in this group. The list
      * is modifiable and not live.
      *
-     * @return the set of beans configuration files; never null.
+     * @return the list of beans configuration files; never null.
      */
     public List<File> getFiles() {
         List<File> result = new ArrayList<File>(files.size());

@@ -44,7 +44,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.netbeans.api.gsf.ElementKind;
+import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.ruby.RubyIndex;
 
 
@@ -141,12 +141,12 @@ public final class IndexedMethod extends IndexedElement implements MethodElement
 
     public List<String> getParameters() {
         if (parameters == null) {
-            String[] args = getArgs();
+            String[] argArray = getArgs();
 
-            if ((args != null) && (args.length > 0)) {
-                parameters = new ArrayList<String>(args.length);
+            if ((argArray != null) && (argArray.length > 0)) {
+                parameters = new ArrayList<String>(argArray.length);
 
-                for (String arg : args) {
+                for (String arg : argArray) {
                     parameters.add(arg);
                 }
             } else {

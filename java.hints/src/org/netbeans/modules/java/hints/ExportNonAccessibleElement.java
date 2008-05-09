@@ -64,22 +64,18 @@ import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.TypeVisitor;
 import javax.lang.model.type.WildcardType;
 import javax.swing.JComponent;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.java.editor.semantic.Utilities;
 import org.netbeans.modules.java.hints.spi.AbstractHint;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -102,61 +98,55 @@ implements ElementVisitor<Boolean,Void>, TypeVisitor<Boolean,Void> {
     public List<ErrorDescription> run(CompilationInfo compilationInfo,
                                       TreePath treePath) {
         stop = false;
-        try {
-            Document doc = compilationInfo.getDocument();
-            
-            if (doc == null) {
-                return null;
-            }
-            
-            Element e = compilationInfo.getTrees().getElement(treePath);
-            if (e == null) {
-                return null;
-            }
-            Boolean b = e.accept(this, null);
-            
-            if (b) {
-                Element parent = e;
-                for (;;) {
-                    if (stop) {
-                        return null;
-                    }
-                    
-                    if (parent == null || parent.getKind() == ElementKind.PACKAGE) {
-                        break;
-                    }
-                    if (!parent.getModifiers().contains(Modifier.PUBLIC) && !parent.getModifiers().contains(Modifier.PROTECTED)) {
-                        return null;
-                    }
-                    parent = parent.getEnclosingElement();
+        Element e = compilationInfo.getTrees().getElement(treePath);
+        if (e == null) {
+            return null;
+        }
+        Boolean b = e.accept(this, null);
+
+        if (b) {
+            Element parent = e;
+            for (;;) {
+                if (stop) {
+                    return null;
                 }
 
-                //#124456: disabling the fix:
-//                List<Fix> fixes = Collections.<Fix>singletonList(new FixImpl(
-//                    "MSG_ExportNonAccessibleElementMakeNonVisible", // NOI18N
-//                    TreePathHandle.create(e, compilationInfo), 
-//                    compilationInfo.getFileObject()
-//                ));
-
-                int[] span = Utilities.findIdentifierSpan(treePath, compilationInfo, doc);
-
-                if (span[0] != (-1) && span[1] != (-1)) {
-                    ErrorDescription ed = ErrorDescriptionFactory.createErrorDescription(
-                            getSeverity().toEditorSeverity(),
-                            NbBundle.getMessage(ExportNonAccessibleElement.class, "MSG_ExportNonAccessibleElement"),
-//                            fixes,
-                            doc,
-                            doc.createPosition(span[0]),
-                            doc.createPosition(span[1])
-                            );
-                    
-                    return Collections.singletonList(ed);
+                if (parent == null || parent.getKind() == ElementKind.PACKAGE) {
+                    break;
                 }
+                if (!parent.getModifiers().contains(Modifier.PUBLIC) && !parent.getModifiers().contains(Modifier.PROTECTED)) {
+                    return null;
+                }
+                parent = parent.getEnclosingElement();
             }
-        } catch (BadLocationException e) {
-            Exceptions.printStackTrace(e);
-        } catch (IOException e) {
-            Exceptions.printStackTrace(e);
+
+            //#124456: disabling the fix:
+//            List<Fix> fixes = Collections.<Fix>singletonList(new FixImpl(
+//                "MSG_ExportNonAccessibleElementMakeNonVisible", // NOI18N
+//                TreePathHandle.create(e, compilationInfo), 
+//                compilationInfo.getFileObject()
+//            ));
+
+            int[] span = null;
+
+            switch (treePath.getLeaf().getKind()) {
+                case METHOD: span = compilationInfo.getTreeUtilities().findNameSpan((MethodTree) treePath.getLeaf()); break;
+                case CLASS: span = compilationInfo.getTreeUtilities().findNameSpan((ClassTree) treePath.getLeaf()); break;
+                case VARIABLE: span = compilationInfo.getTreeUtilities().findNameSpan((VariableTree) treePath.getLeaf()); break;
+            }
+
+            if (span != null) {
+                ErrorDescription ed = ErrorDescriptionFactory.createErrorDescription(
+                        getSeverity().toEditorSeverity(),
+                        NbBundle.getMessage(ExportNonAccessibleElement.class, "MSG_ExportNonAccessibleElement"),
+//                        fixes,
+                        compilationInfo.getFileObject(),
+                        span[0],
+                        span[1]
+                        );
+
+                return Collections.singletonList(ed);
+            }
         }
         
         return null;

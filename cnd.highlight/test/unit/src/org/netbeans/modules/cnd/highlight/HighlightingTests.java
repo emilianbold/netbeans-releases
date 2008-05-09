@@ -46,6 +46,7 @@ import junit.framework.TestSuite;
 import org.netbeans.modules.cnd.test.BaseTestSuite;
 import org.netbeans.modules.cnd.highlight.semantic.InactiveCodeTest;
 import org.netbeans.modules.cnd.highlight.semantic.MacroUsagesTest;
+import org.netbeans.modules.cnd.highlight.semantic.MarkOccurencesTest;
 
 /**
  *
@@ -58,6 +59,7 @@ public class HighlightingTests extends BaseTestSuite {
         
         addTestSuite(InactiveCodeTest.class);
         addTestSuite(MacroUsagesTest.class);
+        addTestSuite(MarkOccurencesTest.class);
     }
 
     public static Test suite() {

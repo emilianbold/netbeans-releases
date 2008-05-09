@@ -1,0 +1,24 @@
+Java
+Web
+Enterprise
+Mobility
+UML
+SOA
+Ruby
+C/C++
+NetBeans Plugin Modules
+Samples
+    Java
+    Web
+    Enterprise
+    Mobility
+    UML
+    SOA
+    Ruby ???
+    NetBeans Plugin Modules
+    Java BluePrints Solutions
+        Java Persistence API
+        AJAX Programming Model
+        AJAX Components
+        Web Tier (Java EE 1.4)
+        Web Services (Java EE 1.4)

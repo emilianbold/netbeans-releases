@@ -46,14 +46,13 @@ import java.util.Map;
 import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider;
+import org.netbeans.modules.spring.beans.BeansAttributes;
+import org.netbeans.modules.spring.beans.BeansElements;
 import org.netbeans.modules.spring.beans.editor.ContextUtilities;
-import org.netbeans.modules.spring.beans.editor.DocumentContext;
-import org.netbeans.modules.spring.beans.editor.EditorContextFactory;
-import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils.Public;
-import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils.Static;
 import org.netbeans.modules.spring.beans.utils.StringUtils;
+import org.netbeans.modules.spring.java.Public;
+import org.netbeans.modules.spring.java.Static;
 import org.netbeans.modules.xml.text.syntax.XMLSyntaxSupport;
-import org.netbeans.modules.xml.text.syntax.dom.Tag;
 
 /**
  * Provides hyperlinking functionality for Spring XML Configuration files
@@ -63,100 +62,57 @@ import org.netbeans.modules.xml.text.syntax.dom.Tag;
 public class SpringXMLConfigHyperlinkProvider implements HyperlinkProvider {
 
     private static final String P_NAMESPACE = "http://www.springframework.org/schema/p"; // NOI18N
-
-    public enum Type {
-        TAG,
-        ATTRIB_VALUE,
-        ATTRIB,
-        TEXT,
-        NONE
-    };
     
-    private static final String BEAN_TAG = "bean";  // NOI18N
-    private static final String IMPORT_TAG = "import";  // NOI18N
-    private static final String LOOKUP_METHOD_TAG = "lookup-method";  // NOI18N
-    private static final String REPLACED_METHOD_TAG = "replaced-method";  // NOI18N
-    private static final String PROPERTY_TAG = "property";  // NOI18N
-    private static final String ALIAS_TAG = "alias";  // NOI18N
-    private static final String CONSTRUCTOR_ARG_TAG = "constructor-arg";  // NOI18N
-    private static final String REF_TAG = "ref";  // NOI18N
-    private static final String IDREF_TAG = "idref";  // NOI18N
-    
-    private static final String CLASS_ATTRIB = "class";  // NOI18N
-    private static final String RESOURCE_ATTRIB = "resource";  // NOI18N
-    private static final String INIT_METHOD_ATTRIB = "init-method";  // NOI18N
-    private static final String DESTROY_METHOD_ATTRIB = "destroy-method";  // NOI18N
-    private static final String NAME_ATTRIB = "name";  // NOI18N
-    private static final String FACTORY_METHOD_ATTRIB = "factory-method";  // NOI18N
-    private static final String FACTORY_BEAN_ATTRIB = "factory-bean";  // NOI18N
-    private static final String DEPENDS_ON_ATTRIB = "depends-on";  // NOI18N
-    private static final String PARENT_ATTRIB = "parent";  // NOI18N
-    private static final String REPLACER_ATTRIB = "replacer";  // NOI18N
-    private static final String REF_ATTRIB = "ref";  // NOI18N
-    private static final String BEAN_ATTRIB = "bean";  // NOI18N
-    private static final String LOCAL_ATTRIB = "local";  // NOI18N
-    
-    private BaseDocument lastDocument;
-    private int startOffset;
-    private int endOffset;
-    private String valueString;
-    private String tagString;
-    private String attribString;
-    private Tag currentTag;
-    private Type type = Type.NONE;
-
     private Map<String, HyperlinkProcessor> attribValueProcessors = 
             new HashMap<String, HyperlinkProcessor>();
     
     private PHyperlinkProcessor pHyperlinkProcessor = new PHyperlinkProcessor();
     
     public SpringXMLConfigHyperlinkProvider() {
-        this.lastDocument = null;
-        
         JavaClassHyperlinkProcessor classHyperlinkProcessor = new JavaClassHyperlinkProcessor();
-        registerAttribValueHyperlinkPoint(BEAN_TAG, CLASS_ATTRIB, classHyperlinkProcessor);
+        registerAttribValueProcessor(BeansElements.BEAN, BeansAttributes.CLASS, classHyperlinkProcessor);
         
         JavaMethodHyperlinkProcessor methodHyperlinkProcessor 
                 = new JavaMethodHyperlinkProcessor(Public.DONT_CARE, Static.NO, 0);
-        registerAttribValueHyperlinkPoint(BEAN_TAG, INIT_METHOD_ATTRIB, methodHyperlinkProcessor);
-        registerAttribValueHyperlinkPoint(BEAN_TAG, DESTROY_METHOD_ATTRIB, methodHyperlinkProcessor);
+        registerAttribValueProcessor(BeansElements.BEAN, BeansAttributes.INIT_METHOD, methodHyperlinkProcessor);
+        registerAttribValueProcessor(BeansElements.BEAN, BeansAttributes.DESTROY_METHOD, methodHyperlinkProcessor);
         
         FactoryMethodHyperlinkProcessor factoryMethodHyperlinkProcessor 
                 = new FactoryMethodHyperlinkProcessor();
-        registerAttribValueHyperlinkPoint(BEAN_TAG, FACTORY_METHOD_ATTRIB, factoryMethodHyperlinkProcessor);
+        registerAttribValueProcessor(BeansElements.BEAN, BeansAttributes.FACTORY_METHOD, factoryMethodHyperlinkProcessor);
         
         methodHyperlinkProcessor 
                 = new JavaMethodHyperlinkProcessor(Public.DONT_CARE, Static.NO, 0);
-        registerAttribValueHyperlinkPoint(LOOKUP_METHOD_TAG, NAME_ATTRIB, methodHyperlinkProcessor);
+        registerAttribValueProcessor(BeansElements.LOOKUP_METHOD, BeansAttributes.NAME, methodHyperlinkProcessor);
         
         methodHyperlinkProcessor 
                 = new JavaMethodHyperlinkProcessor(Public.DONT_CARE, Static.NO, -1);
-        registerAttribValueHyperlinkPoint(REPLACED_METHOD_TAG, NAME_ATTRIB, methodHyperlinkProcessor);
+        registerAttribValueProcessor(BeansElements.REPLACED_METHOD, BeansAttributes.NAME, methodHyperlinkProcessor);
         
         ResourceHyperlinkProcessor resourceHyperlinkProcessor = new ResourceHyperlinkProcessor();
-        registerAttribValueHyperlinkPoint(IMPORT_TAG, RESOURCE_ATTRIB, resourceHyperlinkProcessor);
+        registerAttribValueProcessor(BeansElements.IMPORT, BeansAttributes.RESOURCE, resourceHyperlinkProcessor);
         
         PropertyHyperlinkProcessor propertyHyperlinkProcessor = new PropertyHyperlinkProcessor();
-        registerAttribValueHyperlinkPoint(PROPERTY_TAG, NAME_ATTRIB, propertyHyperlinkProcessor);
+        registerAttribValueProcessor(BeansElements.PROPERTY, BeansAttributes.NAME, propertyHyperlinkProcessor);
         
         BeansRefHyperlinkProcessor beansRefHyperlinkProcessor = new BeansRefHyperlinkProcessor(true);
-        registerAttribValueHyperlinkPoint(BEAN_TAG, FACTORY_BEAN_ATTRIB, beansRefHyperlinkProcessor);
-        registerAttribValueHyperlinkPoint(BEAN_TAG, DEPENDS_ON_ATTRIB, beansRefHyperlinkProcessor);
-        registerAttribValueHyperlinkPoint(BEAN_TAG, PARENT_ATTRIB, beansRefHyperlinkProcessor);
-        registerAttribValueHyperlinkPoint(LOOKUP_METHOD_TAG, BEAN_ATTRIB, beansRefHyperlinkProcessor);
-        registerAttribValueHyperlinkPoint(REPLACED_METHOD_TAG, REPLACER_ATTRIB, beansRefHyperlinkProcessor);
-        registerAttribValueHyperlinkPoint(PROPERTY_TAG, REF_ATTRIB, beansRefHyperlinkProcessor);
-        registerAttribValueHyperlinkPoint(ALIAS_TAG, NAME_ATTRIB, beansRefHyperlinkProcessor);
-        registerAttribValueHyperlinkPoint(CONSTRUCTOR_ARG_TAG, REF_ATTRIB, beansRefHyperlinkProcessor);
-        registerAttribValueHyperlinkPoint(REF_TAG, BEAN_ATTRIB, beansRefHyperlinkProcessor);
-        registerAttribValueHyperlinkPoint(IDREF_TAG, BEAN_ATTRIB, beansRefHyperlinkProcessor);
+        registerAttribValueProcessor(BeansElements.BEAN, BeansAttributes.FACTORY_BEAN, beansRefHyperlinkProcessor);
+        registerAttribValueProcessor(BeansElements.BEAN, BeansAttributes.DEPENDS_ON, beansRefHyperlinkProcessor);
+        registerAttribValueProcessor(BeansElements.BEAN, BeansAttributes.PARENT, beansRefHyperlinkProcessor);
+        registerAttribValueProcessor(BeansElements.LOOKUP_METHOD, BeansAttributes.BEAN, beansRefHyperlinkProcessor);
+        registerAttribValueProcessor(BeansElements.REPLACED_METHOD, BeansAttributes.REPLACER, beansRefHyperlinkProcessor);
+        registerAttribValueProcessor(BeansElements.PROPERTY, BeansAttributes.REF, beansRefHyperlinkProcessor);
+        registerAttribValueProcessor(BeansElements.ALIAS, BeansAttributes.NAME, beansRefHyperlinkProcessor);
+        registerAttribValueProcessor(BeansElements.CONSTRUCTOR_ARG, BeansAttributes.REF, beansRefHyperlinkProcessor);
+        registerAttribValueProcessor(BeansElements.REF, BeansAttributes.BEAN, beansRefHyperlinkProcessor);
+        registerAttribValueProcessor(BeansElements.IDREF, BeansAttributes.BEAN, beansRefHyperlinkProcessor);
         
         beansRefHyperlinkProcessor = new BeansRefHyperlinkProcessor(false);
-        registerAttribValueHyperlinkPoint(IDREF_TAG, LOCAL_ATTRIB, beansRefHyperlinkProcessor);
-        registerAttribValueHyperlinkPoint(REF_TAG, LOCAL_ATTRIB, beansRefHyperlinkProcessor);
+        registerAttribValueProcessor(BeansElements.IDREF, BeansAttributes.LOCAL, beansRefHyperlinkProcessor);
+        registerAttribValueProcessor(BeansElements.REF, BeansAttributes.LOCAL, beansRefHyperlinkProcessor);
     }
     
-    private void registerAttribValueHyperlinkPoint(String tagName, String attribName, 
+    private void registerAttribValueProcessor(String tagName, String attribName, 
             HyperlinkProcessor processor) {
         attribValueProcessors.put(createRegisteredName(tagName, attribName), processor);
     }
@@ -171,81 +127,47 @@ public class SpringXMLConfigHyperlinkProvider implements HyperlinkProvider {
             return false;
         }
 
-        return processHyperlinkPoint(doc, offset);
-    }
-
-    private boolean processHyperlinkPoint(BaseDocument doc, int offset) {
-        DocumentContext context = EditorContextFactory.getDocumentContext(doc, offset);
-        if (ContextUtilities.isValueToken(context.getCurrentToken())) {
-            type = Type.ATTRIB_VALUE;
-            lastDocument = doc;
-            valueString = context.getCurrentTokenImage();
-            valueString = valueString.substring(1, valueString.length() - 1);
-            startOffset = context.getCurrentToken().getOffset() + 1;
-            endOffset = startOffset + context.getCurrentTokenImage().length() - 2;
-
-            currentTag = ContextUtilities.getCurrentTagElement(context);
-            tagString = currentTag.getTagName();
-            attribString = ContextUtilities.getAttributeTokenImage(context);
-
-            HyperlinkProcessor hyperlinkProcessor = 
-                    locateHyperlinkProcessor(tagString, attribString, attribValueProcessors);
-            
-            if(hyperlinkProcessor == null) {
-                if (attribString.endsWith("-ref")) {  // NOI18N
-                    return isPNamespaceName(context, attribString);
-                }
-            } else {
-                return true;
-            }
-        } else if(ContextUtilities.isAttributeToken(context.getCurrentToken())) {
-            type = Type.ATTRIB;
-            lastDocument = doc;
-            attribString = context.getCurrentTokenImage();
-            startOffset = context.getCurrentToken().getOffset();
-            endOffset = startOffset + context.getCurrentTokenImage().length();
-            currentTag = ContextUtilities.getCurrentTagElement(context);
-            tagString = currentTag.getTagName();
-            valueString = null;
-            
-            if (isPNamespaceName(context, attribString)) {
-                return true;
-            }
-        }
-
-        return false;
+        HyperlinkEnv env = new HyperlinkEnv(document, offset);
+        HyperlinkProcessor processor = locateProcessor(env);
+        return processor != null;
     }
 
     public int[] getHyperlinkSpan(Document document, int offset) {
         if (!(document instanceof BaseDocument)) {
             return null;
         }
-
-        return new int[]{startOffset, endOffset};
+        
+        HyperlinkEnv env = new HyperlinkEnv(document, offset);
+        HyperlinkProcessor processor = locateProcessor(env);
+        if(processor == null) {
+            return new int[] { -1, -1 };
+        }
+        
+        return processor.getSpan(env);
     }
 
     public void performClickAction(Document document, int offset) {
-        DocumentContext context = EditorContextFactory.getDocumentContext(document, offset);
-        HyperlinkProcessor processor = null;
-        
-        if (type == Type.ATTRIB_VALUE) {
-            processor = 
-                    locateHyperlinkProcessor(tagString, attribString, attribValueProcessors);
-            
-            if(processor == null 
-                    && isPNamespaceName(context, attribString)
-                    && attribString.endsWith("-ref")) {  // NOI18N
-                processor = pHyperlinkProcessor;
-            }
-        } else if(type == Type.ATTRIB) {
-            if (isPNamespaceName(context, attribString)) {
-                processor = pHyperlinkProcessor;
-            }
-        }
-        
+        HyperlinkEnv env = new HyperlinkEnv(document, offset);
+        HyperlinkProcessor processor = locateProcessor(env);
         if(processor != null) {
-            processor.process(new HyperlinkEnv(document, currentTag, tagString, attribString, valueString, type));
+            processor.process(env);
         }
+    }
+    
+    private HyperlinkProcessor locateProcessor(HyperlinkEnv env) {
+        HyperlinkProcessor processor = null;
+        if(env.getType().isValueHyperlink()) {
+            processor = locateAttributeValueProcessor(env.getTagName(), env.getAttribName());
+            if(processor == null && isPNamespaceName(env, env.getAttribName())) {
+                processor = pHyperlinkProcessor;
+            }
+        } else if(env.getType().isAttributeHyperlink()) {
+            if (isPNamespaceName(env, env.getAttribName())) {
+                processor = pHyperlinkProcessor;
+            }
+        }
+        
+        return processor;
     }
     
     protected String createRegisteredName(String nodeName, String attributeName) {
@@ -266,25 +188,25 @@ public class SpringXMLConfigHyperlinkProvider implements HyperlinkProvider {
         return builder.toString();
     }
     
-    private HyperlinkProcessor locateHyperlinkProcessor(String nodeName, 
-            String attributeName, Map<String, HyperlinkProcessor> processors) {
+    private HyperlinkProcessor locateAttributeValueProcessor(String nodeName, 
+            String attributeName) {
         String key = createRegisteredName(nodeName, attributeName);
-        if(processors.containsKey(key)) {
-            return processors.get(key);
+        if(attribValueProcessors.containsKey(key)) {
+            return attribValueProcessors.get(key);
         }
                
         key = createRegisteredName("*", attributeName); // NOI18N
-        if(processors.containsKey(key)) {
-            return processors.get(key);
+        if(attribValueProcessors.containsKey(key)) {
+            return attribValueProcessors.get(key);
         }
         
         return null;
     }
     
-    private boolean isPNamespaceName(DocumentContext context, String nodeName) {
+    private boolean isPNamespaceName(HyperlinkEnv env, String nodeName) {
         String prefix = ContextUtilities.getPrefixFromNodeName(nodeName);
         if (prefix != null) {
-            String namespaceUri = context.lookupNamespacePrefix(prefix);
+            String namespaceUri = env.lookupNamespacePrefix(prefix);
             if (P_NAMESPACE.equals(namespaceUri)) {
                 return true;
             }

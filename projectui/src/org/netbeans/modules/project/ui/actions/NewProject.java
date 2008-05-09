@@ -217,14 +217,13 @@ public class NewProject extends BasicAction {
                             ProjectUtilities.makeProjectTabVisible( true );
                         }
                         
-                        // Second open the files
-                        if (filesToOpen.isEmpty() && lastProject != null) {
+                        if (lastProject != null) {
                             // Just select and expand the project node
                             ProjectUtilities.selectAndExpandProject(lastProject);
-                        } else {
-                            for( Iterator it = filesToOpen.iterator(); it.hasNext(); ) { // Open the files
-                                ProjectUtilities.openAndSelectNewObject( (DataObject)it.next() );
-                            }
+                        }
+                        // Second open the files
+                        for( Iterator it = filesToOpen.iterator(); it.hasNext(); ) { // Open the files
+                            ProjectUtilities.openAndSelectNewObject( (DataObject)it.next() );
                         }
                         
                     }

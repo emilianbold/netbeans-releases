@@ -72,9 +72,8 @@ class StartInplaceEditor extends MapperKeyboardAction {
 
     @Override
     public KeyStroke[] getShortcuts() {
-        KeyStroke[] a = new KeyStroke[1];
-        a[0] = KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0);
-        return a;
+        return new KeyStroke[]{
+            KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0)
+        };
     }
-
 }

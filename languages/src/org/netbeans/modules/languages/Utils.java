@@ -176,13 +176,15 @@ public class Utils {
     
     public static TokenSequence getTokenSequence (Document document, int offset) {
         TokenHierarchy tokenHierarchy = TokenHierarchy.get (document);
-        TokenSequence ts = tokenHierarchy.tokenSequence ();
+        if (tokenHierarchy == null) return null;
+        TokenSequence tokenSequence = tokenHierarchy.tokenSequence ();
+        if (tokenSequence == null) return null;
         while (true) {
-            ts.move (offset);
-            if (!ts.moveNext ()) return ts;
-            TokenSequence ts2 = ts.embedded ();
-            if (ts2 == null) return ts;
-            ts = ts2;
+            tokenSequence.move (offset);
+            if (!tokenSequence.moveNext ()) return tokenSequence;
+            TokenSequence tokenSequence2 = tokenSequence.embedded ();
+            if (tokenSequence2 == null) return tokenSequence;
+            tokenSequence = tokenSequence2;
         }
     }
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -42,24 +42,19 @@ package org.netbeans.modules.ruby.platform.gems;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
+import org.netbeans.api.ruby.platform.RubyPlatformManagerTest;
 import org.netbeans.api.ruby.platform.RubyTestBase;
-import org.netbeans.api.ruby.platform.RubyTestBase.IFL;
 import org.netbeans.api.ruby.platform.TestUtil;
-import org.netbeans.junit.MockServices;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Utilities;
 
 public class GemManagerTest extends RubyTestBase {
 
     public GemManagerTest(final String testName) {
         super(testName);
-        MockServices.setServices(IFL.class);
         TestUtil.getXTestJRubyHome();
     }
 
@@ -72,7 +67,7 @@ public class GemManagerTest extends RubyTestBase {
     public void testGetRubyLibGemDir() throws Exception {
         RubyPlatform platform = RubyPlatformManager.addPlatform(setUpRubyWithGems());
         GemManager gemManager = platform.getGemManager();
-        assertEquals("righ gem dir", new File(platform.getLib(), "ruby/gems/1.8"), new File(gemManager.getGemHome()));
+        assertEquals("righ gem dir", new File(platform.getLibDir(), "ruby/gems/1.8"), new File(gemManager.getGemHome()));
     }
     
     public void testGetGem() throws Exception {
@@ -81,24 +76,25 @@ public class GemManagerTest extends RubyTestBase {
         assertEquals("righ gem dir", new File(new File(getTestRubyHome(), "bin"), "gem").getAbsolutePath(), gemManager.getGemTool());
     }
     
-    public void testGemFetching() {
-        RubyPlatform jruby = RubyPlatformManager.getDefaultPlatform();
-        GemManager gm = jruby.getGemManager();
-        
-        List<String> errors = new ArrayList<String>();
-        List<Gem> available = gm.getRemoteGems(errors);
-        assertNotNull("gem not null", available);
-        System.out.println("available: " + available.size());
-        assertTrue("no errros: " + errors, errors.isEmpty());
-        
-        List<Gem> installed = gm.getInstalledGems(errors);
-        assertNotNull("gem not null", installed);
-        System.out.println("installed: " + installed.size());
-        assertTrue("no errros", errors.isEmpty());
-        
-        gm.reloadIfNeeded(errors);
-        assertTrue("no errros", errors.isEmpty());
-    }
+    // XXX: (Try to) reenable with JRuby 1.1.2+
+//    public void testGemFetching() {
+//        RubyPlatform jruby = RubyPlatformManager.getDefaultPlatform();
+//        GemManager gm = jruby.getGemManager();
+//        
+//        List<String> errors = new ArrayList<String>();
+//        List<Gem> available = gm.getRemoteGems(errors);
+//        assertNotNull("gem not null", available);
+//        System.out.println("available: " + available.size());
+//        assertTrue("no errros: " + errors, errors.isEmpty());
+//        
+//        List<Gem> installed = gm.getInstalledGems(errors);
+//        assertNotNull("gem not null", installed);
+//        System.out.println("installed: " + installed.size());
+//        assertTrue("no errros", errors.isEmpty());
+//        
+//        gm.reloadIfNeeded(errors);
+//        assertTrue("no errros", errors.isEmpty());
+//    }
 
     public void testIsValidGemHome() throws Exception {
         assertFalse("not valid", GemManager.isValidGemHome(getWorkDir()));
@@ -110,7 +106,7 @@ public class GemManagerTest extends RubyTestBase {
     }
     
     public void testGetRepositories() throws Exception {
-        final RubyPlatform platform = RubyPlatformManager.getDefaultPlatform();
+        RubyPlatform platform = RubyPlatformManager.getDefaultPlatform();
         GemManager gemManager = platform.getGemManager();
         Set<? extends File> paths = gemManager.getRepositories();
         assertEquals("one path element", 1, paths.size());
@@ -119,7 +115,7 @@ public class GemManagerTest extends RubyTestBase {
     }
     
     public void testAddRemoveRepository() throws Exception {
-        final RubyPlatform platform = RubyPlatformManager.getDefaultPlatform();
+        RubyPlatform platform = RubyPlatformManager.getDefaultPlatform();
         GemManager gemManager = platform.getGemManager();
         File dummyRepo = new File(getWorkDirPath(), "/a");
         gemManager.addGemPath(dummyRepo);
@@ -130,8 +126,19 @@ public class GemManagerTest extends RubyTestBase {
         assertTrue("one repositories in info's gempath", platform.getInfo().getGemPath().indexOf(File.pathSeparatorChar) == -1);
     }
     
+    public void testSetGemHome() throws Exception {
+        RubyPlatform platform = RubyPlatformManager.getDefaultPlatform();
+        GemManager gemManager = platform.getGemManager();
+        String origGemHome = gemManager.getGemHome();
+        File dummyRepo = new File(getWorkDirPath(), "/a");
+        platform.setGemHome(dummyRepo);
+        RubyPlatformManagerTest.resetPlatforms();
+        String newGemHome = RubyPlatformManager.getDefaultPlatform().getGemManager().getGemHome();
+        assertFalse("Gem Home changed", origGemHome.equals(newGemHome));
+    }
+    
     public void testAddTheSameRepositoryTwice() {
-        final RubyPlatform platform = RubyPlatformManager.getDefaultPlatform();
+        RubyPlatform platform = RubyPlatformManager.getDefaultPlatform();
         GemManager gemManager = platform.getGemManager();
         File dummyRepo = new File(getWorkDirPath(), "/a");
         assertTrue("successfuly added", gemManager.addGemPath(dummyRepo));
@@ -144,20 +151,38 @@ public class GemManagerTest extends RubyTestBase {
         GemManager.isValidGemHome(FileUtil.toFile(gemRepo));
     }
     
+    public void testInitializeRepositoryFile() throws Exception {
+        File gemRepo = new File(getWorkDir(), "gem-repo");
+        GemManager.initializeRepository(gemRepo);
+        GemManager.isValidGemHome(gemRepo);
+    }
+    
     public void testGetVersionForPlatform() throws IOException {
-        final RubyPlatform platform = RubyPlatformManager.getDefaultPlatform();
+        RubyPlatform platform = RubyPlatformManager.getDefaultPlatform();
         GemManager gemManager = platform.getGemManager();
         RubyPlatform jruby = RubyPlatformManager.getDefaultPlatform();
         FileObject gemRepo = FileUtil.toFileObject(getWorkDir()).createFolder("gem-repo");
         GemManager.initializeRepository(gemRepo);
         jruby.setGemHome(FileUtil.toFile(gemRepo));
-        String version = Utilities.isWindows() ? "0.9.3" : "0.1.10";
+        String version = "0.10.0";
         installFakeGem("ruby-debug-base", version, platform);
-        assertEquals("native fast debugger available", version, gemManager.getVersion("ruby-debug-base"));
-        assertNull("no jruby fast debugger available", gemManager.getVersionForPlatform("ruby-debug-base"));
+        assertEquals("native fast debugger available", version, gemManager.getLatestVersion("ruby-debug-base"));
+        assertFalse("no jruby fast debugger available", gemManager.isGemInstalledForPlatform("ruby-debug-base", "0.10.0"));
         uninstallFakeGem("ruby-debug-base", version, platform);
         installFakeGem("ruby-debug-base", version, "java", platform);
-        assertEquals("no jruby fast debugger available", version, gemManager.getVersionForPlatform("ruby-debug-base"));
+        assertEquals("no jruby fast debugger available", true, gemManager.isGemInstalledForPlatform("ruby-debug-base", "0.10.0"));
+    }
+    
+    public void testIsGemInstalledForPlatform() throws IOException {
+        RubyPlatform platform = RubyPlatformManager.addPlatform(setUpRubyWithGems());
+        for (String version : new String[]{"0.10.0", "0.10.1"}) {
+            installFakeGem("ruby-debug-base", version, platform);
+        }
+        GemManager gemManager = platform.getGemManager();
+        assertTrue(gemManager.isGemInstalledForPlatform("ruby-debug-base", "0.10.0", false));
+        assertTrue(gemManager.isGemInstalledForPlatform("ruby-debug-base", "0.10.0", true));
+        assertTrue(gemManager.isGemInstalledForPlatform("ruby-debug-base", "0.10.1", false));
+        assertTrue(gemManager.isGemInstalledForPlatform("ruby-debug-base", "0.10.1", true));
     }
     
     public void testCompareGemVersions() {
@@ -215,15 +240,36 @@ public class GemManagerTest extends RubyTestBase {
         assertFalse(installedGems.contains("sqlite"));
         assertFalse(installedGems.contains("sqlite3-ruby"));
 
-        assertEquals("1.0.0", gemManager.getVersion("foo"));
-        assertEquals(null, gemManager.getVersion("notagem"));
-        assertEquals(null, gemManager.getVersion("nosuchgem"));
-        assertEquals(null, gemManager.getVersion("sqlite"));
-        assertEquals(null, gemManager.getVersion("sqlite3-ruby"));
-        assertEquals("1.0.0", gemManager.getVersion("mongrel"));
-        assertEquals("0.3.3", gemManager.getVersion("bar-baz"));
-        assertEquals("0.1.1", gemManager.getVersion("pdf-writer"));
-        assertEquals("1.15.3.6752", gemManager.getVersion("activerecord"));
+        assertEquals("1.0.0", gemManager.getLatestVersion("foo"));
+        assertEquals(null, gemManager.getLatestVersion("notagem"));
+        assertEquals(null, gemManager.getLatestVersion("nosuchgem"));
+        assertEquals(null, gemManager.getLatestVersion("sqlite"));
+        assertEquals(null, gemManager.getLatestVersion("sqlite3-ruby"));
+        assertEquals("1.0.0", gemManager.getLatestVersion("mongrel"));
+        assertEquals("0.3.3", gemManager.getLatestVersion("bar-baz"));
+        assertEquals("0.1.1", gemManager.getLatestVersion("pdf-writer"));
+        assertEquals("1.15.3.6752", gemManager.getLatestVersion("activerecord"));
+    }
+    
+    public void testInstallLocal() throws IOException {
+        RubyPlatform platform = RubyPlatformManager.getDefaultPlatform();
+        GemManager gemManager = platform.getGemManager();
+        RubyPlatform jruby = RubyPlatformManager.getDefaultPlatform();
+        FileObject gemRepo = FileUtil.toFileObject(getWorkDir()).createFolder("gem-repo");
+        GemManager.initializeRepository(gemRepo);
+        jruby.setGemHome(FileUtil.toFile(gemRepo));
+        jruby.getInfo().setGemPath("");
+        File rakeGem = getRakeGem();
+        assertNull("rake is not installed", gemManager.getLatestVersion("rake"));
+        gemManager.installLocal(rakeGem, null, false, false, false, null);
+        assertNotNull("rake is installed", gemManager.getLatestVersion("rake"));
+    }
+
+    private File getRakeGem() throws IOException {
+        File rakeGem = new File(TestUtil.getXTestJRubyHome(), "lib/ruby/gems/1.8/cache/rake-0.8.1.gem");
+        assertNotNull("rake gem found", rakeGem);
+        assertTrue("rake gem found", rakeGem.isFile());
+        return rakeGem;
     }
 
     // XXX

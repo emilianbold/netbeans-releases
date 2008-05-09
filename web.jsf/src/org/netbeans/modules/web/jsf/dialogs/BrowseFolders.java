@@ -91,6 +91,9 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
         btv.setRootVisible( false );
         btv.setSelectionMode( javax.swing.tree.TreeSelectionModel.SINGLE_TREE_SELECTION );
         btv.setBorder( SAMPLE_SCROLL_PANE.getBorder() );
+        btv.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/dialogs/Bundle").getString("ACSN_FlodersTree"));
+        btv.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/dialogs/Bundle").getString("ACSD_FlodersTree"));
+        jLabel1.setLabelFor(btv.getViewport().getView());
         folderPanel.add( btv, java.awt.BorderLayout.CENTER );
     }
         
@@ -114,8 +117,11 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
 
         setLayout(new java.awt.GridBagLayout());
 
+        getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/dialogs/Bundle").getString("ACSD_BrowseFiles"));
+
         setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(12, 12, 12, 12)));
         jLabel1.setText(org.openide.util.NbBundle.getMessage(BrowseFolders.class, "LBL_Folders"));
+        jLabel1.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/dialogs/Bundle").getString("MNE_Folders").charAt(0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -155,8 +161,10 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
         
         options[ 0 ].setActionCommand( OptionsListener.COMMAND_SELECT );
         options[ 0 ].addActionListener( optionsListener );
+        options[ 0 ].getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/dialogs/Bundle").getString("ACSD_SelectFile"));
         options[ 1 ].setActionCommand( OptionsListener.COMMAND_CANCEL );
         options[ 1 ].addActionListener( optionsListener );    
+        options[ 1 ].getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/dialogs/Bundle").getString("ACSD_Cancel"));
         
         DialogDescriptor dialogDescriptor = new DialogDescriptor( 
             bf,                                     // innerPane

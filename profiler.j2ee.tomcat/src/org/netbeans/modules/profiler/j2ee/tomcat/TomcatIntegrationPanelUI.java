@@ -43,9 +43,9 @@ package org.netbeans.modules.profiler.j2ee.tomcat;
 import java.awt.Font;
 import javax.swing.ComboBoxModel;
 import javax.swing.UIManager;
-import org.netbeans.modules.profiler.ui.wizards.providers.TargetPlatform;
-import org.netbeans.modules.profiler.ui.wizards.panels.components.DirectorySelector;
-import org.netbeans.modules.profiler.ui.wizards.panels.components.JavaPlatformPanelComponent;
+import org.netbeans.modules.profiler.attach.panels.components.DirectorySelector;
+import org.netbeans.modules.profiler.attach.panels.components.JavaPlatformPanelComponent;
+import org.netbeans.modules.profiler.attach.providers.TargetPlatform;
 
 /**
  *
@@ -70,12 +70,12 @@ public class TomcatIntegrationPanelUI extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        platformSelector = new org.netbeans.modules.profiler.ui.wizards.panels.components.JavaPlatformPanelComponent();
+        platformSelector = new org.netbeans.modules.profiler.attach.panels.components.JavaPlatformPanelComponent();
         jPanel1 = new javax.swing.JPanel();
-        directoryTomcat = new org.netbeans.modules.profiler.ui.wizards.panels.components.DirectorySelector();
+        directoryTomcat = new org.netbeans.modules.profiler.attach.panels.components.DirectorySelector();
         labelTomcat = new javax.swing.JLabel();
         labelCatalina = new javax.swing.JLabel();
-        directoryCatalina = new org.netbeans.modules.profiler.ui.wizards.panels.components.DirectorySelector();
+        directoryCatalina = new org.netbeans.modules.profiler.attach.panels.components.DirectorySelector();
 
         setMaximumSize(new java.awt.Dimension(800, 600));
         setMinimumSize(new java.awt.Dimension(400, 300));
@@ -184,12 +184,12 @@ public class TomcatIntegrationPanelUI extends javax.swing.JPanel {
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private org.netbeans.modules.profiler.ui.wizards.panels.components.DirectorySelector directoryCatalina;
-    private org.netbeans.modules.profiler.ui.wizards.panels.components.DirectorySelector directoryTomcat;
+    private org.netbeans.modules.profiler.attach.panels.components.DirectorySelector directoryCatalina;
+    private org.netbeans.modules.profiler.attach.panels.components.DirectorySelector directoryTomcat;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JLabel labelCatalina;
     private javax.swing.JLabel labelTomcat;
-    private org.netbeans.modules.profiler.ui.wizards.panels.components.JavaPlatformPanelComponent platformSelector;
+    private org.netbeans.modules.profiler.attach.panels.components.JavaPlatformPanelComponent platformSelector;
     // End of variables declaration//GEN-END:variables
   
   public void refreshJvmList(final TargetPlatform preselectedPlatform) {

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -111,7 +111,7 @@ public abstract class OperationSupportImpl {
     }
     
     private static class ForEnable extends OperationSupportImpl {
-        public Boolean doOperation(ProgressHandle progress,
+        public synchronized Boolean doOperation(ProgressHandle progress,
                 OperationContainer<?> container) throws OperationException {
             try {
                 if (progress != null) {
@@ -177,7 +177,7 @@ public abstract class OperationSupportImpl {
     private static class ForDisable extends OperationSupportImpl {
         private Collection<File> controlFileForDisable = null;
         private Collection<UpdateElement> affectedModules = null;
-        public Boolean doOperation(ProgressHandle progress,
+        public synchronized Boolean doOperation(ProgressHandle progress,
                 OperationContainer<?> container) throws OperationException {
             try {
                 if (progress != null) {
@@ -253,7 +253,7 @@ public abstract class OperationSupportImpl {
     }
     
     private static class ForDirectDisable extends OperationSupportImpl {
-        public Boolean doOperation(ProgressHandle progress,
+        public synchronized Boolean doOperation(ProgressHandle progress,
                 OperationContainer<?> container) throws OperationException {
             try {
                 if (progress != null) {
@@ -305,7 +305,7 @@ public abstract class OperationSupportImpl {
     private static class ForUninstall extends OperationSupportImpl {
         private Collection<File> files4remove = null;
         private Collection<UpdateElement> affectedModules = null;
-        public Boolean doOperation(ProgressHandle progress,
+        public synchronized Boolean doOperation(ProgressHandle progress,
                 OperationContainer<?> container) throws OperationException {
             try {
                 if (progress != null) {
@@ -390,7 +390,7 @@ public abstract class OperationSupportImpl {
     }
     
     private static class ForDirectUninstall extends OperationSupportImpl {
-        public Boolean doOperation(ProgressHandle progress,
+        public synchronized Boolean doOperation(ProgressHandle progress,
                 OperationContainer<?> container) throws OperationException {
             try {
                 if (progress != null) {
@@ -466,7 +466,7 @@ public abstract class OperationSupportImpl {
     }
     
     private static class ForInstall extends OperationSupportImpl {
-        public Boolean doOperation(ProgressHandle progress,
+        public synchronized Boolean doOperation(ProgressHandle progress,
                 OperationContainer container) throws OperationException {
             throw new UnsupportedOperationException("Not supported yet.");
         }
@@ -485,7 +485,7 @@ public abstract class OperationSupportImpl {
     }
     
     private static class ForUpdate extends OperationSupportImpl {
-        public Boolean doOperation(ProgressHandle progress,
+        public synchronized Boolean doOperation(ProgressHandle progress,
                 OperationContainer container) throws OperationException {
             throw new UnsupportedOperationException("Not supported yet.");
         }
@@ -504,7 +504,7 @@ public abstract class OperationSupportImpl {
     }
     
     private static class ForCustomInstall extends OperationSupportImpl {
-        public Boolean doOperation(ProgressHandle progress,
+        public synchronized Boolean doOperation(ProgressHandle progress,
                 OperationContainer<?> container) throws OperationException {
             try {
                 
@@ -520,7 +520,9 @@ public abstract class OperationSupportImpl {
                 for (NativeComponentUpdateElementImpl impl : customElements) {
                     CustomInstaller installer = impl.getInstallInfo ().getCustomInstaller ();
                     assert installer != null : "CustomInstaller must found for " + impl.getUpdateElement ();
-                    success = installer.install (impl.getCodeName (), impl.getSpecificationVersion ().toString (), progress);
+                    success = installer.install (impl.getCodeName (),
+                            impl.getSpecificationVersion () == null ? null : impl.getSpecificationVersion ().toString (),
+                            progress);
                     if (success) {
                         UpdateUnitImpl unitImpl = Trampoline.API.impl (impl.getUpdateUnit ());
                         unitImpl.setInstalled (impl.getUpdateElement ());

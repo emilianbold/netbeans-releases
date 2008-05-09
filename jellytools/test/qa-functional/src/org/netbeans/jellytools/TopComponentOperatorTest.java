@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -85,6 +85,7 @@ public class TopComponentOperatorTest extends JellyTestCase {
     }
     
     /** Print out test name. */
+    @Override
     public void setUp() {
         System.out.println("### "+getName()+" ###");
     }
@@ -131,13 +132,13 @@ public class TopComponentOperatorTest extends JellyTestCase {
         TopComponentOperator tco = new TopComponentOperator("SampleClass1.java");  //NOI18N
         assertEquals("Constructor new TopComponentOperator(String) failed.", "SampleClass1.java", tco.getName());  //NOI18N
         tco = new TopComponentOperator("SampleClass", 0);  //NOI18N
-        TopComponentOperator tco1 = new TopComponentOperator("SampleClass", 1);  //NOI18N
-        assertFalse("Constructor new TopComponentOperator(String, int) failed.", tco.getName().equals(tco1.getName()));  //NOI18N
+        TopComponentOperator tcoIndex1 = new TopComponentOperator("SampleClass", 1);  //NOI18N
+        assertFalse("Constructor new TopComponentOperator(String, int) failed.", tco.getName().equals(tcoIndex1.getName()));  //NOI18N
         tco = new TopComponentOperator(MainWindowOperator.getDefault(), "SampleClass1.java");  //NOI18N
         assertEquals("Constructor new TopComponentOperator(ContainerOperator, String) failed.", "SampleClass1.java", tco.getName());  //NOI18N
         tco = new TopComponentOperator(MainWindowOperator.getDefault(), "SampleClass", 0);  //NOI18N
-        tco1 = new TopComponentOperator(MainWindowOperator.getDefault(), "SampleClass", 1);  //NOI18N
-        assertFalse("Constructor new TopComponentOperator(ContainerOperator, String, int) failed.", tco.getName().equals(tco1.getName()));  //NOI18N
+        tcoIndex1 = new TopComponentOperator(MainWindowOperator.getDefault(), "SampleClass", 1);  //NOI18N
+        assertFalse("Constructor new TopComponentOperator(ContainerOperator, String, int) failed.", tco.getName().equals(tcoIndex1.getName()));  //NOI18N
         new TopComponentOperator(MainWindowOperator.getDefault());  //NOI18N
         new TopComponentOperator(MainWindowOperator.getDefault(), 1);  //NOI18N
     }
@@ -234,7 +235,7 @@ public class TopComponentOperatorTest extends JellyTestCase {
         boolean saved = eo.contains("NOT THERE");
         eo.closeDiscard();
         // clean up - delete editable source
-        new DeleteAction().performAPI(editableSourceNode);
+        new DeleteAction().perform(editableSourceNode);
         // "Safe Delete"
         String safeDeleteTitle = Bundle.getString("org.netbeans.modules.refactoring.spi.impl.Bundle", "LBL_SafeDel"); // NOI18N
         new NbDialogOperator(safeDeleteTitle).ok();

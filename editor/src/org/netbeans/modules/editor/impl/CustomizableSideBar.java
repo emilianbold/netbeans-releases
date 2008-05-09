@@ -233,7 +233,7 @@ public final class CustomizableSideBar {
         return sideBarsMap;
     }
 
-    private static Map<SideBarPosition, List<SideBarFactory>> getFactoriesMap(String mimeType) {
+    public static Map<SideBarPosition, List<SideBarFactory>> getFactoriesMap(String mimeType) {
         MimePath mimePath = MimePath.parse(mimeType);
         
         Lookup.Result<SideBarFactoriesProvider> lR = LR.get(mimePath);
@@ -251,7 +251,9 @@ public final class CustomizableSideBar {
         }
         
         Collection<? extends SideBarFactoriesProvider> providers = lR.allInstances();
-        assert providers.size() == 1 : "There should always be only one SideBarFactoriesProvider"; //NOI18N
+        assert providers.size() == 1 : "There should always be only one SideBarFactoriesProvider; provider-count="
+                + providers.size() + ", mimeType=" + mimeType + ", providers: " + providers; //NOI18N
+
         
         SideBarFactoriesProvider provider = providers.iterator().next();
         return provider.getFactories();

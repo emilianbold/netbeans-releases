@@ -37,7 +37,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.profiler.freeform;
 
 import org.apache.tools.ant.module.api.support.TargetLister;
@@ -45,13 +44,10 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.lib.profiler.ProfilerLogger;
-import org.netbeans.lib.profiler.client.ClientUtils;
 import org.netbeans.lib.profiler.common.Profiler;
 import org.netbeans.modules.profiler.AbstractProjectTypeProfiler;
 import org.netbeans.modules.profiler.ui.NBHTMLLabel;
 import org.netbeans.modules.profiler.ui.ProfilerDialogs;
-import org.netbeans.modules.profiler.utils.ProjectUtilities;
-import org.netbeans.modules.profiler.utils.SourceUtils;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.openide.DialogDescriptor;
 import org.openide.NotifyDescriptor;
@@ -70,8 +66,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import javax.swing.*;
+import org.netbeans.modules.profiler.projectsupport.utilities.SourceUtils;
+import org.netbeans.modules.profiler.utils.ProjectUtilities;
 import org.openide.util.HelpCtx;
-
 
 /**
  * A class providing basic support for profiling free-form projects.
@@ -80,20 +77,16 @@ import org.openide.util.HelpCtx;
  */
 public final class FreeFormProjectTypeProfiler extends AbstractProjectTypeProfiler {
     //~ Inner Classes ------------------------------------------------------------------------------------------------------------
-
     private static final class AntTaskSelectPanel extends JPanel implements HelpCtx.Provider {
-        
+
         private static final String HELP_CTX_KEY = "FreeFormProjectTypeProfiler.AntTaskSelectPanel.HelpCtx"; // NOI18N
         private static final HelpCtx HELP_CTX = new HelpCtx(HELP_CTX_KEY);
-    
         //~ Instance fields ------------------------------------------------------------------------------------------------------
-
         final JComboBox targetBox;
         final JLabel label;
         final NBHTMLLabel descriptionLabel;
 
         //~ Constructors ---------------------------------------------------------------------------------------------------------
-
         AntTaskSelectPanel(final List /*<String>*/ list, final int type, final JButton okButton) {
             list.add(0, SELECT_TARGET_ITEM_STRING);
 
@@ -107,10 +100,11 @@ public final class FreeFormProjectTypeProfiler extends AbstractProjectTypeProfil
             targetBox = new JComboBox(list.toArray(new Object[list.size()]));
             targetBox.setSelectedIndex(0);
             targetBox.addItemListener(new ItemListener() {
-                    public void itemStateChanged(final ItemEvent e) {
-                        okButton.setEnabled(targetBox.getSelectedIndex() != 0);
-                    }
-                });
+
+                public void itemStateChanged(final ItemEvent e) {
+                    okButton.setEnabled(targetBox.getSelectedIndex() != 0);
+                }
+            });
 
             setLayout(new GridBagLayout());
 
@@ -156,7 +150,6 @@ public final class FreeFormProjectTypeProfiler extends AbstractProjectTypeProfil
         }
 
         //~ Methods --------------------------------------------------------------------------------------------------------------
-
         public String getTargetName() {
             if (targetBox.getSelectedIndex() == 0) {
                 return null; //nothing selected
@@ -175,26 +168,26 @@ public final class FreeFormProjectTypeProfiler extends AbstractProjectTypeProfil
     // -----
     // I18N String constants
     private static final String ERROR_PARSING_BUILDFILE_MSG = NbBundle.getMessage(FreeFormProjectTypeProfiler.class,
-                                                                                  "FreeFormProjectTypeProfiler_ErrorParsingBuildFileMsg"); // NOI18N
+            "FreeFormProjectTypeProfiler_ErrorParsingBuildFileMsg"); // NOI18N
     private static final String OK_BUTTON_NAME = NbBundle.getMessage(FreeFormProjectTypeProfiler.class,
-                                                                     "FreeFormProjectTypeProfiler_OkButtonName"); // NOI18N
+            "FreeFormProjectTypeProfiler_OkButtonName"); // NOI18N
     private static final String SELECT_PROFILING_TASK_DIALOG_CAPTION = NbBundle.getMessage(FreeFormProjectTypeProfiler.class,
-                                                                                           "FreeFormProjectTypeProfiler_SelectProfilingTaskDialogCaption"); // NOI18N
+            "FreeFormProjectTypeProfiler_SelectProfilingTaskDialogCaption"); // NOI18N
     private static final String NO_PROFILER_TASK_MSG = NbBundle.getMessage(FreeFormProjectTypeProfiler.class,
-                                                                           "FreeFormProjectTypeProfiler_NoProfilerTaskMsg"); // NOI18N
+            "FreeFormProjectTypeProfiler_NoProfilerTaskMsg"); // NOI18N
     private static final String SELECT_TARGET_ITEM_STRING = NbBundle.getMessage(FreeFormProjectTypeProfiler.class,
-                                                                                "FreeFormProjectTypeProfiler_SelectTargetItemString"); // NOI18N
+            "FreeFormProjectTypeProfiler_SelectTargetItemString"); // NOI18N
     private static final String SELECT_PROJECT_TASK_LABEL_STRING = NbBundle.getMessage(FreeFormProjectTypeProfiler.class,
-                                                                                       "FreeFormProjectTypeProfiler_SelectProjectTaskLabelString"); // NOI18N
+            "FreeFormProjectTypeProfiler_SelectProjectTaskLabelString"); // NOI18N
     private static final String SELECT_FILE_TASK_LABEL_STRING = NbBundle.getMessage(FreeFormProjectTypeProfiler.class,
-                                                                                    "FreeFormProjectTypeProfiler_SelectFileTaskLabelString"); // NOI18N
+            "FreeFormProjectTypeProfiler_SelectFileTaskLabelString"); // NOI18N
     private static final String CREATE_NEW_TARGET_MSG = NbBundle.getMessage(FreeFormProjectTypeProfiler.class,
-                                                                            "FreeFormProjectTypeProfiler_CreateNewTargetMsg"); // NOI18N
+            "FreeFormProjectTypeProfiler_CreateNewTargetMsg"); // NOI18N
     private static final String TARGET_BOX_ACCESS_NAME = NbBundle.getMessage(FreeFormProjectTypeProfiler.class,
-                                                                             "FreeFormProjectTypeProfiler_TargetBoxAccessName"); // NOI18N
+            "FreeFormProjectTypeProfiler_TargetBoxAccessName"); // NOI18N
     private static final String TARGET_BOX_ACCESS_DESCR = NbBundle.getMessage(FreeFormProjectTypeProfiler.class,
-                                                                              "FreeFormProjectTypeProfiler_TargetBoxAccessDescr"); // NOI18N
-                                                                                                                                   // -----
+            "FreeFormProjectTypeProfiler_TargetBoxAccessDescr"); // NOI18N
+    // -----
     private static final String FREEFORM_PROJECT_NAMESPACE_40 = "http://www.netbeans.org/ns/freeform-project/1"; // NOI18N
     private static final String FREEFORM_PROJECT_NAMESPACE_41 = "http://www.netbeans.org/ns/freeform-project/2"; // NOI18N
     private static final String PROFILE_TARGET_ATTRIBUTE = "profile-target"; // NOI18N
@@ -204,11 +197,10 @@ public final class FreeFormProjectTypeProfiler extends AbstractProjectTypeProfil
 
     // --- ProjectTypeProfiler implementation ------------------------------------------------------------------------------
     public String getProfilerTargetName(final Project project, final FileObject buildScript, final int type,
-                                        final FileObject profiledClass) {
-        final Element e = ((AuxiliaryConfiguration) project.getLookup().lookup(AuxiliaryConfiguration.class))
-                                                                                                                                                                                                              .getConfigurationFragment("data",
-                                                                                                                                                                                                                                        ProjectUtilities.PROFILER_NAME_SPACE,
-                                                                                                                                                                                                                                        false); // NOI18N
+            final FileObject profiledClass) {
+        final Element e = ((AuxiliaryConfiguration) project.getLookup().lookup(AuxiliaryConfiguration.class)).getConfigurationFragment("data",
+                ProjectUtilities.PROFILER_NAME_SPACE,
+                false); // NOI18N
         String profileTarget = e.getAttribute(PROFILE_TARGET_ATTRIBUTE);
         String profileSingleTarget = e.getAttribute(PROFILE_SINGLE_TARGET_ATTRIBUTE);
 
@@ -266,8 +258,8 @@ public final class FreeFormProjectTypeProfiler extends AbstractProjectTypeProfil
 
     public boolean checkProjectIsModifiedForProfiler(final Project project) {
         Element e = ((AuxiliaryConfiguration) project.getLookup().lookup(AuxiliaryConfiguration.class)).getConfigurationFragment("data",
-                                                                                                                                 ProjectUtilities.PROFILER_NAME_SPACE,
-                                                                                                                                 false); // NOI18N
+                ProjectUtilities.PROFILER_NAME_SPACE,
+                false); // NOI18N
 
         if (e != null) {
             final String profileTarget = e.getAttribute(PROFILE_TARGET_ATTRIBUTE);
@@ -285,14 +277,14 @@ public final class FreeFormProjectTypeProfiler extends AbstractProjectTypeProfil
 
     public void configurePropertiesForProfiling(final Properties props, final Project project, final FileObject profiledClassFile) {
         if (profiledClassFile != null) { // In case the class to profile is explicitely selected (profile-single)
-                                         // 1. specify profiled class name
+            // 1. specify profiled class name
 
             final String profiledClass = SourceUtils.getToplevelClassName(profiledClassFile);
             props.setProperty("profile.class", profiledClass); //NOI18N
 
             // 2. include it in javac.includes so that the compile-single picks it up
             final String clazz = FileUtil.getRelativePath(ProjectUtilities.getRootOf(ProjectUtilities.getSourceRoots(project),
-                                                                                     profiledClassFile), profiledClassFile);
+                    profiledClassFile), profiledClassFile);
             props.setProperty("javac.includes", clazz); //NOI18N
         }
     }
@@ -307,7 +299,7 @@ public final class FreeFormProjectTypeProfiler extends AbstractProjectTypeProfil
     private boolean saveProfilerConfig(final Project project, final String profileTarget, final String profileSingleTarget) {
         // not yet modified for profiler => create profiler-build-impl & modify build.xml and project.xml
         final Element profilerFragment = XMLUtil.createDocument("ignore", null, null, null) // NOI18N
-        .createElementNS(ProjectUtilities.PROFILER_NAME_SPACE, "data"); // NOI18N
+                .createElementNS(ProjectUtilities.PROFILER_NAME_SPACE, "data"); // NOI18N
 
         profilerFragment.setAttribute(PROFILE_VERSION_ATTRIBUTE, VERSION_NUMBER);
 
@@ -320,7 +312,7 @@ public final class FreeFormProjectTypeProfiler extends AbstractProjectTypeProfil
         }
 
         ((AuxiliaryConfiguration) project.getLookup().lookup(AuxiliaryConfiguration.class)).putConfigurationFragment(profilerFragment,
-                                                                                                                     false);
+                false);
 
         try {
             ProjectManager.getDefault().saveProject(project);
@@ -344,14 +336,13 @@ public final class FreeFormProjectTypeProfiler extends AbstractProjectTypeProfil
      * @return String name of the selected target or null if cancelled by the user
      */
     private String selectProfilingTarget(final Project project, final FileObject buildScript, final int type,
-                                         final String currentTarget) {
+            final String currentTarget) {
         final List targets = Util.getAntScriptTargets(buildScript);
         final List l = Util.getAntScriptTargetNames(buildScript);
 
         if (l == null) {
-            Profiler.getDefault()
-                    .displayError(MessageFormat.format(ERROR_PARSING_BUILDFILE_MSG,
-                                                       new Object[] { ProjectUtils.getInformation(project).getName() }));
+            Profiler.getDefault().displayError(MessageFormat.format(ERROR_PARSING_BUILDFILE_MSG,
+                    new Object[]{ProjectUtils.getInformation(project).getName()                    }));
 
             return null;
         }
@@ -367,8 +358,8 @@ public final class FreeFormProjectTypeProfiler extends AbstractProjectTypeProfil
 
         while (true) {
             final DialogDescriptor dd = new DialogDescriptor(atsp, SELECT_PROFILING_TASK_DIALOG_CAPTION, true,
-                                                             new Object[] { okButton, DialogDescriptor.CANCEL_OPTION }, okButton,
-                                                             DialogDescriptor.BOTTOM_ALIGN, null, null);
+                    new Object[]{okButton, DialogDescriptor.CANCEL_OPTION                    }, okButton,
+                    DialogDescriptor.BOTTOM_ALIGN, null, null);
             final Dialog d = ProfilerDialogs.createDialog(dd);
             d.setVisible(true);
 
@@ -382,8 +373,8 @@ public final class FreeFormProjectTypeProfiler extends AbstractProjectTypeProfil
                         if (checkTarget(t.getElement())) {
                             return targetName;
                         } else if (ProfilerDialogs.notify(new NotifyDescriptor.Confirmation(NO_PROFILER_TASK_MSG,
-                                                                                                NotifyDescriptor.OK_CANCEL_OPTION,
-                                                                                                NotifyDescriptor.WARNING_MESSAGE)) == NotifyDescriptor.OK_OPTION) {
+                                NotifyDescriptor.OK_CANCEL_OPTION,
+                                NotifyDescriptor.WARNING_MESSAGE)) == NotifyDescriptor.OK_OPTION) {
                             return targetName;
                         }
                     }

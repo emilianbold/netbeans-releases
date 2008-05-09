@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.modelimpl.uid;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -54,6 +55,7 @@ import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 
@@ -89,7 +91,7 @@ public class UIDCsmConverter {
             return result;
         } catch (StackOverflowError ex) {
             // needed to analyze IZ99230; it's fixed!
-	    Exception ex2 = new Exception("StackOverflowError for UID " + uid);
+	    Exception ex2 = new Exception("StackOverflowError for UID " + uid); // NOI18N
 	    ex2.setStackTrace(ex.getStackTrace());
 	    DiagnosticExceptoins.register(ex2);
             return null;
@@ -139,6 +141,10 @@ public class UIDCsmConverter {
         Collection<T> out = UIDsToList(uids, false);
         return out;
     }
+
+    public static <T extends CsmMacro> Iterator<T> UIDsToMacros(Collection<CsmUID<T>> uids, CsmFilter filter) {
+        return new LazyCsmCollection<T, T>(new ArrayList<CsmUID<T>>(uids), true).iterator(filter);
+    }
     
     public static <T extends CsmInclude> Collection<T> UIDsToIncludes(Collection<CsmUID<T>> uids) {
         Collection<T> out = UIDsToList(uids, false);
@@ -147,7 +153,7 @@ public class UIDCsmConverter {
     
     private static <T extends CsmIdentifiable> Collection<T> UIDsToList(Collection<CsmUID<T>> uids, boolean allowNullsAndSkip) {
         allowNullsAndSkip |= TraceFlags.SAFE_UID_ACCESS;
-        return new LazyCsmCollection<T>(new ArrayList<CsmUID<T>>(uids), allowNullsAndSkip);
+        return new LazyCsmCollection<T, T>(new ArrayList<CsmUID<T>>(uids), allowNullsAndSkip);
 //        List<T> out = new ArrayList<T>(uids.size());
 //        for (CsmUID<T> uid : uids) {
 //            assert uid != null;
@@ -158,6 +164,10 @@ public class UIDCsmConverter {
 //            }
 //        }
 //        return out;
+    }
+
+    public static <T extends CsmIdentifiable> Iterator<T> UIDsToDeclarations(Collection<CsmUID<T>> nonSharedCollection, CsmFilter filter) {
+        return new LazyCsmCollection<T, T>(nonSharedCollection, true).iterator(filter);
     }
     
     public static <T extends CsmIdentifiable> T UIDtoIdentifiable(CsmUID<T> uid) {

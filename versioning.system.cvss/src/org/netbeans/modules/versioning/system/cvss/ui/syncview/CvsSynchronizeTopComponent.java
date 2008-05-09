@@ -140,8 +140,8 @@ public class CvsSynchronizeTopComponent extends TopComponent implements External
         updateTitle();
     }
     
-    public void contentRefreshed() {
-        lastUpdateTimestamp = System.currentTimeMillis();
+    public void contentRefreshed(long timestamp) {
+        lastUpdateTimestamp = timestamp;
         updateTitle();
     }
     

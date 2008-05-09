@@ -414,7 +414,7 @@ public class ELExpression {
             if (bean != null){
                 String prefix = getPropertyBeingTypedName();
                 
-                for (ExecutableElement method : ElementFilter.methodsIn(bean.getEnclosedElements())){
+                for (ExecutableElement method : ElementFilter.methodsIn(parameter.getElements().getAllMembers(bean))){
                     String propertyName = getExpressionSuffix(method);
                     
                     if (propertyName != null && propertyName.startsWith(prefix)){

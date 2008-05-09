@@ -368,6 +368,7 @@ extends FlyOffsetGapList<Object> implements MutableTokenList<T> {
         return false; // Should never become removed
     }
 
+    @Override
     public String toString() {
         return LexerUtilsConstants.appendTokenList(null, this).toString();
     }

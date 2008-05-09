@@ -65,7 +65,7 @@ public class StringTableSection extends ElfSection {
     }
 
     public StringTableSection(ElfReader reader, byte[] stringtable) {
-        super(null, 0, null, null);
+        super(null, 0, null, "String Table"); //NOI18N
         this.stringtable = stringtable;
     }
     

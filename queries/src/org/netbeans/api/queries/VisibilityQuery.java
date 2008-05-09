@@ -41,6 +41,7 @@
 
 package org.netbeans.api.queries;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -48,7 +49,9 @@ import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.spi.queries.VisibilityQueryImplementation;
+import org.netbeans.spi.queries.VisibilityQueryImplementation2;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -99,6 +102,33 @@ public final class VisibilityQuery {
         }
         return true;
     }
+    
+    /**
+     * Check whether a file is recommended to be visible.
+     * Default return value is visible unless at least one VisibilityQueryImplementation
+     * provider says hidden.
+     * @param file a file which should be checked
+     * @return true if it is recommended to show this file
+     * @since org.netbeans.modules.queries/1 1.12
+     */
+    public boolean isVisible(File file) {
+        for (VisibilityQueryImplementation vqi : getVqiInstances()) {
+            if (vqi instanceof VisibilityQueryImplementation2) {
+                if (!((VisibilityQueryImplementation2)vqi).isVisible(file)) {
+                    return false;
+                }
+            } else {
+                FileObject fo = FileUtil.toFileObject(file);
+                if (fo != null) {
+                    if (!vqi.isVisible(fo)) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+    
 
     /**
      * Add a listener to changes.

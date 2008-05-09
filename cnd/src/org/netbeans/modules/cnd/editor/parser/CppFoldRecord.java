@@ -79,9 +79,9 @@ public class CppFoldRecord {
     public CppFoldRecord(int type, int startOffset, int endOffset)
     {
 	this.type = type;
-	this.startLnum = startLnum;
+	this.startLnum = -1;
 	this.startOffset = startOffset;
-	this.endLnum = endLnum;
+	this.endLnum = -1;
 	this.endOffset = endOffset;
     }
     
@@ -103,13 +103,16 @@ public class CppFoldRecord {
     }
 
     public int getStartLine() {
+        assert startLnum != -1;
         return startLnum;
     }
     
     public int getEndLine() {
+        assert endLnum != -1;
         return endLnum;
     }
     
+    @Override
     public String toString() {
         // I'm considering this as a debug function and making all
 	// strings NOI18N

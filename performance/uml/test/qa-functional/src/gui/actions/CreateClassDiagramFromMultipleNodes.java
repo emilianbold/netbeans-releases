@@ -38,14 +38,13 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
-
 package gui.actions;
 
+import java.awt.event.InputEvent;
 import java.io.File;
 
-import javax.swing.tree.TreePath;
 
+import javax.swing.tree.TreePath;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
 import org.netbeans.jellytools.nodes.Node;
@@ -68,84 +67,83 @@ import org.netbeans.jemmy.operators.JComboBoxOperator;
  *
  */
 public class CreateClassDiagramFromMultipleNodes extends org.netbeans.performance.test.utilities.PerformanceTestCase {
-    
+
     private static String testProjectName = "jEdit-Model";
-    private static String testDiagramName = "AbbrevEditor";    
-    private Node diag;
-    private NbDialogOperator create_diag ;
-   
+    private NbDialogOperator create_diag;
+
     /** Creates a new instance of CreateClassDiagramFromMultipleNodes */
     public CreateClassDiagramFromMultipleNodes(String testName) {
         super(testName);
-        //TODO: Adjust expectedTime value        
         expectedTime = 5000;
-        WAIT_AFTER_OPEN=4000;        
+        WAIT_AFTER_OPEN = 4000;
     }
-    public CreateClassDiagramFromMultipleNodes(String testName, String  performanceDataName) {
+
+    public CreateClassDiagramFromMultipleNodes(String testName, String performanceDataName) {
         super(testName, performanceDataName);
-        //TODO: Adjust expectedTime value
         expectedTime = 5000;
-        WAIT_AFTER_OPEN=4000;                
+        WAIT_AFTER_OPEN = 4000;
     }
-    
-    public void initialize(){
+
+    @Override
+    public void initialize() {
         log(":: initialize");
-        
-        ProjectSupport.openProject(System.getProperty("xtest.tmpdir")+File.separator+testProjectName);
-//        new CloseAllDocumentsAction().performAPI();
-        
+        ProjectSupport.openProject(System.getProperty("xtest.tmpdir") + File.separator + testProjectName);
     }
-   
+
     public void prepare() {
         log(":: prepare");
+
         Node pNode = new ProjectsTabOperator().getProjectRootNode(testProjectName);
-        diag = new Node(pNode,"Model"+"|"+"org"+"|"+"gjt"+"|"+"sp"+"|"+"jedit"+"|"+"gui"+"|"+testDiagramName);
-        diag.select();
-        new EventTool().waitNoEvent(1000);
+        Node diag1 = new Node(pNode, "Model|org|gjt|sp|jedit|gui|AbbrevEditor");
+        Node diag2 = new Node(pNode, "Model|org|gjt|sp|jedit|gui|IOProgressMonitor");
         JTreeOperator projectTree = new ProjectsTabOperator().tree();
- 
-        TreePath[] arrTreePath ;
-        arrTreePath=new TreePath[40] ;
-        for (int i=0; i<arrTreePath.length ;i++) {
-        arrTreePath[i]=projectTree.getPathForRow(22+i);
-    }  
-         projectTree.callPopupOnPaths(arrTreePath);   
-         JPopupMenuOperator selectMenu = new JPopupMenuOperator();
-         selectMenu.pushMenu("Create Diagram From Selected Elements");
+
+        TreePath path1 = diag1.getTreePath();
+        TreePath path2 = diag2.getTreePath();
+
+        projectTree.clickOnPath(path1, 1, InputEvent.BUTTON1_MASK);
+        new EventTool().waitNoEvent(500);
+        projectTree.clickOnPath(path2, 1, InputEvent.BUTTON1_MASK, InputEvent.SHIFT_MASK);
+        new EventTool().waitNoEvent(2000);
+        projectTree.clickOnPath(path2, 1, InputEvent.BUTTON3_MASK);
+
+        log(projectTree.getSelectionCount() + " elements selected");
+
+        JPopupMenuOperator selectMenu = new JPopupMenuOperator();
+
+        selectMenu.pushMenu("Create Diagram From Selected Elements");
 
         create_diag = new NbDialogOperator("Create New Diagram");
+        create_diag.move(0, 0);
         new EventTool().waitNoEvent(1000);
-	JListOperator diag_type = new JListOperator(create_diag,1);
+        JListOperator diag_type = new JListOperator(create_diag, 1);
         diag_type.selectItem("Class Diagram");
         JComboBoxOperator spaceCombo = new JComboBoxOperator(create_diag);
         spaceCombo.selectItem("jEdit-Model");
-        
     }
 
     public ComponentOperator open() {
         log("::open");
- 
-       JButtonOperator finishButton = new JButtonOperator(create_diag,"Finish");
+
+        JButtonOperator finishButton = new JButtonOperator(create_diag, "Finish");
         finishButton.push();
 
-         return null;
+        return null;
     }
-    
+
+    @Override
     protected void shutdown() {
         log("::shutdown");
         ProjectSupport.closeProject(testProjectName);
-//        new CloseAllDocumentsAction().performAPI();
     }
-   
 
-    public void close(){
+    @Override
+    public void close() {
         log("::close");
-     new CloseAllDocumentsAction().performAPI();
- 
-    } 
+        new CloseAllDocumentsAction().performAPI();
+    }
+
     public static void main(java.lang.String[] args) {
         junit.textui.TestRunner.run(new CreateClassDiagramFromMultipleNodes("measureTime"));
-    }      
-
-
+    }
 }

@@ -53,5 +53,6 @@ public class ClientWizardProperties {
     public static final String JAX_VERSION = "jaxVersion"; // NOI18N
     
     public static final String JAX_WS = "JAX-WS Style"; // NOI18N
-    public static final String JAX_RPC = "JAX-RPC Style"; // NOI18N    
+    public static final String JAX_RPC = "JAX-RPC Style"; // NOI18N   
+    public static final String USEDISPATCH = "useDispatch"; // NOI18N  
 }

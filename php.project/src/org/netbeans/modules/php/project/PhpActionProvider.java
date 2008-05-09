@@ -40,227 +40,90 @@
  */
 package org.netbeans.modules.php.project;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
-import org.netbeans.modules.php.rt.spi.providers.Command;
-import org.netbeans.modules.php.rt.spi.providers.CommandProvider;
-import org.netbeans.modules.php.rt.spi.providers.WebServerProvider;
-import org.netbeans.modules.php.rt.utils.PhpCommandUtils;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
+import javax.swing.Action;
+import org.netbeans.modules.php.project.ui.actions.Command;
+import org.netbeans.modules.php.project.ui.actions.CopyCommand;
+import org.netbeans.modules.php.project.ui.actions.DebugCommand;
+import org.netbeans.modules.php.project.ui.actions.DebugLocalCommand;
+import org.netbeans.modules.php.project.ui.actions.DebugSingleCommand;
+import org.netbeans.modules.php.project.ui.actions.DeleteCommand;
+import org.netbeans.modules.php.project.ui.actions.Displayable;
+import org.netbeans.modules.php.project.ui.actions.MoveCommand;
+import org.netbeans.modules.php.project.ui.actions.RenameCommand;
+import org.netbeans.modules.php.project.ui.actions.RunCommand;
+import org.netbeans.modules.php.project.ui.actions.RunLocalCommand;
+import org.netbeans.modules.php.project.ui.actions.RunSingleCommand;
 import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
+import org.openide.LifecycleManager;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 
-
 /**
- * @author ads
- *
+ * @author Radek Matous
  */
-class PhpActionProvider implements ActionProvider {
-
-    static final String LBL_PUT_FILES = "LBL_PutFilesToServer"; // NOI18N
-    static final String LBL_OPEN_CONTEXT = "LBL_OpenContext"; // NOI18N
-    static final String LBL_IMPORT_FILE = "LBL_ImportFile"; // NOI18N
-    static final String LBL_DEBUG_PROJECT = "LBL_DebugProject"; // NOI18N
-    static final String LBL_RUN_LOCAL = "LBL_RunLocal"; // NOI18N
+public class PhpActionProvider implements ActionProvider {
+    private final Map<String, Command> commands;
 
     PhpActionProvider(PhpProject project) {
-        myProject = project;
-
-        myCommands = new ArrayList<Command>(2);
-        myCommands.add(new ImportCommand(project));
-        myCommands.add(new RunLocalCommand(project));
-
-        // store standard comands into separate list.
-        // php-specific commands from myCommands List will be shown
-        // in PhpLogicalViewProvider.getProjectActions as is.
-        // And standard commands should be formatted 
-        //in PhpLogicalViewProvider.getStandardProjectActions
-        // manually to be shoun in traditional order.
-        myStandardCommands = new ArrayList<Command>(4);
-        myStandardCommands.add(new CopyCommand(project));
-        myStandardCommands.add(new DeleteCommand(project));
-        myStandardCommands.add(new MoveCommand(project));
-        myStandardCommands.add(new RenameCommand(project));
+        commands = new LinkedHashMap<String, Command>();
+        Command[] commandArray = new Command[] {
+            new RunCommand(project),
+            new DebugCommand(project),
+            new RunSingleCommand(project),
+            new DebugSingleCommand(project),
+            new RunLocalCommand(project),
+            new DebugLocalCommand(project),
+            new DeleteCommand(project),
+            new CopyCommand(project),
+            new MoveCommand(project),
+            new RenameCommand(project)
+        };
+        for (Command command : commandArray) {
+            commands.put(command.getCommandId(), command);
+        }
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.spi.project.ActionProvider#getSupportedActions()
-     */
     public String[] getSupportedActions() {
-        List<String> list = new LinkedList<String>();
-        
-        for (String commandId : getSupportedProviderActions()) {
-            list.add(commandId);
-        }
-        
-        for (String commandId : getSupportedProjectActions()) {
-            list.add(commandId);
-        }
-        
-        return list.toArray(new String[list.size()]);
-    }
-    
-    /* (non-Javadoc)
-     * @see org.netbeans.spi.project.ActionProvider#invokeAction(java.lang.String, org.openide.util.Lookup)
-     */
-    public void invokeAction(String command, Lookup lookup) throws IllegalArgumentException {
-
-        if (invokeProviderAction(command)){
-            return;
-        }
-
-        if (invokeProjectAction(command)){
-            return;
-        }
-
+        Set<String> commandIds = commands.keySet();
+        return commandIds.toArray(new String[commandIds.size()]);
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.spi.project.ActionProvider#isActionEnabled(java.lang.String, org.openide.util.Lookup)
-     */
-    public boolean isActionEnabled(String command, Lookup lookup) 
-            throws IllegalArgumentException 
-    {
-        return true;
-    }
-
-    public List<Command> getProjectCommands() {
-        return myCommands;
-    }
-
-    public List<Command> getStandardProjectCommands() {
-        return myStandardCommands;
-    }
-
-    /**
-     * Finds command with specified id in provider's commands and runs it.
-     * @returns true if command was run. false otherwise
-     */
-    private boolean invokeProviderAction(String command){
-        WebServerProvider provider = Utils.getProvider(getProject());
-        if (provider != null) {
-            CommandProvider commProvider = provider.getCommandProvider();
-            
-            Command[] commands = commProvider.getCommands(getProject());
-            if (doInvokeAction(command, commands)){
-                return true;
-            }
-
+    public void invokeAction(final String commandId, final Lookup lookup) throws IllegalArgumentException {
+        final Command command = getCommand(commandId);
+        command.getProject().getCopySupport().waitFinished();
+        if (command.saveRequired()) {
+            LifecycleManager.getDefault().saveAll();
         }
-        return false;
-    }
-    
-    /**
-     * Finds command with specified id in project's commands and runs it.
-     * @returns true if command was run. false otherwise
-     */
-    private boolean invokeProjectAction(String command){
-        if (doInvokeAction(command, getProjectCommands())) {
-            return true;
-        }
-
-        if (doInvokeAction(command, getStandardProjectCommands())) {
-            return true;
-        }
-        return false;
-    }
-    
-    /**
-     * @see invokeAction(String , Lookup , Command[] )
-     */
-    private boolean doInvokeAction(String commandToRun, 
-            Collection<Command> commands)
-    {
-        Command[] commandsArray = commands.toArray(new Command[]{});
-        return doInvokeAction(commandToRun, commandsArray);
-    }
-    
-    /**
-     * runs specified commandToRun from commands array if there is command with the same id.
-     * @returns true if command was run. false otherwise
-     */
-    private boolean doInvokeAction(String commandToRun, Command[] commands)
-    {
-        for (Command com : commands) {
-            String id = com.getId();
-            if (commandToRun.equals(id)) {
-                PhpCommandRunner.runCommand(com);
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private List<String> getSupportedProjectActions(){
-        List<String> list = new LinkedList<String>();
-
-        for (Command command : getProjectCommands()) {
-            if (command != null && command.isEnabled()) {
-                list.add(command.getId());
-            }
-        }
-        for (Command command : getStandardProjectCommands()) {
-            if (command != null && command.isEnabled()) {
-                list.add(command.getId());
-            }
-        }
-        
-        return list;
-    }
-    
-    private List<String> getSupportedProviderActions(){
-        List<String> list = new LinkedList<String>();
-        WebServerProvider provider = Utils.getProvider(getProject());
-        if (provider != null) {
-                CommandProvider commProvider = provider.getCommandProvider();
-                
-                Command[] commands = commProvider.getCommands(getProject());
-                for (Command command : commands) {
-                    if (command != null && command.isEnabled()) {
-                        list.add(command.getId());
-                    }
+        if (!command.asyncCallRequired()) {
+            command.invokeAction(lookup);
+        } else {
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    command.invokeAction(lookup);
                 }
-            }
-        return list;
-        
-    }
-    
-    private PhpProject getProject() {
-        return myProject;
-    }
-    
-    /** 
-     * <p>runs specified command.
-     * <p>uses org.openide.util.actions.CallableSystemAction.synchronousByDefault
-     * to decide if command should be started in separate thread or not.
-     */
-    public static class PhpCommandRunner {
-
-        //private static RequestProcessor RP = new RequestProcessor(
-        //        "Module-Actions", Integer.MAX_VALUE); // NOI18N
-
-        public static void runCommand(final Command command) {
-            
-            command.setActionFiles(PhpCommandUtils.getActionFiles());
-            
-            if (command.asynchronous()) {
-                Runnable r2 = new Runnable() {
-
-                    public void run() {
-                        command.run();
-                    }
-                };
-                RequestProcessor.getDefault().post(r2);
-                //RP.post(r2);
-            } else {
-                command.run();
-            }
+            });
         }
     }
-    
-    private final PhpProject myProject;
-    private List<Command> myCommands;
-    private List<Command> myStandardCommands;
+
+    public boolean isActionEnabled(String commandId, Lookup lookup) throws IllegalArgumentException {
+        return getCommand(commandId).isActionEnabled(lookup);
+    }
+
+    public Command getCommand(String commandId) {
+        Command retval = commands.get(commandId);
+        assert retval != null : commandId;
+        return retval;
+    }
+
+    public Action getAction(String commandId) {
+        Command command = getCommand(commandId);
+        assert command != null;
+        assert command instanceof Displayable;
+        return ProjectSensitiveActions.projectCommandAction(command.getCommandId(),
+                ((Displayable) command).getDisplayName(), null);
+    }
 }

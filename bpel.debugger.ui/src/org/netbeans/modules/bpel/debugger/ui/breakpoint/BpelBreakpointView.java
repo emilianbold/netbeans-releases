@@ -38,6 +38,9 @@ abstract class BpelBreakpointView implements NodeModel, TableModel, Constants {
     public static final String LINE_BREAKPOINT =
         "org/netbeans/modules/debugger/resources/breakpointsView/Breakpoint";
     
+    public static final String LINE_BREAKPOINT_HIT =
+        "org/netbeans/modules/debugger/resources/breakpointsView/BreakpointHit";
+    
     public static final String BROKEN_BREAKPOINT = 
         "org/netbeans/modules/debugger/resources/breakpointsView/Breakpoint_broken";
     

@@ -49,6 +49,8 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.io.File;
 import java.util.Arrays;
+import java.util.List;
+import org.netbeans.api.java.source.Comment.Style;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.source.TestUtil;
 import org.openide.filesystems.FileObject;
@@ -314,4 +316,74 @@ public class TreeUtilitiesTest extends NbTestCase {
         assertFalse(Kind.METHOD == tp.getParentPath().getLeaf().getKind());
     }
     
+    public void testAutoMapComments1() throws Exception {
+        prepareTest("Test", "package test;\n" +
+                            "import java.io.File;\n" +
+                            "\n" +
+                            "/*test1*/\n" +
+                            "public class Test {\n" +
+                            "\n" +
+                            "    //test2\n" +
+                            "    void method() {\n" +
+                            "        // Test\n" +
+                            "        int a = 0;\n" +
+                            "    }\n" +
+                            "\n" +
+                            "}\n");
+        
+        ClassTree clazz = (ClassTree) info.getCompilationUnit().getTypeDecls().get(0);
+        List<Comment> clazzComments = info.getTreeUtilities().getComments(clazz, true);
+        
+        assertEquals(3, clazzComments.size());
+        
+        assertEquals(Style.WHITESPACE, clazzComments.get(0).style());
+        assertEquals(Style.BLOCK, clazzComments.get(1).style());
+        assertEquals(Style.WHITESPACE, clazzComments.get(0).style());
+        
+        assertEquals("/*test1*/", clazzComments.get(1).getText());
+        
+        List<Comment> clazzComments2 = info.getTreeUtilities().getComments(clazz, true);
+        
+        assertEquals(3, clazzComments2.size());
+        
+        assertTrue(clazzComments.get(0) == clazzComments2.get(0));
+        assertTrue(clazzComments.get(1) == clazzComments2.get(1));
+        assertTrue(clazzComments.get(2) == clazzComments2.get(2));
+    }
+    
+    public void testAutoMapComments2() throws Exception {
+        prepareTest("Test", "package test;\n" +
+                            "import java.io.File;\n" +
+                            "\n" +
+                            "/*test1*/\n" +
+                            "public class Test {\n" +
+                            "\n" +
+                            "    //test2\n" +
+                            "    void method() {\n" +
+                            "        // Test\n" +
+                            "        int a = 0;\n" +
+                            "    }\n" +
+                            "\n" +
+                            "}\n");
+        
+        ClassTree clazz = (ClassTree) info.getCompilationUnit().getTypeDecls().get(0);
+        MethodTree method = (MethodTree) clazz.getMembers().get(1);
+        List<Comment> methodComments = info.getTreeUtilities().getComments(method, true);
+        
+        assertEquals(3, methodComments.size());
+        
+        assertEquals(Style.WHITESPACE, methodComments.get(0).style());
+        assertEquals(Style.LINE, methodComments.get(1).style());
+        assertEquals(Style.WHITESPACE, methodComments.get(0).style());
+        
+        assertEquals("//test2\n", methodComments.get(1).getText());
+        
+        List<Comment> methodComments2 = info.getTreeUtilities().getComments(method, true);
+        
+        assertEquals(3, methodComments2.size());
+        
+        assertTrue(methodComments.get(0) == methodComments2.get(0));
+        assertTrue(methodComments.get(1) == methodComments2.get(1));
+        assertTrue(methodComments.get(2) == methodComments2.get(2));
+    }
 }

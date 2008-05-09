@@ -58,7 +58,7 @@ public class RubyServerNode extends AbstractNode {
         super(Children.create(RailsAppChildrenFactory.create(server), false));
         this.server = server;
         setDisplayName(server.getNodeName());
-        setIconBaseWithExtension("org/netbeans/modules/ruby/railsprojects/ui/resources/rails.png");
+        setIconBaseWithExtension("org/netbeans/modules/ruby/railsprojects/ui/resources/rails_server_16.png");
     }
 
     @Override

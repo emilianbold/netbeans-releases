@@ -50,7 +50,9 @@
 
 package org.netbeans.modules.compapp.casaeditor.graph;
 
+import java.awt.Image;
 import org.netbeans.api.visual.widget.Scene;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -58,9 +60,14 @@ import org.netbeans.api.visual.widget.Scene;
  */
 public class CasaPinWidgetBindingProvides extends CasaPinWidgetBinding {
 
-    /** Creates a new instance of CasaBindingConsumesPin */
+    private static final Image IMAGE_ARROW_LEFT_PROVIDES = Utilities.loadImage(
+            "org/netbeans/modules/compapp/casaeditor/graph/resources/providesLeft.png"); // NOI18N
+    private static final Image IMAGE_ARROW_LEFT_PROVIDES_CLASSIC = Utilities.loadImage(
+            "org/netbeans/modules/compapp/casaeditor/graph/resources/providesLeftClassic.png"); // NOI18N
+    
+    /** Creates a new instance of CasaPinWidgetBindingProvides */
     public CasaPinWidgetBindingProvides(Scene scene) {
-        super(scene, CasaPinWidget.IMAGE_ARROW_LEFT_PROVIDES);
+        super(scene, IMAGE_ARROW_LEFT_PROVIDES, IMAGE_ARROW_LEFT_PROVIDES_CLASSIC);
     }
     
 }

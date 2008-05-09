@@ -52,6 +52,7 @@ import com.sun.source.tree.VariableTree;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
@@ -70,6 +71,8 @@ import org.openide.util.Parameters;
  * @author Martin Adamek
  */
 public final class MethodModelSupport {
+    
+    private static final Logger LOG = Logger.getLogger(MethodModelSupport.class.getName());
     
     private MethodModelSupport() {}
     
@@ -339,6 +342,7 @@ public final class MethodModelSupport {
             case WILDCARD :
             default:break;
         }
+        LOG.warning("Type cannot be recognized for " + typeMirror.getClass().getName() + " of kind " + typeKind);
         return null;
     }
     

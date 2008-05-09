@@ -352,14 +352,14 @@ public class FormCustomEditor extends JPanel implements PropertyChangeListener {
                 // create a special "value with editor" to switch the current
                 // editor in FormProperty
                 if (editor.getPropertyEnv() == null) {
-                    value = new FormProperty.ValueWithEditor(value, currentEditor);
+                    value = new FormProperty.ValueWithEditor(value, currentEditor, true);
                 } else {
                     Object[] nodes = editor.getPropertyEnv().getBeans();
                     if (nodes == null || nodes.length <= 1) {
-                        value = new FormProperty.ValueWithEditor(value, currentEditor);
+                        value = new FormProperty.ValueWithEditor(value, currentEditor, true);
                     }
                     else { // there are more nodes selected
-                        value = new FormProperty.ValueWithEditor(value, currentIndex);
+                        value = new FormProperty.ValueWithEditor(value, currentIndex, true);
                     }
                 }
             }

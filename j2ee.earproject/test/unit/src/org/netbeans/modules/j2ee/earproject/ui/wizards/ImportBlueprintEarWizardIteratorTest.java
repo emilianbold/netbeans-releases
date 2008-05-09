@@ -132,7 +132,7 @@ public class ImportBlueprintEarWizardIteratorTest extends NbTestCase {
         File importedDir = new File(getWorkDir(), "testEA-imported");
         ImportBlueprintEarWizardIterator.testableInstantiate(platformName, sourceLevel,
                 j2eeLevel, importedDir, prjDirF, serverInstanceID, name,
-                Collections.<FileObject, ModuleType>emptyMap(), null);
+                Collections.<FileObject, ModuleType>emptyMap(), null, null, null);
         
         FileObject fo = FileUtil.toFileObject(importedDir);
         EarProject project = (EarProject) ProjectManager.getDefault().findProject(fo);
@@ -153,7 +153,7 @@ public class ImportBlueprintEarWizardIteratorTest extends NbTestCase {
         userModules.put(prjDirFO.getFileObject(carName), ModuleType.CLIENT);
         File importedDir = new File(getWorkDir(), "testEA-imported");
         ImportBlueprintEarWizardIterator.testableInstantiate(platformName, sourceLevel,
-                j2eeLevel, importedDir, prjDirF, serverInstanceID, name, userModules, null);
+                j2eeLevel, importedDir, prjDirF, serverInstanceID, name, userModules, null, null, null);
         
         FileObject importedDirFO = FileUtil.toFileObject(importedDir);
         FileObject ddFO = prjDirFO.getFileObject("src/conf/application.xml");
@@ -172,7 +172,7 @@ public class ImportBlueprintEarWizardIteratorTest extends NbTestCase {
         File importedDir = new File(getWorkDir(), "testEA-imported");
         ImportBlueprintEarWizardIterator.testableInstantiate(platformName, sourceLevel,
                 j2eeLevel, importedDir, prjDirF, serverInstanceID, name,
-                Collections.<FileObject, ModuleType>emptyMap(), null);
+                Collections.<FileObject, ModuleType>emptyMap(), null, null, null);
         
         assertNotNull("have a backup copy of application.xml", prjDirFO.getFileObject("src/conf/original_application.xml"));
         assertNotNull("have a backup copy of manifest", prjDirFO.getFileObject("src/conf/original_MANIFEST.MF"));
@@ -197,7 +197,7 @@ public class ImportBlueprintEarWizardIteratorTest extends NbTestCase {
         File importedDir = new File(getWorkDir(), "testEA-imported");
         ImportBlueprintEarWizardIterator.testableInstantiate(platformName, sourceLevel,
                 j2eeLevel, importedDir, prjDirF, serverInstanceID, name,
-                Collections.<FileObject, ModuleType>emptyMap(), null);
+                Collections.<FileObject, ModuleType>emptyMap(), null, null, null);
         
         String importedContextRoot = null;
         FileObject ddFO = FileUtil.toFileObject(prjDirF).getFileObject("src/conf/application.xml");

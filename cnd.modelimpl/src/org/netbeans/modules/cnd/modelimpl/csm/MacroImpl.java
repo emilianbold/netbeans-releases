@@ -103,8 +103,8 @@ public class MacroImpl extends OffsetableIdentifiableBase<CsmMacro> implements C
         this(macroName, null, macroBody, unresolved, Utils.createOffsetable(unresolved, 0, 0), true);
     }
     
-    public static MacroImpl createSystemMacro(String macroName, String macroBody, CsmFile unresolved) {
-        return new MacroImpl(macroName, macroBody, unresolved);
+    public static SystemMacroImpl createSystemMacro(String macroName, String macroBody, CsmFile unresolved) {
+        return new SystemMacroImpl(macroName, macroBody, null, unresolved, false);
     }
     
     public MacroImpl(String macroName, List<String> macroParams, String macroBody, CsmFile containingFile, CsmOffsetable macroPos, boolean system) {
@@ -149,8 +149,8 @@ public class MacroImpl extends OffsetableIdentifiableBase<CsmMacro> implements C
         retValue.append(getName());
         if (getParameters() != null) {
             retValue.append("["); // NOI18N
-            for (Iterator it = getParameters().iterator(); it.hasNext();) {
-                String param = (String) it.next();
+            for (Iterator<? extends CharSequence> it = getParameters().iterator(); it.hasNext();) {
+                CharSequence param = it.next();
                 retValue.append(param);
                 if (it.hasNext()) {
                     retValue.append(", "); // NOI18N

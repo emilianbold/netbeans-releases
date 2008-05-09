@@ -309,6 +309,7 @@ public final class CssProperties {
     
     private static List<String> textAlignValues = new ArrayList<String>();
     private static void setTextAlignValues(){
+        textAlignValues.add("center"); //NOI18N
         textAlignValues.add("left"); //NOI18N
         textAlignValues.add("right"); //NOI18N
         textAlignValues.add("justify"); //NOI18N
@@ -339,6 +340,7 @@ public final class CssProperties {
     
     private static List<String> positionValues = new ArrayList<String>();
     private static void setPositionValues(){
+        positionValues.add("absolute"); //NOI18N
         positionValues.add("static"); //NOI18N
         positionValues.add("relative"); //NOI18N
         positionValues.add("fixed"); //NOI18N

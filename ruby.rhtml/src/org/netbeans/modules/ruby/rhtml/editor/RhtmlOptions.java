@@ -42,9 +42,8 @@
 package org.netbeans.modules.ruby.rhtml.editor;
 
 import org.netbeans.modules.html.editor.options.HTMLOptions;
-import org.netbeans.modules.ruby.rhtml.editor.RhtmlKit;
 import java.util.MissingResourceException;
-import org.openide.util.HelpCtx;
+import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
 import org.openide.util.NbBundle;
 
 /**
@@ -54,7 +53,7 @@ import org.openide.util.NbBundle;
 * @author Tor Norbye
 * @version 1.00
 */
-public class RhtmlOptions extends HTMLOptions {
+public final class RhtmlOptions extends HTMLOptions {
 
     public static final String RHTML = "rhtml"; // NOI18N
 
@@ -67,12 +66,16 @@ public class RhtmlOptions extends HTMLOptions {
     /**
      * Get localized string
      */
-    protected String getString(String key) {
+    protected @Override String getString(String key) {
         try {
             return NbBundle.getMessage(RhtmlOptions.class, key);
         } catch (MissingResourceException e) {
             return super.getString(key);
         }
+    }
+
+    protected @Override String getContentType() {
+        return RhtmlTokenId.MIME_TYPE;
     }
 
 }

@@ -50,7 +50,6 @@ import javax.swing.text.PlainDocument;
 
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.logger.LogUtil;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 
@@ -60,7 +59,7 @@ import org.openide.NotifyDescriptor;
  */
 public class ColumnNameTextField extends JTextField {
     
-    private static transient final Logger mLogger = LogUtil.getLogger(ColumnNameTextField.class.getName());
+    private static transient final Logger mLogger = Logger.getLogger(ColumnNameTextField.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     /**
      * Extends a plain document to enforce character limitataions for a field name
@@ -101,9 +100,9 @@ public class ColumnNameTextField extends JTextField {
 
                 if (isBadString) {
                     toolkit.beep();
-                    String nbBundle1 = mLoc.t("PRSR001: String({0})contains invalid characters.\nLegal column name characters include letters, numbers, '$' and '#'.",str);
+                    String nbBundle1 = mLoc.t("BUND209: String({0})contains invalid characters.\nLegal column name characters include letters, numbers, '$' and '#'.",str);
                     DialogDisplayer.getDefault().notify(
-                        new NotifyDescriptor.Message(Localizer.parse(nbBundle1)));
+                        new NotifyDescriptor.Message(nbBundle1.substring(15)));
                     return;
                 }
             }

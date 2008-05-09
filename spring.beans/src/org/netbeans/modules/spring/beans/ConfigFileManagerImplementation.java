@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.spring.beans;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import javax.swing.event.ChangeListener;
@@ -58,9 +59,11 @@ public interface ConfigFileManagerImplementation {
 
     Mutex mutex();
 
+    List<File> getConfigFiles();
+
     List<ConfigFileGroup> getConfigFileGroups();
 
-    void putConfigFileGroups(List<ConfigFileGroup> groups);
+    void putConfigFilesAndGroups(List<File> files, List<ConfigFileGroup> groups);
 
     void save() throws IOException;
 

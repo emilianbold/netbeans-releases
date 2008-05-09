@@ -101,6 +101,9 @@ public abstract class QueryUtilities {
         }
         List<SourceGroup>result = new ArrayList<SourceGroup>();
         Project proj = getProject(model);
+        //fix for issue 128660
+        if(proj == null)
+            return null;
         
         List<String>sourceGroupTypeList = new ArrayList<String>();
         sourceGroupTypeList.add(sourceGroupName);

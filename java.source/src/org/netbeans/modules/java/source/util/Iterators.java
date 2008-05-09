@@ -43,6 +43,8 @@ package org.netbeans.modules.java.source.util;
 
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
+import org.openide.util.Parameters;
 
 /** 
  * 
@@ -67,9 +69,70 @@ public final class Iterators {
     public static <T> Iterable<T> chained( Iterable<? extends Iterable<T>> iterables ) {
         return new ChainedIterable<T> (iterables);
     }
+    
+    public static <T> Iterable<T> filter ( final Iterable<T> it, final Comparable<? super T> c) {
+        Parameters.notNull("it",it);   //NOI18N
+        Parameters.notNull("c", c);    //NOI18N
+        return new FilterIterable (it,c);
+    }
                
     // Innerclasses ------------------------------------------------------------
-       
+    
+    private static class FilterIterable<T> implements Iterable<T> {
+        
+        private final Iterable<T> it;
+        private final Comparable<? super T> c;
+        
+        public FilterIterable (final Iterable<T> it, final Comparable<? super T> c) {
+            this.it = it;
+            this.c = c;
+        }
+
+        public Iterator<T> iterator() {
+            return new FilterIterator (it.iterator(),c);
+        }
+        
+    }
+    
+    //@NotThreadSafe
+    private static class FilterIterator<T> implements Iterator<T> {
+        
+        private final Iterator<T> it;
+        private final Comparable<? super T> c;
+        private T nextValue;
+        
+        public FilterIterator (final Iterator<T> it, final Comparable<? super T> c) {
+            this.it = it;
+            this.c = c;
+        }
+
+        public boolean hasNext() {
+            if (nextValue != null) {
+                return true;
+            }
+            while (it.hasNext()) {
+                T val = it.next();
+                if (c.compareTo(val)!=0) {
+                    nextValue = val;
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public T next() {
+            if (!hasNext()) {
+                throw new NoSuchElementException ();
+            }
+            T ret = this.nextValue;
+            this.nextValue = null;
+            return ret;
+        }
+
+        public void remove() {
+            throw new UnsupportedOperationException("Not supported operation.");
+        }
+    }
             
        
     private static class ChainedIterable<T> implements Iterable<T> {

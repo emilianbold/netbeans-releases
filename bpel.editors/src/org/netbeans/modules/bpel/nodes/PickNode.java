@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.bpel.nodes;
 
+import org.netbeans.modules.bpel.nodes.BpelNode;
 import javax.swing.Action;
 import org.netbeans.modules.soa.ui.nodes.InstanceRef;
 import org.netbeans.modules.bpel.model.api.Pick;
@@ -31,7 +32,7 @@ import org.netbeans.modules.bpel.nodes.actions.AddOnMessageAction;
 import org.netbeans.modules.bpel.properties.props.PropertyUtils;
 import org.openide.nodes.Sheet;
 import static org.netbeans.modules.bpel.properties.PropertyType.*;
-import org.netbeans.modules.bpel.nodes.actions.ActionType;
+import org.netbeans.modules.bpel.editors.api.nodes.actions.ActionType;
 import org.openide.nodes.Children;
 import org.openide.util.Lookup;
 import org.openide.util.actions.SystemAction;

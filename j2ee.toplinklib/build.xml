@@ -44,27 +44,6 @@ made subject to such option by the copyright holder.
 
     <import file="../nbbuild/templates/projectized.xml"/>
 
-    <target name="netbeans-extra" depends="release"/>
-
-    <target name="release" depends="init,unzip">
-        <mkdir dir="${cluster}/modules/ext/toplink"/>
-        <copy todir="${cluster}/modules/ext/toplink">
-            <fileset dir="./external/toplink">
-                <include name="**/*.*"/>
-            </fileset>
-        </copy>
-    </target>
-
-    <target name="unzip">
-        <unzip src="./external/glassfish-persistence-v2-build-58g.jar" dest="./external/toplink"/>
-    </target>
-    
-    <target name="clean" depends="projectized-common.clean,clean-toplink"/>
-    
-    <target name="clean-toplink">
-        <delete dir="./external/toplink"/>
-    </target>
-    
     <target name="nbm" depends="init,netbeans" description="Build NBM archive.">
         <mkdir dir="build"/>
         <makenbm file="build/${nbm}"
@@ -75,11 +54,11 @@ made subject to such option by the copyright holder.
                  needsrestart="${nbm.needs.restart}"
                  releasedate="${nbm.release.date}"
 		 moduleauthor="${nbm.module.author}">
-            <license name="glassfish-persistence-v2-build-58g-license.txt">
+            <license>
                 <text>For the integration module:</text>
                 <file location="${license.file}"/>
                 <text>For the TopLink library:</text>
-                <file location="./external/glassfish-persistence-v2-build-58g-license.txt"/>
+                <file location="./external/glassfish-persistence-v2ur1-build-09d-license.txt"/>
             </license>
             <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
         </makenbm>

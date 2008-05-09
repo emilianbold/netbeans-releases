@@ -46,6 +46,11 @@ package org.netbeans.spi.project.ui;
  * when making a new file.
  * An instance should be placed in {@link org.netbeans.api.project.Project#getLookup}
  * to affect the privileged list for that project.
+ * 
+ * <p>
+ * Since 1.28, the PrivilegedTemplates instance can also reside in active node's lookup
+ * and such instance will be used instead of the default one.
+ * 
  * <p>
  * For more information about registering templates see overview of
  * {@link org.netbeans.spi.project.ui.templates.support} package.

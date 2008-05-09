@@ -43,6 +43,7 @@ package org.netbeans.modules.diff.options;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
+import java.util.Map;
 
 /**
  * Renderer and editor for color JComboBox.
@@ -67,7 +68,16 @@ class ColorComboBoxRenderer extends JComponent implements ListCellRenderer, Comb
         setFocusable (true);
     }
 
-    public void paint (Graphics g) {
+    public @Override void paint (Graphics g) {
+        
+        //AntiAliasing check
+        @SuppressWarnings("unchecked") //NOI18N
+        Map<?, ?> aa = (Map<?, ?>) Toolkit.getDefaultToolkit().getDesktopProperty("awt.font.desktophints"); //NOI18N
+
+        if (aa != null) {
+            ((Graphics2D) g).setRenderingHints(aa);
+        }
+        
         Color oldColor = g.getColor ();
         Dimension size = getSize ();
         if (isFocusOwner ())
@@ -95,7 +105,7 @@ class ColorComboBoxRenderer extends JComponent implements ListCellRenderer, Comb
         g.setColor (oldColor);
     }
 
-    public void setEnabled (boolean enabled) {
+    public @Override void setEnabled (boolean enabled) {
         setBackground (enabled ? 
             SystemColor.text : SystemColor.control
         );

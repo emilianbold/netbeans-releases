@@ -72,6 +72,7 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
     
     private Watch watch;
     private WatchesTreeModel model;
+    private long creationTime;
     private static Logger log = Logger.getLogger("gdb.logger.watches"); // NOI18N
     
     /** Creates a new instance of GdbWatchVariable */
@@ -79,6 +80,7 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
         this.model = model;
         this.watch = watch;
         name = watch.getExpression();
+        creationTime = System.currentTimeMillis();
         fields = new Field[0];
         type = null;
         value = null;
@@ -101,6 +103,19 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
         getDebugger().removePropertyChangeListener(this);
     }
     
+    @Override
+    public boolean equals(Object o) {
+        return o instanceof GdbWatchVariable &&
+                    creationTime == ((GdbWatchVariable) o).creationTime &&
+                    getFullName(true).equals(((GdbWatchVariable) o).getFullName(true));
+    }
+    
+    @Override
+    public int hashCode() {
+        return name.hashCode() + (int) (creationTime & 0xffffffff);
+    }
+    
+    @Override
     public void propertyChange(final PropertyChangeEvent ev) {
         log.fine("GWV.propertyChange: Property change for " + ev.getPropertyName()); // NOI18N
         
@@ -113,18 +128,25 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
                     if (pname.equals(Watch.PROP_EXPRESSION)) {
-                        resetTypeInfo();
+                        resetVariable();
                     }
                     type = getDebugger().requestWhatis(watch.getExpression());
-                    value = getDebugger().requestValue("\"" + watch.getExpression() + "\""); // NOI18N
-                    String rt = getTypeInfo().getResolvedType(gwv);
-                    if (GdbUtils.isPointer(rt)) {
-                        derefValue = getDebugger().requestValue('*' + watch.getExpression());
+                    if (type != null && type.length() > 0) {
+                        value = getDebugger().evaluate(watch.getExpression());
+                        String rt = getTypeInfo().getResolvedType(gwv);
+                        if (GdbUtils.isPointer(rt)) {
+                            derefValue = getDebugger().evaluate('*' + watch.getExpression());
+                        }
+                    } else {
+                        type = "";
+                        value = "";
                     }
                     setModifiedValue(value);
                     model.fireTableValueChanged(ev.getSource(), null);
                 }
             });
+        } else if (ev.getPropertyName().equals(GdbDebugger.PROP_VALUE_CHANGED)) {
+            super.propertyChange(ev);
         }
     }
     
@@ -150,10 +172,12 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
     
     @Override
     public String getValue() {
-        if (value == null || value.length() == 0) {
-            value = getDebugger().requestValue("\"" + watch.getExpression() + "\""); // NOI18N
+        synchronized (this) {
+            if (value == null || value.length() == 0) {
+                value = getDebugger().evaluate(watch.getExpression());
+            }
         }
-        return value;
+        return super.getValue();
     }
     
     @Override
@@ -163,16 +187,5 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
     
     public void setValueAt(String value) {
         super.setValue(value);
-    }
-    
-    public void setValueToError(String msg) {
-        msg = msg.replace("\\\"", "\""); // NOI18N
-        if (msg.charAt(msg.length() - 1) == '.') {
-            msg = msg.substring(0, msg.length() - 1);
-        }
-        setValue('>' + msg + '<');
-        log.fine("GWV.setValueToError[" + GdbUtils.threadId() + "]: " + getName()); // NOI18N
-        fields = new Field[0];
-        derefValue = null;
     }
 }

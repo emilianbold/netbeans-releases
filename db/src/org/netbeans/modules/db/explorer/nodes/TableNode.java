@@ -46,16 +46,13 @@ import java.io.IOException;
 import java.util.*;
 import java.text.MessageFormat;
 import org.netbeans.api.db.explorer.DatabaseMetaDataTransfer;
-import org.netbeans.modules.db.explorer.DatabaseMetaDataTransferAccessor;
 
 
-import org.openide.*;
 import org.openide.nodes.NodeTransfer;
 import org.openide.nodes.Node;
 import org.openide.util.datatransfer.PasteType;
 import org.openide.util.NbBundle;
 
-import org.netbeans.lib.ddl.*;
 import org.netbeans.lib.ddl.impl.*;
 import org.netbeans.modules.db.explorer.*;
 import org.netbeans.modules.db.explorer.infos.*;
@@ -64,6 +61,12 @@ import org.openide.util.datatransfer.ExTransferable;
 // Node for Table/View/Procedure things.
 
 public class TableNode extends DatabaseNode /*implements InstanceCookie*/ {
+    public TableNode(DatabaseNodeInfo info) {
+        super(info);
+    }
+    
+    
+    @Override
     public void setInfo(DatabaseNodeInfo nodeinfo)
     {
         super.setInfo(nodeinfo);
@@ -109,23 +112,6 @@ public class TableNode extends DatabaseNode /*implements InstanceCookie*/ {
     }
 */
     
-    public void setName(String newname)
-    {
-        try {
-            DatabaseNodeInfo info = getInfo();
-            Specification spec = (Specification)info.getSpecification();
-            AbstractCommand cmd = spec.createCommandRenameTable(info.getName(), newname);
-            cmd.setObjectOwner((String)info.get(DatabaseNodeInfo.SCHEMA));
-            cmd.execute();
-            super.setName(newname);
-            info.put(DatabaseNode.TABLE, newname);
-        } catch (CommandNotSupportedException ex) {
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(ex.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
-        } catch (Exception ex) {
-            //			ex.printStackTrace();
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(ex.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
-        }
-    }
     
     public Transferable clipboardCopy() throws IOException {
         ExTransferable result = ExTransferable.create(super.clipboardCopy());
@@ -211,7 +197,6 @@ public class TableNode extends DatabaseNode /*implements InstanceCookie*/ {
             TableListNodeInfo ownerinfo = (TableListNodeInfo)getInfo().getParent(DatabaseNode.TABLELIST);
             if (info != null) {
                 TableNodeInfo exinfo = ownerinfo.getChildrenTableInfo(info);
-                DatabaseNodeChildren chi = (DatabaseNodeChildren)getChildren();
                 String name = info.getName();
                 if (exinfo != null) {
                     String namefmt = bundle.getString("PasteTableNameFormat"); //NOI18N
@@ -296,9 +281,4 @@ public class TableNode extends DatabaseNode /*implements InstanceCookie*/ {
             return null;
         }
     }
-
-    public String getShortDescription() {
-        return NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ND_Table"); //NOI18N
-    }
-    
 }

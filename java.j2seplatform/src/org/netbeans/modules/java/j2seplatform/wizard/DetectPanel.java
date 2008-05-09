@@ -345,8 +345,8 @@ public class DetectPanel extends javax.swing.JPanel {
     }
 
 
-    private static String getInitialName (Map m) {        
-        String vmVersion = (String)m.get("java.specification.version");        //NOI18N
+    private static String getInitialName (Map<String,String> m) {        
+        String vmVersion = m.get("java.specification.version");        //NOI18N
         StringBuilder result = new StringBuilder(NbBundle.getMessage(DetectPanel.class,"TXT_DetectPanel_Java"));        
         if (vmVersion != null) {
             result.append (vmVersion);
@@ -396,7 +396,7 @@ public class DetectPanel extends javax.swing.JPanel {
      * Controller for the outer class: manages wizard panel's valid state
      * according to the user's input and detection state.
      */
-    static class WizardPanel implements WizardDescriptor.Panel, TaskListener, ChangeListener {
+    static class WizardPanel implements WizardDescriptor.Panel<WizardDescriptor>, TaskListener, ChangeListener {
         private DetectPanel         component;
         private RequestProcessor.Task task;
         private final J2SEWizardIterator  iterator;
@@ -450,8 +450,8 @@ public class DetectPanel extends javax.swing.JPanel {
             return valid;
         }
 
-        public void readSettings(Object settings) {           
-            this.wiz = (WizardDescriptor) settings;
+        public void readSettings(WizardDescriptor settings) {           
+            this.wiz = settings;
             JavaPlatform platform = this.iterator.getPlatform();
             String srcPath = null;
             String jdocPath = null;
@@ -529,7 +529,7 @@ public class DetectPanel extends javax.swing.JPanel {
 	 Updates the Platform's display name with the one the user
 	 has entered. Stores user-customized display name into the Platform.
 	 */
-        public void storeSettings(Object settings) {
+        public void storeSettings(WizardDescriptor settings) {
             if (isValid()) {                                
                 String name = component.getPlatformName();                
                 List<PathResourceImplementation> src = new ArrayList<PathResourceImplementation>();

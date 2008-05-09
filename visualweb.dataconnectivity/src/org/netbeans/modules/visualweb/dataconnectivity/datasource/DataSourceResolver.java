@@ -207,7 +207,7 @@ public class DataSourceResolver implements DataSourceInfoListener, Runnable {
         return null;
     }
 
-    private boolean updateProject(Project project, DataSourceInfo dsInfo) {
+    private boolean updateProject(Project project, DataSourceInfo dsInfo) throws NamingException {
         boolean needAdd = false;
         ProjectDataSourceManager projectDataSourceManager = new ProjectDataSourceManager(project);
 
@@ -275,7 +275,7 @@ public class DataSourceResolver implements DataSourceInfoListener, Runnable {
         ModelSet.addModelSetsListener(modelingListener);
         topComponent = TopComponent.getRegistry().getActivated();
         topComponent.setCursor(Utilities.createProgressCursor(topComponent));
-        String progressBarLabel = org.openide.util.NbBundle.getMessage(DataSourceResolver.class, "ProgressBarLabel"); //NOI18N
+        String progressBarLabel = org.openide.util.NbBundle.getMessage(DataSourceResolver.class, "LBL_ProgressBar"); //NOI18N
         
         try {
             // model project 

@@ -247,12 +247,6 @@ made subject to such option by the copyright holder.
                         <specification-version>2.0</specification-version>
                     </run-dependency>
                 </dependency>
-                <!-- dependency>
-                    <code-name-base>org.netbeans.modules.visualweb.project.importpage</code-name-base>
-                    <run-dependency>
-                        <specification-version>2.0</specification-version>
-                    </run-dependency>
-                </dependency -->
                 <dependency>
                     <code-name-base>org.netbeans.modules.visualweb.project.jsf</code-name-base>
                     <run-dependency>
@@ -332,9 +326,25 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.web.core</code-name-base>
+                    <build-prerequisite/>
+                    <run-dependency>
+                        <release-version>2</release-version>
+                        <specification-version>2.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.web.jsf.kit</code-name-base>
                     <run-dependency>
                         <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.web.jspparser</code-name-base>
+                    <build-prerequisite/>
+                    <run-dependency>
+                        <release-version>3</release-version>
+                        <specification-version>3.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

@@ -118,6 +118,29 @@ class CleanComboUI extends BasicComboBoxUI {
                 }
             ); //NOI18N
         }
+        //129794 - don't let Mac's UI to handle these events to avoid ClassCastException
+        if( "Aqua".equals(UIManager.getLookAndFeel().getID()) //NOI18N
+                && "10.5".compareTo(System.getProperty("os.version")) <= 0 ) { //NOI18N
+            comboBox.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0), "selectPrevious"); //NOI18N
+            comboBox.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0), "selectNext"); //NOI18N
+            comboBox.getActionMap().put(
+                "selectPrevious", //NOI18N
+                new AbstractAction() {
+                    public void actionPerformed(ActionEvent ae) {
+                        selectPreviousPossibleValue();
+                    }
+                }
+            ); //NOI18N
+            comboBox.getActionMap().put(
+                "selectNext", //NOI18N
+                new AbstractAction() {
+                    public void actionPerformed(ActionEvent ae) {
+                        selectNextPossibleValue();
+                    }
+                }
+            );
+        }
+        
     }
 
     @Override

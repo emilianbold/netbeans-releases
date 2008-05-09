@@ -21,4 +21,6 @@ public interface OperatorComponentContainer extends Component {
 	 * @return
 	 */
 	List<OperatorComponent> findOutputOperator(OperatorComponent operator);
+        
+        List<InvokeStreamOperatorComponent> getInvokeStreamOperatorComponent();
 }

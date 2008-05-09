@@ -50,8 +50,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
-import org.netbeans.modules.editor.impl.KitsTracker;
 import org.netbeans.modules.editor.lib.ColoringMap;
+import org.netbeans.modules.editor.lib.KitsTracker;
 
 /**
 * Utility methods for managing settings
@@ -477,7 +477,7 @@ public class SettingsUtil {
             this.fontStyle = fontStyle;
         }
 
-        protected Coloring getPrintColoring(Class kitClass, String coloringName,
+        protected @Override Coloring getPrintColoring(Class kitClass, String coloringName,
                                             Coloring componentColoring) {
             Coloring printColoring = super.getPrintColoring(kitClass, coloringName, componentColoring);
             Font f = printColoring.getFont();
@@ -504,7 +504,7 @@ public class SettingsUtil {
             this.foreColor = foreColor;
         }
 
-        protected Coloring getPrintColoring(Class kitClass, String coloringName,
+        protected @Override Coloring getPrintColoring(Class kitClass, String coloringName,
                                             Coloring componentColoring) {
             return Coloring.changeForeColor(
                        super.getPrintColoring(kitClass, coloringName, componentColoring),

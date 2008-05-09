@@ -41,13 +41,13 @@
 
 package org.netbeans.modules.cnd.debugger.gdb.models;
 
-import java.util.ArrayList;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.modules.cnd.debugger.gdb.CallStackFrame;
 import org.netbeans.modules.cnd.debugger.gdb.EditorContextBridge;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
+import org.netbeans.modules.cnd.debugger.gdb.disassembly.Disassembly;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
@@ -133,30 +133,14 @@ public class CallStackActionsProvider implements NodeActionsProvider {
     }
 
     private void popToHere(final CallStackFrame frame) {
-	ArrayList<CallStackFrame> stack = debugger.getCallStack();
-        CallStackFrame currentCallStackFrame = debugger.getCurrentCallStackFrame();
-	int i, k = stack.size();
-	if (k < 2 || frame == currentCallStackFrame) {
-	    return;
-	}
         if (!debugger.isValidStackFrame(frame)) {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(GdbDebugger.class,
                        "ERR_InvalidCallStackFrame"))); // NOI18N
-            return;
+        } else {
+            debugger.getGdbProxy().stack_select_frame(frame.getFrameNumber() - 1);
+            debugger.getGdbProxy().exec_finish();
+            makeCurrent(frame);
         }
-	for (i = 1; i < k; i++) {
-            CallStackFrame sf = stack.get(i - 1);
-            if (!debugger.isValidStackFrame(sf)) {
-                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(GdbDebugger.class,
-                           "ERR_InvalidCallStackFrame"))); // NOI18N
-                return;
-            } else if (sf.equals(frame)) {
-                return;
-            } else {
-                debugger.getGdbProxy().stack_select_frame(0);
-                debugger.getGdbProxy().exec_finish();
-	    }
-	}
     }
     
     private void makeCurrent(final CallStackFrame frame) {
@@ -170,7 +154,7 @@ public class CallStackActionsProvider implements NodeActionsProvider {
 	} else {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-		    EditorContextBridge.showSource(frame);
+		    EditorContextBridge.showSource(frame, Disassembly.isInDisasm());
                 }
             });
 	}

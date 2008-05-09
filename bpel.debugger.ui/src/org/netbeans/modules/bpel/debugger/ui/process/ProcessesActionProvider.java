@@ -118,8 +118,7 @@ public class ProcessesActionProvider implements NodeActionsProvider {
     public ProcessesActionProvider(
             final ContextProvider contextProvider) {
         
-        myDebugger = (BpelDebugger) 
-                contextProvider.lookupFirst(null, BpelDebugger.class);
+        myDebugger = contextProvider.lookupFirst(null, BpelDebugger.class);
     }
     
     /**{@inheritDoc}*/

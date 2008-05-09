@@ -3,7 +3,7 @@
 <toc version="2.0">
   <tocitem text="IDE Basics">
     <tocitem text="Version Control and File History"> 
-      <tocitem text="Working with Mercurial">
+      <tocitem text="Mercurial">
         <tocitem text="About Mercurial" target="org.netbeans.modules.mercurial.about" />
         <tocitem text="Mercurial Tasks: Quick Reference" target="org.netbeans.modules.mercurial.quickref" /> 
         <tocitem text="Viewing File Status Information" target="org.netbeans.modules.mercurial.status" />

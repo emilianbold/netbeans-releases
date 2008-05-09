@@ -441,7 +441,7 @@ public final class NbModuleProject implements Project {
     }
     
     /**
-     * Slash-separated path inside netbeans.org CVS, or null for external modules.
+     * Slash-separated path inside netbeans.org sources, or null for external modules.
      */
     public String getPathWithinNetBeansOrg() {
         FileObject nbroot = getNbrootFileObject(null);
@@ -504,7 +504,8 @@ public final class NbModuleProject implements Project {
         NbPlatform p = getPlatform(false);
         if (p == null) {
             // #67148: have to use something... (and getEntry(codeNameBase) will certainly fail!)
-            return ModuleList.getModuleList(getProjectDirectoryFile(), NbPlatform.getDefaultPlatform().getDestDir());
+            NbPlatform p2 = NbPlatform.getDefaultPlatform();
+            return ModuleList.getModuleList(getProjectDirectoryFile(), p2 != null ? p2.getDestDir() : null);
         }
         ModuleList ml;
         try {
@@ -512,7 +513,8 @@ public final class NbModuleProject implements Project {
         } catch (IOException x) {
             // #69029: maybe invalidated platform? Try the default platform instead.
             Logger.getLogger(NbModuleProject.class.getName()).log(Level.FINE, null, x);
-            return ModuleList.getModuleList(getProjectDirectoryFile(), NbPlatform.getDefaultPlatform().getDestDir());
+            NbPlatform p2 = NbPlatform.getDefaultPlatform();
+            return ModuleList.getModuleList(getProjectDirectoryFile(), p2 != null ? p2.getDestDir() : null);
         }
         if (ml.getEntry(getCodeNameBase()) == null) {
             ModuleList.refresh();

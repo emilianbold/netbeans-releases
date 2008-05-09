@@ -86,6 +86,7 @@ import javax.swing.undo.CannotRedoException;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.SimpleValueNames;
+import org.netbeans.lib.editor.util.ListenerList;
 import org.netbeans.lib.editor.util.swing.DocumentListenerPriority;
 import org.netbeans.modules.editor.lib.EditorPreferencesDefaults;
 import org.netbeans.modules.editor.lib.EditorPreferencesKeys;
@@ -113,7 +114,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
      * Mime type of the document. This property can be used for determining
      * mime type of a document.
      * 
-     * @since 1.22
+     * @since 1.26
      */
     public static final String MIME_TYPE_PROP = "mimeType"; // NOI18N
     
@@ -314,6 +315,8 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
     
     private DocumentListener postModificationDocumentListener;
     
+    private ListenerList<DocumentListener> postModificationDocumentListenerList = new ListenerList<DocumentListener>();
+    
     private Position lastPositionEditedByTyping = null;
     
     /** Formatter being used. */
@@ -465,7 +468,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
      * @param addToRegistry XXX You probabaly want to pass <code>true</code>.
      * @param mimeType The mime type for the document.
      * 
-     * @since 1.22
+     * @since 1.26
      */
     public BaseDocument(boolean addToRegistry, String mimeType) {
         super(new DocumentContent());
@@ -670,7 +673,8 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         boolean activePostModification;
         DocumentEvent postModificationEvent = null;
         synchronized (this) {
-            activePostModification = (postModificationDocumentListener != null);
+            activePostModification = (postModificationDocumentListener != null
+                    || postModificationDocumentListenerList.getListenerCount() > 0);
             if (activePostModification) {
                 atomicLock();
             }
@@ -767,6 +771,9 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
                         if (postModificationDocumentListener != null) {
                             postModificationDocumentListener.insertUpdate(postModificationEvent);
                         }
+                        for (DocumentListener listener: postModificationDocumentListenerList.getListeners()) {
+                            listener.insertUpdate(postModificationEvent);
+                        }
                     }
                 } finally {
                     atomicUnlock();
@@ -822,7 +829,8 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
             boolean activePostModification;
             DocumentEvent postModificationEvent = null;
             synchronized (this) {
-                activePostModification = (postModificationDocumentListener != null);
+                activePostModification = (postModificationDocumentListener != null
+                        || postModificationDocumentListenerList.getListenerCount() > 0);
                 if (activePostModification) {
                     atomicLock();
                 }
@@ -900,6 +908,9 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
                     if (postModificationEvent != null) { // Modification finished successfully
                         if (postModificationDocumentListener != null) {
                             postModificationDocumentListener.removeUpdate(postModificationEvent);
+                        }
+                        for (DocumentListener listener: postModificationDocumentListenerList.getListeners()) {
+                            listener.removeUpdate(postModificationEvent);
                         }
                     }
                     atomicUnlock();
@@ -1797,9 +1808,37 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
      * If there is an active post modification document listener
      * then each document modification is encapsulated in an atomic lock
      * transaction automatically to allow further changes inside a transaction.
+     * 
+     * @deprecated Use addPostModificationDocumentListener(DocumentListener)
      */
     public void setPostModificationDocumentListener(DocumentListener listener) {
         this.postModificationDocumentListener = listener;
+    }
+    
+    /**
+     * Add a special document listener that gets notified
+     * after the modification and that is allowed to do further
+     * mutations to the document.
+     * <br>
+     * Additional mutations will be made in a single atomic transaction
+     * with an original mutation.
+     * <br>
+     * This functionality may be used for example by code templates
+     * to synchronize other regions of the document with the one
+     * currently being modified.
+     * <br>
+     * If there is an active post modification document listener
+     * then each document modification is encapsulated in an atomic lock
+     * transaction automatically to allow further changes inside a transaction.
+     * 
+     * @since 1.25
+     */
+    public void addPostModificationDocumentListener(DocumentListener listener) {
+        postModificationDocumentListenerList.add(listener);
+    }
+
+    public void removePostModificationDocumentListener(DocumentListener listener) {
+        postModificationDocumentListenerList.remove(listener);
     }
 
     /** Was the document modified by either insert/remove

@@ -92,8 +92,8 @@ public class JBIComponentConfigurationParserTest {
                 JBIComponentConfigurationParser.parse(xmlText);
         assertEquals(3, result.getChildren().size());
         assertNotNull(result.getChild("ThreadCount"));
-        assertNotNull(result.getChild("JMSApplicationVariables"));
-        assertNotNull(result.getChild("JMSApplicationConfiguration"));
+        assertNotNull(result.getChild("ApplicationVariable"));
+        assertNotNull(result.getChild("ApplicationConfiguration"));
         assertNull(result.getChild("FOO"));
     }    
     

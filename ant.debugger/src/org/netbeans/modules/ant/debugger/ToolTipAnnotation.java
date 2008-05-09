@@ -75,8 +75,7 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
         DebuggerEngine currentEngine = DebuggerManager.getDebuggerManager ().
             getCurrentEngine ();
         if (currentEngine == null) return null;
-        AntDebugger d = (AntDebugger) currentEngine.lookupFirst 
-            (null, AntDebugger.class);
+        AntDebugger d = currentEngine.lookupFirst(null, AntDebugger.class);
         if (d == null) return null;
 
         Part lp = (Part)
@@ -86,8 +85,7 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
         DataObject dob = DataEditorSupport.findDataObject (line);
         if (dob == null) return null;
         EditorCookie ec = 
-            (EditorCookie) dob.getCookie 
-            (EditorCookie.class);
+            dob.getCookie(EditorCookie.class);
 
         if (ec == null) return null;
         this.lp = lp;
@@ -119,8 +117,7 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
         DebuggerEngine currentEngine = DebuggerManager.getDebuggerManager ().
             getCurrentEngine ();
         if (currentEngine == null) return;
-        AntDebugger d = (AntDebugger) currentEngine.lookupFirst 
-            (null, AntDebugger.class);
+        AntDebugger d = currentEngine.lookupFirst(null, AntDebugger.class);
         if (d == null) return;
         String value = d.evaluate (expression);
         if ( value == null ||

@@ -98,10 +98,10 @@ public class GsfDataObject extends MultiDataObject {
     }
 
     protected @Override DataObject handleCreateFromTemplate(DataFolder df, String name) throws IOException {
-        if (name == null) {
+        if (name == null && language.getGsfLanguage().getPreferredExtension() != null) {
             // special case: name is null (unspecified or from one-parameter createFromTemplate)
             name = FileUtil.findFreeFileName(df.getPrimaryFile(),
-                getPrimaryFile().getName(), language.getExtensions()[0]);
+                getPrimaryFile().getName(), language.getGsfLanguage().getPreferredExtension());
         } 
 //        else if (!language.getGsfLanguage().isIdentifierChar(c) Utilities.isJavaIdentifier(name)) {
 //            throw new IOException (NbBundle.getMessage(GsfDataObject.class, "FMT_Not_Valid_FileName", language.getDisplayName(), name));

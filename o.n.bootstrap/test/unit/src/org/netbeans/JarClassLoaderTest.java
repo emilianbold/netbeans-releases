@@ -51,16 +51,19 @@ import java.util.List;
 import java.util.Set;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import junit.framework.AssertionFailedError;
-import org.fakepkg.FakeHandler;
 import org.netbeans.junit.NbTestCase;
-import org.openide.util.Exceptions;
 
 /** Tests that cover some basic aspects of a Proxy/JarClassLoader.
  *
  * @author Petr Nejedly
  */
 public class JarClassLoaderTest extends NbTestCase {
+
+    private static Logger LOGGER = Logger.getLogger(ProxyClassLoader.class.getName());
+
 
     public JarClassLoaderTest(String name) {
         super(name);
@@ -71,7 +74,10 @@ public class JarClassLoaderTest extends NbTestCase {
     /** directory full of testing roots */
     protected File dirs;
 
+    @Override
     protected void setUp() throws Exception {
+        LOGGER.setUseParentHandlers(false);
+        LOGGER.setLevel(Level.OFF);
         jars = new File(JarClassLoaderTest.class.getResource("jars").getFile());
         dirs = new File(JarClassLoaderTest.class.getResource("dirs").getFile());
     }

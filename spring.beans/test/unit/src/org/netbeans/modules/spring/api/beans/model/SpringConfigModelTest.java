@@ -43,14 +43,12 @@ package org.netbeans.modules.spring.api.beans.model;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.modules.spring.api.Action;
-import org.netbeans.modules.spring.api.beans.ConfigFileGroup;
-import org.netbeans.modules.spring.api.beans.model.SpringConfigModel.WriteContext;
+import org.netbeans.modules.spring.api.beans.model.SpringConfigModel.DocumentAccess;
 import org.netbeans.modules.spring.beans.ConfigFileTestCase;
+import org.netbeans.modules.spring.beans.TestUtils;
 
 /**
  *
@@ -63,8 +61,7 @@ public class SpringConfigModelTest extends ConfigFileTestCase {
     }
 
     public void testRunReadAction() throws Exception {
-        ConfigFileGroup group = ConfigFileGroup.create(Collections.<File>emptyList());
-        SpringConfigModel model = new SpringConfigModel(group);
+        SpringConfigModel model = createConfigModel();
         final boolean[] actionRun = { false };
         model.runReadAction(new Action<SpringBeans>() {
             public void run(SpringBeans springBeans) {
@@ -75,8 +72,9 @@ public class SpringConfigModelTest extends ConfigFileTestCase {
     }
 
     public void testExceptionPropagation() throws IOException {
-        ConfigFileGroup group = ConfigFileGroup.create(Collections.singletonList(configFile));
-        SpringConfigModel model = new SpringConfigModel(group);
+        String contents = TestUtils.createXMLConfigText("");
+        TestUtils.copyStringToFile(contents, configFile);
+        SpringConfigModel model = createConfigModel(configFile);
         try {
             model.runReadAction(new Action<SpringBeans>() {
                 public void run(SpringBeans parameter) {
@@ -88,8 +86,8 @@ public class SpringConfigModelTest extends ConfigFileTestCase {
             // OK.
         }
         try {
-            model.runWriteAction(new Action<WriteContext>() {
-                public void run(WriteContext parameter) {
+            model.runDocumentAction(new Action<DocumentAccess>() {
+                public void run(DocumentAccess parameter) {
                     throw new RuntimeException();
                 }
             });
@@ -99,14 +97,16 @@ public class SpringConfigModelTest extends ConfigFileTestCase {
         }
     }
 
-    public void testWriteAction() throws IOException {
+    public void testDocumentAction() throws IOException {
+        String contents = TestUtils.createXMLConfigText("");
+        TestUtils.copyStringToFile(contents, configFile);
         File configFile2 = createConfigFileName("dispatcher-servlet.xml");
-        ConfigFileGroup group = ConfigFileGroup.create(Arrays.asList(configFile, configFile2));
-        SpringConfigModel model = new SpringConfigModel(group);
+        TestUtils.copyStringToFile(contents, configFile2);
+        SpringConfigModel model = createConfigModel(configFile, configFile2);
         final Set<File> invokedForFiles = new HashSet<File>();
-        model.runWriteAction(new Action<WriteContext>() {
-            public void run(WriteContext context) {
-                invokedForFiles.add(context.getCurrentFile());
+        model.runDocumentAction(new Action<DocumentAccess>() {
+            public void run(DocumentAccess docAccess) {
+                invokedForFiles.add(docAccess.getFile());
             }
         });
         assertEquals(2, invokedForFiles.size());

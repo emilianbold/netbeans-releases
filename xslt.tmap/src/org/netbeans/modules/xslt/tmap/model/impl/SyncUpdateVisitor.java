@@ -20,6 +20,7 @@ package org.netbeans.modules.xslt.tmap.model.impl;
 
 import org.netbeans.modules.xml.xam.ComponentUpdater;
 import org.netbeans.modules.xml.xam.ComponentUpdater.Operation;
+import org.netbeans.modules.xslt.tmap.model.api.Import;
 import org.netbeans.modules.xslt.tmap.model.api.Invoke;
 import org.netbeans.modules.xslt.tmap.model.api.Param;
 import org.netbeans.modules.xslt.tmap.model.api.Service;
@@ -63,6 +64,16 @@ public class SyncUpdateVisitor implements ComponentUpdater<TMapComponent>, TMapV
 
     public void visit(TransformMap transformMap) {
         assert false : "Should never add or remove transformmap root";
+    }
+
+    public void visit(Import imprt) {
+        assert getParent() instanceof TransformMap;
+        TransformMap transformMap = (TransformMap)getParent();
+        if (isAdd()) {
+            transformMap.addImport(imprt);
+        } else if (isRemove()) {
+            transformMap.removeImport(imprt);
+        }
     }
 
     public void visit(Service service) {

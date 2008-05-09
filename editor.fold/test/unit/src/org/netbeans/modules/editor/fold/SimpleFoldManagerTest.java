@@ -117,7 +117,7 @@ public class SimpleFoldManagerTest extends NbTestCase {
         
         public void initFolds(FoldHierarchyTransaction transaction) {
             try {
-                getOperation().addToHierarchy(
+                Fold fold = getOperation().addToHierarchy(
                     REGULAR_FOLD_TYPE,
                     "...", // non-null to properly count fold's size (non-null desc gets set) // NOI18N
                     false,
@@ -125,6 +125,9 @@ public class SimpleFoldManagerTest extends NbTestCase {
                     null,
                     transaction
                 );
+
+                assertTrue(getOperation().owns(fold));
+
             } catch (BadLocationException e) {
                 e.printStackTrace();
                 fail();

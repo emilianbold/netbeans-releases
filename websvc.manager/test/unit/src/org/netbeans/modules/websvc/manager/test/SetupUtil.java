@@ -42,7 +42,6 @@ import java.util.Properties;
 import java.util.jar.Manifest;
 import org.netbeans.junit.MockServices;
 import org.netbeans.modules.websvc.manager.WebServiceManager;
-import org.netbeans.modules.websvc.manager.api.WebServiceDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
@@ -61,8 +60,8 @@ import org.openide.util.NbCollections;
  * @author quynguyen
  */
 public class SetupUtil {
-    private static final String WORKDIR_SPACES = "user directory/config/WebServices";
-    private static final String WORKDIR = "userdirectory/config/WebServices";
+    private static final String WORKDIR_SPACES = "user directory";
+    private static final String WORKDIR = "userdirectory";
     private static final String TEST_WSDL = "/org/netbeans/modules/websvc/manager/resources/uszip-asmx-catalog/www.webservicemart.com/uszip.asmx.wsdl";
     private static final String TEST_CATALOG = "/org/netbeans/modules/websvc/manager/resources/uszip-asmx-catalog/catalog.xml";
     private static final String CATALOG_FILE = "uszip-asmx-catalog/catalog.xml";
@@ -74,14 +73,12 @@ public class SetupUtil {
     public static SetupData commonSetUp(File workingDir) throws Exception {
         SetupData data = new SetupData();
         
-        String workDirByOS = 
-                System.getProperty("os.name").startsWith("Windows") ? WORKDIR_SPACES : WORKDIR;
+        File userDir = new File(workingDir.getParentFile(),
+                System.getProperty("os.name").startsWith("Windows") ? WORKDIR_SPACES : WORKDIR);
+        System.getProperties().setProperty("netbeans.user", userDir.getAbsolutePath());
         
-        File websvcHome = new File(workingDir, workDirByOS);
+        File websvcHome = new File(WebServiceManager.WEBSVC_HOME);
         data.setWebsvcHome(websvcHome);
-        
-        WebServiceDescriptor.WEBSVC_HOME = websvcHome.getAbsolutePath();
-        WebServiceManager.WEBSVC_HOME = websvcHome.getAbsolutePath();
         
         File websvcUserDir = new File(WebServiceManager.WEBSVC_HOME);
         websvcUserDir.mkdirs();
@@ -93,8 +90,6 @@ public class SetupUtil {
         retrieveURL(catalogFile, SetupUtil.class.getResource(TEST_CATALOG));
         
         copy(wsdlFile, workingDir);
-        
-        System.getProperties().setProperty("netbeans.user", websvcUserDir.getParentFile().getParentFile().getAbsolutePath());
         
         data.setLocalWsdlFile(wsdlFile);
         data.setLocalCatalogFile(catalogFile);

@@ -61,6 +61,9 @@ public class MeasureJ2EEDialogs {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
 
+// workaround. JAX-RPC support is a separate plugin, this test just closes warning dialog
+//        suite.addTest(new gui.setup.EJBSetupTest("testJAXRPC"));
+
         suite.addTest(new SelectJ2EEModuleDialog("measureTime", "Select J2EE Module Dialog open"));
         suite.addTest(new InvokeEJBAction("testAddBusinessMethodDialog", "Add Business method Dialog open"));
         suite.addTest(new InvokeEJBAction("testCallEJBDialog", "Call EJB Dialog open"));

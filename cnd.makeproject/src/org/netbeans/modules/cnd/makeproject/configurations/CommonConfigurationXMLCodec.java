@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.cnd.makeproject.configurations;
 
+import java.util.List;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ArchiverConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCCompilerConfiguration;
@@ -69,6 +70,16 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.RequiredProjectsC
 
 /**
  * Change History:
+ * V45 - 01.12-08
+ *  Encoding
+ * V44 - 3.08.08 - NB 6.1
+ *   ???
+ * V43 - 3.06.08 - NB 6.1
+ *   Storing compiler flavor as name|flavor
+ * V42 - 2.26.08 - NB 6.1
+ *   Now storing required tools (c, cpp, ...) only if different from default vaue 
+ * V41:
+ *   Added SOURCE_ROOT_LIST_ELEMENT
  * V40:
  *   Added PREPROCESSOR_LIST_ELEMENT and LIST_ELEMENT and saving preprocessor symbols as a list
  * V39:
@@ -101,7 +112,7 @@ public abstract class CommonConfigurationXMLCodec
     extends XMLDecoder
     implements XMLEncoder {
 
-    public final static int CURRENT_VERSION = 40;
+    public final static int CURRENT_VERSION = 45;
 
     // Generic
     protected final static String PROJECT_DESCRIPTOR_ELEMENT = "projectDescriptor"; // NOI18N
@@ -118,6 +129,8 @@ public abstract class CommonConfigurationXMLCodec
     protected final static String ITEM_PATH_ELEMENT = "itemPath"; // NOI18N
     protected final static String PROJECT_MAKEFILE_ELEMENT = "projectmakefile"; // NOI18N
     protected final static String REQUIRED_PROJECTS_ELEMENT = "requiredProjects"; // NOI18N
+    protected final static String SOURCE_ROOT_LIST_ELEMENT = "sourceRootList"; // NOI18N
+    protected final static String SOURCE_ENCODING_ELEMENT = "sourceEncoding"; // NOI18N
     // Tools Set (Compiler set and platform)
     protected final static String TOOLS_SET_ELEMENT = "toolsSet"; // NOI18N
     protected final static String COMPILER_SET_ELEMENT = "compilerSet"; // NOI18N
@@ -235,6 +248,8 @@ public abstract class CommonConfigurationXMLCodec
 	xes.elementOpen(CONFIGURATION_DESCRIPTOR_ELEMENT, CURRENT_VERSION);
 	    if (publicLocation) {
 		writeLogicalFolders(xes);
+                writeSourceRoots(xes);
+                writeSourceEncoding(xes);
 	    }
 	    xes.element(PROJECT_MAKEFILE_ELEMENT, ((MakeConfigurationDescriptor)projectDescriptor).getProjectMakefileName());
 	    if (!publicLocation) {
@@ -291,10 +306,13 @@ public abstract class CommonConfigurationXMLCodec
     
     private void writeToolsSetBlock(XMLEncoderStream xes, MakeConfiguration makeConfiguration) {
 	xes.elementOpen(TOOLS_SET_ELEMENT);
-        xes.element(COMPILER_SET_ELEMENT, "" + makeConfiguration.getCompilerSet().getOption());
-        xes.element(C_REQUIRED_ELEMENT, "" + makeConfiguration.getCRequired().getValue());
-        xes.element(CPP_REQUIRED_ELEMENT, "" + makeConfiguration.getCppRequired().getValue());
-        xes.element(FORTRAN_REQUIRED_ELEMENT, "" + makeConfiguration.getFortranRequired().getValue());
+        xes.element(COMPILER_SET_ELEMENT, "" + makeConfiguration.getCompilerSet().getNameAndFlavor());
+        if (makeConfiguration.getCRequired().getValue() != makeConfiguration.getCRequired().getDefault())
+            xes.element(C_REQUIRED_ELEMENT, "" + makeConfiguration.getCRequired().getValue());
+        if (makeConfiguration.getCppRequired().getValue() != makeConfiguration.getCppRequired().getDefault())
+            xes.element(CPP_REQUIRED_ELEMENT, "" + makeConfiguration.getCppRequired().getValue());
+        if (makeConfiguration.getFortranRequired().getValue() != makeConfiguration.getFortranRequired().getDefault())
+            xes.element(FORTRAN_REQUIRED_ELEMENT, "" + makeConfiguration.getFortranRequired().getValue());
 	xes.element(PLATFORM_ELEMENT, "" + makeConfiguration.getPlatform().getValue()); // NOI18N
         if (makeConfiguration.getDependencyChecking().getModified())
             xes.element(DEPENDENCY_CHECKING, "" + makeConfiguration.getDependencyChecking().getValue()); // NOI18N
@@ -356,6 +374,25 @@ public abstract class CommonConfigurationXMLCodec
 	xes.elementClose(LOGICAL_FOLDER_ELEMENT);
     }
 
+    
+    private void writeSourceRoots(XMLEncoderStream xes) {
+	writeSourceRoots(xes, ((MakeConfigurationDescriptor)projectDescriptor).getSourceRoots());
+    }
+    
+    private void writeSourceRoots(XMLEncoderStream xes, List<String> list) {
+        if (list.size() > 0) {
+            xes.elementOpen(SOURCE_ROOT_LIST_ELEMENT);
+            for (String l : list) {
+                xes.element(LIST_ELEMENT, l);
+            }
+            xes.elementClose(SOURCE_ROOT_LIST_ELEMENT);
+        }
+    }
+    
+    private void writeSourceEncoding(XMLEncoderStream xes) {
+        xes.element(SOURCE_ENCODING_ELEMENT, ((MakeConfigurationDescriptor)projectDescriptor).getSourceEncoding());
+    }
+    
     public static void writeCCompilerConfiguration(XMLEncoderStream xes, CCompilerConfiguration cCompilerConfiguration) {
         if (!cCompilerConfiguration.getModified())
             return;

@@ -233,6 +233,9 @@
                 <package>org.netbeans.modules.etl.project</package>
                 <package>org.netbeans.modules.etl.project.ui</package>
                 <package>org.netbeans.modules.etl.project.ui.wizards</package>
+                <package>org.netbeans.modules.masterindex.plugin</package>
+                <package>org.netbeans.modules.masterindex.plugin.datamodel</package>
+                <package>org.netbeans.modules.masterindex.plugin.util</package>
             </public-packages>
         </data>
     </configuration>

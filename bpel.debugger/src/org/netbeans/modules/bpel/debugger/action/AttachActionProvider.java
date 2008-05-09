@@ -23,14 +23,12 @@ package org.netbeans.modules.bpel.debugger.action;
 import java.util.Collections;
 import java.util.Set;
 import org.netbeans.api.debugger.ActionsManager;
-import org.netbeans.api.debugger.Session;
 import org.netbeans.modules.bpel.debugger.api.BpelDebugger;
 import org.netbeans.modules.bpel.debugger.api.AttachingCookie;
 import org.netbeans.modules.bpel.debugger.api.DebugException;
 import org.netbeans.modules.bpel.debugger.BpelDebuggerImpl;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
 import org.netbeans.spi.debugger.ContextProvider;
-import org.openide.ErrorManager;
 import org.openide.util.RequestProcessor;
 
 
@@ -60,7 +58,7 @@ public class AttachActionProvider extends ActionsProviderSupport {
     
     public void postAction(Object action, Runnable actionPerformedNotifier) {
         AttachingCookie cookie = 
-            (AttachingCookie) mLookupProvider.lookupFirst (null, AttachingCookie.class);
+            mLookupProvider.lookupFirst(null, AttachingCookie.class);
         final String host = cookie.getHost();
         final int port = cookie.getPort();
         

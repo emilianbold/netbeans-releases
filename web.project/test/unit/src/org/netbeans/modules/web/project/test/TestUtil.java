@@ -266,9 +266,9 @@ public final class TestUtil extends ProxyLookup {
         String oldNbUser = System.getProperty("netbeans.user"); // NOI18N
         File root = test.getWorkDir();
         File systemDir = new File(root, "ud/system"); // NOI18N
-        new File(systemDir, "J2EE/InstalledServers").mkdirs(); // NOI18N
-        new File(systemDir, "J2EE/DeploymentPlugins").mkdirs(); // NOI18N
-        new File(root, "nb").mkdirs(); // NOI18N
+        FileUtil.createFolder(new File(systemDir, "J2EE/InstalledServers"));
+        FileUtil.createFolder(new File(systemDir, "J2EE/DeploymentPlugins"));
+        FileUtil.createFolder(new File(root, "nb"));
         System.setProperty("netbeans.home", new File(test.getWorkDir(), "nb").getAbsolutePath()); // NOI18N
         System.setProperty("netbeans.user", new File(test.getWorkDir(), "ud").getAbsolutePath()); // NOI18N
         
@@ -310,7 +310,7 @@ public final class TestUtil extends ProxyLookup {
     public static void copyDir(File src,File tgt) throws IOException {
         if (src.isDirectory()) {
             if (!tgt.exists()) {
-                tgt.mkdir();
+                FileUtil.createFolder(tgt);
             }
             
             String[] dirList = src.list();
@@ -360,9 +360,9 @@ public final class TestUtil extends ProxyLookup {
                 byte data[] = new byte[BUFFER];
                 File entryFile = new File(destDir, entry.getName());
                 if (entry.isDirectory()) {
-                    entryFile.mkdirs();
+                    FileUtil.createFolder(entryFile);
                 } else {
-                    entryFile.getParentFile().mkdirs();
+                    FileUtil.createFolder(entryFile.getParentFile());
                     FileOutputStream fos = new FileOutputStream(entryFile);
                     dest = new BufferedOutputStream(fos, BUFFER);
                     int count;
@@ -587,7 +587,7 @@ public final class TestUtil extends ProxyLookup {
         private static FileSystem mksystem(NbTestCase t) throws Exception {
             LocalFileSystem lfs = new LocalFileSystem();
             File systemDir = new File(t.getWorkDir(), "ud/system");
-            systemDir.mkdirs();
+            FileUtil.createFolder(systemDir);
             lfs.setRootDirectory(systemDir);
             lfs.setReadOnly(false);
             List<FileSystem> layers = new ArrayList<FileSystem>();

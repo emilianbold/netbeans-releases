@@ -1,0 +1,19 @@
+Results for /b\ar/ with queryType=COMPLETION and nameKind=PREFIX
+------------------------------------
+KEYWORD    \0                                         The NUL character (\u0000)
+KEYWORD    \B                                         Non-word boundary
+KEYWORD    \D                                         Non-digit character; same as [^0-9]
+KEYWORD    \S                                         Non-space character
+KEYWORD    \W                                         Not a word character; same as [^0-9A-Za-z_]
+KEYWORD    \b                                         Word boundary (if not in a range specification)
+KEYWORD    \c                                         \c<i>X</i>: The control character ^<i>X</i>
+KEYWORD    \d                                         Digit character; same as [0-9]
+KEYWORD    \f                                         Form feed (\u000C)
+KEYWORD    \n                                         Newline (\u000A)
+KEYWORD    \r                                         Carriage return (\u000D)
+KEYWORD    \s                                         Unicode space character
+KEYWORD    \t                                         Tab (\u0009)
+KEYWORD    \u                                         \u<i>xxxx</i>: The Unicode character in hex <i>xxxx</i>
+KEYWORD    \v                                         Vertical tab (\u000B)
+KEYWORD    \w                                         Any ASCII word character; same as [0-9A-Za-z_]
+KEYWORD    \x                                         \x<i>nn</i>: The latin character in hex <i>nn</i>

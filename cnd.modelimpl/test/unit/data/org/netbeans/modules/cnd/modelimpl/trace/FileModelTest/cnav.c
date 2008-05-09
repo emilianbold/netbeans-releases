@@ -1,4 +1,4 @@
 
-int cStyle();
+int cNav();
 
-int cStyle(int){ return 0; }
+int cNav(int){ return 0; }

@@ -78,7 +78,7 @@ public class ETLDefinitionImpl implements ETLDefinition, Serializable {
     /** Attribute name: displayName */
     public static final String ATTR_REFID = "refId";
     /** Document version */
-    public static final String DOC_VERSION = "5.2";
+    public static final String DOC_VERSION = "6.0";
     /** XML formatting constant: indent prefix */
     public static final String INDENT = "    ";
     /** TAG_DEFINITION is the tag for an ETL definition */

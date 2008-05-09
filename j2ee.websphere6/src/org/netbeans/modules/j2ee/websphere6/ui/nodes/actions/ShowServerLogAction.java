@@ -112,7 +112,7 @@ public class ShowServerLogAction extends CookieAction {
             WSDeploymentManager dm =
                     ((WSManagerNode) node).getDeploymentManager();
             
-            local = dm.getIsLocal().equals("true"); // NOI18N
+            local = dm.isLocal(); // NOI18N
         }
         
         return local;

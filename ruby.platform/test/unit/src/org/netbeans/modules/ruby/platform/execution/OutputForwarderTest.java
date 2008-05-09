@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -48,8 +48,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import junit.framework.TestCase;
-import org.netbeans.modules.ruby.platform.execution.OutputForwarder;
-import org.netbeans.modules.ruby.platform.execution.OutputRecognizer;
 import org.netbeans.modules.ruby.platform.execution.OutputRecognizer.RecognizedOutput;
 import org.openide.windows.OutputListener;
 import org.openide.windows.OutputWriter;
@@ -72,7 +70,7 @@ public class OutputForwarderTest extends TestCase {
     public void testRSpec4AnsiColors() throws  Exception {
         TestOutputRecognizer tor = new TestOutputRecognizer();
         TestOutputWriter writer = new TestOutputWriter(new PrintWriter(new ByteArrayOutputStream()));
-        OutputForwarder forwarder = new OutputForwarder(null, writer, null, Collections.<OutputRecognizer>singletonList(tor), null, null);
+        OutputForwarder forwarder = new OutputForwarder(null, writer, null, Collections.<OutputRecognizer>singletonList(tor), null);
 
         forwarder.processLine("\033[1;35m2 examples, 0 failures, 5 not implemented\033[0m");
         forwarder.processLine("\033[32m1 example, 1 failure\033[0m\r");
@@ -109,3 +107,4 @@ public class OutputForwarderTest extends TestCase {
     }
     
 }
+

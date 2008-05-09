@@ -50,6 +50,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JButton;
@@ -61,6 +62,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
+import org.netbeans.modules.autoupdate.ui.actions.AutoupdateCheckScheduler;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
@@ -84,6 +86,12 @@ public class PluginManagerUI extends javax.swing.JPanel  {
     private Object helpInstance = null;
     
     private static RequestProcessor.Task runningTask;
+    private boolean wasSettings = false;
+    public static final int INDEX_OF_UPDATES_TAB = 0;
+    public static final int INDEX_OF_AVAILABLE_TAB = 1;
+    public static final int INDEX_OF_DOWNLOAD_TAB = 2;
+    public static final int INDEX_OF_INSTALLED_TAB = 3;
+    public static final int INDEX_OF_SETTINGS_TAB = 4;
     
     /** Creates new form PluginManagerUI */
     public PluginManagerUI (JButton closeButton) {
@@ -148,16 +156,19 @@ public class PluginManagerUI extends javax.swing.JPanel  {
                 public void windowOpened (WindowEvent e) {
                     final WindowAdapter waa = this;
                     setWaitingState (true);
-                    Utilities.startAsWorkerThread (PluginManagerUI.this, new Runnable () {
-                        public void run () {
-                            try {
-                                initTask.waitFinished ();
-                                w.removeWindowListener (waa);
-                            } finally {
-                                setWaitingState (false);
-                            }
-                        }
-                    }, NbBundle.getMessage (PluginManagerUI.class, "UnitTab_InitAndCheckingForUpdates"));
+                    Utilities.startAsWorkerThread (PluginManagerUI.this,
+                            new Runnable () {
+                                public void run () {
+                                    try {
+                                        initTask.waitFinished ();
+                                        w.removeWindowListener (waa);
+                                    } finally {
+                                        setWaitingState (false);
+                                    }
+                                }
+                            },
+                            NbBundle.getMessage (PluginManagerUI.class, "UnitTab_InitAndCheckingForUpdates"),
+                            Utilities.getTimeOfInitialization ());
                 }
             });
         }
@@ -203,6 +214,7 @@ public class PluginManagerUI extends javax.swing.JPanel  {
             public void run () {
                 //ensures that uninitialization runs after initialization
                 initTask.waitFinished ();
+                AutoupdateCheckScheduler.runCheckAvailableUpdates (0);
                 //ensure exclusivity between this uninitialization code and refreshUnits (which can run even after this dialog is disposed)
                 synchronized(initTask) {
                     units = null;
@@ -372,6 +384,18 @@ private void tpTabsStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:
     Component component = ((JTabbedPane) evt.getSource ()).getSelectedComponent ();
     if (component instanceof SettingsTab) {
         ((SettingsTab)component).getSettingsTableModel ().refreshModel ();
+        wasSettings = true;
+    } else {
+        if (wasSettings) {
+            final UnitCategoryTableModel availableModel = (UnitCategoryTableModel) (availableTable).getModel ();
+            final Map<String, Boolean> availableState = UnitCategoryTableModel.captureState (availableModel.getUnits ());
+            ((SettingsTab) tpTabs.getComponentAt (INDEX_OF_SETTINGS_TAB)).doLazyRefresh (new Runnable () { // get SettingsTab
+                public void run () {
+                    UnitCategoryTableModel.restoreState (availableModel.getUnits (), availableState, false);
+                }
+            });
+        }
+        wasSettings = false;
     }
 }//GEN-LAST:event_tpTabsStateChanged
 
@@ -460,8 +484,8 @@ private void bHelpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:e
         installedTable = createTabForModel(new InstalledTableModel(units));
         
         SettingsTab tab = new SettingsTab (this);
-        tpTabs.add (tab,4);
-        tpTabs.setTitleAt(4, tab.getDisplayName());
+        tpTabs.add (tab, INDEX_OF_SETTINGS_TAB);
+        tpTabs.setTitleAt(INDEX_OF_SETTINGS_TAB, tab.getDisplayName());
         bHelp.setEnabled (getHelpInstance () != null);
     }
     
@@ -471,6 +495,11 @@ private void bHelpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:e
         tpTabs.setTitleAt (index, model.getDecoratedTabTitle());
         tpTabs.setEnabledAt(index, model.isTabEnabled());
         tpTabs.setToolTipTextAt(index, model.getTabTooltipText()); // NOI18N
+    }
+    
+    void undecorateTabTitles () {
+        tpTabs.setTitleAt (INDEX_OF_UPDATES_TAB, NbBundle.getMessage (PluginManagerUI.class, "PluginManagerUI_UnitTab_Update_Title")); // NOI18N // Updates tab
+        tpTabs.setTitleAt (INDEX_OF_AVAILABLE_TAB, NbBundle.getMessage (PluginManagerUI.class, "PluginManagerUI_UnitTab_Available_Title")); // NOI18N // Available tab
     }
     
     private int findRowWithFirstUnit (UnitCategoryTableModel model) {
@@ -529,6 +558,7 @@ private void bHelpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:e
             }
             setSelectedTab();
         }        
+        AutoupdateCheckScheduler.runCheckAvailableUpdates (100);
     }
         
     static boolean canContinue (String message) {

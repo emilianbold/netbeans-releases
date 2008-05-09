@@ -150,9 +150,9 @@ public class JBIComponentConfigurationParser {
                 JBIComponentConfigurationDescriptor childDescriptor;
                 
                 if (elementName.equals(APPLICATION_VARIABLE)) {
-                    childDescriptor = new ApplicationVariable();
+                    childDescriptor = new JBIComponentConfigurationDescriptor.ApplicationVariable();
                 } else if (elementName.equals(APPLICATION_CONFIGURATION)) {
-                    childDescriptor = new ApplicationConfiguration();                    
+                    childDescriptor = new JBIComponentConfigurationDescriptor.ApplicationConfiguration();                    
                 } else { // Property or Property Group
                     childDescriptor = new JBIComponentConfigurationDescriptor();
                     

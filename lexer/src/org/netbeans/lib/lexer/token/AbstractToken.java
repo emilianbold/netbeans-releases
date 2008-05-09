@@ -234,14 +234,21 @@ public abstract class AbstractToken<T extends TokenId> extends Token<T> implemen
      *
      * @param tokenHierarchy <code>null</code> should be passed
      *  (the parameter is reserved for future use when token hierarchy snapshots will be implemented).
-     * @return dump of the thorough token information.
+     * @return dump of the thorough token information. If token's text is longer
+     *  than 400 characters it will be shortened.
      */
     public String dumpInfo(TokenHierarchy<?> tokenHierarchy) {
         StringBuilder sb = new StringBuilder();
         CharSequence text = text();
         if (text != null) {
             sb.append('"');
-            for (int i = 0; i < text.length(); i++) {
+            int textLength = text.length();
+            for (int i = 0; i < textLength; i++) {
+                if (textLength > 400 && i >= 200 && i < textLength - 200) {
+                    i = textLength - 200;
+                    sb.append(" ...<TEXT-SHORTENED>... "); // NOI18N
+                    continue;
+                }
                 try {
                     CharSequenceUtilities.debugChar(sb, text.charAt(i));
                 } catch (IndexOutOfBoundsException e) {

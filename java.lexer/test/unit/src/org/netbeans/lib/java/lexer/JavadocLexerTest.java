@@ -87,6 +87,40 @@ public class JavadocLexerTest extends NbTestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, JavadocTokenId.OTHER_TEXT, "()}");
     }
 
+    public void testNextBrokenHTML1() {
+        String text = "<code\n @param";
+        
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, JavadocTokenId.language());
+        TokenSequence<?> ts = hi.tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, JavadocTokenId.HTML_TAG, "<code");
+        LexerTestUtilities.assertNextTokenEquals(ts, JavadocTokenId.OTHER_TEXT, "\n ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JavadocTokenId.TAG, "@param");
+    }
+
+    public void testNextBrokenHTML2() {
+        String text = "<code\n * @param\n<code\n ** @param";
+        
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, JavadocTokenId.language());
+        TokenSequence<?> ts = hi.tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, JavadocTokenId.HTML_TAG, "<code");
+        LexerTestUtilities.assertNextTokenEquals(ts, JavadocTokenId.OTHER_TEXT, "\n * ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JavadocTokenId.TAG, "@param");
+        LexerTestUtilities.assertNextTokenEquals(ts, JavadocTokenId.OTHER_TEXT, "\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, JavadocTokenId.HTML_TAG, "<code\n ** @param");
+    }
+
+
+    public void testNextBrokenHTML3() {
+        String text = "<code <code\n @param";
+        
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, JavadocTokenId.language());
+        TokenSequence<?> ts = hi.tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, JavadocTokenId.HTML_TAG, "<code ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JavadocTokenId.HTML_TAG, "<code");
+        LexerTestUtilities.assertNextTokenEquals(ts, JavadocTokenId.OTHER_TEXT, "\n ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JavadocTokenId.TAG, "@param");
+    }
+
 //    public void testModification1() throws Exception {
 //        PlainDocument doc = new PlainDocument();
 //        doc.putProperty(Language.class, JavadocTokenId.language());

@@ -94,7 +94,7 @@ public class CloneRepositoryWizardPanel implements WizardDescriptor.Asynchronous
             if (repository == null) {
                 repositoryModeMask = repositoryModeMask | Repository.FLAG_URL_EDITABLE | Repository.FLAG_URL_ENABLED | Repository.FLAG_SHOW_HINTS | Repository.FLAG_SHOW_PROXY;
                 String title = org.openide.util.NbBundle.getMessage(CloneRepositoryWizardPanel.class, "CTL_Repository_Location");       // NOI18N
-                repository = new Repository(repositoryModeMask, title);
+                repository = new Repository(repositoryModeMask, title, false);
                 repository.addPropertyChangeListener(this);
                 CloneRepositoryPanel panel = (CloneRepositoryPanel)component;
                 panel.repositoryPanel.setLayout(new BorderLayout());

@@ -22,7 +22,7 @@ import org.netbeans.modules.bpel.model.api.Scope;
 import org.netbeans.modules.bpel.properties.Constants;
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
 import org.netbeans.modules.bpel.model.api.NamedElement;
-import org.netbeans.modules.bpel.nodes.actions.ActionType;
+import org.netbeans.modules.bpel.editors.api.nodes.actions.ActionType;
 import org.netbeans.modules.bpel.properties.props.PropertyUtils;
 import org.openide.nodes.Sheet;
 import static org.netbeans.modules.bpel.properties.PropertyType.*;

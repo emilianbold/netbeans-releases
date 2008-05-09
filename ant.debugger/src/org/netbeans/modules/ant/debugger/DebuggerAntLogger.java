@@ -370,7 +370,7 @@ public class DebuggerAntLogger extends AntLogger {
         );
         DebuggerEngine[] es = DebuggerManager.getDebuggerManager ().
             startDebugging (di);
-        AntDebugger debugger = (AntDebugger) es [0].lookupFirst (null, AntDebugger.class);
+        AntDebugger debugger = es[0].lookupFirst(null, AntDebugger.class);
         debugger.setExecutor(execTask);
         return debugger;
     }

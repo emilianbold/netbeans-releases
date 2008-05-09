@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.bpel.mapper.tree.models;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -72,15 +73,53 @@ public class PartnerLinkTreeExtModel
         } else if (parent instanceof PartnerLinkContainer) {
             PartnerLinkContainer plContainer = (PartnerLinkContainer)parent;
             if (plContainer != null) {
-                return Arrays.asList(plContainer.getPartnerLinks());
+                return filterPartnerLink(
+                        !mShowEndpointRef ? Roles.PARTNER_ROLE : null, plContainer);
             }
         } else if (mShowEndpointRef && parent instanceof PartnerLink) {
-            return Arrays.asList(Roles.MY_ROLE, Roles.PARTNER_ROLE);
+            PartnerLink pl = (PartnerLink)parent;
+            List<Roles> rolesList = new ArrayList<Roles>();
+            if (pl.getMyRole() != null) {
+                rolesList.add(Roles.MY_ROLE);
+            }
+            if (pl.getPartnerRole() != null) {
+                rolesList.add(Roles.PARTNER_ROLE);
+            }
+            return rolesList;
         }
         //
         return null;
     }
 
+    private List<PartnerLink> filterPartnerLink(Roles filter, PartnerLinkContainer plc) {
+        if (plc == null) {
+            return Collections.emptyList();
+        }
+        PartnerLink[] pls = plc.getPartnerLinks();
+        if (filter == null) {
+            return Arrays.asList(pls);
+        }
+        List<PartnerLink> plsFiltred = new  ArrayList<PartnerLink>();
+        int l = pls.length;
+        if (Roles.MY_ROLE.equals(filter)) {
+            for (int i = 0; i < l; i++) {
+                PartnerLink pl = pls[i];
+                if (pl != null && pl.getMyRole() != null) {
+                    plsFiltred.add(pl);
+                }
+            }
+        } else if (Roles.PARTNER_ROLE.equals(filter)) {
+            for (int i = 0; i < l; i++) {
+                PartnerLink pl = pls[i];
+                if (pl != null && pl.getPartnerRole() != null) {
+                    plsFiltred.add(pl);
+                }
+            }
+        }
+        
+        return plsFiltred;
+    }
+    
     public Boolean isLeaf(Object node) {
         return null;
     }

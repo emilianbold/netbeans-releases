@@ -43,6 +43,7 @@ package org.netbeans.modules.php.rt.spi.providers;
 
 import java.util.List;
 
+import org.netbeans.modules.php.rt.providers.impl.local.DefaultLocalServerProvider;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.Lookup.Result;
@@ -113,6 +114,10 @@ public interface WebServerProvider {
             return myProviders;
         }
         
+        public static WebServerProvider getDefaultProvider(String domain, String baseDir, String port, String docRoot, String indexFile) {
+            return new DefaultLocalServerProvider(domain, baseDir, port, docRoot, indexFile);
+        }
+                
         private static void initProviders() {
             Result<WebServerProvider> result = Lookup.getDefault().lookup(
                     new Lookup.Template<WebServerProvider>(

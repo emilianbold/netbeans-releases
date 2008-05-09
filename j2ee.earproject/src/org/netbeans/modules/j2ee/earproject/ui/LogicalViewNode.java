@@ -46,7 +46,10 @@ import java.beans.BeanInfo;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
+import org.netbeans.modules.j2ee.earproject.EarProject;
 import org.netbeans.modules.j2ee.earproject.ui.actions.AddModuleAction;
+import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
@@ -72,8 +75,9 @@ public final class LogicalViewNode extends AbstractNode {
     private static Icon openedFolderIconCache;	
     private final AntProjectHelper model;
     
-    public LogicalViewNode(AntProjectHelper model) {
-        super(new LogicalViewChildren(model), Lookups.fixed( new Object[] { model }));
+    public LogicalViewNode(AntProjectHelper model, EarProject project, 
+            UpdateHelper updateHelper, ClassPathSupport cs) {
+        super(new LogicalViewChildren(model, project, updateHelper, cs), Lookups.fixed( new Object[] { model }));
         this.model = model;
         // Set FeatureDescriptor stuff:
         setName(J2EE_MODULES_NAME);

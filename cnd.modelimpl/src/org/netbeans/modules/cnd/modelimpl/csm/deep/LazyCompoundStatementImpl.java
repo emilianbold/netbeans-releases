@@ -41,22 +41,18 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.deep;
 
-import antlr.Token;
 import antlr.TokenStream;
-import antlr.TokenStreamException;
 import java.lang.ref.SoftReference;
 import java.util.*;
 
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.deep.*;
-import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 
 import antlr.collections.AST;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.parser.CPPParserEx;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
@@ -68,13 +64,10 @@ import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 public final class LazyCompoundStatementImpl extends StatementBase implements CsmCompoundStatement {
     
     private SoftReference<List/*<CsmStatement>*/> statements = null;
-    private final int firstTokenOffset;
     
     public LazyCompoundStatementImpl(AST ast, CsmFile file, CsmFunction scope) {
         super(ast, file, scope);
         assert(ast.getType() == CPPTokenTypes.CSM_COMPOUND_STATEMENT_LAZY);
-        // remember start offset of compound statement
-        firstTokenOffset = getStartOffset();
         // we need to throw away the compound statement AST under this element
         ast.setFirstChild(null);
     }
@@ -111,57 +104,17 @@ public final class LazyCompoundStatementImpl extends StatementBase implements Cs
     }
     
     private boolean renderStatements(List list) {
-        TokenStream tokenStream = getTokenStream();
-        if( tokenStream == null ) {
-            return false;
-        }
-        AST resolvedAst = resolveLazyCompoundStatement(tokenStream);
-        renderStatements(resolvedAst, list);
-	return true;
-    }
-    
-    private static class PushBackTokenStream implements TokenStream {
-	private TokenStream stream;
-	private Token first;
-	public PushBackTokenStream(TokenStream stream, Token first) {
-	    this.stream = stream;
-	    this.first = first;
-	}
-	public Token nextToken() throws TokenStreamException {
-	    if( first == null ) {
-		return stream.nextToken();
-	    }
-	    else {
-		Token result = first;
-		first = null;
-		return result;
-	    }
-	}
-    };
-    
-    private TokenStream getTokenStream() {
         FileImpl file = (FileImpl) getContainingFile();
-        TokenStream  stream = file.getTokenStream();
-        if( stream == null ) {
-	    Utils.LOG.severe("Can't create compound statement: can't create token stream for file " + file.getAbsolutePath()); // NOI18N
+        TokenStream stream = file.getTokenStream(getStartOffset(), getEndOffset());
+        if (stream == null) {
+            Utils.LOG.severe("Can't create compound statement: can't create token stream for file " + file.getAbsolutePath()); // NOI18N
+            return false;
+        } else {        
+            AST resolvedAst = resolveLazyCompoundStatement(stream);
+            file.releaseTokenStream(stream);
+            renderStatements(resolvedAst, list);
+            return true;
         }
-	else {
-	    try {
-		for( Token next = stream.nextToken(); next != null && next.getType() != CPPTokenTypes.EOF; next = stream.nextToken() ) {
-		    assert (next instanceof APTToken ) : "we have only APTTokens in token stream";
-                    int currOffset = ((APTToken) next).getOffset();
-                    if( currOffset == firstTokenOffset ) {
-                        return new PushBackTokenStream(stream, next);
-                    }
-		}
-	        Utils.LOG.severe("Can't find token at offset " + firstTokenOffset + " in file: " + getContainingFile().getAbsolutePath() + " while restoring function body"); // NOI18N
-	    } catch (TokenStreamException ex) {
-		Utils.LOG.severe("Can't create compound statement: " + ex.getMessage());
-		DiagnosticExceptoins.register(ex);
-		return null;
-	    }
-	}
-        return null;
     }
     
     private void renderStatements(AST ast, List list) {
@@ -192,12 +145,10 @@ public final class LazyCompoundStatementImpl extends StatementBase implements Cs
     @Override
     public void write(DataOutput output) throws IOException {
         super.write(output);
-        output.writeInt(this.firstTokenOffset);
     }
     
     public LazyCompoundStatementImpl(DataInput input) throws IOException {
         super(input);
-        this.firstTokenOffset = input.readInt();
         this.statements = null;
     }      
 }

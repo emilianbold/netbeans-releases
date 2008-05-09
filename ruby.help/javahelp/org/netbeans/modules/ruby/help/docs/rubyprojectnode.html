@@ -1,10 +1,9 @@
-<html>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<!--
-* Copyright (c) 2007 Sun Microsystems, Inc.
-* All rights reserved. 
- * Use is subject to license terms.
+<!--      
+*     Copyright (c) 2008 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
 -->
+<html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <title>Ruby Project or Ruby on Rails Project Node</title>
@@ -12,7 +11,7 @@
 </head>
 <body>
 <h2>Ruby Project or Ruby on Rails Project Node</h2>
-<p><small><a href="#seealso">See Also</a></small></p>
+
 <p>The Projects window is the main entry point to your project sources. It shows a logical view of important project contents such as Source Files and Test Files (for Ruby Projects) or Controllers, Models, and Views (for Ruby on Rails projects). You can open the Projects window by choosing Window &gt; Projects (Ctrl-1).</p>
 <p>There are two types of Ruby projects that can be open in this window:</p>
 <table border="0" cellpadding="5">
@@ -22,11 +21,11 @@
   </tr>
   <tr valign="top">
     <td><img src="images/railsprojicon.gif" width="13" height="16"></td>
-    <td><span class="railsbullet"><b>Ruby on Rails Projects.</b> Projects with Rails support for models, views, controllers, and databases that you can test quickly from the IDE and run in the server configured with Rails. You can right-click the main project node and perform tasks like adding new files, generating models, views, and controllers, migrating databases, running Rake tasks, and so on.</span></td>
+    <td class="railsbullet"><b>Ruby on Rails Projects.</b> Projects with Rails support for models, views, controllers, and databases that you can test quickly from the IDE and      run in the server that you specified for the project<em>. </em>You can right-click the main project node and perform tasks like adding new files, generating models, views, and controllers, migrating databases, running Rake tasks, and so on.</td>
   </tr>
 </table>
 <ul class="note">
-<li>For a  view of your project that shows the actual directory structure, you can use the Files window, usually available on a tab next to the Projects window or by choosing Windows &gt; Files (Ctrl-2). You can also change the default Projects window view from a logical view to a file view by choosing Tools &gt; Options &gt; Ruby &gt; Platform tab to display that tab of the <a href="rubyoptions.html">Ruby Options Window</a>. Then  uncheck Show Logical Project View, click OK, and  restart the IDE to apply the new window setting.</li>
+<li>For a  view of your project that shows the actual directory structure, you can use the Files window, usually available on a tab next to the Projects window or by choosing Windows &gt; Files (Ctrl-2). </li>
 </ul>
 <p>The following list of tasks shows you some of the things you can do in this window with a Ruby or Ruby on Rails project node. For a complete list of tasks, see <a href="ruby_quickref.html">Working With NetBeans Ruby</a>.</p>
 <table border="1" cellpadding="5" cellspacing="0" summary="The left column lists the task name. The right column lists the steps to perform.">
@@ -55,8 +54,8 @@
           <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
       <param name="viewerActivator" value="javax.help.LinkButton">
       <param name="content" value=
-        "http://www.netbeans.org/kb/60/ruby/index.html">
-      <param name="text" value="<html><u>Ruby Documentation web page</u></html>">
+        "http://www.netbeans.org/kb/trails/ruby.html">
+      <param name="text" value="<html><u>Ruby and Rails Learning Trail web page</u></html>">
          <param name="textFontSize" value="medium">
         <param name="textColor" value="blue">
    </object>
@@ -64,18 +63,18 @@
     </ul></td>
 </tr>
 <tr valign="top">
-  <td>Generate a model, a controller, a migration, an integration test, and so on</td>
+  <td>Generate a scaffold, a model, a controller, a migration, an integration test, and so on</td>
   <td><ol>
     <li>In the Projects window, select the main node for your Ruby on Rails project and right-click<a href="usingirb.html"></a> it.</li>
     <li>Select Generate to open the Rails Generator dialog box.</li>
     <li>Expand the Generate drop-down list and choose the item you would like to generate.
 </li>
   </ol>
-<p>For examples of generating a model and a controller, see  &nbsp;
+<p>For examples of generating a scaffold, see  &nbsp;
   <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
     <param name="viewerActivator" value="javax.help.LinkButton">
     <param name="content" value=
-        "http://www.netbeans.org/kb/60/ruby/rapid-ruby-weblog.html">
+        "http://www.netbeans.org/kb/61/ruby/rapid-ruby-weblog.html">
     <param name="text" value="<html><u>Creating a Ruby Weblog in 10 Minutes</u></html>.">
          <param name="textFontSize" value="medium">
         <param name="textColor" value="blue">
@@ -87,15 +86,7 @@
   <td><ul>
       <li>To migrate a database  for a Ruby on Rails project (for example, add tables that you have defined in a model), right-click the main project node in the Projects window and choose Migrate Database &gt; To Current Version.</li>
   <li>You can also revert the database to an earlier version by choosing one of the other To Version choices.</li>
-  <li>For an example, see&nbsp;
-    <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-      <param name="viewerActivator" value="javax.help.LinkButton">
-      <param name="content" value=
-        "http://www.netbeans.org/kb/60/ruby/rapid-ruby-weblog.html#06">
-      <param name="text" value="<html><u>Migrating the Database</u></html>">
-         <param name="textFontSize" value="medium">
-        <param name="textColor" value="blue">
-   </object>in the tutorial "Creating a Ruby Weblog in 10 Minutes".
+  <li>For an example, see <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer"><param name="viewerActivator" value="javax.help.LinkButton"><param name="content" value="http://www.netbeans.org/kb/61/ruby/rapid-ruby-weblog.html#05"><param name="text" value="<html><u>Creating the Database</u></html>"><param name="textFontSize" value="medium"><param name="textColor" value="blue"></object>in the tutorial "Creating a Ruby Weblog in 10 Minutes".
 &nbsp; </li>
   </ul></td>
 </tr>
@@ -103,16 +94,20 @@
   <td>Run a Ruby or Rails application</td>
   <td><ol>
     <li>If your project is not the main one, right-click the project node and choose Set as Main Project.</li>
-    <li>Click the Run Main Project <img src="images/runprojicon.gif" alt="Run Project button" width="11" height="20" align="texttop">&nbsp;toolbar button or press F6 or choose Run &gt; Run Main Project from the main menu. </li>
+    <li>Click the Run Main Project <img src="images/runprojicon.gif" alt="Run Project button" width="11" height="20" align="texttop">&nbsp;toolbar button or press F6 or choose Run &gt; Run Main Project from the main menu.</li> 
   </ol>
     <ul>
-      <ul>
           <li>You see a Ruby project's output in a window at the bottom of the IDE.</li>
           <li>A Ruby on Rails project runs in the server configured with Rails and displays in your default browser.</li>
     <ul class="note">        
-    <li>To stop the  server, click the  X button <img src="images/redx.gif" alt="Red X icon" width="15" height="16" align="texttop">&nbsp;to the left of the server window at the bottom of the IDE.</li>
-    </ul>
-        </ul>
+    <li>To stop the  server, click the  X button <img src="images/redx.gif" alt="Red X icon" width="15" height="16" align="texttop">&nbsp;to the left of the output window at the bottom of the IDE.
+
+
+ Alternatively, you can stop the server in the Services window by 
+
+ 
+      expanding Servers and expanding the server's node. Right-click the application node   and choose 'Stop "{application name}"'. </li>
+         
     </ul></td>
 </tr>
 <tr valign="top">
@@ -125,23 +120,13 @@
   <td>Run tests on your project </td>
   <td><ul>
       <li>For quick testing when editing a view or controller file, use Ctrl-F6, or Command-F6 on a Mac platform, to run the tests associated with the file.
-          <p>For full details on testing Ruby and Rails projects, see
-              <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-                <param name="viewerActivator" value="javax.help.LinkButton">
-                <param name="content" value=
-        "http://www.netbeans.org/kb/60/ruby/unittest.html">
-                <param name="text" value="<html><u>Test Driven Rails Development</u></html>.">
-                <param name="textFontSize" value="medium">
-                <param name="textColor" value="blue">
-              </object>
-          </p>
       </li>
   </ul></td>
 </tr>
 <tr valign="top">
   <td>Manage your Rails plugins</td>
   <td><ul>
-      <li>Choose Tools &gt; Rail Plugins to open the <a href="railspluginmanager.html">Rails Plugins Manager</a>.</li>
+      <li> Right-click the project node and choose Rails Plugins. For more information see  the <a href="railspluginmanager.html">Rails Plugins Manager</a>.</li>
   </ul></td>
 </tr>
 <tr valign="top">
@@ -151,6 +136,12 @@
       <li>Select Run Rake Task and choose the type of task you would like to run.</li>
       <li>Check the progress of the task in the Output window at the bottom of the IDE.</li>
   </ol></td>
+</tr>
+<td>Change Server </td>
+  <td><ol>
+      <li> In the Projects window, right-click the project node and choose Properties. </li>
+      <li> Select the Rails category and select the Server from the drop-down list.  </li>
+      </ol></td>
 </tr>
 </table>
 

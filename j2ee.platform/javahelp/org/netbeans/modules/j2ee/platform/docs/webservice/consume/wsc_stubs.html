@@ -1,71 +1,79 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<!-- * Copyright © 2007 Sun Microsystems,
+<!-- * Copyright © 2008 Sun Microsystems,
 Inc.  All rights reserved.  
 Use is subject to license terms.  *--> 
 <html> 
-<head> 
-    <title>Generating RESTful Web Service Client Stubs</title>
-    <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
-</head> 
-<body>
-    <h2>Generating RESTful Web Service Client Stubs</h2>
-    <p> <small><a href="#seealso">See Also</a>&nbsp; </small>
-    
-    
-    <p>For each RESTful resource class, you can generate a JavaScript
-    client stub that makes it easy for client applications to access
-    the RESTful service. Using a wizard, you can select from a list of
-    projects containing RESTful services. When you finish the
-    wizard, you will have created the client stubs 
-    for the services contained by the selected projects.
-    
-    <ul class="note">
-                <li>For details on RESTful web services client stubs,
-        see:
-         <p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-            <param name="content" value="http://wiki.netbeans.org/wiki/view/RESTRemoting">
-            <param name="text" value="<html><u> RESTful Web Service Remoting (a.k.a RESTful Web Service Client Stub)</u></html>">
+    <head> 
+        <title>Generating RESTful Web Service Client Stubs</title>
+        <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head> 
+    <body>
+        <h2>Generating RESTful Web Service Client Stubs</h2>
+        <p> <small><a href="#seealso">See Also</a>&nbsp; </small>
+        
+        
+        <p>For each RESTful resource class, you can generate a JavaScript
+        client stub that makes it easy for client applications to access
+        the RESTful service. Using a wizard, you can select from a list of
+        projects containing RESTful services. Alternatively, you can enter the 
+        URL of a RESTful service's WADL file (See <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+            <param name="content" value="https://wadl.dev.java.net/">
+            <param name="text" value="<html><u>the Java.net WADL project</u></html>">
             <param name="textFontSize" value="medium">
             <param name="textColor" value="blue">
-        </object>
-                </li>
-            </ul>
-            
-            <p><b>To generate RESTful web service client stubs:</b> 
-     
-     <ol>
-        <li><a href="nbdocs://org.netbeans.modules.visualweb.ravehelp.rave_nbpack/org/netbeans/modules/visualweb/ravehelp/rave_nbpack/docs/web/create/about/create_webapps_proj.html">Create a web application project</a>.
-        <li>In the Projects window or Files window, right-click the web application project node
-            and choose New. Then choose RESTful Web Service Client Stubs.
-            <p>Alternatively, you can choose the above templates
-            by right-clicking the project node, choosing New &gt; Other
-            and then selecting RESTful Web Service Client Stubs from the Web Services category.
-        </li>
-        <li>Click Next and complete the wizard.
-        <li>In the Projects window, expand the Web Pages node. Notice that you have
-         a 'reststubs' node, which contains the generated JavaScript classes. There is
-         also a 'reststub.html' file. Right-click it, choose View, and then you can
-         view the generated test page. The test
-         page lists URIs to the client stubs, which
-         you can click to test whether client
-         stub generation succeeded as expected.
-     </ol>
-<dl>
-    <dt><a name="seealso">See Also</a></dt>
-    <dd><a href="../about/about_ws.html">About Web Services</a></dd>
-    <dd><a href="../create/create_rest_from_scratch.html">Generating a RESTful Web Service from Scratch</a></dd>
-    <dd><a href="../consume/wsc_rest.html">Using the Preregistered RESTful Web Service Components</a></dd>
-     <dd><a href="../expose/test_rest.html">Testing a RESTful Web Service</a></dd>
-</dl>
-    
-    
-    <hr>
-    <small><a href="../../credits.html">Legal Notices</a></small> 
-    <table cellpadding="20" border="0"> 
-        <tr><td>&nbsp;</td></tr> 
-        <tr><td>&nbsp;</td></tr> 
-        <tr><td>&nbsp;</td></tr> 
-    </table> 
-    
-</body>
+        </object>  
+        for more information about the Java net WADL project.) When you finish the
+        wizard, you will have created the client stubs 
+        for the services contained by the selected projects or represented by the
+        WADL.
+        
+        <ul class="note">
+            <li>For details on RESTful web services client stubs,
+                see:
+                <p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                    <param name="content" value="http://wiki.netbeans.org/wiki/view/RESTRemoting">
+                    <param name="text" value="<html><u> RESTful Web Service Remoting (a.k.a RESTful Web Service Client Stub)</u></html>">
+                    <param name="textFontSize" value="medium">
+                    <param name="textColor" value="blue">
+                </object>
+            </li>
+        </ul>
+        
+        <p><b>To generate RESTful web service client stubs:</b> 
+        
+        <ol>
+            <li><a href="nbdocs://org.netbeans.modules.visualweb.ravehelp.rave_nbpack/org/netbeans/modules/visualweb/ravehelp/rave_nbpack/docs/web/create/about/create_webapps_proj.html">Create a web application project</a>.
+            <li>In the Projects window or Files window, right-click the web application project node
+                and choose New. Then choose RESTful Web Service Client Stubs.
+                <p>Alternatively, you can choose the above templates
+                by right-clicking the project node, choosing New &gt; Other
+                and then selecting RESTful Web Service Client Stubs from the Web Services category.
+            </li>
+            <li>Click Next and complete the wizard.
+            <li>In the Projects window, expand the Web Pages node. Notice that you have
+            a 'reststubs' node, which contains the generated JavaScript classes. There is
+            also a 'reststub.html' file. Right-click it, choose View, and then you can
+            view the generated test page. The test
+            page lists URIs to the client stubs, which
+            you can click to test whether client
+            stub generation succeeded as expected.
+        </ol>
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="../about/about_ws.html">About Web Services</a></dd>
+            <dd><a href="../create/create_rest_from_scratch.html">Generating a RESTful Web Service from Scratch</a></dd>
+            <dd><a href="../consume/wsc_rest.html">Using the Preregistered RESTful Web Service Components</a></dd>
+            <dd><a href="../expose/test_rest.html">Testing a RESTful Web Service</a></dd>
+        </dl>
+        
+        
+        <hr>
+        <small><a href="../../credits.html">Legal Notices</a></small> 
+        <table cellpadding="20" border="0"> 
+            <tr><td>&nbsp;</td></tr> 
+            <tr><td>&nbsp;</td></tr> 
+            <tr><td>&nbsp;</td></tr> 
+        </table> 
+        
+    </body>
 </html>

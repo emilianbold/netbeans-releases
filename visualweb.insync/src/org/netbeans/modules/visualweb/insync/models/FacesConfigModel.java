@@ -62,14 +62,20 @@ import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
 import org.openide.cookies.SaveCookie;
 import org.openide.loaders.DataObject;
 import org.netbeans.modules.xml.xam.Model.State;
-import org.openide.util.Lookup;
-
 
 /**
  * Wrapper class for all the faces config files in a project
  */
 public class FacesConfigModel extends Model{
     WebModule webModule;
+    
+    //XAM AbstractModelFactory caches the XAM Model using WeakHashmap, wherein the value is a weak
+    //reference to XAM Model. Therefore it is the responsibility of clients to hold-on to XAM Model
+    //if they want to avoid re-creation of Model. Re-creation cost could be significant when insync 
+    //calls getManagedBean many hundreds of times(see #125957). This logic indeed should go inside
+    //web/jsf but may not be implemented in 6.1 time frame. Temporarily we have a workaround, where-in
+    //we hold-on to XAM Models, note that we do not use these Models.
+    List<JSFConfigModel> configModels;
     
     //--------------------------------------------------------------------------------- Construction
 
@@ -98,6 +104,7 @@ public class FacesConfigModel extends Model{
 
     public ManagedBean[] getManagedBeans() {
         FileObject[] configs = ConfigurationUtils.getFacesConfigFiles(webModule);
+        refreshJSFConfigModelReferences(configs);
         List<ManagedBean> managedBeans = new ArrayList<ManagedBean>();
         for(FileObject configFile : configs) {
             JSFConfigModel model = ConfigurationUtils.getConfigModel(configFile, true);
@@ -111,9 +118,10 @@ public class FacesConfigModel extends Model{
 
     public ManagedBean getManagedBean(String name) {
         FileObject[] configs = ConfigurationUtils.getFacesConfigFiles(webModule);
+        refreshJSFConfigModelReferences(configs);
         for(FileObject configFile : configs) {
             JSFConfigModel model = ConfigurationUtils.getConfigModel(configFile, true);
-            if(!isBusted(model)) {
+            if(!isBusted(model)) {            	
                 Collection<ManagedBean> managedBeans = model.getRootComponent().getManagedBeans();
                 for(ManagedBean managedBean : managedBeans) {
                     if(managedBean.getManagedBeanName().equals(name)) {
@@ -127,9 +135,10 @@ public class FacesConfigModel extends Model{
     
     public FacesConfig getFacesConfigForManagedBean(String name) {
         FileObject[] configs = ConfigurationUtils.getFacesConfigFiles(webModule);
+        refreshJSFConfigModelReferences(configs);
         for(FileObject configFile : configs) {
             JSFConfigModel model = ConfigurationUtils.getConfigModel(configFile, true);
-            if(!isBusted(model)) {
+            if(!isBusted(model)) {            	
                 FacesConfig facesConfig = model.getRootComponent();
                 Collection<ManagedBean> managedBeans = facesConfig.getManagedBeans();
                 for(ManagedBean managedBean : managedBeans) {
@@ -142,6 +151,20 @@ public class FacesConfigModel extends Model{
         return null;
     }    
 
+    private void refreshJSFConfigModelReferences(FileObject[] configs) {
+    	List<JSFConfigModel> newConfigModels = new ArrayList<JSFConfigModel>();
+        try {
+            for(FileObject configFile : configs) {
+                JSFConfigModel model = ConfigurationUtils.getConfigModel(configFile, true);
+                if(model != null) {
+                    newConfigModels.add(model);	                
+                }
+            }
+        } finally {
+        	configModels = newConfigModels;
+        }
+    }
+    
     public ManagedBean ensureManagedBean(String name, String className, ManagedBean.Scope scope) {
         ManagedBean mb = getManagedBean(name);
         if (mb == null) {

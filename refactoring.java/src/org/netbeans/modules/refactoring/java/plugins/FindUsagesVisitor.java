@@ -42,16 +42,20 @@
 package org.netbeans.modules.refactoring.java.plugins;
 
 import com.sun.source.tree.*;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.Scanner;
 import java.util.logging.Logger;
 import javax.lang.model.element.*;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.lexer.JavaTokenId;
+import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
@@ -148,7 +152,37 @@ public class FindUsagesVisitor extends FindVisitor {
         Trees trees = workingCopy.getTrees();
         Element el = trees.getElement(path);
         if (el == null) {
-            return;
+            path = path.getParentPath();
+            if (path != null && path.getLeaf().getKind() == Kind.IMPORT) {
+                ImportTree impTree = (ImportTree)path.getLeaf();
+                if (!impTree.isStatic()) {
+                    return;
+                }
+                Tree idTree = impTree.getQualifiedIdentifier();
+                if (idTree.getKind() != Kind.MEMBER_SELECT) {
+                    return;
+                }
+                final Name id = ((MemberSelectTree) idTree).getIdentifier();
+                Tree classTree = ((MemberSelectTree) idTree).getExpression();
+                path = trees.getPath(workingCopy.getCompilationUnit(), classTree);
+                el = trees.getElement(path);
+                if (el == null) {
+                    return;
+                }
+                Iterator iter = workingCopy.getElementUtilities().getMembers(el.asType(),new ElementUtilities.ElementAcceptor() {
+                    public boolean accept(Element e, TypeMirror type) {
+                        return id.equals(e.getSimpleName());
+                    }
+                }).iterator();
+                if (iter.hasNext()) {
+                    el = (Element) iter.next();
+                }
+                if (iter.hasNext()) {
+                    return;
+                }
+            } else {
+                return;
+            }
         }
         if (elementToFind!=null&& elementToFind.getKind() == ElementKind.METHOD && el.getKind() == ElementKind.METHOD) {
             if (el.equals(elementToFind) || workingCopy.getElements().overrides((ExecutableElement) el, (ExecutableElement) elementToFind, (TypeElement) elementToFind.getEnclosingElement())) {
@@ -156,7 +190,6 @@ public class FindUsagesVisitor extends FindVisitor {
             }
         } else if (el.equals(elementToFind)) {
             addUsage(getCurrentPath());
-            return;
         }
     }
     

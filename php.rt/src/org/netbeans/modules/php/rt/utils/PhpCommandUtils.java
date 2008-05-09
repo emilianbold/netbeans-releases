@@ -78,7 +78,7 @@ public class PhpCommandUtils {
     
     public static boolean isInvokedForProject(){
          Node[] nodes = getActionNodes();
-        if (nodes == null) {
+        if (nodes == null || nodes.length == 0) {
             return false;
         }
              
@@ -124,17 +124,32 @@ public class PhpCommandUtils {
         FileObject[] files = getActionFiles();
         for (FileObject fileObject : files) {
             Project ownerProject = FileOwnerQuery.getOwner(fileObject);
-            
-            // alresdy retrieved sources arecached
-            FileObject[] sources = getAndCacheSources(projectToSrc, ownerProject);
-            for (FileObject source : sources) {
-                if (source.equals(fileObject)) {
-                    return true;
+            if (ownerProject != null) {
+                // alresdy retrieved sources arecached
+                FileObject[] sources = getAndCacheSources(projectToSrc, ownerProject);
+                for (FileObject source : sources) {
+                    if (source.equals(fileObject)) {
+                        return true;
+                    }
                 }
             }
         }
         return false;
     }
+    
+    public static boolean isInvokedForFolder(){
+        Map<Project, FileObject[]> projectToSrc 
+                = new HashMap<Project, FileObject[]>();
+        
+        FileObject[] files = getActionFiles();
+        for (FileObject fileObject : files) {
+            if (fileObject.isFolder()) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
     
     public static void saveAll(){
         // suggested by nb team as general approach

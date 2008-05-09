@@ -4,6 +4,7 @@ License: GPL-with-Proguard-exception
 Origin: http://proguard.sourceforge.net/
 Source: proguard3.7-src.zip
 Files: proguard3.7-src.zip, proguard3.7.jar
+Description: Description: Free Java class file shrinker, optimizer, obfuscator, and preverifier
 OSR: 5748
 Comment: ProGuard JAR must not be linked with any part of IDE. Should be used only as executable binary. For more information about license see THIRDPARTYLICENSEREADME.txt.
 

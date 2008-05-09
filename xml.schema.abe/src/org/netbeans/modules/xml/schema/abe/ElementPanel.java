@@ -332,9 +332,7 @@ public class ElementPanel extends ABEBaseDropPanel{
     
     //Following set of methods needed for the tag size calculation and horizontal bar display logic
     public Dimension getPreferredSize() {
-        synchronized(this){        
-            return getMinimumSize();
-        }
+        return getMinimumSize();
     }
     
     public Dimension getMinimumSize() {

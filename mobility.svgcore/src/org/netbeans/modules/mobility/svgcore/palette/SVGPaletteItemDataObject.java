@@ -48,6 +48,7 @@ import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Formatter;
 import org.netbeans.modules.mobility.svgcore.SVGDataObject;
 import org.netbeans.modules.mobility.svgcore.composer.SceneManager;
 import org.openide.filesystems.FileObject;
@@ -121,7 +122,7 @@ public final class SVGPaletteItemDataObject extends MultiDataObject {
         
         if ( doc instanceof BaseDocument) {
             BaseDocument bDoc = (BaseDocument) doc;
-
+            Formatter formatter = bDoc.getFormatter();
             try {
                 bDoc.atomicLock();
                 
@@ -134,11 +135,15 @@ public final class SVGPaletteItemDataObject extends MultiDataObject {
                 doc.insertString(start, text, null);
                 
                 int end = start + text.length();
-                bDoc.getFormatter().reformat(bDoc, start, end);
+                formatter.reformatLock();
+                formatter.reformat(bDoc, start, end);
+                formatter.reformatUnlock();
                 bDoc.atomicUnlock();
             } catch( Exception e) {
+                formatter.reformatUnlock();
                 bDoc.atomicUndo();
             }
+            
         }
     }
 }

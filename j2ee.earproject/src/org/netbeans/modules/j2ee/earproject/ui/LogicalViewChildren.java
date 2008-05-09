@@ -41,18 +41,16 @@
 
 package org.netbeans.modules.j2ee.earproject.ui;
 
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ant.AntArtifact;
+import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.earproject.EarProject;
-import org.netbeans.modules.j2ee.earproject.ui.customizer.VisualClassPathItem;
+import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
+import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
@@ -66,17 +64,22 @@ import org.openide.nodes.Node;
  * Edit this template to work with the classes and logic of your data model.
  * @author vkraemer
  */
-public class LogicalViewChildren extends Children.Keys<String>  implements AntProjectListener {
+public class LogicalViewChildren extends Children.Keys<ClassPathSupport.Item>  implements AntProjectListener {
     
     private final AntProjectHelper model;
-    private final java.util.Map<String, VisualClassPathItem> vcpItems;
+    private ClassPathSupport cs;
+    private final UpdateHelper updateHelper;
+    private EarProject project;
     
-    public LogicalViewChildren(AntProjectHelper model) {
+    public LogicalViewChildren(AntProjectHelper model, EarProject project, 
+            UpdateHelper updateHelper, ClassPathSupport cs) {
         if (null == model) {
             throw new IllegalArgumentException("model cannot be null"); // NOI18N
         }
         this.model = model;
-        vcpItems = new HashMap<String, VisualClassPathItem>();
+        this.project = project;
+        this.updateHelper = updateHelper;
+        this.cs = cs;
     }
     
     @Override
@@ -90,48 +93,30 @@ public class LogicalViewChildren extends Children.Keys<String>  implements AntPr
     }
     
     private void updateKeys() {
-        Project p = FileOwnerQuery.getOwner(model.getProjectDirectory());
-        //#62823 debug
-        if(p == null) {
-            Logger.getLogger("global").log(Level.WARNING, null,
-                    new IllegalStateException("FileOwnerQuery.getOwner(" + model.getProjectDirectory() + ") returned null. " + // NOI18N
-                    "Please report this with the situation description to issue #62823 " + // NOI18N
-                    "(http://www.netbeans.org/issues/show_bug.cgi?id=62823)."));
-            return ;
-        }
-        
-        EarProject earProject = p.getLookup().lookup(EarProject.class);
-        List<VisualClassPathItem> vcpis = earProject.getProjectProperties().getJarContentAdditional();
-        synchronized (vcpItems) {
-            vcpItems.clear();
-            for (VisualClassPathItem vcpi : vcpis) {
-                Object obj = vcpi.getObject();
-                if (!(obj instanceof AntArtifact)) {
-                    continue;
-                }
-                AntArtifact aa = (AntArtifact) obj;
-                Project vcpiProject = aa.getProject();
-                J2eeModuleProvider jmp = vcpiProject.getLookup().lookup(J2eeModuleProvider.class);
-                if (null != jmp) {
-                    vcpItems.put(vcpi.getRaw(), vcpi);
-                }
+        List<ClassPathSupport.Item> vcpis = EarProjectProperties.getJarContentAdditional(project);
+        List<ClassPathSupport.Item> keys = new ArrayList<ClassPathSupport.Item>();
+        for (ClassPathSupport.Item item : vcpis) {
+            if (item.getType() != ClassPathSupport.Item.TYPE_ARTIFACT || item.getArtifact() == null) {
+                continue;
             }
-            setKeys(vcpItems.keySet());
+            Project vcpiProject = item.getArtifact().getProject();
+            J2eeModuleProvider jmp = vcpiProject.getLookup().lookup(J2eeModuleProvider.class);
+            if (null != jmp) {
+                keys.add(item);
+            }
         }
+        setKeys(keys);
     }
     
     @Override
     protected void removeNotify() {
         model.removeAntProjectListener(this);
-        setKeys(Collections.<String>emptySet());
+        setKeys(Collections.<ClassPathSupport.Item>emptySet());
         super.removeNotify();
     }
     
-    protected Node[] createNodes(String key) {
-        synchronized (vcpItems) {
-            VisualClassPathItem vcpItem = vcpItems.get(key);
-            return new Node[] { new ModuleNode(vcpItem, model.getProjectDirectory() ) };
-        }
+    protected Node[] createNodes(ClassPathSupport.Item item) {
+        return new Node[] { new ModuleNode(item, model.getProjectDirectory(), project, updateHelper, cs) };
     }
     
     public void modelChanged(Object ev) {

@@ -177,11 +177,13 @@ public class QueryUnusedGlobalsReader {
                 QueryUtilities.getProjectSourceGroups(
                 model,SharedUtils.SOURCES_TYPE_JAVA);
         
-        //  lastly, the other files in the project
-        for(SourceGroup srcGrp : srcGrps) {
-            FileObject f = srcGrp.getRootFolder();
-            if (f != queryFolder){
-                getFiles(allFiles, f, queryFolder, qFile);
+        if(srcGrps != null){
+            //  lastly, the other files in the project
+            for(SourceGroup srcGrp : srcGrps) {
+                FileObject f = srcGrp.getRootFolder();
+                if (f != queryFolder){
+                    getFiles(allFiles, f, queryFolder, qFile);
+                }
             }
         }
         findUnused(cancelSignal, theGlobals, allFiles);

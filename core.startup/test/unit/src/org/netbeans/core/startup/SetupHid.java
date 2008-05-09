@@ -59,6 +59,7 @@ import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
+import java.util.logging.Level;
 import java.util.zip.CRC32;
 import org.netbeans.InvalidException;
 import org.netbeans.Module;
@@ -67,7 +68,6 @@ import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.Repository;
@@ -84,10 +84,20 @@ abstract class SetupHid extends NbTestCase {
     /** directory full of JAR files to test */
     protected File jars;
 
-    protected void setUp() throws Exception {
+    protected @Override void setUp() throws Exception {
         Locale.setDefault(Locale.US);
         jars = new File(ModuleManagerTest.class.getResource("jars").getFile());
         clearWorkDir();
+        
+        File ud = new File(getWorkDir(), "ud");
+        ud.mkdirs();
+        
+        System.setProperty("netbeans.user", ud.getPath());
+    }
+
+    @Override
+    protected Level logLevel() {
+        return Level.FINE;
     }
 
     protected static void deleteRec(File f) throws IOException {
@@ -279,6 +289,7 @@ abstract class SetupHid extends NbTestCase {
      * @param manifest a manifest to store (key/value pairs for main section)
      */
     public static void createJar(File jar, Map<String,String> contents, Map<String,String> manifest) throws IOException {
+        // XXX use TestFileUtils.writeZipFile
         Manifest m = new Manifest();
         m.getMainAttributes().putValue("Manifest-Version", "1.0"); // workaround for JDK bug
         for (Map.Entry<String,String> line : manifest.entrySet()) {

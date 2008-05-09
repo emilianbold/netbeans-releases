@@ -20,14 +20,14 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.api.gsf</code-name-base>
+                    <code-name-base>org.netbeans.modules.gsf.api</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>0.40.0</specification-version>
+                        <specification-version>1.1.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.api.gsfpath</code-name-base>
+                    <code-name-base>org.netbeans.modules.gsfpath.api</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
                         <specification-version>0.31.0</specification-version>
@@ -36,8 +36,8 @@
                 <dependency>
                     <code-name-base>org.netbeans.modules.gsf</code-name-base>
                     <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>0.62.0</specification-version>
+                        <release-version>2</release-version>
+                        <specification-version>0.72.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -134,6 +134,13 @@
                     <run-dependency>
                         <release-version>0-1</release-version>
                         <specification-version>1.16</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.ruby.samples.depot</code-name-base>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.1</specification-version>
                     </run-dependency>
                 </dependency>
             </module-dependencies>

@@ -207,9 +207,9 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
     /** Look at the third exp on stack */
     private CsmCompletionExpression peekExp(int ind) {
         int cnt = expStack.size();
-        return (cnt > ind && cnt > 0) ? (CsmCompletionExpression)expStack.get(cnt - ind) : null;
+        return (cnt >= ind && cnt > 0) ? (CsmCompletionExpression)expStack.get(cnt - ind) : null;
     }
-
+    
     private CsmCompletionExpression createTokenExp(int id) {
         CsmCompletionExpression exp = new CsmCompletionExpression(id);
         addTokenTo(exp);
@@ -566,7 +566,7 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
 
         return ret;
     }
-
+    
     public boolean token(TokenID tokenID, TokenContextPath tokenContextPath,
     int tokenOffset, int tokenLen) {
         
@@ -966,27 +966,33 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
                             boolean genericType = false;
                             if (java15) { // special treatment of Java 1.5 features
                                 switch (topID) {
+                                    case CONSTANT: // check for "List<const" plus ">" case
                                     case VARIABLE: // check for "List<var" plus ">" case
+                                    case TYPE: // check for "List<int" plus ">" case
                                     case DOT: // check for "List<var1.var2" plus ">" case
                                     case ARROW: // check for "List<var1.var2" plus ">" case
                                     case SCOPE: // check for "List<NS::Class" plus ">" case
                                     case GENERIC_TYPE: // check for "List<HashMap<String, Integer>" plus ">" case
+                                    case GENERIC_TYPE_OPEN: // chack for "List<" plus ">" case
                                     case GENERIC_WILD_CHAR: // chack for "List<?" plus ">" case
                                     case ARRAY: // chack for "List<String[]" plus ">" case
-                                        CsmCompletionExpression top2 = peekExp2();
-                                        switch (getValidExpID(top2)) {
-                                            case GENERIC_TYPE_OPEN:
-                                                popExp();
-                                                top2.addParameter(top);
-                                                top2.setExpID(GENERIC_TYPE);
-                                                addTokenTo(top2);
-                                                genericType = true;
-                                                top = top2;
+                                    case PARENTHESIS: // chack for "T<(1+1)" plus ">" case
+                                        int cnt = expStack.size();
+                                        CsmCompletionExpression gen = null;
+                                        for (int i = 0; i < cnt; i++) {
+                                            CsmCompletionExpression expr = peekExp(i + 1);
+                                            if (expr.getExpID() == GENERIC_TYPE_OPEN) {
+                                                gen = expr;
                                                 break;
-
-                                            default:
-                                                errorState = topID == GENERIC_TYPE;
-                                                break;
+                                            }
+                                        }
+                                        if (gen != null) {
+                                            while (peekExp().getExpID() != GENERIC_TYPE_OPEN) {
+                                                gen.addParameter(popExp());
+                                            }
+                                            gen.setExpID(GENERIC_TYPE);
+                                            top = gen;
+                                            genericType = true;
                                         }
                                         break;
 
@@ -1028,40 +1034,42 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
                             boolean genericType = false;
                             if (java15) { // special treatment of Java 1.5 features
                                 switch (topID) {
+                                    case CONSTANT: // check for "List<const" plus ">" case
                                     case VARIABLE: // check for "List<var" plus ">" case
+                                    case TYPE: // check for "List<int" plus ">" case
                                     case DOT: // check for "List<var.var2" plus ">" case
                                     case ARROW: // check for "List<var.var2" plus ">" case
                                     case SCOPE: // check for "List<NS::Class" plus ">" case
                                     case GENERIC_TYPE: // check for "List<HashMap<String, Integer>" plus ">" case
+                                    case GENERIC_TYPE_OPEN: // chack for "List<" plus ">" case
                                     case GENERIC_WILD_CHAR: // chack for "List<?" plus ">" case
                                     case ARRAY: // chack for "List<String[]" plus ">" case
-                                        CsmCompletionExpression top2 = peekExp2();
-                                        switch (getValidExpID(top2)) {
-                                            case GENERIC_TYPE_OPEN:
-                                                // Check whether outer is open as well
-                                                CsmCompletionExpression top3 = peekExp(3);
-                                                if (getValidExpID(top3) == GENERIC_TYPE_OPEN) {
-                                                    genericType = true;
-                                                    popExp();
-                                                    top2.addParameter(top);
-                                                    top2.setExpID(GENERIC_TYPE);
-                                                    addTokenTo(top2); // [TODO] revise possible spliting of the token
-
-                                                    popExp();
-                                                    top3.addParameter(top2);
-                                                    top3.setExpID(GENERIC_TYPE);
-                                                    addTokenTo(top3); // [TODO] revise possible spliting of the token
-
-                                                    top = top3;
-
-                                                } else { // inner is not generic type
-                                                    errorState = true;
+                                    case PARENTHESIS: // chack for "T<(1+1)" plus ">" case
+                                        int cnt = expStack.size();
+                                        CsmCompletionExpression genTop = null;
+                                        CsmCompletionExpression genBottom = null;
+                                        for (int i = 0; i < cnt; i++) {
+                                            CsmCompletionExpression expr = peekExp(i + 1);
+                                            if (expr.getExpID() == GENERIC_TYPE_OPEN) {
+                                                CsmCompletionExpression expr2 = peekExp(i + 2);
+                                                if (getValidExpID(expr2) == GENERIC_TYPE_OPEN) {
+                                                    genTop = expr;
+                                                    genBottom = expr2;
+                                                    break;
                                                 }
-                                                break;
+                                            }
+                                        }
+                                        if (genTop != null && genBottom != null) {
+                                            while (peekExp().getExpID() != GENERIC_TYPE_OPEN) {
+                                                genTop.addParameter(popExp());
+                                            }
+                                            genTop.setExpID(GENERIC_TYPE);
+                                            popExp();
+                                            genBottom.addParameter(genTop);
+                                            genBottom.setExpID(GENERIC_TYPE);
+                                            top = genBottom;
 
-                                            default:
-                                                errorState = true;
-                                                break;
+                                            genericType = true;
                                         }
                                         break;
 
@@ -1368,27 +1376,24 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
                                         top = top2;
                                         break;
 
-                                    case GENERIC_TYPE_OPEN:
-                                        switch (topID) {
-                                            case VARIABLE:
-                                            case DOT:
-                                            case ARROW:
-                                            case SCOPE:
-                                            case GENERIC_TYPE:
-                                            case GENERIC_WILD_CHAR:
-                                                popExp();
-                                                top2.addParameter(top);
-                                                addTokenTo(top2); // add "," to open generics type
-                                                top = top2;
-                                                break;
-
-                                            default:
-                                                errorState = true;
-                                                break;
-                                        }
-                                        break;
-
                                     default:
+                                        int cnt = expStack.size();
+                                        CsmCompletionExpression gen = null;
+                                        for (int i = 0; i < cnt; i++) {
+                                            CsmCompletionExpression expr = peekExp(i + 1);
+                                            if (expr.getExpID() == GENERIC_TYPE_OPEN) {
+                                                gen = expr;
+                                                break;
+                                            }
+                                        }
+                                        if (gen != null) {
+                                            while (peekExp().getExpID() != GENERIC_TYPE_OPEN) {
+                                                gen.addParameter(popExp());
+                                            }
+                                            top = gen;
+                                            break;
+                                        }
+
                                         errorState = true;
                                         break;
                                 }
@@ -1768,8 +1773,7 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
                 break;
 
             case GENERIC_TYPE_OPEN:
-                top.setExpID(OPERATOR);
-                top.addParameter(constExp);
+                pushExp(constExp);
                 errorState = false;
                 break;
 
@@ -1817,6 +1821,14 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
                 errorState = false;
                 break;
             }     
+            case GENERIC_TYPE_OPEN:
+            {
+                CsmCompletionExpression kwdExp = createTokenExp(TYPE);
+                kwdExp.setType(kwdType);
+                pushExp(kwdExp);
+                errorState = false;
+                break;
+            }     
             default: // otherwise not recognized
                 errorState = true;
                 break;
@@ -1845,6 +1857,12 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
                 case CCTokenContext.BLOCK_COMMENT_ID:
                     pushExp(CsmCompletionExpression.createEmptyVariable(
                         bufferStartPos + bufferOffsetDelta + offset));
+                    break;
+                default:
+                    if (getValidExpID(peekExp()) == GENERIC_TYPE) {
+                        pushExp(CsmCompletionExpression.createEmptyVariable(
+                            bufferStartPos + bufferOffsetDelta + offset));
+                    }
                     break;
             }
         }        
@@ -1876,10 +1894,12 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
                     case ANNOTATION:
                     case ANNOTATION_OPEN:
                     case CASE:
-                    case GENERIC_TYPE_OPEN: // e.g. "List<String"
                         popExp();
                         top2.addParameter(top);
                         reScan = false; // by default do not nest more - can be changed if necessary
+                        break;
+                    case GENERIC_TYPE_OPEN: // e.g. "List<String"
+                        reScan = false;
                         break;
                     }
                     break;
@@ -1924,9 +1944,11 @@ final class CsmCompletionTokenProcessor implements TokenProcessor {
 //                        break;
                     case ANNOTATION:
                     case ANNOTATION_OPEN:
-                    case GENERIC_TYPE_OPEN:
                         popExp();
                         top2.addParameter(top);
+                        reScan = false; // by default do not nest more - can be changed if necessary
+                        break;
+                    case GENERIC_TYPE_OPEN: // e.g. "List<String"
                         reScan = false; // by default do not nest more - can be changed if necessary
                         break;
                     case OPERATOR:

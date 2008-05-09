@@ -44,4 +44,8 @@ package org.netbeans.modules.db.explorer.infos;
 public class IndexColumnNodeInfo extends ColumnNodeInfo
 {
     static final long serialVersionUID =861029499015830000L;
+    
+    public String getShortDescription() {
+        return bundle().getString("ND_Column"); //NOI18N
+    }    
 }

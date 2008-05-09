@@ -317,12 +317,23 @@ ${(parameterInfo.getCodeGenType())!} ${(parameterInfo.getName())!}<#if parameter
 <#list classInfo.getLiterals() as literal >
 <#if literal.getName()?? >
 <@MemberDeclarationComment literal nestingLevel />
-<@ident nestingLevel />${literal.getName()}<#if literal_has_next>,${BETWEEN_FIELDS_LINE_SPACING}<#else>;</#if>
+<@ident nestingLevel />${literal.getName()}<@literalArguments literal /><#if literal_has_next>,${BETWEEN_FIELDS_LINE_SPACING}<#else>;</#if>
 </#if>
 </#list>
 <#else>
 <@ident nestingLevel />;
 </#if>
+</#macro>
+
+
+<#macro literalArguments literal >
+<@singleline>
+<#if literal.getLiteral().getTaggedValueByName("JavaEnumLiteralArguments")?? >
+<#if literal.getLiteral().getTaggedValueByName("JavaEnumLiteralArguments").getDataValue()?? >
+(${literal.getLiteral().getTaggedValueByName("JavaEnumLiteralArguments").getDataValue()})
+</#if>
+</#if>
+</@singleline>
 </#macro>
 
 

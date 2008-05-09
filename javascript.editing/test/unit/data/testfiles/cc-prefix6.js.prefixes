@@ -1,0 +1,24 @@
+var foo = 5
+ ^v,var
+var foo = 5
+  ^va,var
+var foo = 5
+   ^var,var
+var foo = 5
+     ^f,foo
+var foo = 5
+      ^fo,foo
+var foo = 5
+       ^foo,foo
+var foo = 5
+           ^5,5
+bar = 10
+ ^b,bar
+bar = 10
+  ^ba,bar
+bar = 10
+   ^bar,bar
+bar = 10
+       ^1,10
+bar = 10
+        ^10,10

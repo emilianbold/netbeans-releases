@@ -45,6 +45,7 @@ import java.beans.PropertyChangeEvent;
 import org.openide.util.RequestProcessor;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 
 //TODO: RETOUCHE almost complete rewrite needed

@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.javadoc.hints;
 
+import com.sun.javadoc.ClassDoc;
 import com.sun.javadoc.Doc;
 import com.sun.javadoc.ExecutableMemberDoc;
 import com.sun.javadoc.Tag;
@@ -49,8 +50,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.TypeParameterElement;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
@@ -104,7 +107,7 @@ final class AddTagFix implements Fix, CancellableTask<WorkingCopy> {
         return new AddTagFix(ElementHandle.create(elm), paramName, -1, file, spec, "MISSING_PARAM_HINT", Kind.PARAM); // NOI18N
     }
 
-    public static Fix createAddTypeParamTagFix(TypeElement elm,
+    public static Fix createAddTypeParamTagFix(Element elm,
             String paramName, FileObject file, SourceVersion spec) {
         return new AddTagFix(ElementHandle.create(elm), paramName, -1, file, spec, "MISSING_TYPEPARAM_HINT", Kind.TYPEPARAM); // NOI18N
     }
@@ -177,12 +180,12 @@ final class AddTagFix implements Fix, CancellableTask<WorkingCopy> {
         boolean[] isLastTag = new boolean[1];
         switch (this.kind) {
         case PARAM:
-            insertPosition = getParamInsertPosition(wc, doc, (ExecutableElement) elm, jdoc, isLastTag);
+            insertPosition = getParamInsertPosition(wc, doc, (ExecutableElement) elm, (ExecutableMemberDoc) jdoc, isLastTag);
             insertJavadoc = "@param " + paramName + " "; // NOI18N
             break;
         case TYPEPARAM:
-            insertPosition = getTypeParamInsertPosition(wc, doc, (TypeElement) elm, jdoc, isLastTag);
-            insertJavadoc = "@param " + paramName + " "; // NOI18N
+            insertPosition = getTypeParamInsertPosition(wc, doc, elm, jdoc, isLastTag);
+            insertJavadoc = "@param <" + paramName + "> "; // NOI18N
             break;
         case RETURN:
             insertPosition = getReturnInsertPosition(wc, doc, jdoc, isLastTag);
@@ -310,15 +313,27 @@ final class AddTagFix implements Fix, CancellableTask<WorkingCopy> {
         return getTagInsertPosition(wc, doc, jdoc, null, false, isLastTag);
     }
 
-    private Position getTypeParamInsertPosition(CompilationInfo wc, Document doc, TypeElement elm, Doc jdoc, boolean[] isLastTag) throws BadLocationException {
+    private Position getTypeParamInsertPosition(CompilationInfo wc, Document doc, Element elm, Doc jdoc, boolean[] isLastTag) throws BadLocationException {
         // 1. find @param tags + find index of param and try to apply on @param array
-        Tag[] tags = jdoc.tags("@param"); // NOI18N
+        ElementKind elmkind = elm.getKind();
+        Tag[] tags;
+        if (elmkind.isClass() || elmkind.isInterface()) {
+            tags = ((ClassDoc) jdoc).typeParamTags();
+        } else if (elmkind == ElementKind.METHOD || elmkind == ElementKind.CONSTRUCTOR) {
+            tags = ((ExecutableMemberDoc) jdoc).typeParamTags();
+        } else {
+            throw new IllegalStateException(elm + ", " + elmkind + "\n" + jdoc.getRawCommentText()); // NOI18N
+        }
         Tag where = null;
         boolean insertBefore = true;
         if (tags.length > 0) {
-            int index = findParamIndex(elm.getTypeParameters(), paramName);
-            where = index < tags.length? tags[index]: tags[tags.length - 1];
-            insertBefore = index < tags.length;
+            List<? extends TypeParameterElement> typeParameters =
+                    elmkind == ElementKind.METHOD || elmkind == ElementKind.CONSTRUCTOR
+                    ? ((ExecutableElement) elm).getTypeParameters()
+                    : ((TypeElement) elm).getTypeParameters();
+            int pindex = findParamIndex(typeParameters, paramName);
+            where = pindex < tags.length? tags[pindex]: tags[tags.length - 1];
+            insertBefore = pindex < tags.length;
         } else {
             // 2. if not, find first tag + insert before
             tags = jdoc.tags();
@@ -375,21 +390,27 @@ final class AddTagFix implements Fix, CancellableTask<WorkingCopy> {
         return getTagInsertPosition(wc, doc, jdoc, where, insertBefore, isLastTag);
     }
 
-    private Position getParamInsertPosition(CompilationInfo wc, Document doc, ExecutableElement elm, Doc jdoc, boolean[] isLastTag) throws BadLocationException {
+    private Position getParamInsertPosition(CompilationInfo wc, Document doc, ExecutableElement elm, ExecutableMemberDoc jdoc, boolean[] isLastTag) throws BadLocationException {
         // 1. find @param tags + find index of param and try to apply on @param array
-        Tag[] tags = jdoc.tags("@param"); // NOI18N
-        // XXX filter type params?
+        Tag[] tags = jdoc.paramTags();
         Tag where = null;
         boolean insertBefore = true;
         if (tags.length > 0) {
-            int index = findParamIndex(elm.getParameters(), paramName);
-            where = index < tags.length? tags[index]: tags[tags.length - 1];
-            insertBefore = index < tags.length;
+            int pindex = findParamIndex(elm.getParameters(), paramName);
+            where = pindex < tags.length? tags[pindex]: tags[tags.length - 1];
+            insertBefore = pindex < tags.length;
         } else {
-            // 2. if not, find first tag + insert before
-            tags = jdoc.tags();
+            tags = jdoc.typeParamTags();
+            // 2. if not, find last type param tag + insert after
             if (tags.length > 0) {
-                where = tags[0];
+                where = tags[tags.length - 1];
+                insertBefore = false;
+            } else {
+                // 3. if not, find first tag + insert before
+                tags = jdoc.tags();
+                if (tags.length > 0) {
+                    where = tags[0];
+                }
             }
         }
         return getTagInsertPosition(wc, doc, jdoc, where, insertBefore, isLastTag);

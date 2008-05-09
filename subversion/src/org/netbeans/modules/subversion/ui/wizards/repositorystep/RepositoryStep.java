@@ -218,8 +218,6 @@ public class RepositoryStep extends AbstractStep implements WizardDescriptor.Asy
                 }
 
                 if(info != null) {
-                    // XXX convert to repositoryConnection                    
-
                     SVNUrl repositoryUrl = info.getRepository();
                     if(repositoryUrl==null) {
                         // XXX see issue #72810 and #72921. workaround!

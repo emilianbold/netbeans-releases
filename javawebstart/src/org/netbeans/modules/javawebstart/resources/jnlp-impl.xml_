@@ -374,6 +374,7 @@ made subject to such option by the copyright holder.
     </target>
     <target name="-unavailable-task-warning" depends="-check-task-available" unless="signjarstask.available">
         <echo message="Signtask is not available, jar files will not be signed. Task is available only when running inside NetBeans IDE."/>
+        <echo message="You can fix the problem by adding following jar file to Ant classpath: [NetBeans install dir]/java2/ant/nblib/org-netbeans-modules-javawebstart-signtask.jar"/>
     </target>
     <target name="-preinit-resources-signed-jars" depends="-unavailable-task-warning,-sign-jars" if="jnlp.signed.true+signjarstask.available">
         <property name="jnlp.resources.jars.value" value="${jnlp.signed.jars}${jnlp.components}"/>
@@ -445,6 +446,13 @@ made subject to such option by the copyright holder.
     <body>
         <h3>Test page for launching the application via JNLP</h3>
         <a href="launch.jnlp">Launch the application</a>
+        <!-- or use following script element to launch via Deployment Toolkit
+        <script src="http://java.com/js/deployJava.js"></script>
+        <script>
+            var url="http://[fill in your URL]/launch.jnlp";
+            deployJava.createWebStartLaunchButton(url, "1.6");
+        </script>
+        -->
     </body>
 </html>
 ]]></echo>

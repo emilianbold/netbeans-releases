@@ -54,7 +54,9 @@ public class NewSceneDialog extends AbstractNameValidationDialog {
 		super("");
 		HelpCtx.setHelpIDString(this, "org.netbeans.modules.vmd.game.dialog.NewSceneDialog");
 		this.gameDesign = gameDesign;
-	}
+                this.getAccessibleContext().setAccessibleName(NbBundle.getMessage(NewSceneDialog.class, "NewSceneDialog.accessible.name"));
+                this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NewSceneDialog.class, "NewSceneDialog.accessible.description"));
+        }
 	
 	public NewSceneDialog(Scene scene) {
 		this(scene.getGameDesign());

@@ -28,9 +28,6 @@
 
 package org.netbeans.modules.ruby.debugger.model;
 
-/**
- * @author Martin Krauskopf
- */
 public final class CallSite {
 
     private final String path;

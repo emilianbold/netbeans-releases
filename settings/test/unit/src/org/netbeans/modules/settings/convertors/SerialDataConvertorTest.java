@@ -46,6 +46,7 @@ import org.openide.filesystems.*;
 import org.openide.filesystems.FileSystem; // override java.io.FileSystem
 import org.openide.loaders.*;
 import org.openide.cookies.*;
+import java.util.logging.Level;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.*;
 import java.io.*;
@@ -68,6 +69,11 @@ public class SerialDataConvertorTest extends NbTestCase {
     /** Creates new DataFolderTest */
     public SerialDataConvertorTest(String name) {
         super (name);
+    }
+
+    @Override
+    protected Level logLevel() {
+        return Level.FINE;
     }
     
     /** Setups variables.

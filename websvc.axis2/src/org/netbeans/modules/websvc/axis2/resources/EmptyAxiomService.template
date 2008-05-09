@@ -1,0 +1,49 @@
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt">
+
+<#if package?? && package != "">
+package ${package};
+
+</#if>
+import org.apache.axiom.om.*;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.namespace.QName;
+
+/**
+ *
+ * @author ${user}
+ */
+public class ${name} {
+    // please, check if schema namespace in wsdl file corresponds to this value: 
+    private static final String SCHEMA_NAMESPACE = "${ns}";
+
+    private OMFactory omFactory = OMAbstractFactory.getOMFactory();
+      
+    /** This method can be used to get values from request parameter
+     * @param requestElement top level element from request body, e.g. "getPrice" element)
+     * @param requestChildName request child element name, e.g. "symbol"
+     * @return request parameter value
+     */
+    private String getRequestParam(OMElement requestElement, String requestChildName) {
+        OMElement requestChildElement = 
+            requestElement.getFirstChildWithName(new QName(SCHEMA_NAMESPACE, requestChildName));
+        return requestChildElement.getText();        
+    }
+    
+    /** This method can be used to generate response
+     * @param responseElementName element name for top level response element, e.g. "getPriceResponse"  
+     * @param responseChildName response element name, e.g. "return"
+     * @param response OMNode representing a response (use omFactory to create the OMNode object)
+     * @return request parameter value
+     */    
+    private OMElement createResponse(String responseElementName, String responseChildName, OMNode response) {
+        OMNamespace omNs = omFactory.createOMNamespace(SCHEMA_NAMESPACE, "ns");
+        OMElement responseElement = omFactory.createOMElement(responseElementName, omNs);
+        OMElement responseChildElement = omFactory.createOMElement(responseChildName, omNs);
+        responseChildElement.addChild(response);
+        responseElement.addChild(responseChildElement);
+        return responseElement;
+    }
+}

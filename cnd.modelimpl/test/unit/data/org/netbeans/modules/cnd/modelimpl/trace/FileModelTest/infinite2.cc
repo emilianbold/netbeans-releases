@@ -1,9 +1,9 @@
-class A : A {
+class Infinite2 : Infinite2 {
     void foo();
     
 };
    
-void A::foo() {
+void Infinite2::foo() {
     C a;
      
 }

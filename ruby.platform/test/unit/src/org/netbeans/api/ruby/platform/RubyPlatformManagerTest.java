@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -22,7 +22,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -46,6 +46,11 @@ import org.openide.filesystems.FileUtil;
 
 public final class RubyPlatformManagerTest extends RubyTestBase {
 
+    /** "Bridge" to package private {@link RubyPlatformManager#resetPlatforms}. */
+    public static void resetPlatforms() {
+        RubyPlatformManager.resetPlatforms();
+    }
+
     public RubyPlatformManagerTest(final String testName) {
         super(testName);
     }
@@ -53,15 +58,23 @@ public final class RubyPlatformManagerTest extends RubyTestBase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        RubyPlatformManager.resetPlatforms();
+        resetPlatforms();
     }
 
     public void testAddPlatform() throws Exception {
         assertEquals("bundle JRuby", 1, RubyPlatformManager.getPlatforms().size());
+        RubyPlatform defPlatform = RubyPlatformManager.getDefaultPlatform();
+        assertNotNull("has default platform", defPlatform);
+        assertEquals("platform already present", defPlatform, RubyPlatformManager.addPlatform(defPlatform.getInterpreterFile()));
+        assertEquals("was not added twice", 1, RubyPlatformManager.getPlatforms().size());
+    }
+    
+    public void testAddingTheSamePlatformTwice() throws Exception {
+        assertEquals("bundle JRuby", 1, RubyPlatformManager.getPlatforms().size());
         RubyPlatform ruby = RubyPlatformManager.addPlatform(setUpRuby());
         File defaultRubyHome = getTestRubyHome();
         assertEquals("right ruby home", defaultRubyHome, ruby.getHome());
-        assertEquals("right ruby lib", new File(defaultRubyHome, "lib/ruby/1.8").getAbsolutePath(), ruby.getLibDir());
+        assertEquals("right ruby lib", new File(defaultRubyHome, "lib/ruby/1.8").getAbsolutePath(), ruby.getVersionLibDir());
         assertEquals("two platforms", 2, RubyPlatformManager.getPlatforms().size());
         RubyPlatformManager.removePlatform(ruby);
         assertEquals("platform removed", 1, RubyPlatformManager.getPlatforms().size());
@@ -115,10 +128,12 @@ public final class RubyPlatformManagerTest extends RubyTestBase {
 
         // remove and check
         gemManager.removeGemPath(dummyRepo);
+        // XXX this is neeeded on Windows. But we do use FileObject everywhere (?!)
+        platform.getLibDirFO().refresh();
         RubyPlatformManager.resetPlatforms();
         platform = RubyPlatformManager.getDefaultPlatform();
         gemManager = platform.getGemManager();
-        assertEquals("two repositories", 1, RubyPlatformManager.getDefaultPlatform().getGemManager().getRepositories().size());
+        assertEquals("two repositories", 1, gemManager.getRepositories().size());
         gemManager.removeGemPath(dummyRepo);
     }
 

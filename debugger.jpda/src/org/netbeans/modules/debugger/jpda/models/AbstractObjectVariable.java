@@ -45,6 +45,7 @@ import com.sun.jdi.ArrayReference;
 import com.sun.jdi.ArrayType;
 import com.sun.jdi.CharValue;
 import com.sun.jdi.ClassType;
+import com.sun.jdi.IntegerValue;
 import com.sun.jdi.Method;
 import com.sun.jdi.ObjectCollectedException;
 import com.sun.jdi.ObjectReference;
@@ -281,32 +282,77 @@ class AbstractObjectVariable extends AbstractVariable implements ObjectVariable 
      */
     public String getToStringValue () throws InvalidExpressionException {
         Value v = getInnerValue ();
-        return getToStringValue(v, getDebugger());
+        return getToStringValue(v, getDebugger(), 0);
     }
     
-    static String getToStringValue (Value v, JPDADebuggerImpl debugger) throws InvalidExpressionException {
+    /**
+     * Calls {@link java.lang.Object#toString} in debugged JVM and returns
+     * its value.
+     *
+     * @return toString () value of this instance
+     */
+    public String getToStringValue (int maxLength) throws InvalidExpressionException {
+        Value v = getInnerValue ();
+        return getToStringValue(v, getDebugger(), maxLength);
+    }
+    
+    static String getToStringValue (Value v, JPDADebuggerImpl debugger, int maxLength) throws InvalidExpressionException {
         if (v == null) return null;
         try {
             if (!(v.type () instanceof ClassType)) 
                 return AbstractVariable.getValue (v);
             if (v instanceof CharValue)
                 return "\'" + v.toString () + "\'";
-            if (v instanceof StringReference)
-                return "\"" +
-                    ((StringReference) v).value ()
-                    + "\"";
-            Method toStringMethod = ((ClassType) v.type ()).
-                concreteMethodByName ("toString", "()Ljava/lang/String;");
-            StringReference sr = (StringReference) debugger.invokeMethod (
-                (ObjectReference) v,
-                toStringMethod,
-                new Value [0]
-            );
+            boolean addQuotation = false;
+            boolean addDots = false;
+            StringReference sr;
+            if (v instanceof StringReference) {
+                sr = (StringReference) v;
+                addQuotation = true;
+            } else {
+                Method toStringMethod = ((ClassType) v.type ()).
+                    concreteMethodByName ("toString", "()Ljava/lang/String;");  // NOI8N
+                sr = (StringReference) debugger.invokeMethod (
+                    (ObjectReference) v,
+                    toStringMethod,
+                    new Value [0]
+                );
+            }
             if (sr == null) {
                 return null;
             } else {
-                return sr.value ();
+                if (maxLength > 0 && maxLength < Integer.MAX_VALUE) {
+                    Method stringLengthMethod = ((ClassType) sr.type ()).
+                        concreteMethodByName ("length", "()I");  // NOI8N
+                    IntegerValue lengthValue = (IntegerValue) debugger.invokeMethod (
+                        sr,
+                        stringLengthMethod,
+                        new Value [0]
+                    );
+                    if (lengthValue.value() > maxLength) {
+                        Method subStringMethod = ((ClassType) sr.type ()).
+                            concreteMethodByName ("substring", "(II)Ljava/lang/String;");  // NOI8N
+                        if (subStringMethod != null) {
+                            sr = (StringReference) debugger.invokeMethod (
+                                sr,
+                                subStringMethod,
+                                new Value [] { v.virtualMachine().mirrorOf(0),
+                                               v.virtualMachine().mirrorOf(maxLength) }
+                            );
+                            addDots = true;
+                        }
+                    }
+                    
+                }
             }
+            String str = sr.value();
+            if (addDots) {
+                str = str + "..."; // NOI8N
+            }
+            if (addQuotation) {
+                str = "\"" + str + "\""; // NOI8N
+            }
+            return str;
         } catch (VMDisconnectedException ex) {
             return NbBundle.getMessage(AbstractVariable.class, "MSG_Disconnected");
         } catch (ObjectCollectedException ocex) {

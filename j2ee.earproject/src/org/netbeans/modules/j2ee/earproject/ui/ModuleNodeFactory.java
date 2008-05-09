@@ -88,7 +88,8 @@ public class ModuleNodeFactory implements NodeFactory {
 
         public Node node(String key) {
             if (JAVAEE_MODULES.equals(key)) {
-                return new LogicalViewNode(project.getAntProjectHelper());
+                return new LogicalViewNode(project.getAntProjectHelper(), project, 
+                        project.getUpdateHelper(), project.getClassPathSupport());
             }
             assert false : "No node for key: " + key; // NOI18N
             return null;

@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.spring.beans.hyperlink;
 
-import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -52,13 +51,13 @@ import org.openide.util.NbBundle;
  *
  * @author Rohan Ranade (Rohan.Ranade@Sun.COM)
  */
-public class ResourceHyperlinkProcessor implements HyperlinkProcessor {
+public class ResourceHyperlinkProcessor extends HyperlinkProcessor {
 
     public ResourceHyperlinkProcessor() {
     }
 
     public void process(HyperlinkEnv env) {
-        FileObject fo = NbEditorUtilities.getFileObject(env.getDocument());
+        FileObject fo = env.getFileObject();
         if (fo == null) {
             return;
         }

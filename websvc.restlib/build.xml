@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?> <!-- -*- sgml-indent-step: 2 -*- -->
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
@@ -46,4 +46,9 @@ made subject to such option by the copyright holder.
     <target name="zip_rest" depends="init">
         <zip basedir="${cluster}/${module.jar.dir}/ext/rest" zipfile="external/rest.zip" includes="*.jar"/>
     </target>
+    
+     <target name="zip_api_doc" depends="init">
+        <zip basedir="${cluster}/${module.jar.dir}/../docs/rest" zipfile="external/jsr311-api-doc.zip"/>
+    </target>
+    
 </project>

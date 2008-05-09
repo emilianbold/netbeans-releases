@@ -84,12 +84,13 @@ import org.openide.util.NbBundle;
  */
 public class AddPropertyCodeGenerator implements CodeGenerator {
 
+    private String className;
     private List<String> existingFields;
-
     private String[] pcsName;
     private String[] vcsName;
 
-    public AddPropertyCodeGenerator(List<String> existingFields, String[] pcsName, String[] vcsName) {
+    public AddPropertyCodeGenerator(String className, List<String> existingFields, String[] pcsName, String[] vcsName) {
+        this.className = className;
         this.existingFields = existingFields;
         this.pcsName = pcsName;
         this.vcsName = vcsName;
@@ -111,7 +112,7 @@ public class AddPropertyCodeGenerator implements CodeGenerator {
 
     public void perform(FileObject file, JTextComponent pane) {
         JButton ok = new JButton(NbBundle.getMessage(AddPropertyCodeGenerator.class, "LBL_ButtonOK"));
-        final AddPropertyPanel addPropertyPanel = new AddPropertyPanel(file, existingFields, pcsName, vcsName, ok);
+        final AddPropertyPanel addPropertyPanel = new AddPropertyPanel(file, className, existingFields, pcsName, vcsName, ok);
         String caption = NbBundle.getMessage(AddPropertyCodeGenerator.class, "CAP_AddProperty");
         String cancel = NbBundle.getMessage(AddPropertyCodeGenerator.class, "LBL_ButtonCancel");
         DialogDescriptor dd = new DialogDescriptor(addPropertyPanel,caption, true, new Object[] {ok,cancel}, ok, DialogDescriptor.DEFAULT_ALIGN, null, null);
@@ -250,7 +251,9 @@ public class AddPropertyCodeGenerator implements CodeGenerator {
                 }
             }
             
-            return Collections.singleton(new AddPropertyCodeGenerator(existingFields, pcsName, vcsName));
+            String className = ((TypeElement) e).getQualifiedName().toString();
+            
+            return Collections.singleton(new AddPropertyCodeGenerator( className, existingFields, pcsName,vcsName));
         }
         
         private static TypeMirror resolve(CompilationInfo info, String s) {

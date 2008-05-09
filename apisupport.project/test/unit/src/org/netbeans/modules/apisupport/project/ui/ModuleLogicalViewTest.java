@@ -66,16 +66,16 @@ public class ModuleLogicalViewTest extends TestBase {
     }
     
     public void testFindPath() throws Exception {
-        Project freeform = ProjectManager.getDefault().findProject(FileUtil.toFileObject(file("ant/freeform")));
-        assertNotNull("have project in ant/freeform", freeform);
+        Project freeform = ProjectManager.getDefault().findProject(FileUtil.toFileObject(file("ant.freeform")));
+        assertNotNull("have project in ant.freeform", freeform);
         LogicalViewProvider lvp = freeform.getLookup().lookup(LogicalViewProvider.class);
         assertNotNull("have a LogicalViewProvider", lvp);
-        assertNotNull("found arch.xml", find(lvp, "ant/freeform/arch.xml"));
-        assertNotNull("found FreeformProject.java", find(lvp, "ant/freeform/src/org/netbeans/modules/ant/freeform/FreeformProject.java"));
-        assertNotNull("found freeform-project-general.xsd", find(lvp, "ant/freeform/src/org/netbeans/modules/ant/freeform/resources/freeform-project-general.xsd"));
-        assertNotNull("found FreeformProjectTest.java", find(lvp, "ant/freeform/test/unit/src/org/netbeans/modules/ant/freeform/FreeformProjectTest.java"));
-        assertNull("did not find test/cfg-unit.xml", find(lvp, "ant/freeform/test/cfg-unit.xml"));
-        Node layer = find(lvp, "ant/freeform/src/org/netbeans/modules/ant/freeform/resources/layer.xml");
+        assertNotNull("found arch.xml", find(lvp, "ant.freeform/arch.xml"));
+        assertNotNull("found FreeformProject.java", find(lvp, "ant.freeform/src/org/netbeans/modules/ant/freeform/FreeformProject.java"));
+        assertNotNull("found freeform-project-general.xsd", find(lvp, "ant.freeform/src/org/netbeans/modules/ant/freeform/resources/freeform-project-general.xsd"));
+        assertNotNull("found FreeformProjectTest.java", find(lvp, "ant.freeform/test/unit/src/org/netbeans/modules/ant/freeform/FreeformProjectTest.java"));
+        assertNull("did not find test/cfg-unit.xml", find(lvp, "ant.freeform/test/cfg-unit.xml"));
+        Node layer = find(lvp, "ant.freeform/src/org/netbeans/modules/ant/freeform/resources/layer.xml");
         assertNotNull("Found layer", layer);
         assertEquals("Sources is parent parent of the layer", "${src.dir}", layer.getParentNode().getParentNode().getName());
         assertFalse("Has children: " + layer, layer.isLeaf());

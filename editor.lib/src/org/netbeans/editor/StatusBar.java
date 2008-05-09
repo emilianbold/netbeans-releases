@@ -488,10 +488,10 @@ public class StatusBar implements PropertyChangeListener, DocumentListener {
             
             if (CELL_POSITION.equals(cellName)){
                 cell.setToolTipText(caretPositionLocaleString);
-            }else if (CELL_TYPING_MODE.equals(cellName)){
+            } else if (CELL_TYPING_MODE.equals(cellName)) {
                 cell.setToolTipText(insText.equals(text)? insertModeLocaleString : overwriteModeLocaleString);
-            }else{
-                cell.setToolTipText(text.length() == 0 ? null : text);
+            } else {
+                cell.setToolTipText(text == null || text.length() == 0 ? null : text);
             }
             
             if (c != null && cell instanceof Cell) {
@@ -614,7 +614,8 @@ public class StatusBar implements PropertyChangeListener, DocumentListener {
                 Border b = getBorder();
                 Insets ins = (b != null) ? b.getBorderInsets(this) : NULL_INSETS;
                 FontMetrics fm = getFontMetrics(f);
-                int mw = fm.stringWidth(this.getText());
+                String text = this.getText();
+                int mw = text == null ? 0 : fm.stringWidth(text);
                 maxDimension.height = fm.getHeight() + ins.top + ins.bottom;
                 if (widestStrings != null) {
                     for (int i = 0; i < widestStrings.length; i++) {

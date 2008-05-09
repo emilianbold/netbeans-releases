@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.uml.core.metamodel.core.foundation;
 
+import java.io.IOException;
 import org.dom4j.Attribute;
 import org.dom4j.Document;
 import org.dom4j.Element;
@@ -53,6 +54,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.uml.common.generics.ETPairT;
 import org.netbeans.modules.uml.core.metamodel.structure.IProject;
 import org.netbeans.modules.uml.core.support.umlsupport.URILocator;
@@ -62,6 +65,10 @@ import org.netbeans.modules.uml.core.eventframework.EventBlocker;
 import org.netbeans.modules.uml.core.eventframework.EventDispatchRetriever;
 import org.netbeans.modules.uml.core.eventframework.EventDispatchNameKeeper;
 import org.netbeans.modules.uml.core.eventframework.IEventPayload;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 
 public class VersionableElement implements IVersionableElement
@@ -71,6 +78,7 @@ public class VersionableElement implements IVersionableElement
      * through its accessor and mutator, so that subclasses can point our 
      * methods at other Nodes.
      */
+    private static final Logger logger = Logger.getLogger("org.netbeans.modules.uml.core");
     protected Node m_Node = null;
     protected org.dom4j.Node m_DOMNode = null;
     private WeakReference aggregator = new WeakReference( this );
@@ -983,13 +991,19 @@ protected List getAllAffectedElements(Document doc, String xmiid) {
   			}
   		}
   		
-  		if (this instanceof IProject)
-  		{
-  		}
-  		else
+  		if (!(this instanceof IProject))
   		{
   			File file = new File(versionedFile);
-  			file.delete();
+                        FileObject fo = FileUtil.toFileObject(file);
+                        if ( fo != null)
+                        {
+                            try {
+                                fo.delete();
+                            } catch (IOException ex) {
+                                String mesg = ex.getMessage();
+                                logger.log(Level.WARNING, mesg != null ? mesg : "", ex);
+                            }
+                        }
   		}
   	}
   }
@@ -1125,7 +1139,7 @@ protected List getAllAffectedElements(Document doc, String xmiid) {
 	protected void buildNodePresence(String nodeName, Document doc, Node parent)
 	{
 		try {
-         Element parentElement = (org.dom4j.Element)parent;
+                        Element parentElement = (org.dom4j.Element)parent;
 			org.dom4j.Element element = parentElement.addElement( XMLManip.getQName(parentElement, nodeName));
                 
 			//parent.appendChild(element);
@@ -1142,9 +1156,11 @@ protected List getAllAffectedElements(Document doc, String xmiid) {
 			// a perfect place to establish the ID.
 			String idStr = UMLXMLManip.generateId(true);
 			setXMIID(idStr);
-		} catch(Exception e)
+		} 
+                catch(Exception ex)
 		{
-			e.printStackTrace();
+			String mesg = ex.getMessage();
+                        logger.log(Level.WARNING, mesg != null ? mesg : "", ex);
 		}
 	}
 	
@@ -1320,25 +1336,25 @@ protected List getAllAffectedElements(Document doc, String xmiid) {
 		return proj;
 	}
 	
-	protected void finalize()
-	{
-		try
-		{
-			super.finalize();
-			FactoryRetriever ret = FactoryRetriever.instance();
-         if(isClone() == false)
-         {
-            String xmiid = XMLManip.getAttributeValue(m_Node, "xmi.id");
-            if (xmiid != null && xmiid.length() > 0)
+	protected void finalize() 
+        {
+            try 
             {
-               ret.removeObject(xmiid);
+                super.finalize();
+                FactoryRetriever ret = FactoryRetriever.instance();
+                if (isClone() == false) {
+                    String xmiid = XMLManip.getAttributeValue(m_Node, "xmi.id");
+                    if (xmiid != null && xmiid.length() > 0) {
+                        ret.removeObject(xmiid);
+                    }
+                }
+            } 
+            catch (Throwable ex) 
+            {
+                String mesg = ex.getMessage();
+                logger.log(Level.WARNING, mesg != null ? mesg : "", ex);
             }
-         }
-		}
-		catch (Throwable e)
-		{
-		}
-	}
+        }
    
    public boolean isClone()
    {

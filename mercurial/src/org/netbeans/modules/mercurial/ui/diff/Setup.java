@@ -150,7 +150,7 @@ public final class Setup {
                 | FileInformation.STATUS_VERSIONED_ADDEDLOCALLY)) {
                     firstRevision = REVISION_BASE;
 
-                    firstTitle = loc.getString("MSG_DiffPanel_LocalNew"); // NOI18N
+                    firstTitle = MessageFormat.format(loc.getString("MSG_DiffPanel_BaseRevision"), new Object [] { firstRevision }); // NOI18N
                 } else if (match (status, FileInformation.STATUS_VERSIONED_NEWINREPOSITORY)) {
                     firstRevision = null;
                     firstTitle = NbBundle.getMessage(Setup.class, "LBL_Diff_NoLocalFile"); // NOI18N

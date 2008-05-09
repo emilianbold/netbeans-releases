@@ -77,7 +77,10 @@ public class BindingProperty extends PropertySupport.ReadWrite<MetaBinding> {
         FormProperty prop = (FormProperty)bindingComponent.getPropertyByName(bindingDescriptor.getPath());
         if (prop == null) {
             // Can we have a component with a binding property and no regular property?
-            prop = bindingComponent.getAllBeanProperties()[0];
+            RADProperty[] props = bindingComponent.getAllBeanProperties();
+            if (props.length > 0) {
+                prop = props[0];
+            }
         }
         if (prop != null) {
             String name = FormUtils.getBundleString("MSG_Binding_NullProperty"); // NOI18N

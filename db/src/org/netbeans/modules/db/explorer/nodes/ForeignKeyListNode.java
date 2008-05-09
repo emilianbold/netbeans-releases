@@ -41,14 +41,10 @@
 
 package org.netbeans.modules.db.explorer.nodes;
 
-import org.openide.util.NbBundle;
+import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
 
 public class ForeignKeyListNode extends DatabaseNode {
-    public ForeignKeyListNode() {
-        setDisplayName(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("NDN_ForeignKeys")); //NOI18N
-    }
-
-    public String getShortDescription() {
-        return NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ND_ForeignKeyList"); //NOI18N
+    public ForeignKeyListNode(DatabaseNodeInfo info) {
+        super(info);
     }
 }

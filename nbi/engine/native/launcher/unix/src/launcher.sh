@@ -102,10 +102,14 @@ MSG_ARG_CPA="nlu.arg.cpa"
 MSG_ARG_CPP="nlu.arg.cpp"
 MSG_ARG_DISABLE_FREE_SPACE_CHECK="nlu.arg.disable.space.check"
 MSG_ARG_LOCALE="nlu.arg.locale"
+MSG_ARG_SILENT="nlu.arg.silent"
 MSG_ARG_HELP="nlu.arg.help"
 MSG_USAGE="nlu.msg.usage"
 
-entryPoint() {		
+isSymlink=
+
+entryPoint() {
+        initSymlinkArgument        
 	CURRENT_DIRECTORY=`pwd`
 	LAUNCHER_NAME=`echo $0`
 	parseCommandLineArguments "$@"
@@ -135,6 +139,15 @@ entryPoint() {
 	fi
 }
 
+initSymlinkArgument() {
+        testSymlinkErr=`test -L / > /dev/null`
+        if [ -z "$testSymlinkErr" ] ; then
+            isSymlink=-L
+        else
+            isSymlink=-h
+        fi
+}
+
 debugLauncherArguments() {
 	debug "Launcher Command : $0"
 	argCounter=1
@@ -162,7 +175,9 @@ parseCommandLineArguments() {
 		$ARG_VERBOSE)
                         USE_DEBUG_OUTPUT=1;;
 		$ARG_NOSPACECHECK)
-                        PERFORM_FREE_SPACE_CHECK=0;;
+                        PERFORM_FREE_SPACE_CHECK=0
+                        parseJvmAppArgument "$1"
+                        ;;
                 $ARG_OUTPUT)
 			if [ -n "$2" ] ; then
                         	OUTPUT_FILE="$2"
@@ -235,7 +250,7 @@ parseCommandLineArguments() {
 	done
 }
 
-setLauncherLocale() {        index=0
+setLauncherLocale() {
 	if [ 0 -eq $LOCAL_OVERRIDDEN ] ; then		
         	SYSTEM_LOCALE="$LANG"
 		debug "Setting initial launcher locale from the system : $SYSTEM_LOCALE"
@@ -267,8 +282,8 @@ setLauncherLocale() {        index=0
   			# the less the length the less the difference and more coincedence
 
                         comp=`echo "$SYSTEM_LOCALE" | sed -e "s/^${arg}//"`				
-			length1=`awk 'END{ print length(a) }' a="$comp" < /dev/null`
-			length2=`awk 'END{ print length(b) }' b="$LAUNCHER_LOCALE" < /dev/null`
+			length1=`getStringLength "$comp"`
+                        length2=`getStringLength "$LAUNCHER_LOCALE"`
                         if [ $length1 -lt $length2 ] ; then	
 				# more coincidence between $SYSTEM_LOCALE and $arg than between $SYSTEM_LOCALE and $arg
                                 compare=`ifLess "$comp" "$LAUNCHER_LOCALE"`
@@ -337,6 +352,11 @@ ifNumber()
 	fi 
 	echo $result
 }
+getStringLength() {
+    strlength=`awk 'END{ print length(a) }' a="$1" < /dev/null`
+    echo $strlength
+}
+
 resolveRelativity() {
 	if [ 1 -eq `ifPathRelative "$1"` ] ; then
 		echo "$CURRENT_DIRECTORY"/"$1" | sed 's/\"//g' 2>/dev/null
@@ -427,7 +447,8 @@ showHelp() {
 	msg7=`message "$MSG_ARG_CPP $ARG_CLASSPATHP"`
 	msg8=`message "$MSG_ARG_DISABLE_FREE_SPACE_CHECK $ARG_NOSPACECHECK"`
         msg9=`message "$MSG_ARG_LOCALE $ARG_LOCALE"`
-	msg10=`message "$MSG_ARG_HELP $ARG_HELP"`
+        msg10=`message "$MSG_ARG_SILENT $ARG_SILENT"`
+	msg11=`message "$MSG_ARG_HELP $ARG_HELP"`
 	out "$msg0"
 	out "$msg1"
 	out "$msg2"
@@ -439,6 +460,7 @@ showHelp() {
 	out "$msg8"
 	out "$msg9"
 	out "$msg10"
+	out "$msg11"
 	exitProgram $ERROR_OK
 }
 
@@ -552,7 +574,7 @@ setTestJVMClasspath() {
 	if [ -d "$TEST_JVM_PATH" ] ; then
 		TEST_JVM_CLASSPATH="$TEST_JVM_PATH"
 		debug "... testJVM path is a directory"
-	elif [ -L "$TEST_JVM_PATH" ] && [ $notClassFile -eq 1 ] ; then
+	elif [ $isSymlink "$TEST_JVM_PATH" ] && [ $notClassFile -eq 1 ] ; then
 		TEST_JVM_CLASSPATH="$TEST_JVM_PATH"
 		debug "... testJVM path is a link but not a .class file"
 	else
@@ -644,6 +666,13 @@ resolveResourceSize() {
     	echo "$resourceSize"
 }
 
+resolveResourceMd5() {
+	resourcePrefix="$1"
+	resourceVar="$""$resourcePrefix""_MD5"
+	resourceMd5=`eval "echo \"$resourceVar\""`
+    	echo "$resourceMd5"
+}
+
 resolveResourceType() {
 	resourcePrefix="$1"
 	resourceVar="$""$resourcePrefix""_TYPE"
@@ -661,8 +690,11 @@ extractResource() {
                 resourceSize=`resolveResourceSize "$resourcePrefix"`
 		debug "... resource size=$resourceSize"
             	resourcePath=`resolveResourcePath "$resourcePrefix"`
-	    	debug "... resource path=$resourcePath"		
+	    	debug "... resource path=$resourcePath"
             	extractFile "$resourceSize" "$resourcePath"
+                resourceMd5=`resolveResourceMd5 "$resourcePrefix"`
+	    	debug "... resource md5=$resourceMd5"
+                checkMd5 "$resourcePath" "$resourceMd5"
 		debug "... done"
 	fi
 	debug "... extracting resource finished"	
@@ -701,7 +733,7 @@ processJarsClasspath() {
 	while [ $jarsCounter -lt $JARS_NUMBER ] ; do
 		resolvedFile=`resolveResourcePath "JAR_$jarsCounter"`
 		debug "... adding jar to classpath : $resolvedFile"
-		if [ ! -f "$resolvedFile" ] && [ ! -d "$resolvedFile" ] && [ ! -L "$resolvedFile" ] ; then
+		if [ ! -f "$resolvedFile" ] && [ ! -d "$resolvedFile" ] && [ ! $isSymlink "$resolvedFile" ] ; then
 				message "$MSG_ERROP_MISSING_RESOURCE" "$resolvedFile"
 				exitProgram $ERROR_MISSING_RESOURCES
 		else
@@ -720,7 +752,7 @@ processJarsClasspath() {
 extractFile() {
         start=$LAUNCHER_TRACKING_SIZE
         size=$1 #absolute size
-        name=$2 #relative part
+        name="$2" #relative part        
         fullBlocks=`expr $size / $FILE_BLOCK_SIZE`
         fullBlocksSize=`expr "$FILE_BLOCK_SIZE" \* "$fullBlocks"`
         oneBlocks=`expr  $size - $fullBlocksSize`
@@ -755,9 +787,62 @@ extractFile() {
 		LAUNCHER_TRACKING_SIZE=`expr "$LAUNCHER_TRACKING_SIZE" + 1`
 
 		LAUNCHER_TRACKING_SIZE_BYTES=`expr "$LAUNCHER_TRACKING_SIZE_BYTES" + "$oneBlocks"`
-        fi
+        fi        
 }
 
+md5_program=""
+no_md5_program_id="no_md5_program"
+
+initMD5program() {
+    if [ -z "$md5_program" ] ; then 
+        type digest >> /dev/null 2>&1
+        if [ 0 -eq $? ] ; then
+            md5_program="digest -a md5"
+        else
+            type md5sum >> /dev/null 2>&1
+            if [ 0 -eq $? ] ; then
+                md5_program="md5sum"
+            else 
+                type gmd5sum >> /dev/null 2>&1
+                if [ 0 -eq $? ] ; then
+                    md5_program="gmd5sum"
+                else
+                    type md5 >> /dev/null 2>&1
+                    if [ 0 -eq $? ] ; then
+                        md5_program="md5 -q"
+                    else 
+                        md5_program="$no_md5_program_id"
+                    fi
+                fi
+            fi
+        fi
+        debug "... program to check: $md5_program"
+    fi
+}
+
+checkMd5() {
+     name="$1"
+     md5="$2"     
+     if [ 32 -eq `getStringLength "$md5"` ] ; then
+         #do MD5 check         
+         initMD5program            
+         if [ 0 -eq `ifEquals "$md5_program" "$no_md5_program_id"` ] ; then
+            debug "... check MD5 of file : $name"           
+            debug "... expected md5: $md5"
+            realmd5=`$md5_program "$name" 2>/dev/null | sed "s/ .*//g"`
+            debug "... real md5 : $realmd5"
+            if [ 32 -eq `getStringLength "$realmd5"` ] ; then
+                if [ 0 -eq `ifEquals "$md5" "$realmd5"` ] ; then
+                        debug "... integration check FAILED"
+			message "$MSG_ERROR_INTEGRITY" `normalizePath "$LAUNCHER_FULL_PATH"`
+			exitProgram $ERROR_INTEGRITY
+                fi
+            else
+                debug "... looks like not the MD5 sum"
+            fi
+         fi
+     fi   
+}
 searchJavaEnvironment() {
      if [ -z "$LAUNCHER_JAVA_EXE" ] ; then
 		    # search java in the environment
@@ -814,7 +899,7 @@ searchJavaSystemPaths() {
 				debug "... next item is $nextItem"				
 				nextItem=`removeEndSlashes "$nextItem"`
 				if [ -n "$nextItem" ] ; then
-					if [ -d "$nextItem" ] || [ -L "$nextItem" ] ; then
+					if [ -d "$nextItem" ] || [ $isSymlink "$nextItem" ] ; then
 	               				debug "... checking item : $nextItem"
 						verifyJVM "$nextItem"
 					fi
@@ -844,7 +929,7 @@ searchJavaUserDefined() {
 }
 searchJava() {
 	message "$MSG_JVM_SEARCH"
-        if [ ! -f "$TEST_JVM_CLASSPATH" ] && [ ! -L "$TEST_JVM_CLASSPATH" ] && [ ! -d "$TEST_JVM_CLASSPATH" ]; then
+        if [ ! -f "$TEST_JVM_CLASSPATH" ] && [ ! $isSymlink "$TEST_JVM_CLASSPATH" ] && [ ! -d "$TEST_JVM_CLASSPATH" ]; then
                 debug "Cannot find file for testing JVM at $TEST_JVM_CLASSPATH"
 		message "$MSG_ERROR_JVM_NOT_FOUND" "$ARG_JAVAHOME"
                 exitProgram $ERROR_TEST_JVM_FILE
@@ -891,7 +976,7 @@ normalizePath() {
 
 resolveSymlink() {  
     pathArg="$1"	
-    while [ -L "$pathArg" ] ; do
+    while [ $isSymlink "$pathArg" ] ; do
         ls=`ls -ld "$pathArg"`
         link=`expr "$ls" : '^.*-> \(.*\)$' 2>/dev/null`
     
@@ -944,10 +1029,10 @@ checkJavaHierarchy() {
 	tryJava="$1"
 	javaHierarchy=0
 	if [ -n "$tryJava" ] ; then
-		if [ -d "$tryJava" ] || [ -L "$tryJava" ] ; then # existing directory or a symlink        			
+		if [ -d "$tryJava" ] || [ $isSymlink "$tryJava" ] ; then # existing directory or a isSymlink        			
 			javaLib="$tryJava"/"lib"
 	        
-			if [ -d "$javaLib" ] || [ -L "$javaLib" ] ; then
+			if [ -d "$javaLib" ] || [ $isSymlink "$javaLib" ] ; then
 				javaLibDtjar="$javaLib"/"dt.jar"
 				if [ -f "$javaLibDtjar" ] || [ -f "$javaLibDtjar" ] ; then
 					#definitely JDK as the JRE doesn`t have dt.jar
@@ -957,7 +1042,7 @@ checkJavaHierarchy() {
 					javaLibJce="$javaLib"/"jce.jar"
 					javaLibCharsets="$javaLib"/"charsets.jar"					
 					javaLibRt="$javaLib"/"rt.jar"
-					if [ -f "$javaLibJce" ] || [ -L "$javaLibJce" ] || [ -f "$javaLibCharsets" ] || [ -L "$javaLibCharsets" ] || [ -f "$javaLibRt" ] || [ -L "$javaLibRt" ] ; then
+					if [ -f "$javaLibJce" ] || [ $isSymlink "$javaLibJce" ] || [ -f "$javaLibCharsets" ] || [ $isSymlink "$javaLibCharsets" ] || [ -f "$javaLibRt" ] || [ $isSymlink "$javaLibRt" ] ; then
 						javaHierarchy=1
 					fi
 					

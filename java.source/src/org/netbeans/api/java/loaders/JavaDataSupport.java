@@ -41,12 +41,16 @@
 
 package org.netbeans.api.java.loaders;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.java.JavaDataLoader;
 import org.netbeans.modules.java.JavaNode;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.MultiDataObject;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 
 /**
@@ -83,7 +87,8 @@ public final class JavaDataSupport {
             DataObject jdo = DataObject.find(javafile);
             return new JavaNode(jdo, true);
         } catch (DataObjectNotFoundException ex) {
-            throw new IllegalStateException(ex);
+            Logger.getLogger(JavaDataSupport.class.getName()).log(Level.INFO, null, ex);
+            return new AbstractNode(Children.LEAF);
         }
     }
 

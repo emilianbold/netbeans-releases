@@ -234,7 +234,9 @@ public final class IOSupport {
             return;
         }
         CodeResolver resolver = resolvers.get(activatedView.getContext().getDataObject());
-        resolver.viewActivated(activatedView);
+        if (resolver != null) {
+            resolver.viewActivated(activatedView);
+        }
     }
 
     /**

@@ -29,77 +29,83 @@ package org.jruby.lexer.yacc;
 
 import org.jruby.ast.RegexpNode;
 import org.jruby.ast.StrNode;
+import org.jruby.lexer.yacc.SyntaxException.PID;
 import org.jruby.parser.ReOptions;
 import org.jruby.parser.Tokens;
 import org.jruby.util.ByteList;
 
 public class StringTerm extends StrTerm {
-    /* bit flags to indicate the string type */
-	private int func;
+    // Expand variables, Indentation of final marker
+    private int flags;
 
-    private final char term;
+    // Start of string ([, (, {, <, ', ", \n) 
+    private final char begin;
 
-    private final char paren;
+    // End of string (], ), }, >, ', ", \0)
+    private final char end;
 
-    /* nested string level */
+    // How many strings are nested in the current string term
     private int nest;
 
-    public StringTerm(int func, char term, char paren) {
-        this.func = func;
-        this.term = term;
-        this.paren = paren;
-        this.nest = 0;
+    public StringTerm(int flags, int begin, int end) {
+        this.flags = flags;
+        this.begin = (char) begin;
+        this.end   = (char) end;
+        this.nest  = 0;
     }
 
-    public int parseString(final RubyYaccLexer lexer, LexerSource src) throws java.io.IOException {
-        char c;
-        int space = 0;
+    public int parseString(RubyYaccLexer lexer, LexerSource src) throws java.io.IOException {
+        boolean spaceSeen = false;
+        int c;
 
-        if (func == -1) {
+        // FIXME: How much more obtuse can this be?
+        // Heredoc already parsed this and saved string...Do not parse..just return
+        if (flags == -1) {
             lexer.setValue(new Token("\"", lexer.getPosition()));
             return Tokens.tSTRING_END;
         }
 
         c = src.read();
-        if ((func & RubyYaccLexer.STR_FUNC_QWORDS) != 0
-                && Character.isWhitespace(c)) {
+        if ((flags & RubyYaccLexer.STR_FUNC_QWORDS) != 0 && Character.isWhitespace(c)) {
             do {
                 c = src.read();
             } while (Character.isWhitespace(c));
-            space = 1;
+            spaceSeen = true;
         }
 
         // BEGIN NETBEANS MODIFICATIONS
-        //if (c == term && nest == 0) {
-        if ((processingEmbedded == IGNORE_EMBEDDED || processingEmbedded == LOOKING_FOR_EMBEDDED) && (c == term) && (nest == 0)) {
+        //if (c == end && nest == 0) {
+        if ((processingEmbedded == IGNORE_EMBEDDED || processingEmbedded == LOOKING_FOR_EMBEDDED) && (c == end) && (nest == 0)) {
         // END NETBEANS MODIFICATIONS
-            if ((func & RubyYaccLexer.STR_FUNC_QWORDS) != 0) {
+            if ((flags & RubyYaccLexer.STR_FUNC_QWORDS) != 0) {
                 // BEGIN NETBEANS MODIFICATIONS
                 if (processingEmbedded == LOOKING_FOR_EMBEDDED) { // Only make this change when lexing, not parsing
                     // I want the terminating ")" to be passed as a string closure token,
                     // not as a plain rparen, since I want it to match up with the 
                     // string opening tag (and I don't want an unbalanced right paren)
-                    lexer.setValue(new Token(""+term, lexer.getPosition()));
+                    lexer.setValue(new Token(""+end, lexer.getPosition()));
                     return Tokens.tSTRING_END;
                 }
                 // END NETBEANS MODIFICATIONS
-                func = -1;
+                flags = -1;
                 lexer.getPosition();
                 return ' ';
             }
-            if ((func & RubyYaccLexer.STR_FUNC_REGEXP) != 0) {
+            
+            if ((flags & RubyYaccLexer.STR_FUNC_REGEXP) != 0) {
                 lexer.setValue(new RegexpNode(src.getPosition(), ByteList.create(""), parseRegexpFlags(src)));
                 return Tokens.tREGEXP_END;
             }
+            
             lexer.setValue(new Token("\"", lexer.getPosition()));
             return Tokens.tSTRING_END;
         }
-        if (space != 0) {
+        
+        if (spaceSeen) {
             src.unread(c);
             lexer.getPosition();
             return ' ';
         }
-        ByteList buffer = new ByteList();
 
         // BEGIN NETBEANS MODIFICATIONS
         if ((processingEmbedded == EMBEDDED_DEXPR) && (c == '}')) {
@@ -109,7 +115,29 @@ public class StringTerm extends StrTerm {
         }
         // END NETBEANS MODIFICATIONS
         
-        if ((func & RubyYaccLexer.STR_FUNC_EXPAND) != 0 && c == '#') {
+        // Single-quote fast path
+// XXX CHECK THIS! May not work with #{}'s    
+        if (begin == '\0' && flags == 0) {
+            ByteList buffer = new ByteList();
+            src.unread(c);
+            if (parseSimpleStringIntoBuffer(src, buffer) == RubyYaccLexer.EOF) {
+                throw new SyntaxException(PID.STRING_HITS_EOF, src.getPosition(), "unterminated string meets end of file");
+            }
+            
+            /*
+            ByteList buffer;
+            src.unread(c);
+            if ((buffer = src.readUntil(end)) == null) {
+                throw new SyntaxException(src.getPosition(), "unterminated string meets end of file");
+            }
+            */
+            lexer.setValue(new StrNode(lexer.getPosition(), buffer)); 
+            return Tokens.tSTRING_CONTENT;
+        }
+        
+        ByteList buffer = new ByteList();
+
+        if ((flags & RubyYaccLexer.STR_FUNC_EXPAND) != 0 && c == '#') {
             c = src.read();
             switch (c) {
             case '$':
@@ -131,18 +159,18 @@ public class StringTerm extends StrTerm {
                 lexer.setValue(new Token("#" + c, lexer.getPosition())); 
                 return Tokens.tSTRING_DBEG;
             }
-            buffer.append('#');
+            buffer.append((byte) '#');
         }
         src.unread(c);
         // BEGIN NETBEANS MODIFICATIONS
-        //if (parseStringIntoBuffer(src, buffer) == 0) {
+        //if (parseStringIntoBuffer(lexer, src, buffer) == RubyYaccLexer.EOF) {
         int parsed;
         if (processingEmbedded == EMBEDDED_DEXPR) {
-            parsed = parseDExprIntoBuffer(src, buffer);
+            parsed = parseDExprIntoBuffer(lexer, src, buffer);
         } else {
-            parsed = parseStringIntoBuffer(src, buffer);
+            parsed = parseStringIntoBuffer(lexer, src, buffer);
         }
-        if (parsed == 0) {
+        if (parsed == RubyYaccLexer.EOF) {
         // END NETBEANS MODIFICATIONS
             // BEGIN NETBEANS MODIFICATIONS
             // We've read to the end of input and haven't found a corresponding String
@@ -166,7 +194,7 @@ public class StringTerm extends StrTerm {
 //                    break;
 //                }
 //            }
-            //throw new SyntaxException(src.getPosition(), "unterminated string meets end of file");
+            //throw new SyntaxException(PID.STRING_HITS_EOF, src.getPosition(), "unterminated string meets end of file");
             throw new UnterminatedStringException(src.getPosition(), "unterminated string meets end of file");
             // END NETBEANS MODIFICATIONS
         }
@@ -189,8 +217,8 @@ public class StringTerm extends StrTerm {
     private int parseRegexpFlags(final LexerSource src) throws java.io.IOException {
         char kcode = 0;
         int options = 0;
-        char c;
-        StringBuffer unknownFlags = new StringBuffer(10);
+        int c;
+        StringBuilder unknownFlags = new StringBuilder(10);
 
         for (c = src.read(); c != RubyYaccLexer.EOF
                 && Character.isLetter(c); c = src.read()) {
@@ -219,25 +247,50 @@ public class StringTerm extends StrTerm {
             case 'u':
                 kcode = 64;
                 break;
+            case 'j':
+                options |= 256; // Regexp engine 'java'
+                break;
             default:
-                unknownFlags.append(c);
+                unknownFlags.append((char) c);
                 break;
             }
         }
         src.unread(c);
         if (unknownFlags.length() != 0) {
-            throw new SyntaxException(src.getPosition(), "unknown regexp option"
+            throw new SyntaxException(PID.REGEXP_UNKNOWN_OPTION, src.getPosition(), "unknown regexp option"
                     + (unknownFlags.length() > 1 ? "s" : "") + " - "
-                    + unknownFlags.toString());
+                    + unknownFlags.toString(), unknownFlags.toString());
         }
         return options | kcode;
     }
     
-    public char parseStringIntoBuffer(LexerSource src, ByteList buffer) throws java.io.IOException {
-        char c;
+    public int parseSimpleStringIntoBuffer(LexerSource src, ByteList buffer) throws java.io.IOException {
+        int c;
 
         while ((c = src.read()) != RubyYaccLexer.EOF) {
-            if (paren != '\0' && c == paren) {
+            if (c == end) {
+                src.unread(c);
+                break;
+            } else if (c == '\\') {
+                c = src.read();
+                if ((c == '\n' || c != end) && c != '\\') buffer.append('\\');
+            } 
+
+            buffer.append(c);
+        }
+        
+        return c;
+    }
+    
+    public int parseStringIntoBuffer(RubyYaccLexer lexer, LexerSource src, ByteList buffer) throws java.io.IOException {
+        boolean qwords = (flags & RubyYaccLexer.STR_FUNC_QWORDS) != 0;
+        boolean expand = (flags & RubyYaccLexer.STR_FUNC_EXPAND) != 0;
+        boolean escape = (flags & RubyYaccLexer.STR_FUNC_ESCAPE) != 0;
+        boolean regexp = (flags & RubyYaccLexer.STR_FUNC_REGEXP) != 0;
+        int c;
+
+        while ((c = src.read()) != RubyYaccLexer.EOF) {
+            if (begin != '\0' && c == begin) {
                 nest++;
             // BEGIN NETBEANS MODIFICATIONS
             } else if (processingEmbedded == EMBEDDED_DEXPR && c == '}') {
@@ -247,14 +300,14 @@ public class StringTerm extends StrTerm {
                  src.unread(c);
                  break;
             // END NETBEANS MODIFICATIONS
-            } else if (c == term) {
+            } else if (c == end) {
                 if (nest == 0) {
                     src.unread(c);
                     break;
                 }
                 nest--;
-            } else if ((func & RubyYaccLexer.STR_FUNC_EXPAND) != 0 && c == '#' && !src.peek('\n')) {
-                char c2 = src.read();
+            } else if (c == '#' && expand && !src.peek('\n')) {
+                int c2 = src.read();
 
                 if (c2 == '$' || c2 == '@' || c2 == '{') {
                     src.unread(c2);
@@ -266,57 +319,47 @@ public class StringTerm extends StrTerm {
                 c = src.read();
                 switch (c) {
                 case '\n':
-                    if ((func & RubyYaccLexer.STR_FUNC_QWORDS) != 0) {
-                        break;
-                    }
-                    if ((func & RubyYaccLexer.STR_FUNC_EXPAND) != 0) {
-                        continue;
-                    }
+                    if (qwords) break;
+                    if (expand) continue;
                     buffer.append('\\');
                     break;
 
                 case '\\':
-                    if ((func & RubyYaccLexer.STR_FUNC_ESCAPE) != 0) {
-                        buffer.append(c);
-                    }
+                    if (escape) buffer.append(c);
                     break;
 
                 default:
-                    if ((func & RubyYaccLexer.STR_FUNC_REGEXP) != 0) {
+                    if (regexp) {
                         src.unread(c);
                         parseEscapeIntoBuffer(src, buffer);
                         continue;
-                    } else if ((func & RubyYaccLexer.STR_FUNC_EXPAND) != 0) {
+                    } else if (expand) {
                         src.unread(c);
-                        if ((func & RubyYaccLexer.STR_FUNC_ESCAPE) != 0) {
-                            buffer.append('\\');
-                        }
-                        c = src.readEscape();
-                    } else if ((func & RubyYaccLexer.STR_FUNC_QWORDS) != 0
-                            && Character.isWhitespace(c)) {
+                        if (escape) buffer.append('\\');
+                        c = lexer.readEscape();
+                    } else if (qwords && Character.isWhitespace(c)) {
                         /* ignore backslashed spaces in %w */
-                    } else if (c != term && !(paren != '\0' && c == paren)) {
+                    } else if (c != end && !(begin != '\0' && c == begin)) {
                         buffer.append('\\');
                     }
                 }
-            } else if ((func & RubyYaccLexer.STR_FUNC_QWORDS) != 0
-                    && Character.isWhitespace(c)) {
+            } else if (qwords && Character.isWhitespace(c)) {
                 src.unread(c);
                 break;
             }
-            if (c == '\0' && (func & RubyYaccLexer.STR_FUNC_SYMBOL) != 0) {
-                throw new SyntaxException(src.getPosition(), "symbol cannot contain '\\0'");
-            }
             buffer.append(c);
         }
+        
         return c;
     }
 
     // BEGIN NETBEANS MODIFICATIONS
-    public char parseDExprIntoBuffer(LexerSource src, ByteList buffer) throws java.io.IOException {
-        char c;
-        
-        assert processingEmbedded == EMBEDDED_DEXPR;
+    public int parseDExprIntoBuffer(RubyYaccLexer lexer, LexerSource src, ByteList buffer) throws java.io.IOException {
+        boolean qwords = (flags & RubyYaccLexer.STR_FUNC_QWORDS) != 0;
+        boolean expand = (flags & RubyYaccLexer.STR_FUNC_EXPAND) != 0;
+        boolean escape = (flags & RubyYaccLexer.STR_FUNC_ESCAPE) != 0;
+        boolean regexp = (flags & RubyYaccLexer.STR_FUNC_REGEXP) != 0;
+        int c;
 
         while ((c = src.read()) != RubyYaccLexer.EOF) {
             if (c == '{') {
@@ -327,74 +370,69 @@ public class StringTerm extends StrTerm {
                     break;
                 }
                 nest--;
+//            } else if (c == end) {
+//                if (nest == 0) {
+//                    src.unread(c);
+//                    break;
+//                }
+//                nest--;
             } else if (c == '\\') {
                 c = src.read();
                 switch (c) {
                 case '\n':
-                    if ((func & RubyYaccLexer.STR_FUNC_QWORDS) != 0) {
-                        break;
-                    }
-                    if ((func & RubyYaccLexer.STR_FUNC_EXPAND) != 0) {
-                        continue;
-                    }
+                    if (qwords) break;
+                    if (expand) continue;
                     buffer.append('\\');
                     break;
 
                 case '\\':
-                    if ((func & RubyYaccLexer.STR_FUNC_ESCAPE) != 0) {
-                        buffer.append(c);
-                    }
+                    if (escape) buffer.append(c);
                     break;
 
                 default:
-                    if ((func & RubyYaccLexer.STR_FUNC_REGEXP) != 0) {
+                    if (regexp) {
                         src.unread(c);
                         parseEscapeIntoBuffer(src, buffer);
                         continue;
-                    } else if ((func & RubyYaccLexer.STR_FUNC_EXPAND) != 0) {
+                    } else if (expand) {
                         src.unread(c);
-                        if ((func & RubyYaccLexer.STR_FUNC_ESCAPE) != 0) {
-                            buffer.append('\\');
-                        }
-                        c = src.readEscape();
-                    } else if ((func & RubyYaccLexer.STR_FUNC_QWORDS) != 0
-                            && Character.isWhitespace(c)) {
+                        if (escape) buffer.append('\\');
+                        c = lexer.readEscape();
+                    } else if (qwords && Character.isWhitespace(c)) {
                         /* ignore backslashed spaces in %w */
-                    } else if (c != term && !(paren != '\0' && c == paren)) {
+                    } else if (c != end && !(begin != '\0' && c == begin)) {
                         buffer.append('\\');
                     }
                 }
-            } else if ((func & RubyYaccLexer.STR_FUNC_QWORDS) != 0
-                    && Character.isWhitespace(c)) {
+            } else if (qwords && Character.isWhitespace(c)) {
                 src.unread(c);
                 break;
             }
-            if (c == '\0' && (func & RubyYaccLexer.STR_FUNC_SYMBOL) != 0) {
-                throw new SyntaxException(src.getPosition(), "symbol cannot contain '\\0'");
-            }
             buffer.append(c);
         }
+        
         return c;
     }
     // END NETBEANS MODIFICATIONS
-
+    
+    
     // Was a goto in original ruby lexer
     private void escaped(LexerSource src, ByteList buffer) throws java.io.IOException {
-        char c;
+        int c;
 
         switch (c = src.read()) {
         case '\\':
             parseEscapeIntoBuffer(src, buffer);
             break;
         case RubyYaccLexer.EOF:
-            throw new SyntaxException(src.getPosition(), "Invalid escape character syntax");
+            throw new SyntaxException(PID.INVALID_ESCAPE_SYNTAX, src.getPosition(), "Invalid escape character syntax");
         default:
             buffer.append(c);
         }
     }
 
     private void parseEscapeIntoBuffer(LexerSource src, ByteList buffer) throws java.io.IOException {
-        char c;
+        int c;
 
         switch (c = src.read()) {
         case '\n':
@@ -412,7 +450,7 @@ public class StringTerm extends StrTerm {
             for (int i = 0; i < 2; i++) {
                 c = src.read();
                 if (c == RubyYaccLexer.EOF) {
-                    throw new SyntaxException(src.getPosition(), "Invalid escape character syntax");
+                    throw new SyntaxException(PID.INVALID_ESCAPE_SYNTAX, src.getPosition(), "Invalid escape character syntax");
                 }
                 if (!RubyYaccLexer.isOctChar(c)) {
                     src.unread(c);
@@ -426,7 +464,7 @@ public class StringTerm extends StrTerm {
             buffer.append(c);
             c = src.read();
             if (!RubyYaccLexer.isHexChar(c)) {
-                throw new SyntaxException(src.getPosition(), "Invalid escape character syntax");
+                throw new SyntaxException(PID.INVALID_ESCAPE_SYNTAX, src.getPosition(), "Invalid escape character syntax");
             }
             buffer.append(c);
             c = src.read();
@@ -438,14 +476,14 @@ public class StringTerm extends StrTerm {
             break;
         case 'M':
             if ((c = src.read()) != '-') {
-                throw new SyntaxException(src.getPosition(), "Invalid escape character syntax");
+                throw new SyntaxException(PID.INVALID_ESCAPE_SYNTAX, src.getPosition(), "Invalid escape character syntax");
             }
             buffer.append(new byte[] { '\\', 'M', '-' });
             escaped(src, buffer);
             break;
         case 'C':
             if ((c = src.read()) != '-') {
-                throw new SyntaxException(src.getPosition(), "Invalid escape character syntax");
+                throw new SyntaxException(PID.INVALID_ESCAPE_SYNTAX, src.getPosition(), "Invalid escape character syntax");
             }
             buffer.append(new byte[] { '\\', 'C', '-' });
             escaped(src, buffer);
@@ -454,19 +492,19 @@ public class StringTerm extends StrTerm {
             buffer.append(new byte[] { '\\', 'c' });
             escaped(src, buffer);
             break;
-        case 0:
-            throw new SyntaxException(src.getPosition(), "Invalid escape character syntax");
+        case RubyYaccLexer.EOF:
+            throw new SyntaxException(PID.INVALID_ESCAPE_SYNTAX, src.getPosition(), "Invalid escape character syntax");
         default:
-            if (c != '\\' || c != term) {
+            if (c != '\\' || c != end) {
                 buffer.append('\\');
             }
             buffer.append(c);
         }
     }
-
+    
     // BEGIN NETBEANS MODIFICATIONS
     public boolean isSubstituting() {
-        return (func & RubyYaccLexer.STR_FUNC_EXPAND) != 0;
+        return (flags & RubyYaccLexer.STR_FUNC_EXPAND) != 0;
     }
 
     public Object getMutableState() {
@@ -532,37 +570,37 @@ public class StringTerm extends StrTerm {
             return false;
         final StringTerm other = (StringTerm) obj;
 
-        if (this.func != other.func)
+        if (this.flags != other.flags)
             return false;
-        if (this.term != other.term)
+        if (this.end != other.end)
             return false;
         if (this.processingEmbedded != other.processingEmbedded)
             return false;
-        if (this.paren != other.paren)
+        if (this.begin != other.begin)
             return false;
         if (this.nest != other.nest)
             return false;
         return true;
     }
     
-    private static String toFuncString(int func) {
+    private static String toFuncString(int flags) {
         StringBuilder sb = new StringBuilder();
-        if ((func & RubyYaccLexer.STR_FUNC_ESCAPE) != 0) {
+        if ((flags & RubyYaccLexer.STR_FUNC_ESCAPE) != 0) {
             sb.append("escape|");
         }
-        if ((func & RubyYaccLexer.STR_FUNC_EXPAND) != 0) {
+        if ((flags & RubyYaccLexer.STR_FUNC_EXPAND) != 0) {
             sb.append("expand|");
         }
-        if ((func & RubyYaccLexer.STR_FUNC_REGEXP) != 0) {
+        if ((flags & RubyYaccLexer.STR_FUNC_REGEXP) != 0) {
             sb.append("regexp|");
         }
-        if ((func & RubyYaccLexer.STR_FUNC_QWORDS) != 0) {
+        if ((flags & RubyYaccLexer.STR_FUNC_QWORDS) != 0) {
             sb.append("qwords|");
         }
-        if ((func & RubyYaccLexer.STR_FUNC_SYMBOL) != 0) {
+        if ((flags & RubyYaccLexer.STR_FUNC_SYMBOL) != 0) {
             sb.append("symbol|");
         }
-        if ((func & RubyYaccLexer.STR_FUNC_INDENT) != 0) {
+        if ((flags & RubyYaccLexer.STR_FUNC_INDENT) != 0) {
             sb.append("indent|");
         }
         
@@ -578,15 +616,15 @@ public class StringTerm extends StrTerm {
     }
 
     public String toString() {
-        return "StringTerm[func=" + toFuncString(func) + ",term=" + term + ",paren=" + (int)paren + ",nest=" + nest + ",embed=" + processingEmbedded + "]";
+        return "StringTerm[flags=" + toFuncString(flags) + ",end=" + end + ",begin=" + (int)begin + ",nest=" + nest + ",embed=" + processingEmbedded + "]";
     }
 
     public int hashCode() {
         int hash = 7;
 
-        hash = 13 * hash + this.func;
-        hash = 13 * hash + this.term;
-        hash = 13 * hash + this.paren;
+        hash = 13 * hash + this.flags;
+        hash = 13 * hash + this.end;
+        hash = 13 * hash + this.begin;
         hash = 13 * hash + this.nest;
         hash = 13 * hash + this.processingEmbedded;
         return hash;
@@ -594,7 +632,8 @@ public class StringTerm extends StrTerm {
     
     public static class UnterminatedStringException extends SyntaxException {
         public UnterminatedStringException(ISourcePosition pos, String message) {
-            super(pos, message);
+            // TODO - get rid of this class now that I have an id? I can switch on normal SyntaxExceptions!
+            super(PID.STRING_HITS_EOF, pos, message);
         }
     }
     // END NETBEANS MODIFICATIONS

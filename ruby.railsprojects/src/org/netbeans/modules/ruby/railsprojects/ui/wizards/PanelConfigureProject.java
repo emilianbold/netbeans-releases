@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -52,6 +52,7 @@ import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.util.HelpCtx;
 import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.modules.ruby.platform.gems.GemManager;
 
 /**
  * Panel just asking for basic info.
@@ -93,7 +94,7 @@ public final class PanelConfigureProject implements WizardDescriptor.Panel, Wiza
         return component.valid( wizardDescriptor );
     }
     
-    private final Set/*<ChangeListener>*/ listeners = new HashSet(1);
+    private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
     public final void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.add(l);
@@ -107,7 +108,7 @@ public final class PanelConfigureProject implements WizardDescriptor.Panel, Wiza
     protected final void fireChangeEvent() {
         Iterator it;
         synchronized (listeners) {
-            it = new HashSet(listeners).iterator();
+            it = new HashSet<ChangeListener>(listeners).iterator();
         }
         ChangeEvent ev = new ChangeEvent(this);
         while (it.hasNext()) {
@@ -131,14 +132,13 @@ public final class PanelConfigureProject implements WizardDescriptor.Panel, Wiza
         WizardDescriptor d = (WizardDescriptor)settings;
         component.store(d);
         d.putProperty ("NewProjectWizard_Title", null); // NOI18N
-        d.putProperty( /*XXX Define somewhere */ "setAsMain", Boolean.TRUE); // NOI18N
     }
 
     public boolean isFinishPanel() {
         // Can only finish here if the Rails configuration is okay, otherwise
         // user must move on to the Rails installation panel
-        RubyPlatform platform = WizardUtil.platformFor(wizardDescriptor);
-        return platform.getGemManager().isValidRails(false);
+        RubyPlatform platform = component.getPlatform();
+        return platform == null ? false : RailsInstallationValidator.getRailsInstallation(platform).isValid();
     }
     
     public void validate() throws WizardValidationException {

@@ -46,19 +46,18 @@ public class PlaceHolderSelectionModel {
         return null;
     }
     
-    public void setSelectedPlaceHolder(PlaceHolder ph) {
-        if (ph == null) {
-            return;
-        }
+    public void setSelectedPlaceHolder(PlaceHolder placeholder) {
+
         List<PlaceHolder> phs = phManager.getPlaceHolders();
         if (phs == null) {
             return;
         }
-        for (PlaceHolder curPh : phs) {
-            curPh.dragExit();
+        for (PlaceHolder ph : phs) {
+            ph.dragExit();
         }
-
-        ph.dragEnter();
+        if (placeholder != null) {
+            placeholder.dragEnter();
+        }   
     }
 
 }

@@ -262,7 +262,7 @@ public class AttrImpl extends AbstractNode implements Attr, XMLTokenIDs {
         
         // Add values of all value and character entity
         StringBuffer buf = new StringBuffer();
-        while (next.getTokenID() == VALUE || next.getTokenID() == CHARACTER) {
+        while (next != null && (next.getTokenID() == VALUE || next.getTokenID() == CHARACTER)) {
             String image = next.getImage();
             String actual = Util.actualAttributeValue(image);
             if (!image.equals(actual)) {

@@ -44,4 +44,15 @@ package org.netbeans.modules.db.explorer.infos;
 public class PrimaryColumnNodeInfo extends ColumnNodeInfo
 {
     static final long serialVersionUID =-7554732746594473866L;
+
+    @Override
+    public String getShortDescription() {
+        return bundle().getString("ND_PrimaryKey"); //NOI18N
+    }
+    
+    @Override
+    public String getDisplayName() {
+        return getName();
+    }
+
 }

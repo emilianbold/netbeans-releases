@@ -112,10 +112,28 @@ public class JavadocLexer implements Lexer<JavadocTokenId> {
                     }
                 }
             case '<':
+                int backupCounter = 0;
+                boolean newline = false;
+                boolean asterisk = false;
                 while (true) {
                     ch = input.read();
+                    ++backupCounter;
                     if (ch == '>' || ch == EOF) {
                         return token(JavadocTokenId.HTML_TAG);
+                    } else if (ch == '<') {
+                        input.backup(1);
+                        return token(JavadocTokenId.HTML_TAG);
+                    } else if (ch == '\n') {
+                        backupCounter = 1;
+                        newline = true;
+                        asterisk = false;
+                    } else if (newline && ch == '@') {
+                        input.backup(backupCounter);
+                        return token(JavadocTokenId.HTML_TAG);
+                    } else if (newline && !asterisk && ch == '*') {
+                        asterisk = true;
+                    } else if (newline && !Character.isWhitespace(ch)) {
+                        newline = false;
                     }
                 }
             case '.':

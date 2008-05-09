@@ -283,6 +283,18 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
                     fastCheckProblem = createProblem(fastCheckProblem, true, msg);
                     return fastCheckProblem;
                 }
+                FileObject parentFolder = fo.getParent();
+                Enumeration enumeration = parentFolder.getFolders(false);
+                while (enumeration.hasMoreElements()) {
+                    FileObject subfolder = (FileObject) enumeration.nextElement();
+                    if (subfolder.getName().equals(newName)) {
+                        String msg = new MessageFormat(getString("ERR_ClassPackageClash")).format(
+                            new Object[] {newName, pkgname}
+                        );
+                        fastCheckProblem = createProblem(fastCheckProblem, true, msg);
+                        return fastCheckProblem;
+                    }
+                }
             }
             FileObject primFile = treePathHandle.getFileObject();
             FileObject folder = primFile.getParent();
@@ -437,9 +449,9 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
         Set<FileObject> a = getRelevantFiles();
         fireProgressListenerStart(ProgressEvent.START, a.size());
         TransformTask transform = new TransformTask(new RenameTransformer(refactoring.getNewName(), allMethods, refactoring.isSearchInComments()), treePathHandle);
-        createAndAddElements(a, transform, elements, refactoring);
+        Problem problem = createAndAddElements(a, transform, elements, refactoring);
         fireProgressListenerStop();
-        return null;
+        return problem;
     }
 
     private static int getAccessLevel(Element e) {

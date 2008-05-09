@@ -37,6 +37,7 @@ public final class ProcessExecutionColumnModel_Line extends AbstractColumn {
         myName = "CTL_Column_Line"; // NOI18N
         myTooltip = "CTL_Column_Line_Tooltip"; // NOI18N
         myType = String.class;
+        mySortable = false;
     }
     
     @Override

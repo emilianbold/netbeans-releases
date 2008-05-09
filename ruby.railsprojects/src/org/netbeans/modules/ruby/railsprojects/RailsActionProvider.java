@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -50,17 +50,19 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.logging.Logger;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.gsf.DeclarationFinder.DeclarationLocation;
+import org.netbeans.modules.gsf.api.DeclarationFinder.DeclarationLocation;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.ruby.railsprojects.server.RailsServerManager;
 import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
 import org.netbeans.modules.ruby.rubyproject.AutoTestSupport;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.ruby.railsprojects.ui.customizer.RailsProjectProperties;
-import org.netbeans.modules.ruby.rubyproject.RakeSupport;
+import org.netbeans.modules.ruby.rubyproject.rake.RakeSupport;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.api.ruby.platform.RubyPlatformManager;
 import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.ruby.NbUtilities;
 import org.netbeans.modules.ruby.RubyUtils;
@@ -71,6 +73,8 @@ import org.netbeans.modules.ruby.rubyproject.ScriptDescProvider;
 import org.netbeans.modules.ruby.rubyproject.TestNotifier;
 import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.OutputRecognizer;
+import org.netbeans.modules.ruby.rubyproject.UpdateHelper;
+import org.netbeans.modules.ruby.rubyproject.rake.RakeRunner;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.openide.ErrorManager;
@@ -84,13 +88,15 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 /** 
  * Action provider of the Ruby project. This is the place where to do
  * strange things to Ruby actions. E.g. compile-single.
  */
 public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
-    
+
     /**
      * Standard command for running rdoc on a project.
      * @see org.netbeans.spi.project.ActionProvider
@@ -133,11 +139,13 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
     RailsProject project;
     
     // Ant project helper of the project
-    private UpdateHelper updateHelper;
+    private final UpdateHelper updateHelper;
     
         
     /**Set of commands which are affected by background scanning*/
     final Set<String> bkgScanSensitiveActions;
+    
+    private static final Logger LOGGER = Logger.getLogger(RailsActionProvider.class.getName());
     
     public RailsActionProvider( RailsProject project, UpdateHelper updateHelper ) {
         this.bkgScanSensitiveActions = new HashSet<String>(Arrays.asList(new String[] {
@@ -156,7 +164,12 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
     }
 
     private RubyPlatform getPlatform() {
-        return RubyPlatform.platformFor(project);
+        RubyPlatform platform = RubyPlatform.platformFor(project);
+        if (platform == null) {
+            platform = RubyPlatformManager.getDefaultPlatform();
+        }
+        
+        return platform;
     }
 
     /** Return true iff the given file is a migration file */
@@ -221,16 +234,13 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
             runServer("", debugCommand);
             return;
         } else if (COMMAND_TEST.equals(command)) {
-            if (!RubyPlatform.hasValidRake(project, true)) {
-                return;
-            }
-            // Save all files first
-            LifecycleManager.getDefault().saveAll();
-            RakeSupport rake = new RakeSupport(project);
-            rake.setTest(true);
             File pwd = FileUtil.toFile(project.getProjectDirectory());
-            String displayName = NbBundle.getMessage(RailsActionProvider.class, "Tests");
-            rake.runRake(pwd, null, displayName, new RailsFileLocator(context, project), true, false, "test"); // NOI18N
+            RakeRunner runner = new RakeRunner(project);
+            runner.setPWD(pwd);
+            runner.setFileLocator(new RailsFileLocator(context, project));
+            runner.showWarnings(true);
+            runner.setDebug(COMMAND_DEBUG_SINGLE.equals(command));
+            runner.run("test"); // NOI18N
             return;
         } else if (COMMAND_TEST_SINGLE.equals(command) || COMMAND_DEBUG_TEST_SINGLE.equals(command)) {
             if (!RubyPlatform.platformFor(project).isValidRuby(true)) {
@@ -285,8 +295,12 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
             if (RakeSupport.isRakeFile(file)) {
                 // Save all files first - this rake file could be accessing other files
                 LifecycleManager.getDefault().saveAll();
-                RakeSupport rake = new RakeSupport(project);
-                rake.runRake(null, file, file.getName(), new RailsFileLocator(context, project), true, debugSingleCommand);
+                RakeRunner runner = new RakeRunner(project);
+                runner.setRakeFile(file);
+                runner.setFileLocator(new RailsFileLocator(context, project));
+                runner.showWarnings(true);
+                runner.setDebug(COMMAND_DEBUG_SINGLE.equals(command));
+                runner.run();
                 return;
             }
             
@@ -303,8 +317,12 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
             if (isMigrationFile(file)) {
                 String name = file.getName();
                 String version = Integer.toString(Integer.parseInt(name.substring(0, 3)));
-                RakeSupport rake = new RakeSupport(project);
-                rake.runRake(FileUtil.toFile(project.getProjectDirectory()), null, file.getName(), new RailsFileLocator(context, project), true, debugSingleCommand, "db:migrate", "VERSION=" + version); // NOI18N
+                RakeRunner runner = new RakeRunner(project);
+                runner.setPWD(FileUtil.toFile(project.getProjectDirectory()));
+                runner.setFileLocator(new RailsFileLocator(context, project));
+                runner.showWarnings(true);
+                runner.setParameters("VERSION=" + version); // NOI18N
+                runner.run("db:migrate"); // NOI18N
                 return;
             }
             
@@ -534,23 +552,45 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
         File pwd = FileUtil.toFile(project.getProjectDirectory());
         String script = "script" + File.separator + "console"; // NOI18N
         String classPath = project.evaluator().getProperty(RailsProjectProperties.JAVAC_CLASSPATH);
+        String noreadlineArg = "--irb=irb --noreadline"; //NOI18N
+        String railsEnv = project.evaluator().getProperty(RailsProjectProperties.RAILS_ENV);
+        String[] additionalArgs = null;
+        if (railsEnv != null && !"".equals(railsEnv.trim())) {
+            additionalArgs = new String[]{noreadlineArg, railsEnv};
+        } else {
+            additionalArgs = new String[]{noreadlineArg};
+        }
 
         new RubyExecution(new ExecutionDescriptor(getPlatform(), displayName, pwd, script).
                 showSuspended(false).
                 showProgress(false).
                 classPath(classPath).
                 allowInput().
-                //initialArgs(options).
-                //additionalArgs(getApplicationArguments()).
+                // see #130264
+                additionalArgs(additionalArgs). //NOI18N
                 fileLocator(new RailsFileLocator(context, project)).
                 addStandardRecognizers(),
                 project.evaluator().getProperty(RailsProjectProperties.SOURCE_ENCODING)
                 ).
                 run();
+                
+        // request focus for the output window - see #133519
+        final String outputWindowId = "output"; //NOI18N
+        TopComponent outputWindow = WindowManager.getDefault().findTopComponent(outputWindowId);
+        // outputWindow should not be null as the output window id is not likely to change, but 
+        // checking for null anyway since we are not relying on an API.
+        if (outputWindow != null) {
+            outputWindow.requestActive();
+        } else {
+            LOGGER.info("Could not find the output window using id " + outputWindowId);
+        }
     }
     
     private void runRubyScript(FileObject fileObject, String target, String displayName, final Lookup context, final boolean debug,
             OutputRecognizer[] extraRecognizers) {
+        if (!getPlatform().showWarningIfInvalid()) {
+            return;
+        }
         ExecutionDescriptor desc = getScriptDescriptor(null, fileObject, target, displayName, context, debug, extraRecognizers);
         RubyExecution service = new RubyExecution(desc,
                 project.evaluator().getProperty(RailsProjectProperties.SOURCE_ENCODING));
@@ -602,24 +642,22 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
         // Locate the target and specify it by full path.
         // This is necessary because JRuby and Ruby don't locate the script from the load
         // path it seems.
-        if (!new File(target).exists()) {
-            if (srcPath != null && srcPath.length > 0) {
-                boolean found = false; // Prefer the first match
-                for (FileObject root : srcPath) {
+        if (!new File(target).exists() && srcPath != null && srcPath.length > 0) {
+            boolean found = false; // Prefer the first match
+            for (FileObject root : srcPath) {
+                FileObject fo = root.getFileObject(target);
+                if (fo != null) {
+                    target = FileUtil.toFile(fo).getAbsolutePath();
+                    found = true;
+                    break;
+                }
+            }
+            if (!found && testPath != null) {
+                for (FileObject root : testPath) {
                     FileObject fo = root.getFileObject(target);
                     if (fo != null) {
                         target = FileUtil.toFile(fo).getAbsolutePath();
-                        found = true;
                         break;
-                    }
-                }
-                if (!found && testPath != null) {
-                    for (FileObject root : testPath) {
-                        FileObject fo = root.getFileObject(target);
-                        if (fo != null) {
-                            target = FileUtil.toFile(fo).getAbsolutePath();
-                            break;
-                        }
                     }
                 }
             }

@@ -13,9 +13,7 @@
 	<mapID target="orch_debug_start_stop" url="debug/start_stop.html"/>
 	<mapID target="orch_debug_windows" url="debug/debug_windows.html"/>
 	<mapID target="orch_debug_windows_sessions" url="debug/debug_windows_sessions.html"/>
-	<mapID target="orch_design_about_correlation" url="design/about_correlation.html"/>
 	<mapID target="orch_design_change_message_flow" url="design/change_message_flow.html"/>
-	<mapID target="org.netbeans.modules.bpel.properties.editors.CorrelationSetCustomEditor" url="design/create_correlation_set.html"/>
 	<mapID target="orch_design_create_diagram" url="design/create_diagram.html"/>
 	<mapID target="orch_design_import_wsdl_resources" url="design/import_wsdl_resources.html"/>
 	<mapID target="orch_design_open_diag" url="design/open_diag.html"/>
@@ -29,7 +27,6 @@
 	<mapID target="orch_elements_scope_add_catch" url="elements/scope_add_catch.html"/>
 	<mapID target="orch_elements_scope_add_catchall" url="elements/scope_add_catch_all.html"/>
 	<mapID target="orch_elements_scope_add_fault_handler" url="elements/scope_add_fault_handler.html"/>
-	<mapID target="orch_intro" url="intro.html"/>
 	<mapID target="orch_mapper_functions" url="mapper/mapper_functions.html"/>
 	<mapID target="orch_mapper_mappings" url="mapper/mapper_mappings.html"/>
 	<mapID target="orch_mapper_predicates" url="mapper/mapper_predicates.html"/>
@@ -73,10 +70,9 @@
 	<mapID target="org.netbeans.modules.bpel.navigator.BpelNavigatorVisualPanel" url="windows_editors/nav_bpelview.html"/>
 	<mapID target="org.netbeans.modules.bpel.project.ui.customizer.CustomizerGeneral" url="properties/bpel_project_props.html"/>
 	<mapID target="org.netbeans.modules.bpel.project.ui.customizer.IcanproCustomizer" url="properties/bpel_project_props.html"/>
-	<mapID target="org.netbeans.modules.bpel.project.ui.customizer.IcanproCustomizer" url="properties/bpel_project_props.html"/>
 	<mapID target="org.netbeans.modules.bpel.project.ui.IcanproLogicalViewProvider" url="windows_editors/project_node.html"/>
 	<mapID target="org.netbeans.modules.bpel.xpath.view.output.ExpressionTopComponent" url="mapper/about_mapper.html"/>
-	<mapID target="org.netbeans.modules.print.impl.ui.Attribute" url="windows_editors/design_print.html"/>
+	<mapID target="orch_windows_editors_print" url="windows_editors/design_print.html"/>
 	<mapID target="orch_elements_event_handler" url="elements/add_event_handler.html"/>
 	<mapID target="orch_elements_event_handler_onalarm" url="elements/add_event_handler_onalarm.html"/>
 	<mapID target="org.netbeans.modules.bpel.properties.editors.OnEventCustomEditor" url="elements/add_event_handler_onevent.html"/>
@@ -102,4 +98,17 @@
 	<mapID target="orch_debug_monitor" url="debug/monitor_debugger.html"/>
 	<mapID target="org.netbeans.modules.bpel.core.wizard.NewBpelFilePanel" url="properties/bpel_process_wizard.html"/>
 	<mapID target="orch_design_find_usage" url="design/finding_usages.html"/>
-	</map>
+	<mapID target="orch_design_documentation" url="design/documentation.html"/>
+	<mapID target="orch_windows_editors_cloning" url="windows_editors/cloning.html"/>
+	<mapID target="orch_design_about_correlation" url="design/about_correlation_and_wizard.html"/>
+	<mapID target="orch_design_correlation_manually" url="design/create_correlation_manually.html"/>
+	<mapID target="orch_elements_add_compensation_handler" url="elements/add_compensation_handler.html"/>
+	<mapID target="orch_elements_add_termination_handler" url="elements/add_termination_handler.html"/>
+	<mapID target="orch_elements_compensate" url="elements/compensate.html"/>
+	<mapID target="orch_elements_compensatescope" url="elements/compensatescope.html"/>
+	<mapID target="orch_elements_rethrow" url="elements/rethrow.html"/>
+	<mapID target="design_print" url="windows_editors/design_print.html"/>
+	<mapID target="debug_windows_partner_links" url="debug/debug_windows_partner_links.html"/>
+	<mapID target="debug_windows_threads" url="debug/debug_windows_threads.html"/>
+	<mapID target="logging_about_logging" url="logging/about_logging.html"/>
+</map>

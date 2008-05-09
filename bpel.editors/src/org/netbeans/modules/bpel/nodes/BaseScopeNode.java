@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.bpel.nodes;
 
+import org.netbeans.modules.bpel.nodes.BpelNode;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -34,7 +35,7 @@ import org.netbeans.modules.bpel.model.api.VariableContainer;
 import org.netbeans.modules.bpel.model.api.events.ChangeEvent;
 import org.netbeans.modules.bpel.properties.editors.controls.filter.NodeChildFilter;
 import org.netbeans.modules.bpel.model.api.support.VisibilityScope;
-import org.netbeans.modules.bpel.nodes.actions.ActionType;
+import org.netbeans.modules.bpel.editors.api.nodes.actions.ActionType;
 import org.netbeans.modules.bpel.nodes.actions.AddCompensationHandlerAction;
 import org.netbeans.modules.bpel.nodes.actions.AddEventHandlersAction;
 import org.netbeans.modules.bpel.nodes.actions.AddFaultHandlersAction;

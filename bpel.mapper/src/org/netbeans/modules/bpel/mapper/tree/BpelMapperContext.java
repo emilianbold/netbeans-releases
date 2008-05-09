@@ -49,6 +49,14 @@ public class BpelMapperContext extends DefaultMapperContext {
                 .getPopupMenu(value);
     }
 
+    @Override
+    public String getLeftToolTipText(MapperModel mode, Object value) {
+        return ((MapperSwingTreeModel) mode.getLeftTreeModel()).
+                getToolTipText(value);
+    }
+    
+    
+
     //==========================================================================
     
     @Override

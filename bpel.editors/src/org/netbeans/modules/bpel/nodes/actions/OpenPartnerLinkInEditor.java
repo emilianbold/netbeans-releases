@@ -18,6 +18,8 @@
  */
 package org.netbeans.modules.bpel.nodes.actions;
 
+import org.netbeans.modules.bpel.nodes.actions.BpelNodeAction;
+import org.netbeans.modules.bpel.editors.api.nodes.actions.ActionType;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.PartnerLink;
 import org.netbeans.modules.bpel.model.api.references.WSDLReference;
@@ -34,6 +36,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.text.Line;
 import org.openide.util.NbBundle;
+import org.netbeans.modules.soa.ui.SoaUtil;
 
 /**
  *
@@ -63,7 +66,7 @@ public class OpenPartnerLinkInEditor extends BpelNodeAction {
         }
         
         WSDLModel wsdlModel = plt.get().getModel();
-        FileObject fo = Util.getFileObjectByModel(wsdlModel);
+        FileObject fo = SoaUtil.getFileObjectByModel(wsdlModel);
         try {
             DataObject d = DataObject.find(fo);
             LineCookie lc = (LineCookie) d.getCookie(LineCookie.class);

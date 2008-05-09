@@ -1,0 +1,65 @@
+[display: |, block, display: block, 53]
+block
+inherit
+inline-block
+inline-table
+list-item
+none
+run-in
+table
+table-caption
+table-cell
+table-column
+table-column-group
+table-footer-group
+table-header-group
+table-row
+table-row-group
+End cursor position = 68
+[color: |, green, color: green, 91]
+black
+blue
+brown
+green
+grey
+inherit
+magenta
+olive
+orange
+pink
+purple
+red
+silver
+violet
+white
+yellow
+End cursor position = 104
+[border-right: |, inset, border-right: inset, 143]
+black
+blue
+brown
+dashed
+dotted
+double
+green
+grey
+groove
+hidden
+inherit
+inset
+magenta
+none
+olive
+orange
+outset
+pink
+purple
+red
+ridge
+silver
+solid
+transparent
+violet
+white
+yellow
+End cursor position = 163

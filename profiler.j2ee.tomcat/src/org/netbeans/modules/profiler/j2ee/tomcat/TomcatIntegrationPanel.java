@@ -40,22 +40,17 @@
 
 package org.netbeans.modules.profiler.j2ee.tomcat;
 
-import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.lib.profiler.common.AttachSettings;
-import org.netbeans.lib.profiler.common.integration.IntegrationUtils;
-import org.netbeans.modules.profiler.ui.wizards.AttachWizardContext;
-import org.netbeans.modules.profiler.ui.wizards.panels.AttachWizardPanel;
-import org.netbeans.modules.profiler.ui.wizards.providers.TargetPlatform;
-import org.netbeans.modules.profiler.ui.wizards.providers.TargetPlatformEnum;
-import org.netbeans.modules.profiler.ui.wizards.providers.ValidationResult;
-import org.openide.ErrorManager;
-import org.openide.util.HelpCtx;
 import java.util.Iterator;
 import java.util.List;
-import javax.swing.ComboBoxModel;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
-import javax.swing.event.ListDataListener;
+import org.netbeans.lib.profiler.common.AttachSettings;
+import org.netbeans.modules.profiler.attach.panels.AttachWizardPanel;
+import org.netbeans.modules.profiler.attach.providers.TargetPlatform;
+import org.netbeans.modules.profiler.attach.providers.TargetPlatformEnum;
+import org.netbeans.modules.profiler.attach.providers.ValidationResult;
+import org.netbeans.modules.profiler.attach.wizard.AttachWizardContext;
+import org.openide.util.HelpCtx;
 
 
 /**

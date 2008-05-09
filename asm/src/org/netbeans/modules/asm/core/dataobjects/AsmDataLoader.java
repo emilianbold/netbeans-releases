@@ -50,16 +50,16 @@ import org.openide.util.NbBundle;
 
 public class AsmDataLoader extends UniFileLoader {
     
-    public static final String REQUIRED_MIME = "text/x-asm";
+    public static final String REQUIRED_MIME = "text/x-asm"; // NOI18N
     private static final long serialVersionUID = 1L;
     
     public AsmDataLoader() {
-        super("org.netbeans.modules.asm.core.dataobjects.AsmDataObject");   
+        super("org.netbeans.modules.asm.core.dataobjects.AsmDataObject"); // NOI18N
     }
          
     @Override
     protected String defaultDisplayName() {
-        return NbBundle.getMessage(AsmDataLoader.class, "LBL_Asm_loader_name");
+        return NbBundle.getMessage(AsmDataLoader.class, "LBL_Asm_loader_name"); // NOI18N
     }
     
     @Override
@@ -74,6 +74,6 @@ public class AsmDataLoader extends UniFileLoader {
     
     @Override
     protected String actionsContext() {
-        return "Loaders/" + REQUIRED_MIME + "/Actions";
+        return "Loaders/" + REQUIRED_MIME + "/Actions"; // NOI18N
     }
 }

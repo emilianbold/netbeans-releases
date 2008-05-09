@@ -51,5 +51,4 @@ made subject to such option by the copyright holder.
 <bindings>
     <bind actionName="goto-source" key="DS-B"/>
     <bind actionName="goto-super-implementation" key="DS-P"/>
-    <bind actionName="goto-declaration" key="D-B"/>    
 </bindings>

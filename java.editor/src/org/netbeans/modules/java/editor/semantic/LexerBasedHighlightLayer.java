@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -23,7 +23,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.java.editor.semantic;
 
@@ -97,7 +97,11 @@ public class LexerBasedHighlightLayer extends AbstractHighlightsContainer {
         return colorings;
     }
     
-    public HighlightsSequence getHighlights(int startOffset, int endOffset) {
+    public synchronized HighlightsSequence getHighlights(int startOffset, int endOffset) {
+        if (colorings.isEmpty()) {
+            return HighlightsSequence.EMPTY;
+        }
+        
         TokenHierarchy th = TokenHierarchy.get(doc);
         TokenSequence<? extends TokenId> seq = th.tokenSequence();
         

@@ -1,20 +1,20 @@
 
-class B : A {
+class InfiniteB : InfiniteA {
     class D {
         
     };
 };
 
 namespace N {
-    class A : B {
+    class InfiniteA : InfiniteB {
 
     };
 }
 
-class A : B {
+class InfiniteA : InfiniteB {
     void foo();
 };
 
-void A::foo() {
+void InfiniteA::foo() {
     C a;
 }

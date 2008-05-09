@@ -57,8 +57,6 @@ public class AbbrevInputPanel extends javax.swing.JPanel {
         initComponents ();
 
         getAccessibleContext().setAccessibleDescription(getBundleString("ACSD_AIP")); // NOI18N
-        abbrevLabel.setDisplayedMnemonic(getBundleString("AIP_Abbrev_Mnemonic").charAt (0)); // NOI18N
-        expandLabel.setDisplayedMnemonic(getBundleString("AIP_Expand_Mnemonic").charAt (0)); // NOI18N
         abbrevField.getAccessibleContext().setAccessibleDescription(getBundleString("ACSD_AIP_Abbrev")); // NOI18N
         expandTextArea.getAccessibleContext().setAccessibleDescription(getBundleString("ACSD_AIP_Expand")); // NOI18N
         
@@ -87,7 +85,8 @@ public class AbbrevInputPanel extends javax.swing.JPanel {
     }
 
 
-    private void initComponents() {//GEN-BEGIN:initComponents
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
         abbrevLabel = new javax.swing.JLabel();
@@ -96,18 +95,17 @@ public class AbbrevInputPanel extends javax.swing.JPanel {
         expandScrollPane = new javax.swing.JScrollPane();
         expandTextArea = new javax.swing.JTextArea();
 
+        setBorder(javax.swing.BorderFactory.createEmptyBorder(12, 12, 11, 11));
         setLayout(new java.awt.GridBagLayout());
 
-        setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(12, 12, 11, 11)));
         abbrevLabel.setLabelFor(abbrevField);
-        abbrevLabel.setText(getBundleString( "AIP_Abbrev" )); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(abbrevLabel, getBundleString( "AIP_Abbrev" ));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         add(abbrevLabel, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
@@ -116,7 +114,7 @@ public class AbbrevInputPanel extends javax.swing.JPanel {
         add(abbrevField, gridBagConstraints);
 
         expandLabel.setLabelFor(expandTextArea);
-        expandLabel.setText(getBundleString( "AIP_Expand" )); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(expandLabel, getBundleString( "AIP_Expand" ));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -136,16 +134,15 @@ public class AbbrevInputPanel extends javax.swing.JPanel {
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(expandScrollPane, gridBagConstraints);
-
-    }//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JTextArea expandTextArea;
-    private javax.swing.JLabel abbrevLabel;
     private javax.swing.JTextField abbrevField;
-    private javax.swing.JScrollPane expandScrollPane;
+    private javax.swing.JLabel abbrevLabel;
     private javax.swing.JLabel expandLabel;
+    private javax.swing.JScrollPane expandScrollPane;
+    private javax.swing.JTextArea expandTextArea;
     // End of variables declaration//GEN-END:variables
 
 }

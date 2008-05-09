@@ -780,8 +780,16 @@ public class Utility {
                 }
             }
             
-            if (path != null) wsdlImport.setLocation(path);
-            
+            if (path != null) {
+                wsdlImport.setLocation(path);
+                Collection<Import> wsdlImports = recievingModel.getDefinitions().getImports();
+                for (Import wsdlImp : wsdlImports) {
+                    String namespace = wsdlImp.getNamespace();
+                    if (namespace != null && namespace.equals(importedWSDLTargetNamespace)) {
+                        return wsdlImp; //already imported.
+                    }
+                }
+            }
             recievingModel.getDefinitions().addImport(wsdlImport);
             return wsdlImport;
         }

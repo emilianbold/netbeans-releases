@@ -11,9 +11,9 @@
  * http://www.netbeans.org/cddl-gplv2.html
  * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
  * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
+ * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
  * particular file as subject to the "Classpath" exception as provided
  * by Sun in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -60,7 +60,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.xml.wsdl.model.Operation;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.openide.filesystems.FileUtil;
-import static org.netbeans.modules.soa.ui.util.UI.*;
+import static org.netbeans.modules.xml.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -163,6 +163,7 @@ final class PanelProxy<T> extends Panel<T> {
 
     update();
     mainPanel.add(panel, cc);
+    mainPanel.getAccessibleContext().setAccessibleDescription(i18n("ACSD_LBL_NewBridgeService3"));   
   }
 
   @Override
@@ -240,6 +241,7 @@ final class PanelProxy<T> extends Panel<T> {
     myRequestBox.setSelected(true);
 
     myRequestText = new JTextField();
+    a11y(myRequestText, "ACSN_LBL_Transform_Request", "ACSD_LBL_Transform_Request"); // NOI18N
     myRequestFile = new JTextField(fileName);
     myRequestFileBrowseButton = createBrowseButton(myRequestFile);
 
@@ -255,10 +257,12 @@ final class PanelProxy<T> extends Panel<T> {
         }
       }
     );
+    a11y(myReplyBox, "ACSN_LBL_Transform_Reply", "ACSD_LBL_Transform_Reply"); // NOI18N
     myReplyBox.setEnabled(true);
     myReplyBox.setSelected(false);
 
     myReplyText = new JTextField();
+    a11y(myReplyText, "ACSN_LBL_Transform_Reply", "ACSD_LBL_Transform_Reply"); // NOI18N
     myReplyFile = new JTextField(fileName);
     myReplyFileBrowseButton = createBrowseButton(myReplyFile, "LBL_Browse2");
 
@@ -299,7 +303,10 @@ final class PanelProxy<T> extends Panel<T> {
       SMALL_INSET, MEDIUM_INSET + SMALL_INSET + TINY_INSET + TINY_INSET, TINY_INSET, SMALL_INSET);
     c.fill = GridBagConstraints.NONE;
     c.weightx = 0.0;
-    panel.add(createLabel(i18n("LBL_XSL_File")), c); // NOI18N
+    JLabel label = createLabel(i18n(getNextXslFileLabel()));
+    a11y(label, "ACSN_LBL_XSL_File", "ACSD_LBL_XSL_File"); // NOI18N
+    label.setLabelFor(file);
+    panel.add(label, c); // NOI18N
 
     // file
     c.gridwidth = 1;
@@ -316,6 +323,12 @@ final class PanelProxy<T> extends Panel<T> {
     return panel;
   }
 
+  private String getNextXslFileLabel() {
+    myXslFileUsagesCounter++;
+    return myXslFileUsagesCounter > 1 ? "LBL_XSL_File3" : "LBL_XSL_File" ; // NOI18N
+  }
+  
+  private int myXslFileUsagesCounter = 0;
   private PanelOperation<T> myOperationImplement;
   private PanelOperation<T> myOperationCall;
   private JCheckBox myRequestBox; 

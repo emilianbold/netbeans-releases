@@ -65,7 +65,7 @@ public abstract class SampleWizardIterator implements WizardDescriptor.Instantia
     
     private static final long serialVersionUID = 1L;
 
-    public static final String PROJDIR = "projdir"; // NOI18N
+    public static final String PROJECT_DIR = "projdir"; // NOI18N
     public static final String NAME = "name"; // NOI18N
     private transient int index;
     private transient WizardDescriptor.Panel[] panels;
@@ -89,7 +89,7 @@ public abstract class SampleWizardIterator implements WizardDescriptor.Instantia
 
       Repository.getDefault().getDefaultFileSystem().runAtomicAction(new org.openide.filesystems.FileSystem.AtomicAction() {
         public void run() throws IOException {
-          File dirF = FileUtil.normalizeFile((File) wiz.getProperty(PROJDIR));
+          File dirF = FileUtil.normalizeFile((File) wiz.getProperty(PROJECT_DIR));
           dirF.mkdirs();
           dir = FileUtil.toFileObject(dirF);
           FileObject template = Templates.getTemplate(wiz);
@@ -136,7 +136,7 @@ public abstract class SampleWizardIterator implements WizardDescriptor.Instantia
     }
 
     public void uninitialize(WizardDescriptor wiz) {
-        this.wiz.putProperty(PROJDIR,null);
+        this.wiz.putProperty(PROJECT_DIR, null);
         this.wiz.putProperty(NAME,null);
         this.wiz = null;
         panels = null;

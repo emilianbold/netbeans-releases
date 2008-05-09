@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.debugger.gdb.breakpoints;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.HashMap;
-
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
@@ -53,8 +52,6 @@ import org.netbeans.api.debugger.LazyActionsManagerListener;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.Watch;
-import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
-
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 
 
@@ -70,19 +67,18 @@ public class BreakpointsEngineListener extends LazyActionsManagerListener
     private GdbDebugger         debugger;
     private Session             session;
     private BreakpointsReader   breakpointsReader;
-    private HashMap             breakpointToImpl = new HashMap();
+    private HashMap<Breakpoint, BreakpointImpl> breakpointToImpl = new HashMap<Breakpoint, BreakpointImpl>();
 
     public BreakpointsEngineListener(ContextProvider lookupProvider) {
         debugger = (GdbDebugger) lookupProvider.lookupFirst(null, GdbDebugger.class);
         session = (Session) lookupProvider.lookupFirst(null, Session.class);
-        debugger.addPropertyChangeListener(GdbDebugger.PROP_STATE, this);
+        debugger.addPropertyChangeListener(this);
         breakpointsReader = PersistenceManager.findBreakpointsReader();
     }
     
     protected void destroy() {
         debugger.removePropertyChangeListener(GdbDebugger.PROP_STATE, this);
-        DebuggerManager.getDebuggerManager().removeDebuggerListener(
-		    DebuggerManager.PROP_BREAKPOINTS, this);
+        DebuggerManager.getDebuggerManager().removeDebuggerListener(DebuggerManager.PROP_BREAKPOINTS, this);
         removeBreakpointImpls();
     }
     
@@ -91,12 +87,18 @@ public class BreakpointsEngineListener extends LazyActionsManagerListener
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
-        if (evt.getNewValue() == GdbDebugger.STATE_LOADING) {
-	    int count = createBreakpointImpls();
-	    DebuggerManager.getDebuggerManager().addDebuggerListener(DebuggerManager.PROP_BREAKPOINTS, this);
-            if (count == 0) { // no breakpoints
-                debugger.setReady();
+        String pname = evt.getPropertyName();
+        if (pname.equals(GdbDebugger.PROP_STATE)) {
+            if (evt.getNewValue() == GdbDebugger.STATE_LOADING) {
+                int count = createBreakpointImpls();
+                DebuggerManager.getDebuggerManager().addDebuggerListener(DebuggerManager.PROP_BREAKPOINTS, this);
+                if (count == 0) { // no breakpoints
+                    debugger.setReady();
+                }
             }
+        } else if (pname.equals(GdbDebugger.PROP_SHARED_LIB_LOADED)) {
+            assert !Thread.currentThread().getName().equals("GdbReaderRP");
+            sharedLibLoaded();
         }
     }
 
@@ -134,6 +136,9 @@ public class BreakpointsEngineListener extends LazyActionsManagerListener
         } else if (b instanceof FunctionBreakpoint) {
             breakpointToImpl.put(b, new FunctionBreakpointImpl(
 			(FunctionBreakpoint) b, breakpointsReader, debugger, session));
+        } else if (b instanceof AddressBreakpoint) {
+            breakpointToImpl.put(b, new AddressBreakpointImpl(
+			(AddressBreakpoint) b, breakpointsReader, debugger, session));
         }
     }
     
@@ -148,11 +153,29 @@ public class BreakpointsEngineListener extends LazyActionsManagerListener
     }
 
     private void removeBreakpointImpl(Breakpoint b) {
-        BreakpointImpl impl = (BreakpointImpl) breakpointToImpl.get(b);
+        BreakpointImpl impl = breakpointToImpl.get(b);
         if (impl != null) {
             impl.remove();
             breakpointToImpl.remove(b);
 	}
+    }
+    
+    /**
+     * A breakpoint in a shared library would have failed at startup and would have an
+     * invalid validity. Go through all invalid breakpoints and update them. Any that are
+     * in the newly loaded shared library will correctly get set. Others will continue
+     * as invalid.
+     */
+    private void sharedLibLoaded() {
+        for (Breakpoint bp : DebuggerManager.getDebuggerManager().getBreakpoints()) {
+            if (bp.getValidity() == Breakpoint.VALIDITY.INVALID) {
+                BreakpointImpl impl = breakpointToImpl.get(bp);
+                if (impl != null) {
+                    impl.setState(BreakpointImpl.BPSTATE_REVALIDATE);
+                    impl.update();
+                }
+            }
+        }
     }
     
     public Breakpoint[] initBreakpoints() {return new Breakpoint[0];}

@@ -28,7 +28,8 @@ import org.netbeans.modules.bpel.model.api.PartnerLink;
 import org.netbeans.modules.bpel.properties.props.PropertyUtils;
 import org.openide.nodes.Sheet;
 import static org.netbeans.modules.bpel.properties.PropertyType.*;
-import org.netbeans.modules.bpel.nodes.actions.ActionType;
+import org.netbeans.modules.bpel.editors.api.nodes.actions.ActionType;
+import org.netbeans.modules.bpel.model.api.support.TBoolean;
 import org.netbeans.modules.bpel.nodes.dnd.BpelEntityPasteType;
 import org.netbeans.modules.bpel.nodes.dnd.SequenceEntityPasteType;
 import org.openide.nodes.Children;
@@ -52,6 +53,7 @@ public class BpelProcessNode extends BaseScopeNode<Process> {
         return NodeType.PROCESS;
     }
 
+    @Override
     protected Sheet createSheet() {
         Sheet sheet = super.createSheet();
 
@@ -69,12 +71,16 @@ public class BpelProcessNode extends BaseScopeNode<Process> {
                 Process.TARGET_NAMESPACE, TARGET_NAMESPACE, 
                 "getTargetNamespace", "setTargetNamespace", null); // NOI18N
         //
+        PropertyUtils.registerCalculatedProperty(this, mainPropertySet,
+                ATOMIC_PROCESS, "isAtomic", "setAtomic", null); // NOI18N
+        //
         PropertyUtils.registerProperty(this, mainPropertySet,
                 DOCUMENTATION, "getDocumentation", "setDocumentation", "removeDocumentation"); // NOI18N
         //
         return sheet;
     }
     
+    @Override
     protected boolean isDropNodeInstanceSupported(BpelNode childNode) {
         if (!isDropNodeSupported(childNode)) {
             return false;
@@ -109,6 +115,7 @@ public class BpelProcessNode extends BaseScopeNode<Process> {
         return null;
     }
     
+    @Override
     protected ActionType[] getActionsArray() {
         if (isModelReadOnly()) {
             return new ActionType[] {
@@ -133,6 +140,7 @@ public class BpelProcessNode extends BaseScopeNode<Process> {
         };
     }
 
+    @Override
     public ActionType[] getAddActionArray() {
         return new ActionType[] {
             ActionType.ADD_VARIABLE,
@@ -146,6 +154,7 @@ public class BpelProcessNode extends BaseScopeNode<Process> {
         };
     }
 
+    @Override
     protected String getImplHtmlDisplayName() {
         String name = getName();
         if (name == null) {
@@ -153,5 +162,22 @@ public class BpelProcessNode extends BaseScopeNode<Process> {
         }
 //        name = name.replaceAll("&","&amp;"); // NOI18N
         return name;
+    }
+    
+    public Boolean isAtomic() {
+        if (TBoolean.YES.equals(getReference().isAtomic())) {
+            return Boolean.TRUE;
+        }
+        return Boolean.FALSE;
+    }
+    
+    public void setAtomic(Boolean newValue) {
+        if (newValue == null) {
+            // default atomic is no.
+            getReference().setAtomic(TBoolean.NO);
+        } else {
+            getReference().setAtomic(
+                    newValue == Boolean.TRUE ? TBoolean.YES : TBoolean.NO);
+        }
     }
 }

@@ -69,6 +69,7 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.editor.Acceptor;
 import org.netbeans.editor.AcceptorFactory;
+import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
@@ -108,9 +109,7 @@ final class AbbrevDetection implements DocumentListener, PropertyChangeListener,
     private static final String SURROUND_WITH = NbBundle.getMessage(SurroundWithFix.class, "TXT_SurroundWithHint_Label"); //NOI18N
     private static final int SURROUND_WITH_DELAY = 250;
     
-    private static final AbbrevExpander[] abbrevExpanders = { new CodeTemplateAbbrevExpander() };
-
-    public static synchronized AbbrevDetection get(JTextComponent component) {
+    public static AbbrevDetection get(JTextComponent component) {
         AbbrevDetection ad = (AbbrevDetection)component.getClientProperty(AbbrevDetection.class);
         if (ad == null) {
             ad = new AbbrevDetection(component);
@@ -142,6 +141,9 @@ final class AbbrevDetection implements DocumentListener, PropertyChangeListener,
      * Abbreviation characters captured from typing.
      */
     private final StringBuffer abbrevChars = new StringBuffer();
+
+//    /** Chars on which to expand acceptor */
+//    private Acceptor expandAcceptor;
 
     /** Which chars reset abbreviation accounting */
     private Acceptor resetAcceptor;
@@ -215,7 +217,7 @@ final class AbbrevDetection implements DocumentListener, PropertyChangeListener,
     
     public void insertUpdate(DocumentEvent evt) {
         if (!isIgnoreModification()) {
-            if (DocumentUtilities.isTypingModification(evt) && !isAbbrevDisabled()) {
+            if (DocumentUtilities.isTypingModification(evt.getDocument()) && !isAbbrevDisabled()) {
                 int offset = evt.getOffset();
                 int length = evt.getLength();
                 appendTypedText(offset, length);
@@ -227,7 +229,7 @@ final class AbbrevDetection implements DocumentListener, PropertyChangeListener,
 
     public void removeUpdate(DocumentEvent evt) {
         if (!isIgnoreModification()) {
-            if (DocumentUtilities.isTypingModification(evt) && !isAbbrevDisabled()) {
+            if (DocumentUtilities.isTypingModification(evt.getDocument()) && !isAbbrevDisabled()) {
                 int offset = evt.getOffset();
                 int length = evt.getLength();
                 removeAbbrevText(offset, length);
@@ -309,13 +311,14 @@ final class AbbrevDetection implements DocumentListener, PropertyChangeListener,
             && !isAbbrevDisabled()
             && !Boolean.TRUE.equals(doc.getProperty(EDITING_TEMPLATE_DOC_PROPERTY))
         ) {
-            Document document = component.getDocument();
-            CodeTemplateManagerOperation operation = CodeTemplateManagerOperation.get(document);
-            KeyStroke expandKeyStroke = operation.getExpansionKey();
-            
-            if (expandKeyStroke.equals(KeyStroke.getKeyStrokeForEvent(evt))) {
-                if (expand()) {
-                    evt.consume();
+            CodeTemplateManagerOperation operation = CodeTemplateManagerOperation.get(component.getDocument(), abbrevEndPosition.getOffset());
+            if (operation != null) {
+                KeyStroke expandKeyStroke = operation.getExpansionKey();
+
+                if (expandKeyStroke.equals(KeyStroke.getKeyStrokeForEvent(evt))) {
+                    if (expand(operation)) {
+                        evt.consume();
+                    }
                 }
             }
         }
@@ -406,18 +409,15 @@ final class AbbrevDetection implements DocumentListener, PropertyChangeListener,
         }
     }
 
-    public boolean expand() {
+    public boolean expand(CodeTemplateManagerOperation op) {
         CharSequence abbrevText = getAbbrevText();
         int abbrevEndOffset = abbrevEndPosition.getOffset();
-        for (int i = 0; i < abbrevExpanders.length; i++) {
-            if (abbrevExpanders[i].expand(component, 
-                    abbrevEndOffset - abbrevText.length(), abbrevText)
-            ) {
-                resetAbbrevChars();
-                return true;
-            }
+        if (expand(op, component, abbrevEndOffset - abbrevText.length(), abbrevText)) {
+            resetAbbrevChars();
+            return true;
+        } else {
+            return false;
         }
-        return false;
     }
     
     private void showSurroundWithHint() {
@@ -471,5 +471,22 @@ final class AbbrevDetection implements DocumentListener, PropertyChangeListener,
         }
 
         return defaultValue;
+    }
+
+    private static boolean expand(CodeTemplateManagerOperation op, JTextComponent component, int abbrevStartOffset, CharSequence abbrev) {
+        op.waitLoaded();
+        CodeTemplate ct = op.findByAbbreviation(abbrev.toString());
+        if (ct != null) {
+            try {
+                // Remove the abbrev text
+                Document doc = component.getDocument();
+                doc.remove(abbrevStartOffset, abbrev.length());
+            } catch (BadLocationException ble) {
+            }
+            ct.insert(component);
+            return true;
+        } else {
+            return false;
+        }
     }
 }

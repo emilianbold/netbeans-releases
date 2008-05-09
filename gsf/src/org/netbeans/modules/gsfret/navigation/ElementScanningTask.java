@@ -42,21 +42,24 @@
 package org.netbeans.modules.gsfret.navigation;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
-import org.netbeans.api.gsf.CancellableTask;
-import org.netbeans.api.gsf.Parser;
-import org.netbeans.api.gsf.ParserResult;
-import org.netbeans.api.gsf.StructureScanner;
-import org.netbeans.api.gsf.Element;
-import org.netbeans.api.gsf.ElementHandle;
-import org.netbeans.api.gsf.ElementKind;
-import org.netbeans.api.gsf.Modifier;
-import org.netbeans.api.gsf.StructureItem;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.ImageIcon;
+import org.netbeans.modules.gsf.api.CancellableTask;
+import org.netbeans.modules.gsf.api.ParserResult;
+import org.netbeans.modules.gsf.api.StructureScanner;
+import org.netbeans.modules.gsf.api.ElementHandle;
+import org.netbeans.modules.gsf.api.ElementKind;
+import org.netbeans.modules.gsf.api.Modifier;
+import org.netbeans.modules.gsf.api.StructureItem;
 import org.netbeans.napi.gsfret.source.CompilationInfo;
 import org.netbeans.modules.gsf.GsfHtmlFormatter;
-import org.netbeans.modules.gsfret.navigation.ElementNode.Description;
+import org.netbeans.modules.gsf.Language;
+import org.netbeans.modules.gsf.LanguageRegistry;
 
 /**
  * This file is originally from Retouche, the Java Support 
@@ -102,7 +105,7 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
                 return null;
             }
 
-            public ElementHandle<? extends Element> getElementHandle() {
+            public ElementHandle getElementHandle() {
                 throw new UnsupportedOperationException("Not supported on the Root Node.");
             }
 
@@ -128,17 +131,51 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
             public long getEndPosition() {
                 return Long.MAX_VALUE;
             }
+
+            public ImageIcon getCustomIcon() {
+                return null;
+            }
+            
+            public String getSortText() {
+                return null;
+            }
         };
         
-        ParserResult pr = info.getParserResult();
-        if (pr != null) {
-            StructureScanner scanner = info.getLanguage().getStructure();
-            Parser parser = info.getParser();
-            if (scanner != null && parser != null) {
+        Set<String> mimeTypes = info.getEmbeddedMimeTypes();
+        LanguageRegistry registry = LanguageRegistry.getInstance();
+        List<String> sortedMimes = new ArrayList<String>(mimeTypes);
+        // TODO - sort results by something more interesting than the alphabetical
+        // order of their mimetypes...
+        Collections.sort(sortedMimes);
+        
+        List<MimetypeRootNode> roots = new ArrayList<MimetypeRootNode>();
+        int mimetypesWithElements = 0;
+        for (String mimeType : mimeTypes) {
+            Language language = registry.getLanguageByMimeType(mimeType);
+            StructureScanner scanner = language.getStructure();
+            if (scanner != null) {
+                long startTime = System.currentTimeMillis();
                 List<? extends StructureItem> children = scanner.scan(info, new NavigatorFormatter());
-                for (StructureItem co : children) {
-                    items.add(co);
+                long endTime = System.currentTimeMillis();
+                Logger.getLogger("TIMER").log(Level.FINE, "Structure (" + mimeType + ")",
+                    new Object[] {info.getFileObject(), endTime - startTime});
+                
+                if(children.size() > 0) {
+                    mimetypesWithElements++;
                 }
+                roots.add(new MimetypeRootNode(language, children));
+            }
+        }
+        
+        if(mimetypesWithElements > 1) {
+            //at least two languages provided some elements - use the root mimetype nodes
+            for(MimetypeRootNode root : roots) {
+                items.add(root);
+            }
+        } else {
+            //just one or none language provided elements - put them to the root
+            for(MimetypeRootNode root : roots) {
+                items.addAll(root.getNestedItems());
             }
         }
         
@@ -146,6 +183,105 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
             ui.refresh( rootDescription, info.getFileObject() );
             
         }
+    }
+    
+    private static final class MimetypeRootNode implements StructureItem {
+
+        //hack - see the getSortText() comment
+        private static final String CSS_MIMETYPE = "text/x-css"; //NOI18N
+        private static final String CSS_SORT_TEXT = "2";//NOI18N
+        private static final String JAVASCRIPT_MIMETYPE = "text/javascript";//NOI18N
+        private static final String JAVASCRIPT_SORT_TEXT = "1";//NOI18N
+        private static final String HTML_MIMETYPE = "text/html";//NOI18N
+        private static final String HTML_SORT_TEXT = "3";//NOI18N
+        private static final String OTHER_SORT_TEXT = "4";//NOI18N
+        
+        private Language language;
+        private List<? extends StructureItem> items;
+        long from, to;
+        
+        private MimetypeRootNode(Language lang, List<? extends StructureItem> items) {
+            this.language = lang;
+            this.items = items;
+            this.from = items.size() > 0 ? items.get(0).getPosition() : 0;
+            this.to = items.size() > 0 ? items.get(items.size() - 1).getEndPosition() : 0;
+        }
+        
+        @Override
+        public boolean equals(Object o) {
+            if(!(o instanceof MimetypeRootNode)) {
+                return false;
+            }
+            MimetypeRootNode compared = (MimetypeRootNode)o;
+            return language.equals(compared.language);
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 3;
+            hash = 97 * hash + (this.language != null ? this.language.hashCode() : 0);
+            return hash;
+        }
+        
+        public String getName() {
+            return language.getDisplayName();
+        }
+
+        public String getSortText() {
+            //hack -> I need to ensure that the navigator selects the top most
+            //node when user moves caret in the source.
+            //Since the navigator tree is a generic graph if there are more
+            //embedded languages we need to use some tricks...
+            if(language.getMimeType().equals(CSS_MIMETYPE)) {
+                return CSS_SORT_TEXT;
+            } else if(language.getMimeType().equals(JAVASCRIPT_MIMETYPE)) {
+                return JAVASCRIPT_SORT_TEXT;
+            } else if (language.getMimeType().equals(HTML_MIMETYPE)) {
+                return HTML_SORT_TEXT;
+            } else {
+                return OTHER_SORT_TEXT + getName();
+            }
+            
+        }
+
+        public String getHtml() {
+            return getName();
+        }
+
+        public ElementHandle getElementHandle() {
+            return null;
+        }
+
+        public ElementKind getKind() {
+            return ElementKind.OTHER;
+        }
+
+        public Set<Modifier> getModifiers() {
+            return Collections.emptySet();
+        }
+
+        public boolean isLeaf() {
+            return false;
+        }
+
+        public List<? extends StructureItem> getNestedItems() {
+            return items;
+        }
+
+        public long getPosition() {
+            return from;
+        }
+
+        public long getEndPosition() {
+            return to;
+        }
+
+        public ImageIcon getCustomIcon() {
+            String iconBase = language.getIconBase();
+            return  iconBase == null ? null : new ImageIcon(org.openide.util.Utilities.loadImage(iconBase));
+        }
+
+        
     }
     
     private class NavigatorFormatter extends GsfHtmlFormatter {

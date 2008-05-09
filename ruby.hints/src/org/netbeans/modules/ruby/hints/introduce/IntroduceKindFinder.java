@@ -42,7 +42,7 @@ import org.netbeans.modules.ruby.ParseTreeVisitor;
 import java.util.ArrayList;
 import java.util.List;
 import org.jruby.ast.Node;
-import org.jruby.ast.NodeTypes;
+import org.jruby.ast.NodeType;
 
 /**
  * Finder which determines if the given range in the AST represents a valid range for
@@ -60,98 +60,98 @@ class IntroduceKindFinder implements ParseTreeVisitor {
     public boolean visit(Node node) {
         switch (node.nodeId) {
         // I can't handle these kinds of flow control yet:
-        case NodeTypes.RETURNNODE:
+        case RETURNNODE:
         // I should be able to handle break and next if the loop which these are referring
         // to are within my code fragment... but how to check that? Needs work! XXX
-        case NodeTypes.BREAKNODE:
-        case NodeTypes.NEXTNODE:
-        case NodeTypes.REDONODE:
-        case NodeTypes.RETRYNODE:
+        case BREAKNODE:
+        case NEXTNODE:
+        case REDONODE:
+        case RETRYNODE:
         // Yield is okay:
-        //case NodeTypes.YIELDNODE:
+        //case YIELDNODE:
             invalid = true;
             
-        case NodeTypes.NILNODE:
-        case NodeTypes.FALSENODE:
-        case NodeTypes.TRUENODE:
-        case NodeTypes.ZARRAYNODE:
-        case NodeTypes.ZEROARGNODE:
-        case NodeTypes.ARRAYNODE:
-        case NodeTypes.BIGNUMNODE:
-        case NodeTypes.FIXNUMNODE:
-        case NodeTypes.XSTRNODE:
-        case NodeTypes.STRNODE:
-        case NodeTypes.REGEXPNODE:
-        case NodeTypes.FLOATNODE:
-        case NodeTypes.DREGEXPNODE:
-        case NodeTypes.DSTRNODE:
-        case NodeTypes.DXSTRNODE:
-        case NodeTypes.SYMBOLNODE:
-        case NodeTypes.EVSTRNODE:
+        case NILNODE:
+        case FALSENODE:
+        case TRUENODE:
+        case ZARRAYNODE:
+        case ZEROARGNODE:
+        case ARRAYNODE:
+        case BIGNUMNODE:
+        case FIXNUMNODE:
+        case XSTRNODE:
+        case STRNODE:
+        case REGEXPNODE:
+        case FLOATNODE:
+        case DREGEXPNODE:
+        case DSTRNODE:
+        case DXSTRNODE:
+        case SYMBOLNODE:
+        case EVSTRNODE:
             // constant eligible
             seenConstant = true;
             break;
 
-        case NodeTypes.NEWLINENODE:
+        case NEWLINENODE:
             // Can't have multiple statements in anything but a method
             seenMethod = true;
             break;
 
-        case NodeTypes.DEFNNODE:
-        case NodeTypes.DEFSNODE:
-        case NodeTypes.MODULENODE:
-        case NodeTypes.CLASSNODE:
-        case NodeTypes.SCLASSNODE:
-        case NodeTypes.ARGSCATNODE:
-        case NodeTypes.ARGSNODE:
-        case NodeTypes.ARGSPUSHNODE:
+        case DEFNNODE:
+        case DEFSNODE:
+        case MODULENODE:
+        case CLASSNODE:
+        case SCLASSNODE:
+        case ARGSCATNODE:
+        case ARGSNODE:
+        case ARGSPUSHNODE:
             invalid = true;
             break;
 
         // Control flow, assignments etc. imply that it's not an expression, so it would
         // have to be an extract method operation
-        case NodeTypes.YIELDNODE:
-        case NodeTypes.WHENNODE:
-        case NodeTypes.WHILENODE:
-        case NodeTypes.UNDEFNODE:
-        case NodeTypes.UNTILNODE:
-        case NodeTypes.RESCUEBODYNODE:
-        case NodeTypes.RESCUENODE:
-        case NodeTypes.ITERNODE:
-        case NodeTypes.FORNODE:
-        case NodeTypes.IFNODE:
-        case NodeTypes.LOCALASGNNODE:
-        case NodeTypes.DASGNNODE:
-        case NodeTypes.CONSTDECLNODE:
-        case NodeTypes.CLASSVARASGNNODE:
-        case NodeTypes.ATTRASSIGNNODE:
-        case NodeTypes.CLASSVARDECLNODE:
-        case NodeTypes.GLOBALASGNNODE:
-        case NodeTypes.INSTASGNNODE:
-        case NodeTypes.MULTIPLEASGNNODE:
-        case NodeTypes.OPASGNANDNODE:
-        case NodeTypes.OPASGNNODE:
-        case NodeTypes.OPASGNORNODE:
-        case NodeTypes.OPELEMENTASGNNODE:
+        case YIELDNODE:
+        case WHENNODE:
+        case WHILENODE:
+        case UNDEFNODE:
+        case UNTILNODE:
+        case RESCUEBODYNODE:
+        case RESCUENODE:
+        case ITERNODE:
+        case FORNODE:
+        case IFNODE:
+        case LOCALASGNNODE:
+        case DASGNNODE:
+        case CONSTDECLNODE:
+        case CLASSVARASGNNODE:
+        case ATTRASSIGNNODE:
+        case CLASSVARDECLNODE:
+        case GLOBALASGNNODE:
+        case INSTASGNNODE:
+        case MULTIPLEASGNNODE:
+        case OPASGNANDNODE:
+        case OPASGNNODE:
+        case OPASGNORNODE:
+        case OPELEMENTASGNNODE:
             seenMethod = true;
             break;
 
-        case NodeTypes.ANDNODE:
-        case NodeTypes.ORNODE:
-        case NodeTypes.NOTNODE:
-        case NodeTypes.HASHNODE:
-        case NodeTypes.CALLNODE:
+        case ANDNODE:
+        case ORNODE:
+        case NOTNODE:
+        case HASHNODE:
+        case CALLNODE:
             // What I really want to capture here is that the method
             // is no longer nontrivial - don't offer extract on just a single method
             // identifier etc.
             //simple = false;
             break;
 
-        case NodeTypes.FCALLNODE:
-        case NodeTypes.VCALLNODE:
-        case NodeTypes.LOCALVARNODE:
-        case NodeTypes.INSTVARNODE:
-        case NodeTypes.DVARNODE:
+        case FCALLNODE:
+        case VCALLNODE:
+        case LOCALVARNODE:
+        case INSTVARNODE:
+        case DVARNODE:
             simple = false;
             seenNonConstant = true;
             break;

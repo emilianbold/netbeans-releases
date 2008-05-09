@@ -36,7 +36,7 @@ import org.netbeans.modules.xml.xam.Model;
 
 public class DecorationManager {
 
-    private final Object cacheKey = new Object();
+    private Object cacheKey = new Object();
     public static final Decoration emptyDecoration = new Decoration();
     private ArrayList<DecorationProvider> providersList = new ArrayList<DecorationProvider>();
     private DesignView designView;
@@ -48,7 +48,7 @@ public class DecorationManager {
     }
 
     /**
-     * Calculates the superset of states from all providers
+     * Returns the superset of states from all providers
      **/
     public Decoration getDecoration(Pattern p) {
         BpelEntity entity = p.getOMReference();
@@ -68,10 +68,6 @@ public class DecorationManager {
 
     public void attachProvider(DecorationProvider provider) {
         providersList.add(provider);
-    /*
-     * trigger re-calculation of all decorations to add
-     * of decorations reported by  new provider
-     */
     }
 
     /**
@@ -82,6 +78,9 @@ public class DecorationManager {
         for (DecorationProvider p : providersList) {
             p.release();
         }
+        
+        //this should release all DecorationManager cookies in BpelModel
+        cacheKey = null;
     }
 
     /**

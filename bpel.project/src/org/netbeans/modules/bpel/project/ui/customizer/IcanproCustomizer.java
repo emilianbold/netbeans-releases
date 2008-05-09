@@ -16,8 +16,6 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
-
 package org.netbeans.modules.bpel.project.ui.customizer;
 
 import java.awt.BorderLayout;
@@ -49,18 +47,13 @@ import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectPr
 public class IcanproCustomizer extends javax.swing.JPanel implements HelpCtx.Provider  {
     
     private Component currentCustomizer;
-
     private GridBagConstraints fillConstraints;
-    
     private IcanproProjectProperties webProperties;
 
-    /** Creates new form WebCustomizer */
     public IcanproCustomizer(IcanproProjectProperties webProperties) {
         initComponents();
         this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(IcanproCustomizer.class, "ACS_Customize_A11YDesc")); //NOI18N
-
         this.webProperties = webProperties;
-        //this.wm = wm;
         
         fillConstraints = new GridBagConstraints();
         fillConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -70,7 +63,6 @@ public class IcanproCustomizer extends javax.swing.JPanel implements HelpCtx.Pro
         fillConstraints.weighty = 1.0;
         
         categoryPanel.add( new CategoryView( createRootNode(webProperties) ), fillConstraints );
-                
     }
     
     public HelpCtx getHelpCtx() {
@@ -117,28 +109,22 @@ public class IcanproCustomizer extends javax.swing.JPanel implements HelpCtx.Pro
 
     }// </editor-fold>//GEN-END:initComponents
     
-    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel categoryPanel;
     private javax.swing.JPanel customizerPanel;
     // End of variables declaration//GEN-END:variables
     
-    // Private innerclasses ----------------------------------------------------
-
     private class CategoryView extends JPanel implements ExplorerManager.Provider, HelpCtx.Provider {
         
         private ExplorerManager manager;
         private BeanTreeView btv;
         
         CategoryView( Node rootNode ) {
-        
-            // See #36315
             manager = new ExplorerManager();
-
             setLayout( new BorderLayout() );
             
             Dimension size = new Dimension( 220, 4 );
-            btv = new BeanTreeView();    // Add the BeanTreeView
+            btv = new BeanTreeView();
             btv.setSelectionMode( TreeSelectionModel.SINGLE_TREE_SELECTION );
             btv.setPopupAllowed( false );
             btv.setRootVisible( false );
@@ -169,8 +155,8 @@ public class IcanproCustomizer extends javax.swing.JPanel implements HelpCtx.Pro
         }
         
         private void selectFirstNode() {
-            
             Children ch = manager.getRootContext().getChildren();
+
             if ( ch != null ) {
                 Node nodes[] = ch.getNodes();
                 
@@ -183,13 +169,7 @@ public class IcanproCustomizer extends javax.swing.JPanel implements HelpCtx.Pro
                     }
                 }
             }
-            
         }
-        
-        
-        /** Listens to selection change and shows the customizers as
-         *  panels
-         */
         
         private class ManagerChangeListener implements PropertyChangeListener {
 
@@ -214,135 +194,38 @@ public class IcanproCustomizer extends javax.swing.JPanel implements HelpCtx.Pro
                         if ( currentCustomizer instanceof Panel ) {
                             ((Panel)currentCustomizer).initValues();
                         }
-                        
-                        /*
-                        if ( currentCustomizer instanceof javax.swing.JComponent ) {
-                            ((javax.swing.JComponent)currentCustomizer).setPreferredSize( new java.awt.Dimension( 600, 0 ) );
-                        }
-                        */
                         customizerPanel.add( currentCustomizer, fillConstraints );
                         customizerPanel.validate();
                         customizerPanel.repaint();
-                        
                     }
                     else {
                         currentCustomizer = null;
                     }
-
                     return;
                 }
             }
         }
     }
              
-    // Private methods ---------------------------------------------------------
-    
     private static Node createRootNode(IcanproProjectProperties webProperties) {
         String ICON_FOLDER = "org/netbeans/modules/bpel/project/ui/resources/";
         ResourceBundle bundle = NbBundle.getBundle( IcanproCustomizer.class );
         
-        /* Add Service Reference */
-        /** Comment out EJB-WS */       
-        /*
-        ConfigurationDescription serviceRefDescriptions[] = new ConfigurationDescription[] {
-            new ConfigurationDescription(
-                "ServiceRef",
-                // TBD i18N bundle.getString( "LBL_Config_Run" ), 
-                "EJB-WS",
-                ICON_FOLDER + "defaultCategory", // "run", // NOI18N
-                new CustomizerJarContent(webProperties),
-                null ),
-        };
-         */
-        /** End Comment out EJB-WS */
-        
-     /* starts  ConfigurationDescription buildDescriptions[] = new ConfigurationDescription[] {
-            new ConfigurationDescription(
-                "Build",
-                bundle.getString( "LBL_Config_Build" ), // NOI18N
-                ICON_FOLDER + "defaultCategory", // "build", // NOI18N
-                new CustomizerCompile(webProperties),
-                null ), ends */
-            /*
-            new ConfigurationDescription(
-                "Jar",
-                bundle.getString( "LBL_Config_Jar" ), // NOI18N
-                ICON_FOLDER + "defaultCategory", // "jar", // NOI18N
-                new CustomizerWar(webProperties),
-                null ),
-//B            new ConfigurationDescription(
-//B                "Javadoc",
-//B                bundle.getString( "LBL_Config_Javadoc" ), // NOI18N
-//B                ICON_FOLDER + "javadoc", // NOI18N
-//B                new CustomizerJavadoc(webProperties),
-//B                null ),
-            */
-        //starts & ends};
-        /*
-        //=======Start of IcanPro==============================================//
-        ConfigurationDescription runDescriptions[] = new ConfigurationDescription[] {
-            new ConfigurationDescription(
-                "Run",
-                bundle.getString( "LBL_Config_Run" ), // NOI18N
-                ICON_FOLDER + "defaultCategory", // "run", // NOI18N
-                new CustomizerRun(webProperties),
-                null ),
-        };
-        //=======End of IcanPro================================================//
-        */
         ConfigurationDescription descriptions[] = new ConfigurationDescription[] {
             new ConfigurationDescription(
                 "General",
                 bundle.getString( "LBL_Config_General" ), // NOI18N
                 ICON_FOLDER + "defaultCategory", // "icanproProjectIcon", // NOI18N
-                new CustomizerGeneral(webProperties),
-                  null),
-            /** Comment out EJB-WS */
-            /*        
-       
-            new ConfigurationDescription(
-                "ServiceRef",
-                "Service Reference", //TBD i18N
-                ICON_FOLDER + "defaultCategory", // "general", // NOI18N
-                createEmptyLabel( null ),
-                serviceRefDescriptions)    
-                */
-            /** End Comment out EJB-WS **/
-                    
-/*                null ),
-                  new ConfigurationDescription(
-                "BuildCategoty",
-                "Build",
-                ICON_FOLDER + "defaultCategory", // "general", // NOI18N
-                createEmptyLabel( null ),*/
-              //starts & ends  buildDescriptions ),
-//                null) // replace for start & ends
-            /*
-            //=======Start of IcanPro==========================================//
-            new ConfigurationDescription(
-                "RunCategoty",
-                "Run",
-                ICON_FOLDER + "run", // NOI18N
-                createEmptyLabel( null ),
-                runDescriptions )
-            //=======End of IcanPro============================================//
-            */
+                new CustomizerGeneral(webProperties), null),
         };
 
         ConfigurationDescription rootDescription = new ConfigurationDescription(
         "InvisibleRoot", "InvisibleRoot", null, null, descriptions );  // NOI18N
 
         return new ConfigurationNode( rootDescription );
-
-
     }
 
-    // Private meyhods ---------------------------------------------------------
-
-    // XXX Remove when all panels have some options
-
     private static javax.swing.JLabel createEmptyLabel( String text ) {
-
         JLabel label;
         if ( text == null ) {
             label = new JLabel();
@@ -351,24 +234,15 @@ public class IcanproCustomizer extends javax.swing.JPanel implements HelpCtx.Pro
             label = new JLabel( text );
             label.setHorizontalAlignment( JLabel.CENTER );
         }
-
         return label;
     }
 
-    // Private innerclasses ----------------------------------------------------
-
-    /** Class describing the configuration node. Prototype of the
-     *  configuration node.
-     */
     private static class ConfigurationDescription {
-        
-        
         private String name;
         private String displayName;
         private String iconBase;
         private Component customizer;
         private ConfigurationDescription[] children;
-        // XXX Add Node.Properties
         
         ConfigurationDescription( String name,
         String displayName,
@@ -382,14 +256,9 @@ public class IcanproCustomizer extends javax.swing.JPanel implements HelpCtx.Pro
             this.customizer = customizer;
             this.children = children;
         }
-        
     }
     
-    
-    /** Node to be used for configuration
-     */
     private static class ConfigurationNode extends AbstractNode {
-        
         private Component customizer;
         
         public ConfigurationNode( ConfigurationDescription description ) {
@@ -397,7 +266,7 @@ public class IcanproCustomizer extends javax.swing.JPanel implements HelpCtx.Pro
             setName( description.name );
             setDisplayName( description.displayName );
             if ( description.iconBase != null ) {
-                setIconBase( description.iconBase );
+                setIconBaseWithExtension(description.iconBase);
             }
             this.customizer = description.customizer;
         }
@@ -409,11 +278,8 @@ public class IcanproCustomizer extends javax.swing.JPanel implements HelpCtx.Pro
         public Component getCustomizer() {
             return customizer;
         }
-        
     }
     
-    /** Children used for configuration
-     */
     private static class ConfigurationChildren extends Children.Keys {
         
         private Collection descriptions;
@@ -421,8 +287,6 @@ public class IcanproCustomizer extends javax.swing.JPanel implements HelpCtx.Pro
         public ConfigurationChildren( ConfigurationDescription[] descriptions ) {
             this.descriptions = Arrays.asList( descriptions );
         }
-        
-        // Children.Keys impl --------------------------------------------------
         
         public void addNotify() {
             setKeys( descriptions );
@@ -438,10 +302,6 @@ public class IcanproCustomizer extends javax.swing.JPanel implements HelpCtx.Pro
     }
     
     static interface Panel {
-        
         public void initValues();
-        
     }
-    
-    
 }

@@ -73,7 +73,9 @@ public class ModelObjectFactory {
 				opComponent = model.getFactory().createInputOperator(model);
 			} else if(componentType.getPath().endsWith("Output")) {
 				opComponent = model.getFactory().createOutputOperator(model);
-			} else {
+			} else if(componentType.getPath().endsWith("InvokeStream")) {
+                                opComponent = model.getFactory().createInvokeStreamOperator(model);
+                        } else {
 				opComponent = model.getFactory().createOperator(model);
 			}
 			opComponent.setType(componentType.getPath());

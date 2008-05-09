@@ -109,4 +109,9 @@ public class PropertiesOptions extends BaseOptions {
     public HelpCtx getHelpCtx() {
         return new HelpCtx("editing.editor.properties"); // NOI18N
     }
+
+    protected String getContentType() {
+        return PropertiesKit.PROPERTIES_MIME_TYPE;
+    }
+    
 }

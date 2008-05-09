@@ -61,5 +61,9 @@ public class RhtmlTokenDumpTest extends NbTestCase {
         LexerTestUtilities.checkTokenDump(this, "testfiles/testInput.rb.txt",
                 RhtmlTokenId.language());
     }
-    
+
+    public void testTrimMode() throws Exception {
+        LexerTestUtilities.checkTokenDump(this, "testfiles/trim_mode.erb.txt",
+                RhtmlTokenId.language());
+    }
 }

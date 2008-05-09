@@ -42,6 +42,7 @@
 package org.netbeans.updater;
 
 import java.io.File;
+import java.io.IOException;
 import javax.swing.SwingUtilities;
 
 /**
@@ -60,6 +61,8 @@ public final class UpdaterDispatcher implements Runnable {
     public static final String NEW_UPDATER_DIR = "new_updater"; // NOI18N
     
     public static final String DEACTIVATE_LATER = "deactivate_later.txt"; // NOI18N
+    
+    public static final String LAST_MODIFIED = ".lastModified"; // NOI18N
     
     /** Explore <cluster>/update directory and schedules actions handler for
      * Install/Update, Uninstall or Disable modules
@@ -145,6 +148,17 @@ public final class UpdaterDispatcher implements Runnable {
     public void run () {
         dispatch ();
         UpdaterFrame.disposeSplash ();
+    }
+    
+    public static void touchLastModified (File cluster) {
+        try {
+            File stamp = new File (cluster, LAST_MODIFIED);
+            if (! stamp.createNewFile ()) {
+                stamp.setLastModified (System.currentTimeMillis ());
+            }
+        } catch (IOException ex) {
+            ex.printStackTrace ();
+        }
     }
     
 }

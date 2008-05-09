@@ -165,14 +165,15 @@ public abstract class TagBasedLexerFormatter {
         List<TagIndentationData> matchedOpeningTags = new ArrayList<TagIndentationData>();
         BaseDocument doc = (BaseDocument) context.document();
         doc.atomicLock();
-        TokenHierarchy tokenHierarchy = TokenHierarchy.get(doc);
-
-        if (tokenHierarchy == null) {
-            logger.severe("Could not retrieve TokenHierarchy for document " + doc);
-            return;
-        }
-
+        
         try {
+            TokenHierarchy tokenHierarchy = TokenHierarchy.get(doc);
+
+            if (tokenHierarchy == null) {
+                logger.severe("Could not retrieve TokenHierarchy for document " + doc);
+                return;
+            }
+            
             TransferData transferData = null;
             
             if (isTopLevelLanguage(doc)){
@@ -251,7 +252,7 @@ public abstract class TagBasedLexerFormatter {
                     }
                     
                     // Mark blocks of embedded language
-                    if (tokenSequence.embedded() != null) {
+                    if (tokenSequence.embedded() != null && !isWSToken(tokenSequence.token())) {
                         int firstLineOfEmbeddedBlock = Utilities.getLineOffset(doc, tokenSequence.offset());
                         int lastLineOfEmbeddedBlock = Utilities.getLineOffset(doc, tokenSequence.offset() + getTxtLengthWithoutWhitespaceSuffix(tokenSequence.token().text()));
 
@@ -695,7 +696,11 @@ public abstract class TagBasedLexerFormatter {
             }
 
             Integer dotPos = (Integer) doc.getProperty(TransferData.ORG_CARET_OFFSET_DOCPROPERTY);
-            assert dotPos != null;
+            //assert dotPos != null;
+            if(dotPos == null) {
+                dotPos = context.caretOffset();
+            }
+            
             int origDotPos = dotPos.intValue() - 1; // dotPos - "\n".length()
             
             if (indexWithinCurrentLanguage(doc, origDotPos - 1)) {

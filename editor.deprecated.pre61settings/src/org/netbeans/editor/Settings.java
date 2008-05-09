@@ -73,7 +73,7 @@ import org.netbeans.api.editor.settings.KeyBindingSettings;
 import org.netbeans.modules.editor.deprecated.pre61settings.EditorPreferencesInjector;
 import org.netbeans.modules.editor.deprecated.pre61settings.KitchenSink;
 import org.netbeans.modules.editor.deprecated.pre61settings.OrgNbEditorAccessor;
-import org.netbeans.modules.editor.impl.KitsTracker;
+import org.netbeans.modules.editor.lib.KitsTracker;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;

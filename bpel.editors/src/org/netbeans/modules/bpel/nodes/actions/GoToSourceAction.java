@@ -18,6 +18,8 @@
  */
 package org.netbeans.modules.bpel.nodes.actions;
 
+import org.netbeans.modules.bpel.nodes.actions.BpelNodeAction;
+import org.netbeans.modules.bpel.editors.api.nodes.actions.ActionType;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.openide.util.NbBundle;
 
@@ -47,7 +49,7 @@ public class GoToSourceAction extends BpelNodeAction {
 
     protected void performAction(BpelEntity[] bpelEntities) {
         if (bpelEntities != null && bpelEntities.length > 0) {
-            org.netbeans.modules.bpel.editors.api.utils.Util.goToSource(bpelEntities[0]);
+            org.netbeans.modules.bpel.editors.api.EditorUtil.goToSource(bpelEntities[0]);
         }
     }
 

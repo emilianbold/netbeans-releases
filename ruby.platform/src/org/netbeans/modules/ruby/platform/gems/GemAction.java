@@ -43,6 +43,7 @@ package org.netbeans.modules.ruby.platform.gems;
 import java.awt.Dialog;
 
 import javax.swing.JButton;
+import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
@@ -56,6 +57,19 @@ public final class GemAction extends CallableSystemAction {
     }
     
     public static boolean showGemManager(String availableFilter) {
+        return showGemManager(availableFilter, null);
+    }
+
+    /**
+     * Displays the gem manager panel.
+     * 
+     * @param availableFilter the filter to use for displaying gems, e.g. 
+     * <code>"generators$"</code> for displaying only generator gems.
+     * @param preselected the platform that should be preselected in the panel; 
+     * may be <code>null</code> in which case the last selected platform is preselected.
+     */
+    public static boolean showGemManager(String availableFilter, RubyPlatform preselected) {
+    
         // XXX: should be moved directly to GemManager panel(?)
 //        String gemProblem = GemManager.getGemProblem();
 //
@@ -67,7 +81,7 @@ public final class GemAction extends CallableSystemAction {
 //            return false;
 //        }
 
-        GemPanel customizer = new GemPanel(availableFilter);
+        GemPanel customizer = new GemPanel(availableFilter, preselected);
         JButton close =
                 new JButton(NbBundle.getMessage(GemAction.class, "CTL_Close"));
         close.getAccessibleContext()

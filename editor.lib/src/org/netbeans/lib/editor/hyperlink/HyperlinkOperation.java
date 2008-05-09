@@ -85,6 +85,7 @@ import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
 public class HyperlinkOperation implements MouseListener, MouseMotionListener, PropertyChangeListener, KeyListener {
 
     private static Logger LOG = Logger.getLogger(HyperlinkOperation.class.getName());
+    private static final String KEY = "hyperlink-operation"; //NOI18N
     
     private JTextComponent component;
     private Document       currentDocument;
@@ -96,8 +97,10 @@ public class HyperlinkOperation implements MouseListener, MouseMotionListener, P
     private boolean        hyperlinkEnabled;
     private int            actionKeyMask;
     
-    public static HyperlinkOperation create(JTextComponent component, String mimeType) {
-        return new HyperlinkOperation(component, mimeType);
+    public static void ensureRegistered(JTextComponent component, String mimeType) {
+        if (component.getClientProperty(KEY) == null) {
+            component.putClientProperty(KEY, new HyperlinkOperation(component, mimeType));
+        }
     }
     
     private static synchronized Cursor getMouseCursor(HyperlinkType type) {
@@ -409,7 +412,7 @@ public class HyperlinkOperation implements MouseListener, MouseMotionListener, P
     public static final class HighlightFactoryImpl implements HighlightsLayerFactory {
         public HighlightsLayer[] createLayers(Context context) {
             return new HighlightsLayer[] {
-                HighlightsLayer.create(HyperlinkOperation.class.getName(), ZOrder.CARET_RACK, true, getBag(context.getDocument()))
+                HighlightsLayer.create(HyperlinkOperation.class.getName(), ZOrder.SHOW_OFF_RACK.forPosition(450), true, getBag(context.getDocument()))
             };
         }
     }

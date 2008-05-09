@@ -237,7 +237,7 @@ public final class TestUtil extends ProxyLookup {
     public static void copyDir(File src,File tgt) throws IOException {
         if (src.isDirectory()) {
             if (!tgt.exists()) {
-                tgt.mkdir();
+                FileUtil.createFolder(tgt);
             }
             
             String[] dirList = src.list();

@@ -122,17 +122,19 @@ public class LoggingRepaintManager extends RepaintManager {
      * @param w width of the region
      * @param h hieght of the region
      */
-    public synchronized void addDirtyRegion(JComponent c, int x, int y, int w, int h) {
-        String log = c.getClass().getName() + ", "+ x + "," + y + "," + w + "," + h;
-        
-        // fix for issue 73361, It looks like the biggest cursor is on Sol 10 (10,19) in textfields
-        // of some dialogs
-        if (w > 10 || h > 19) { // painted region isn't cursor (or painted region is greater than cursor)
-            if (regionFilters != null && !acceptedByRegionFilters(c)) {
-                tr.add(ActionTracker.TRACK_APPLICATION_MESSAGE, "IGNORED DirtyRegion: " + log);
-            } else { // no filter || accepted by filter =>  measure it
-                tr.add(ActionTracker.TRACK_APPLICATION_MESSAGE, "ADD DirtyRegion: " + log);
-                hasDirtyMatches = true;
+    public void addDirtyRegion(JComponent c, int x, int y, int w, int h) {
+        synchronized (this) {
+            String log = c.getClass().getName() + ", "+ x + "," + y + "," + w + "," + h;
+
+            // fix for issue 73361, It looks like the biggest cursor is on Sol 10 (10,19) in textfields
+            // of some dialogs
+            if (w > 10 || h > 19) { // painted region isn't cursor (or painted region is greater than cursor)
+                if (regionFilters != null && !acceptedByRegionFilters(c)) {
+                    tr.add(ActionTracker.TRACK_APPLICATION_MESSAGE, "IGNORED DirtyRegion: " + log);
+                } else { // no filter || accepted by filter =>  measure it
+                    tr.add(ActionTracker.TRACK_APPLICATION_MESSAGE, "ADD DirtyRegion: " + log);
+                    hasDirtyMatches = true;
+                }
             }
         }
         //System.out.println(log);
@@ -158,8 +160,18 @@ public class LoggingRepaintManager extends RepaintManager {
      */
     public void  addRegionFilter(RegionFilter filter) {
         if(filter != null){
-            tr.add(ActionTracker.TRACK_CONFIG_APPLICATION_MESSAGE, "FILTER: " + filter.getFilterName());
+            tr.add(ActionTracker.TRACK_CONFIG_APPLICATION_MESSAGE, "ADD FILTER: " + filter.getFilterName());
             regionFilters.add(filter);
+        }
+    }
+    /**
+     * Remove region filter
+     * @param filter
+     */
+    public void removeRegionFilter(RegionFilter filter) {
+        if(filter != null){
+            tr.add(ActionTracker.TRACK_CONFIG_APPLICATION_MESSAGE, "REMOVE FILTER: " + filter.getFilterName());
+            regionFilters.remove(filter);
         }
     }
     /**

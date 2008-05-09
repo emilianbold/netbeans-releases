@@ -27,17 +27,22 @@
  */
 package org.netbeans.test.java.hints;
 
+import java.awt.Container;
 import java.awt.event.KeyEvent;
 import java.util.regex.Pattern;
 import javax.swing.ListModel;
 import javax.swing.tree.DefaultMutableTreeNode;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.MainWindowOperator;
+import org.netbeans.jellytools.OptionsOperator;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TimeoutExpiredException;
+import org.netbeans.jemmy.operators.ContainerOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JListOperator;
+import org.netbeans.jemmy.operators.JSplitPaneOperator;
+import org.netbeans.jemmy.operators.JTabbedPaneOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.modules.java.hints.spi.AbstractHint;
 import org.netbeans.spi.editor.hints.Fix;
@@ -81,6 +86,7 @@ public class HintsTestCase extends JavaTestCase {
             assertFalse("Item " + ethalItem + " is missing in current list", j == current.length);
         }
     }
+    
     protected EditorOperator editor;
     protected EditorOperator target;
 
@@ -100,13 +106,13 @@ public class HintsTestCase extends JavaTestCase {
     }
 
     public void useHint(String hint, String[] hints, String pattern) {
-        new EventTool().waitNoEvent(750);
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 500);
+        new EventTool().waitNoEvent(750);        
         JListOperator jlo = null;
         int cycles = 0;
         while (cycles < MAX_CYCLES) {
             cycles++;
-            editor.pushKey(KeyEvent.VK_ENTER, KeyEvent.ALT_DOWN_MASK);
+            JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout",cycles*500);
+            editor.pushKey(KeyEvent.VK_ENTER, KeyEvent.ALT_DOWN_MASK);            
             try {
                 jlo = new JListOperator(MainWindowOperator.getDefault());
                 break;
@@ -183,5 +189,18 @@ public class HintsTestCase extends JavaTestCase {
             chbox1.doClick();
             new EventTool().waitNoEvent(500);
         }
+    }
+
+    public void setInPlaceCreation(boolean inPlace) {
+        OptionsOperator oo = OptionsOperator.invoke();
+        oo.selectCategory("Java Code");
+        JTabbedPaneOperator jtpo = new JTabbedPaneOperator(oo);
+        jtpo.selectPage("Hints");
+        JSplitPaneOperator jspo = new JSplitPaneOperator(oo);
+        JTreeOperator jto = new JTreeOperator(jtpo);
+        selectHintNode(jto, "errors", "Create Local Variable");
+        JCheckBoxOperator chbox1 = new JCheckBoxOperator(new ContainerOperator((Container) jspo.getRightComponent()), "Create Local Variable In Place");
+        chBoxSetSelected(chbox1, inPlace);
+        oo.ok();
     }
 }

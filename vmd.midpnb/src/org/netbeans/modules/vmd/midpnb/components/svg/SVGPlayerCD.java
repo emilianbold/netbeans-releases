@@ -68,6 +68,9 @@ import org.openide.util.NbBundle;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.vmd.api.model.presenters.actions.ActionsPresenter;
+import org.netbeans.modules.vmd.midpnb.actions.EditSVGFileAction;
+import org.openide.util.actions.SystemAction;
 
 /**
  *
@@ -167,7 +170,9 @@ public class SVGPlayerCD extends ComponentDescriptor {
                 // delete
                 DeleteDependencyPresenter.createNullableComponentReferencePresenter(PROP_SVG_IMAGE),
                 // screen
-                new SVGPlayerDisplayPresenter ()
+                new SVGPlayerDisplayPresenter (),
+                //actions
+                ActionsPresenter.create(20, SystemAction.get(EditSVGFileAction.class))
                 );
     }
 

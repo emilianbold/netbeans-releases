@@ -40,37 +40,38 @@
 package org.netbeans.modules.spring.beans.hyperlink;
 
 import java.io.IOException;
-import org.netbeans.modules.editor.NbEditorUtilities;
+import java.util.Map;
 import org.netbeans.modules.spring.api.Action;
 import org.netbeans.modules.spring.api.beans.model.SpringBean;
 import org.netbeans.modules.spring.api.beans.model.SpringBeans;
 import org.netbeans.modules.spring.api.beans.model.SpringConfigModel;
 import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils;
-import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils.Public;
-import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils.Static;
+import org.netbeans.modules.spring.java.JavaUtils;
+import org.netbeans.modules.spring.java.Public;
+import org.netbeans.modules.spring.java.Static;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
-import org.w3c.dom.Node;
 
 /**
  * Hyperlink Processor for factory-method attribute of a bean
  * 
  * @author Rohan Ranade (Rohan.Ranade@Sun.COM)
  */
-public class FactoryMethodHyperlinkProcessor implements HyperlinkProcessor {
+public class FactoryMethodHyperlinkProcessor extends HyperlinkProcessor {
 
-    private static final String FACTORY_BEAN_ATTRIB = "factory-bean"; // NOI18N
-    private static final String FACTORY_METHOD_ATTRIB = "factory-method"; // NOI18N
-    
     public void process(HyperlinkEnv env) {
-        Node tag = env.getCurrentTag();
+        Map<String, String> beanAttributes = env.getBeanAttributes();
+        SpringBean mergedBean = SpringXMLConfigEditorUtils.getMergedBean(beanAttributes, env.getFileObject());
+        if(mergedBean == null) {
+            return;
+        }
         Static staticFlag = Static.YES;
-        final String[] className = { SpringXMLConfigEditorUtils.getBeanClassName(tag) };
+        final String[] className = { mergedBean.getClassName() };
         
         // if factory-bean has been defined, resolve it and get it's class name
-        if(SpringXMLConfigEditorUtils.hasAttribute(tag, FACTORY_BEAN_ATTRIB)) { 
-            final String factoryBeanName = SpringXMLConfigEditorUtils.getAttribute(tag, FACTORY_BEAN_ATTRIB);
-            FileObject fo = NbEditorUtilities.getFileObject(env.getDocument());
+        if(mergedBean.getFactoryBean() != null) { 
+            final String factoryBeanName = mergedBean.getFactoryBean();
+            FileObject fo = env.getFileObject();
             if(fo == null) {
                 return;
             }
@@ -95,8 +96,8 @@ public class FactoryMethodHyperlinkProcessor implements HyperlinkProcessor {
         }
         
         if (className[0] != null) {
-            String methodName = SpringXMLConfigEditorUtils.getAttribute(tag, FACTORY_METHOD_ATTRIB);
-            SpringXMLConfigEditorUtils.openMethodInEditor(env.getDocument(), className[0], methodName, -1,
+            String methodName = mergedBean.getFactoryMethod();
+            JavaUtils.openMethodInEditor(env.getFileObject(), className[0], methodName, -1,
                     Public.DONT_CARE, staticFlag);
         }
     }

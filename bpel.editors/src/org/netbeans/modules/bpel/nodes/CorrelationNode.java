@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.bpel.nodes;
 
+import org.netbeans.modules.bpel.nodes.BpelNode;
 import org.netbeans.modules.bpel.model.api.Correlation;
 import org.netbeans.modules.bpel.model.api.CorrelationSet;
 import org.netbeans.modules.bpel.model.api.support.Initiate;
@@ -28,8 +29,8 @@ import org.netbeans.modules.bpel.model.api.references.BpelReference;
 import org.netbeans.modules.bpel.properties.props.PropertyUtils;
 import org.openide.nodes.Sheet;
 import static org.netbeans.modules.bpel.properties.PropertyType.*;
-import org.netbeans.modules.bpel.nodes.actions.ActionType;
-import org.netbeans.modules.soa.ui.SoaUiUtil;
+import org.netbeans.modules.bpel.editors.api.nodes.actions.ActionType;
+import org.netbeans.modules.soa.ui.SoaUtil;
 import org.openide.nodes.Children;
 import org.openide.util.Lookup;
 
@@ -97,7 +98,7 @@ public class CorrelationNode extends BpelNode<Correlation> {
                 : " initiate="+initiate.toString(); // NOI18N
         }
         
-        return SoaUiUtil.getGrayString(getName(), nodeName == null ? "" : nodeName);
+        return SoaUtil.getGrayString(getName(), nodeName == null ? "" : nodeName);
     }
     
     protected ActionType[] getActionsArray() {

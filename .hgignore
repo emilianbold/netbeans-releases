@@ -3,11 +3,17 @@
 /dist$
 /nbproject/private$
 /test/(coverage|lib|results|work)$
+derby\.log
 \.class$
 \.DS_Store$
 \.orig$
 \.rej$
+\.tmp\.$
+\.swp$
+^tags$
 /gensrc$
+\.ant-targets-build\.xml$
+^hs_err_pid[0-9]*\.log
 ^nbbuild/antsrc/org/netbeans/nbbuild/extlibs/external\.pyc$
 ^o.apache.tools.ant.module/external/lib$
 ^apisupport.project/src/org/netbeans/modules/apisupport/project/resources/sample-build-impl\.xml$
@@ -79,10 +85,7 @@
 ^installer/cdc/customcode/lib$
 ^installer/cnd/customcode/lib$
 ^installer/coreide/customcode/lib$
-^installer/infra/build/engine/\.ant-lib$
-^installer/infra/build/products/jdk/\.ant-lib$
-^installer/infra/build/products/nb-portalpack/\.ant-lib$
-^installer/infra/build/products/tomcat/\.ant-lib$
+^installer/infra/build/nbi_all$
 ^installer/j2ee/customcode/lib$
 ^installer/jbossbundle/customcode/lib$
 ^installer/jdkbundle/customcode/lib$
@@ -120,6 +123,7 @@
 ^jellytools/test/qa-functional/data/SampleProject/nbproject/build-impl\.xml$
 ^jellytools/test/qa-functional/data/SampleProject/nbproject/genfiles\.properties$
 ^jemmy/run$
+^lib.terminalemulator/demosrc/telnet/de$
 ^lexer/gen/build$
 ^mvd/lib$
 ^mvd/graphlib/classes$
@@ -186,6 +190,7 @@
 ^php.doc/libdoc/doc\.html$
 ^o.jruby.distro/unpatched_source$
 ^o.jruby/patched_source$
+^o.mozilla.rhino.patched/patched_source$
 ^schema2beans/anttask/s2banttask\.jar$
 ^schema2beans/dev/schema2beansdev\.jar$
 ^schema2beans/dev/manifest-subst\.mf$
@@ -230,6 +235,7 @@
 ^visualweb.webui.designtime/gen$
 ^visualweb.webui.designtime/\.generated$
 ^visualweb.webui/library/gen$
+^visualweb\.woodstock\.webui\.jsf/test/functional-compile\.mark$
 ^visualweb.xhtml/generated$
 ^web.core/src/org/netbeans/modules/web/taglib/model$
 ^web.jsf.navigation/\.externalToolBuilders$

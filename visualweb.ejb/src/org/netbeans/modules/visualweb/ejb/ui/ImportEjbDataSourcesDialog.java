@@ -86,10 +86,13 @@ public class ImportEjbDataSourcesDialog implements ActionListener {
         DialogDescriptor dialogDescriptor = new DialogDescriptor( importPanel, NbBundle.getMessage(ImportEjbDataSourcesDialog.class, "IMPORT_EJB_DATASOURCES"), 
                                                                   true, (ActionListener)this );
         
-        okButton = new JButton( NbBundle.getMessage(ImportEjbDataSourcesDialog.class, "OK") );
-        okButton.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/ejb/ui/Bundle").getString("OK"));
+        okButton = new JButton( NbBundle.getMessage(ImportEjbDataSourcesDialog.class, "OK_BUTTON_LABEL") );
+        
+        okButton.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/ejb/ui/Bundle").getString("OK_BUTTON_DESC"));
+        okButton.setMnemonic(NbBundle.getMessage(ImportEjbDataSourcesDialog.class, "OK_BUTTON_MNEMONIC").charAt(0));
         cancelButton = new JButton( NbBundle.getMessage(ImportEjbDataSourcesDialog.class, "CANCEL_BUTTON_LABEL") );
         cancelButton.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/visualweb/ejb/ui/Bundle").getString("CANCEL_BUTTON_DESC"));
+        cancelButton.setMnemonic(NbBundle.getMessage(ImportEjbDataSourcesDialog.class, "CANCEL_BUTTON_MNEMONIC").charAt(0));
         dialogDescriptor.setOptions(new Object[] { okButton, cancelButton });
         dialogDescriptor.setClosingOptions(new Object[] {cancelButton});
         

@@ -53,7 +53,6 @@ import javax.management.openmbean.CompositeType;
 import javax.management.openmbean.TabularData;
 import javax.management.openmbean.TabularDataSupport;
 import javax.management.openmbean.TabularType;
-import org.netbeans.modules.sun.manager.jbi.GenericConstants;
 import org.netbeans.modules.sun.manager.jbi.management.JBIMBeanTaskResultHandler;
 import org.netbeans.modules.sun.manager.jbi.nodes.JBIComponentNode;
 import org.openide.DialogDisplayer;
@@ -216,10 +215,9 @@ abstract class AbstractTabularPropertySupport
             TabularData oldTabularData,
             TabularData newTabularData,
             String[] keys) {
-        @SuppressWarnings("unchecked")
-        Collection<CompositeData> oldCDs = oldTabularData.values();
-        @SuppressWarnings("unchecked")
-        Collection<CompositeData> newCDs = newTabularData.values();
+        
+        Collection<CompositeData> oldCDs = (Collection<CompositeData>) oldTabularData.values();
+        Collection<CompositeData> newCDs = (Collection<CompositeData>) newTabularData.values();
 
         CompositeType rowType = oldTabularData.getTabularType().getRowType();
         @SuppressWarnings("unchecked")

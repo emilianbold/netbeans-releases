@@ -41,6 +41,7 @@ package org.netbeans.modules.ruby.railsprojects;
 
 import java.io.File;
 import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.modules.ruby.railsprojects.database.RailsDatabaseConfiguration;
 
 /**
  * Encapsulates data required for creating a new Rails project (empty 
@@ -67,13 +68,9 @@ public class RailsProjectCreateData {
      */
     private final boolean create;
     /**
-     * The database to use.
+     * The database configuration to use.
      */
-    private final String database;
-    /**
-     * Specifies whether the database should be accessed using JDBC.
-     */
-    private final boolean jdbc;
+    private final RailsDatabaseConfiguration database;
     /**
      * Specifies whether the project might be deployed as a .war file.
      */
@@ -83,6 +80,12 @@ public class RailsProjectCreateData {
      * The instance id of the project's target server.
      */
     private final String serverInstanceId;
+    
+    /**
+     * The version of Rails to be used for this project. If <code>null</code>,
+     * the newest available versions should be used.
+     */
+    private final String railsVersion;
     /**
      * Constructs a new RailsProjectCreateData instance.
      * @param dir the top-level directory for the project 
@@ -94,17 +97,22 @@ public class RailsProjectCreateData {
      * @param jdbc specifies whether JDBC should be used for accessing the database.
      * @param deploy specifies whether the Rake support targets for deploying 
      * the project as a .war file should be added.
+     * @param serverInstanceId the id of the server instance to be used for this
+     * project
+     * @param railsVersion the version of Rails to be used for this project. 
+     * If <code>null</code>, the latest installed version should be used.
      */
     public RailsProjectCreateData(RubyPlatform platform, File dir, String name, boolean create, 
-            String database, boolean jdbc, boolean deploy, String serverInstanceId) {
+            RailsDatabaseConfiguration database, boolean deploy, String serverInstanceId, 
+            String railsVersion) {
         this.platform = platform;
         this.dir = dir;
         this.name = name;
         this.create = create;
         this.database = database;
-        this.jdbc = jdbc;
         this.deploy = deploy;
         this.serverInstanceId = serverInstanceId;
+        this.railsVersion = railsVersion;
     }
 
     /**
@@ -117,7 +125,7 @@ public class RailsProjectCreateData {
     /**
      * @see #database
      */
-    public String getDatabase() {
+    public RailsDatabaseConfiguration getDatabase() {
         return database;
     }
 
@@ -133,13 +141,6 @@ public class RailsProjectCreateData {
      */
     public File getDir() {
         return dir;
-    }
-
-    /**
-     * @see #jdbc
-     */
-    public boolean isJdbc() {
-        return jdbc;
     }
 
     /**
@@ -163,6 +164,14 @@ public class RailsProjectCreateData {
         return platform;
     }
 
+    /**
+     * @see #railsVersion
+     */
+    public String getRailsVersion() {
+        return railsVersion;
+    }
+
+    
     
 }
 

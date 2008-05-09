@@ -18,29 +18,19 @@
  */
 package org.netbeans.modules.xslt.tmap.nodes.properties;
 
-import javax.xml.namespace.NamespaceContext;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.xml.namespace.QName;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
-import org.netbeans.modules.xml.schema.model.SchemaComponent;
-import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.schema.model.SchemaModelFactory;
-import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
-import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
-import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Model;
-import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.xml.xam.Reference;
+import org.netbeans.modules.xml.xam.locator.CatalogModelException;
+import org.netbeans.modules.xslt.tmap.model.api.Import;
 import org.netbeans.modules.xslt.tmap.model.api.TMapComponent;
-import org.netbeans.modules.xslt.tmap.model.api.VariableDeclarator;
+import org.netbeans.modules.xslt.tmap.model.api.TMapModel;
 import org.netbeans.modules.xslt.tmap.model.api.VariableReference;
-import org.openide.util.NbBundle;
 
 /**
  * The utility class containing auxiliary methods to work with WSDL
@@ -52,6 +42,8 @@ import org.openide.util.NbBundle;
  * @author nk160297
  */
 public final class ResolverUtility {
+    
+    private static final Logger LOGGER = Logger.getLogger(ResolverUtility.class.getName());
     
     /**
      * Calculate a String to display from a QName.
@@ -171,14 +163,14 @@ public final class ResolverUtility {
 //        return null;
 //    }
 //    
-//    public static String encodeLocation(String location){
-//        return location.replace(" ", "%20");
-//    }
-//    
-//    public static String decodeLocation(String location){
-//        return location.replace("%20", " ");
-//    }
-//    
+    public static String encodeLocation(String location){
+        return location.replace(" ", "%20"); // NOI18N
+    }
+    
+    public static String decodeLocation(String location){
+        return location.replace("%20", " "); // NOI18N
+    }
+
 //    /**
 //     * Returns the FileObject which points to the folder where the specified
 //     * BPEL Process is located.
@@ -202,35 +194,38 @@ public final class ResolverUtility {
 //        return null;
 //    }
 //    
-//    /**
-//     * Check if the specified model is imported to the current BPEL.
-//     */
-//    public static boolean isModelImported(Model model, Lookup lookup) {
-//        BpelModel bpelModel = lookup.lookup(BpelModel.class);
-//        return isModelImported(model, bpelModel);
-//    }
-//    
-//    /**
-//     * Check if the specified model is imported to the current BPEL.
-//     */
-//    public static boolean isModelImported(Model model, BpelModel bpelModel) {
-//        if (model == SchemaModelFactory.getDefault().getPrimitiveTypesModel()) {
-//            // the primitive types' model considered as imported implicitly.
-//            return true;
-//        }
-//        
-//        for (Import imp : bpelModel.getProcess().getImports()) {
-//            if (model == ImportHelper.getWsdlModel(imp, false)) {
-//                return true;
-//            }
-//            if (model == ImportHelper.getSchemaModel(imp, false)) {
-//                return true;
-//            }
-//        }
-//        
-//        return false;
-//    }
-//    
+    /**
+     * Check if the specified model is imported to the current transformmap.
+     */
+    public static boolean isModelImported(Model model, Lookup lookup) {
+        TMapModel tMapModel = lookup.lookup(TMapModel.class);
+        return isModelImported(model, tMapModel);
+    }
+    
+    /**
+     * Check if the specified model is imported to the current transformmap.
+     */
+    public static boolean isModelImported(Model model, TMapModel tMapModel) {
+        if (model == SchemaModelFactory.getDefault().getPrimitiveTypesModel()) {
+            // the primitive types' model considered as imported implicitly.
+            return true;
+        }
+        
+        for (Import imp : tMapModel.getTransformMap().getImports()) {
+            try {
+            if (model == imp.getImportModel()) {
+                return true;
+            }
+            } catch (CatalogModelException ex) {
+                LOGGER.log(Level.INFO, "exception on imported model resolving");
+                return false;
+            }
+        }
+        
+        return false;
+    }
+
+    
     /**
      * Tries to resolve the reference and take it's name.
      */

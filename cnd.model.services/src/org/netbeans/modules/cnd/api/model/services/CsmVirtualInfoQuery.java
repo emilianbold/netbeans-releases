@@ -180,6 +180,7 @@ public abstract class CsmVirtualInfoQuery {
                 if (it.hasNext()){
                     method = it.next();
                 }
+                res.add(method);
             }
             cls = method.getContainingClass();
             if (cls != null){

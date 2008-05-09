@@ -88,7 +88,7 @@ public class DbgpSessionProvider extends SessionProvider {
     {
         SessionId id = (SessionId)
             getContextProvider().lookupFirst( null , SessionId.class );
-        return findUnique( id.getSessionPrefix() );
+        return id.getId();//findUnique( id.getSessionPrefix() );
     }
 
     /* (non-Javadoc)
@@ -97,7 +97,7 @@ public class DbgpSessionProvider extends SessionProvider {
     @Override
     public String getTypeID()
     {
-        return Debugger.SESSION_ID;
+        return DebuggerImpl.SESSION_ID;
     }
     
     private ContextProvider getContextProvider() {

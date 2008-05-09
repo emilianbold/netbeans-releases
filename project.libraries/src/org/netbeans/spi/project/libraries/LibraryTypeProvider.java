@@ -105,8 +105,8 @@ public interface LibraryTypeProvider extends Lookup.Provider {
 
     /**
      * Returns customizer for given volume's type, or null if the volume is not customizable.
-     * The object of the LibraryImplementation type and optionally LibraryStorageArea type is
-     * passed to the customizer's setObject method.
+     * The <code>LibraryCustomizerContext</code> instance is passed
+     * to the customizer's setObject method.
      * The customized object describes the library created by this
      * provider, but the customizer cannot assume that the customized
      * object is of the same type as the object created by {@link #createLibrary}.

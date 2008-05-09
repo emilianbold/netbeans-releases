@@ -59,7 +59,8 @@ import org.openide.util.Parameters;
  * <p>
  * It is not possible to instantiate this class directly. Implementators have to
  * implement the {@link J2eeModuleImplementation} first and then use the
- * {@link J2eeModuleFactory} to create a J2eeModule instance.
+ * {@link org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleFactory}
+ * to create a J2eeModule instance.
  * 
  * @author  Pavel Buzek
  */
@@ -266,7 +267,7 @@ public class J2eeModule {
     }
     
     static {
-        J2eeModuleAccessor.DEFAULT = new J2eeModuleAccessor() {
+        J2eeModuleAccessor.setDefault(new J2eeModuleAccessor() {
             public J2eeModule createJ2eeModule(J2eeModuleImplementation impl) {
                 return new J2eeModule(impl);
             }
@@ -278,6 +279,6 @@ public class J2eeModule {
             public void setJ2eeModuleProvider(J2eeModule j2eeModule, J2eeModuleProvider j2eeModuleProvider) {
                 j2eeModule.setJ2eeModuleProvider(j2eeModuleProvider);
             }
-        };
+        });
     }
 }

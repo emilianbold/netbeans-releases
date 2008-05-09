@@ -62,6 +62,8 @@ made subject to such option by the copyright holder.
                 <file name="Settings.settings" url="PlainOptions.settings"/>
                 <file name="EditorKit.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.editor.plain.PlainKit"/>
+                    <attr name="instanceOf" stringvalue="javax.swing.text.EditorKit,org.netbeans.modules.editor.plain.PlainKit"/>
+                    <attr name="beaninfo" boolvalue="false"/>
                 </file>
             </folder>
         </folder>

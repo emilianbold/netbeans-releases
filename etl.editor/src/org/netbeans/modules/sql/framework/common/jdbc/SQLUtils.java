@@ -63,7 +63,7 @@ import net.java.hulp.i18n.Logger;
 import com.sun.sql.framework.utils.RuntimeAttribute;
 import com.sun.sql.framework.utils.StringUtil;
 import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.logger.LogUtil;
+
 
 /**
  * Utility class supplying lookup and conversion methods for SQL-related tasks.
@@ -75,7 +75,7 @@ import org.netbeans.modules.etl.logger.LogUtil;
  */
 public class SQLUtils {
 
-    private static transient final Logger mLogger = LogUtil.getLogger(SQLUtils.class.getName());
+    private static transient final Logger mLogger = Logger.getLogger(SQLUtils.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     /* Log4J cateogry */
     static final String LOG_CATEGORY = SQLUtils.class.getName();
@@ -95,7 +95,7 @@ public class SQLUtils {
     private static final List<String> SUPPORTED_INTERVAL_TYPES = new ArrayList<String>();
     private static final List<String> SUPPORTED_LITERAL_JDBC_TYPES = new ArrayList<String>();
     private static final List<String> SUPPORTED_CAST_JDBC_TYPES = new ArrayList<String>();
-    
+    private static String AXIONDB = "AXION";
 
     static {
         dbNameIdMap.put(DBConstants.ANSI92_STR, new Integer(DBConstants.ANSI92));
@@ -367,7 +367,7 @@ public class SQLUtils {
                 rawSql = processedSql;
             } while (flag);
         } while (iter.hasNext());
-        mLogger.infoNoloc(mLoc.t("PRSR091: >>> Generated PreparedStatement: \n {0}", processedSql));
+        mLogger.infoNoloc(mLoc.t("EDIT091: >>> Generated PreparedStatement: {0}", processedSql));
         return processedSql;
     }
 
@@ -417,7 +417,7 @@ public class SQLUtils {
             } while (noMore);
         } while (iter.hasNext());
 
-        mLogger.infoNoloc(mLoc.t("PRSR092: >>> Generated PreparedStatement: \n {0}", processedSql));
+        mLogger.infoNoloc(mLoc.t("EDIT092: >>> Generated PreparedStatement: \n {0}", processedSql));
         return processedSql;
     }
 
@@ -669,7 +669,9 @@ public class SQLUtils {
         if (normalizedName.startsWith(DBConstants.DB2_STR)) {
             normalizedName = DBConstants.DB2V7_STR;
         }
-
+        if (normalizedName.equals(AXIONDB)){
+            normalizedName = DBConstants.AXION_STR;
+        }
         Integer dbType = dbNameIdMap.get(normalizedName);
         if (dbType != null) {
             return dbType.intValue();
@@ -782,7 +784,7 @@ public class SQLUtils {
 
                     case Types.TIMESTAMP:
                         long ts = com.sun.sql.framework.jdbc.SQLUtils.convertFromIso8601(valueObj.toString());
-                        mLogger.infoNoloc(mLoc.t("PRSR093: **** timestamp ****  {0}", ts));
+                        mLogger.infoNoloc(mLoc.t("EDIT093: **** timestamp ****  {0}", ts));
                         try {
                             ps.setTimestamp(index, new java.sql.Timestamp(ts));
                         } catch (java.sql.SQLException e) {
@@ -803,7 +805,7 @@ public class SQLUtils {
             if (StringUtil.isNullString(details)) {
                 details = e.toString();
             }
-            mLogger.errorNoloc(mLoc.t("PRSR094: details{0}", LOG_CATEGORY), e);
+            mLogger.errorNoloc(mLoc.t("EDIT094: details{0}", LOG_CATEGORY), e);
             throw new BaseException(details, e);
         }
     }
@@ -846,7 +848,7 @@ public class SQLUtils {
 
                     case Types.TIMESTAMP:
                         long ts = com.sun.sql.framework.jdbc.SQLUtils.convertFromIso8601(valueObj.toString());
-                        mLogger.infoNoloc(mLoc.t("PRSR095: **** timestamp ****  {0}", ts));
+                        mLogger.infoNoloc(mLoc.t("EDIT093: **** timestamp ****  {0}", ts));
                         try {
                             values.put(name, new java.sql.Timestamp(ts));
                         } catch (Exception e) {
@@ -889,7 +891,7 @@ public class SQLUtils {
 
                 case Types.TIMESTAMP:
                     long ts = com.sun.sql.framework.jdbc.SQLUtils.convertFromIso8601(valueObj.toString());
-                    mLogger.infoNoloc(mLoc.t("PRSR096: **** timestamp ****  {0}", ts));
+                    mLogger.infoNoloc(mLoc.t("EDIT093: **** timestamp ****  {0}", ts));
                     try {
                         ps.setTimestamp(index, new java.sql.Timestamp(ts));
                     } catch (java.sql.SQLException e) {
@@ -908,7 +910,7 @@ public class SQLUtils {
             if (StringUtil.isNullString(details)) {
                 details = e.toString();
             }
-            mLogger.errorNoloc(mLoc.t("PRSR097: details{0}", LOG_CATEGORY), e);
+            mLogger.errorNoloc(mLoc.t("EDIT094: details{0}", LOG_CATEGORY), e);
             throw new BaseException(details, e);
         }
 

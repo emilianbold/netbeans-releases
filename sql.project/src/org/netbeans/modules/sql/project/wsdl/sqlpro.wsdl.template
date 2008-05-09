@@ -9,8 +9,10 @@
 	xmlns:xsd="http://www.w3.org/2001/XMLSchema" name="sqlse"
 	targetNamespace="http://com.sun.jbi/sqlse/sqlseengine">
 	<types>
-	<xsd:schema elementFormDefault="qualified" targetNamespace="http://com.sun.jbi/sqlse/sqlseengine">
-        </xsd:schema>
+		<xsd:schema elementFormDefault="qualified" 
+			targetNamespace="http://com.sun.jbi/sqlse/sqlseengine" 
+			xmlns="http://com.sun.jbi/sqlse/sqlseengine">
+		</xsd:schema>
 	</types>
 
 	<plink:partnerLinkType name="sqlsePartnerLinkType">

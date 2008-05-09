@@ -313,8 +313,8 @@ public class BeanTypeSerializer implements JavonSerializer {
         return "set" + field.getName().substring( 0, 1 ).toUpperCase() + field.getName().substring( 1 );
     }
     
-    private String getGetter( FieldData field ) {
-        return "get" + field.getName().substring( 0, 1 ).toUpperCase() + field.getName().substring( 1 );
+    private String getGetter( FieldData field ) {        
+        return (field.getType().getClassName().toLowerCase().equals("boolean") ? "get" : "is") + field.getName().substring( 0, 1 ).toUpperCase() + field.getName().substring( 1 ); //NOI18N
     }
     
     public Set<ClassData> getReferencedTypes( ClassData rootClassData, Set<ClassData> usedTypes ) {

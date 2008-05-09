@@ -1,5 +1,5 @@
 #API master signature file
-#Version 3.27.1
+#Version 3.29.0
 CLSS public static abstract org.apache.tools.ant.module.AntSettings$IntrospectedInfoSerializer
 cons public IntrospectedInfoSerializer()
 fld  public static org.apache.tools.ant.module.AntSettings$IntrospectedInfoSerializer org.apache.tools.ant.module.AntSettings$IntrospectedInfoSerializer.instance

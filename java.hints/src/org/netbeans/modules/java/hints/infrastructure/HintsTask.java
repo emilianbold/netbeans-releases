@@ -48,8 +48,8 @@ import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -88,19 +88,48 @@ public class HintsTask implements CancellableTask<CompilationInfo> {
     private AtomicBoolean cancel = new AtomicBoolean();
     private List<ErrorDescription> currentHints = new LinkedList<ErrorDescription>();
     
+    private Map<Kind, List<TreeRule>> presetHints;
+    
     public HintsTask() {}
+    
+    public HintsTask(List<TreeRule> hints) {
+        presetHints = new  EnumMap<Kind, List<TreeRule>>(Kind.class);
+        
+        for (TreeRule r : hints) {
+            for (Kind k : r.getTreeKinds()) {
+                List<TreeRule> rules = presetHints.get(k);
+                
+                if (rules == null) {
+                    presetHints.put(k, rules = new  LinkedList<TreeRule>());
+                }
+                
+                rules.add(r);
+            }
+        }
+    }
+    
+    public List<ErrorDescription> computeHints(CompilationInfo info) {
+        return computeHints(info, new TreePath(info.getCompilationUnit()));
+    }
+    
+    private List<ErrorDescription> computeHints(CompilationInfo info, TreePath startAt) {
+        Map<Kind, List<TreeRule>> hints = presetHints != null ? presetHints : RulesManager.getInstance().getHints(false);
+        
+        if (hints.isEmpty()) {
+            return Collections.<ErrorDescription>emptyList();
+        }
+        
+        List<ErrorDescription> errors = new  LinkedList<ErrorDescription>();
+        
+        new ScannerImpl(info, cancel, hints).scan(startAt, errors);
+        
+        return errors;
+    }
     
     public void run(CompilationInfo info) throws Exception {
         cancel.set(false);
         
         long startTime = System.currentTimeMillis();
-        
-        Map<Kind, List<TreeRule>> hints = RulesManager.getInstance().getHints(false);
-        
-        if (hints.isEmpty()) {
-            HintsController.setErrors(info.getFileObject(), HintsTask.class.getName(), Collections.<ErrorDescription>emptyList());
-            return ;
-        }
         
         TreePath changedMethod = info.getChangedTree();
         
@@ -121,7 +150,7 @@ public class HintsTask implements CancellableTask<CompilationInfo> {
                 }
             }
 
-            new ScannerImpl(info, cancel, hints).scan(changedMethod, errors);
+            errors = computeHints(info, changedMethod);
 
             if (cancel.get()) {
                 return;
@@ -131,9 +160,7 @@ public class HintsTask implements CancellableTask<CompilationInfo> {
 
             HintsController.setErrors(info.getFileObject(), HintsTask.class.getName(), errors);
         } else {
-            List<ErrorDescription> result = new ArrayList<ErrorDescription>();
-
-            new ScannerImpl(info, cancel, hints).scan(info.getCompilationUnit(), result);
+            List<ErrorDescription> result = computeHints(info);
 
             if (cancel.get()) {
                 return;

@@ -88,7 +88,7 @@ public class WsdlWrapperHandler extends DefaultHandler{
                     bindings.put(bindingName,bindingInfo);
                 }
             } else if (insideBinding && bindingInfo!=null && uri.startsWith(SOAP_BINDING_PREFIX)) {
-                bindingInfo.setBindingType(attributes.getValue("transport")); //NOI18N
+                bindingInfo.setBindingType(uri);
             }
         } else if("service".equals(localName)) { // NOI18N
             isService=true;

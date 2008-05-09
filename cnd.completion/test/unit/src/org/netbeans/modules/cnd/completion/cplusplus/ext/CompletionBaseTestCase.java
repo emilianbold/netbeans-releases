@@ -117,7 +117,7 @@ public abstract class CompletionBaseTestCase extends ProjectBasedTestCase {
             // copy golden
             File goldenCopyFile = new File(workDir, goldenFileName + ".golden");
             CndCoreTestUtils.copyToWorkDir(goldenDataFile, goldenCopyFile); // NOI18N
-            fail("OUTPUT Difference between " + output + " and " + goldenCopyFile); // NOI18N
+            fail("OUTPUT Difference between diff " + output + " " + goldenCopyFile); // NOI18N
         }
     }
     

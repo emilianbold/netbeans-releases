@@ -32,6 +32,7 @@ import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.refactoring.RefactoringUtil;
 import org.netbeans.modules.web.refactoring.TldRefactoring;
 import org.netbeans.modules.web.taglib.model.FunctionType;
 import org.netbeans.modules.web.taglib.model.ListenerType;
@@ -64,7 +65,14 @@ abstract class BaseTldRename extends TldRefactoring{
     
     public Problem prepare(RefactoringElementsBag refactoringElements) {
         
+        Problem problem = null;
         for(TaglibHandle taglibHandle : getTaglibs(webModule)){
+            if (!taglibHandle.isValid()) {
+                problem = RefactoringUtil.addToEnd(new Problem(false, 
+                        NbBundle.getMessage(BaseTldRename.class, "TXT_TLdInvalidProblem", taglibHandle.getTldFile())), 
+                        problem);
+                continue;
+            }
             Taglib taglib = taglibHandle.getTaglib();
             for (RenameItem item : getAffectedClasses()){
                 
@@ -95,7 +103,7 @@ abstract class BaseTldRename extends TldRefactoring{
                 }
             }
         }
-        return null;
+        return problem;
     }
 
     private static class TagClassRenameElement extends TldRefactoringElement{

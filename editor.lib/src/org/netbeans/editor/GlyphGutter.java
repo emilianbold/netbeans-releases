@@ -98,7 +98,7 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
     private EditorUI editorUI;
     
     /** Document to which this gutter is attached*/
-    private BaseDocument doc;
+    private BaseDocument document;
     
     /** Annotations manager responsible for annotations for this line */
     private Annotations annos;
@@ -200,8 +200,8 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
         super();
         this.editorUI = editorUI;
         init = false;
-        doc = editorUI.getDocument();
-        annos = doc.getAnnotations();
+        document = editorUI.getDocument();
+        annos = document.getAnnotations();
         
         // Annotations class is model for this view, so the listener on changes in
         // Annotations must be added here
@@ -343,8 +343,13 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
     protected int getLineCount() {
         int lineCnt;
         try {
-            if (doc != null) {
-                lineCnt = Utilities.getLineOffset(doc, doc.getLength()) + 1;
+            if (document != null) {
+                document.readLock();
+                try {
+                    lineCnt = Utilities.getLineOffset(document, document.getLength()) + 1;
+                } finally {
+                    document.readUnlock();
+                }
             } else { // deactivated
                 lineCnt = 1;
             }
@@ -584,23 +589,29 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
         
         int lineCnt;
         try {
-            lineCnt = Utilities.getLineOffset(doc, doc.getLength()) + 1;
+            lineCnt = Utilities.getLineOffset(document, document.getLength()) + 1;
         } catch (BadLocationException e) {
             lineCnt = 1;
         }
 
-        repaint();
-        checkSize();
+        // This method is called from the same thread as doc.insertString/remove() is done.
+        // Ensure the following runs in EDT.
+        Utilities.runInEventDispatchThread(new Runnable() {
+            public void run() {
+                repaint();
+                checkSize();
+            }
+        });
     }
 
     /** Check whether it is not necessary to resize the gutter */
     protected void checkSize() {
         int count = getLineCount();
-        if (count > highestLineNumber) {
+        if (count != highestLineNumber) {
             highestLineNumber = count;
         }
         Dimension dim = getPreferredSize();
-        if (getWidthDimension() > dim.width ||
+        if (getWidthDimension() != dim.width ||
             getHeightDimension() > dim.height) {
             resize();
         }
@@ -679,7 +690,7 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
                 JTextComponent component = editorUI.getComponent();
                 BaseTextUI textUI = (BaseTextUI)component.getUI();
                 int clickOffset = textUI.viewToModel(component, new Point(0, e.getY()));
-                line = Utilities.getLineOffset(doc, clickOffset);
+                line = Utilities.getLineOffset(document, clickOffset);
             }catch (BadLocationException ble){
                 ble.printStackTrace();
             }
@@ -716,12 +727,12 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
                             int line = getLineFromMouseEvent(e);
                             if (line == -1) return;
                             try {
-                                currentLine = Utilities.getLineOffset(doc, editorUI.getComponent().getCaret().getDot());
+                                currentLine = Utilities.getLineOffset(document, editorUI.getComponent().getCaret().getDot());
                             } catch (BadLocationException ex) {
                                 return;
                             }
                             if (line != currentLine) {
-                                int offset = Utilities.getRowStartFromLineOffset(doc, line);
+                                int offset = Utilities.getRowStartFromLineOffset(document, line);
                                 JumpList.checkAddEntry();
                                 editorUI.getComponent().getCaret().setDot(offset);
                             }
@@ -746,7 +757,7 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
                 if (annos.getActiveAnnotation(line) != null)
                     offset = annos.getActiveAnnotation(line).getOffset();
                 else
-                    offset = Utilities.getRowStartFromLineOffset(doc, line);
+                    offset = Utilities.getRowStartFromLineOffset(document, line);
                 if (editorUI.getComponent().getCaret().getDot() != offset)
                     JumpList.checkAddEntry();
                 editorUI.getComponent().getCaret().setDot(offset);
@@ -889,7 +900,7 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
                     foldHierarchy.removeFoldHierarchyListener(glyphGutterFoldHierarchyListener);
                     foldHierarchy = null;
                     // Release document reference
-                    doc = null;
+                    document = null;
                     editorUI.removePropertyChangeListener(this);
                     editorUI = null;
                     annos = null;

@@ -95,7 +95,6 @@ public class MarkOccurrencesSupport implements CaretListener {
         if (parserManager.getState () == State.PARSING) {
             return;
         }
-        removeHighlights ();
         ASTNode node = parserManager.getAST ();
         DatabaseContext root = DatabaseManager.getRoot (node);
         if (root == null) {
@@ -107,7 +106,8 @@ public class MarkOccurrencesSupport implements CaretListener {
         if (item == null)
             item = root.getDatabaseItem (offset - 1);
         if (item == null) return;
-        addHighlights (getUssages (item, node));
+        removeHighlights ();
+        addHighlights (getUsages (item, node));
     }
     
     private void addHighlights (final List<ASTItem> ussages) {
@@ -150,14 +150,16 @@ public class MarkOccurrencesSupport implements CaretListener {
         });
     }
     
-    static List<ASTItem> getUssages (DatabaseItem item, ASTNode root) {
+    static List<ASTItem> getUsages (DatabaseItem item, ASTNode root) {
         List<ASTItem> result = new ArrayList<ASTItem> ();
         DatabaseDefinition definition = null;
         if (item instanceof DatabaseDefinition)
             definition = (DatabaseDefinition) item;
         else
             definition = ((DatabaseUsage) item).getDefinition ();
-        result.add (root.findPath (definition.getOffset ()).getLeaf ());
+        if (definition.getSourceFileUrl() == null) 
+            // It's a local definition
+            result.add (root.findPath (definition.getOffset ()).getLeaf ());
         Iterator<DatabaseUsage> it = definition.getUsages ().iterator ();
         while (it.hasNext ()) {
             DatabaseUsage databaseUsage =  it.next();

@@ -50,7 +50,7 @@ made subject to such option by the copyright holder.
              executor="ide-nogui" timeout="600000">
         <testset dir="qa-functional/src">
             <patternset>
-                <include name="general/EditorKitsRegistryTest.class"/>
+                <include name="org/netbeans/test/editor/EditorKitsRegistryTest.class"/>
             </patternset>
         </testset>
     </testbag>
@@ -62,10 +62,10 @@ made subject to such option by the copyright holder.
                 <include name="keyboard_shortcuts/*Test.class"/>
                 <include name="general/*Test.class"/>
                 <include name="popup_menus/MainMenuTest.class"/>                
+                <include name="org/netbeans/test/editor/EditorKitsRegistryTest.class"/>
                 <include name="search_replace/SearchAndReplaceTestSuite.class"/>
                 <exclude name="search_replace/SearchAndReplaceTestSuite.class/testCloseButton"/>
-                <exclude name="search_replace/SearchAndReplaceTestSuite.class/testReplaceDialogComboBox"/>
-                <exclude name="search_replace/SearchAndReplaceTestSuite.class/testReplaceSelectionRepeated"/>                
+                <exclude name="search_replace/SearchAndReplaceTestSuite.class/testReplaceDialogComboBox"/>                
 		<!-- Removing, fails on 1.5.0_12 for some strange reason -->
                 <!-- <include name="org/netbeans/test/editor/suites/abbrevs/AbbreviationsAddRemovePerformer.class"/>  -->
             </patternset>
@@ -78,6 +78,7 @@ made subject to such option by the copyright holder.
             <patternset>                               
                 <include name="keyboard_shortcuts/*Test.class"/>
                 <include name="general/*Test.class"/>
+                <include name="org/netbeans/test/editor/EditorKitsRegistryTest.class"/>
                 <include name="popup_menus/MainMenuTest.class"/>                            
             </patternset>
         </testset>
@@ -94,7 +95,7 @@ made subject to such option by the copyright holder.
     </testbag>
     
     <!-- Indentation tests -->
-    <testbag testattribs="all,indent" name="indentation-programmatic">
+    <testbag testattribs="indent" name="indentation-programmatic">
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="org/netbeans/test/editor/indentation/programmatic/*Performer.class"/>

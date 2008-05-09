@@ -80,6 +80,8 @@ import org.openide.util.WeakListeners;
 
 public class BaseTextUI extends BasicTextUI implements PropertyChangeListener, DocumentListener {
 
+    /* package */ static final String PROP_DEFAULT_CARET_BLINK_RATE = "nbeditor-default-swing-caret-blink-rate"; //NOI18N
+    
     /** Extended UI */
     private EditorUI editorUI;
 
@@ -230,12 +232,17 @@ public class BaseTextUI extends BasicTextUI implements PropertyChangeListener, D
         BaseKit kit = (BaseKit)getEditorKit(component);
         ViewFactory vf = kit.getViewFactory();
         // Create and attach caret
+        Caret defaultCaret = component.getCaret();
         Caret caret = kit.createCaret();
         component.setCaretColor(Color.black); // will be changed by settings later
         component.setCaret(caret);
+        component.putClientProperty(PROP_DEFAULT_CARET_BLINK_RATE, defaultCaret.getBlinkRate());
         
         // assign blink rate
-        int br = prefs.getInt(SimpleValueNames.CARET_BLINK_RATE, EditorPreferencesDefaults.defaultCaretBlinkRate);
+        int br = prefs.getInt(SimpleValueNames.CARET_BLINK_RATE, -1);
+        if (br == -1) {
+            br = defaultCaret.getBlinkRate();
+        }
         caret.setBlinkRate(br);
 
         SwingUtilities.replaceUIInputMap(c, JComponent.WHEN_FOCUSED, null);

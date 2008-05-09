@@ -55,10 +55,10 @@ import java.sql.Connection;
 
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.model.DBMetaDataFactory;
 import org.netbeans.modules.sql.framework.common.utils.DBExplorerUtil;
 import org.netbeans.modules.sql.framework.model.DBConnectionDefinition;
+import org.netbeans.modules.sql.framework.model.TargetTable;
 import org.netbeans.modules.sql.framework.model.impl.AbstractDBTable;
 
 /**
@@ -68,7 +68,7 @@ import org.netbeans.modules.sql.framework.model.impl.AbstractDBTable;
  */
 public class SQLDBSynchronizationValidationVisitor {
 
-    private static transient final Logger mLogger = LogUtil.getLogger(SQLDBSynchronizationValidationVisitor.class.getName());
+    private static transient final Logger mLogger = Logger.getLogger(SQLDBSynchronizationValidationVisitor.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
     private class Table extends AbstractDBTable {
@@ -130,14 +130,14 @@ public class SQLDBSynchronizationValidationVisitor {
         }
     }
 
-    private void checkForUpdates(SQLDBColumn collabColumn, List newColumns, SQLDBTable table) {
+    private void checkForUpdates(SQLDBColumn collabColumn, List newColumns, SQLDBTable table, boolean ignorePrecision) {
         Iterator itr = newColumns.iterator();
         SQLDBColumn newColumn = null;
         boolean columnMatched = true;
 
         while (itr.hasNext()) {
             newColumn = (SQLDBColumn) itr.next();
-            columnMatched = (compareWith(collabColumn, newColumn) == 0);
+            columnMatched = (compareWith(collabColumn, newColumn, ignorePrecision) == 0);
             if (columnMatched) {
                 break;
             }
@@ -145,21 +145,21 @@ public class SQLDBSynchronizationValidationVisitor {
 
         if (!columnMatched) {
             // Column not present or is modified in Database
-            String nbBundle1 = mLoc.t("PRSR001: Column {0} is removed or updated for table {1} in Database", collabColumn.getName(), table.getName());
-            String desc = Localizer.parse(nbBundle1);
+            String nbBundle1 = mLoc.t("BUND298: Column {0} is removed or updated for table {1} in Database", collabColumn.getName(), table.getName());
+            String desc = nbBundle1.substring(15);
             ValidationInfo vInfo = new ValidationInfoImpl(table, desc, ValidationInfo.VALIDATION_ERROR);
             this.validationInfoList.add(vInfo);
         }
     }
 
-    private void checkForNewColumns(SQLDBColumn newColumn, List newColumns, SQLDBTable table) {
+    private void checkForNewColumns(SQLDBColumn newColumn, List newColumns, SQLDBTable table, boolean ignorePrecision) {
         Iterator itr = newColumns.iterator();
         SQLDBColumn collabColumn = null;
         boolean columnMatched = true;
 
         while (itr.hasNext()) {
             collabColumn = (SQLDBColumn) itr.next();
-            columnMatched = (compareWith(collabColumn, newColumn) == 0);
+            columnMatched = (compareWith(collabColumn, newColumn, ignorePrecision) == 0);
             if (columnMatched) {
                 break;
             }
@@ -167,14 +167,14 @@ public class SQLDBSynchronizationValidationVisitor {
 
         if (!columnMatched) {
             // new column found
-            String nbBundle2 = mLoc.t("PRSR001: Column {0} is removed or updated for table {1} in Database", collabColumn.getName(), table.getName());
-            String desc = Localizer.parse(nbBundle2);
+            String nbBundle2 = mLoc.t("BUND928: Found new column{0} in Database ->{1}" , collabColumn.getName(),table.getParent().getModelName());
+            String desc = nbBundle2.substring(15);
             ValidationInfo vInfo = new ValidationInfoImpl(table, desc, ValidationInfo.VALIDATION_ERROR);
             this.validationInfoList.add(vInfo);
         }
     }
 
-    private int compareWith(SQLDBColumn collabCol, SQLDBColumn newCol) {
+    private int compareWith(SQLDBColumn collabCol, SQLDBColumn newCol, boolean ignorePrecision) {
         // compare primary keys
         if (collabCol.isPrimaryKey() && !newCol.isPrimaryKey()) {
             return -1;
@@ -194,6 +194,7 @@ public class SQLDBSynchronizationValidationVisitor {
             return -1;
         }
 
+        if(!ignorePrecision) {
         // compare scale
         if (collabCol.getScale() != newCol.getScale()) {
             return -1;
@@ -202,6 +203,7 @@ public class SQLDBSynchronizationValidationVisitor {
         // compare getPrecision
         if (collabCol.getPrecision() != newCol.getPrecision()) {
             return -1;
+            }
         }
 
         // compare getOrdinalPosition
@@ -218,9 +220,9 @@ public class SQLDBSynchronizationValidationVisitor {
     }
 
     private void compareCollabTableWithDatabaseTable(SQLDBTable collabTable, DBMetaDataFactory meta) throws Exception {
-        if (meta.isTableOrViewExist(collabTable.getCatalog(), collabTable.getSchema(), collabTable.getName())) {
+        if (meta.isTableOrViewExist(AbstractDBTable.getResolvedCatalogName(collabTable), AbstractDBTable.getResolvedSchemaName(collabTable), AbstractDBTable.getResolvedTableName(collabTable))) {
             // Get the table from database
-            Table newTable = new Table(collabTable.getName(), collabTable.getCatalog(), collabTable.getSchema());
+            Table newTable = new Table(AbstractDBTable.getResolvedCatalogName(collabTable), AbstractDBTable.getResolvedSchemaName(collabTable), AbstractDBTable.getResolvedTableName(collabTable));
             meta.populateColumns(newTable);
 
             List collabColumns = collabTable.getColumnList();
@@ -228,19 +230,35 @@ public class SQLDBSynchronizationValidationVisitor {
 
             //Check for update and delete
             for (Iterator itr = collabColumns.iterator(); itr.hasNext();) {
-                checkForUpdates((SQLDBColumn) itr.next(), newColumns, collabTable);
+                SQLDBColumn oldCol = (SQLDBColumn) itr.next();
+                int sqlTypeCode = oldCol.getJdbcType();
+                boolean ignorePrecision = false;
+                if ((sqlTypeCode == java.sql.Types.DATE || sqlTypeCode == java.sql.Types.TIME || sqlTypeCode == java.sql.Types.TIMESTAMP || sqlTypeCode == java.sql.Types.NUMERIC) && meta.getDBType().equals(DBMetaDataFactory.AXION)) {
+                    ignorePrecision = true;
+                }
+                checkForUpdates(oldCol, newColumns, collabTable, ignorePrecision);
             }
 
             // check for new columns
             for (Iterator itr = newColumns.iterator(); itr.hasNext();) {
-                checkForNewColumns((SQLDBColumn) itr.next(), collabColumns, collabTable);
+                SQLDBColumn newCol = (SQLDBColumn) itr.next();
+                int sqlTypeCode = newCol.getJdbcType();
+                boolean ignorePrecision = false;
+                if ((sqlTypeCode == java.sql.Types.DATE || sqlTypeCode == java.sql.Types.TIME || sqlTypeCode == java.sql.Types.TIMESTAMP || sqlTypeCode == java.sql.Types.NUMERIC) && meta.getDBType().equals(DBMetaDataFactory.AXION)) {
+                    ignorePrecision = true;
+                }
+                checkForNewColumns(newCol, collabColumns, collabTable,ignorePrecision);
             }
 
         // TODO: XXXXX We also need to check PK, FK, Index modifications XXXXX
         } else {
-            String nbBundle3 = mLoc.t("PRSR001: Table {0} is removed or renamed in Database", collabTable.getName());
-            String desc = Localizer.parse(nbBundle3) + " " + meta.getDBName();
-            ValidationInfo vInfo = new ValidationInfoImpl(collabTable, desc, ValidationInfo.VALIDATION_ERROR);
+            boolean createIfNotExists = false;
+            if (collabTable instanceof TargetTable) {
+                createIfNotExists = ((TargetTable) collabTable).isCreateTargetTable();
+            }
+            String nbBundle3 = mLoc.t("BUND299: Table {0} is removed or renamed in Database", collabTable.getName());
+            String desc = nbBundle3.substring(15) + " " + meta.getDBName();
+            ValidationInfo vInfo = new ValidationInfoImpl(collabTable, desc, createIfNotExists ? ValidationInfo.VALIDATION_WARNING : ValidationInfo.VALIDATION_ERROR);
             validationInfoList.add(vInfo);
             return;
         }

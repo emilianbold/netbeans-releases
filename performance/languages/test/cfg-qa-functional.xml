@@ -61,10 +61,24 @@ made subject to such option by the copyright holder.
     <testbag testattribs="all or ui_responsiveness or actions" prio="2"
              executor="ide_performance" name="UI responsiveness - Actions" >
         <testset dir="qa-functional/src">
-            <patternset>
-                
-                <include name="gui/ScriptingMeasureActions.class"/>
-                
+            <patternset>                
+                <include name="gui/ScriptingMeasureActions.class"/>                
+            </patternset>
+        </testset>
+    </testbag>
+    <testbag testattribs="all or ui_responsiveness or dialogs" prio="3"
+             executor="ide_performance" name="UI responsiveness - Dialogs" >
+        <testset dir="qa-functional/src">
+            <patternset>                
+                <include name="gui/ScriptingMeasureDialogs.class"/>                
+            </patternset>
+        </testset>
+    </testbag>
+    <testbag testattribs="all or ui_responsiveness or menus" prio="4"
+             executor="ide_performance" name="UI responsiveness - Menus" >
+        <testset dir="qa-functional/src">
+            <patternset>                
+                <include name="gui/ScriptingMeasureMenus.class"/>                
             </patternset>
         </testset>
     </testbag>
@@ -73,10 +87,24 @@ made subject to such option by the copyright holder.
     <testbag testattribs="(all or ui_responsiveness or actions) and NOT once" prio="5"
              executor="ide_performance" name="UI responsiveness - Actions" >
         <testset dir="qa-functional/src">
-            <patternset>
-                
-                <include name="gui/ScriptingMeasureActions.class"/>
-                
+            <patternset>                
+                <include name="gui/ScriptingMeasureActions.class"/>                
+            </patternset>
+        </testset>
+    </testbag>
+    <testbag testattribs="(all or ui_responsiveness or dialogs) and NOT once" prio="6"
+             executor="ide_performance" name="UI responsiveness - Dialogs" >
+        <testset dir="qa-functional/src">
+            <patternset>                
+                <include name="gui/ScriptingMeasureDialogs.class"/>                
+            </patternset>
+        </testset>
+    </testbag>
+    <testbag testattribs="(all or ui_responsiveness or menus) and NOT once" prio="7"
+             executor="ide_performance" name="UI responsiveness - Menus" >
+        <testset dir="qa-functional/src">
+            <patternset>                
+                <include name="gui/ScriptingMeasureMenus.class"/>                
             </patternset>
         </testset>
     </testbag>
@@ -85,13 +113,28 @@ made subject to such option by the copyright holder.
     <testbag testattribs="(all or ui_responsiveness or actions) and NOT once" prio="8"
              executor="ide_performance" name="UI responsiveness - Actions" >
         <testset dir="qa-functional/src">
-            <patternset>
-                
-                <include name="gui/ScriptingMeasureActions.class"/>
-                
+            <patternset>                
+                <include name="gui/ScriptingMeasureActions.class"/>                
             </patternset>
         </testset>
     </testbag>
+    <testbag testattribs="(all or ui_responsiveness or dialogs) and NOT once" prio="9"
+             executor="ide_performance" name="UI responsiveness - Dialogs" >
+        <testset dir="qa-functional/src">
+            <patternset>                
+                <include name="gui/ScriptingMeasureDialogs.class"/>                
+            </patternset>
+        </testset>
+    </testbag>
+    <testbag testattribs="(all or ui_responsiveness or menus) and NOT once" prio="10"
+             executor="ide_performance" name="UI responsiveness - Menus" >
+        <testset dir="qa-functional/src">
+            <patternset>                
+                <include name="gui/ScriptingMeasureMenus.class"/>                
+            </patternset>
+        </testset>
+    </testbag>
+
  
     <!-- Scan Classpath test bag -->    
     <testbag testattribs="all or classpath_scan" prio="100"

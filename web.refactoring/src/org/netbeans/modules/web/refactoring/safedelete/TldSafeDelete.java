@@ -58,8 +58,16 @@ public class TldSafeDelete extends TldRefactoring{
     
     
     public Problem prepare(RefactoringElementsBag refactoringElements) {
+
+        Problem problem = null;
         for (String clazz : classes){
             for (TaglibHandle taglibHandle : getTaglibs(webModule)) {
+            if (!taglibHandle.isValid()) {
+                problem = RefactoringUtil.addToEnd(new Problem(false, 
+                        NbBundle.getMessage(TldSafeDelete.class, "TXT_TldInvalidProblem", taglibHandle.getTldFile())), 
+                        problem);
+                continue;
+            }
                 Taglib taglib = taglibHandle.getTaglib();
                 for (TagType tagType : taglib.getTag()) {
                     if (clazz.equals(tagType.getTagClass())) {
@@ -68,7 +76,7 @@ public class TldSafeDelete extends TldRefactoring{
                 }
             }
         }
-        return null;
+        return problem;
     }
     
     private static class TagClassSafeDeleteElement extends TldRefactoringElement {

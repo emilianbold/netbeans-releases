@@ -193,6 +193,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         } else {
             renderingHints = null;
         }
+        setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
     }
     
     // public contract ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -423,7 +424,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
                     String message = (String) commitMessages.get(al.getRevision());
                     File file = getCurrentFile();
                     Project project = Utils.getProject(file);                
-                    Context context = Utils.getProjectsContext(new Project[] { project });
+                    Context context = Utils.getProjectContext(project, file);
                     SearchHistoryAction.openSearch(
                             context, 
                             ProjectUtils.getInformation(project).getDisplayName(),
@@ -646,15 +647,6 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         dim.width = width;
         dim.height *=2;  // XXX
         return dim;
-    }
-
-    /**
-     * Gets the maximum size of this component.
-     *
-     * @return the maximum size of this component
-     */
-    public Dimension getMaximumSize() {
-        return getPreferredSize();
     }
 
     /**

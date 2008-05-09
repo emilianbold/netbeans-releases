@@ -105,59 +105,66 @@ public abstract class AbstractTestCaseExecutionAction extends NodeAction
         
         /*tc.getTestcaseNode().showDiffTopComponentVisible();*/        
         JbiProject project = tc.getTestcaseNode().getProject();
-        
-        // Make sure the App Server has been selected for the project.
-        if (!JbiManager.isSelectedServer(project)) {
-            return;
-        }
-        
-        // Make sure the App Server is started (blocking until server is ready)
-        JbiManager.startServer(project, true);
-        
-        // Make sure the SA is deployed and started. It is more effiecient 
-        // this way than calling the deploy Ant task blindly in the Ant script.
-        {
-            AntProjectHelper antProjectHelper = project.getAntProjectHelper();
-            String serverInstance = antProjectHelper.getStandardPropertyEvaluator().
-                        getProperty(JbiProjectProperties.J2EE_SERVER_INSTANCE);
-            RuntimeManagementServiceWrapper adminService = null;
-            try {
-                 adminService = AdministrationServiceHelper.getRuntimeManagementServiceWrapper(serverInstance);
-            } catch (Exception e) {
-                NotifyDescriptor d = new NotifyDescriptor.Message(
-                        e.getMessage(), NotifyDescriptor.ERROR_MESSAGE);
-                DialogDisplayer.getDefault().notify(d);
+
+        JbiProjectProperties properties = project.getProjectProperties();
+        boolean osgi = ((Boolean) properties.get(JbiProjectProperties.OSGI_SUPPORT)).booleanValue();
+        if (osgi) {
+            // 04/03/08, Skip GF server check..
+            // System.out.println("Got OSGI: "+osgi);
+        } else {
+
+            // Make sure the App Server has been selected for the project.
+            if (!JbiManager.isSelectedServer(project)) {
                 return;
             }
 
-            try {
-                JbiProjectProperties properties = project.getProjectProperties();
-                String saID = (String) properties.get(JbiProjectProperties.SERVICE_ASSEMBLY_ID);
-                ServiceAssemblyInfo saStatus = adminService.getServiceAssembly(saID, "server");
-                if (saStatus == null) { // not deployed
-                    // Add the deploy target to the target list. 
-                    // (Alternatively, we could call adminService.deployServiceAssembly
-                    // directly, but then we need to worry about project build.)
-                    List<String> targetList = new ArrayList<String>();
-                    targetList.add("run"); // NOI18N
-                    targetList.addAll(Arrays.asList(targetNames));
-                    targetNames = targetList.toArray(new String[]{});
-                } else if (!saStatus.getState().equals(ServiceAssemblyInfo.STARTED_STATE)) {
-                    // simply start the service assembly
-                    String result = adminService.startServiceAssembly(saID, "server");
-                    boolean success = JBIMBeanTaskResultHandler.showRemoteInvokationResult(
-                            "Start", saID, result); // NOI18N
-                    if (!success) {
-                        return;
+            // Make sure the App Server is started (blocking until server is ready)
+            JbiManager.startServer(project, true);
+
+            // Make sure the SA is deployed and started. It is more effiecient
+            // this way than calling the deploy Ant task blindly in the Ant script.
+            {
+                AntProjectHelper antProjectHelper = project.getAntProjectHelper();
+                String serverInstance = antProjectHelper.getStandardPropertyEvaluator().
+                            getProperty(JbiProjectProperties.J2EE_SERVER_INSTANCE);
+                RuntimeManagementServiceWrapper adminService = null;
+                try {
+                     adminService = AdministrationServiceHelper.getRuntimeManagementServiceWrapper(serverInstance);
+                } catch (Exception e) {
+                    NotifyDescriptor d = new NotifyDescriptor.Message(
+                            e.getMessage(), NotifyDescriptor.ERROR_MESSAGE);
+                    DialogDisplayer.getDefault().notify(d);
+                    return;
+                }
+
+                try {
+                    // JbiProjectProperties properties = project.getProjectProperties();
+                    String saID = (String) properties.get(JbiProjectProperties.SERVICE_ASSEMBLY_ID);
+                    ServiceAssemblyInfo saStatus = adminService.getServiceAssembly(saID, "server");
+                    if (saStatus == null) { // not deployed
+                        // Add the deploy target to the target list.
+                        // (Alternatively, we could call adminService.deployServiceAssembly
+                        // directly, but then we need to worry about project build.)
+                        List<String> targetList = new ArrayList<String>();
+                        targetList.add("run"); // NOI18N
+                        targetList.addAll(Arrays.asList(targetNames));
+                        targetNames = targetList.toArray(new String[]{});
+                    } else if (!saStatus.getState().equals(ServiceAssemblyInfo.STARTED_STATE)) {
+                        // simply start the service assembly
+                        String result = adminService.startServiceAssembly(saID, "server");
+                        boolean success = JBIMBeanTaskResultHandler.showRemoteInvokationResult(
+                                "Start", saID, result); // NOI18N
+                        if (!success) {
+                            return;
+                        }
                     }
-                } 
-            } catch (ManagementRemoteException e) {
-                NotifyDescriptor d = new NotifyDescriptor.Message(e.getMessage(),
-                        NotifyDescriptor.ERROR_MESSAGE);
-                DialogDisplayer.getDefault().notify(d);
+                } catch (ManagementRemoteException e) {
+                    NotifyDescriptor d = new NotifyDescriptor.Message(e.getMessage(),
+                            NotifyDescriptor.ERROR_MESSAGE);
+                    DialogDisplayer.getDefault().notify(d);
+                }
             }
         }
-        
         
         FileObject projectDir = project.getProjectDirectory();
         FileObject buildXMLFile = projectDir.getFileObject(project.getBuildXmlName());

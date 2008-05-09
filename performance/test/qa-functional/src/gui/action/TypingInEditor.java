@@ -74,12 +74,18 @@ public class TypingInEditor extends org.netbeans.performance.test.utilities.Perf
     /** Creates a new instance of TypingInEditor */
     public TypingInEditor(String testName) {
         super(testName);
+//        WAIT_AFTER_PREPARE = 1000;
+        WAIT_AFTER_OPEN = 100;
+
         HEURISTIC_FACTOR = -1; // use default WaitAfterOpen for all iterations
     }
     
     /** Creates a new instance of TypingInEditor */
     public TypingInEditor(String testName, String performanceDataName) {
         super(testName, performanceDataName);
+//        WAIT_AFTER_PREPARE = 1000;
+        WAIT_AFTER_OPEN = 100;
+
         HEURISTIC_FACTOR = -1; // use default WaitAfterOpen for all iterations
     }
     
@@ -127,7 +133,7 @@ public class TypingInEditor extends org.netbeans.performance.test.utilities.Perf
         editorOperator = EditorWindowOperator.getEditor(fileName);
         
         //wait painting pf folds in the editor
-        waitNoEvent(2000);
+//        waitNoEvent(2000);
         
         // go to the right place
         editorOperator.setCaretPosition(caretPositionX,caretPositionY);
@@ -140,6 +146,7 @@ public class TypingInEditor extends org.netbeans.performance.test.utilities.Perf
     
     public ComponentOperator open(){
         //new Action(null, null, new Shortcut(KeyEvent.VK_A)).perform(editorOperator);
+        repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
         editorOperator.typeKey('a');
         return null;
     }
@@ -157,7 +164,7 @@ public class TypingInEditor extends org.netbeans.performance.test.utilities.Perf
 
     private void setEditorForMeasuringOn(){
         // measure only paint events from QuietEditorPane
-        repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
+//        repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
         
         // set large font size for Editor
 /*        BaseOptions options = BaseOptions.getOptions(kitClass);

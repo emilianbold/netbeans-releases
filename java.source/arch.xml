@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?><!-- -*- sgml-indent-step: 1 -*- -->
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
@@ -92,7 +92,7 @@ made subject to such option by the copyright holder.
 -->
  <answer id="arch-quality">
   <p>
-  <api type="export" category="devel" group="java" name="JavaSourceAPI" url="@TOP@index.html"/>
+  <api type="export" category="official" group="java" name="JavaSourceAPI" url="@TOP@index.html"/>
   </p>
  </answer>
 
@@ -303,13 +303,13 @@ made subject to such option by the copyright holder.
  <answer id="dep-nb">
   <defaultanswer generate='none' />
 <ul>
-<li><api type='import' group='java' category='private' name='org.netbeans.api.java' url='@org-netbeans-api-java@/overview-summary.html' >
+<li><api type='import' group='java' category='official' name='org.netbeans.api.java' url='@org-netbeans-api-java@/overview-summary.html' >
             The module is needed for compilation. 
         
             The module is used during runtime. 
             </api>
 </li>            
-<li><api type='import' group='java' category='private' name='org.netbeans.api.progress' url='@org-netbeans-api-progress@/overview-summary.html' >
+<li><api type='import' group='java' category='official' name='org.netbeans.api.progress' url='@org-netbeans-api-progress@/overview-summary.html' >
             The module is needed for compilation. 
         
             The module is used during runtime. 
@@ -356,7 +356,7 @@ made subject to such option by the copyright holder.
                 is required.
             </api>
 </li>            
-<li><api type='import' group='java' category='private' name='org.netbeans.modules.java.platform' url='@org-netbeans-modules-java-platform@/overview-summary.html' >
+<li><api type='import' group='java' category='official' name='org.netbeans.modules.java.platform' url='@org-netbeans-modules-java-platform@/overview-summary.html' >
             The module is needed for compilation. 
         
             The module is used during runtime. 
@@ -376,7 +376,7 @@ made subject to such option by the copyright holder.
                 is required.
             </api>
 </li>            
-<li><api type='import' group='java' category='private' name='org.netbeans.modules.lexer' url='@org-netbeans-modules-lexer@/overview-summary.html' >
+<li><api type='import' group='java' category='official' name='org.netbeans.modules.lexer' url='@org-netbeans-modules-lexer@/overview-summary.html' >
             The module is needed for compilation. 
         
             The module is used during runtime. 
@@ -386,7 +386,7 @@ made subject to such option by the copyright holder.
                 is required.
             </api>
 </li>            
-<li><api type='import' group='java' category='private' name='org.netbeans.modules.projectapi' url='@org-netbeans-modules-projectapi@/overview-summary.html' >
+<li><api type='import' group='java' category='official' name='org.netbeans.modules.projectapi' url='@org-netbeans-modules-projectapi@/overview-summary.html' >
             The module is needed for compilation. 
         
             The module is used during runtime. 
@@ -396,7 +396,7 @@ made subject to such option by the copyright holder.
                 is required.
             </api>
 </li>            
-<li><api type='import' group='java' category='private' name='org.netbeans.modules.queries' url='@org-netbeans-modules-queries@/overview-summary.html' >
+<li><api type='import' group='java' category='official' name='org.netbeans.modules.queries' url='@org-netbeans-modules-queries@/overview-summary.html' >
             The module is needed for compilation. 
         
             The module is used during runtime. 
@@ -412,7 +412,7 @@ made subject to such option by the copyright holder.
             The module is used during runtime. 
             </api>
 </li>            
-<li><api type='import' group='java' category='private' name='org.netbeans.spi.navigator' url='@org-netbeans-spi-navigator@/overview-summary.html' >
+<li><api type='import' group='java' category='official' name='org.netbeans.spi.navigator' url='@org-netbeans-spi-navigator@/overview-summary.html' >
             The module is needed for compilation. 
         
             The module is used during runtime. 

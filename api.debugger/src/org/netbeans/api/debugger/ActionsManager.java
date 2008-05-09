@@ -418,9 +418,7 @@ public final class ActionsManager {
     
     private void initActionImpls () {
         actionProviders = new HashMap ();
-        Iterator i = lookup.lookup (null, ActionsProvider.class).iterator ();
-        while (i.hasNext ()) {
-            ActionsProvider ap = (ActionsProvider) i.next ();
+        for (ActionsProvider ap : lookup.lookup(null, ActionsProvider.class)) {
             Iterator ii = ap.getActions ().iterator ();
             while (ii.hasNext ())
                 registerActionsProvider (ii.next (), ap);

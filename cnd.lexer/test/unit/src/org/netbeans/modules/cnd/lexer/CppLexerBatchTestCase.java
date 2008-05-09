@@ -359,6 +359,34 @@ public class CppLexerBatchTestCase extends TestCase {
         
     }
     
+    public void testLineContinuationAfterSlash() {
+        String text = "\n" + 
+                      "    /\\\n\n" +
+                      "#define /\\\n    \n\n";
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, CppTokenId.languageCpp());
+        TokenSequence<?> ts = hi.tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.NEW_LINE, "\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, "    ");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.SLASH, "/");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.ESCAPED_LINE, "\\\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.NEW_LINE, "\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_DIRECTIVE, "#define /\\\n    \n");
+        
+        TokenSequence<?> ep = ts.embedded();
+        LexerTestUtilities.assertNextTokenEquals(ep, CppTokenId.PREPROCESSOR_START, "#");
+        LexerTestUtilities.assertNextTokenEquals(ep, CppTokenId.PREPROCESSOR_DEFINE, "define");
+        LexerTestUtilities.assertNextTokenEquals(ep, CppTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ep, CppTokenId.SLASH, "/");
+        LexerTestUtilities.assertNextTokenEquals(ep, CppTokenId.ESCAPED_LINE, "\\\n");
+        LexerTestUtilities.assertNextTokenEquals(ep, CppTokenId.WHITESPACE, "    ");
+        LexerTestUtilities.assertNextTokenEquals(ep, CppTokenId.NEW_LINE, "\n");
+
+        assertFalse("No more tokens", ep.moveNext());
+        
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.NEW_LINE, "\n");
+        assertFalse("No more tokens", ts.moveNext());
+    }
+    
     private String getAllKeywords() {
         return "asm auto bool break case catch char class const const_cast continue " +
             "default delete do double dynamic_cast else enum finally float for friend goto if " +
@@ -453,7 +481,7 @@ public class CppLexerBatchTestCase extends TestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.SHORT, "short");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.SIZNED, "signed");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.SIGNED, "signed");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.SIZEOF, "sizeof");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
@@ -594,7 +622,7 @@ public class CppLexerBatchTestCase extends TestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.SHORT, "short");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.SIZNED, "signed");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.SIGNED, "signed");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.SIZEOF, "sizeof");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
@@ -780,5 +808,29 @@ public class CppLexerBatchTestCase extends TestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.ARROWMBR, "->*");
 
         assertFalse("No more tokens", ts.moveNext());
+    }
+    
+    public void testComment2() {
+        // IZ#83566: "*/" string is highlighted as error
+        String text = "const/*    */int*/*       */i = 0; */";
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, CppTokenId.languageCpp());
+        TokenSequence<?> ts = hi.tokenSequence();
+        
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.CONST, "const");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.BLOCK_COMMENT, "/*    */");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.INT, "int");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.STAR, "*");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.BLOCK_COMMENT, "/*       */");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.IDENTIFIER, "i");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.EQ, "=");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.INT_LITERAL, "0");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.SEMICOLON, ";");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.INVALID_COMMENT_END, "*/");
+
+        assertFalse("No more tokens", ts.moveNext());
+        
     }
 }

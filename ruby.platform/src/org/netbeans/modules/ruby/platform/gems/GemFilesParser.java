@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -40,6 +40,7 @@ package org.netbeans.modules.ruby.platform.gems;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -72,9 +73,9 @@ class GemFilesParser {
     private final File[] specFiles;
     
     /**
-     * Key => gem name, value => (key => gem version, value => gem file).
+     * Key => gem name, value => List of GemInfos representing installed versions.
      */
-    private Map<String, Map<String, File>> resultMap;
+    private Map<String, List<GemInfo>> resultMap;
 
     /**
      * Constructs a new GemFilesParser for the given <code>files</code>.
@@ -85,12 +86,12 @@ class GemFilesParser {
     }
 
     /**
-     * Finds the files representing gems and chooses the newest version of each. 
-     * Use {@link getFiles()} and {@link getFiles()} to retrieve the results.
+     * Finds the files representing installed gems.
+     * Use {@link getFiles()} and {@link getGemInfos()} to retrieve the results.
      */
-    public void chooseGems() {
+    public void parseGems() {
 
-        resultMap = new HashMap<String, Map<String, File>>();
+        resultMap = new HashMap<String, List<GemInfo>>();
 
         for (File spec : specFiles) {
             // See if it looks like a gem
@@ -101,31 +102,33 @@ class GemFilesParser {
 
             fileName = fileName.substring(0, fileName.length() - DOT_GEM_SPEC.length());
 
-            GemInfo gemInfo = parseInfo(fileName);
-            if (gemInfo == null) {
+            String[] nameAndVersion = parseNameAndVersion(fileName);
+            if (nameAndVersion == null) {
                 LOGGER.fine("Could not resolve the name and version for " + fileName);
                 continue;
             }
 
-            Map<String, File> nameMap = resultMap.get(gemInfo.getName());
-
-            if (nameMap == null) {
-                nameMap = new HashMap<String, File>();
-                resultMap.put(gemInfo.getName(), nameMap);
-                nameMap.put(gemInfo.getVersion(), spec);
-            } else {
-                // Decide whether this version is more recent than the one already there
-                String oldVersion = nameMap.keySet().iterator().next();
-
-                if (GemManager.compareGemVersions(gemInfo.getVersion(), oldVersion) > 0) {
-                    // New version is higher
-                    nameMap.clear();
-                    nameMap.put(gemInfo.getVersion(), spec);
-                }
-            }
+            String name = nameAndVersion[0];
+            String version = nameAndVersion[1];
+            
+            List<GemInfo> versions = resultMap.get(name);
+            
+            if (versions == null) {
+                versions = new ArrayList<GemInfo>();
+                resultMap.put(name, versions);
+            } 
+            versions.add(new GemInfo(name, version, spec));
         }
+        sortVersions();
     }
 
+    private void sortVersions() { 
+        for (String key : resultMap.keySet()) {
+            List<GemInfo> versions = resultMap.get(key);
+            Collections.sort(versions);
+        }
+    }
+    
     private void checkInitialiazed() {
         if (resultMap == null) {
             throw new IllegalStateException("Not initialized, you must run the chooseGems method first");
@@ -133,7 +136,13 @@ class GemFilesParser {
     }
 
     // todo: javadoc + rename
-    public Map<String, Map<String, File>> getGemMap() {
+    public static Map<String, List<GemInfo>> getGemInfos(final File[] specFiles) {
+        GemFilesParser gemFilesParser = new GemFilesParser(specFiles);
+        gemFilesParser.parseGems();
+        return gemFilesParser.getGemInfos();
+    }
+    
+    Map<String, List<GemInfo>> getGemInfos() {
         checkInitialiazed();
         return resultMap;
     }
@@ -141,47 +150,35 @@ class GemFilesParser {
     /**
      * @return the found gem files.
      */
-    public File[] getFiles() {
+    public File[] getFiles(boolean onlyLatestVersions) {
 
         checkInitialiazed();
 
         List<File> resultList = new ArrayList<File>();
 
-        for (Map<String, File> map : resultMap.values()) {
-            for (File f : map.values()) {
-                resultList.add(f);
+        for (String key : resultMap.keySet()) {
+            List<GemInfo> versions = resultMap.get(key);
+            if (onlyLatestVersions) {
+                resultList.add(versions.get(0).getSpecFile());
+            } else {
+                for (GemInfo each : versions) {
+                    resultList.add(each.getSpecFile());
+                }
             }
+                    
         }
         return resultList.toArray(new File[resultList.size()]);
 
     }
 
     // not private because used in tests
-    static GemInfo parseInfo(String fileName) {
+    static String[] parseNameAndVersion(String fileName) {
         Matcher m = PATTERN.matcher(fileName);
         if (!m.find() || m.groupCount() < 2) {
             //XXX: can there be gems without a version number?
             return null;
         }
-        return new GemInfo(m.group(1), m.group(2));
+        return new String[]{m.group(1), m.group(2)};
     }
 
-    static final class GemInfo {
-
-        private final String name;
-        private final String version;
-
-        public GemInfo(String name, String version) {
-            this.name = name;
-            this.version = version;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public String getVersion() {
-            return version;
-        }
-    }
 }

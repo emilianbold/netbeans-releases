@@ -264,7 +264,7 @@ public class DrawLayerFactory {
                 active = mark.activateLayer;
             } else {
                 JTextComponent c = ctx.getEditorUI().getComponent();
-                active = (c != null) && c.getCaret().isSelectionVisible()
+                active = (c != null) && Utilities.isSelectionShowing(c)
                          && ctx.getFragmentOffset() >= c.getSelectionStart()
                          && ctx.getFragmentOffset() < c.getSelectionEnd();
             }
@@ -735,7 +735,11 @@ public class DrawLayerFactory {
         public boolean isActive(DrawContext ctx, MarkFactory.DrawMark mark) {
             int nextActivityOffset;
             coloring = null;
-            
+//            LOG.setLevel(Level.FINE);
+//            if (LOG.isLoggable(Level.FINE)) {
+//                LOG.fine("  ctx-offset=" + ctx.getFragmentOffset() + ", mark=" + mark + '\n');
+//            }
+
             if (mark == null) {
                 View view = ctx instanceof DrawEngine.DrawInfo ? ((DrawEngine.DrawInfo)ctx).view : null;
                 if (view instanceof DrawEngineLineView) {
@@ -775,6 +779,10 @@ public class DrawLayerFactory {
                 return false;
             }
 
+//            if (LOG.isLoggable(Level.FINE)) {
+//                LOG.log(Level.FINE, "anno: o=" + anno.getOffset() + ", l=" + anno.getLength() + ", wl=" + anno.isWholeLine()
+//                    + ", m=" + mark + ", ctx-offset=" + ctx.getFragmentOffset() + '\n');
+//            }
             if (anno.isWholeLine()) {
                 try {
                     nextActivityOffset = Utilities.getRowEnd(doc, ctx.getFragmentOffset());
@@ -783,7 +791,20 @@ public class DrawLayerFactory {
                     return false;
                 }
             } else {
+                if (ctx.getFragmentOffset() < anno.getOffset()) { // Queried below annotation start
+                    setNextActivityChangeOffset(anno.getOffset());
+                    return false;
+                }
                 nextActivityOffset = anno.getOffset() + anno.getLength();
+                if (ctx.getFragmentOffset() >= nextActivityOffset) { // Queried above annotation end
+                    try {
+                        setNextActivityChangeOffset(Utilities.getRowEnd(doc, ctx.getFragmentOffset()));
+                    } catch (BadLocationException ble) {
+                        LOG.log(Level.FINE, null, ble);
+                        return false;
+                    }
+                    return false;
+                }
             }
             
             setNextActivityChangeOffset(nextActivityOffset);

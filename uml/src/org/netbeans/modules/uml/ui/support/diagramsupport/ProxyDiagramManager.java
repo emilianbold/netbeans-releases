@@ -48,10 +48,12 @@
 package org.netbeans.modules.uml.ui.support.diagramsupport;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Vector;
 
+import java.util.logging.Level;
 import org.netbeans.modules.uml.common.generics.ETPairT;
 import org.netbeans.modules.uml.core.IApplication;
 import org.netbeans.modules.uml.core.coreapplication.IDiagramCleanupManager;
@@ -65,6 +67,7 @@ import org.netbeans.modules.uml.core.metamodel.diagrams.IBroadcastAction;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IProxyDiagram;
 import org.netbeans.modules.uml.core.metamodel.structure.IProject;
+import org.netbeans.modules.uml.core.support.UMLLogger;
 import org.netbeans.modules.uml.core.support.umlsupport.ExtensionFileFilter;
 import org.netbeans.modules.uml.core.support.umlsupport.FileExtensions;
 import org.netbeans.modules.uml.core.support.umlsupport.FileSysManip;
@@ -86,6 +89,8 @@ import org.netbeans.modules.uml.ui.support.archivesupport.IProductArchiveElement
 import org.netbeans.modules.uml.ui.support.archivesupport.ProductArchiveImpl;
 import org.netbeans.modules.uml.ui.support.commondialogs.IErrorDialog;
 import org.netbeans.modules.uml.ui.swing.commondialogs.SwingErrorDialog;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -200,65 +205,107 @@ public class ProxyDiagramManager implements IProxyDiagramManager,
         }
     }
     
+//    protected void closedDiagram(IProxyDiagram proxyDiagram)
+//    {
+//        if(proxyDiagram != null)
+//        {
+//            String diagramFileName =proxyDiagram.getFilename();
+//            if((diagramFileName != null) && (diagramFileName.length() > 0))
+//            {
+//                String etlFilename = FileSysManip.ensureExtension(diagramFileName, FileExtensions.DIAGRAM_LAYOUT_EXT ); //C:\...\UMLProject10\Class Diagram 1_1202347482156.etld"
+//                String etlpFilename = FileSysManip.ensureExtension(diagramFileName, FileExtensions.DIAGRAM_PRESENTATION_EXT );
+//                
+//                String path = StringUtilities.getPath(diagramFileName);
+//                String fileName = StringUtilities.getFileName(diagramFileName);
+//                path = FileSysManip.addBackslash(path);
+//                path += "DiagramBackup";     // "C:\Users\thuy\Documents\NetBeansProjects\UMLProject10\DiagramBackup"
+//                String newETLFilename = FileSysManip.createFullPath(path, fileName, FileExtensions.DIAGRAM_LAYOUT_EXT); //C:\...UMLProject10\DiagramBackup\Class Diagram 1_1202347482156.etld
+//                String newETLPFilename = FileSysManip.createFullPath(path, fileName, FileExtensions.DIAGRAM_PRESENTATION_EXT);
+//                
+//                File backupPath = new File(path);
+//                boolean backupExist = true;
+//                if(backupPath.exists() == false)
+//                {
+//                    backupExist = backupPath.mkdirs();
+//                }
+//                
+//                if((backupExist == true) &&
+//                        (etlFilename.length() > 0) &&//
+//                        (newETLFilename.length() > 0) &&
+//                        (etlpFilename.length() > 0) &&
+//                        (newETLPFilename.length() > 0))
+//                {
+//                    File etlFile = new File(etlFilename);
+//                    etlFile.renameTo(new File(newETLFilename));
+//                    
+//                    File etlpFile = new File(etlpFilename);
+//                    etlpFile.renameTo(new File(newETLPFilename));
+//                    
+//                    // Make sure that the original file is removed.
+//                    File oldETLFile = new File(etlFilename);
+//                    if(oldETLFile.exists() == true)
+//                    {
+//                        oldETLFile.delete();
+//                        oldETLFile = null;
+//                    }
+//                    
+//                    File oldETLPFile = new File(etlpFilename);
+//                    if(oldETLPFile.exists() == true)
+//                    {
+//                        oldETLPFile.delete();
+//                        oldETLPFile = null;
+//                    }
+//                }
+//                
+//                IDrawingAreaEventDispatcher dispatcher = getDispatcher();
+//                if(dispatcher != null)
+//                {
+//                    IEventPayload payload = dispatcher.createPayload("DrawingAreaFileRemoved");
+//                    dispatcher.fireDrawingAreaFileRemoved(diagramFileName, payload);
+//                }
+//                
+//            }
+//        }
+//    }
+    
     protected void closedDiagram(IProxyDiagram proxyDiagram)
     {
         if(proxyDiagram != null)
         {
-            String diagramFileName =proxyDiagram.getFilename();
+            String diagramFileName = proxyDiagram.getFilename();
             if((diagramFileName != null) && (diagramFileName.length() > 0))
             {
-                String etlFilename = FileSysManip.ensureExtension(diagramFileName, FileExtensions.DIAGRAM_LAYOUT_EXT );
+                String etlFilename = FileSysManip.ensureExtension(diagramFileName, FileExtensions.DIAGRAM_LAYOUT_EXT ); //C:\...\UMLProject10\Class Diagram 1_1202347482156.etld"
                 String etlpFilename = FileSysManip.ensureExtension(diagramFileName, FileExtensions.DIAGRAM_PRESENTATION_EXT );
                 
-                String path = StringUtilities.getPath(diagramFileName);
-                String fileName = StringUtilities.getFileName(diagramFileName);
-                path = FileSysManip.addBackslash(path);
-                path += "DiagramBackup";
-                String newETLFilename = FileSysManip.createFullPath(path, fileName, FileExtensions.DIAGRAM_LAYOUT_EXT);
-                String newETLPFilename = FileSysManip.createFullPath(path, fileName, FileExtensions.DIAGRAM_PRESENTATION_EXT);
+                //FileObject diagFO = FileUtil.toFileObject(new File(diagramFileName));
+                FileObject etldFO = FileUtil.toFileObject(new File(etlFilename));
+                FileObject etlpFO = FileUtil.toFileObject(new File(etlpFilename));
                 
-                File backupPath = new File(path);
-                boolean backupExist = true;
-                if(backupPath.exists() == false)
+                if (etldFO != null && etlpFO != null)
                 {
-                    backupExist = backupPath.mkdirs();
-                }
-                
-                if((backupExist == true) &&
-                        (etlFilename.length() > 0) &&
-                        (newETLFilename.length() > 0) &&
-                        (etlpFilename.length() > 0) &&
-                        (newETLPFilename.length() > 0))
-                {
-                    File etlFile = new File(etlFilename);
-                    etlFile.renameTo(new File(newETLFilename));
-                    
-                    File etlpFile = new File(etlpFilename);
-                    etlpFile.renameTo(new File(newETLPFilename));
-                    
-                    // Make sure that the original file is removed.
-                    File oldETLFile = new File(etlFilename);
-                    if(oldETLFile.exists() == true)
-                    {
-                        oldETLFile.delete();
-                        oldETLFile = null;
-                    }
-                    
-                    File oldETLPFile = new File(etlpFilename);
-                    if(oldETLPFile.exists() == true)
-                    {
-                        oldETLPFile.delete();
-                        oldETLPFile = null;
+                    try {
+                        FileObject parentFolder = etldFO.getParent();
+                        String fileNameWihoutExt = etldFO.getName();
+                        FileObject destFolderFO = parentFolder.getFileObject("DiagramBackup");
+                        if (destFolderFO == null) 
+                        {
+                            destFolderFO = parentFolder.createFolder("DiagramBackup");
+                        }
+
+                        // move *.etld and *.etlp to the DiagramBackup folder
+                        FileUtil.moveFile(etldFO, destFolderFO, fileNameWihoutExt);
+                        FileUtil.moveFile(etlpFO, destFolderFO, fileNameWihoutExt);
+
+                        IDrawingAreaEventDispatcher dispatcher = getDispatcher();
+                        if (dispatcher != null) {
+                            IEventPayload payload = dispatcher.createPayload("DrawingAreaFileRemoved");
+                            dispatcher.fireDrawingAreaFileRemoved(diagramFileName, payload);
+                        }
+                    } catch (IOException ex) {
+                        UMLLogger.logException(ex, Level.WARNING);
                     }
                 }
-                
-                IDrawingAreaEventDispatcher dispatcher = getDispatcher();
-                if(dispatcher != null)
-                {
-                    IEventPayload payload = dispatcher.createPayload("DrawingAreaFileRemoved");
-                    dispatcher.fireDrawingAreaFileRemoved(diagramFileName, payload);
-                }
-                
             }
         }
     }
@@ -533,26 +580,19 @@ public class ProxyDiagramManager implements IProxyDiagramManager,
         
         if(pNamespace != null)
         {
-            try
+            IElement element = (IElement)pNamespace;
+            String xmiID = element.getXMIID();
+            String topXMIID = element.getTopLevelId();
+
+            if (xmiID != null && (xmiID.length() > 0) &&
+                    topXMIID != null && (topXMIID.length() > 0))
             {
-                IElement element = (IElement)pNamespace;
-                String xmiID = element.getXMIID();
-                String topXMIID = element.getTopLevelId();
-                
-                if (xmiID != null && (xmiID.length() > 0) &&
-                        topXMIID != null && (topXMIID.length() > 0))
-                {
-                    retVal = getDiagramsInNamespace(topXMIID, xmiID);
-                }
-                else
-                {
-                    // No namespace has been provided so just return all the diagrams
-                    retVal = getDiagramsInWorkspace();
-                }
+                retVal = getDiagramsInNamespace(topXMIID, xmiID);
             }
-            catch (Throwable e)
+            else
             {
-                e.printStackTrace();
+                // No namespace has been provided so just return all the diagrams
+                retVal = getDiagramsInWorkspace();
             }
         }
         

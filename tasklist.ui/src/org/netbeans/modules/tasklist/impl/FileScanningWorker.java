@@ -176,6 +176,7 @@ class FileScanningWorker implements Runnable {
                 
                 progress.started();
                 
+                Set<FileTaskScanner> scannersToNotify = null;
                 ScanItem item = new ScanItem();
                 while( true ) {
 
@@ -187,6 +188,9 @@ class FileScanningWorker implements Runnable {
                         } else {
                             isCancel = true;
                         }
+                        if( isCancel ) {
+                            scannersToNotify = new HashSet<FileTaskScanner>( preparedScanners );
+                        }
                     }
 
                     if( isCancel ) {
@@ -194,7 +198,7 @@ class FileScanningWorker implements Runnable {
                     }
                 }
 
-                cleanUp();
+                cleanUp( scannersToNotify );
                 
                 try {
                     SLEEP_LOCK.wait();
@@ -270,7 +274,7 @@ class FileScanningWorker implements Runnable {
         return atLeastOneProviderIsActive;
     }
     
-    private void cleanUp() {
+    private void cleanUp( Set<FileTaskScanner> scannersToNotify ) {
         progress.finished();
         
         synchronized( this ) {
@@ -278,12 +282,14 @@ class FileScanningWorker implements Runnable {
             priorityResourceIterator.clear();
             priorityResource2scanner.clear();
         }
-        notifyFinished();
+        notifyFinished( scannersToNotify );
     }
     
-    private void notifyFinished() {
-        for( FileTaskScanner ts : preparedScanners ) {
-            ts.notifyFinish();
+    private void notifyFinished( Set<FileTaskScanner> scannersToNotify ) {
+        if( null != scannersToNotify ) {
+            for( FileTaskScanner ts : scannersToNotify ) {
+                ts.notifyFinish();
+            }
         }
         preparedScanners.clear();
     }

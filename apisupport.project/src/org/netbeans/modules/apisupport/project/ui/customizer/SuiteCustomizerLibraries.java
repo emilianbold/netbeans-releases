@@ -96,7 +96,7 @@ import org.w3c.dom.Element;
  *
  * @author Martin Krauskopf
  */
-final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
+public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         implements Comparator<Node>, ExplorerManager.Provider, ChangeListener {
     private final ExplorerManager manager;
     private ModuleEntry[] platformModules;
@@ -423,7 +423,7 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         return manager;
     }
     
-    private static final Set<String> DISABLED_PLATFORM_MODULES = new HashSet<String>();
+    public static final Set<String> DISABLED_PLATFORM_MODULES = new HashSet<String>();
     
     static {
         // Probably not needed for most platform apps, and won't even work under JNLP.
@@ -618,6 +618,9 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         platformValue.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_PlatformValue"));
         javaPlatformCombo.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_JavaPlatformCombo"));
         javaPlatformButton.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_JavaPlatformButton"));
+        
+        javaPlatformLabel.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_JavaPlatformLbl"));
+        platform.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_PlatformLbl"));
     }
     
     // #65924: show warnings if some dependencies cannot be satisfied
@@ -701,6 +704,7 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
             // Cannot use ProjectXMLManager since we need to report also deps on nonexistent modules.
             Element dataE = project.getPrimaryConfigurationData();
             Element depsE = Util.findElement(dataE, "module-dependencies", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
+            assert depsE != null : "Malformed metadata in " + project;
             for (Element dep : Util.findSubElements(depsE)) {
                 Element run = Util.findElement(dep, "run-dependency", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
                 if (run == null) {

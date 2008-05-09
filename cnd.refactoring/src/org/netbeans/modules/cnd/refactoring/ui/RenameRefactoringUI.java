@@ -160,7 +160,7 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
         newName = panel.getNameValue();
         if (refactoring instanceof RenameRefactoring) {
             ((RenameRefactoring) refactoring).setNewName(newName);
-            ((RenameRefactoring) refactoring).setSearchInComments(panel.searchJavadoc());            
+            ((RenameRefactoring) refactoring).setSearchInComments(panel.searchInComments());            
         }
         return refactoring.checkParameters();
     }

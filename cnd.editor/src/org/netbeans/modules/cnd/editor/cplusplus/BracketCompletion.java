@@ -341,18 +341,21 @@ public class BracketCompletion {
                 case CCTokenContext.RPAREN_ID:
                     if (parenBalance-- == 0)
                         return token.getOffset();
+                    break;
                 case CCTokenContext.LBRACE_ID:
                     braceBalance++;
                     break;
                 case CCTokenContext.RBRACE_ID:
                     if (braceBalance-- == 0)
                         return token.getOffset();
+                    break;
                 case CCTokenContext.LBRACKET_ID:
                     bracketBalance++;
                     break;
                 case CCTokenContext.RBRACKET_ID:
                     if (bracketBalance-- == 0)
                         return token.getOffset();
+                    break;
             }
             token = token.getNext();
         }

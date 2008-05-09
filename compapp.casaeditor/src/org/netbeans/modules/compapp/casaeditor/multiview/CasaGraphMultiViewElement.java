@@ -197,6 +197,7 @@ public class CasaGraphMultiViewElement extends TopComponent implements MultiView
     @Override
     public void componentActivated() {
         super.componentActivated();
+        CasaMultiViewFactory.updateGroupVisibility(CasaGraphMultiViewDesc.PREFERRED_ID);
         if (mLookAndFeelRenderFlag.isSet()) {
             CasaFactory.getCasaCustomizer().renderCasaDesignView(mDesignView.getScene());
         }
@@ -205,6 +206,7 @@ public class CasaGraphMultiViewElement extends TopComponent implements MultiView
     @Override
     public void componentDeactivated() {
         super.componentDeactivated();
+        CasaMultiViewFactory.updateGroupVisibility(CasaGraphMultiViewDesc.PREFERRED_ID);
     }
     
     @Override

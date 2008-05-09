@@ -67,7 +67,7 @@ public class RailsGeneratorDialog extends org.netbeans.performance.test.utilitie
     @Override
     public void initialize() {
         log("::initialize");
-        CMD = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.ruby.railsprojects.Bundle", "CTL_GenerateAction");
+        CMD = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.ruby.railsprojects.Bundle", "rails-generator");
         TITLE = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.ruby.railsprojects.Bundle", "GeneratorTitle");
         projectName = Projects.RAILS_PROJECT;
         testNode = (Node) new ProjectsTabOperator().getProjectRootNode(projectName);            

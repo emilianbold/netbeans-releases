@@ -45,7 +45,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.junit.NbTestCase;
@@ -88,10 +87,9 @@ public abstract class CacheManagerTestBaseHid extends NbTestCase {
         clearWorkDir();
         LayerCacheManager m = mf.createManager();
         // layer2.xml should override layer1.xml where necessary:
-        List urls = Arrays.asList(new URL[] {
+        List<URL> urls = Arrays.asList(
             CacheManagerTestBaseHid.class.getResource("data/layer2.xml"),
-            CacheManagerTestBaseHid.class.getResource("data/layer1.xml"),
-        });
+            CacheManagerTestBaseHid.class.getResource("data/layer1.xml"));
         FileSystem f = BinaryCacheManagerTest.store(m, urls);
         // Initial run.
         checkStruct(f);

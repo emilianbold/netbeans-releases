@@ -8,3 +8,8 @@ FIX:Rename the local variable
 HINT:Block variable aliases local variable - Unintentional side effect?
 FIX:Rename the block variable
 FIX:Rename the local variable
+            sql << " #{join_dependency.join_associations.collect{|join| join.association_join }.join} "
+                                                                  ----
+HINT:Block variable aliases local variable - Unintentional side effect?
+FIX:Rename the block variable
+FIX:Rename the local variable

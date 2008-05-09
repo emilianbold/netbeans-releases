@@ -1,4 +1,4 @@
-<?xml version="1.0"?><!-- -*- sgml-indent-step: 4 -*- -->
+<?xml version="1.0"?>
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
@@ -45,7 +45,6 @@ made subject to such option by the copyright holder.
 
     <target name="build" description="Build stuff for modules tests">
 	<path id="openide">
-	    <pathelement location="${nb_all}/openide/openide-13javac-workaround.jar"/>
             <pathelement location="${openide.util.dir}/lib/org-openide-util.jar"/>
             <pathelement location="${openide.modules.dir}/lib/org-openide-modules.jar"/>
             <pathelement location="${openide.filesystems.dir}/core/org-openide-filesystems.jar"/>

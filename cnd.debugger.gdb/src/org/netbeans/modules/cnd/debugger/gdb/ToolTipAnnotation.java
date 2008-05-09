@@ -57,6 +57,7 @@ import org.openide.text.Line.Part;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.openide.nodes.Node;
+import org.openide.util.RequestProcessor;
 import org.openide.windows.TopComponent;
 
 /*
@@ -65,10 +66,11 @@ import org.openide.windows.TopComponent;
  *
  * @author Nik Molchanov (copied from JPDA implementation)
  */
-public class ToolTipAnnotation extends Annotation {
+public class ToolTipAnnotation extends Annotation implements Runnable {
     
-    private String expression;
-
+    private Part lp;
+    private EditorCookie ec;
+    
     public String getShortDescription() {
         DebuggerEngine currentEngine = DebuggerManager.getDebuggerManager().getCurrentEngine();
         if (currentEngine == null) {
@@ -87,32 +89,55 @@ public class ToolTipAnnotation extends Annotation {
         if (dob == null) {
             return null;
         }
-        EditorCookie ec = (EditorCookie) dob.getCookie(EditorCookie.class);
+        EditorCookie ec = dob.getCookie(EditorCookie.class);
         if (ec == null) {
             return null;
         }
-
-        try {
-            StyledDocument doc = ec.openDocument();
-            JEditorPane ep = getCurrentEditor();
-            if (ep == null) {
-                return null;
-            }
-            synchronized (this) {
-                expression = getIdentifier(doc, ep, NbDocument.findLineOffset(doc,
-                        lp.getLine().getLineNumber()) + lp.getColumn());
-                if (expression == null) {
-                    return null;
-                }
-            }
-            try {
-                // There is a small window during debugger startup when getGdbProxy() returns null
-                return debugger.evaluateToolTip(expression);
-            } catch (NullPointerException npe) {
-            }
-        } catch (IOException e) {
-        }
+        
+        this.lp = lp;
+        this.ec = ec;
+        RequestProcessor.getDefault ().post (this);
         return null;
+    }
+        
+    public void run() {
+        if (lp == null || ec == null) {
+            return;
+        }
+        StyledDocument doc;
+        try {
+            doc = ec.openDocument();
+        } catch (IOException ex) {
+            return;
+        }                    
+        JEditorPane ep = getCurrentEditor();
+        if (ep == null) {
+            return;
+        }
+        
+        String expression = getIdentifier(doc, ep, NbDocument.findLineOffset(doc, 
+                lp.getLine().getLineNumber()) + lp.getColumn());
+        
+        if (expression == null) {
+            return;
+        }
+        
+        DebuggerEngine currentEngine = DebuggerManager.getDebuggerManager().getCurrentEngine();
+        if (currentEngine == null) {
+            return;
+        }
+        GdbDebugger debugger = (GdbDebugger) currentEngine.lookupFirst(null, GdbDebugger.class);
+        if (debugger == null) {
+            return;
+        }
+        
+        if (!GdbDebugger.STATE_STOPPED.equals(debugger.getState())) {
+            return;
+        }
+        
+        String toolTipText = debugger.evaluate(expression);
+        
+        firePropertyChange (PROP_SHORT_DESCRIPTION, null, toolTipText);
     }
 
     public String getAnnotationType () {

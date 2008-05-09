@@ -71,7 +71,7 @@ public class CreateJ2EEProject extends org.netbeans.performance.test.utilities.P
     public CreateJ2EEProject(String testName) {
         super(testName);
         expectedTime = 20000;
-        WAIT_AFTER_OPEN=30000;
+        WAIT_AFTER_OPEN=20000;
     }
     
     /**
@@ -82,7 +82,7 @@ public class CreateJ2EEProject extends org.netbeans.performance.test.utilities.P
     public CreateJ2EEProject(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         expectedTime = 20000;
-        WAIT_AFTER_OPEN=30000;
+        WAIT_AFTER_OPEN=20000;
     }
     
     public void testCreateEnterpriseApplicationProject(){
@@ -121,6 +121,7 @@ public class CreateJ2EEProject extends org.netbeans.performance.test.utilities.P
         project_name += Utils.getTimeIndex();
         wizard_location.txtProjectName().setText(project_name);
         //project_name = wizard_location.txtProjectName().getText();
+        wizard_location.next();
         if (project.equals("Enterprise Application")) {
             JCheckBoxOperator createEjb = new JCheckBoxOperator(wizard_location, "Ejb");
             JCheckBoxOperator createWeb = new JCheckBoxOperator(wizard_location, "Web");

@@ -753,7 +753,7 @@ public class Utilities {
         Document doc = c.getDocument();
         Caret caret = c.getCaret();
         int[] ret;
-        if (caret.isSelectionVisible()) {
+        if (Utilities.isSelectionShowing(caret)) {
             ret = new int[] { c.getSelectionStart(), c.getSelectionEnd() }; 
         } else if (doc instanceof BaseDocument){
             ret = getIdentifierBlock((BaseDocument)doc, caret.getDot());
@@ -798,7 +798,7 @@ public class Utilities {
         Document doc = c.getDocument();
         Caret caret = c.getCaret();
         String ret;
-        if (caret.isSelectionVisible()) {
+        if (Utilities.isSelectionShowing(caret)) {
             ret = c.getSelectedText();
 	    if (ret != null) return ret;
         } 
@@ -1350,6 +1350,27 @@ public class Utilities {
     }
     
     /**
+     * Check whether caret's selection is visible and there is at least
+     * one selected character showing.
+     * 
+     * @param caret non-null caret.
+     * @return true if selection is visible and there is at least one selected character.
+     */
+    public static boolean isSelectionShowing(Caret caret) {
+        return caret.isSelectionVisible() && caret.getDot() != caret.getMark();
+    }
+    
+    /**
+     * @see isSelectionShowing(Caret)
+     * @param component non-null component.
+     * @return if selection is showing for component's caret.
+     */
+    public static boolean isSelectionShowing(JTextComponent component) {
+        Caret caret = component.getCaret();
+        return (caret != null) && isSelectionShowing(caret);
+    }
+     
+    /**
      * Gets the mime type of a document. If the mime type can't be determined
      * this method will return <code>null</code>. This method should work reliably
      * for Netbeans documents that have their mime type stored in a special
@@ -1386,4 +1407,5 @@ public class Utilities {
         }
         return mimeType;
     }
+    
 }

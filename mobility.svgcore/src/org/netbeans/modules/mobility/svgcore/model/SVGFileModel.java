@@ -510,7 +510,12 @@ public final class SVGFileModel {
 
     public String getElementId(DocumentElement de) {
         String id = m_mapping.element2id(de);
-        assert id != null : "Element " + de + " could not be found!"; //NOI18N
+        //assert id != null : "Element " + de + " could not be found!"; //NOI18N
+        //Warning if id == null, it could happen when Navigator is not updated fast enough.
+        if (id == null) {
+            id = ""; //NOI18N
+            System.out.println("Element " + de + " could not be found!"); //NOI18N
+        }
         return id;
     }
 

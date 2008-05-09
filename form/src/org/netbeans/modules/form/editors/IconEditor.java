@@ -423,14 +423,14 @@ public class IconEditor extends PropertyEditorSupport
                 }
             }
             catch (URISyntaxException ex) {}
+            catch (IllegalArgumentException ex) {}
 
             if (url != null) { // treat as url
+                Icon icon = null;
                 try {
-                    Icon icon = new ImageIcon(ImageIO.read(url));
-                    return new NbImageIcon(TYPE_URL, urlString, icon);
-                } catch (IOException ex) { // should not happen
-                    Logger.getLogger(IconEditor.class.getName()).log(Level.WARNING, null, ex);
-                }
+                    icon = new ImageIcon(ImageIO.read(url));
+                } catch (IOException ex) {}
+                return new NbImageIcon(TYPE_URL, urlString, icon);
             }
         }
         catch (MalformedURLException ex) {}
@@ -465,7 +465,7 @@ public class IconEditor extends PropertyEditorSupport
         
         public NbImageIcon(int type, String name, Icon icon) {
             this.type = type;
-            if (name.startsWith("/")) // NOI18N
+            if ((type == TYPE_CLASSPATH) && name.startsWith("/")) // NOI18N
                 name = name.substring(1);
             this.name = name;
             this.icon = icon;

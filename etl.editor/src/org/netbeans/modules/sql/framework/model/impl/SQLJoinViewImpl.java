@@ -68,7 +68,6 @@ import org.w3c.dom.NodeList;
 import net.java.hulp.i18n.Logger;
 import com.sun.sql.framework.exception.BaseException;
 import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.model.SQLGroupBy;
 
 /**
@@ -76,7 +75,7 @@ import org.netbeans.modules.sql.framework.model.SQLGroupBy;
  */
 public class SQLJoinViewImpl extends AbstractSQLObject implements SQLJoinView {
 
-    private static transient final Logger mLogger = LogUtil.getLogger(SQLJoinViewImpl.class.getName());
+    private static transient final Logger mLogger = Logger.getLogger(SQLJoinViewImpl.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
     class SecondParseObjectInfo {
@@ -157,7 +156,7 @@ public class SQLJoinViewImpl extends AbstractSQLObject implements SQLJoinView {
         try {
             cond = new SQLJoinViewImpl(this);
         } catch (Exception ex) {
-            mLogger.errorNoloc(mLoc.t("PRSR119: Error while cloniing SQLJoinViewImpl{0}", this.toString()), ex);
+            mLogger.errorNoloc(mLoc.t("EDIT119: Error while cloniing SQLJoinViewImpl{0}", this.toString()), ex);
             throw new CloneNotSupportedException("can not create clone of " + this.toString());
         }
         return cond;

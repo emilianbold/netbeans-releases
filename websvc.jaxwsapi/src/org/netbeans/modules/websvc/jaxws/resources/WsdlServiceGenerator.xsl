@@ -104,7 +104,7 @@ made subject to such option by the copyright holder.
                         </xsl:attribute>
                         <xsl:element name="address" namespace="http://schemas.xmlsoap.org/wsdl/soap/">
                             <xsl:attribute name="location">
-                                <xsl:text>REPLACE_WITH_ACTUAL_WEB_SERVICE_URL</xsl:text>
+                                <xsl:text>REPLACE_WITH_ACTUAL_URL</xsl:text>
                             </xsl:attribute>
                         </xsl:element>
                     </xsl:element>
@@ -273,7 +273,7 @@ made subject to such option by the copyright holder.
                             </xsl:attribute>
                             <xsl:element name="address" namespace="http://schemas.xmlsoap.org/wsdl/soap/">
                                 <xsl:attribute name="location">
-                                    <xsl:text>REPLACE_WITH_ACTUAL_WEB_SERVICE_URL</xsl:text>
+                                    <xsl:text>REPLACE_WITH_ACTUAL_URL</xsl:text>
                                 </xsl:attribute>
                             </xsl:element>
                         </xsl:element>

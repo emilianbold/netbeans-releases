@@ -41,10 +41,10 @@
 package org.netbeans.modules.profiler.j2ee.selector.nodes.ejb.message;
 
 import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.modules.profiler.selector.api.nodes.ClassNode;
-import org.netbeans.modules.profiler.selector.api.nodes.ContainerNode;
 import javax.lang.model.element.TypeElement;
 import javax.swing.Icon;
+import org.netbeans.modules.profiler.selector.spi.nodes.ClassNode;
+import org.netbeans.modules.profiler.selector.spi.nodes.ContainerNode;
 
 
 /**

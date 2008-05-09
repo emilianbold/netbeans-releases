@@ -146,18 +146,11 @@ public final class ExtraProjectJavadocForBinaryQueryImpl extends ProjectOpenedHo
                 String val = entry.getKey().substring(REF_START.length());
                 String sourceKey = JAVADOC_START + val;
                 String source = props.get(sourceKey);
-                try {
-                    File bin = PropertyUtils.resolveFile(FileUtil.toFile(helper.getProjectDirectory()), entry.getValue());
-                    URL binURL = bin.toURI().toURL();
-                    if (FileUtil.isArchiveFile(binURL)) {
-                        binURL = FileUtil.getArchiveRoot(binURL);
-                    }
-                    if (source != null) {
-                        File src = PropertyUtils.resolveFile(FileUtil.toFile(helper.getProjectDirectory()), source);
-                        result.put(binURL, src.toURI());
-                    } 
-                } catch (MalformedURLException ex) {
-                    Exceptions.printStackTrace(ex);
+                File bin = PropertyUtils.resolveFile(FileUtil.toFile(helper.getProjectDirectory()), entry.getValue());
+                URL binURL = FileUtil.urlForArchiveOrDir(bin);
+                if (source != null && binURL != null) {
+                    File src = PropertyUtils.resolveFile(FileUtil.toFile(helper.getProjectDirectory()), source);
+                    result.put(binURL, src.toURI());
                 }
             }
         }

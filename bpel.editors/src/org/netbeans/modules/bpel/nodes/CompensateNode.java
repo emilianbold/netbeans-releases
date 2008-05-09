@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.bpel.nodes;
 
+import org.netbeans.modules.bpel.nodes.BpelNode;
 import org.netbeans.modules.bpel.model.api.Compensate;
 import org.netbeans.modules.bpel.properties.Constants;
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
@@ -25,7 +26,7 @@ import org.netbeans.modules.bpel.model.api.NamedElement;
 import org.netbeans.modules.bpel.properties.props.PropertyUtils;
 import org.openide.nodes.Sheet;
 import static org.netbeans.modules.bpel.properties.PropertyType.*;
-import org.netbeans.modules.soa.ui.SoaUiUtil;
+import org.netbeans.modules.soa.ui.SoaUtil;
 import org.openide.util.Lookup;
 
 /**
@@ -67,6 +68,6 @@ public class CompensateNode extends BpelNode<Compensate> {
         }
         String result = "";
         
-        return SoaUiUtil.getGrayString(super.getImplHtmlDisplayName(), result);
+        return SoaUtil.getGrayString(super.getImplHtmlDisplayName(), result);
     }
 }

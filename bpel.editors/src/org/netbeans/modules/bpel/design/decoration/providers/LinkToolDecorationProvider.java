@@ -16,7 +16,6 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.modules.bpel.design.decoration.providers;
 
 import java.awt.Component;
@@ -37,6 +36,7 @@ import org.netbeans.modules.bpel.design.decoration.Positioner;
 import org.netbeans.modules.bpel.design.decoration.components.LinkToolButton;
 import org.netbeans.modules.bpel.design.geometry.FBounds;
 import org.netbeans.modules.bpel.design.geometry.FPoint;
+import org.netbeans.modules.bpel.design.model.patterns.InvokePattern;
 import org.netbeans.modules.bpel.design.model.patterns.Pattern;
 import org.netbeans.modules.bpel.design.selection.DiagramSelectionListener;
 import org.netbeans.modules.bpel.design.selection.FlowlinkTool;
@@ -50,111 +50,91 @@ import org.netbeans.modules.bpel.model.api.support.UniqueId;
  */
 public class LinkToolDecorationProvider extends DecorationProvider implements
         DiagramSelectionListener {
-    
 
-    
     private ArrayList<UniqueId> linkedEntities = new ArrayList<UniqueId>();
     private Decoration linkBtnDecoration;
     private DragSource dragSource = new DragSource();
-    
-    private static final Icon ICON
-            = new ImageIcon(Decoration.class
-            .getResource("resources/enabled_breakpoint.png"));
-    
+    private static final Icon ICON = new ImageIcon(Decoration.class.getResource("resources/enabled_breakpoint.png"));
+
     public LinkToolDecorationProvider(DesignView designView) {
         super(designView);
 
         getDesignView().getSelectionModel().addSelectionListener(this);
     }
-    
-    
+
     public Decoration getDecoration(BpelEntity entity) {
-        
+
         UniqueId entityID = entity.getUID();
         UniqueId selectedEntityID = getDesignView().getSelectionModel().getSelectedID();
-        
-        
-        if (entityID!= null && entityID.equals(selectedEntityID) &&
-            entity instanceof PartnerLinkReference &&
-            linkBtnDecoration != null) {
-            
-            return (getDesignView().getFlowLinkTool().isActive()) ? null :
-                linkBtnDecoration;
+
+
+
+        if (entityID != null && entityID.equals(selectedEntityID) &&
+                entity instanceof PartnerLinkReference &&
+                linkBtnDecoration != null) {
+
+            return linkBtnDecoration;
         }
-        
-        
-        
+
+
+
         return null;
     }
-    
-    
+
     public void selectionChanged(BpelEntity oldSelection, BpelEntity newSelection) {
-        
-        
-        
-        if (newSelection instanceof PartnerLinkReference){
+
+
+
+        if (newSelection instanceof PartnerLinkReference) {
             Pattern p = getDesignView().getModel().getPattern(newSelection);
             LinkToolButton button = new LinkToolButton(p);
-            
+
             dragSource.createDefaultDragGestureRecognizer(
                     button,
                     DnDConstants.ACTION_MOVE,
                     getDesignView().getDndHandler());
-            
-            
+
+
             ComponentsDescriptor cd = new ComponentsDescriptor();
             cd.add(button, linkToolPositioner);
-            linkBtnDecoration = new Decoration( new Descriptor[]{cd});
-            
-          
+            linkBtnDecoration = new Decoration(new Descriptor[]{cd});
+
+
         } else {
             linkBtnDecoration = null;
         }
-        
-        
-        
-       
         fireDecorationChanged();
-        
-        
-        
-        
+
+
+
+
     }
     private Positioner linkToolPositioner = new Positioner() {
-        private static final int HSPACING = 0;
-        private static final int VSPACING = 3;
-        
-        public void position(Pattern pattern, Collection<Component> components, 
-                double zoom) 
-        {
-            assert (components.size() == 1) 
-                    : "Only one LinkToolButton per element allowed";
-            
+
+        private static final int SPACING = 2;
+
+        public void position(Pattern pattern, Collection<Component> components,
+                double zoom) {
+            assert (components.size() == 1) : "Only one LinkToolButton per element allowed";
+
             LinkToolButton btn = ((LinkToolButton) components.toArray()[0]);
-            
-            FlowlinkTool flt = getDesignView().getFlowLinkTool();
-            
-            if (flt.isActive()){
-                btn.setPosition(flt.getPosition());
-            } else {
-                FBounds bounds = pattern.getFirstElement().getBounds();
-                
-                DiagramView view = pattern.getView();
-                Point p = view.convertDiagramToScreen(
-                        new FPoint(bounds.getX(), bounds.getCenterY()));
-                
-                
-                btn.setPosition(p);
-            }
-            
-            
-            
-            
-            
+
+
+
+            FBounds bounds = pattern.getFirstElement().getBounds();
+
+            DiagramView view = pattern.getView();
+            Point p = view.convertDiagramToScreen(
+                    (pattern instanceof InvokePattern) ? new FPoint(bounds.getMaxX() - SPACING, bounds.getCenterY()) : new FPoint(bounds.getX() + SPACING, bounds.getCenterY()));
+
+
+
+            btn.setPosition(p);
+
+
+
+
+
         }
-        
     };
-    
-    
-  
 }

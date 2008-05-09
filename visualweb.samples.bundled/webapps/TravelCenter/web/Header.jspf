@@ -30,15 +30,14 @@
 -->
 <div style="height: 192px; width: 830px; -rave-layout: grid" xmlns:f="http://java.sun.com/jsf/core" xmlns:h="http://java.sun.com/jsf/html" xmlns:webuijsf="http://www.sun.com/webui/webuijsf">
     <f:subview id="Header">
-        <webuijsf:image binding="#{Header.image1}" id="image1" url="/resources/header.jpg"/>
-        <h:panelGrid binding="#{Header.bottomPanel}" columns="3" id="bottomPanel" style="background-color: #657882; height: 50px; width: 830px">
-            <webuijsf:panelLayout binding="#{Header.leftPanel}" id="leftPanel" panelLayout="flow" style="color: rgb(255, 255, 255); font-size: 12px; font-style: italic; font-weight: bold; text-align: left; text-indent: 50px; vertical-align: middle; width: 415px">
-                <webuijsf:staticText binding="#{Header.poweredBy}" id="poweredBy" text="Empowered by NetBeans 6"/>
+        <webuijsf:image id="image1" url="/resources/header.jpg"/>
+        <h:panelGrid columns="3" id="bottomPanel" style="background-color: #657882; height: 50px; width: 830px">
+            <webuijsf:panelLayout id="leftPanel" panelLayout="flow" style="color: rgb(255, 255, 255); font-size: 12px; font-style: italic; font-weight: bold; text-align: left; text-indent: 50px; vertical-align: middle; width: 415px">
+                <webuijsf:staticText id="poweredBy" text="Empowered by NetBeans 6"/>
             </webuijsf:panelLayout>
-            <webuijsf:imageHyperlink actionExpression="#{Header.home_action}" binding="#{Header.home}" id="home" imageURL="/resources/home.gif" target="_blank"
-                text="Home&#xa;" toolTip="Go to the Visual Web page at the NetBeans site" url="http://visualweb.netbeans.org/"/>
-            <webuijsf:imageHyperlink actionExpression="#{Header.help_action}" binding="#{Header.help}" id="help" imageURL="/resources/help.gif" target="_blank"
-                text="Help" url="readme.html"/>
+            <webuijsf:imageHyperlink actionExpression="#{Header.home_action}" id="home" imageURL="/resources/home.gif" target="_blank" text="Home&#xa;"
+                toolTip="Go to the Visual Web page at the NetBeans site" url="http://visualweb.netbeans.org/"/>
+            <webuijsf:imageHyperlink actionExpression="#{Header.help_action}" id="help" imageURL="/resources/help.gif" target="_blank" text="Help" url="readme.html"/>
         </h:panelGrid>
     </f:subview>
 </div>

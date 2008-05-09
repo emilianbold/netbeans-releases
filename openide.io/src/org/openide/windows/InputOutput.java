@@ -156,28 +156,34 @@ public interface InputOutput {
     * @return the flushed reader
     * @deprecated meaningless, does nothing
     */
+    @Deprecated
     public Reader flushReader();
 
     /** @deprecated Use {@link #NULL} instead. */
-    /*public static final*/ Reader nullReader = new InputStreamReader(new NullInputStream());
+    @Deprecated
+    /*public static final*/ Reader nullReader = InputOutput$Null.NULL_READER;
 
     /** @deprecated Use {@link #NULL} instead. */
-    /*public static final*/ OutputWriter nullWriter = new InputOutput$NullOutputWriter();
+    @Deprecated
+    /*public static final*/ OutputWriter nullWriter = InputOutput$Null.NULL_WRITER;
 
 }
 
+@SuppressWarnings("deprecation")
 final class InputOutput$Null extends Object implements InputOutput {
+    static Reader NULL_READER = new InputStreamReader(new NullInputStream());
+    static OutputWriter NULL_WRITER = new InputOutput$NullOutputWriter();
     public InputOutput$Null () {
     }
     
     public OutputWriter getOut() {
-        return nullWriter;
+        return NULL_WRITER;
     }
     public Reader getIn() {
-        return nullReader;
+        return NULL_READER;
     }
     public OutputWriter getErr() {
-        return nullWriter;
+        return NULL_WRITER;
     }
     public void closeInputOutput() {
     }
@@ -203,7 +209,7 @@ final class InputOutput$Null extends Object implements InputOutput {
     public void setFocusTaken(boolean value) {
     }
     public Reader flushReader() {
-        return nullReader;
+        return NULL_READER;
     }
 }
 

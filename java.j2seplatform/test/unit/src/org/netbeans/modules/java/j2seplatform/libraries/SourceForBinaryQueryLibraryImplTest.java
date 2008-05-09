@@ -51,7 +51,6 @@ import java.util.zip.ZipEntry;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
-import org.netbeans.api.project.TestUtil;
 import org.netbeans.core.startup.layers.ArchiveURLMapper;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.j2seplatform.platformdefinition.JavaPlatformProviderImpl;
@@ -59,22 +58,24 @@ import org.netbeans.modules.project.libraries.DefaultLibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Lookup;
 import org.openide.util.Utilities;
-import org.openide.util.lookup.Lookups;
 import org.netbeans.modules.masterfs.MasterURLMapper;
+import org.openide.util.test.MockLookup;
 
 /**
  * J2SELibrarySourceForBinaryQuery test
  *
  */
-public class SourceForBinaryQueryLibraryImplTest extends NbTestCase implements Lookup.Provider {
-    
-    private Lookup lookup;
+public class SourceForBinaryQueryLibraryImplTest extends NbTestCase {
     
     public SourceForBinaryQueryLibraryImplTest(String testName) {
         super(testName);
-        TestUtil.setLookup(Lookups.proxy(this));
+        MockLookup.setInstances(
+                LibraryProviderImpl.getDefault(),
+                new JavaPlatformProviderImpl(),
+                new ArchiveURLMapper(),
+                new J2SELibrarySourceForBinaryQuery(),
+                new MasterURLMapper());
     }
     
     private String getBase() throws Exception {
@@ -85,7 +86,7 @@ public class SourceForBinaryQueryLibraryImplTest extends NbTestCase implements L
         return dir.toString();
     }
     
-    protected void setUp() throws Exception {
+    protected @Override void setUp() throws Exception {
         System.setProperty("netbeans.user", getWorkDirPath()); 
         super.setUp();
         clearWorkDir();        
@@ -150,7 +151,7 @@ public class SourceForBinaryQueryLibraryImplTest extends NbTestCase implements L
         DefaultLibraryImplementation lib;
         lib = new DefaultLibraryImplementation("j2se", new String[]{"classpath", "src"});
         lib.setName(libName);
-        ArrayList l = new ArrayList();
+        List<URL> l = new ArrayList<URL>();
         URL u = cp.toURI().toURL();
         if (cp.getPath().endsWith(".jar")) {
             u = FileUtil.getArchiveRoot(u);
@@ -158,7 +159,7 @@ public class SourceForBinaryQueryLibraryImplTest extends NbTestCase implements L
         l.add(u);
         lib.setContent("classpath", l);
         if (src != null) {
-            l = new ArrayList();
+            l = new ArrayList<URL>();
             u = src.toURI().toURL();
             if (src.getPath().endsWith(".jar")) {
                 u = FileUtil.getArchiveRoot(u);
@@ -221,7 +222,7 @@ public class SourceForBinaryQueryLibraryImplTest extends NbTestCase implements L
         SFBQResultListener l = new SFBQResultListener ();        
         result.addChangeListener(l);
         LibraryImplementation impl = getLibrary("library4");
-        List srcList = new ArrayList ();
+        List<URL> srcList = new ArrayList<URL>();
         File baseDir = new File(getBase());
         File libDir = new File(baseDir,"library4");
         File srcDir = new File(libDir,"src4");
@@ -234,21 +235,6 @@ public class SourceForBinaryQueryLibraryImplTest extends NbTestCase implements L
         String base = new File(getBase()).toURI().toString();
         assertEquals(base+"library4/src4/",result.getRoots()[0].getURL().toExternalForm());
     }
-    
-    public synchronized Lookup getLookup() {
-        if (this.lookup == null) {
-            this.lookup = Lookups.fixed (
-                new Object[] {
-                    LibraryProviderImpl.getDefault(),
-                    new JavaPlatformProviderImpl (),
-                    new ArchiveURLMapper (),
-                    new J2SELibrarySourceForBinaryQuery (),
-                    new MasterURLMapper(),
-                });
-        }
-        return this.lookup;
-    }    
-    
     
     private static class SFBQResultListener implements ChangeListener {
         

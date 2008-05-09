@@ -56,12 +56,12 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <class-path-extension>
-                <runtime-relative-path>ext/jsf-1_2/jsf-api.jar</runtime-relative-path>
-            </class-path-extension>
             <public-packages>
                 <subpackages>javax.faces</subpackages>
             </public-packages>
+            <class-path-extension>
+                <runtime-relative-path>ext/jsf-1_2/jsf-api.jar</runtime-relative-path>
+            </class-path-extension>
         </data>
     </configuration>
 </project>

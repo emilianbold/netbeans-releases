@@ -52,6 +52,13 @@ import org.netbeans.modules.sql.framework.model.SQLObjectFactory;
 import org.netbeans.modules.sql.framework.ui.event.SQLDataEvent;
 import org.netbeans.modules.sql.framework.ui.event.SQLDataListener;
 import org.netbeans.modules.sql.framework.ui.model.JoinBuilderSQLUIModel;
+import java.beans.PropertyChangeListener;
+import java.io.IOException;
+import javax.swing.event.UndoableEditListener;
+import org.netbeans.modules.xml.xam.Component;
+import org.netbeans.modules.xml.xam.ComponentListener;
+import org.netbeans.modules.xml.xam.Model.State;
+import org.netbeans.modules.xml.xam.ModelSource;
 
 import com.sun.sql.framework.exception.BaseException;
 
@@ -161,6 +168,78 @@ public class JoinBuilderSQLUIModelImpl extends AbstractSQLModel implements JoinB
 
     private void restoreObjects() throws BaseException {
         super.restoreObjects(joinView.getAllObjects());
+    }
+
+   public void removeComponentListener(ComponentListener cl) {
+        // throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void addComponentListener(ComponentListener cl) {
+        //throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void addPropertyChangeListener(PropertyChangeListener pcl) {
+        // throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void removePropertyChangeListener(PropertyChangeListener pcl) {
+        // throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void removeUndoableEditListener(UndoableEditListener uel) {
+        // throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void addUndoableEditListener(UndoableEditListener uel) {
+        //throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void removeUndoableRefactorListener(UndoableEditListener uel) {
+        // throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void addUndoableRefactorListener(UndoableEditListener uel) {
+        // throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void sync() throws IOException {
+        //  throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public boolean inSync() {
+        return true;
+    //  throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public State getState() {
+        return null;
+    //  throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public boolean isIntransaction() {
+        return true;
+    // throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public boolean startTransaction() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void endTransaction() {
+        // throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void addChildComponent(Component target, Component child, int index) {
+        // throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void removeChildComponent(Component child) {
+        //throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public ModelSource getModelSource() {
+        return null;
+    // throw new UnsupportedOperationException("Not supported yet.");
     }
 
 }

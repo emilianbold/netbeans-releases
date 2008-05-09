@@ -35,7 +35,6 @@ import org.netbeans.modules.xslt.model.XslComponent;
  * @author nk160297
  */
 public class AddNestedAxiElement extends XsltNodeAction {
-    
     private static final long serialVersionUID = 1L;
     
     protected Element myNewAxiElement;
@@ -44,16 +43,30 @@ public class AddNestedAxiElement extends XsltNodeAction {
             Element element) {
         super(xsltMapper, node);
         myNewAxiElement = element;
+        setEnabled(isEnabled());
         postInit();
     }
     
+    @Override
     public String getDisplayName() {
         return myNewAxiElement.getName();
     }
     
+    @Override
     public Icon getIcon() {
         Icon icon = new ImageIcon(NodeType.ELEMENT.getImage(BadgeModificator.SINGLE));
         return icon;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        Object dataObject = myTreeNode.getDataObject();
+        if ((dataObject != null) && (dataObject instanceof XslComponent)) {
+            XslComponent parentComponent = (XslComponent) dataObject;
+            return (! BranchConstructor.containsXslElementOrAttribute(parentComponent, 
+                myNewAxiElement, getMapper()));
+        }
+        return false;
     }
     
     public void actionPerformed(ActionEvent e) {
@@ -63,6 +76,4 @@ public class AddNestedAxiElement extends XsltNodeAction {
             BranchConstructor.createXslElementOrAttribute(parentComp, myNewAxiElement, getMapper());
         }
     }
-
-    
 }

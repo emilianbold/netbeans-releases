@@ -123,7 +123,7 @@ import org.openide.util.NbBundle;
  * @author Jan Lahoda
  */
 public class IntroduceHint implements CancellableTask<CompilationInfo> {
-    
+
     private AtomicBoolean cancel = new AtomicBoolean();
 
     public IntroduceHint() {
@@ -305,6 +305,15 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         return e != null && e.getKind() == ElementKind.CONSTRUCTOR;
     }
     
+    private static boolean isInAnnotationType(CompilationInfo info, TreePath path) {
+        Element e = info.getTrees().getElement(path);
+        if (e != null) {
+            e = e.getEnclosingElement();
+            return e != null && e.getKind() == ElementKind.ANNOTATION_TYPE;
+        }
+        return false;
+    }
+    
     private static List<TreePath> findConstructors(CompilationInfo info, TreePath method) {
         List<TreePath> result = new LinkedList<TreePath>();
         TreePath parent = method.getParentPath();
@@ -353,7 +362,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
             Fix field = null;
             Fix methodFix = null;
             
-            if (method != null) {
+            if (method != null && !isInAnnotationType(info, method)) {
                 int[] initilizeIn = computeInitializeIn(info, resolved, duplicatesForConstant);
                 
                 if (statik) {

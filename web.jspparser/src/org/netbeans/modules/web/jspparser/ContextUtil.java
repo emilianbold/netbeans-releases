@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -43,16 +43,18 @@ package org.netbeans.modules.web.jspparser;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.StringTokenizer;
 
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
-/** Static utilities related to web context stuff - relative paths, relative objects etc.
- *
+/**
+ * Static utilities related to web context stuff - relative paths, relative objects etc.
  * @author Petr Jiricka
  */
-public class ContextUtil {
+public final class ContextUtil {
+
+    private ContextUtil() {
+    }
 
     /** Returns a message for a given throwable. Optionally includes the throwable
      * stack trace in the message.
@@ -69,9 +71,7 @@ public class ContextUtil {
             pw.close();
             return swriter.toString();
         }
-        else {
-            return throwable.getMessage();
-        }
+        return throwable.getMessage();
     }
     
     /**********************************
@@ -80,14 +80,14 @@ public class ContextUtil {
      */
     
     /** Decides whether a given file is in the subtree defined by the given folder.
-     * Similar to <code>org.openide.filesystems.FileUtil.isParentOf (FileObject folder, FileObject fo)</code>, 
+     * Similar to <code>org.openide.filesystems.FileUtil.isParentOf (FileObject folder, FileObject fo)</code>,
      * but also accepts the case that <code>fo == folder</code>
      */
     public static boolean isInSubTree(FileObject folder, FileObject fo) {
         if (fo == folder) {
             return true;
         }
-        else return FileUtil.isParentOf(folder, fo);
+        return FileUtil.isParentOf(folder, fo);
     }
 
     /** Finds a relative resource path between rootFolder and relativeObject. 
@@ -99,7 +99,7 @@ public class ContextUtil {
         String rfp = rootFolder.getPath();
         String rop = relativeObject.getPath();
         // check that they share the start of the path 
-        if (!isInSubTree (rootFolder, relativeObject)) {
+        if (!isInSubTree(rootFolder, relativeObject)) {
             throw new IllegalArgumentException("" + rootFolder + " / " + relativeObject); // NOI18N
         }
         // now really return the result

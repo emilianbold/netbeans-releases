@@ -54,13 +54,13 @@ import org.netbeans.jellytools.actions.OpenAction;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.test.web.performance.WebPerformanceTestCase;
-
+import org.netbeans.performance.test.utilities.PerformanceTestCase;
 /**
  * Test of typing in opened source editor.
  *
  * @author  anebuzelsky@netbeans.org
  */
-public class TypingInJspEditor extends WebPerformanceTestCase {
+public class TypingInJspEditor extends PerformanceTestCase {
     private String file;
     private int line;
     
@@ -81,19 +81,20 @@ public class TypingInJspEditor extends WebPerformanceTestCase {
     }
     
     protected void init() {
-        super.init();
+//        super.init();
         expectedTime = UI_RESPONSE;
         WAIT_AFTER_PREPARE = 3000;
+        WAIT_AFTER_OPEN = 100;
     }
     
     private EditorOperator editorOperator;
     
     protected void initialize() {
         System.out.println("=== " + this.getClass().getName() + " ===");
-        jspOptions().setCaretBlinkRate(0);
+//        jspOptions().setCaretBlinkRate(0);
         // delay between the caret stops and the update of his position in status bar
-        jspOptions().setStatusBarCaretDelay(0);
-        jspOptions().setFontSize(20);
+//        jspOptions().setStatusBarCaretDelay(0);
+//        jspOptions().setFontSize(20);
 //        jspOptions().setCodeFoldingEnable(false);
         // open a java file in the editor
         new OpenAction().performAPI(new Node(new ProjectsTabOperator().getProjectRootNode("TestWebProject"),"Web Pages|"+file));
@@ -112,8 +113,9 @@ public class TypingInJspEditor extends WebPerformanceTestCase {
     public ComponentOperator open(){
         //repaintManager().setOnlyEditor(true);
         repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
-        KeyStroke keyA = KeyStroke.getKeyStroke('a');
-        new ActionNoBlock(null, null, keyA).perform(editorOperator);
+//        KeyStroke keyA = KeyStroke.getKeyStroke('a');
+//        new ActionNoBlock(null, null, keyA).perform(editorOperator);
+        editorOperator.typeKey('a');
         return null;
     }
     

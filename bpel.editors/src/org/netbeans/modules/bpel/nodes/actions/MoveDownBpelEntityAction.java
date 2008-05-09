@@ -18,8 +18,10 @@
  */
 package org.netbeans.modules.bpel.nodes.actions;
 
+import org.netbeans.modules.bpel.nodes.actions.BpelNodeAction;
+import org.netbeans.modules.bpel.editors.api.nodes.actions.ActionType;
 import java.util.concurrent.Callable;
-import org.netbeans.modules.bpel.editors.api.utils.Util;
+import org.netbeans.modules.bpel.editors.api.EditorUtil;
 import org.netbeans.modules.bpel.model.api.Process;
 import org.netbeans.modules.bpel.model.api.ActivityHolder;
 import org.netbeans.modules.bpel.model.api.BpelContainer;
@@ -58,7 +60,7 @@ public class MoveDownBpelEntityAction extends BpelNodeAction {
             // TODO m
             canMove = false;
         } else if (parent instanceof CompositeActivity) {
-            int childIndex = Util.getChildIndex(entity, (CompositeActivity) parent);
+            int childIndex = EditorUtil.getChildIndex(entity, (CompositeActivity) parent);
             int maxActivitiesIndex = ((CompositeActivity) parent).sizeOfActivities()-1;
             if (childIndex >= 0 && childIndex < maxActivitiesIndex) {
                 canMove = true;
@@ -107,7 +109,7 @@ public class MoveDownBpelEntityAction extends BpelNodeAction {
 // TODO a
         } else if (parent instanceof CompositeActivity) {
             int maxActivitiesIndex = ((CompositeActivity) parent).sizeOfActivities()-1;
-            int childIndex = Util.getChildIndex(movingEntity, (CompositeActivity) parent);
+            int childIndex = EditorUtil.getChildIndex(movingEntity, (CompositeActivity) parent);
             // TODO m
             if (childIndex >= 0 && childIndex < maxActivitiesIndex) {
                 BpelEntity movingEntityCopy = movingEntity.cut();

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -41,7 +41,9 @@
 
 package org.netbeans.modules.ruby.rubyproject;
 
+import org.netbeans.modules.ruby.rubyproject.rake.RakeSupport;
 import java.awt.Dialog;
+import java.awt.Toolkit;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
@@ -56,7 +58,7 @@ import java.util.Set;
 import javax.swing.JButton;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.api.gsf.DeclarationFinder.DeclarationLocation;
+import org.netbeans.modules.gsf.api.DeclarationFinder.DeclarationLocation;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
@@ -67,6 +69,7 @@ import org.netbeans.api.ruby.platform.RubyPlatformManager;
 import org.netbeans.modules.ruby.platform.RubyExecution;
 import org.netbeans.modules.ruby.platform.execution.OutputRecognizer;
 import org.netbeans.modules.ruby.platform.gems.GemManager;
+import org.netbeans.modules.ruby.rubyproject.rake.RakeRunner;
 import org.netbeans.modules.ruby.rubyproject.ui.customizer.RubyProjectProperties;
 import org.netbeans.modules.ruby.rubyproject.ui.customizer.MainClassChooser;
 import org.netbeans.modules.ruby.rubyproject.ui.customizer.MainClassWarning;
@@ -119,12 +122,11 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
         COMMAND_AUTOTEST,
         COMMAND_RDOC,
         COMMAND_IRB_CONSOLE,
-        //        COMMAND_COMPILE_SINGLE,
         COMMAND_RUN,
         COMMAND_RUN_SINGLE,
         COMMAND_DEBUG,
         COMMAND_DEBUG_SINGLE,
-        //        COMMAND_TEST,
+        COMMAND_TEST,
         COMMAND_TEST_SINGLE,
         COMMAND_DEBUG_TEST_SINGLE,
         COMMAND_DELETE,
@@ -138,7 +140,7 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
     RubyProject project;
     
     // Ant project helper of the project
-    private UpdateHelper updateHelper;
+    private final UpdateHelper updateHelper;
     
         
     /**Set of commands which are affected by background scanning*/
@@ -163,8 +165,10 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
     private void runRubyScript(FileObject fileObject, String target, 
             String displayName, final Lookup context, final boolean debug,
             OutputRecognizer[] extraRecognizers) {
+        if (!getPlatform().showWarningIfInvalid()) {
+            return;
+        }
         ExecutionDescriptor desc = getScriptDescriptor(null, fileObject, target, displayName, context, debug, extraRecognizers);
-
         RubyExecution service = new RubyExecution(desc,
                 project.evaluator().getProperty(RubyProjectProperties.SOURCE_ENCODING));
         service.run();
@@ -174,7 +178,7 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
             String displayName, final Lookup context, final boolean debug,
             OutputRecognizer[] extraRecognizers) {
     
-        String options = project.evaluator().getProperty(RubyProjectProperties.RUN_JVM_ARGS);
+        String options = project.evaluator().getProperty(RubyProjectProperties.RUBY_OPTIONS);
 
         if (options != null && options.trim().length() == 0) {
             options = null;
@@ -242,12 +246,14 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
         }
         
         String classPath = project.evaluator().getProperty(RubyProjectProperties.JAVAC_CLASSPATH);
+        String jrubyProps = project.evaluator().getProperty(RubyProjectProperties.JRUBY_PROPS);
 
-        ExecutionDescriptor desc = new ExecutionDescriptor(RubyPlatform.platformFor(project), displayName, pwd, target);
+        ExecutionDescriptor desc = new ExecutionDescriptor(getPlatform(), displayName, pwd, target);
         desc.debug(debug);
         desc.showSuspended(true);
         desc.allowInput();
         desc.fileObject(fileObject);
+        desc.jrubyProperties(jrubyProps);
         desc.initialArgs(options);
         desc.classPath(classPath);
         desc.additionalArgs(getApplicationArguments());
@@ -268,24 +274,22 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
         // Locate the target and specify it by full path. This is necessary
         // because JRuby and Ruby don't locate the script from the load path it
         // seems.
-        if (!new File(target).exists()) {
-            if (srcPath != null && srcPath.length > 0) {
-                boolean found = false; // Prefer the first match
-                for (FileObject root : srcPath) {
+        if (!new File(target).exists() && srcPath != null && srcPath.length > 0) {
+            boolean found = false; // Prefer the first match
+            for (FileObject root : srcPath) {
+                FileObject fo = root.getFileObject(target);
+                if (fo != null) {
+                    target = FileUtil.toFile(fo).getAbsolutePath();
+                    found = true;
+                    break;
+                }
+            }
+            if (!found && testPath != null) {
+                for (FileObject root : testPath) {
                     FileObject fo = root.getFileObject(target);
                     if (fo != null) {
                         target = FileUtil.toFile(fo).getAbsolutePath();
-                        found = true;
                         break;
-                    }
-                }
-                if (!found && testPath != null) {
-                    for (FileObject root : testPath) {
-                        FileObject fo = root.getFileObject(target);
-                        if (fo != null) {
-                            target = FileUtil.toFile(fo).getAbsolutePath();
-                            break;
-                        }
                     }
                 }
             }
@@ -328,21 +332,33 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
         }
     }
     
-    private void openIrbConsole(Lookup context) {
-        // FIXME: project or platfrom sensitive
-        RubyPlatform platform = RubyPlatformManager.getDefaultPlatform();
-        platform.findExecutable("irb"); // NOI18N
+    private RubyPlatform getPlatform() {
+        RubyPlatform platform = RubyPlatform.platformFor(project);
+        if (platform == null) {
+            platform = RubyPlatformManager.getDefaultPlatform();
+        }
         
-        String displayName = "IRB"; //NbBundle.getMessage(RailsActionProvider.class, "RailsConsole");
+        return platform;
+    }
+
+    private void openIrbConsole(Lookup context) {
+        RubyPlatform platform = getPlatform();
+        String irbPath = platform.findExecutable("irb"); // NOI18N
+        if (irbPath == null) {
+            Toolkit.getDefaultToolkit().beep();
+            return;
+        }
+
+        String displayName = NbBundle.getMessage(RubyActionProvider.class, "CTL_IrbTopComponent");
         File pwd = FileUtil.toFile(project.getProjectDirectory());
         String classPath = project.evaluator().getProperty(RubyProjectProperties.JAVAC_CLASSPATH);
 
-        new RubyExecution(new ExecutionDescriptor(platform, displayName, pwd).
+        new RubyExecution(new ExecutionDescriptor(platform, displayName, pwd, irbPath).
                 showSuspended(false).
                 showProgress(false).
                 classPath(classPath).
                 allowInput().
-                initialArgs("-e \"require 'irb';" /* + " require 'irb/completion';"*/ + " IRB.start\""). // NOI18N
+                additionalArgs("--simple-prompt", "--noreadline"). // NOI18N
                 //additionalArgs(getApplicationArguments()).
                 fileLocator(new RubyFileLocator(context, project)).
                 addStandardRecognizers(),
@@ -476,8 +492,12 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
 
                 // Save all files first - this rake file could be accessing other files
                 LifecycleManager.getDefault().saveAll();
-                RakeSupport rake = new RakeSupport(project);
-                rake.runRake(null, file, file.getName(), new RubyFileLocator(context, project), true, COMMAND_DEBUG_SINGLE.equals(command));
+                RakeRunner runner = new RakeRunner(project);
+                runner.setRakeFile(file);
+                runner.setFileLocator(new RubyFileLocator(context, project));
+                runner.showWarnings(true);
+                runner.setDebug(COMMAND_DEBUG_SINGLE.equals(command));
+                runner.run();
                 return;
             }
             
@@ -496,81 +516,16 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
             runRubyScript(file, FileUtil.toFile(file).getAbsolutePath(),
                     file.getNameExt(), context, COMMAND_DEBUG_SINGLE.equals(command), null);
             return;
-        } else if (COMMAND_REBUILD.equals(command)) {
-            if (!gemManager.isValidRake(true)) {
-                return;
+        } else if (COMMAND_REBUILD.equals(command) || COMMAND_BUILD.equals(command) || COMMAND_CLEAN.equals(command)) {
+            RakeRunner runner = new RakeRunner(project);
+            runner.showWarnings(true);
+            if (COMMAND_REBUILD.equals(command)) {
+                runner.run("clean", "gem"); // NOI18N
+            } else if (COMMAND_BUILD.equals(command)) {
+                runner.run("gem"); // NOI18N
+            } else { // if(COMMAND_CLEAN.equals(command)) {
+                runner.run("clean"); // NOI18N
             }
-
-            // Save all files first
-            LifecycleManager.getDefault().saveAll();
-            
-            String displayName = NbBundle.getMessage(RubyActionProvider.class, "Rake");
-            File pwd = getSourceFolder(); // Or project directory
-            
-            Runnable finishedAction =
-                new Runnable() {
-                    public void run() {
-                        invokeAction(COMMAND_BUILD, context);
-                    }
-                };
-            
-            String classPath = project.evaluator().getProperty(RubyProjectProperties.JAVAC_CLASSPATH);
-            new RubyExecution(new ExecutionDescriptor(platform, displayName, pwd, gemManager.getRake()).
-                    additionalArgs("clean"). // NOI18N
-                    postBuild(finishedAction).
-                    allowInput().
-                    classPath(classPath).
-                    appendJdkToPath(platform.isJRuby()).
-                    fileLocator(new RubyFileLocator(context, project)).
-                    addStandardRecognizers(),
-                    project.evaluator().getProperty(RubyProjectProperties.SOURCE_ENCODING)
-                    ).
-                    run();
-            return;
-            
-        } else if (COMMAND_BUILD.equals(command)) {
-            if (!gemManager.isValidRake(true)) {
-                return;
-            }
-
-            // Save all files first
-            LifecycleManager.getDefault().saveAll();
-            
-            String displayName = 
-                NbBundle.getMessage(RubyActionProvider.class, "Rake");
-            File pwd = getSourceFolder(); // Or project directory?
-            String classPath = project.evaluator().getProperty(RubyProjectProperties.JAVAC_CLASSPATH);
-            new RubyExecution(new ExecutionDescriptor(platform, displayName, pwd, gemManager.getRake()).
-                    allowInput().
-                    classPath(classPath).
-                    appendJdkToPath(platform.isJRuby()).
-                    fileLocator(new RubyFileLocator(context, project)).
-                    addStandardRecognizers(),
-                    project.evaluator().getProperty(RubyProjectProperties.SOURCE_ENCODING)
-                    ).
-                    run();
-            return;
-        } else if (COMMAND_CLEAN.equals(command)) {
-            if (!gemManager.isValidRake(true)) {
-                return;
-            }
-
-            //RubyFileLocator fileLocator = new RubyFileLocator(context);
-            String displayName = 
-                NbBundle.getMessage(RubyActionProvider.class, "Rake");
-
-            File pwd = getSourceFolder(); // Or project directory?
-            String classPath = project.evaluator().getProperty(RubyProjectProperties.JAVAC_CLASSPATH);
-            new RubyExecution(new ExecutionDescriptor(platform, displayName, pwd, gemManager.getRake()).
-                    additionalArgs("clean"). // NOI18N
-                    allowInput().
-                    classPath(classPath).
-                    appendJdkToPath(platform.isJRuby()).
-                    fileLocator(new RubyFileLocator(context, project)).
-                    addStandardRecognizers(),
-                    project.evaluator().getProperty(RubyProjectProperties.SOURCE_ENCODING)
-                    ).
-                    run();
             return;
         }
         
@@ -604,7 +559,7 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
 
             new RubyExecution(new ExecutionDescriptor(platform, displayName, pwd).
                     //gemManager.getRDoc()).
-                    additionalArgs("-r", "rdoc/rdoc", "-e", "begin; r = RDoc::RDoc.new; r.document(ARGV); end").
+                    additionalArgs("-r", "rdoc/rdoc", "-e", "begin; r = RDoc::RDoc.new; r.document(ARGV); end"). // NOI18N
                     fileLocator(fileLocator).
                     postBuild(showBrowser).
                     addStandardRecognizers(),
@@ -663,14 +618,14 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
         }
 
         if (COMMAND_TEST.equals(command)) {
-            if (!platform.isValidRuby(true)) {
-                return;
-            }
-
-            FileObject[] files = findTestSourcesForSources(context);
-
-            //return;
-            throw new RuntimeException("Not yet implemented");
+            File pwd = FileUtil.toFile(project.getProjectDirectory());
+            RakeRunner runner = new RakeRunner(project);
+            runner.setPWD(pwd);
+            runner.setFileLocator(new RubyFileLocator(context, project));
+            runner.showWarnings(true);
+            runner.setDebug(COMMAND_DEBUG_SINGLE.equals(command));
+            runner.run("test"); // NOI18N
+            return;
         }
         
         if (COMMAND_IRB_CONSOLE.equals(command)) {

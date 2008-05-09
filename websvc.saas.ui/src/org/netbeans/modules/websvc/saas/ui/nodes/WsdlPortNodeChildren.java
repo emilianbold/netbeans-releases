@@ -39,9 +39,8 @@
 
 package org.netbeans.modules.websvc.saas.ui.nodes;
 
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
-import org.netbeans.modules.websvc.saas.model.WsdlSaas;
+import org.netbeans.modules.websvc.saas.model.WsdlSaasMethod;
+import org.netbeans.modules.websvc.saas.model.WsdlSaasPort;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 
@@ -49,27 +48,27 @@ import org.openide.nodes.Node;
  *
  * @author nam
  */
-public class WsdlPortNodeChildren extends Children.Keys<WsdlOperation>{
-    private WsdlSaas saas;
-    private WsdlPort port;
+public class WsdlPortNodeChildren extends Children.Keys<WsdlSaasMethod>{
+    private WsdlSaasPort port;
 
-    public WsdlPortNodeChildren(WsdlSaas saas, WsdlPort port) {
-        this.saas = saas;
+    public WsdlPortNodeChildren(WsdlSaasPort port) {
         this.port = port;
     }
 
     @Override
     protected void addNotify() {
+        setKeys(port.getWsdlMethods());
         super.addNotify();
     }
 
     @Override
     protected void removeNotify() {
+        setKeys(new WsdlSaasMethod[0]);
         super.removeNotify();
     }
 
     @Override
-    protected Node[] createNodes(WsdlOperation key) {
-        return new Node[] { new WsdlMethodNode(saas, port, key) };
+    protected Node[] createNodes(WsdlSaasMethod key) {
+        return new Node[] { new WsdlMethodNode(key) };
     }
 }

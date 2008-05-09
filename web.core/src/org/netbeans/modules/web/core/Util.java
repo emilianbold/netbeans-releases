@@ -64,9 +64,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
-//import java.io.*;
 import org.xml.sax.*;
-//import java.util.*;
 
 /** Utility class
 * @author  Petr Jiricka
@@ -74,9 +72,10 @@ import org.xml.sax.*;
 */
 public class Util {
 
+    private static final Logger LOG = Logger.getLogger(Util.class.getName());
+    
     /** Waits for startup of a server, waits until the connection has
      * been established. */ 
-
     public static boolean waitForURLConnection(URL url, int timeout, int retryTime) { 
         Connect connect = new Connect(url, retryTime); 
         Thread t = new Thread(connect);
@@ -84,6 +83,7 @@ public class Util {
         try {
             t.join(timeout);
         } catch(InterruptedException ie) {
+            LOG.log(Level.FINE, "error", ie);
         }
         if (t.isAlive()) {
             connect.finishLoop();
@@ -106,7 +106,6 @@ public class Util {
             return input.toString();
         }
         catch (Exception e) {
-	    //e.printStackTrace();
             return null;
         }
         finally {
@@ -115,7 +114,7 @@ public class Util {
                     in.close();
                 }
                 catch(IOException e) {
-                    //e.printStackTrace();
+                    LOG.log(Level.FINE, "error", e);
                 }
         }
     }
@@ -140,6 +139,7 @@ public class Util {
             try {
                 InetAddress.getByName(url.getHost());
             } catch (UnknownHostException e) {
+                LOG.log(Level.FINE, "error", e);
                 return;
             }
             while (loop) {
@@ -148,12 +148,17 @@ public class Util {
                     socket.close();
                     status = true;
                     break;
-                } catch (UnknownHostException e) {//nothing to do
-                } catch (IOException e) {//nothing to do
+                } catch (UnknownHostException e) {
+                    LOG.log(Level.FINE, "error", e);
+                    //nothing to do
+                } catch (IOException e) {
+                    LOG.log(Level.FINE, "error", e);
+                    //nothing to do
                 }
                 try {
                     Thread.currentThread().sleep(retryTime);
                 } catch(InterruptedException ie) {
+                    LOG.log(Level.FINE, "error", ie);
                 }
             }
         }
@@ -163,6 +168,7 @@ public class Util {
         }
     }
 
+    // FIXME: consider removing of duplicate/similar code
     // following block is copy/pasted code from 
     // org.netbeans.modules.j2ee.common.Util
     
@@ -176,63 +182,64 @@ public class Util {
     public static SourceGroup[] getJavaSourceGroups(Project project) {
         SourceGroup[] sourceGroups = ProjectUtils.getSources(project).getSourceGroups(
                                     JavaProjectConstants.SOURCES_TYPE_JAVA);
-        Set testGroups = getTestSourceGroups(project, sourceGroups);
-        List result = new ArrayList();
-        for (int i = 0; i < sourceGroups.length; i++) {
-            if (!testGroups.contains(sourceGroups[i])) {
-                result.add(sourceGroups[i]);
+        Set<SourceGroup> testGroups = getTestSourceGroups(project, sourceGroups);
+        List<SourceGroup> result = new ArrayList<SourceGroup>();
+        for (SourceGroup sourceGroup : sourceGroups) {
+            if (!testGroups.contains(sourceGroup)) {
+                result.add(sourceGroup);
             }
         }
-        return (SourceGroup[]) result.toArray(new SourceGroup[result.size()]);
+        return result.toArray(new SourceGroup[result.size()]);
     }
 
-    private static Set/*<SourceGroup>*/ getTestSourceGroups(Project project, SourceGroup[] sourceGroups) {
-        Map foldersToSourceGroupsMap = createFoldersToSourceGroupsMap(sourceGroups);
-        Set testGroups = new HashSet();
-        for (int i = 0; i < sourceGroups.length; i++) {
-            testGroups.addAll(getTestTargets(sourceGroups[i], foldersToSourceGroupsMap));
+    private static Set<SourceGroup> getTestSourceGroups(Project project, SourceGroup[] sourceGroups) {
+        Map<FileObject,SourceGroup> foldersToSourceGroupsMap =
+                createFoldersToSourceGroupsMap(sourceGroups);
+        Set<SourceGroup> testGroups = new HashSet<SourceGroup>();
+        for (SourceGroup sourceGroup : sourceGroups) {
+            testGroups.addAll(getTestTargets(sourceGroup, foldersToSourceGroupsMap));
         }
         return testGroups;
     }
     
-    private static Map createFoldersToSourceGroupsMap(final SourceGroup[] sourceGroups) {
-        Map result;
+    private static Map<FileObject,SourceGroup> createFoldersToSourceGroupsMap(
+            final SourceGroup[] sourceGroups)
+    {
+        Map<FileObject,SourceGroup> result;
         if (sourceGroups.length == 0) {
-            result = Collections.EMPTY_MAP;
+            result = Collections.emptyMap();
         } else {
-            result = new HashMap(2 * sourceGroups.length, .5f);
-            for (int i = 0; i < sourceGroups.length; i++) {
-                SourceGroup sourceGroup = sourceGroups[i];
+            result = new HashMap<FileObject,SourceGroup>(2 * sourceGroups.length, .5f);
+            for (SourceGroup sourceGroup : sourceGroups) {
                 result.put(sourceGroup.getRootFolder(), sourceGroup);
             }
         }
         return result;
     }
 
-    private static List/*<FileObject>*/ getFileObjects(URL[] urls) {
-        List result = new ArrayList();
+    private static List<FileObject> getFileObjects(URL[] urls) {
+        List<FileObject> result = new ArrayList<FileObject>();
         for (int i = 0; i < urls.length; i++) {
             FileObject sourceRoot = URLMapper.findFileObject(urls[i]);
             if (sourceRoot != null) {
                 result.add(sourceRoot);
             } else {
-                if (Logger.getLogger("global").isLoggable(Level.FINE)) {
-                    Logger.getLogger("global").log(Level.FINE, null, new IllegalStateException("No FileObject found for the following URL: " + urls[i]));
+                if (LOG.isLoggable(Level.FINE)) {  //NOI18N
+                    LOG.log(Level.FINE, null, new IllegalStateException("No FileObject found for the following URL: " + urls[i]));  //NOI18N
                 }
             }
         }
         return result;
     }
     
-    private static List/*<SourceGroup>*/ getTestTargets(SourceGroup sourceGroup, Map foldersToSourceGroupsMap) {
+    private static List<SourceGroup> getTestTargets(SourceGroup sourceGroup, Map foldersToSourceGroupsMap) {
         final URL[] rootURLs = UnitTestForSourceQuery.findUnitTests(sourceGroup.getRootFolder());
         if (rootURLs.length == 0) {
-            return new ArrayList();
+            return new ArrayList<SourceGroup>();
         }
-        List result = new ArrayList();
-        List sourceRoots = getFileObjects(rootURLs);
-        for (int i = 0; i < sourceRoots.size(); i++) {
-            FileObject sourceRoot = (FileObject) sourceRoots.get(i);
+        List<SourceGroup> result = new ArrayList<SourceGroup>();
+        List<FileObject> sourceRoots = getFileObjects(rootURLs);
+        for (FileObject sourceRoot : sourceRoots) {
             SourceGroup srcGroup = (SourceGroup) foldersToSourceGroupsMap.get(sourceRoot);
             if (srcGroup != null) {
                 result.add(srcGroup);
@@ -261,7 +268,7 @@ public class Util {
             try {
                 reader.parse(new InputSource(is));
             } catch (SAXException ex) {
-                String message = ex.getMessage();
+                LOG.log(Level.FINE, "error", ex);
             }
             return handler.getValues();
         } catch(javax.xml.parsers.ParserConfigurationException ex) {
@@ -271,31 +278,34 @@ public class Util {
     
     private static class TLDVersionHandler extends org.xml.sax.helpers.DefaultHandler {
         private String tagName;
-        private Set elNames;
-        private Set values;
+        private Set<String> elNames;
+        private Set<String> values;
         private boolean insideEl, insideTag;
 
         TLDVersionHandler(String[] elNames, String tagName) {
-            this.elNames=new java.util.HashSet();
+            this.elNames=new HashSet<String>();
             for (int i=0;i<elNames.length;i++) {
                 this.elNames.add(elNames[i]);
             }
             this.tagName=tagName;
-            values = new HashSet();
+            values = new HashSet<String>();
         }
+        @Override
         public void startElement(String uri, String localName, String rawName, Attributes atts) throws SAXException {
             if (elNames.contains(rawName)) insideEl=true;
-            else if (tagName.equals(rawName) && insideEl) { //NOI18N
+            else if (tagName.equals(rawName) && insideEl) {
                 insideTag=true;
             }
         }
+        @Override
         public void endElement(String uri, String localName, String rawName) throws SAXException {
             if (elNames.contains(rawName)) insideEl=false;
-            else if (tagName.equals(rawName) && insideEl) { //NOI18N
+            else if (tagName.equals(rawName) && insideEl) {
                 insideTag=false;
             }
         }
         
+        @Override
         public void characters(char[] ch,int start,int length) throws SAXException {
             if (insideTag) {
                 values.add(String.valueOf(ch,start,length).trim());

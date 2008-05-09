@@ -70,7 +70,9 @@ import org.netbeans.modules.uml.core.eventframework.EventBlocker;
 import org.netbeans.modules.uml.core.metamodel.core.constructs.IAliasedType;
 import org.netbeans.modules.uml.core.metamodel.core.constructs.IClass;
 import org.netbeans.modules.uml.core.metamodel.core.constructs.IDataType;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.Abstraction;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.CreationFactory;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.Dependency;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.ElementCollector;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.FactoryRetriever;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.ICreationFactory;
@@ -81,10 +83,12 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPackage;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IVersionableElement;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.Permission;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.RelationProxy;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.RelationValidator;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.TypedFactoryRetriever;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.UMLXMLManip;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.Usage;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.IDerivationClassifier;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.IRelationFactory;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.RelationFactory;
@@ -96,11 +100,13 @@ import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IGeneralization;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IInterface;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.INavigableEnd;
+import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.Implementation;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IOperation;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IParameter;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IParameterableElement;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IUMLBinding;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.Parameter;
+import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.Realization;
 import org.netbeans.modules.uml.core.metamodel.structure.IProject;
 import org.netbeans.modules.uml.core.preferenceframework.IPreferenceAccessor;
 import org.netbeans.modules.uml.core.preferenceframework.PreferenceAccessor;
@@ -826,10 +832,11 @@ public class UMLParsingIntegrator
         Node foundNode = null;
         try
         {
+
             // Attempt to get the value of the @name attribute. It QUITE possible that xml attribute
             // doesn't exist...
             String value = XMLManip.getAttributeValue(prototypeNode, "name"); // NOI18N
-            if (value != null)
+             if (value != null)
             {
                 // We've got a name, so let's see if we get lucky...
                 String query = ".//*[@name=\""; // NOI18N
@@ -872,7 +879,7 @@ public class UMLParsingIntegrator
         }
         return foundNode;
     }
-    
+
     public void ensureXMLAttrValues(String query, Node childInDestinationNamespace, Node elmentBeingInjected, String attrName)
     {
         try
@@ -911,7 +918,26 @@ public class UMLParsingIntegrator
             String query = ".//"; // NOI18N
             query += elementName;
             query += "/ancestor::*[2]"; // NOI18N
-            List nodes = childInDestinationNamespace.selectNodes(query);
+  
+            Element destination = (childInDestinationNamespace instanceof Element) 
+                                  ? (Element) childInDestinationNamespace 
+                                    : null;
+            String destNodeName = "";
+            if (destination != null) 
+            {
+                destNodeName = destination.getQualifiedName();
+            }
+            List nodes;
+            if (destination != null && isNodeContainer(destNodeName)) 
+            {
+                nodes = new ArrayList();
+                nodes.add(childInDestinationNamespace);
+            }
+            else
+            {
+                nodes = childInDestinationNamespace.selectNodes(query);
+            }
+            //List nodes = childInDestinationNamespace.selectNodes(query);
             if (nodes != null)
             {
                 int num = nodes.size();
@@ -920,7 +946,17 @@ public class UMLParsingIntegrator
                     Node node = (Node) nodes.get(x);
                     if (node != null)
                     {
-                        Node foundNode = findElement(node, elementBeingInjected);
+                        //Node foundNode = findElement(node, elementBeingInjected);
+                        Node foundNode;
+                        if (destination != null && isNodeContainer(destNodeName)) 
+                        {
+                            foundNode = elementBeingInjected;
+                        }
+                        else 
+                        {
+                            foundNode = findElement(node, elementBeingInjected);
+                        }
+
                         if (foundNode != null)
                         {
                             // Now get the owned element and move it to the foundNode
@@ -987,13 +1023,18 @@ public class UMLParsingIntegrator
             query += attrName;
             query += "]";
             
-            ensureXMLAttrValues(query, childInDestinationNamespace, elementBeingInjected, attrName);
-            
-            // Make sure to check the current element as well
-            
             Element element = (childInDestinationNamespace instanceof Element) ? (Element) childInDestinationNamespace : null;
-            ;
-            
+            String destNodeName = "";
+            if (element != null) 
+            {
+                destNodeName = element.getQualifiedName();
+            }
+            if ( ! (element != null && isNodeContainer(destNodeName))) 
+            {
+                ensureXMLAttrValues(query, childInDestinationNamespace, elementBeingInjected, attrName);
+            }
+
+            // Make sure to check the current element as well                        
             if (element != null)
             {
                 Attribute attr = element.attribute(attrName);
@@ -1366,6 +1407,8 @@ public class UMLParsingIntegrator
                             
                             if (injectNestedClass != null)
                             {
+                                handleClientDependenciesAttr(destinationNestedClass, injectNestedClass);
+
                                 String finalXMIID = null;
                                 finalXMIID = replaceReferences(destinationNestedClass, injectNestedClass, finalXMIID);
                                 
@@ -1571,6 +1614,17 @@ public class UMLParsingIntegrator
             sendExceptionMessage(e);
         }
     }
+
+    private void handleClientDependenciesAttr(Node childInDestinationNamespace, Node elementBeingInjected)
+    {
+        String clientDeps 
+            = XMLManip.getAttributeValue(childInDestinationNamespace, 
+                                         "clientDependency"); // NOI18N                
+        if (clientDeps != null)
+        {
+            XMLManip.setAttributeValue(elementBeingInjected, "clientDependency", clientDeps); // NOI18N
+        }
+    }
     
     public boolean replaceElement(Node childInDestinationNamespace, Node elementBeingInjected)
     {
@@ -1589,6 +1643,7 @@ public class UMLParsingIntegrator
                 TypedFactoryRetriever < IElement > fact = new TypedFactoryRetriever < IElement > ();
                 IElement nodeInNamespace = fact.createTypeAndFill(childInDestinationNamespace);
                 removeClientDependencies(nodeInNamespace);
+                handleClientDependenciesAttr(childInDestinationNamespace, elementBeingInjected);
                 removeNonNavigableAssoc(nodeInNamespace);
                 removeGeneralizations(nodeInNamespace);
                 markSpecializationsForRedefinitionAnalysis(nodeInNamespace); 
@@ -1852,19 +1907,45 @@ public class UMLParsingIntegrator
         if ((parent != null) && (elementBeingInjected != null))
         {
             ok = true;
-            String childName =
+            Node childInDestinationNamespace = null;
+
+            // look up by MarkerId             
+            String markerID = XMLManip.retrieveNodeTextValue(elementBeingInjected, 
+                "./UML:Element.ownedElement/UML:TaggedValue[@name='MarkerID']/UML:TaggedValue.dataValue");
+            if (markerID != null) 
+            {
+                Node guess = parent.getDocument().elementByID(markerID);  
+                if (guess != null && (guess instanceof Element) && (elementBeingInjected instanceof Element)) 
+                {
+                    String gType = ((Element)guess).getQualifiedName();
+                    String injType = ((Element)elementBeingInjected).getQualifiedName();
+                    if ( (  gType != null 
+                            && ( gType.equals("UML:Class") || gType.equals("UML:Interface") || gType.equals("UML:Enumeration")))
+                         && (injType != null
+                             && ( injType.equals("UML:Class") || injType.equals("UML:Interface") || injType.equals("UML:Enumeration"))))
+                    {
+                        childInDestinationNamespace = guess;  
+                    }
+                }                  
+            }
+
+            Element injected = (Element) elementBeingInjected;
+            String injectNodeName = injected.getQualifiedName();
+            if (childInDestinationNamespace == null) 
+            {
+                // now let's try by name
+                String childName =
                     XMLManip.getAttributeValue(elementBeingInjected, "name");
             
-            ETList<Node> temp = namedNodes.get(childName);
-            
-            if (temp != null)
-            {
-                Element injected = (Element) elementBeingInjected;
-                String injectNodeName = injected.getQualifiedName();
-                Node childInDestinationNamespace = getElementOfType(temp, injectNodeName);
+                ETList<Node> temp = namedNodes.get(childName);            
+                if (temp != null)
+                {
+                    childInDestinationNamespace = getElementOfType(temp, injectNodeName);
+                }
+            }
                 
                 if ((childInDestinationNamespace != null) &&
-                        !m_CancelDueToConflict)
+                    !m_CancelDueToConflict)
                 {
                     boolean overwrite = true;
                     
@@ -1905,7 +1986,7 @@ public class UMLParsingIntegrator
                     //ok = false;
                     ok = true;
                 }
-            }
+
         }
         
         return ok;
@@ -3600,6 +3681,24 @@ public class UMLParsingIntegrator
         }
     }
     
+    protected void processEnumLiteralArguments(Node node)
+    {
+        try
+        {
+            Node argsNode = node.selectSingleNode("./TokenDescriptors/TDescriptor[@type='JavaEnumLiteralArguments']");
+            if (argsNode != null)
+            {
+                String argsStr = XMLManip.getAttributeValue(argsNode, "value");
+                addTaggedValue(node, "JavaEnumLiteralArguments", argsStr, false);
+                argsNode.detach();
+            }
+        }
+        catch (Exception e)
+        {
+            sendExceptionMessage(e);
+        }
+    }
+
     protected void analyzeInterfaceTypes(Node classNode)
     {
         try
@@ -4734,12 +4833,14 @@ public class UMLParsingIntegrator
             
             if (element != null)
             {
+                UMLXMLManip.replaceReferencesIndexCreate(m_FragDocument);
                 Element docElement = m_FragDocument.getRootElement();
                 
                 if (docElement != null)
                 {
                     injectElementsIntoNamespace(element, docElement);
                 }
+                UMLXMLManip.replaceReferencesIndexDrop(m_FragDocument);
             }
         }
         
@@ -5568,7 +5669,7 @@ public class UMLParsingIntegrator
             }
             else
             {
-                descriptors = node.selectNodes("./TokenDescriptors/TDescriptor[not( @type='Comment' or @type='Class Dependency')]");
+                descriptors = node.selectNodes("./TokenDescriptors/TDescriptor[not( @type='Comment' or @type='Class Dependency' or @type='Marker-id')]");
             }
             if (descriptors != null)
             {
@@ -6160,11 +6261,20 @@ public class UMLParsingIntegrator
                     for (int index = 0; index < max; index++)
                     {
                         IDependency pDep = pDependencies.get(index);
-                        if(pDep!=null)
+
+                        if(pDep!=null 
+                           && ( ! ( pDep instanceof Dependency
+                                  || pDep instanceof Realization                                 
+                                  || pDep instanceof Abstraction
+                                  || pDep instanceof Usage 
+                                  || pDep instanceof Permission)
+                                || (pDep instanceof Implementation)
+                              )
+                           )
                         {
+                            pNamedElement.removeClientDependency(pDep);
                             pDep.delete();
-                        }
-                        
+                        }                        
                     }
                 }
             }
@@ -6947,6 +7057,7 @@ public class UMLParsingIntegrator
                     establishXMIID(curElement);
                     XMLManip.setAttributeValue(curElement, "enumeration", enumerationID);
                     processComment(curElement);
+                    processEnumLiteralArguments(curElement);
                 }
                 
                 scrubOperations(pClazz, clazzObj, classSpace);
@@ -7026,7 +7137,7 @@ public class UMLParsingIntegrator
         
         try
         {
-            
+
             String value = XMLManip.retrieveNodeTextValue(node, "./UML:Element.ownedElement/UML:TaggedValue[@name='documentation']/UML:TaggedValue.dataValue");
             
             if (value.length() > 0)

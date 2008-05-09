@@ -56,10 +56,8 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntArtifactQuery;
-import org.netbeans.api.project.ant.FileChooser;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
-import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -214,11 +212,7 @@ public final class ClassSource {
             }
         }
         public Boolean addToProjectClassPath(FileObject projectArtifact, String classPathType) throws IOException, UnsupportedOperationException {
-            String f = FileChooser.showRelativizeFilePathCustomizer(jar, projectArtifact, true);
-            if (f == null) {
-                return null;
-            }
-            URL u = LibrariesSupport.convertFilePathToURL(f);
+            URL u = jar.toURI().toURL();
             if (FileUtil.isArchiveFile(FileUtil.toFileObject(jar))) {
                 u = FileUtil.getArchiveRoot(u);
             }

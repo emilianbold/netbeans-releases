@@ -345,21 +345,6 @@ public class ProjectTab extends TopComponent
         ExplorerUtils.activateActions(manager, false);
     }
 
-    @Override
-    public Action[] getActions() {
-        Action[] actions = super.getActions();
-        if (ID_LOGICAL.equals(id)) {
-            List<Action> allActions = new ArrayList<Action>(Arrays.asList(manager.getRootContext().getActions(false)));
-            allActions.add(null);
-            allActions.addAll(Arrays.asList(actions));
-            return allActions.toArray(new Action[allActions.size()]);
-        } else {
-            return actions;
-        }
-    }
-
-
-
     // SEARCHING NODES
     
     // Called from the SelectNodeAction

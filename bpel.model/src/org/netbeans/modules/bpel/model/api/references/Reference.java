@@ -20,14 +20,10 @@ package org.netbeans.modules.bpel.model.api.references;
 
 import org.netbeans.modules.xml.xam.Referenceable;
 
-
 /**
  * @author ads
- *
  */
-public interface Reference<T extends Referenceable> extends
-        org.netbeans.modules.xml.xam.Reference<T>
-{
+public interface Reference<T extends Referenceable> extends org.netbeans.modules.xml.xam.Reference<T> {
 
     /**
      * @return True if there was performed resolving and method get()

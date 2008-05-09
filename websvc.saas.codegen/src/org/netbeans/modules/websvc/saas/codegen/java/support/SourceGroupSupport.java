@@ -244,32 +244,40 @@ public class SourceGroupSupport {
         return qualifiedClassName.substring(qualifiedClassName.lastIndexOf('.')+1);
     }
     
-//    public static JavaSource getJavaSourceFromClassName(String qualifiedClassName, Project project) throws IOException {
-//        FileObject fo = getFileObjectFromClassName(qualifiedClassName, project);
-//        if (fo != null) {
-//            return JavaSource.forFileObject(fo);
-//        } else {
-//            return null;
-//        }
-//    }
-//    
-//    public static FileObject getFileObjectFromClassName(String qualifiedClassName, Project project) throws IOException {
-//        RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
-//        FileObject root = restSupport.findSourceRoot();
-//        ClasspathInfo cpInfo = ClasspathInfo.create(root);
-//        ClassIndex ci = cpInfo.getClassIndex();
-//        int beginIndex = qualifiedClassName.lastIndexOf('.')+1;
-//        String simple = qualifiedClassName.substring(beginIndex);
-//        Set<ElementHandle<TypeElement>> handles = ci.getDeclaredTypes(
-//                simple, ClassIndex.NameKind.SIMPLE_NAME, 
-//                Collections.singleton(ClassIndex.SearchScope.SOURCE));
-//        for (ElementHandle<TypeElement> handle : handles) {
-//            if (qualifiedClassName.equals(handle.getQualifiedName())) {
-//                return SourceUtils.getFile(handle, cpInfo);
-//            }
-//        }
-//        return null;
-//    }
+    public static FileObject findSourceRoot(Project project) {
+        SourceGroup[] sourceGroups = ProjectUtils.getSources(project).getSourceGroups(
+                JavaProjectConstants.SOURCES_TYPE_JAVA);
+        if (sourceGroups != null && sourceGroups.length > 0) {
+            return sourceGroups[0].getRootFolder();
+        }
+        return null;
+    }
+    
+    public static JavaSource getJavaSourceFromClassName(String qualifiedClassName, Project project) throws IOException {
+        FileObject fo = getFileObjectFromClassName(qualifiedClassName, project);
+        if (fo != null) {
+            return JavaSource.forFileObject(fo);
+        } else {
+            return null;
+        }
+    }
+    
+    public static FileObject getFileObjectFromClassName(String qualifiedClassName, Project project) throws IOException {
+        FileObject root = findSourceRoot(project);
+        ClasspathInfo cpInfo = ClasspathInfo.create(root);
+        ClassIndex ci = cpInfo.getClassIndex();
+        int beginIndex = qualifiedClassName.lastIndexOf('.')+1;
+        String simple = qualifiedClassName.substring(beginIndex);
+        Set<ElementHandle<TypeElement>> handles = ci.getDeclaredTypes(
+                simple, ClassIndex.NameKind.SIMPLE_NAME, 
+                Collections.singleton(ClassIndex.SearchScope.SOURCE));
+        for (ElementHandle<TypeElement> handle : handles) {
+            if (qualifiedClassName.equals(handle.getQualifiedName())) {
+                return SourceUtils.getFile(handle, cpInfo);
+            }
+        }
+        return null;
+    }
     
     public static FileObject findJavaSourceFile(Project project, String name) {
         for (SourceGroup group : getJavaSourceGroups(project)) {

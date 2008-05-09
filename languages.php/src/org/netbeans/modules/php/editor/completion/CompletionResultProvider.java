@@ -42,7 +42,7 @@ package org.netbeans.modules.php.editor.completion;
 
 import java.util.List;
 
-import org.netbeans.api.gsf.CompletionProposal;
+import org.netbeans.modules.gsf.api.CompletionProposal;
 
 
 /**

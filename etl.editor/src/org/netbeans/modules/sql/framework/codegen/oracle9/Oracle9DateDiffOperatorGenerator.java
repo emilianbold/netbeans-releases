@@ -97,7 +97,7 @@ public class Oracle9DateDiffOperatorGenerator extends AbstractGenerator {
     };
 
     private static final String[] DAY_UNIT_CALC_FACT_VALS = new String[] { "0",
-            "0", "0.0417", "1" // 24 * 60
+            "0", "0.0415", "1" // 24 * 60
     };
 
     private static final String[] MONTH_UNIT_CALC_FACT_VALS = new String[] { "1", "12" };

@@ -165,7 +165,6 @@ public final class ModuleOperations implements DeleteOperationImplementation,
         addFile(GeneratedFilesHelper.BUILD_XML_PATH, files);
         addFile("manifest.mf", files); // NOI18N
         addFile("nbproject", files); // NOI18N
-        addFile(".cvsignore", files); // NOI18N
         return files;
     }
     

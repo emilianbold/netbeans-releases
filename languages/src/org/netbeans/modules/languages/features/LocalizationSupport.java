@@ -82,7 +82,7 @@ public class LocalizationSupport {
                 return bundle.getString (text);
             } catch (MissingResourceException ex) {
             }
-        return null;
+        return text;
     }
 }
 

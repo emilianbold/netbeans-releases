@@ -42,7 +42,6 @@
 package org.netbeans.modules.spring.beans.hyperlink;
 
 import java.io.IOException;
-import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.spring.api.Action;
 import org.netbeans.modules.spring.api.beans.model.SpringBean;
 import org.netbeans.modules.spring.api.beans.model.SpringBeans;
@@ -50,14 +49,13 @@ import org.netbeans.modules.spring.api.beans.model.SpringConfigModel;
 import org.netbeans.modules.spring.util.SpringBeansUIs;
 import org.netbeans.modules.spring.util.SpringBeansUIs.GoToBeanAction;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 
 /**
  *
  * @author Rohan Ranade (Rohan.Ranade@Sun.COM)
  */
-public class BeansRefHyperlinkProcessor implements HyperlinkProcessor {
+public class BeansRefHyperlinkProcessor extends HyperlinkProcessor {
 
     private boolean globalSearch;
 
@@ -66,7 +64,7 @@ public class BeansRefHyperlinkProcessor implements HyperlinkProcessor {
     }
 
     public void process(HyperlinkEnv env) {
-        final FileObject fileObject = NbEditorUtilities.getFileObject(env.getDocument());
+        final FileObject fileObject = env.getFileObject();
         if (fileObject == null) {
             return;
         }
@@ -80,7 +78,7 @@ public class BeansRefHyperlinkProcessor implements HyperlinkProcessor {
                     if(globalSearch) {
                         bean = beans.findBean(beanName);
                     } else {
-                        bean = beans.findBean(FileUtil.toFile(fileObject), beanName);
+                        bean = beans.getFileBeans(fileObject).findBeanByID(beanName);
                     }
                     
                     if (bean == null) {

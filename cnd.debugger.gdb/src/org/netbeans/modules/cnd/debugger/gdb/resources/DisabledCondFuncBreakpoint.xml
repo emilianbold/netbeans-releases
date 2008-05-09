@@ -50,4 +50,5 @@ made subject to such option by the copyright holder.
     glyph='nbresloc:/org/netbeans/modules/debugger/resources/editor/DisabledConditionalBreakpoint.gif'
     highlight='0xDCDCD8' 
     type='line'
+    actions='BreakpointActions'
 />

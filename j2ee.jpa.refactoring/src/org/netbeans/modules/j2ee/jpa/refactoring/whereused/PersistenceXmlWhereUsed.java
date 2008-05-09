@@ -129,8 +129,7 @@ public final class PersistenceXmlWhereUsed extends PersistenceXmlRefactoring {
          * @return Formatted text.
          */
         public String getDisplayText() {
-            Object[] args = new Object [] {parentFile.getNameExt(), clazz};
-            return MessageFormat.format(NbBundle.getMessage(PersistenceXmlWhereUsedRefactoringElement.class, "TXT_PersistenceXmlClassWhereUsed"), args);
+            return MessageFormat.format(NbBundle.getMessage(PersistenceXmlWhereUsedRefactoringElement.class, "TXT_PersistenceXmlClassWhereUsed"), clazz);
         }
         
         public void performChange() {

@@ -42,7 +42,6 @@ package org.netbeans.modules.editor.settings.storage;
 import java.util.concurrent.Callable;
 import org.netbeans.modules.editor.settings.storage.spi.StorageFilter;
 import org.netbeans.modules.editor.settings.storage.spi.StorageReader;
-import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -73,7 +72,6 @@ public abstract class SpiPackageAccessor {
     protected SpiPackageAccessor() {
     }
     
-    public abstract void storageReaderSetProcessedFile(StorageReader r, FileObject f);
     public abstract String storageFilterGetStorageDescriptionId(StorageFilter f);
     public abstract void storageFilterInitialize(StorageFilter f, Callable<Void> notificationCallback);
 }

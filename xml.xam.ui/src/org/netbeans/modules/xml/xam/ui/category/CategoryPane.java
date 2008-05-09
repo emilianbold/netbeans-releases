@@ -134,4 +134,9 @@ public interface CategoryPane {
      * @param  category  Category to be selected (may not be null).
      */
     void setCategory(Category category);
+    
+    /**
+     * Allow cleanup.
+     */
+    void close();
 }

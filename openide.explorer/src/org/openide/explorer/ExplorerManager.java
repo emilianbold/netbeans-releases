@@ -228,8 +228,20 @@ public final class ExplorerManager extends Object implements Serializable, Clone
                     if (value[i] == null) {
                         throw new IllegalArgumentException(getString("EXC_NoElementOfNodeSelectionMayBeNull"));
                     }
-
-                    checkUnderRoot(value[i], "EXC_NodeSelectionCannotContainNodes");
+                    
+                    // exception means sanity check failed (supplied nodes are not under root)
+                    // the reason could be that they were deleted meanwhile, so fail gracefuly in production builds
+                    try {
+                        checkUnderRoot(value[i], "EXC_NodeSelectionCannotContainNodes");
+                    } catch (IllegalArgumentException e) {
+                        boolean dontFailGracefully = false;
+                        assert dontFailGracefully = true;
+                        if (dontFailGracefully) {
+                            throw e;
+                        } else {
+                            return false;
+                        }
+                    }
                 }
 
                 if ((value.length != 0) && (vetoableSupport != null)) {
@@ -826,6 +838,7 @@ bigloop:
      * @return ExplorerActionsImpl
      */
     static synchronized ExplorerActionsImpl findExplorerActionsImpl(ExplorerManager em) {
+        assert em != null;
         if (em.actions == null) {
             em.actions = new ExplorerActionsImpl();
             em.actions.attach(em);

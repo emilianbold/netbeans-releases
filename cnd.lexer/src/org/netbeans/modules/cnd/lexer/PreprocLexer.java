@@ -69,7 +69,7 @@ public final class PreprocLexer extends CndLexer {
     private static final int DIRECTIVE_NAME     = INIT + 1;
     private static final int EXPRESSION         = DIRECTIVE_NAME + 1;
     private static final int INCLUDE_DIRECTIVE  = EXPRESSION + 1;
-    private static final int OTHER              = INCLUDE_DIRECTIVE + 1;
+    public static final int OTHER              = INCLUDE_DIRECTIVE + 1;
     
     private int state = INIT;
     private final Filter<CppTokenId> preprocFilter;
@@ -79,9 +79,10 @@ public final class PreprocLexer extends CndLexer {
         super(info);
         this.preprocFilter = CndLexerUtilities.getPreprocFilter();
         @SuppressWarnings("unchecked")
-        Filter<CppTokenId> filter = (Filter<CppTokenId>) info.getAttributeValue("lexer-filter"); // NOI18N
+        Filter<CppTokenId> filter = (Filter<CppTokenId>) info.getAttributeValue(CndLexerUtilities.LEXER_FILTER);
         this.keywordsFilter = filter != null ? filter : defaultFilter;
-        fromState(info.state()); // last line in contstructor
+        Integer attrState = (Integer) info.getAttributeValue(CndLexerUtilities.LEXER_STATE); 
+        fromState(info.state(), attrState); // last line in contstructor
     }
 
     @Override
@@ -89,8 +90,12 @@ public final class PreprocLexer extends CndLexer {
         return Integer.valueOf(state);
     }
     
-    private void fromState(Object state) {
-        this.state = state == null ? INIT : ((Integer)state).intValue();
+    private void fromState(Object state, Integer attrState) {
+        if (state == null) {
+            this.state = attrState == null ? INIT : attrState.intValue();
+        } else {
+            this.state = ((Integer)state).intValue();
+        }
     }
 
     @Override

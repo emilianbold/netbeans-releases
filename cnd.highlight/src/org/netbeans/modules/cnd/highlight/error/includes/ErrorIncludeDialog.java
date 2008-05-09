@@ -79,14 +79,14 @@ import javax.swing.event.ListSelectionListener;
 import org.netbeans.modules.cnd.api.model.CsmChangeEvent;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
-import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
+import org.netbeans.modules.cnd.api.model.CsmListeners;
 import org.netbeans.modules.cnd.api.model.CsmModelListener;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
-import org.netbeans.modules.cnd.discovery.api.ProjectUtil;
+import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
 import org.netbeans.modules.cnd.dwarfdump.Dwarf;
 import org.netbeans.modules.cnd.dwarfdump.CompilationUnit;
 import org.netbeans.modules.cnd.dwarfdump.exception.WrongFileFormatException;
@@ -144,7 +144,7 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
                         if (searchBase != null) {
                             searchBase.clear();
                         }
-                        CsmModelAccessor.getModel().removeModelListener(ErrorIncludeDialog.this);
+                        CsmListeners.getDefault().removeModelListener(ErrorIncludeDialog.this);
                     }
                 }
             }
@@ -173,7 +173,7 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
         Dialog dlg = DialogDisplayer.getDefault().createDialog(descriptor);
         dlg.setVisible(true);
         errors.parent = dlg;
-        CsmModelAccessor.getModel().addModelListener(errors);
+        CsmListeners.getDefault().addModelListener(errors);
     }
     
     private void createComponents(List<CsmInclude> includes) {
@@ -672,7 +672,7 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
     
     private void gatherSubFolders(File d, HashSet<String> set){
         if (d.isDirectory()){
-            if (ProjectUtil.ignoreFolder(d)){
+            if (DiscoveryUtils.ignoreFolder(d)){
                 return;
             }
             String path = d.getAbsolutePath();

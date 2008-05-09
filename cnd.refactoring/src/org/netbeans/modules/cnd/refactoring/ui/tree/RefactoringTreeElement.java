@@ -42,14 +42,11 @@
 package org.netbeans.modules.cnd.refactoring.ui.tree;
 
 import javax.swing.Icon;
-import org.netbeans.modules.cnd.api.model.CsmObject;
-import org.netbeans.modules.cnd.api.model.CsmOffsetable;
-import org.netbeans.modules.cnd.api.model.CsmScope;
-import org.netbeans.modules.cnd.api.model.CsmUID;
-import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
+import org.netbeans.modules.cnd.refactoring.support.ElementGrip;
 import org.netbeans.modules.refactoring.api.RefactoringElement;
 import org.netbeans.modules.refactoring.spi.ui.TreeElement;
 import org.netbeans.modules.refactoring.spi.ui.TreeElementFactory;
+import org.openide.filesystems.FileObject;
 
 /**
  * presentation of a leaf for refactoring element
@@ -58,24 +55,25 @@ import org.netbeans.modules.refactoring.spi.ui.TreeElementFactory;
 public class RefactoringTreeElement implements TreeElement { 
     
     private final RefactoringElement refactoringElement;
-    private final CsmUID<CsmOffsetable> thisObject;
+    private final Object parent;
     
     RefactoringTreeElement(RefactoringElement element) {
         this.refactoringElement = element;
-        this.thisObject = CsmRefactoringUtils.getHandler(element.getLookup().lookup(CsmOffsetable.class));
+        Object curParent = element.getLookup().lookup(ElementGrip.class); 
+        if (curParent == null) {
+            curParent = element.getLookup().lookup(FileObject.class);
+        }
+        this.parent = curParent;
     }
     
     public TreeElement getParent(boolean isLogical) {
-        CsmObject parent = null;
+        Object curParent = null;
         if (isLogical) {
-            parent = getCsmParent();
+            curParent = this.parent;
         } else {
-            CsmOffsetable thisObj = thisObject.getObject();
-            if (thisObj != null) {
-                parent = thisObj.getContainingFile();
-            }            
+            curParent = this.parent instanceof ElementGrip ? ((ElementGrip)this.parent).getFileObject() : this.parent;
         }
-        return parent != null ? TreeElementFactory.getTreeElement(parent) : null;
+        return curParent != null ? TreeElementFactory.getTreeElement(curParent) : null;
     }
     
     public Icon getIcon() {
@@ -90,12 +88,12 @@ public class RefactoringTreeElement implements TreeElement {
         return refactoringElement;
     }
     
-    private CsmObject getCsmParent() {
-        CsmOffsetable obj = thisObject.getObject();
-        CsmObject enclosing = null;
-        if (obj != null) {
-            enclosing = CsmRefactoringUtils.getEnclosingElement((CsmObject)obj);
-        }
-        return enclosing;
-    }
+//    private CsmObject getCsmParent() {
+//        CsmOffsetable obj = null;// thisObject.getObject();
+//        CsmObject enclosing = null;
+//        if (obj != null) {
+//            enclosing = CsmRefactoringUtils.getEnclosingElement((CsmObject)obj);
+//        }
+//        return enclosing;
+//    }
 }

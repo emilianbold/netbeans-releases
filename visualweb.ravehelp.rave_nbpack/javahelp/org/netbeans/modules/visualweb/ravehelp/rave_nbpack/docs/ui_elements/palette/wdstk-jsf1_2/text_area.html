@@ -1,7 +1,7 @@
 <html>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
- * Copyright © 2007 Sun Microsystems, Inc.
+ * Copyright © 2008 Sun Microsystems, Inc.
  * All rights reserved. 
  * Use is subject to license terms.
 -->
@@ -12,7 +12,7 @@
 </head>
 <body>
 <h2>JSF 1.2 Text Area Component</h2>
-<p><small><a href="#seealso">See Also | Tutorials  </a></small><small><a href="#tutorials"></a></small></p>
+<p><small><a href="#seealso">See Also  </a></small></p>
 <p>The  Text Area component 
   <img src="../../../images/bh_textarea_icon.gif" alt="Text Area component icon">&nbsp;is a  text input area 
   in which users can enter multiple lines of text. The HTML 
@@ -78,7 +78,12 @@ Some typical properties you might set are:
       </li>
       <li><b>Bind to Data<a name="bindtodata"></a></b>. Opens a dialog box that enables you to bind the component's <code>text</code> property to a data provider or an object, as described in the topic <a href="../../dialogs/bindtodata_simple_db.html">Bind to Data Dialog Box</a>. </li>
       <li><b>Property Bindings</b>. Opens a dialog box that enables you to bind properties of the component in addition to the <code>text</code> property to other objects or bean properties that update this component's properties automatically.</li>
-      <li><b>Configure Virtual Forms.</b> Enables you to add the component to a <a href="../../../components/aboutvirtualforms.html">virtual form</a>.</li>
+      <li><b>Add Binding Attribute. </b>This option adds a binding attribute to the component. <br>
+<ul>
+  <li><b>Note: </b>If you plan to script the component in Java code, you  must manually add a binding attribute, which is bound using a value binding expression to a property of the backing page bean.</li>
+</ul>
+</li>
+			<li><strong>Remove Binding Attribute.</strong> This option removes the binding attribute from the component. </li><li><b>Configure Virtual Forms.</b> Enables you to add the component to a <a href="../../../components/aboutvirtualforms.html">virtual form</a>.</li>
     </ul>
   </li>
 </ul>
@@ -94,23 +99,7 @@ Some typical properties you might set are:
  
   <dd><a href="../palette.html">About the Visual Web Palette</a></dd>
 </dl>
-<dl>     <dt>
-         <a name="tutorials">Tutorials</a>
-      </dt>
-      <dd>
-        <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-          <param name="content" value="http://www.netbeans.org/kb/60/web/about_components.html">
-          <param name="text" value="Delving Into Components"></object>
-      </dd>
-<dd>
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-		<param name="content" value="http://www.netbeans.org/kb/60/web/intro.html
-		<param name="text" value="Getting Started with NetBeans 6.0">
-</object>
-</dd>
 
-
-</dl>
 
 <hr>
 <!-- Start Customer Feedback Link -->

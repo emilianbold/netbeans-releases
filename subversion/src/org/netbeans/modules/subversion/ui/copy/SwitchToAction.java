@@ -41,20 +41,26 @@
 
 package org.netbeans.modules.subversion.ui.copy;
 
+import java.awt.EventQueue;
 import java.io.File;
+import java.util.List;
 import org.netbeans.modules.subversion.FileInformation;
-import org.netbeans.modules.subversion.FileStatusCache;
 import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
+import org.netbeans.modules.subversion.client.SvnClientRefreshHandler;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.tigris.subversion.svnclientadapter.ISVNInfo;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
+import org.tigris.subversion.svnclientadapter.SVNNodeKind;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
@@ -111,17 +117,59 @@ public class SwitchToAction extends ContextAction {
         File[] files = Subversion.getInstance().getStatusCache().listFiles(ctx, FileInformation.STATUS_LOCAL_CHANGE);       
         boolean hasChanges = files.length > 0;
 
+        final RequestProcessor rp = createRequestProcessor(nodes);
         final SwitchTo switchTo = new SwitchTo(repositoryRoot, root, hasChanges);
-        if(switchTo.showDialog()) {
-            ContextAction.ProgressSupport support = new ContextAction.ProgressSupport(this, nodes) {
-                public void perform() {
-                    RepositoryFile toRepositoryFile = switchTo.getRepositoryFile();
-                    performSwitch(toRepositoryFile, root, this);
-                }
-            };
-            support.start(createRequestProcessor(nodes));
-        }        
+                
+        showDialog(switchTo, root, rp, nodes);
     }
+
+    private void showDialog(final SwitchTo switchTo, final File root, final RequestProcessor rp, final Node[] nodes) {        
+        boolean ret = switchTo.showDialog();
+        if(!ret) {
+            return;
+        }
+        rp.post(new Runnable() {
+            public void run() {
+                if(!validateInput(root, switchTo.getRepositoryFile())) {
+                    EventQueue.invokeLater(new Runnable() {
+                        public void run() {
+                            showDialog(switchTo, root, rp, nodes);
+                        }
+                    });
+                } else {
+                    ContextAction.ProgressSupport support = new ContextAction.ProgressSupport(SwitchToAction.this, nodes) {
+                        public void perform() {
+                            RepositoryFile toRepositoryFile = switchTo.getRepositoryFile();
+                            performSwitch(toRepositoryFile, root, this);
+                        }
+                    };
+                    support.start(rp);                            
+                }
+            }
+        });
+    }
+    
+    private boolean validateInput(File root, RepositoryFile toRepositoryFile) {
+        boolean ret = false;
+        SvnClient client;
+        try {                   
+            client = Subversion.getInstance().getClient(toRepositoryFile.getRepositoryUrl());
+            ISVNInfo info = client.getInfo(toRepositoryFile.getFileUrl());
+            if(info.getNodeKind() == SVNNodeKind.DIR && root.isFile()) {
+                SvnClientExceptionHandler.annotate(NbBundle.getMessage(SwitchToAction.class, "LBL_SwitchFileToFolderError"));
+                ret = false;
+            } else if(info.getNodeKind() == SVNNodeKind.FILE && root.isDirectory()) {
+                SvnClientExceptionHandler.annotate(NbBundle.getMessage(SwitchToAction.class, "LBL_SwitchFolderToFileError"));
+                ret = false;
+            } else {
+                ret = true;
+            }
+        } catch (SVNClientException ex) {
+            SvnClientExceptionHandler.notifyException(ex, true, true);
+            return ret;
+        }                            
+        return ret;
+    }        
 
     static void performSwitch(RepositoryFile toRepositoryFile, File root, SvnProgressSupport support) {
         File[][] split = Utils.splitFlatOthers(new File[] {root} );
@@ -131,7 +179,7 @@ public class SwitchToAction extends ContextAction {
             recursive = false;
         } else {
             recursive = true;
-        }        
+        }                
 
         try {
             SvnClient client;
@@ -143,9 +191,14 @@ public class SwitchToAction extends ContextAction {
             }            
             // ... and switch
             client.switchToUrl(root, toRepositoryFile.getFileUrl(), toRepositoryFile.getRevision(), recursive);
-            // XXX this is ugly and expensive! the client should notify (onNotify()) the cache. find out why it doesn't work...
-            SvnUtils.refreshRecursively(root);
-            Subversion.getInstance().refreshAllAnnotations();
+            // the client doesn't notify as there is no output rom the cli. Lets emulate onNotify as from the client
+            List<File> switchedFiles = SvnUtils.listRecursively(root);
+            File[] fileArray = switchedFiles.toArray(new File[switchedFiles.size()]);
+            Subversion.getInstance().getRefreshHandler().refreshImediately(fileArray);                        
+            // the cache fires status change events to trigger the annotation refresh
+            // unfortunatelly - we have to call the refresh explicitly for each file also 
+            // from this place as the branch label was changed evern if the files status didn't
+            Subversion.getInstance().refreshAnnotations(fileArray); 
         } catch (SVNClientException ex) {
             support.annotate(ex);
         }

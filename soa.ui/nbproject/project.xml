@@ -132,6 +132,15 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.projectapi</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.13</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.xml.core</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -151,26 +160,25 @@
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.bpel.core</friend>
+                <friend>org.netbeans.modules.bpel.model</friend>
                 <friend>org.netbeans.modules.bpel.debugger.ui</friend>
                 <friend>org.netbeans.modules.bpel.editors</friend>
                 <friend>org.netbeans.modules.bpel.editors.api</friend>
                 <friend>org.netbeans.modules.bpel.mapper</friend>
-                <friend>org.netbeans.modules.bpel.refactoring</friend>
-                <friend>org.netbeans.modules.bpel.search</friend>
-                <friend>org.netbeans.modules.bpel.validation</friend>
                 <friend>org.netbeans.modules.soa.mapper</friend>
                 <friend>org.netbeans.modules.xslt.core</friend>
                 <friend>org.netbeans.modules.xslt.mapper</friend>
                 <friend>org.netbeans.modules.xslt.project</friend>
                 <friend>org.netbeans.modules.xslt.tmap</friend>
+                <friend>org.netbeans.modules.etl.editor</friend>
                 <package>org.netbeans.modules.soa.ui</package>
+                <package>org.netbeans.modules.soa.ui.util</package>
                 <package>org.netbeans.modules.soa.ui.axinodes</package>
                 <package>org.netbeans.modules.soa.ui.form</package>
                 <package>org.netbeans.modules.soa.ui.form.valid</package>
                 <package>org.netbeans.modules.soa.ui.nodes</package>
                 <package>org.netbeans.modules.soa.ui.tnv.api</package>
                 <package>org.netbeans.modules.soa.ui.tnv.scrollpane</package>
-                <package>org.netbeans.modules.soa.ui.util</package>
             </friend-packages>
         </data>
     </configuration>

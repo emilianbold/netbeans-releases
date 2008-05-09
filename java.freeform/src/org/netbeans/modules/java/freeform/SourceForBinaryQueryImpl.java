@@ -42,11 +42,9 @@
 package org.netbeans.modules.java.freeform;
 
 import java.io.File;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import javax.swing.event.ChangeListener;
@@ -141,27 +139,7 @@ final class SourceForBinaryQueryImpl implements SourceForBinaryQueryImplementati
                 continue;
             }
             File buildProduct = helper.resolveFile(textEval);
-            URL buildProductURL;
-            try {
-                buildProductURL = buildProduct.toURI().toURL();
-            } catch (MalformedURLException e) {
-                assert false : e;
-                continue;
-            }
-            if (FileUtil.isArchiveFile(buildProductURL)) {
-                buildProductURL = FileUtil.getArchiveRoot(buildProductURL);
-            } else {
-                // If it is not jar then it has to be folder. Make sure folder
-                // URL ends with slash character. If buildProduct file above
-                // does not exist then created URL will not end with slash!
-                if (!buildProduct.exists() && !buildProductURL.toExternalForm().endsWith("/")) {
-                    try {
-                        buildProductURL = new URL(buildProductURL.toExternalForm()+"/");
-                    } catch (MalformedURLException e) {
-                        assert false : e;
-                    }
-                }
-            }
+            URL buildProductURL = FileUtil.urlForArchiveOrDir(buildProduct);
             binaries.add(buildProductURL);
         }
         return binaries;

@@ -48,7 +48,6 @@ import javax.swing.ImageIcon;
 
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.ui.graph.actions.GraphAction;
 import org.netbeans.modules.sql.framework.ui.view.conditionbuilder.ConditionBuilderView;
 import org.netbeans.modules.sql.framework.ui.view.conditionbuilder.ConditionViewManager;
@@ -61,20 +60,20 @@ import org.openide.util.HelpCtx;
 public class ShowTableTreeAction extends GraphAction {
 
     private static URL validateSqlUrl = ShowTableTreeAction.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/Show_Source_Columns.png");
-    private static transient final Logger mLogger = LogUtil.getLogger(ShowTableTreeAction.class.getName());
+    private static transient final Logger mLogger = Logger.getLogger(ShowTableTreeAction.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
     public ShowTableTreeAction() {
         // Action name
-        String nbBundle1 = mLoc.t("PRSR001: Toggle Tree View");
-        this.putValue(Action.NAME, Localizer.parse(nbBundle1));
+        String nbBundle1 = mLoc.t("BUND374: Toggle Tree View");
+        this.putValue(Action.NAME, nbBundle1.substring(15));
 
         // Action icon
         this.putValue(Action.SMALL_ICON, new ImageIcon(validateSqlUrl));
 
         // Action tooltip
-        String nbBundle2 = mLoc.t("PRSR001: Toggle Table Tree View");
-        this.putValue(Action.SHORT_DESCRIPTION, Localizer.parse(nbBundle2));
+        String nbBundle2 = mLoc.t("BUND375: Toggle Table Tree View");
+        this.putValue(Action.SHORT_DESCRIPTION, nbBundle2.substring(15));
     }
 
     /**

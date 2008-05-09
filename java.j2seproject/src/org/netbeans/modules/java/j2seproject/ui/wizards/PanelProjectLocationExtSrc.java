@@ -41,11 +41,9 @@
 
 package org.netbeans.modules.java.j2seproject.ui.wizards;
 
-import java.awt.Dialog;
 import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
-import java.util.Enumeration;
 import javax.swing.JFileChooser;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -68,6 +66,9 @@ public class PanelProjectLocationExtSrc extends SettingsPanel {
     private PanelConfigureProject firer;
     private WizardDescriptor wizardDescriptor;
     private boolean calculatePF;
+    
+    private static final String DEFAULT_BUILD_SCRIPT_NAME = "build.xml";      //NOI18N
+    private static final String NB_BUILD_SCRIPT_NAME = "nbbuild.xml";          //NOI18N
 
     /** Creates new form PanelSourceFolders */
     public PanelProjectLocationExtSrc (PanelConfigureProject panel) {
@@ -77,32 +78,55 @@ public class PanelProjectLocationExtSrc extends SettingsPanel {
             public void changedUpdate(DocumentEvent e) {
                 calculateProjectFolder ();
                 dataChanged ();
+                firePropertyChange (PanelProjectLocationVisual.PROP_PROJECT_NAME,null, projectName.getText());
             }
 
             public void insertUpdate(DocumentEvent e) {
                 calculateProjectFolder ();
                 dataChanged ();
+                firePropertyChange (PanelProjectLocationVisual.PROP_PROJECT_NAME,null, projectName.getText());
             }
 
             public void removeUpdate(DocumentEvent e) {
                 calculateProjectFolder ();
                 dataChanged ();
+                firePropertyChange (PanelProjectLocationVisual.PROP_PROJECT_NAME,null, projectName.getText());
             }
         });        
         this.projectLocation.getDocument().addDocumentListener(new DocumentListener () {
             public void changedUpdate(DocumentEvent e) {             
                 setCalculateProjectFolder (false);
+                checkBuildScriptName();
                 dataChanged ();
+                firePropertyChange (PanelProjectLocationVisual.PROP_PROJECT_LOCATION,null, projectLocation.getText());
             }
 
             public void insertUpdate(DocumentEvent e) {
                 setCalculateProjectFolder (false);
+                checkBuildScriptName();
                 dataChanged ();
+                firePropertyChange (PanelProjectLocationVisual.PROP_PROJECT_LOCATION,null, projectLocation.getText());
             }
 
             public void removeUpdate(DocumentEvent e) {
                 setCalculateProjectFolder (false);
+                checkBuildScriptName();
                 dataChanged ();
+                firePropertyChange (PanelProjectLocationVisual.PROP_PROJECT_LOCATION,null, projectLocation.getText());
+            }
+        });
+        this.buildScriptName.getDocument().addDocumentListener(new DocumentListener() {
+
+            public void insertUpdate(DocumentEvent e) {
+                dataChanged();
+            }
+
+            public void removeUpdate(DocumentEvent e) {
+                dataChanged();
+            }
+
+            public void changedUpdate(DocumentEvent e) {
+                dataChanged();
             }
         });
     }
@@ -112,6 +136,17 @@ public class PanelProjectLocationExtSrc extends SettingsPanel {
             File f = ProjectChooser.getProjectsFolder();
             this.projectLocation.setText (f.getAbsolutePath() + File.separator + this.projectName.getText());
             this.calculatePF = true;
+        }
+    }
+    
+    private void checkBuildScriptName() {
+        if (DEFAULT_BUILD_SCRIPT_NAME.equals(this.buildScriptName.getText())) {
+            final String path = this.projectLocation.getText();
+            final File projDir = new File (path);
+            final File buildScript = new File (projDir, DEFAULT_BUILD_SCRIPT_NAME);
+            if (buildScript.exists()) {
+                this.buildScriptName.setText(NB_BUILD_SCRIPT_NAME);
+            }
         }
     }
     
@@ -151,16 +186,33 @@ public class PanelProjectLocationExtSrc extends SettingsPanel {
         }
         this.projectName.setText (projectName);                
         this.projectName.selectAll();
+        String buildScriptName = (String) settings.getProperty("buildScriptName");           //NOI18N
+        if (buildScriptName == null) {
+            assert projectLocation != null;
+            buildScriptName = DEFAULT_BUILD_SCRIPT_NAME;
+            File bf = new File (projectLocation,buildScriptName);
+            if (bf.exists()) {
+                buildScriptName = NB_BUILD_SCRIPT_NAME;
+            }
+            //Todo: Mybe generate other name, like nb-build2.xml - not sure if it's desirable
+        }
+        this.buildScriptName.setText(buildScriptName);
+        
     }
 
     void store (WizardDescriptor settings) {        
         settings.putProperty ("name",this.projectName.getText()); // NOI18N
         File projectsDir = new File(this.projectLocation.getText());
-        settings.putProperty ("projdir", projectsDir); // NOI18N        
+        settings.putProperty ("projdir", projectsDir); // NOI18N
+        String buildScriptName = this.buildScriptName.getText();
+        if (DEFAULT_BUILD_SCRIPT_NAME.equals(buildScriptName)) {
+            buildScriptName = null;
+        }
+        settings.putProperty("buildScriptName", buildScriptName);    //NOI18N
     }
     
     boolean valid (WizardDescriptor settings) {
-        String result = checkValidity (this.projectName.getText(), this.projectLocation.getText());
+        String result = checkValidity (this.projectName.getText(), this.projectLocation.getText(), this.buildScriptName.getText());
         if (result == null) {
             wizardDescriptor.putProperty( "WizardPanel_errorMessage","");   //NOI18N
             return true;
@@ -171,7 +223,8 @@ public class PanelProjectLocationExtSrc extends SettingsPanel {
         }
     }
 
-    static String checkValidity (final String projectName, final String projectLocation) {
+    static String checkValidity (final String projectName, final String projectLocation,
+        final String buildScriptName) {
         if ( projectName.length() == 0 
              || projectName.indexOf('/')  > 0           //NOI18N
              || projectName.indexOf('\\') > 0           //NOI18N
@@ -192,6 +245,10 @@ public class PanelProjectLocationExtSrc extends SettingsPanel {
         if (projLoc == null || !projLoc.canWrite()) {
             return NbBundle.getMessage(PanelSourceFolders.class,"MSG_ProjectFolderReadOnly");
         }
+        
+        if (buildScriptName.length() == 0 || buildScriptName.indexOf(File.separatorChar) >= 0 || !buildScriptName.endsWith(".xml")) {   //NOI18N
+            return NbBundle.getMessage(PanelSourceFolders.class,"MSG_WrongBuildScriptName");
+        }
 
         File destFolder = FileUtil.normalizeFile(new File( projectLocation ));
         File[] kids = destFolder.listFiles();
@@ -208,12 +265,9 @@ public class PanelProjectLocationExtSrc extends SettingsPanel {
                 else if ("dist".equals(childName)) {   //NOI18N
                     file = NbBundle.getMessage (PanelSourceFolders.class,"TXT_DistFolder");
                 }
-                else if ("build.xml".equals(childName)) {   //NOI18N
+                else if (buildScriptName.equals(childName)) {   //NOI18N
                     file = NbBundle.getMessage (PanelSourceFolders.class,"TXT_BuildXML");
-                }
-                else if ("manifest.mf".equals(childName)) { //NOI18N
-                    file = NbBundle.getMessage (PanelSourceFolders.class,"TXT_Manifest");
-                }
+                }                
                 if (file != null) {
                     String format = NbBundle.getMessage (PanelSourceFolders.class,"MSG_ProjectFolderInvalid");
                     return MessageFormat.format(format, new Object[] {file});
@@ -246,7 +300,8 @@ public class PanelProjectLocationExtSrc extends SettingsPanel {
      * WARNING: Do NOT modify this code. The content of this method is
      * always regenerated by the Form Editor.
      */
-    private void initComponents() {//GEN-BEGIN:initComponents
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
         jPanel2 = new javax.swing.JPanel();
@@ -256,33 +311,33 @@ public class PanelProjectLocationExtSrc extends SettingsPanel {
         jLabel6 = new javax.swing.JLabel();
         projectLocation = new javax.swing.JTextField();
         jButton3 = new javax.swing.JButton();
+        jLabel1 = new javax.swing.JLabel();
+        buildScriptName = new javax.swing.JTextField();
         jPanel1 = new javax.swing.JPanel();
 
         setLayout(new java.awt.GridBagLayout());
 
-        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PanelProjectLocationExtSrc.class, "ACSN_PanelSourceFolders"));
-        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelProjectLocationExtSrc.class, "ACSD_PanelSourceFolders"));
         jPanel2.setLayout(new java.awt.GridBagLayout());
 
         jLabel4.setLabelFor(jPanel2);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(PanelProjectLocationExtSrc.class, "LBL_ProjectNameAndLocationLabel"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(PanelProjectLocationExtSrc.class, "LBL_ProjectNameAndLocationLabel")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         jPanel2.add(jLabel4, gridBagConstraints);
-        jLabel4.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PanelProjectLocationExtSrc.class, "ACSN_jLabel4"));
-        jLabel4.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelProjectLocationExtSrc.class, "ACSD_jLabel4"));
+        jLabel4.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PanelProjectLocationExtSrc.class, "ACSN_jLabel4")); // NOI18N
+        jLabel4.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelProjectLocationExtSrc.class, "ACSD_jLabel4")); // NOI18N
 
         jLabel5.setLabelFor(projectName);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel5, org.openide.util.NbBundle.getMessage(PanelProjectLocationExtSrc.class, "LBL_NWP1_ProjectName_Label"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel5, org.openide.util.NbBundle.getMessage(PanelProjectLocationExtSrc.class, "LBL_NWP1_ProjectName_Label")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         jPanel2.add(jLabel5, gridBagConstraints);
-        jLabel5.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PanelProjectLocationExtSrc.class, "ACSN_projectNameLabel"));
-        jLabel5.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelProjectLocationExtSrc.class, "ACSD_projectNameLabel"));
+        jLabel5.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PanelProjectLocationExtSrc.class, "ACSN_projectNameLabel")); // NOI18N
+        jLabel5.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelProjectLocationExtSrc.class, "ACSD_projectNameLabel")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -293,15 +348,15 @@ public class PanelProjectLocationExtSrc extends SettingsPanel {
 
         jLabel6.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(PanelProjectLocationExtSrc.class).getString("LBL_NWP1_CreatedProjectFolder_LablelMnemonic").charAt(0));
         jLabel6.setLabelFor(projectLocation);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel6, org.openide.util.NbBundle.getMessage(PanelProjectLocationExtSrc.class, "LBL_NWP1_CreatedProjectFolder_Lablel"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel6, org.openide.util.NbBundle.getMessage(PanelProjectLocationExtSrc.class, "LBL_NWP1_CreatedProjectFolder_Lablel")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         jPanel2.add(jLabel6, gridBagConstraints);
-        jLabel6.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PanelProjectLocationExtSrc.class, "ACSN_projectLocationLabel"));
-        jLabel6.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelProjectLocationExtSrc.class, "ACSD_projectLocationLabel"));
+        jLabel6.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PanelProjectLocationExtSrc.class, "ACSN_projectLocationLabel")); // NOI18N
+        jLabel6.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelProjectLocationExtSrc.class, "ACSD_projectLocationLabel")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 2;
@@ -311,21 +366,35 @@ public class PanelProjectLocationExtSrc extends SettingsPanel {
         gridBagConstraints.insets = new java.awt.Insets(12, 6, 0, 0);
         jPanel2.add(projectLocation, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(jButton3, org.openide.util.NbBundle.getMessage(PanelProjectLocationExtSrc.class, "LBL_NWP1_BrowseLocation_Button3"));
+        org.openide.awt.Mnemonics.setLocalizedText(jButton3, org.openide.util.NbBundle.getMessage(PanelProjectLocationExtSrc.class, "LBL_NWP1_BrowseLocation_Button3")); // NOI18N
         jButton3.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 browseProjectLocation(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 6, 0, 0);
         jPanel2.add(jButton3, gridBagConstraints);
-        jButton3.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PanelProjectLocationExtSrc.class, "ACSN_browseButton"));
-        jButton3.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelProjectLocationExtSrc.class, "ACSD_browseButton"));
+        jButton3.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PanelProjectLocationExtSrc.class, "ACSN_browseButton")); // NOI18N
+        jButton3.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelProjectLocationExtSrc.class, "ACSD_browseButton")); // NOI18N
+
+        jLabel1.setLabelFor(buildScriptName);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(PanelProjectLocationExtSrc.class, "MSG_BuildScriptName")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
+        jPanel2.add(jLabel1, gridBagConstraints);
+        jLabel1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelProjectLocationExtSrc.class, "AD_BuildScriptName")); // NOI18N
+
+        buildScriptName.setText("\n");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(12, 6, 0, 0);
+        jPanel2.add(buildScriptName, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -335,7 +404,6 @@ public class PanelProjectLocationExtSrc extends SettingsPanel {
         add(jPanel2, gridBagConstraints);
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
@@ -344,10 +412,12 @@ public class PanelProjectLocationExtSrc extends SettingsPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         add(jPanel1, gridBagConstraints);
-        jPanel1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PanelProjectLocationExtSrc.class, "ACSN_jPanel1"));
-        jPanel1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelProjectLocationExtSrc.class, "ACSD_jPanel1"));
+        jPanel1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PanelProjectLocationExtSrc.class, "ACSN_jPanel1")); // NOI18N
+        jPanel1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelProjectLocationExtSrc.class, "ACSD_jPanel1")); // NOI18N
 
-    }//GEN-END:initComponents
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PanelProjectLocationExtSrc.class, "ACSN_PanelSourceFolders")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelProjectLocationExtSrc.class, "ACSD_PanelSourceFolders")); // NOI18N
+    }// </editor-fold>//GEN-END:initComponents
 
     private void browseProjectLocation(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseProjectLocation
         // TODO add your handling code here:
@@ -373,7 +443,9 @@ public class PanelProjectLocationExtSrc extends SettingsPanel {
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JTextField buildScriptName;
     private javax.swing.JButton jButton3;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;

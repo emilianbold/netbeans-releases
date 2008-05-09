@@ -40,12 +40,7 @@
  */
 package org.netbeans.modules.ruby.rhtml;
 
-import java.util.Map;
 import org.netbeans.editor.Acceptor;
-import org.netbeans.editor.Settings;
-import org.netbeans.editor.SettingsNames;
-import org.netbeans.editor.ext.ExtSettingsNames;
-import org.netbeans.modules.ruby.rhtml.editor.RhtmlKit;
 
 
 /**
@@ -56,39 +51,14 @@ import org.netbeans.modules.ruby.rhtml.editor.RhtmlKit;
  * Maybe that is all there already in NetBeans but I could not find it.
  * This is called from the ModuleInstall class and it's key for the editor to work.
  */
-public class RhtmlEditorSettings extends Settings.AbstractInitializer {
-    private static final String SETTINGS_NAME = "rhtml-editor-settings-initializer"; // NOI18N
-
-    public RhtmlEditorSettings() {
-        super(SETTINGS_NAME);
-    }
-    
-    public static final Acceptor defaultAbbrevResetAcceptor = new Acceptor() {
+public final class RhtmlEditorSettings {
+    private final static Acceptor defaultAbbrevResetAcceptor = new Acceptor() {
           public final boolean accept(char ch) {
-              return !Character.isJavaIdentifierPart(ch) && ch != ':';
+              return !Character.isJavaIdentifierPart(ch) && ch != ':'; //NOI18N
           }
-      };
-
-    @SuppressWarnings("unchecked") // The old API isn't generified yet
-    public void updateSettingsMap(Class kitClass, Map settingsMap) {
-        if (kitClass == null) {
-            return;
-        }
-
-        if (kitClass == RhtmlKit.class) {
-            settingsMap.put(SettingsNames.SPACES_PER_TAB, Integer.valueOf(2));
-            settingsMap.put(SettingsNames.INDENT_SHIFT_WIDTH, Integer.valueOf(2));
-            settingsMap.put(ExtSettingsNames.CARET_SIMPLE_MATCH_BRACE, Boolean.FALSE);
-            settingsMap.put(ExtSettingsNames.HIGHLIGHT_MATCH_BRACE, Boolean.TRUE);
-            settingsMap.put(SettingsNames.WORD_MATCH_MATCH_CASE, Boolean.TRUE);
-            settingsMap.put(ExtSettingsNames.REINDENT_WITH_TEXT_BEFORE, Boolean.FALSE);
-            settingsMap.put(ExtSettingsNames.COMPLETION_AUTO_POPUP, Boolean.TRUE);
-            settingsMap.put(SettingsNames.PAIR_CHARACTERS_COMPLETION, Boolean.TRUE);
-            settingsMap.put(SettingsNames.ABBREV_RESET_ACCEPTOR, defaultAbbrevResetAcceptor);
-
-            //ExtSettingsNames.SHOW_DEPRECATED_MEMBERS
-            //ExtSettingsNames.COMPLETION_INSTANT_SUBSTITUTION
-            //ExtSettingsNames.COMPLETION_CASE_SENSITIVE
-        }
+    };
+    
+    public static Acceptor getAbbrevResetAcceptor() {
+        return defaultAbbrevResetAcceptor;
     }
 }

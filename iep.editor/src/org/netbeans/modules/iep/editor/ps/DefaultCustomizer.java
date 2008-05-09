@@ -121,7 +121,7 @@ public class DefaultCustomizer extends TcgComponentNodePropertyCustomizer implem
             // by createPropertyPanel()
             IEPModel model = getOperatorComponent().getModel();
             
-            mSelectPanel = new SelectPanel(model, mComponent);
+            mSelectPanel = createSelectPanel(model, mComponent);
             
             ExpressionAttributeDropNotificationListener listener = new ExpressionAttributeDropNotificationListener();
             mSelectPanel.addAttributeDropNotificationListener(listener);
@@ -161,9 +161,11 @@ public class DefaultCustomizer extends TcgComponentNodePropertyCustomizer implem
             // left attribute pane
             if (mHasExpressionColumn) {
                 ((JSplitPane)attributePane).setOneTouchExpandable(true);
-                mInputPanel = new InputSchemaTreePanel(model, mComponent);
-                mInputPanel.setPreferredSize(new Dimension(200, 400));
-                ((JSplitPane)attributePane).setLeftComponent(mInputPanel);
+                mInputPanel = createInputSchemaTreePanel(model, mComponent);
+                if(mInputPanel != null) {
+                	 mInputPanel.setPreferredSize(new Dimension(200, 400));
+                    ((JSplitPane)attributePane).setLeftComponent(mInputPanel);
+                }
             }
             
             // right attribute pane
@@ -187,7 +189,7 @@ public class DefaultCustomizer extends TcgComponentNodePropertyCustomizer implem
             rightPane.add(mSelectPanel, gbc);
             
             if (mHasExpressionColumn) {
-                if (mHasFromClause) {
+                if (mHasFromClause && isShowFromClause()) {
                     gbc.gridx = 0;
                     gbc.gridy = rightPaneGridY++;
                     gbc.gridwidth = 1;
@@ -248,6 +250,15 @@ public class DefaultCustomizer extends TcgComponentNodePropertyCustomizer implem
                     NbBundle.getMessage(DefaultCustomEditor.class, "CustomEditor.FAILED_TO_LAYOUT"),
                     e);
         }
+    }
+    
+    protected SelectPanel createSelectPanel(IEPModel model, OperatorComponent component) {
+    	return new SelectPanel(model, component);
+    }
+    
+    protected InputSchemaTreePanel createInputSchemaTreePanel(IEPModel model, OperatorComponent component) {
+        mInputPanel = new InputSchemaTreePanel(model, mComponent);
+        return mInputPanel;
     }
     
     protected JPanel createPropertyPanel() throws Exception {
@@ -383,7 +394,7 @@ public class DefaultCustomizer extends TcgComponentNodePropertyCustomizer implem
                 mSelectPanel.validateContent(evt);
                 
                 if (mHasExpressionColumn) {
-                    if (mHasFromClause) {
+                    if (mHasFromClause && isShowFromClause()) {
                         // from clause
                         mFromPanel.validateContent(evt);
                         String from = mFromPanel.getStringValue();
@@ -547,7 +558,7 @@ public class DefaultCustomizer extends TcgComponentNodePropertyCustomizer implem
                     mModel.endTransaction();
                     //ritmComponent.getProperty(TO_COLUMN_LIST_KEY).setValue(toList);
                     
-                    if (mHasFromClause) {
+                    if (mHasFromClause && isShowFromClause()) {
                         // from clause
                         mFromPanel.store();
                     }
@@ -571,6 +582,18 @@ public class DefaultCustomizer extends TcgComponentNodePropertyCustomizer implem
             e.printStackTrace();
             NotifyHelper.reportError(e.getMessage());
         }
+    }
+    
+    protected boolean isShowFromClause() {
+        return true;
+    }
+    
+    public String generateUniqueAttributeName(String baseName) {
+        if(mSelectPanel != null) {
+            return mSelectPanel.generateUniqueAttributeName(baseName);
+        }
+        
+        return null;
     }
     
     class ExpressionAttributeDropNotificationListener implements AttributeDropNotificationListener {

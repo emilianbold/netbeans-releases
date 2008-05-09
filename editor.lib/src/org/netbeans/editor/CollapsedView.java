@@ -192,25 +192,17 @@ import org.openide.util.WeakListeners;
     }
     
     public void paint(Graphics g, Shape allocation){
-        Rectangle allocRect = allocation.getBounds();
-        int x = allocRect.x+2;
-        int y = allocRect.y;
-        int width = allocRect.width-1;
-        int height = allocRect.height-1;
-
+        Rectangle r = allocation.getBounds();
         Coloring coloring = getColoring();
-        
-        // draw background
+
         g.setColor(coloring.getBackColor());
-        g.fillRect(x, y, width, height);
+        g.fillRect(r.x, r.y, r.width, r.height);
         
-        // draw border
         g.setColor(coloring.getForeColor());
-        g.setFont(coloring.getFont());
-        g.drawRect(x, y, width, height);
+        g.drawRect(r.x, r.y, r.width - 1, r.height - 1);
         
-        // draw the fold's caption (text)
-        g.drawString(foldDescription, x + MARGIN_WIDTH, y + getEditorUI().getLineAscent()-1);
+        g.setFont(coloring.getFont());
+        g.drawString(foldDescription, r.x + MARGIN_WIDTH, r.y + getEditorUI().getLineAscent() - 1);
     }
     
     public @Override int getNextVisualPositionFrom(

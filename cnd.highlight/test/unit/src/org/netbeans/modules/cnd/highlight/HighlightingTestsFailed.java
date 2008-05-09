@@ -52,7 +52,7 @@ import org.netbeans.modules.cnd.test.BaseTestSuite;
 public class HighlightingTestsFailed extends BaseTestSuite {
 
     public HighlightingTestsFailed() {
-        super("Highlighting tests failed");
+        super("Highlighting tests failed"); // NOI18N
         addTestSuite(ClassFieldsTest.Failed.class);
     }
 

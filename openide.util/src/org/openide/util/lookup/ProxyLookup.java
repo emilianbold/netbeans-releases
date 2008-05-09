@@ -51,9 +51,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import javax.swing.event.EventListenerList;
 import org.openide.util.Lookup;
@@ -66,20 +66,14 @@ import org.openide.util.LookupListener;
  * @since 1.9
  */
 public class ProxyLookup extends Lookup {
-    /** empty array of lookups for potential use */
-    private static final Lookup[] EMPTY_ARR = new Lookup[0];
+    /** data representing the state of the lookup */
+    private ImmutableInternalData data;
 
-    /** lookups to delegate to (either Lookup or array of Lookups) */
-    private Object lookups;
-
-    /** map of templates to currently active results */
-    private HashMap<Template<?>,Reference<R>> results;
-    
     /** Create a proxy to some other lookups.
      * @param lookups the initial delegates
      */
     public ProxyLookup(Lookup... lookups) {
-        this.setLookupsNoFire(lookups);
+        data = ImmutableInternalData.EMPTY.setLookupsNoFire(lookups, true);
     }
 
     /**
@@ -88,12 +82,12 @@ public class ProxyLookup extends Lookup {
      * @since 3.27
      */
     protected ProxyLookup() {
-        this(EMPTY_ARR);
+        data = ImmutableInternalData.EMPTY;
     }
 
     @Override
-    public String toString() {
-        return "ProxyLookup(class=" + getClass() + ")->" + Arrays.asList(getLookups(false)); // NOI18N
+    public synchronized String toString() {
+        return "ProxyLookup(class=" + getClass() + ")->" + Arrays.asList(getData().getLookups(false)); // NOI18N
     }
 
     /** Getter for the delegates.
@@ -101,22 +95,8 @@ public class ProxyLookup extends Lookup {
     * @since 1.19
     */
     protected final Lookup[] getLookups() {
-        return getLookups(true);
-    }
-
-    /** getter for the delegates, that can but need not do a clone.
-     * @param clone true if clone of internal array is requested
-     */
-    private final Lookup[] getLookups(boolean clone) {
-        Object l = this.lookups;
-        if (l instanceof Lookup) {
-            return new Lookup[] { (Lookup)l };
-        } else {
-            Lookup[] arr = (Lookup[])l;
-            if (clone) {
-                arr = arr.clone();
-            }
-            return arr;
+        synchronized (ProxyLookup.this) {
+            return getData().getLookups(true);
         }
     }
 
@@ -128,22 +108,6 @@ public class ProxyLookup extends Lookup {
         return map.keySet();
     }
     
-    /** Called from setLookups and constructor. 
-     * @param lookups the lookups to setup
-     */
-    private void setLookupsNoFire(Lookup[] lookups) {
-        if (lookups.length == 1) {
-            this.lookups = lookups[0];
-            assert this.lookups != null : "Cannot assign null delegate";
-        } else {
-            if (lookups.length == 0) {
-                this.lookups = EMPTY_ARR;
-            } else {
-                this.lookups = lookups.clone();
-            }
-        }
-    }
-
     /**
      * Changes the delegates.
      *
@@ -159,43 +123,14 @@ public class ProxyLookup extends Lookup {
         Map<Result,LookupListener> toRemove = new IdentityHashMap<Lookup.Result, LookupListener>();
         Map<Result,LookupListener> toAdd = new IdentityHashMap<Lookup.Result, LookupListener>();
         
-        List<Runnable> delayed = new LinkedList<Runnable>();
-        synchronized (this) {
-            old = getLookups(false);
-            current = identityHashSet(Arrays.asList(old));
-            newL = identityHashSet(Arrays.asList(lookups));
-
-            setLookupsNoFire(lookups);
-            
-            if ((results == null) || results.isEmpty()) {
-                // no affected results => exit
+        ImmutableInternalData orig;
+        synchronized (ProxyLookup.this) {
+            orig = getData();
+            ImmutableInternalData newData = getData().setLookupsNoFire(lookups, false);
+            if (newData == getData()) {
                 return;
             }
-
-            arr = new ArrayList<Reference<R>>(results.values());
-
-            Set<Lookup> removed = identityHashSet(current);
-            removed.removeAll(newL); // current contains just those lookups that have disappeared
-            newL.removeAll(current); // really new lookups
-
-            if (removed.isEmpty() && newL.isEmpty()) {
-                // no need to notify changes
-                return;
-            }
-
-            for (Reference<R> ref : arr) {
-                R<?> r = ref.get();
-                if (r != null) {
-                    Runnable delay = r.lookupChange(newL, removed, old, lookups, toAdd, toRemove);
-                    if (delay != null) {
-                        delayed.add(delay);
-                    }
-                }
-            }
-        }
-        
-        for (Runnable runnable : delayed) {
-            runnable.run();
+            arr = setData(newData, lookups, toAdd, toRemove);
         }
         
         // better to do this later than in synchronized block
@@ -240,7 +175,10 @@ public class ProxyLookup extends Lookup {
     public final <T> T lookup(Class<T> clazz) {
         beforeLookup(new Template<T>(clazz));
 
-        Lookup[] tmpLkps = this.getLookups(false);
+        Lookup[] tmpLkps;
+        synchronized (ProxyLookup.this) {
+            tmpLkps = getData().getLookups(false);
+        }
 
         for (int i = 0; i < tmpLkps.length; i++) {
             T o = tmpLkps[i].lookup(clazz);
@@ -257,7 +195,10 @@ public class ProxyLookup extends Lookup {
     public final <T> Item<T> lookupItem(Template<T> template) {
         beforeLookup(template);
 
-        Lookup[] tmpLkps = this.getLookups(false);
+        Lookup[] tmpLkps; 
+        synchronized (ProxyLookup.this) {
+            tmpLkps = getData().getLookups(false);
+        }
 
         for (int i = 0; i < tmpLkps.length; i++) {
             Item<T> o = tmpLkps[i].lookupItem(template);
@@ -275,74 +216,120 @@ public class ProxyLookup extends Lookup {
         return (R<T>)r;
     }
 
-    public final synchronized <T> Result<T> lookup(Lookup.Template<T> template) {
-        if (results != null) {
-            Reference<R> ref = results.get(template);
-            R r = (ref == null) ? null : ref.get();
-
-            if (r != null) {
-                return convertResult(r);
-            }
-        } else {
-            results = new HashMap<Template<?>,Reference<R>>();
+    public final <T> Result<T> lookup(Lookup.Template<T> template) {
+        synchronized (ProxyLookup.this) {
+            ImmutableInternalData[] res = { null };
+            R<T> newR = getData().findResult(this, res, template);
+            setData(res[0], getData().getLookups(false), null, null);
+            return newR;
         }
-
-        R<T> newR = new R<T>(template);
-        results.put(template, new java.lang.ref.SoftReference<R>(newR));
-
-        return newR;
     }
 
     /** Unregisters a template from the has map.
      */
-    private final synchronized void unregisterTemplate(Template<?> template) {
-        if (results == null) {
-            return;
+    private final void unregisterTemplate(Template<?> template) {
+        synchronized (ProxyLookup.this) {
+            ImmutableInternalData id = getData();
+            if (id == null) {
+                return;
+            }
+            setData(id.removeTemplate(this, template), getData().getLookups(false), null, null);
+        }
+    }
+
+    private ImmutableInternalData getData() {
+        assert Thread.holdsLock(this);
+        return data;
+    }
+
+    private Collection<Reference<R>> setData(
+        ImmutableInternalData newData, Lookup[] current, 
+        Map<Result,LookupListener> toAdd, Map<Result,LookupListener> toRemove
+    ) {
+        assert Thread.holdsLock(ProxyLookup.this);
+        assert newData != null;
+        
+        ImmutableInternalData previous = this.getData();
+        
+        if (previous == newData) {
+            return Collections.emptyList();
         }
 
-        Reference<R> ref = results.remove(template);
-
-        if ((ref != null) && (ref.get() != null)) {
-            // seems like there is a reference to a result for this template
-            // thta is still alive
-            results.put(template, ref);
+        if (newData.isEmpty()) {
+            this.setData(newData);
+            // no affected results => exit
+            return Collections.emptyList();
         }
+
+        Collection<Reference<R>> arr = newData.references();
+
+        Set<Lookup> removed = identityHashSet(previous.getLookupsList());
+        Set<Lookup> currentSet = identityHashSet(Arrays.asList(current));
+        Set<Lookup> newL = identityHashSet(currentSet);
+        removed.removeAll(currentSet); // current contains just those lookups that have disappeared
+        newL.removeAll(previous.getLookupsList()); // really new lookups
+
+        for (Reference<R> ref : arr) {
+            R<?> r = ref.get();
+            if (r != null) {
+                r.lookupChange(newData, current, previous, newL, removed, toAdd, toRemove);
+                if (this.getData() != previous) {
+                    // the data were changed by an re-entrant call
+                    // skip any other change processing, as it is not needed
+                    // anymore
+                }
+            }
+        }
+                for (Reference<R> ref : arr) {
+            R<?> r = ref.get();
+            if (r != null) {
+                r.data = newData;
+            }
+        }
+        this.setData(newData);
+        return arr;
+    }
+
+    private void setData(ImmutableInternalData data) {
+        this.data = data;
     }
 
     /** Result of a lookup request. Allows access to single object
      * that was found (not too useful) and also to all objects found
      * (more useful).
      */
-    private final class R<T> extends WaitableResult<T> {
+    private static final class R<T> extends WaitableResult<T> {
+        /** weak listener & result */
+        private final WeakResult<T> weakL;
+        
         /** list of listeners added */
         private javax.swing.event.EventListenerList listeners;
-
-        /** template for this result */
-        private Lookup.Template<T> template;
 
         /** collection of Objects */
         private Collection[] cache;
 
-        /** weak listener & result */
-        private WeakResult<T> weakL;
+        
+        /** associated lookup */
+        private ImmutableInternalData data;
 
         /** Constructor.
          */
-        public R(Lookup.Template<T> t) {
-            template = t;
-            weakL = new WeakResult<T>(this);
+        public R(ProxyLookup proxy, Lookup.Template<T> t) {
+            this.weakL = new WeakResult<T>(proxy, this, t);
         }
-
-        /** When garbage collected, remove the template from the has map.
-         */
-        @Override
-        protected void finalize() {
-            unregisterTemplate(template);
+        
+        private ProxyLookup proxy() {
+            return weakL.result.proxy;
         }
 
         @SuppressWarnings("unchecked")
         private Result<T>[] newResults(int len) {
             return new Result[len];
+        }
+        
+        @Override
+        protected void finalize() {
+            weakL.result.run();
         }
 
         /** initializes the results
@@ -350,22 +337,27 @@ public class ProxyLookup extends Lookup {
         private Result<T>[] initResults() {
             BIG_LOOP: for (;;) {
                 Lookup[] myLkps;
-                synchronized (this) {
-                    if (weakL.results != null) {
-                        return weakL.results;
+                ImmutableInternalData current;
+                synchronized (proxy()) {
+                    if (weakL.getResults() != null) {
+                        return weakL.getResults();
                     }
-                    myLkps = getLookups(false);
+                    myLkps = data.getLookups(false);
+                    current = data;
                 }
 
-                getLookups(false);
                 Result<T>[] arr = newResults(myLkps.length);
 
                 for (int i = 0; i < arr.length; i++) {
-                    arr[i] = myLkps[i].lookup(template);
+                    arr[i] = myLkps[i].lookup(weakL.result.template);
                 }
 
-                synchronized (this) {
-                    Lookup[] currentLkps = getLookups(false);
+                synchronized (proxy()) {
+                    if (current != data) {
+                        continue;
+                    }
+                    
+                    Lookup[] currentLkps = data.getLookups(false);
                     if (currentLkps.length != myLkps.length) {
                         continue BIG_LOOP;
                     }
@@ -377,15 +369,15 @@ public class ProxyLookup extends Lookup {
                     
                     // some other thread might compute the result mean while. 
                     // if not finish the computation yourself
-                    if (weakL.results != null) {
-                        return weakL.results;
+                    if (weakL.getResults() != null) {
+                        return weakL.getResults();
                     }
 
                     for (int i = 0; i < arr.length; i++) {
                         arr[i].addLookupListener(weakL);
                     }
 
-                    weakL.results = arr;
+                    weakL.setResults(arr);
 
                     return arr;
                 }
@@ -397,74 +389,61 @@ public class ProxyLookup extends Lookup {
          * @param remove set of removed lookups
          * @param current array of current lookups
          */
-        protected Runnable lookupChange(
-            Set<Lookup> added, Set<Lookup> removed, Lookup[] old, final Lookup[] current, 
-            final Map<Result,LookupListener> toAdd, Map<Result,LookupListener> toRemove
+        final void lookupChange(
+            ImmutableInternalData newData, Lookup[] current, ImmutableInternalData oldData,
+            Set<Lookup> added, Set<Lookup> removed,
+            Map<Result,LookupListener> toAdd, Map<Result,LookupListener> toRemove
         ) {
-            synchronized (this) {
-                if (weakL.results == null) {
-                    // not computed yet, do not need to do anything
-                    return null;
-                }
-
-                // map (Lookup, Lookup.Result)
-                Map<Lookup,Result<T>> map = new IdentityHashMap<Lookup,Result<T>>(old.length * 2);
-
-                for (int i = 0; i < old.length; i++) {
-                    if (removed.contains(old[i])) {
-                        // removed lookup
-                        toRemove.put(weakL.results[i], weakL);
-                    } else {
-                        // remember the association
-                        map.put(old[i], weakL.results[i]);
-                    }
-                }
-
-                final Lookup.Result<T>[] arr = newResults(current.length);
-
-                Runnable delayedInitialization = null;
-                for (int i = 0; i < current.length; i++) {
-                    if (added.contains(current[i])) {
-                        final int index = i;
-                        class Delay implements Runnable {
-                            private Runnable previous;
-
-                            public Delay(Runnable previous) {
-                                this.previous = previous;
-                            }
-                            
-                            public void run() {
-                                if (previous != null) {
-                                    previous.run();
-                                }
-                                // new lookup
-                                arr[index] = current[index].lookup(template);
-                                toAdd.put(arr[index], weakL);
-                            }
-                        }
-                        delayedInitialization = new Delay(delayedInitialization);
-                        arr[i] = Lookup.EMPTY.lookup(template);
-                    } else {
-                        // old lookup
-                        arr[i] = map.get(current[i]);
-
-                        if (arr[i] == null) {
-                            // assert
-                            throw new IllegalStateException();
-                        }
-                    }
-                }
-
-                // remember the new results
-                weakL.results = arr;
-                return delayedInitialization;
+            if (weakL.getResults() == null) {
+                // not computed yet, do not need to do anything
+                return;
             }
+
+            Lookup[] old = oldData.getLookups(false);
+
+            // map (Lookup, Lookup.Result)
+            Map<Lookup,Result<T>> map = new IdentityHashMap<Lookup,Result<T>>(old.length * 2);
+
+            for (int i = 0; i < old.length; i++) {
+                if (removed.contains(old[i])) {
+                    // removed lookup
+                    if (toRemove != null) {
+                        toRemove.put(weakL.getResults()[i], weakL);
+                    }
+                } else {
+                    // remember the association
+                    map.put(old[i], weakL.getResults()[i]);
+                }
+            }
+
+            Lookup.Result<T>[] arr = newResults(current.length);
+
+            for (int i = 0; i < current.length; i++) {
+                if (added.contains(current[i])) {
+                    // new lookup
+                    arr[i] = current[i].lookup(weakL.result.template);
+                    if (toAdd != null) {
+                        toAdd.put(arr[i], weakL);
+                    }
+                } else {
+                    // old lookup
+                    arr[i] = map.get(current[i]);
+
+                    if (arr[i] == null) {
+                        // assert
+                        throw new IllegalStateException();
+                    }
+                }
+            }
+
+            // remember the new results
+            weakL.setResults(arr);
         }
 
         /** Just delegates.
          */
         public void addLookupListener(LookupListener l) {
-            synchronized (this) {
+            synchronized (proxy()) {
                 if (listeners == null) {
                     listeners = new EventListenerList();
                 }
@@ -518,9 +497,9 @@ public class ProxyLookup extends Lookup {
             Lookup.Result<T>[] arr = myBeforeLookup();
 
             // if the call to beforeLookup resulted in deletion of caches
-            synchronized (this) {
-                if (cache != null) {
-                    Collection result = cache[indexToCache];
+            synchronized (proxy()) {
+                if (getCache() != null) {
+                    Collection result = getCache()[indexToCache];
                     if (result != null) {
                         return result;
                     }
@@ -560,16 +539,16 @@ public class ProxyLookup extends Lookup {
             
             
 
-            synchronized (this) {
-                if (cache == null) {
+            synchronized (proxy()) {
+                if (getCache() == null) {
                     // initialize the cache to indicate this result is in use
-                    cache = new Collection[3];
+                    setCache(new Collection[3]);
                 }
                 
-                if (arr == weakL.results) {
+                if (arr == weakL.getResults()) {
                     // updates the results, if the results have not been
                     // changed during the computation of allInstances
-                    cache[indexToCache] = ret;
+                    getCache()[indexToCache] = ret;
                 }
             }
 
@@ -586,24 +565,24 @@ public class ProxyLookup extends Lookup {
             // clear cached instances
             Collection oldItems;
             Collection oldInstances;
-            synchronized (this) {
-                if (cache == null) {
+            synchronized (proxy()) {
+                if (getCache() == null) {
                     // nobody queried the result yet
                     return;
                 }
-                oldInstances = cache[0];
-                oldItems = cache[2];
+                oldInstances = getCache()[0];
+                oldItems = getCache()[2];
                 
 
                 if (listeners == null || listeners.getListenerCount() == 0) {
                     // clear the cache
-                    cache = new Collection[3];
+                    setCache(new Collection[3]);
                     return;
                 }
                 
                 // ignore events if they arrive as a result of call to allItems
                 // or allInstances, bellow...
-                cache = null;
+                setCache(null);
             }
 
             boolean modified = true;
@@ -620,11 +599,11 @@ public class ProxyLookup extends Lookup {
                         modified = false;
                     }
                 } else {
-                    synchronized (this) {
-                        if (cache == null) {
+                    synchronized (proxy()) {
+                        if (getCache() == null) {
                             // we have to initialize the cache
                             // to show that the result has been initialized
-                            cache = new Collection[3];
+                            setCache(new Collection[3]);
                         }
                     }
                 }
@@ -640,7 +619,9 @@ public class ProxyLookup extends Lookup {
          * @return results to work on.
          */
         private Lookup.Result<T>[] myBeforeLookup() {
-            ProxyLookup.this.beforeLookup(template);
+            Template<T> template = weakL.result.template;
+            
+            proxy().beforeLookup(template);
 
             Lookup.Result<T>[] arr = initResults();
 
@@ -658,38 +639,65 @@ public class ProxyLookup extends Lookup {
         /** Used by proxy results to synchronize before lookup.
          */
         protected void beforeLookup(Lookup.Template t) {
-            if (t.getType() == template.getType()) {
+            if (t.getType() == weakL.result.template.getType()) {
                 myBeforeLookup();
             }
         }
+
+        private Collection[] getCache() {
+            return cache;
+        }
+
+        private void setCache(Collection[] cache) {
+            assert Thread.holdsLock(proxy());
+            this.cache = cache;
+        }
     }
-    private static final class WeakResult<T> extends WaitableResult<T> implements LookupListener {
+    private static final class WeakRef<T> extends WeakReference<R> implements Runnable {
+        final WeakResult<T> result;
+        final ProxyLookup proxy;
+        final Template<T> template;
+        
+        public WeakRef(R r, WeakResult<T> result, ProxyLookup proxy, Template<T> template) {
+            super(r);
+            this.result = result;
+            this.template = template;
+            this.proxy = proxy;
+        }
+
+        public void run() {
+            result.removeListeners();
+            proxy.unregisterTemplate(template);
+        }
+    }
+    
+    
+    private static final class WeakResult<T> extends WaitableResult<T> implements LookupListener, Runnable {
         /** all results */
         private Lookup.Result<T>[] results;
-
-        private Reference<R> result;
+        private final WeakRef<T> result;
         
-        public WeakResult(R r) {
-            this.result = new WeakReference<R>(r);
+        public WeakResult(ProxyLookup proxy, R r, Template<T> t) {
+            this.result = new WeakRef<T>(r, this, proxy, t);
         }
         
-        protected void beforeLookup(Lookup.Template t) {
-            R r = result.get();
-            if (r != null) {
-                r.beforeLookup(t);
-            } else {
-                removeListeners();
-            }
-        }
-
-        private void removeListeners() {
-            Lookup.Result<T>[] arr = this.results;
+        final void removeListeners() {
+            Lookup.Result<T>[] arr = this.getResults();
             if (arr == null) {
                 return;
             }
 
             for(int i = 0; i < arr.length; i++) {
                 arr[i].removeLookupListener(this);
+            }
+        }
+
+        protected void beforeLookup(Lookup.Template t) {
+            R r = result.get();
+            if (r != null) {
+                r.beforeLookup(t);
+            } else {
+                removeListeners();
             }
         }
 
@@ -735,5 +743,206 @@ public class ProxyLookup extends Lookup {
             assert false;
             return null;
         }
+
+        public void run() {
+            removeListeners();
+        }
+
+        private Lookup.Result<T>[] getResults() {
+            return results;
+        }
+
+        private void setResults(Lookup.Result<T>[] results) {
+            this.results = results;
+        }
     } // end of WeakResult
+    
+    static abstract class ImmutableInternalData extends Object {
+        static final ImmutableInternalData EMPTY = new EmptyInternalData();
+        static final Lookup[] EMPTY_ARR = new Lookup[0];
+
+        
+        protected ImmutableInternalData() {
+        }
+        
+        public static ImmutableInternalData create(Object lkp, Map<Template, Reference<R>> results) {
+            if (results.size() == 0 && lkp == EMPTY_ARR) {
+                return EMPTY;
+            }
+            if (results.size() == 1) {
+                Entry<Template,Reference<R>> e = results.entrySet().iterator().next();
+                return new SingleInternalData(lkp, e.getKey(), e.getValue());
+            }
+            
+            return new RealInternalData(lkp, results);
+        }
+
+        protected abstract boolean isEmpty();
+        protected abstract Map<Template, Reference<R>> getResults();
+        protected abstract Object getRawLookups();
+
+        final Collection<Reference<R>> references() {
+            return getResults().values();
+        }
+        
+        final <T> ImmutableInternalData removeTemplate(ProxyLookup proxy, Template<T> template) {
+            if (getResults().containsKey(template)) {
+                HashMap<Template,Reference<R>> c = new HashMap<Template, Reference<ProxyLookup.R>>(getResults());
+                Reference<R> ref = c.remove(template);
+                if (ref != null && ref.get() != null) {
+                    // seems like there is a reference to a result for this template
+                    // thta is still alive
+                    return this;
+                }
+                return create(getRawLookups(), c);
+            } else {
+                return this;
+            }
+        }
+        
+        <T> R<T> findResult(ProxyLookup proxy, ImmutableInternalData[] newData, Template<T> template) {
+            assert Thread.holdsLock(proxy);
+            
+            Map<Template,Reference<R>> map = getResults();
+            
+            Reference<R> ref = map.get(template);
+            R r = (ref == null) ? null : ref.get();
+
+            if (r != null) {
+                newData[0] = this;
+                return convertResult(r);
+            }
+            
+            HashMap<Template, Reference<R>> res = new HashMap<Template, Reference<R>>(map);
+            R<T> newR = new R<T>(proxy, template);
+            res.put(template, new java.lang.ref.SoftReference<R>(newR));
+            newR.data = newData[0] = create(getRawLookups(), res);
+            return newR;
+        }
+        final ImmutableInternalData setLookupsNoFire(Lookup[] lookups, boolean skipCheck) {
+            Object l;
+            
+            if (!skipCheck) {
+                Lookup[] previous = getLookups(false);
+                if (previous == lookups) {
+                    return this;
+                }
+            
+                if (previous.length == lookups.length) {
+                    int same = 0;
+                    for (int i = 0; i < previous.length; i++) {
+                        if (lookups[i] != previous[i]) {
+                            break;
+                        }
+                        same++;
+                    }
+                    if (same == previous.length) {
+                        return this;
+                    }
+                }
+            }
+            
+            if (lookups.length == 1) {
+                l = lookups[0];
+                assert l != null : "Cannot assign null delegate";
+            } else {
+                if (lookups.length == 0) {
+                    l = EMPTY_ARR;
+                } else {
+                    l = lookups.clone();
+                }
+            }
+            
+            if (isEmpty() && l == EMPTY_ARR) {
+                return this;
+            }
+            
+            return create(l, getResults());
+        }
+        final Lookup[] getLookups(boolean clone) {
+            Object l = this.getRawLookups();
+            if (l instanceof Lookup) {
+                return new Lookup[] { (Lookup)l };
+            } else {
+                Lookup[] arr = (Lookup[])l;
+                if (clone) {
+                    arr = arr.clone();
+                }
+                return arr;
+            }
+        }
+        final List<Lookup> getLookupsList() {
+            return Arrays.asList(getLookups(false));            
+        }
+
+    } // end of ImmutableInternalData
+    
+    private static final class SingleInternalData extends ImmutableInternalData {
+        /** lookups to delegate to (either Lookup or array of Lookups) */
+        private final Object lookups;
+        private final Template template;
+        private final Reference<ProxyLookup.R> result;
+                
+        public SingleInternalData(Object lookups, Template<?> template, Reference<ProxyLookup.R> result) {
+            this.lookups = lookups;
+            this.template = template;
+            this.result = result;
+        }
+
+        protected final boolean isEmpty() {
+            return false;
+        }
+
+        protected Map<Template, Reference<R>> getResults() {
+            return Collections.singletonMap(template, result);
+        }
+        
+        protected Object getRawLookups() {
+            return lookups;
+        }
+    }
+    private static final class RealInternalData extends ImmutableInternalData {
+        /** lookups to delegate to (either Lookup or array of Lookups) */
+        private final Object lookups;
+
+        /** map of templates to currently active results */
+        private final Map<Template,Reference<R>> results;
+
+        public RealInternalData(Object lookups, Map<Template, Reference<ProxyLookup.R>> results) {
+            this.results = results;
+            this.lookups = lookups;
+        }
+
+        protected final boolean isEmpty() {
+            return false;
+        }
+
+        protected Map<Template, Reference<R>> getResults() {
+            boolean strict = false;
+            assert strict = true;
+            return strict ? Collections.unmodifiableMap(results) : results;
+        }
+        
+        protected Object getRawLookups() {
+            return lookups;
+        }
+    }
+    
+    private static final class EmptyInternalData extends ImmutableInternalData {
+        EmptyInternalData() {
+        }
+
+        protected final boolean isEmpty() {
+            return true;
+        }
+
+        protected Map<Template, Reference<R>> getResults() {
+            return Collections.emptyMap();
+        }
+
+        @Override
+        protected Object getRawLookups() {
+            return EMPTY_ARR;
+        }
+    } // end of EmptyInternalData
 }

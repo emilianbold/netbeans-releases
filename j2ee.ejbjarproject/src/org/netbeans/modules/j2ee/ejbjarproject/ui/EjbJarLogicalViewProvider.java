@@ -67,7 +67,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.j2ee.ejbjarproject.SourceRoots;
 
 import org.openide.nodes.*;
 import org.openide.util.*;
@@ -91,18 +90,20 @@ import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProperties;
-import org.netbeans.modules.j2ee.ejbjarproject.UpdateHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
 import org.openide.util.lookup.Lookups;
 
 
 import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
+import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
 import org.netbeans.modules.j2ee.common.ui.BrokenServerSupport;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.InstanceListener;
 import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProject;
 import org.netbeans.modules.j2ee.spi.ejbjar.support.J2eeProjectView;
+import org.netbeans.modules.java.api.common.SourceRoots;
+import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.netbeans.spi.project.ui.support.NodeFactorySupport;
 import org.openide.filesystems.FileStateInvalidException;
@@ -214,11 +215,11 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider {
     // Private innerclasses ----------------------------------------------------
    
     private static final String[] BREAKABLE_PROPERTIES = new String[] {
-        EjbJarProjectProperties.JAVAC_CLASSPATH,
+        ProjectProperties.JAVAC_CLASSPATH,
         EjbJarProjectProperties.DEBUG_CLASSPATH,
-        EjbJarProjectProperties.RUN_TEST_CLASSPATH, 
+        ProjectProperties.RUN_TEST_CLASSPATH, 
         EjbJarProjectProperties.DEBUG_TEST_CLASSPATH, 
-        EjbJarProjectProperties.JAVAC_TEST_CLASSPATH,
+        ProjectProperties.JAVAC_TEST_CLASSPATH,
     };
 
     public boolean hasBrokenLinks() {
@@ -245,7 +246,6 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider {
         private Action brokenLinksAction;
         private BrokenServerAction brokenServerAction;
         private boolean broken;
-        private static final String BROKEN_PROJECT_BADGE = "org/netbeans/modules/j2ee/ejbjarproject/ui/resources/brokenProjectBadge.gif"; // NOI18N
         
         // icon badging >>>
         private Set files;
@@ -441,14 +441,14 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider {
         public Image getMyIcon(int type) {
             Image original = super.getIcon( type );                
             return broken || brokenServerAction.isEnabled() 
-                    ? Utilities.mergeImages(original, Utilities.loadImage(BROKEN_PROJECT_BADGE), 8, 0) 
+                    ? Utilities.mergeImages(original, ProjectProperties.ICON_BROKEN_BADGE.getImage(), 8, 0) 
                     : original;
         }
 
         public Image getMyOpenedIcon(int type) {
             Image original = super.getOpenedIcon(type);                
             return broken || brokenServerAction.isEnabled() 
-                    ? Utilities.mergeImages(original, Utilities.loadImage(BROKEN_PROJECT_BADGE), 8, 0) 
+                    ? Utilities.mergeImages(original, ProjectProperties.ICON_BROKEN_BADGE.getImage(), 8, 0) 
                     : original;
         }            
 

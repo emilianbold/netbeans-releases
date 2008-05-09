@@ -47,11 +47,11 @@ public class AssignIcon2D extends Icon2D {
     
     static {
         GeneralPath gp = new GeneralPath(new RoundRectangle2D
-                .Float(-12, -6, 24, 12, 4, 4));
-        gp.moveTo(-5, -2);
-        gp.lineTo(5, -2);
-        gp.moveTo(-5, 2);
-        gp.lineTo(5, 2);
+                .Float(-7, -4, 14, 8, 2, 2));
+        gp.moveTo(-3, -1);
+        gp.lineTo(3, -1);
+        gp.moveTo(-3, 1);
+        gp.lineTo(3, 1);
         
         SHAPE = gp;
     }

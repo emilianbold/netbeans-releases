@@ -212,6 +212,7 @@ public class TruststorePanel extends JPanel {
                 ComboConstants.PROF_STSISSUED.equals(profile) ||
                 ComboConstants.PROF_STSISSUEDCERT.equals(profile) ||
                 ComboConstants.PROF_STSISSUEDENDORSE.equals(profile) ||
+                ComboConstants.PROF_STSISSUEDSUPPORTING.equals(profile) ||
                 ComboConstants.PROF_MUTUALCERT.equals(profile)) {
                 aliasRequired = false;
             }
@@ -415,9 +416,10 @@ public class TruststorePanel extends JPanel {
 //        }
             
         String selector = getSelector();
-        if (selector != null) {
+        // IZ#129480, failed to clear selector textfield
+        //if (selector != null) {
             ProprietarySecurityPolicyModelHelper.setCertSelector(comp, selector, client);
-        }
+        //}
             
     }
     

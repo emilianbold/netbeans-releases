@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://research.sun.com/wadl/2006/10" xmlns:tns="http://research.sun.com/wadl/2006/10" xmlns:xml="http://www.w3.org/XML/1998/namespace" elementFormDefault="qualified">
 
-  <xs:import namespace="http://www.w3.org/XML/1998/namespace" schemaLocation="http://www.w3.org/2001/xml.xsd"/>
+  <!-- xs:import namespace="http://www.w3.org/XML/1998/namespace" schemaLocation="http://www.w3.org/2001/xml.xsd"/-->
 
   <xs:element name="application">
     <xs:complexType>
@@ -26,7 +26,7 @@
         <xs:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
       </xs:sequence>
       <xs:attribute name="title" type="xs:string"/>
-      <xs:attribute ref="xml:lang"/>
+      <!-- xs:attribute ref="xml:lang"/ -->
       <xs:anyAttribute namespace="##other" processContents="lax"/>
     </xs:complexType>
   </xs:element>

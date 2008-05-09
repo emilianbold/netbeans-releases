@@ -58,8 +58,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.Stack;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.filesystems.FileSystem;
-import org.openide.util.NotImplementedException;
 import org.openide.xml.XMLUtil;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
@@ -132,14 +132,18 @@ abstract class ParsingLayerCacheManager extends LayerCacheManager implements Con
         curr = new Stack<Object>();
         curr.push(root);
         try {
-            // XMLReader r = SAXParserFactory.newInstance().newSAXParser().getXMLReader();
             XMLReader r = XMLUtil.createXMLReader();
             // Speed enhancements.
             // XXX these are not really necessary; OK to run validation here!
             r.setFeature("http://xml.org/sax/features/validation", false);
             r.setFeature("http://xml.org/sax/features/namespaces", false);
-            // XXX this is not standard, should not rely on it:
-            r.setFeature("http://xml.org/sax/features/string-interning", true);
+            try {
+                r.setFeature("http://xml.org/sax/features/string-interning", true);
+            } catch (SAXException x) {
+                Logger.getLogger(ParsingLayerCacheManager.class.getName()).log(Level.INFO,
+                        "#127537: could not set string-interning feature on parser; are you using a nonstandard XML parser?",
+                        x);
+            }
             r.setContentHandler(this);
             r.setErrorHandler(this);
             r.setEntityResolver(this);

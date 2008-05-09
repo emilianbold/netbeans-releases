@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.websvc.core.dev.wizard;
 
 import org.netbeans.modules.websvc.core.ProjectInfo;
@@ -87,10 +86,11 @@ public class MessageHandlerWizard implements WizardDescriptor.InstantiatingItera
         SourceGroup[] sourceGroups = SourceGroups.getJavaSourceGroups(project);
 
         //create the Java Project chooser
-         if (sourceGroups.length == 0)
+        if (sourceGroups.length == 0) {
             firstPanel = new FinishableProxyWizardPanel(Templates.createSimpleTargetChooser(project, sourceGroups, new BottomPanel()));
-        else
+        } else {
             firstPanel = new FinishableProxyWizardPanel(JavaTemplates.createPackageChooser(project, sourceGroups, new BottomPanel(), true));
+        }
         JComponent c = (JComponent) firstPanel.getComponent();
         Util.changeLabelInComponent(c, NbBundle.getMessage(MessageHandlerWizard.class, "LBL_JavaTargetChooserPanelGUI_ClassName_Label"), NbBundle.getMessage(MessageHandlerWizard.class, "LBL_Handler_Name")); //NOI18N
         c.putClientProperty("WizardPanel_contentData", HANDLER_STEPS);
@@ -151,7 +151,7 @@ public class MessageHandlerWizard implements WizardDescriptor.InstantiatingItera
         return currentPanel;
     }
 
-/** Dummy implementation of WizardDescriptor.Panel required in order to provide Help Button
+    /** Dummy implementation of WizardDescriptor.Panel required in order to provide Help Button
      */
     private class BottomPanel implements WizardDescriptor.Panel<WizardDescriptor> {
 
@@ -171,38 +171,16 @@ public class MessageHandlerWizard implements WizardDescriptor.InstantiatingItera
         public void removeChangeListener(ChangeListener l) {
         }
 
-        private boolean isValidInJavaProject(Project javaProject) {
-
-            SourceGroup[] sgs = ProjectUtils.getSources(javaProject).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-            ClassPath classPath;
-            FileObject wsimportFO = null;
-            FileObject wscompileFO = null;
-            if (sgs.length > 0) {
-                classPath = ClassPath.getClassPath(sgs[0].getRootFolder(), ClassPath.COMPILE);
-                if (classPath != null) {
-                    wsimportFO = classPath.findResource("com/sun/tools/ws/ant/WsImport.class"); //NOI18N
-                    wscompileFO = classPath.findResource("com/sun/xml/rpc/tools/ant/Wscompile.class"); //NOI18N
-                }
-            }
-
-            if (wsimportFO == null && wscompileFO == null) {
-                wiz.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(MessageHandlerWizard.class, "ERR_HandlerNeedProperLibraries")); // NOI18N
-                return false;
-            }
-            return true;
-        }
-
         public boolean isValid() {
             ProjectInfo creator = new ProjectInfo(project);
             int projectType = creator.getProjectType();
 
             //test for conditions in JSE
             if (projectType == ProjectInfo.JSE_PROJECT_TYPE) {
-                return isValidInJavaProject(project);
+                return isValidInJavaProject(project, wiz);
             }
 
-            if (!Util.isJavaEE5orHigher(project) && ((WebServicesSupport.getWebServicesSupport(project.getProjectDirectory()) == null)
-                    && (WebServicesClientSupport.getWebServicesClientSupport(project.getProjectDirectory()) == null))) {
+            if (!Util.isJavaEE5orHigher(project) && ((WebServicesSupport.getWebServicesSupport(project.getProjectDirectory()) == null) && (WebServicesClientSupport.getWebServicesClientSupport(project.getProjectDirectory()) == null))) {
                 // check if jaxrpc plugin installed
                 wiz.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(MessageHandlerWizard.class, "ERR_NoJaxrpcPluginFoundHandler")); // NOI18N
                 return false;
@@ -231,5 +209,30 @@ public class MessageHandlerWizard implements WizardDescriptor.InstantiatingItera
         public HelpCtx getHelp() {
             return new HelpCtx(MessageHandlerWizard.class);
         }
+    }
+
+    public static boolean isValidInJavaProject(Project javaProject, WizardDescriptor wiz) {
+
+        SourceGroup[] sgs = ProjectUtils.getSources(javaProject).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        ClassPath classPath;
+        FileObject handlerFO = null;
+        if (sgs.length > 0) {
+            classPath = ClassPath.getClassPath(sgs[0].getRootFolder(), ClassPath.BOOT);
+            if (classPath != null) {
+                handlerFO = classPath.findResource("javax/xml/ws/handler/Handler.class");  //NOI18N
+            }
+            if(handlerFO == null){
+                classPath = ClassPath.getClassPath(sgs[0].getRootFolder(), ClassPath.COMPILE);
+                if(classPath != null){
+                    handlerFO = classPath.findResource("javax/xml/ws/handler/Handler.class");  //NOI18N
+                }
+            }
+        }
+
+        if (handlerFO == null) {
+            wiz.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(MessageHandlerWizard.class, "ERR_HandlerNeedProperLibraries")); // NOI18N
+            return false;
+        }
+        return true;
     }
 }

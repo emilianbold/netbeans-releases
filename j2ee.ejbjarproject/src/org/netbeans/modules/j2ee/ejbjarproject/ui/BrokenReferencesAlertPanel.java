@@ -42,13 +42,14 @@
 package org.netbeans.modules.j2ee.ejbjarproject.ui;
 
 import javax.swing.JPanel;
+import org.netbeans.modules.j2ee.common.project.ui.UserProjectSettings;
 
 public class BrokenReferencesAlertPanel extends JPanel {
     private static final long serialVersionUID = 1L;
 
     public BrokenReferencesAlertPanel() {
         initComponents();
-        again.setSelected(FoldersListSettings.getDefault().isShowAgainBrokenRefAlert());
+        again.setSelected(UserProjectSettings.getDefault().isShowAgainBrokenRefAlert());
     }
 
     /** This method is called from within the constructor to
@@ -105,7 +106,7 @@ public class BrokenReferencesAlertPanel extends JPanel {
     }//GEN-END:initComponents
 
     private void againActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_againActionPerformed
-        FoldersListSettings.getDefault().setShowAgainBrokenRefAlert(again.isSelected());
+        UserProjectSettings.getDefault().setShowAgainBrokenRefAlert(again.isSelected());
     }//GEN-LAST:event_againActionPerformed
 
 

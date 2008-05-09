@@ -61,8 +61,15 @@ public class TldWhereUsed extends TldRefactoring{
     }
     
     public Problem prepare(RefactoringElementsBag refactoringElements) {
-        
+        Problem problem = null;
+
         for(TaglibHandle taglibHandle : getTaglibs(webModule)){
+            if (!taglibHandle.isValid()) {
+                problem = RefactoringUtil.addToEnd(new Problem(false, 
+                        NbBundle.getMessage(TldWhereUsed.class, "TXT_TaglibWhereUsedInvalidProblem", taglibHandle.getTldFile())), 
+                        problem);
+                continue;
+            }
             Taglib taglib = taglibHandle.getTaglib();
             for (TagType tagType : taglib.getTag()){
                 if (clazz.equals(tagType.getTagClass())){
@@ -88,7 +95,7 @@ public class TldWhereUsed extends TldRefactoring{
             }
         }
         
-        return null;
+        return problem;
     }
     
     private static class TagClassWhereUsedElement extends TldRefactoringElement {

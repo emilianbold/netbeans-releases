@@ -68,7 +68,10 @@ public class CCOptionsBeanInfo extends BaseOptionsBeanInfo {
         String hidden[] = new String[] {
                 CCOptions.LINE_HEIGHT_CORRECTION_PROP,
                 CCOptions.STATUS_BAR_CARET_DELAY_PROP,
-                CCOptions.STATUS_BAR_VISIBLE_PROP
+                CCOptions.STATUS_BAR_VISIBLE_PROP,
+                CCOptions.COMPLETION_AUTO_POPUP_PROP,
+                CCOptions.INDENT_ENGINE_PROP,
+                CCOptions.JAVADOC_AUTO_POPUP_PROP
         };
         setHidden(hidden);
     }    

@@ -145,7 +145,8 @@ public enum PropertyType {
     FOR_EXPRESSION(TimeEvent.class, ForExprEditor.class), 
     UNTIL_EXPRESSION(TimeEvent.class, UntilExprEditor.class), 
     REPEAT_EVERY_EXPRESSION(RepeatEvery.class, RepeatEveryExprEditor.class), 
-    COMPENSATION_TARGET(BpelReference.class, CompensationTargetEditor.class);
+    COMPENSATION_TARGET(BpelReference.class, CompensationTargetEditor.class), 
+    ATOMIC_PROCESS(Boolean.class);
 
     private Class<?> myClass;
     private String myDisplayName;

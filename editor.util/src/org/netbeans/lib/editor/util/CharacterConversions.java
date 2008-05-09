@@ -88,11 +88,11 @@ public final class CharacterConversions {
         for(int i = 0; i < text.length(); i++) {
             char ch = text.charAt(i);
             if (lastCharCR && ch == LF) { // found CRLF sequence
+                output.append(LF);
                 lastCharCR = false;
 
             } else { // not CRLF sequence
                 if (ch == CR) {
-                    output.append(LF);
                     lastCharCR = true;
                 } else if (ch == LS || ch == PS) { // Unicode LS, PS
                     output.append(LF);

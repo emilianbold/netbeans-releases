@@ -148,8 +148,4 @@ public class WebModuleNode extends AppserverMgmtApplicationsNode {
         return children;  
     }
 
-    protected List getPropertiesToIgnore() {
-        //Only for web module, these properties are the only ones displayed.
-        return Arrays.asList(NodeTypes.WEB_APPLICATION); // should this be WEB_APPLICATION_PROP        
-    }
 }

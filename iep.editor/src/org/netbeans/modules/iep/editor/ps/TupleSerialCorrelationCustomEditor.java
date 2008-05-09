@@ -205,13 +205,13 @@ public class TupleSerialCorrelationCustomEditor extends TcgComponentNodeProperty
         
         private void updateTable() {
             try {
-                Vector data = new Vector();
+                Vector<Vector<String>> data = new Vector<Vector<String>>();
                 int size = mSizePanel.getIntValue();
                 List<SchemaAttribute> attributeList = mSelectionPanel.getSelectedAttributeList();
-                Vector r;
+                Vector<String> r;
                 for (int i = 0; i < size; i++) {
                     for (int j = 0, J = attributeList.size(); j < J; j++) {
-                        r = new Vector();
+                        r = new Vector<String>();
                         SchemaAttribute attr = attributeList.get(j);
                         r.add(attr.getAttributeName() + "_" + i);
                         r.add(attr.getAttributeType());
@@ -427,19 +427,6 @@ public class TupleSerialCorrelationCustomEditor extends TcgComponentNodeProperty
             }
         }
         
-        private List getAttributeMetadataAsList() {
-            List attributeMetadataList = new ArrayList();
-            Vector r = mTableModel.getDataVector();
-            for (int i = 0, I = r.size(); i < I; i++) {
-                Vector c = (Vector) r.elementAt(i);
-                attributeMetadataList.add(c.elementAt(0));
-                attributeMetadataList.add(c.elementAt(1));
-                attributeMetadataList.add(c.elementAt(2));
-                attributeMetadataList.add(c.elementAt(3));
-                attributeMetadataList.add("");
-            }
-            return attributeMetadataList;
-        }
         
         private List<SchemaAttribute> getAttributes() {
             List<SchemaAttribute> attributeList = new ArrayList<SchemaAttribute>();
@@ -455,7 +442,7 @@ public class TupleSerialCorrelationCustomEditor extends TcgComponentNodeProperty
             	sa.setAttributeName(name);
                 
                 //type
-                sa.setAttributeSize((String) c.elementAt(1));
+                sa.setAttributeType((String) c.elementAt(1));
                 //size
                 sa.setAttributeSize((String) c.elementAt(2));
                 //scale

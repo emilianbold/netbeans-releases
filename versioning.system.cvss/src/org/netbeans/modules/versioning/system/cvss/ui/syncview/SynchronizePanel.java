@@ -405,9 +405,23 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
 //        options.setModeratelyQuiet(true);
         refreshCommandGroup = new ExecutorGroup(msg);
         refreshCommandGroup.addExecutors(UpdateExecutor.splitCommand(cmd, cvs, options, parentTopComponent.getContentTitle()));
-        refreshCommandGroup.execute();
-        // XXX should not be there barrier?
-        parentTopComponent.contentRefreshed();
+        final long timestamp = System.currentTimeMillis();
+        refreshCommandGroup.addBarrier(new Runnable() {
+            public void run() {
+                if (!refreshCommandGroup.isFailed()) {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            parentTopComponent.contentRefreshed(timestamp);
+                        }
+                    });
+                }
+            }
+        });
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                refreshCommandGroup.execute();
+            }
+        });
     }
 
     private void onDisplayedStatusChanged() {

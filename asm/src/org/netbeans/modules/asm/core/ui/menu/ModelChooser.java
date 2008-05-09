@@ -87,7 +87,7 @@ public class ModelChooser extends AbstractAction
     }
     
     public ModelChooser() {
-        super(NbBundle.getMessage(ModelChooser.class, "CTL_ModelChooser"));
+        super(NbBundle.getMessage(ModelChooser.class, "CTL_ModelChooser")); // NOI18N
     }
 
     public void actionPerformed(ActionEvent ev) {
@@ -95,7 +95,7 @@ public class ModelChooser extends AbstractAction
     }
 
     public JMenuItem getMenuPresenter() {        
-        String label = NbBundle.getMessage(ModelChooser.class, "CTL_ModelChooser");
+        String label = NbBundle.getMessage(ModelChooser.class, "CTL_ModelChooser"); // NOI18N
         Mnemonics.setLocalizedText(menu, label);
         return menu;
     }
@@ -137,7 +137,7 @@ public class ModelChooser extends AbstractAction
 
                          String modelName = closureModel.toString();
                          String syntName = closureSyntax.toString();
-                         JRadioButtonMenuItem item = new JRadioButtonMenuItem(modelName + " - " + syntName);
+                         JRadioButtonMenuItem item = new JRadioButtonMenuItem(modelName + " - " + syntName); // NOI18N
                              item.addActionListener(new ActionListener() {
                                  public void actionPerformed(ActionEvent event) {
                                      curModel = closureModel;

@@ -48,8 +48,10 @@ import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.openide.filesystems.FileObject;
 
 /**
- * Base SPI interface for {@link J2eeModule}. Implementation of this interface 
- * is used to create {@link J2eeModule} instance using the {@link J2eeModuleFactory}.
+ * Base SPI interface for {@link org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule}.
+ * Implementation of this interface is used to create
+ * {@link org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule}
+ * instance using the {@link J2eeModuleFactory}.
  * 
  * @author sherold
  * 
@@ -86,12 +88,14 @@ public interface J2eeModuleImplementation {
      */
     FileObject getArchive () throws java.io.IOException;
     
-    /** Returns the contents of the archive, in copyable form.
-     *  Used for incremental deployment.
-     *  Currently uses its own {@link RootedEntry} interface.
-     *  If the J2eeModule instance describes a
-     *  j2ee application, the result should not contain module archives.
-     *  @return Iterator through {@link RootedEntry}s
+    /** 
+     * Returns the contents of the archive, in copyable form.
+     * Used for incremental deployment.
+     * Currently uses its own {@link org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule.RootedEntry}
+     * interface. If the J2eeModule instance describes a j2ee application,
+     * the result should not contain module archives.
+     * 
+     * @return Iterator through {@link org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule.RootedEntry}s
      */
     Iterator getArchiveContents() throws java.io.IOException;
 

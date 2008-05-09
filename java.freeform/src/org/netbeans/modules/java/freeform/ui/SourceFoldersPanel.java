@@ -448,8 +448,8 @@ public class SourceFoldersPanel extends JPanel implements HelpCtx.Provider, List
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 11;
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 8);
         add(includesExcludesButton, gridBagConstraints);
         includesExcludesButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SourceFoldersPanel.class, "ACSD_Includes-Excludes_Name")); // NOI18N
         includesExcludesButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SourceFoldersPanel.class, "ACSD_Includes-Excludes_Desc")); // NOI18N
@@ -503,6 +503,8 @@ public class SourceFoldersPanel extends JPanel implements HelpCtx.Provider, List
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(4, 10, 4, 4);
         jPanel1.add(jTextArea1, gridBagConstraints);
+        jTextArea1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SourceFoldersPanel.class, "ACSN_Freeform_Warning_Message" )); // NOI18N
+        jTextArea1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SourceFoldersPanel.class, "ACSD_Freeform_Warning_Message" )); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;

@@ -42,7 +42,6 @@ package org.netbeans.modules.subversion.ui.history;
 
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
-import org.openide.util.Cancellable;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
 import org.openide.windows.TopComponent;
@@ -62,6 +61,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
 import org.netbeans.modules.subversion.Subversion;
+import org.netbeans.modules.subversion.client.SvnProgressSupport;
 
 /**
  * Shows Search History results in a table with Diff pane below it.
@@ -75,7 +75,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
     private DiffTreeTable treeView;
     private JSplitPane    diffView;
     
-    private ShowDiffTask            currentTask;
+    private SvnProgressSupport      currentTask;
     private RequestProcessor.Task   currentShowDiffTask;
     
     private DiffView                currentDiff;
@@ -206,8 +206,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
         synchronized(this) {
             cancelBackgroundTasks();
             currentTask = new ShowDiffTask(header, revision1, revision2, showLastDifference);
-            currentShowDiffTask = rp.create(currentTask);
-            currentShowDiffTask.schedule(0);
+            currentShowDiffTask = currentTask.start(rp, header.getLogInfoHeader().getRepositoryRootUrl(), NbBundle.getMessage(DiffResultsView.class, "LBL_SearchHistory_Diffing"));                            
         }
     }
 
@@ -309,13 +308,12 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
         treeView.setSelection(container);
     }
 
-    private class ShowDiffTask implements Runnable, Cancellable {
+    private class ShowDiffTask extends SvnProgressSupport {
         
         private final RepositoryRevision.Event header;
         private final String revision1;
         private final String revision2;
         private boolean showLastDifference;
-        private volatile boolean cancelled;
 
         public ShowDiffTask(RepositoryRevision.Event header, String revision1, String revision2, boolean showLastDifference) {
             this.header = header;
@@ -324,19 +322,20 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
             this.showLastDifference = showLastDifference;
         }
 
-        public void run() { 
+        @Override
+        protected void perform() {
             final Diff diff = Diff.getDefault();
             final DiffStreamSource s1 = new DiffStreamSource(header.getFile(), null, revision1, revision1);
             final DiffStreamSource s2 = new DiffStreamSource(header.getFile(), null, revision2, revision2);
 
             // it's enqueued at ClientRuntime queue and does not return until previous request handled
             s1.getMIMEType();  // triggers s1.init()
-            if (cancelled) {
+            if (isCanceled()) {
                 return;
             }
 
             s2.getMIMEType();  // triggers s2.init()
-            if (cancelled) {
+            if (isCanceled()) {
                 return;
             }
 
@@ -345,7 +344,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     try {
-                        if (cancelled) {
+                        if (isCanceled()) {
                             return;
                         }
                         final DiffView view = diff.createDiff(s1, s2);
@@ -363,11 +362,6 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
                     }
                 }
             });
-        }
-
-        public boolean cancel() {
-            cancelled = true;            
-            return true;
         }
     }
     

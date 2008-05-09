@@ -1,12 +1,14 @@
-<#assign licenseFirst = "/*">
-<#assign licensePrefix = " * ">
-<#assign licenseLast = " */">
-<#include "../Licenses/license-${project.license}.txt">
+/*
+ * __NAME__
+ *
+ * Created on __DATE__, __TIME__
+ *
+ * To change this template, choose Tools | Template Manager
+ * and open the template in the editor.
+ */
 
-<#if package?? && package != "">
-package ${package};
+package Templates.Classes;
 
-</#if>
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.URLEncoder;
@@ -17,96 +19,76 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.saas.AuthorizationFrame;
+import javax.swing.JOptionPane;
 import org.netbeans.saas.RestConnection;
 
 /**
  *
- * @author ${user}
+ * @author __USER__
  */
-public class FacebookAuthenticator {
+public class __NAME__ {
 
     private static String apiKey;
     private static String secret;
     private static String sessionKey;
     private static String sessionSecret;
     
+    private static final String PROP_FILE = __NAME__.class.getSimpleName().toLowerCase() + ".properties";
+
     static {
         try {
             Properties props = new Properties();
-            props.load(FacebookAuthenticator.class.getResourceAsStream(
-                    "/org/netbeans/saas/facebook/facebook.properties"));
+            props.load(__NAME__.class.getResourceAsStream(PROP_FILE));
             apiKey = props.getProperty("api_key");
             secret = props.getProperty("secret");
         } catch (IOException ex) {
-            Logger.getLogger(FacebookAuthenticator.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(__NAME__.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
-    public static String getApiKey() {
+    public static String getApiKey() throws IOException {
+        if (apiKey == null || apiKey.length() == 0) {
+            throw new IOException("Please specify your api key and secret in the "  + PROP_FILE + " file.");
+        }
         return apiKey;
     }
 
-    public static String getSessionKey() {
+    public static String getSessionKey() throws IOException {
+        if (sessionKey == null || sessionKey.length() == 0) {
+            throw new IOException("Failed to get a valid session key.");
+        }
         return sessionKey;
     }
 
-    public static void login() {
+    private static String getSecret() throws IOException  {
+        if (secret == null || secret.length() == 0) {
+            throw new IOException("Please specify your secret in the "  + PROP_FILE + " file.");
+        }
+        return secret;
+    }
+
+    private static String getSessionSecret() throws IOException  {
+        if (sessionSecret == null || sessionSecret.length() == 0) {
+            throw new IOException("Failed to get a valid session secret.");
+        }
+        return sessionSecret;
+    }
+    
+    public static void login() throws IOException {
         if (sessionKey == null) {
             String token = getToken();
 
-            if (token != null) {
-                try {
-                    String method = "facebook.auth.getSession";
-                    String v = "1.0";
-                    
-                    String sig = sign(secret,
-                            new String[][]{
-                                {"method", method},
-                                {"v", v},
-                                {"api_key", apiKey},
-                                {"auth_token", token}
-                            });
-
-                    RestConnection conn = new RestConnection(
-                            "http://api.facebook.com/restserver.php",
-                            new String[][]{
-                                {"method", method},
-                                {"api_key", apiKey},
-                                {"sig", sig},
-                                {"v", v},
-                                {"auth_token", token}
-                            });
-                    
-                    String result = conn.get();
-
-                    sessionKey = result.substring(result.indexOf("<session_key>") + 13,
-                            result.indexOf("</session_key>"));
-
-                    sessionSecret = result.substring(result.indexOf("<secret>") + 8,
-                            result.indexOf("</secret>"));
-                } catch (IOException ex) {
-                    Logger.getLogger(FacebookAuthenticator.class.getName()).log(Level.SEVERE, null, ex);
-                }
-
-            }
-        }
-    }
-
-    private static void logout() {
-        
-    }
-    
-    private static String getToken() {
-        String token = null;
-        try {
-            String method = "facebook.auth.createToken";
+            String method = "facebook.auth.getSession";
             String v = "1.0";
+            String apiKey = getApiKey();
+            String secret = getSecret();
+
             String sig = sign(secret,
                     new String[][]{
                         {"method", method},
+                        {"v", v},
                         {"api_key", apiKey},
-                        {"v", v}
+                        {"auth_token", token}
                     });
 
             RestConnection conn = new RestConnection(
@@ -115,48 +97,90 @@ public class FacebookAuthenticator {
                         {"method", method},
                         {"api_key", apiKey},
                         {"sig", sig},
-                        {"v", v}
+                        {"v", v},
+                        {"auth_token", token}
                     });
-            String result = conn.get();
 
+            String result = conn.get().getDataAsString();
+
+            try {
+                sessionKey = result.substring(result.indexOf("<session_key>") + 13,
+                    result.indexOf("</session_key>"));
+
+                sessionSecret = result.substring(result.indexOf("<secret>") + 8,
+                    result.indexOf("</secret>"));
+            } catch (Exception ex) {
+                throw new IOException("Failed to get session key and secret: " + result);
+            }
+        }
+    }
+
+    private static void logout() {
+    }
+
+    private static String getToken() throws IOException {
+        String token = null;
+        String method = "facebook.auth.createToken";
+        String v = "1.0";
+        String apiKey = getApiKey();
+        String secret = getSecret();
+        
+        String sig = sign(secret,
+                new String[][]{
+                    {"method", method},
+                    {"api_key", apiKey},
+                    {"v", v}
+                });
+
+        RestConnection conn = new RestConnection(
+                "http://api.facebook.com/restserver.php",
+                new String[][]{
+                    {"method", method},
+                    {"api_key", apiKey},
+                    {"sig", sig},
+                    {"v", v}
+                });
+        String result = conn.get().getDataAsString();
+
+        try {
             token = result.substring(result.indexOf("<auth_createToken_response"),
                     result.indexOf("</auth_createToken_response>"));
             token = token.substring(token.indexOf(">") + 1);
-
-            String loginUrl = "http://www.facebook.com/login.php?api_key=" +
-                    apiKey + "&v=" + v + "&auth_token=" + token;
-
-            AuthorizationFrame frame = new AuthorizationFrame(loginUrl);
-            synchronized (frame) {
-                try {
-                    frame.wait();
-                } catch (InterruptedException ex) {
-                    Logger.getLogger(FacebookAuthenticator.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
         } catch (Exception ex) {
-            Logger.getLogger(FacebookAuthenticator.class.getName()).log(Level.SEVERE, null, ex);
+            throw new IOException("Failed to get session token: " + result);
+        }
+
+        String loginUrl = "http://www.facebook.com/login.php?api_key=" +
+                apiKey + "&v=" + v + "&auth_token=" + token;
+
+        if (JOptionPane.showInputDialog(null,
+                "Please log into your Facebook account using the following URL to authorize this application and click OK after you are done:",
+                "Facebook Authorization Dialog",
+                JOptionPane.INFORMATION_MESSAGE,
+                null,
+                null,
+                loginUrl) == null) {
+            throw new IOException("Authorizatoin declined");
         }
 
         return token;
     }
 
-    public static String sign(String[][] params) {
-        return sign(sessionSecret, params);
+    public static String sign(String[][] params) throws IOException {
+        return sign(getSessionSecret(), params);
     }
 
-    private static String sign(String secret,
-            String[][] params) {
-
+    private static String sign(String secret, String[][] params) throws IOException{
         try {
             TreeMap<String, String> map = new TreeMap<String, String>();
 
-            for (int i = 0; i < params.length; i++) {
+            for (int i = 0; i <
+                    params.length; i++) {
                 String key = params[i][0];
                 String value = params[i][1];
 
                 if (value != null) {
-                    map.put(key, URLEncoder.encode(value, "UTF-8"));
+                    map.put(key, value);  
                 }
             }
 
@@ -165,6 +189,7 @@ public class FacebookAuthenticator {
             for (Map.Entry<String, String> entry : entrySet) {
                 signature += entry.getKey() + "=" + entry.getValue();
             }
+
             signature += secret;
 
             MessageDigest md = MessageDigest.getInstance("MD5");
@@ -173,7 +198,7 @@ public class FacebookAuthenticator {
 
             return bigInt.toString(16);
         } catch (Exception ex) {
-            Logger.getLogger(FacebookAuthenticator.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(__NAME__.class.getName()).log(Level.SEVERE, null, ex);
         }
 
         return null;

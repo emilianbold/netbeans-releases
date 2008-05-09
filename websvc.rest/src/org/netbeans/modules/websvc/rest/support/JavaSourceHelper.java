@@ -47,7 +47,6 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.ImportTree;
-import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
@@ -57,7 +56,6 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import java.util.List;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -93,7 +91,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.websvc.rest.codegen.Constants;
 import org.netbeans.modules.websvc.rest.model.api.RestConstants;
-import org.openide.ErrorManager;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -101,6 +98,7 @@ import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
 
 /**
@@ -174,6 +172,7 @@ public class JavaSourceHelper {
                 }
             }, true);
         } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);      
         }
 
         return isBoolean[0];
@@ -194,7 +193,12 @@ public class JavaSourceHelper {
     }
 
     public static String getClassName(JavaSource source) throws IOException {
-        return getTypeElement(source).getSimpleName().toString();
+        TypeElement te = getTypeElement(source);
+        if (te != null) {
+            return te.getSimpleName().toString();
+        } else {
+            return null;
+        }
     }
 
     public static String getClassType(JavaSource source) throws IOException {
@@ -214,6 +218,7 @@ public class JavaSourceHelper {
                 }
             }, true);
         } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
         }
 
         return packageName[0];
@@ -244,6 +249,7 @@ public class JavaSourceHelper {
                 }
             }, true);
         } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
         }
 
         return fieldName[0];
@@ -351,7 +357,7 @@ public class JavaSourceHelper {
             }
             return JavaSource.forFileObject(fobj);
         } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            Exceptions.printStackTrace(ex);
         }
 
         return null;
@@ -839,6 +845,7 @@ public class JavaSourceHelper {
                 }
             }, true);
         } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
         }
 
         return classAnons[0];
@@ -859,7 +866,7 @@ public class JavaSourceHelper {
                 }
             }, true);
         } catch (IOException ex) {
-            ex.printStackTrace();
+            Exceptions.printStackTrace(ex);
         }
         return allTree[0];
     }
@@ -880,6 +887,7 @@ public class JavaSourceHelper {
                 }
             }, true);
         } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
         }
         return allMethods;
     }
@@ -908,6 +916,7 @@ public class JavaSourceHelper {
                 }
             }, true);
         } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
         }
         
         return results;
@@ -949,6 +958,7 @@ public class JavaSourceHelper {
                 }
             }, true);
         } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
         }
 
         return position;

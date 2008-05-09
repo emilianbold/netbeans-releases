@@ -73,6 +73,8 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Position;
 import javax.swing.text.View;
 import javax.swing.plaf.TextUI;
+import javax.swing.text.Document;
+import javax.swing.undo.UndoManager;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.FontColorNames;
@@ -83,6 +85,7 @@ import org.netbeans.modules.editor.lib.ColoringMap;
 import org.netbeans.modules.editor.lib.EditorPreferencesDefaults;
 import org.netbeans.modules.editor.lib.EditorPreferencesKeys;
 import org.netbeans.modules.editor.lib.EditorRenderingHints;
+import org.netbeans.modules.editor.lib.KitsTracker;
 import org.netbeans.modules.editor.lib.SettingsConversions;
 import org.openide.util.WeakListeners;
 
@@ -255,6 +258,8 @@ public class EditorUI implements ChangeListener, PropertyChangeListener {
     /** Left right corner of the JScrollPane */
     private JPanel glyphCorner;
     
+    private boolean popupMenuEnabled;
+
     public static final String LINE_HEIGHT_CHANGED_PROP = "line-height-changed-prop"; //NOI18N
 
     /** init paste action #39678 */
@@ -327,7 +332,7 @@ public class EditorUI implements ChangeListener, PropertyChangeListener {
      * @deprecated Use Editor Settings API instead.
      */
     protected static Map<String, Coloring> getSharedColoringMap(Class kitClass) {
-        String mimeType = BaseKit.kitsTracker_FindMimeType(kitClass);
+        String mimeType = KitsTracker.getInstance().findMimeType(kitClass);
         return ColoringMap.get(mimeType).getMap();
     }
 
@@ -415,7 +420,6 @@ public class EditorUI implements ChangeListener, PropertyChangeListener {
                 // stop listening on component
                 component.removePropertyChangeListener(this);
                 component.removeFocusListener(focusL);
-            
             }
 
             BaseDocument doc = getDocument();
@@ -508,7 +512,7 @@ public class EditorUI implements ChangeListener, PropertyChangeListener {
                         BaseKit kit = Utilities.getKit(c);
                         if (kit != null) {
                             boolean isEditable = c.isEditable();
-                            boolean selectionVisible = c.getCaret().isSelectionVisible();
+                            boolean selectionVisible = Utilities.isSelectionShowing(c);
                             boolean caretGuarded = isCaretGuarded();
 
                             Action a = kit.getActionByName(BaseKit.copyAction);
@@ -553,6 +557,26 @@ public class EditorUI implements ChangeListener, PropertyChangeListener {
 
             // add all document layers
             drawLayerList.add(newDoc.getDrawLayerList());
+            checkUndoManager(newDoc);
+        }
+    }
+    
+    private void checkUndoManager(Document doc) {
+        // If there is the wrapper component the default UndoManager
+        // of the document gets cleared so that only the TopComponent's one gets used.
+        UndoManager undoManager = (UndoManager) doc.getProperty(BaseDocument.UNDO_MANAGER_PROP);
+        if (hasExtComponent()) {
+            if (undoManager != null) {
+                doc.removeUndoableEditListener(undoManager);
+                doc.putProperty(BaseDocument.UNDO_MANAGER_PROP, null);
+            }
+        } else { // Implicit use e.g. an editor pane in a dialog
+            if (undoManager == null) {
+                // By default have an undo manager in UNDO_MANAGER_PROP
+                undoManager = new UndoManager();
+                doc.addUndoableEditListener(undoManager);
+                doc.putProperty(BaseDocument.UNDO_MANAGER_PROP, undoManager);
+            }
         }
     }
 
@@ -813,6 +837,7 @@ public class EditorUI implements ChangeListener, PropertyChangeListener {
         if (extComponent == null) {
             if (component != null) {
                 extComponent = createExtComponent();
+                checkUndoManager(getDocument());
             }
         }
         return extComponent;
@@ -1372,17 +1397,19 @@ public class EditorUI implements ChangeListener, PropertyChangeListener {
 
     public void adjustWindow(int caretPercentFromWindowTop) {
         final Rectangle bounds = getExtentBounds();
-        if (component != null && (component.getCaret() instanceof Rectangle)) {
-            Rectangle caretRect = (Rectangle)component.getCaret();
-            bounds.y = caretRect.y - (caretPercentFromWindowTop * bounds.height) / 100
-                       + (caretPercentFromWindowTop * lineHeight) / 100;
-            Utilities.runInEventDispatchThread(
-                new Runnable() {
+        if (component != null) {
+            try {
+                Rectangle caretRect = component.modelToView(component.getCaretPosition());
+                bounds.y = caretRect.y - (caretPercentFromWindowTop * bounds.height) / 100
+                        + (caretPercentFromWindowTop * lineHeight) / 100;
+                Utilities.runInEventDispatchThread(new Runnable() {
                     public void run() {
                         scrollRectToVisible(bounds, SCROLL_SMALLEST);
                     }
-                }
-            );
+                });
+            } catch (BadLocationException e) {
+                LOG.log(Level.WARNING, null, e);
+            }
         }
     }
 

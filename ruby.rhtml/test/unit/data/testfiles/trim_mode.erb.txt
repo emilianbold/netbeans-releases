@@ -1,0 +1,38 @@
+.t.e.s.t RHTML delimiters
+Sample from http://www.ruby-doc.org/stdlib/libdoc/erb/rdoc/classes/ERB.html:
+
+   From:  James Edward Gray II <james@grayproductions.net>
+    To:  <%= to %>
+    Subject:  Addressing Needs
+
+    <%= to[/\w+/] %>:
+
+    Just wanted to send a quick note assuring that your needs are being
+    addressed.
+
+    I want you to know that my team will keep working on the issues,
+    especially:
+
+    <%# ignore numerous minor requests -- focus on priorities %>
+    % priorities.each do |priority|
+      
+      * <%= priority %>
+    % end
+
+    Thanks for your patience.
+
+    James Edward Gray II
+
+Some other cases to check:
+
+  Lines containing % should not be treated as Ruby
+  %% this is a normal line, not a Ruby line
+  <%% double_percents_should_be_cancelled %%>
+  <% normal %>
+  <%= normalexpr %>
+  <%# comment %>
+  <%%>
+  <%=%>
+  html
+  <div></div>
+.e.o.f.

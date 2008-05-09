@@ -84,7 +84,7 @@ public class EvaluateAction extends AbstractAction implements PropertyChangeList
     private synchronized boolean canBeEnabled() {
         DebuggerEngine de = DebuggerManager.getDebuggerManager().getCurrentEngine();
         if (de == null) return false;
-        JPDADebugger debugger = (JPDADebugger) de.lookupFirst(null, JPDADebugger.class);
+        JPDADebugger debugger = de.lookupFirst(null, JPDADebugger.class);
         JPDADebugger lastDebugger = (JPDADebugger) lastDebuggerRef.get();
         if (lastDebugger != null && debugger != lastDebugger) {
             lastDebugger.removePropertyChangeListener(
@@ -114,7 +114,7 @@ public class EvaluateAction extends AbstractAction implements PropertyChangeList
     public void actionPerformed (ActionEvent evt) {
         DebuggerEngine de = DebuggerManager.getDebuggerManager().getCurrentEngine();
         if (de == null) return ;
-        JPDADebugger debugger = (JPDADebugger) de.lookupFirst(null, JPDADebugger.class);
+        JPDADebugger debugger = de.lookupFirst(null, JPDADebugger.class);
         if (debugger == null) return ;
         Evaluator.open(debugger);
     }

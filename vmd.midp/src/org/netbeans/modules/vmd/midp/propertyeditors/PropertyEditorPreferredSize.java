@@ -72,7 +72,6 @@ public class PropertyEditorPreferredSize extends PropertyEditorUserCode implemen
 
     private static final String UNLOCKED_TEXT = NbBundle.getMessage(PropertyEditorPreferredSize.class, "LBL_PREF_SIZE_UNLOCKED_TXT"); // NOI18N
     private static final String UNLOCKED_NUM_TEXT = String.valueOf(ItemCD.UNLOCKED_VALUE.getPrimitiveValue());
-    
     private CustomEditor customEditor;
     private JRadioButton radioButton;
     private String label;
@@ -162,9 +161,10 @@ public class PropertyEditorPreferredSize extends PropertyEditorUserCode implemen
             int intValue = 0;
             try {
                 text = text.replaceAll("[^0-9\\-]+", ""); // NOI18N
-                intValue = Integer.parseInt(text);
+                intValue = Integer.parseInt(text) <= 0 ? 0 : Integer.parseInt(text);
             } catch (NumberFormatException e) {
             }
+            
             super.setValue(MidpTypes.createIntegerValue(intValue));
         }
     }
@@ -282,8 +282,10 @@ public class PropertyEditorPreferredSize extends PropertyEditorUserCode implemen
         public void actionPerformed(ActionEvent evt) {
             if (unlockedCheckBox.isSelected()) {
                 setUnlocked(false);
+                clearErrorStatus();
             } else {
                 unsetUnlocked(false);
+                checkNumberStatus();
             }
         }
 
@@ -305,16 +307,34 @@ public class PropertyEditorPreferredSize extends PropertyEditorUserCode implemen
         }
 
         private void checkNumberStatus() {
-            if (!Pattern.matches("[\\d\\-]+", textField.getText())) {
-                // NOI18N
+            if (!radioButton.isSelected()) {
+                clearErrorStatus();
+                return;
+            }
+            if (!Pattern.matches("[\\d\\-]+", textField.getText())) { //NOI18N
                 displayWarning(PropertyEditorNumber.NON_DIGITS_TEXT);
             } else {
                 clearErrorStatus();
             }
+            try {
+                int number = Integer.valueOf(textField.getText());
+                if (number < 0 && !unlockedCheckBox.isSelected()) {
+                    displayWarning(NbBundle.getMessage(PropertyEditorPreferredSize.class, "MSG_POSITIVE_CHARS")); //NOI18N
+                } else {
+                    clearErrorStatus();
+                }
+            } catch (NumberFormatException ex) {
+                displayWarning(PropertyEditorNumber.NON_DIGITS_TEXT);
+            }
+
         }
 
         public void focusGained(FocusEvent e) {
-            if (e.getSource() == radioButton || e.getSource() == textField || e.getSource() == unlockedCheckBox) {
+            if(e.getSource() == textField || e.getSource() == unlockedCheckBox){
+               radioButton.setSelected(true);
+               checkNumberStatus();
+            }
+            if (e.getSource() == radioButton) {
                 checkNumberStatus();
             }
         }

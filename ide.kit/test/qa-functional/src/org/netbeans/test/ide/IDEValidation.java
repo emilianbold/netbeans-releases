@@ -49,6 +49,7 @@ import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
+import java.util.logging.Logger;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.UIManager;
@@ -114,7 +115,6 @@ import org.netbeans.jemmy.util.PNGEncoder;
 
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.ide.ProjectSupport;
-import org.openide.util.Lookup;
 import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -369,7 +369,7 @@ public class IDEValidation extends JellyTestCase {
         String databasesLabel = Bundle.getString("org.netbeans.modules.db.resources.Bundle", "NDN_Databases");
         Node databasesNode = new Node(RuntimeTabOperator.invoke().getRootNode(), databasesLabel);
         // "Please wait..."
-        String waitNodeLabel = Bundle.getString("org.netbeans.modules.db.resources.Bundle", "WaitNode");
+        String waitNodeLabel = Bundle.getString("org.openide.nodes.Bundle", "LBL_WAIT");
         // wait until the wait node dismiss and after that start waiting for Drivers node
         // (see issue http://www.netbeans.org/issues/show_bug.cgi?id=43910 - Creation of 
         // children under Databases node is not properly synchronized)
@@ -919,6 +919,8 @@ public class IDEValidation extends JellyTestCase {
         MainWindowOperator.StatusTextTracer stt = MainWindowOperator.getDefault().getStatusTextTracer();
         SourcePackagesNode sourcePackagesNode = new SourcePackagesNode(SAMPLE_PROJECT_NAME);
         JavaNode sampleClass1Node = new JavaNode(sourcePackagesNode, SAMPLE1_PACKAGE_NAME+"|"+SAMPLE1_FILE_NAME);
+        // flag to stop debugger in finally
+        boolean debuggerStarted = false;
         try {
             // find sample file in Editor
             EditorOperator eo = new EditorOperator(SAMPLE1_FILE_NAME);
@@ -980,6 +982,7 @@ public class IDEValidation extends JellyTestCase {
             }).waitAction(eo);
             // start to track Main Window status bar
             stt.start();
+            debuggerStarted = true;
             // start debugging
             new DebugAction().performMenu(sampleClass1Node);
             // check the first breakpoint reached
@@ -1009,22 +1012,25 @@ public class IDEValidation extends JellyTestCase {
             } catch (Exception e1) {
                 // ignore it
             }
+            th.printStackTrace(getLog());
             throw th;
         } finally {
-            // finish debugging
-            new FinishDebuggerAction().perform();
-            // check status line
-            // "SampleProject (debug-single)"
-            String outputTarget = Bundle.getString(
-                    "org.apache.tools.ant.module.run.Bundle",
-                    "TITLE_output_target",
-                    new Object[] {SAMPLE_PROJECT_NAME, null, "debug-single"});  // NOI18N
-            // "Finished building SampleProject (debug-single)"
-            String finishedMessage = Bundle.getString(
-                    "org.apache.tools.ant.module.run.Bundle",
-                    "FMT_finished_target_status",
-                    new Object[] {outputTarget});
-            stt.waitText(finishedMessage);
+            if(debuggerStarted) {
+                // finish debugging
+                new FinishDebuggerAction().perform();
+                // check status line
+                // "SampleProject (debug-single)"
+                String outputTarget = Bundle.getString(
+                        "org.apache.tools.ant.module.run.Bundle",
+                        "TITLE_output_target",
+                        new Object[] {SAMPLE_PROJECT_NAME, null, "debug-single"});  // NOI18N
+                // "Finished building SampleProject (debug-single)"
+                String finishedMessage = Bundle.getString(
+                        "org.apache.tools.ant.module.run.Bundle",
+                        "FMT_finished_target_status",
+                        new Object[] {outputTarget});
+                stt.waitText(finishedMessage);
+            }
             stt.stop();
             // delete sample class
             sampleClass1Node.delete();
@@ -1139,6 +1145,9 @@ public class IDEValidation extends JellyTestCase {
      * - wait until dtd is opened in editor and close it
      * - call "Check DTD" on dtd node
      * - find and close output tab
+     * - call "Generate DOM Tree Scanner" on dtd node
+     * - set name and confirm the dialog
+     * - wait until scanner is opened in editor and close it
      */
     public void testXML() {
         // check XML Entity Catalogs
@@ -1229,15 +1238,13 @@ public class IDEValidation extends JellyTestCase {
         new OutputTabOperator(xmlCheckTitle).close();
 
         // "Generate DOM Tree Scanner"
-        /* Not available because of http://www.netbeans.org/issues/show_bug.cgi?id=90174
         String generateScannerItem = Bundle.getStringTrimmed("org.netbeans.modules.xml.tools.generator.Bundle", "PROP_GenerateDOMScanner");
         new ActionNoBlock(null, generateScannerItem).perform(dtdNode);
         selectDialog = new NbDialogOperator(selectTitle);
         new JButtonOperator(selectDialog, oKLabel).push();
         // wait Scanner is open in editor
         new EditorOperator("DTDScanner.java").close();  // NOI18N
-        Node scannerNode = new Node(xmlNode, "DTDScanner.java"); // NOI18N
-        */
+        new Node(xmlNode, "DTDScanner.java"); // NOI18N
     }
 
     /** Test Window System 
@@ -1404,6 +1411,9 @@ public class IDEValidation extends JellyTestCase {
     public void testBlacklistedClassesHandler() throws Exception {
         BlacklistedClassesHandler bcHandler = BlacklistedClassesHandler.getBlacklistedClassesHandler();
         assertNotNull("BlacklistedClassesHandler should be available", bcHandler);
+        if (bcHandler.isGeneratingWhitelist()) {
+            bcHandler.saveWhiteList(getLog("whitelist.txt"));
+        }
         try {
             assertTrue(bcHandler.listViolations(), bcHandler.noViolations());
         } finally {

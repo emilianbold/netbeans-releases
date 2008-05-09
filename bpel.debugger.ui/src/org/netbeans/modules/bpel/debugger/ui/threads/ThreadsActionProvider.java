@@ -68,8 +68,7 @@ public class ThreadsActionProvider implements NodeActionsProvider {
     public ThreadsActionProvider(
             final ContextProvider contextProvider) {
         
-        myDebugger = (BpelDebugger) 
-                contextProvider.lookupFirst(null, BpelDebugger.class);
+        myDebugger = contextProvider.lookupFirst(null, BpelDebugger.class);
     }
     
     /**{@inheritDoc}*/

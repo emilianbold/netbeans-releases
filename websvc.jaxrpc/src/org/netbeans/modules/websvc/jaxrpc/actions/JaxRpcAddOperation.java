@@ -236,7 +236,10 @@ public class JaxRpcAddOperation implements AddOperationCookie {
     static WebserviceDescription findWSDescriptionFromClass(FileObject implClassFO) {
         WebServicesSupport wsSupport = WebServicesSupport.getWebServicesSupport(implClassFO);
         ClassPath classPath = ClassPath.getClassPath(implClassFO, ClassPath.SOURCE);
-        String implClassPath = classPath.getResourceName(implClassFO, '.', false);
+        String implClassPath = null;
+        if(classPath==null || (implClassPath = classPath.getResourceName(implClassFO, '.', false))==null) {
+            return null;
+        }
         if (wsSupport != null) {
             DDProvider wsDDProvider = DDProvider.getDefault();
             Webservices webServices = null;

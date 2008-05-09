@@ -86,7 +86,6 @@ import com.sun.sql.framework.jdbc.DBConstants;
 import net.java.hulp.i18n.Logger;
 import com.sun.sql.framework.utils.StringUtil;
 import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.model.Index;
 
 /**
@@ -95,7 +94,7 @@ import org.netbeans.modules.sql.framework.model.Index;
  */
 public class SQLValidationVisitor implements SQLVisitor {
 
-    private static transient final Logger mLogger = LogUtil.getLogger(SQLValidationVisitor.class.getName());
+    private static transient final Logger mLogger = Logger.getLogger(SQLValidationVisitor.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     private static final HashSet<String> DATE_FORMAT_OPS = new HashSet<String>();
     
@@ -143,7 +142,7 @@ public class SQLValidationVisitor implements SQLVisitor {
         SQLCondition extCondition = sourceTable.getExtractionCondition();
         if (extCondition != null) {
             if (!extCondition.isValid()) {
-                String desc = buildErrorMessageWithObjectIdentifier(sourceTable.getQualifiedName(), "ERROR_extraction_condition_invalid");
+                String desc = buildErrorMessageWithObjectIdentifier(sourceTable.getQualifiedName(), "BUND803: Extraction condition is not valid.");
                 ValidationInfo validationInfo = new ValidationInfoImpl(extCondition, desc, ValidationInfo.VALIDATION_ERROR);
                 validationInfoList.add(validationInfo);
             } else {
@@ -157,7 +156,7 @@ public class SQLValidationVisitor implements SQLVisitor {
         SQLCondition dataValidationCondition = sourceTable.getDataValidationCondition();
         if (dataValidationCondition != null) {
             if (!dataValidationCondition.isValid()) {
-                String desc = buildErrorMessageWithObjectIdentifier(sourceTable.getQualifiedName(), "ERROR_datavalidation_condition_invalid");
+                String desc = buildErrorMessageWithObjectIdentifier(sourceTable.getQualifiedName(), "BUND804: Data validation condition is not valid.");
                 ValidationInfo validationInfo = new ValidationInfoImpl(dataValidationCondition, desc, ValidationInfo.VALIDATION_ERROR);
                 validationInfoList.add(validationInfo);
             } else {
@@ -179,8 +178,8 @@ public class SQLValidationVisitor implements SQLVisitor {
         // If the resulting expression does not form a valid condition, then raise an
         // error.
         if (!condition.isValid()) {
-           String nbBundle1 = mLoc.t("PRSR001: Condition is not valid.");
-            String error = Localizer.parse(nbBundle1);
+           String nbBundle1 = mLoc.t("BUND302: Condition is not valid.");
+            String error = nbBundle1.substring(15);
             ValidationInfo info = new ValidationInfoImpl(null, error, ValidationInfo.VALIDATION_ERROR);
             validationInfoList.add(info);
         }
@@ -196,8 +195,8 @@ public class SQLValidationVisitor implements SQLVisitor {
         boolean oracleTableGroupByUse = false;
         final int execStrategy = definition.getExecutionStrategyCode().intValue();
         if ((execStrategy == SQLDefinition.EXECUTION_STRATEGY_STAGING) && definition.requiresPipelineProcess()) {
-            String nbBundle2 = mLoc.t("PRSR001: Cannot execute in Staging mode, choose Best-fit or Pipeline.");
-            String desc = Localizer.parse(nbBundle2);
+            String nbBundle2 = mLoc.t("BUND001: Cannot execute in Staging mode, choose Best-fit or Pipeline.");
+            String desc = nbBundle2.substring(15);
             ValidationInfo validationInfo = new ValidationInfoImpl(definition, desc, ValidationInfo.VALIDATION_ERROR);
             validationInfoList.add(validationInfo);
         }
@@ -218,7 +217,7 @@ public class SQLValidationVisitor implements SQLVisitor {
             // Check for Unknown DB and UPDATE and MERGE statement usage.
             if (jdbcEway) {
                 if ((stmtType == SQLConstants.INSERT_UPDATE_STATEMENT) && ((execStrategy == SQLDefinition.EXECUTION_STRATEGY_BEST_FIT) || (execStrategy == SQLDefinition.EXECUTION_STRATEGY_STAGING))) {
-                    String desc = buildErrorMessageWithObjectIdentifier(identifier, "WARN_merge_may_not_be_supported");
+                    String desc = buildErrorMessageWithObjectIdentifier(identifier, "BUND805: Merge/Upsert statement generated, may not be supported by target table Database.");
                     ValidationInfo validationInfo = new ValidationInfoImpl(targetTable, desc, ValidationInfo.VALIDATION_WARNING);
                     validationInfoList.add(validationInfo);
                 }
@@ -230,8 +229,8 @@ public class SQLValidationVisitor implements SQLVisitor {
             try {
                 srcTables.addAll(PhysicalTable.getPhysicalTableList(targetTable.getSourceTableList()));
             } catch (BaseException e) {
-                String nbBundle3 = mLoc.t("PRSR001: Must have at least one column mapped to a literal, source column or operator.");
-                String desc = Localizer.parse(nbBundle3);
+                String nbBundle3 = mLoc.t("BUND304: Must have at least one column mapped to a literal, source column or operator.");
+                String desc = nbBundle3.substring(15);
                 ValidationInfo validationInfo = new ValidationInfoImpl(targetTable, desc, ValidationInfo.VALIDATION_ERROR);
                 validationInfoList.add(validationInfo);
             }
@@ -270,8 +269,8 @@ public class SQLValidationVisitor implements SQLVisitor {
         for (it = trgtTables.iterator(); it.hasNext();) {
             PhysicalTable pt = (PhysicalTable) it.next();
             if (srcTables.contains(pt)) {
-                String nbBundle4 = mLoc.t("PRSR001: {0} used as both source and target.",pt.getName());
-                String desc = Localizer.parse(nbBundle4);
+                String nbBundle4 = mLoc.t("BUND305: {0} used as both source and target.",pt.getName());
+                String desc = nbBundle4.substring(15);
                 ValidationInfo validationInfo = new ValidationInfoImpl(definition, desc, ValidationInfo.VALIDATION_WARNING);
                 validationInfoList.add(validationInfo);
             }
@@ -283,8 +282,8 @@ public class SQLValidationVisitor implements SQLVisitor {
         // as its scroll-able result set caches data at the client VM.
         // Pipeline GROUP BY processing needs scroll-able result set.
         if ((definition.requiresPipelineProcess() || (definition.getExecutionStrategyCode().intValue() == SQLDefinition.EXECUTION_STRATEGY_PIPELINE)) && (oracleTableGroupByUse)) {
-            String nbBundle5 = mLoc.t("PRSR001: Can not use Oracle table as Source with Group By clause in pipeline/validation mode.");
-            String desc = Localizer.parse(nbBundle5);
+            String nbBundle5 = mLoc.t("BUND306: Can not use Oracle table as Source with Group By clause in pipeline/validation mode.");
+            String desc = nbBundle5.substring(15);
             ValidationInfo validationInfo = new ValidationInfoImpl(definition, desc, ValidationInfo.VALIDATION_ERROR);
             validationInfoList.add(validationInfo);
         }
@@ -294,18 +293,18 @@ public class SQLValidationVisitor implements SQLVisitor {
         visitExpression(filter, true);
 
         if (!filter.isValid()) {
-            String nbBundle6 = mLoc.t("PRSR001: {0} ({1})",filter.getDisplayName(), filter.toString());
-            String descriptor = Localizer.parse(nbBundle6);
-            String message = buildErrorMessageWithObjectIdentifier(descriptor, "ERROR_predicate_invalid");
+            String nbBundle6 = mLoc.t("BUND307: {0}-{1}",filter.getDisplayName(), filter.toString());
+            String descriptor = nbBundle6.substring(15);
+            String message = buildErrorMessageWithObjectIdentifier(descriptor, "BUND806: Predicate is invalid or incomplete.");
             ValidationInfo expValidationInfo = new ValidationInfoImpl(filter, message, ValidationInfo.VALIDATION_ERROR);
             validationInfoList.add(expValidationInfo);
         }
 
         // Check if the next SQLFilter clause, if any, has a prefix.
         if (filter.getNextFilter() != null && StringUtil.isNullString(filter.getNextFilter().getPrefix())) {
-            String nbBundle7 = mLoc.t("PRSR001: {0} {1}",filter.getNextFilter().getDisplayName(), filter.toString());
-            String descriptor = Localizer.parse(nbBundle7);
-            String message = buildErrorMessageWithObjectIdentifier(descriptor, "ERROR_predicate_missing_prefix");
+            String nbBundle7 = mLoc.t("BUND307: {0}-{1}",filter.getNextFilter().getDisplayName(), filter.toString());
+            String descriptor = nbBundle7.substring(15);
+            String message = buildErrorMessageWithObjectIdentifier(descriptor, "BUND807: Please add a prefix to this predicate.");
 
             ValidationInfo expValidationInfo = new ValidationInfoImpl(filter, message, ValidationInfo.VALIDATION_ERROR);
             validationInfoList.add(expValidationInfo);
@@ -314,7 +313,7 @@ public class SQLValidationVisitor implements SQLVisitor {
 
     public void visit(SQLGenericOperator operator) {
         if (operator.hasVariableArgs() && operator.getInputObjectMap().size() == 0) {
-            String desc = buildErrorMessageWithObjectIdentifier(operator.getDisplayName(), "ERROR_input_not_linked");
+            String desc = buildErrorMessageWithObjectIdentifier(operator.getDisplayName(), "BUND808: Input is not linked.");
             ValidationInfo expValidationInfo = new ValidationInfoImpl(operator, desc, ValidationInfo.VALIDATION_ERROR);
             validationInfoList.add(expValidationInfo);
         } else {
@@ -391,7 +390,7 @@ public class SQLValidationVisitor implements SQLVisitor {
         // check for column maps for non-delete statements
         if (stmtType != SQLConstants.DELETE_STATEMENT) {
             if (nonNullColumns == 0) {
-                String desc = buildErrorMessageWithObjectIdentifier(identifier, "ERROR_targettable_not_mapped");
+                String desc = buildErrorMessageWithObjectIdentifier(identifier, "BUND304: Must have at least one column mapped to a literal, source column or operator.");
                 ValidationInfo validationInfo = new ValidationInfoImpl(targetTable, desc, ValidationInfo.VALIDATION_ERROR);
                 validationInfoList.add(validationInfo);
             }
@@ -407,10 +406,12 @@ public class SQLValidationVisitor implements SQLVisitor {
         // validate truncate before load option
         if (targetTable.isTruncateBeforeLoad()) {
             if (stmtType == SQLConstants.INSERT_STATEMENT) {
-                ValidationInfo validationInfo = new ValidationInfoImpl(targetTable, "Target table " + targetTable.getFullyQualifiedName() + " will be truncated before loading, use this option if you want to refresh the data", ValidationInfo.VALIDATION_WARNING);
+                String desc = buildErrorMessageWithObjectIdentifiers("", "BUND810: Target table {0} will be truncated before loading, use this option if you want to refresh the data", new Object[]{targetTable.getFullyQualifiedName()});
+                ValidationInfo validationInfo = new ValidationInfoImpl(targetTable, desc, ValidationInfo.VALIDATION_WARNING);
                 validationInfoList.add(validationInfo);
             } else {
-                ValidationInfo validationInfo = new ValidationInfoImpl(targetTable, "Can't truncate target table " + targetTable.getFullyQualifiedName() + " for the selected statement type -> " + targetTable.getStrStatementType(), ValidationInfo.VALIDATION_ERROR);
+                String desc = buildErrorMessageWithObjectIdentifiers("", "BUND811: Can't truncate target table {0} for the selected statement type -> {1}", new Object[]{targetTable.getFullyQualifiedName(), targetTable.getStrStatementType()});
+                ValidationInfo validationInfo = new ValidationInfoImpl(targetTable,  desc, ValidationInfo.VALIDATION_ERROR);
                 validationInfoList.add(validationInfo);
             }
         }
@@ -421,10 +422,10 @@ public class SQLValidationVisitor implements SQLVisitor {
     }
 
     private String buildErrorMessageWithObjectIdentifiers(String identifier, String errorKey, Object[] errorParams) {
-        String nbBundle12 = mLoc.t("PRSR001: {0}{1}{2}",LOG_CATEGORY,errorKey,errorParams);
-        String errorMessage = Localizer.parse(nbBundle12);
-        String nbBundle8 = mLoc.t("PRSR001: {0}: {1}",identifier,errorMessage);
-        return Localizer.parse(nbBundle8);
+        String nbBundle12 = mLoc.t(errorKey,errorParams);
+        String errorMessage = nbBundle12.substring(15);
+        String nbBundle8 = mLoc.t("BUND307: {0}-{1}",identifier,errorMessage);
+        return nbBundle8.substring(15);
     }
 
     private void doJoinConditionValidation(SQLJoinOperator operator) {
@@ -438,12 +439,12 @@ public class SQLValidationVisitor implements SQLVisitor {
 
         SQLCondition jCondition = operator.getJoinCondition();
         if (!jCondition.isConditionDefined()) {
-            String desc = buildErrorMessageWithObjectIdentifier(identifier, "WARNING_join_condition_missing");
+            String desc = buildErrorMessageWithObjectIdentifier(identifier, "BUND813: Missing join condition - this will result in a Cartesian join between tables.");
             ValidationInfoImpl vInfo = new ValidationInfoImpl(jCondition, desc, ValidationInfo.VALIDATION_WARNING);
             validationInfoList.add(vInfo);
         } else {
             if (!jCondition.isValid()) {
-                String desc = buildErrorMessageWithObjectIdentifier(identifier, "ERROR_join_condition_invalid");
+                String desc = buildErrorMessageWithObjectIdentifier(identifier, "BUND814: Join condition is invalid.");
                 ValidationInfoImpl vInfo = new ValidationInfoImpl(jCondition, desc, ValidationInfo.VALIDATION_ERROR);
                 validationInfoList.add(vInfo);
             }
@@ -486,13 +487,13 @@ public class SQLValidationVisitor implements SQLVisitor {
                             if (sLeft.isPrimaryKey() && sRight.isPrimaryKey()) {
                                 foundOnePKMatch = true;
                             } else if (sLeft.isPrimaryKey() && !sRight.isPrimaryKey()) {
-                                errorKey = "ERROR_join_column_not_pk";
+                                errorKey = "BUND801: Column {0} used in join condition is not a primary key.";
                                 objectNames = new Object[]{sRight.toString()};
                             } else if (!sLeft.isPrimaryKey() && sRight.isPrimaryKey()) {
-                                errorKey = "ERROR_join_column_not_pk";
+                                errorKey = "BUND801: Column {0} used in join condition is not a primary key.";
                                 objectNames = new Object[]{sLeft.toString()};
                             } else {
-                                errorKey = "ERROR_join_columns_not_pks";
+                                errorKey = "BUND802: Columns {0},{1} used in join condition are not primary keys.";
                                 objectNames = new Object[]{sLeft.toString(), sRight.toString()};
                             }
 
@@ -508,7 +509,7 @@ public class SQLValidationVisitor implements SQLVisitor {
                 // If an equal relation is not found between columns of both tables
                 // then this is an error in join condition
                 if (!foundOneEqualOp) {
-                    String desc = buildErrorMessageWithObjectIdentifier(identifier, "ERROR_join_missing_equal_op");
+                    String desc = buildErrorMessageWithObjectIdentifier(identifier, "BUND815: Join needs to have at least one equal operator between columns of participating join tables (or expressions containing those columns).");
                     ValidationInfoImpl vInfo = new ValidationInfoImpl(jCondition, desc, ValidationInfo.VALIDATION_WARNING);
                     validationInfoList.add(vInfo);
                 } else if (!foundOnePKMatch) {
@@ -516,9 +517,11 @@ public class SQLValidationVisitor implements SQLVisitor {
                     ValidationInfoImpl vInfo = new ValidationInfoImpl(jCondition, desc, ValidationInfo.VALIDATION_WARNING);
                     validationInfoList.add(vInfo);
                 }
+                
+                
             }
         } catch (BaseException ex) {
-            mLogger.errorNoloc(mLoc.t("PRSR130: Error while validating SQLJoinOperator{0}", operator.getDisplayName()), ex);
+            mLogger.errorNoloc(mLoc.t("EDIT130: Error while validating SQLJoinOperator-{0}", operator.getDisplayName()), ex);
         }
     }
 
@@ -535,7 +538,7 @@ public class SQLValidationVisitor implements SQLVisitor {
                 case SQLConstants.DELETE_STATEMENT:
                     // Columns must not be linked for delete statement.
                     if (obj != null) {
-                        String desc = buildErrorMessageWithObjectIdentifiers(identifier, "ERROR_input_link_prohibited_delete", new Object[]{argName});
+                        String desc = buildErrorMessageWithObjectIdentifiers(identifier, "BUND816: {0} cannot be linked in a delete statement.", new Object[]{argName});
                         columnErrors.add(new ValidationInfoImpl(targetTable, desc, ValidationInfo.VALIDATION_ERROR));
                     }
                     break;
@@ -545,10 +548,10 @@ public class SQLValidationVisitor implements SQLVisitor {
                     break;
                 default:
                     if ((col.isPrimaryKey() || !col.isNullable()) && obj == null) {
-                        String desc = buildErrorMessageWithObjectIdentifiers(identifier, "WARNING_input_link_needed_pknotnull", new Object[]{argName});
+                        String desc = buildErrorMessageWithObjectIdentifiers(identifier, "BUND817: {0} should be linked (column is primary key or not nullable).", new Object[]{argName});
                         columnErrors.add(new ValidationInfoImpl(targetTable, desc, ValidationInfo.VALIDATION_WARNING));
                     } else if (uniqueIndexColumns.contains(col.getName()) && (obj == null)) {
-                        String desc = buildErrorMessageWithObjectIdentifiers(identifier, "WARNING_input_link_needed_unique", new Object[]{argName});
+                        String desc = buildErrorMessageWithObjectIdentifiers(identifier, "BUND818: {0} should be linked (column is part of unique index).", new Object[]{argName});
                         columnErrors.add(new ValidationInfoImpl(targetTable, desc, ValidationInfo.VALIDATION_WARNING));
                     }
 
@@ -644,8 +647,8 @@ public class SQLValidationVisitor implements SQLVisitor {
                 column = ((ColumnRef) sqlObject).getColumn();
 
                 if ((column.getObjectType() == SQLConstants.SOURCE_COLUMN) && !(((SQLDBColumn) column).isVisible())) {
-                    String nbBundle9 = mLoc.t("PRSR001: Column {0} used in a condition is not visible.", sqlObject.getDisplayName());
-                    desc = Localizer.parse(nbBundle9);
+                    String nbBundle9 = mLoc.t("BUND308: Column {0} used in a condition is not visible.", sqlObject.getDisplayName());
+                    desc = nbBundle9.substring(15);
                     ValidationInfo validationInfo = new ValidationInfoImpl(sqlObject.getParentObject(), desc, ValidationInfo.VALIDATION_ERROR);
                     validationInfoList.add(validationInfo);
                 }
@@ -660,8 +663,8 @@ public class SQLValidationVisitor implements SQLVisitor {
                     validationInfoList.addAll(vInfos);
                 }
             } else if (!isObjectMappedToExpression(sqlObject, expObjects)) {
-                String nbBundle10 = mLoc.t("PRSR001: {0} is not mapped to an expression.", new Object[]{sqlObject.getDisplayName()});
-                desc = Localizer.parse(nbBundle10);
+                String nbBundle10 = mLoc.t("BUND309: {0} is not mapped to an expression.", new Object[]{sqlObject.getDisplayName()});
+                desc = nbBundle10.substring(15);
                 ValidationInfo validationInfo = new ValidationInfoImpl(sqlObject, desc, ValidationInfo.VALIDATION_ERROR);
 
                 validationInfoList.add(validationInfo);
@@ -685,7 +688,7 @@ public class SQLValidationVisitor implements SQLVisitor {
             try {
                 formatParser.parseDateTimeFormatToJava(value);
             } catch (AxionException e) {
-                String message = buildErrorMessageWithObjectIdentifiers(op.getDisplayName(), "ERROR_dateformat_invalid", new Object[]{value});
+                String message = buildErrorMessageWithObjectIdentifiers(op.getDisplayName(), "BUND819: ''{0}'' is an invalid datetime format.", new Object[]{value});
                 errorInfo = new ValidationInfoImpl(op, message, validationType);
             }
         }
@@ -714,7 +717,7 @@ public class SQLValidationVisitor implements SQLVisitor {
                 case SQLConstants.INSERT_STATEMENT:
                     break;
                 default:
-                    ValidationInfo validationInfo = new ValidationInfoImpl(targetTable, "Defined GroupBy/Having clause will not be used :: " + targetTable.getSQLGroupBy().toString(), ValidationInfo.VALIDATION_WARNING);
+                    ValidationInfo validationInfo = new ValidationInfoImpl(targetTable, "BUND820: Defined GroupBy/Having clause will not be used :: " + targetTable.getSQLGroupBy().toString(), ValidationInfo.VALIDATION_WARNING);
                     validationInfoList.add(validationInfo);
             }
         }
@@ -731,7 +734,7 @@ public class SQLValidationVisitor implements SQLVisitor {
             SQLCondition having = groupBy.getHavingCondition();
             if (having != null) {
                 if (!having.isValid()) {
-                    String desc = buildErrorMessageWithObjectIdentifier(having.getDisplayName(), "ERROR_condition_invalid");
+                    String desc = buildErrorMessageWithObjectIdentifier(having.getDisplayName(), "BUND302: Condition is not valid.");
                     ValidationInfo validationInfo = new ValidationInfoImpl(having, desc, ValidationInfo.VALIDATION_ERROR);
                     validationInfoList.add(validationInfo);
                 } else {
@@ -750,10 +753,10 @@ public class SQLValidationVisitor implements SQLVisitor {
                 if (sqlObj instanceof TargetColumn) {
                     TargetColumn col = (TargetColumn) sqlObj;
                     if (col.getValue() == null) {
-                        ValidationInfoImpl validationInfo = new ValidationInfoImpl(targetTable, "Selected group by target coulmn not mapped: " + col, ValidationInfo.VALIDATION_ERROR);
+                        ValidationInfoImpl validationInfo = new ValidationInfoImpl(targetTable, "BUND821: Selected group by target coulmn not mapped: " + col, ValidationInfo.VALIDATION_ERROR);
                         validationInfoList.add(validationInfo);
                     } else if (SQLObjectUtil.isAggregateFunctionMapped(col.getValue())) {
-                        ValidationInfoImpl validationInfo = new ValidationInfoImpl(targetTable, "Group By clause can't contain agrregate function: " + col + "->" + col.getValue(), ValidationInfo.VALIDATION_ERROR);
+                        ValidationInfoImpl validationInfo = new ValidationInfoImpl(targetTable, "BUND822: Group By clause can't contain agrregate function: " + col + "->" + col.getValue(), ValidationInfo.VALIDATION_ERROR);
                         validationInfoList.add(validationInfo);
                     }
                 }
@@ -783,7 +786,7 @@ public class SQLValidationVisitor implements SQLVisitor {
         int compatibility = op.isInputCompatible(argName, sqlObj);
         switch (compatibility) {
             case SQLConstants.TYPE_CHECK_INCOMPATIBLE:
-                desc = buildErrorMessageWithObjectIdentifiers(identifier, "ERROR_datatype_incompatible", new Object[]{displayName});
+                desc = buildErrorMessageWithObjectIdentifiers(identifier, "BUND823: Incompatible datatype for input ''{0}''.", new Object[]{displayName});
                 break;
             case SQLConstants.TYPE_CHECK_DOWNCAST_WARNING:
             case SQLConstants.TYPE_CHECK_UNKNOWN:
@@ -791,7 +794,7 @@ public class SQLValidationVisitor implements SQLVisitor {
                 if (datatype == null) {
                     datatype = "unknown";
                 }
-                desc = buildErrorMessageWithObjectIdentifiers(identifier, "WARNING_datatype_downcast_unknown", new Object[]{datatype, displayName});
+                desc = buildErrorMessageWithObjectIdentifiers(identifier, "BUND824: Use of {0} datatype as input for {1} may result in loss of precision, data truncation, unexpected results, or runtime error.", new Object[]{datatype, displayName});
                 validationType = ValidationInfo.VALIDATION_WARNING;
                 break;
             case SQLConstants.TYPE_CHECK_COMPATIBLE:
@@ -816,7 +819,7 @@ public class SQLValidationVisitor implements SQLVisitor {
                 case Types.CHAR:
                 case Types.NUMERIC:
                     if (castPrecision > colPrecision) {
-                        String castError = buildErrorMessageWithObjectIdentifiers(identifier, "ERROR_datatype_castexceedsprecision", new Object[]{new Integer(castPrecision), displayName, new Integer(colPrecision)});
+                        String castError = buildErrorMessageWithObjectIdentifiers(identifier, "BUND825: Precision of cast operator ({0}) exceeds the precision of column {1} ({2}).", new Object[]{new Integer(castPrecision), displayName, new Integer(colPrecision)});
                         expValidationInfo = new ValidationInfoImpl(castOp, castError, validationType);
                     }
                     break;
@@ -837,7 +840,7 @@ public class SQLValidationVisitor implements SQLVisitor {
                 sTable.visit(this);
             }
         } catch (BaseException ex) {
-            mLogger.errorNoloc(mLoc.t("PRSR132: Could not find source tables for this target table{0}in {1}", targetTable.getName(), SQLValidationVisitor.class.getName()), ex);
+            mLogger.errorNoloc(mLoc.t("EDIT132: Could not find source tables for this target table{0}in {1}", targetTable.getName(), SQLValidationVisitor.class.getName()), ex);
         }
     }
 
@@ -847,14 +850,14 @@ public class SQLValidationVisitor implements SQLVisitor {
 
             if (predicate != null) {
                 if (!predicate.hasTargetColumn()) {
-                    String nbBundle11 = mLoc.t("PRSR001: Target/Join condition should have at least one target table column.");
-                    String desc = Localizer.parse(nbBundle11);
+                    String nbBundle11 = mLoc.t("BUND310: Target/Join condition should have at least one target table column.");
+                    String desc = nbBundle11.substring(15);
                     ValidationInfoImpl validationInfo = new ValidationInfoImpl(condition, desc, ValidationInfo.VALIDATION_ERROR);
                     validationInfoList.add(validationInfo);
                 }
             }
         } catch (Exception ex) {
-            mLogger.errorNoloc(mLoc.t("PRSR133: Validating target table condition in{0}", SQLValidationVisitor.class.getName()), ex);
+            mLogger.errorNoloc(mLoc.t("EDIT133: Validating target table condition in{0}", SQLValidationVisitor.class.getName()), ex);
         }
     }
 
@@ -872,7 +875,7 @@ public class SQLValidationVisitor implements SQLVisitor {
                     String desc = null;
 
                     if (stmtType == SQLConstants.INSERT_UPDATE_STATEMENT) {
-                        desc = buildErrorMessageWithObjectIdentifier(identifier, "ERROR_mergecondition_missing");
+                        desc = buildErrorMessageWithObjectIdentifier(identifier, "BUND826: Must supply a merge condition for this table.");
                     } else {
                         try {
                             // If this is a static update (no associated source tables), a
@@ -880,7 +883,7 @@ public class SQLValidationVisitor implements SQLVisitor {
                             if (targetTable.getSourceTableList().size() == 0) {
                                 break;
                             }
-                            desc = buildErrorMessageWithObjectIdentifier(identifier, "ERROR_updatecondition_missing");
+                            desc = buildErrorMessageWithObjectIdentifier(identifier, "BUND827: Must supply an update condition for this table.");
                         } catch (BaseException ignore) {
                             break;
                         }
@@ -900,7 +903,7 @@ public class SQLValidationVisitor implements SQLVisitor {
         SQLCondition joinCondition = targetTable.getJoinCondition();
         if (joinCondition != null) {
             if (!joinCondition.isValid()) {
-                String desc = buildErrorMessageWithObjectIdentifier(identifier, "ERROR_condition_invalid");
+                String desc = buildErrorMessageWithObjectIdentifier(identifier, "BUND302: Condition is not valid.");
                 ValidationInfoImpl validationInfo = new ValidationInfoImpl(joinCondition, desc, ValidationInfo.VALIDATION_ERROR);
                 validationInfoList.add(validationInfo);
             } else {
@@ -912,7 +915,7 @@ public class SQLValidationVisitor implements SQLVisitor {
         SQLCondition filterCondition = targetTable.getFilterCondition();
         if (filterCondition != null) {
             if (!filterCondition.isValid()) {
-                String desc = buildErrorMessageWithObjectIdentifier(identifier, "ERROR_condition_invalid");
+                String desc = buildErrorMessageWithObjectIdentifier(identifier, "BUND302: Condition is not valid.");
                 ValidationInfoImpl validationInfo = new ValidationInfoImpl(filterCondition, desc, ValidationInfo.VALIDATION_ERROR);
                 validationInfoList.add(validationInfo);
             }
@@ -930,13 +933,13 @@ public class SQLValidationVisitor implements SQLVisitor {
             ValidationInfo expValidationInfo = null;
 
             if (obj == null) {
-                String desc = buildErrorMessageWithObjectIdentifiers(identifier, "ERROR_object_not_linked", new Object[]{obj.getDisplayName()});
+                String desc = buildErrorMessageWithObjectIdentifiers(identifier, "BUND828: ''{0}'' is not linked.", new Object[]{obj.getDisplayName()});
                 expValidationInfo = new ValidationInfoImpl(operator, desc, ValidationInfo.VALIDATION_ERROR);
             }
 
             SQLObject sqlObj = obj.getSQLObject();
             if (sqlObj == null) {
-                String desc = buildErrorMessageWithObjectIdentifiers(identifier, "ERROR_object_not_linked", new Object[]{obj.getDisplayName()});
+                String desc = buildErrorMessageWithObjectIdentifiers(identifier, "BUND828: ''{0}'' is not linked.", new Object[]{obj.getDisplayName()});
                 expValidationInfo = new ValidationInfoImpl(operator, desc, ValidationInfo.VALIDATION_ERROR);
             } else {
                 expValidationInfo = (sqlObj instanceof SQLCustomOperatorImpl) ? null : validateInputDataType(operator, argName, obj.getDisplayName(), sqlObj);

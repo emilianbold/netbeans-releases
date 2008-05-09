@@ -35,11 +35,14 @@ pack_all_components()
     find netbeans | egrep -v "netbeans/(extra|testtools|xml|enterprise|visualweb|uml|ruby|soa|cnd|identity|php)" | egrep -v "(org-netbeans-modules-mobility-end2end|org-netbeans-modules-mobility-jsr172)" | zip -q $DIST_DIR/zip/$NAME-mobility.zip -@ || exit 1
     find netbeans | egrep -v "netbeans/(extra|testtools|mobility|uml|ruby|soa|cnd|identity|php)" | zip -q $DIST_DIR/zip/$NAME-javaee.zip -@ || exit 1
     find netbeans | egrep -v "netbeans/(extra|testtools|xml|java|apisupport|harness|profiler|mobility|enterprise|visualweb|uml|soa|identity|cnd|php)" | zip -q $DIST_DIR/zip/$NAME-ruby.zip -@ || exit 1
+    find netbeans | egrep -v "netbeans/(extra|testtools|xml|java|apisupport|harness|profiler|mobility|enterprise|visualweb|uml|soa|identity|cnd|ruby)" | zip -q $DIST_DIR/zip/$NAME-php.zip -@ || exit 1
     find netbeans | egrep -v "netbeans/(extra|testtools|xml|java|apisupport|harness|profiler|mobility|enterprise|visualweb|uml|ruby|soa|identity|php)" | zip -q $DIST_DIR/zip/$NAME-cpp.zip -@ || exit 1
 
     mkdir $DIST_DIR/zip/moduleclusters
 
     rm -rf $NB_ALL/nbbuild/netbeans/extra
+
+    cd $NB_ALL/nbbuild
 
     #Pack all the NetBeans
     pack_component $DIST_DIR/zip/moduleclusters $NAME all-in-one netbeans
@@ -47,6 +50,9 @@ pack_all_components()
     cd $NB_ALL/nbbuild/netbeans
 
     #Continue with individual component
+    pack_component $DIST_DIR/zip/moduleclusters $NAME php "php*"
+    rm -rf php*
+
     pack_component $DIST_DIR/zip/moduleclusters $NAME uml "uml*"
     rm -rf uml*
 
@@ -92,8 +98,8 @@ pack_all_components()
     pack_component $DIST_DIR/zip/moduleclusters $NAME cnd "cnd*"
     rm -rf cnd*
 
-    pack_component $DIST_DIR/zip/moduleclusters $NAME php "php*"
-    rm -rf php*
+    pack_component $DIST_DIR/zip/moduleclusters $NAME gsf "gsf*"
+    rm -rf gsf*
 
     pack_component $DIST_DIR/zip/moduleclusters $NAME nb6.0-etc "*"
 }

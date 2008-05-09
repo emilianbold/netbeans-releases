@@ -139,6 +139,22 @@ public final class ObjectTranslation {
         }
     }
     
+    private void verifyTranslation (Object t, Object o, Object v) {
+        switch (translationID) {
+            case LOCALS_ID:
+                if (t instanceof AbstractVariable) {
+                    AbstractVariable local = ((AbstractVariable) t);
+                    Value lv = local.getInnerValue();
+                    if (lv == null && v != null || lv != null && !lv.equals(v)) {
+                        local.setInnerValue((Value) v);
+                    }
+                    return ;
+                }
+            default:
+                throw new IllegalStateException(""+o);
+        }
+    }
+    
     /**
      * Translates a debuggee Mirror to a wrapper object.
      *
@@ -205,6 +221,7 @@ public final class ObjectTranslation {
      */
     public Object translate (Mirror o, Object v) {
         Object r = null;
+        boolean verify = false;
         synchronized (cache) {
             WeakReference wr = cache.get (o);
             if (wr != null)
@@ -212,7 +229,12 @@ public final class ObjectTranslation {
             if (r == null) {
                 r = createTranslation (o, v);
                 cache.put (o, new WeakReference<Object>(r));
+            } else {
+                verify = true;
             }
+        }
+        if (verify) {
+            verifyTranslation(r, o, v);
         }
         return r;
     }

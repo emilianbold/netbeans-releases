@@ -4,12 +4,14 @@
  */
 package org.netbeans.modules.bpel.design;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.dnd.Autoscroll;
 import java.awt.event.MouseEvent;
 import java.util.Iterator;
 import java.util.List;
@@ -48,17 +50,20 @@ import org.openide.util.NbBundle;
  *
  * @author Alexey
  */
-public abstract class DiagramView extends JPanel {
-
+public abstract class DiagramView extends JPanel implements Autoscroll {
+    
     private DesignView designView;
     private PlaceHolderManager placeholderManager;
     private NameEditor nameEditor;
     private MouseHandler mouseHandler;
+    
+    private int offsetX;
+    private int offsetY;
 
     public DiagramView(DesignView designView) {
         super(new DiagramViewLayout());
         this.designView = designView;
-
+        setBackground(BACKGROUND_COLOR);
 
         placeholderManager =
                 new PlaceHolderManager(this);
@@ -94,7 +99,41 @@ public abstract class DiagramView extends JPanel {
        // System.out.println("Paint (" + (System.currentTimeMillis() - start) + " ms):" + this );
     }
 
-   
+     @Override
+    public void print(Graphics g) {
+        designView.setPrintMode(true);
+        super.print(g);
+        designView.setPrintMode(false);
+    }
+     
+     
+    public void setOffsets(int offsetX, int offsetY) {
+        this.offsetX = offsetX;
+        this.offsetY = offsetY;
+    }
+    
+//    public void doLayout() {
+//        FBounds bounds = getContentSize();
+//        double k = designView.getCorrectedZoom();
+//        
+//        offsetX = (int) Math.round((getWidth() - bounds.width * k) / 2);
+//        offsetY = (int) Math.round((getHeight() - bounds.height * k) / 2);
+//
+//        super.doLayout();
+//    }
+    
+    
+    @Override
+    protected void printComponent(Graphics g) {
+        paintContent(g, getDesignView().getCorrectedZoom(), true);
+    }
+
+    @Override
+    protected void printChildren(Graphics g) {
+    //    super.printChildren(g);
+    }
+    
+    
     private void paintContent(Graphics g, double zoom, boolean printMode) {
 
         Pattern root = getDesignView().getModel().getRootPattern();
@@ -127,8 +166,6 @@ public abstract class DiagramView extends JPanel {
 
             if (!printMode) {
                 placeholderManager.paint(g2);
-            //  FIXME              flowLinkTool.paint(g2);
-//                ghost.paint(g2);
             }
         }
     }
@@ -144,6 +181,17 @@ public abstract class DiagramView extends JPanel {
     //    public void scrollToFocusVisible(Pattern pattern) {
 //        scrollRectToVisible(getFocusAreaBounds(pattern));
 //    }
+    public void scrollPlaceholderToView(PlaceHolder ph) {
+        
+        if (ph == null) {
+            return;
+        }
+        Rectangle r = ph.getShape().getBounds();
+      
+        scrollRectToVisible(r);
+
+    }
+
     public void scrollPatternToView(Pattern pattern) {
         if (pattern == null) {
             return;
@@ -246,6 +294,9 @@ public abstract class DiagramView extends JPanel {
 
     public Point convertPointToParent(FPoint point) {
         Point result = convertDiagramToScreen(point);
+        if (designView.getPrintMode()) {
+            return result;
+        }
         Component c = this;
         while (c != getDesignView()) {
             result.x += c.getX();
@@ -258,6 +309,9 @@ public abstract class DiagramView extends JPanel {
     public FPoint convertPointFromParent(Point point) {
         Component c = this;
         Point result = new Point(point);
+        if (designView.getPrintMode()) {
+            return this.convertScreenToDiagram(result);
+        }
         while (c != getDesignView()) {
             result.x -= c.getX();
             result.y -= c.getY();
@@ -265,52 +319,59 @@ public abstract class DiagramView extends JPanel {
         }
 
         return this.convertScreenToDiagram(result);
-
     }
 
     public Insets getAutoscrollInsets() {
-        Rectangle outer = getBounds();
-        Rectangle inner = getParent().getBounds();
-        return new Insets(inner.y - outer.y + AUTOSCROLL_INSETS,
-                inner.x - outer.x + AUTOSCROLL_INSETS,
-                outer.height - inner.height - inner.y + outer.y + AUTOSCROLL_INSETS,
-                outer.width - inner.width - inner.x + outer.x + AUTOSCROLL_INSETS);
+        Rectangle r = getVisibleRect();
+
+        int w = getWidth();
+        int h = getHeight();
+        
+        Insets insets = new Insets(
+                r.y + AUTOSCROLL_INSETS, 
+                r.x + AUTOSCROLL_INSETS,
+                Math.max(0, h - r.y - r.height + AUTOSCROLL_INSETS),
+                Math.max(0, w - r.x - r.width + AUTOSCROLL_INSETS));
+        
+        return insets;
     }
 
     public void autoscroll(Point location) {
-        JScrollPane scroller = (JScrollPane) SwingUtilities.getAncestorOfClass(JScrollPane.class, this);
+        Rectangle r = getVisibleRect();
+        
+        int w = getWidth();
+        int h = getHeight();
+        
+        int px = location.x;
+        int py = location.y;
+        
+        Insets insets = getAutoscrollInsets();
+        
+        int dx = 0;
+        int dy = 0;
 
-        if (scroller != null) {
-            repaint();
+        final int SPEED_FACTOR = 5;
+        
+        if (px < insets.left) {
+            dx -= (insets.left - px) * SPEED_FACTOR;
+        } 
+        
+        if (px > w - insets.right) {
+            dx += (px - w + insets.right) * SPEED_FACTOR;
+        }
 
-            final int SPEED_FACTOR = 5;
-
-            Insets scrollInsets = new Insets(12, 12, 12, 12);
-            Rectangle r = getVisibleRect();
-
-            int h_distance = 0;
-            if (location.x <= r.x + AUTOSCROLL_INSETS) {
-                h_distance = location.x - (r.x + AUTOSCROLL_INSETS);
-            } else if (location.x >= r.x + r.width - AUTOSCROLL_INSETS) {
-                h_distance = location.x - (r.x + r.width - AUTOSCROLL_INSETS);
-
-            }
-            if (h_distance != 0) {
-                JScrollBar bar = scroller.getHorizontalScrollBar();
-                bar.setValue(bar.getValue() + h_distance * SPEED_FACTOR);
-            }
-
-
-            int v_dist = 0;
-            if (location.y <= r.y + AUTOSCROLL_INSETS) {
-                v_dist = location.y - (r.y + AUTOSCROLL_INSETS);
-            } else if (location.y >= r.y + r.height - scrollInsets.bottom) {
-                v_dist = location.y - (r.y + r.height - scrollInsets.bottom);
-            }
-            if (v_dist != 0) {
-                JScrollBar bar = scroller.getVerticalScrollBar();
-                bar.setValue(bar.getValue() + v_dist * SPEED_FACTOR);
-            }
+        if (py < insets.top) {
+            dy -= (insets.top - py) * SPEED_FACTOR;
+        } 
+        
+        if (py > h - insets.bottom) {
+            dy += (py - h + insets.bottom) * SPEED_FACTOR;
+        }
+        
+        if (dx != 0 || dy != 0) {
+            r.x += dx;
+            r.y += dy;
+            scrollRectToVisible(r);
         }
     }
 
@@ -364,17 +425,24 @@ public abstract class DiagramView extends JPanel {
 //        return p;
 //    }
     public FPoint convertScreenToDiagram(Point point, double zoom) {
-        double x = ((point.x - DiagramViewLayout.MARGIN_LEFT) / zoom) + LayoutManager.HMARGIN;
-
-        double y = ((point.y - DiagramViewLayout.MARGIN_TOP) / zoom) + LayoutManager.VMARGIN;
-
+        double x = ((point.x - offsetX) / zoom) + LayoutManager.HMARGIN;
+        double y = ((point.y - offsetY) / zoom) + LayoutManager.VMARGIN;
+        
+        if (designView.getPrintMode()) {
+            x = ((point.x - getWidth() / 2) / zoom) + LayoutManager.HMARGIN;
+            y = ((point.y) / zoom) + LayoutManager.VMARGIN;
+        }
         return new FPoint(x, y);
     }
 
     public Point convertDiagramToScreen(FPoint point, double zoom) {
-        double x = (point.x - LayoutManager.HMARGIN) * zoom + DiagramViewLayout.MARGIN_LEFT;
-        double y = (point.y - LayoutManager.VMARGIN) * zoom + DiagramViewLayout.MARGIN_TOP;
-
+        double x = (point.x - LayoutManager.HMARGIN) * zoom + offsetX;
+        double y = (point.y - LayoutManager.VMARGIN) * zoom + offsetY;
+        
+        if (designView.getPrintMode()) {
+            x = (point.x - LayoutManager.HMARGIN) * zoom + getWidth() / 2;
+            y = (point.y - LayoutManager.VMARGIN) * zoom;
+        }
         return new Point((int) Math.round(x), (int) Math.round(y));
     }
 
@@ -422,5 +490,7 @@ public abstract class DiagramView extends JPanel {
         return null;
 
     }
+    
+    private static final Color BACKGROUND_COLOR = new Color(0xFCFAF5);
     private static int AUTOSCROLL_INSETS = 20;
 }

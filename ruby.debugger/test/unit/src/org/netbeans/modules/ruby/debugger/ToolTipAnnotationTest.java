@@ -52,9 +52,13 @@ public class ToolTipAnnotationTest extends TestCase {
     public void testGetExpressionToEvaluate() {
         String line = "    @a1, @a1_gem = util_gem 'a', '1' do |s| s.executables << 'a_bin' end\n";
         assertEquals("variable parsed", "@a1_gem", ToolTipAnnotation.getExpressionToEvaluate(line, 13));
+        String line2 = "while eof?\n";
+        assertEquals("question mark parsed", "eof?", ToolTipAnnotation.getExpressionToEvaluate(line2, 8));
     }
 
     public void testIsRubyIdentifier() {
         assertTrue("@ is identifier", ToolTipAnnotation.isRubyIdentifier('@'));
+        assertTrue("? is identifier", ToolTipAnnotation.isRubyIdentifier('?'));
     }
+
 }

@@ -3,14 +3,13 @@
                      "http://java.sun.com/products/javahelp/map_1_0.dtd">
 
 <map version="1.0">
-	<mapID target="basics_javaeews_acc_serv_resources" url="basics/javaeews/acc_serv_resources.html"/>
-	<mapID target="basics_javaeews_intro-javaeews" url="basics/javaeews/intro_javaeews.html"/>
-	<mapID target="basics_javaeews_resource_usage" url="basics/javaeews/resource_usage.html"/>
-	<mapID target="basics_javaeews_serv_resources_win" url="basics/javaeews/serv_resources_win.html"/>
 	<mapID target="caps_basics_add_jbi" url="basics/add_jbi_module.html"/>
 	<mapID target="caps_basics_create" url="basics/create_project.html"/>
 	<mapID target="caps_basics_deploy" url="basics/deploy_project.html"/>
-	<mapID target="caps_basics_jbi" url="basics/jbi.html"/>
+	<mapID target="javaee-module-options" url="basics/javaee-module-options.html"/>
+	<mapID target="verify-server-resources" url="basics/verify-server-resources.html"/>
+	<mapID target="javaee-deployment-settings" url="basics/javaee-deployment-settings.html"/>
+        <mapID target="caps_basics_jbi" url="basics/jbi.html"/>
 	<mapID target="caps_credits" url="credits.html"/>
 	<mapID target="caps_jbi_runtime_function" url="jbinode/caps_jbi_node_RuntimeFunctionality.html"/>
 	<mapID target="caps_jbi_tester" url="basics/jbi_tester.html"/>
@@ -39,4 +38,9 @@
 	<mapID target="casaeditor-connections" url="casaeditor/connections.html"/>
 	<mapID target="casaeditor_navigation" url="casaeditor/navigator.html"/>
 	<mapID target="casaeditor_clean-configuration" url="casaeditor/clean-configuration.html"/>
+	<mapID target="jbinode_bc-properties" url="jbinode/jbi_node_bc-properties.html"/>
+	<mapID target="jbinode_app-configuration" url="jbinode/app-configuration.html"/>
+	<mapID target="jbinode_app-variables" url="jbinode/app-variables.html"/>
+	<mapID target="casaeditor_config-extension" url="casaeditor/config-extension.html"/>
+	<mapID target="casaeditor_disable-endpoint" url="casaeditor/disable-endpoint.html"/>
 </map>

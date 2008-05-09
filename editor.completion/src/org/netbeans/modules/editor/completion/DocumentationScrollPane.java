@@ -87,12 +87,14 @@ public class DocumentationScrollPane extends JScrollPane {
     private static final String JAVADOC_FORWARD = "javadoc-forward"; //NOI18N    
     private static final String JAVADOC_OPEN_IN_BROWSER = "javadoc-open-in-browser"; //NOI18N    
     private static final String JAVADOC_OPEN_SOURCE = "javadoc-open-source"; //NOI18N    
+    private static final String COPY_TO_CLIPBOARD = "copy-to-clipboard";
     
     private static final int ACTION_JAVADOC_ESCAPE = 0;
     private static final int ACTION_JAVADOC_BACK = 1;
     private static final int ACTION_JAVADOC_FORWARD = 2;
     private static final int ACTION_JAVADOC_OPEN_IN_BROWSER = 3;
     private static final int ACTION_JAVADOC_OPEN_SOURCE = 4;
+    private static final int ACTION_JAVADOC_COPY = 5;
 
     private JButton bBack, bForward, bGoToSource, bShowWeb;    
     private HTMLDocView view;
@@ -131,7 +133,7 @@ public class DocumentationScrollPane extends JScrollPane {
         
         installTitleComponent();
         installKeybindings(editorComponent);
-        setFocusable(false);
+        setFocusable(true);
     }
     
     public void setPreferredSize(Dimension preferredSize) {
@@ -295,6 +297,10 @@ public class DocumentationScrollPane extends JScrollPane {
         if (action != null)
             action.actionPerformed(new ActionEvent(currentDocumentation, 0, null));        
     }
+    
+    private void copy() {
+        view.copy();
+    }
 
     /** Attempt to find the editor keystroke for the given editor action. */
     private KeyStroke[] findEditorKeys(String editorActionName, KeyStroke defaultKey, JTextComponent component) {
@@ -307,7 +313,7 @@ public class DocumentationScrollPane extends JScrollPane {
             if (ui != null && km != null) {
                 EditorKit kit = ui.getEditorKit(component);
                 if (kit instanceof BaseKit) {
-                    Action a = ((BaseKit)kit).getActionByName(editorActionName);
+                     Action a = ((BaseKit)kit).getActionByName(editorActionName);
                     if (a != null) {
                         KeyStroke[] keys = km.getKeyStrokesForAction(a);
                         if (keys != null && keys.length > 0) {
@@ -353,6 +359,11 @@ public class DocumentationScrollPane extends JScrollPane {
         registerKeybinding(ACTION_JAVADOC_OPEN_SOURCE, JAVADOC_OPEN_SOURCE,
         KeyStroke.getKeyStroke(KeyEvent.VK_O, KeyEvent.ALT_MASK | KeyEvent.CTRL_MASK),
         null, component);
+        
+        //register copy action
+        registerKeybinding(ACTION_JAVADOC_COPY, COPY_TO_CLIPBOARD,
+        KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.CTRL_MASK),
+        COPY_TO_CLIPBOARD, component);
         
         // Register movement keystrokes to be reachable through Ctrl+<orig-keystroke>
         mapWithCtrl(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0));
@@ -498,6 +509,9 @@ public class DocumentationScrollPane extends JScrollPane {
                     break;
                 case ACTION_JAVADOC_OPEN_SOURCE:
                     goToSource();
+                    break;
+                case ACTION_JAVADOC_COPY:
+                    copy();
                     break;
             }
             

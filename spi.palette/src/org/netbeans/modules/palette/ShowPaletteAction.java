@@ -76,6 +76,7 @@ public class ShowPaletteAction extends AbstractAction {
                 
             return;
         }
+        Utils.setOpenedByUser( palette, true );
         palette.open();
         palette.requestActive();
     }

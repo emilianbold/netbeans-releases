@@ -55,11 +55,14 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.SimpleValueNames;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
 import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateFilter;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionProvider;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
@@ -150,32 +153,42 @@ public final class CodeTemplateCompletionProvider implements CompletionProvider 
         }
         
         protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
-            CodeTemplateManagerOperation op = CodeTemplateManagerOperation.get(doc);
+            String langPath = null;
             String identifierBeforeCursor = null;
             if (doc instanceof AbstractDocument) {
                 AbstractDocument adoc = (AbstractDocument)doc;
                 adoc.readLock();
                 try {
-                    if (adoc instanceof BaseDocument) {
-                        identifierBeforeCursor = Utilities.getIdentifierBefore(
-                                (BaseDocument)adoc, caretOffset);
+                    try {
+                        if (adoc instanceof BaseDocument) {
+                            identifierBeforeCursor = Utilities.getIdentifierBefore((BaseDocument)adoc, caretOffset);
+                        }
+                    } catch (BadLocationException e) {
+                        // leave identifierBeforeCursor null
                     }
-                } catch (BadLocationException e) {
-                    // leave identifierBeforeCursor null
+                    List<TokenSequence<?>> list = TokenHierarchy.get(doc).embeddedTokenSequences(caretOffset, true);
+                    if (list.size() > 1) {
+                        langPath = list.get(list.size() - 1).languagePath().mimePath();
+                    }
                 } finally {
                     adoc.readUnlock();
                 }
             }
             
-            op.waitLoaded();
+            if (langPath == null) {
+                langPath = NbEditorUtilities.getMimeType(doc);
+            }
 
             queryCaretOffset = caretOffset;
             queryAnchorOffset = (identifierBeforeCursor != null) ? caretOffset - identifierBeforeCursor.length() : caretOffset;
-            if (identifierBeforeCursor != null) {
+            if (langPath != null && identifierBeforeCursor != null) {
                 String mimeType = DocumentUtilities.getMimeType(component);
                 MimePath mimePath = mimeType == null ? MimePath.EMPTY : MimePath.get(mimeType);
                 Preferences prefs = MimeLookup.getLookup(mimePath).lookup(Preferences.class);
                 boolean ignoreCase = prefs.getBoolean(SimpleValueNames.COMPLETION_CASE_SENSITIVE, false);
+                
+                CodeTemplateManagerOperation op = CodeTemplateManagerOperation.get(MimePath.parse(langPath));
+                op.waitLoaded();
                 
                 Collection<? extends CodeTemplate> cts = op.findByParametrizedText(identifierBeforeCursor, ignoreCase);
                 Collection<? extends CodeTemplateFilter> filters = CodeTemplateManagerOperation.getTemplateFilters(component, queryAnchorOffset);
@@ -188,6 +201,7 @@ public final class CodeTemplateCompletionProvider implements CompletionProvider 
                 }
                 resultSet.addAllItems(queryResult);
             }
+            
             resultSet.setAnchorOffset(queryAnchorOffset);
             resultSet.finish();
         }

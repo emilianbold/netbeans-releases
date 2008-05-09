@@ -43,15 +43,11 @@ package org.netbeans.modules.cnd.debugger.gdb.actions;
 
 import java.util.Collections;
 import java.util.Set;
-
 import org.openide.util.RequestProcessor;
-
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.spi.debugger.ActionsProvider;
 import org.netbeans.spi.debugger.ActionsProviderListener;
 import org.netbeans.spi.debugger.ContextProvider;
-
-import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 
 
@@ -63,8 +59,6 @@ public class StartActionProvider extends ActionsProvider {
     
     private GdbDebugger debuggerImpl;
     private ContextProvider lookupProvider;
-    private static final boolean startVerbose =
-                System.getProperty("netbeans.debugger.start") != null;
 
     /**
      * Creates a new instance of StartActionProvider
@@ -132,6 +126,7 @@ public class StartActionProvider extends ActionsProvider {
      *        done.
      * @since 1.5
      */
+    @Override
     public void postAction(final Object action, final Runnable actionPerformedNotifier) {
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {

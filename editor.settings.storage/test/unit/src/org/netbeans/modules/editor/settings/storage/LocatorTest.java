@@ -355,7 +355,7 @@ public class LocatorTest extends NbTestCase {
     public static void scan(String settingsTypeId, FileObject baseFolder, String mimeType, String profileId, boolean fullScan, boolean scanModules, boolean scanUsers, Map<String, List<Object []>> results) {
         SettingsType.Locator l = SettingsType.getLocator(SettingsType.find(settingsTypeId));
         assertNotNull("Can't find locator for '" + settingsTypeId + "'");
-        l.scan(baseFolder, mimeType, profileId, fullScan, scanModules, scanUsers, results);
+        l.scan(baseFolder, mimeType, profileId, fullScan, scanModules, scanUsers, false, results);
     }
     
     public static String getWritableFileName(String settingsTypeId, String mimeType, String profileId, String fileId, boolean modulesFile) {

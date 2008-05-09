@@ -45,7 +45,6 @@ import java.awt.Color;
 import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
 import java.net.URL;
 import java.text.Collator;
 import java.util.Arrays;
@@ -501,15 +500,8 @@ public final class PlatformComponentFactory {
         public @Override Component getListCellRendererComponent(JList list, Object value,
                 int index, boolean isSelected, boolean cellHasFocus) {
             URL u = (URL) value;
-            String text = u.toExternalForm();
-            if (u.getProtocol().equals("file")) { // NOI18N
-                text = new File(URI.create(u.toExternalForm())).getAbsolutePath();
-            } else if (u.getProtocol().equals("jar")) { // NOI18N
-                URL baseU = FileUtil.getArchiveFile(u);
-                if (u.equals(FileUtil.getArchiveRoot(baseU)) && baseU.getProtocol().equals("file")) { // NOI18N
-                    text = new File(URI.create(baseU.toExternalForm())).getAbsolutePath();
-                }
-            }
+            File f = FileUtil.archiveOrDirForURL(u);
+            String text = f != null ? f.getAbsolutePath() : u.toString();
             return super.getListCellRendererComponent(list, text, index, isSelected, cellHasFocus);
         }
     }

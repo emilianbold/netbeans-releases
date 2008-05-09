@@ -2,7 +2,7 @@
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -19,7 +19,7 @@
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
- * "Portions Copyrighted [year] [name of copyright owner]"
+ *			"Portions Copyrighted [year] [name of copyright owner]"
  *
  * Contributor(s):
  *
@@ -63,6 +63,7 @@ class InterpDtTerm extends InterpANSI {
 	protected final Actor act_M = new ACT_M();
 	protected final Actor act_D = new ACT_D();
 	protected final Actor act_done_collect = new ACT_DONE_COLLECT();
+	protected final Actor act_done_collect2 = new ACT_DONE_COLLECT2();
 	protected final Actor act_collect = new ACT_COLLECT();
 	protected final Actor act_start_collect = new ACT_START_COLLECT();
 
@@ -78,6 +79,9 @@ class InterpDtTerm extends InterpANSI {
 		st_esc_rb.setAction(c, st_esc_rb, act_collect);
 	    st_esc_rb.setAction((char) 27, st_wait, act_nop);
 
+	    st_esc_rb.setAction((char) 7, st_base, act_done_collect2);	// BEL
+            
+	    st_esc_rb.setAction((char) 27, st_wait, act_nop);		// ESC
 	    st_wait.setAction('\\', st_base, act_done_collect);
 
 	    st_esc_lb.setAction('?', st_esc_lb_q, act_reset_number);
@@ -93,7 +97,7 @@ class InterpDtTerm extends InterpANSI {
 	    st_esc_lb_b.setAction('p', st_base, new ACT_DEC_STR());
 	}
 
-	protected static final class ACT_START_COLLECT implements Actor {
+	static final class ACT_START_COLLECT implements Actor {
 	    public String action(AbstractInterp ai, char c) {
 		InterpDtTerm i = (InterpDtTerm) ai;
 		i.text = "";	// NOI18N
@@ -101,7 +105,7 @@ class InterpDtTerm extends InterpANSI {
 	    }
 	}
 
-	protected static final class ACT_COLLECT implements Actor {
+	static final class ACT_COLLECT implements Actor {
 	    public String action(AbstractInterp ai, char c) {
 		// java bug 4318526 text += c;
 		InterpDtTerm i = (InterpDtTerm) ai;
@@ -110,7 +114,7 @@ class InterpDtTerm extends InterpANSI {
 	    }
 	}
 
-	protected static final class ACT_DONE_COLLECT implements Actor {
+	static final class ACT_DONE_COLLECT implements Actor {
 	    public String action(AbstractInterp ai, char c) {
 		/* DEBUG
 		System.out.println("DtTerm emulation: got '" + text + "'");	// NOI18N
@@ -119,53 +123,100 @@ class InterpDtTerm extends InterpANSI {
 	    }
 	}
 
-	protected static final class ACT_D implements Actor {
+	static final class ACT_DONE_COLLECT2 implements Actor {
+	    public String action(AbstractInterp ai, char c) {
+		InterpDtTerm i = (InterpDtTerm) ai;
+		i.text = "";	// NOI18N
+                int semix = i.text.indexOf(';');
+                if (semix == -1)
+                    return null;
+                String p1 = i.text.substring(0, semix);
+                String p2 = i.text.substring(semix+1);
+		/* DEBUG
+		System.out.println("DtTerm emulation done_collect2: got '" + p1 + "' '" + p2 + "'");	// NOI18N
+		*/
+                int code = Integer.parseInt(p1);
+                switch (code) {
+                    case 0:
+                        ai.ops.op_icon_name(p2);
+                        ai.ops.op_win_title(p2);
+                        break;
+                    case 1:
+                        ai.ops.op_icon_name(p2);
+                        break;
+                    case 2:
+                        ai.ops.op_win_title(p2);
+                        break;
+                    case 3:
+                        ai.ops.op_cwd(p2);
+                        break;
+                }
+		return null;
+	    }
+	}
+
+        
+	static final class ACT_D implements Actor {
 	    public String action(AbstractInterp ai, char c) {
 		ai.ops.op_do(1);
 		return null;
 	    }
 	};
 
-	protected static final class ACT_M implements Actor {
+	static final class ACT_M implements Actor {
 	    public String action(AbstractInterp ai, char c) {
 		ai.ops.op_up(1);
 		return null;
 	    }
 	}
 
-	protected static final class ACT_DEC_PRIVATE implements Actor {
-	    public String action(AbstractInterp ai, char c) {
-		if (ai.noNumber())
-		    return "act_DEC_private: no number";	// NOI18N
-		int n = ai.numberAt(0);
-		switch(c) {
-		    case 'h':
+	static final class ACT_DEC_PRIVATE implements Actor {
+            
+            // xterm Sequences to turn mouse reporting on and off are to be
+            // implemeted here.
+            // See http://www.xfree86.org/current/ctlseqs.html#Mouse%20Tracking
+            
+            private static String decPrivateSet(AbstractInterp ai, char c, int n) {
 			if (n == 5)
 			    ai.ops.op_reverse(true);
 			else if (n == 25)
 			    ai.ops.op_cursor_visible(true);
 			else 
 			    return "act_DEC_private: unrecognized cmd " + c;	// NOI18N
-			break;
-		    case 'l':
+                return null;
+            }
+            
+            private static String decPrivateReset(AbstractInterp ai, char c, int n) {
 			if (n == 5)
 			    ai.ops.op_reverse(false);
 			else if (n == 25)
 			    ai.ops.op_cursor_visible(false);
 			else 
 			    return "act_DEC_private: unrecognized cmd " + c;	// NOI18N
-			break;
-		    case 'r':
-		    case 's':
-			/* DEBUG
-			System.out.println("act_DEC_private " +	// NOI18N
-			    numberAt(0) + " " + c);	// NOI18N
-			*/
-			break;
-		    default:
+                return null;
+            }
+            
+            private static String decPrivateSave(AbstractInterp ai, char c, int n) {
 			return "act_DEC_private: unrecognized cmd " + c;	// NOI18N
 		} 
-		return null;
+            
+            
+            private static String decPrivateRestore(AbstractInterp ai, char c, int n) {
+                
+                return "act_DEC_private: unrecognized cmd " + c;	// NOI18N
+            }
+            
+	    public String action(AbstractInterp ai, char c) {
+		if (ai.noNumber())
+		    return "act_DEC_private: no number";	// NOI18N
+		int n = ai.numberAt(0);
+		switch(c) {
+		    case 'h': return decPrivateSet(ai, c, n);
+		    case 'l': return decPrivateReset(ai, c, n);
+		    case 'r': return decPrivateRestore(ai, c, n);
+		    case 's': return decPrivateSave(ai, c, n);
+		    default:  return "act_DEC_private: unrecognized cmd " + c;	// NOI18N
+		} 
 	    }
 	}
 

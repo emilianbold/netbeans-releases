@@ -44,6 +44,7 @@ package org.netbeans.modules.ruby;
 import org.jruby.ast.MethodDefNode;
 import org.jruby.ast.Node;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.gsf.GsfTestCompilationInfo;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -60,9 +61,10 @@ public class TypeAnalyzerTest extends RubyTestBase {
     private TypeAnalyzer getAnalyzer(String file, String caretLine, boolean findMethod) throws Exception {
         FileObject fo = getTestFile(file);
         BaseDocument doc = getDocument(fo);
-        TestCompilationInfo info = getInfo(fo);
+        GsfTestCompilationInfo info = getInfo(fo);
         Node root = AstUtilities.getRoot(info);
-        RubyIndex index = RubyIndex.get(info.getIndex());
+        initializeRegistry();
+        RubyIndex index = RubyIndex.get(info.getIndex(RubyMimeResolver.RUBY_MIME_TYPE));
 
         int caretOffset = -1;
         if (caretLine != null) {

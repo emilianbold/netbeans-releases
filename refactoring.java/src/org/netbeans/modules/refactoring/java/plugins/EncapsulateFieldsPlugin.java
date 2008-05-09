@@ -64,6 +64,9 @@ import org.netbeans.modules.refactoring.java.api.EncapsulateFieldRefactoring;
 import org.netbeans.modules.refactoring.java.plugins.EncapsulateFieldRefactoringPlugin.EncapsulateDesc;
 import org.netbeans.modules.refactoring.java.plugins.EncapsulateFieldRefactoringPlugin.Encapsulator;
 import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
+import org.netbeans.modules.refactoring.java.ui.EncapsulateFieldPanel.InsertPoint;
+import org.netbeans.modules.refactoring.java.ui.EncapsulateFieldPanel.Javadoc;
+import org.netbeans.modules.refactoring.java.ui.EncapsulateFieldPanel.SortBy;
 import org.netbeans.modules.refactoring.java.ui.EncapsulateFieldsRefactoring;
 import org.netbeans.modules.refactoring.java.ui.EncapsulateFieldsRefactoring.EncapsulateFieldInfo;
 import org.openide.filesystems.FileObject;
@@ -171,6 +174,7 @@ public final class EncapsulateFieldsPlugin extends JavaRefactoringPlugin {
         Problem problem = null;
         Set<FileObject> references = new HashSet<FileObject>();
         List<EncapsulateDesc> descs = new ArrayList<EncapsulateDesc>(refactorings.size());
+        fireProgressListenerStart(ProgressEvent.START, refactorings.size() + 1);
         for (EncapsulateFieldRefactoringPlugin ref : refactorings) {
             if (cancelRequest) {
                 return null;
@@ -184,12 +188,18 @@ public final class EncapsulateFieldsPlugin extends JavaRefactoringPlugin {
             }
             descs.add(desc);
             references.addAll(desc.refs);
+            fireProgressListenerStep();
         }
 
-        Encapsulator encapsulator = new Encapsulator(descs, problem);
-        createAndAddElements(references, new TransformTask(encapsulator, descs.get(0).fieldHandle), elements, refactoring);
+        Encapsulator encapsulator = new Encapsulator(descs, problem,
+                refactoring.getContext().lookup(InsertPoint.class),
+                refactoring.getContext().lookup(SortBy.class),
+                refactoring.getContext().lookup(Javadoc.class)
+                );
+        Problem prob = createAndAddElements(references, new TransformTask(encapsulator, descs.get(0).fieldHandle), elements, refactoring);
+        fireProgressListenerStop();
         problem = encapsulator.getProblem();
-        return problem;
+        return prob != null ? prob : problem;
     }
     
     private void initRefactorings(Collection<EncapsulateFieldInfo> refactorFields, Set<Modifier> methodModifier, Set<Modifier> fieldModifier, boolean alwaysUseAccessors) {

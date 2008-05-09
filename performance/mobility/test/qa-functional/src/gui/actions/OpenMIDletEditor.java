@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package gui.actions;
 
 import gui.MPUtilities;
@@ -48,6 +47,8 @@ import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 
 /**
@@ -55,88 +56,107 @@ import org.netbeans.jemmy.operators.JPopupMenuOperator;
  * @author mkhramov@netbeans.org
  */
 public class OpenMIDletEditor extends org.netbeans.performance.test.utilities.PerformanceTestCase {
-    
+
     private Node openNode;
     private String targetProject;
     private String midletName;
     private ProjectsTabOperator pto;
-    
-    protected static String OPEN = org.netbeans.jellytools.Bundle.getStringTrimmed("org.openide.actions.Bundle", "Open");    
+    // Since Loading Document label is shown it is okay to load document for 10 sec
+    public final static long EXPECTED_TIME = 10000;
+    protected static String OPEN = org.netbeans.jellytools.Bundle.getStringTrimmed("org.openide.actions.Bundle", "Open");
+
     /**
      * Creates a new instance of OpenMIDletEditor
      * @param testName the name of the test
-     */    
+     */
     public OpenMIDletEditor(String testName) {
         super(testName);
         targetProject = "MobileApplicationVisualMIDlet";
         midletName = "VisualMIDletMIDP20.java";
-        expectedTime = WINDOW_OPEN;
-        WAIT_AFTER_OPEN=20000;        
+        expectedTime = EXPECTED_TIME;
+        WAIT_AFTER_OPEN = 20000;
     }
 
     /**
      * Creates a new instance of OpenMIDletEditor
      * @param testName the name of the test
      * @param performanceDataName measured values will be saved under this name
-     */    
+     */
     public OpenMIDletEditor(String testName, String performanceDataName) {
-        super(testName,performanceDataName);
-        targetProject = "MobileApplicationVisualMIDlet";        
-        midletName = "VisualMIDletMIDP20.java";        
-        expectedTime = WINDOW_OPEN;
-        WAIT_AFTER_OPEN=20000;        
+        super(testName, performanceDataName);
+        targetProject = "MobileApplicationVisualMIDlet";
+        midletName = "VisualMIDletMIDP20.java";
+        expectedTime = EXPECTED_TIME;
+        WAIT_AFTER_OPEN = 20000;
     }
+
+    @Override
     public void initialize() {
         log(":: initialize");
         EditorOperator.closeDiscardAll();
-        pto = ProjectsTabOperator.invoke();        
-    } 
-    
+        pto = ProjectsTabOperator.invoke();
+    }
+
     public void prepare() {
         log(":: prepare");
-        String documentPath = MPUtilities.SOURCE_PACKAGES+"|"+"allComponents"+"|"+midletName;
-        
+        String documentPath = MPUtilities.SOURCE_PACKAGES + "|" + "allComponents" + "|" + midletName;
+
         long nodeTimeout = pto.getTimeouts().getTimeout("ComponentOperator.WaitStateTimeout");
         pto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 60000);
-        
+
         try {
             openNode = new Node(pto.getProjectRootNode(targetProject), documentPath);
         } catch (TimeoutExpiredException ex) {
-            pto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout",nodeTimeout);
-            throw new Error("Cannot find expected node because of Timeout");            
+            pto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", nodeTimeout);
+            throw new Error("Cannot find expected node because of Timeout");
         }
-        pto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout",nodeTimeout);
-        
+        pto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", nodeTimeout);
+
         if (this.openNode == null) {
             throw new Error("Cannot find expected node ");
         }
-        openNode.select();        
+        openNode.select();
     }
 
     public ComponentOperator open() {
         log(":: open");
-        JPopupMenuOperator popup =  this.openNode.callPopup();
+        JPopupMenuOperator popup = this.openNode.callPopup();
         if (popup == null) {
             throw new Error("Cannot get context menu for node ");
         }
-        log("------------------------- after popup invocation ------------");
+        log("   -- after popup invocation --");
         popup.getTimeouts().setTimeout("JMenuOperator.PushMenuTimeout", 90000);
         try {
             popup.pushMenu(OPEN);
         } catch (org.netbeans.jemmy.TimeoutExpiredException tee) {
             throw new Error("Cannot push menu item ");
         }
-       
+
         return MIDletEditorOperator.findMIDletEditorOperator(midletName);
     }
-    
+
+    @Override
     public void close() {
         log(":: close");
-        ((MIDletEditorOperator)testedComponentOperator).close();
+        if (testedComponentOperator != null) {
+            new Thread("Question dialog discarder") {
+
+                @Override
+                public void run() {
+                    try {
+                        new JButtonOperator(new JDialogOperator("Question"), "Discard").push();
+                    } catch (Exception e) {
+                        // There is no need to care about this exception as this dialog is optional 
+                        e.printStackTrace();
+                    }
+                }
+            }.start();
+            ((MIDletEditorOperator) testedComponentOperator).close();
+        }
     }
-    
+
+    @Override
     public void shutdown() {
         log("::shutdown");
-    }    
-
+    }
 }

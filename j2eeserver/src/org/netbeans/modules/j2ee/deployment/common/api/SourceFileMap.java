@@ -50,6 +50,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
+import org.openide.util.Parameters;
 
 /**
  * Extra file mapping service for each j2ee module.  This service cover irregular source to
@@ -71,7 +72,7 @@ public abstract class SourceFileMap {
 
     /**
      * Returns the relative path in distribution of the given concrete source file.
-     * @param distributionPath distribution path for to find source file for.
+     * @param sourceFile source file for to find the distribution path.
      */
     public abstract File getDistributionPath(FileObject sourceFile);
     
@@ -142,12 +143,10 @@ public abstract class SourceFileMap {
     /**
      * Returns a source file map for the module, or null if none can be identified.
      *
-     * @param ddbean An instance of ddbean to establish mapping context.
+     * @param j2eeModule module for which the source file map will be returned.
      */
     public static final SourceFileMap findSourceMap(J2eeModule j2eeModule) {
-        if (j2eeModule == null) {
-            throw new NullPointerException();
-        }
-        return J2eeModuleAccessor.DEFAULT.getJ2eeModuleProvider(j2eeModule).getSourceFileMap();
+        Parameters.notNull("j2eeModule", j2eeModule);
+        return J2eeModuleAccessor.getDefault().getJ2eeModuleProvider(j2eeModule).getSourceFileMap();
     }
 }

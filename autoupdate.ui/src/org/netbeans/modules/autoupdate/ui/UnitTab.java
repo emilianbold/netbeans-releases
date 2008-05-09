@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.autoupdate.ui;
 
+import org.netbeans.modules.autoupdate.ui.wizards.UninstallUnitWizard;
+import org.netbeans.modules.autoupdate.ui.wizards.InstallUnitWizard;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Point;
@@ -89,7 +91,6 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableModel;
 import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
-import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.api.autoupdate.UpdateUnitProvider.CATEGORY;
 import org.netbeans.modules.autoupdate.ui.wizards.OperationWizardModel.OperationType;
@@ -305,7 +306,6 @@ public class UnitTab extends javax.swing.JPanel {
             p.removePreferenceChangeListener (preferenceChangeListener);
             preferenceChangeListener = null;
         }
-        manager = null;
     }
     
     
@@ -619,7 +619,6 @@ public class UnitTab extends javax.swing.JPanel {
                     ((LocallyDownloadedTableModel) model).setUnits (null);
                 }
                 Utilities.presentRefreshProviders (manager, force);
-                final List<UpdateUnit> units = UpdateManager.getDefault ().getUpdateUnits (Utilities.getUnitTypes ());
                 SwingUtilities.invokeLater (new Runnable () {
                     public void run () {
                         fireUpdataUnitChange ();
@@ -1068,7 +1067,9 @@ public class UnitTab extends javax.swing.JPanel {
             try {
                 wizardFinished = new InstallUnitWizard ().invokeWizard (OperationType.INSTALL, manager);
             } finally {
-                fireUpdataUnitChange ();
+                if (manager != null) {
+                    fireUpdataUnitChange ();
+                }
                 if (!wizardFinished) {
                     UnitCategoryTableModel.restoreState (model.getUnits (), state, model.isMarkedAsDefault ());
                 }

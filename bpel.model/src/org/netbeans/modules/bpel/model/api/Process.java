@@ -21,7 +21,7 @@ package org.netbeans.modules.bpel.model.api;
 
 import org.netbeans.modules.bpel.model.api.events.VetoException;
 
-import com.sun.org.apache.xalan.internal.lib.Extensions;
+import org.netbeans.modules.bpel.model.api.support.TBoolean;
 
 
 /**
@@ -66,6 +66,10 @@ public interface Process extends JoinFailureSuppressor, NamedElement,
      */
     String TARGET_NAMESPACE = "targetNamespace"; // NOI18N
 
+    /**
+     * atomic attribute's name.
+     */
+    String ATOMIC = "atomic"; // NOI18N
 
     /**
      * Gets the value of the targetNamespace property.
@@ -169,4 +173,24 @@ public interface Process extends JoinFailureSuppressor, NamedElement,
      * @return size of "imports" children.
      */
     int sizeOfImports();
+    
+    /**
+     * Indicates if the process is atomic. 
+     * It isn't an extension (not standard) attribute of the process.
+     * 
+     * atomic=true - acknowledges Message(MEx) to its partner immediately 
+     * after executing Receive activity. 
+     * 
+     * atomic=false - acknowledges Message(MEx) to its partner 
+     * when the instance completes.
+     * 
+     * @return the value of the atomic flag
+     */
+    TBoolean isAtomic();
+
+    /**
+     * Set atomic attribute. See the description of the isAtomic() method.
+     * @param value
+     */
+    void setAtomic(TBoolean value);
 }

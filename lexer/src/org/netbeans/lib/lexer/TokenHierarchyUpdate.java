@@ -505,7 +505,10 @@ public final class TokenHierarchyUpdate {
                 Object relexState = tokenListList.relexState(index);
                 // update-status called above
                 TokenListChange<?> chng = update.updateTokenListByModification(etl, relexState);
-                if (chng.isBoundsChange()) {
+                relexState = LexerUtilsConstants.endState(etl, relexState);
+                // Prevent bounds change in case the states at the end of the section would not match
+                // which leads to relexing of the next section.
+                if (chng.isBoundsChange() && LexerUtilsConstants.statesEqual(relexState, matchState)) {
                     TokenListChange<?> parentChange = (tokenListList.languagePath().size() == 2)
                             ? update.rootChange
                             : update.info(tokenListList.languagePath().parent()).change;
@@ -513,7 +516,6 @@ public final class TokenHierarchyUpdate {
                 } else { // Regular change
                     update.processNonBoundsChange(chng);
                 }
-                relexState = LexerUtilsConstants.endState(etl, relexState);
                 relexAfterLastModifiedSection(index + 1, relexState, matchState);
 
             } else { // Non-bounds change

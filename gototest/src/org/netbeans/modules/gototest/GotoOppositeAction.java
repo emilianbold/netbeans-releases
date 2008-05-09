@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -63,6 +63,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.util.actions.CallableSystemAction;
 import org.openide.windows.TopComponent;
 
@@ -72,7 +73,7 @@ import org.openide.windows.TopComponent;
  * which perform logic appropriate for the file type being opened.
  * <p>
  * Much of this is based on the original JUnit action by Marian Petras.
-å * 
+ * 
  * @author  Marian Petras
  * @author Tor Norbye
  */
@@ -84,11 +85,6 @@ public class GotoOppositeAction extends CallableSystemAction {
 
     public GotoOppositeAction() {
         putValue("noIconInMenu", Boolean.TRUE); //NOI18N
-
-        String name = NbBundle.getMessage(
-                GotoOppositeAction.class,
-                "LBL_Action_GoToTest"); //NOI18N
-        putValue("PopupMenuText", name); //NOI18N
 
         // Not sure what the following is used for - a grep for trimmed-text
         // doesn't reveal any clients. Obsolete code perhaps?
@@ -131,7 +127,7 @@ public class GotoOppositeAction extends CallableSystemAction {
     }
     
     public void performAction() {
-        int caretOffsetHolder[] = new int[1];
+        int caretOffsetHolder[] = { -1 };
         FileObject fo = getApplicableFileObject(caretOffsetHolder);
         int caretOffset = caretOffsetHolder[0];
 
@@ -206,7 +202,7 @@ public class GotoOppositeAction extends CallableSystemAction {
     }
     
     private FileType getCurrentFileType() {
-        FileObject fo = getApplicableFileObject(null);
+        FileObject fo = getApplicableFileObject(new int[1]);
         
         return (fo != null) ? getFileType(fo) : FileType.NEITHER;
     }
@@ -241,17 +237,21 @@ public class GotoOppositeAction extends CallableSystemAction {
     }
     
     private FileObject getApplicableFileObject(int[] caretPosHolder) {
+        if (!EventQueue.isDispatchThread()) {
+            // Unsafe to ask for an editor pane from a random thread.
+            // E.g. org.netbeans.lib.uihandler.LogRecords.write asking for getName().
+            Collection<? extends DataObject> dobs = Utilities.actionsGlobalContext().lookupAll(DataObject.class);
+            return dobs.size() == 1 ? dobs.iterator().next().getPrimaryFile() : null;
+        }
+
         // TODO: Use the new editor library to compute this:
         // JTextComponent pane = EditorRegistry.lastFocusedComponent();
         TopComponent comp = TopComponent.getRegistry().getActivated();
-        if (comp == null) {
-            return null;
-        }
 
         if (comp instanceof CloneableEditorSupport.Pane) {
             JEditorPane editorPane = ((CloneableEditorSupport.Pane)comp).getEditorPane();
             if (editorPane != null) {
-                if (caretPosHolder != null && editorPane.getCaret() != null) {
+                if (editorPane.getCaret() != null) {
                     caretPosHolder[0] = editorPane.getCaret().getDot();
                 }
                 Document document = editorPane.getDocument();
@@ -263,10 +263,7 @@ public class GotoOppositeAction extends CallableSystemAction {
                     return ((DataObject) sdp).getPrimaryFile();
                 }
             }
-        } else {
-            if (caretPosHolder != null) {
-                caretPosHolder[0] = -1;
-            }
+        } else if (comp != null) {
             Node[] selectedNodes = comp.getActivatedNodes();
             if (selectedNodes != null && selectedNodes.length == 1) {
                 DataObject dataObj = selectedNodes[0].getLookup().lookup(DataObject.class);

@@ -56,7 +56,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.j2ee.sun.api.Asenv;
 import org.netbeans.modules.j2ee.sun.api.ServerLocationManager;
-import org.netbeans.modules.j2ee.sun.ide.Installer;
 import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
@@ -68,11 +67,7 @@ import org.netbeans.modules.j2ee.sun.ide.j2ee.PlatformValidator;
  */
 class AddDomainPlatformPanel implements WizardDescriptor.FinishablePanel,
         ChangeListener {
-    
-    private static Profile[] SHORT_PROFILES_LIST = { Profile.DEFAULT };
-    private static Profile[] LONG_PROFILES_LIST = { Profile.DEFAULT, Profile.DEVELOPER,
-        Profile.CLUSTER, Profile.ENTERPRISE };
-    
+        
     /**
      * The visual component that displays this panel. If you need to access the
      * component from this class, just use getComponent().
@@ -115,10 +110,19 @@ class AddDomainPlatformPanel implements WizardDescriptor.FinishablePanel,
     }
     
     private String guessDefaultInstall() {
-        if (org.openide.util.Utilities.isWindows()) {
-            return "C:\\Sun\\AppServer";    // NOI18N
+        if (serverVersion.equals(PlatformValidator.APPSERVERSJS)) {
+            // use the sunw name
+            if (org.openide.util.Utilities.isWindows()) {
+                return "C:\\Sun\\AppServer";    // NOI18N
+            } else {
+                return System.getProperty("user.home") + File.separator + "SUNWappserver";  // NOI18N
+            }
+        } else if (serverVersion.equals(PlatformValidator.SAILFIN_V1)) {
+            // use sailfin name
+            return System.getProperty("user.home") + File.separator + "sailfin";  // NOI18N
         } else {
-            return System.getProperty("user.home") + File.separator + "SUNWappserver";  // NOI18N
+            // use glassfish name
+            return System.getProperty("user.home") + File.separator + "glassfish";  // NOI18N
         }
     }
     
@@ -170,24 +174,8 @@ class AddDomainPlatformPanel implements WizardDescriptor.FinishablePanel,
                 wiz.putProperty(AddDomainWizardIterator.PROP_ERROR_MESSAGE,
                         errMsg); 
             }
-            getAIVPP().setDomainsList(new Object[0],false);
-            getAIVPP().setProfilesList(new Profile[0],false);
             retVal = false;
         } else if (retVal) {
-            Object oldPlatformLoc = wiz.getProperty(AddDomainWizardIterator.PLATFORM_LOCATION);
-            if (!location.equals(oldPlatformLoc) || getAIVPP().getDomainsListModel().getSize() < 1) {
-                Object[] domainsList = getDomainList(Util.getRegisterableDefaultDomains(location),location);
-                getAIVPP().setDomainsList(domainsList,true);
-            }
-            if (!location.equals(oldPlatformLoc) || getAIVPP().getProfilesListModel().getSize() < 1) {
-                if (ServerLocationManager.getAppServerPlatformVersion(location) !=
-                        ServerLocationManager.GF_V2) {
-                    getAIVPP().setProfilesList(SHORT_PROFILES_LIST,true);
-                } else {
-                    getAIVPP().setProfilesList(LONG_PROFILES_LIST,true);
-                }
-            }
-            //component.setDomainsList();
             if (ServerLocationManager.isGlassFish(location)) {
                 String javaClassVersion =
                         System.getProperty("java.class.version");               // NOI18N
@@ -215,66 +203,66 @@ class AddDomainPlatformPanel implements WizardDescriptor.FinishablePanel,
                             NbBundle.getMessage(AddDomainPlatformPanel.class,
                             "Msg_NoDefaultDomainsAvailable"));                      //NOI18N
                     retVal = false;
-                }
-                wiz.putProperty(AddDomainWizardIterator.TYPE, selectedType);
-                String dirCandidate = getAIVPP().getDomainDir();
-                if (null != dirCandidate) {
-                    File domainDir = new File(dirCandidate);
-                    // this should not happen. The previous page of the wizard should
-                    // prevent this panel from appearing.
-                    String mess = Util.rootOfUsableDomain(domainDir);
-                    if (null != mess) {
-                        wiz.putProperty(AddDomainWizardIterator.PROP_ERROR_MESSAGE,
-                                mess);
-                        retVal = false;
-                    } else {
-                        //File platformDir = (File) wiz.getProperty(AddDomainWizardIterator.PLATFORM_LOCATION);
-                        Util.fillDescriptorFromDomainXml(wiz, domainDir);
-                        // fill in the admin name and password from the asadminprefs file
-                        String username = "admin";
-                        String password = null;
-                        File f = new File(System.getProperty("user.home")+"/.asadminprefs"); //NOI18N
-                        if (f.exists()){
-                            FileInputStream fis = null;
-                            try{
-                                
-                                fis = new FileInputStream(f);
-                                Properties p = new Properties();
-                                p.load(fis);
-//                                fis.close();
-                                
-                                Enumeration e = p.propertyNames() ;
-                                while(e.hasMoreElements()) {
-                                    String v = (String)e.nextElement();
-                                    if ("AS_ADMIN_USER".equals(v))//admin user//NOI18N
-                                        username = p.getProperty(v );
-                                    else if ("AS_ADMIN_PASSWORD".equals(v)){ // admin password//NOI18N
-                                        password = p.getProperty(v );
+                } else {
+                    wiz.putProperty(AddDomainWizardIterator.TYPE, selectedType);
+                    File dirCandidate = getAIVPP().getDomainDir();
+                    if (null != dirCandidate) {
+                        // this should not happen. The previous page of the wizard should
+                        // prevent this panel from appearing.
+                        String mess = Util.rootOfUsableDomain(dirCandidate);
+                        if (null != mess) {
+                            wiz.putProperty(AddDomainWizardIterator.PROP_ERROR_MESSAGE,
+                                    mess);
+                            retVal = false;
+                        } else {
+                            //File platformDir = (File) wiz.getProperty(AddDomainWizardIterator.PLATFORM_LOCATION);
+                            Util.fillDescriptorFromDomainXml(wiz, dirCandidate);
+                            // fill in the admin name and password from the asadminprefs file
+                            String username = "admin";
+                            String password = null;
+                            File f = new File(System.getProperty("user.home")+"/.asadminprefs"); //NOI18N
+                            if (f.exists()){
+                                FileInputStream fis = null;
+                                try{
+
+                                    fis = new FileInputStream(f);
+                                    Properties p = new Properties();
+                                    p.load(fis);
+    //                                fis.close();
+
+                                    Enumeration e = p.propertyNames() ;
+                                    while(e.hasMoreElements()) {
+                                        String v = (String)e.nextElement();
+                                        if ("AS_ADMIN_USER".equals(v))//admin user//NOI18N
+                                            username = p.getProperty(v );
+                                        else if ("AS_ADMIN_PASSWORD".equals(v)){ // admin password//NOI18N
+                                            password = p.getProperty(v );
+                                        }
                                     }
-                                }
-                                
-                            } catch (IOException e){
-                                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
-                                        e);
-                            } finally {
-                                if (null != fis) {
-                                    try {
-                                        fis.close();
-                                    } catch (IOException ex) {
-                                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
-                                                ex);
+
+                                } catch (IOException e){
+                                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+                                            e);
+                                } finally {
+                                    if (null != fis) {
+                                        try {
+                                            fis.close();
+                                        } catch (IOException ex) {
+                                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+                                                    ex);
+                                        }
                                     }
                                 }
                             }
+                            wiz.putProperty(AddDomainWizardIterator.PASSWORD, password);
+                            wiz.putProperty(AddDomainWizardIterator.USER_NAME,username);
                         }
-                        wiz.putProperty(AddDomainWizardIterator.PASSWORD, password);
-                        wiz.putProperty(AddDomainWizardIterator.USER_NAME,username);
+                    } else {
+                        wiz.putProperty(AddDomainWizardIterator.PROP_ERROR_MESSAGE,
+                                NbBundle.getMessage(AddDomainPlatformPanel.class,
+                                "Msg_NoDefaultDomainsAvailable"));                      //NOI18N
+                        retVal = false;
                     }
-                } else {
-                    wiz.putProperty(AddDomainWizardIterator.PROP_ERROR_MESSAGE,
-                            NbBundle.getMessage(AddDomainPlatformPanel.class,
-                            "Msg_NoDefaultDomainsAvailable"));                      //NOI18N
-                    retVal = false;
                 }
             } else if (selectedType == AddDomainWizardIterator.REMOTE) {
                 wiz.putProperty(AddDomainWizardIterator.TYPE, selectedType);
@@ -313,25 +301,6 @@ class AddDomainPlatformPanel implements WizardDescriptor.FinishablePanel,
                 retVal = false;
             }
         }
-        return retVal;
-    }
-    
-    private Object[] getDomainList(File[] dirs, File location){
-        return getServerList(dirs,location);
-    }
-    
-    private Object[] getServerList(File[] dirs,File location){
-        java.util.List xmlList = new java.util.ArrayList();
-        Object retVal[];
-        for(int i=0; location != null && i<dirs.length; i++){
-            String hostPort = Util.getHostPort(dirs[i],location);
-            if(hostPort != null) {
-                xmlList.add(
-                        NbBundle.getMessage(AddDomainPlatformPanel.class,
-                        "LBL_domainListEntry", new Object[] {hostPort,dirs[i].toString()}));
-            }
-        }//for
-        retVal = xmlList.toArray();
         return retVal;
     }
     

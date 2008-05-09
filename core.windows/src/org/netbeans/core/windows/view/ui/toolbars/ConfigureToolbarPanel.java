@@ -347,6 +347,13 @@ public class ConfigureToolbarPanel extends javax.swing.JPanel implements Runnabl
     private javax.swing.JPanel palettePanel;
     // End of variables declaration//GEN-END:variables
 
+    @Override
+    public void addNotify() {
+        super.addNotify();
+        
+        checkSmallIcons.setSelected( ToolbarPool.getDefault().getPreferredIconSize() == 16 );
+    }
+    
     private static class FolderActionNode extends FilterNode {
         public FolderActionNode( Node original  ) {
             super( original, new MyChildren( original ) );

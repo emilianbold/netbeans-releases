@@ -89,14 +89,12 @@ import com.sun.sql.framework.utils.Attribute;
 import net.java.hulp.i18n.Logger;
 import java.beans.PropertyChangeListener;
 import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.etl.ui.view.ETLOutputWindowTopComponent;
 import org.netbeans.modules.sql.framework.model.DBMetaDataFactory;
 import org.netbeans.modules.sql.framework.model.SQLDBTable;
 import org.netbeans.modules.sql.framework.model.SQLJoinOperator;
 import org.netbeans.modules.sql.framework.model.impl.RuntimeInputImpl;
 import org.netbeans.modules.sql.framework.model.impl.RuntimeOutputImpl;
-import org.netbeans.modules.sql.framework.model.impl.SQLJoinViewImpl;
 import org.netbeans.modules.sql.framework.model.utils.SQLObjectUtil;
 import org.netbeans.modules.sql.framework.ui.editor.property.impl.PropertyNode;
 import org.netbeans.modules.sql.framework.ui.editor.property.impl.TemplateFactory;
@@ -109,7 +107,6 @@ import org.netbeans.modules.sql.framework.ui.output.dataview.TargetTableDataPane
 import org.netbeans.modules.sql.framework.ui.view.property.RuntimeInputProperties;
 import org.netbeans.modules.sql.framework.ui.view.property.RuntimeOutputProperties;
 import org.netbeans.modules.sql.framework.ui.view.property.SQLCollaborationProperties;
-import org.netbeans.modules.sql.framework.ui.view.property.SQLJoinProperties;
 import org.netbeans.modules.sql.framework.ui.view.validation.SQLValidationView;
 import org.openide.awt.StatusDisplayer;
 import org.openide.nodes.Node;
@@ -123,7 +120,7 @@ import org.openide.windows.WindowManager;
  */
 public abstract class BasicTopView extends JPanel implements IGraphViewContainer {
 
-    private static transient final Logger mLogger = LogUtil.getLogger(BasicTopView.class.getName());
+    private static transient final Logger mLogger = Logger.getLogger(BasicTopView.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
     protected static abstract class ConditionValidator implements ActionListener {
@@ -222,8 +219,8 @@ public abstract class BasicTopView extends JPanel implements IGraphViewContainer
         public void actionPerformed(ActionEvent e) {
             if (NotifyDescriptor.OK_OPTION.equals(e.getSource())) {
                 if (!mView.isConditionValid()) {
-                    String nbBundle1 = mLoc.t("PRSR001: Current condition is invalid.Are you sure you want to keep it and close this builder?");
-                    NotifyDescriptor confirmDlg = new NotifyDescriptor.Confirmation(Localizer.parse(nbBundle1), mDialog.getTitle(), NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.WARNING_MESSAGE);
+                    String nbBundle1 = mLoc.t("BUND482: Current condition is invalid.Are you sure you want to keep it and close this builder?");
+                    NotifyDescriptor confirmDlg = new NotifyDescriptor.Confirmation(nbBundle1.substring(15), mDialog.getTitle(), NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.WARNING_MESSAGE);
                     DialogDisplayer.getDefault().notify(confirmDlg);
                     if (confirmDlg.getValue() != NotifyDescriptor.YES_OPTION) {
                         return;
@@ -440,6 +437,10 @@ public abstract class BasicTopView extends JPanel implements IGraphViewContainer
         }
 
         if (bean.getObjectType() == SQLConstants.SOURCE_TABLE) {
+            if (attr == null) {
+                template = "FFSourceTable";
+                return template;
+            }
             if (((String) attr.getAttributeValue()).equals("RSS")) {
                 template = "RSSSourceTable";
             } else if (((String) attr.getAttributeValue()).equalsIgnoreCase("WEB")) {
@@ -449,8 +450,14 @@ public abstract class BasicTopView extends JPanel implements IGraphViewContainer
             } else if (((String) attr.getAttributeValue()).equalsIgnoreCase("DELIMITED") ||
                     ((String) attr.getAttributeValue()).equalsIgnoreCase("FIXEDWIDTH")) {
                 template = "FFSourceTable";
+            } else {
+                template = "FFSourceTable";
             }
         } else if (bean.getObjectType() == SQLConstants.TARGET_TABLE) {
+            if (attr == null) {
+                template = "FFTargetTable";
+                return template;
+            }
             if (((String) attr.getAttributeValue()).equals("RSS")) {
                 template = "RSSTargetTable";
             } else if (((String) attr.getAttributeValue()).equalsIgnoreCase("WEB")) {
@@ -460,7 +467,10 @@ public abstract class BasicTopView extends JPanel implements IGraphViewContainer
             } else if (((String) attr.getAttributeValue()).equalsIgnoreCase("DELIMITED") ||
                     ((String) attr.getAttributeValue()).equalsIgnoreCase("FIXEDWIDTH")) {
                 template = "FFTargetTable";
+            } else {
+                template = "FFTargetTable";
             }
+
         }
         return template;
     }
@@ -482,7 +492,7 @@ public abstract class BasicTopView extends JPanel implements IGraphViewContainer
             if (bean.getObjectType() == SQLConstants.SOURCE_TABLE) {
                 SourceTableProperties srcTableBaen = new SourceTableProperties(this, (SQLBasicTableArea) gNode, (SourceTable) bean);
                 if (((SourceTable) bean).getParent().getConnectionDefinition().getDBType().equals(DBMetaDataFactory.AXION) ||
-                    ((SourceTable) bean).getParent().getConnectionDefinition().getDBType().equalsIgnoreCase("Internal")) {
+                        ((SourceTable) bean).getParent().getConnectionDefinition().getDBType().equalsIgnoreCase("Internal")) {
                     template = getTemplateName(bean);
                     pBean = new FFSourceTableProperties(srcTableBaen);
                 } else {
@@ -492,7 +502,7 @@ public abstract class BasicTopView extends JPanel implements IGraphViewContainer
             } else if (bean.getObjectType() == SQLConstants.TARGET_TABLE) {
                 TargetTableProperties trgtTableBaen = new TargetTableProperties(this, (SQLBasicTableArea) gNode, (TargetTable) bean);
                 if (((TargetTable) bean).getParent().getConnectionDefinition().getDBType().equals(DBMetaDataFactory.AXION) ||
-                    ((TargetTable) bean).getParent().getConnectionDefinition().getDBType().equalsIgnoreCase("Internal")) {    
+                        ((TargetTable) bean).getParent().getConnectionDefinition().getDBType().equalsIgnoreCase("Internal")) {
                     template = getTemplateName(bean);
                     pBean = new FFTargetTableProperties(trgtTableBaen);
                 } else {
@@ -505,9 +515,6 @@ public abstract class BasicTopView extends JPanel implements IGraphViewContainer
             } else if (bean.getObjectType() == SQLConstants.RUNTIME_OUTPUT) {
                 pBean = new RuntimeOutputProperties((RuntimeOutputImpl) bean, sqlModel.getSQLDefinition(), this);
                 template = "RuntimeOutput";
-            } else if (bean.getObjectType() == SQLConstants.JOIN_VIEW) {
-                pBean = new SQLJoinProperties(((SQLJoinViewImpl) bean).getRootJoin(), this);
-                template = "Join";
             }
         }
 
@@ -522,7 +529,7 @@ public abstract class BasicTopView extends JPanel implements IGraphViewContainer
                         TemplateFactory.invokeSetter(pb, evt.getPropertyName(), evt.getNewValue());
                         DataObjectProvider.getProvider().getActiveDataObject().setModified(true);
                     } catch (Exception ex) {
-                        mLogger.errorNoloc(mLoc.t("PRSR194: Failed to save changes {0}", LOG_CATEGORY), ex);
+                        mLogger.errorNoloc(mLoc.t("EDIT194: Failed to save changes {0}", LOG_CATEGORY), ex);
                     }
                 }
             }
@@ -553,9 +560,9 @@ public abstract class BasicTopView extends JPanel implements IGraphViewContainer
     }
 
     private void doDataValidation(SQLBasicTableArea gNode, SourceTable table) {
-        String nbBundle2 = mLoc.t("PRSR001: Data Validation Condition");
+        String nbBundle2 = mLoc.t("BUND478: Data Validation Condition");
         ConditionBuilderView cView = ConditionBuilderUtil.getValidationConditionBuilderView(table, (IGraphViewContainer) this.getGraphView().getGraphViewContainer());
-        String title = Localizer.parse(nbBundle2);
+        String title = nbBundle2.substring(15);
 
         // Create a Dialog that defers decision-making on whether to close the dialog to
         // an ActionListener.
@@ -565,6 +572,7 @@ public abstract class BasicTopView extends JPanel implements IGraphViewContainer
         dd.setClosingOptions(new Object[0]);
 
         Dialog dlg = DialogDisplayer.getDefault().createDialog(dd);
+        dlg.getAccessibleContext().setAccessibleDescription("This dialog does Condition Validation");
         ActionListener dlgListener = new ConditionValidator.DataValidation(gNode, table, cView, dlg, sqlModel);
         dd.setButtonListener(dlgListener);
 
@@ -584,7 +592,7 @@ public abstract class BasicTopView extends JPanel implements IGraphViewContainer
                 JoinUtility.editJoinView(jView, modifiedJoinView, modifiedJoinView.getSourceTables(), tableNodes, this.getGraphView());
             } catch (BaseException ex) {
 
-                mLogger.errorNoloc(mLoc.t("PRSR195: Caught Exception while commiting join view edits.{0}", LOG_CATEGORY), ex);
+                mLogger.errorNoloc(mLoc.t("EDIT195: Caught Exception while commiting join view edits.{0}", LOG_CATEGORY), ex);
                 NotifyDescriptor d = new NotifyDescriptor.Message(ex.toString(), NotifyDescriptor.ERROR_MESSAGE);
                 DialogDisplayer.getDefault().notify(d);
             }
@@ -597,16 +605,16 @@ public abstract class BasicTopView extends JPanel implements IGraphViewContainer
         this.collabView = new SQLCollaborationView(viewFactory);
         // create output view
         refreshMetaView = new SQLValidationView(this.getGraphView());
-        String nbBundle1 = mLoc.t("PRSR001: Refresh Metadata Log");
-        refreshMetaView.setName(Localizer.parse(nbBundle1));
+        String nbBundle1 = mLoc.t("BUND483: Refresh Metadata Log");
+        refreshMetaView.setName(nbBundle1.substring(15));
         setLayout(new BorderLayout());
         add(this.collabView, BorderLayout.CENTER);
     }
 
     private void showDataExtraction(SQLBasicTableArea gNode, SourceTable table) {
         ConditionBuilderView cView = ConditionBuilderUtil.getConditionBuilderView(table, (IGraphViewContainer) this.getGraphView().getGraphViewContainer());
-        String nbBundle2 = mLoc.t("PRSR001: Extraction Condition");
-        String title = Localizer.parse(nbBundle2);
+        String nbBundle2 = mLoc.t("BUND506: Extraction Condition");
+        String title = nbBundle2.substring(15);
 
         // Create a Dialog that defers decision-making on whether to close the dialog to
         // an ActionListener.
@@ -616,6 +624,7 @@ public abstract class BasicTopView extends JPanel implements IGraphViewContainer
         dd.setClosingOptions(new Object[0]);
 
         Dialog dlg = DialogDisplayer.getDefault().createDialog(dd);
+        dlg.getAccessibleContext().setAccessibleDescription("This dialog filters data based on condition specified");
         ActionListener dlgListener = new ConditionValidator.ExtractionFilter(gNode, table, cView, dlg, sqlModel);
         dd.setButtonListener(dlgListener);
 
@@ -680,8 +689,8 @@ public abstract class BasicTopView extends JPanel implements IGraphViewContainer
 
     private void showTargetJoinCondition(final SQLBasicTableArea gNode, final TargetTable table) {
         ConditionBuilderView cView = ConditionBuilderUtil.getJoinConditionBuilderView(table, (IGraphViewContainer) this.getGraphView().getGraphViewContainer());
-        String nbBundle3 = mLoc.t("PRSR001: Target Join Condition");
-        String title = Localizer.parse(nbBundle3);
+        String nbBundle3 = mLoc.t("BUND507: Target Join Condition");
+        String title = nbBundle3.substring(15);
 
         // Create a Dialog that defers decision-making on whether to close the dialog to
         // an ActionListener.
@@ -691,6 +700,7 @@ public abstract class BasicTopView extends JPanel implements IGraphViewContainer
         dd.setClosingOptions(new Object[0]);
 
         Dialog dlg = DialogDisplayer.getDefault().createDialog(dd);
+        dlg.getAccessibleContext().setAccessibleDescription("This dialog helps user specify TargetJoinCondition");
         ActionListener dlgListener = new ConditionValidator.TargetJoinConditioon(gNode, table, cView, dlg, sqlModel);
         dd.setButtonListener(dlgListener);
 
@@ -701,8 +711,8 @@ public abstract class BasicTopView extends JPanel implements IGraphViewContainer
 
     private void showTargetFilterCondition(final SQLBasicTableArea gNode, final TargetTable table) {
         ConditionBuilderView cView = ConditionBuilderUtil.getFilterConditionBuilderView(table, (IGraphViewContainer) this.getGraphView().getGraphViewContainer());
-        String nbBundle4 = mLoc.t("PRSR001: Outer Filter Condition");
-        String title = Localizer.parse(nbBundle4);
+        String nbBundle4 = mLoc.t("BUND508: Outer Filter Condition");
+        String title = nbBundle4.substring(15);
 
         // Create a Dialog that defers decision-making on whether to close the dialog to
         // an ActionListener.
@@ -712,6 +722,7 @@ public abstract class BasicTopView extends JPanel implements IGraphViewContainer
         dd.setClosingOptions(new Object[0]);
 
         Dialog dlg = DialogDisplayer.getDefault().createDialog(dd);
+        dlg.getAccessibleContext().setAccessibleDescription("This dialog lets user configure outer filter condition for target table");
         ActionListener dlgListener = new ConditionValidator.TargetFilterCondition(gNode, table, cView, dlg, sqlModel);
         dd.setButtonListener(dlgListener);
 

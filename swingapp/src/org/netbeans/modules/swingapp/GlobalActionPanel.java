@@ -41,9 +41,13 @@
 
 package org.netbeans.modules.swingapp;
 
+import java.awt.AWTKeyStroke;
 import java.awt.Component;
 import java.awt.Dialog;
+import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -62,6 +66,7 @@ import javax.swing.JList;
 import javax.swing.JOptionPane;
 import java.awt.event.MouseAdapter;
 import java.beans.PropertyVetoException;
+import java.util.HashSet;
 import javax.swing.JTable;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
@@ -246,6 +251,12 @@ public class GlobalActionPanel extends javax.swing.JPanel {
         reloadProjectsCombo();
         reloadClassesCombo();
         reloadTable();
+
+        // Issue 110367
+        Set<AWTKeyStroke> set = actionTable.getFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS);
+        set = new HashSet<AWTKeyStroke>(set);
+        set.add(AWTKeyStroke.getAWTKeyStroke(KeyEvent.VK_TAB, InputEvent.CTRL_DOWN_MASK | InputEvent.ALT_DOWN_MASK));
+        actionTable.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, set);
     }
     
     private boolean actionHasSource(ProxyAction act) {

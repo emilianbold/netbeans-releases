@@ -88,6 +88,8 @@ public class InstancesView extends TopComponent {
     public InstancesView() {
         setIcon (Utilities.loadImage ("org/netbeans/modules/debugger/jpda/resources/root.gif")); // NOI18N
         setLayout (new BorderLayout ());
+        // Remember the location of the component when closed.
+        putClientProperty("KeepNonPersistentTCInModelWhenClosed", Boolean.TRUE); // NOI18N
     }
 
     protected void componentShowing() {
@@ -220,7 +222,7 @@ public class InstancesView extends TopComponent {
             int state = JPDADebugger.STATE_DISCONNECTED;
             DebuggerEngine de = DebuggerManager.getDebuggerManager().getCurrentEngine();
             if (de != null) {
-                JPDADebugger d = (JPDADebugger) de.lookupFirst(null, JPDADebugger.class);
+                JPDADebugger d = de.lookupFirst(null, JPDADebugger.class);
                 if (d != null) {
                     state = getThreadsState(d);
                     synchronized (this) {

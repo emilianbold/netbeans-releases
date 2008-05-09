@@ -40,7 +40,7 @@
  */
 package org.netbeans.modules.versioning.system.cvss;
 
-import org.netbeans.spi.queries.VisibilityQueryImplementation;
+import org.netbeans.spi.queries.VisibilityQueryImplementation2;
 import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.util.VersioningEvent;
 import org.netbeans.modules.versioning.util.VersioningListener;
@@ -59,7 +59,7 @@ import java.io.IOException;
  * 
  * @author Maros Sandor
  */
-public class CvsVisibilityQuery implements VisibilityQueryImplementation, VersioningListener {
+public class CvsVisibilityQuery implements VisibilityQueryImplementation2, VersioningListener {
 
     private static CvsVisibilityQuery instance;
     private static final String MARKER_CVS_REMOVED = "CVS/.nb-removed";
@@ -80,7 +80,11 @@ public class CvsVisibilityQuery implements VisibilityQueryImplementation, Versio
     public boolean isVisible(FileObject fileObject) {
         if (fileObject.isData()) return true;
         File file = FileUtil.toFile(fileObject);
-        return file == null || !isHiddenFolder(file);
+        return isVisible(file);
+    }
+    
+    public boolean isVisible(File file) {
+        return file == null || file.isFile() || !isHiddenFolder(file);
     }
 
     public synchronized void addChangeListener(ChangeListener l) {

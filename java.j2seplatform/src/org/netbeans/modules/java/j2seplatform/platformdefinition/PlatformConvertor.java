@@ -115,9 +115,9 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
     
     private RequestProcessor.Task    saveTask;
     
-    private Reference   refPlatform = new WeakReference(null);
+    private Reference<JavaPlatform>   refPlatform = new WeakReference<JavaPlatform>(null);
     
-    private LinkedList keepAlive = new LinkedList();
+    private LinkedList<PropertyChangeEvent> keepAlive = new LinkedList<PropertyChangeEvent>();
     
     private PlatformConvertor(XMLDataObject  object) {
         this.holder = object;
@@ -125,14 +125,14 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
             public void fileDeleted (final FileEvent fe) {
                 if (!defaultPlatform) {
                     try {
-                    ProjectManager.mutex().writeAccess( new Mutex.ExceptionAction () {
-                        public Object run () throws IOException {
+                    ProjectManager.mutex().writeAccess( new Mutex.ExceptionAction<Void> () {
+                        public Void run () throws IOException {
                             String systemName = fe.getFile().getName();
                             String propPrefix =  "platforms." + systemName + ".";   //NOI18N
                             boolean changed = false;
                             EditableProperties props = PropertyUtils.getGlobalProperties();
-                            for (Iterator it = props.keySet().iterator(); it.hasNext(); ) {
-                                String key = (String) it.next ();
+                            for (Iterator<String> it = props.keySet().iterator(); it.hasNext(); ) {
+                                String key = it.next ();
                                 if (key.startsWith(propPrefix)) {
                                     it.remove();
                                     changed =true;
@@ -190,7 +190,7 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
             }
 
             JavaPlatform inst = createPlatform(handler);
-            refPlatform = new WeakReference(inst);
+            refPlatform = new WeakReference<JavaPlatform>(inst);
             return inst;
         }
     }
@@ -213,7 +213,7 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
         return holder.getName();
     }
     
-    public boolean instanceOf(Class type) {
+    public boolean instanceOf(Class<?> type) {
         return (type.isAssignableFrom(JavaPlatform.class));
     }
     
@@ -234,7 +234,7 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
         PropertyChangeEvent e;
         
         synchronized (this) {
-            e = (PropertyChangeEvent)keepAlive.removeFirst();
+            e = keepAlive.removeFirst();
         }
         JavaPlatform plat = (JavaPlatform)e.getSource();
         try {
@@ -278,8 +278,8 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
         f.getPrimaryFile().getFileSystem().runAtomicAction(w);
         try {
             ProjectManager.mutex().writeAccess(
-                    new Mutex.ExceptionAction () {
-                        public Object run () throws Exception {
+                    new Mutex.ExceptionAction<Void> () {
+                        public Void run () throws Exception {
                             EditableProperties props = PropertyUtils.getGlobalProperties();
                             generatePlatformProperties(plat, idName, props);
                             PropertyUtils.putGlobalProperties (props);
@@ -319,8 +319,7 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
             props.setProperty(homePropName, jdkHome.getAbsolutePath());
             ClassPath bootCP = platform.getBootstrapLibraries();
             StringBuffer sbootcp = new StringBuffer();
-            for (Iterator it = bootCP.entries().iterator(); it.hasNext();) {
-                ClassPath.Entry entry = (ClassPath.Entry) it.next();
+            for (ClassPath.Entry entry : bootCP.entries()) {
                 URL url = entry.getURL();
                 if ("jar".equals(url.getProtocol())) {              //NOI18N
                     url = FileUtil.getArchiveFile(url);
@@ -354,7 +353,7 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
 
     private static String getCompilerType (JavaPlatform platform) {
         assert platform != null;
-        String prop = (String) platform.getSystemProperties().get("java.specification.version"); //NOI18N
+        String prop = platform.getSystemProperties().get("java.specification.version"); //NOI18N
         assert prop != null;
         SpecificationVersion specificationVersion = new SpecificationVersion (prop);
         SpecificationVersion jdk13 = new SpecificationVersion("1.3");   //NOI18N
@@ -370,11 +369,11 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
         }
     }
 
-    private static boolean isDefaultLocation (FileObject tool, Collection installFolders) {
+    private static boolean isDefaultLocation (FileObject tool, Collection<FileObject> installFolders) {
         assert tool != null && installFolders != null;
         if (installFolders.size()!=1)
             return false;
-        FileObject root = (FileObject)installFolders.iterator().next();
+        FileObject root = installFolders.iterator().next();
         String relativePath = FileUtil.getRelativePath(root,tool);
         if (relativePath == null) {
             return false;
@@ -475,8 +474,8 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
         }
         
         void write(final  OutputStream out) throws IOException {
-            final Map props = instance.getProperties();
-            final Map sysProps = instance.getSystemProperties();
+            final Map<String,String> props = instance.getProperties();
+            final Map<String,String> sysProps = instance.getSystemProperties();
             final Document doc = XMLUtil.createDocument(ELEMENT_PLATFORM,null,PLATFORM_DTD_ID,"http://www.netbeans.org/dtds/java-platformdefinition-1_0.dtd"); //NOI18N
             final Element platformElement = doc.getDocumentElement();
             platformElement.setAttribute(ATTR_PLATFORM_NAME,instance.getDisplayName());
@@ -489,30 +488,29 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
                 writeProperties(sysProps, sysPropsElement, doc);
                 platformElement.appendChild(sysPropsElement);
                 final Element jdkHomeElement = doc.createElement(ELEMENT_JDKHOME);
-                for (Iterator it = instance.getInstallFolders().iterator(); it.hasNext();) {
-                    URL url = ((FileObject)it.next ()).getURL();
+                for (Iterator<FileObject> it = instance.getInstallFolders().iterator(); it.hasNext();) {
+                    URL url = it.next ().getURL();
                     final Element resourceElement = doc.createElement(ELEMENT_RESOURCE);
                     resourceElement.appendChild(doc.createTextNode(url.toExternalForm()));
                     jdkHomeElement.appendChild(resourceElement);
                 }                
                 platformElement.appendChild(jdkHomeElement);                
             }            
-            List pl = this.instance.getSourceFolders().entries();
-            if (pl.size()>0 && shouldWriteSources ()) {                
+            final List<ClassPath.Entry> psl = this.instance.getSourceFolders().entries();
+            if (psl.size()>0 && shouldWriteSources ()) {                
                 final Element sourcesElement = doc.createElement (ELEMENT_SOURCEPATH);
-                for (Iterator it = pl.iterator(); it.hasNext();) {
-                    URL url = ((ClassPath.Entry)it.next ()).getURL();
+                for (Iterator<ClassPath.Entry> it = psl.iterator(); it.hasNext();) {
+                    URL url = it.next ().getURL();
                     final Element resourceElement = doc.createElement (ELEMENT_RESOURCE);
                     resourceElement.appendChild(doc.createTextNode(url.toExternalForm()));
                     sourcesElement.appendChild(resourceElement);
                 }
                 platformElement.appendChild(sourcesElement);
             }
-            pl = this.instance.getJavadocFolders();
-            if (pl.size()>0 && shouldWriteJavadoc ()) {
+            final List<URL> pdl = this.instance.getJavadocFolders();
+            if (pdl.size()>0 && shouldWriteJavadoc ()) {
                 final Element javadocElement = doc.createElement(ELEMENT_JAVADOC);
-                for (Iterator it = pl.iterator(); it.hasNext();) {                    
-                    URL url = (URL) it.next ();
+                for (URL url : pdl) {                    
                     final Element resourceElement = doc.createElement(ELEMENT_RESOURCE);
                     resourceElement.appendChild(doc.createTextNode(url.toExternalForm()));
                     javadocElement.appendChild(resourceElement);
@@ -522,11 +520,11 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
             XMLUtil.write(doc, out, "UTF8");                                                    //NOI18N
         }
         
-        void writeProperties(final Map props, final Element element, final Document doc) throws IOException {
-            final Collection sortedProps = new TreeSet(props.keySet());
-            for (Iterator it = sortedProps.iterator(); it.hasNext(); ) {
-                final String n = (String)it.next();
-                final String val = (String)props.get(n);                
+        void writeProperties(final Map<String,String> props, final Element element, final Document doc) throws IOException {
+            final Collection<String> sortedProps = new TreeSet<String>(props.keySet());
+            for (Iterator<String> it = sortedProps.iterator(); it.hasNext(); ) {
+                final String n = it.next();
+                final String val = props.get(n);                
                 try {
                     XMLUtil.toAttributeValue(n);
                     XMLUtil.toAttributeValue(val);
@@ -544,16 +542,16 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
             if (defaultPlatform) {
                 assert this.instance instanceof DefaultPlatformImpl;
                 DefaultPlatformImpl dp = (DefaultPlatformImpl) this.instance;
-                List sfEntries = dp.getSourceFolders().entries();
-                List defaultSf = DefaultPlatformImpl.getSources (FileUtil.normalizeFile(new File((String)dp.getSystemProperties().get("jdk.home"))));   //NOI18N
+                List<ClassPath.Entry> sfEntries = dp.getSourceFolders().entries();
+                List<URL> defaultSf = DefaultPlatformImpl.getSources (FileUtil.normalizeFile(new File((String)dp.getSystemProperties().get("jdk.home"))));   //NOI18N
                 if (defaultSf == null || sfEntries.size() != defaultSf.size()) {
                     return true;
                 }
-                Iterator/*<ClassPath.Entry>*/ sfit = sfEntries.iterator();
-                Iterator/*<URL>*/ defif = defaultSf.iterator();
+                Iterator<ClassPath.Entry> sfit = sfEntries.iterator();
+                Iterator<URL> defif = defaultSf.iterator();
                 while (sfit.hasNext()) {
-                    ClassPath.Entry entry = (ClassPath.Entry) sfit.next ();                    
-                    URL url = (URL) defif.next();
+                    ClassPath.Entry entry = sfit.next ();                    
+                    URL url = defif.next();
                     if (!url.equals(entry.getURL())) {
                         return true;
                     }
@@ -589,17 +587,17 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
     static final String ATTR_PROPERTY_VALUE = "value"; // NOI18N
     
     static class H extends org.xml.sax.helpers.DefaultHandler implements EntityResolver {
-        Map     properties;
-        Map     sysProperties;
-        List    sources;
-        List    javadoc;
-        List installFolders;
+        Map<String,String> properties;
+        Map<String,String> sysProperties;
+        List<URL> sources;
+        List<URL> javadoc;
+        List<URL> installFolders;
         String  name;
         boolean isDefault;
 
-        private Map     propertyMap;
+        private Map<String,String> propertyMap;
         private StringBuffer buffer;
-        private List/*<URL>*/ path;
+        private List<URL> path;
 
 
         public void startDocument () throws org.xml.sax.SAXException {
@@ -615,11 +613,11 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
                 isDefault = "yes".equals(attrs.getValue(ATTR_PLATFORM_DEFAULT));
             } else if (ELEMENT_PROPERTIES.equals(qName)) {
                 if (properties == null)
-                    properties = new HashMap(17);
+                    properties = new HashMap<String,String>(17);
                 propertyMap = properties;
             } else if (ELEMENT_SYSPROPERTIES.equals(qName)) {
                 if (sysProperties == null)
-                    sysProperties = new HashMap(17);
+                    sysProperties = new HashMap<String,String>(17);
                 propertyMap = sysProperties;
             } else if (ELEMENT_PROPERTY.equals(qName)) {
                 if (propertyMap == null)
@@ -631,15 +629,15 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
                 propertyMap.put(name, val);
             }
             else if (ELEMENT_SOURCEPATH.equals(qName)) {
-                this.sources = new ArrayList ();
+                this.sources = new ArrayList<URL> ();
                 this.path = this.sources;
             }
             else if (ELEMENT_JAVADOC.equals(qName)) {
-                this.javadoc = new ArrayList ();
+                this.javadoc = new ArrayList<URL> ();
                 this.path = this.javadoc;
             }
             else if (ELEMENT_JDKHOME.equals(qName)) {
-                this.installFolders = new ArrayList ();
+                this.installFolders = new ArrayList<URL> ();
                 this.path =  this.installFolders;
             }
             else if (ELEMENT_RESOURCE.equals(qName)) {

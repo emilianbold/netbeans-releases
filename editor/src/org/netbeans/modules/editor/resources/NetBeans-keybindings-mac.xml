@@ -70,11 +70,25 @@ made subject to such option by the copyright holder.
     <bind key="DS-RIGHT" remove="true"/>
     <bind key="AS-RIGHT" actionName="selection-next-word"/>
     
+    <bind key="D-M" remove="true"/>
+    <bind key="C-M" actionName="select-next-parameter"/>
+    
+    <bind key="D-R" remove="true"/>
+    <bind key="C-R" actionName="in-place-refactoring"/>
+
+    <bind key="C-H" remove="true"/>
+    <bind key="M-R" actionName="replace"/>
+
+    <bind key="D-UP" remove="true"/>
+    <bind actionName="scroll-down" key="C-UP"/>
+    <bind key="D-DOWN" remove="true"/>
+    <bind actionName="scroll-up" key="C-DOWN"/>
+
     
     <!-- Things we add only on the mac -->
     
-    <bind actionName="caret-begin" key="M-UP"/> 
-    <bind actionName="caret-end" key="M-DOWN"/>
+    <bind actionName="page-up" key="M-UP"/> 
+    <bind actionName="page-down" key="M-DOWN"/>
     <bind actionName="selection-begin-line" key="MS-LEFT"/>
     <bind actionName="selection-end-line" key="MS-RIGHT"/>
     <bind actionName="caret-end-line" key="M-RIGHT"/>

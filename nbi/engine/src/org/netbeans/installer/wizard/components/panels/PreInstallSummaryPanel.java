@@ -58,9 +58,6 @@ import org.netbeans.installer.utils.helper.swing.NbiPanel;
 import org.netbeans.installer.utils.helper.swing.NbiTextPane;
 import org.netbeans.installer.wizard.ui.SwingUi;
 import org.netbeans.installer.wizard.ui.WizardUi;
-import org.netbeans.installer.wizard.components.WizardPanel;
-import org.netbeans.installer.wizard.components.WizardPanel.WizardPanelSwingUi;
-import org.netbeans.installer.wizard.components.WizardPanel.WizardPanelUi;
 import org.netbeans.installer.wizard.containers.SwingContainer;
 
 /**
@@ -181,6 +178,7 @@ public class PreInstallSummaryPanel extends ErrorMessagePanel {
         // protected ////////////////////////////////////////////////////////////////
         @Override
         protected void initializeContainer() {
+            super.initializeContainer();
             container.getNextButton().setText(
                     panel.getProperty(INSTALL_BUTTON_TEXT_PROPERTY));
         }
@@ -271,71 +269,72 @@ public class PreInstallSummaryPanel extends ErrorMessagePanel {
         @Override
         protected String validateInput() {
             try {
-                final List<File> roots =
-                        SystemUtils.getFileSystemRoots();
-                final List<Product> toInstall =
-                        Registry.getInstance().getProductsToInstall();
-                final Map<File, Long> spaceMap =
-                        new HashMap<File, Long>();
-                
-                LogManager.log("Available roots : " + StringUtils.asString(roots));
-                
-                File downloadDataDirRoot = FileUtils.getRoot(
-                        Installer.getInstance().getLocalDirectory(), roots);
-                long downloadSize = 0;
-                for (Product product: toInstall) {
-                    downloadSize+=product.getDownloadSize();
-                }
-                // the critical check point - we download all the data
-                spaceMap.put(downloadDataDirRoot, new Long(downloadSize));                
-                long lastDataSize = 0;
-                
-                for (Product product: toInstall) {
-                    final File installLocation = product.getInstallationLocation();                    
-                    final File root = FileUtils.getRoot(installLocation, roots);
-                    final long productSize = product.getRequiredDiskSpace();
+                if(!Boolean.getBoolean(SystemUtils.NO_SPACE_CHECK_PROPERTY)) {
+                    final List<File> roots =
+                            SystemUtils.getFileSystemRoots();
+                    final List<Product> toInstall =
+                            Registry.getInstance().getProductsToInstall();
+                    final Map<File, Long> spaceMap =
+                            new HashMap<File, Long>();
                     
-                    LogManager.log("    [" + root + "] <- " + installLocation);
+                    LogManager.log("Available roots : " + StringUtils.asString(roots));
                     
-                    if ( root != null ) {                        
-                        Long ddSize =  spaceMap.get(downloadDataDirRoot);
-                        // remove space that was freed after the remove of previos product data
-                        spaceMap.put(downloadDataDirRoot, 
-                                Long.valueOf(ddSize - lastDataSize));
-                        
-                        Long size = spaceMap.get(root);
-                        size = Long.valueOf(
-                                (size != null ? size.longValue() : 0L) +
-                                productSize);                        
-                        spaceMap.put(root, size);   
-                        lastDataSize = product.getDownloadSize();
-                    } else {
-                        return StringUtils.format(
-                                panel.getProperty(ERROR_NON_EXISTENT_ROOT_PROPERTY),
-                                product, installLocation);
+                    File downloadDataDirRoot = FileUtils.getRoot(
+                            Installer.getInstance().getLocalDirectory(), roots);
+                    long downloadSize = 0;
+                    for (Product product: toInstall) {
+                        downloadSize+=product.getDownloadSize();
                     }
-                }
-                
-                for (File root: spaceMap.keySet()) {
-                    try {
-                        final long availableSpace =
-                                SystemUtils.getFreeSpace(root);
-                        final long requiredSpace =
-                                spaceMap.get(root) + REQUIRED_SPACE_ADDITION;
+                    // the critical check point - we download all the data
+                    spaceMap.put(downloadDataDirRoot, new Long(downloadSize));                
+                    long lastDataSize = 0;
+                    
+                    for (Product product: toInstall) {
+                        final File installLocation = product.getInstallationLocation();                    
+                        final File root = FileUtils.getRoot(installLocation, roots);
+                        final long productSize = product.getRequiredDiskSpace();
                         
-                        if (availableSpace < requiredSpace) {
+                        LogManager.log("    [" + root + "] <- " + installLocation);
+                        
+                        if ( root != null ) {                        
+                            Long ddSize =  spaceMap.get(downloadDataDirRoot);
+                            // remove space that was freed after the remove of previos product data
+                            spaceMap.put(downloadDataDirRoot, 
+                                    Long.valueOf(ddSize - lastDataSize));
+                            
+                            Long size = spaceMap.get(root);
+                            size = Long.valueOf(
+                                    (size != null ? size.longValue() : 0L) +
+                                    productSize);                        
+                            spaceMap.put(root, size);   
+                            lastDataSize = product.getDownloadSize();
+                        } else {
                             return StringUtils.format(
-                                    panel.getProperty(ERROR_NOT_ENOUGH_SPACE_PROPERTY),
-                                    root,
-                                    StringUtils.formatSize(requiredSpace - availableSpace));
+                                    panel.getProperty(ERROR_NON_EXISTENT_ROOT_PROPERTY),
+                                    product, installLocation);
                         }
-                    } catch (NativeException e) {
-                        ErrorManager.notifyError(
-                                panel.getProperty(ERROR_CANNOT_CHECK_SPACE_PROPERTY),
-                                e);
+                    }
+                
+                    for (File root: spaceMap.keySet()) {
+                        try {
+                            final long availableSpace =
+                                    SystemUtils.getFreeSpace(root);
+                            final long requiredSpace =
+                                    spaceMap.get(root) + REQUIRED_SPACE_ADDITION;
+                            
+                            if (availableSpace < requiredSpace) {
+                                return StringUtils.format(
+                                        panel.getProperty(ERROR_NOT_ENOUGH_SPACE_PROPERTY),
+                                        root,
+                                        StringUtils.formatSize(requiredSpace - availableSpace));
+                            }
+                        } catch (NativeException e) {
+                            ErrorManager.notifyError(
+                                    panel.getProperty(ERROR_CANNOT_CHECK_SPACE_PROPERTY),
+                                    e);
+                        }
                     }
                 }
-                
                 final List<Product> toUninstall =
                         Registry.getInstance().getProductsToUninstall();
                 for (Product product: toUninstall) {

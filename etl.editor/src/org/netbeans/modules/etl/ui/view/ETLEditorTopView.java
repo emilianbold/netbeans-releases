@@ -49,7 +49,6 @@ import org.netbeans.modules.etl.codegen.ETLProcessFlowGeneratorFactory;
 import org.netbeans.modules.etl.codegen.ETLStrategyBuilder;
 import org.netbeans.modules.etl.codegen.ETLStrategyBuilderContext;
 import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.etl.ui.view.graph.actions.CollabPropertiesAction;
 import org.netbeans.modules.etl.ui.view.graph.actions.EditDbModelAction;
 import org.netbeans.modules.etl.ui.view.graph.actions.JoinAction;
@@ -87,7 +86,7 @@ import org.openide.util.NbBundle;
 public class ETLEditorTopView extends BasicTopView {
 
     public static final String OPERATOR_FOLDER = "ETLOperators";
-    private static transient final Logger mLogger = LogUtil.getLogger(ETLEditorTopView.class.getName());
+    private static transient final Logger mLogger = Logger.getLogger(ETLEditorTopView.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     private ETLCollaborationTopPanel topPanel;
     //private UndoAction undoAction;
@@ -298,7 +297,7 @@ public class ETLEditorTopView extends BasicTopView {
                             }
                         }
                     } catch (BaseException be) {
-                        mLogger.errorNoloc(mLoc.t("PRSR048: Failed to generate Core SQL{0}", ETLEditorTopView.class.getName()), be);
+                        mLogger.errorNoloc(mLoc.t("EDIT048: Failed to generate Core SQL{0}", ETLEditorTopView.class.getName()), be);
                         StringBuilder msg = new StringBuilder();
                         if (targetTable != null) {
                             msg.append(targetTable.getQualifiedName()).append(": ");
@@ -309,12 +308,12 @@ public class ETLEditorTopView extends BasicTopView {
                         } else {
                             msg.append(be.getMessage());
                         }
-                        String nbBundle1 = mLoc.t("PRSR001: Cannot evaluate SQL:{0}",msg);
-                        this.sqlText =  Localizer.parse(nbBundle1);
+                        String nbBundle1 = mLoc.t("BUND368: Cannot evaluate SQL:{0}",msg);
+                        this.sqlText =  nbBundle1.substring(15);
                     } catch (Exception exp) {
-                        String nbBundle2 = mLoc.t("PRSR001: Cannot evaluate SQL:{0}",exp.getMessage());
-                        mLogger.errorNoloc(mLoc.t("PRSR049: Failed to generate Core SQL{0}", ETLEditorTopView.class.getName()), ex);
-                        this.sqlText = Localizer.parse(nbBundle2);
+                        String nbBundle2 = mLoc.t("BUND368: Cannot evaluate SQL:{0}",exp.getMessage());
+                        mLogger.errorNoloc(mLoc.t("EDIT048: Failed to generate Core SQL{0}", ETLEditorTopView.class.getName()), ex);
+                        this.sqlText = nbBundle2.substring(15);
                     }
                     return "";
                 }

@@ -18,8 +18,6 @@
  */
 package org.netbeans.modules.xslt.tmap.nodes.properties;
 
-import org.netbeans.modules.soa.ui.UserNotification;
-import org.netbeans.modules.xslt.tmap.model.api.events.VetoException;
 import org.openide.ErrorManager;
 
 /**
@@ -54,11 +52,8 @@ public class PropertyVetoError extends Error {
     
     public static void defaultProcessing(PropertyVetoError ex) {
         Throwable cause = ex.getCause();
-        if (cause instanceof VetoException) {
-            UserNotification.showMessage(cause.getLocalizedMessage());
-        } else {
+        
             ErrorManager.getDefault().notify(cause);
-        }
     }
     
 }

@@ -159,4 +159,30 @@ public final class Path {
         }
         return pathName;
     }
+    
+    public static String findCommand(String cmd) {
+        File file;
+        String cmd2 = null;
+        ArrayList<String> dirlist = getPath();
+        
+        if (cmd.length() > 0) {
+            if (Utilities.isWindows() && !cmd.endsWith(".exe")) { // NOI18N
+                cmd2 = cmd + ".exe"; // NOI18N
+            }
+
+            for (String dir : dirlist) {
+                file = new File(dir, cmd);
+                if (file.exists()) {
+                    return file.getAbsolutePath();
+                }
+                if (cmd2 != null) {
+                    file = new File(dir, cmd2);
+                    if (file.exists()) {
+                        return file.getAbsolutePath();
+                    }
+                }
+            }
+        }
+        return null;
+    }
 }

@@ -315,7 +315,12 @@ public class ServerInstance implements Node.Cookie, Comparable {
                 try {
                     j2eePlatformImpl = fact.getJ2eePlatformImpl(isConnected() ? getDeploymentManager() : getDisconnectedDeploymentManager());
                 }  catch (DeploymentManagerCreationException dmce) {
-                    Exceptions.printStackTrace(dmce);
+                    // this condition is ugly workaround for disconnected
+                    // deployment manager throwing exception - bug 113907
+                    FileObject fo = ServerRegistry.getInstanceFileObject(url);
+                    if (fo != null) {
+                        Exceptions.printStackTrace(dmce);
+                    }
                 }
             }
         }
@@ -1500,11 +1505,7 @@ public class ServerInstance implements Node.Cookie, Comparable {
             }
         }
     }
-    
-    public boolean isDefault() {
-        return url.equals(ServerRegistry.getInstance().getDefaultInstance().getUrl());
-    }
-    
+
     public String toString() {
         return getDisplayName();
     }

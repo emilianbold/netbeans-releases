@@ -41,9 +41,7 @@
 
 package org.netbeans.modules.cnd.debugger.gdb;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.debugger.gdb.models.AbstractVariable;
@@ -59,69 +57,35 @@ import org.netbeans.modules.cnd.debugger.gdb.models.AbstractVariable;
  * @author Gordon Prieur (copied from Jan Jancura's JPDA implementation)
  */
 public class CallStackFrame {
+    private final GdbDebugger debugger;
+    private final int lineNumber;
+    private final String func;
+    private final String file;
+    private final String fullname;
+    private final int frameNumber;
+    private final String address;
     
-    public static final int OBSOLETE = 1;
-    public static final int VALID = 2;
-    
-    private CallStackFrame sf;
-    private GdbDebugger debugger;
-    private int lineNumber;
-    private String func;
-    private String file;
-    private String fullname;
-    private int frameNumber;
-    private String address;
-    private int state;
-    private LocalVariable[] cachedLocalVariables;
-    private Map<String, Object> typeMap = new HashMap();
+    private LocalVariable[] cachedLocalVariables = null;
     private Logger log = Logger.getLogger("gdb.logger"); // NOI18N
     
-    public CallStackFrame(GdbDebugger debugger, String func, String file, String fullname, String lnum, String address) {
+    public CallStackFrame(GdbDebugger debugger, String func, String file, String fullname, String lnum, String address, int frameNumber) {
         this.debugger = debugger;
-        set(func, file, fullname, lnum, address);
-        frameNumber = 0;
-    }
-    
-    /**
-     *  Set frame values.
-     *
-     *  @param func Function name from gdb
-     *  @param file File name (basename) from gdb
-     *  @param fullname Absolute path from gdb
-     *  @param lnum Line number (as a String) from gdb
-     */
-    public void set(String func, String file, String fullname, String lnum, String address) {
-        if (this.fullname != null && !this.fullname.equals(fullname)) {
-            typeMap.clear();
-        }
         this.func = func;
         this.file = file;
         this.fullname = fullname;
         this.address = address;
+        this.frameNumber = frameNumber;
+        int lNumber = -1;
         if (lnum != null) {
             try {
-                lineNumber = Integer.parseInt(lnum);
+                lNumber = Integer.parseInt(lnum);
             } catch (NumberFormatException ex) {
-                lineNumber = 1; // shouldn't happen
+                lNumber = 1; // shouldn't happen
             }
         } else {
-            lineNumber = -1;
+            lNumber = -1;
         }
-        invalidateCache();
-        setState(CallStackFrame.VALID);
-    }
-    
-    public void invalidateCache() {
-        cachedLocalVariables = null;
-    }
-    
-    /**
-     *  Set frame number.
-     *
-     *  @param frameNumber Frame number in Call Stack ("0" means top)
-     */
-    public void setFrameNumber(int frameNumber) {
-        this.frameNumber = frameNumber;
+        this.lineNumber = lNumber;
     }
     
     /**
@@ -140,13 +104,6 @@ public class CallStackFrame {
      */
     public int getLineNumber() {
         return lineNumber;
-    }
-    
-    /**
-     * Set the linenumber after a step operation
-     */
-    public void setLineNumber(int lineNumber) {
-        this.lineNumber = lineNumber;
     }
     
     /**
@@ -188,22 +145,6 @@ public class CallStackFrame {
         debugger.setCurrentCallStackFrame(this);
     }
     
-    /** Set the state of this frame */
-    public void setState(int state) {
-        if (state != this.state && (state == OBSOLETE || state == VALID)) {
-            this.state = state;
-        }
-    }
-    
-    /**
-     * Returns <code>true</code> if this frame is obsoleted.
-     *
-     * @return <code>true</code> if this frame is obsoleted
-     */
-    public  boolean isObsolete() {
-        return state == OBSOLETE;
-    }
-    
     /** UNCOMMENT WHEN THIS METHOD IS NEEDED. IT'S ALREADY IMPLEMENTED IN THE IMPL. CLASS.
      * Determine, if this stack frame can be poped off the stack.
      *
@@ -219,11 +160,6 @@ public class CallStackFrame {
      */
     public void popFrame() {
         debugger.getGdbProxy().exec_finish();
-    }
-    
-    /** Get stack frame */
-    public CallStackFrame getStackFrame() {
-        return sf;
     }
     
     /**
@@ -253,5 +189,11 @@ public class CallStackFrame {
             return cachedLocalVariables;
         }
     }
+
+    @Override
+    public int hashCode() {
+        // currently default hash code and equals are the optimal ones,
+        // because CallStackFrames can not be equal if they are not the same object
+        return super.hashCode();
+    }
 }
- 

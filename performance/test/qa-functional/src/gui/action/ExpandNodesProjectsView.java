@@ -91,7 +91,7 @@ public class ExpandNodesProjectsView extends org.netbeans.performance.test.utili
     
 
     public void testExpandProjectNode(){
-        WAIT_AFTER_OPEN = 3000;
+        WAIT_AFTER_OPEN = 1000;
         WAIT_AFTER_PREPARE = 2000;
         project = "jEdit";
         pathToFolderNode = "";
@@ -99,7 +99,7 @@ public class ExpandNodesProjectsView extends org.netbeans.performance.test.utili
     }
 
     public void testExpandSourcePackagesNode(){
-        WAIT_AFTER_OPEN = 3000;
+        WAIT_AFTER_OPEN = 1000;
         WAIT_AFTER_PREPARE = 2000;
         project = "jEdit";
         pathToFolderNode = gui.Utilities.SOURCE_PACKAGES;
@@ -107,7 +107,7 @@ public class ExpandNodesProjectsView extends org.netbeans.performance.test.utili
     }
     
     public void testExpandFolderWith50JavaFiles(){
-        WAIT_AFTER_OPEN = 3000;
+        WAIT_AFTER_OPEN = 1000;
         WAIT_AFTER_PREPARE = 2000;
         project = "PerformanceTestFoldersData";
         pathToFolderNode = gui.Utilities.SOURCE_PACKAGES + "|folders.javaFolder50";
@@ -115,7 +115,7 @@ public class ExpandNodesProjectsView extends org.netbeans.performance.test.utili
     }
     
     public void testExpandFolderWith100JavaFiles(){
-        WAIT_AFTER_OPEN = 3000;
+        WAIT_AFTER_OPEN = 1000;
         WAIT_AFTER_PREPARE = 2000;
         project = "PerformanceTestFoldersData";
         pathToFolderNode = gui.Utilities.SOURCE_PACKAGES + "|folders.javaFolder100";
@@ -123,7 +123,7 @@ public class ExpandNodesProjectsView extends org.netbeans.performance.test.utili
     }
     
     public void testExpandFolderWith100XmlFiles(){
-        WAIT_AFTER_OPEN = 3000;
+        WAIT_AFTER_OPEN = 1000;
         WAIT_AFTER_PREPARE = 500;
         project = "PerformanceTestFoldersData";
         pathToFolderNode = gui.Utilities.SOURCE_PACKAGES + "|folders.xmlFolder100";
@@ -131,7 +131,7 @@ public class ExpandNodesProjectsView extends org.netbeans.performance.test.utili
     }
     
     public void testExpandFolderWith100TxtFiles(){
-        WAIT_AFTER_OPEN = 3000;
+        WAIT_AFTER_OPEN = 1000;
         WAIT_AFTER_PREPARE = 500;
         project = "PerformanceTestFoldersData";
         pathToFolderNode = gui.Utilities.SOURCE_PACKAGES + "|folders.txtFolder100";
@@ -147,7 +147,7 @@ public class ExpandNodesProjectsView extends org.netbeans.performance.test.utili
         projectTab.getProjectRootNode("PerformanceTestFoldersData").collapse();
         
         turnBadgesOff();
-        repaintManager().addRegionFilter(repaintManager().EXPLORER_FILTER);
+//        repaintManager().addRegionFilter(repaintManager().EXPLORER_FILTER);
     }
         
         
@@ -162,6 +162,7 @@ public class ExpandNodesProjectsView extends org.netbeans.performance.test.utili
     
     public ComponentOperator open(){
 //        nodeToBeExpanded.tree().clickOnPath(nodeToBeExpanded.getTreePath(), 2);
+        repaintManager().addRegionFilter(repaintManager().EXPLORER_FILTER);
 nodeToBeExpanded.tree().doExpandPath(nodeToBeExpanded.getTreePath());
 //        nodeToBeExpanded.tree().clickMouse(2);
 //        nodeToBeExpanded.waitExpanded();

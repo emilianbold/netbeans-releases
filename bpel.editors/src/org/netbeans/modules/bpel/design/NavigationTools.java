@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.bpel.design;
 
+import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -38,7 +39,9 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JToggleButton;
+import javax.swing.JViewport;
 import org.openide.util.NbBundle;
 
 /**
@@ -50,6 +53,7 @@ public class NavigationTools extends JPanel implements MouseListener,
         ActionListener {
 
     
+    private DiagramView currentDiagramView;
     private DesignView designView; 
     
     private Mode mode = Mode.OFF; 
@@ -72,9 +76,15 @@ public class NavigationTools extends JPanel implements MouseListener,
         setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         setBackground(null);
         setOpaque(false);
+        setVisible(false);
         
-        designView.addKeyListener(this);
-        designView.addFocusListener(this);
+        designView.getProcessView().addKeyListener(this);
+        designView.getConsumersView().addKeyListener(this);
+        designView.getProvidersView().addKeyListener(this);
+        
+        designView.getProcessView().addFocusListener(this);
+        designView.getConsumersView().addFocusListener(this);
+        designView.getProvidersView().addFocusListener(this);
         
         editingModeButton = new JToggleButton(SELECT_TOOL_ICON);
         editingModeButton.setSelected(true);
@@ -123,17 +133,13 @@ public class NavigationTools extends JPanel implements MouseListener,
     
     private void turnOn(Mode newMode) {
         this.mode = newMode;
-        getDesignView().revalidate();
-        getDesignView().repaint();
-        getDesignView().add(this, 0);
+        setVisible(true);
     }
     
     
     private void turnOff() {
         this.mode = Mode.OFF;
-        getDesignView().remove(this);
-        getDesignView().revalidate();
-        getDesignView().repaint();
+        setVisible(false);
     }
     
     
@@ -181,26 +187,56 @@ public class NavigationTools extends JPanel implements MouseListener,
 
     
     public void mouseDragged(MouseEvent e) {
-        int dx = e.getX() - toolX;
-        int dy = e.getY() - toolY;
+        int mx = e.getX();
+        int my = e.getY();
         
-        Rectangle rect = getDesignView().getVisibleRect();
+        int dx = mx - toolX;
+        int dy = my - toolY;
+
+        toolX = mx;
+        toolY = my;
         
-        rect.x -= dx;
-        rect.y -= dy;
-        
-        getDesignView().scrollRectToVisible(rect);
+        if (currentDiagramView != null) {
+            Rectangle rect = currentDiagramView.getVisibleRect();
+            
+            rect.x -= dx;
+            rect.y -= dy;
+
+            currentDiagramView.scrollRectToVisible(rect);
+        }
     }
     
     
     public void mousePressed(MouseEvent e) {
+        TriScrollPane scrollPane = (TriScrollPane) getParent();
+        
+        int mx = e.getX();
+        int my = e.getY();
+        
+        JViewport processViewport = (JViewport) (designView
+                .getProcessView().getParent());
+        JComponent consumerTopComponent = (JComponent) (designView
+                .getConsumersView().getParent().getParent().getParent());
+        JComponent providerTopComponent = (JComponent) (designView
+                .getProvidersView().getParent().getParent().getParent());
+        
+        if (contains(processViewport, mx, my)) {
+            currentDiagramView = designView.getProcessView();
+        } else if (contains(consumerTopComponent, mx, my)) {
+            currentDiagramView = designView.getConsumersView();
+        } else if (contains(providerTopComponent, mx, my)) {
+            currentDiagramView = designView.getProvidersView();
+        } else {
+            currentDiagramView = null;
+        }
+        
         toolX = e.getX();
         toolY = e.getY();
     }
     
     
     public void mouseReleased(MouseEvent e) {
-        
+        currentDiagramView = null;
     }
 
     
@@ -233,6 +269,13 @@ public class NavigationTools extends JPanel implements MouseListener,
         return new ImageIcon(NavigationTools.class
                 .getResource("resources/" + name)); // NOI18N
     }       
+    
+    private static boolean contains(Component c, int px, int py) {
+        if (!c.isVisible()) return false;
+        px -= c.getX();
+        py -= c.getY();
+        return 0 <= px && 0 <= py && px < c.getWidth() && py < c.getHeight();
+    }
     
     private static Icon HAND_TOOL_ICON = loadIcon("hand_tool.png"); // NOI18N
     private static Icon SELECT_TOOL_ICON = loadIcon("select_tool.png"); // NOI18N

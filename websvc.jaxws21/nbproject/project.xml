@@ -68,6 +68,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.xml.jaxb</friend>
                 <friend>org.netbeans.modules.websvc.components.strikeiron</friend>
                 <friend>org.netbeans.modules.websvc.saas.api</friend>
+                <friend>org.netbeans.modules.websvc.saas.services.strikeiron</friend>
                 <friend>org.netbeans.modules.websvc.saas.ui</friend>
                 <package>com.sun.tools.ws.processor</package>
                 <package>com.sun.tools.ws.processor.generator</package>

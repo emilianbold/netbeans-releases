@@ -79,7 +79,7 @@ public class FileObjectPropertyEditor extends PropertyEditorSupport {
 
     public void setAsText(String text) throws IllegalArgumentException {
         try {
-            List fileObjs = new ArrayList ();
+            List<FileObject> fileObjs = new ArrayList<FileObject> ();
             if (text != null) {
                 StringTokenizer tk = new StringTokenizer (text, File.pathSeparator);
                 while (tk.hasMoreTokens()) {

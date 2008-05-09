@@ -100,6 +100,15 @@ public abstract class URLMapper {
 
     static {
         DefaultURLMapperProxy.setDefault(new DefaultURLMapper());
+        reset();
+    }
+
+    /** Cache of all available URLMapper instances. */
+    private static List<URLMapper> cache;
+
+    /** Reset cache, for use from unit tests. */
+    static void reset() {
+        cache = null;
         result = Lookup.getDefault().lookupResult(URLMapper.class);
         result.addLookupListener(
             new LookupListener() {
@@ -111,12 +120,6 @@ public abstract class URLMapper {
             }
         );
     }
-
-    /** Basic impl. for JarFileSystem, LocalFileSystem, MultiFileSystem */
-    private static URLMapper defMapper;
-
-    /** Cache of all available URLMapper instances. */
-    private static List<URLMapper> cache;
 
     /** Find a good URL for this file object which works according to type:
      * <ul>

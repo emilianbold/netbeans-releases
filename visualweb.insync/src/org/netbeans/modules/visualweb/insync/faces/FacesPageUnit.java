@@ -376,40 +376,40 @@ public class FacesPageUnit extends FacesUnit implements PropertyChangeListener {
      * Bind all markup beans to their element and take care of parenting. Creates the HtmlBean
      * instances for HTML and other fake beans on the fly
      */
-    
-    // This is a horrible O(N2) algorithm, need to change it - Winston
     protected void bindMarkupBeans(Element e) {
         MarkupBean mbean = getMarkupBean(e);
         if (mbean == null) {
-            String type = HtmlBean.getBeanClassname(e);
+            String type = null;
+            String tagName = e.getLocalName();
+            String name = e.getAttribute(FacesBean.ID_ATTR);
+            String tagLibUri = pgunit.findTaglibUri(e.getPrefix());
+            try {
+                type = container.findComponentClass(tagName, tagLibUri);
+                assert Trace.trace("insync.faces", "FU.bindMarkupBeans type:" + type +
+                        " tag:" + tagName + " tagLibUri:" + tagLibUri);
+            } catch (JsfTagSupportException ex) {
+                ErrorManager.getDefault().log(ex.getLocalizedMessage());
+            }
+
             if (type != null) {
                 BeanInfo bi = getBeanInfo(type);
-                if (bi != null) {
-                    mbean = new HtmlBean(this, bi, e.getTagName(), e);
-                    beans.add(mbean);
+                mbean = new FacesBean(this, bi, name, e);
+                // snag the form bean as it goes by for later use as the default parent
+                if (defaultParent == null && tagName.equals(HtmlTag.FORM.name)) {
+                    defaultParent = mbean;
                 }
             } else {
-                // OK, there are no bindings in the Java, create designbean from tag
-                String tagName = e.getLocalName();
-                String name = e.getAttribute(FacesBean.ID_ATTR);
-                String tagLibUri = pgunit.findTaglibUri(e.getPrefix());
-                try {
-                    type = container.findComponentClass(tagName, tagLibUri);
-                    assert Trace.trace("insync.faces", "FU.bindMarkupBeans type:" + type +
-                            " tag:" + tagName + " tagLibUri:" + tagLibUri);
+                type = HtmlBean.getBeanClassname(e);
+                if (type != null) {
                     BeanInfo bi = getBeanInfo(type);
-                    mbean = new FacesBean(this, bi, name, e);
-                    // snag the form bean as it goes by for later use as the default parent
-                    if (defaultParent == null && tagName.equals(HtmlTag.FORM.name)) {
-                        defaultParent = mbean;
+                    if (bi != null) {
+                        mbean = new HtmlBean(this, bi, e.getTagName(), e);
                     }
-                    beans.add(mbean);
-                } catch (JsfTagSupportException ex) {
-                    ErrorManager.getDefault().log(ex.getLocalizedMessage());
                 }
             }
         }
         if (mbean != null) {
+            beans.add(mbean);
             Bean parent = mbean.bindParent();
             if (parent != null)
                 parent.addChild(mbean, null);  // append is right since we are walking the DOM here

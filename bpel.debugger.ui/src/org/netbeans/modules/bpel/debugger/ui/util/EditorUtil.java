@@ -29,6 +29,9 @@ import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
 import javax.swing.text.StyledDocument;
+import org.netbeans.core.api.multiview.MultiViewHandler;
+import org.netbeans.core.api.multiview.MultiViewPerspective;
+import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.modules.bpel.core.BPELDataLoader;
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.openide.cookies.EditorCookie;
@@ -42,6 +45,7 @@ import org.openide.text.Line;
 import org.openide.text.NbDocument;
 import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -178,6 +182,25 @@ public final class EditorUtil {
         }
         
         return NbDocument.findLineNumber(document, offset) + 1;
+    }
+    
+    public static String getOpenedDocumentViewName() {
+        final TopComponent tc = 
+                WindowManager.getDefault().getRegistry().getActivated();
+        final MultiViewHandler mvh = 
+                MultiViews.findMultiViewHandler(tc);
+                
+        if (mvh == null) {
+            return null;
+        }
+        
+        final MultiViewPerspective mvp = mvh.getSelectedPerspective();
+        
+        if (mvp == null) {
+            return null;
+        }
+        
+        return mvp.preferredID();
     }
     
     /**

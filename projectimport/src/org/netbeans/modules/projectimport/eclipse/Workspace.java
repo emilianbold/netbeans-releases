@@ -43,6 +43,7 @@ package org.netbeans.modules.projectimport.eclipse;
 
 import java.io.File;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -199,7 +200,11 @@ public final class Workspace {
     }
     
     Collection getJarsForUserLibrary(String libRawPath) {
-        return (Collection) userLibraries.get(libRawPath);
+        Collection retVal = Collections.EMPTY_LIST;
+        if (userLibraries != null) {
+            retVal = (Collection) userLibraries.get(libRawPath);
+        }
+        return retVal;
     }
     
     /**

@@ -47,8 +47,6 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -83,6 +81,7 @@ import org.openide.modules.InstalledFileLocator;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Mutex;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.w3c.dom.Element;
 
@@ -493,33 +492,21 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
                     for (JavaPlatform platform : JavaPlatformManager.getDefault().getInstalledPlatforms()) {
                         if (new HashSet<FileObject>(platform.getInstallFolders()).equals(Collections.singleton(homeFO))) {
                             // Matching JDK is registered, so look up its real bootcp.
-                            StringBuffer bootcpSB = new StringBuffer();
                             ClassPath boot = platform.getBootstrapLibraries();
                             boot.removePropertyChangeListener(weakListener);
                             boot.addPropertyChangeListener(weakListener);
-                            for (ClassPath.Entry entry : boot.entries()) {
-                                URL u = entry.getURL();
-                                if (u.toExternalForm().endsWith("!/")) { // NOI18N
-                                    URL nested = FileUtil.getArchiveFile(u);
-                                    if (nested != null) {
-                                        u = nested;
-                                    }
-                                }
-                                if ("file".equals(u.getProtocol())) { // NOI18N
-                                    File f = new File(URI.create(u.toExternalForm()));
-                                    if (bootcpSB.length() > 0) {
-                                        bootcpSB.append(File.pathSeparatorChar);
-                                    }
-                                    bootcpSB.append(f.getAbsolutePath());
-                                }
-                            }
-                            bootcp = bootcpSB.toString();
+                            bootcp = boot.toString(ClassPath.PathConversionMode.WARN);
                             break;
                         }
                     }
                 }
                 if (bootcp == null) {
-                    bootcp = "${nbjdk.home}/jre/lib/rt.jar".replace('/', File.separatorChar); // NOI18N
+                    if (Utilities.isMac()) {
+                        bootcp = "${nbjdk.home}/../Classes/classes.jar";    //NOI18N
+                    }
+                    else {
+                        bootcp = "${nbjdk.home}/jre/lib/rt.jar".replace('/', File.separatorChar); // NOI18N
+                    }
                 }
             }
             if (bootcp == null) {
@@ -527,7 +514,7 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
                 bootcp = "${sun.boot.class.path}"; // NOI18N
             }
             props.put("nbjdk.bootclasspath", bootcp); // NOI18N
-            if (home != null) {
+            if (home != null && !Utilities.isMac()) {   //On Mac everything is in classes.jar, there is no tools.jar
                 props.put("tools.jar", home + "/lib/tools.jar".replace('/', File.separatorChar)); // NOI18N
             }
             if (Util.err.isLoggable(ErrorManager.INFORMATIONAL)) {
@@ -625,6 +612,7 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
         Element data = project.getPrimaryConfigurationData();
         Element moduleDependencies = Util.findElement(data,
             "module-dependencies", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
+        assert moduleDependencies != null : "Malformed metadata in " + project;
         StringBuffer cp = new StringBuffer();
         for (Element dep : Util.findSubElements(moduleDependencies)) {
             if (Util.findElement(dep, "compile-dependency", // NOI18N

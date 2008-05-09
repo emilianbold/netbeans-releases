@@ -43,15 +43,15 @@ package org.netbeans.modules.db.explorer.infos;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.lang.ref.WeakReference;
 import java.io.InputStream;
 import java.io.IOException;
 import java.sql.Connection;
 import java.text.MessageFormat;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
+import java.util.concurrent.ConcurrentHashMap;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
@@ -65,14 +65,13 @@ import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.modules.db.explorer.ConnectionList;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.DatabaseDriver;
-import org.netbeans.modules.db.explorer.DatabaseNodeChildren;
 import org.netbeans.modules.db.explorer.DbMetaDataListenerSupport;
 import org.netbeans.modules.db.explorer.actions.DatabaseAction;
 import org.netbeans.modules.db.explorer.nodes.DatabaseNode;
-import org.netbeans.modules.db.explorer.nodes.RootNode;
-import org.openide.nodes.Children;
+import org.openide.util.ChangeSupport;
 
-public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
+public class DatabaseNodeInfo extends ConcurrentHashMap<String, Object>
+        implements Node.Cookie, Comparable {
     public static final String SPECIFICATION_FACTORY = "specfactory"; //NOI18N
     public static final String SPECIFICATION = "spec"; //NOI18N
     public static final String DRIVER_SPECIFICATION = "drvspec"; //NOI18N
@@ -112,17 +111,19 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
     public static final String PERM = "perm"; //NOI18N
     public static final String ADAPTOR = "adaptor"; //NOI18N
     public static final String ADAPTOR_CLASSNAME = "adaptorClass"; //NOI18N
+    public static final String REGISTERED_NODE = "registered"; // NOI8N
 
+    // Multi-operation changes are synchronized on this
     private static Map gtab = null;
     static final String gtabfile = "org/netbeans/modules/db/resources/explorer.plist"; //NOI18N
 
+    // Sychronized on this
     private boolean connected = false;
+        
+    // Thread-safe, no synchronization
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
 
-    protected static ResourceBundle bundle() {
-        return NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle");
-    }
-
-    public static Map getGlobalNodeInfo() {
+    public synchronized static Map getGlobalNodeInfo() {
         if (gtab == null)
             gtab = readInfo();
         
@@ -153,23 +154,27 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
         return getGlobalNodeInfo().get(key);
     }
 
-    public static DatabaseNodeInfo createNodeInfo(DatabaseNodeInfo parent, String nodecode) throws DatabaseException {
+    public static DatabaseNodeInfo createNodeInfo(DatabaseNodeInfo parent, 
+            String nodecode) throws DatabaseException {
         DatabaseNodeInfo e_ni = null;
-        try {
-            String nodec = (String)((Map)DatabaseNodeInfo.getGlobalNodeInfo().get(nodecode)).get(INFOCLASS);
-            if (nodec != null)
+        
+        String nodec = (String)((Map)DatabaseNodeInfo.getGlobalNodeInfo().get(nodecode)).get(INFOCLASS);
+        if (nodec != null) {
+            try {
                 e_ni = (DatabaseNodeInfo)Class.forName(nodec).newInstance();
-            else {
-                String message = MessageFormat.format(bundle().getString("EXC_UnableToFindClassInfo"), new String[] {nodecode}); // NOI18N
-                throw new Exception(message);
+            } catch ( Exception e ) {
+                throw new DatabaseException(e);
             }
-        } catch (Exception exc) {
-            throw new DatabaseException(exc.getMessage());
+        } else {
+            String message = MessageFormat.format(bundle().
+                    getString("EXC_UnableToFindClassInfo"), 
+                    new String[] {nodecode}); // NOI18N
+            throw new DatabaseException(message);
         }
 
-        if (e_ni != null)
+        if (e_ni != null) {
             e_ni.setParentInfo(parent, nodecode);
-        else {
+        } else {
             String message = MessageFormat.format(bundle().getString("EXC_UnableToCreateNodeInfo"), new String[] {nodecode}); // NOI18N
             throw new DatabaseException(message);
         }
@@ -201,8 +206,6 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
     /* Parent of info in node hierarchy */
     private DatabaseNodeInfo parent = null;
 
-    /* Owning node */
-    WeakReference nodewr = null;
     private PropertyChangeSupport pcs = null;
     private Set connectionpcsKeys = null;
 
@@ -230,11 +233,8 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
             this.parent = parent;
         }
         Map ltab = (Map)getGlobalNodeInfo(sname);
-        if (ltab != null)
+        if (ltab != null) {
             putAll(ltab);
-        else {
-            String message = MessageFormat.format(bundle().getString("EXC_UnableToReadInfo"), new String[] {sname}); // NOI18N
-            throw new DatabaseException(message);
         }
         put(CODE, sname);
         if (parent != null && parent.isReadOnly()) setReadOnly(true);
@@ -273,17 +273,6 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
         String wflag = (String)propmap.get(DatabaseNodeInfo.WRITABLE);
         if (wflag != null) return wflag.toUpperCase().equals("YES"); //NOI18N
         return defa;
-    }
-
-    public DatabaseNode getNode()
-    {
-        if (nodewr != null) return (DatabaseNode)nodewr.get();
-        return null;
-    }
-
-    public void setNode(DatabaseNode node)
-    {
-        nodewr = new WeakReference(node);
     }
 
     private  PropertyChangeSupport getConnectionPCS()
@@ -330,8 +319,8 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
 
         return connectionpcsKeys;
     }
-
-    public Object put(Object key, Object obj)
+    
+    public Object put(String key, Object obj)
     {
         Object old = get(key);
         
@@ -358,38 +347,15 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
 
     public void refreshChildren() throws DatabaseException {
         // create list (infos)
-        Vector charr = new Vector();
-        put(DatabaseNodeInfo.CHILDREN, charr);
-        initChildren(charr);
-        
-        // create sub-tree (by infos)
-        try {
-            final Node[] subTreeNodes = new Node[charr.size()];
-            
-            // current sub-tree
-            final DatabaseNodeChildren children = (DatabaseNodeChildren) getNode().getChildren();
-            
-            // build refreshed sub-tree
-            for(int i = 0; i < charr.size(); i++)
-                subTreeNodes[i] = children.createNode((DatabaseNodeInfo) charr.elementAt(i));
-
-            Children.MUTEX.postWriteRequest(new Runnable() {
-                public void run() {
-                    // remove current sub-tree
-                    children.remove(children.getNodes());
-
-                    // add built sub-tree
-                    children.add(subTreeNodes);
-                }
-            });
-            
-            fireRefresh();
-        } catch (ClassCastException ex) {
-            //PENDING
-        } catch (Exception ex) {
-            Logger.getLogger("global").log(Level.INFO, null, ex);
-        }
+        put(DatabaseNodeInfo.CHILDREN, new Vector());
+        getChildren();
+        notifyChange();
     }
+    
+    public String getShortDescription() {
+        return ""; // NOI18N
+    }
+    
 
     protected void fireRefresh() {
         boolean allTables = true;
@@ -427,6 +393,7 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
     public void setProperty(String key, Object obj)
     {
         put(key, obj);
+        notifyChange();
     }
 
     /** Add property change listener */
@@ -491,6 +458,7 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
     public void setDriver(String drv)
     {
         put(DRIVER, drv);
+        notifyChange();
     }
 
     public Connection getConnection()
@@ -521,14 +489,15 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
         }
 
         getConnectionPCS().firePropertyChange(CONNECTION, oldval, con);
-
+        notifyChange();
     }
 
-    public void setConnected(boolean connected) {
+    public synchronized void setConnected(boolean connected) {
         this.connected = connected;
+        notifyChange();
     }
     
-    public boolean isConnected() {
+    public synchronized boolean isConnected() {
         return connected;
     }
 
@@ -561,6 +530,7 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
             put(PASSWORD, pwd);
         put(REMEMBER_PWD, (Boolean.valueOf(cinfo.rememberPassword())));
         put("drivername", cinfo.getDriverName());
+        notifyChange();
     }
 
     public String getCode()
@@ -581,6 +551,7 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
     public void setName(String nam)
     {
         put(NAME, nam);
+        notifyChange();
     }
 
     public String getUser()
@@ -599,6 +570,7 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
 
     public void setSchema(String schema) {
         put(SCHEMA, schema);
+        notifyChange();
     }
 
     public String getDatabase()
@@ -609,6 +581,7 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
     public void setDatabase(String db)
     {
         put(DATABASE, db);
+        notifyChange();
     }
 
     public String getPassword()
@@ -619,6 +592,7 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
     public void setPassword(String pwd)
     {
         put(PASSWORD, pwd);
+        notifyChange();
     }
 
     public String getTable()
@@ -634,6 +608,7 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
     public void setTable(String nam)
     {
         put("table", nam); //NOI18N
+        notifyChange();
     }
 
     public String getIconBase() {
@@ -642,16 +617,23 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
 
     public void setIconBase(String base) {
         put("iconbase", base); //NOI18N
+        notifyChange();
     }
 
-    public String getDisplayname()
+    public String getDisplayName()
     {
-        return (String)get("displayname"); //NOI18N
+        String dname = (String)get("displayname");
+        if ( dname == null || "{name}".equals(dname)) {
+            return getName();
+        } else {
+            return dname;
+        }
     }
 
-    public void setDisplayname(String name)
+    public void setDisplayName(String name)
     {
         put("displayname", name); //NOI18N
+        notifyChange();
     }
 
     public String getURL()
@@ -662,6 +644,7 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
     public void setURL(String url)
     {
         put(URL, url);
+        notifyChange();
     }
 
     /** Returns connection properties (login name and password)
@@ -683,40 +666,98 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
     throws DatabaseException
     {
     }
+    
+    public boolean isChildrenInitialized() {
+        Vector children = (Vector)get(CHILDREN);
+
+        return children.size() > 0 && 
+                children.elementAt(0) instanceof DatabaseNodeInfo;        
+    }
 
     public Vector getChildren()
     throws DatabaseException
     {
         Vector children = (Vector)get(CHILDREN);
-        if (children.size() > 0 && children.elementAt(0) instanceof DatabaseNodeInfo) return children;
+        
+        if ( isChildrenInitialized() ) {
+            return children;
+        }
 
         Vector chalt = new Vector();
         initChildren(chalt);
         chalt.addAll(children);
 
-        try {
-            for (int i=0; i<chalt.size();i++) {
-                Object e_child = chalt.elementAt(i);
-                if (e_child instanceof String) {
-                    DatabaseNodeInfo e_ni = createNodeInfo(this, (String)e_child);
-                    chalt.setElementAt(e_ni,i);
-                }
+        for (int i=0; i<chalt.size();i++) {
+            Object e_child = chalt.elementAt(i);
+            if (e_child instanceof String) {
+                DatabaseNodeInfo e_ni = createNodeInfo(this, (String)e_child);
+                chalt.setElementAt(e_ni,i);
             }
-
-            children = chalt;
-            put(CHILDREN, children);
-
-        } catch (Exception exc) {
-            String message = MessageFormat.format(bundle().getString("EXC_UnableToCreateChildren"), new String[] {exc.getMessage()}); // NOI18N
-            throw new DatabaseException(message);
         }
 
+        children = chalt;
+        put(CHILDREN, children);
+        
+        // Do NOT notify change here, as this is called by the stateChanged()
+        // method in the Node, we'd end up in an endless loop
+        
         return children;
     }
+    
+    // For debugging
+    private void printChildren(String message, Vector children) {
+        System.out.println("");
+        System.out.println(message);
+        for ( Object child : children ) {
+            StringBuffer childstr = new StringBuffer(child.getClass().getName());
+            
+            if ( child instanceof DatabaseNodeInfo ) {
+                childstr.append(": " + ((DatabaseNodeInfo)child).getDisplayName());
+            } else {
+                childstr.append(": " + child.toString());
+            }
+            
+            System.out.println(childstr.toString());            
+        }
+        
+    }
+    
+    public void addChild(DatabaseNodeInfo child) throws DatabaseException {
+        addChild(child, true);
+    }
+    
+    public void addChild(DatabaseNodeInfo child, boolean notify)
+            throws DatabaseException {
+        getChildren().add(child);
+        
+        if ( notify ) {
+            notifyChange();
+        }
+    }
+    
+    public void removeChild(DatabaseNodeInfo child) throws DatabaseException {
+        removeChild(child, true);
+    }
+    
+    public synchronized void removeChild(DatabaseNodeInfo child, boolean notify) 
+            throws DatabaseException {
+        getChildren().remove(child);
+        
+        if ( notify ) {
+            notifyChange();
+        }
+    }
+    
+    public void setChildren(Vector chvec) {
+        setChildren(chvec, true);
+    }
 
-    public void setChildren(Vector chvec)
+    public void setChildren(Vector chvec, boolean notify)
     {
         put(CHILDREN, chvec);
+        if ( notify ) {
+            notifyChange();
+        }
     }
 
     public Vector getActions()
@@ -786,7 +827,8 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
 
         return actions;
     }
-
+    
+    @Override
     public String toString()
     {
         String result = ""; //NOI18N
@@ -801,12 +843,12 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
 
     public boolean isDebugMode()
     {
-        return RootNode.getOption().getDebugMode();
+        return RootNodeInfo.getOption().getDebugMode();
     }
 
     public void setDebugMode(boolean mode)
     {
-        RootNode.getOption().setDebugMode(mode);
+        RootNodeInfo.getOption().setDebugMode(mode);
     }
 
     public boolean isReadOnly()
@@ -819,8 +861,9 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
     public void setReadOnly(boolean flag)
     {
         put(READONLY, flag ? Boolean.TRUE : Boolean.FALSE);
+        notifyChange();
     }
-
+    
     /** Getter for property driverSpecification.
      *@return Value of property driverSpecification.
      */
@@ -834,5 +877,116 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
     public void setDriverSpecification(DriverSpecification driverSpecification) {
         put(DRIVER_SPECIFICATION, driverSpecification);
     }
+    
+    public void addChangeListener(ChangeListener listener) {
+        changeSupport.addChangeListener(listener);
+    }
+    
+    public void removeChangeListener(ChangeListener listener) {
+        changeSupport.removeChangeListener(listener);
+    }
+    
+    protected void notifyChange() {
+        changeSupport.fireChange();
+    }
+    
+    protected static ResourceBundle bundle() {
+        return NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); // NOI18N
+
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        // Assumes that you can't have two nodes under the same parent with
+        // the same display name.  I'm not sure if this is completely valid,
+        // but I can think of no other way to uniquely identify an info
+        // without deep-searching the children == costly...
+        
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final DatabaseNodeInfo other = (DatabaseNodeInfo) obj;
+        String displayName = this.getDisplayName();
+        String otherDisplayName = other.getDisplayName();
+        if (displayName != otherDisplayName && 
+                (displayName == null || 
+                    !displayName.equals(otherDisplayName))) {
+            return false;
+        }
+        if (this.parent != other.parent && 
+                (this.parent == null || !this.parent.equals(other.parent))) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        // Generated by NetBeans (thanks!)
+        int hash = 3;
+        String displayName = this.getDisplayName();
+        hash = 19 * hash + (displayName != null ? displayName.hashCode() : 0);
+        hash = 19 * hash + (this.parent != null ? this.parent.hashCode() : 0);
+        return hash;
+    }
+    
+    public int compareTo(Object o2) {
+        // It's an exception if this isn't a DatabaseNodeInfo...
+        DatabaseNodeInfo info2 = (DatabaseNodeInfo)o2;
+        
+        if ( this.equals(info2)) {
+            return 0;
+        }        
+
+        java.util.Map map = null;
+        if ( parent != null ) {
+            map = (java.util.Map)parent.get(DatabaseNodeInfo.CHILDREN_ORDERING);
+        }
+        
+        if ( map != null ) {
+            boolean sort = 
+                ((! (this instanceof TableNodeInfo)) && 
+                (! (this instanceof ViewNodeInfo)) && 
+                (! (this instanceof ProcedureNodeInfo)) ); //NOI18N
+
+            if (! sort)
+                return 1;
+
+            // Ordering is based on the node class for this info class
+            // See if the node class is in the ordering map, and if it
+            // is, use that for comparison.
+            int o1val, o2val, diff;
+            Integer o1i = (Integer)map.get(get(CLASS));
+            if (o1i != null)
+                o1val = o1i.intValue();
+            else
+                o1val = Integer.MAX_VALUE;
+
+            Integer o2i = null;
+            o2i = (Integer)map.get(info2.get(CLASS));
+
+            if (o2i != null)
+                o2val = o2i.intValue();
+            else
+                o2val = Integer.MAX_VALUE;
+
+            diff = o1val-o2val;
+
+            // If they're the same class, then sort using display name
+            // below...
+            if (diff != 0) {
+                return diff;
+            }
+        }
+        
+        return getDisplayName() != null ?
+            getDisplayName().compareTo(info2.getDisplayName()) :
+            1;
+    }
+
+    
 
 }

@@ -2697,7 +2697,7 @@ public class JsfForm {
         }
 
         // XXX Context page notion from fragment should be removed.
-        if (this.contextJsfForm != contextJsfForm) {
+        if (this.contextJsfForm != contextJsfForm && isValid()) {
             // Force refresh such that the style links are recomputed
             clearHtml();
         }

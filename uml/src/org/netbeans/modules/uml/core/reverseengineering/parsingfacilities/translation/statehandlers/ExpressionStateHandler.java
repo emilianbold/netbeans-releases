@@ -295,8 +295,7 @@ public class ExpressionStateHandler extends StateHandler
             {
                 if((retVal != null) && (retVal.length() > 0))
                 {
-                    //kris richards - removed comma for 90664 fix
-                    retVal += " ";
+                    retVal += ", ";
                 }
                 retVal += proxy.toString();
           }

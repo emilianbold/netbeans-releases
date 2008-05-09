@@ -1,91 +1,105 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<!-- * Copyright © 2007 Sun Microsystems,
+<!-- * Copyright © 2008 Sun Microsystems,
 Inc.  All rights reserved.  
 Use is subject to license terms.  *--> 
 <html> 
-<head> 
-    <title>Using the Preregistered RESTful Web Service Components</title>
-    <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
-</head> 
-<body>
-<h2>Using the Preregistered RESTful Web Service Components</h2>
-<p> <small><a href="#seealso">See Also</a>&nbsp; </small>
-
-<p>When you <a href="../create/create_rest_from_scratch.html">generate RESTful web services</a>, and open
- one in the editor, the component palette (Ctrl-Shift-8) displays
- a list of preregistered web service components. The
- list of preregistered web service components is as follows:
- 
- <ul>
-     <li>Google Map</li>
-     <li>Strike Iron</li>
-     <ul>
-         <li>Address Verification</li>
-         <li>Email Verification</li>
-         <li>IP Address Lookup</li>
-         <li>Reverse Phone Lookup</li>
-         <li>Tax Complete</li>
-     </ul>
-     <li>Yahoo News Search</li>
- </ul>
-
- <ul class="note">
-                <li>For a tutorial that shows how the
-    preregistered RESTful web service components are used,
-        see:
-         <p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-            <param name="content" value="http://www.netbeans.org/kb/60/websvc/rest.html">
-            <param name="text" value="<html><u>Getting Started with RESTful Web Services in NetBeans IDE 6.0</u></html>">
-            <param name="textFontSize" value="medium">
-            <param name="textColor" value="blue">
-        </object>
-
-                </li>
+    <head> 
+        <title>SaaS Components and the Web Service Manager</title>
+        <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head> 
+    <body>
+        <h2>SaaS Components and the Web Service Manager</h2>
+        <p> <small><a href="#seealso">See Also</a>&nbsp; </small>
+        
+        <p>The Web Services Manager is an expanded set of functionality 
+            added to the Web Services node in the IDE's Services tab. It 
+        supersedes the Palette for RESTful web services.</p>
+        <h3>Dragging and Dropping SaaS Operations</h3>
+        <p>The Web Service Manager displays
+        a list of preregistered SaaS (Software as a Service) web service components.
+        <!-- May add list of services later -->
+        
+        <ul class="note">
+            <li>For a tutorial that shows how 
+                RESTful SaaS web service components are used,
+                see:
+                <p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                    <param name="content" value="http://www.netbeans.org/kb/61/websvc/rest61.html">
+                    <param name="text" value="<html><u>Getting Started with RESTful Web Services on GlassFish</u></html>">
+                    <param name="textFontSize" value="medium">
+                    <param name="textColor" value="blue">
+                </object>
+                
+            </li>
+        </ul>
+        
+        <p><b>To add SaaS operations to a web application:</b></p>
+        
+        <ol>
+            <li>Go to the related homepage of
+            the web service and obtain the
+            required keys and codes, if necessary:
+            <ul>
+                <li>To get a Google Map key, go here:
+                <p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                    <param name="content" value="http://www.google.com/apis/maps/signup.html">
+                    <param name="text" value="<html><u>Sign Up for the Google Maps API</u></html>">
+                    <param name="textFontSize" value="medium">
+                    <param name="textColor" value="blue">
+                </object>
+                <li>To get a Strike Iron username and password, go here:
+                <p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                    <param name="content" value="http://www.strikeiron.com/">
+                    <param name="text" value="<html><u>Strike Iron</u></html>">
+                    <param name="textFontSize" value="medium">
+                    <param name="textColor" value="blue">
+                </object>
+                <li>To set up an Amazon S3 Bucket account (you have to buy one 
+                but it's very reasonable), go here:
+                <p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                    <param name="content" value="http://www.amazon.com/gp/browse.html?node=16427261">
+                    <param name="text" value="<html><u>Amazon S3</u></html>">
+                    <param name="textFontSize" value="medium">
+                    <param name="textColor" value="blue">
+                </object>
             </ul>
- 
- <p><b>To use the preregistered web service components:</b>
- 
- <ol>
-     <li>Go to the related homepage of
-     the web service and obtain the
-     required keys and codes, if necessary:
-     <ul>
-         <li>To get a Google Map key, go here:
-         <p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-             <param name="content" value="http://www.google.com/apis/maps/signup.html">
-             <param name="text" value="<html><u>Sign Up for the Google Maps API</u></html>">
-             <param name="textFontSize" value="medium">
-             <param name="textColor" value="blue">
-         </object>
-         <li>To get a Strike Iron username and password, go here:
-         <p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-             <param name="content" value="http://www.strikeiron.com/">
-             <param name="text" value="<html><u>Strike Iron</u></html>">
-             <param name="textFontSize" value="medium">
-             <param name="textColor" value="blue">
-         </object>
-     </ul>
-     <li>Drag the item from the palette.
-     <li>Fill in the applicable details in the dialog box that appears.
-     <li>Drop the item in the resource class.
- </ol>
- 
-<dl>
-    <dt><a name="seealso">See Also</a></dt>
-    <dd><a href="../about/about_ws.html">About Web Services</a></dd>
-    <dd><a href="../create/create_rest_from_scratch.html">Generating a RESTful Web Service from Scratch</a></dd>
-    <dd><a href="../consume/wsc_stubs.html">Generating RESTful Web Service component Stubs</a></dd>
-    <dd><a href="../expose/test_rest.html">Testing a RESTful Web Service</a></dd>
-</dl>
-
-
-<hr>
-<small><a href="../../credits.html">Legal Notices</a></small> 
-<table cellpadding="20" border="0"> 
-    <tr><td>&nbsp;</td></tr> 
-    <tr><td>&nbsp;</td></tr> 
-    <tr><td>&nbsp;</td></tr> 
-</table> 
-
-</body>
+            <li>Drag the item from the Services tab.
+            
+            <li>Drop the item in the resource class.
+            <li>Fill in the applicable details in the dialog box that appears.
+        </ol>
+        <p>All the plumbing code for accessing the service is generated by the IDE
+        when you finish the drag-and-drop action.</p>
+        <h3>Accessing SaaS Service API</h3>
+        <p>Right-click a service's node. Select View API Document in the service 
+        node's context menu and the API opens in a browser window.</p>
+        <h3>Opening Service WADL</h3>
+        <p>Click View WADL in the service node's context menu and the WADL opens 
+            in the IDE's editor. WADL is a simple alternative to WSDL for use with 
+            XML/HTTP Web applications. See <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                <param name="content" value="https://wadl.dev.java.net/">
+                <param name="text" value="<html><u>https://wadl.dev.java.net/</u></html>">
+                <param name="textFontSize" value="medium">
+                <param name="textColor" value="blue">
+            </object>
+            for 
+        more information about the Java net WADL project.</p>
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="../about/about_ws.html">About Web Services</a></dd>
+            <dd><a href="../create/create_rest_from_scratch.html">Generating a RESTful Web Service from Scratch</a></dd>
+            <dd><a href="wsc_stubs.html">Generating RESTful Web Service component Stubs</a></dd>
+            <dd><a href="../expose/test_rest.html">Testing a RESTful Web Service</a></dd>
+        </dl>
+        
+        
+        <hr>
+        <small><a href="../../credits.html">Legal Notices</a></small> 
+        <table cellpadding="20" border="0"> 
+            <tr><td>&nbsp;</td></tr> 
+            <tr><td>&nbsp;</td></tr> 
+            <tr><td>&nbsp;</td></tr> 
+        </table> 
+        
+    </body>
 </html>

@@ -46,6 +46,7 @@
 
 package org.netbeans.modules.j2ee.sun.dd.api.ejb;
 
+import org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException;
 import org.netbeans.modules.j2ee.sun.dd.api.common.WebserviceDescription;
 import org.netbeans.modules.j2ee.sun.dd.api.common.MessageDestination;
 
@@ -104,5 +105,13 @@ public interface EnterpriseBeans extends org.netbeans.modules.j2ee.sun.dd.api.Co
     public int sizeWebserviceDescription(); 
     public WebserviceDescription newWebserviceDescription();
     
+    public void setPropertyElement(int index, PropertyElement value) throws VersionNotSupportedException;
+    public PropertyElement getPropertyElement(int index) throws VersionNotSupportedException;
+    public int sizePropertyElement() throws VersionNotSupportedException;
+    public void setPropertyElement(PropertyElement[] value) throws VersionNotSupportedException;
+    public PropertyElement[] getPropertyElement() throws VersionNotSupportedException;
+    public int addPropertyElement(PropertyElement value) throws VersionNotSupportedException;
+    public int removePropertyElement(PropertyElement value) throws VersionNotSupportedException;
+    public PropertyElement newPropertyElement() throws VersionNotSupportedException;
     
 }

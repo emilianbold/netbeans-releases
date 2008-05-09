@@ -82,10 +82,6 @@ public class IgnoreAction extends AbstractSystemAction {
         int actionStatus = -1;
         FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
         for (int i = 0; i < files.length; i++) {
-            if (files[i].getName().equals(".cvsignore")) { // NOI18N
-                actionStatus = UNDEFINED;
-                break;
-            }
             FileInformation info = cache.getStatus(files[i]);
             if (info.getStatus() == FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) {
                 actionStatus = (actionStatus == -1 || actionStatus == IGNORING) ? IGNORING : UNDEFINED;

@@ -2,9 +2,9 @@ package test;
 
 import javax.swing.JFrame;
 
-public class OverrideInInnerClass {
+public class Test {
     
-    public OverrideInInnerClass() {}
+    public Test() {}
     
     public static void main(String[] args) {
         JFrame f = new JFrame() {

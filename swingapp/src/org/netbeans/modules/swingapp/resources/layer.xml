@@ -72,6 +72,7 @@ made subject to such option by the copyright holder.
     <folder name="Menu">
         <folder name="Window">
             <folder name="Other">
+                 <attr name="position" intvalue="1700"/>
                  <file name="ShowGlobalActionTableAction.shadow">
                      <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-swingapp-actions-ShowGlobalActionTableAction.instance"/>
                      <attr name="position" intvalue="600"/>

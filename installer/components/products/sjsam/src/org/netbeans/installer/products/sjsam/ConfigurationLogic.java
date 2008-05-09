@@ -45,9 +45,9 @@ import org.netbeans.installer.utils.applications.GlassFishUtils;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.components.ProductConfigurationLogic;
+import org.netbeans.installer.product.dependencies.Requirement;
 import org.netbeans.installer.utils.FileProxy;
 import org.netbeans.installer.utils.FileUtils;
-import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.applications.JavaUtils;
 import org.netbeans.installer.utils.exceptions.InitializationException;
@@ -56,8 +56,8 @@ import org.netbeans.installer.utils.exceptions.UninstallationException;
 import org.netbeans.installer.utils.exceptions.XMLException;
 import org.netbeans.installer.utils.helper.Dependency;
 import org.netbeans.installer.utils.helper.ExecutionResults;
-import org.netbeans.installer.utils.helper.NbiThread;
 import org.netbeans.installer.utils.helper.RemovalMode;
+import org.netbeans.installer.utils.helper.Text;
 import org.netbeans.installer.utils.progress.Progress;
 import org.netbeans.installer.wizard.Wizard;
 import org.netbeans.installer.wizard.components.WizardComponent;
@@ -72,11 +72,6 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     public static final String WIZARD_COMPONENTS_URI =
             FileProxy.RESOURCE_SCHEME_PREFIX + // NOI18N
             "org/netbeans/installer/products/sjsam/wizard.xml"; // NOI18N
-    
-    private static final String GLASSFISH_UID =
-            "glassfish"; // NOI18N
-    private static final String APPSERVER_UID =
-            "sjsas"; // NOI18N
     
     private static final String AM_INSTALLER =
             "addons/am_installer.jar"; // NOI18N
@@ -109,7 +104,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         
         // get the list of suitable glassfish installations
         final List<Dependency> dependencies =
-                getProduct().getDependencyByUid(GLASSFISH_UID);
+                getProduct().getDependencies(Requirement.class);
         final List<Product> sources =
                 Registry.getInstance().getProducts(dependencies.get(0));
         
@@ -167,65 +162,65 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         }
         
         // install the jvm option ///////////////////////////////////////////////////
-        try {
-            progress.setDetail(getString("CL.install.add.jvm.option")); // NOI18N
-            
-            GlassFishUtils.setJvmOption(
-                    asLocation,
-                    GlassFishUtils.DEFAULT_DOMAIN,
-                    "-Dcom.sun.enterprise.server.ss.ASQuickStartup=false"); // NOI18N
-        } catch (IOException e) {
-            throw new InstallationException(
-                    getString("CL.install.error.add.jvm.option"), // NOI18N
-                    e);
-        } catch (XMLException e) {
-            throw new InstallationException(
-                    getString("CL.install.error.add.jvm.option"), // NOI18N
-                    e);
-        }
-        progress.addPercentage(DELTA_PROGRESS);
+        //try {
+        //    progress.setDetail(getString("CL.install.add.jvm.option")); // NOI18N
+        //    
+        //    GlassFishUtils.setJvmOption(
+        //            asLocation,
+        //            GlassFishUtils.DEFAULT_DOMAIN,
+        //            "-Dcom.sun.enterprise.server.ss.ASQuickStartup=false"); // NOI18N
+        //} catch (IOException e) {
+        //    throw new InstallationException(
+        //            getString("CL.install.error.add.jvm.option"), // NOI18N
+        //            e);
+        //} catch (XMLException e) {
+        //    throw new InstallationException(
+        //            getString("CL.install.error.add.jvm.option"), // NOI18N
+        //            e);
+        //}
+        //progress.addPercentage(DELTA_PROGRESS);
         
         // start the default domain /////////////////////////////////////////////////
-        try {
-            progress.setDetail(getString("CL.install.start.as")); // NOI18N
-            
-            GlassFishUtils.startDefaultDomain(asLocation);
-        } catch (IOException e) {
-            throw new InstallationException(
-                    getString("CL.install.error.start.as"), // NOI18N
-                    e);
-        }
-        progress.addPercentage(DELTA_PROGRESS);
+        //try {
+        //    progress.setDetail(getString("CL.install.start.as")); // NOI18N
+        //    
+        //    GlassFishUtils.startDefaultDomain(asLocation);
+        //} catch (IOException e) {
+        //    throw new InstallationException(
+        //            getString("CL.install.error.start.as"), // NOI18N
+        //            e);
+        //}
+        //progress.addPercentage(DELTA_PROGRESS);
         
         // stop the default domain //////////////////////////////////////////////////
-        try {
-            progress.setDetail(getString("CL.install.stop.as")); // NOI18N
-            
-            GlassFishUtils.stopDefaultDomain(asLocation);
-        } catch (IOException e) {
-            throw new InstallationException(
-                    getString("CL.install.error.stop.as"), // NOI18N
-                    e);
-        }
-        progress.addPercentage(DELTA_PROGRESS * 7);
+        //try {
+        //    progress.setDetail(getString("CL.install.stop.as")); // NOI18N
+        //    
+        //    GlassFishUtils.stopDefaultDomain(asLocation);
+        //} catch (IOException e) {
+        //    throw new InstallationException(
+        //            getString("CL.install.error.stop.as"), // NOI18N
+        //            e);
+        //}
+        //progress.addPercentage(DELTA_PROGRESS * 7);
         
         // remove the jvm option ///////////////////////////////////////////////////
-        try {
-            progress.setDetail(getString("CL.install.remove.jvm.option")); // NOI18N
-            
-            GlassFishUtils.removeJvmOption(
-                    asLocation,
-                    GlassFishUtils.DEFAULT_DOMAIN,
-                    "-Dcom.sun.enterprise.server.ss.ASQuickStartup=false"); // NOI18N
-        } catch (IOException e) {
-            throw new InstallationException(
-                    getString("CL.install.error.remove.jvm.option"), // NOI18N
-                    e);
-        } catch (XMLException e) {
-            throw new InstallationException(
-                    getString("CL.install.error.remove.jvm.option"), // NOI18N
-                    e);
-        }
+        //try {
+        //    progress.setDetail(getString("CL.install.remove.jvm.option")); // NOI18N
+        //    
+        //    GlassFishUtils.removeJvmOption(
+        //            asLocation,
+        //            GlassFishUtils.DEFAULT_DOMAIN,
+        //            "-Dcom.sun.enterprise.server.ss.ASQuickStartup=false"); // NOI18N
+        //} catch (IOException e) {
+        //    throw new InstallationException(
+        //            getString("CL.install.error.remove.jvm.option"), // NOI18N
+        //            e);
+        //} catch (XMLException e) {
+        //    throw new InstallationException(
+        //            getString("CL.install.error.remove.jvm.option"), // NOI18N
+        //            e);
+        //}
         
         /////////////////////////////////////////////////////////////////////////////
         progress.setPercentage(Progress.COMPLETE);
@@ -234,7 +229,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     public void uninstall(Progress progress) throws UninstallationException {
         // get the list of suitable glassfish installations
         final List<Dependency> dependencies =
-                getProduct().getDependencyByUid(GLASSFISH_UID);
+                getProduct().getDependencies(Requirement.class);
         final List<Product> sources =
                 Registry.getInstance().getProducts(dependencies.get(0));
         
@@ -295,6 +290,11 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         return RemovalMode.LIST;
     }
     
+    @Override
+    public Text getLicense() {
+       return null;
+    }     
+    
     // private //////////////////////////////////////////////////////////////////////
     private String getAMServerLinkName(final File asLocation) {
         final File file = new File(asLocation, AMSERVER_DIR_INSIDE_AS);
@@ -306,5 +306,5 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                 replace(File.separatorChar, '_');
         
         return "AMConfig" + "_" + result + "_";
-    }
+    }   
 }

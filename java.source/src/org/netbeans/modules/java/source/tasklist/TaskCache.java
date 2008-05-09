@@ -289,13 +289,13 @@ public class TaskCache {
                 
                 if (f.isFile()) {
                     if (f.getName().endsWith(ERR_EXT)) {
-                        String relative = cacheRootURI.relativize(f.toURI()).getPath();
+                        String relative = cacheRootURI.relativize(f.toURI()).getRawPath();
                         
                         relative = relative.replaceAll(ERR_EXT + "$", "java");
                         result.add(rootURI.resolve(relative).toURL());
                     }
                     if (!onlyErrors && f.getName().endsWith(WARN_EXT)) {
-                        String relative = cacheRootURI.relativize(f.toURI()).getPath();
+                        String relative = cacheRootURI.relativize(f.toURI()).getRawPath();
                         
                         relative = relative.replaceAll(WARN_EXT + "$", "java");
                         result.add(rootURI.resolve(relative).toURL());

@@ -38,6 +38,10 @@ public class SQLMapEntry {
 	public static final String TYPE_TAG = "type";
 
 	public static final String SQLMAP_TAG = "sql";
+	
+	public static final String DISPLAYNAME_TAG = "displayName";
+	public static final String PROCESSNAME_TAG = "processName";
+	public static final String FILEPATH_TAG = "filePath";
 
 	private String partnerLink;
 
@@ -53,10 +57,15 @@ public class SQLMapEntry {
 
 	private String roleName;
 
+	//added as a result of http://www.netbeans.org/issues/show_bug.cgi?id=129492
+	private String mDisplayName;
+	private String mProcessName;
+	private String mFilePath; 
+
 	public SQLMapEntry(String partnerLink, String portType, 
                        String operation, String sqlfileName,
                        String wsdlFileName,
-			String type) {
+			String type, String displayName, String processName, String filePath) {
 		super();
 		this.partnerLink = partnerLink;
 		this.portType = portType;
@@ -65,6 +74,11 @@ public class SQLMapEntry {
         this.wsdlfileName = wsdlFileName;
 		this.type = type;
 		this.roleName = wsdlFileName.substring(0, wsdlFileName.indexOf(".wsdl")) + "_myrole";
+
+		//added as a result of http://www.netbeans.org/issues/show_bug.cgi?id=129492
+		this.mDisplayName = displayName;
+		this.mProcessName = processName;
+		this.mFilePath = filePath; 
 	}
 
 	/**
@@ -116,5 +130,18 @@ public class SQLMapEntry {
 	public String getRoleName() {
 		return roleName;
 	}
+
+	//added as a result of http://www.netbeans.org/issues/show_bug.cgi?id=129492
+	public String getDisplayName() {
+		return mDisplayName;
+	}
+
+	public String getProcessName() {
+		return mProcessName;
+	}
+
+	public String getFilePath() {
+		return mFilePath;
+	} 
 
 }

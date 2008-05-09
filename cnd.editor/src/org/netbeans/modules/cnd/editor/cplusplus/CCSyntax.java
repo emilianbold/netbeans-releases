@@ -1386,6 +1386,8 @@ public class CCSyntax extends Syntax {
                 return (len == 2)
                        ? CCTokenContext.IF : null;
 	    case 'n':
+                if (len <= 2)
+                    return null;
 		switch (buffer[offset++]) {
 		case 't': // keyword "int"
 		    return (len == 3)

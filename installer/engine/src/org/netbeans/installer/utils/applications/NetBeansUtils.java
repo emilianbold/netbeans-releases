@@ -40,6 +40,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -53,17 +54,36 @@ import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.helper.FilesList;
+import org.netbeans.installer.wizard.components.panels.netbeans.NbWelcomePanel;
+import org.netbeans.installer.wizard.components.panels.netbeans.NbWelcomePanel.BundleType;
 
 /**
  *
  * @author Kirill Sorokin
+ * @author Dmitry Lipin
  */
 public class NetBeansUtils {
     /////////////////////////////////////////////////////////////////////////////////
     // Static
     public static void addCluster(File nbLocation, String clusterName) throws IOException {
-        File netbeansclusters = new File(nbLocation, NETBEANS_CLUSTERS);
-        
+        final File netbeansclusters = new File(nbLocation, NETBEANS_CLUSTERS);
+        final File clusterFile = new File(nbLocation, clusterName);
+        final File lastModified = new File(clusterFile, LAST_MODIFIED_MARKER);
+        // Workaround to Issue #129288 (http://www.netbeans.org/issues/show_bug.cgi?id=129288)
+        // Enabling clusters has no effect without removal userdir
+        // Touching of .lastModified file is done everytime when user requests to add the cluster - 
+        // even though it is already in the netbeans.clusters
+        if(FileUtils.exists(clusterFile)) {
+            if(!FileUtils.exists(lastModified)) {
+                try {
+                    lastModified.createNewFile();
+                } catch (IOException e) {
+                    LogManager.log(e);
+                }
+            } else {
+                lastModified.setLastModified(new Date().getTime());
+            }
+        }
         List<String> list = FileUtils.readStringList(netbeansclusters);
         for (String string: list) {
             if (string.equals(clusterName)) {
@@ -89,7 +109,7 @@ public class NetBeansUtils {
         
         File productid = new File(nbCluster, PRODUCT_ID);
         
-        return FileUtils.writeFile(productid, NB_IDE_ID);
+        return FileUtils.writeFile(productid, getNetBeansId());
     }
     
     public static FilesList addPackId(File nbLocation, String packId) throws IOException {
@@ -99,7 +119,7 @@ public class NetBeansUtils {
         
         final String id;
         if (!productid.exists()) {
-            id = NB_IDE_ID;
+            id = getNetBeansId();
         } else {
             id = FileUtils.readFile(productid).trim();
         }
@@ -136,7 +156,7 @@ public class NetBeansUtils {
         
         String id;
         if (!productid.exists()) {
-            id = NB_IDE_ID;
+            id = getNetBeansId();
         } else {
             id = FileUtils.readFile(productid).trim();
         }
@@ -589,7 +609,11 @@ public class NetBeansUtils {
             }
         }
     }
-    
+    private static String getNetBeansId() {
+        return BundleType.getType(
+                System.getProperty(NbWelcomePanel.WELCOME_PAGE_TYPE_PROPERTY)).
+                getNetBeansBundleId();
+    }
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
     private NetBeansUtils() {
@@ -628,6 +652,9 @@ public class NetBeansUtils {
     
     public static final String NETBEANS_OPTIONS_PATTERN =
             NETBEANS_OPTIONS + "\"(.*?)( ?)(-J{0}(?:{1}\\\\\\\"(.*?)\\\\\\\"|{1}(.*?)|())(?= |\"))( ?)(.*)?\"";
+
+    public static final String LAST_MODIFIED_MARKER =
+           ".lastModified";
     
     public static final String NB_IDE_ID =
             "NB"; // NOI18N

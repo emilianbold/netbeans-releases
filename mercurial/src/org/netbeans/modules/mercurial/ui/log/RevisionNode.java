@@ -57,6 +57,7 @@ import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.text.DateFormat;
 import java.util.*;
+import org.netbeans.modules.mercurial.ui.rollback.BackoutAction;
 
 /**
  * Visible in the Search History Diff view.
@@ -73,7 +74,7 @@ class RevisionNode extends AbstractNode {
     private RepositoryRevision.Event    event;
     private RepositoryRevision          container;
     private String                      path;
-
+    
     public RevisionNode(RepositoryRevision container, SearchHistoryPanel master) {
         super(new RevisionNodeChildren(container, master), Lookups.fixed(master, container));
         this.container = container;
@@ -113,12 +114,11 @@ class RevisionNode extends AbstractNode {
         // TODO: reuse action code from SummaryView
         if (event == null) {
             return new Action [] {
-                SystemAction.get(RevertModificationsAction.class)
+                SystemAction.get(BackoutAction.class)
             };
         } else {
             return new Action [] {
-                new RollbackAction(),
-                SystemAction.get(RevertModificationsAction.class)
+                new RollbackToAction()
             };
         }
     }
@@ -207,33 +207,42 @@ class RevisionNode extends AbstractNode {
         }
     }
 
-    private class RollbackAction extends AbstractAction {
+    private class RollbackToAction extends AbstractAction {
 
-        public RollbackAction() {
+        public RollbackToAction() {
             putValue(Action.NAME, NbBundle.getMessage(RevisionNode.class, "CTL_Action_RollbackTo", // NOI18N
                     event.getLogInfoHeader().getLog().getRevision()));
         }
 
         public void actionPerformed(ActionEvent e) {
-            SummaryView.rollback(event);
+            SummaryView.revertModifications(event);
         }
     }
 
-    private static class RevertModificationsAction extends NodeAction {
+    private static class BackoutAction extends NodeAction {
 
         protected void performAction(Node[] activatedNodes) {
-            Set<RepositoryRevision.Event> events = new HashSet<RepositoryRevision.Event>();
-            Set<RepositoryRevision> revisions = new HashSet<RepositoryRevision>();
+            RepositoryRevision.Event event = null;
+            RepositoryRevision repoRev = null;
             for (Node n : activatedNodes) {
                 RevisionNode node = (RevisionNode) n;
                 if (node.event != null) {
-                    events.add(node.event);
+                    event = node.event;
+                    break;
                 } else {
-                    revisions.add(node.container);
+                    repoRev = node.container;
+                    break;
                 }
             }
-            SearchHistoryPanel master = (SearchHistoryPanel) activatedNodes[0].getLookup().lookup(SearchHistoryPanel.class);
-            SummaryView.revert(master, revisions.toArray(new RepositoryRevision[revisions.size()]), events.toArray(new RepositoryRevision.Event[events.size()]));
+            if(repoRev == null && event == null) return;
+            if(repoRev != null){
+                if(repoRev.getEvents() != null){
+                    event =  repoRev.getEvents().get(0);
+                }else if(event == null){
+                    return;
+                }
+            }
+            SummaryView.backout(event);
         }
 
         protected boolean enable(Node[] activatedNodes) {
@@ -245,7 +254,7 @@ class RevisionNode extends AbstractNode {
         }
 
         public HelpCtx getHelpCtx() {
-            return new HelpCtx(RevertModificationsAction.class);
+            return new HelpCtx(BackoutAction.class);
         }
     }
     

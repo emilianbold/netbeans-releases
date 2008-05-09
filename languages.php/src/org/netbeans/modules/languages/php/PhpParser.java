@@ -46,20 +46,20 @@ import java.util.Set;
 
 import javax.swing.text.Document;
 
-import org.netbeans.api.gsf.CompilationInfo;
-import org.netbeans.api.gsf.Element;
-import org.netbeans.api.gsf.ElementHandle;
-import org.netbeans.api.gsf.ElementKind;
-import org.netbeans.api.gsf.Modifier;
-import org.netbeans.api.gsf.OccurrencesFinder;
-import org.netbeans.api.gsf.ParseEvent;
-import org.netbeans.api.gsf.ParseListener;
-import org.netbeans.api.gsf.Parser;
-import org.netbeans.api.gsf.ParserFile;
-import org.netbeans.api.gsf.ParserResult;
-import org.netbeans.api.gsf.PositionManager;
-import org.netbeans.api.gsf.SemanticAnalyzer;
-import org.netbeans.api.gsf.SourceFileReader;
+import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.Element;
+import org.netbeans.modules.gsf.api.ElementHandle;
+import org.netbeans.modules.gsf.api.ElementKind;
+import org.netbeans.modules.gsf.api.Modifier;
+import org.netbeans.modules.gsf.api.OccurrencesFinder;
+import org.netbeans.modules.gsf.api.ParseEvent;
+import org.netbeans.modules.gsf.api.ParseListener;
+import org.netbeans.modules.gsf.api.Parser;
+import org.netbeans.modules.gsf.api.ParserFile;
+import org.netbeans.modules.gsf.api.ParserResult;
+import org.netbeans.modules.gsf.api.PositionManager;
+import org.netbeans.modules.gsf.api.SemanticAnalyzer;
+import org.netbeans.modules.gsf.api.SourceFileReader;
 import org.netbeans.modules.php.model.ModelAccess;
 import org.netbeans.modules.php.model.PhpModel;
 import org.netbeans.modules.php.model.SourceElement;
@@ -76,7 +76,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 public class PhpParser implements Parser {
     
     /* (non-Javadoc)
-     * @see org.netbeans.api.gsf.Parser#createHandle(org.netbeans.api.gsf.CompilationInfo, org.netbeans.api.gsf.Element)
+     * @see org.netbeans.modules.gsf.api.Parser#createHandle(org.netbeans.modules.gsf.api.CompilationInfo, org.netbeans.modules.gsf.api.Element)
      */
     public <T extends Element> ElementHandle<T> createHandle(
             CompilationInfo info, T element )
@@ -85,7 +85,7 @@ public class PhpParser implements Parser {
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.api.gsf.Parser#getMarkOccurrencesTask(int)
+     * @see org.netbeans.modules.gsf.api.Parser#getMarkOccurrencesTask(int)
      */
     public OccurrencesFinder getMarkOccurrencesTask( int caretPosition ) {
         // TODO Auto-generated method stub
@@ -93,7 +93,7 @@ public class PhpParser implements Parser {
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.api.gsf.Parser#getPositionManager()
+     * @see org.netbeans.modules.gsf.api.Parser#getPositionManager()
      */
     public PositionManager getPositionManager() {
         // TODO Auto-generated method stub
@@ -101,7 +101,7 @@ public class PhpParser implements Parser {
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.api.gsf.Parser#getSemanticAnalysisTask()
+     * @see org.netbeans.modules.gsf.api.Parser#getSemanticAnalysisTask()
      */
     public SemanticAnalyzer getSemanticAnalysisTask() {
         // TODO Auto-generated method stub
@@ -109,7 +109,7 @@ public class PhpParser implements Parser {
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.api.gsf.Parser#parseFiles(java.util.List, org.netbeans.api.gsf.ParseListener, org.netbeans.api.gsf.SourceFileReader)
+     * @see org.netbeans.modules.gsf.api.Parser#parseFiles(java.util.List, org.netbeans.modules.gsf.api.ParseListener, org.netbeans.modules.gsf.api.SourceFileReader)
      */
     public void parseFiles( List<ParserFile> files, ParseListener listener,
             SourceFileReader reader )
@@ -157,7 +157,7 @@ public class PhpParser implements Parser {
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.api.gsf.Parser#resolveHandle(org.netbeans.api.gsf.CompilationInfo, org.netbeans.api.gsf.ElementHandle)
+     * @see org.netbeans.modules.gsf.api.Parser#resolveHandle(org.netbeans.modules.gsf.api.CompilationInfo, org.netbeans.modules.gsf.api.ElementHandle)
      */
     public <T extends Element> T resolveHandle( CompilationInfo info,
             ElementHandle<T> handle )
@@ -192,7 +192,7 @@ public class PhpParser implements Parser {
 
     /**
      * A wrapper for the {@link org.netbeans.modules.php.model.SourceElement} 
-     * that implements the {@link org.netbeans.api.gsf.Element} interface.
+     * that implements the {@link org.netbeans.modules.gsf.api.Element} interface.
      * 
      * @todo move this class into appropriated package as top-level class,
      * e.g. org.netbeans.modules.php.model.PhpElement.

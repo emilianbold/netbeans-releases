@@ -55,10 +55,9 @@ import org.netbeans.modules.websvc.rest.codegen.GenericResourceGenerator;
 import org.netbeans.modules.websvc.rest.codegen.model.GenericResourceBean;
 import org.netbeans.modules.websvc.rest.wizard.PatternResourcesSetupPanel.Pattern;
 import org.netbeans.spi.project.ui.templates.support.Templates;
-import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.TemplateWizard;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -92,7 +91,7 @@ public class PatternResourcesIterator implements WizardDescriptor.InstantiatingI
                             result.addAll(new GenericResourceGenerator(targetFolder, bean).generate(pHandle));
                         }
                     } catch(Exception iox) {
-                        ErrorManager.getDefault().notify(iox);
+                        Exceptions.printStackTrace(iox);
                     } finally {
                         pHandle.finish();
                         dialog.close();
@@ -102,7 +101,7 @@ public class PatternResourcesIterator implements WizardDescriptor.InstantiatingI
             generatorTask.schedule(50);
             dialog.open();
         } catch (Exception ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            Exceptions.printStackTrace(ex);
         }
         return result;
     }

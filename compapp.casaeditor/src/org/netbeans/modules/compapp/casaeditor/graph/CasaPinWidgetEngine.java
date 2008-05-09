@@ -45,8 +45,8 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Image;
 import java.awt.Rectangle;
+import javax.swing.border.LineBorder;
 import org.netbeans.api.visual.anchor.Anchor;
-import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.widget.ImageWidget;
 import org.netbeans.api.visual.widget.LabelWidget;
@@ -62,22 +62,19 @@ import org.openide.util.NbBundle;
 public class CasaPinWidgetEngine extends CasaPinWidget implements CasaMinimizable {
     
     private static final int LABEL_MAX_CHAR = 48;
-    private static final int VERTICAL_GAP = 3;
+//    private static final int VERTICAL_GAP = 3;
+    
     private LabelWidget mNameWidget;
-    private Image mCurrentOriginalImage;
-    private Image mCurrentDisplayedImage;
-    private ImageWidget mCurrentImageWidget;
     private ImageWidget mEmptyWidget;
+    private Image mCurrentImage;
     
+    private static final boolean DEBUG = false;
     
-    public CasaPinWidgetEngine(Scene scene, Image image) {
-        super(scene);
+    public CasaPinWidgetEngine(Scene scene, Image pinImage, Image classicPinImage) {
+        super(scene, pinImage, classicPinImage);
         
-        mCurrentOriginalImage = image;
-        mCurrentDisplayedImage = image;
-        
-        mImageWidget.setImage(image);
-        
+        mCurrentImage = getPinImage();
+                
         mEmptyWidget = new ImageWidget(scene);
         mEmptyWidget.setPreferredBounds(mImageWidget.getPreferredBounds());
                 
@@ -98,19 +95,20 @@ public class CasaPinWidgetEngine extends CasaPinWidget implements CasaMinimizabl
                 addChild(mImageWidget);
                 break;
         }
+        
+        if (DEBUG) {
+            setBorder(new LineBorder(Color.blue));
+            mImageWidget.setBorder(new LineBorder(Color.red));
+            mEmptyWidget.setBorder(new LineBorder(Color.green));
+            mNameWidget.setBorder(new LineBorder(Color.red));            
+        }
     }
-    
+        
+    @Override
     protected void setSelected(boolean isSelected) {
-        if (isSelected) {
-            mCurrentDisplayedImage = createSelectedPinImage(mCurrentOriginalImage);
-        } else {
-            mCurrentDisplayedImage = mCurrentOriginalImage;
-        }
-        if (mImageWidget.getImage() != null) {
-            // If the image is supposed to be displayed, show it in whatever
-            // selection state we currently have.
-            mImageWidget.setImage(mCurrentDisplayedImage);
-        }
+        super.setSelected(isSelected);
+        
+        mCurrentImage = mImageWidget.getImage();
     }
     
     protected void setPinName(String name) {
@@ -131,6 +129,7 @@ public class CasaPinWidgetEngine extends CasaPinWidget implements CasaMinimizabl
         return Directions.LEFT;
     }
     
+    @Override
     public Anchor getAnchor() {
         return RegionUtilities.createFixedDirectionalAnchor(this, getDirection(), 0);
     }
@@ -152,11 +151,7 @@ public class CasaPinWidgetEngine extends CasaPinWidget implements CasaMinimizabl
         mNameWidget.setPreferredBounds(rect);
         mImageWidget.setPreferredBounds(rect);
         setPreferredBounds(rect);
-        
-        if (isMinimized) {
-            mImageWidget.setImage(null);
-        } else {
-            mImageWidget.setImage(mCurrentDisplayedImage);
-        }
+                
+        mImageWidget.setImage(isMinimized ? null : mCurrentImage);
     }
 }

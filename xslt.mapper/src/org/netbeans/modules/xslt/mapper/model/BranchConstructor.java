@@ -26,6 +26,8 @@ import org.netbeans.modules.xml.axi.AXIComponent;
 import org.netbeans.modules.xml.axi.AXIType;
 import org.netbeans.modules.xml.axi.AbstractAttribute;
 import org.netbeans.modules.xml.axi.AbstractElement;
+import org.netbeans.modules.xml.axi.Attribute;
+import org.netbeans.modules.xml.axi.Element;
 import org.netbeans.modules.xslt.mapper.model.nodes.TreeNode;
 import org.netbeans.modules.xslt.mapper.model.targettree.AXIUtils;
 import org.netbeans.modules.xslt.mapper.model.targettree.SchemaNode;
@@ -38,6 +40,7 @@ import org.netbeans.modules.xslt.model.SequenceConstructor;
 import org.netbeans.modules.xslt.model.SequenceElement;
 import org.netbeans.modules.xslt.model.XslComponent;
 import org.netbeans.modules.xslt.model.XslModel;
+
 /**
  * Constructs missing XSLT components which are required to
  * the specified SchemaNode be presented in the XSLT document.
@@ -46,14 +49,12 @@ import org.netbeans.modules.xslt.model.XslModel;
  */
 
 public class BranchConstructor {
-    
-    
-    
     private boolean transactionStarted = false;
     private boolean exitTranactionOnFinish = true;
     private SchemaNode startFromNode;
     private XsltMapper mapper;
     private XslModel myModel;
+    
     public BranchConstructor(SchemaNode node, XsltMapper mapper) {
         startFromNode = node;
         this.mapper = mapper;
@@ -104,7 +105,9 @@ public class BranchConstructor {
         //
         return result;
     }
-    public static XslComponent createXslElementOrAttribute(XslComponent parent, AXIComponent type, XsltMapper mapper){
+    
+    public static XslComponent createXslElementOrAttribute(XslComponent parent, 
+        AXIComponent type, XsltMapper mapper) {
         assert (parent instanceof SequenceConstructor);
         XslModel model = parent.getModel();
         XslComponent nameHolder = null;
@@ -162,22 +165,44 @@ public class BranchConstructor {
         }
         return nameHolder;
     }
-    
-    
-    
-    private static  int calculateNodeIndex(XslComponent parent_xsl, AXIComponent type, XsltMapper mapper) {
-        List<XslComponent> xsl_children = parent_xsl.getChildren();
+
+    public static boolean containsXslElementOrAttribute(XslComponent parent, 
+        AXIComponent checkedChildType, XsltMapper mapper) {
+        AXIComponent parent_type = AXIUtils.getType(parent, mapper);
+        List<AXIComponent> axi_child_types = AXIUtils.getChildTypes(parent_type);
+        int child_typeIndex = axi_child_types.indexOf(checkedChildType);
+        if (child_typeIndex == -1) return false;
         
+        List<XslComponent> xsl_children = parent.getChildren();
+        for (int i = 0; i < xsl_children.size(); i++){
+            AXIComponent childType = AXIUtils.getType(xsl_children.get(i), mapper);
+            String checkedChildName = null, childName = null;
+            if ((checkedChildType instanceof Element) && (childType instanceof Element)) {
+                checkedChildName = ((Element) checkedChildType).getName();
+                childName = ((Element) childType).getName();
+            }
+            if ((checkedChildType instanceof Attribute) && (childType instanceof Attribute)) {
+                checkedChildName = ((Attribute) checkedChildType).getName();
+                childName = ((Attribute) childType).getName();
+            }
+            if ((checkedChildName != null) && (childName != null) && 
+                (checkedChildName.equals(childName))) {
+                return true;
+            }
+        }
+        return false;
+    }
+        
+    private static int calculateNodeIndex(XslComponent parent_xsl, 
+        AXIComponent type, XsltMapper mapper) {
         AXIComponent parent_type = AXIUtils.getType(parent_xsl, mapper);
-        
         List<AXIComponent> axi_children = AXIUtils.getChildTypes(parent_type);
-        
         int type_index = axi_children.indexOf(type);
         if (type_index == -1){
             return 0;
         }
-        
-        for (int n = 0; n < xsl_children.size(); n++){
+        List<XslComponent> xsl_children = parent_xsl.getChildren();
+        for (int n = 0; n < xsl_children.size(); n++) {
             AXIComponent child_type = AXIUtils.getType(xsl_children.get(n), mapper);
             int comp_index = axi_children.indexOf(child_type);
             if (comp_index > type_index){
@@ -185,8 +210,5 @@ public class BranchConstructor {
             }
         }
         return xsl_children.size();
-        
-        
     }
 }
-

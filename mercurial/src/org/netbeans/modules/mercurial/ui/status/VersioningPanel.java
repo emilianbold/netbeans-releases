@@ -367,7 +367,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
      * Performs the "cvs update" command on all diplayed roots. // NOI18N
      */
     private void onUpdateAction() {
-        UpdateAction.update(context, null);
+        UpdateAction.update(context);
         parentTopComponent.contentRefreshed();
     }
     
@@ -706,8 +706,6 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/mercurial/ui/status/Bundle"); // NOI18N
         statusLabel.setText(bundle.getString("CTL_Versioning_Status_Table_Title")); // NOI18N
         statusLabel.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        statusLabel.setMaximumSize(new java.awt.Dimension(120, 17));
-        statusLabel.setMinimumSize(new java.awt.Dimension(120, 17));
         jPanel2.add(statusLabel);
         statusLabel.getAccessibleContext().setAccessibleName(bundle.getString("CTL_Versioning_Status_Table_Title")); // NOI18N
 
@@ -721,8 +719,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
 
         btnRefresh.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/mercurial/resources/icons/refresh.png"))); // NOI18N
         btnRefresh.setToolTipText(org.openide.util.NbBundle.getMessage(VersioningPanel.class, "CTL_Synchronize_Action_Refresh_Tooltip")); // NOI18N
-        btnRefresh.setMaximumSize(new java.awt.Dimension(28, 28));
-        btnRefresh.setMinimumSize(new java.awt.Dimension(28, 28));
+        btnRefresh.setFocusable(false);
         btnRefresh.setPreferredSize(new java.awt.Dimension(22, 25));
         btnRefresh.addActionListener(this);
         jPanel2.add(btnRefresh);

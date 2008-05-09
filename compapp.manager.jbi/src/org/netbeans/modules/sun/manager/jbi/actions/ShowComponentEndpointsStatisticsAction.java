@@ -40,100 +40,59 @@
  */
 package org.netbeans.modules.sun.manager.jbi.actions;
 
-import com.sun.esb.management.api.administration.AdministrationService;
 import com.sun.esb.management.common.ManagementRemoteException;
-import com.sun.esb.management.common.data.IEndpointStatisticsData;
-import java.util.Date;
 import org.netbeans.modules.sun.manager.jbi.management.AppserverJBIMgmtController;
-import org.netbeans.modules.sun.manager.jbi.management.wrapper.api.PerformanceMeasurementServiceWrapper;
 import org.netbeans.modules.sun.manager.jbi.nodes.JBIComponentNode;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
-import org.openide.windows.IOProvider;
-import org.openide.windows.InputOutput;
-import org.openide.windows.OutputWriter;
 
 /**
- * Action to show endpoint statistics of a SE/BC.
+ * Action to show endpoint statistics of a service engine or binding component.
  * 
  * @author jqian
  */
 public class ShowComponentEndpointsStatisticsAction extends NodeAction {
-    
+
     protected void performAction(Node[] activatedNodes) {
-       
-        for (Node node : activatedNodes) {
+
+        if (activatedNodes != null && activatedNodes.length == 1) {
+
             JBIComponentNode componentNode =
-                    node.getLookup().lookup(JBIComponentNode.class);
-            String compName = node.getName();
-            
-            InputOutput io = IOProvider.getDefault().getIO("Endpoint Statistics", false);
-            io.select();
-            OutputWriter writer = io.getOut();
-            
-            writer.println("==================================================");
-            writer.println("Endpoint Statistics for " + compName + "  (" + new Date() + ")");
-            writer.println();
+                    activatedNodes[0].getLookup().lookup(JBIComponentNode.class);
+            String compName = activatedNodes[0].getName();
+
+            AppserverJBIMgmtController controller =
+                    componentNode.getAppserverJBIMgmtController();
             
             try {
-                AppserverJBIMgmtController controller = 
-                        componentNode.getAppserverJBIMgmtController();
-                AdministrationService adminService = 
-                        controller.getAdministrationService();
-                PerformanceMeasurementServiceWrapper perfService = 
-                        controller.getPerformanceMeasurementServiceWrapper();
-                
-                writer.println(" * Provisioning Endpoints:");
-                String[] pEndpoints = 
-                        adminService.getProvisioningEndpoints(compName, 
-                        AppserverJBIMgmtController.SERVER_TARGET);
-                for (String pEndpoint : pEndpoints) {
-                    if (pEndpoint.endsWith(",Provider")) {
-                        pEndpoint = pEndpoint.substring(0, pEndpoint.length() - 9);
-                    }
-                    IEndpointStatisticsData statistics = 
-                            perfService.getEndpointStatistics(pEndpoint, 
-                            AppserverJBIMgmtController.SERVER_TARGET);
-                    writer.println("   " + pEndpoint);
-                    writer.println(statistics.getDisplayString());                   
-                }
-                
-                writer.println(" * Consuming Endpoints:");
-                String[] cEndpoints = 
-                        adminService.getConsumingEndpoints(compName, 
-                        AppserverJBIMgmtController.SERVER_TARGET);
-                for (String cEndpoint : cEndpoints) {
-                    if (cEndpoint.endsWith(",Consumer")) {
-                        cEndpoint = cEndpoint.substring(0, cEndpoint.length() - 9);
-                    }
-                    IEndpointStatisticsData statistics = 
-                            perfService.getEndpointStatistics(cEndpoint, 
-                            AppserverJBIMgmtController.SERVER_TARGET);
-                    writer.println("   " + cEndpoint);
-                    writer.println(statistics.getDisplayString());
-                }
-                writer.println();
+                ComponentEndpointsStatisticsDialog dialog =
+                        new ComponentEndpointsStatisticsDialog(controller, compName);
+                dialog.pack();
+                dialog.setLocationRelativeTo(null);
+                dialog.setVisible(true);
             } catch (ManagementRemoteException e) {
                 System.err.println(e.getMessage());
             }
         }
     }
-        
+
     protected boolean enable(Node[] activatedNodes) {
-        return true;
+        return activatedNodes != null && activatedNodes.length == 1;
     }
-         
+
     @Override
     protected boolean asynchronous() {
         return false;
     }
-    
+
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
-    
+
     public String getName() {
-        return "Show Endpoint Statistics"; //NbBundle.getMessage(RefreshAction.class, "LBL_RefreshAction"); // NOI18N
-    }    
+        return NbBundle.getMessage(ShowComponentEndpointsStatisticsAction.class, 
+                "LBL_ShowEndpointStatisticsAction"); // NOI18N
+    }
 }

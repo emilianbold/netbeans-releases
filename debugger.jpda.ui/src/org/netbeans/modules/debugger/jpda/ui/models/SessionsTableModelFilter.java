@@ -121,7 +121,7 @@ PropertyChangeListener {
         if (e == null) {
             return false;
         }
-        JPDADebugger d = (JPDADebugger) e.lookupFirst(null, JPDADebugger.class);
+        JPDADebugger d = e.lookupFirst(null, JPDADebugger.class);
         return d != null;
     }
     
@@ -129,7 +129,7 @@ PropertyChangeListener {
         DebuggerEngine e = s.getCurrentEngine ();
         if (e == null)
             return loc ("MSG_Session_State_Starting");
-        JPDADebugger d = (JPDADebugger) e.lookupFirst (null, JPDADebugger.class);
+        JPDADebugger d = e.lookupFirst(null, JPDADebugger.class);
         synchronized (this) {
             if (!addedAsListener) {
                 d.addPropertyChangeListener (JPDADebugger.PROP_STATE, this);

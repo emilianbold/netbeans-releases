@@ -44,7 +44,6 @@ import javax.swing.event.MenuListener;
 
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.mashup.tables.wizard.MashupTableWizardIterator;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.util.Utilities;
@@ -58,11 +57,11 @@ import org.openide.util.actions.SystemAction;
 public class NewFFDBAction extends AbstractAction implements Presenter.Menu {
 
     private JMenuItem menuPresenter = null;
-    private static transient final Logger mLogger = LogUtil.getLogger(NewFFDBAction.class.getName());
+    private static transient final Logger mLogger = Logger.getLogger(NewFFDBAction.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
-    public static String nbBundle1 = mLoc.t("PRSR001: Mashup Database");
+    public static String nbBundle1 = mLoc.t("BUND256: Mashup Database");
     public NewFFDBAction() {
-        super(Localizer.parse(nbBundle1));
+        super(nbBundle1.substring(15));
     }
 
     public void actionPerformed(java.awt.event.ActionEvent e) {

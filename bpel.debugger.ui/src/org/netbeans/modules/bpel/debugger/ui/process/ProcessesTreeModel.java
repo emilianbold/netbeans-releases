@@ -32,6 +32,7 @@ import org.netbeans.modules.bpel.debugger.api.Fault;
 import org.netbeans.modules.bpel.debugger.api.ProcessInstance;
 import org.netbeans.modules.bpel.debugger.api.ProcessInstancesModel;
 import org.netbeans.modules.bpel.debugger.api.WaitingCorrelatedMessage;
+import org.netbeans.modules.bpel.debugger.api.variables.Variable;
 import org.netbeans.modules.bpel.debugger.ui.util.VariablesUtil;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.viewmodel.ModelEvent;
@@ -72,8 +73,7 @@ public class ProcessesTreeModel implements TreeModel {
     public ProcessesTreeModel(
             final ContextProvider lookupProvider) {
         
-        myDebugger = (BpelDebugger)
-                lookupProvider.lookupFirst(null, BpelDebugger.class);
+        myDebugger = lookupProvider.lookupFirst(null, BpelDebugger.class);
         myVariablesUtil = new VariablesUtil(myDebugger);
     }
     
@@ -150,10 +150,16 @@ public class ProcessesTreeModel implements TreeModel {
         }
         
         if (object instanceof Fault) {
-            return filter(
-                    myVariablesUtil.getChildren(((Fault) object).getVariable()),
-                    from, 
-                    to);
+            final Variable variable = ((Fault) object).getVariable();
+            
+            if (variable != null) {
+                return filter(
+                        myVariablesUtil.getChildren(variable),
+                        from, 
+                        to);
+            } else {
+                return new Object[0];
+            }
         }
         
         return filter(myVariablesUtil.getChildren(object), from, to);
@@ -215,8 +221,13 @@ public class ProcessesTreeModel implements TreeModel {
         }
         
         if (object instanceof Fault) {
-            return myVariablesUtil.getChildren(
-                    ((Fault) object).getVariable()).length;
+            final Variable variable = ((Fault) object).getVariable();
+            
+            if (variable != null) {
+                return myVariablesUtil.getChildren(variable).length;
+            } else {
+                return 0;
+            }
         }
         
         return myVariablesUtil.getChildren(object).length;

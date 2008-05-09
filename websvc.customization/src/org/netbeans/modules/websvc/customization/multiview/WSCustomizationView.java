@@ -104,8 +104,10 @@ public class WSCustomizationView extends SectionView{
         
         //create Definitions node
         Node definitionsNode = new DefinitionsNode(this, primaryDefinitions);
-        
-        addSection(new SectionPanel(this, definitionsNode, primaryDefinitions), false); //NOI18N
+        SectionPanel definitionsPanel = new SectionPanel(this, definitionsNode, primaryDefinitions);
+        definitionsPanel.setTitle(NbBundle.getMessage(WSCustomizationView.class,
+                "TITLE_GLOBAL_CUSTOMIZATION_MNEM"));
+        addSection(definitionsPanel, false); //NOI18N
         
         //add the port types section
         Children portTypeChildren = new Children.Array();
@@ -123,7 +125,7 @@ public class WSCustomizationView extends SectionView{
         SectionContainer portTypesCont =
                 new SectionContainer(this,portTypeNodeContainer,
                 NbBundle.getMessage(WSCustomizationView.class,
-                "TITLE_PORTTYPES"));
+                "TITLE_PORTTYPES_MNEM"));
         // creating section panels for PortTypes
         SectionPanel[] portTypePanels = new SectionPanel[portTypesList.size()];
         i = 0;
@@ -150,7 +152,7 @@ public class WSCustomizationView extends SectionView{
         SectionContainer operationCont =
                 new SectionContainer(this,operationNodeContainer,
                 NbBundle.getMessage(WSCustomizationView.class,
-                "TITLE_PORTTYPE_OPERATIONS"));
+                "TITLE_PORTTYPE_OPERATIONS_MNEM"));
         // creatings section panels for PortType Operations
         SectionPanel[] operationPanels = new SectionPanel[portTypeOperationsList.size()];
         i = 0;
@@ -177,7 +179,7 @@ public class WSCustomizationView extends SectionView{
         SectionContainer faultCont =
                 new SectionContainer(this,faultNodeContainer,
                 NbBundle.getMessage(WSCustomizationView.class,
-                "TITLE_PORTTYPE_FAULTS"));
+                "TITLE_PORTTYPE_FAULTS_MNEM"));
         // creatings section panels for PortType Operation faults
         SectionPanel[] faultPanels = new SectionPanel[portTypeOperationFaultsList.size()];
         i = 0;
@@ -204,7 +206,7 @@ public class WSCustomizationView extends SectionView{
         SectionContainer bindingCont =
                 new SectionContainer(this,bindingNodeContainer,
                 NbBundle.getMessage(WSCustomizationView.class,
-                "TITLE_BINDINGS"));
+                "TITLE_BINDINGS_MNEM"));
         // creatings section panels for Bindings
         SectionPanel[] bindingPanels = new SectionPanel[bindingsList.size()];
         i = 0;
@@ -231,7 +233,7 @@ public class WSCustomizationView extends SectionView{
         SectionContainer bindingOpCont =
                 new SectionContainer(this,bindingOpNodeContainer,
                 NbBundle.getMessage(WSCustomizationView.class,
-                "TITLE_BINDING_OPERATIONS"));
+                "TITLE_BINDING_OPERATIONS_MNEM"));
         // creating section panels for Binding Operations
         SectionPanel[] bindingOpPanels = new SectionPanel[bindingOperationsList.size()];
         i = 0;
@@ -257,7 +259,7 @@ public class WSCustomizationView extends SectionView{
         SectionContainer servicesCont =
                 new SectionContainer(this,serviceNodeContainer,
                 NbBundle.getMessage(WSCustomizationView.class,
-                "TITLE_SERVICES"));
+                "TITLE_SERVICES_MNEM"));
         // creating section panels for Services
         SectionPanel[] servicePanels = new SectionPanel[servicesList.size()];
         i = 0;
@@ -283,7 +285,7 @@ public class WSCustomizationView extends SectionView{
         SectionContainer portCont =
                 new SectionContainer(this,portNodeContainer,
                 NbBundle.getMessage(WSCustomizationView.class,
-                "TITLE_PORTS"));
+                "TITLE_PORTS_MNEM"));
         // creating section panels for Ports
         SectionPanel[] portPanels = new SectionPanel[portsList.size()];
         i = 0;
@@ -297,7 +299,10 @@ public class WSCustomizationView extends SectionView{
         ExternalBindingNode externalBindingNode = new ExternalBindingNode(Children.LEAF);
         externalBindingNode.setDisplayName(NbBundle.getMessage(WSCustomizationView.class,
                 "TITLE_EXTERNAL_BINDING_FILES"));
-        addSection(new SectionPanel(this, externalBindingNode, new BindingKey()), false);
+        SectionPanel externalBindingPanel = new SectionPanel(this, externalBindingNode, new BindingKey());
+        externalBindingPanel.setTitle(NbBundle.getMessage(WSCustomizationView.class,
+                "TITLE_EXTERNAL_BINDING_FILES_MNEM"));
+        addSection(externalBindingPanel, false);
         rootChildren.add(new Node[] {definitionsNode, portTypeNodeContainer,
         operationNodeContainer, faultNodeContainer,
         bindingNodeContainer, bindingOpNodeContainer,

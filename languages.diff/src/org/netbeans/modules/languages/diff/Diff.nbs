@@ -23,7 +23,7 @@ TOKEN:index:( "Index:" [^ "\n" "\r"]* ["\n" "\r"]+ )
 TOKEN:header:( "===" [^ "\n" "\r"]* ["\n" "\r"]+ )
 TOKEN:header:( "---" [^ "\n" "\r"]* ["\n" "\r"]+ )
 TOKEN:header:( "+++" [^ "\n" "\r"]* ["\n" "\r"]+ )
-TOKEN:header:( "diff" [^ "\n" "\r"]* ["\n" "\r"]+ )
+TOKEN:diff:( "diff" [^ "\n" "\r"]* ["\n" "\r"]+ )
 TOKEN:header:( "retrieving" [^ "\n" "\r"]* ["\n" "\r"]+ )
 TOKEN:header:( "@@" [^ "\n" "\r"]* ["\n" "\r"]+ )
 TOKEN:header:( "RCS file:" [^ "\n" "\r"]* ["\n" "\r"]+ )
@@ -58,8 +58,10 @@ COLOR:filename: {
 
 S = (<plain>)* file*;
 file = name body;
+file = <diff> body2;
 name = <index>;
-body = (<plain> | <added> | <removed> | <header>)*;
+body = (<plain> | <added> | <removed> | <header> | <diff>)*;
+body2 = (<plain> | <added> | <removed> | <header>)*;
 
 FOLD:body 
 

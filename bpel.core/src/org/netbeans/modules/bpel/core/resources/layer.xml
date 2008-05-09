@@ -12,9 +12,9 @@
   http://www.netbeans.org/cddl-gplv2.html
   or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
   specific language governing permissions and limitations under the
-  License.  When distributing the software, include this License Header
+  License. When distributing the software, include this License Header
   Notice in each file and include the License file at
-  nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+  nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
   particular file as subject to the "Classpath" exception as provided
   by Sun in the GPL Version 2 section of the License file that
   accompanied this code. If applicable, add the following below the
@@ -41,12 +41,6 @@
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
 <filesystem>
-    <folder name="Editors">
-        <folder name="AnnotationTypes">
-            <file name="bpel-validation-annotation.xml" url="bpel-validation-annotation.xml"/>
-        </folder>
-    </folder>    
-
     <folder name="Templates">
         <folder name="SOA_BPEL">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.bpel.core.wizard.Bundle"/>
@@ -74,7 +68,7 @@
     </folder>
 
     <folder name="Services">
-        <!-- Recognize text/x-bpel+xml: -->
+        <!-- Recognize text/x-bpel+xml -->
         <folder name="MIMEResolver">
             <file name="org-netbeans-modules-bpel-core-mime-resolver.xml" url="mime-resolver.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.bpel.core.resources.Bundle"/>
@@ -100,61 +94,72 @@
         <folder name="text">
             <folder name="x-bpel+xml">
                 <folder name="Actions">
-                    <file name="org-openide-actions-OpenAction.instance">
-                        <attr name="position" intvalue="400"/>
+                    <file name="org-openide-actions-EditAction.instance_hidden"/>
+                    <file name="org-netbeans-modules-bpel-editors-multiview-BpelDesignViewOpenAction.instance">
+                        <attr name="position" intvalue="100"/>
+                    </file>                 
+                    <file name="org-netbeans-modules-bpel-editors-multiview-BpelSourceViewOpenAction.instance">
+                        <attr name="position" intvalue="150"/>
                     </file>
-                    <file name="org-openide-actions-FileSystemAction.instance">
-                        <attr name="position" intvalue="500"/>
-                    </file>
+                    <!--file name="org-openide-actions-OpenAction.instance">
+                        <attr name="position" intvalue="100"/>
+                    </file-->
                     <file name="sep-1.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="600"/>
-                    </file>
-                    <file name="org-openide-actions-CutAction.instance">
-                        <attr name="position" intvalue="700"/>
-                    </file>
-                    <file name="org-openide-actions-CopyAction.instance">
-                        <attr name="position" intvalue="800"/>
-                    </file>                    
-                    <file name="org-openide-actions-PasteAction.instance">
-                        <attr name="position" intvalue="900"/>
-                    </file>   
-                    <file name="sep-1a.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="1000"/>
-                    </file>
-                    <file name="org-openide-actions-DeleteAction.instance">
-                        <attr name="position" intvalue="1100"/>
-                    </file>
-                    <file name="org-openide-actions-RenameAction.instance">
-                        <attr name="position" intvalue="1200"/>
-                    </file>                    
-                    <file name="sep-1b.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="1300"/>
+                        <attr name="position" intvalue="200"/>
                     </file>                    
                     <file name="org-netbeans-modules-xml-tools-actions-CheckAction.instance">
-                        <attr name="position" intvalue="1400"/>
+                        <attr name="position" intvalue="300"/>
                     </file>
                     <file name="org-netbeans-modules-xml-tools-actions-ValidateAction.instance">
-                        <attr name="position" intvalue="1500"/>
+                        <attr name="position" intvalue="400"/>
                     </file>
                     <file name="sep-2.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="1600"/>
+                        <attr name="position" intvalue="500"/>
                     </file>
-                    <file name="org-openide-actions-SaveAsTemplateAction.instance">
-                        <attr name="position" intvalue="1700"/>
+                    <file name="org-openide-actions-CutAction.instance">
+                        <attr name="position" intvalue="600"/>
                     </file>
+                    <file name="org-openide-actions-CopyAction.instance">
+                        <attr name="position" intvalue="700"/>
+                    </file>                    
+                    <file name="org-openide-actions-PasteAction.instance">
+                        <attr name="position" intvalue="800"/>
+                    </file>   
                     <file name="sep-3.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="100"/>
+                        <attr name="position" intvalue="900"/>
+                    </file>
+                    <file name="org-openide-actions-DeleteAction.instance">
+                        <attr name="position" intvalue="1000"/>
+                    </file>
+                    <file name="org-openide-actions-RenameAction.instance">
+                        <attr name="position" intvalue="1100"/>
+                    </file>                    
+                    <file name="sep-4.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1200"/>
+                    </file>
+                    <file name="org-openide-actions-SaveAsTemplateAction.instance">
+                        <attr name="position" intvalue="1300"/>
+                    </file>
+                    <file name="sep-5.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1400"/>
+                    </file>
+                    <file name="org-openide-actions-FileSystemAction.instance">
+                        <attr name="position" intvalue="1500"/>
+                    </file>
+                    <file name="sep-6.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1600"/>
                     </file>
                     <file name="org-openide-actions-ToolsAction.instance">
-                        <attr name="position" intvalue="200"/>
+                        <attr name="position" intvalue="1700"/>
                     </file>
                     <file name="org-openide-actions-PropertiesAction.instance">
-                        <attr name="position" intvalue="300"/>
+                        <attr name="position" intvalue="1800"/>
                     </file>
                 </folder>
             </folder>

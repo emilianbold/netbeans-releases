@@ -310,6 +310,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.visualweb.xhtml</friend>
                 <friend>org.netbeans.modules.web.jsf.navigation</friend>
                 <friend>org.netbeans.modules.portalpack.visualweb</friend>
+                <friend>org.netbeans.modules.visualweb.removebindings</friend>
                 <package>org.netbeans.modules.visualweb.project.jsf.api</package>
                 <package>org.netbeans.modules.visualweb.project.jsf.services</package>
             </friend-packages>

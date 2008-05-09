@@ -42,7 +42,6 @@ package org.netbeans.modules.cnd.editor.options;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import javax.swing.JComponent;
-import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -52,33 +51,41 @@ import org.openide.util.Lookup;
  * @author Alexander Simon
  */
 public class EditorOptionsPanelController extends OptionsPanelController {
-    private EditorOptionsPanel panel;
+    private EditorPropertySheet panel;
+    private static final boolean TRACE = false;
+    
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     private boolean changed;
 
     
-    public EditorOptionsPanelController(CodeStyle.Language language){
-         panel = new EditorOptionsPanel(language, this);
+    public EditorOptionsPanelController(){
+        if (TRACE) System.out.println("EditorOptionsPanelController.ctor()"); // NOI18N
+         panel = new EditorPropertySheet(this);
     }
     
     public void update() {
+        if (TRACE) System.out.println("EditorOptionsPanelController.update()"); // NOI18N
         changed = false;
 	panel.load();
     }
     
     public void applyChanges() {
+        if (TRACE) System.out.println("EditorOptionsPanelController.applyChanges()"); // NOI18N
 	panel.store();
     }
     
     public void cancel() {
+        if (TRACE) System.out.println("EditorOptionsPanelController.cancel()"); // NOI18N
 	panel.cancel();
     }
     
     public boolean isValid() {
+        if (TRACE) System.out.println("EditorOptionsPanelController.isValid()"); // NOI18N
         return true;
     }
     
     public boolean isChanged() {
+        if (TRACE) System.out.println("EditorOptionsPanelController.isChanged()"); // NOI18N
 	return changed;
     }
 
@@ -104,17 +111,5 @@ public class EditorOptionsPanelController extends OptionsPanelController {
 	    pcs.firePropertyChange(OptionsPanelController.PROP_CHANGED, false, true);
 	}
 	pcs.firePropertyChange(OptionsPanelController.PROP_VALID, null, null);
-    }
-
-    public static class CEditorOptionsPanelController extends EditorOptionsPanelController {
-        public CEditorOptionsPanelController(){
-            super(CodeStyle.Language.C);
-        }
-    }
-
-    public static class CppEditorOptionsPanelController extends EditorOptionsPanelController {
-        public CppEditorOptionsPanelController(){
-            super(CodeStyle.Language.CPP);
-        }
     }
 }

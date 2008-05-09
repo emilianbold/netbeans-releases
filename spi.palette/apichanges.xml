@@ -296,6 +296,47 @@ is the proper place.
         <issue number="105561"/>
     </change>      
     
+    <change id="per-document-visibility" >
+        <api name="palette_api"/>
+        <summary>Palette visibility is defined per document-type.</summary>
+        <version major="1" minor="13"/>
+        <date day="22" month="2" year="2008"/>
+        <author login="saubrecht"/>
+        <compatibility addition="no" binary="compatible" deletion="no" semantic="compatible" deprecation="no" modification="no" source="compatible"/>
+        <description>
+            <p>
+                Now it's possible to close the palette window while e.g. editing an HTML file
+                and the palette will still show up when designing a form.
+            </p>
+        </description>
+        <issue number="62964"/>
+    </change>      
+    
+    <change id="support-text-dnd" >
+        <api name="palette_api"/>
+        <summary>Allowing user dropping text into the palette to create new custom code clips.</summary>
+        <version major="1" minor="14"/>
+        <date day="5" month="5" year="2008"/>
+        <author login="saubrecht"/>
+        <compatibility addition="yes" binary="compatible" deletion="no" semantic="compatible" deprecation="no" modification="no" source="compatible"/>
+        <description>
+            <p>
+                If the Common Palette is associated with a text editor then it's desired to allow
+                users dragging and dropping text into the palette to create new custom code clips that
+                can be dropped into editor later on.
+            </p>
+            <p>
+                That can be achieved simply by subclassing the default DragAndDropHandler class 
+                which manages all DragAndDrop-related operations in the Common Palette and turning
+                the text dnd support in superclasses's constructor on. The default implementation
+                pops up a dialog window when some text is dropped into the palette where user enters
+                code clip name and tooltip and optionally selects appropriate icons.
+            </p>
+        </description>
+        <class package="org.netbeans.spi.palette" name="DragAndDropHandler"/>
+        <issue number="93002"/>
+    </change>      
+    
 </changes>
   
     <!-- Now the surrounding HTML text and document structure: -->

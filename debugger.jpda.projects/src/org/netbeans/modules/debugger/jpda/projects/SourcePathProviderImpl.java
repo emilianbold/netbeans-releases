@@ -116,8 +116,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
         pcs = new PropertyChangeSupport (this);
         //this.session = (Session) contextProvider.lookupFirst 
         //    (null, Session.class);
-        Map properties = (Map) contextProvider.lookupFirst 
-            (null, Map.class);
+        Map properties = contextProvider.lookupFirst(null, Map.class);
         
         // 2) get default allSourceRoots of source roots used for stepping
         if (properties != null) {
@@ -522,7 +521,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
      * @param path path to normalize
      * @return normalized path without "." and ".." elements
      */ 
-    private static String normalize(String path) {
+    public static String normalize(String path) {
       for (Matcher m = thisDirectoryPattern.matcher(path); m.find(); )
       {
         path = m.replaceAll("$1");
@@ -543,16 +542,20 @@ public class SourcePathProviderImpl extends SourcePathProvider {
      */
     private static String getRoot(FileObject fileObject) {
         File f = null;
+        String path = "";
         try {
             if (fileObject.getFileSystem () instanceof JarFileSystem) {
                 f = ((JarFileSystem) fileObject.getFileSystem ()).getJarFile ();
+                if (!fileObject.isRoot()) {
+                    path = "!/"+fileObject.getPath();
+                }
             } else {
                 f = FileUtil.toFile (fileObject);
             }
         } catch (FileStateInvalidException ex) {
         }
         if (f != null) {
-            return f.getAbsolutePath ();
+            return f.getAbsolutePath () + path;
         } else {
             return null;
         }
@@ -564,8 +567,19 @@ public class SourcePathProviderImpl extends SourcePathProvider {
     private FileObject getFileObject (String file) {
         File f = new File (file);
         FileObject fo = FileUtil.toFileObject (f);
-        if (fo != null && FileUtil.isArchiveFile (fo))
+        String path = null;
+        if (fo == null && file.contains("!/")) {
+            int index = file.indexOf("!/");
+            f = new File(file.substring(0, index));
+            fo = FileUtil.toFileObject (f);
+            path = file.substring(index + "!/".length());
+        }
+        if (fo != null && FileUtil.isArchiveFile (fo)) {
             fo = FileUtil.getArchiveRoot (fo);
+            if (path !=null) {
+                fo = fo.getFileObject(path);
+            }
+        }
         return fo;
     }
     

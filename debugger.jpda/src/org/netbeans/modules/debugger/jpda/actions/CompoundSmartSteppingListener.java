@@ -66,8 +66,7 @@ public class CompoundSmartSteppingListener extends SmartSteppingCallback {
     
     public CompoundSmartSteppingListener (ContextProvider lookupProvider) {
         this.lookupProvider = lookupProvider;
-        SmartSteppingFilter smartSteppingFilter = (SmartSteppingFilter) lookupProvider.
-            lookupFirst (null, SmartSteppingFilter.class);
+        SmartSteppingFilter smartSteppingFilter = lookupProvider.lookupFirst(null, SmartSteppingFilter.class);
         initFilter (smartSteppingFilter);
     }
     

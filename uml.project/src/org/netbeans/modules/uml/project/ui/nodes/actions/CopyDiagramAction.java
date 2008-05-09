@@ -122,7 +122,7 @@ public class CopyDiagramAction extends NodeAction
 
     
     // save presentation (.etlp) and layout (.etld) files
-    private void saveFiles(String fileName, String newName)
+    private boolean saveFiles(String fileName, String newName)
     {
         String originalFile = original.getFilename();
         String original_p = originalFile;
@@ -143,13 +143,26 @@ public class CopyDiagramAction extends NodeAction
         // persist presentation file
         ProductArchiveImpl archive = new ProductArchiveImpl(original_p);
         IProductArchiveElement ele = archive.getElement(IProductArchiveDefinitions.DIAGRAMINFO_STRING);
-        ele.addAttributeString(IProductArchiveDefinitions.DIAGRAMNAME_STRING, newName);
-        ele.addAttributeString(IProductArchiveDefinitions.DIAGRAM_XMIID, UMLXMLManip.generateId(true));
-        archive.save(clone_p);
+        if (ele != null)
+        { 
+            ele.addAttributeString(IProductArchiveDefinitions.DIAGRAMNAME_STRING, newName);
+            ele.addAttributeString(IProductArchiveDefinitions.DIAGRAM_XMIID, UMLXMLManip.generateId(true));
+            archive.save(clone_p);
         
-        // persist layout file
-        archive = new ProductArchiveImpl(original_l);
-        archive.save(clone_l);
+            // persist layout file
+            archive = new ProductArchiveImpl(original_l);
+            archive.save(clone_l);
+            return true;
+        }
+        else 
+        {
+            NotifyDescriptor.Message msg 
+                = new NotifyDescriptor.Message
+                (NbBundle.getMessage(CopyDiagramAction.class,
+                    "MSG_Cant_Copy_Diagram")); // NOI18N
+            DialogDisplayer.getDefault().notify(msg);
+            return false;
+        }
     }
     
     
@@ -161,11 +174,13 @@ public class CopyDiagramAction extends NodeAction
             original.getDiagram().save();
         }
         String filename = getFullFileName(name, nameSpace);
-        saveFiles(filename, name);
-        
-        // create diagram node
-        UMLProjectModule.getProjectTreeEngine().addDiagramNode(
+
+        if (saveFiles(filename, name))        
+        {
+            // create diagram node
+            UMLProjectModule.getProjectTreeEngine().addDiagramNode(
                 filename + FileExtensions.DIAGRAM_PRESENTATION_EXT);
+        }
     }
     
     

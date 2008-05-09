@@ -193,6 +193,7 @@ class UsagesASTEvaluator extends ASTEvaluator {
             unresolvedUsages.add (context);
             unresolvedUsages_declaration_precedes_ussage.add (declaration_precedes_ussage);
         }
+        ContextASTEvaluator.setEvaluated(document, true);
     }
 
     public String getFeatureName () {

@@ -595,10 +595,7 @@ public class TreeFactory {
                 break;
             }
             case DECLARED:
-                Type outer = t.getEnclosingType();
-                JCExpression clazz = outer.tag == CLASS && t.tsym.owner.kind == TYP
-                        ? make.Select((JCExpression) Type(outer), t.tsym)
-                        : (JCExpression) QualIdent(t.tsym);
+                JCExpression clazz = (JCExpression) QualIdent(t.tsym);
                 tp = t.getTypeArguments().isEmpty()
                 ? clazz
                         : make.TypeApply(clazz, Types(t.getTypeArguments()));

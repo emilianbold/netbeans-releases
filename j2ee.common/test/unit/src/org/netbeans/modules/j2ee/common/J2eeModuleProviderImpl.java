@@ -74,6 +74,16 @@ public class J2eeModuleProviderImpl extends J2eeModuleProvider {
     public void setServerInstanceID(String severInstanceID) {
     }
 
+    @Override
+    public String getServerID() {
+        return null;
+    }
+
+    @Override
+    public String getServerInstanceID() {
+        return null;
+    }
+
     public File getDeploymentConfigurationFile(String name) {
         return null;
     }

@@ -421,6 +421,14 @@ import org.openide.util.lookup.ProxyLookup;
             return Collections.<MultiKeyBinding>emptyList();
         }
     }
+
+    public static void initKeyBindingList(String mimeType) {
+        Collection<? extends KeyBindingSettings> c = MimeLookup.getLookup(mimeType).lookupAll(KeyBindingSettings.class);
+        if (!c.isEmpty()) {
+            // just do something with the collection
+            c.iterator().next();
+        }
+    }
     
     private JTextComponent getComponent() {
 	return (JTextComponent)componentRef.get();
@@ -456,7 +464,7 @@ import org.openide.util.lookup.ProxyLookup;
         }
         
         for(Object item : items) {
-            if (item instanceof JSeparator) {
+            if (item == null || item instanceof JSeparator) {
                 addSeparator();
                 continue;
             }
@@ -585,7 +593,9 @@ import org.openide.util.lookup.ProxyLookup;
             }
         }
 
-        if (nodeLookup == null) {
+        if (nodeLookup == null && ancestorLookup == null) {
+            return Lookups.singleton(c);
+        } else if (nodeLookup == null) {
             return ancestorLookup;
         } else if (ancestorLookup == null) {
             return nodeLookup;

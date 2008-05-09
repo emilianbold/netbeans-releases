@@ -64,6 +64,7 @@ import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
 import org.openide.text.DataEditorSupport;
 import org.openide.util.NbBundle;
+import org.openide.util.Lookup;
 import org.openide.windows.CloneableOpenSupport;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -140,6 +141,10 @@ public class UMLProjectDataObject extends MultiDataObject
         getCookieSet().remove(save);
     }
     
+    public Lookup getLookup() {
+        return getCookieSet().getLookup();
+    }
+
     private String getDisplayName()
     {
         Project proj = FileOwnerQuery.getOwner(getFileObject());
@@ -236,19 +241,22 @@ public class UMLProjectDataObject extends MultiDataObject
         {
             //custom logic to save uml project files
             Project currentProj = FileOwnerQuery.getOwner(getFileObject());
-            UMLProjectHelper helper = (UMLProjectHelper)currentProj.getLookup().
-                    lookup(UMLProjectHelper.class);
-            if (helper!=null)
+            if (currentProj != null && currentProj.getLookup() != null) 
             {
-                // save modified documentation in the edit pane
-                DocumentationTopComponnet.saveDocumentation();
-                 
-                helper.saveProject();
-                SaveCookie save = (SaveCookie) UMLProjectDataObject.this.
-                                        getCookie(SaveCookie.class);
-                if (save!=null)
-                    UMLProjectDataObject.this.removeSaveCookie(save);
-                setModified(false);
+                UMLProjectHelper helper = (UMLProjectHelper)currentProj.getLookup().
+                    lookup(UMLProjectHelper.class);
+                if (helper!=null)
+                {
+                    // save modified documentation in the edit pane
+                    DocumentationTopComponnet.saveDocumentation();
+                    
+                    helper.saveProject();
+                    SaveCookie save = (SaveCookie) UMLProjectDataObject.this.
+                        getCookie(SaveCookie.class);
+                    if (save!=null)
+                        UMLProjectDataObject.this.removeSaveCookie(save);
+                    setModified(false);
+                }
             }
         }
     }

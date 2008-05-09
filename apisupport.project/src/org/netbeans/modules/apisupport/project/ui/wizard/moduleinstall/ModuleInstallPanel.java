@@ -156,6 +156,7 @@ final class ModuleInstallPanel extends BasicWizardIterator.Panel {
     }
     
     private void initAccessibility() {
+        getAccessibleContext().setAccessibleDescription(getMessage("ACS_form"));
         projectNameValue.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_ProjectName"));
         packageName.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_PackageName"));
         createdFilesValue.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_CreatedFilesValue"));

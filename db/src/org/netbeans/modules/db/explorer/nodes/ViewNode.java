@@ -44,17 +44,7 @@ package org.netbeans.modules.db.explorer.nodes;
 import java.awt.datatransfer.Transferable;
 import java.io.IOException;
 
-import java.util.*;
-import java.text.MessageFormat;
 import org.netbeans.api.db.explorer.DatabaseMetaDataTransfer;
-import org.netbeans.modules.db.explorer.DatabaseMetaDataTransferAccessor;
-
-import org.openide.*;
-import org.openide.util.NbBundle;
-
-import org.netbeans.lib.ddl.*;
-import org.netbeans.lib.ddl.impl.*;
-import org.netbeans.modules.db.*;
 import org.netbeans.modules.db.explorer.*;
 import org.netbeans.modules.db.explorer.infos.*;
 import org.openide.util.datatransfer.ExTransferable;
@@ -63,27 +53,8 @@ import org.openide.util.datatransfer.ExTransferable;
 // Node for Table/View/Procedure things.
 
 public class ViewNode extends DatabaseNode {
-    public void setName(String newname)
-    {
-        try {
-            DatabaseNodeInfo info = getInfo();
-            Specification spec = (Specification)info.getSpecification();
-            AbstractCommand cmd = spec.createCommandRenameView(info.getName(), newname);
-            cmd.setObjectOwner((String)info.get(DatabaseNodeInfo.SCHEMA));
-            cmd.execute();
-            super.setName(newname);
-            info.put(DatabaseNode.TABLE, newname);
-            info.put(DatabaseNode.VIEW, newname);
-        } catch (CommandNotSupportedException exc) {
-            String message = MessageFormat.format(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("EXC_UnableToChangeName"), new String[] {exc.getCommand()}); // NOI18N
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public String getShortDescription() {
-        return NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ND_View"); //NOI18N
+    public ViewNode(DatabaseNodeInfo info) {
+        super(info);
     }
 
     public Transferable clipboardCopy() throws IOException {

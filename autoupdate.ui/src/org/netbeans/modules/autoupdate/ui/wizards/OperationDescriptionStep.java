@@ -62,6 +62,7 @@ import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.modules.autoupdate.ui.Containers;
 import org.netbeans.modules.autoupdate.ui.wizards.OperationWizardModel.OperationType;
 import org.openide.WizardDescriptor;
+import org.openide.modules.Dependency;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -267,6 +268,8 @@ public class OperationDescriptionStep implements WizardDescriptor.Panel<WizardDe
                     displayName = getBundle ("OperationDescriptionStep_PluginNameFormat", displayName, dep);
                 }
             }
+        } else if (dep != null && dep.toLowerCase ().startsWith ("java")) { // NOI18N
+            displayName = getBundle ("OperationDescriptionStep_PluginBrokesJavaDependency", dep, Dependency.JAVA_SPEC);
         }
         return displayName == null ? dep : displayName;
     }
@@ -278,7 +281,7 @@ public class OperationDescriptionStep implements WizardDescriptor.Panel<WizardDe
             for (UpdateElement el : plugins) {
                 String updatename;
                 updatename = "<b>"  + el.getDisplayName () + "</b> "; // NOI18N
-                if (OperationWizardModel.OperationType.UPDATE == type) {
+                if (OperationWizardModel.OperationType.UPDATE == type && el.getUpdateUnit ().getInstalled () != null) {
                     String oldVersion = el.getUpdateUnit ().getInstalled ().getSpecificationVersion ();
                     String newVersion = el.getSpecificationVersion ();
                     updatename += getBundle ("OperationDescriptionStep_UpdatePluginVersionFormat", oldVersion, newVersion);

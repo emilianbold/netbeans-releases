@@ -51,7 +51,9 @@ import java.io.File;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.Specification;
+import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
@@ -71,6 +73,7 @@ public class J2SEPlatformImpl extends JavaPlatform {
     protected static final String SYSPROP_BOOT_CLASSPATH = "sun.boot.class.path";     // NOI18N
     protected static final String SYSPROP_JAVA_CLASS_PATH = "java.class.path";        // NOI18N
     protected static final String SYSPROP_JAVA_EXT_PATH = "java.ext.dirs";            //NOI18N
+    protected static final String SYSPROP_USER_DIR = "user.dir";                      //NOI18N
 
     /**
      * Holds the display name of the platform
@@ -79,7 +82,7 @@ public class J2SEPlatformImpl extends JavaPlatform {
     /**
      * Holds the properties of the platform
      */
-    private Map properties;
+    private Map<String,String> properties;
 
     /**
      * List&lt;URL&gt;
@@ -89,28 +92,28 @@ public class J2SEPlatformImpl extends JavaPlatform {
     /**
      * List&lt;URL&gt;
      */
-    private List javadoc;
+    private List<URL> javadoc;
 
     /**
-     * List&lt;FileObject&gt;
+     * List&lt;URL&gt;
      */
-    private List installFolders;
+    private List<URL> installFolders;
 
     /**
      * Holds bootstrap libraries for the platform
      */
-    Reference       bootstrap = new WeakReference(null);
+    Reference<ClassPath> bootstrap = new WeakReference<ClassPath>(null);
     /**
      * Holds standard libraries of the platform
      */
-    Reference       standardLibs = new WeakReference(null);
+    Reference<ClassPath> standardLibs = new WeakReference<ClassPath>(null);
 
     /**
      * Holds the specification of the platform
      */
     private Specification spec;
 
-    J2SEPlatformImpl (String dispName, List installFolders, Map initialProperties, Map sysProperties, List sources, List javadoc) {
+    J2SEPlatformImpl (String dispName, List<URL> installFolders, Map<String,String> initialProperties, Map<String,String> sysProperties, List<URL> sources, List<URL> javadoc) {
         super();
         this.displayName = dispName;
         if (installFolders != null) {
@@ -118,9 +121,9 @@ public class J2SEPlatformImpl extends JavaPlatform {
         }
         else {
             //Old version, repair
-            String home = (String) initialProperties.remove ("platform.home");        //NOI18N
+            String home = initialProperties.remove ("platform.home");        //NOI18N
             if (home != null) {
-                this.installFolders = new ArrayList ();
+                this.installFolders = new ArrayList<URL> ();
                 StringTokenizer tk = new StringTokenizer (home, File.pathSeparator);
                 while (tk.hasMoreTokens()) {
                     File f = new File (tk.nextToken());
@@ -141,12 +144,13 @@ public class J2SEPlatformImpl extends JavaPlatform {
             this.javadoc = Collections.unmodifiableList(javadoc);   //No copy needed, called from this module => safe
         }
         else {
-            this.javadoc = Collections.EMPTY_LIST;
+            this.javadoc = Collections.<URL>emptyList();
         }
-        setSystemProperties(sysProperties);
+        setSystemProperties(filterProbe(sysProperties));
     }
 
-    protected J2SEPlatformImpl (String dispName, String antName, List installFolders, Map initialProperties, Map sysProperties, List sources, List javadoc) {
+    protected J2SEPlatformImpl (String dispName, String antName, List<URL> installFolders, Map<String,String> initialProperties,
+        Map<String,String> sysProperties, List<URL> sources, List<URL> javadoc) {
         this (dispName,  installFolders, initialProperties, sysProperties,sources, javadoc);
         this.properties.put (PLAT_PROP_ANT_NAME,antName);
     }
@@ -200,16 +204,16 @@ public class J2SEPlatformImpl extends JavaPlatform {
 
     public ClassPath getBootstrapLibraries() {
         synchronized (this) {
-            ClassPath cp = (ClassPath) (bootstrap == null ? null : bootstrap.get());
+            ClassPath cp = (bootstrap == null ? null : bootstrap.get());
             if (cp != null)
                 return cp;
-            String pathSpec = (String)getSystemProperties().get(SYSPROP_BOOT_CLASSPATH);
+            String pathSpec = getSystemProperties().get(SYSPROP_BOOT_CLASSPATH);
             String extPathSpec = Util.getExtensions((String)getSystemProperties().get(SYSPROP_JAVA_EXT_PATH));
             if (extPathSpec != null) {
                 pathSpec = pathSpec + File.pathSeparator + extPathSpec;
             }
             cp = Util.createClassPath (pathSpec);
-            bootstrap = new WeakReference(cp);
+            bootstrap = new WeakReference<ClassPath>(cp);
             return cp;
         }
     }
@@ -221,12 +225,12 @@ public class J2SEPlatformImpl extends JavaPlatform {
      */
     public ClassPath getStandardLibraries() {
         synchronized (this) {
-            ClassPath cp = (ClassPath) (standardLibs == null ? null : standardLibs.get());
+            ClassPath cp = (standardLibs == null ? null : standardLibs.get());
             if (cp != null)
                 return cp;
-            String pathSpec = (String)getSystemProperties().get(SYSPROP_JAVA_CLASS_PATH);
+            String pathSpec = getSystemProperties().get(SYSPROP_JAVA_CLASS_PATH);
             cp = Util.createClassPath (pathSpec);
-            standardLibs = new WeakReference(cp);
+            standardLibs = new WeakReference<ClassPath>(cp);
             return cp;
         }
     }
@@ -236,10 +240,10 @@ public class J2SEPlatformImpl extends JavaPlatform {
      * where the Platform is installed. Typically it returns one folder, but
      * in some cases there can be more of them.
      */
-    public final Collection getInstallFolders() {
-        Collection result = new ArrayList ();
-        for (Iterator it = this.installFolders.iterator(); it.hasNext();) {
-            URL url = (URL) it.next ();
+    public final Collection<FileObject> getInstallFolders() {
+        Collection<FileObject> result = new ArrayList<FileObject> ();
+        for (Iterator<URL> it = this.installFolders.iterator(); it.hasNext();) {
+            URL url = it.next ();
             FileObject root = URLMapper.findFileObject(url);
             if (root != null) {
                 result.add (root); 
@@ -250,7 +254,7 @@ public class J2SEPlatformImpl extends JavaPlatform {
 
 
     public final FileObject findTool(final String toolName) {
-        String archFolder = (String) getProperties().get(PLAT_PROP_ARCH_FOLDER);        
+        String archFolder = getProperties().get(PLAT_PROP_ARCH_FOLDER);        
         FileObject tool = null;
         if (archFolder != null) {
             tool = Util.findTool (toolName, this.getInstallFolders(), archFolder);            
@@ -280,15 +284,15 @@ public class J2SEPlatformImpl extends JavaPlatform {
      * Returns the location of the Javadoc for this platform
      * @return FileObject
      */
-    public final List getJavadocFolders () {
+    public final List<URL> getJavadocFolders () {
         return this.javadoc;
     }
 
-    public final void setJavadocFolders (List c) {
+    public final void setJavadocFolders (List<URL> c) {
         assert c != null;
-        List safeCopy = Collections.unmodifiableList (new ArrayList (c));
-        for (Iterator it = safeCopy.iterator(); it.hasNext();) {
-            URL url = (URL) it.next ();
+        List<URL> safeCopy = Collections.unmodifiableList (new ArrayList<URL> (c));
+        for (Iterator<URL> it = safeCopy.iterator(); it.hasNext();) {
+            URL url = it.next ();
             if (!"jar".equals (url.getProtocol()) && FileUtil.isArchiveFile(url)) {
                 throw new IllegalArgumentException ("JavadocFolder must be a folder.");
             }
@@ -298,7 +302,7 @@ public class J2SEPlatformImpl extends JavaPlatform {
     }
 
     public String getVendor() {
-        String s = (String)getSystemProperties().get("java.vm.vendor"); // NOI18N
+        String s = getSystemProperties().get("java.vm.vendor"); // NOI18N
         return s == null ? "" : s; // NOI18N
     }
 
@@ -309,20 +313,50 @@ public class J2SEPlatformImpl extends JavaPlatform {
         return spec;
     }
 
-    public Map getProperties() {
+    public Map<String,String> getProperties() {
         return Collections.unmodifiableMap (this.properties);
     }
     
     Collection getInstallFolderURLs () {
         return Collections.unmodifiableList(this.installFolders);
     }
+    
+    protected static String filterProbe (String v, final String probePath) {
+        if (v != null) {
+            final String[] pes = PropertyUtils.tokenizePath(v);
+            final StringBuilder sb = new StringBuilder ();
+            for (String pe : pes) {
+                if (probePath != null ?  probePath.equals(pe) : (pe != null &&
+                pe.endsWith("org-netbeans-modules-java-j2seplatform-probe.jar"))) { //NOI18N
+                    //Skeep
+                }
+                else {
+                    if (sb.length() > 0) {
+                        sb.append(File.pathSeparatorChar);
+                    }
+                    sb.append(pe);
+                }
+            }
+            v = sb.toString();
+        }
+        return v;
+    }
+    
+    private static Map<String,String> filterProbe (final Map<String,String> p) {
+        if (p!=null) {
+            final String val = p.get(SYSPROP_JAVA_CLASS_PATH);
+            if (val != null) {
+                p.put(SYSPROP_JAVA_CLASS_PATH, filterProbe(val, null));
+            }
+        }
+        return p;
+    }
 
 
-    private static ClassPath createClassPath (List urls) {
-        List resources = new ArrayList ();
+    private static ClassPath createClassPath (final List<? extends URL> urls) {
+        List<PathResourceImplementation> resources = new ArrayList<PathResourceImplementation> ();
         if (urls != null) {
-            for (Iterator it = urls.iterator(); it.hasNext();) {
-                URL url = (URL) it.next();
+            for (URL url : urls) {
                 resources.add (ClassPathSupport.createResource (url));
             }
         }

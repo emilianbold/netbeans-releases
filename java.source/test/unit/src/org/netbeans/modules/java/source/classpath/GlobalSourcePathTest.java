@@ -59,6 +59,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -75,6 +76,7 @@ import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
+import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 
@@ -182,75 +184,101 @@ public class GlobalSourcePathTest extends NbTestCase {
         //Testing classpath registration
         MutableClassPathImplementation mcpi1 = new MutableClassPathImplementation ();
         mcpi1.addResource(this.srcRoot1);
+        CPListener l = new CPListener(cpi);
         ClassPath cp1 = ClassPathFactory.createClassPath(mcpi1);
-        regs.register(ClassPath.SOURCE,new ClassPath[]{cp1});
+        regs.register(ClassPath.SOURCE,new ClassPath[]{cp1});        
+        assertTrue(l.await());
         impls = cpi.getResources();
         assertNotNull (impls);
         assertEquals(1,impls.size());
         assertEquals(srcRoot1.getURL(),impls.get(0).getRoots()[0]);
         //Testing changes in registered classpath
+        l = new CPListener(cpi);
         mcpi1.addResource(srcRoot2);
+        assertTrue(l.await());
         impls = cpi.getResources();
         assertNotNull (impls);
         assertEquals(2,impls.size());
         assertEquals(new FileObject[] {srcRoot1, srcRoot2},impls);
+        l = new CPListener(cpi);
         mcpi1.removeResource(srcRoot1);
+        assertTrue(l.await());
         impls = cpi.getResources();
         assertNotNull (impls);
         assertEquals(1,impls.size());
         assertEquals(srcRoot2.getURL(),impls.get(0).getRoots()[0]);
         //Testing adding new ClassPath
+        l = new CPListener(cpi);
         MutableClassPathImplementation mcpi2 = new MutableClassPathImplementation ();
         mcpi2.addResource(srcRoot1);
         ClassPath cp2 = ClassPathFactory.createClassPath(mcpi2);
         regs.register (ClassPath.SOURCE, new ClassPath[] {cp2});
+        assertTrue(l.await());
         impls = cpi.getResources();
         assertNotNull (impls);
         assertEquals(new FileObject[] {srcRoot2, srcRoot1},impls);
+        l = new CPListener(cpi);
         mcpi2.addResource(srcRoot3);
+        assertTrue(l.await());
         impls = cpi.getResources();
         assertNotNull (impls);
         assertEquals(new FileObject[] {srcRoot2, srcRoot1, srcRoot3},impls);
         //Testing removing ClassPath
+        l = new CPListener(cpi);
         regs.unregister(ClassPath.SOURCE,new ClassPath[] {cp2});
+        assertTrue(l.await());
         impls = cpi.getResources();
         assertNotNull (impls);
         assertEquals(new FileObject[] {srcRoot2},impls);
         //Testing registering classpath with SFBQ
+        l = new CPListener(cpi);
         ClassPath cp3 = ClassPathSupport.createClassPath(new FileObject[] {bootRoot1,bootRoot2});
         regs.register(ClassPath.BOOT,new ClassPath[] {cp3});
+        assertTrue(l.await());
         impls = cpi.getResources();
         assertNotNull (impls);
         assertEquals(new FileObject[] {srcRoot2, bootSrc1},impls);
+        l = new CPListener(cpi);
         MutableClassPathImplementation mcpi4 = new MutableClassPathImplementation ();
         mcpi4.addResource (compRoot1);
         ClassPath cp4 = ClassPathFactory.createClassPath(mcpi4);
         regs.register(ClassPath.COMPILE,new ClassPath[] {cp4});
+        assertTrue(l.await());
         impls = cpi.getResources();
         assertNotNull (impls);
         assertEquals(new FileObject[] {srcRoot2, bootSrc1, compSrc1},impls);
+        l = new CPListener(cpi);
         mcpi4.addResource(compRoot2);
+        assertTrue(l.await());
         impls = cpi.getResources();
         assertNotNull (impls);
         assertEquals(new FileObject[] {srcRoot2, bootSrc1, compSrc1, compSrc2},impls);
+        l = new CPListener(cpi);
         mcpi4.removeResource(compRoot1);
+        assertTrue(l.await());
         impls = cpi.getResources();
         assertNotNull (impls);
         assertEquals(new FileObject[] {srcRoot2, bootSrc1, compSrc2},impls);
+        l = new CPListener(cpi);
         regs.unregister(ClassPath.BOOT,new ClassPath[] {cp3});
+        assertTrue(l.await());
         impls = cpi.getResources();
         assertNotNull (impls);
         assertEquals(new FileObject[] {srcRoot2, compSrc2},impls);
         //Testing listening on SFBQ.Results
+        l = new CPListener(cpi);
         SFBQImpl.getDefault().register(compRoot2,compSrc1);
+        assertTrue(l.await());
         impls = cpi.getResources();
         assertNotNull (impls);
         assertEquals(new FileObject[] {srcRoot2, compSrc1},impls);
+        l = new CPListener(cpi);
         SFBQImpl.getDefault().register(compRoot2,compSrc2);
+        assertTrue(l.await());
         impls = cpi.getResources();
         assertNotNull (impls);
-        assertEquals(new FileObject[] {srcRoot2, compSrc2},impls);                
-        //Test unknown source roots
+        assertEquals(new FileObject[] {srcRoot2, compSrc2},impls);                                    
+        //Test unknown source roots                
         ClassPath ucp = ClassPathSupport.createClassPath(new FileObject[] {unknown1, unknown2});
         gcp.getSourceRootForBinaryRoot(unknown1.getURL(),ucp,true);
         gcp.getSourceRootForBinaryRoot(unknown2.getURL(),ucp,true);
@@ -470,6 +498,16 @@ public class GlobalSourcePathTest extends NbTestCase {
             pri.firePropertyChange(propId);
         }
         assertEquals(2, l.ids.size());
+    }
+    
+    public void testSetUseLibraries () {
+        GlobalSourcePathTestUtil.setUseLibraries(true);     //Assertion error shouldn't be thrown
+        try {
+            GlobalSourcePath.getDefault().setUseLibraries(true);
+            assertTrue(false);
+        } catch (AssertionError e) {
+            //AssertionError has to be thrown
+        }
     }
     
     
@@ -708,6 +746,29 @@ public class GlobalSourcePathTest extends NbTestCase {
             return instance;
         }
         
+    }
+    
+    private static class CPListener implements PropertyChangeListener {
+        
+        private final CountDownLatch latch = new CountDownLatch(1);
+        private final ClassPathImplementation impl;
+        
+        public CPListener (final ClassPathImplementation impl) {
+            assert impl != null;
+            this.impl = impl;
+            this.impl.addPropertyChangeListener(WeakListeners.propertyChange(this, this.impl));
+        }
+        
+        public boolean await () throws InterruptedException {
+            return this.latch.await(5000, TimeUnit.MILLISECONDS);
+        }
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (this.impl == evt.getSource() && 
+                ClassPathImplementation.PROP_RESOURCES.equals(evt.getPropertyName())) {
+                latch.countDown();
+            }
+        }        
     }
     
 }

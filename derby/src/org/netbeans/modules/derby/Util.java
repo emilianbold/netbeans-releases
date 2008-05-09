@@ -47,7 +47,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-import org.netbeans.modules.derby.ui.DerbySystemHomePanel;
+import org.netbeans.modules.derby.ui.DerbyPropertiesPanel;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileLock;
@@ -97,7 +97,7 @@ public class Util {
         if (DerbyOptions.getDefault().getSystemHome().length() <= 0) {
             return Mutex.EVENT.writeAccess(new Mutex.Action<Boolean>() {
                 public Boolean run() {
-                    return DerbySystemHomePanel.showDerbySettings();
+                    return DerbyPropertiesPanel.showDerbyProperties();
                 }
             });
         }

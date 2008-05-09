@@ -132,7 +132,7 @@ public class ProjectClassPathModifier {
     /**
      * Adds archive files or folders into the project's classpath if the
      * entries are not already there.
-     * @param classPathRoots roots to be added, each root has to be either a root of an archive or a folder
+     * @param classPathRoots roots to be added, each root has to be either a root of an archive or a folder url
      * @param projectArtifact a file whose classpath should be extended
      * @param classPathType the type of classpath to be extended, @see ClassPath
      * @return true in case the classpath was changed, (at least one classpath root was added to the classpath),
@@ -159,11 +159,53 @@ public class ProjectClassPathModifier {
                     if ("jar".equals(urlToAdd.getProtocol())) {
                         urlToAdd = FileUtil.getArchiveFile (urlToAdd);
                     }
+                    final FileObject fo = URLMapper.findFileObject(urlToAdd);
+                    if (fo == null) {
+                        throw new UnsupportedOperationException ("Adding of a non existent root is not supported by project.");  //NOI18N
+                    }
+                    result |= extensible.pcpe.addArchiveFile (fo);
+                }
+                return result;
+            }
+        }
+        throw new UnsupportedOperationException ();
+    }
+    
+    /**
+     * Adds archive files or folders into the project's classpath if the
+     * entries are not already there.
+     * @param classPathRoots roots to be added, each root has to be either a root of an archive or a folder url; URI can be relative
+     * @param projectArtifact a file whose classpath should be extended
+     * @param classPathType the type of classpath to be extended, @see ClassPath
+     * @return true in case the classpath was changed, (at least one classpath root was added to the classpath),
+     * the value false is returned when all the classpath roots are already included on the classpath.
+     * @exception IOException in case the project metadata cannot be changed
+     * @exception UnsupportedOperationException is thrown when the project does not support
+     * adding of a root to the classpath of the given type.
+     * @since org.netbeans.modules.java.project/1 1.16
+     */
+    public static boolean addRoots (final URI[] classPathRoots, final FileObject projectArtifact, final String classPathType) throws IOException, UnsupportedOperationException {
+        final Extensible extensible = findExtensible(projectArtifact, classPathType);
+        if (extensible != null) {
+            if (extensible.pcmi != null) {
+                assert extensible.sg != null;
+                assert extensible.classPathType != null;
+                return ProjectClassPathModifierAccessor.INSTANCE.addRoots (classPathRoots, extensible.pcmi, extensible.sg, extensible.classPathType);
+            }
+            else if (extensible.pcpe != null) {
+                boolean result = false;
+                final Project project = FileOwnerQuery.getOwner(projectArtifact);
+                final File projectFolderFile = FileUtil.toFile(project.getProjectDirectory());
+                for (int i=0; i< classPathRoots.length; i++) {
+                    URI urlToAdd = LibrariesSupport.getArchiveFile(classPathRoots[i]);
+                    if (urlToAdd == null) {
+                        urlToAdd = classPathRoots[i];
+                    }
                     final FileObject fo;
-                    if (LibrariesSupport.isAbsoluteURL(urlToAdd)) {
-                        fo = URLMapper.findFileObject(urlToAdd);
+                    if (urlToAdd.isAbsolute()) {
+                        fo = FileUtil.toFileObject(new File(urlToAdd));
                     } else {
-                        File f = PropertyUtils.resolveFile(projectFolderFile, LibrariesSupport.convertURLToFilePath(urlToAdd));
+                        File f = PropertyUtils.resolveFile(projectFolderFile, LibrariesSupport.convertURIToFilePath(urlToAdd));
                         fo = FileUtil.toFileObject(f);
                     }
                     if (fo == null) {
@@ -190,6 +232,29 @@ public class ProjectClassPathModifier {
      * removing of a root from the classpath of the given type.
      */
     public static boolean removeRoots (final URL[] classPathRoots, final FileObject projectArtifact, final String classPathType) throws IOException, UnsupportedOperationException {
+        final Extensible extensible = findExtensible (projectArtifact, classPathType);
+        if (extensible != null && extensible.pcmi != null) {
+            assert extensible.sg != null;
+            assert extensible.classPathType != null;
+            return ProjectClassPathModifierAccessor.INSTANCE.removeRoots (classPathRoots, extensible.pcmi, extensible.sg, extensible.classPathType);
+        }
+        throw new UnsupportedOperationException ();
+    }
+    
+    /**
+     * Removes archive files or folders from the project's classpath if the
+     * entries are included on it.
+     * @param classPathRoots roots to be removed, each root has to be either a root of an archive or a folder; URI can be relative
+     * @param projectArtifact a file from whose classpath the roots should be removed
+     * @param classPathType the type of classpath, @see ClassPath
+     * @return true in case the classpath was changed, (at least one classpath root was removed from the classpath),
+     * the value false is returned when none of the classpath roots was included on the classpath.
+     * @exception IOException in case the project metadata cannot be changed
+     * @exception UnsupportedOperationException is thrown when the project does not support
+     * removing of a root from the classpath of the given type.
+     * @since org.netbeans.modules.java.project/1 1.16
+     */
+    public static boolean removeRoots (final URI[] classPathRoots, final FileObject projectArtifact, final String classPathType) throws IOException, UnsupportedOperationException {
         final Extensible extensible = findExtensible (projectArtifact, classPathType);
         if (extensible != null && extensible.pcmi != null) {
             assert extensible.sg != null;
@@ -300,7 +365,7 @@ public class ProjectClassPathModifier {
                 }
             }
         }
-        else if (classPathType.equals(ClassPath.COMPILE)) {
+        if (classPathType.equals(ClassPath.COMPILE)) {
             final org.netbeans.spi.java.project.classpath.ProjectClassPathExtender pe = 
                     project.getLookup().lookup(org.netbeans.spi.java.project.classpath.ProjectClassPathExtender.class);
             if (pe != null) {

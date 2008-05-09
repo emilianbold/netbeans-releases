@@ -51,7 +51,16 @@ public class UnnamedEnumTestCase extends HyperlinkBaseTestCase {
         super(testName);
         //System.setProperty("cnd.modelimpl.trace.registration", "true");
     }
+
+    public void testFOUR() throws Exception {
+        performTest("newfile.cc", 3, 15, "newfile.cc", 3, 14);
+        performTest("newfile.cc", 7, 14, "newfile.cc", 3, 14);
+    }
     
+    public void testONE() throws Exception {
+        performTest("newfile.cc", 6, 14, "newfile.h", 1, 7);
+    }
+
     public void testExecutionContextT() throws Exception {
         performTest("unnamedTypedefEnum.cc", 6, 20, "unnamedTypedefEnum.cc", 6, 17); // k_eExecutionContextSystemTask
         performTest("unnamedTypedefEnum.cc", 7, 20, "unnamedTypedefEnum.cc", 7, 17); // k_eExecutionContextMPTask

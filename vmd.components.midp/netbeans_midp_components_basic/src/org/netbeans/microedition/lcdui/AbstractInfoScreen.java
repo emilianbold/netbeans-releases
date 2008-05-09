@@ -267,8 +267,13 @@ public abstract class AbstractInfoScreen extends Canvas {
         if (image != null) {
             g.drawImage(image, centerX, centerY, Graphics.HCENTER | Graphics.VCENTER);
         }
-        if (text != null) {
+        if (image == null && text != null) {
             g.drawString(text, centerX, centerY, Graphics.HCENTER | Graphics.BASELINE);
+        } else if (image != null && text != null) {
+            int textPositionY = centerY + image.getHeight() + 5;
+            if (textPositionY > g.getClipHeight())
+                textPositionY = g.getClipHeight() - 5 ;
+            g.drawString(text, centerX, textPositionY, Graphics.HCENTER | Graphics.BASELINE);
         }
     }
     

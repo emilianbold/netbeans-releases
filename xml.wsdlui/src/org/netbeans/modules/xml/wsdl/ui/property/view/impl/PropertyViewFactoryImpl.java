@@ -325,7 +325,7 @@ public class PropertyViewFactoryImpl extends PropertyViewFactory {
     private org.openide.nodes.Node.Property createDefaultNodeProperty(Attribute attr, ExtensibilityElement exElement, QName attributeQName, boolean isOptional) {
         Node.Property attrValueProperty = null;
         QName elementQName = new QName(attributeQName.getNamespaceURI(), exElement.getQName().getLocalPart());
-        ExtensibilityElementConfigurator configurator = new ExtensibilityElementConfiguratorFactory().getExtensibilityElementConfigurator(
+        ExtensibilityElementConfigurator configurator = ExtensibilityElementConfiguratorFactory.getDefault().getExtensibilityElementConfigurator(
                 elementQName);
         if (configurator != null) {
             if (configurator.isHidden(exElement, elementQName, attributeQName.getLocalPart())) {

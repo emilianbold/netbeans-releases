@@ -52,10 +52,10 @@
 # sources=/space/src/nb_all
 # a full NB source checkout
 #
-# nbjdk=/opt/java/j2se/1.5.0_14
-# JDK 1.5.0_14 installation directory. (Full JDK, not just JRE.)
+# nbjdk=/opt/java/j2se/1.5.0_15
+# JDK 1.5.0_15 installation directory. (Full JDK, not just JRE.)
 #
-# nbtestjdk=/opt/java/j2se/1.5.0_14
+# nbtestjdk=/opt/java/j2se/1.5.0_15
 # JDK installation directory for use when running (but not building!) test suites.
 # By default, same as nbjdk. However you may wish to run tests with a
 # different VM.
@@ -75,7 +75,7 @@
 #
 # dobuild=no
 # if set to "no", do not do a build, just run tests
-# default is "yes", do a build (incl. sanity check and commit verification)
+# default is "yes", do a build (incl. commit verification)
 # YOU MUST DO A CLEAN BUILD BEFORE COMMITTING TO THE TRUNK
 #
 # testedmodule=full
@@ -145,9 +145,9 @@ fi
 
 if [ "$override" != yes ]
 then
-    if $nbjdk/bin/java -version 2>&1 | fgrep -q -v 1.5.0_14
+    if $nbjdk/bin/java -version 2>&1 | fgrep -q -v 1.5.0_15
     then
-        echo "You need to set the variable 'nbjdk' to a JDK 1.5.0_14 installation" 1>&2
+        echo "You need to set the variable 'nbjdk' to a JDK 1.5.0_15 installation" 1>&2
         exit 2
     fi
     if $ant -version 2>&1 | fgrep -q -v 1.7.0
@@ -281,9 +281,8 @@ if [ $dobuild = yes ]
 then
     echo "----------BUILDING NETBEANS----------" 1>&2
     # Intentionally skipping check-commit-validation.
-    # Running sanity-start just so you have a good chance to see deprecation messages etc.
     # Make sure to explicitly set JDK (ignore any definition in user.build.properties).
-    $antcmd -f $sources/nbbuild/build.xml -Dnbjdk.home=$nbjdk nozip-check
+    $antcmd -f $sources/build.xml -Dnbjdk.home=$nbjdk
     status=$?
     if [ $status '!=' 0 ]
     then

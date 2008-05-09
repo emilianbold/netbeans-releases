@@ -81,6 +81,7 @@ import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.ProjectNameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
+import org.netbeans.modules.cnd.modelimpl.uid.LazyCsmCollection;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
@@ -122,7 +123,28 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         if (TraceFlags.CLOSE_AFTER_PARSE) {
             Terminator.create(this);
         }
-        needParseOrphan = ModelSupport.instance().needParseOrphan(platformProject);
+        needParseOrphan = ModelSupport.needParseOrphan(platformProject);
+    }
+    
+    
+    private boolean checkConsistency() {
+        long time = TraceFlags.TIMING ? System.currentTimeMillis() : 0;
+        if( getFileContainer() == null ) {
+            return false;
+        }
+        if( getDeclarationsSorage() == null ) {
+            return false;
+        }
+        if( getGraph() == null ) {
+            return false;
+        }
+        if( getGlobalNamespace() == null ) {
+            return false;
+        }
+        if( TraceFlags.TIMING ) {
+            System.err.printf("Consistency check took %d ms\n", System.currentTimeMillis() - time);
+        }
+        return true;
     }
     
     private void setStatus(Status newStatus) {
@@ -158,8 +180,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 time = System.currentTimeMillis() - time;
                 System.err.printf("Project %s: loaded. %d ms\n", name, time);
             }
-            
-            return impl;
+            if( impl.checkConsistency() ) {
+                return impl;
+            }
         }
         return null;
     }
@@ -409,6 +432,23 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 !item.isExcluded();
     }
     
+    protected synchronized void registerProjectListeners() {
+        if( platformProject instanceof NativeProject ) {
+            if( projectListener == null ) {
+                projectListener = new NativeProjectListenerImpl(getModel(), (NativeProject) platformProject);
+            }
+            ((NativeProject) platformProject).addProjectItemsListener(projectListener);
+        }
+    }
+    
+    protected synchronized void unregisterProjectListeners() {
+        if( projectListener != null ) {
+            if( platformProject instanceof NativeProject ) {
+                ((NativeProject) platformProject).removeProjectItemsListener(projectListener);
+            }
+        }
+    }
+    
     protected synchronized void ensureFilesCreated() {
         if( status ==  Status.Initial || status == Status.Restored ) {
             try {
@@ -422,8 +462,8 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                     }
                 }
                 ParserQueue.instance().onStartAddingProjectFiles(this);
-                ModelSupport.instance().registerProjectListeners(this, platformProject);
-                NativeProject nativeProject = ModelSupport.instance().getNativeProject(platformProject);
+		registerProjectListeners();
+                NativeProject nativeProject = ModelSupport.getNativeProject(platformProject);
                 if( nativeProject != null ) {
                     try {
                         ParserQueue.instance().suspend();
@@ -527,7 +567,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             }
         }
         if(TraceFlags.DUMP_PROJECT_ON_OPEN ) {
-            ModelSupport.instance().dumpNativeProject(nativeProject);
+            ModelSupport.dumpNativeProject(nativeProject);
         }
         
         try {
@@ -584,7 +624,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 continue;
             }
             assert (nativeFileItem.getFile() != null) : "native file item must have valid File object";
-            if( TraceFlags.DEBUG ) ModelSupport.instance().trace(nativeFileItem);
+            if( TraceFlags.DEBUG ) ModelSupport.trace(nativeFileItem);
             try {
                 createIfNeed(nativeFileItem, sources, validator);
             } catch (Exception ex){
@@ -609,7 +649,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         assert preprocHandler != null;
         int fileType = isSourceFile ? getFileType(nativeFile) : FileImpl.HEADER_FILE;
         
-        FileAndHandler fileAndHandler = createOrFindFileImpl(ModelSupport.instance().getFileBuffer(file), nativeFile, fileType);
+        FileAndHandler fileAndHandler = createOrFindFileImpl(ModelSupport.getFileBuffer(file), nativeFile, fileType);
         
         if( fileAndHandler.preprocHandler == null ) {
             fileAndHandler.preprocHandler = createPreprocHandler(nativeFile);
@@ -1024,6 +1064,10 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         onFileRemoved(getFile(nativeFile));
     }
     
+    public void onFileExternalChange(FileImpl file) {
+        DeepReparsingUtils.reparseOnEdit(file, this);
+   }
+    
     public CsmFile findFile(CharSequence absolutePath) {
         File file = new File(absolutePath.toString());
         APTPreprocHandler preprocHandler = null;
@@ -1062,7 +1106,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 impl = getFile(file);
                 if( impl == null ) {
                     preprocHandler = (preprocHandler == null) ? getPreprocHandler(file) : preprocHandler;
-                    impl = new FileImpl(ModelSupport.instance().getFileBuffer(file), this, fileType, nativeFileItem);
+                    impl = new FileImpl(ModelSupport.getFileBuffer(file), this, fileType, nativeFileItem);
                     if (nativeFileItem != null) {
                         putNativeFileItem(impl.getUID(), nativeFileItem);
                     }
@@ -1205,10 +1249,6 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
     
     
-    protected ModelImpl getModelImpl() {
-        return null;
-    }
-    
     /**
      * Creates a dummy ClassImpl for uresolved name, stores in map
      * @param nameTokens name
@@ -1260,6 +1300,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 initializationTask = null;
             }
         }
+        unregisterProjectListeners();
         ParserQueue.instance().removeAll(this);
     }
     
@@ -1309,7 +1350,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
     
     private void disposeFiles() {
-        List<FileImpl> list;
+        Collection<FileImpl> list;
 //        synchronized (fileContainer) {
         list = getFileContainer().getFileImpls();
         getFileContainer().clear();
@@ -1327,7 +1368,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     
     private NamespaceImpl _getGlobalNamespace() {
         NamespaceImpl ns = (NamespaceImpl) UIDCsmConverter.UIDtoNamespace(globalNamespaceUID);
-        assert ns != null : "Failed to get global namespace by key " + globalNamespaceUID;
+        if (ns == null) {
+            DiagnosticExceptoins.register(new IllegalStateException("Failed to get global namespace by key " + globalNamespaceUID));
+        }
         return ns;
     }
     
@@ -1399,6 +1442,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                     file.fixFakeRegistrations();
                 }
             }
+        } 
+        catch( Exception e ) {
+           DiagnosticExceptoins.register(e); 
         } finally {
             disposeLock.readLock().unlock();
             ProjectComponent.setStable(declarationsSorageKey);
@@ -1411,7 +1457,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
      * CsmProject implementation
      */
     public Collection<CsmFile> getAllFiles() {
-        return (Collection<CsmFile>) getFileContainer().getFiles();
+        return getFileContainer().getFiles();
     }
     
     /**
@@ -1424,24 +1470,23 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
     
     public Collection<CsmFile> getSourceFiles() {
-        List<CsmFile> res = new ArrayList<CsmFile>();
+        List<CsmUID<CsmFile>> uids = new ArrayList<CsmUID<CsmFile>>();
         for(FileImpl file : getAllFileImpls()){
             if (file.isSourceFile()) {
-                res.add(file);
+                uids.add(file.getUID());
             }
         }
-        return res;
+        return new LazyCsmCollection<CsmFile, CsmFile>(uids, TraceFlags.SAFE_UID_ACCESS);
     }
     
     public Collection<CsmFile> getHeaderFiles() {
-        List<CsmFile> res = new ArrayList<CsmFile>();
+        List<CsmUID<CsmFile>> uids = new ArrayList<CsmUID<CsmFile>>();
         for(FileImpl file : getAllFileImpls()){
-            //if (file.isHeaderFile()) {
-            if (!file.isSourceFile()) {
-                res.add(file);
+            if ( ! file.isSourceFile()) {
+                uids.add(file.getUID());
             }
         }
-        return res;
+        return new LazyCsmCollection<CsmFile, CsmFile>(uids, TraceFlags.SAFE_UID_ACCESS);
     }
     
     public long getMemoryUsageEstimation() {
@@ -1671,7 +1716,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     
     private NativeProject findNativeProjectHolder(Set<ProjectBase> visited) {
         visited.add(this);
-        NativeProject nativeProject = ModelSupport.instance().getNativeProject(getPlatformProject());
+        NativeProject nativeProject = ModelSupport.getNativeProject(getPlatformProject());
         if (nativeProject == null) {
             // try to find dependent projects and ask them
             List<ProjectBase> deps = this.getDependentProjects();
@@ -1903,11 +1948,13 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     
     private Object namespaceLock = new String("namespaceLock in Projectbase "+hashCode()); // NOI18N
     
-    private Key declarationsSorageKey;
-    private Key fileContainerKey;
-    private Key graphStorageKey;
+    private final Key declarationsSorageKey;
+    private final Key fileContainerKey;
+    private final Key graphStorageKey;
     
     protected final SourceRootContainer projectRoots = new SourceRootContainer();
+    
+    private NativeProjectListenerImpl projectListener;
     
     //private NamespaceImpl fakeNamespace;
     
@@ -1985,18 +2032,26 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
     
     DeclarationContainer getDeclarationsSorage() {
-        return (DeclarationContainer) RepositoryUtils.get(declarationsSorageKey);
+        DeclarationContainer dc = (DeclarationContainer) RepositoryUtils.get(declarationsSorageKey);
+        if (dc == null) {
+            DiagnosticExceptoins.register(new IllegalStateException("Failed to get DeclarationsSorage by key " + declarationsSorageKey)); // NOI18N
+        }
+        return dc;       
     }
     
     FileContainer getFileContainer() {
         FileContainer fc = (FileContainer) RepositoryUtils.get(fileContainerKey);
-	assert fc != null : "Failed to get FileContainer by key " + fileContainerKey;
+        if (fc == null) {
+            DiagnosticExceptoins.register(new IllegalStateException("Failed to get FileContainer by key " + fileContainerKey)); // NOI18N
+        }
         return fc;
     }
     
     public GraphContainer getGraphStorage() {
         GraphContainer gc = (GraphContainer) RepositoryUtils.get(graphStorageKey);
-	assert gc != null : "Failed to get GraphContainer by key " + graphStorageKey;
+        if (gc == null) {
+            DiagnosticExceptoins.register(new IllegalStateException("Failed to get GraphContainer by key " + graphStorageKey)); // NOI18N
+        }
 	return gc;
     }
 }

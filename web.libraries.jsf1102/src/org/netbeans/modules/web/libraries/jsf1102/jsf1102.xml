@@ -59,4 +59,11 @@ made subject to such option by the copyright holder.
         <type>javadoc</type>
         <resource>jar:nbinst:///docs/javaee5-doc-api.zip!/</resource>
     </volume>
+    <volume>
+        <type>maven-pom</type>
+        <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->
+        <resource>http://repo1.maven.org/maven2/javax/faces/jsf-api/1.1_02/jsf-api-1.1_02.pom</resource>
+        <resource>http://repo1.maven.org/maven2/javax/faces/jsf-impl/1.1_02/jsf-impl-1.1_02.pom</resource>
+        <resource>http://repo1.maven.org/maven2/commons-digester/commons-digester/1.5/commons-digester-1.5.pom</resource>
+    </volume>
 </library>

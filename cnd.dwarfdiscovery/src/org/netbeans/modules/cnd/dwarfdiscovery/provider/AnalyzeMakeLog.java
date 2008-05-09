@@ -46,6 +46,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.cnd.discovery.api.Configuration;
+import org.netbeans.modules.cnd.discovery.api.ProjectImpl;
 import org.netbeans.modules.cnd.discovery.api.ProjectProperties;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.discovery.api.ProviderProperty;
@@ -151,11 +152,10 @@ public class AnalyzeMakeLog extends BaseDwarfProvider {
 
     @Override
     public boolean isApplicable(ProjectProxy project) {
-        if (detectMakeLog(project) != null){
-            Object o = getProperty(RESTRICT_COMPILE_ROOT).getValue();
-            if (o == null || "".equals(o.toString())){ // NOI18N
-                getProperty(RESTRICT_COMPILE_ROOT).setValue(project.getSourceRoot());
-            }
+//        if (detectMakeLog(project) != null){
+        Object o = getProperty(RESTRICT_COMPILE_ROOT).getValue();
+        if (o == null || "".equals(o.toString())){ // NOI18N
+            getProperty(RESTRICT_COMPILE_ROOT).setValue(project.getSourceRoot());
             return true;
         }
         return false;
@@ -164,7 +164,7 @@ public class AnalyzeMakeLog extends BaseDwarfProvider {
     private String detectMakeLog(ProjectProxy project){
         String root = project.getSourceRoot();
         int i = root.indexOf("/usr/src/"); // NOI18N
-        if (i < 0 && root.endsWith("/usr/src")){
+        if (i < 0 && root.endsWith("/usr/src")){ // NOI18N
             i = root.indexOf("/usr/src"); // NOI18N
         }
         if (i > 0) {
@@ -175,12 +175,15 @@ public class AnalyzeMakeLog extends BaseDwarfProvider {
                 for (File when : log.listFiles()) {
                     if (when.isDirectory()) {
                         for (File l : when.listFiles()) {
-                            if (l.getAbsolutePath().endsWith("/nightly.log")) { // NOI18N
-                                if (latest == null){
-                                    latest = l.getAbsolutePath();
+                            String current = l.getAbsolutePath();
+                            if (current.endsWith("/nightly.log")) { // NOI18N
+                                if (latest == null) {
+                                    latest = current;
                                 } else {
-                                    if (latest.compareTo(l.getAbsolutePath())<0) {
-                                        latest = l.getAbsolutePath();
+                                    String folder1 = latest.substring(0, latest.lastIndexOf("/nightly.log")); // NOI18N
+                                    String folder2 = current.substring(0, current.lastIndexOf("/nightly.log")); // NOI18N
+                                    if (folder1.compareTo(folder2) < 0) {
+                                        latest = current;
                                     }
                                 }
                                 break;
@@ -204,6 +207,22 @@ public class AnalyzeMakeLog extends BaseDwarfProvider {
         }
         return 80;
     }
+
+    @Override
+    protected List<SourceFileProperties> getSourceFileProperties(String objFileName, Map<String,SourceFileProperties> map){
+        ProviderProperty p = getProperty(RESTRICT_COMPILE_ROOT);
+        String root = "";
+        if (p != null) {
+            root = (String)p.getValue();
+        }
+        return runLogReader(objFileName, root);
+    }
+    
+    /* package-local */ static List<SourceFileProperties> runLogReader(String objFileName, String root){
+        LogReader clrf = new LogReader(objFileName, root);
+        List<SourceFileProperties> list = clrf.getResults();
+        return list;
+    }
     
     public List<Configuration> analyze(final ProjectProxy project) {
         isStoped = false;
@@ -214,7 +233,7 @@ public class AnalyzeMakeLog extends BaseDwarfProvider {
                 private List<SourceFileProperties> myFileProperties;
                 private List<String> myIncludedFiles;
                 public List<ProjectProperties> getProjectConfiguration() {
-                    return divideByLanguage(getSourcesConfiguration());
+                    return ProjectImpl.divideByLanguage(getSourcesConfiguration());
                 }
                 
                 public List<Configuration> getDependencies() {
@@ -233,6 +252,8 @@ public class AnalyzeMakeLog extends BaseDwarfProvider {
                     }
                     return myFileProperties;
                 }
+                
+                
                 
                 public List<String> getIncludedFiles(){
                     if (myIncludedFiles == null) {

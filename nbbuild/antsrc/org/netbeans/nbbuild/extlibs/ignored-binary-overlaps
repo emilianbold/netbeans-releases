@@ -4,3 +4,8 @@
 
 # #119122: duplication of these is intentional.
 ruby*/jruby-*/lib/*.jar ruby*/modules/ext/*.jar
+
+# It is impractical to create a common library module containing the duplicate
+# libraries.
+enterprise5/modules/ext/rest/http.jar java2/modules/ext/jaxws21/http.jar 
+enterprise5/modules/ext/rest/jdom-1.0.jar mobility8/modules/ext/jdom-1.0.jar  

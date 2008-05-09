@@ -47,21 +47,11 @@ import javax.swing.Icon;
 import javax.swing.UIManager;
 import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
 import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 public class DriverListNode extends DatabaseNode {
-    public DriverListNode() {
-        setDisplayName(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("NDN_Drivers")); //NOI18N
-    }
-
-    public void setInfo(DatabaseNodeInfo nodeinfo) {
-        info = nodeinfo;
-        processInfo();
-    }
-
-    public String getShortDescription() {
-        return NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ND_DriverList"); //NOI18N
+    public DriverListNode(DatabaseNodeInfo info) {
+        super(info);
     }
 
     /** Help context where to find more about the paste type action.
@@ -114,4 +104,5 @@ public class DriverListNode extends DatabaseNode {
         }
 
         return null;
-    }  }
+    }  
+}

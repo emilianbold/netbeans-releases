@@ -112,11 +112,11 @@ public final class ColoringStorage implements StorageDescription<String, Attribu
         return null;
     }
 
-    public StorageReader<String, AttributeSet> createReader(FileObject f) {
+    public StorageReader<String, AttributeSet> createReader(FileObject f, String mimePath) {
         throw new UnsupportedOperationException("Should not be called.");
     }
 
-    public StorageWriter<String, AttributeSet> createWriter(FileObject f) {
+    public StorageWriter<String, AttributeSet> createWriter(FileObject f, String mimePath) {
         throw new UnsupportedOperationException("Should not be called.");
     }
     
@@ -131,7 +131,7 @@ public final class ColoringStorage implements StorageDescription<String, Attribu
         FileObject baseFolder = Repository.getDefault().getDefaultFileSystem().findResource("Editors"); //NOI18N
         Map<String, List<Object []>> files = new HashMap<String, List<Object []>>();
         SettingsType.Locator locator = SettingsType.getLocator(this);
-        locator.scan(baseFolder, mimePath.getPath(), profile, true, true, !defaults, files);
+        locator.scan(baseFolder, mimePath.getPath(), profile, true, true, !defaults, false, files);
         
         assert files.size() <= 1 : "Too many results in the scan"; //NOI18N
 
@@ -145,7 +145,7 @@ public final class ColoringStorage implements StorageDescription<String, Attribu
             // If non-default profile load the default profile supplied by modules
             // to find the localizing bundles.
             Map<String, List<Object []>> defaultProfileModulesFiles = new HashMap<String, List<Object []>>();
-            locator.scan(baseFolder, mimePath.getPath(), EditorSettingsImpl.DEFAULT_PROFILE, true, true, false, defaultProfileModulesFiles);
+            locator.scan(baseFolder, mimePath.getPath(), EditorSettingsImpl.DEFAULT_PROFILE, true, true, false, false, defaultProfileModulesFiles);
             filesForLocalization = defaultProfileModulesFiles.get(EditorSettingsImpl.DEFAULT_PROFILE);
             
             // if there is no default profile (eg. in tests)
@@ -158,9 +158,11 @@ public final class ColoringStorage implements StorageDescription<String, Attribu
         
         Map<String, SimpleAttributeSet> fontsColorsMap = new HashMap<String, SimpleAttributeSet>();
         for(Object [] info : profileInfos) {
+            assert info.length == 5;
             FileObject profileHome = (FileObject) info[0];
             FileObject settingFile = (FileObject) info[1];
             boolean modulesFile = ((Boolean) info[2]).booleanValue();
+            boolean legacyFile = ((Boolean) info[4]).booleanValue();
 
             // Skip files with wrong type of colorings
             boolean isTokenColoringFile = isTokenColoringFile(settingFile);
@@ -169,8 +171,8 @@ public final class ColoringStorage implements StorageDescription<String, Attribu
             }
             
             // Load colorings from the settingFile
-            ColoringsReader reader = new ColoringsReader();
-            Utils.load(settingFile, reader);
+            ColoringsReader reader = new ColoringsReader(settingFile, mimePath.getPath());
+            Utils.load(settingFile, reader, !legacyFile);
             Map<String, SimpleAttributeSet> sets = reader.getAdded();
             
             // Process loaded colorings
@@ -296,7 +298,7 @@ public final class ColoringStorage implements StorageDescription<String, Attribu
         FileSystem sfs = Repository.getDefault().getDefaultFileSystem();
         FileObject baseFolder = sfs.findResource("Editors"); //NOI18N
         Map<String, List<Object []>> files = new HashMap<String, List<Object []>>();
-        SettingsType.getLocator(this).scan(baseFolder, mimePath.getPath(), profile, true, defaults, !defaults, files);
+        SettingsType.getLocator(this).scan(baseFolder, mimePath.getPath(), profile, true, defaults, !defaults, false, files);
         
         assert files.size() <= 1 : "Too many results in the scan"; //NOI18N
 
@@ -386,7 +388,8 @@ public final class ColoringStorage implements StorageDescription<String, Attribu
         private final Map<String, SimpleAttributeSet> colorings = new HashMap<String, SimpleAttributeSet>();
         private SimpleAttributeSet attribs = null;
         
-        public ColoringsReader() {
+        public ColoringsReader(FileObject f, String mimePath) {
+            super(f, mimePath);
         }
 
         public @Override Map<String, SimpleAttributeSet> getAdded() {

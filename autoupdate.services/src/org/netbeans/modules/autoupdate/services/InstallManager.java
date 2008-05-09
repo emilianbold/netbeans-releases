@@ -53,6 +53,7 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.Module;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.core.startup.MainLookup;
 import org.netbeans.core.startup.layers.LocalFileSystemEx;
@@ -124,12 +125,12 @@ public class InstallManager extends InstalledFileLocator{
                 
                 // if no writable => getUserDir()
                 if (ERR.isLoggable (Level.INFO)) {
-                    if (res == null || ! res.canWrite ()) {
+                    if (res == null || ! Utilities.canWriteInCluster (res)) {
                         ERR.log (Level.INFO, "Declared target cluster " + targetCluster + 
                                 " in " + update.getUpdateElement () + " is not writable. Will be used " + res);
                     }
                 }
-                res = res == null || ! res.canWrite () ? getUserDir () : res;
+                res = res == null || ! Utilities.canWriteInCluster (res) ? getUserDir () : res;
 
                 
             } else {
@@ -151,7 +152,7 @@ public class InstallManager extends InstalledFileLocator{
                     cluster.mkdirs();
                     extendSystemFileSystem(cluster);
                 }
-                if (cluster.canWrite()) {
+                if (Utilities.canWriteInCluster (cluster)) {
                     res = cluster;
                     break;
                 } else {
@@ -230,9 +231,10 @@ public class InstallManager extends InstalledFileLocator{
         UpdateElementImpl i = Trampoline.API.impl (installed);
         assert i instanceof ModuleUpdateElementImpl : "Impl of " + installed + " instanceof ModuleUpdateElementImpl";
         
-        String configFileName = ModuleDeactivator.CONFIG + '/' + ModuleDeactivator.MODULES + '/' + installed.getCodeName ().replace ('.', '-') + ".xml"; // NOI18N
-        File configFile = InstalledFileLocator.getDefault ().locate (configFileName, installed.getCodeName (), false);
-        if (configFile == null) {
+        Module m = Utilities.toModule (((ModuleUpdateElementImpl) i).getModuleInfo ());
+        File jarFile = m == null ? null : m.getJarFile ();
+        
+        if (jarFile == null) {
             // only fixed module cannot be located
             ERR.log (Level.FINE, "No install dir for " + installed + " (It's ok for fixed). Is fixed? " + Trampoline.API.impl (installed).isFixed ());
             String targetCluster = update.getInstallInfo ().getTargetCluster ();
@@ -260,14 +262,15 @@ public class InstallManager extends InstalledFileLocator{
                 }*/
             
             for (File cluster : UpdateTracking.clusters (true)) {       
-                if (isParentOf (cluster, configFile)) {
+                cluster = FileUtil.normalizeFile (cluster);
+                if (isParentOf (cluster, jarFile)) {
                     res = cluster;
                     break;
                 }
             }
         }
 
-        if (res == null || ! res.canWrite ()) {
+        if (res == null || ! Utilities.canWriteInCluster (res)) {
             // go to userdir if no writable cluster is known
             ERR.log (Level.WARNING, "It's forbidden to write in target cluster " + res + 
                     " for " + update.getUpdateElement ());

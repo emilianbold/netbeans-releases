@@ -380,9 +380,13 @@ public final class SuiteUtils {
         File projectDirF = FileUtil.toFile(subModule.getProjectDirectory());
         File suiteDirF = suiteProps.getProjectDirectoryFile();
         String projectPropKey = generatePropertyKey(subModule);
-        if (CollocationQuery.areCollocated(projectDirF, suiteDirF)) {
+        String rel = PropertyUtils.relativizeFile(suiteDirF, projectDirF);
+        //mkleint: removed CollocationQuery.areCollocated() reference
+        // when AlwaysRelativeCQI gets removed the condition resolves to false more frequently.
+        // that might not be desirable.
+        if (rel != null) {
             suiteProps.setProperty(projectPropKey,
-                    PropertyUtils.relativizeFile(suiteDirF, projectDirF));
+                    rel);
         } else {
             suiteProps.setPrivateProperty(projectPropKey, projectDirF.getAbsolutePath());
         }

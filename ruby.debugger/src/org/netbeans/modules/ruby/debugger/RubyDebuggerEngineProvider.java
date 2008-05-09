@@ -44,9 +44,6 @@ package org.netbeans.modules.ruby.debugger;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.spi.debugger.DebuggerEngineProvider;
 
-/**
- * @author Martin Krauskopf
- */
 public final class RubyDebuggerEngineProvider extends DebuggerEngineProvider {
     
     static final String RUBY_LANGUAGE = "Ruby"; // NOI18N

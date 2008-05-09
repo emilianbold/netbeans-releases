@@ -48,7 +48,6 @@ import javax.swing.ImageIcon;
 
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.ui.graph.actions.GraphAction;
 import org.netbeans.modules.sql.framework.ui.view.conditionbuilder.ConditionBuilderView;
 import org.netbeans.modules.sql.framework.ui.view.conditionbuilder.ConditionViewManager;
@@ -62,20 +61,20 @@ import org.netbeans.modules.sql.framework.ui.view.conditionbuilder.ConditionView
 public class ValidateGraphAction extends GraphAction {
 
     private static URL showSqlUrl = ValidateGraphAction.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/validate.png");
-    private static transient final Logger mLogger = LogUtil.getLogger(ValidateGraphAction.class.getName());
+    private static transient final Logger mLogger = Logger.getLogger(ValidateGraphAction.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
     public ValidateGraphAction() {
         // Action name
-        String nbBundle1 = mLoc.t("PRSR001: Validate Graph");
-        this.putValue(Action.NAME, Localizer.parse(nbBundle1));
+        String nbBundle1 = mLoc.t("BUND376: Validate Graph");
+        this.putValue(Action.NAME, nbBundle1.substring(15));
 
         // Action icon
         this.putValue(Action.SMALL_ICON, new ImageIcon(showSqlUrl));
 
         // Action tooltip
-        String nbBundle2 = mLoc.t("PRSR001: Validate Graph");
-        this.putValue(Action.SHORT_DESCRIPTION, Localizer.parse(nbBundle2));
+        String nbBundle2 = mLoc.t("BUND376: Validate Graph");
+        this.putValue(Action.SHORT_DESCRIPTION, nbBundle2.substring(15));
     }
 
     /**

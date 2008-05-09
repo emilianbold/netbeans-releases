@@ -92,56 +92,6 @@ public class Page1 extends AbstractPageBean {
         tripDataProvider.setCachedRowSet((javax.sql.rowset.CachedRowSet) getValue("#{SessionBean1.tripRowSet}"));
         triptypeDataProvider.setCachedRowSet((javax.sql.rowset.CachedRowSet) getValue("#{SessionBean1.triptypeRowSet}"));
     }
-
-    private Page page1 = new Page();
-    
-    public Page getPage1() {
-        return page1;
-    }
-    
-    public void setPage1(Page p) {
-        this.page1 = p;
-    }
-    
-    private Html html1 = new Html();
-    
-    public Html getHtml1() {
-        return html1;
-    }
-    
-    public void setHtml1(Html h) {
-        this.html1 = h;
-    }
-    
-    private Head head1 = new Head();
-    
-    public Head getHead1() {
-        return head1;
-    }
-    
-    public void setHead1(Head h) {
-        this.head1 = h;
-    }
-    
-    private Link link1 = new Link();
-    
-    public Link getLink1() {
-        return link1;
-    }
-    
-    public void setLink1(Link l) {
-        this.link1 = l;
-    }
-    
-    private Body body1 = new Body();
-    
-    public Body getBody1() {
-        return body1;
-    }
-    
-    public void setBody1(Body b) {
-        this.body1 = b;
-    }
     
     private Form form1 = new Form();
     
@@ -151,42 +101,6 @@ public class Page1 extends AbstractPageBean {
     
     public void setForm1(Form f) {
         this.form1 = f;
-    }
-    private HtmlPanelGrid mainPanel = new HtmlPanelGrid();
-
-    public HtmlPanelGrid getMainPanel() {
-        return mainPanel;
-    }
-
-    public void setMainPanel(HtmlPanelGrid hpg) {
-        this.mainPanel = hpg;
-    }
-    private HtmlPanelGrid personForm = new HtmlPanelGrid();
-
-    public HtmlPanelGrid getPersonForm() {
-        return personForm;
-    }
-
-    public void setPersonForm(HtmlPanelGrid hpg) {
-        this.personForm = hpg;
-    }
-    private HtmlPanelGrid tripForm = new HtmlPanelGrid();
-
-    public HtmlPanelGrid getTripForm() {
-        return tripForm;
-    }
-
-    public void setTripForm(HtmlPanelGrid hpg) {
-        this.tripForm = hpg;
-    }
-    private HtmlPanelGrid crudControls = new HtmlPanelGrid();
-
-    public HtmlPanelGrid getCrudControls() {
-        return crudControls;
-    }
-
-    public void setCrudControls(HtmlPanelGrid hpg) {
-        this.crudControls = hpg;
     }
     private Button create = new Button();
 
@@ -224,15 +138,6 @@ public class Page1 extends AbstractPageBean {
     public void setDelete(Button b) {
         this.delete = b;
     }
-    private HtmlPanelGrid vcrControls = new HtmlPanelGrid();
-
-    public HtmlPanelGrid getVcrControls() {
-        return vcrControls;
-    }
-
-    public void setVcrControls(HtmlPanelGrid hpg) {
-        this.vcrControls = hpg;
-    }
     private Button first = new Button();
 
     public Button getFirst() {
@@ -269,42 +174,6 @@ public class Page1 extends AbstractPageBean {
     public void setLast(Button b) {
         this.last = b;
     }
-    private Label label1 = new Label();
-
-    public Label getLabel1() {
-        return label1;
-    }
-
-    public void setLabel1(Label l) {
-        this.label1 = l;
-    }
-    private Label label2 = new Label();
-
-    public Label getLabel2() {
-        return label2;
-    }
-
-    public void setLabel2(Label l) {
-        this.label2 = l;
-    }
-    private Label label3 = new Label();
-
-    public Label getLabel3() {
-        return label3;
-    }
-
-    public void setLabel3(Label l) {
-        this.label3 = l;
-    }
-    private Label label4 = new Label();
-
-    public Label getLabel4() {
-        return label4;
-    }
-
-    public void setLabel4(Label l) {
-        this.label4 = l;
-    }
     private Calendar depDateCalendar = new Calendar();
 
     public Calendar getDepDateCalendar() {
@@ -313,51 +182,6 @@ public class Page1 extends AbstractPageBean {
 
     public void setDepDateCalendar(Calendar c) {
         this.depDateCalendar = c;
-    }
-    private Message message1 = new Message();
-
-    public Message getMessage1() {
-        return message1;
-    }
-
-    public void setMessage1(Message m) {
-        this.message1 = m;
-    }
-    private TextField fromCity = new TextField();
-
-    public TextField getFromCity() {
-        return fromCity;
-    }
-
-    public void setFromCity(TextField tf) {
-        this.fromCity = tf;
-    }
-    private TextField toCity = new TextField();
-
-    public TextField getToCity() {
-        return toCity;
-    }
-
-    public void setToCity(TextField tf) {
-        this.toCity = tf;
-    }
-    private Message message2 = new Message();
-
-    public Message getMessage2() {
-        return message2;
-    }
-
-    public void setMessage2(Message m) {
-        this.message2 = m;
-    }
-    private Message message3 = new Message();
-
-    public Message getMessage3() {
-        return message3;
-    }
-
-    public void setMessage3(Message m) {
-        this.message3 = m;
     }
     private DropDown tripType = new DropDown();
 
@@ -368,33 +192,6 @@ public class Page1 extends AbstractPageBean {
     public void setTripType(DropDown dd) {
         this.tripType = dd;
     }
-    private MessageGroup messageGroup1 = new MessageGroup();
-
-    public MessageGroup getMessageGroup1() {
-        return messageGroup1;
-    }
-
-    public void setMessageGroup1(MessageGroup mg) {
-        this.messageGroup1 = mg;
-    }
-    private Label person = new Label();
-
-    public Label getPerson() {
-        return person;
-    }
-
-    public void setPerson(Label l) {
-        this.person = l;
-    }
-    private Label title1 = new Label();
-
-    public Label getTitle1() {
-        return title1;
-    }
-
-    public void setTitle1(Label l) {
-        this.title1 = l;
-    }
     private DropDown personId = new DropDown();
 
     public DropDown getPersonId() {
@@ -403,15 +200,6 @@ public class Page1 extends AbstractPageBean {
 
     public void setPersonId(DropDown dd) {
         this.personId = dd;
-    }
-    private StaticText title = new StaticText();
-
-    public StaticText getTitle() {
-        return title;
-    }
-
-    public void setTitle(StaticText st) {
-        this.title = st;
     }
     private CachedRowSetDataProvider personDataProvider = new CachedRowSetDataProvider();
 

@@ -122,26 +122,6 @@ public class JsfJspDataNode extends org.openide.loaders.DataNode implements Prop
             JsfProjectUtils.removeProjectPropertyListener(project, listener);
         }
 
-        /**
-         * If this is a portlet project and the page is part of an initial mode,
-         * we need to unset the initial page.
-         * -David Botterill 12/7/2005
-         */
-        FileObject fo = getDataObject().getPrimaryFile();
-        if(null == fo) return;
-        JsfPortletSupport portletSupport = JsfJspDataNode.getPortletSupport(fo);
-        if(null != portletSupport) {
-            try {
-                if(portletSupport.isInitialPage(PortletModeType.VIEW, fo) ||
-                        portletSupport.isInitialPage(PortletModeType.EDIT, fo) ||
-                        portletSupport.isInitialPage(PortletModeType.HELP, fo)) {
-                    portletSupport.unsetInitialPage(fo);
-                }
-            } catch(JsfPortletSupportException pse) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, pse);
-            }
-        }
-
         super.destroy();
     }
 

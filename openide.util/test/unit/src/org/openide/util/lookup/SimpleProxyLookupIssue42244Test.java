@@ -55,8 +55,9 @@ public class SimpleProxyLookupIssue42244Test extends AbstractLookupBaseHid imple
         super(testName, null);
     }
 
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(new NbTestSuite (SimpleProxyLookupIssue42244Test.class));
+    public static Test suite() {
+        // return new SimpleProxyLookupIssue42244Test("testGarbageCollect");
+        return new NbTestSuite(SimpleProxyLookupIssue42244Test.class);
     }
     
     /** Creates an lookup for given lookup. This class just returns 

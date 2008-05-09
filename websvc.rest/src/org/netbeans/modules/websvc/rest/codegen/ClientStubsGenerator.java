@@ -73,6 +73,7 @@ import org.netbeans.modules.websvc.rest.codegen.model.ClientStubModel;
 import org.netbeans.modules.websvc.rest.codegen.model.ClientStubModel.*;
 import org.openide.filesystems.FileSystem;
 import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -99,6 +100,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
     public static final String JS = "js"; //NOI18N
     public static final String HTML = "html"; //NOI18N
     public static final String HTM = "htm"; //NOI18N
+    public static final String TXT = "txt"; //NOI18N
     public static final String JSON = "json"; //NOI18N
     public static final String GIF = "gif"; //NOI18N
     public static final String JSP = "jsp"; //NOI18N
@@ -122,7 +124,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
     public static final String JS_CONTAINERSTUB_TEMPLATE = "Templates/WebServices/JsContainerStub.js"; //NOI18N
     public static final String JS_CONTAINERITEMSTUB_TEMPLATE = "Templates/WebServices/JsContainerItemStub.js"; //NOI18N
     public static final String JS_GENERICSTUB_TEMPLATE = "Templates/WebServices/JsGenericStub.js"; //NOI18N
-    public static final String JS_README_TEMPLATE = "Templates/WebServices/JsReadme.html"; //NOI18N
+    public static final String JS_README_TEMPLATE = "Templates/WebServices/JsReadme.txt"; //NOI18N
      
     //Dojo templates
     public static final String DOJO_RESTSTORE = "RestStore";//NOI18N
@@ -146,7 +148,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
     public static final String JMAKI_RESOURCESTABLE_DEST = "rtable"; //NOI18N
     public static final String JMAKI_RESOURCESTABLEUP_DEST = "rtableUp"; //NOI18N
     public static final String JMAKI_RESOURCESTABLEDOWN_DEST = "rtableDown"; //NOI18N
-    public static final String JMAKI_README_TEMPLATE = "Templates/WebServices/JmakiReadme.html"; //NOI18N
+    public static final String JMAKI_README_TEMPLATE = "Templates/WebServices/JmakiReadme.txt"; //NOI18N
     public static final String JMAKI_COMPONENTCSS_TEMPLATE = "Templates/WebServices/JmakiComponent.css"; //NOI18N
     public static final String JMAKI_COMPONENTHTM_TEMPLATE = "Templates/WebServices/JmakiComponent.htm"; //NOI18N
     public static final String JMAKI_COMPONENTJS_TEMPLATE = "Templates/WebServices/JmakiComponent.js"; //NOI18N
@@ -182,6 +184,8 @@ public class ClientStubsGenerator extends AbstractGenerator {
     private static final int READ_BUF_SIZE = 65536;
     private static final int WRITE_BUF_SIZE = 65536;
     private FileObject wadlFile;
+    private String folderName;
+    private String baseUrl;
     
     public ClientStubsGenerator(FileObject root, Project p, boolean createJmaki, boolean overwrite) throws IOException {
         assert root != null;
@@ -197,9 +201,8 @@ public class ClientStubsGenerator extends AbstractGenerator {
             boolean createJmaki, boolean overwrite) throws IOException {
         assert root != null;
         assert p != null;
-        this.root = root.getFileObject(folderName);
-        if(this.root == null)
-            this.root = root.createFolder(folderName);
+        this.root = root;
+        this.folderName = folderName;
         this.p = p;
         this.createJmaki = createJmaki;
         this.overwrite = overwrite;
@@ -210,9 +213,8 @@ public class ClientStubsGenerator extends AbstractGenerator {
             boolean createJmaki, boolean overwrite) throws IOException {
         assert root != null;
         assert wadlFile != null;
-        this.root = root.getFileObject(folderName);
-        if(this.root == null)
-            this.root = root.createFolder(folderName);
+        this.root = root;
+        this.folderName = folderName;
         this.wadlFile = wadlFile;
         this.createJmaki = createJmaki;
         this.overwrite = overwrite;
@@ -221,6 +223,10 @@ public class ClientStubsGenerator extends AbstractGenerator {
     
     public FileObject getRootDir() {
         return root;
+    }
+    
+    public String getFolderName() {
+        return folderName;
     }
     
     public Project getProject() {
@@ -243,17 +249,43 @@ public class ClientStubsGenerator extends AbstractGenerator {
         return model;
     }
 
+    public static final String DEFAULT_PROTOCOL = "http";
+    public static final String DEFAULT_HOST = "localhost";
+    public static final String DEFAULT_PORT = "8080";
+    
+    private String getApplicationNameFromUrl(String url) {
+        String appName = url.replaceAll(DEFAULT_PROTOCOL+"://", "");
+        if(appName.endsWith("/"))
+            appName = appName.substring(0, appName.length()-1);
+        String[] paths = appName.split("/");
+        if(paths != null && paths.length > 0) {
+            for(int i=0;i<paths.length;i++) {
+                String path = paths[i];
+                if(path != null && path.startsWith(DEFAULT_HOST) &&
+                        i+1 < paths.length && paths[i+1] != null &&
+                        paths[i+1].trim().length() > 0) {
+                    return paths[i+1];
+                }
+            }
+        }
+        return ClientStubModel.normailizeName(appName);
+    }
+    
     public Set<FileObject> generate(ProgressHandle pHandle) throws IOException {
         if(pHandle != null)
             initProgressReporting(pHandle, false);
         
         this.model = new ClientStubModel();
-        if(p != null)
+        baseUrl = DEFAULT_PROTOCOL+"://"+DEFAULT_HOST+":"+DEFAULT_PORT+"/";
+        if(p != null) {
             this.model.buildModel(p);
-        else if(wadlFile != null) {
-            String appName = this.model.buildModel(wadlFile);
-            if(appName != null)
-                this.projectName = appName;
+            baseUrl += getProjectName() + "/resources";
+        } else if(wadlFile != null) {
+            String url = this.model.buildModel(wadlFile);
+            if(url != null) {
+                baseUrl = url;
+                this.projectName = getApplicationNameFromUrl(baseUrl);
+            }
         }
         List<Resource> resourceList = model.getResources();
         
@@ -272,23 +304,23 @@ public class ClientStubsGenerator extends AbstractGenerator {
         }
         
         if (createJmaki()) {
-            resourcesDir = getRootDir();
+            resourcesDir = createFolder(getRootDir(), RESOURCES);
             dojoDir = createFolder(resourcesDir, DOJO);
             restDir = createFolder(dojoDir, REST);
             rjsDir = createFolder(restDir, RJS);
             rdjDir = createFolder(restDir, RDJ);
-            templatesDir = createFolder(getRootDir().getParent(), TEMPLATES);
+            templatesDir = createFolder(getRootDir(), TEMPLATES);
             initJs(p);
             initDojo(p, resourceList);
             initJmaki(p, resourceList);
         } else {
-            rjsDir = createFolder(getRootDir().getParent(), REST);
+            rjsDir = createFolder(getRootDir(), getFolderName());
             initJs(p);
         }
         
         FileObject prjStubDir = createFolder(rjsDir, getProjectName().toLowerCase());
         createDataObjectFromTemplate(JS_PROJECTSTUB_TEMPLATE, prjStubDir, getProjectName(), JS, canOverwrite());
-        updateProjectStub(prjStubDir.getFileObject(getProjectName(), JS), getProjectName(), "");
+        updateProjectStub(prjStubDir.getFileObject(getProjectName(), JS), getProjectName(), "", baseUrl);
             
         for (Resource r : resourceList) {
             if(pHandle != null)
@@ -301,7 +333,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
                 new ResourceDojoComponents(r, rdjDir).generate();
                 new ResourceJmakiComponent(r, restDir).generate();
                 File dir = new File(FileUtil.toFile(templatesDir), DOJO+File.separator+REST);
-                dir.mkdirs();
+                FileUtil.createFolder(dir);
                 new ResourceJmakiTemplate(r, FileUtil.toFileObject(dir)).generate();
             }
         }
@@ -341,14 +373,14 @@ public class ClientStubsGenerator extends AbstractGenerator {
             if (testFile != null) {
                 files.add(testFile);
             }
-            FileObject readme = restDir.getFileObject(JMAKI_README, HTML);
+            FileObject readme = restDir.getFileObject(JMAKI_README, TXT);
             if(readme != null)
                 files.add(readme);
         } else {
             FileObject rjsTest = rjsDir.getFileObject(JS_TESTSTUBS, HTML);
             if(rjsTest != null)
                 files.add(rjsTest);
-            FileObject readme = rjsDir.getFileObject(JS_README, HTML);
+            FileObject readme = rjsDir.getFileObject(JS_README, TXT);
             if(readme != null)
                 files.add(readme);
         }
@@ -465,7 +497,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
     private void initJs(Project p) throws IOException {
         createDataObjectFromTemplate(JS_TESTSTUBS_TEMPLATE, rjsDir, JS_TESTSTUBS, HTML, false);
         createDataObjectFromTemplate(JS_STUBSUPPORT_TEMPLATE, rjsDir, JS_SUPPORT, JS, canOverwrite());  
-        createDataObjectFromTemplate(JS_README_TEMPLATE, rjsDir, JS_README, HTML, canOverwrite());
+        createDataObjectFromTemplate(JS_README_TEMPLATE, rjsDir, JS_README, TXT, canOverwrite());
     }
 
     private void initDojo(Project p, List<Resource> resourceList) throws IOException {
@@ -494,8 +526,8 @@ public class ClientStubsGenerator extends AbstractGenerator {
     }
     
     private void initJmaki(Project p, List<Resource> resourceList) throws IOException {
-        createDataObjectFromTemplate(JMAKI_README_TEMPLATE, restDir, JMAKI_README, HTML, canOverwrite());
-        createDataObjectFromTemplate(JMAKI_RESTBUNDLE_TEMPLATE, getRootDir().getParent(), BUNDLE, PROPERTIES, canOverwrite());
+        createDataObjectFromTemplate(JMAKI_README_TEMPLATE, restDir, JMAKI_README, TXT, canOverwrite());
+        createDataObjectFromTemplate(JMAKI_RESTBUNDLE_TEMPLATE, getRootDir(), BUNDLE, PROPERTIES, canOverwrite());
                 
         //find first container 
         Resource c = null;
@@ -595,7 +627,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
             }
                     out.close();
         } catch (Exception e) {
-            e.printStackTrace();
+            Exceptions.printStackTrace(e);
                 }
             }
 
@@ -640,9 +672,13 @@ public class ClientStubsGenerator extends AbstractGenerator {
                 }
                 final File entryFile = new File(targetFolder, entry.getName());
                 if(entry.isDirectory()) {
-                    if(!entryFile.exists() && !entryFile.mkdirs()) {
-                        throw new RuntimeException("Failed to create folder: " +
-                                entryFile.getName() + ".  Terminating archive installation.");
+                    if(!entryFile.exists()) {
+                        try {
+                            FileObject fObj = FileUtil.createFolder(entryFile);
+                        } catch(IOException iox) {
+                            throw new RuntimeException("Failed to create folder: " +
+                                    entryFile.getName() + ".  Terminating archive installation.");
+                        }
                     }
                 } else {
                     if(entryFile.exists() && overwrite) {
@@ -652,9 +688,13 @@ public class ClientStubsGenerator extends AbstractGenerator {
                         }
                     }
                     File parentFile = entryFile.getParentFile();
-                    if(!parentFile.exists() && !parentFile.mkdirs()) {
-                        throw new RuntimeException("Failed to create folder: " +
+                    if(!parentFile.exists()) {
+                        try {
+                            FileObject fObj = FileUtil.createFolder(parentFile);
+                        } catch(IOException iox) {
+                            throw new RuntimeException("Failed to create folder: " +
                                 parentFile.getName() + ".  Terminating archive installation.");
+                        }
                     }
                     targetFS.runAtomicAction(new FileSystem.AtomicAction() {
                         public void run() throws IOException {
@@ -670,6 +710,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
                                     try {
                                         os.close();
                                     } catch(IOException ex) {
+                                        Exceptions.printStackTrace(ex);
                                     }
                                 }
                             }
@@ -682,6 +723,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
                 try {
                     zip.close();
                 } catch(IOException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
             }
         }
@@ -689,7 +731,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
         return result;
     }
 
-    private void updateProjectStub(FileObject projectStub, String prjName, String pkg) throws IOException {
+    private void updateProjectStub(FileObject projectStub, String prjName, String pkg, String baseUrl) throws IOException {
         FileLock lock = projectStub.lock();
         try {
             BufferedReader reader = new BufferedReader(new FileReader(FileUtil.toFile(projectStub)));
@@ -697,7 +739,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
             StringBuffer sb = new StringBuffer();
             while ((line = reader.readLine()) != null) {
                 if (line.contains("__BASE_URL__")) {
-                    sb.append(line.replaceAll("__BASE_URL__", "http://localhost:8080/" + prjName + "/resources"));
+                    sb.append(line.replaceAll("__BASE_URL__", baseUrl));
                 } else if (line.contains("__PROJECT_NAME__")) {
                     sb.append(line.replaceAll("__PROJECT_NAME__", prjName));
                 } else if (line.contains("__PROJECT_INIT_BODY__")) {
@@ -740,20 +782,22 @@ public class ClientStubsGenerator extends AbstractGenerator {
         sb2.append("\t\tvar str = '';\n");
         sb2.append("\t\t//Example test code for " + prjName + "\n");
         sb2.append("\t\tstr = '<h2>Resources for " + prjName + ":</h2><br><table border=\"1\">';\n");
-        sb2.append("\t\tvar app = new " + pkg+prjName + "();\n");
+        sb2.append("\t\tvar app = new " + pkg+prjName + "('"+baseUrl+"');\n");
         sb2.append("\t\tvar resources = app.getResources();\n");
         sb2.append("\t\tfor(i=0;i<resources.length;i++) {\n");
         sb2.append("\t\t  var resource = resources[i];\n");
         sb2.append("\t\t  var uri = resource.getUri();\n");
         sb2.append("\t\t  str += '<tr><td valign=\"top\"><a href=\"'+uri+'\" target=\"_blank\">'+uri+'</a></td><td>';\n");
         sb2.append("\t\t  var items  = resource.getItems();\n");
-        sb2.append("\t\t  if(items != undefined) {\n");
+        sb2.append("\t\t  if(items != undefined && items.length > 0) {\n");
         sb2.append("\t\t    for(j=0;j<items.length;j++) {\n");
         sb2.append("\t\t        var item = items[j];\n");
         sb2.append("\t\t        var uri2 = item.getUri();\n");
         sb2.append("\t\t        str += '<a href=\"'+uri2+'\" target=\"_blank\">'+uri2+'</a><br/>';\n");
         sb2.append("\t\t        str += '&nbsp;&nbsp;<font size=\"-3\">'+item.toString()+'</font><br/>';\n");
         sb2.append("\t\t    }\n");
+        sb2.append("\t\t  } else {\n");
+        sb2.append("\t\t    str += 'No items, please check the url: <a href=\"'+uri+'\" target=\"_blank\">'+uri+'</a>';\n");
         sb2.append("\t\t  }\n");
         sb2.append("\t\t  str += '</td></tr>';\n");
         sb2.append("\t\t}\n");
@@ -878,7 +922,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
                 "__RESOURCE_NAME__",
                 "__STUB_METHODS__"
             };
-            if(r.isContainer() && root != null) {
+            if(r.isContainer() && root != null && root.getChildren().size() > 0) {
                 String containerName = r.getName();
                 String containerRepName = root.getName();
                 //TODO
@@ -948,10 +992,22 @@ public class ClientStubsGenerator extends AbstractGenerator {
             return replacedLine;
         }
         
+        public static final String RJSSUPPORT = "rjsSupport";
         protected String createStubJSMethods(Resource r, String object, String pkg) {
             StringBuffer sb = new StringBuffer();
+            Method getMethod = null;
             for (Method m : r.getMethods()) {
-                sb.append(createMethod(m, object, pkg)+",\n\n");
+                if (m.getType() == MethodType.GET) {
+                    getMethod = m;
+                }
+            }
+            if(getMethod != null){
+                String defaultGetMethod = createDefaultGetMethod(getMethod, RJSSUPPORT+".");
+                if(defaultGetMethod != null)
+                    sb.append(defaultGetMethod+",\n\n");
+            }
+            for (Method m : r.getMethods()) {
+                sb.append(createMethod(m, RJSSUPPORT+".", pkg)+",\n\n");
             }
             String s = sb.toString();
             if(s.length() > 3)
@@ -1037,13 +1093,13 @@ public class ClientStubsGenerator extends AbstractGenerator {
                     if(child.isEntity()) //child is a Entity and has a non-generic converter
                         sb.append("         '\""+childName+"\":{\"@uri\":\"'+" +
                             "this."+childName+".getUri()+'\", \""+childRepName+"\":" +
-                            "{\"$\":\"'+eval(\"this."+childName+".get\"+this."+childName+".getFields()[0].substring(0,1).toUpperCase()+this."+childName+".getFields()[0].substring(1)+\"()\")+'\"}},'+\n");
+                            ":\"'+eval(\"this."+childName+".get\"+this."+childName+".getFields()[0].substring(0,1).toUpperCase()+this."+childName+".getFields()[0].substring(1)+\"()\")+'\"},'+\n");
                     else
                         sb.append("         '\""+childName+"\":{\"@uri\":\"'+this."+childName+".getUri()+'\"},'+\n");
                 }else if(child.isRoot()) {
                     sb.append("         this."+childName+".toString()+','+\n");
                 }else
-                    sb.append("         '\""+childName+"\":{\"$\":\"'+this."+childName+"+'\"},'+\n");
+                    sb.append("         '\""+childName+"\":\"'+this."+childName+"+'\",'+\n");
             }
             return sb.toString();
         }
@@ -1106,8 +1162,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
             return mName;
         }
         
-        private String createMethod(Method m, String object, String pkg) {
-            object = "rjsSupport.";
+        private String createMethod(Method m, final String object, String pkg) {
             if (m.getType() == MethodType.GET) {
                 return createGetMethod(m, object);
             } else if (m.getType() == MethodType.POST) {
@@ -1130,6 +1185,28 @@ public class ClientStubsGenerator extends AbstractGenerator {
                         return m.getName() + mime.suffix();
             }
             return m.getName();
+        }
+        
+        private String createDefaultGetMethod(Method m, String object) {
+            StringBuffer sb = new StringBuffer();
+            String jsonMethod = null;
+            for(Representation rep:m.getResponse().getRepresentation()) {
+                String mimeType = rep.getMime();
+                mimeType = mimeType.replaceAll("\"", "").trim();
+                if(mimeType.equals(Constants.MimeType.JSON.value()))
+                    jsonMethod = mimeType;
+            }
+            //Add a default getJson() method used by Container/Containee init() methods
+            if(jsonMethod != null) {
+                sb.append("/* Default getJson() method used by Container/Containee init() methods. Do not remove. */\n");
+                sb.append("   getJson : function() {\n" +
+                    "      return "+object+"get(this.uri, '" +jsonMethod+ "');\n" +
+                    "   }");
+            }
+            if(sb.length() > 0)
+                return sb.toString();
+            else
+                return null;
         }
         
         private String createGetMethod(Method m, String object) {

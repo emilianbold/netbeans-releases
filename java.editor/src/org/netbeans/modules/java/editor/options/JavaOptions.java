@@ -103,24 +103,27 @@ public class JavaOptions extends BaseOptions {
 
     public static final String GOTO_CLASS_SHOW_LIBRARY_CLASSES_PROP = "gotoClassShowLibraryClasses"; //NOI18N
 
+    public static final String GUESS_METHOD_ARGUMENTS_PROP = "guessMethodArguments"; //NOI18N
+    
     static final String[] JAVA_PROP_NAMES = OptionSupport.mergeStringArrays(BaseOptions.BASE_PROP_NAMES, new String[] {
+                                                CODE_FOLDING_PROPS_PROP,
+                                                COMPLETION_AUTO_POPUP_DELAY_PROP,
                                                 COMPLETION_AUTO_POPUP_PROP,
                                                 COMPLETION_CASE_SENSITIVE_PROP,
-                                                COMPLETION_AUTO_POPUP_DELAY_PROP,
-                                                FORMAT_SPACE_BEFORE_PARENTHESIS_PROP,
-                                                FORMAT_COMPOUND_BRACKET_ADD_NL_PROP,
-                                                JAVADOC_BGCOLOR,
-                                                //JAVADOC_AUTO_POPUP_DELAY_PROP,
-                                                JAVADOC_PREFERRED_SIZE_PROP,
-                                                JAVADOC_AUTO_POPUP_PROP,
-                                                SHOW_DEPRECATED_MEMBERS_PROP,
                                                 COMPLETION_INSTANT_SUBSTITUTION_PROP,
                                                 COMPLETION_NATURAL_SORT_PROP,
                                                 FAST_IMPORT_PACKAGE_PROP,
+                                                FORMAT_COMPOUND_BRACKET_ADD_NL_PROP,
+                                                FORMAT_SPACE_BEFORE_PARENTHESIS_PROP,
                                                 GOTO_CLASS_CASE_SENSITIVE_PROP,
                                                 GOTO_CLASS_SHOW_INNER_CLASSES_PROP,
                                                 GOTO_CLASS_SHOW_LIBRARY_CLASSES_PROP,
-                                                CODE_FOLDING_PROPS_PROP
+                                                GUESS_METHOD_ARGUMENTS_PROP,
+                                                JAVADOC_AUTO_POPUP_DELAY_PROP,
+                                                JAVADOC_AUTO_POPUP_PROP,
+                                                JAVADOC_BGCOLOR,
+                                                JAVADOC_PREFERRED_SIZE_PROP,
+                                                SHOW_DEPRECATED_MEMBERS_PROP,
                                             });
 
     static final long serialVersionUID =-7951549840240159575L;
@@ -224,6 +227,7 @@ public class JavaOptions extends BaseOptions {
     public boolean getJavaDocAutoPopup() {
         return getSettingBoolean(ExtSettingsNames.JAVADOC_AUTO_POPUP);
     }
+    
     public void setJavaDocAutoPopup(boolean auto) {
         setSettingBoolean(ExtSettingsNames.JAVADOC_AUTO_POPUP, auto,
             JAVADOC_AUTO_POPUP_PROP);
@@ -261,6 +265,14 @@ public class JavaOptions extends BaseOptions {
             COMPLETION_NATURAL_SORT_PROP);
     }
     
+    public boolean getGuessMethodArguments() {
+        return getSettingBoolean(GUESS_METHOD_ARGUMENTS_PROP);
+    }
+    
+    public void setGuessMethodArguments(boolean auto) {
+        setSettingBoolean(GUESS_METHOD_ARGUMENTS_PROP, auto, GUESS_METHOD_ARGUMENTS_PROP);
+    }
+    
     public int getFastImportSelection() {
         return getSettingInteger(ExtSettingsNames.FAST_IMPORT_SELECTION);
     }
@@ -290,15 +302,15 @@ public class JavaOptions extends BaseOptions {
         setSettingBoolean(JavaSettingsNames.GOTO_CLASS_SHOW_LIBRARY_CLASSES, v, GOTO_CLASS_SHOW_LIBRARY_CLASSES_PROP);
     }
 
-    protected Class getDefaultIndentEngineClass() {
+    protected @Override Class getDefaultIndentEngineClass() {
         return JavaIndentEngine.class;
     }
 
-    public HelpCtx getHelpCtx () {
+    public @Override HelpCtx getHelpCtx () {
         return new HelpCtx (HELP_ID);
     }
 
-    public Map getCodeFoldingProps(){
+    public @Override Map getCodeFoldingProps(){
         Map map = new HashMap(super.getCodeFoldingProps());
         
         Boolean val = (Boolean)getSettingValue(JavaSettingsNames.CODE_FOLDING_COLLAPSE_METHOD);
@@ -319,7 +331,7 @@ public class JavaOptions extends BaseOptions {
         return map;
     }
 
-    public void setCodeFoldingProps(Map props){
+    public @Override void setCodeFoldingProps(Map props){
         String name = SettingsNames.CODE_FOLDING_ENABLE;
         setSettingValue(name, props.get(name));
         name = JavaSettingsNames.CODE_FOLDING_COLLAPSE_METHOD;
@@ -337,7 +349,7 @@ public class JavaOptions extends BaseOptions {
     /**
      * Get localized string
      */
-    protected String getString(String key) {
+    protected @Override String getString(String key) {
         try {
             return NbBundle.getMessage(JavaOptions.class, key);
         } catch (MissingResourceException e) {
@@ -345,5 +357,7 @@ public class JavaOptions extends BaseOptions {
         }
     }
 
-    
+    protected @Override String getContentType() {
+        return JavaKit.JAVA_MIME_TYPE;
+    }
 }

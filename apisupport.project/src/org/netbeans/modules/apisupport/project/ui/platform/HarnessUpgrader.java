@@ -44,7 +44,6 @@ package org.netbeans.modules.apisupport.project.ui.platform;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.ui.ModuleUISettings;
@@ -107,10 +106,12 @@ class HarnessUpgrader {
     }
     
     private static void doUpgrade(Set<NbPlatform> platforms) throws IOException {
-        File defaultHarness = NbPlatform.getDefaultPlatform().getHarnessLocation();
-        Iterator it = platforms.iterator();
-        while (it.hasNext()) {
-            NbPlatform p = (NbPlatform) it.next();
+        NbPlatform plaf = NbPlatform.getDefaultPlatform();
+        if (plaf == null) {
+            return;
+        }
+        File defaultHarness = plaf.getHarnessLocation();
+        for (NbPlatform p : platforms) {
             p.setHarnessLocation(defaultHarness);
         }
     }

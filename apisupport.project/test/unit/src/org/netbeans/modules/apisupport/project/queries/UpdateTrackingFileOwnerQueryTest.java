@@ -62,17 +62,17 @@ public class UpdateTrackingFileOwnerQueryTest extends TestBase {
     
     public void testOwnershipNetBeansOrg() throws Exception {
         // Basic module:
-        assertOwnership("ant", "nbbuild/netbeans/" + TestBase.CLUSTER_JAVA + "/modules/org-apache-tools-ant-module.jar");
+        assertOwnership("o.apache.tools.ant.module", "nbbuild/netbeans/" + TestBase.CLUSTER_JAVA + "/modules/org-apache-tools-ant-module.jar");
         // Explicitly listed additions:
-        assertOwnership("ant", "nbbuild/netbeans/" + TestBase.CLUSTER_JAVA + "/ant/nblib/bridge.jar");
+        assertOwnership("o.apache.tools.ant.module", "nbbuild/netbeans/" + TestBase.CLUSTER_JAVA + "/ant/nblib/bridge.jar");
         // Pattern matches (here "ant/lib/"):
         assertTrue("ant module built (cannot scan by pattern unless files exist)", file("nbbuild/netbeans/" + TestBase.CLUSTER_JAVA + "/ant/lib/ant.jar").isFile());
-        assertOwnership("ant", "nbbuild/netbeans/" + TestBase.CLUSTER_JAVA + "/ant/lib/ant.jar");
+        assertOwnership("o.apache.tools.ant.module", "nbbuild/netbeans/" + TestBase.CLUSTER_JAVA + "/ant/lib/ant.jar");
         // These two always included:
-        assertOwnership("ant", "nbbuild/netbeans/" + TestBase.CLUSTER_JAVA + "/config/Modules/org-apache-tools-ant-module.xml");
-        assertOwnership("ant", "nbbuild/netbeans/" + TestBase.CLUSTER_JAVA + "/update_tracking/org-apache-tools-ant-module.xml");
+        assertOwnership("o.apache.tools.ant.module", "nbbuild/netbeans/" + TestBase.CLUSTER_JAVA + "/config/Modules/org-apache-tools-ant-module.xml");
+        assertOwnership("o.apache.tools.ant.module", "nbbuild/netbeans/" + TestBase.CLUSTER_JAVA + "/update_tracking/org-apache-tools-ant-module.xml");
         // Different pattern match ("modules/ext/jh*.jar"):
-        assertOwnership("core/javahelp", "nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM + "/modules/ext/jh-2.0_05.jar");
+        assertOwnership("javahelp", "nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM + "/modules/ext/jh-2.0_05.jar");
         // Use of release dir:
         assertOwnership("extbrowser", "nbbuild/netbeans/" + TestBase.CLUSTER_IDE + "/modules/lib/extbrowser.dll");
     }
@@ -84,18 +84,18 @@ public class UpdateTrackingFileOwnerQueryTest extends TestBase {
     }
     
     private void assertOwnership(String project, String file) throws Exception {
-        FileObject projectFO = FileUtil.toFileObject(PropertyUtils.resolveFile(nbCVSRootFile(), project));
+        FileObject projectFO = FileUtil.toFileObject(PropertyUtils.resolveFile(nbRootFile(), project));
         assertNotNull("have project " + project, projectFO);
         Project p = ProjectManager.getDefault().findProject(projectFO);
         assertNotNull("have a project in " + project, p);
         // This has the side effect of forcing a scan of the module universe:
         ClassPath.getClassPath(projectFO.getFileObject("src"), ClassPath.COMPILE);
-        FileObject fileFO = FileUtil.toFileObject(PropertyUtils.resolveFile(nbCVSRootFile(), file));
+        FileObject fileFO = FileUtil.toFileObject(PropertyUtils.resolveFile(nbRootFile(), file));
         if (fileFO != null) { // OK if not currently built
             assertEquals("correct owner by FileObject of " + file, p, FileOwnerQuery.getOwner(fileFO));
         }
         assertEquals("correct owner by URI of " + file, p, FileOwnerQuery.getOwner(
-                PropertyUtils.resolveFile(nbCVSRootFile(), file).toURI()));
+                PropertyUtils.resolveFile(nbRootFile(), file).toURI()));
     }
     
 }

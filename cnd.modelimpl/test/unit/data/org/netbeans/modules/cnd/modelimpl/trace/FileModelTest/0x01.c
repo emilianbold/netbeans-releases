@@ -1,6 +1,6 @@
 // ""); // 0x01
-void foo(char* p);
+void foo_0x01(char* p);
 
-void foo() {
-	foo(""); // 0x01
+void foo_0x01() {
+	foo_0x01(""); // 0x01
 }

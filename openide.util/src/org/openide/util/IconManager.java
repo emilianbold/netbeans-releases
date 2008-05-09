@@ -308,7 +308,7 @@ final class IconManager extends Object {
                     }
                 }
             } catch (IOException ioe) {
-                ERR.log(Level.WARNING, "Cannot load image", ioe);
+                ERR.log(Level.WARNING, "Cannot load " + name + " image", ioe);
             }
 
             if (result != null) {

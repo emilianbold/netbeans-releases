@@ -41,7 +41,9 @@
 
 package org.netbeans.core.startup.layers;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -66,18 +68,26 @@ public class NamedFSServicesLookupTest extends NamedServicesLookupTest{
         super(name);
     }
 
+    @Override
     protected Level logLevel() {
         return Level.FINE;
     }
     
     @Override
     protected void setUp() throws Exception {
+        if (System.getProperty("netbeans.user") == null) {
+            System.setProperty("netbeans.user", new File(getWorkDir(), "ud").getPath());
+        }
+        
         LOG = Logger.getLogger("Test." + getName());
         
         Lookup.getDefault().lookup(ModuleInfo.class);
         assertEquals(MainLookup.class, Lookup.getDefault().getClass());
 
         root = Repository.getDefault().getDefaultFileSystem().getRoot();
+        for (FileObject fo : root.getChildren()) {
+            fo.delete();
+        }
         
         super.setUp();
     }
@@ -124,7 +134,9 @@ public class NamedFSServicesLookupTest extends NamedServicesLookupTest{
         LOG.info("About to create lookup");
         Lookup l = Lookups.forPath("inst/ordering");
         LOG.info("querying lookup");
-        Iterator<? extends Long> lng = l.lookupAll(Long.class).iterator();
+        Collection<? extends Long> lngAll = l.lookupAll(Long.class);
+        assertEquals(4, lngAll.size());
+        Iterator<? extends Long> lng = lngAll.iterator();
         LOG.info("checking results");
         
         assertEquals(Long.valueOf(500), lng.next());

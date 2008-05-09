@@ -41,21 +41,10 @@
 
 package org.netbeans.modules.websvc.rest.projects;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
-import org.netbeans.modules.websvc.rest.RestUtils;
-import org.netbeans.modules.websvc.rest.model.api.RestServices;
-import org.netbeans.modules.websvc.rest.model.api.RestServicesMetadata;
-import org.netbeans.modules.websvc.rest.model.api.RestServicesModel;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.spi.project.LookupProvider;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
-import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
@@ -73,18 +62,18 @@ public class WebRestSupportLookupProvider implements LookupProvider {
         final Project prj = baseContext.lookup(Project.class);
         final RestSupport restSupport = new WebProjectRestSupport(prj);
         
-        PrivilegedTemplates templates = new PrivilegedTemplates() {
-            public String[] getPrivilegedTemplates() {
-                return new String[] {
-                    "Templates/WebServices/RestServicesFromEntities", // NOI18N
-                    "Templates/WebServices/RestServicesFromPatterns",  //NOI18N
-                    "Templates/WebServices/RestClientStubs"    //NOI18N
-                };
-            }
-        };
+//        PrivilegedTemplates templates = new PrivilegedTemplates() {
+//            public String[] getPrivilegedTemplates() {
+//                return new String[] {
+//                    "Templates/WebServices/RestServicesFromEntities", // NOI18N
+//                    "Templates/WebServices/RestServicesFromPatterns"  //NOI18N
+//                    //"Templates/WebServices/RestClientStubs"    //NOI18N
+//                };
+//            }
+//        };
         
         //ProjectRestServiceNotifier servicesNotifier = new ProjectRestServiceNotifier(prj);
-        return Lookups.fixed(new Object[] {restSupport, templates});
+        return Lookups.fixed(new Object[] {restSupport});
     }
     
 }

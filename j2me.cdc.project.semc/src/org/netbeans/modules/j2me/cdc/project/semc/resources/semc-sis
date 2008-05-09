@@ -1,5 +1,9 @@
 <xsl:comment>semc-make-sis</xsl:comment>
 
+    <target name="-semc-sis-init" if="semc-platform.trigger" description="Init necessary properties for SEMC platform">
+        <property name="pprolauncher.dir" value="${{platform.home}}/epoc32/tools/ppro-custom-launcher/output/arm/PProLauncher${{semc.application.uid}}"/>
+    </target>
+
     <target name="semc-ppro-arm" if="semc-platform.trigger" description="Builds neccessary files for semc device">
         <exec executable="${{platform.home}}/epoc32/tools/create-ppro-app.bat" dir="${{platform.home}}/epoc32/tools/">
             <arg value="arm"/>
@@ -13,49 +17,53 @@
         </exec>
     </target>
     <target name="semc-make-sis-icon" if="semc-platform.trigger" unless="semc.icon.invalid">
-        <copy file="${{semc.application.icon}}" tofile="${{platform.home}}/epoc32/tools/ppro-custom-launcher/output/arm/PProLauncher${{semc.application.uid}}/${{semc.application.uid}}.mbm" failonerror="false"/>
+        <copy file="${{semc.application.icon}}" tofile="${{pprolauncher.dir}}/${{semc.application.uid}}.mbm" failonerror="false"/>
     </target>
     <target name="semc-make-sis" depends="semc-ppro-arm,semc-make-sis-icon" if="semc-platform.trigger" unless="no.application.uid" description="Builds SIS file for device">
         <property name="dll.dir" location="dll"/>
         <mkdir dir="${{dll.dir}}"/>
-        <copy todir="${{platform.home}}/epoc32/tools/ppro-custom-launcher/output/arm/PProLauncher${{semc.application.uid}}">
+        <copy todir="${{pprolauncher.dir}}">
             <fileset dir="${{dist.dir}}">
                 <exclude name="javadoc/**"/>
             </fileset>
         </copy>
-        <copy todir="${{platform.home}}/epoc32/tools/ppro-custom-launcher/output/arm/PProLauncher${{semc.application.uid}}">
+        <copy todir="${{pprolauncher.dir}}">
             <fileset dir="${{dll.dir}}">
                 <include name="**/*.dll"/>
             </fileset>
         </copy>
-        <pkgmake workdir="${{platform.home}}/epoc32/tools/ppro-custom-launcher/output/arm/PProLauncher${{semc.application.uid}}" id="${{semc.application.uid}}" appname="${{application.name}}" appicon="${{semc.application.uid}}.mbm" vendor="${{application.vendor}}" version="${{deployment.number}}" logo="${{logo.image}}" logoinstallonly="${{logo.image.installonly}}">
+        <copy todir="${{pprolauncher.dir}}" failonerror="false">
+            <fileset dir="${{resources.dir}}"/>
+        </copy>
+        <pkgmake workdir="${{pprolauncher.dir}}" id="${{semc.application.uid}}" appname="${{application.name}}" appicon="${{semc.application.uid}}.mbm" vendor="${{application.vendor}}" version="${{deployment.number}}" logo="${{logo.image}}" logoinstallonly="${{logo.image.installonly}}">
             <fileset dir="${{dist.dir}}">
                 <exclude name="javadoc/**"/>
             </fileset>
             <fileset dir="${{dll.dir}}" >
                 <include name="**/*.dll"/>
             </fileset>
+            <fileset dir="${{resources.dir}}"/>
         </pkgmake>
-        <exec executable="${{platform.home}}/epoc32/tools/makesis" dir="${{platform.home}}/epoc32/tools/ppro-custom-launcher/output/arm/PProLauncher${{semc.application.uid}}">
-            <arg value="-d${{platform.home}}/epoc32/tools/ppro-custom-launcher/output/arm/PProLauncher${{semc.application.uid}}"/>
+        <exec executable="${{platform.home}}/epoc32/tools/makesis" dir="${{pprolauncher.dir}}">
+            <arg value="-d${{pprolauncher.dir}}"/>
             <arg value="PProLauncher${{semc.application.uid}}.pkg"/>
-            <arg value="SYMBIAN.sis"/>
+            <arg value="${{application.name}}.sis"/>
             <env key="SDKDRIVE" value="${{sdkdrive}}"/>
             <env key="EPOCROOT" value="${{epocroot}}"/>
             <env key="Path" value="${{epocpath}}"/>
         </exec>
         <copy todir="${{dist.dir}}">
-            <fileset dir="${{platform.home}}/epoc32/tools/ppro-custom-launcher/output/arm/PProLauncher${{semc.application.uid}}">
+            <fileset dir="${{pprolauncher.dir}}">
                 <include name="**/*.SIS"/>
                 <include name="**/*.sis"/>
             </fileset>
         </copy>
     </target>
     <target name="semc-sign-sis" if="semc-platform.trigger" depends="semc-make-sis" unless="no.certificateorkey" description="Sign SIS file">
-        <exec executable="${{platform.home}}/epoc32/tools/signsis" dir="${{platform.home}}/epoc32/tools/ppro-custom-launcher/output/arm/PProLauncher${{semc.application.uid}}">
+        <exec executable="${{platform.home}}/epoc32/tools/signsis" dir="${{pprolauncher.dir}}">
             <arg value="-s"/>
-            <arg value="${{platform.home}}/epoc32/tools/ppro-custom-launcher/output/arm/PProLauncher${{semc.application.uid}}/SYMBIAN.sis"/>
-            <arg value="${{platform.home}}/epoc32/tools/ppro-custom-launcher/output/arm/PProLauncher${{semc.application.uid}}/SYMBIAN-SIGNED.sis"/>
+            <arg value="${{pprolauncher.dir}}/${{application.name}}.sis"/>
+            <arg value="${{pprolauncher.dir}}/${{application.name}}-SIGNED.sis"/>
             <arg value="${{semc.certificate.path}}"/>
             <arg value="${{semc.private.key.path}}"/>
             <arg value="${{semc.private.key.password}}"/>
@@ -64,7 +72,7 @@
             <env key="Path" value="${{epocpath}}"/>
         </exec>
         <copy todir="${{dist.dir}}">
-            <fileset dir="${{platform.home}}/epoc32/tools/ppro-custom-launcher/output/arm/PProLauncher${{semc.application.uid}}">
+            <fileset dir="${{pprolauncher.dir}}">
                 <include name="**/*.SIS"/>
                 <include name="**/*.sis"/>
             </fileset>
@@ -73,4 +81,6 @@
     <target name="semc-no-sign-sis" depends="semc-make-sis" if="no.certificateorkey" unless="no.application.uid" description="Prints out only info when SIS is not signed ">
         <echo message="Signed SIS was not created! Set up path to certificate and private key in project properties!"/>
     </target>
-    <target name="semc-sis" if="semc-platform.trigger" depends="semc-sign-sis,semc-no-sign-sis" unless="no.application.uid"/>
+    <target name="-pre-semc-sis" if="semc-platform.trigger" description="Customizable target called before SIS file is built"/>
+    <target name="semc-sis" if="semc-platform.trigger" depends="-semc-sis-init, -pre-semc-sis, semc-sign-sis,semc-no-sign-sis, -post-semc-sis" unless="no.application.uid"/>
+    <target name="-post-semc-sis" if="semc-platform.trigger" description="Customizable target called after SIS file is built"/>

@@ -751,6 +751,9 @@ public class SecurityTokensModelHelper {
                     if (ComboConstants.ISSUED_KEYTYPE_SYMMETRIC_POLICYSTR.equals(type)) {
                         return ComboConstants.ISSUED_KEYTYPE_SYMMETRIC;
                     }
+                    if (ComboConstants.ISSUED_KEYTYPE_NOPROOF_POLICYSTR.equals(type)) {
+                        return ComboConstants.ISSUED_KEYTYPE_NOPROOF;
+                    }
                 }
             }
         }
@@ -858,6 +861,9 @@ public class SecurityTokensModelHelper {
             }
             if (keyType.equals(ComboConstants.ISSUED_KEYTYPE_SYMMETRIC)) {
                 k.setContent(ComboConstants.ISSUED_KEYTYPE_SYMMETRIC_POLICYSTR);
+            }
+            if (keyType.equals(ComboConstants.ISSUED_KEYTYPE_NOPROOF)) {
+                k.setContent(ComboConstants.ISSUED_KEYTYPE_NOPROOF_POLICYSTR);
             }
 
             KeySize s = PolicyModelHelper.createElement(rst, TrustQName.KEYSIZE.getQName(), KeySize.class, false);

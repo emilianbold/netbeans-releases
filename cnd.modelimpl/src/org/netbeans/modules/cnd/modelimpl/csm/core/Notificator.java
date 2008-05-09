@@ -222,9 +222,10 @@ public class Notificator {
         
         gatherProjects(ev);
         
-        if( model != null ) {
-            model.fireModelChanged(ev);
-        }
+	//TODO: thik over, probably it's worth keeping this "!=" 
+        //if( model != null ) {
+        ListenersImpl.getImpl().fireModelChanged(ev);
+        //}
     }
     
     private static void gatherProjects(ChangeEventImpl ev) {

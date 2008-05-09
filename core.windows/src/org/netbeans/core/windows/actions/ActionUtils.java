@@ -76,8 +76,8 @@ public abstract class ActionUtils {
         
         List<Action> actions = new ArrayList<Action>();
         if(kind == Constants.MODE_KIND_EDITOR) {
-            actions.add(new CloseAllDocumentsAction(false));
-            CloseAllButThisAction allBut = new CloseAllButThisAction(tc);
+            actions.add(new CloseAllDocumentsAction(true));
+            CloseAllButThisAction allBut = new CloseAllButThisAction(tc, true);
             if (mode != null && mode.getOpenedTopComponents().size() == 1) {
                 allBut.setEnabled(false);
             }
@@ -264,21 +264,50 @@ public abstract class ActionUtils {
     } // End of class CloneDocumentAction.
     
     // Utility methods >>
-    public static void closeAllDocuments () {
-        TopComponent activeTC = TopComponent.getRegistry().getActivated();
-        List<TopComponent> tcs = getOpened(activeTC);
-        
-        for(TopComponent tc: tcs) {
-            tc.close();
+    /** Closes all documents, based on isContext flag
+     * 
+     * @param isContext when true, closes all documents in active mode only,
+     * otherwise closes all documents in the system
+     */
+    public static void closeAllDocuments (boolean isContext) {
+        if (isContext) {
+            TopComponent activeTC = TopComponent.getRegistry().getActivated();
+            List<TopComponent> tcs = getOpened(activeTC);
+
+            for(TopComponent tc: tcs) {
+                tc.close();
+            }
+        } else {
+            TopComponent[] tcs = WindowManagerImpl.getInstance().getEditorTopComponents();
+
+            for(TopComponent tc: tcs) {
+                tc.close();
+            }
         }
     }
 
-    public static void closeAllExcept (TopComponent tc) {
-        List<TopComponent> tcs = getOpened(tc);
+    /** Closes all documents except given param, according to isContext flag
+     * 
+     * @param isContext when true, closes all documents except given 
+     * in active mode only, otherwise closes all documents in the system except
+     * given
+     */
+    public static void closeAllExcept (TopComponent tc, boolean isContext) {
+        if (isContext) {
+            List<TopComponent> tcs = getOpened(tc);
 
-        for(TopComponent curTC: tcs) {
-            if (curTC != tc) {
-                curTC.close();
+            for(TopComponent curTC: tcs) {
+                if (curTC != tc) {
+                    curTC.close();
+                }
+            }
+        } else {
+            TopComponent[] tcs = WindowManagerImpl.getInstance().getEditorTopComponents();
+
+            for(TopComponent curTC: tcs) {
+                if (curTC != tc) {
+                    curTC.close();
+                }
             }
         }
     }

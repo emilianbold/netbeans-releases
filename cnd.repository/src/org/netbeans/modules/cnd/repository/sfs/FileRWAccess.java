@@ -42,8 +42,6 @@
 package org.netbeans.modules.cnd.repository.sfs;
 
 import java.io.*;
-import java.nio.*;
-import java.util.*;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
 

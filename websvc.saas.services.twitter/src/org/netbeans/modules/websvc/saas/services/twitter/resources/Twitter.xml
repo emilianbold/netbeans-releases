@@ -48,34 +48,49 @@
                     ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/SaasServices.xsd' 
                type="http://research.sun.com/wadl/2006/10"
                api-doc="http://groups.google.com/group/twitter-development-talk/web/api-documentation"
-               url="/org/netbeans/modules/websvc/saas/services/twitter/resources/TwitterWadl.xml">
+               url="org/netbeans/modules/websvc/saas/services/twitter/resources/TwitterWadl.xml">
 
-    <description>Twitter Service</description>
+    <description>What Are You Doing Service</description>
     
-    <display-name>TwitterService</display-name>
+    <display-name>What Are You Doing Service</display-name>
 
     <saas-metadata>
 
         <localizing-bundle>org.netbeans.modules.websvc.saas.services.twitter.Bundle</localizing-bundle>
 
-        <icon16>org/netbeans/modules/websvc/saas/services/twitter/resources/twitter16.png</icon16>
-
         <group name="Twitter">
         </group>
 
-        <authentication profile="Templates/WebServices/profile.properties">
-            <http-basic/>
+        <code-gen>
+            <artifacts targets="java,servlet,resource,jsp">
+                <artifact id="HttpBasicAuthenticatorDesktop" type="template"
+                    url="Templates/SaaSServices/HttpBasicAuthenticatorDesktop.java"/>
+                <artifact id="HttpBasicAuthenticator" type="template"
+                    url="Templates/SaaSServices/HttpBasicAuthenticator.java"/>
+                <artifact id="HttpBasicAuthenticatorLogin" type="template"
+                    url="Templates/SaaSServices/HttpBasicLogin.java"/>
+                <artifact id="HttpBasicAuthenticatorCallback" type="template"
+                    url="Templates/SaaSServices/HttpBasicCallback.java"/>
+            </artifacts>
+        </code-gen>
+        <authentication profile="Templates/SaaSServices/httpbasic.properties">
+            <http-basic username="username" password="password">
+                <authenticator>
+                    <use-templates>
+                        <desktop>
+                            <template type="auth" href="HttpBasicAuthenticatorDesktop"/>
+                        </desktop>
+                        <web>
+                            <template type="auth" href="HttpBasicAuthenticator"/>
+                            <template type="login" href="HttpBasicAuthenticatorLogin"/>
+                            <template type="callback" href="HttpBasicAuthenticatorCallback"/>
+                        </web>
+                    </use-templates>
+                </authenticator>
+            </http-basic>
         </authentication>
 
     </saas-metadata>
 
-    <methods>
-        <method name="getPublicTimeline" 
-            href="#twitter.getPublicTimeline"/>
-        <method name="getDirectMessages" 
-            href="#twitter.getDirectMessages"/>
-        <method name="sendDirectMessage" 
-            href="#twitter.sendDirectMessage"/>
-    </methods>
-
+    <methods/>
 </saas-services>

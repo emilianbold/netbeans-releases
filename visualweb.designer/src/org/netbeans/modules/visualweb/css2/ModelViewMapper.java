@@ -2279,6 +2279,11 @@ public final class ModelViewMapper {
 
 //        PageBox pageBox = webform.getPane().getPageBox();
         CssBox box = findBox(pageBox, pos);
+        
+        // XXX #127014 Possible NPE.
+        if (box == null) {
+            return DomPosition.NONE;
+        }
 
         if (box.getBoxType() == BoxType.TEXT) {
             TextBox tb = (TextBox)box;
@@ -2306,6 +2311,11 @@ public final class ModelViewMapper {
      */
 //    public static Position getFirstDocumentPosition(WebForm webform, boolean create) {
     public static DomPosition getFirstDocumentPosition(WebForm webform, boolean create) {
+        // XXX #128116 Possible NPE after closing component.
+        if (webform.getPane().getPageBox() == null) {
+            return DomPosition.NONE;
+        }
+        
         // XXX Very suspicious assertion.
 //        assert webform.getPane().getPageBox().getElement().getOwnerDocument() == webform.getJspDom();
         if (webform.getPane().getPageBox().getElement().getOwnerDocument() != webform.getHtmlDom()) {
@@ -2420,6 +2430,12 @@ public final class ModelViewMapper {
      */
 //    public static Position getLastDocumentPosition(WebForm webform, boolean create) {
     public static DomPosition getLastDocumentPosition(WebForm webform, boolean create) {
+        
+        // XXX #128116 Possible NPE after closing component.
+        if (webform.getPane().getPageBox() == null) {
+            return DomPosition.NONE;
+        }
+        
         // XXX Very suspicious assertion.
 //        assert webform.getPane().getPageBox().getElement().getOwnerDocument() == webform.getJspDom();
         if (webform.getPane().getPageBox().getElement().getOwnerDocument() != webform.getHtmlDom()) {

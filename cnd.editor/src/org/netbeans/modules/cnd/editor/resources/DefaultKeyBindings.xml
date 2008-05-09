@@ -44,7 +44,6 @@ Contributor(s):
 <bindings>
     <bind actionName="comment" key="DS-T"/>
     <bind actionName="uncomment" key="DS-D"/>  
-    <bind actionName="goto-declaration" key="D-B"/> 
     <!-- 
         the next line is to prevent user from confusing.
         otherwise goto-super-implementation which is disabled for

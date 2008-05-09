@@ -26,8 +26,6 @@ import static org.junit.Assert.*;
  */
 public class JBIComponentActionDescriptorTest {
 
-    private JBIComponentActionDescriptor descriptor;
-
     public JBIComponentActionDescriptorTest() {
     }
 

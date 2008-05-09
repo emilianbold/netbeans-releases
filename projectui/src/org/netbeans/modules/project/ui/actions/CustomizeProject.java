@@ -74,7 +74,7 @@ public class CustomizeProject extends ProjectAction implements Presenter.Popup {
     }
     
     public CustomizeProject( Lookup context ) {
-        super( (String)null, namePattern, null, context );
+        super( (String)null, namePattern, namePatternPopup, null, context );
         refresh( getLookup() );
     }
             
@@ -160,10 +160,9 @@ public class CustomizeProject extends ProjectAction implements Presenter.Popup {
     // Implementation of Presenter.Popup ---------------------------------------
     
     public JMenuItem getPopupPresenter() {
-        JMenuItem popupPresenter = new JMenuItem( this );
+        JMenuItem popupPresenter = new JMenuItem();
+        org.openide.awt.Actions.connect(popupPresenter, this, true);
         popupPresenter.setText( namePatternPopup );
-        popupPresenter.setIcon( null );
-
         return popupPresenter;
     }
     

@@ -42,8 +42,8 @@ package org.netbeans.modules.languages.php;
 
 import javax.swing.text.Document;
 
-import org.netbeans.api.gsf.CompilationInfo;
-import org.netbeans.api.gsf.OffsetRange;
+import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.OffsetRange;
 
 
 /**
@@ -51,11 +51,11 @@ import org.netbeans.api.gsf.OffsetRange;
  *
  */
 public class DeclarationFinder implements
-        org.netbeans.api.gsf.DeclarationFinder
+        org.netbeans.modules.gsf.api.DeclarationFinder
 {
 
     /* (non-Javadoc)
-     * @see org.netbeans.api.gsf.DeclarationFinder#findDeclaration(org.netbeans.api.gsf.CompilationInfo, int)
+     * @see org.netbeans.modules.gsf.api.DeclarationFinder#findDeclaration(org.netbeans.modules.gsf.api.CompilationInfo, int)
      */
     public DeclarationLocation findDeclaration( CompilationInfo info,
             int caretOffset )
@@ -65,7 +65,7 @@ public class DeclarationFinder implements
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.api.gsf.DeclarationFinder#getReferenceSpan(javax.swing.text.Document, int)
+     * @see org.netbeans.modules.gsf.api.DeclarationFinder#getReferenceSpan(javax.swing.text.Document, int)
      */
     public OffsetRange getReferenceSpan( Document doc, int caretOffset ) {
         // TODO Auto-generated method stub

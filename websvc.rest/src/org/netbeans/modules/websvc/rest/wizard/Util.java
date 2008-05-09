@@ -54,6 +54,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
@@ -404,5 +405,13 @@ public class Util {
             }
         }
         return true;
+    }
+    
+    public static ClasspathInfo getClasspathInfo(Project p) {
+        FileObject fileObject = p.getProjectDirectory();
+        return ClasspathInfo.create(
+                ClassPath.getClassPath(fileObject, ClassPath.BOOT), // JDK classes
+                ClassPath.getClassPath(fileObject, ClassPath.COMPILE), // classpath from dependent projects and libraries
+                ClassPath.getClassPath(fileObject, ClassPath.SOURCE)); // source classpath
     }
 }

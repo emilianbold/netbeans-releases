@@ -167,31 +167,6 @@ public class StateHandler
         // No valid implementation in the C++ code base.
     }
 
-    /**
-     * Given a comment all of the comment markers will be removed.
-     *
-     * Java Example:
-     *    // This is a test -> This is a Test
-     *
-     * Current C++ and Java style comments are handled.  When
-     * me have a differnet comment style I new approach should
-     * be implemented.
-     *
-     * @param origComment [in] The comment that must be cleansed
-     *
-     * @return The cleansed value.
-     */
-
-    protected String cleanseComment(String origComment)
-    {
-        if(origComment == null
-            || origComment.trim().length() == 0) return null;
-
-
-        String retVal = origComment.replaceAll("/\\*\\s*|\\*/|\\*\\s?|//\\s?", "");
-
-       return retVal;
-    }
 
     /**
      * Creates a new Token Descriptor tag for the specified XML DOM node.  The
@@ -540,7 +515,6 @@ public class StateHandler
 
             if(comment != null && comment.trim().length() > 0)
             {
-                String cleansedComment = cleanseComment(comment);
                 if(comment != null)
                 {
                     String line = pToken.getProperty("CommentStartLine");
@@ -554,7 +528,7 @@ public class StateHandler
                                             Long.parseLong(line),
                                             Long.parseLong(col),
                                             Long.parseLong(pos),
-                                            cleansedComment,
+                                            comment,
                                             Long.parseLong(length));
 					}
 					catch (NumberFormatException e)
@@ -575,7 +549,6 @@ public class StateHandler
 
             if(comment != null && comment.trim().length() > 0)
             {
-                String cleansedComment = cleanseComment(comment);
                 if(comment != null)
                 {
                     String line = pToken.getProperty("Marker-CommentStartLine");
@@ -590,7 +563,7 @@ public class StateHandler
                                             Long.parseLong(line),
                                             Long.parseLong(col),
                                             Long.parseLong(pos),
-                                            cleansedComment,
+                                            comment,
                                             Long.parseLong(length));
 					}
 					catch (NumberFormatException e)

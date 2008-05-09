@@ -42,9 +42,10 @@
 package org.netbeans.modules.xml.schema.model.impl;
 
 import org.netbeans.modules.xml.schema.model.AttributeReference;
-import org.netbeans.modules.xml.schema.model.Attribute.Use;
+import org.netbeans.modules.xml.schema.model.GlobalAttribute;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.schema.model.visitor.SchemaVisitor;
+import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.w3c.dom.Element;
 
 /**
@@ -77,5 +78,18 @@ public class AttributeReferenceImpl extends LocalAttributeBaseImpl
     
     public void accept(SchemaVisitor visitor) {
 	visitor.visit(this);
+    }
+
+    @Override
+    public String toString() {
+        NamedComponentReference<GlobalAttribute> gAttrRef = this.getRef();
+        if (gAttrRef != null) {
+            GlobalAttribute gAttr = gAttrRef.get();
+            if (gAttr != null) {
+                String name = gAttr.getName();
+                return "-> " + name; // NOI18N
+            }
+        }
+        return null;
     }
 }

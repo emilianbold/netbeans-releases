@@ -170,6 +170,8 @@ public class SchemaPanel extends AbstractPanel implements ActionListener, TableM
 
         schemaTable.setModel(tableModel);
         jScrollPane1.setViewportView(schemaTable);
+        schemaTable.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SchemaPanel.class, "LBL_Schema_table")); // NOI18N
+        schemaTable.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SchemaPanel.class, "LBL_Schema_table")); // NOI18N
 
         locationPanel.add(jScrollPane1, java.awt.BorderLayout.CENTER);
 
@@ -177,9 +179,9 @@ public class SchemaPanel extends AbstractPanel implements ActionListener, TableM
         locationLabel.setText(org.openide.util.NbBundle.getMessage(SchemaPanel.class, "LBL_SchemaPanel_Location")); // NOI18N
         locationLabel.setToolTipText(org.openide.util.NbBundle.getMessage(SchemaPanel.class, "TIP_SchemaPanel_Location")); // NOI18N
 
-        browseButton.setText("Browse");
+        browseButton.setText(org.openide.util.NbBundle.getMessage(SchemaPanel.class, "LBL_BrowseButton")); // NOI18N
 
-        removeButton.setText("Remove");
+        removeButton.setText(org.openide.util.NbBundle.getMessage(SchemaPanel.class, "LBL_RemoveButton")); // NOI18N
         removeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 removeButtonActionPerformed(evt);
@@ -214,6 +216,12 @@ public class SchemaPanel extends AbstractPanel implements ActionListener, TableM
                     .add(removeButton))
                 .addContainerGap(82, Short.MAX_VALUE))
         );
+
+        browseButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SchemaPanel.class, "LBL_BrowseButton")); // NOI18N
+        removeButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SchemaPanel.class, "LBL_RemoveButton")); // NOI18N
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SchemaPanel.class, "PROP_schema_panel_name")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SchemaPanel.class, "PROP_schema_panel_name")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private boolean isDuplicate(String schemaFileName) {
@@ -242,11 +250,12 @@ private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
 }//GEN-LAST:event_removeButtonActionPerformed
 
    private void browseButtonActionPerformed(ActionEvent evt){
-       gui = new SchemaImportGUI(templateWizard);
+      gui = new SchemaImportGUI(templateWizard);
        final DialogDescriptor descriptor = new DialogDescriptor(gui,
-                "Test_Titile",
+                NbBundle.getMessage(SchemaPanel.class,"LBL_Browser"),
                 true, this);
         Dialog dlg = DialogDisplayer.getDefault().createDialog(descriptor);
+        dlg.getAccessibleContext().setAccessibleDescription("DSC_Browser");
         dlg.setVisible(true);
    }
     private void initAccessibility() {
@@ -254,6 +263,8 @@ private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
         // memonics
         Util util = Util.THIS;        
         locationLabel.setDisplayedMnemonic(util.getChar("PROP_schema_locationLabel_mne"));
+        browseButton.setMnemonic(util.getChar("LBL_BrowseButton_mme"));
+        removeButton.setMnemonic(util.getChar("LBL_RemoveButton_mne"));
        
     }
     
@@ -371,7 +382,7 @@ private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
                     
                     row.add(false);
                     row.add(obj);
-                    
+                   
                     SchemaParser.SchemaInfo info = Util.getRootElements(fobj);
                     if (info != null && info.roots.size() > 0) {
                         Iterator it = info.roots.iterator();
@@ -471,6 +482,11 @@ private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
             }
             if(row == tableModel.getRowCount() - 1) {
                 addRow(startString);
+            }
+            //if its the first row, then select it as primary
+            if(row == 0) {
+               // System.out.println("added first row");
+                model.setValueAt(new Boolean(true), 0, 0);
             }
         } 
     }
@@ -643,6 +659,7 @@ private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
                         info.roots.toArray(rootElements);
                         obj.setRootElements(rootElements);                
                     }
+                    obj.setSchemaFileName((String)value);
                     rowVector.set(col, obj);
                
                

@@ -90,107 +90,24 @@ made subject to such option by the copyright holder.
         </folder>
     </folder>
     
-    <folder name="Templates">
-        <folder name="Other">
-            <file name="CascadeStyleSheet.css" url="CascadeStyleSheet.css.template">
-                <attr name="position" intvalue="310"/>
-                <attr name="template" boolvalue="true"/>
-                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.css.resources.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/css/resources/style_sheet_16.png"/>
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/css/resources/CSS_template.html"/>
-                <attr name="templateCategory" stringvalue="simple-files"/>
-            </file>
-        </folder>
-    </folder>
-    
-    <folder name="Services">
-        <folder name="MIMEResolver">
-            <file name="CssResolver.xml" url="CssResolver.xml">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.css.resources.Bundle"/>
-                <attr name="position" intvalue="170"/>
-            </file>
-        </folder>
-    </folder>
-    
-    <folder name="Loaders">
-        <folder name="text">
-            <folder name="x-css">
-                <folder name="Actions">
-                    <file name="org-openide-actions-OpenAction.instance">
-                        <attr name="position" intvalue="100"/>
-                    </file>
-                    <file name="org-openide-actions-FileSystemAction.instance">
-                        <attr name="position" intvalue="200"/>
-                    </file>
-                    <file name="sep-1.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="300"/>
-                    </file>
-                    <file name="org-openide-actions-CutAction.instance">
-                        <attr name="position" intvalue="400"/>
-                    </file>
-                    <file name="org-openide-actions-CopyAction.instance">
-                        <attr name="position" intvalue="500"/>
-                    </file>
-                    <file name="sep-2.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="600"/>
-                    </file>
-                    <file name="org-openide-actions-DeleteAction.instance">
-                        <attr name="position" intvalue="700"/>
-                    </file>
-                    <file name="org-openide-actions-RenameAction.instance">
-                        <attr name="position" intvalue="800"/>
-                    </file>
-                    <file name="sep-3.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="900"/>
-                    </file>
-                    <file name="org-openide-actions-SaveAsTemplateAction.instance">
-                        <attr name="position" intvalue="1000"/>
-                    </file>
-                    <file name="sep-4.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="1100"/>
-                    </file>
-                    <file name="org-openide-actions-ToolsAction.instance">
-                        <attr name="position" intvalue="1200"/>
-                    </file>
-                    <file name="org-openide-actions-PropertiesAction.instance">
-                        <attr name="position" intvalue="1300"/>
-                    </file>
-                </folder>
-            </folder>
-        </folder>
-    </folder>
-    
     <folder name="Editors">
         <folder name="text">
             <folder name="x-css">
-                <attr name="createDataObject" boolvalue="false"/>
-                
-                <file name="Settings.settings" url="EditorOptions.xml"/>
-                
-                <file name="EditorKit.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.css.editor.CssEditorKit"/>
-                </file>
-                
                 <folder name="Popup">
                     <file name="CssSeparator1.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="4100"/>
                     </file>
-                    <file name="create-rule">
+                    <file name="org-netbeans-modules-css-actions-CssRuleCreateAction.instance">
                         <attr name="position" intvalue="4200"/>
                     </file>
-                    <file name="check-style">
+                    <file name="org-netbeans-modules-css-actions-CheckStyleAction.instance">
                         <attr name="position" intvalue="4300"/>
                     </file>
-                    <file name="copy-html-style">
+                    <file name="org-netbeans-modules-css-actions-CopyStyleAction$HTML.instance">
                         <attr name="position" intvalue="4400"/>
                     </file>
-                    <file name="copy-xml-style">
+                    <file name="org-netbeans-modules-css-actions-CopyStyleAction$XML.instance">
                         <attr name="position" intvalue="4500"/>
                     </file>
                     <file name="SeparatorFolding.instance">
@@ -206,7 +123,7 @@ made subject to such option by the copyright holder.
                     </folder>
                 <folder name="Toolbars">
                     <folder name="Default">
-                        <file name="create-rule">
+                        <file name="org-netbeans-modules-css-actions-CssRuleCreateAction.instance">
                             <attr name="position" intvalue="900"/>
                         </file>
                         </folder>

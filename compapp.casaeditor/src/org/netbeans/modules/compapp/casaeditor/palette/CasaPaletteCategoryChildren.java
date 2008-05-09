@@ -38,40 +38,82 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.compapp.casaeditor.palette;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.logging.Logger;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.compapp.casaeditor.api.CasaPaletteCategoryID;
 import org.netbeans.modules.compapp.casaeditor.api.CasaPaletteItemID;
 import org.netbeans.modules.compapp.casaeditor.api.CasaPalettePlugin;
+import org.netbeans.modules.compapp.projects.jbi.api.JbiDefaultComponentInfo;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import org.openide.util.WeakListeners;
 
 /**
  *
  * @author rdara
+ * @author chikkala
  */
 public class CasaPaletteCategoryChildren extends Children.Keys<CasaPaletteCategoryID> {
-    
+    private static Logger sLogger = Logger.getLogger(CasaPaletteCategoryChildren.class.getName());
+    private ChangeListener mChangeListener = null;
+
     private Lookup mLookup;
-    
+
     public CasaPaletteCategoryChildren(Lookup lookup) {
         mLookup = lookup;
+        initJbiDefaultComponentInfoChangeListener();
+    }
+    /**
+     * creates and registers the ChangeListener on JBIDefaultComponentInfo and
+     * when state changes it refreshes the keys to reload the palette
+     */
+    private void initJbiDefaultComponentInfoChangeListener() {
+        
+        mChangeListener = new ChangeListener() {
+
+            public void stateChanged(ChangeEvent e) {
+                sLogger.fine("on jbi comp info state change. refershing keys..."); //NOI18N
+                refreshKeys();
+            }
+            
+        };
+        // add change listener for JbiDefaultComponentInfo. use weak listener
+        JbiDefaultComponentInfo compInfo = JbiDefaultComponentInfo.getJbiDefaultComponentInfo();
+        ChangeListener weakListener = WeakListeners.change(mChangeListener, compInfo);
+        compInfo.addChangeListener(weakListener);
+    }
+    /**
+     * reloads the palette nodes
+     */
+    private void refreshKeys() {
+        setKeys(new ArrayList<CasaPaletteCategoryID>());
+        addNotify();
+    }
+    /**
+     * remove all the palette node keys
+     */
+    @Override
+    protected void removeNotify() {
+        setKeys(new ArrayList<CasaPaletteCategoryID>());
     }
     
     
     protected Node[] createNodes(CasaPaletteCategoryID key) {
-        return new Node[] { new CasaPaletteCategoryNode(key, mLookup) };
+        return new Node[]{new CasaPaletteCategoryNode(key, mLookup)                };
     }
-    
+
+    @Override
     protected void addNotify() {
         super.addNotify();
-        
+
         java.util.Map<String, CasaPaletteCategoryID> categoryMap = new HashMap<String, CasaPaletteCategoryID>();
         List<CasaPaletteCategoryID> categories = new ArrayList<CasaPaletteCategoryID>();
         Collection<? extends CasaPalettePlugin> plugins = CasaPalette.getPlugins();

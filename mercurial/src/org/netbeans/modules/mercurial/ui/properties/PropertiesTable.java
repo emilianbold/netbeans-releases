@@ -46,6 +46,7 @@ import java.util.Arrays;
 import javax.swing.JComponent;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JLabel;
 import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
 import javax.swing.event.TableModelEvent;
@@ -70,11 +71,11 @@ public class PropertiesTable implements AncestorListener, TableModelListener {
     private String[] columns;
     
     /** Creates a new instance of PropertiesTable */
-    public PropertiesTable(String[] columns) {
-        init(columns);
+    public PropertiesTable(JLabel label, String[] columns) {
+        init(label, columns);
     }
     
-    private void init(String[] columns) {
+    private void init(JLabel label, String[] columns) {
         tableModel = new PropertiesTableModel(columns);
         tableModel.addTableModelListener(this);
         table = new JTable(tableModel);
@@ -86,6 +87,8 @@ public class PropertiesTable implements AncestorListener, TableModelListener {
         component = new JScrollPane(table, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         component.setPreferredSize(new Dimension(340, 150));
         table.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PropertiesTable.class, "ACSD_PropertiesTable")); // NOI18N        
+        table.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PropertiesTable.class, "ACSN_PropertiesTable")); // NOI18N        
+        label.setLabelFor(table);
         setColumns(columns);
     }
     

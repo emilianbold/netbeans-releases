@@ -34,9 +34,9 @@ import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import org.jruby.ast.ConstDeclNode;
 import org.jruby.ast.Node;
-import org.jruby.ast.NodeTypes;
-import org.netbeans.api.gsf.CompilationInfo;
-import org.netbeans.api.gsf.OffsetRange;
+import org.jruby.ast.NodeType;
+import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.ruby.hints.spi.AstRule;
 import org.netbeans.modules.ruby.hints.spi.Description;
@@ -59,15 +59,15 @@ public class ConstantNames implements AstRule {
         return true;
     }
 
-    public Set<Integer> getKinds() {
-        return Collections.singleton(NodeTypes.CONSTDECLNODE);
+    public Set<NodeType> getKinds() {
+        return Collections.singleton(NodeType.CONSTDECLNODE);
     }
     
     public void run(RuleContext context, List<Description> result) {
         Node node = context.node;
         CompilationInfo info = context.compilationInfo;
 
-        assert (node.nodeId == NodeTypes.CONSTDECLNODE);
+        assert (node.nodeId == NodeType.CONSTDECLNODE);
         String name = ((ConstDeclNode)node).getName();
 
         for (int i = 0; i < name.length(); i++) {

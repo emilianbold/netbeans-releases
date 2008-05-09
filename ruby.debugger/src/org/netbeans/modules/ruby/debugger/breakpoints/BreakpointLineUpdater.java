@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -44,7 +44,6 @@ package org.netbeans.modules.ruby.debugger.breakpoints;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
-import org.netbeans.modules.ruby.debugger.ContextProviderWrapper;
 import org.openide.cookies.LineCookie;
 import org.openide.loaders.DataObject;
 import org.openide.text.Line;
@@ -53,9 +52,8 @@ import org.openide.util.Exceptions;
 /** Simplified, heavily based on Java Debugger code. */
 final class BreakpointLineUpdater implements PropertyChangeListener {
 
-    private RubyBreakpoint breakpoint;
+    private final RubyBreakpoint breakpoint;
     private DataObject dataObject;
-    private LineCookie lc;
     private Line line;
 
     public BreakpointLineUpdater(RubyBreakpoint breakpoint) {
@@ -68,9 +66,9 @@ final class BreakpointLineUpdater implements PropertyChangeListener {
     }
 
     public synchronized void attach() throws IOException {
-        this.lc = dataObject.getCookie(LineCookie.class);
         breakpoint.addPropertyChangeListener(this);
         try {
+            LineCookie lc = dataObject.getCookie(LineCookie.class);
             this.line = lc.getLineSet().getCurrent(breakpoint.getLineNumber() - 1);
             line.addPropertyChangeListener(this);
         } catch (IndexOutOfBoundsException ioobex) {

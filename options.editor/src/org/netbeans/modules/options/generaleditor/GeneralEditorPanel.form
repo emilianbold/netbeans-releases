@@ -29,25 +29,34 @@
                           <Component id="lCodeCompletion2" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="lCollapseByDefault" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
+                      <EmptySpace min="14" pref="14" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="cbCamelCaseBehavior" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="cbInsertClosingBracketsAutomatically" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="cbShowDeprecated" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="cbCaseSensitive" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="cbFoldInitialComments" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="cbFoldJavadocComments" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="cbFoldImports" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="cbFoldInnerClasses" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="cbFoldMethods" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="cbUseCodeFolding" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="cbAutoPopup" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="cbInsertSingleProposalsAutomatically" alignment="0" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace min="-2" pref="91" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="cbGuessMethodArgs" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="cbDocsAutoPopup" alignment="0" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                          </Group>
+                      </Group>
                   </Group>
                   <Component id="lCamelCaseBehavior" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="cbCamelCaseBehavior" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="cbInsertClosingBracketsAutomatically" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="cbShowDeprecated" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="cbCaseSensitive" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="cbInsertSingleProposalsAutomatically" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="cbAutoPopup" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="cbFoldInitialComments" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="cbFoldJavadocComments" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="cbFoldImports" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="cbFoldInnerClasses" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="cbFoldMethods" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="cbUseCodeFolding" alignment="0" min="-2" max="-2" attributes="0"/>
-              </Group>
-              <EmptySpace pref="391" max="32767" attributes="0"/>
+              <EmptySpace pref="133" max="32767" attributes="0"/>
           </Group>
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace min="138" pref="138" max="138" attributes="0"/>
@@ -56,17 +65,17 @@
           </Group>
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace min="-2" pref="116" max="-2" attributes="0"/>
-              <Component id="jSeparator3" pref="641" max="32767" attributes="0"/>
+              <Component id="jSeparator3" pref="774" max="32767" attributes="0"/>
           </Group>
           <Group type="102" alignment="0" attributes="0">
               <Component id="lCodeCompletion" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Component id="jSeparator2" pref="664" max="32767" attributes="0"/>
+              <Component id="jSeparator2" pref="768" max="32767" attributes="0"/>
           </Group>
           <Group type="102" alignment="0" attributes="0">
               <Component id="lCodeFolding" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Component id="jSeparator1" pref="683" max="32767" attributes="0"/>
+              <Component id="jSeparator1" pref="796" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -104,10 +113,16 @@
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="1" attributes="0">
                   <Component id="lCodeCompletion2" min="-2" max="-2" attributes="0"/>
-                  <Component id="cbAutoPopup" min="-2" max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="3" attributes="0">
+                      <Component id="cbAutoPopup" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="cbDocsAutoPopup" alignment="3" min="-2" max="-2" attributes="0"/>
+                  </Group>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="cbInsertSingleProposalsAutomatically" min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="cbInsertSingleProposalsAutomatically" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="cbGuessMethodArgs" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="cbCaseSensitive" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
@@ -151,9 +166,6 @@
             <EmptyBorder bottom="0" left="0" right="0" top="0"/>
           </Border>
         </Property>
-        <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
-          <Insets value="[0, 0, 0, 0]"/>
-        </Property>
       </Properties>
     </Component>
     <Component class="javax.swing.JCheckBox" name="cbFoldMethods">
@@ -163,9 +175,6 @@
           <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
             <EmptyBorder bottom="0" left="0" right="0" top="0"/>
           </Border>
-        </Property>
-        <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
-          <Insets value="[0, 0, 0, 0]"/>
         </Property>
       </Properties>
     </Component>
@@ -177,9 +186,6 @@
             <EmptyBorder bottom="0" left="0" right="0" top="0"/>
           </Border>
         </Property>
-        <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
-          <Insets value="[0, 0, 0, 0]"/>
-        </Property>
       </Properties>
     </Component>
     <Component class="javax.swing.JCheckBox" name="cbFoldImports">
@@ -189,9 +195,6 @@
           <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
             <EmptyBorder bottom="0" left="0" right="0" top="0"/>
           </Border>
-        </Property>
-        <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
-          <Insets value="[0, 0, 0, 0]"/>
         </Property>
       </Properties>
     </Component>
@@ -203,9 +206,6 @@
             <EmptyBorder bottom="0" left="0" right="0" top="0"/>
           </Border>
         </Property>
-        <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
-          <Insets value="[0, 0, 0, 0]"/>
-        </Property>
       </Properties>
     </Component>
     <Component class="javax.swing.JCheckBox" name="cbFoldInitialComments">
@@ -215,9 +215,6 @@
           <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
             <EmptyBorder bottom="0" left="0" right="0" top="0"/>
           </Border>
-        </Property>
-        <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
-          <Insets value="[0, 0, 0, 0]"/>
         </Property>
       </Properties>
     </Component>
@@ -241,9 +238,6 @@
             <EmptyBorder bottom="0" left="0" right="0" top="0"/>
           </Border>
         </Property>
-        <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
-          <Insets value="[0, 0, 0, 0]"/>
-        </Property>
       </Properties>
     </Component>
     <Component class="javax.swing.JCheckBox" name="cbInsertSingleProposalsAutomatically">
@@ -253,9 +247,6 @@
           <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
             <EmptyBorder bottom="0" left="0" right="0" top="0"/>
           </Border>
-        </Property>
-        <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
-          <Insets value="[0, 0, 0, 0]"/>
         </Property>
       </Properties>
     </Component>
@@ -267,9 +258,6 @@
             <EmptyBorder bottom="0" left="0" right="0" top="0"/>
           </Border>
         </Property>
-        <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
-          <Insets value="[0, 0, 0, 0]"/>
-        </Property>
       </Properties>
     </Component>
     <Component class="javax.swing.JCheckBox" name="cbShowDeprecated">
@@ -280,9 +268,6 @@
             <EmptyBorder bottom="0" left="0" right="0" top="0"/>
           </Border>
         </Property>
-        <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
-          <Insets value="[0, 0, 0, 0]"/>
-        </Property>
       </Properties>
     </Component>
     <Component class="javax.swing.JCheckBox" name="cbInsertClosingBracketsAutomatically">
@@ -292,9 +277,6 @@
           <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
             <EmptyBorder bottom="0" left="0" right="0" top="0"/>
           </Border>
-        </Property>
-        <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
-          <Insets value="[0, 0, 0, 0]"/>
         </Property>
       </Properties>
     </Component>
@@ -315,15 +297,32 @@
             <EmptyBorder bottom="0" left="0" right="0" top="0"/>
           </Border>
         </Property>
-        <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
-          <Insets value="[0, 0, 0, 0]"/>
-        </Property>
       </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="lCamelCaseBehaviorExample">
       <Properties>
         <Property name="text" type="java.lang.String" value="(Example: Caret stops at J, T, N in &quot;JavaTypeName&quot; when using next/previous word acctions)"/>
         <Property name="enabled" type="boolean" value="false"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JCheckBox" name="cbDocsAutoPopup">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Auto Popup Documentation Window"/>
+        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+          <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
+            <EmptyBorder bottom="0" left="0" right="0" top="0"/>
+          </Border>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JCheckBox" name="cbGuessMethodArgs">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Guess Filled Method Arguments"/>
+        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+          <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
+            <EmptyBorder bottom="0" left="0" right="0" top="0"/>
+          </Border>
+        </Property>
       </Properties>
     </Component>
   </SubComponents>

@@ -118,12 +118,14 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
         return (WindowManagerImpl)Lookup.getDefault().lookup(WindowManager.class);
     }
     
+    @Override
     public void topComponentRequestAttention(TopComponent tc) {
         ModeImpl mode = (ModeImpl) findMode(tc);
         
         central.topComponentRequestAttention(mode, tc);
     }
 
+    @Override
     public void topComponentCancelRequestAttention(TopComponent tc) {
         ModeImpl mode = (ModeImpl) findMode(tc);
         
@@ -754,6 +756,11 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
 
     /** Sets visible or invisible window system GUI. */
     public void setVisible(boolean visible) {
+        if( visible ) {
+            FloatingWindowTransparencyManager.getDefault().start();
+        } else {
+            FloatingWindowTransparencyManager.getDefault().stop();
+        }
         SwingUtilities.invokeLater(exclusive);
         central.setVisible(visible);
     }
@@ -1011,6 +1018,7 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
     /////////////////////////////
 
     /** Overrides superclass method, to enhance access modifier. */
+    @Override
     public void componentShowing(TopComponent tc) {
         if((tc != null) && (tc != persistenceShowingTC)) {
             super.componentShowing(tc);
@@ -1025,6 +1033,7 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
     }
     
     /** Overrides superclass method, to enhance access modifier. */
+    @Override
     public void componentHidden(TopComponent tc) {
         if(tc != null) {
             super.componentHidden(tc);
@@ -1040,6 +1049,7 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
         topComponentOpenAtTabPosition(tc, -1);
     }
 
+    @Override
     protected void topComponentOpenAtTabPosition (TopComponent tc, int position) {
         assertEventDispatchThreadWeak();
         
@@ -1088,6 +1098,7 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
         }
     }
     
+    @Override
     protected int topComponentGetTabPosition (TopComponent tc) {
         assertEventDispatchThreadWeak();
         
@@ -1218,8 +1229,10 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
             return false;
         //check opened TopComponents first to avoid AWT assertion if possible
         for(ModeImpl mode: getModes()) {
+            if( mode.getKind() != Constants.MODE_KIND_EDITOR )
+                continue;
             if( mode.containsTopComponent( tc ) ) {
-                return mode.getKind() == Constants.MODE_KIND_EDITOR;
+                return true;
             }
         }
 
@@ -1232,8 +1245,10 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
         if( null == tc )
             return false;
         for(ModeImpl mode: getModes()) {
+            if( mode.getKind() != Constants.MODE_KIND_EDITOR )
+                continue;
             if( mode.getOpenedTopComponents().contains( tc ) ) {
-                return mode.getKind() == Constants.MODE_KIND_EDITOR;
+                return true;
             }
         }
 

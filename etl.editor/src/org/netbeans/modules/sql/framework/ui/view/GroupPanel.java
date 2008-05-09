@@ -62,6 +62,9 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+
 
 /**
  * @author Ritesh Adval
@@ -69,6 +72,8 @@ import javax.swing.ListSelectionModel;
  */
 public class GroupPanel extends JPanel {
 
+    private static transient final Logger mLogger = Logger.getLogger(GroupPanel.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
     class ButtonActionListener implements ActionListener {
 
         /**
@@ -277,7 +282,10 @@ public class GroupPanel extends JPanel {
         GridBagConstraints c = new GridBagConstraints();
 
         JButton upButton = new JButton(new ImageIcon(UP_IMG_URL));
-        upButton.setActionCommand("UP");
+        String nbBundle30 = mLoc.t("BUND488: UP");
+        upButton.setActionCommand(nbBundle30.substring(15));
+        upButton.getAccessibleContext().setAccessibleName(nbBundle30.substring(15));
+        upButton.setMnemonic(nbBundle30.substring(15).charAt(0));
 
         c.gridwidth = GridBagConstraints.REMAINDER;
         c.weighty = 1.0;
@@ -285,7 +293,10 @@ public class GroupPanel extends JPanel {
         buttonPanel.add(upButton, c);
 
         JButton downButton = new JButton(new ImageIcon(DOWN_IMG_URL));
-        downButton.setActionCommand("DOWN");
+        String nbBundle31 = mLoc.t("BUND488: UP");
+        downButton.setActionCommand(nbBundle31.substring(15));
+        downButton.getAccessibleContext().setAccessibleName(nbBundle31.substring(15));
+        downButton.setMnemonic(nbBundle31.substring(15).charAt(0));
 
         c.gridwidth = GridBagConstraints.REMAINDER;
         c.weighty = 1.0;

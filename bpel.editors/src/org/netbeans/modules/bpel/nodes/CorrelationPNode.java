@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.bpel.nodes;
 
+import org.netbeans.modules.bpel.nodes.BpelNode;
 import org.netbeans.modules.bpel.model.api.PatternedCorrelation;
 import org.netbeans.modules.bpel.model.api.events.ChangeEvent;
 import org.netbeans.modules.bpel.model.api.support.Initiate;
@@ -30,7 +31,7 @@ import org.netbeans.modules.bpel.model.api.events.PropertyRemoveEvent;
 import org.netbeans.modules.bpel.properties.props.PropertyUtils;
 import org.openide.nodes.Sheet;
 import static org.netbeans.modules.bpel.properties.PropertyType.*;
-import org.netbeans.modules.soa.ui.SoaUiUtil;
+import org.netbeans.modules.soa.ui.SoaUtil;
 import org.openide.util.Lookup;
 
 /**
@@ -98,7 +99,7 @@ public class CorrelationPNode extends BpelNode<PatternedCorrelation> {
                 ? ref.getSet().getRefString() 
                 : super.getImplHtmlDisplayName()
             : baseName;
-        return SoaUiUtil.getGrayString( 
+        return SoaUtil.getGrayString( 
                 baseName
                 , nodeName == null ? getDisplayName() : nodeName);
     }

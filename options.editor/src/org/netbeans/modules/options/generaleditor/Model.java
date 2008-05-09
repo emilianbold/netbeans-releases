@@ -42,7 +42,10 @@
 package org.netbeans.modules.options.generaleditor;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.prefs.Preferences;
@@ -51,7 +54,6 @@ import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.editor.SettingsNames;
 import org.netbeans.modules.editor.options.BaseOptions;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbPreferences;
 
@@ -65,23 +67,23 @@ public class Model {
     }
 
     boolean isFoldImports () {
-        return getFoldingParameter ("code-folding-collapse-import", false);
+        return getFoldingParameter ("code-folding-collapse-import", false); //NOI18N
     }
     
     boolean isFoldInitialComment () {
-        return getFoldingParameter ("code-folding-collapse-initial-comment", false);
+        return getFoldingParameter ("code-folding-collapse-initial-comment", false); //NOI18N
     }
     
     boolean isFoldInnerClasses () {
-        return getFoldingParameter ("code-folding-collapse-innerclass", false);
+        return getFoldingParameter ("code-folding-collapse-innerclass", false); //NOI18N
     }
     
     boolean isFoldJavaDocComments () {
-        return getFoldingParameter ("code-folding-collapse-javadoc", false);
+        return getFoldingParameter ("code-folding-collapse-javadoc", false); //NOI18N
     }
     
     boolean isFoldMethods () {
-        return getFoldingParameter ("code-folding-collapse-method", false);
+        return getFoldingParameter ("code-folding-collapse-method", false); //NOI18N
     }
     
     void setFoldingOptions (
@@ -107,23 +109,23 @@ public class Model {
                 Boolean.valueOf (showCodeFolding)
             );
             m.put (
-                "code-folding-collapse-import",
+                "code-folding-collapse-import", //NOI18N
                 Boolean.valueOf (foldImports)
             );
             m.put (
-                "code-folding-collapse-initial-comment",
+                "code-folding-collapse-initial-comment", //NOI18N
                 Boolean.valueOf (foldInitialComent)
             );
             m.put (
-                "code-folding-collapse-innerclass",
+                "code-folding-collapse-innerclass", //NOI18N
                 Boolean.valueOf (foldInnerClasses)
             );
             m.put (
-                "code-folding-collapse-javadoc",
+                "code-folding-collapse-javadoc", //NOI18N
                 Boolean.valueOf (foldJavaDoc)
             );
             m.put (
-                "code-folding-collapse-method",
+                "code-folding-collapse-method", //NOI18N
                 Boolean.valueOf (foldMethods)
             );
             
@@ -135,31 +137,41 @@ public class Model {
     // code completion options 
     
     boolean isPairCharacterCompletion () {
-        return getParameter ("getPairCharactersCompletion", true);
+        return getParameter ("getPairCharactersCompletion", true); //NOI18N
     }
     
     boolean isCompletionAutoPopup () {
-        return getParameter ("getCompletionAutoPopup", true);
+        return getParameter ("getCompletionAutoPopup", true); //NOI18N
+    }
+    
+    boolean isDocumentationAutoPopup () {
+        return getParameter ("getJavaDocAutoPopup", true); //NOI18N
     }
     
     boolean isShowDeprecatedMembers () {
-        return getParameter ("getShowDeprecatedMembers", true);
+        return getParameter ("getShowDeprecatedMembers", true); //NOI18N
     }
     
     boolean isCompletionInstantSubstitution () {
-        return getParameter ("getCompletionInstantSubstitution", true);
+        return getParameter ("getCompletionInstantSubstitution", true); //NOI18N
     }
     
     boolean isCompletionCaseSensitive () {
-        return getParameter ("getCompletionCaseSensitive", true);
+        return getParameter ("getCompletionCaseSensitive", true); //NOI18N
+    }
+
+    boolean isGuessMethodArguments () {
+        return getParameter ("getGuessMethodArguments", true); //NOI18N
     }
     
     void setCompletionOptions (
         boolean pairCharacterCompletion,
         boolean completionAutoPopup,
+        boolean documentationAutoPopup,
         boolean showDeprecatedMembers,
         boolean completionInstantSubstitution,
-        boolean completionCaseSensitive
+        boolean completionCaseSensitive,
+        boolean guessMethodArguments
     ) {
         Set mimeTypes = EditorSettings.getDefault().getMimeTypes();
         for(Iterator i = mimeTypes.iterator(); i.hasNext(); ) {
@@ -172,7 +184,7 @@ public class Model {
             
             try {
                 Method method = baseOptions.getClass ().getMethod (
-                    "setPairCharactersCompletion",
+                    "setPairCharactersCompletion", //NOI18N
                     new Class [] {Boolean.TYPE}
                 );
                 method.invoke (
@@ -183,7 +195,7 @@ public class Model {
             }
             try {
                 Method method = baseOptions.getClass ().getMethod (
-                    "setCompletionAutoPopup",
+                    "setCompletionAutoPopup", //NOI18N
                     new Class [] {Boolean.TYPE}
                 );
                 method.invoke (
@@ -194,7 +206,18 @@ public class Model {
             }
             try {
                 Method method = baseOptions.getClass ().getMethod (
-                    "setShowDeprecatedMembers",
+                    "setJavaDocAutoPopup", //NOI18N
+                    new Class [] {Boolean.TYPE}
+                );
+                method.invoke (
+                    baseOptions, 
+                    new Object [] {Boolean.valueOf (documentationAutoPopup)}
+                );
+            } catch (Exception ex) {
+            }
+            try {
+                Method method = baseOptions.getClass ().getMethod (
+                    "setShowDeprecatedMembers", //NOI18N
                     new Class [] {Boolean.TYPE}
                 );
                 method.invoke (
@@ -205,7 +228,7 @@ public class Model {
             }
             try {
                 Method method = baseOptions.getClass ().getMethod (
-                    "setCompletionInstantSubstitution",
+                    "setCompletionInstantSubstitution", //NOI18N
                     new Class [] {Boolean.TYPE}
                 );
                 method.invoke (
@@ -216,12 +239,23 @@ public class Model {
             }
             try {
                 Method method = baseOptions.getClass ().getMethod (
-                    "setCompletionCaseSensitive",
+                    "setCompletionCaseSensitive", //NOI18N
                     new Class [] {Boolean.TYPE}
                 );
                 method.invoke (
                     baseOptions, 
                     new Object [] {Boolean.valueOf (completionCaseSensitive)}
+                );
+            } catch (Exception ex) {
+            }
+            try {
+                Method method = baseOptions.getClass ().getMethod (
+                    "setGuessMethodArguments", //NOI18N
+                    new Class [] {Boolean.TYPE}
+                );
+                method.invoke (
+                    baseOptions, 
+                    new Object [] {Boolean.valueOf (guessMethodArguments)}
                 );
             } catch (Exception ex) {
             }
@@ -246,14 +280,22 @@ public class Model {
         
     // private helper methods ..................................................
     
+    private static final List<String> PRIVILEDGED_MIME_TYPES = Arrays.asList(new String [] {
+        "text/x-java", //NOI18N
+        "text/x-c++", //NOI18N
+        "text/x-c", //NOI18N
+        "text/x-ruby", //NOI18N
+    });
+    
     private boolean getFoldingParameter (
         String parameterName, 
         boolean defaultValue
     ) {
-        boolean successfullRead = false;
         Set<String> mimeTypes = EditorSettings.getDefault().getAllMimeTypes();
+        List<String> list = new ArrayList<String>(PRIVILEDGED_MIME_TYPES);
+        list.addAll(mimeTypes);
         
-        for(String mimeType : mimeTypes) {
+        for(String mimeType : list) {
             BaseOptions options = getOptions(mimeType);
             
             if (options == null) {
@@ -263,21 +305,20 @@ public class Model {
             Map foldingParams = options.getCodeFoldingProps();
             Boolean value = (Boolean) foldingParams.get(parameterName);
             
-            if (value != null && value.booleanValue()) {
-                return true;
-            } else {
-                successfullRead = true;
+            if (value != null) {
+                return value.booleanValue();
             }
         }
         
-        return successfullRead ? false : defaultValue;
+        return defaultValue;
     }
     
     private boolean getParameter (String parameterName, boolean defaultValue) {
-        boolean successfullRead = false;
         Set<String> mimeTypes = EditorSettings.getDefault().getAllMimeTypes();
+        List<String> list = new ArrayList<String>(PRIVILEDGED_MIME_TYPES);
+        list.addAll(mimeTypes);
         
-        for(String mimeType : mimeTypes) {
+        for(String mimeType : list) {
             BaseOptions options = getOptions(mimeType);
             
             if (options == null) {
@@ -290,16 +331,13 @@ public class Model {
                     new Class [0]
                 );
                 boolean value = ((Boolean) method.invoke(options, new Object[0])).booleanValue();
-                if (value) {
-                    return true;
-                } else {
-                    successfullRead = true;
-                }
+                return value;
             } catch (Exception ex) {
+                // ignore
             }
         }
         
-        return successfullRead ? false : defaultValue;
+        return defaultValue;
     }
     
     private static BaseOptions getOptions (String mimeType) {

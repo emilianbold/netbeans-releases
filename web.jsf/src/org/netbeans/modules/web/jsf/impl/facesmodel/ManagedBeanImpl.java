@@ -97,29 +97,29 @@ public class ManagedBeanImpl extends DescriptionGroupImpl implements ManagedBean
     
     public String getManagedBeanName() {
         if (beanName == null) {
-            beanName = getChildElementText(JSFConfigQNames.MANAGED_BEAN_NAME.getQName(getModel().getVersion()));
+            beanName = getChildElementText(JSFConfigQNames.MANAGED_BEAN_NAME.getQName(getNamespaceURI()));
         }
         return beanName;
     }
     
     public void setManagedBeanName(String name) {
-        setChildElementText(MANAGED_BEAN_NAME, name, JSFConfigQNames.MANAGED_BEAN_NAME.getQName(getModel().getVersion()));
+        setChildElementText(MANAGED_BEAN_NAME, name, JSFConfigQNames.MANAGED_BEAN_NAME.getQName(getNamespaceURI()));
     }
     
     public String getManagedBeanClass() {
         if (beanClass ==  null) {
-            beanClass = getChildElementText(JSFConfigQNames.MANAGED_BEAN_CLASS.getQName(getModel().getVersion()));
+            beanClass = getChildElementText(JSFConfigQNames.MANAGED_BEAN_CLASS.getQName(getNamespaceURI()));
         }
         return beanClass;
     }
     
     public void setManagedBeanClass(String beanClass) {
-        setChildElementText(MANAGED_BEAN_CLASS, beanClass, JSFConfigQNames.MANAGED_BEAN_CLASS.getQName(getModel().getVersion()));
+        setChildElementText(MANAGED_BEAN_CLASS, beanClass, JSFConfigQNames.MANAGED_BEAN_CLASS.getQName(getNamespaceURI()));
     }
     
     public ManagedBean.Scope getManagedBeanScope() {
         if (beanScope == null) {
-            String scopeText = getChildElementText(JSFConfigQNames.MANAGED_BEAN_SCOPE.getQName(getModel().getVersion()));
+            String scopeText = getChildElementText(JSFConfigQNames.MANAGED_BEAN_SCOPE.getQName(getNamespaceURI()));
             scopeText = scopeText.trim().toUpperCase();
             try{
                 beanScope = ManagedBean.Scope.valueOf(scopeText);
@@ -132,7 +132,7 @@ public class ManagedBeanImpl extends DescriptionGroupImpl implements ManagedBean
     }
     
     public void setManagedBeanScope(ManagedBean.Scope scope) {
-        setChildElementText(MANAGED_BEAN_SCOPE, scope.toString(), JSFConfigQNames.MANAGED_BEAN_SCOPE.getQName(getModel().getVersion()));
+        setChildElementText(MANAGED_BEAN_SCOPE, scope.toString(), JSFConfigQNames.MANAGED_BEAN_SCOPE.getQName(getPeer().getNamespaceURI()));
     }
     
     protected List<String> getSortedListOfLocalNames(){

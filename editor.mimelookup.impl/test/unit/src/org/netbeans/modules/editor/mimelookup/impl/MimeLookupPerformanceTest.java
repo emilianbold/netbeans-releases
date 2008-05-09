@@ -109,7 +109,7 @@ public class MimeLookupPerformanceTest extends NbTestCase {
         }
         return filter;
     }
-
+    /*
     public void testMimeLookupObjectInstallingUninstallingSize() throws IOException{
         MimePath mp = MimePath.parse("text/x-java/text/html/text/xml");
         Lookup lookup = MimeLookup.getLookup(mp);
@@ -158,6 +158,7 @@ public class MimeLookupPerformanceTest extends NbTestCase {
         gc(); gc();
         assertSize("", size + 3000, lookup); // 3000 is threshold
     }
+    */
     
     public void testClassLookuping() throws IOException{
         MimePath mp = MimePath.parse("text/x-java/text/html/text/xml");

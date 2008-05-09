@@ -39,36 +39,33 @@
 
 package org.netbeans.modules.websvc.saas.ui.nodes;
 
-import com.sun.tools.ws.processor.model.Operation;
 import com.sun.tools.ws.processor.model.java.JavaMethod;
 import com.sun.tools.ws.processor.model.java.JavaParameter;
 import java.awt.Image;
 import java.awt.datatransfer.Transferable;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
-import org.netbeans.modules.websvc.manager.spi.WebServiceTransferManager;
-import org.netbeans.modules.websvc.manager.util.ManagerUtil;
-import org.netbeans.modules.websvc.saas.model.WsdlSaas;
+import org.netbeans.modules.websvc.saas.model.Saas;
+import org.netbeans.modules.websvc.saas.model.WsdlSaasMethod;
 import org.netbeans.modules.websvc.saas.spi.SaasNodeActionsProvider;
 import org.netbeans.modules.websvc.saas.ui.actions.TestMethodAction;
+import org.netbeans.modules.websvc.saas.util.SaasTransferable;
 import org.netbeans.modules.websvc.saas.util.SaasUtil;
+import org.netbeans.modules.websvc.saas.util.TypeUtil;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.PropertySupport.Reflection;
 import org.openide.nodes.Sheet;
 import org.openide.nodes.Sheet.Set;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
+import org.openide.util.datatransfer.ExTransferable;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 
@@ -77,43 +74,35 @@ import org.openide.util.lookup.InstanceContent;
  * @author nam
  */
 public class WsdlMethodNode extends AbstractNode {
-    private WsdlSaas saas;
-    private WsdlPort port;
-    private WsdlOperation operation;
-    private JavaMethod javaMethod;
+    WsdlSaasMethod method;
     private Transferable transferable;
     
-    public WsdlMethodNode(WsdlSaas saas, WsdlPort port, WsdlOperation operation) {
-        this(saas, port, operation, new InstanceContent());
+    public WsdlMethodNode(WsdlSaasMethod method) {
+        this(method, new InstanceContent());
     }
 
-    protected WsdlMethodNode(WsdlSaas saas, WsdlPort port, WsdlOperation operation, InstanceContent content) {
+    protected WsdlMethodNode(WsdlSaasMethod method, InstanceContent content) {
         super(Children.LEAF, new AbstractLookup(content));
-        this.saas = saas;
-        this.port = port;
-        this.operation = operation;
-        content.add(operation);
-        content.add(port);
-        content.add(saas);
-        javaMethod = ((Operation)operation.getInternalJAXWSOperation()).getJavaMethod() ;
+        this.method = method;
+        content.add(method);
+        transferable = ExTransferable.create(
+            new SaasTransferable<WsdlSaasMethod>(method, SaasTransferable.WSDL_METHOD_FLAVORS));
     }
 
     @Override
     public String getDisplayName() {
-        return operation.getName();
+        return method.getName();
     }
     
     @Override
     public String getShortDescription() {
-        /**
-         * Set the shortDescription (tooltip) to the method signature
-         */
+        JavaMethod javaMethod = method.getJavaMethod();
         String signature = javaMethod.getReturnType().getFormalName() + " " + javaMethod.getName() + "(";
         Iterator parameterIterator = javaMethod.getParametersList().iterator();
         JavaParameter currentParam = null;
         while(parameterIterator.hasNext()) {
             currentParam = (JavaParameter)parameterIterator.next();
-            String parameterType = ManagerUtil.getParameterType(currentParam);
+            String parameterType = TypeUtil.getParameterType(currentParam);
             signature += parameterType + " " + currentParam.getName();
             if(parameterIterator.hasNext()) {
                 signature += ", ";
@@ -125,12 +114,7 @@ public class WsdlMethodNode extends AbstractNode {
     
     @Override
     public Action[] getActions(boolean context) {
-        List<Action> actions = new ArrayList<Action>();
-        for (SaasNodeActionsProvider ext : SaasUtil.getSaasNodeActionsProviders()) {
-            for (Action a : ext.getSaasActions(this.getLookup())) {
-                actions.add(a);
-            }
-        }
+        List<Action> actions = SaasNode.getActions(getLookup());
         //TODO maybe ???
         actions.add(SystemAction.get(TestMethodAction.class));
         return actions.toArray(new Action[actions.size()]);
@@ -150,7 +134,8 @@ public class WsdlMethodNode extends AbstractNode {
     }
     
     private Image getMethodIcon() {
-        if(!"void".equals(javaMethod.getReturnType().getRealName())) {
+        JavaMethod javaMethod = method.getJavaMethod();
+        if (javaMethod != null && !"void".equals(javaMethod.getReturnType().getRealName())) {
             Image image1 = Utilities.loadImage("org/netbeans/modules/websvc/manager/resources/methodicon.png");
             Image image2 = Utilities.loadImage("org/netbeans/modules/websvc/manager/resources/table_dp_badge.png");
             int x = image1.getWidth(null) - image2.getWidth(null);
@@ -165,6 +150,7 @@ public class WsdlMethodNode extends AbstractNode {
      * @return property sheet for the data source nodes
      */
     protected Sheet createSheet() {
+        JavaMethod javaMethod = method.getJavaMethod();
         Sheet sheet = super.createSheet();
         Set ss = sheet.get("data"); // NOI18N
         
@@ -174,6 +160,10 @@ public class WsdlMethodNode extends AbstractNode {
             ss.setDisplayName(NbBundle.getMessage(WsdlMethodNode.class, "METHOD_INFO"));
             ss.setShortDescription(NbBundle.getMessage(WsdlMethodNode.class, "METHOD_INFO"));
             sheet.put(ss);
+        }
+        
+        if (javaMethod == null) {
+            return sheet;
         }
         
         try {
@@ -245,7 +235,7 @@ public class WsdlMethodNode extends AbstractNode {
                 for(int ii=0;paramIterator.hasNext();ii++) {
                     currentParameter = (JavaParameter)paramIterator.next();
                     if(currentParameter.getType().isHolder()) {
-                        p = new Reflection(ManagerUtil.getParameterType(currentParameter), String.class, "toString", null); // NOI18N
+                        p = new Reflection(TypeUtil.getParameterType(currentParameter), String.class, "toString", null); // NOI18N
                     } else {
                         p = new Reflection(currentParameter.getType(), String.class, "getRealName", null); // NOI18N
                     }
@@ -291,18 +281,15 @@ public class WsdlMethodNode extends AbstractNode {
         return false;
     }
     
+    @Override
     public Transferable clipboardCopy() throws IOException {
-        return addFlavors(transferable);
-    }
-    
-    static Transferable addFlavors(Transferable transfer) {
-        Collection<? extends WebServiceTransferManager> managers = Lookup.getDefault().lookupAll(WebServiceTransferManager.class);
-        Transferable result = transfer;
-        
-        for (WebServiceTransferManager m : managers) {
-            result = m.addDataFlavors(result);
+        if (method.getSaas().getState() == Saas.State.READY) {
+            return SaasTransferable.addFlavors(transferable);
+        } else {
+            method.getSaas().toStateReady(false);
+            return super.clipboardCopy();
         }
-        return result;
+        
     }
-    
+   
 }

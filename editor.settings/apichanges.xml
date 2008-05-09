@@ -104,6 +104,37 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="added.EditorStyleConstants.xxxBorderLineColor">
+            <summary>Added border related constants to EditorStyleConstants</summary>
+            <version major="1" minor="16"/>
+            <date day="28" month="2" year="2008"/>
+            <author login="vstejskal"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes" deprecation="no" deletion="no" modification="no" />
+            <description>
+            <p>
+                Several new constants were added to <code>EditorStyleConstants</code> to
+                support drawing rectangular boxes around text in the editor.
+            </p>
+            </description>
+            <issue number="108161"/>
+        </change>
+
+        <change id="added.CodeTemplateDescription.getMimePath">
+            <summary>Added CodeTemplateDescription.getMimePath</summary>
+            <version major="1" minor="15"/>
+            <date day="14" month="2" year="2008"/>
+            <author login="vstejskal"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes" deprecation="no" deletion="no" modification="no" />
+            <description>
+            <p>
+                The <code>CodeTemplateDescription.getMimePath</code> and a new
+                constructor were added to accomodate a mime path where a code
+                template was registered.
+            </p>
+            </description>
+            <issue number="121663"/>
+        </change>
+
         <change id="added.EditorStyleConstants.Tooltip">
             <summary>Added EditorStyleConstants.Tooltip</summary>
             <version major="1" minor="12"/>

@@ -47,6 +47,7 @@ import org.netbeans.modules.soa.mappercore.model.Graph;
 import org.netbeans.modules.soa.mappercore.model.Link;
 import org.netbeans.modules.soa.mappercore.model.TreeSourcePin;
 import org.netbeans.modules.soa.mappercore.model.Vertex;
+import org.netbeans.modules.soa.mappercore.utils.Utils;
 
 /**
  *
@@ -54,6 +55,7 @@ import org.netbeans.modules.soa.mappercore.model.Vertex;
  */
 public class AutoSelectionCanvas implements MapperSelectionListener {
     private Canvas canvas;
+    private TreePath currentPath;
     private Link currentLink;
     private Graph currentGraph;
     private Vertex currentVertex;
@@ -69,6 +71,7 @@ public class AutoSelectionCanvas implements MapperSelectionListener {
         List<Link> links = canvas.getSelectionModel().getSelectedLinks();
         Graph graph = canvas.getSelectionModel().getSelectedGraph();
         TreePath treePath = canvas.getSelectionModel().getSelectedPath();
+        if (treePath == null) return;
         //Change link
         if (links != null && links.size() > 0) {
             Link link = links.get(0);
@@ -83,7 +86,10 @@ public class AutoSelectionCanvas implements MapperSelectionListener {
         
         if (vertexes != null && vertexes.size() > 0) {
             Vertex vertex = vertexes.get(0);
-            if (vertex != currentVertex) {
+            if (vertex != currentVertex || 
+                    (!(Utils.equal(treePath, currentPath) && vertex == currentVertex))) 
+            {
+                
                 currentVertex = vertex;
                 if (mapper.getNode(treePath, true).isGraphCollapsed()) {
                     mapper.setExpandedGraphState(treePath, true);
@@ -97,9 +103,9 @@ public class AutoSelectionCanvas implements MapperSelectionListener {
         Mapper mapper = canvas.getMapper();
         if (treePath == mapper.getRoot().getTreePath()) return;
         
-        mapper.setExpandedState(treePath, true);
-        parentsExpand(mapper.getNode(treePath, true).getParent().getTreePath());
-        
+        TreePath parrentPath = mapper.getNode(treePath, true).getParent().getTreePath();
+        mapper.setExpandedState(parrentPath, true);
+        parentsExpand(parrentPath);
     }
 
 }

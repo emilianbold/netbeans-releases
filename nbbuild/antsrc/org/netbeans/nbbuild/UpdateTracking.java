@@ -136,7 +136,7 @@ class UpdateTracking {
             File directory = new File( nbPath + FILE_SEPARATOR + TRACKING_DIRECTORY );
             setTrackingFile(directory, getTrackingFileName());
             if (!trackingFile.exists() || !trackingFile.isFile())
-                throw new BuildException ("Tracking file " + trackingFile.getAbsolutePath() + " cannot be found for module codenamebase " + codeName );
+                throw new BuildException ("Tracking file " + trackingFile.getAbsolutePath() + " cannot be found for module " + module.getCodenamebase());
 //        }
         read();
         if ( module.getVersions().size() != 1 ) 
@@ -151,7 +151,7 @@ class UpdateTracking {
             File directory = new File( nbPath + FILE_SEPARATOR + TRACKING_DIRECTORY );
             setTrackingFile(directory, getTrackingFileName());
             if (!trackingFile.exists() || !trackingFile.isFile())
-                throw new BuildException ("Tracking file " + trackingFile.getAbsolutePath() + " cannot be found for module codenamebase " + codeName );
+                throw new BuildException ("Tracking file " + trackingFile.getAbsolutePath() + " cannot be found for module " + module.getCodenamebase());
         }
         
         read();

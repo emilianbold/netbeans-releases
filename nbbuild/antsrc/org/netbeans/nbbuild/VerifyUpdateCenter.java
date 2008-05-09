@@ -174,7 +174,7 @@ public final class VerifyUpdateCenter extends Task {
                 auVisibilityProblems.append("\n" + cnb);
             }
             pseudoTests.put("testAutoUpdateVisibility", auVisibilityProblems.length() > 0 ?
-                "Some regular modules neither AutoUpdate-Show-In-Client nor AutoUpdate-Essential-Module" + auVisibilityProblems : null);
+                "Some regular modules (that no one depends on) neither AutoUpdate-Show-In-Client nor AutoUpdate-Essential-Module" + auVisibilityProblems : null);
         }
         checkForProblems(findInconsistencies(manifests, loader, disabledAutoloads), "Inconsistency(ies) in " + updates, "synchronicConsistency", pseudoTests);
         if (pseudoTests.get("synchronicConsistency") == null) {

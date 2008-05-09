@@ -56,7 +56,7 @@ import org.jruby.ast.ModuleNode;
 import org.jruby.ast.NewlineNode;
 import org.jruby.ast.Node;
 import org.jruby.ast.types.INameNode;
-import org.netbeans.api.gsf.ParserResult;
+import org.netbeans.modules.gsf.api.ParserResult;
 import org.openide.util.Enumerations;
 
 
@@ -154,6 +154,7 @@ class AstNodeAdapter implements ParserResult.AstTreeNode {
         return Enumerations.array(children);
     }
 
+    @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
 

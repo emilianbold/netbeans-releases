@@ -97,12 +97,10 @@ PropertyChangeListener {
 
     public DebuggerOutput (ContextProvider contextProvider) {
         this.contextProvider = contextProvider;
-        this.debugger = (JPDADebugger) contextProvider.lookupFirst 
-            (null, JPDADebugger.class);
+        this.debugger = contextProvider.lookupFirst(null, JPDADebugger.class);
         //this.engine = (DebuggerEngine) contextProvider.lookupFirst 
         //    (null, DebuggerEngine.class);
-        engineContext = (SourcePath) contextProvider.lookupFirst 
-            (null, SourcePath.class);
+        engineContext = contextProvider.lookupFirst(null, SourcePath.class);
         
         // close old tabs
         if (DebuggerManager.getDebuggerManager ().getSessions ().length == 1) {
@@ -113,7 +111,7 @@ PropertyChangeListener {
         }
         
         // open new tab
-        String title = (String) contextProvider.lookupFirst (null, String.class);
+        String title = contextProvider.lookupFirst(null, String.class);
         if (title == null)
             title = NbBundle.getBundle (IOManager.class).getString 
                 ("CTL_DebuggerConsole_Title");
@@ -152,8 +150,7 @@ PropertyChangeListener {
             ioManager = this.ioManager;
         }
         if (debuggerState == JPDADebugger.STATE_STARTING) {
-            AbstractDICookie cookie = (AbstractDICookie) contextProvider.
-                lookupFirst (null, AbstractDICookie.class);
+            AbstractDICookie cookie = contextProvider.lookupFirst(null, AbstractDICookie.class);
             if (cookie instanceof AttachingDICookie) {
                 AttachingDICookie c = (AttachingDICookie) cookie;
                 if (c.getHostName () != null) {

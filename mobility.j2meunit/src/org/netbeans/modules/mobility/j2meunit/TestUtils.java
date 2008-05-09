@@ -53,6 +53,7 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -64,6 +65,7 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
 
+import javax.lang.model.util.Types;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.*;
 import org.netbeans.api.project.Project;
@@ -347,8 +349,8 @@ public class TestUtils {
         return result;
     }
 
-    public static HashMap<ElementHandle<TypeElement>,List<ExecutableElement>> findTopClasses(JavaSource javaSource, Set<Modifier> accessModifiers, boolean tpm) throws IOException {
-        TopClassFinderTask finder = new TopClassFinderTask(accessModifiers,tpm);
+    public static HashMap<ElementHandle<TypeElement>,List<ExecutableElement>> findTopClasses(JavaSource javaSource, Set<Modifier> accessModifiers, boolean tpm,  boolean skipAbstractClasses, boolean skipPkgPrivateClasses, boolean skipExceptionClasses) throws IOException {
+        TopClassFinderTask finder = new TopClassFinderTask(accessModifiers,tpm, skipAbstractClasses, skipPkgPrivateClasses, skipExceptionClasses);
         javaSource.runUserActionTask(finder, true);
         return finder.getTopClassElems();
     }
@@ -383,12 +385,18 @@ public class TestUtils {
         private volatile boolean cancelled;
         final private boolean testPkgPrivateMethods;
         final private Set<Modifier> accessModifiers;
-
+        final boolean skipAbstractClasses;
+        final boolean skipPkgPrivateClasses;
+        final boolean skipExceptionClasses;
+        
         private HashMap<ElementHandle<TypeElement>,List<ExecutableElement>> topClassMap = new HashMap<ElementHandle<TypeElement>,List<ExecutableElement>>();
 
-        private TopClassFinderTask(Set<Modifier> am,boolean tpm) {
+        private TopClassFinderTask(Set<Modifier> am,boolean tpm, boolean skipAbstractClasses, boolean skipPkgPrivateClasses, boolean skipExceptionClasses) {
             accessModifiers = am;
             testPkgPrivateMethods = tpm;
+            this.skipAbstractClasses = skipAbstractClasses;
+            this.skipExceptionClasses = skipExceptionClasses;
+            this.skipPkgPrivateClasses = skipPkgPrivateClasses;
         }
 
         public void cancel() {
@@ -401,13 +409,36 @@ public class TestUtils {
                 return;
             }
 
-            
-            List<ElementHandle<TypeElement>> ltce = findTopClassElemHandles(parameter, parameter.getCompilationUnit());
-            
-            for (ElementHandle<TypeElement> tce : ltce)
-            {
-                topClassMap.put(tce,findTestableMethods(tce.resolve(parameter)));
+            TypeElement exceptionType = null;
+            if (skipExceptionClasses){
+                exceptionType = parameter.getElements().getTypeElement("java.lang.Exception");
             }
+            
+            List<TypeElement> topCls = findTopClassElems(parameter, parameter.getCompilationUnit());
+            for (Iterator<TypeElement> it = topCls.iterator(); it.hasNext();) {
+                TypeElement typeElement = it.next();
+                Set<Modifier> modifiers = typeElement.getModifiers();
+                if (skipAbstractClasses && modifiers.contains(Modifier.ABSTRACT)){
+                    continue;
+                }
+                if (skipPkgPrivateClasses && !modifiers.contains(Modifier.PUBLIC)){
+                    continue;
+                }
+                
+                if (exceptionType != null){
+                    Types types = parameter.getTypes();
+                    boolean isSubtype = types.isSubtype(types.erasure(typeElement.asType()), types.erasure(exceptionType.asType()));
+                    if (isSubtype){
+                        continue;
+                    }
+                }
+
+                List<ElementHandle<TypeElement>> ltce = findTopClassElemHandles(parameter, parameter.getCompilationUnit());
+
+                for (ElementHandle<TypeElement> tce : ltce) {
+                    topClassMap.put(tce, findTestableMethods(tce.resolve(parameter)));
+                }
+            }            
         }
         
         private boolean isTestableMethod(ExecutableElement method) {

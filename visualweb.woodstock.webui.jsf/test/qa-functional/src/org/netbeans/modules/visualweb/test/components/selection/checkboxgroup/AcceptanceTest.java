@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -62,6 +62,7 @@ import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.operators.JTreeOperator;
+import static org.netbeans.modules.visualweb.test.components.util.ComponentUtils.typeLines;
 
 /**
  * @author Sherry Zhou (sherry.zhou@sun.com)
@@ -257,17 +258,18 @@ public class AcceptanceTest extends RaveTestCase {
         editor.requestFocus();
         TestUtils.wait(2000);
         editor.pushKey(KeyEvent.VK_ENTER);
-        editor.typeText("String showSelections=\"You selected \"; \n");
-        editor.typeText("String[] mySelections = getSessionBean1().getChoices();\n");
-        editor.typeText("for (int i = 0; i < mySelections.length; i++) \n");
-        editor.typeText("showSelections+=mySelections[i] +\" \"; \n");
-        //  editor.typeText("} \n");
-        editor.typeText("if (showSelections.equals(\"\")) \n");
-        editor.typeText("showSelections = \"nothing selected\"; \n");
-        editor.typeText("else \n");
-        editor.typeText("showSelections = \"Values chosen:\n\" + showSelections; \n");
-        editor.typeText("// Display the list in the message group \n");
-        editor.typeText("info(showSelections);  \n");
+        String code =
+                "String showSelections=\"You selected \"; \n"+
+                "String[] mySelections = getSessionBean1().getChoices();\n"+
+                "for (int i = 0; i < mySelections.length; i++) \n"+
+                "showSelections+=mySelections[i] +\" \"; \n"+
+                "if (showSelections.equals(\"\")) \n"+
+                "showSelections = \"nothing selected\"; \n"+
+                "else \n"+
+                "showSelections = \"Values chosen:\n\" + showSelections; \n"+
+                "// Display the list in the message group \n"+
+                "info(showSelections);  \n";
+        typeLines(code, editor);
         TestUtils.wait(200);
         
         log("Reformat code");

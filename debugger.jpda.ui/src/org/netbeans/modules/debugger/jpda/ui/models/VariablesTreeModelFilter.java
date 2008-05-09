@@ -103,7 +103,7 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
         return original.getRoot ();
     }
     
-    static boolean isEvaluated(Object o) {
+    public static boolean isEvaluated(Object o) {
         if (o instanceof Refreshable) {
             return ((Refreshable) o).isCurrent();
         }

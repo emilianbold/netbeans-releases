@@ -108,6 +108,11 @@ public class SearchRunnable implements Runnable {
                             stop();
                         }
                     }));
+                    if (dialog[0] != null) {
+                        dialog[0].getAccessibleContext().setAccessibleName(NbBundle.getMessage(SearchRunnable.class, "ACSN_searchingPlatform")); //NOI18N
+                        dialog[0].getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SearchRunnable.class, "ACSD_searchingPlatform")); //NOI18N
+                    }
+                        
                 }
             });
             SwingUtilities.invokeLater(new Runnable() {

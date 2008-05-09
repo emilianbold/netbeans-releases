@@ -19,8 +19,10 @@
 
 package org.netbeans.modules.soa.mappercore.model;
 
+import java.util.ArrayList;
 import java.util.List;
 import javax.swing.tree.TreePath;
+import org.netbeans.modules.soa.mappercore.model.VertexItem;
 
 /**
  *
@@ -68,6 +70,31 @@ public class GraphSubset {
                 : EMPTY_LINKS;
     }
     
+    public GraphSubset(GraphSubset graphSubset) {
+        List<Vertex> verteces = new ArrayList<Vertex>();
+        List<Link> links = new ArrayList<Link>();
+        
+        for (int i = 0; i < graphSubset.getVertexCount(); i++) {
+            verteces.add(createVertex(graphSubset.getVertex(i)));
+        }
+        
+        for (int i = 0; i < graphSubset.getLinkCount(); i++) {
+            Link link = createLink(graphSubset.getLink(i), verteces, graphSubset);
+            if (link != null) {
+                links.add(link);
+            }
+        }
+        
+        this.treePath = graphSubset.getTreePath();
+        this.graph = graphSubset.getGraph();
+        this.verteces = (verteces != null && !verteces.isEmpty()) 
+                ? verteces.toArray(new Vertex[verteces.size()])
+                : EMPTY_VERTECES;
+        this.links = (links != null && !links.isEmpty()) 
+                ? links.toArray(new Link[links.size()])
+                : EMPTY_LINKS;
+    }
+           
     
     public TreePath getTreePath() { return treePath; }
     public Graph getGraph() { return graph; }
@@ -80,6 +107,89 @@ public class GraphSubset {
     
     public boolean isEmpty() { return links.length == 0 && verteces.length == 0; }
     
+    public boolean containVertex(Vertex vertex) {
+        int length = verteces.length - 1;
+        for (int i = length; i >= 0; i--) {
+            if (verteces[i] == vertex) { return true; }
+        }
+        return false;
+    }
+    private int ingexOf(Vertex vertex) {
+        int length = verteces.length;
+        for (int i = 0; i < length; i++) {
+            if (verteces[i] == vertex) { return i; }
+        }
+        return -1;
+    }
+    private Vertex createVertex(Vertex vertex) {
+        Vertex newVertex = null;
+        if (vertex instanceof Constant){
+            newVertex = new Constant(vertex.getDataObject(), vertex.getIcon());
+        } 
+        if (vertex instanceof Operation) {
+            newVertex = new Operation(vertex.getDataObject(), vertex.getIcon());
+        }
+        if (vertex instanceof Function) {
+            String name = ((Function)vertex).getName();
+            String text = ((Function)vertex).getResultText();
+            newVertex = new Function(vertex.getDataObject(), vertex.getIcon(), name, text);
+        }
+//        if (vertex.getClass() == Vertex.class ) {
+//            newVertex = new Vertex(vertex.getDataObject(), vertex.getIcon()) {};
+//        }
+        for (int i = 0; i < vertex.getItemCount(); i++) {
+            VertexItem item= vertex.getItem(i);
+            new VertexItem(newVertex, item.getDataObject(), item.getValue(),
+                    item.getValueType(), item.getShortDescription(), item.isHairline());
+            newVertex.addItem(new VertexItem(newVertex, item.getDataObject(), item.getValue(),
+                    item.getValueType(), item.getShortDescription(), item.isHairline()));
+        }
+        
+        newVertex.setLocation(vertex.getX(), vertex.getY());
+        newVertex.setWidth(vertex.getWidth());
+        newVertex.setHeight(vertex.getHeight());
+        newVertex.setResultText(vertex.getResultText());
+       // newVertex.setGraph(vertex.getGraph());
+        return newVertex;
+    }
+    
+    private Link createLink(Link link, List<Vertex> verteces, GraphSubset graphSubset) {
+        TargetPin target = link.getTarget();
+        SourcePin source = link.getSource();
+        TargetPin newTarget = null;
+        SourcePin newSource = null;
+        if (source instanceof TreeSourcePin) {
+            newSource = source;
+        }
+        if (source instanceof Vertex) {
+            int index = graphSubset.ingexOf((Vertex) source);
+            if (index < 0) {
+                newSource = null;
+            } else {
+                newSource = verteces.get(index);
+            }
+        }
+        
+        if (target instanceof Graph) {
+            newTarget = null;
+        }
+        if (target instanceof VertexItem) {
+            VertexItem item = (VertexItem) target;
+            int indexV = graphSubset.ingexOf(item.getVertex());
+            int indexI = item.getVertex().getItemIndex(item);
+            if (indexV < 0) {
+                newTarget = null;
+            } else {
+                newTarget = verteces.get(indexV).getItem(indexI);
+            }
+        }
+        
+        if (newSource != null && newTarget != null) {
+            return new Link(newSource, newTarget);
+        } else {
+            return null;
+        }
+    }
     
     private static final Vertex[] EMPTY_VERTECES = new Vertex[0];
     private static final Link[] EMPTY_LINKS = new Link[0];

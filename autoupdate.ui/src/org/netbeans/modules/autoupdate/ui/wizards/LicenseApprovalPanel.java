@@ -129,6 +129,8 @@ public class LicenseApprovalPanel extends javax.swing.JPanel {
         taLicenses.setWrapStyleWord(true);
         taLicenses.setMargin(new java.awt.Insets(0, 4, 0, 4));
         spLicenses.setViewportView(taLicenses);
+        taLicenses.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(LicenseApprovalPanel.class, "LicenseApprovalPanel_taLicenses_ACN")); // NOI18N
+        taLicenses.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(LicenseApprovalPanel.class, "LicenseApprovalPanel_taLicenses_ACD")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(cbAccept, org.openide.util.NbBundle.getMessage(LicenseApprovalPanel.class, "LicenseApprovalPanel.cbAccept.text")); // NOI18N
         cbAccept.addActionListener(new java.awt.event.ActionListener() {
@@ -142,15 +144,11 @@ public class LicenseApprovalPanel extends javax.swing.JPanel {
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
+                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(cbAccept))
-                    .add(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, taTitle, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 461, Short.MAX_VALUE)
-                            .add(spLicenses, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 461, Short.MAX_VALUE))))
+                    .add(cbAccept)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, taTitle, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 461, Short.MAX_VALUE)
+                    .add(spLicenses, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 461, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -163,6 +161,8 @@ public class LicenseApprovalPanel extends javax.swing.JPanel {
                 .add(cbAccept)
                 .addContainerGap())
         );
+
+        cbAccept.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(LicenseApprovalPanel.class, "LicenseApprovalPanel_cbAccept_ACN")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void cbAcceptActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbAcceptActionPerformed

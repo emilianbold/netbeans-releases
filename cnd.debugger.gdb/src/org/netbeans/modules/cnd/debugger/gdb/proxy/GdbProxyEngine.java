@@ -53,9 +53,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
+import org.netbeans.modules.cnd.api.utils.Path;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.utils.CommandBuffer;
-import org.netbeans.modules.cnd.settings.CppSettings;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
@@ -92,7 +92,8 @@ public class GdbProxyEngine {
      * @param stepIntoProject - a flag to stop at first source line
      */
     public GdbProxyEngine(GdbDebugger debugger, GdbProxy gdbProxy, List debuggerCommand,
-                    String[] debuggerEnvironment, String workingDirectory, String termpath) throws IOException {
+                    String[] debuggerEnvironment, String workingDirectory, String termpath,
+                    String cspath) throws IOException {
         
         if (Utilities.isUnix() && termpath != null) {
             ExternalTerminal eterm = new ExternalTerminal(debugger, termpath, debuggerEnvironment);
@@ -117,16 +118,23 @@ public class GdbProxyEngine {
         Map<String, String> env = pb.environment();
         Process proc = null;
         
+        String pathname = Path.getPathName();
         for (String var : debuggerEnvironment) {
             String key, value;
             int idx = var.indexOf('=');
             if (idx != -1) {
                 key = var.substring(0, idx);
                 value = var.substring(idx + 1);
-                env.put(key, value);
+                if (key.equals(pathname)) {
+                    env.put(key, value + File.pathSeparator + cspath);
+                } else {
+                    env.put(key, value);
+                }
             }
         }
-        env.put("PATH", CppSettings.getDefault().getPath()); // NOI18N
+        if (!env.containsKey(pathname)) {
+            env.put(pathname, Path.getPathAsString() + File.pathSeparator + cspath); // NOI18N
+        }
         pb.directory(new File(workingDirectory));
         pb.redirectErrorStream(true);
         
@@ -284,7 +292,7 @@ public class GdbProxyEngine {
                 break;
                 
             case '&': // log-stream-output
-                debugger.logStreamOutput(token, msg);
+                debugger.logStreamOutput(msg);
                 break;
                 
             default:
@@ -350,8 +358,8 @@ public class GdbProxyEngine {
                 break;
             }
         }
-        char ch = msg.charAt(i);
-        if (ch == '^' || ch == '*' || ch == '+' || ch == '=') {
+        char ch = i < msg.length() ? msg.charAt(i) : 0;
+        if ((ch == '^' || ch == '*' || ch == '+' || ch == '=') && ch != 0) {
             return msg.substring(i);
         } else {
             return msg;

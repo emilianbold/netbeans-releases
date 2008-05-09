@@ -62,6 +62,8 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
+import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
+import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.modules.websvc.core.ClientWizardProperties;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -142,14 +144,24 @@ public class JaxWsClientCreator implements ClientCreator {
         
         String wsdlUrl = (String)wiz.getProperty(ClientWizardProperties.WSDL_DOWNLOAD_URL);
         String filePath = (String)wiz.getProperty(ClientWizardProperties.WSDL_FILE_PATH);
+        Boolean useDispatch = (Boolean) wiz.getProperty(ClientWizardProperties.USEDISPATCH);
         //if (wsdlUrl==null) wsdlUrl = "file:"+(filePath.startsWith("/")?filePath:"/"+filePath); //NOI18N
         if(wsdlUrl == null){
             wsdlUrl = FileUtil.toFileObject(FileUtil.normalizeFile(new File(filePath))).getURL().toExternalForm();
         }
         String packageName = (String)wiz.getProperty(ClientWizardProperties.WSDL_PACKAGE_NAME);
         if (packageName!=null && packageName.length()==0) packageName=null;
-        jaxWsClientSupport.addServiceClient(getWsdlName(wsdlUrl),wsdlUrl,packageName, isJsr109Platform); 
-        
+        String clientName = jaxWsClientSupport.addServiceClient(getWsdlName(wsdlUrl),wsdlUrl,packageName, isJsr109Platform); 
+        if (useDispatch) {
+            List<Client> clients = jaxWsClientSupport.getServiceClients();
+            for (Client c : clients) {
+                if (c.getName().equals(clientName)) {
+                    c.setUseDispatch(useDispatch);
+                }
+            }
+            JaxWsModel jaxWsModel = (JaxWsModel) project.getLookup().lookup(JaxWsModel.class);
+            jaxWsModel.write();
+        }
         handle.finish();
     }
     

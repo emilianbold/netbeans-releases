@@ -54,10 +54,10 @@ import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.View;
+import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.Utilities;
-import org.netbeans.editor.Registry;
 import org.netbeans.editor.view.spi.EstimatedSpanView;
 import org.netbeans.editor.view.spi.LockView;
 import org.netbeans.modules.editor.java.JavaKit;
@@ -79,11 +79,12 @@ public class JavaEditorWarmUpTask implements Runnable{
     /**
      * Number of lines that an artificial document
      * for view hierarchy code optimization will have.
-     * <br>
-     * The default threshold for hotspot method compilation
-     * is 1500 invocations.
+     * <br/>
+     * The number is hotspot's threshold for method compilation 1500 divied by 10 + 1
+     * since 1500 would be rather high line count. Anyway main effect of warmup
+     * the class pre-loading should apply regardless of this value.
      */
-    private static final int ARTIFICIAL_DOCUMENT_LINE_COUNT = 1510;
+    private static final int ARTIFICIAL_DOCUMENT_LINE_COUNT = 151;
 
     /**
      * Number of times a long document is assigned to the editor pane
@@ -151,11 +152,11 @@ public class JavaEditorWarmUpTask implements Runnable{
                     startTime = System.currentTimeMillis();
                 }
 
-                Iterator componentIterator = Registry.getComponentIterator();
-                if (!componentIterator.hasNext()) { // no components opened yet
+                
+                if (EditorRegistry.lastFocusedComponent() == null) { // no components opened yet
                     status = STATUS_CREATE_PANE;
                     SwingUtilities.invokeLater(this); // must run in AWT
-                } // otherwise stop because editor pane(s) already opened (optimized)
+                }// otherwise stop because editor pane(s) already opened (optimized)
                 break;
                 
             case STATUS_CREATE_PANE: // now create editor component and assign a kit to it
@@ -170,8 +171,6 @@ public class JavaEditorWarmUpTask implements Runnable{
                     // Make sure extended component necessary classes get loaded
                     editorUI.getExtComponent();
                 }
-
-                Registry.removeComponent(pane);
 
                 status = STATUS_CREATE_DOCUMENTS;
                 RequestProcessor.getDefault().post(this);

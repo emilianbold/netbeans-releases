@@ -45,9 +45,12 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
+import java.io.Reader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.palette.DefaultModel;
+import org.netbeans.modules.palette.ui.TextImporter;
 import org.openide.nodes.Index;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
@@ -66,7 +69,23 @@ import org.openide.util.datatransfer.PasteType;
  */
 public abstract class DragAndDropHandler {
 
+    private boolean isTextDnDEnabled;
+    
     private static DragAndDropHandler defaultHandler;
+    
+    public DragAndDropHandler() {
+        this( false );
+    }
+    
+    /**
+     * Subclass this class and use this c'tor with <code>true</code> parameter to support text drag and drop
+     * into the palette to create new custom code clips. Subclassed instance must be then provided
+     * to <code>PaletteFactory</code> when creating <code>PaletteController</code>.
+     * @param textDnDEnabled True to allow text to be dropped into the palette window.
+     */
+    protected DragAndDropHandler( boolean textDnDEnabled ) {
+        this.isTextDnDEnabled = textDnDEnabled;
+    }
     
     static DragAndDropHandler getDefault() {
         if( null == defaultHandler )
@@ -97,7 +116,7 @@ public abstract class DragAndDropHandler {
                 return true;
             }
         }
-        return false;
+        return (isTextDnDEnabled && DataFlavor.selectBestTextFlavor(flavors) != null);
     }
     
     /**
@@ -157,6 +176,9 @@ public abstract class DragAndDropHandler {
                     }
                 }
                 return true;
+            }
+            if( isTextDnDEnabled && null != DataFlavor.selectBestTextFlavor(item.getTransferDataFlavors()) ) {
+                return importTextIntoPalette( targetCategory, item, dropIndex );
             }
         } catch( IOException ioE ) {
             Logger.getLogger( DragAndDropHandler.class.getName() ).log( Level.INFO, null, ioE );
@@ -235,6 +257,34 @@ public abstract class DragAndDropHandler {
         }
         order.move( sourceIndex, moveToIndex );
         return true;
+    }
+    
+    private boolean importTextIntoPalette( Lookup targetCategory, Transferable item, int dropIndex ) 
+            throws IOException, UnsupportedFlavorException {
+        
+        DataFlavor flavor = DataFlavor.selectBestTextFlavor( item.getTransferDataFlavors() );
+        if( null == flavor )
+            return false;
+        
+        String textToImport = extractText( item, flavor );
+        SwingUtilities.invokeLater( new TextImporter( textToImport, targetCategory, dropIndex ) );
+        return true;
+    }
+    
+    private String extractText( Transferable t, DataFlavor flavor ) 
+            throws IOException, UnsupportedFlavorException {
+        
+        Reader reader = flavor.getReaderForText(t);
+        if( null == reader )
+            return null;
+        StringBuffer res = new StringBuffer();
+        char[] buffer = new char[4*1024];
+        int len;
+        while( (len=reader.read( buffer )) > 0 ) {
+            res.append(buffer, 0, len);
+        }
+        
+        return res.toString();
     }
     
     private static final class DefaultDragAndDropHandler extends DragAndDropHandler {

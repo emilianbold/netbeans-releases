@@ -60,11 +60,13 @@ import org.netbeans.lib.cvsclient.command.log.LogInformation;
 import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
 import org.netbeans.modules.versioning.system.cvss.FileInformation;
 import org.netbeans.modules.versioning.system.cvss.FileStatusCache;
+import org.netbeans.modules.versioning.system.cvss.ClientRuntime;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
@@ -250,6 +252,32 @@ public class Utils {
         return new Context(filtered, roots, exclusions);
     }
 
+    /**
+     * Returns the widest possible versioned context for the given file, the outter boundary is the file's Project.
+     * 
+     * @param file a file
+     * @return Context a context 
+     */
+    public static Context getProjectContext(Project project, File file) {
+        Context context = Utils.getProjectsContext(new Project[] { project });
+        if (context.getRootFiles().length == 0) {
+            // the project itself is not versioned, try to search in the broadest context possible
+            FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
+            for (;;) {
+                File parent = file.getParentFile();
+                assert parent != null;
+                if ((cache.getStatus(parent).getStatus() & FileInformation.STATUS_IN_REPOSITORY) == 0) {
+                    Set<File> files = new HashSet<File>(1);
+                    files.add(file);
+                    context = new Context(files, files, Collections.emptySet());
+                    break;
+                }
+                file = parent;
+            }
+        }
+        return context;
+    }
+    
     public static File [] toFileArray(Collection fileObjects) {
         Set files = new HashSet(fileObjects.size()*4/3+1);
         for (Iterator i = fileObjects.iterator(); i.hasNext();) {

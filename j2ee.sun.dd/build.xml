@@ -46,6 +46,7 @@ made subject to such option by the copyright holder.
   <property name="s2b_root_common_2_1_0" location="src/org/netbeans/modules/j2ee/sun/dd/impl/common/model_2_1_0"/>
   <property name="s2b_root_common_2_1_1" location="src/org/netbeans/modules/j2ee/sun/dd/impl/common/model_2_1_1"/>
   <property name="s2b_root_common_3_0_0" location="src/org/netbeans/modules/j2ee/sun/dd/impl/common/model_3_0_0"/>
+  <property name="s2b_root_ejb_3_0_1" location="src/org/netbeans/modules/j2ee/sun/dd/impl/ejb/model_3_0_1"/>
   <property name="s2b_root_ejb_3_0_0" location="src/org/netbeans/modules/j2ee/sun/dd/impl/ejb/model_3_0_0"/>
   <property name="s2b_root_ejb_2_1_1" location="src/org/netbeans/modules/j2ee/sun/dd/impl/ejb/model_2_1_1"/>
   <property name="s2b_root_ejb_2_1_0" location="src/org/netbeans/modules/j2ee/sun/dd/impl/ejb/model_2_1_0"/>
@@ -107,6 +108,14 @@ made subject to such option by the copyright holder.
 	  validate="true"
 	  attrProp="true"
 	  rootDir="src"/> 
+       <schema2beans schema="${s2b_res_root}/sun-ejb-jar_3_0-1.dtd"
+ 	  mddFile="${s2b_res_root}/sun-ejb-jar_3_0-1.mdd"
+	  package="org.netbeans.modules.j2ee.sun.dd.impl.ejb.model_3_0_1"
+          docRoot="sun-ejb-jar"
+	  useInterfaces="true"
+	  validate="false"
+	  attrProp="true"
+	  rootDir="src"/>
        <schema2beans schema="${s2b_res_root}/sun-ejb-jar_3_0-0.dtd"
  	  mddFile="${s2b_res_root}/sun-ejb-jar_3_0-0.mdd"
 	  package="org.netbeans.modules.j2ee.sun.dd.impl.ejb.model_3_0_0"
@@ -294,6 +303,7 @@ made subject to such option by the copyright holder.
         <mkdir dir="${s2b_root_common_2_1_0}"/>
         <mkdir dir="${s2b_root_common_2_1_1}"/>
         <mkdir dir="${s2b_root_common_3_0_0}"/>
+        <mkdir dir="${s2b_root_ejb_3_0_1}"/>
         <mkdir dir="${s2b_root_ejb_3_0_0}"/>
         <mkdir dir="${s2b_root_ejb_2_1_1}"/>
         <mkdir dir="${s2b_root_ejb_2_1_0}"/>
@@ -332,6 +342,12 @@ made subject to such option by the copyright holder.
             </fileset>
         </delete>
         <delete dir="${s2b_root_common_3_0_0}"/>
+        <delete>
+            <fileset dir="${s2b_root_ejb_3_0_1}">
+                <include name="*.java"/>
+            </fileset>
+        </delete>
+        <delete dir="${s2b_root_ejb_3_0_1}"/>
         <delete>
             <fileset dir="${s2b_root_ejb_3_0_0}">
                 <include name="*.java"/>

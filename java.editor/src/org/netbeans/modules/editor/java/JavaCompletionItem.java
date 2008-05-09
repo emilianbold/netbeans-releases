@@ -44,6 +44,7 @@ package org.netbeans.modules.editor.java;
 import com.sun.source.tree.*;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
+import com.sun.source.util.Trees;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -161,10 +162,16 @@ public abstract class JavaCompletionItem implements CompletionItem {
             case METHOD:
                 return new MethodItem(elem, type, substitutionOffset, isInherited, isDeprecated, inImport, smartType);
             case CONSTRUCTOR:
-                return new ConstructorItem(elem, type, substitutionOffset, isDeprecated, smartType);
+                return new ConstructorItem(elem, type, substitutionOffset, isDeprecated, smartType, null);
             default:
                 throw new IllegalArgumentException("kind=" + elem.getKind());
         }
+    }
+    
+    public static final JavaCompletionItem createThisOrSuperConstructorItem(ExecutableElement elem, ExecutableType type, int substitutionOffset, boolean isDeprecated, String name) {
+        if (elem.getKind() == ElementKind.CONSTRUCTOR)
+            return new ConstructorItem(elem, type, substitutionOffset, isDeprecated, false, name);
+        throw new IllegalArgumentException("kind=" + elem.getKind());
     }
 
     public static final JavaCompletionItem createOverrideMethodItem(ExecutableElement elem, ExecutableType type, int substitutionOffset, boolean implement) {
@@ -250,8 +257,6 @@ public abstract class JavaCompletionItem implements CompletionItem {
                     JTextComponent component = (JTextComponent)evt.getSource();
                     int caretOffset = component.getSelectionEnd();
                     substituteText(component, substitutionOffset, caretOffset - substitutionOffset, Character.toString(evt.getKeyChar()));
-                    if (evt.getKeyChar() == '.')
-                        Completion.get().showCompletion();
                     evt.consume();
                     break;
                 case '.':
@@ -259,9 +264,15 @@ public abstract class JavaCompletionItem implements CompletionItem {
                     component = (JTextComponent)evt.getSource();
                     caretOffset = component.getSelectionEnd();
                     substituteText(component, substitutionOffset, caretOffset - substitutionOffset, Character.toString(evt.getKeyChar()));
-                    if (evt.getKeyChar() == '.')
-                        Completion.get().showCompletion();
                     evt.consume();
+                    caretOffset = component.getSelectionEnd();
+                    try {
+                        if (caretOffset > 0 && !".".equals(component.getDocument().getText(caretOffset - 1, 1))) {
+                            Completion.get().hideCompletion();
+                            break;
+                        }
+                    } catch (BadLocationException ble) {}
+                    Completion.get().showCompletion();
                     break;
             }
         }
@@ -318,7 +329,6 @@ public abstract class JavaCompletionItem implements CompletionItem {
         if (prefix == null)
             return;
         StringBuilder text = new StringBuilder(prefix);
-        boolean completeMethod = text.length() == len && toAdd != null && "()".equals(toAdd.trim());
         int semiPos = toAdd != null && toAdd.endsWith(";") ? findPositionForSemicolon(c) : -2; //NOI18N
         if (semiPos > -2)
             toAdd = toAdd.length() > 1 ? toAdd.substring(0, toAdd.length() - 1) : null;
@@ -376,8 +386,6 @@ public abstract class JavaCompletionItem implements CompletionItem {
             doc.insertString(position.getOffset(), text.toString(), null);
             if (semiPosition != null)
                 doc.insertString(semiPosition.getOffset(), ";", null);
-            else if (completeMethod)
-                c.setCaretPosition(c.getCaretPosition() - 1);
         } catch (BadLocationException e) {
             // Can't update
         } finally {
@@ -619,7 +627,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
     
         public CompletionTask createDocumentationTask() {
-            return JavaCompletionProvider.createDocTask(ElementHandle.from(typeHandle));
+            return typeHandle.getKind() == TypeKind.DECLARED ? JavaCompletionProvider.createDocTask(ElementHandle.from(typeHandle)) : null;
         }
 
         protected ImageIcon getIcon(){
@@ -808,13 +816,25 @@ public abstract class JavaCompletionItem implements CompletionItem {
                             } finally {
                                 doc.atomicUnlock();
                             }
-                            if (insideNew) {
-                                List<ExecutableElement> ctors = type != null && type.getKind() == TypeKind.DECLARED ? ElementFilter.constructorsIn(elem.getEnclosedElements()) : null;
-                                if (ctors != null) {
-                                    final JavaCompletionItem item = ctors.size() > 1 || Utilities.hasAccessibleInnerClassConstructor(elem, controller.getTreeUtilities().scopeFor(offset), controller.getTrees())
-                                            ? null : ctors.size() == 1
-                                            ? createExecutableItem(ctors.get(0), (ExecutableType)controller.getTypes().asMemberOf(type, ctors.get(0)), offset, false, false, false, true)
-                                            : createDefaultConstructorItem(elem, offset, true);
+                            if (insideNew && type != null && type.getKind() == TypeKind.DECLARED) {
+                                ExecutableElement ctor = null;
+                                Trees trees = controller.getTrees();
+                                Scope scope = controller.getTreeUtilities().scopeFor(offset);
+                                int val = 0; // no constructors seen yet
+                                for (ExecutableElement ee : ElementFilter.constructorsIn(elem.getEnclosedElements())) {
+                                    if (trees.isAccessible(scope, ee, type)) {
+                                        if (ctor != null) {
+                                            val = 2; // more than one accessible constructors seen
+                                            break;
+                                        }
+                                        ctor = ee;
+                                    }
+                                    val = 1; // constructor seen
+                                }
+                                if (val != 1 || ctor != null) {
+                                    final JavaCompletionItem item = val == 0 ? createDefaultConstructorItem(elem, offset, true) :
+                                            val == 2 || Utilities.hasAccessibleInnerClassConstructor(elem, scope, trees) ? null :
+                                            createExecutableItem(ctor, (ExecutableType)controller.getTypes().asMemberOf(type, ctor), offset, false, false, false, true);
                                     try {
                                         final Position offPosition = doc.createPosition(offset);
                                         SwingUtilities.invokeLater(new Runnable() {
@@ -1303,8 +1323,11 @@ public abstract class JavaCompletionItem implements CompletionItem {
                                 controller.toPhase(JavaSource.Phase.PARSED);
                                 TreePath tp = controller.getTreeUtilities().pathFor(c.getSelectionEnd());
                                 Tree tree = tp.getLeaf();
-                                if (tree.getKind() == Tree.Kind.IDENTIFIER || tree.getKind() == Tree.Kind.PRIMITIVE_TYPE)
+                                if (tree.getKind() == Tree.Kind.IDENTIFIER || tree.getKind() == Tree.Kind.PRIMITIVE_TYPE) {
                                     tp = tp.getParentPath();
+                                    if (tp.getLeaf().getKind() == Tree.Kind.VARIABLE && ((VariableTree)tp.getLeaf()).getType() == tree)
+                                        ret[0] = ";"; //NOI18N
+                                }
                                 if (tp.getLeaf().getKind() == Tree.Kind.MEMBER_SELECT ||
                                     (tp.getLeaf().getKind() == Tree.Kind.METHOD_INVOCATION && ((MethodInvocationTree)tp.getLeaf()).getMethodSelect() == tree))
                                     tp = tp.getParentPath();
@@ -1322,6 +1345,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 if (toAdd != null && !add.startsWith(toAdd))
                     add += toAdd;
                 super.substituteText(c, offset, len, add);
+                if ("(".equals(toAdd)) //NOI18N
+                    c.setCaretPosition(c.getCaretPosition() - 1);
             } else {
                 String add = "()"; //NOI18N
                 if (toAdd != null && !add.startsWith(toAdd))
@@ -1365,10 +1390,9 @@ public abstract class JavaCompletionItem implements CompletionItem {
                     Position semiPosition = semiPos > -1 ? doc.createPosition(semiPos) : null;
                     if (len > 0)
                         doc.remove(offset, len);
+                    doc.insertString(offset, getInsertPrefix().toString(), null);                    
                     if (semiPosition != null)
                         doc.insertString(semiPosition.getOffset(), ";", null); //NOI18N
-                    else if (params.isEmpty() && "(".equals(toAdd)) //NOI18N
-                        c.setCaretPosition(c.getCaretPosition() - 1);
                 } catch (BadLocationException e) {
                     // Can't update
                 } finally {
@@ -1377,7 +1401,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 CodeTemplateManager ctm = CodeTemplateManager.get(doc);
                 if (ctm != null) {
                     StringBuilder sb = new StringBuilder();
-                    sb.append(getInsertPrefix());
+                    boolean guessArgs = Utilities.guessMethodArguments();
                     if (CodeStyle.getDefault(null).spaceBeforeMethodCallParen())
                     sb.append(' '); //NOI18N
                     sb.append('('); //NOI18N
@@ -1386,8 +1410,10 @@ public abstract class JavaCompletionItem implements CompletionItem {
                             ParamDesc paramDesc = it.next();
                             sb.append("${"); //NOI18N
                             sb.append(paramDesc.name);
-                            sb.append(" named instanceof="); //NOI18N
-                            sb.append(paramDesc.fullTypeName);
+                            if (guessArgs) {
+                                sb.append(" named instanceof="); //NOI18N
+                                sb.append(paramDesc.fullTypeName);
+                            }
                             sb.append('}'); //NOI18N
                             if (it.hasNext())
                                 sb.append(", "); //NOI18N
@@ -1497,7 +1523,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                             return;
                         TreePath tp = copy.getTreeUtilities().pathFor(offset);
                         if (tp.getLeaf().getKind() == Tree.Kind.CLASS) {
-                            if (Utilities.isInMethod(tp))
+                            if (Utilities.inAnonymousOrLocalClass(tp))
                                 copy.toPhase(Phase.RESOLVED);
                             int idx = 0;
                             for (Tree tree : ((ClassTree)tp.getLeaf()).getMembers()) {
@@ -1656,7 +1682,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                             return;
                         TreePath tp = copy.getTreeUtilities().pathFor(offset);
                         if (tp.getLeaf().getKind() == Tree.Kind.CLASS) {
-                            if (Utilities.isInMethod(tp))
+                            if (Utilities.inAnonymousOrLocalClass(tp))
                                 copy.toPhase(Phase.RESOLVED);
                             int idx = 0;
                             for (Tree tree : ((ClassTree)tp.getLeaf()).getMembers()) {
@@ -1721,15 +1747,17 @@ public abstract class JavaCompletionItem implements CompletionItem {
         protected Set<Modifier> modifiers;
         private List<ParamDesc> params;
         private boolean isAbstract;
+        private boolean insertName;
         private String sortText;
         private String leftText;
         
-        private ConstructorItem(ExecutableElement elem, ExecutableType type, int substitutionOffset, boolean isDeprecated, boolean smartType) {
+        private ConstructorItem(ExecutableElement elem, ExecutableType type, int substitutionOffset, boolean isDeprecated, boolean smartType, String name) {
             super(substitutionOffset);
             this.elementHandle = ElementHandle.create(elem);
             this.isDeprecated = isDeprecated;
             this.smartType = smartType;
-            this.simpleName = elem.getEnclosingElement().getSimpleName().toString();
+            this.simpleName = name != null ? name : elem.getEnclosingElement().getSimpleName().toString();
+            this.insertName = name != null;
             this.modifiers = elem.getModifiers();
             this.params = new ArrayList<ParamDesc>();
             Iterator<? extends VariableElement> it = elem.getParameters().iterator();
@@ -1742,7 +1770,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
         
         public int getSortPriority() {
-            return smartType ? 650 - SMART_TYPE : 650;
+            return insertName ? 550 : smartType ? 650 - SMART_TYPE : 650;
         }
         
         public CharSequence getSortText() {
@@ -1832,8 +1860,10 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
         
         protected void substituteText(JTextComponent c, int offset, int len, String toAdd) {
-            offset += len;
-            len = 0;
+            if (!insertName) {
+                offset += len;
+                len = 0;
+            }
             int semiPos = toAdd != null && toAdd.endsWith(";") ? findPositionForSemicolon(c) : -2; //NOI18N
             if (semiPos > -2)
                 toAdd = toAdd.length() > 1 ? toAdd.substring(0, toAdd.length() - 1) : null;
@@ -1849,8 +1879,11 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 sequence.moveNext();
             }
             String add = isAbstract ? "() {}" : "()"; //NOI18N
-            if (toAdd != null && !add.startsWith(toAdd))
-                add += toAdd;   
+            if (toAdd != null && !add.startsWith(toAdd)) {
+                add += toAdd;
+            } else {
+                toAdd = null;
+            }
             String text = CodeStyle.getDefault(null).spaceBeforeMethodCallParen() ? " " : ""; //NOI18N
             if (sequence == null) {
                 text += add;
@@ -1885,8 +1918,13 @@ public abstract class JavaCompletionItem implements CompletionItem {
             try {
                 Position semiPosition = semiPos > -1 ? doc.createPosition(semiPos) : null;
                 doc.remove(offset, len);
-                doc.insertString(offset, text, null);
-                position = doc.createPosition(offset + text.indexOf('(') + 1);
+                if (insertName) {
+                    doc.insertString(offset, simpleName + text, null);
+                    position = doc.createPosition(offset + simpleName.length() + text.indexOf('('));
+                } else {
+                    doc.insertString(offset, text, null);
+                    position = doc.createPosition(offset + text.indexOf('('));
+                }
                 if (semiPosition != null)
                     doc.insertString(semiPosition.getOffset(), ";", null); //NOI18N
                 else if (!isAbstract && params.isEmpty() && "(".equals(toAdd)) //NOI18N
@@ -1917,24 +1955,37 @@ public abstract class JavaCompletionItem implements CompletionItem {
                     }).commit();
                 } catch (Exception ex) {
                 }
-            }            
+            }
             if (!params.isEmpty() && text.trim().length() > 1) {
                 CodeTemplateManager ctm = CodeTemplateManager.get(doc);
                 if (ctm != null) {
+                    if (position != null)
+                        offset = position.getOffset();
+                    if (toAdd == null)
+                        toAdd = ""; //NOI18N
+                    if (text.startsWith("()" + toAdd)) //NOI18N
+                        c.select(offset, offset + toAdd.length() + 2);
+                    else if (text.startsWith("()")) //NOI18N
+                        c.select(offset, offset + 2);
+                    else
+                        c.setCaretPosition(offset);
                     StringBuilder sb = new StringBuilder();
+                    boolean guessArgs = Utilities.guessMethodArguments();
+                    sb.append("("); //NOI18N
                     for (Iterator<ParamDesc> it = params.iterator(); it.hasNext();) {
                         ParamDesc paramDesc = it.next();
                         sb.append("${"); //NOI18N
                         sb.append(paramDesc.name);
-                        sb.append(" named instanceof="); //NOI18N
-                        sb.append(paramDesc.fullTypeName);
+                        if (guessArgs) {
+                            sb.append(" named instanceof="); //NOI18N
+                            sb.append(paramDesc.fullTypeName);
+                        }
                         sb.append("}"); //NOI18N
                         if (it.hasNext())
                             sb.append(", "); //NOI18N
                     }
-                    if (position != null)
-                        offset = position.getOffset();
-                    c.setCaretPosition(offset);
+                    sb.append(")"); //NOI18N
+                    sb.append(toAdd);
                     ctm.createTemporary(sb.toString()).insert(c);
                     Completion.get().showToolTip();
                 }
@@ -2263,12 +2314,15 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 CodeTemplateManager ctm = CodeTemplateManager.get(doc);
                 if (ctm != null) {
                     StringBuilder sb = new StringBuilder();
+                    boolean guessArgs = Utilities.guessMethodArguments();
                     for (int i = activeParamsIndex; i < params.size(); i++) {
                         ParamDesc paramDesc = params.get(i);
                         sb.append("${"); //NOI18N
                         sb.append(paramDesc.name);
-                        sb.append(" named instanceof="); //NOI18N
-                        sb.append(paramDesc.fullTypeName);
+                        if (guessArgs) {
+                            sb.append(" named instanceof="); //NOI18N
+                            sb.append(paramDesc.fullTypeName);
+                        }
                         sb.append("}"); //NOI18N
                         if (i < params.size() - 1)
                             sb.append(", "); //NOI18N
@@ -2296,7 +2350,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                     sb.append(", "); //NOI18N
                 }
             }
-            sb.append(')');
+            sb.append(") - parameters"); //NOI18N
             return sb.toString();
         }
     }
@@ -2717,13 +2771,16 @@ public abstract class JavaCompletionItem implements CompletionItem {
                         sb.append('.'); //NOI18N
                         sb.append(memberName);
                         if (params != null) {
+                            boolean guessArgs = Utilities.guessMethodArguments();
                             sb.append("("); //NOI18N
                             for (Iterator<ParamDesc> it = params.iterator(); it.hasNext();) {
                                 ParamDesc paramDesc = it.next();
                                 sb.append("${"); //NOI18N
                                 sb.append(paramDesc.name);
-                                sb.append(" named instanceof="); //NOI18N
-                                sb.append(paramDesc.fullTypeName);
+                                if (guessArgs) {
+                                    sb.append(" named instanceof="); //NOI18N
+                                    sb.append(paramDesc.fullTypeName);
+                                }
                                 sb.append("}"); //NOI18N
                                 if (it.hasNext())
                                     sb.append(", "); //NOI18N
@@ -2789,6 +2846,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private static ImageIcon icon;
         
         private List<ElementHandle<VariableElement>> fieldHandles;
+        private ElementHandle<TypeElement> parentHandle;
         private String simpleName;
         private List<ParamDesc> params;
         private String sortText;
@@ -2797,6 +2855,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private InitializeAllConstructorItem(Iterable<? extends VariableElement> fields, TypeElement parent, int substitutionOffset) {
             super(substitutionOffset);
             this.fieldHandles = new ArrayList<ElementHandle<VariableElement>>();
+            this.parentHandle = ElementHandle.create(parent);
             this.params = new ArrayList<ParamDesc>();
             for (VariableElement ve : fields) {
                 this.fieldHandles.add(ElementHandle.create(ve));
@@ -2883,6 +2942,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                         copy.toPhase(JavaSource.Phase.PARSED);
                         TreePath tp = copy.getTreeUtilities().pathFor(offset);
                         if (tp.getLeaf().getKind() == Tree.Kind.CLASS) {
+                            TypeElement parent = parentHandle.resolve(copy);
                             ArrayList<VariableElement> fieldElements = new ArrayList<VariableElement>();
                             for (ElementHandle<? extends Element> handle : fieldHandles)
                                 fieldElements.add((VariableElement)handle.resolve(copy));
@@ -2893,7 +2953,13 @@ public abstract class JavaCompletionItem implements CompletionItem {
                                 else
                                     break;
                             }
-                            GeneratorUtils.generateConstructor(copy, tp, fieldElements, null, idx);
+                            
+                            TreeMaker make = copy.getTreeMaker();
+                            ClassTree clazz = (ClassTree) tp.getLeaf();
+                            GeneratorUtilities gu = GeneratorUtilities.get(copy);
+                            ClassTree decl = make.insertClassMember(clazz, idx, gu.createConstructor(parent, fieldElements, null)); //NOI18N
+                            
+                            copy.rewrite(clazz, decl);
                         }
                     }
                 }).commit();
@@ -2963,9 +3029,6 @@ public abstract class JavaCompletionItem implements CompletionItem {
                     while (t == null && tp != null) {
                         switch(tp.getLeaf().getKind()) {
                             case EXPRESSION_STATEMENT:
-                                ExpressionTree expr = ((ExpressionStatementTree)tp.getLeaf()).getExpression();
-                                if (expr != null && expr.getKind() == Tree.Kind.ERRONEOUS)
-                                    break;
                             case IMPORT:                                
                                 t = tp.getLeaf();
                                 break;

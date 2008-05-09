@@ -112,17 +112,27 @@ public class NbiProperties extends Properties {
             final String value,
             final Platform platform,
             final Locale locale) {
-        String realName = name;
+        final String[] platformParts = getPlatformParts(platform);
+        final String[] localeParts = getLocaleParts(locale);
         
-        if (platform != null) {
-            realName += "." + platform.toString();
+        for (int i = platformParts.length; i >= 0; i--) {
+            for (int j = localeParts.length; j >= 0; j--) {
+                final String platformString =
+                        StringUtils.asString(platformParts, 0, i, "-");
+                final String localeString =
+                        StringUtils.asString(localeParts, 0, j, "_");
+                
+                final String candidateName =
+                        name +
+                        (platformString.equals("") ? "" : "." + platformString) +
+                        (localeString.equals("") ? "" : "." + localeString);
+                
+                if (super.getProperty(candidateName) != null) {                    
+                    return super.setProperty(candidateName, value);
+                }
+            }
         }
-        
-        if (locale != null) {
-            realName += "." + locale.toString();
-        }
-        
-        return super.setProperty(realName, value);
+        return super.setProperty(name, value);
     }
     
     // private //////////////////////////////////////////////////////////////////////

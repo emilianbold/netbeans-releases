@@ -61,6 +61,7 @@ import java.util.logging.Logger;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 
 import org.netbeans.modules.debugger.jpda.EditorContextBridge;
+import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.openide.util.NbBundle;
 
 /**
@@ -119,7 +120,7 @@ public class TreeEvaluator {
         //if (exprTree == null) return null;
         try {
             Mirror mirror = EditorContextBridge.parseExpression(expression.getExpression(), url, line,
-                                                              new EvaluatorVisitor(), evaluationContext,
+                                                              new EvaluatorVisitor(expression), evaluationContext,
                                                               evaluationContext.getDebugger().getEngineContext().getContext());
             if (mirror instanceof Value || mirror == null) {
                 return (Value) mirror;
@@ -154,7 +155,8 @@ public class TreeEvaluator {
         ObjectReference objectReference, 
         Method method, 
         ThreadReference evaluationThread, 
-        List<Value> args
+        List<Value> args,
+        JPDADebuggerImpl debugger
      ) throws InvalidExpressionException {
         
         try {
@@ -178,8 +180,9 @@ public class TreeEvaluator {
             ieex.initCause(itsex);
             throw ieex;
         } catch (InvocationException iex) {
-            InvalidExpressionException ieex = new InvalidExpressionException (iex);
-            ieex.initCause(iex);
+            Throwable ex = new InvocationExceptionTranslated(iex, debugger);
+            InvalidExpressionException ieex = new InvalidExpressionException (ex);
+            ieex.initCause(ex);
             throw ieex;
         } catch (UnsupportedOperationException uoex) {
             InvalidExpressionException ieex = new InvalidExpressionException (uoex);

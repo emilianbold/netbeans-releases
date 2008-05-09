@@ -1,0 +1,52 @@
+function a(b) {
+ ^f,function
+function a(b) {
+  ^fu,function
+function a(b) {
+   ^fun,function
+function a(b) {
+    ^func,function
+function a(b) {
+     ^funct,function
+function a(b) {
+      ^functi,function
+function a(b) {
+       ^functio,function
+function a(b) {
+        ^function,function
+function a(b) {
+          ^a,a
+function a(b) {
+            ^b,b
+  x = File.exists("foo")
+   ^x,x
+  x = File.exists("foo")
+       ^F,File
+  x = File.exists("foo")
+        ^Fi,File
+  x = File.exists("foo")
+         ^Fil,File
+  x = File.exists("foo")
+          ^File,File
+  x = File.exists("foo")
+            ^e,exists
+  x = File.exists("foo")
+             ^ex,exists
+  x = File.exists("foo")
+              ^exi,exists
+  x = File.exists("foo")
+               ^exis,exists
+  x = File.exists("foo")
+                ^exist,exists
+  x = File.exists("foo")
+                 ^exists,exists
+  x = File.exists("foo")
+                   ^"",""
+  x = File.exists("foo")
+                    ^"",""
+  x = File.exists("foo")
+                     ^"",""
+  x = File.exists("foo")
+                      ^"",""
+  x = File.exists("foo")
+                       ^"",""

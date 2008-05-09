@@ -48,7 +48,7 @@
 
 package org.netbeans.lib.terminalemulator;
 
-interface Interp {
+public interface Interp {
     public String name();
     public void processChar(char c);
 } 

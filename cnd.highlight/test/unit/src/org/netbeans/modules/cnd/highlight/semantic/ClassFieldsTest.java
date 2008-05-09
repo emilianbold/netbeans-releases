@@ -57,7 +57,7 @@ public class ClassFieldsTest extends SemanticHighlightingTestBase {
 
     public void testNoMore() {}
     
-    protected List<? extends CsmOffsetable> getBlocks(FileImpl testFile) {
+    protected List<? extends CsmOffsetable> getBlocks(FileImpl testFile,int offset) {
         List<? extends CsmOffsetable> list = SemanticHighlighter.getFieldsBlocks(testFile);
         assert list != null && list.size() > 0;
         return list;
@@ -80,7 +80,7 @@ public class ClassFieldsTest extends SemanticHighlightingTestBase {
 
         }
 
-        protected List<? extends CsmOffsetable> getBlocks(FileImpl testFile) {
+        protected List<? extends CsmOffsetable> getBlocks(FileImpl testFile,int offset) {
             List<? extends CsmOffsetable> list = SemanticHighlighter.getFieldsBlocks(testFile);
             assert list != null && list.size() > 0;
             return list;

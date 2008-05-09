@@ -74,6 +74,8 @@ public class XPathLiteralEditor implements ILiteralEditor {
      */
     public void show() {
         ExpressionEditor exprEditor = new ExpressionEditor(mBasicMapper);
+        exprEditor.getAccessibleContext().setAccessibleDescription(
+                NbBundle.getMessage(ExpressionEditor.class, "ACSD_LBL_XPath_ExpressionBuilder")); // NOI18N
         String expr = mFieldNode.getLiteralName();
         if (expr != null && expr.length() > 0) {
             exprEditor.setSelectedValue(expr);

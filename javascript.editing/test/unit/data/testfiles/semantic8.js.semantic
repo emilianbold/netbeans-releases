@@ -1,0 +1,3 @@
+function |>METHOD:foo<|() {
+    |>GLOBAL:x<| = new
+}

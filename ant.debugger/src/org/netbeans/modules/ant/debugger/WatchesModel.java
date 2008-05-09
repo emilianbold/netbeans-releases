@@ -75,6 +75,7 @@ public class WatchesModel implements NodeModel, TableModel {
     public WatchesModel (ContextProvider contextProvider) {
         debugger = (AntDebugger) contextProvider.lookupFirst 
             (null, AntDebugger.class);
+        debugger.setWatchesModel(this);
     }
     
     

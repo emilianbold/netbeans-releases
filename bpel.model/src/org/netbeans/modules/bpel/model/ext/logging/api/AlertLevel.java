@@ -33,7 +33,7 @@ public enum AlertLevel implements EnumValue {
     MAJOR("major"),
     MINOR("minor"),
     WARNING("warning"),
-    INFORMATION("information"),
+    INFORMATION("info"),
     INVALID();
 
     AlertLevel() {

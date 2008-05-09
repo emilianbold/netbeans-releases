@@ -101,10 +101,14 @@ public class GeneralOptionsPanel extends JPanel implements ActionListener {
         loc (rbUseSystemProxy, "Use_System_Proxy_Settings");
         loc (rbHTTPProxy, "Use_HTTP_Proxy");
         
+        rbUseSystemProxy.setToolTipText (getUseSystemProxyToolTip ());
+        
         // if system proxy setting is not detectable, disable this radio
         // button
-        if (System.getProperty("netbeans.system_http_proxy") == null) // NOI18N
-            rbUseSystemProxy.setEnabled(false);
+        // do not disable this radio button at all
+        // it could use JDK detection sometime
+        //if (System.getProperty("netbeans.system_http_proxy") == null) // NOI18N
+            //rbUseSystemProxy.setEnabled(false);
     }
     
     /** This method is called from within the constructor to
@@ -320,8 +324,24 @@ private void bMoreProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     // End of variables declaration//GEN-END:variables
     
     
-    private static String loc (String key) {
-        return NbBundle.getMessage (GeneralOptionsPanel.class, key);
+    private static String loc (String key, String... params) {
+        return NbBundle.getMessage (GeneralOptionsPanel.class, key, params);
+    }
+    
+    private String getUseSystemProxyToolTip () {
+        if (rbUseSystemProxy.isSelected ()) {
+            String toolTip;
+            String sHost = System.getProperty ("http.proxyHost"); // NOI18N
+            if (sHost == null || sHost.trim ().length () == 0) {
+                toolTip = loc ("GeneralOptionsPanel_rbUseSystemProxy_Direct"); // NOI18N
+            } else {
+                String sPort = System.getProperty ("http.proxyPort"); // NOI18N
+                toolTip = loc ("GeneralOptionsPanel_rbUseSystemProxy_Format", sHost, sPort);
+            }
+            return toolTip;
+        } else {
+            return null;
+        }
     }
     
     private static void loc (Component c, String key) {
@@ -368,6 +388,7 @@ private void bMoreProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         }
         tfProxyHost.setText (model.getHttpProxyHost ());
         tfProxyPort.setText (model.getHttpProxyPort ());
+        rbUseSystemProxy.setToolTipText (getUseSystemProxyToolTip ());
 
         updateWebBrowsers();
         
@@ -438,5 +459,6 @@ private void bMoreProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         tfProxyHost.setEnabled (rbHTTPProxy.isSelected ());
         tfProxyPort.setEnabled (rbHTTPProxy.isSelected ());
         bMoreProxy.setEnabled (rbHTTPProxy.isSelected ());
+        rbUseSystemProxy.setToolTipText (getUseSystemProxyToolTip ());
     }
 }

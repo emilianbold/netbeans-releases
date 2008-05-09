@@ -50,15 +50,12 @@ import java.util.logging.Logger;
 
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.nodes.Node;
 
 import org.netbeans.lib.ddl.DDLException;
 import org.netbeans.lib.ddl.impl.DriverSpecification;
-import org.netbeans.lib.ddl.impl.DropIndex;
 import org.netbeans.lib.ddl.impl.Specification;
 
 import org.netbeans.api.db.explorer.DatabaseException;
-import org.netbeans.modules.db.explorer.DatabaseNodeChildren;
 import org.netbeans.modules.db.explorer.nodes.DatabaseNode;
 
 public class IndexNodeInfo extends TableNodeInfo {
@@ -104,42 +101,14 @@ public class IndexNodeInfo extends TableNodeInfo {
         }
     }
 
-    public void refreshChildren() throws DatabaseException {
-        // create list (infos)
-        Vector charr = new Vector();
-        put(DatabaseNodeInfo.CHILDREN, charr);
-        initChildren(charr);
-        
-        // create sub-tree (by infos)
-        try {
-            Node[] subTreeNodes = new Node[charr.size()];
-
-            // current sub-tree
-            DatabaseNodeChildren children = (DatabaseNodeChildren)getNode().getChildren();
-
-            // remove current sub-tree
-            children.remove(children.getNodes());
-
-            // build refreshed sub-tree
-            for(int i=0; i<charr.size(); i++)
-                subTreeNodes[i] = children.createNode((DatabaseNodeInfo)charr.elementAt(i));
-
-            // add built sub-tree
-            children.add(subTreeNodes);
-        } catch (Exception ex) {
-            Logger.getLogger("global").log(Level.INFO, null, ex);
-        }
-    }
-
     public void delete() throws IOException {
         try {
             String table = (String)get(DatabaseNode.TABLE);
             Specification spec = (Specification)getSpecification();
             DDLHelper.deleteIndex(spec, (String)get(DatabaseNodeInfo.SCHEMA), 
                     table, getName());
-
-            //refresh list of columns due to the column's icons
-            getParent(DatabaseNode.TABLE).refreshChildren();
+            
+            getParent().removeChild(this);
         } catch (DDLException e) {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
         } catch (Exception e) {
@@ -147,4 +116,16 @@ public class IndexNodeInfo extends TableNodeInfo {
             throw new IOException(e.toString());
         }
     }
+    
+    @Override
+    public String getShortDescription() {
+        return bundle().getString("ND_Index"); //NOI18N
+    }
+    
+    @Override 
+    public String getDisplayName() {
+        return getName();
+    }
+
+    
 }

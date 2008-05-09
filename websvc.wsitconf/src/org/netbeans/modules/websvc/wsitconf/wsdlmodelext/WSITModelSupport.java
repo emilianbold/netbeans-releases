@@ -77,6 +77,7 @@ import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.Import;
+import org.netbeans.modules.xml.wsdl.model.Message;
 import org.netbeans.modules.xml.wsdl.model.Port;
 import org.netbeans.modules.xml.wsdl.model.Types;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
@@ -485,9 +486,20 @@ public class WSITModelSupport {
                             
                             List<String> faults = JavaWsdlMapper.getOperationFaults(jc, name);
                             for (String faultstr : faults) {
-                                org.netbeans.modules.xml.wsdl.model.Message fMsg = wcf.createMessage();
-                                fMsg.setName(faultstr);
-                                d.addMessage(fMsg);
+                                
+                                Collection<Message> msgs = d.getMessages();
+                                org.netbeans.modules.xml.wsdl.model.Message fMsg = null;
+                                for (Message msg : msgs) {
+                                    if (msg.getName().equals(faultstr)) {
+                                        fMsg = msg;
+                                        break;
+                                    }
+                                }
+                                if (fMsg == null) {
+                                    fMsg = wcf.createMessage();
+                                    fMsg.setName(faultstr);
+                                    d.addMessage(fMsg);
+                                }
                                 
                                 org.netbeans.modules.xml.wsdl.model.Fault fault = wcf.createFault();
                                 fault.setName(faultstr);

@@ -44,10 +44,10 @@ package gui.action;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.TopComponentOperator;
+import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.performance.test.guitracker.LoggingRepaintManager.RegionFilter;
 
 /**
@@ -62,6 +62,7 @@ public class OpenNavigationPage extends org.netbeans.performance.test.utilities.
     private static String openNodeName;
     
     protected static String OPEN = org.netbeans.jellytools.Bundle.getStringTrimmed("org.openide.actions.Bundle", "Open");
+    private TopComponentOperator navPage;
     
     /** Creates a new instance of OpenNavigationPage */
     public OpenNavigationPage(String testName) {
@@ -76,6 +77,7 @@ public class OpenNavigationPage extends org.netbeans.performance.test.utilities.
         WAIT_AFTER_OPEN=20000;
     }
     
+    @Override
     protected void initialize() {
         log("::initialize::");
         EditorOperator.closeDiscardAll();
@@ -97,31 +99,38 @@ public class OpenNavigationPage extends org.netbeans.performance.test.utilities.
             fail("Cannot find and select project node");
         }
                 
-        if (this.openNode == null) {
+        if (openNode == null) {
             throw new Error("Cannot find node "+openNodeName);
         }
-        log("========== Open file path ="+this.openNode.getPath());
     }
     
     public ComponentOperator open() {
-        JPopupMenuOperator popup =  this.openNode.callPopup();
-        if (popup == null) {
-            throw new Error("Cannot get context menu for node " + openNodeName);
-        }
-        log("------------------------- after popup invocation ------------");
-        try {
-            popup.pushMenu(OPEN);
-        } catch (org.netbeans.jemmy.TimeoutExpiredException tee) {
-            throw new Error("Cannot push menu item Open on node " + openNodeName);
-        }
-        log("------------------------- after open ------------");
-        return new TopComponentOperator("faces-config.xml",0); // NOI18N
+        log("opening");
+//        JPopupMenuOperator popup =  openNode.callPopup();
+//        if (popup == null) {
+//            throw new Error("Cannot get context menu for node " + openNodeName);
+//        }
+//        log("------------------------- after popup invocation ------------");
+//        try {
+//            popup.pushMenu(OPEN);
+//        } catch (org.netbeans.jemmy.TimeoutExpiredException tee) {
+//            throw new Error("Cannot push menu item Open on node " + openNodeName);
+//        }
+//        log("------------------------- after open ------------");
+        new OpenAction().performAPI(openNode);
+        
+        navPage = new TopComponentOperator("faces-config.xml",0); // NOI18N
+        log("opened");
+        return navPage;
     }
     
+    @Override
     public void close() {
-        ((TopComponentOperator)this.testedComponentOperator).close();
+        navPage.closeDiscard();
+
     }
     
+    @Override
     protected void shutdown() {
         log("::shutdwown");
         repaintManager().resetRegionFilters();

@@ -60,7 +60,7 @@ made subject to such option by the copyright holder.
     <!-- Setting command line -->
     <!-- ==================== -->
     <!-- Command line is created from this property and xtest.perf.commandline.suffix which can be set from command line of xtest -->
-    <property name="ide.commandline.suffix" value="-J-Dorg.netbeans.performance.repeat=4 -J-Dorg.netbeans.performance.memory.usage.log=true"/>
+    <property name="ide.commandline.suffix" value="-J-Dorg.netbeans.performance.repeat=4 -J-Dorg.netbeans.performance.memory.usage.log=true -J-XX:+HeapDumpOnOutOfMemoryError -J-XX:HeapDumpPath=${xtest.results.testrun.dir}"/>
 
     
     <!-- ========= -->

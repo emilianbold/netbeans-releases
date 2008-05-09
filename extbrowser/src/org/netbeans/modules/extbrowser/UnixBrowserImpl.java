@@ -175,6 +175,7 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
             pcs.firePropertyChange (PROP_URL, old, url);
         }
         catch (java.io.IOException ex) {
+            ExtWebBrowser.getEM().log(Level.INFO, null, ex);
             // occurs when executable is not found or not executable
             DialogDisplayer.getDefault().notify(
                 new NotifyDescriptor.Message (

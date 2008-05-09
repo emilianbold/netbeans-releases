@@ -106,14 +106,19 @@ public class RegistryViewImpl implements WebServicesRegistryView, PropertyChange
         WebServiceListModel model = WebServiceListModel.getInstance();
         Set registeredServices = model.getWebServiceSet();
         List serviceNames = getServiceNames(wsdlFile);
-
+        String url = null;
+        try {
+             url = wsdlFile.getURL().toExternalForm();
+        } catch (FileStateInvalidException ex) {
+        }
         for (Iterator nameIter = serviceNames.iterator(); nameIter.hasNext(); ) {
             String searchName = (String) nameIter.next();
             searchName = removeSpacesFromServiceName(searchName);
 
             for (Iterator iter = registeredServices.iterator(); iter.hasNext(); ) {
                 WebServiceData wsData = (WebServiceData) iter.next();
-                if(searchName.equalsIgnoreCase(wsData.getName())) {
+                if(searchName.equalsIgnoreCase(wsData.getName()) &&
+                        (url!=null && url.equals(wsData.getURL()))) {
                     foundServices.add(new WebServicesNode(wsData));
                     break;
                 }
@@ -195,8 +200,15 @@ public class RegistryViewImpl implements WebServicesRegistryView, PropertyChange
                             // remove old service first
                             wsListModel.removeWebService(existingWS);
                         } else {
-                            // !PW Failed: Web service of that name already exists in model
-                            continue;
+                            // Web service of that name already exists in model.
+                            // Lets change the display name of this service
+                            String wsurl = wsData.getURL();
+                            String existingUrl = existingWS.getURL();
+                            if(wsurl!=null&&!wsurl.equals(existingUrl)) {
+                                wsData.setDisplayName(uniqueWSName(wsData.getDisplayName(), 
+                                        getRegisteredServiceNames(wsListModel)));
+                            } else
+                                continue;
                         }
                     }
 
@@ -238,6 +250,24 @@ public class RegistryViewImpl implements WebServicesRegistryView, PropertyChange
         }
 
         return result;
+    }
+
+    private Set getRegisteredServiceNames(WebServiceListModel wsListModel) {
+        Set wsNames = new HashSet();
+        Iterator iter = wsListModel.getWebServiceSet().iterator();
+        while(iter.hasNext()){
+            wsNames.add(((WebServiceData)iter.next()).getDisplayName());
+        }
+        return wsNames;
+    }
+
+    private String uniqueWSName(final String origName, Set names ){
+        int uniquifier = 0;
+        String truename = origName;
+        while(names.contains(truename)){
+            truename = origName + String.valueOf(++uniquifier);
+        }
+        return truename;
     }
 
     private List getServiceNames(FileObject wsdlFile) {

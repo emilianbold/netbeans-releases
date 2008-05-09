@@ -42,10 +42,12 @@
 package org.netbeans.modules.debugger.jpda.projects;
 
 import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -88,10 +90,36 @@ public class BreakpointAnnotationProvider implements AnnotationProvider,
 
     private Map<JPDABreakpoint, Annotation[]> breakpointToAnnotations;
     private Set<FileObject> annotatedFiles;
+    private Set<PropertyChangeListener> dataObjectListeners;
 
     public void annotate (Line.Set set, Lookup lookup) {
-        FileObject fo = (FileObject) lookup.lookup (FileObject.class);
-        if (fo == null) return;
+        final FileObject fo = lookup.lookup(FileObject.class);
+        if (fo != null) {
+            final DataObject dobj = lookup.lookup(DataObject.class);
+            if (dobj != null) {
+                PropertyChangeListener pchl = new PropertyChangeListener() {
+                    /** annotate renamed files. */
+                    public void propertyChange(PropertyChangeEvent evt) {
+                        if (DataObject.PROP_PRIMARY_FILE.equals(evt.getPropertyName())) {
+                            FileObject newFO = dobj.getPrimaryFile();
+                            annotate(newFO);
+                        }
+                    }
+                };
+                dobj.addPropertyChangeListener(WeakListeners.propertyChange(pchl, dobj));
+                synchronized (this) {
+                    if (dataObjectListeners == null) {
+                        dataObjectListeners = new HashSet<PropertyChangeListener>();
+                    }
+                    // Prevent from GC.
+                    dataObjectListeners.add(pchl);
+                }
+            }
+            annotate(fo);
+        }
+    }
+    
+    public void annotate (final FileObject fo) {
         boolean attachManagerListener = false;
         synchronized (this) {
             if (breakpointToAnnotations == null) {
@@ -292,11 +320,11 @@ public class BreakpointAnnotationProvider implements AnnotationProvider,
         }
         LineCookie lc = dataObject.getCookie(LineCookie.class);
         if (lc == null) return;
-        List<DebuggerAnnotation> annotations = new ArrayList<DebuggerAnnotation>();
+        List<DebuggerBreakpointAnnotation> annotations = new ArrayList<DebuggerBreakpointAnnotation>();
         for (int l : lines) {
             try {
                 Line line = lc.getLineSet().getCurrent(l - 1);
-                DebuggerAnnotation annotation = new DebuggerAnnotation (annotationType, line);
+                DebuggerBreakpointAnnotation annotation = new DebuggerBreakpointAnnotation (annotationType, line, b);
                 annotations.add(annotation);
             } catch (IndexOutOfBoundsException e) {
             } catch (IllegalArgumentException e) {

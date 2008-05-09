@@ -173,7 +173,9 @@ public class NewCDCProjectWizardIterator implements TemplateWizard.Iterator {
             pkgFolder = FileUtil.createFolder( srcFolder, fName );        
         }
         DataFolder pDf = DataFolder.findFolder( pkgFolder );        
-        mt.createFromTemplate( pDf, mName );
+        DataObject doj = mt.createFromTemplate( pDf, mName );
+        if (doj != null)
+            doj.getPrimaryFile().setAttribute("justCreatedByNewWizard", Boolean.TRUE); //NOI18N
         return templateType;
     }
     

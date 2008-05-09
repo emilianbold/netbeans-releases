@@ -32,7 +32,6 @@ import com.sun.sql.framework.exception.BaseException;
 import com.sun.sql.framework.utils.StringUtil;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.model.DBConnectionDefinition;
 import org.netbeans.modules.sql.framework.model.DBTable;
 
@@ -48,7 +47,7 @@ import org.netbeans.modules.sql.framework.model.DBTable;
  */
 public class PatternFinder {
 
-    private static transient final Logger mLogger = LogUtil.getLogger(PatternFinder.class.getName());
+    private static transient final Logger mLogger = Logger.getLogger(PatternFinder.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
     public static boolean allDBTablesAreInternal(Iterator tableIterator) throws BaseException {
@@ -74,21 +73,19 @@ public class PatternFinder {
             // Force pipeline execution
             builder = (definition.hasValidationConditions()) ? new ValidatingStrategyBuilderImpl(model) : new PipelinedStrategyBuilderImpl(model);
         } else if (strategyOverride == SQLDefinition.EXECUTION_STRATEGY_STAGING) {
+            String nbBundle1 = mLoc.t("BUND001: Cannot execute in Staging mode, choose Best-fit or Pipeline.");
             if (definition.requiresPipelineProcess()) {
-                String nbBundle1 = mLoc.t("PRSR001: Cannot execute in Staging mode, choose Best-fit or Pipeline.");
-                String desc = Localizer.parse(nbBundle1);
+                String desc = nbBundle1.substring(15);
                 throw new BaseException(desc);
             }
 
             if (PatternFinder.isSourceAndTargetAreInternalButDifferent(definition)) {
-                String nbBundle2 = mLoc.t("PRSR001: Cannot execute in Staging mode, choose Best-fit or Pipeline.");
-                String desc = Localizer.parse(nbBundle2);
+                String desc = nbBundle1.substring(15);
                 throw new BaseException(desc);
             }
 
             if (isInternalDBTable(tt) && allDBTablesAreInternal(sourceTables.iterator())) {
-                String nbBundle3 = mLoc.t("PRSR001: Cannot execute in Staging mode, choose Best-fit or Pipeline.");
-                String desc = Localizer.parse(nbBundle3);
+                String desc = nbBundle1.substring(15);
                 throw new BaseException(desc);
             }
 

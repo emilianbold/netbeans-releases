@@ -41,28 +41,13 @@
 
 package org.netbeans.modules.db.explorer.nodes;
 
-import java.util.*;
-import org.netbeans.lib.ddl.*;
-import org.netbeans.lib.ddl.impl.*;
+import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
 import org.openide.nodes.Children;
-import org.netbeans.modules.db.*;
-import org.netbeans.modules.db.explorer.*;
-import org.netbeans.modules.db.explorer.infos.*;
 
 public class LeafNode extends DatabaseNode
 {
-    public LeafNode()
+    public LeafNode(DatabaseNodeInfo info)
     {
-        super(Children.LEAF);
+        super(Children.LEAF, info);
     }
 }
-/*
- * <<Log>>
- *  4    Gandalf   1.3         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  3    Gandalf   1.2         6/9/99   Ian Formanek    ---- Package Change To 
- *       org.openide ----
- *  2    Gandalf   1.1         5/21/99  Slavek Psenicka new version
- *  1    Gandalf   1.0         5/14/99  Slavek Psenicka 
- * $
- */

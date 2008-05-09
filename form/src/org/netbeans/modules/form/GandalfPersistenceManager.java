@@ -95,6 +95,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
     private static final String NB60_PRE_VERSION = "1.4"; // NOI18N
     private static final String NB60_VERSION = "1.5"; // NOI18N
     private static final String NB61_VERSION = "1.6"; // NOI18N
+    private static final String NB65_VERSION = "1.7"; // NOI18N
 
     // XML elements names
     static final String XML_FORM = "Form"; // NOI18N
@@ -3690,15 +3691,9 @@ public class GandalfPersistenceManager extends PersistenceManager {
             saveProperties(component.getKnownBeanProperties(),
                            XML_PROPERTIES, buf, indent);
 
-            if (component instanceof RADVisualComponent) {
-                // try to save accessibility properties
-                FormProperty[] accProps = ((RADVisualComponent)component)
-                                            .getAccessibilityProperties();
-                saveProperties(accProps, XML_A11Y_PROPERTIES, buf, indent);
-//                if (saveProperties(accProps,
-//                                   XML_A11Y_PROPERTIES, buf, indent))
-//                    raiseFormatVersion(NB34_VERSION);
-            }
+            // try to save accessibility properties
+            FormProperty[] accProps = component.getAccessibilityProperties();
+            saveProperties(accProps, XML_A11Y_PROPERTIES, buf, indent);
         }
 
         // 2. Binding properties
@@ -5995,7 +5990,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
                || NB50_VERSION.equals(ver)
                || NB60_PRE_VERSION.equals(ver)
                || NB60_VERSION.equals(ver)
-               || NB61_VERSION.equals(ver);
+               || NB61_VERSION.equals(ver)
+               || NB65_VERSION.equals(ver);
     }
 
     private static FormModel.FormVersion formVersionForVersionString(String version) {
@@ -6015,6 +6011,9 @@ public class GandalfPersistenceManager extends PersistenceManager {
             if (NB61_VERSION.equals(version)) {
                 return FormModel.FormVersion.NB61;
             }
+            if (NB65_VERSION.equals(version)) {
+                return FormModel.FormVersion.NB65;
+            }
         }
         return null;
     }
@@ -6027,6 +6026,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 case NB60_PRE: return NB60_PRE_VERSION;
                 case NB60: return NB60_VERSION;
                 case NB61: return NB61_VERSION;
+                case NB65: return NB65_VERSION;
             }
         }
         return null;

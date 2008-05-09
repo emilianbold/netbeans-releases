@@ -53,6 +53,7 @@ import org.netbeans.modules.cnd.dwarfdump.exception.WrongFileFormatException;
 import org.netbeans.modules.cnd.dwarfdump.reader.DwarfReader;
 import org.netbeans.modules.cnd.dwarfdump.section.DwarfDebugInfoSection;
 import org.netbeans.modules.cnd.dwarfdump.section.ElfSection;
+import org.netbeans.modules.cnd.dwarfdump.trace.TraceDwarf;
 
 /**
  *
@@ -60,12 +61,19 @@ import org.netbeans.modules.cnd.dwarfdump.section.ElfSection;
  */
 public class Dwarf {
     private DwarfReader dwarfReader;
-    private boolean isArchive;
     private List<MemberHeader> offsets;
     private FileMagic magic;
     private String fileName;
     
+    enum Mode {
+        Normal, Archive, MachoLOF
+    };
+    private final Mode mode;
+    
     public Dwarf(String objFileName) throws FileNotFoundException, WrongFileFormatException, IOException {
+        if (TraceDwarf.TRACED) {
+            System.out.println("\n**** Dwarfing " + objFileName + "\n"); //NOI18N
+        }
         fileName = objFileName;
         magic = new FileMagic(objFileName);
         if (magic.getMagic() == Magic.Arch){
@@ -75,10 +83,16 @@ public class Dwarf {
             if (offsets.size()==0) {
                 throw new WrongFileFormatException("Not an ELF file"); // NOI18N
             }
-            isArchive = true;
+            mode = Mode.Archive;
         } else {
-            isArchive = false;
             dwarfReader = new DwarfReader(objFileName, magic.getReader(), magic.getMagic(), 0, magic.getReader().length());
+            if (dwarfReader.getLinkedObjectFiles().size() > 0) {
+                // Mach-O left dwarf info in linked object files
+                mode = Mode.MachoLOF;
+            } else {
+                mode = Mode.Normal;
+            }
+            
         }
     }
     
@@ -184,10 +198,12 @@ public class Dwarf {
     }
     
     public List<CompilationUnit> getCompilationUnits() throws IOException {
-        if (isArchive) {
+        if (mode == Mode.Archive) {
             return getArchiveCompilationUnits(magic.getReader());
-        } else {
+        } else if (mode == Mode.Normal) {
             return getFileCompilationUnits();
+        } else {// mode = Mode.MachoLOF
+            return getMachoLOFCompilationUnits();
         }
     }
     
@@ -198,6 +214,15 @@ public class Dwarf {
             result = debugInfo.getCompilationUnits();
         } else {
             result = new LinkedList<CompilationUnit>();
+        }
+        return result;
+    }
+    
+    private List<CompilationUnit> getMachoLOFCompilationUnits() throws IOException {
+        List<CompilationUnit> result = new LinkedList<CompilationUnit>();
+        for (String string : dwarfReader.getLinkedObjectFiles()) {
+            Dwarf gimli = new Dwarf(string);
+            result.addAll(gimli.getCompilationUnits());
         }
         return result;
     }

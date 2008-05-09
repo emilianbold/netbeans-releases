@@ -45,8 +45,11 @@ import java.awt.event.ActionEvent;
 import java.util.MissingResourceException;
 import java.util.prefs.Preferences;
 import javax.swing.Action;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseAction;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 
@@ -85,16 +88,30 @@ import org.openide.util.NbPreferences;
                     originalAction.actionPerformed(evt);
                 }
             } else {
-                int offset = newOffset(target);
-                if (offset != -1) {
-                    moveToNewOffset(target, offset);
+                BaseDocument bdoc = org.netbeans.editor.Utilities.getDocument(target);
+                if (bdoc != null) {
+                    bdoc.atomicLock();
+                    DocumentUtilities.setTypingModification(bdoc, true);
+                    try {
+                        int offset = newOffset(target);
+                        if (offset != -1) {
+                            moveToNewOffset(target, offset);
+                        }
+                    } catch (BadLocationException ble) {
+                        target.getToolkit().beep();
+                    } finally {
+                        DocumentUtilities.setTypingModification(bdoc, false);
+                        bdoc.atomicUnlock();
+                    }
+                } else {
+                    target.getToolkit().beep();
                 }
             }
         }
     }
 
-    protected abstract int newOffset(JTextComponent textComponent);
-    protected abstract void moveToNewOffset(JTextComponent textComponent, int offset);
+    protected abstract int newOffset(JTextComponent textComponent) throws BadLocationException;
+    protected abstract void moveToNewOffset(JTextComponent textComponent, int offset) throws BadLocationException;
 
     public String getShortDescription(){
         String name = (String)getValue(Action.NAME);

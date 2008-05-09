@@ -134,6 +134,13 @@ public class ImageOpenSupport extends OpenSupport implements OpenCookie, CloseCo
         lastSaveTime = System.currentTimeMillis();
     }
 
+    void lastClosed() {
+        if (fileChangeL != null) {
+            entry.getFile().removeFileChangeListener(fileChangeL);
+            fileChangeL = null;
+        }
+    }
+
     /** Ask and reload/close image views. */
     private void reload(FileEvent evt) {
         // ask if reload?

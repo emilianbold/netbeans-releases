@@ -41,21 +41,20 @@
 package org.netbeans.modules.profiler.j2ee.jboss;
 
 import org.netbeans.lib.profiler.common.AttachSettings;
-import org.netbeans.lib.profiler.common.integration.IntegrationProvider;
-import org.netbeans.lib.profiler.common.integration.IntegrationUtils;
-import org.netbeans.modules.profiler.ui.wizards.framework.steps.SimpleWizardStep;
-import org.netbeans.modules.profiler.ui.wizards.providers.IDESettingsPersistor;
-import org.netbeans.modules.profiler.ui.wizards.providers.SettingsPersistor;
-import org.netbeans.modules.profiler.ui.wizards.providers.TargetPlatform;
-import org.netbeans.modules.profiler.ui.wizards.providers.ValidationResult;
-import org.netbeans.modules.profiler.ui.wizards.providers.scripted.AbstractScriptIntegrationProvider;
-import org.netbeans.modules.profiler.ui.wizards.providers.scripted.ScriptHeaderModifier;
-import org.netbeans.modules.profiler.ui.wizards.providers.scripted.TextScriptHeaderModifier;
+import org.netbeans.lib.profiler.common.integration.IntegrationUtils;import org.netbeans.modules.profiler.attach.providers.IDESettingsPersistor;
+import org.netbeans.modules.profiler.attach.providers.SettingsPersistor;
+import org.netbeans.modules.profiler.attach.providers.TargetPlatform;
+import org.netbeans.modules.profiler.attach.providers.ValidationResult;
+import org.netbeans.modules.profiler.attach.providers.scripted.AbstractScriptIntegrationProvider;
+import org.netbeans.modules.profiler.attach.providers.scripted.ScriptHeaderModifier;
+import org.netbeans.modules.profiler.attach.providers.scripted.TextScriptHeaderModifier;
+import org.netbeans.modules.profiler.attach.wizard.steps.SimpleWizardStep;
 import java.io.File;
 import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.Properties;
 import java.util.ResourceBundle;
+import org.netbeans.modules.profiler.attach.spi.IntegrationProvider;
 
 
 /**

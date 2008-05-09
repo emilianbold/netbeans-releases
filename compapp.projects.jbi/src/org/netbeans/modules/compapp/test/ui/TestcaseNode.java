@@ -78,6 +78,7 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 import org.openide.actions.DeleteAction;
+import org.openide.actions.RenameAction;
 import org.openide.util.NbBundle;
 import org.openide.util.datatransfer.PasteType;
 
@@ -136,21 +137,25 @@ public class TestcaseNode extends FilterNode {
         
         // set the model listener
         mFileChangeListener = new FileChangeAdapter() {
+            @Override
             public void fileChanged(FileEvent fe) {
                 checkOutputChange(fe.getFile());
                 update();
             }
             
+            @Override
             public void fileDataCreated(FileEvent fe) {
                 checkOutputChange(fe.getFile());
                 update();
             }
             
+            @Override
             public void fileDeleted(FileEvent fe) {
                 checkOutputChange(fe.getFile());
                 update();
             }
             
+            @Override
             public void fileRenamed(FileRenameEvent fe) {
                 checkOutputChange(fe.getFile());
                 update();
@@ -162,6 +167,7 @@ public class TestcaseNode extends FilterNode {
         // keep an eye on the test/ directory
         mTestDir = mProject.getTestDirectory();
         mTestDirChangeListener = new FileChangeAdapter() {
+            @Override
             public void fileFolderCreated(FileEvent fe) {
                 FileObject fo = fe.getFile();
                 if (fo.getName().equals("results")) {   // FIXME  // NOI18N
@@ -177,6 +183,7 @@ public class TestcaseNode extends FilterNode {
                 update();
             }
             
+            @Override
             public void fileDeleted(FileEvent fe) {
                 FileObject fo = fe.getFile();
                 if (fo.getName().equals("results")) {   // FIXME // NOI18N
@@ -190,6 +197,7 @@ public class TestcaseNode extends FilterNode {
         
         // keep an eye on the test/results/ directory
         mTestResultsDirChangeListener = new FileChangeAdapter() {
+            @Override
             public void fileFolderCreated(FileEvent fe) {
                 FileObject fo = fe.getFile();
                 if (fo.getName().equals(testCaseName)) {
@@ -200,6 +208,7 @@ public class TestcaseNode extends FilterNode {
                 update();
             }
             
+            @Override
             public void fileDeleted(FileEvent fe) {
                 
                 FileObject fo = fe.getFile();
@@ -217,15 +226,18 @@ public class TestcaseNode extends FilterNode {
         
         // keep an eye on the test/results/<TESTCASE> directory
         mTestCaseResultsDirChangeListener = new FileChangeAdapter() {
+            @Override
             public void fileDataCreated(FileEvent fe) {
                 update();
                 doFirstResultCheck(fe.getFile());
             }
             
+            @Override
             public void fileDeleted(FileEvent fe) {
                 update();
             }
             
+            @Override
             public void fileRenamed(FileRenameEvent fe) {
                 update();
             }
@@ -266,6 +278,7 @@ public class TestcaseNode extends FilterNode {
         mChildren = (TestcaseChildren) getChildren();
     }
     
+    @Override
     public void setName(String name) {
         String oldName = getName();
         
@@ -355,15 +368,18 @@ public class TestcaseNode extends FilterNode {
     }
     
     // @overwrite
+    @Override
     public boolean canCut() {
         return false;
     }
     
     // @overwrite
+    @Override
     public boolean canCopy() {
         return false;
     }
     
+    @Override
     public Node.Cookie getCookie(Class type) {
         if (type == TestcaseCookie.class) {
             return mTestcaseCookie;
@@ -379,6 +395,7 @@ public class TestcaseNode extends FilterNode {
         return mTestcaseDir;
     }
     
+    @Override
     public Action[] getActions(boolean context) {
         List<Action> actionList = new ArrayList<Action>();
         actionList.add(SystemAction.get(TestCaseRunAction.class));
@@ -386,6 +403,7 @@ public class TestcaseNode extends FilterNode {
         actionList.add(null);
         actionList.add(SystemAction.get(TestcaseDiffAction.class));
         actionList.add(null);
+        actionList.add(SystemAction.get(RenameAction.class));
         actionList.add(SystemAction.get(DeleteAction.class));
         actionList.add(SystemAction.get(TestCaseResultsDeleteAction.class));
         actionList.add(null);
@@ -394,6 +412,7 @@ public class TestcaseNode extends FilterNode {
         return actionList.toArray(new Action[0]);
     }
     
+    @Override
     public void destroy() throws IOException {
         
         super.destroy();
@@ -415,6 +434,7 @@ public class TestcaseNode extends FilterNode {
         }
     }
     
+    @Override
     public Node.PropertySet[] getPropertySets() {
         return mPropertyFileWrapper.getSheet().toArray();
     }
@@ -599,6 +619,7 @@ public class TestcaseNode extends FilterNode {
     }
     
     class PropertyFileChangeListener extends FileChangeAdapter {
+        @Override
         public void fileChanged(FileEvent fe) {
             mPropertyFileWrapper.loadProperties();
             // Notify Properties pane to repaint
@@ -609,11 +630,13 @@ public class TestcaseNode extends FilterNode {
     // Until we provide Paste action in the context menu, paste or DnD is
     // forbidden for now. (IZ 79815)
     // @overwrite
+    @Override
     public PasteType[] getPasteTypes(Transferable t) {
         return new PasteType[] {};
     }
     
     // @overwrite
+    @Override
     public PasteType getDropType(Transferable t, int action, int index) {
         return null;
     }
@@ -629,10 +652,12 @@ public class TestcaseNode extends FilterNode {
 //        super.destroy();
 //    }
     
+    @Override
     public Image getIcon(int type) {
         return computeIcon(false, type);
     }
     
+    @Override
     public Image getOpenedIcon(int type)  {
         return computeIcon(true, type);
     }

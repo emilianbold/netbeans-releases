@@ -254,7 +254,7 @@ final class NbPlatformCustomizerJavadoc extends JPanel {
         if (ret == JFileChooser.APPROVE_OPTION) {
             File javadocRoot = FileUtil.normalizeFile(chooser.getSelectedFile());
             ModuleUISettings.getDefault().setLastUsedNbPlatformLocation(javadocRoot.getParentFile().getAbsolutePath());
-            URL newUrl = Util.urlForDirOrJar(javadocRoot);
+            URL newUrl = FileUtil.urlForArchiveOrDir(javadocRoot);
             model.addJavadocRoot(newUrl);
             javadocList.setSelectedValue(newUrl, true);
         }

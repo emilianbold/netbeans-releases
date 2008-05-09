@@ -49,7 +49,7 @@ package org.netbeans.modules.css.visual.ui;
 
 import java.util.logging.Level;
 import javax.swing.text.BadLocationException;
-import org.netbeans.modules.css.model.CssRuleContent;
+import org.netbeans.modules.css.editor.model.CssRuleContent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;

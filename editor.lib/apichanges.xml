@@ -107,7 +107,7 @@ is the proper place.
 
         <change id="BaseDocument-kitClass-deprecations">
             <summary>Deprecating kit class related API in BaseDocument</summary>
-            <version major="1" minor="22"/>
+            <version major="1" minor="26"/>
             <date day="16" month="1" year="2008"/>
             <author login="vstejskal"/>
             <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes" deprecation="yes"/>
@@ -118,7 +118,7 @@ is the proper place.
                     types and <code>MimeLookup</code>. This change deprecates API
                     methods and construction in <code>BaseDocument</code> that
                     accept editor kit implementation class and adds their equivalents
-                    accepting <code>EditorKit</code>.
+                    accepting mime type.
                 </p>
                 <p>Deprecated:
                 <code>BaseDocument(Class, boolean)</code>,
@@ -129,15 +129,67 @@ is the proper place.
                 </p>
                 <p>Added:
                 <code>BaseDocument.MIME_TYPE_PROP</code>,
-                <code>BaseDocument(EditorKit, boolean)</code>,
-                <code>GuardedDocument(EditorKit)</code>,
-                <code>GuardedDocument(EditorKit, boolean, StyleContext)</code>,
+                <code>BaseDocument(boolean, String)</code>,
+                <code>GuardedDocument(String)</code>,
+                <code>GuardedDocument(String, boolean, StyleContext)</code>,
                 <code>Formatter.getFormatter(String)</code>
                 </p>
             </description>
             <issue number="114747"/>
         </change>
 
+        <change id="BaseDocument.addPostModificationDocumentListener">
+            <summary>Added BaseDocument.addPostModificationDocumentListener()</summary>
+            <version major="1" minor="25"/>
+            <date day="28" month="3" year="2008"/>
+            <author login="mmetelka"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes" deprecation="no"/>
+            <description>
+                <p>BaseDocument.addPostModificationDocumentListener() is an improvement
+                  over existing BaseDocument.setPostModificationDocumentListener()
+                  which is now deprecated.
+                </p>
+            </description>
+        </change>
+        
+        <change id="Adding.thick.line.caret">
+            <summary>Adding Thick Line Caret</summary>
+            <version major="1" minor="23"/>
+            <date day="20" month="3" year="2008"/>
+            <author login="vstejskal"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes" deprecation="no"/>
+            <description>
+                <p>Adding several fields related to Thick Line Caret contributed
+                by barty (barth2k at yahoo dot com):</p>
+                <ul>
+                    <li><code>BaseCaret.THICK_LINE_CARET</code></li>
+                    <li><code>SettingsNames.THICK_CARET_WIDTH</code></li>
+                    <li><code>SettingsDefaults.defaultThickCaretWidth</code></li>
+                </ul>
+            </description>
+        </change>
+        
+        <change id="DrawContext.and.DrawGraphics.enhanced">
+            <summary>Adding methods to DrawContext and DrawGraphics</summary>
+            <version major="1" minor="22"/>
+            <date day="28" month="2" year="2008"/>
+            <author login="vstejskal"/>
+            <compatibility binary="incompatible" source="compatible" semantic="compatible" addition="yes" deprecation="no"/>
+            <description>
+                <p>Adding:</p>
+                <ul>
+                    <li><code>DrawContext.get{set}TopBorderLineColor</code></li>
+                    <li><code>DrawContext.get{set}RightBorderLineColor</code></li>
+                    <li><code>DrawContext.get{set}BottomBorderLineColor</code></li>
+                    <li><code>DrawContext.get{set}LeftBorderLineColor</code></li>
+                    <li><code>DrawGraphics.setTopBorderLineColor</code></li>
+                    <li><code>DrawGraphics.setRightBorderLineColor</code></li>
+                    <li><code>DrawGraphics.setBottomBorderLineColor</code></li>
+                    <li><code>DrawGraphics.setLeftBorderLineColor</code></li>
+                </ul>
+            </description>
+        </change>
+        
         <change id="LineSeparatorConversion.deprecated">
             <summary>Deprecating LineSeparatorConversion</summary>
             <version major="1" minor="20"/>

@@ -66,11 +66,11 @@ public class EvaluatorTest extends TestBase {
     protected void setUp() throws Exception {
         super.setUp();
         userPropertiesFile = TestBase.initializeBuildProperties(getWorkDir(), getDataDir());
-        FileObject dir = nbCVSRoot().getFileObject("java/project");
+        FileObject dir = nbRoot().getFileObject("java.project");
         assertNotNull("have java/project checked out", dir);
         Project p = ProjectManager.getDefault().findProject(dir);
         javaProjectProject = (NbModuleProject)p;
-        dir = nbCVSRoot().getFileObject("openide/loaders");
+        dir = nbRoot().getFileObject("openide.loaders");
         assertNotNull("have openide/loaders checked out", dir);
         p = ProjectManager.getDefault().findProject(dir);
         loadersProject = (NbModuleProject)p;
@@ -78,17 +78,17 @@ public class EvaluatorTest extends TestBase {
     
     public void testEvaluator() throws Exception {
         PropertyEvaluator eval = javaProjectProject.evaluator();
-        assertEquals("right basedir", file("java/project"),
+        assertEquals("right basedir", file("java.project"),
             javaProjectProject.getHelper().resolveFile(eval.getProperty("basedir")));
-        assertEquals("right nb_all", nbCVSRootFile(),
+        assertEquals("right nb_all", nbRootFile(),
             javaProjectProject.getHelper().resolveFile(eval.getProperty("nb_all")));
         assertEquals("right code.name.base.dashes", "org-netbeans-modules-java-project", eval.getProperty("code.name.base.dashes"));
         assertEquals("right is.autoload", "true", eval.getProperty("is.autoload"));
         assertEquals("right manifest.mf", "manifest.mf", eval.getProperty("manifest.mf"));
-        assertEquals("right core.dir", file("nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM),
-            javaProjectProject.getHelper().resolveFile(eval.getProperty("core.dir")));
-        assertEquals("right apisupport/project.dir", file("nbbuild/netbeans/" + TestBase.CLUSTER_APISUPPORT),
-            javaProjectProject.getHelper().resolveFile(eval.getProperty("apisupport/project.dir")));
+        assertEquals("right o.n.core.dir", file("nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM),
+            javaProjectProject.getHelper().resolveFile(eval.getProperty("o.n.core.dir")));
+        assertEquals("right apisupport.project.dir", file("nbbuild/netbeans/" + TestBase.CLUSTER_APISUPPORT),
+            javaProjectProject.getHelper().resolveFile(eval.getProperty("apisupport.project.dir")));
         assertEquals("right module JAR", file("nbbuild/netbeans/" + TestBase.CLUSTER_JAVA + "/modules/org-netbeans-modules-java-project.jar"),
             javaProjectProject.getHelper().resolveFile(eval.evaluate("${cluster}/${module.jar}")));
         eval = loadersProject.evaluator();

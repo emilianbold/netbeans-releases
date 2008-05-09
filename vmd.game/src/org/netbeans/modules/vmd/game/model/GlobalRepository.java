@@ -335,15 +335,24 @@ public class GlobalRepository implements PropertyChangeListener, Editable {
 	}
 		
 	public boolean isComponentNameAvailable(String fieldName) {
-		if (this.isNameAvailable(CodeUtils.decapitalize(fieldName))
-		 && this.isNameAvailable(CodeUtils.capitalize(fieldName))
-		 && this.isNameAvailable(CodeUtils.createGetterMethodName(fieldName))
-		 && this.isNameAvailable(CodeUtils.createSetterMethodName(fieldName))) {
-            return true;
-		}
-		return false;
+        List<String> derivedNames = deriveUsedNames(fieldName);
+        for (String derivedName : derivedNames) {
+            if (!this.isNameAvailable(derivedName)) {
+                return false;
+            }
+        }
+		return true;
 	}
 	
+    public static List<String> deriveUsedNames(String fieldName) {
+        List<String> derivedNames = new ArrayList<String>();
+        derivedNames.add(CodeUtils.decapitalize(fieldName));
+        derivedNames.add(CodeUtils.capitalize(fieldName));
+        derivedNames.add(CodeUtils.createGetterMethodName(fieldName));
+        derivedNames.add(CodeUtils.createSetterMethodName(fieldName));
+        return derivedNames;
+    }
+    
 	private boolean isNameAvailable(String name) {		
 		if (this.getLayerByName(name) != null) {
 			return false;

@@ -44,7 +44,7 @@ import java.util.List;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.api.model.CsmChangeEvent;
-import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
+import org.netbeans.modules.cnd.api.model.CsmListeners;
 import org.netbeans.modules.cnd.api.model.CsmModelListener;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.openide.filesystems.FileObject;
@@ -60,7 +60,7 @@ public abstract class EditorAwareCsmFileTaskFactory extends CsmFileTaskFactory {
     protected EditorAwareCsmFileTaskFactory() {
         super();
         OpenedEditors.getDefault().addChangeListener(new ChangeListenerImpl());
-        CsmModelAccessor.getModel().addModelListener(modelListener);
+        CsmListeners.getDefault().addModelListener(modelListener);
     }
     
     /**@inheritDoc*/

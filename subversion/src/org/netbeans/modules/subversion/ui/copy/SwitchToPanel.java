@@ -41,8 +41,6 @@
 
 package org.netbeans.modules.subversion.ui.copy;
 
-import org.netbeans.modules.subversion.ui.wizards.*;
-
 /**
  *
  * @author  Petr Kuzel

@@ -129,6 +129,7 @@ public class DeclarationASTEvaluator extends ASTEvaluator {
                 //S ystem.out.println("add " + definition + " to " + con);
                 UsagesASTEvaluator.addDatabaseDefinition (document, definition);
             }
+            ContextASTEvaluator.setEvaluated(document, true);
         }
     }
 

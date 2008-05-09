@@ -72,6 +72,8 @@ import com.sun.appserv.management.j2ee.Servlet;
 import com.sun.appserv.management.j2ee.StatefulSessionBean;
 import com.sun.appserv.management.j2ee.StatelessSessionBean;
 import com.sun.appserv.management.j2ee.WebModule;
+import java.util.Arrays;
+import java.util.List;
 
 
 
@@ -425,7 +427,12 @@ public class NodeTypes {
      *
      * @return All the property names for the node type passed.
      */
-    public static String[] getNodeProperties(String nodeType){
-        return (String[]) propertiesMapper.get(nodeType);
+    public static List getNodeProperties(String nodeType){
+        List props = null;
+        String[] strArr = (String[]) propertiesMapper.get(nodeType);
+        if(strArr != null){
+            props = Arrays.asList(strArr);
+        }
+        return props;
     }
 }

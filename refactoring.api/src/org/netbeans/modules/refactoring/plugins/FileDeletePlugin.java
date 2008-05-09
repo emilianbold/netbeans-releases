@@ -77,8 +77,8 @@ public class FileDeletePlugin implements RefactoringPlugin {
     
     public Problem prepare(RefactoringElementsBag elements) {
         for (FileObject fo: refactoring.getRefactoringSource().lookupAll(FileObject.class)) {
-            elements.addFileChange(refactoring, new DeleteFile(fo, elements));
-        }
+                elements.addFileChange(refactoring, new DeleteFile(fo, elements));
+            }
         return null;
     }
     
@@ -92,8 +92,8 @@ public class FileDeletePlugin implements RefactoringPlugin {
 
     public void cancelRequest() {
     }
-    
-    private class DeleteFile extends SimpleRefactoringElementImplementation {
+    //TODO: Move out this inner class
+    static class DeleteFile extends SimpleRefactoringElementImplementation {
         
         private final URL res;
         private String filename;
@@ -153,3 +153,8 @@ public class FileDeletePlugin implements RefactoringPlugin {
     }
 
 }
+
+//                if (fo.isFolder()) {
+//                    //TODO:Move deletion of packages to a separate plugin constructed by RefactoringPluginFactory
+//                    dataObject.getNodeDelegate().destroy();
+//                }else{

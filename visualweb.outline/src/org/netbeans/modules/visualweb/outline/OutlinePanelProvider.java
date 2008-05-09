@@ -141,7 +141,7 @@ public class OutlinePanelProvider implements NavigatorPanelWithUndo {
             if (isFine()) {
                 fine("designBeans=" + designBeans); // NOI18N
             }
-
+            
             OutlinePanel.getDefault().setActiveBeans(designBeans.toArray(new DesignBean[designBeans.size()]));
         }
     } // End of OultlineLookupListener.

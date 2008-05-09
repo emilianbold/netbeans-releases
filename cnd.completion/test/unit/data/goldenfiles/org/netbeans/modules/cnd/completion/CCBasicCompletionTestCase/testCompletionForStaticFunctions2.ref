@@ -1,0 +1,4 @@
+funcion4() double
+function1() void
+function2(double d, int i) int
+function3() int

@@ -63,7 +63,7 @@ public class FindOverridingVisitor extends FindVisitor {
         if (!workingCopy.getTreeUtilities().isSynthetic(getCurrentPath())) {
             ExecutableElement el = (ExecutableElement) workingCopy.getTrees().getElement(getCurrentPath());
             
-            if (workingCopy.getElements().overrides(el, (ExecutableElement) elementToFind, (TypeElement) el.getEnclosingElement())) {
+            if (el != null && workingCopy.getElements().overrides(el, (ExecutableElement) elementToFind, (TypeElement) el.getEnclosingElement())) {
                 addUsage(getCurrentPath());
             }
         }

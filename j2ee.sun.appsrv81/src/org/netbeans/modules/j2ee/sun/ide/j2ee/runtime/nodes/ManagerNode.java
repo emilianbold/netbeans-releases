@@ -52,6 +52,7 @@ import org.netbeans.modules.j2ee.sun.api.ServerLocationManager;
 import org.netbeans.modules.j2ee.sun.api.SunDeploymentManagerInterface;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.DeploymentManagerProperties;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.runtime.actions.ShowAdminToolAction;
+import org.netbeans.modules.j2ee.sun.ide.j2ee.runtime.actions.ShowUpdateCenterAction;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.runtime.actions.ViewLogAction;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.ui.Customizer;
 import org.openide.cookies.InstanceCookie;
@@ -117,11 +118,14 @@ public class ManagerNode extends AbstractNode implements Node.Cookie{
             ch = dir.getChildren();
             nbextraoptions = ch.length; 
         }
-        javax.swing.Action[]  newActions = new javax.swing.Action[4 + nbextraoptions] ;// 5 hardcoded number of actionns!!
+        javax.swing.Action[]  newActions = new javax.swing.Action[5 + nbextraoptions] ;// 5 hardcoded number of actionns!!
         int a=0;
         newActions[a++]=(null);        
         newActions[a++]= (SystemAction.get(ShowAdminToolAction.class));
         newActions[a++]=(SystemAction.get(ViewLogAction.class));
+        if(ServerLocationManager.hasUpdateCenter(sdm.getPlatformRoot())) {
+            newActions[a++]=(SystemAction.get(ShowUpdateCenterAction.class));
+        }
         boolean isGlassFish = ServerLocationManager.isGlassFish(sdm.getPlatformRoot());
         for(int i = 0; i < nbextraoptions; i++) {
             try{

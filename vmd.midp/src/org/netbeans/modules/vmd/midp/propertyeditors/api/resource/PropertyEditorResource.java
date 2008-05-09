@@ -112,7 +112,12 @@ public class PropertyEditorResource extends PropertyEditorUserCode implements Pr
         // TODO lazy init
         radioButton = new JRadioButton();
         rePanel = new ResourceEditorPanel(perElement, noneComponentAsText, radioButton);
-        Mnemonics.setLocalizedText(radioButton, NbBundle.getMessage(PropertyEditorResource.class, "LBL_RB_RESOURCE")); // NOI18N
+        Mnemonics.setLocalizedText(radioButton, 
+                NbBundle.getMessage(PropertyEditorResource.class, "LBL_RB_RESOURCE")); // NOI18N
+        radioButton.getAccessibleContext().setAccessibleName( 
+                NbBundle.getMessage(PropertyEditorResource.class, "ACSN_RB_RESOURCE"));
+        radioButton.getAccessibleContext().setAccessibleDescription( 
+                NbBundle.getMessage(PropertyEditorResource.class, "ACSD_RB_RESOURCE"));
         initElements(Collections.<PropertyEditorElement>singleton(this));
     }
 

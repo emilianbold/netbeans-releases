@@ -45,6 +45,7 @@ import org.netbeans.modules.visual.border.*;
 import org.netbeans.modules.visual.util.GeomUtil;
 
 import java.awt.*;
+import org.openide.util.Parameters;
 
 /**
  * This class is a factory of all built-in implementation of borders.
@@ -135,7 +136,9 @@ public final class BorderFactory {
      * @return the border
      */
     public static Border createSwingBorder (Scene scene, javax.swing.border.Border border) {
-        assert scene != null && scene.getView () != null && border != null;
+        Parameters.notNull("scene", scene);
+        // Makes SwingBorderGetterTest fail: Parameters.notNull("scene.view", scene.getView());
+        Parameters.notNull("border", border);
         return new SwingBorder (scene, border);
     }
 

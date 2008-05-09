@@ -43,21 +43,24 @@ package org.netbeans.modules.java.source.parsing;
 
 import com.sun.tools.javac.model.JavacElements;
 import java.io.File;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.net.URL;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.util.Elements;
 import javax.tools.DiagnosticListener;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
-import javax.tools.StandardJavaFileManager;
 import javax.tools.StandardLocation;
 import junit.framework.*;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -68,6 +71,8 @@ import org.netbeans.modules.java.source.TestUtil;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
 import org.netbeans.modules.java.source.usages.IndexUtil;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -119,44 +124,6 @@ public class ClasspathInfoTest extends NbTestCase {
         assertNotNull( "Classpath Info should be created", ci );
     }
     
-//
-//    public void testParse() throws Exception {
-//        final String TEST_FILE = "samples1/EmptyClass.java";
-//                
-//        JavacInterface ji = JavacInterface.create( bootPath, classPath, null);
-//                
-//        TestUtil.copyFiles( workDir, TEST_FILE );
-//        CompilationUnitTree cu = ji.parse( FileObjects.fileFileObject( new File( workDir, TEST_FILE ) ), null );         
-//        assertNotNull( "Should produce compilation unit.", cu );                
-//    }
-//    
-//    public void testParseString() throws Exception {
-//                        
-//        JavacInterface ji = JavacInterface.create( bootPath, classPath, null);
-//                
-//        CompilationUnitTree cu = ji.parse( FileObjects.memoryFileObject( SOURCE, "MemoryFile.java"), null ); 
-//        assertNotNull( "Should produce compilation unit.", cu );                
-//    }
-//
-//    public void testResolve() {
-//        JavacInterface ji = JavacInterface.create( bootPath, classPath, null);
-//                
-//        CompilationUnitTree cu = ji.parse( FileObjects.memoryFileObject( SOURCE, "MemoryFile.java"), null ); 
-//        assertNotNull( "Should produce compilation unit.", cu );
-//                
-//        ji.resolveElements( cu );
-//                
-//    }
-////
-////    /**
-////     * Test of resolveEnvironment method, of class org.netbeans.modules.java.search.parsing.JavacInterface.
-////     */
-////    public void testResolveEnvironment() {
-////        System.out.println("testResolveEnvironment");        
-////        // TODO add your test code below by replacing the default call to fail.
-////        fail("The test case is empty.");
-////    }
-//
     
     public void testGetTypeDeclaration() throws Exception {
         ClasspathInfo ci = ClasspathInfo.create( bootPath, classPath, null);
@@ -201,96 +168,58 @@ public class ClasspathInfoTest extends NbTestCase {
             }
         }
     }
+    
+    
+    private static ClassPath createSourcePath (FileObject testBase) throws IOException {
+        FileObject root = testBase.createFolder("src");        
+        return ClassPathSupport.createClassPath(new FileObject[]{root});
+    }
+    
+    private static FileObject createJavaFile (FileObject root, String path, String content) throws IOException {
+        FileObject fo = FileUtil.createData(root, path);
+        final FileLock lock = fo.lock();
+        try {
+            PrintWriter out = new PrintWriter (new OutputStreamWriter (fo.getOutputStream(lock)));
+            try {
+                out.print(content);
+            } finally {
+                out.close();
+            }
+        } finally {
+            lock.releaseLock();
+        }
+        return fo;
+    }
+    
+    private static void assertEquals (final String[] binNames,
+            final Iterable<JavaFileObject> jfos, final JavaFileManager fm) {
+        final Set<String> bs = new HashSet<String>();
+        bs.addAll(Arrays.asList(binNames));
+        for (JavaFileObject jfo : jfos) {
+            final String bn = fm.inferBinaryName (StandardLocation.SOURCE_PATH, jfo);
+            assertNotNull(bn);
+            assertTrue(bs.remove(bn));
+        }
+        assertTrue(bs.isEmpty());
+        
+    }
+    
+    public void testMemoryFileManager () throws Exception {
+        final ClassPath scp = createSourcePath(FileUtil.toFileObject(this.getWorkDir()));
+        createJavaFile(scp.getRoots()[0], "org/me/Lib.java", "package org.me;\n class Lib {}\n");
+        final ClasspathInfo cpInfo = ClasspathInfoAccessor.getINSTANCE().create( bootPath, classPath,scp, null, true, true,  true);
+        final JavaFileManager fm = ClasspathInfoAccessor.getINSTANCE().getFileManager(cpInfo);
+        Iterable<JavaFileObject> jfos = fm.list(StandardLocation.SOURCE_PATH, "org.me", EnumSet.of(JavaFileObject.Kind.SOURCE), false);
+        assertEquals (new String[] {"org.me.Lib"}, jfos, fm);
+        ClasspathInfoAccessor.getINSTANCE().registerVirtualSource(cpInfo, FileObjects.memoryFileObject("org.me","Main.java",
+        null,System.currentTimeMillis(),"package org.me;\n class Main{}\n"));
+        jfos = fm.list(StandardLocation.SOURCE_PATH, "org.me", EnumSet.of(JavaFileObject.Kind.SOURCE), false);
+        assertEquals (new String[] {"org.me.Lib","org.me.Main"}, jfos, fm);
+        ClasspathInfoAccessor.getINSTANCE().unregisterVirtualSource(cpInfo, "org.me.Main");
+        jfos = fm.list(StandardLocation.SOURCE_PATH, "org.me", EnumSet.of(JavaFileObject.Kind.SOURCE), false);
+        assertEquals (new String[] {"org.me.Lib"}, jfos, fm);
+    }
 
-//
-//    /**
-//     * Test of getPackageNames method, of class org.netbeans.modules.java.search.parsing.JavacInterface.
-//     */
-//    public void testGetPackageNames() {
-//        System.out.println("testGetPackageNames");
-//        
-//        // TODO add your test code below by replacing the default call to fail.
-//        fail("The test case is empty.");
-//    }
-//
-//    /**
-//     * Test of getClassNames method, of class org.netbeans.modules.java.search.parsing.JavacInterface.
-//     */
-//    public void testGetClassNames() {
-//        System.out.println("testGetClassNames");
-//        
-//        // TODO add your test code below by replacing the default call to fail.
-//        fail("The test case is empty.");
-//    }
-//
-//    /**
-//     * Test of getSourcePositions method, of class org.netbeans.modules.java.search.parsing.JavacInterface.
-//     */
-//    public void testGetSourcePositions() {
-//        System.out.println("testGetSourcePositions");
-//        
-//        // TODO add your test code below by replacing the default call to fail.
-//        fail("The test case is empty.");
-//    }
-//
-//    /**
-//     * Test of getTypeChecker method, of class org.netbeans.modules.java.search.parsing.JavacInterface.
-//     */
-//    public void testGetTypeChecker() {
-//        System.out.println("testGetTypeChecker");
-//        
-//        // TODO add your test code below by replacing the default call to fail.
-//        fail("The test case is empty.");
-//    }
-//
-//    /**
-//     * Test of getAttribution method, of class org.netbeans.modules.java.search.parsing.JavacInterface.
-//     */
-//    public void testGetAttribution() {
-//        System.out.println("testGetAttribution");
-//        
-//        // TODO add your test code below by replacing the default call to fail.
-//        fail("The test case is empty.");
-//    }
-//
-//    /**
-//     * Test of cleanCaches method, of class org.netbeans.modules.java.search.parsing.JavacInterface.
-//     */
-//    public void testCleanCaches() {
-//        System.out.println("testCleanCaches");
-//        
-//        // TODO add your test code below by replacing the default call to fail.
-//        fail("The test case is empty.");
-//    }
-//
-//    /**
-//     * Test of getClasspath method, of class org.netbeans.modules.java.search.parsing.JavacInterface.
-//     */
-//    public void testGetClasspath() {
-//        System.out.println("testGetClasspath");
-//        
-//        // TODO add your test code below by replacing the default call to fail.
-//        fail("The test case is empty.");
-//    }
-//
-//    /**
-//     * Test of createContext method, of class org.netbeans.modules.java.search.parsing.JavacInterface.
-//     */
-//    public void testCreateContext() {
-//        System.out.println("testCreateContext");
-//        
-//        // TODO add your test code below by replacing the default call to fail.
-//        fail("The test case is empty.");
-//    }
-//
-//    /**
-//     * Test of getErrorsFor method, of class org.netbeans.modules.java.search.parsing.JavacInterface.
-//     */
-//    public void testGetErrorsFor() {
-//        System.out.println("testGetErrorsFor");
-//        
-//        // TODO add your test code below by replacing the default call to fail.
-//        fail("The test case is empty.");
-//    }
+
     
 }

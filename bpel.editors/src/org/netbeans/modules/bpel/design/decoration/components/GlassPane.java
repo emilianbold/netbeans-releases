@@ -28,6 +28,7 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Insets;
+import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.event.ActionEvent;
@@ -38,8 +39,11 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.geom.Arc2D;
+import java.awt.geom.Area;
+import java.awt.geom.Area;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Line2D;
+import java.awt.geom.RoundRectangle2D;
 import java.net.URL;
 import javax.swing.Icon;
 import javax.swing.InputMap;
@@ -50,6 +54,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
@@ -67,25 +72,35 @@ public class GlassPane extends JPanel implements ActionListener, FocusListener, 
     
     private JPanel labelPane;
     private JButton hideButton;
+    private JComponent decoration;
     private JTextComponent editorPane;
     private JScrollPane scrollPane;
     private StringBuffer html = new StringBuffer();
+    private boolean myEditable;
     
-    public GlassPane(String text, ActionListener actionListener, boolean editable) {
+    private int px = 0;
+    private int py = 0;
+    
+    private Shape borderShape = null;
+    public GlassPane(String text, ActionListener actionListener, boolean editable, JComponent decoration){
         setLayout(new BorderLayout(0, 1));
-        setBorder(new EmptyBorder(6, 36, 6, 6)); 
+        setBorder(new EmptyBorder(26, 26, 26, 26)); 
         setPreferredSize(new Dimension(320, 180)); 
+        myEditable = editable;
+        this.decoration = decoration;
+        
         setOpaque(false);
 
         if (editable) {
-          editorPane = new javax.swing.JTextArea();
+          editorPane = new JTextArea();
+          ((JTextArea) editorPane).setLineWrap(true);
+          ((JTextArea) editorPane).setWrapStyleWord(true);
         }
         else {
           editorPane = new JEditorPane() {
               protected void paintComponent(Graphics g) {
                   Graphics2D g2 = (Graphics2D) g.create();
-                  g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                          RenderingHints.VALUE_ANTIALIAS_ON);
+                  g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                   super.paintComponent(g2);
                   g2.dispose();
               }
@@ -153,15 +168,31 @@ public class GlassPane extends JPanel implements ActionListener, FocusListener, 
         scrollPane.addMouseListener(this);
         editorPane.addMouseListener(this);
 
-        if (text != null) {
-          editorPane.setText(text);
-          editorPane.setCaretPosition(editorPane.getDocument().getStartPosition().getOffset());
-        }
+        editorPane.addFocusListener(this);
+        updateText(text);
+
         myActionListener = actionListener;
+    }
+
+    @Override
+    public void requestFocus() {
+      editorPane.requestFocus();
+    }
+    
+    public JComponent getDecoration(){
+        return decoration;
     }
     
     public boolean contains(int x, int y) {
-        return createBorderShape().contains(0.5 + x, 0.5 + y);
+        Shape borderShape = getBorderShape();
+        return (borderShape != null) && borderShape
+                .contains(0.5 + x, 0.5 + y);
+    }
+
+    @Override
+    public void invalidate() {
+        super.invalidate();
+        borderShape = null;
     }
     
     public void addHeader(Icon icon, String text) {
@@ -219,6 +250,12 @@ public class GlassPane extends JPanel implements ActionListener, FocusListener, 
         fillHTMLSpacer();
     }
     
+    public void updateText(String text) {
+      if (text != null) {
+        editorPane.setText(text);
+      }
+    }
+
     public void updateHTML() {
         if (html.length() == 0) {
             fillHTMLHeader();
@@ -301,7 +338,21 @@ public class GlassPane extends JPanel implements ActionListener, FocusListener, 
     }
     
     public void actionPerformed(ActionEvent e) {
-        DesignView designView = (DesignView) getParent().getParent();
+        hidePane();
+    }
+
+    private void hidePane() {
+        if (getParent() == null) {
+          return;
+        }
+//System.out.println();
+//System.out.println();
+//System.out.println("getParent() 1: " + getParent());
+//System.out.println();
+//System.out.println("getParent() 2: " + getParent().getParent());
+//System.out.println();
+//System.out.println("getParent() 3: " + getParent().getParent().getParent());
+        DesignView designView = (DesignView) (getParent().getParent().getParent());
         designView.getOverlayView().remove(this);
         
         hideButton.getModel().setArmed(false);
@@ -323,21 +374,21 @@ public class GlassPane extends JPanel implements ActionListener, FocusListener, 
     }
     
     public void paintThumbnail(Graphics g) {
-        Graphics2D g2 = (Graphics2D) g;
-        
-        g2.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, 
-                RenderingHints.VALUE_STROKE_NORMALIZE);
-        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, 
-                RenderingHints.VALUE_ANTIALIAS_ON);
-        
-        Shape borderShape = createBorderShape();
-        g2.setPaint(new Color(FILL.getRed(), FILL.getGreen(), FILL.getBlue(), 
-                128));
-        g2.fill(borderShape);
-        
-        g2.setStroke(new FStroke(1).createStroke(g2));
-        g2.setPaint(STROKE);
-        g2.draw(borderShape);
+//        Graphics2D g2 = (Graphics2D) g;
+//        
+//        g2.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, 
+//                RenderingHints.VALUE_STROKE_NORMALIZE);
+//        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, 
+//                RenderingHints.VALUE_ANTIALIAS_ON);
+//        
+//        Shape borderShape = getBorderShape();
+//        g2.setPaint(new Color(FILL.getRed(), FILL.getGreen(), FILL.getBlue(), 
+//                128));
+//        g2.fill(borderShape);
+//        
+//        g2.setStroke(new FStroke(1).createStroke(g2));
+//        g2.setPaint(STROKE);
+//        g2.draw(borderShape);
     }
     
     protected void paintComponent(Graphics g) {
@@ -347,46 +398,129 @@ public class GlassPane extends JPanel implements ActionListener, FocusListener, 
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, 
                 RenderingHints.VALUE_ANTIALIAS_ON);
             
-        Shape borderShape = createBorderShape();
+        Shape borderShape = getBorderShape();
         
-        g2.setPaint(FILL);
-        g2.fill(borderShape);
-        
-        g2.setPaint(STROKE);
-        g2.draw(borderShape);
+        if (borderShape != null) {
+            g2.setPaint(FILL);
+            g2.fill(borderShape);
+
+            g2.setPaint(STROKE);
+            g2.draw(borderShape);
+        }
         
         g2.dispose();
     }
     
-    private Shape createBorderShape() {
-        GeneralPath gp = new GeneralPath();
-        
-        Insets inests = getBorder().getBorderInsets(this);
-        
-        float x0 = 0.5f;
-        float x1 = inests.left - 6 + 0.5f;
-        float x2 = getWidth() - 0.5f;
-        
-        float y0 = 0.5f;
-        float y1 = getHeight() - 0.5f;
-        
-        float arcSize = Math.min(Math.min(x2 - x1, y1 - y0), 10);
-
-        gp.moveTo(x0, y0);
-        gp.lineTo(x1, y0 + 14);
-        gp.append(new Arc2D.Float(x1, y0, arcSize, arcSize, 
-                180, -90, Arc2D.OPEN), true);
-        gp.append(new Arc2D.Float(x2 - arcSize, y0, arcSize, arcSize, 
-                90, -90, Arc2D.OPEN), true);
-        gp.append(new Arc2D.Float(x2 - arcSize, y1 - arcSize, arcSize, arcSize, 
-                0, -90, Arc2D.OPEN), true);
-        gp.append(new Arc2D.Float(x1, y1 - arcSize, arcSize, arcSize, 
-                -90, -90, Arc2D.OPEN), true);
-        gp.lineTo(x1, Math.min(y0 + arcSize / 2 + 14 + 14, y1 - arcSize / 2));
-        gp.closePath();
-        
-        return gp;
+    public void setAnchorPoint(Point point) {
+        setAnchorPoint(point.x, point.y);
     }
+    
+    public void setAnchorPoint(int px, int py) {
+        if (this.px != px || this.py != py) {
+            this.px = px;
+            this.py = py;
+            borderShape = null;
+            repaint();
+        }
+    }
+    
+    private Shape getBorderShape() {
+        if (borderShape == null) {
+            Insets insets = getInsets();
+            
+            int w = getWidth();
+            int h = getHeight();
+            
+            if (w == 0 || h == 0) {
+                return null;
+            }
+            
+            int x0 = insets.left - INTERNAL_INSET;
+            int y0 = insets.top - INTERNAL_INSET;
+            
+            int rrw = w - x0 - (insets.right - INTERNAL_INSET);
+            int rrh = h - y0 - (insets.bottom - INTERNAL_INSET);
+            
+            Area area = new Area(new RoundRectangle2D.Double(
+                    x0 + 0.5, y0 + 0.5, 
+                    rrw - 1, rrh - 1, INTERNAL_INSET * 2, INTERNAL_INSET * 2));
+            
+            double cx = x0 + 0.5 * rrw;
+            double cy = y0 + 0.5 * rrh;
+            
+            double ax = px - cx;
+            double ay = py - cy;
+            
+            // cx + ax * t = 0.5
+            // cx + ax * t = w - 0.5
+            // cy + ay * t = 0.5
+            // cy + ay * t = h - 0.5
+            
+            double t = Double.MAX_VALUE;
+
+            double temp = (0.5 - cx) / ax;
+            if (0.0 < temp && temp < t) t = temp;
+            
+            temp = (w - 0.5 - cx) / ax;
+            if (0.0 < temp && temp < t) t = temp;
+            
+            temp = (0.5 - cy) / ay;
+            if (0.0 < temp && temp < t) t = temp;
+            
+            temp = (h - 0.5 - cy) / ay;
+            if (0.0 < temp && temp < t) t = temp;
+            
+            double dx = t * ax;
+            double dy = t * ay;
+            double dlen = Math.sqrt(dx * dx + dy * dy);
+            
+            double nlen = Math.min(rrw, rrh) / 4.0;
+            double nx = -dy * nlen / dlen;
+            double ny = dx * nlen / dlen;
+            
+            GeneralPath gp = new GeneralPath();
+            gp.moveTo((float) (cx + dx), (float) (cy + dy));
+            gp.lineTo((float) (cx + nx), (float) (cy + ny));
+            gp.lineTo((float) (cx - nx), (float) (cy - ny));
+            gp.closePath();
+            
+            area.add(new Area(gp));
+            
+            borderShape = area;
+        }
+        
+        return borderShape;
+    }
+    
+//    private Shape createBorderShape() {
+//        GeneralPath gp = new GeneralPath();
+//        
+//        Insets inests = getBorder().getBorderInsets(this);
+//        
+//        float x0 = 0.5f;
+//        float x1 = inests.left - 6 + 0.5f;
+//        float x2 = getWidth() - 0.5f;
+//        
+//        float y0 = 0.5f;
+//        float y1 = getHeight() - 0.5f;
+//        
+//        float arcSize = Math.min(Math.min(x2 - x1, y1 - y0), 10);
+//
+//        gp.moveTo(x0, y0);
+//        gp.lineTo(x1, y0 + 14);
+//        gp.append(new Arc2D.Float(x1, y0, arcSize, arcSize, 
+//                180, -90, Arc2D.OPEN), true);
+//        gp.append(new Arc2D.Float(x2 - arcSize, y0, arcSize, arcSize, 
+//                90, -90, Arc2D.OPEN), true);
+//        gp.append(new Arc2D.Float(x2 - arcSize, y1 - arcSize, arcSize, arcSize, 
+//                0, -90, Arc2D.OPEN), true);
+//        gp.append(new Arc2D.Float(x1, y1 - arcSize, arcSize, arcSize, 
+//                -90, -90, Arc2D.OPEN), true);
+//        gp.lineTo(x1, Math.min(y0 + arcSize / 2 + 14 + 14, y1 - arcSize / 2));
+//        gp.closePath();
+//        
+//        return gp;
+//    }
     
     private static JScrollPane createScrollPane(JComponent content) {
         JScrollPane res = new JScrollPane(content);
@@ -442,7 +576,12 @@ public class GlassPane extends JPanel implements ActionListener, FocusListener, 
         moveOnTop();
     }
 
-    public void focusLost(FocusEvent e) {}
+    public void focusLost(FocusEvent e) {
+      if (myEditable) {
+          hidePane();
+      }
+    }
+
     public void mousePressed(MouseEvent e) {}
     public void mouseReleased(MouseEvent e) {}
     public void mouseEntered(MouseEvent e) {}
@@ -554,4 +693,8 @@ public class GlassPane extends JPanel implements ActionListener, FocusListener, 
     private static final Color STROKE = new Color(0x444444);
     private static final URL E_IMAGE_URL = Decoration.class.getResource("resources/e.png"); // NOI18N
     private static final Color TEXT_COLOR = new Color(0xBB2200);
+    
+    private static final double BASE_LENGTH = 20;
+    
+    public static final int INTERNAL_INSET=6;
 }

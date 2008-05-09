@@ -1,0 +1,15 @@
+
+
+Document 0
+Delete:  source : <TESTURL>/woodstock.sdoc
+
+
+
+Document 1
+Indexed:
+  base : button;webui.suntheme.widget;button;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;;0;0;;;
+  base : setprops;webui.suntheme.widget.button;setProps;|DOCUMENTED|FUNCTION|DOC_ONLY|;props;0;da;;boolean;
+  fqn : webui.suntheme.widget.button.setprops;;webui.suntheme.widget.button.setProps;|DOCUMENTED|FUNCTION|DOC_ONLY|;props;0;da;;boolean;
+  fqn : webui.suntheme.widget.button;;webui.suntheme.widget.button;|DOCUMENTED|CONSTRUCTOR|DOC_ONLY|;;0;0;;;
+
+Not Indexed:

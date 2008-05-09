@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.bpel.nodes;
 
+import org.netbeans.modules.bpel.nodes.BpelNode;
 import org.netbeans.modules.soa.ui.nodes.InstanceRef;
 import org.netbeans.modules.bpel.model.api.Throw;
 import org.netbeans.modules.bpel.properties.Constants;

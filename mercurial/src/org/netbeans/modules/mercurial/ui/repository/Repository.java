@@ -78,6 +78,7 @@ import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  * @author Tomas Stupka
@@ -92,8 +93,12 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
     public final static int FLAG_SHOW_PROXY             = 64;    
     
     private final static String LOCAL_URL_HELP          = "file:///repository_path";              // NOI18N
-    private final static String HTTP_URL_HELP           = "http://[username[:password]@]hostname/repository_path";      // NOI18N
-    private final static String HTTPS_URL_HELP          = "https://[username[:password]@]hostname/repository_path";     // NOI18N
+    private final static String HTTP_URL_HELP           = Utilities.isWindows()? 
+        "http://[DOMAIN%5C[username[:password]@]hostname/repository_path":      // NOI18N
+        "http://[username[:password]@]hostname/repository_path";      // NOI18N
+    private final static String HTTPS_URL_HELP          = Utilities.isWindows()? 
+        "https://[DOMAIN%5C[username[:password]@]hostname/repository_path":     // NOI18N
+        "https://[username[:password]@]hostname/repository_path";     // NOI18N
     private final static String STATIC_HTTP_URL_HELP    = "static-http://hostname/repository_path";       // NOI18N
     private final static String SSH_URL_HELP            = "ssh://hostname/repository_path";   // NOI18N   
                
@@ -108,12 +113,14 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
     private String message;            
     private int modeMask;
     private Dimension maxNeededSize;
+    private boolean bPushPull;
+    private static int HG_PUSH_PULL_VERT_PADDING = 30;
     
     public Repository(String titleLabel) {
-        this(0, titleLabel);
+        this(0, titleLabel, false);
     }
             
-    public Repository(int modeMask, String titleLabel) {
+    public Repository(int modeMask, String titleLabel, boolean bPushPull) {
         
         this.modeMask = modeMask;
         
@@ -130,7 +137,10 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         //repositoryPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 0, 0));
         
         // retrieve the dialog size for the largest configuration
-        updateVisibility("https:");                                                                       // NOI18N
+        if(bPushPull)
+            updateVisibility("foo:"); // NOI18N
+        else
+            updateVisibility("https:"); // NOI18N            
         maxNeededSize = repositoryPanel.getPreferredSize();
 
         repositoryPanel.savePasswordCheckBox.setSelected(HgModuleConfig.getDefault().getSavePassword());
@@ -644,6 +654,9 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         corectPanel.panel.setLayout(new BorderLayout());
         JPanel p = getPanel();
         if(setMaxNeddedSize) {
+            if(bPushPull){
+                maxNeededSize.setSize(maxNeededSize.width, maxNeededSize.height + HG_PUSH_PULL_VERT_PADDING);
+            }
             p.setPreferredSize(maxNeededSize);
         }        
         corectPanel.panel.add(p, BorderLayout.NORTH);
@@ -659,6 +672,9 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         DialogDescriptor dialogDescriptor = new DialogDescriptor(corectPanel, title); // NOI18N        
         JPanel p = getPanel();
         if(setMaxNeededSize) {
+            if(bPushPull){
+                maxNeededSize.setSize(maxNeededSize.width, maxNeededSize.height + HG_PUSH_PULL_VERT_PADDING);
+            }
             p.setPreferredSize(maxNeededSize);
         }        
         if(options!= null) {
@@ -676,6 +692,8 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         if (name != null) {
             dialog.addWindowListener(new DialogBoundsPreserver(HgModuleConfig.getDefault().getPreferences(), name)); // NOI18N
         }
+        dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(Repository.class, "ACSD_RepositoryPanel"));
+
         dialog.setVisible(true);
     }
 

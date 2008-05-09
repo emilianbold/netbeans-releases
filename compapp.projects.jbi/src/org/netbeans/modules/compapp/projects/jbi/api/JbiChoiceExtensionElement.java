@@ -61,10 +61,17 @@ import java.util.List;
  */
 public class JbiChoiceExtensionElement extends JbiExtensionElement {
     
+    private String defaultChoice;
+    
     public JbiChoiceExtensionElement(String name, 
+            String displayName,
             List<JbiExtensionElement> subElements,
-            List<JbiExtensionAttribute> attributes) {
-        super(name, subElements, attributes);
+            List<JbiExtensionAttribute> attributes,
+            String description,
+            String defaultChoice) {
+        super(name, displayName, subElements, attributes, description);
+        
+        this.defaultChoice = defaultChoice;
     }
     
     public List<String> getChoices() {
@@ -75,5 +82,9 @@ public class JbiChoiceExtensionElement extends JbiExtensionElement {
         }
         
         return ret;
+    }
+    
+    public String getDefaultChoice() {
+        return defaultChoice;
     }
 }

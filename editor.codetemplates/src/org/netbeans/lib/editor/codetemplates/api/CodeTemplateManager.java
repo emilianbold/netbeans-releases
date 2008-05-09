@@ -96,7 +96,7 @@ public final class CodeTemplateManager {
      * @return non-null code template that can be inserted into the document.
      */
     public CodeTemplate createTemporary(String parametrizedText) {
-        return new CodeTemplate(operation, "", "", parametrizedText, null); // NOI18N
+        return new CodeTemplate(operation, "", "", parametrizedText, null, operation.getMimePath()); // NOI18N
     }
     
     /**
@@ -162,13 +162,18 @@ public final class CodeTemplateManager {
             String abbreviation, 
             String description, 
             String parametrizedText,
-            List<String> contexts
+            List<String> contexts,
+            String mimePath
         ) {
-            return new CodeTemplate(managerOperation, abbreviation, description, parametrizedText, contexts);
+            return new CodeTemplate(managerOperation, abbreviation, description, parametrizedText, contexts, mimePath);
         }
 
         public String getSingleLineText(CodeTemplate codeTemplate) {
             return codeTemplate.getSingleLineText();
+        }
+        
+        public String getCodeTemplateMimePath(CodeTemplate codeTemplate) {
+            return codeTemplate.getMimePath();
         }
     } // End of ApiAccessor class
 }

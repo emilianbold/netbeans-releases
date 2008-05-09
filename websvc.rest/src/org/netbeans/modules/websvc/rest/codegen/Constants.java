@@ -66,9 +66,11 @@ public class Constants {
     
     public static final String ENTITY_TYPE = RestConstants.REST_API_PACKAGE + "Entity";
     
-    public static final String HTTP_CONTEXT = RestConstants.REST_API_PACKAGE + "core.HttpContext";    //NOI18N
+    public static final String CONTEXT = RestConstants.REST_API_PACKAGE + "core.Context";    //NOI18N
     
     public static final String URI_INFO = RestConstants.REST_API_PACKAGE + "core.UriInfo";     //NOI18N
+    
+    public static final String URI_BUILDER = RestConstants.REST_API_PACKAGE + "core.UriBuilder"; //NOI18N
     
     public static final String URI_TYPE = "java.net.URI";       //NOI18N
     
@@ -81,6 +83,10 @@ public class Constants {
     public static final String ENTITY_TRANSACTION = "javax.persistence.EntityTransaction";
     
     public static final String PERSISTENCE = "javax.persistence.Persistence";
+    
+    public static final String PERSISTENCE_ENTITY = "javax.persistence.Entity";
+
+    public static final String PERSISTENCE_TABLE = "javax.persistence.Table";
     
     public static final String NO_RESULT_EXCEPTION = "javax.persistence.NoResultException";        //NOI18N
     
@@ -123,7 +129,8 @@ public class Constants {
         XML("application/xml", "Xml"),      //NOI18N
         JSON("application/json", "Json"),   //NOI18N
         TEXT("text/plain", "Text"),         //NOI18N
-        HTML("text/html", "Html");          //NOI18N
+        HTML("text/html", "Html"),          //NOI18N
+        IMAGE("image/png", "Image");          //NOI18N
         
         private String value;
         private String suffix;

@@ -207,6 +207,7 @@ public class MakeArtifactChooser extends JPanel implements PropertyChangeListene
                         (artifacts[i].getOutput().endsWith(".a") || // NOI18N
                             artifacts[i].getOutput().endsWith(".so") || // NOI18N
                             artifacts[i].getOutput().endsWith(".dylib") || // NOI18N
+                            artifacts[i].getOutput().endsWith(".lib") || // NOI18N
                             artifacts[i].getOutput().endsWith(".dll")) || // NOI18N
                         artifacts[i].getConfigurationType() == MakeArtifact.TYPE_DYNAMIC_LIB ||
                         artifacts[i].getConfigurationType() == MakeArtifact.TYPE_STATIC_LIB) {

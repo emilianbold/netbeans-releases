@@ -40,8 +40,8 @@
  */
 package org.netbeans.modules.gsf;
 
-import org.netbeans.api.gsf.ElementKind;
-import org.netbeans.api.gsf.HtmlFormatter;
+import org.netbeans.modules.gsf.api.ElementKind;
+import org.netbeans.modules.gsf.api.HtmlFormatter;
 
 
 /**
@@ -70,8 +70,8 @@ public class GsfHtmlFormatter extends HtmlFormatter {
         // Not sure what to do about maxLength here... but presumably
     }
 
-    public void appendText(String text) {
-        for (int i = 0, n = text.length(); i < n; i++) {
+    public void appendText(String text, int fromInclusive, int toExclusive) {
+        for (int i = fromInclusive; i < toExclusive; i++) {
             if (textLength >= maxLength) {
                 if (textLength == maxLength) {
                     sb.append("...");

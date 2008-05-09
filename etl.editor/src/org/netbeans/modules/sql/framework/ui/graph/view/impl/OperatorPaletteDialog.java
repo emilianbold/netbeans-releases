@@ -53,7 +53,7 @@ import javax.swing.JPanel;
 
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.logger.LogUtil;
+
 
 /**
  * Displays the palette of available operators for the Collaboration Definition Editor.
@@ -65,17 +65,17 @@ public class OperatorPaletteDialog extends JDialog implements ActionListener {
 
     /* flag on whether to show palette item names */
     private static boolean showName = true;
-    private static transient final Logger mLogger = LogUtil.getLogger(OperatorPaletteDialog.class.getName());
+    private static transient final Logger mLogger = Logger.getLogger(OperatorPaletteDialog.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     private static Dimension minSize = null;
 
     /* cancel button */
-    String nbBundle = mLoc.t("PRSR001: Close");
-    private JButton mBtnCancel = new JButton(Localizer.parse(nbBundle));
+    String nbBundle = mLoc.t("BUND327: Close");
+    private JButton mBtnCancel = new JButton(nbBundle.substring(15));
 
     /* "Show name" check box */
-    String nbBundle1 = mLoc.t("PRSR001: Show Names");
-    private JCheckBox mCheckName = new JCheckBox(Localizer.parse(nbBundle1), showName);
+    String nbBundle1 = mLoc.t("BUND328: Show Names");
+    private JCheckBox mCheckName = new JCheckBox(nbBundle1.substring(15), showName);
 
     /* selection (tabbed) panel */
     private OperatorSelectionPanel mPanel = null;
@@ -92,8 +92,8 @@ public class OperatorPaletteDialog extends JDialog implements ActionListener {
 
         mPanel = sp;
 
-        String nbBundle2 = mLoc.t("PRSR001: Operator Palette");
-        setTitle(Localizer.parse(nbBundle2));
+        String nbBundle2 = mLoc.t("BUND329: Operator Palette");
+        setTitle(nbBundle2.substring(15));
 
         JPanel pane = new JPanel();
 
@@ -106,7 +106,7 @@ public class OperatorPaletteDialog extends JDialog implements ActionListener {
         JPanel bp2 = new JPanel();
         mCheckName.addActionListener(this);
         mBtnCancel.addActionListener(this);
-
+        mBtnCancel.getAccessibleContext().setAccessibleName(nbBundle.substring(15));
         bp2.add(mBtnCancel);
         bp.add(bp2, BorderLayout.EAST);
         bp.add(mCheckName, BorderLayout.WEST);

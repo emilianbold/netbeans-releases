@@ -61,7 +61,8 @@ final class IssuesPanel extends JPanel {
     IssuesPanel(String title, String[] issues) {
         super(new BorderLayout());
         add(new JLabel(title), BorderLayout.NORTH);
-        add(new JScrollPane(new JList(issues)), BorderLayout.CENTER);
+        add(new JScrollPane(issues != null ? new JList(issues) : new JList()), // defensive fix against #120879
+                BorderLayout.CENTER);
     }
     
 }

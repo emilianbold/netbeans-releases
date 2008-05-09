@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.css.visual.ui;
 
+import org.netbeans.modules.css.visual.api.StyleBuilderTopComponent;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
@@ -52,9 +53,11 @@ import org.openide.windows.TopComponent;
  */
 public class StyleBuilderAction extends AbstractAction {
     
+    private static final String ICON_PATH = "org/netbeans/modules/css/resources/style_builder_view_toolbar.png"; //NOI18N
+    
     public StyleBuilderAction() {
         super(NbBundle.getMessage(StyleBuilderAction.class, "CTL_CSSStyleBuilderAction"));
-        putValue(SMALL_ICON,new ImageIcon(Utilities.loadImage(StyleBuilderTopComponent.ICON_PATH, true)));
+        putValue(SMALL_ICON,new ImageIcon(Utilities.loadImage(ICON_PATH, true)));
     }
     
     public void actionPerformed(ActionEvent evt) {

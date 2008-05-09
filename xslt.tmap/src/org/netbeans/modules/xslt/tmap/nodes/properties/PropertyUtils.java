@@ -23,23 +23,19 @@ import java.beans.PropertyEditor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.text.MessageFormat;
 import org.netbeans.modules.soa.ui.ClassBasedPool;
 import org.netbeans.modules.soa.ui.SoaConstants;
-import org.netbeans.modules.soa.ui.UserNotification;
 import org.netbeans.modules.soa.ui.nodes.InstanceRef;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.dom.DocumentComponent;
 import org.netbeans.modules.xml.xam.ui.XAMUtils;
 import org.netbeans.modules.xslt.tmap.model.api.TMapComponent;
-import org.netbeans.modules.xslt.tmap.model.api.events.VetoException;
 import org.netbeans.modules.xslt.tmap.nodes.DecoratedTMapComponent;
 import org.netbeans.modules.xslt.tmap.nodes.TMapComponentNode;
 import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -765,115 +761,8 @@ public class PropertyUtils {
          */
         public void setValue(Object newValue)
                 throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-            try {
-                if (newValue == null ||
-                        (newValue instanceof String &&
-                        ((String)newValue).length() == 0) ) {
-                    if (canRemove()) {
-                        try {
-                            invokeMethod(myInstanceRef, myRemover, new Object[0]);
-                        } catch (IllegalAccessException ex) {
-                            try {
-                                myRemover.setAccessible(true);
-                                invokeMethod(myInstanceRef, myRemover, new Object[0]);
-                            } finally {
-                                myRemover.setAccessible(false);
-                            }
-                        }
-                    } else {
-                        Object oldValue = getValue();
-                        if (oldValue == null ||
-                                (oldValue instanceof String &&
-                                ((String)oldValue).length() == 0) ) {
-                            // DO NOTHING because of value hasn't been changed
-                        } else {
-                            // The following code is dangerous because of the
-                            // property editor can be used for other purposes.
-                            PropertyEditor pEditor = getPropertyEditor();
-                            pEditor.setValue(oldValue);
-                            String oldText = pEditor.getAsText();
-                            //
-                            if (oldText == null || oldText.length() == 0) {
-                                // DO NOTHING because of value hasn't been changed
-                            } else {
-                                //
-                                String msg = NbBundle.getMessage(
-                                        TMapComponentNode.class, "ERR_REQURED_PROPERTY"); // NOI18N
-                                PropertyType pType = (PropertyType)getValue(
-                                        SoaConstants.PROPERTY_TYPE_ATTRIBUTE);
-                                String propName;
-                                if (pType != null) {
-                                    propName = pType.getDisplayName();
-                                } else {
-                                    propName = getName();
-                                }
-                                //
-                                msg = MessageFormat.format(msg, propName);
-                                throw new InvocationTargetException(
-                                        new VetoException(msg, null));
-                            }
-                        }
-                    }
-                } else {
-                    try {
-                        if (mySetter == null) {
-                            throw new IllegalAccessException();
-                        }
-                        //
-                        invokeMethod(myInstanceRef, mySetter, new Object[] {newValue});
-                    } catch (IllegalAccessException ex) {
-                        try {
-                            mySetter.setAccessible(true);
-                            invokeMethod(myInstanceRef, mySetter, new Object[] {newValue});
-                        } finally {
-                            mySetter.setAccessible(false);
-                        }
-                    }
-                }
-            } catch (InvocationTargetException ex) {
-                Throwable targetEx = ex.getTargetException();
-                //
-                boolean processed = false;
-                if (targetEx instanceof VetoException) {
-                    //
-                    // Check if the setValue has been called from the property sheet
-                    StackTraceElement[] stackTraceArr = ex.getStackTrace();
-                    for (StackTraceElement stElement : stackTraceArr) {
-                        if (stElement.getMethodName().equals("stopCellEditing") &&
-                                stElement.getClassName().equals(
-                                "org.openide.explorer.propertysheet.SheetCellEditor")) { // NOI18N
-                            //
-                            // The setValue is invoked from the propery sheet inplace editor
-                            //
-                            UserNotification.showMessage(
-                                    targetEx.getLocalizedMessage());
-                            processed = true;
-                            break;
-                        } else if (stElement.getMethodName().equals("cancelValue") &&
-                                stElement.getClassName().equals(
-                                "org.openide.explorer.propertysheet.PropertyDialogManager")) { // NOI18N
-                            //
-                            // Ignore the exception if user press the Cancel button
-                            processed = true;
-                            break;
-                        } else if (stElement.getMethodName().equals("actionPerformed") &&
-                                stElement.getClassName().equals(
-                                "org.openide.explorer.propertysheet.PropertyDialogManager")) { // NOI18N
-                            //
-                            // The setValue is invoked from the propery customizer dialog
-                            //
-                            throw new PropertyVetoError(targetEx);
-                        }
-                    }
-                } else if (!(targetEx instanceof Exception)) {
-                    ErrorManager.getDefault().notify(targetEx);
-                    processed = false;
-                }
-                //
-                if (!processed) {
-                    throw ex;
-                }
-            }
+            // todo a
+
         }
         
         /* Can remove the value of the property.

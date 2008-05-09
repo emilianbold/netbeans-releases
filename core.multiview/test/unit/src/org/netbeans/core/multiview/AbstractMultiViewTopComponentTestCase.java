@@ -42,34 +42,24 @@
 
 package org.netbeans.core.multiview;
 
+import java.awt.Component;
 import org.netbeans.core.api.multiview.MultiViewHandler;
 import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.core.spi.multiview.MultiViewDescription;
-import org.netbeans.core.spi.multiview.MultiViewFactory;
 
 import java.awt.Image;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import java.util.Collection;
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import javax.swing.Action;
-import javax.swing.JPanel;
-import javax.swing.JToolBar;
-import javax.swing.SwingUtilities;
-import junit.framework.*;
-import org.netbeans.core.api.multiview.MultiViewPerspective;
 import org.netbeans.core.spi.multiview.CloseOperationHandler;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.junit.*;
 import org.openide.awt.UndoRedo;
 import org.openide.util.HelpCtx;
-import org.openide.util.io.NbMarshalledObject;
-import org.openide.util.lookup.Lookups;
 
 import org.openide.windows.*;
 
@@ -86,6 +76,7 @@ public abstract class AbstractMultiViewTopComponentTestCase extends NbTestCase {
     }
     
 
+    @Override
     protected boolean runInEQ () {
         return true;
     }
@@ -299,11 +290,46 @@ public abstract class AbstractMultiViewTopComponentTestCase extends NbTestCase {
 
     }
 
-    
-    
+    /** Test for 130919 fix - tests that TabsComponent don't hold strong
+     * references to visual representations of multiview tabs after close.
+     */
+    public void testLeakInnerCompsAfterClose_130473 () throws Exception {
+        final MVElem elem1 = new MVElem(new Action[] {new Act1("act1")} );
+        MultiViewDescription desc1 = new MVDesc("desc1", null, TopComponent.PERSISTENCE_NEVER, elem1);
+        MultiViewDescription[] descs = new MultiViewDescription[] { desc1 };
+        TopComponent tc = callFactory(descs, desc1);
+        
+        tc.open();
+        
+        Component[] comps = null;
+        TabsComponent tabsC = null;
+        if (tc instanceof MultiViewTopComponent) {
+            MultiViewTopComponent mvtc = (MultiViewTopComponent)tc;
+            tabsC = mvtc.peer.tabs;
+            comps = tabsC.componentPanel.getComponents();
+        } else if (tc instanceof MultiViewCloneableTopComponent) {
+            MultiViewCloneableTopComponent mvctc = (MultiViewCloneableTopComponent)tc;
+            tabsC = mvctc.peer.tabs;
+            comps = tabsC.componentPanel.getComponents();
+        }
+        
+        assertNotNull("Components array inside must not be null", comps);
+        assertTrue("Component array must not be empty", comps.length > 0);
+        
+        List<WeakReference<Component>> weakComps = new ArrayList<WeakReference<Component>>();
+        for (int i = 0; i < comps.length; i++) {
+            weakComps.add(new WeakReference<Component>(comps[i]));
+        }
+        comps = null;
 
-    
-    
+        tc.close();
+        tc = null;
+        
+        for (WeakReference<Component> wComp : weakComps) {
+            assertGC("Component inside TabsComponent panel not freed", wComp, Collections.singleton(tabsC));
+        }
+        
+    }
     
 // -------------------------------------------------------------------------------
 // *******************************************************************************    

@@ -347,7 +347,10 @@ public final class VisualPropertySupport {
     }
     
     protected static String readValue( final JComboBox comboBox ) {
-        return comboBox.getSelectedItem().toString();
+        Object selectedItem = comboBox.getSelectedItem();
+        if (selectedItem == null)
+            return null;
+        return selectedItem.toString();
     }
     
     protected static Integer readValue( final JSlider slider ) {

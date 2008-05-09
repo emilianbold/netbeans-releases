@@ -43,6 +43,25 @@ package gui.setup;
 
 import gui.Utilities;
 
+import javax.swing.tree.TreePath;
+import org.netbeans.jellytools.Bundle;
+import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.MainWindowOperator;
+import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.actions.BuildProjectAction;
+import org.netbeans.junit.ide.ProjectSupport;
+import org.netbeans.jellytools.RuntimeTabOperator;
+
+import org.netbeans.jemmy.TimeoutExpiredException;
+import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.jemmy.operators.JCheckBoxOperator;
+import org.netbeans.jemmy.operators.JListOperator;
+import org.netbeans.jemmy.operators.JMenuBarOperator;
+import org.netbeans.jemmy.operators.JMenuItemOperator;
+import org.netbeans.jemmy.operators.JPopupMenuOperator;
+import org.netbeans.jemmy.operators.JTextFieldOperator;
+import org.netbeans.jemmy.operators.JTreeOperator;
+
 /**
  * Test suite that actually does not perform any test but sets up user directory
  * for UI responsiveness tests
@@ -98,5 +117,43 @@ public class IDESetupTest extends org.netbeans.jellytools.JellyTestCase {
     public void closeMemoryToolbar(){
         Utilities.closeMemoryToolbar();
     }
+
+    public void testAddAppServer() {
+
+        String appServerPath = System.getProperty("com.sun.aas.installRoot");
+        String addServerMenuItem = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.actions.Bundle", "LBL_Add_Server_Instance"); // Add Server...
+        String addServerInstanceDialogTitle = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.wizard.Bundle", "LBL_ASIW_Title"); //"Add Server Instance"
+        String serverItem = "Tomcat 6.0";
+        String nextButtonCaption = Bundle.getStringTrimmed("org.openide.Bundle", "CTL_NEXT");
+        String finishButtonCaption = Bundle.getStringTrimmed("org.openide.Bundle", "CTL_FINISH");
+
+        RuntimeTabOperator rto = RuntimeTabOperator.invoke();        
+        JTreeOperator runtimeTree = rto.tree();
+        
+        long oldTimeout = runtimeTree.getTimeouts().getTimeout("JTreeOperator.WaitNextNodeTimeout");
+        runtimeTree.getTimeouts().setTimeout("JTreeOperator.WaitNextNodeTimeout", 60000);
+        
+        TreePath path = runtimeTree.findPath("Servers");
+        runtimeTree.selectPath(path);
+        
+        try {
+            //log("Let's check whether GlassFish V2 is already added");
+            runtimeTree.findPath("Servers|Tomcat 6.0");
+        } catch (TimeoutExpiredException tee) {
+            //log("There is no GlassFish V2 node so we'll add it");
+            
+            new JPopupMenuOperator(runtimeTree.callPopupOnPath(path)).pushMenuNoBlock(addServerMenuItem);
+            NbDialogOperator addServerInstanceDialog = new NbDialogOperator(addServerInstanceDialogTitle);
+            new JListOperator(addServerInstanceDialog,1).selectItem(serverItem);
+            new JButtonOperator(addServerInstanceDialog,nextButtonCaption).push();
+            new JTextFieldOperator(addServerInstanceDialog,1).enterText(appServerPath);
+            new JCheckBoxOperator(addServerInstanceDialog,1).changeSelection(false);
+            new JButtonOperator(addServerInstanceDialog,finishButtonCaption).push();
+        }
+        
+        runtimeTree.getTimeouts().setTimeout("JTreeOperator.WaitNextNodeTimeout", oldTimeout);
+
+    }
+
 
 }

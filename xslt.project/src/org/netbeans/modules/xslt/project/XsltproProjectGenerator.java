@@ -27,7 +27,6 @@ import org.netbeans.api.queries.FileEncodingQuery;
 import static org.netbeans.modules.xslt.project.XsltproConstants.*;
 import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectProperties;
 
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
@@ -132,7 +131,7 @@ public class XsltproProjectGenerator {
             dirFO = FileUtil.toFileObject(dir);
         }
 
-        // vlv # 113228
+        // # 113228
         if (dirFO == null) {
           throw new IOException("Can't create " + dir.getName());
         }
@@ -166,7 +165,7 @@ public class XsltproProjectGenerator {
         fo.getFileSystem().refresh(false);
         fo = FileUtil.toFileObject (dir);
 
-        // vlv # 113228
+        // # 113228
         if (fo == null) {
           throw new IOException("Can't create " + dir.getName());
         }
@@ -231,12 +230,9 @@ public class XsltproProjectGenerator {
         ep.setProperty(IcanproProjectProperties.JAR_NAME, name + ".jar");
         ep.setProperty(IcanproProjectProperties.JAR_COMPRESS, "false");
 //        ep.setProperty(JAR_CONTENT_ADDITIONAL, "");
-        Deployment deployment = Deployment.getDefault();
-        String serverInstanceID = deployment.getDefaultServerInstanceID();
         ep.setProperty(IcanproProjectProperties.JAVAC_SOURCE, "1.4");
         ep.setProperty(IcanproProjectProperties.JAVAC_DEBUG, "true");
         ep.setProperty(IcanproProjectProperties.JAVAC_DEPRECATION, "false");
-// todo r
         ep.setProperty(VALIDATION_FLAG, "false");
 
         ep.setProperty(IcanproProjectProperties.JAVAC_TARGET, "1.4");
@@ -263,7 +259,7 @@ public class XsltproProjectGenerator {
                 NbBundle.getMessage(XsltproProjectGenerator.class, "TXT_Service_Unit_Description")); // NOI18N
         
         // todo r
-        ep.setProperty("jbi.se.type", "sun-bpel-engine"); // NOI18N
+        ep.setProperty("jbi.se.type", "sun-xslt-engine"); // NOI18N
         ep.setProperty("jbi.service-unit.description", 
                 NbBundle.getMessage(XsltproProjectGenerator.class, "TXT_Service_Unit_Description")); // NOI18N
 

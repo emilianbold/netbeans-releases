@@ -51,7 +51,9 @@ import org.netbeans.modules.compapp.casaeditor.model.casa.CasaExtensibilityEleme
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
 import org.netbeans.modules.compapp.casaeditor.nodes.CasaNode;
 import org.openide.awt.Actions;
+import org.openide.nodes.Node;
 import org.openide.util.actions.Presenter;
+import org.openide.windows.TopComponent;
 
 /** 
  * Action to clear configuration extensions. 
@@ -146,8 +148,14 @@ class ClearConfigExtensionAction extends NodeAbstractAction {
             }
         }
 
-        // FIXME: not working as expected
-        ((CasaNode) getNode()).refresh(); // refresh the property sheet
+        //((CasaNode) getNode()).refresh();
+        Node[] selectedNodes = TopComponent.getRegistry().getActivatedNodes();
+        
+        if (selectedNodes != null && selectedNodes.length > 0 &&
+                selectedNodes[0] instanceof CasaNode) {
+            CasaNode connectionNode = (CasaNode) selectedNodes[0];
+            connectionNode.refresh();
+        }
     }
 }
 

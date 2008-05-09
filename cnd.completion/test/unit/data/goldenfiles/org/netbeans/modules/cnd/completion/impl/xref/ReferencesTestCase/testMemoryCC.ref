@@ -36,25 +36,25 @@
 ==============================================================
 'Module', tokenID=identifier, offset=2217 [45:5/2217-45:11/2223]
 --OWNER:
-    FUNCTION_DEFINITION Memory(int,int,int)  [44:1/2126-47:6/2303] ReferencesTestCase/memory.cc
+    EXPR null text='Module("Memory", "generic", type, size, units'
 --RESOLVED TO:
     FUNCTION Module(const char*,const char*,int,int,int)  [54:5/2246-54:92/2333] ReferencesTestCase/module.h
 ==============================================================
 'type', tokenID=identifier, offset=2245 [45:33/2245-45:37/2249]
 --OWNER:
-    FUNCTION_DEFINITION Memory(int,int,int)  [44:1/2126-47:6/2303] ReferencesTestCase/memory.cc
+    EXPR null text='Module("Memory", "generic", type, size, units'
 --RESOLVED TO:
     VARIABLE type [44:16/2141-44:24/2149] ReferencesTestCase/memory.cc  TYPE: int TEXT=int  [44:16/2141-44:19/2144]  INIT: null  SCOPE: Memory 
 ==============================================================
 'size', tokenID=identifier, offset=2251 [45:39/2251-45:43/2255]
 --OWNER:
-    FUNCTION_DEFINITION Memory(int,int,int)  [44:1/2126-47:6/2303] ReferencesTestCase/memory.cc
+    EXPR null text='Module("Memory", "generic", type, size, units'
 --RESOLVED TO:
     VARIABLE size [44:42/2167-44:50/2175] ReferencesTestCase/memory.cc  TYPE: int TEXT=int  [44:42/2167-44:45/2170]  INIT: null  SCOPE: Memory 
 ==============================================================
 'units', tokenID=identifier, offset=2257 [45:45/2257-45:50/2262]
 --OWNER:
-    FUNCTION_DEFINITION Memory(int,int,int)  [44:1/2126-47:6/2303] ReferencesTestCase/memory.cc
+    EXPR null text='Module("Memory", "generic", type, size, units'
 --RESOLVED TO:
     VARIABLE units [44:66/2191-44:75/2200] ReferencesTestCase/memory.cc  TYPE: int TEXT=int  [44:66/2191-44:69/2194]  INIT: null  SCOPE: Memory 
 ==============================================================
@@ -78,13 +78,13 @@
 ==============================================================
 'metric', tokenID=identifier, offset=2535 [58:9/2535-58:15/2541]
 --OWNER:
-    VARIABLE metric [58:5/2531-58:35/2561] ReferencesTestCase/memory.cc  TYPE: int TEXT=int  [58:5/2531-58:8/2534]  INIT: text='200'  SCOPE: Stmt  [56:37/2519-71:2/2803]
+    VARIABLE metric [58:5/2531-58:35/2561] ReferencesTestCase/memory.cc  TYPE: int TEXT=int  [58:5/2531-58:8/2534]  INIT: text='200 * GetUnits()'  SCOPE: Stmt  [56:37/2519-71:2/2803]
 --RESOLVED TO:
-    VARIABLE metric [58:5/2531-58:35/2561] ReferencesTestCase/memory.cc  TYPE: int TEXT=int  [58:5/2531-58:8/2534]  INIT: text='200'  SCOPE: Stmt  [56:37/2519-71:2/2803]
+    VARIABLE metric [58:5/2531-58:35/2561] ReferencesTestCase/memory.cc  TYPE: int TEXT=int  [58:5/2531-58:8/2534]  INIT: text='200 * GetUnits()'  SCOPE: Stmt  [56:37/2519-71:2/2803]
 ==============================================================
 'GetUnits', tokenID=identifier, offset=2550 [58:24/2550-58:32/2558]
 --OWNER:
-    VARIABLE metric [58:5/2531-58:35/2561] ReferencesTestCase/memory.cc  TYPE: int TEXT=int  [58:5/2531-58:8/2534]  INIT: text='200'  SCOPE: Stmt  [56:37/2519-71:2/2803]
+    VARIABLE metric [58:5/2531-58:35/2561] ReferencesTestCase/memory.cc  TYPE: int TEXT=int  [58:5/2531-58:8/2534]  INIT: text='200 * GetUnits()'  SCOPE: Stmt  [56:37/2519-71:2/2803]
 --RESOLVED TO:
     FUNCTION GetUnits() const  [75:5/2975-75:26/2996] ReferencesTestCase/module.h
 ==============================================================
@@ -104,7 +104,7 @@
 --OWNER:
     STMT EXPRESSION text='metric += 100'
 --RESOLVED TO:
-    VARIABLE metric [58:5/2531-58:35/2561] ReferencesTestCase/memory.cc  TYPE: int TEXT=int  [58:5/2531-58:8/2534]  INIT: text='200'  SCOPE: Stmt  [56:37/2519-71:2/2803]
+    VARIABLE metric [58:5/2531-58:35/2561] ReferencesTestCase/memory.cc  TYPE: int TEXT=int  [58:5/2531-58:8/2534]  INIT: text='200 * GetUnits()'  SCOPE: Stmt  [56:37/2519-71:2/2803]
 ==============================================================
 'ULTRA', tokenID=identifier, offset=2691 [65:14/2691-65:19/2696]
 --OWNER:
@@ -116,7 +116,7 @@
 --OWNER:
     STMT EXPRESSION text='metric += 200'
 --RESOLVED TO:
-    VARIABLE metric [58:5/2531-58:35/2561] ReferencesTestCase/memory.cc  TYPE: int TEXT=int  [58:5/2531-58:8/2534]  INIT: text='200'  SCOPE: Stmt  [56:37/2519-71:2/2803]
+    VARIABLE metric [58:5/2531-58:35/2561] ReferencesTestCase/memory.cc  TYPE: int TEXT=int  [58:5/2531-58:8/2534]  INIT: text='200 * GetUnits()'  SCOPE: Stmt  [56:37/2519-71:2/2803]
 ==============================================================
 'SetSupportMetric', tokenID=identifier, offset=2764 [70:5/2764-70:21/2780]
 --OWNER:
@@ -128,7 +128,7 @@
 --OWNER:
     STMT EXPRESSION text='SetSupportMetric(metric)'
 --RESOLVED TO:
-    VARIABLE metric [58:5/2531-58:35/2561] ReferencesTestCase/memory.cc  TYPE: int TEXT=int  [58:5/2531-58:8/2534]  INIT: text='200'  SCOPE: Stmt  [56:37/2519-71:2/2803]
+    VARIABLE metric [58:5/2531-58:35/2561] ReferencesTestCase/memory.cc  TYPE: int TEXT=int  [58:5/2531-58:8/2534]  INIT: text='200 * GetUnits()'  SCOPE: Stmt  [56:37/2519-71:2/2803]
 ==============================================================
 'Memory', tokenID=identifier, offset=2821 [73:13/2821-73:19/2827]
 --OWNER:

@@ -68,6 +68,8 @@ public class JspMultiSettingsInitializer extends Settings.AbstractInitializer {
         
         // Jsp Settings
         if (kitClass == JSPKit.class) {
+            settingsMap.put(SettingsNames.CODE_FOLDING_ENABLE, new Boolean(true));
+            
             settingsMap.put(JavaSettingsNames.PAIR_CHARACTERS_COMPLETION,
                         JavaSettingsDefaults.defaultPairCharactersCompletion);
 

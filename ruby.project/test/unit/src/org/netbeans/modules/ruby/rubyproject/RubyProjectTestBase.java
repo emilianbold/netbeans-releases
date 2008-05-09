@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -23,7 +23,20 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
  */
 package org.netbeans.modules.ruby.rubyproject;
 
@@ -35,11 +48,12 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.ruby.RubyTestBase;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
-import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.LocalFileSystem;
 import org.openide.filesystems.MultiFileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.filesystems.XMLFileSystem;
@@ -78,39 +92,57 @@ public abstract class RubyProjectTestBase extends RubyTestBase {
     
     protected RubyProject createTestProject(String projectName, String... paths) throws Exception {
         File prjDirF = new File(getWorkDir(), projectName);
-        RubyProjectGenerator.createProject(prjDirF, projectName, null, RubyPlatformManager.getDefaultPlatform());
+        RubyPlatform plaf = RubyPlatformManager.getDefaultPlatform();
+        RubyProjectGenerator.createProject(prjDirF, projectName, null, plaf);
         createFiles(prjDirF, paths);
         RubyProject project = (RubyProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(prjDirF));
         assertNotNull(project);
         return project;
     }
 
+    protected RubyProject createTestProject(final boolean open) throws Exception {
+        RubyProject project = createTestProject("RubyProject_" + getName());
+        if (open) {
+            project.open();
+        }
+        return project;
+        
+    }
     protected RubyProject createTestProject() throws Exception {
-        return createTestProject("RubyProject_" + getName());
+        return createTestProject(false);
     }
 
     protected void registerLayer() throws Exception {
-        MockLookup.setInstances(new Repo(this));
+        MockLookup.setInstances(new Repo(getWorkDir()));
         FileObject template = Repository.getDefault().getDefaultFileSystem().findResource("Templates/Ruby/main.rb");
         assertNotNull("layer registered", template);
     }
 
     private static final class Repo extends Repository {
 
-        public Repo(NbTestCase t) throws Exception {
-            super(mksystem(t));
+        public Repo(final File root) throws Exception {
+            super(mksystem(root));
+        }
+        
+        private static FileSystem mksystem(final File root) throws Exception {
+            List<FileSystem> fss = new ArrayList<FileSystem>();
+            
+            // self layer
+            addLayer(fss, "org/netbeans/modules/ruby/rubyproject/ui/resources/layer.xml");
+            
+            // local filesystem preventing tons of FreeMarker warnings about missing license-default.txt
+            LocalFileSystem fs = new LocalFileSystem();
+            fs.setRootDirectory(root);
+            FileUtil.createData(fs.getRoot(), "Templates/Licenses/license-default.txt");
+            fss.add(fs);
+            
+            return new MultiFileSystem(fss.toArray(new FileSystem[fss.size()]));
         }
 
-        private static FileSystem mksystem(NbTestCase t) throws Exception {
-            List<FileSystem> layers = new ArrayList<FileSystem>();
-            addLayer(layers, "org/netbeans/modules/ruby/rubyproject/ui/resources/layer.xml");
-            return new MultiFileSystem(layers.toArray(new FileSystem[layers.size()]));
-        }
-
-        private static void addLayer(List<FileSystem> layers, String layerRes) throws SAXException {
+        private static void addLayer(List<FileSystem> fss, String layerRes) throws SAXException {
             URL layerFile = Repo.class.getClassLoader().getResource(layerRes);
             assert layerFile != null : layerRes + " found";
-            layers.add(new XMLFileSystem(layerFile));
+            fss.add(new XMLFileSystem(layerFile));
         }
     }
 }

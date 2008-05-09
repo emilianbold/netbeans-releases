@@ -65,8 +65,8 @@ import org.netbeans.modules.uml.ui.support.archivesupport.ProductArchiveImpl;
  */
 public class CachedDiagrams implements FileExtensions, IProductArchiveDefinitions
 {
-   private static final Logger LOG =
-           Logger.getLogger("org.netbeans.modules.uml.ui.controls.drawingarea.CachedDiagrams");
+   private static final Logger logger =
+           Logger.getLogger("uml.ui.controls.drawingarea.CachedDiagrams");
    private static CachedDiagrams m_Instance = null;
    private HashMap < String , DiagramDetails > m_CachedInfo = new HashMap< String , DiagramDetails >();
    
@@ -98,8 +98,6 @@ public class CachedDiagrams implements FileExtensions, IProductArchiveDefinition
       DiagramDetails retVal = null;
       if(sDiagramFilename.length() > 0)
       {
-         long etlCrc32  = 0;
-         long etlpCrc32 = 0;
          retVal = getInfoFromCache(sDiagramFilename);
          
          if(retVal == null)
@@ -138,7 +136,7 @@ public class CachedDiagrams implements FileExtensions, IProductArchiveDefinition
             }
             if ( retVal != null)  //TODO: delete this if block after done debugging
             {
-                LOG.info("** getInfo: load diagram detail from file. " +
+                logger.fine("** getInfo: load diagram detail from file. " +
                         "Diagram alias|name= "+ retVal.getDiagramAlias() + "|" + retVal.getName());
             }
          } 

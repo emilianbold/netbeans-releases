@@ -41,12 +41,8 @@
 
 package org.netbeans.modules.websvc.design.view.actions;
 
-import java.awt.Dialog;
-import java.awt.Image;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.File;
-import java.io.IOException;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -60,6 +56,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
+import org.netbeans.modules.websvc.core.AddOperationCookie;
 import org.netbeans.modules.websvc.core.AddWsOperationHelper;
 import org.netbeans.modules.websvc.core._RetoucheUtil;
 import org.netbeans.modules.websvc.design.schema2java.OperationGeneratorHelper;
@@ -70,6 +67,7 @@ import org.netbeans.modules.xml.schema.model.ReferenceableSchemaComponent;
 import org.netbeans.modules.xml.schema.model.Schema;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.Operation;
+import org.netbeans.modules.xml.wsdl.model.PortType;
 import org.netbeans.modules.xml.wsdl.model.Types;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.openide.DialogDescriptor;
@@ -80,6 +78,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
@@ -89,7 +88,7 @@ import org.openide.util.Utilities;
  *
  * @author Ajit Bhate
  */
-public class AddOperationAction extends AbstractAction {
+public class AddOperationAction extends AbstractAction implements AddOperationCookie {
     
     private FileObject implementationClass;
     private Service service;
@@ -131,18 +130,27 @@ public class AddOperationAction extends AbstractAction {
     public void actionPerformed(ActionEvent arg0) {
         if(wsdlFile != null && wsdlFile.exists()){
             final AddOperationFromSchemaPanel panel = new AddOperationFromSchemaPanel(wsdlFile);
+            final String targetPortType =  OperationGeneratorHelper.getPortTypeNameFromImpl(implementationClass);
+            boolean closeDialog = false;
             DialogDescriptor desc = new DialogDescriptor(panel,
                     NbBundle.getMessage(AddOperationAction.class, "TTL_AddWsOperation"));
-            desc.setButtonListener(new ActionListener() {
-                public void actionPerformed(ActionEvent evt) {
-                    if (evt.getSource() == DialogDescriptor.OK_OPTION) {
+            while (!closeDialog) {
+                DialogDisplayer.getDefault().notify(desc);
+                if (desc.getValue() == DialogDescriptor.OK_OPTION) {
+                    if (wsdlOperationExists(panel.getWSDLModel(), panel.getOperationName(), targetPortType)) {
+                        // wsdl port operation with this name already exists
+                        DialogDisplayer.getDefault().notify(
+                                new DialogDescriptor.Message(
+                                    NbBundle.getMessage(AddOperationAction.class, "TXT_OperationExists")));
+                    } else {
+                        closeDialog = true;
                         final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.
                                 getMessage(AddOperationAction.class, "MSG_AddingOperation", panel.getOperationName())); //NOI18N
                         Task task = new Task(new Runnable() {
                             public void run() {
                                 try{
                                     handle.start();
-                                    addWSDLOperation(panel);
+                                    addWSDLOperation(panel, targetPortType);
                                 }catch(Exception e){
                                     handle.finish();
                                     ErrorManager.getDefault().notify(e);
@@ -153,11 +161,10 @@ public class AddOperationAction extends AbstractAction {
                         });
                         RequestProcessor.getDefault().post(task);
                     }
+                } else {
+                    closeDialog = true;
                 }
-            });
-            
-            Dialog dialog = DialogDisplayer.getDefault().createDialog(desc);
-            dialog.setVisible(true);
+            }
         } else { // WS from Java
             try{
                 // no need to create new task or progress handle, as strategy does it.
@@ -201,7 +208,7 @@ public class AddOperationAction extends AbstractAction {
         }
     }
     
-    private void addWSDLOperation(AddOperationFromSchemaPanel panel)
+    private void addWSDLOperation(AddOperationFromSchemaPanel panel, String targetPortType)
             throws IOException, FileStateInvalidException, URISyntaxException, UnknownHostException{
         OperationGeneratorHelper generatorHelper = new OperationGeneratorHelper(wsdlFile);
         WSDLModel wsdlModel = WSDLUtils.getWSDLModel(FileUtil.toFileObject(wsdlFile), true);
@@ -216,11 +223,18 @@ public class AddOperationAction extends AbstractAction {
         List<ParamModel> parameterTypes = panel.getParameterTypes();
         ReferenceableSchemaComponent returnType = panel.getReturnType();
         List<ParamModel> faultTypes = panel.getFaultTypes();
-        generatorHelper.addWsOperation(generatorHelper.getPortTypeNameFromImpl(implementationClass),
+        generatorHelper.addWsOperation(targetPortType,
                 operationName, parameterTypes, returnType, faultTypes);
+        saveWsdlFile(FileUtil.toFileObject(wsdlFile));
         generatorHelper.generateJavaArtifacts(service.getName(), implementationClass, operationName, false);
    
         saveImplementationClass(implementationClass);
+    }
+    
+    private void saveWsdlFile(FileObject wsdlFile) throws DataObjectNotFoundException, IOException{
+        DataObject wsdlDO = DataObject.find(wsdlFile);
+        SaveCookie saveCookie = wsdlDO.getCookie(SaveCookie.class);
+        saveCookie.save();
     }
     
     private void changeSchemaLocation(Set<Schema> newSchemas, WSDLModel wsdlModel)
@@ -247,6 +261,33 @@ public class AddOperationAction extends AbstractAction {
             }
         }
     }
+    
+    private boolean wsdlOperationExists(WSDLModel wsdlModel, String operationName, String targetPortType) {
+        assert wsdlModel != null;
+        Collection<PortType> portTypes = wsdlModel.getDefinitions().getPortTypes();
+        PortType port = null;
+        for (PortType portType:portTypes) {
+            if (portType.getName().equals(targetPortType)) {
+                port = portType;
+                break;
+            }
+        }
+        if (port != null) {
+            Collection<Operation> operations = port.getOperations();
+            for (Operation op:operations) {
+                if (op.getName().equals(operationName)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public void addOperation(FileObject implementationClass) {
+        actionPerformed(null);
+    }
+
+    public boolean isEnabledInEditor(FileObject implClass) {
+        return service != null && service.getWsdlUrl() != null;
+    }
 }
-
-

@@ -179,6 +179,11 @@ public class LogicalHandlerWizard implements WizardDescriptor.InstantiatingItera
             ProjectInfo creator = new ProjectInfo(project);
             int projectType = creator.getProjectType();
             
+             //test for conditions in JSE
+            if (projectType == ProjectInfo.JSE_PROJECT_TYPE) {
+                return MessageHandlerWizard.isValidInJavaProject(project, wiz);
+            }
+            /*
             if (projectType == ProjectInfo.JSE_PROJECT_TYPE && Util.isSourceLevel16orHigher(project))
                 return true;
             
@@ -190,7 +195,7 @@ public class LogicalHandlerWizard implements WizardDescriptor.InstantiatingItera
                 } else
                     return true;
             }
-            
+            */
             if (Util.isJavaEE5orHigher(project) && (projectType == ProjectInfo.WEB_PROJECT_TYPE 
                     || projectType == ProjectInfo.CAR_PROJECT_TYPE
                     || projectType == ProjectInfo.EJB_PROJECT_TYPE)) { //NOI18N

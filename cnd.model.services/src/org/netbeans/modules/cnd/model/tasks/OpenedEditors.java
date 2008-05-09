@@ -175,7 +175,7 @@ class OpenedEditors implements PropertyChangeListener {
      * Checks if the given file is supported.
      */
     private static boolean isSupported(FileObject file) throws NullPointerException {
-        Parameters.notNull("files", file);
+        Parameters.notNull("files", file); //NOI18N
 
         return !filterSupportedFiles(Collections.singletonList(file)).isEmpty();
     }
@@ -185,7 +185,7 @@ class OpenedEditors implements PropertyChangeListener {
      * Filter unsupported files from the <code>files</code> parameter. 
      */
     public static List<FileObject> filterSupportedFiles(Collection<FileObject> files) throws NullPointerException {
-        Parameters.notNull("files", files);
+        Parameters.notNull("files", files); //NOI18N
 
         List<FileObject> result = new LinkedList<FileObject>();
 

@@ -809,11 +809,11 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
     }
     
     void selectNextUsage() {
-        selectNextPrev(true);
+        CheckNodeListener.selectNextPrev(true, isQuery, tree);
     }
     
     void selectPrevUsage() {
-        selectNextPrev(false);
+        CheckNodeListener.selectNextPrev(false, isQuery, tree);
     }
     
     private int location;
@@ -825,44 +825,6 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
     public void restoreDeviderLocation() {
         if (splitPane.getRightComponent()!=null)
             splitPane.setDividerLocation(location);
-    }
-    
-    private void selectNextPrev(final boolean next) {
-        int newRow = getSelectedRow();
-        int maxcount = tree.getRowCount();
-        CheckNode node;
-        do {
-            if (next) {
-                newRow++;
-                if (newRow>=maxcount)
-                    newRow = 0;
-            } else {
-                newRow--;
-                if (newRow<0)
-                    newRow = maxcount-1;
-            }
-            TreePath path = tree.getPathForRow(newRow);
-            node = (CheckNode) path.getLastPathComponent();
-            if (!node.isLeaf()) {
-                tree.expandRow(newRow);
-                maxcount = tree.getRowCount();
-            }
-        }
-        while (!node.isLeaf());
-        tree.setSelectionRow(newRow);
-        tree.scrollRowToVisible(newRow);
-        if (isQuery) {
-            CheckNodeListener.findInSource(node);
-        } else {
-            CheckNodeListener.openDiff(node);
-        }
-    }
-    
-    private int getSelectedRow() {
-        int[] rows = tree.getSelectionRows();
-        if (rows == null || rows.length == 0)
-            return 0;
-        return rows[0];
     }
 
     ////////////////////////////////////////////////////////////////////////////

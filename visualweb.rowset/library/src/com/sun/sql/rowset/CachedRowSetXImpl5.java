@@ -1512,7 +1512,7 @@ public abstract class CachedRowSetXImpl5 extends BaseRowSetX implements CachedRo
          int cols = rowSetMD.getColumnCount();
         
          for (int i=1; i <= cols; ++i) {
-             String colName = rowSetMD.getColumnName(i);
+             String colName = rowSetMD.getColumnLabel(i);
              if (colName != null)
                  if (name.equalsIgnoreCase(colName))
                      return (i);
@@ -2257,6 +2257,10 @@ public abstract class CachedRowSetXImpl5 extends BaseRowSetX implements CachedRo
                  Log.getLogger().finest("Connection: " + tempConn +
                                         "  DataSourceName: " + getDataSourceName() +
                                         "  URL: " + getUrl());
+                 
+                 if (tempConn == null) {
+                     throw new NamingException(rb.getString("NAME_NOT_FOUND") + " " + getDataSourceName()); //NOI18N
+                 } 
                  tempPS = tempConn.prepareStatement(getCommand());
                  // System.out.println("Prepared Statement: " + tempPS);
 
@@ -2287,8 +2291,9 @@ public abstract class CachedRowSetXImpl5 extends BaseRowSetX implements CachedRo
                  initMetaData(rowSetMD, rsmd);
                  // System.out.println("After calling initMetaData, rsmd: " + rsmd);
              }
-             // catch (SQLException e) {
-             // }
+             catch (NamingException e) {
+                 Log.getLogger().finest("Caught exception: " + e + " " + e.getMessage());
+             }
              finally {
                  if (tempPS != null) {
                      tempPS.close();
@@ -4102,25 +4107,32 @@ public abstract class CachedRowSetXImpl5 extends BaseRowSetX implements CachedRo
              try {
                  Context ctx = new InitialContext();
                  Log.getLogger().finest("About to get DataSource, ctx: " + ctx);
-
                  DataSource ds = (DataSource)ctx.lookup(dataSourceName);
-                
-                 Log.getLogger().finest("About to get connection, DataSource: " + ds);
-
-                 if(username == null || username.equals("")) { //NOI18N
-                     conn = ds.getConnection();
+                 if (ds == null) {
+                     throw new NamingException(rb.getString("NAME_NOT_FOUND") + " " + dataSourceName); //NOI18N
                  } else {
-                     conn = ds.getConnection(username, password);
+                     Log.getLogger().finest("About to get connection, DataSource: " + ds);
+                     if (username == null || username.equals("")) { //NOI18N
+                         conn = ds.getConnection();
+                     } else {
+                         conn = ds.getConnection(username, password);
+                     }
                  }
              } catch (javax.naming.NamingException ex) {
                  Log.getLogger().finest("Caught exception: " + ex + " " + ex.getMessage());
-                 throw new SQLException(rb.getString("UNABLE_TO_CONNECT")+ex.getMessage()); //NOI18N
+             } catch (SQLException sqe) {
+                 Log.getLogger().finest("Caught exception: " + sqe + " " + sqe.getMessage()); 
+                 throw new SQLException(rb.getString("UNABLE_TO_CONNECT")+ sqe.getMessage()); //NOI18N
              }
          } else if (url != null) {
              // Check only for url != null because
              // user, passwd can be null
              // Connect using the driver manager.
-             conn = DriverManager.getConnection(url, username, password);
+             try {
+                 conn = DriverManager.getConnection(url, username, password);
+             } catch (SQLException sqe) {
+                 Log.getLogger().finest("Caught exception: " + sqe + " " + sqe.getMessage());
+             }
          } else {
              throw new SQLException(rb.getString("BOTH_DS_AND_URL_CANNOT_BE_NULL")); //NOI18N
          }

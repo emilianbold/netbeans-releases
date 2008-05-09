@@ -42,9 +42,11 @@ package org.netbeans.modules.xml.catalogsupport.util;
 
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 
+import java.util.Set;
 import org.openide.filesystems.FileObject;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -62,8 +64,16 @@ public class ProjectUtilities {
 
   private ProjectUtilities() {}
     
+  public static List<FileObject> getXSDFilesRecursively(Project project) {
+    return getFilesRecursively(project, XSD);
+  }
+
   public static List<FileObject> getWSDLFilesRecursively(Project project) {
-    final List<FileObject> wsdls = new ArrayList<FileObject>();
+    return getFilesRecursively(project, WSDL);
+  }
+
+  private static List<FileObject> getFilesRecursively(Project project, final String extension) {
+    final List<FileObject> files = new ArrayList<FileObject>();
 
     ProjectUtilities.visitRecursively(project, new ProjectVisitor() {
       public void visit(Project project) {
@@ -71,20 +81,20 @@ public class ProjectUtilities {
         SourceGroup [] groups = sources.getSourceGroups(ProjectConstants.SOURCES_TYPE_XML);
 
         for (SourceGroup group : groups) {
-          Enumeration files = group.getRootFolder().getChildren(true);
+          Enumeration children = group.getRootFolder().getChildren(true);
 
-          while (files.hasMoreElements()) {
-            FileObject file = (FileObject) files.nextElement();
+          while (children.hasMoreElements()) {
+            FileObject file = (FileObject) children.nextElement();
 
-            if (file.getExt().toLowerCase().equals("wsdl")) { // NOI18N
-              wsdls.add(file);
+            if (file.getExt().toLowerCase().equals(extension)) {
+              files.add(file);
             }
           }
         }
       }
     });
 
-    return wsdls;
+    return files;
   }
 
   public static List<ProjectWSDL> getProjectWSDLRecursively(Project project) {
@@ -101,7 +111,7 @@ public class ProjectUtilities {
           while (files.hasMoreElements()) {
             FileObject file = (FileObject) files.nextElement();
 
-            if (file.getExt().toLowerCase().equals("wsdl")) { // NOI18N
+            if (file.getExt().toLowerCase().equals(WSDL)) {
               wsdls.add(new ProjectWSDL(file, project));
             }
           }
@@ -112,7 +122,75 @@ public class ProjectUtilities {
     return wsdls;
   }
 
-  public static void visitRecursively(Project project, ProjectVisitor visitor) {
+    /**
+     * Returns the set of projects to which the base project references to. 
+     * Not only direct referenced, but all project are taken into consideration.
+     * 
+     * @param baseProj
+     * @return
+     */
+    public static Set getReferencedProjects(Project baseProj) {
+        HashSet<Project> projectSet = new HashSet<Project>();
+        populateReferencedProjects(baseProj, projectSet);
+        return projectSet;
+    }
+
+    /**
+     * Fill in the set of projects to which the base project references to. 
+     * @param baseProj
+     * @param projectSet
+     */
+    private static void populateReferencedProjects(
+            Project baseProj, Set<Project> projectSet) {
+        DefaultProjectCatalogSupport instance = DefaultProjectCatalogSupport.
+                getInstance(baseProj.getProjectDirectory());
+        //
+        if (instance != null) {
+            Set references = instance.getProjectReferences();
+            for (Object proj : references) {
+                assert proj instanceof Project;
+                projectSet.add((Project) proj);
+                //
+                populateReferencedProjects((Project) proj, projectSet);
+            }
+        }
+    }
+
+    /**
+     * Collects the content of source folders of the project. 
+     * If the extension is specified, then files only with the extension 
+     * are returned.
+     * 
+     * @param project
+     * @param extension
+     * @return
+     */
+    public static List<FileObject> getDirectSources(Project project, String extension) {
+        final List<FileObject> files = new ArrayList<FileObject>();
+        //
+        Sources sources = ProjectUtils.getSources(project);
+        SourceGroup[] groups = sources.getSourceGroups(ProjectConstants.SOURCES_TYPE_XML);
+        //
+        for (SourceGroup group : groups) {
+            Enumeration children = group.getRootFolder().getChildren(true);
+            //
+            while (children.hasMoreElements()) {
+                FileObject file = (FileObject) children.nextElement();
+                //
+                if (file.isFolder()) {
+                    files.add(file);
+                } else if (extension == null) {
+                    files.add(file);
+                } else if (file.getExt().toLowerCase().equals(extension)) {
+                    files.add(file);
+                }
+            }
+        }
+        //
+        return files;
+    }
+  
+  private static void visitRecursively(Project project, ProjectVisitor visitor) {
     visitRecursively(project, visitor, new ArrayList<Project>());
   }
 
@@ -141,8 +219,10 @@ public class ProjectUtilities {
 
   public static FileObject getSrcFolder(Project project) {
     return project.getProjectDirectory().getFileObject(SRC_FOLDER);
-  }
-
-  private static final String SRC_FOLDER = "src"; // NOI18N
+      }
+      
+  public static final String XSD = "xsd"; // NOI18N
+  public static final String WSDL = "wsdl"; // NOI18N
+  public static final String SRC_FOLDER = "src"; // NOI18N
   public static final String SLASHED_SRC = "/" + SRC_FOLDER + "/"; // NOI18N
 }

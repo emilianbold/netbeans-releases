@@ -47,6 +47,8 @@ import javax.swing.Action;
 import javax.swing.JOptionPane;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
+import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
+import org.netbeans.modules.cnd.api.model.CsmModelState;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
@@ -173,6 +175,9 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
      */
     @Override
     public boolean canRename(Lookup lookup) {
+        if( CsmModelAccessor.getModelState() != CsmModelState.ON ) {
+            return false;
+        }
         Collection<? extends Node> nodes = lookup.lookupAll(Node.class);
         if (nodes.size() > 1) {
             return false;

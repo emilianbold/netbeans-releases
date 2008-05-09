@@ -199,6 +199,33 @@ public final class ASDDVersion {
         "Sun Java System Application Server 9.0" // NOI18N
     );
     
+    /** Represents Sun Java System Application Server 9.1.1
+     */
+    public static final ASDDVersion SUN_APPSERVER_9_1_1 = new ASDDVersion(
+        "9.1.1", 91,	// NOI18N
+        DTDRegistry.SUN_WEBAPP_250_DTD_PUBLIC_ID,
+        DTDRegistry.SUN_WEBAPP_250_DTD_SYSTEM_ID,
+        SunWebApp.VERSION_2_5_0,
+        250,
+        DTDRegistry.SUN_EJBJAR_301_DTD_PUBLIC_ID,
+        DTDRegistry.SUN_EJBJAR_301_DTD_SYSTEM_ID,
+        SunEjbJar.VERSION_3_0_1,
+        301,
+        DTDRegistry.SUN_CMP_MAPPING_810_DTD_PUBLIC_ID,
+        DTDRegistry.SUN_CMP_MAPPING_810_DTD_SYSTEM_ID,
+        "1.2",
+        120,
+        DTDRegistry.SUN_APPLICATION_50_DTD_PUBLIC_ID,
+        DTDRegistry.SUN_APPLICATION_50_DTD_SYSTEM_ID,
+        SunApplication.VERSION_5_0_0,
+        500,
+        DTDRegistry.SUN_APPCLIENT_50_DTD_PUBLIC_ID,
+        DTDRegistry.SUN_APPCLIENT_50_DTD_SYSTEM_ID,
+        SunApplicationClient.VERSION_5_0_0,
+        500,
+        "Sun Java System Application Server 9.1.1" // NOI18N
+    );
+
     /** Represents Sun Java System Application Server 9.0
      */
     public static final ASDDVersion SUN_WEBSERVER_7_0 = new ASDDVersion(
@@ -217,7 +244,8 @@ public final class ASDDVersion {
 //        SUN_APPSERVER_7_1,
         SUN_APPSERVER_8_0,
         SUN_APPSERVER_8_1,
-        SUN_APPSERVER_9_0
+        SUN_APPSERVER_9_0,
+        SUN_APPSERVER_9_1_1
     };
     
     /** Ordered list of webserver versions.
@@ -349,6 +377,8 @@ public final class ASDDVersion {
             result = SUN_APPSERVER_8_1;
         } else if(SUN_APPSERVER_9_0.toString().equals(version)) {
             result = SUN_APPSERVER_9_0;
+        } else if(SUN_APPSERVER_9_1_1.toString().equals(version)) {
+            result = SUN_APPSERVER_9_1_1;
         }
         
         return result;
@@ -370,6 +400,8 @@ public final class ASDDVersion {
             result = SUN_APPSERVER_8_1;
         } else if(SUN_APPSERVER_9_0.toString().compareTo(version) == 0) {
             result = SUN_APPSERVER_9_0;
+        } else if(SUN_APPSERVER_9_1_1.toString().compareTo(version) == 0) {
+            result = SUN_APPSERVER_9_1_1;
         }
         
         return result;
@@ -390,6 +422,8 @@ public final class ASDDVersion {
             result = SUN_APPSERVER_8_1;
         } else if(SUN_APPSERVER_9_0.getNumericWebAppVersion().compareTo(version) == 0) {
             result = SUN_APPSERVER_9_0;
+        } else if(SUN_APPSERVER_9_1_1.getNumericWebAppVersion().compareTo(version) == 0) {
+            result = SUN_APPSERVER_9_1_1;
         }
         
         return result;
@@ -410,6 +444,8 @@ public final class ASDDVersion {
             result = SUN_APPSERVER_8_1;
         } else if(SUN_APPSERVER_9_0.getNumericEjbJarVersion().compareTo(version) == 0) {
             result = SUN_APPSERVER_9_0;
+        } else if(SUN_APPSERVER_9_1_1.getNumericEjbJarVersion().compareTo(version) == 0) {
+            result = SUN_APPSERVER_9_1_1;
         }
         
         return result;
@@ -432,6 +468,8 @@ public final class ASDDVersion {
             result = SUN_APPSERVER_8_1;
         } else if(SUN_APPSERVER_9_0.getNumericApplicationVersion().compareTo(version) == 0) {
             result = SUN_APPSERVER_9_0;
+        } else if(SUN_APPSERVER_9_1_1.getNumericApplicationVersion().compareTo(version) == 0) {
+            result = SUN_APPSERVER_9_1_1;
         }
         
         return result;
@@ -451,6 +489,8 @@ public final class ASDDVersion {
             result = SUN_APPSERVER_8_1;
         } else if(SUN_APPSERVER_9_0.getNumericAppClientVersion().compareTo(version) == 0) {
             result = SUN_APPSERVER_9_0;
+        } else if(SUN_APPSERVER_9_1_1.getNumericAppClientVersion().compareTo(version) == 0) {
+            result = SUN_APPSERVER_9_1_1;
         }
         return result;
     }
@@ -470,6 +510,8 @@ public final class ASDDVersion {
             result = SUN_APPSERVER_8_1;
         } else if(SUN_APPSERVER_9_0.getNumericCmpMappingsVersion().compareTo(version) == 0) {
             result = SUN_APPSERVER_9_0;
+        } else if(SUN_APPSERVER_9_1_1.getNumericCmpMappingsVersion().compareTo(version) == 0) {
+            result = SUN_APPSERVER_9_1_1;
         }
         
         return result;

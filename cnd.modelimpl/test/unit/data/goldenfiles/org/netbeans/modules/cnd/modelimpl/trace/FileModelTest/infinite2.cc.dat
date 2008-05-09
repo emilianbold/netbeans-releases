@@ -11,35 +11,35 @@ Includes:
     <no includes>
 Macros:
     <no macros>
-CLASS A (A ) [1:1/0-4:3/37] lcurly=12 SCOPE: $Global$ 
+CLASS Infinite2 (Infinite2 ) [1:1/0-4:3/53] lcurly=28 SCOPE: $Global$ 
     BASE CLASSES:
-        CLASS=A VISIBILITY==PRIVATE virtual==false text='A'
+        CLASS=Infinite2 VISIBILITY==PRIVATE virtual==false text='Infinite2'
     MEMBERS:
-        FUNCTION foo [2:5/18-2:16/29] MethodImpl SCOPE: A 
-            DEFINITION: foo  [6:1/42-9:2/74]
+        FUNCTION foo [2:5/34-2:16/45] MethodImpl SCOPE: Infinite2 
+            DEFINITION: foo  [6:1/58-9:2/98]
             SIGNATURE foo()
-            UNIQUE NAME F:A::foo()
+            UNIQUE NAME F:Infinite2::foo()
             PARAMETERS:
-            RETURNS void TEXT=void  [2:5/18-2:9/22]
-FUNCTION DEFINITION foo  [6:1/42-9:2/74] FunctionDefinitionImpl SCOPE: infinite2.cc
+            RETURNS void TEXT=void  [2:5/34-2:9/38]
+FUNCTION DEFINITION foo  [6:1/58-9:2/98] FunctionDefinitionImpl SCOPE: infinite2.cc
     SIGNATURE foo()
-    UNIQUE NAME f:A::foo()
-    DECLARATION: foo  [2:5/18-2:16/29]
+    UNIQUE NAME f:Infinite2::foo()
+    DECLARATION: foo  [2:5/34-2:16/45]
     PARAMETERS:
-    RETURNS void TEXT=void  [6:1/42-6:5/46]
-    STATEMENT COMPOUND  [6:15/56-9:2/74] SCOPE: foo 
-        STATEMENT DECLARATION  [7:5/62-7:9/66] SCOPE: Stmt  [6:15/56-9:2/74]
-            VARIABLE a [7:5/62-7:9/66]  TYPE: $unresolved$::C TEXT=C  [7:5/62-7:6/63]  INIT: null  SCOPE: Stmt  [6:15/56-9:2/74]
+    RETURNS void TEXT=void  [6:1/58-6:5/62]
+    STATEMENT COMPOUND  [6:23/80-9:2/98] SCOPE: foo 
+        STATEMENT DECLARATION  [7:5/86-7:9/90] SCOPE: Stmt  [6:23/80-9:2/98]
+            VARIABLE a [7:5/86-7:9/90]  TYPE: $unresolved$::C TEXT=C  [7:5/86-7:6/87]  INIT: null  SCOPE: Stmt  [6:23/80-9:2/98]
 
 ========== Dumping model of PROJECT DummyProject
-CLASS A (A ) [1:1/0-4:3/37] lcurly=12 SCOPE: $Global$ 
+CLASS Infinite2 (Infinite2 ) [1:1/0-4:3/53] lcurly=28 SCOPE: $Global$ 
     BASE CLASSES:
-        CLASS=A VISIBILITY==PRIVATE virtual==false text='A'
+        CLASS=Infinite2 VISIBILITY==PRIVATE virtual==false text='Infinite2'
     MEMBERS:
-        FUNCTION foo [2:5/18-2:16/29] MethodImpl SCOPE: A 
-            DEFINITION: foo  [6:1/42-9:2/74]
+        FUNCTION foo [2:5/34-2:16/45] MethodImpl SCOPE: Infinite2 
+            DEFINITION: foo  [6:1/58-9:2/98]
             SIGNATURE foo()
-            UNIQUE NAME F:A::foo()
+            UNIQUE NAME F:Infinite2::foo()
             PARAMETERS:
-            RETURNS void TEXT=void  [2:5/18-2:9/22]
+            RETURNS void TEXT=void  [2:5/34-2:9/38]
 

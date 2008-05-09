@@ -55,11 +55,33 @@ made subject to such option by the copyright holder.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
 <changes>
+    <change id="NbModuleSuite">
+        <api name="nbjunit"/>
+        <summary>Support class to allow excution of unit tests inside of NetBeans Runtime Container</summary>
+        <version major="1" minor="46"/>
+        <date day="29" month="2" year="2008"/>
+        <author login="jtulach"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>
+                It always used to be hard to setup the right environment for test
+                execution. In case this NetBeans this is even harder. The module
+                system is ready to work without classpath isolation, however 
+                not every feature is available and not every
+                behavior remains the same
+                That is why there is now the new <code>NbModuleSuite</code>
+                support class that allows to really start the whole NetBeans 
+                Runtime Container, satisfy all the dependencies and only then 
+                load the testing class and execute it.
+            </p>
+        </description>
+        <class package="org.netbeans.junit" name="NbModuleSuite"/>
+    </change>
     <change id="CollectData">
         <api name="nbjunit"/>
         <summary>Support for Garbage Collecting of Log Message Arguments</summary>
         <version major="1" minor="44"/>
-        <date day="14" month="12" year="2006"/>
+        <date day="14" month="12" year="2007"/>
         <author login="jtulach"/>
         <compatibility addition="yes"/>
         <description>

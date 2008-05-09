@@ -25,7 +25,6 @@ import org.netbeans.modules.bpel.model.api.support.BpelModelVisitor;
 import org.netbeans.modules.bpel.model.xam.BpelElements;
 import org.w3c.dom.Element;
 
-
 /**
  * @author ads
  *

@@ -224,7 +224,10 @@ public final class MacrosModel {
     }
     
     public void deleteMacro(int tableRow) {
-        Macro macro = allMacrosList.remove(tableRow);
+        Macro macro = allMacrosList.get(tableRow);
+        Set<String> set = Collections.<String>emptySet();
+        macro.setShortcuts(set);
+        allMacrosList.remove(tableRow);
         Map<String, Macro> map = mimeType2Macros.get(macro.getMimeType());
         map.remove(macro.getName());
         
@@ -416,10 +419,12 @@ public final class MacrosModel {
     private void fireTableModelChange(Macro m, int columnIndex) {
         assert columnIndex >= 0 && columnIndex < COLUMN_COUNT;
         
-        int rowIndex = allMacrosList.indexOf(m);
-        assert rowIndex != -1;
+	//wrong assumption that list will be ordered in the same way as table
+//        int rowIndex = allMacrosList.indexOf(m);
+//        assert rowIndex != -1;
         
-        tableModel.fireTableCellUpdated(rowIndex, columnIndex);
+//        tableModel.fireTableCellUpdated(rowIndex, columnIndex);
+	tableModel.fireTableDataChanged();
     }
 
     private void setChanged(boolean changed) {

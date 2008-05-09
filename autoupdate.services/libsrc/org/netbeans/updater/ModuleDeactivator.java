@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -43,7 +43,6 @@ package org.netbeans.updater;
 
 import java.io.*;
 import java.util.*;
-import java.util.jar.*;
 import javax.swing.SwingUtilities;
 
 /**
@@ -64,9 +63,12 @@ public final class ModuleDeactivator extends Object {
         UpdaterFrame.setLabel (Localization.getBrandedString ("CTL_DeletingFiles"));
         Collection<File> allFiles = new HashSet<File> ();
         for (File cluster : UpdateTracking.clusters (true)) {
-            allFiles.addAll (readFilesMarkedForDeleteInCluster (cluster));
-            allFiles.add (getControlFileForMarkedForDelete (cluster));
-            allFiles.add (getDeactivateLater (cluster));
+            boolean modified = allFiles.addAll (readFilesMarkedForDeleteInCluster (cluster));
+            modified = allFiles.add (getControlFileForMarkedForDelete (cluster)) || modified;
+            modified = allFiles.add (getDeactivateLater (cluster)) || modified;
+            if (modified) {
+                UpdaterDispatcher.touchLastModified (cluster);
+            }
         }
         UpdaterFrame.setProgressRange (0, allFiles.size ());
         int i = 0;
@@ -175,13 +177,35 @@ public final class ModuleDeactivator extends Object {
     private static void doDelete (File f) {
         assert f != null : "Invalid file " + f + " for delete.";
         if (f.exists () && ! f.delete ()) {
-            assert false : f + " cannot be deleted";
+            // updater_nb.jar is locked on windows, don't throw AE here
+            //assert false : f + " cannot be deleted";
             f.deleteOnExit ();
         }
         f = f.getParentFile ();
-        while (f != null && f.delete ()) {
+        while (f != null && doDeleteEmptyDirectory (f)) {
             f = f.getParentFile (); // remove empty dirs too
         }
+    }
+    
+    private static boolean doDeleteEmptyDirectory (File d) {
+        assert d != null : d + " cannot be null";
+        
+        boolean res = false;
+        if (d.isDirectory ()) { // #132673: remove .lastModified as well if the directory is empty
+            List<File> files = Arrays.asList (d.listFiles ());
+            if (files.size () == 1) {
+                File f = files.get (0);
+                if (UpdaterDispatcher.LAST_MODIFIED.endsWith (f.getName ())) {
+                    if (f.delete ()) {
+                        res = d.delete ();
+                    }
+                }
+            }
+            res = d.delete ();
+        } else {
+            res = d.delete ();
+        }
+        return res;
     }
 
     private static Set<File> readFilesMarkedForDeleteInCluster (File cluster) {

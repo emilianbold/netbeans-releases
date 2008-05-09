@@ -53,12 +53,13 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
+import org.openide.util.datatransfer.ExTransferable;
 
 /**
  *
  * @author rico
  */
-public class WebServiceTransferable implements Transferable{
+public class WebServiceTransferable  extends ExTransferable.Single {
     private WebServiceReference ref;
     
     public static final DataFlavor WS_FLAVOR =
@@ -66,13 +67,16 @@ public class WebServiceTransferable implements Transferable{
     
     /** Creates a new instance of WebServiceTransferable */
     public WebServiceTransferable(WebServiceReference ref) {
+        super(WS_FLAVOR);
         this.ref = ref;
     }
 
+    @Override
     public boolean isDataFlavorSupported(DataFlavor flavor) {
         return WS_FLAVOR.equals(flavor);
     }
 
+    @Override
     public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException {
         if (WS_FLAVOR.equals(flavor)) {
             return ref;
@@ -80,10 +84,16 @@ public class WebServiceTransferable implements Transferable{
         throw new UnsupportedFlavorException(flavor);
     }
 
+    @Override
     public DataFlavor[] getTransferDataFlavors() {
          return new DataFlavor[] {
             WS_FLAVOR
         };
+    }
+
+    @Override
+    protected Object getData() throws IOException, UnsupportedFlavorException {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
     
 }

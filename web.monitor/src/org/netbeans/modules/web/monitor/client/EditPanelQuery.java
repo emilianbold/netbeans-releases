@@ -76,6 +76,7 @@ import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.web.monitor.data.*;
+import org.openide.awt.Mnemonics;
 
 class EditPanelQuery extends DataDisplay {
 
@@ -153,7 +154,7 @@ class EditPanelQuery extends DataDisplay {
 		}
 	    });
 
-	    addGridBagComponent(this, createHeaderLabel(NbBundle.getBundle(EditPanelQuery.class).getString("MON_Querystring"), NbBundle.getBundle(EditPanelQuery.class).getString("MON_Querystring_Mnemonic").charAt(0), NbBundle.getBundle(EditPanelQuery.class).getString("ACS_MON_QuerystringA11yDesc"), paramTable),
+	    addGridBagComponent(this, createHeaderLabel(NbBundle.getBundle(EditPanelQuery.class).getString("MON_Querystring_Header"), NbBundle.getBundle(EditPanelQuery.class).getString("ACS_MON_QuerystringA11yDesc"), paramTable),
                                 0, ++gridy,
 				1, 1, 0, 0, 
 				java.awt.GridBagConstraints.WEST,
@@ -204,25 +205,22 @@ class EditPanelQuery extends DataDisplay {
 	    Param[] params2 = rd.getParam();
 	    if (params2 == null) params2 = new Param[0];
 	    setParameters(params2);
-            char mnemonic = ' ';
             String ad = null;
 
 	    if(method.equals(EditPanel.GET)) {
 		msg2 = NbBundle.getBundle(EditPanelQuery.class).getString("MON_Query_parameters");
-                mnemonic = NbBundle.getBundle(EditPanelQuery.class).getString("MON_Query_parameters_Mnemonic").charAt(0);
                 ad = NbBundle.getBundle(EditPanelQuery.class).getString("ACS_MON_Query_parametersA11yDesc");
                 paramTable.getAccessibleContext().setAccessibleName(NbBundle.getBundle(EditPanelQuery.class).getString("ACS_MON_ParametersTableA11yDesc"));
                 paramTable.setToolTipText(NbBundle.getBundle(EditPanelQuery.class).getString("ACS_MON_ParametersTableA11yDesc"));
 		
 	    } else if(method.equals(EditPanel.POST)) {
 		msg2 = NbBundle.getBundle(EditPanelQuery.class).getString("MON_Posted_data");
-                mnemonic = NbBundle.getBundle(EditPanelQuery.class).getString("MON_Posted_data_Mnemonic").charAt(0);
                 ad = NbBundle.getBundle(EditPanelQuery.class).getString("ACS_MON_Posted_dataA11yDesc");
                 paramTable.getAccessibleContext().setAccessibleName(NbBundle.getBundle(EditPanelQuery.class).getString("ACS_MON_Posted_dataTableA11yName"));
                 paramTable.setToolTipText(NbBundle.getBundle(EditPanelQuery.class).getString("ACS_MON_Posted_dataTableA11yDesc"));
 	    }
 
-	    msg2Label = createSortButtonLabel(msg2, paramTable, mnemonic, ad);
+	    msg2Label = createSortButtonLabel(msg2, paramTable, ad);
 
 	    addGridBagComponent(this, msg2Label, 0, ++gridy,
 				1, 1, 0, 0, 
@@ -254,17 +252,16 @@ class EditPanelQuery extends DataDisplay {
 			    tableInsets,
 			    0, 0);
 
-	newParamB = new JButton(NbBundle.getBundle(EditPanelQuery.class).getString("MON_New_param"));
-        newParamB.setMnemonic(NbBundle.getBundle(EditPanelQuery.class).getString("MON_New_param_Mnemonic").charAt(0));
+	newParamB = new JButton();
+        Mnemonics.setLocalizedText(newParamB, NbBundle.getBundle(EditPanel.class).getString("MON_New_param"));
         newParamB.setToolTipText(NbBundle.getBundle(EditPanelQuery.class).getString("ACS_MON_New_paramA11yDesc"));
 	newParamB.addActionListener(new ActionListener() {
 		public void actionPerformed(ActionEvent e) {
 
-		    String title = NbBundle.getBundle(EditPanelQuery.class).getString("MON_New_param"); 
 		    ParamEditor pe = new ParamEditor("", "", //NOI18N
 						     ParamEditor.Editable.BOTH, 
 						     ParamEditor.Condition.NONE, 
-						     title);
+						     newParamB.getText());
 
 		    if(debug) log("Now showing dialog"); // NOI18N
 		    
@@ -283,8 +280,8 @@ class EditPanelQuery extends DataDisplay {
 		    }
 		}});
 
-	deleteParamB = new JButton(NbBundle.getBundle(EditPanelQuery.class).getString("MON_Delete_param"));
-        deleteParamB.setMnemonic(NbBundle.getBundle(EditPanelQuery.class).getString("MON_Delete_param_Mnemonic").charAt(0));
+	deleteParamB = new JButton();
+        Mnemonics.setLocalizedText(deleteParamB, NbBundle.getBundle(EditPanel.class).getString("MON_Delete_param"));
         deleteParamB.setToolTipText(NbBundle.getBundle(EditPanelQuery.class).getString("ACS_MON_Delete_paramA11yDesc"));
 
 	deleteParamB.addActionListener(new ActionListener() {

@@ -44,6 +44,7 @@ package org.netbeans.modules.compapp.casaeditor.nodes;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponentVisitor;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaConnection;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaConsumes;
+import org.netbeans.modules.compapp.casaeditor.model.casa.CasaEndpoint;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaPort;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaProvides;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaServiceEngineServiceUnit;
@@ -67,24 +68,34 @@ public class CasaNodeCreationVisitor extends CasaComponentVisitor.Default {
         return mNode;
     }
     
+    @Override
     public void visit(CasaServiceEngineServiceUnit data) {
         mNode = new ServiceUnitNode(data, mNodeFactory);
     }
 
+    @Override
     public void visit(CasaConnection data) {
         mNode = new ConnectionNode(data, mNodeFactory);
     }
 
+    @Override
     public void visit(CasaConsumes data) {
         mNode = new ConsumesNode(data, mNodeFactory);
     }
 
+    @Override
     public void visit(CasaProvides data) {
         mNode = new ProvidesNode(data, mNodeFactory);
     }
 
+    @Override
     public void visit(CasaPort data) {
         mNode = new WSDLEndpointNode(data, mNodeFactory);
+    }
+    
+    @Override
+    public void visit(CasaEndpoint data) {
+        mNode = new ServiceUnitProcessNode(data, mNodeFactory);
     }
     
 }

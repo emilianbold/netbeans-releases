@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,8 +21,10 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -42,14 +44,12 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
 import org.netbeans.api.ruby.platform.RubyPlatform.Info;
-import org.netbeans.junit.MockServices;
-import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.gsf.GsfTestBase;
 import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.modules.InstalledFileLocator;
 
-public abstract class RubyTestBase extends NbTestCase {
+public abstract class RubyTestBase extends GsfTestBase {
     
     private FileObject testRubyHome;
 
@@ -59,36 +59,11 @@ public abstract class RubyTestBase extends NbTestCase {
 
     protected @Override void setUp() throws Exception {
         super.setUp();
-        clearWorkDir();
-        MockServices.setServices(IFL.class);
         TestUtil.getXTestJRubyHome();
-        System.setProperty("netbeans.user", getWorkDirPath());
     }
 
     public File getTestRubyHome() {
         return FileUtil.toFile(testRubyHome);
-    }
-    
-    public static final class IFL extends InstalledFileLocator {
-        public IFL() {}
-        public @Override File locate(String relativePath, String codeNameBase, boolean localized) {
-            if (relativePath.equals("ruby/debug-commons-0.9.5/classic-debug.rb")) {
-                File rubydebugDir = getDirectory("rubydebug.dir", true);
-                File cd = new File(rubydebugDir, "classic-debug.rb");
-                assertTrue("classic-debug found in " + rubydebugDir, cd.isFile());
-                return cd;
-            } else if (relativePath.equals("jruby-1.1RC1")) {
-                return TestUtil.getXTestJRubyHome();
-            } else if (relativePath.equals("platform_info.rb")) {
-                String script = System.getProperty("xtest.platform_info.rb");
-                if (script == null) {
-                    throw new RuntimeException("xtest.platform_info.rb property has to be set when running within binary distribution");
-                }
-                return new File(script);
-            } else {
-                return null;
-            }
-        }
     }
     
     private static File resolveFile(final String property, final boolean mandatory) {
@@ -110,40 +85,62 @@ public abstract class RubyTestBase extends NbTestCase {
         return directory;
     }
 
-    protected File setUpRuby() throws Exception {
+    protected File setUpRuby() throws IOException {
         return setUpRuby(false, "");
     }
 
-    protected File setUpRubyWithGems() throws Exception {
+    protected File setUpRubyWithGems() throws IOException {
         return setUpRuby(true, "");
     }
     
-    protected File setUpRuby(final boolean withGems, final String suffix) throws Exception {
+    protected File setUpRuby(final boolean withGems, final String suffix) throws IOException {
+        return setUpRuby("Ruby", withGems, suffix);
+    }
+    
+    protected File setUpRubinius() throws IOException {
+        return setUpRuby("Rubinius", false, "");
+        
+    }
+    
+    private File setUpRuby(final String kind, final boolean withGems, final String suffix) throws IOException {
         // Ensure that $GEM_HOME isn't picked up
         // I can't do this:
         //  System.getenv().remove("GEM_HOME");
         // because the environment variable map is unmodifiable. So instead
         // side effect to ensure that the GEM_HOME check isn't run
         GemManager.TEST_GEM_HOME = "invalid"; // non null but also invalid dir, will bypass $GEM_HOME lookup
+        boolean isRubinius = kind.equals("Rubinius");
         
         // Build a fake ruby structure
         testRubyHome = FileUtil.createFolder(FileUtil.toFileObject(getWorkDir()), "test_ruby");
         
         FileObject bin = testRubyHome.createFolder("bin");
-        FileObject libRuby = FileUtil.createFolder(testRubyHome, "lib/ruby");
-        libRuby.createFolder(RubyPlatform.DEFAULT_RUBY_RELEASE);
-        FileObject interpreter = bin.createData("ruby" + suffix);
-        String[] binaries = { "rdoc", "gem" };
+        FileObject libRuby = FileUtil.createFolder(testRubyHome, "lib");
+        FileObject libRuby18 = null;
+        if (!isRubinius) {
+            libRuby = FileUtil.createFolder(testRubyHome, "lib/ruby");
+            libRuby18 = libRuby.createFolder(RubyPlatform.DEFAULT_RUBY_RELEASE);
+        }
+        
+        FileObject interpreter = isRubinius
+                ? FileUtil.createData(testRubyHome, "shotgun/rubinius")
+                : bin.createData("ruby" + suffix);
+        String[] binaries = { "irb", "gem", "rdoc" };
         for (String binary : binaries) {
             bin.createData(binary + suffix);
         }
 
         Properties props = new Properties();
-        props.put(Info.RUBY_KIND, "Ruby");
+        props.put(Info.RUBY_KIND, kind);
         props.put(Info.RUBY_VERSION, "0.1");
         props.put(Info.RUBY_RELEASE_DATE, "2000-01-01");
         props.put(Info.RUBY_PLATFORM, "abcd");
+        props.put(Info.RUBY_PLATFORM, "abcd");
+        if (!isRubinius) {
+            props.put(Info.RUBY_LIB_DIR, FileUtil.toFile(libRuby18).getAbsolutePath());
+        }
         if (withGems) {
+            assertFalse("setuping Rubinius with RubyGems is not supported yet", isRubinius);
             // Build a fake rubygems repository
             FileObject gemRepo = FileUtil.createFolder(libRuby, "gems/" + RubyPlatform.DEFAULT_RUBY_RELEASE);
             GemManager.initializeRepository(gemRepo);
@@ -185,22 +182,4 @@ public abstract class RubyTestBase extends NbTestCase {
     protected static void installFakeGem(final String name, final String version, final RubyPlatform platform) throws IOException {
         installFakeGem(name, version, null, platform);
     }
-
-    protected FileObject getTestFile(String relFilePath) {
-        File wholeInputFile = new File(getDataDir(), relFilePath);
-        if (!wholeInputFile.exists()) {
-            NbTestCase.fail("File " + wholeInputFile + " not found.");
-        }
-        FileObject fo = FileUtil.toFileObject(wholeInputFile);
-        assertNotNull(fo);
-
-        return fo;
-    }
-
-    private File touch(final File directory, final String binary) throws IOException {
-        File binaryF = new File(directory, binary);
-        binaryF.createNewFile();
-        return binaryF;
-    }
-
 }

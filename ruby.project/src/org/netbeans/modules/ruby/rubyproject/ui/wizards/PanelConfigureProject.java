@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -48,22 +48,21 @@ import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.ruby.rubyproject.ui.wizards.NewRubyProjectWizardIterator.Type;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.util.HelpCtx;
 
 /**
  * Panel just asking for basic info.
- * @author Jesse Glick
  */
 public final class PanelConfigureProject implements WizardDescriptor.Panel, WizardDescriptor.ValidatingPanel, WizardDescriptor.FinishablePanel {
     
     private WizardDescriptor wizardDescriptor;
-    private int type;
+    private final Type type;
     private PanelConfigureProjectVisual component;
     
-    /** Create the wizard panel descriptor. */
-    public PanelConfigureProject( int type ) {
+    PanelConfigureProject(Type type) {
         this.type = type;
     }
     
@@ -75,16 +74,18 @@ public final class PanelConfigureProject implements WizardDescriptor.Panel, Wiza
     }
     
     public HelpCtx getHelp() {
-        
-        switch ( type ) {
-            case NewRubyProjectWizardIterator.TYPE_APP:
-                return new HelpCtx( this.getClass().getName() + "_APP" ); // NOI18N
-//            case NewRubyProjectWizardIterator.TYPE_LIB:
-//                return new HelpCtx( this.getClass().getName() + "_LIB" ); // NOI18N
-            case NewRubyProjectWizardIterator.TYPE_EXT:
-                return new HelpCtx( this.getClass().getName() + "_EXT" ); // NOI18N
-        }        
-        return new HelpCtx( PanelConfigureProject.class );
+        HelpCtx result;
+        switch (type) {
+            case APPLICATION:
+                result = new HelpCtx(this.getClass().getName() + "_APP"); // NOI18N
+                break;
+            case EXISTING:
+                result = new HelpCtx(this.getClass().getName() + "_EXT"); // NOI18N
+                break;
+            default:
+                throw new IllegalStateException("unknown type: " + type);
+        }
+        return result;
     }
     
     public boolean isValid() {
@@ -94,18 +95,18 @@ public final class PanelConfigureProject implements WizardDescriptor.Panel, Wiza
     
     private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
     
-    public final void addChangeListener(ChangeListener l) {
+    public void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.add(l);
         }
     }
-    public final void removeChangeListener(ChangeListener l) {
+    public void removeChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.remove(l);
         }
     }
     
-    protected final void fireChangeEvent() {
+    protected void fireChangeEvent() {
         Iterator it;
         synchronized (listeners) {
             it = new HashSet<ChangeListener>(listeners).iterator();

@@ -1,0 +1,114 @@
+<html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright © 2008 Sun Microsystems, Inc.
+ * All rights reserved. 
+ * Use is subject to license terms.
+-->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>JSF 1.2 Bubble Help Component Properties Window</title>
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+
+<h2>JSF 1.2 Bubble Help Component Properties Window </h2>
+<p><small><a href="#seealso">See Also  </a></small></p>
+
+
+<p>You see the Properties window for a Bubble Help Component <img src="../../../../images/bubble.png" alt="Alert Component icon">&nbsp;when you select the component on a page that you are editing in the Visual Designer. Most of the component's properties are both JSP attributes and properties of the <code>Bubble Help</code> Java component in the page bean.</p>
+<p>This JavaServer Faces 1.2 component has the following properties. </p>
+
+<h3>General</h3>
+<ul>
+	<li><b>id.</b><code> Type: String</code><br>
+	The name of the Bubble Help Component in the page bean and the JSP file. </li>
+</ul>
+
+<h3>Appearance</h3>
+<ul>
+  <li><b>duration.</b><code> Type: String</code><br>
+Number of milliseconds after which the the popup window closes. The default is 200 milliseconds. </li>
+  <li><b>focusId.</b><code> Type: String</code><br> 
+    This is used to set the focus to an element inside the bubble. </li>
+  <li><b>style.</b><code> Type: String</code><br>
+		Cascading Style Sheet rules (CSS level 2) to be applied to the outermost HTML element when the component is rendered.  For example:
+		  <p><code>&nbsp;&nbsp;&nbsp;position: absolute; left: 144px; top: 72px</code></p>
+<p>You can enter values directly or click the ellipsis (...) button to use the <a href="../../../propeditors/style_prop_ed_main.html">Style Editor</a>.
+    <ul class="note">
+          <li>This property overrides any settings in the theme or the project CSS file for this component. If a style specified in this property does not appear to take effect, it is because an area of the component is obscured by a child component that has different style settings.</li>
+    </ul>
+
+	  <p>For a list of CSS2 style attributes, see the web page at<br>
+        <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+	      <param name="content" value="http://www.w3.org/TR/REC-CSS2/propidx.html">
+	      <param name="text" value="http://www.w3.org/TR/REC-CSS2/propidx.html"></object>
+      </p>
+  </li>
+	<li><b>styleClass.<a name="themecss"></a></b><code> Type: String</code><br>
+	  A space-separated list of CSS2 style classes to be applied the the outermost HTML element when the component is rendered. The style classes must be defined in the project's style sheet or in the theme's CSS file. If you click the ellipsis button (...), you see a list of all styles you can add to this property. For information on adding CSS classes and rules to the project's cascading style sheet, see <a href="../../../editors/about_css_editor.html">CSS Editor</a>.
+      <ul class="note">
+        <li>See the note above under the <code>style</code> property description for an explanation of why a class added to this property might appear to have no effect on the component. </li>
+        <li> If you add a CSS style class from the current <a href="../../../../components/aboutthemes.html">theme</a> to your project CSS file and you redefine the style class, the change affects all components that use this style class. However, you can add your own style classes to the project CSS file that redefine the default style classes, and then when you add them to this property, the changes affect only this instance of this component.</li>
+     </ul>
+  <li><b>title.</b><code> Type: String</code><br>
+	  Text for the popup help title.</li>
+</ul>
+
+<h3>Data</h3>
+<ul>
+  <li><b>converter.</b><code> Type: Converter </code><br>
+This is used to specify a method to translate native property values to <code>String</code> and back for the component </li>
+  <li><b>value.</b><code> Type: Object </code><br>
+The current value of the component. </li>
+</ul>
+
+<h3>Behavior</h3>
+<ul>
+  <li><b>autoClose.</b><code> Type: Boolean </code><br>
+This uses the <code>autoClose</code> attribute to close the bubble help automatically.</li>
+  <li><b>closeButton.</b><code> Type: Boolean </code><br>
+  This uses the <code>closeButton</code> attribute to display a close button for a bubble. 
+    
+  </li>
+  <li><b>visible.</b><code> Type: Boolean</code><br>
+  Indicates whether or not the  component can be seen by the user on the rendered HTML page.   If you deselect this property, the component's HTML code is rendered on the page, but the component is not visible  in the browser because it is hidden by a style setting. The valule is set to false by default, so HTML for the component HTML is included and is invisible to the user. If the component is not visible, it can still be processed on subsequent form submissions because the HTML is present. </li>
+</ul>
+<h3>Accessibility</h3>
+<ul>
+  <li><b>tabIndex.</b><code> Type: Integer</code><br> 
+  The attribute is used for making the bubble help component accessible. 
+</li>
+</ul>
+<h3>Advanced</h3>
+<ul>
+  <li><b>rendered.</b><code> Type: Boolean</code><br>
+If selected, the component is to be rendered and processed on any subsequent page submission. If not selected, the component does not appear on the page at all, not even as a hidden component. If you need the component to be hidden but still processed when the page is submitted, deselect the <code>visible</code> property instead of this property. </li>
+</ul>
+
+  </li>
+</ul>
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd><a href="../bubble.html">Bubble Help Component</a></dd>
+	<dd><a href="../../../../components/component_process.html">Working With Components</a></dd>
+	<dd><a href="../../../../components/howtocomponents/components_quickref.html">Component Tasks: Quick Reference</a></dd>
+</dl>
+
+<hr>
+<!-- Start Customer Feedback Link -->
+<!-- <p><b>Comments or questions?</b><br>
+Use the link below to connect to the Visual Web Development contact page. </p>
+  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="viewerActivator" value="javax.help.LinkButton">
+    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Alert Component Properties Window">
+    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> 
+<!-- End Customer Feedback Link -->
+  <small><a href="../../../../credits.html">Legal Notices</a></small>
+<table cellpadding="50" border="0">
+<tr>
+<td>&nbsp;</td>
+</tr>
+</table>
+</body>
+</html>

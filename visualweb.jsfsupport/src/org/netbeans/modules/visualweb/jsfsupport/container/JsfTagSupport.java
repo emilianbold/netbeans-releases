@@ -18,6 +18,9 @@ import javax.faces.webapp.UIComponentTagBase;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.w3c.dom.Document;
@@ -52,10 +55,7 @@ public class JsfTagSupport {
         try {
             Enumeration<URL> urls = classLoader.getResources("META-INF/faces-config.xml");
             while (urls.hasMoreElements()) {
-                URL url = urls.nextElement();
-                if (!url.getPath().contains("jsfcl.jar")) {
-                    addTaglibFacesConfigMapEntry(url);
-                }
+                addTaglibFacesConfigMapEntry(urls.nextElement());
             }
 
             // Bug Fix 124610 - Unfortunately the JSF RI component informations are not kept
@@ -67,17 +67,21 @@ public class JsfTagSupport {
             tagLibFacesConfigInfo.addTagLibUrl(tagLibUrl);
             tagLibFacesConfigInfo.addFacesConfigUrl(facesConfigUrl);
             statictTaglibFacesConfigLocationMap.put(taglibUri, tagLibFacesConfigInfo);
+            
+            tagLibUrl = new URL(facesConfigUrl.toString().split("!")[0] + "!/META-INF/jsf_core.tld");
+            taglibUri = "http://java.sun.com/jsf/core";
+            tagLibFacesConfigInfo = new TagLibFacesConfigInfo(taglibUri);
+            tagLibFacesConfigInfo.addTagLibUrl(tagLibUrl);
+            tagLibFacesConfigInfo.addFacesConfigUrl(facesConfigUrl);
+            statictTaglibFacesConfigLocationMap.put(taglibUri, tagLibFacesConfigInfo);            
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
         }
     }
 
     private static void addTaglibFacesConfigMapEntry(URL facesConfigUrl) throws IOException, ParserConfigurationException, SAXException {
-        String zipFilePathPrefix = facesConfigUrl.getFile().split("!")[0];
-        String zipFilePath = zipFilePathPrefix.substring(zipFilePathPrefix.indexOf(":") + 1);
-        if (zipFilePath.contains("%20")) {
-            zipFilePath = zipFilePath.replaceAll("%20", " ");
-        }
+        FileObject facesConfigFileObject = URLMapper.findFileObject(facesConfigUrl);
+        String zipFilePath = FileUtil.toFile(FileUtil.getArchiveFile(facesConfigFileObject)).getAbsolutePath();
         ZipFile in = new ZipFile(zipFilePath);
         Enumeration<? extends ZipEntry> entries = in.entries();
         while (entries.hasMoreElements()) {
@@ -133,6 +137,9 @@ public class JsfTagSupport {
 
     public String getComponentClass(
             ClassLoader classLoader, String tagName) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
+        if(tagName.equals("view") || tagName.equals("subview") || tagName.equals("verbatim")) {
+            return null;
+        }
         UIComponentTagBase componentTag = (UIComponentTagBase) getTagHandler(classLoader, tagName);
         String componentType = componentTag.getComponentType();
         ComponentInfo componentInfo = componentInfoMap.get(componentType);

@@ -84,7 +84,7 @@ public class CasaDataLoaderBeanInfo extends SimpleBeanInfo {
      */
     public Image getIcon(int type) {
         if ((type == BeanInfo.ICON_COLOR_16x16) || (type == BeanInfo.ICON_MONO_16x16)) {
-            return Utilities.loadImage("org/netbeans/modules/compapp/casaeditor/resources/casa16.gif"); // NOI18N
+            return Utilities.loadImage("org/netbeans/modules/compapp/casaeditor/resources/service_composition_16.png"); // NOI18N
         } else {
             return null;
         }

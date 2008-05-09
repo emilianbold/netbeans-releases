@@ -49,6 +49,47 @@ import javax.lang.model.element.Modifier;
  */
 public class Constants {
     
+    public static final String AUTH = "auth"; //NOI18N
+
+    public static final String LOGIN = "login"; //NOI18N
+    
+    public static final String CALLBACK = "callback"; //NOI18N
+
+    
+    public static final String JAVA_ANNOTATION_PACKAGE = "javax.annotation."; //NOI18N
+    
+    public static final String JAVA_ANNOTATION_RESOURCE = "Resource"; //NOI18N
+    
+    public static final String HTTP_SERVLET_PACKAGE = "javax.servlet.http.";       //NOI18N
+    
+    public static final String HTTP_SERVLET_REQUEST_CLASS = "HttpServletRequest";//NOI18N
+    
+    public static final String HTTP_SERVLET_RESPONSE_CLASS = "HttpServletResponse";//NOI18N
+    
+    public static final String HTTP_SERVLET_REQUEST_VARIABLE = "request";//NOI18N
+    
+    public static final String HTTP_SERVLET_RESPONSE_VARIABLE = "response";//NOI18N
+    
+    public static final String HTTP_RESOURCE_ANNOTATION = "Resource";     //NOI18N
+    
+    public static final String CONTENT_TYPE = "Content-Type";//NOI18N
+    
+    public static final String PUT_POST_CONTENT = "content";//NOI18N
+    
+    public static final String UNSUPPORTED_DROP = "WARN_UnsupportedDropTarget";//NOI18N
+    
+    public static final String HEADER_PARAMS = "headerParams"; // NOI18n
+    
+    public static final String QUERY_PARAMS = "queryParams"; // NOI18n
+    
+    public static final String PATH_PARAMS = "pathParams"; // NOI18n
+    
+    public static final String REST_CONNECTION = "RestConnection"; //NOI18N
+            
+    public static final String SERVICE_AUTHENTICATOR = "Authenticator"; //NOI18N
+    
+    public static final String SERVICE_AUTHORIZATION_FRAME = "AuthorizationFrame"; //NOI18N
+    
     public static final String XML_TRANSIENT_ANNOTATION = "XmlTransient"; //NOI18N
    
     public static final String XML_ROOT_ELEMENT_ANNOTATION = "XmlRootElement";  //NOI18N
@@ -56,7 +97,63 @@ public class Constants {
     public static final String XML_ELEMENT_ANNOTATION = "XmlElement";  //NOI18N
     
     public static final String XML_ATTRIBUTE_ANNOTATION = "XmlAttribute";  //NOI18N
+    
+    public static final String PATH_ANNOTATION = "Path"; //NOI18N
+    
+    public static final String URI_PARAM_ANNOTATION = "PathParam";       //NOI18N
+    
+    public static final String QUERY_PARAM_ANNOTATION = "QueryParam";       //NOI18N
+    
+    public static final String DEFAULT_VALUE_ANNOTATION = "DefaultValue";       //NOI18N
+    
+    public static final String GET_ANNOTATION = "GET";   //NOI18N
+    
+    public static final String POST_ANNOTATION = "POST";   //NOI18N
+    
+    public static final String PUT_ANNOTATION = "PUT";   //NOI18N
+    
+    public static final String DELETE_ANNOTATION = "DELETE";   //NOI18N
+    
+    public static final String PRODUCE_MIME_ANNOTATION = "ProduceMime"; //NOI18N
+    
+    public static final String CONSUME_MIME_ANNOTATION = "ConsumeMime"; //NOI18N
+    
+    public static final String HTTP_CONTEXT_ANNOTATION = "Context";     //NOI18N
 
+    public static final String REST_API_PACKAGE = "javax.ws.rs.";       //NOI18N
+    
+    public static final String PATH = REST_API_PACKAGE + PATH_ANNOTATION;
+    
+    public static final String GET = REST_API_PACKAGE + GET_ANNOTATION;
+    
+    public static final String POST = REST_API_PACKAGE + POST_ANNOTATION;
+    
+    public static final String PUT = REST_API_PACKAGE + PUT_ANNOTATION;
+    
+    public static final String DELETE = REST_API_PACKAGE + DELETE_ANNOTATION;
+    
+    public static final String PRODUCE_MIME = REST_API_PACKAGE + PRODUCE_MIME_ANNOTATION;
+    
+    public static final String CONSUME_MIME = REST_API_PACKAGE + CONSUME_MIME_ANNOTATION;
+    
+    public static final String URI_PARAM = REST_API_PACKAGE + URI_PARAM_ANNOTATION;
+    
+    public static final String QUERY_PARAM = REST_API_PACKAGE + QUERY_PARAM_ANNOTATION;
+    
+    public static final String DEFAULT_VALUE = REST_API_PACKAGE + DEFAULT_VALUE_ANNOTATION;
+
+    public static final String WEB_APPLICATION_EXCEPTION = REST_API_PACKAGE + "WebApplicationException";
+    
+    public static final String HTTP_RESPONSE = REST_API_PACKAGE + "core.Response"; //NOI18N
+    
+    public static final String RESPONSE_BUILDER = REST_API_PACKAGE + "core.Response.Builder";       //NOI8N
+    
+    public static final String ENTITY_TYPE = REST_API_PACKAGE + "Entity";
+    
+    public static final String HTTP_CONTEXT = REST_API_PACKAGE + "core.Context";    //NOI18N
+    
+    public static final String URI_INFO = REST_API_PACKAGE + "core.UriInfo";     //NOI18N
+    
     public static final String URI_TYPE = "java.net.URI";       //NOI18N
     
     public static final String QUERY_TYPE = "javax.persistence.Query";       //NOI18N
@@ -106,6 +203,33 @@ public class Constants {
    
     public static final String JAVA_EXT = "java"; //NI18N
     
+    public enum DropFileType {
+        JAVA_CLIENT("javaClient", "System.out"), 
+        RESOURCE("resource", "System.out"),
+        SERVLET("servlet", "out"),
+        JSP("jsp", "out");
+        
+        private String prefix; 
+        private String printWriterType;
+        
+        DropFileType(String prefix, String printWriterType) {
+            this.prefix = prefix;
+            this.printWriterType = printWriterType;
+        }
+        
+        public String value() {
+            return name();
+        }
+        
+        public String prefix() {
+            return prefix;
+        }
+        
+        public String getPrintWriterType() {
+            return printWriterType;
+        }
+    }
+
     public enum MimeType {
         XML("application/xml", "Xml"),      //NOI18N
         JSON("application/json", "Json"),   //NOI18N
@@ -137,6 +261,58 @@ public class Constants {
         }
         
         public String toString() {
+            return value;
+        }
+    }
+    
+    public enum HttpMethodType {
+        GET("get", Constants.GET), 
+        PUT("put", Constants.PUT),
+        POST("post", Constants.POST),
+        DELETE("delete", Constants.DELETE);
+        
+        private String prefix; 
+        private String annotationType;
+        
+        HttpMethodType(String prefix, String annotationType) {
+            this.prefix = prefix;
+            this.annotationType = annotationType;
+        }
+        
+        public String value() {
+            return name();
+        }
+        
+        public String prefix() {
+            return prefix;
+        }
+        
+        public String getAnnotationType() {
+            return annotationType;
+        }
+    }
+    
+    public enum SaasAuthenticationType {
+        PLAIN("Plain", "plain"),
+        HTTP_BASIC("HttpBasic", "http-basic"), 
+        API_KEY("ApiKey", "api-key"),
+        CUSTOM("Custom", "custom"),
+        SIGNED_URL("SignedUrl", "signed-url"),
+        SESSION_KEY("SessionKey", "session-key");
+        
+        private String classId;
+        private String value;
+        
+        SaasAuthenticationType(String classId, String value) {
+            this.classId = classId;
+            this.value = value;
+        }
+        
+        public String getClassIdentifier() {
+            return classId;
+        }
+        
+        public String value() {
             return value;
         }
     }

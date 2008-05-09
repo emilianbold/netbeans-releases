@@ -38,7 +38,9 @@ public class IEPSaveCookie implements SaveCookie {
 	public IEPSaveCookie(PlanEditorSupport editorSupport) {
 		this.mEditorSupport = editorSupport;
 		
-		this.mEditorSupport.getModel().addComponentListener(new IEPModelListener());
+		if(this.mEditorSupport.getModel() != null) {
+			this.mEditorSupport.getModel().addComponentListener(new IEPModelListener());
+		}
 	}
 	
 	public void save() throws IOException {

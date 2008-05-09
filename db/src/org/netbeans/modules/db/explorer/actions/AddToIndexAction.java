@@ -144,6 +144,8 @@ public class AddToIndexAction extends DatabaseAction {
                 ixrm.add(selectedCol);
                 ddl.execute(index, isUQ, ixrm);
             }
+            
+            info.refreshChildren();
 
         } catch(Exception exc) {
             DbUtilities.reportError(bundle().getString("ERR_UnableToAddColumn"), exc.getMessage()); // NOI18N

@@ -40,11 +40,11 @@ public class AttachingSessionCookie implements SessionCookie {
     public String getSessionId() {
         if (mySessionId == null) {
             AttachingCookie attachingCookie = 
-                (AttachingCookie) myContextProvider.lookupFirst (null, AttachingCookie.class);
+                myContextProvider.lookupFirst(null, AttachingCookie.class);
             if (attachingCookie != null) {
                 mySessionId = attachingCookie.getHost() + ":" + attachingCookie.getPort();
             } else {
-                Session session = (Session)myContextProvider.lookupFirst(null, Session.class);
+                Session session = myContextProvider.lookupFirst(null, Session.class);
                 mySessionId = session.getName();
             }
         }

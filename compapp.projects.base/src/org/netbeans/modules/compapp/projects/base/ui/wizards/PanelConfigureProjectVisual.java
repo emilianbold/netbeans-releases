@@ -26,14 +26,14 @@ import javax.swing.JPanel;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 
-class PanelConfigureProjectVisual
+public class PanelConfigureProjectVisual
     extends JPanel
     implements org.netbeans.modules.compapp.projects.base.IcanproConstants {
 
     private PanelConfigureProject panel;
 
     private PanelProjectLocationVisual projectLocationPanel;
-    private PanelOptionsVisual optionsPanel;
+    private SettingsPanel optionsPanel;
     /** prefered dimmension of the panels */
     private static final java.awt.Dimension PREF_DIM = new java.awt.Dimension (500, 340);
 
@@ -46,8 +46,11 @@ class PanelConfigureProjectVisual
         projectLocationPanel = new PanelProjectLocationVisual(panel);
         locationContainer.add(projectLocationPanel, java.awt.BorderLayout.NORTH);
 
-        optionsPanel = new PanelOptionsVisual(panel);
+        optionsPanel = getOptionsPanel(panel);
         optionsContainer.add(optionsPanel, java.awt.BorderLayout.NORTH);
+        if (optionsPanel instanceof ProjectNameAware) {
+            ((ProjectNameAware)optionsPanel).attachProjectNameListener(projectLocationPanel.getProjectNameTextField());
+        }
 
 ///
 /*        DocumentListener dl = new DocumentListener() {
@@ -77,6 +80,10 @@ class PanelConfigureProjectVisual
         putClientProperty ("NewProjectWizard_Title", panel.getDefaultTitle()); //NOI18N
     }
 
+    protected SettingsPanel getOptionsPanel(PanelConfigureProject panel) {
+        return new PanelOptionsVisual(panel);
+    }
+    
     @Override
     public Dimension getPreferredSize() {
         return PREF_DIM;

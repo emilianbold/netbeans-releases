@@ -42,7 +42,7 @@
 package org.netbeans.modules.cnd.highlight.semantic;
 
 import java.io.File;
-import java.util.List;
+import java.util.Collection;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceModelTestBase;
@@ -57,18 +57,22 @@ public abstract class SemanticHighlightingTestBase  extends TraceModelTestBase {
         super(name);
     }
     
-    protected abstract List<? extends CsmOffsetable> getBlocks(FileImpl testFile);
+    protected abstract Collection<? extends CsmOffsetable> getBlocks(FileImpl testFile,int offset);
     
-    protected @Override void postTest(String[] args) {
+    protected @Override void postTest(String[] args, Object... params) {
         FileImpl file = getFileImpl(new File(args[0]));
-        List<? extends CsmOffsetable> out = getBlocks(file);
+        int offset = -1;
+        if (params != null && params.length > 0) {
+            offset = params[0] instanceof Integer ? (Integer)params[0] : -1;
+        }
+        Collection<? extends CsmOffsetable> out = getBlocks(file, offset);
         assert out != null;
         int i = 1;
         for (CsmOffsetable b : out) {
-            System.out.println( "Block " + (i++) + ": Lines " +
-                    file.getLineColumn(b.getStartOffset())[0] + "-" + file.getLineColumn(b.getEndOffset())[0] +
-                    "\tOffsets " +
-                    b.getStartOffset() + "-" + b.getEndOffset());
+            System.out.println( "Block " + (i++) + ": Lines " +  // NOI18N
+                    file.getLineColumn(b.getStartOffset())[0] + "-" + file.getLineColumn(b.getEndOffset())[0] + // NOI18N
+                    "\tOffsets " + // NOI18N
+                    b.getStartOffset() + "-" + b.getEndOffset()); // NOI18N
         }
     }
 }

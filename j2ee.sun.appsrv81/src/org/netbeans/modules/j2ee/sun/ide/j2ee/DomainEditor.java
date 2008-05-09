@@ -458,6 +458,7 @@ public class DomainEditor {
             Node cpNode = (Node)cpMap.get(poolName);
             NamedNodeMap cpAttrMap = cpNode.getAttributes();
             String dsClassName = cpAttrMap.getNamedItem("datasource-classname").getNodeValue();
+            String resType = cpAttrMap.getNamedItem("res-type").getNodeValue();
             
             //Get property values
             Element cpElement = (Element) cpNode;
@@ -472,15 +473,21 @@ public class DomainEditor {
                 for(int m=0; m<propsMap.getLength(); m++){
                     String mkey = propsMap.getNamedItem(CONST_NAME).getNodeValue();
                     String mkeyValue = propsMap.getNamedItem("value").getNodeValue();
-                    map.put(mkey, mkeyValue);
+                    if(mkey.equalsIgnoreCase(CONST_USER)){
+                        pValues.put(CONST_USER, mkeyValue);
+                    }else if (mkey.equalsIgnoreCase(CONST_PASSWORD)){
+                        pValues.put(CONST_PASSWORD, mkeyValue);
+                    }else if (mkey.equalsIgnoreCase(CONST_URL)){
+                        pValues.put(CONST_URL, mkeyValue);
+                    }else if (mkey.equalsIgnoreCase(CONST_SERVER_NAME)){
+                        pValues.put(CONST_SERVER_NAME, mkeyValue);
+                    }else {
+                        map.put(mkey, mkeyValue);
+                    }
                 }
             } // connection-pool properties
 
-            pValues.put(CONST_USER, (String)map.get(CONST_USER));
-            pValues.put(CONST_PASSWORD, (String)map.get(CONST_PASSWORD));
-            pValues.put(CONST_URL, (String)map.get(CONST_URL));
             pValues.put(CONST_LOWER_DATABASE_NAME, (String)map.get(CONST_LOWER_DATABASE_NAME));
-            pValues.put(CONST_SERVER_NAME, (String)map.get(CONST_SERVER_NAME));
             pValues.put(CONST_PORT_NUMBER, (String)map.get(CONST_PORT_NUMBER));
             pValues.put(CONST_LOWER_PORT_NUMBER, (String)map.get(CONST_LOWER_PORT_NUMBER));
             pValues.put(CONST_DATABASE_NAME, (String)map.get(CONST_DATABASE_NAME));
@@ -488,6 +495,7 @@ public class DomainEditor {
             pValues.put(CONST_DRIVER_CLASS, (String)map.get(CONST_DRIVER_CLASS));
             pValues.put(CONST_DERBY_CONN_ATTRS, (String)map.get(CONST_DERBY_CONN_ATTRS));
             pValues.put("dsClassName", dsClassName);
+            pValues.put("resType", resType);
             
             dSources.put(jndiName, pValues);
         } // for each jdbc-resource
@@ -506,6 +514,7 @@ public class DomainEditor {
             Node cpNode = (Node)cpMap.get(name);
             NamedNodeMap cpAttrMap = cpNode.getAttributes();
             String dsClassName = cpAttrMap.getNamedItem("datasource-classname").getNodeValue();
+            String resType = cpAttrMap.getNamedItem("res-type").getNodeValue();
             
             //Get property values
             Element cpElement = (Element) cpNode;
@@ -520,15 +529,21 @@ public class DomainEditor {
                 for(int m=0; m<propsMap.getLength(); m++){
                     String mkey = propsMap.getNamedItem(CONST_NAME).getNodeValue();
                     String mkeyValue = propsMap.getNamedItem("value").getNodeValue();
-                    map.put(mkey, mkeyValue);
+                    if(mkey.equalsIgnoreCase(CONST_USER)){
+                        pValues.put(CONST_USER, mkeyValue);
+                    }else if (mkey.equalsIgnoreCase(CONST_PASSWORD)){
+                        pValues.put(CONST_PASSWORD, mkeyValue);
+                    }else if (mkey.equalsIgnoreCase(CONST_URL)){
+                        pValues.put(CONST_URL, mkeyValue);
+                    }else if (mkey.equalsIgnoreCase(CONST_SERVER_NAME)){
+                        pValues.put(CONST_SERVER_NAME, mkeyValue);
+                    }else {
+                        map.put(mkey, mkeyValue);
+                    }
                 }
             } // connection-pool properties
             
-            pValues.put(CONST_USER, (String)map.get(CONST_USER));
-            pValues.put(CONST_PASSWORD, (String)map.get(CONST_PASSWORD));
-            pValues.put(CONST_URL, (String)map.get(CONST_URL));
             pValues.put(CONST_LOWER_DATABASE_NAME, (String)map.get(CONST_LOWER_DATABASE_NAME));
-            pValues.put(CONST_SERVER_NAME, (String)map.get(CONST_SERVER_NAME));
             pValues.put(CONST_PORT_NUMBER, (String)map.get(CONST_PORT_NUMBER));
             pValues.put(CONST_LOWER_PORT_NUMBER, (String)map.get(CONST_LOWER_PORT_NUMBER));
             pValues.put(CONST_DATABASE_NAME, (String)map.get(CONST_DATABASE_NAME));
@@ -536,6 +551,7 @@ public class DomainEditor {
             pValues.put(CONST_DRIVER_CLASS, (String)map.get(CONST_DRIVER_CLASS));
             pValues.put(CONST_DERBY_CONN_ATTRS, (String)map.get(CONST_DERBY_CONN_ATTRS));
             pValues.put("dsClassName", dsClassName);
+            pValues.put("resType", resType);
             
             pools.put(name, pValues);
         }

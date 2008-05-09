@@ -28,95 +28,68 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import javax.swing.JEditorPane;
-import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.border.EmptyBorder;
 import javax.swing.text.html.HTMLEditorKit;
+import org.netbeans.modules.bpel.model.api.AnotherVersionBpelProcess;
+import org.netbeans.modules.bpel.model.api.BpelEntity;
+import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.openide.util.NbBundle;
 
 public class ErrorPanel extends JEditorPane {
 
     private DesignView designView;
-    private boolean installed = false;
+
     private static final long serialVersionUID = 1;
 
 //    private Timer timer;
     
     public ErrorPanel(DesignView designView) {
         this.designView = designView;
-//        this.timer = new Timer(3000, this);
         
-//        setEditorKitForContentType("text/html",new HTMLEditorKit()); // NOI18N
+        setEditorKitForContentType("text/html",new HTMLEditorKit()); // NOI18N
         setEditable(false);
         setPreferredSize(new Dimension(200, 200));
         setBorder(new EmptyBorder(20, 20, 20, 20));
         setContentType("text/html"); // NOI18N
         setBackground(designView.getBackground());
-            setText(NbBundle.getMessage(ErrorPanel.class, "LBL_ErrorPanel_Content"));
-//        try {
-//            setPage(ERROR_MESSAGE);
-//            
-//        } catch (IOException e) {};
+        setText(NbBundle.getMessage(ErrorPanel.class, "LBL_ErrorPanel_Content"));
     }
 
 
-    public boolean isInstalled() {
-        return installed;
-    }
+
     
     
-    public void install() {
-        if (!installed) {
-            Component c = getDesignView().getParent();
+
+    
+    
+    public void updateErrorMessage() {
+
+        
+        boolean verifyNamespace = false;
+        
+        if (designView.getBPELModel().getState() != BpelModel.State.VALID) {
+            AnotherVersionBpelProcess avp = designView.getBPELModel()
+                    .getAnotherVersionProcess();
             
-            if (c != null) {
-                JScrollPane scrollPane = (JScrollPane) c.getParent();
-                scrollPane.setViewportView(this);
+            if (avp != null) {
+                String currentNS = avp.getNamespaceUri();
+                if (currentNS == null) {
+                    verifyNamespace = true;
+                } else {
+                    verifyNamespace = !currentNS.equals(BpelEntity
+                            .BUSINESS_PROCESS_NS_URI);
+                }
             }
-            
-            installed = true;
-//            timer.start();
         }
-            
-//        updateErrorMessage();
+
+        try {
+            setPage((verifyNamespace) ? ERROR_MESSAGE_2 : ERROR_MESSAGE_1);
+        } catch (IOException e) {};
     }
     
     
-//    public void updateErrorMessage() {
-//        if (!isInstalled()) return;
-//        
-//        boolean verifyNamespace = false;
-//        
-//        if (designView.getBPELModel().getState() != BpelModel.State.VALID) {
-//            AnotherVersionBpelProcess avp = designView.getBPELModel()
-//                    .getAnotherVersionProcess();
-//            
-//            if (avp != null) {
-//                String currentNS = avp.getNamespaceUri();
-//                if (currentNS == null) {
-//                    verifyNamespace = true;
-//                } else {
-//                    verifyNamespace = !currentNS.equals(BpelEntity
-//                            .BUSINESS_PROCESS_NS_URI);
-//                }
-//            }
-//        }
-//
-//        try {
-//            setPage((verifyNamespace) ? ERROR_MESSAGE_2 : ERROR_MESSAGE_1);
-//        } catch (IOException e) {};
-//    }
-    
-    
-    public void uninstall() {
-        if (!installed) return;
-        
-        JScrollPane scrollPane = (JScrollPane) getParent().getParent();
-        scrollPane.setViewportView(getDesignView());
-        
-//        timer.stop();
-        installed = false;
-    }
+
     
     
     public DesignView getDesignView() {
@@ -139,20 +112,20 @@ public class ErrorPanel extends JEditorPane {
 //    }
     
 
-//    private static URL ERROR_MESSAGE; // NOI18N
+   private static URL ERROR_MESSAGE; // NOI18N
     
     
     static {
-//        try {
-//            ERROR_MESSAGE = new URL("nbresloc:/org/netbeans/modules/bpel/design/resources/errormessage.html"); // NOI18N
-//            ERROR_MESSAGE = NbBundle.getMessage(ErrorPanel.class, "LBL_ErrorPanel_Content");// NOI18N
-//        } catch (MalformedURLException e) {}
+        try {
+            ERROR_MESSAGE = new URL("nbresloc:/org/netbeans/modules/bpel/design/resources/errormessage.html"); // NOI18N
+            //ERROR_MESSAGE = NbBundle.getMessage(ErrorPanel.class, "LBL_ErrorPanel_Content");// NOI18N
+        } catch (MalformedURLException e) {}
     }
     
     
-//    private static URL ERROR_MESSAGE_1 = ErrorPanel.class
-//            .getResource("resources/errormessage1.html"); // NOI18N
-//
-//    private static URL ERROR_MESSAGE_2 = ErrorPanel.class
-//            .getResource("resources/errormessage2.html"); // NOI18N
+    private static URL ERROR_MESSAGE_1 = ErrorPanel.class
+            .getResource("resources/errormessage1.html"); // NOI18N
+
+    private static URL ERROR_MESSAGE_2 = ErrorPanel.class
+            .getResource("resources/errormessage2.html"); // NOI18N
 }

@@ -47,8 +47,8 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
 import org.netbeans.modules.j2ee.earproject.ui.ModuleNode;
-import org.netbeans.modules.j2ee.earproject.ui.customizer.VisualClassPathItem;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -68,9 +68,9 @@ public class OpenModuleProjectAction extends CookieAction {
     public void performAction(Node[] nodes) {
         Project projects[] = new Project[nodes.length];
         for (int i = 0; i < nodes.length; i++) {
-            VisualClassPathItem vcpi = nodes[i].getCookie(ModuleNode.class).getVCPI();
-            if (VisualClassPathItem.Type.ARTIFACT == vcpi.getType()) {
-                projects[i] = ((AntArtifact) vcpi.getObject()).getProject();
+            ClassPathSupport.Item vcpi = nodes[i].getCookie(ModuleNode.class).getVCPI();
+            if (ClassPathSupport.Item.TYPE_ARTIFACT == vcpi.getType()) {
+                projects[i] = vcpi.getArtifact().getProject();
             } else {
                 continue;
             }

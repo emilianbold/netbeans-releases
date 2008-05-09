@@ -44,4 +44,10 @@ package org.netbeans.modules.db.explorer.infos;
 public class ProcedureParamNodeInfo extends DatabaseNodeInfo
 {
     static final long serialVersionUID =4583121775649131706L;
+
+    @Override
+    public String getShortDescription() {
+        return bundle().getString("ND_ProcedureParam"); //NOI18N
+    }
+
 }

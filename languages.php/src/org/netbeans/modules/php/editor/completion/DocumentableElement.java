@@ -42,9 +42,9 @@
 package org.netbeans.modules.php.editor.completion;
 
 import java.util.Set;
-import org.netbeans.api.gsf.Element;
-import org.netbeans.api.gsf.ElementKind;
-import org.netbeans.api.gsf.Modifier;
+import org.netbeans.modules.gsf.api.Element;
+import org.netbeans.modules.gsf.api.ElementKind;
+import org.netbeans.modules.gsf.api.Modifier;
 
 /**
  * An abstraction for the <code>Element</code> that has the associated 

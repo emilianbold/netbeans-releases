@@ -403,6 +403,7 @@ final class NewOptionsIterator extends BasicWizardIterator {
             files.add(files.addModuleDependency("org.openide.util")); // NOI18N
             files.add(files.addModuleDependency("org.netbeans.modules.options.api","0-1",null,true));// NOI18N
             files.add(files.addModuleDependency("org.openide.awt")); // NOI18N
+            files.add(files.addModuleDependency("org.jdesktop.layout")); // NOI18N
         }
         
         private void generateLayerEntry() {

@@ -22,6 +22,7 @@ package org.netbeans.modules.xslt.mapper.model.nodes.actions;
 import java.awt.Image;
 import java.util.HashMap;
 import java.util.Map;
+import org.netbeans.modules.xslt.model.CopyOf;
 import org.netbeans.modules.xslt.model.ForEach;
 import org.netbeans.modules.xslt.model.If;
 import org.netbeans.modules.xslt.model.Instruction;
@@ -34,7 +35,8 @@ import org.openide.util.Utilities;
  */
 public enum SupportedRuleTypes {
     IF(If.class),
-    FOR_EACH(ForEach.class);
+    FOR_EACH(ForEach.class),
+    COPY_OF(CopyOf.class);
     
     private static Map<Class<? extends Instruction>, SupportedRuleTypes> classToType;
     

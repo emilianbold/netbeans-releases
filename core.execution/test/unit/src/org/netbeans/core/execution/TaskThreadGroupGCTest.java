@@ -41,15 +41,14 @@
 
 package org.netbeans.core.execution;
 
-import java.awt.Frame;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.SwingUtilities;
 import org.netbeans.junit.NbTestCase;
 import org.openide.execution.ExecutionEngine;
 import org.openide.execution.ExecutorTask;
+import org.openide.windows.IOProvider;
 
 /**
  * Test that a task thread group is cleared when it is done.
@@ -57,42 +56,18 @@ import org.openide.execution.ExecutorTask;
  * @author Jesse Glick
  */
 public class TaskThreadGroupGCTest extends NbTestCase {
-    private Frame f;
 
     public TaskThreadGroupGCTest(String name) {
         super(name);
     }
 
-    protected void setUp() throws Exception {
-        super.setUp();
-
-        SwingUtilities.invokeAndWait(new Runnable() {
-            public void run() {
-                f = new Frame();
-                f.setVisible(true);
-            }
-        });
-    }
-
-    protected void tearDown() throws Exception {
-
-        SwingUtilities.invokeAndWait(new Runnable() {
-            public void run() {
-                f.setVisible(false);
-                f.dispose();
-                f = null;
-            }
-        });
-        super.tearDown();
-    }
-
-
+    @Override
     protected int timeOut() {
         return 60000;
     }
 
-
     public void testTTGGC() throws Exception {
+        IOProvider.getDefault(); // initialize stdio streams to default, else we will get stack overflow later
         final List<Reference<Thread>> t = new ArrayList<Reference<Thread>>();
         Runnable r = new Runnable() {
             public void run() {

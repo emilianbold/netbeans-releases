@@ -46,6 +46,7 @@ import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 
+import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.ComponentOperator;
 
 /**
@@ -67,9 +68,12 @@ public class AddComponentLibraryDialog extends org.netbeans.performance.test.uti
         expectedTime = WINDOW_OPEN;
     }
     
+    @Override
     protected void initialize() {
         log("::initialize");
         Node projectRoot = null;
+        long oldTimeOut = JemmyProperties.getCurrentTimeout("ComponentOperator.WaitStateTimeout");
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitStateTimeout", 120000);
         try {
             projectRoot = new ProjectsTabOperator().getProjectRootNode("VisualWebProject");
             projectRoot.select();
@@ -80,6 +84,7 @@ public class AddComponentLibraryDialog extends org.netbeans.performance.test.uti
         String nodePath = Bundle.getString("org.netbeans.modules.visualweb.complib.ui.Bundle", "ComplibsRootNode.displayName");
         log("Node path = "+nodePath);
         openNode = new Node(projectRoot,nodePath);
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitStateTimeout", oldTimeOut);
     }
     
     public void prepare() {
@@ -92,6 +97,7 @@ public class AddComponentLibraryDialog extends org.netbeans.performance.test.uti
         return new NbDialogOperator(Bundle.getString("org.netbeans.modules.visualweb.complib.ui.Bundle", "ComplibsRootNode.addComplibTitle"));
     }
 
+    @Override
     public void close() {
         super.close();
     }

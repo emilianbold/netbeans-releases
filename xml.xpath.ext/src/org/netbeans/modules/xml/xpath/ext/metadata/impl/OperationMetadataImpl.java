@@ -29,6 +29,7 @@ import org.netbeans.modules.xml.xpath.ext.metadata.OperationMetadata;
 import org.netbeans.modules.xml.xpath.ext.metadata.ResultTypeCalculator;
 import org.netbeans.modules.xml.xpath.ext.metadata.XPathType;
 import org.netbeans.modules.xml.xpath.ext.metadata.impl.images.IconLoader;
+import org.openide.util.NbBundle;
 
 /**
  * Contains static metadata classes for all XPath operations.
@@ -107,7 +108,8 @@ public abstract class OperationMetadataImpl implements OperationMetadata {
         }
         
         public String getDisplayName() {
-            return "Logical Or";
+            return NbBundle.getMessage(OperationMetadataImpl.class, 
+                            "DN_LogicalOr"); // NOI18N
         }
 
 //        public String getShortDescription() {
@@ -135,7 +137,8 @@ public abstract class OperationMetadataImpl implements OperationMetadata {
         }
 
         public String getDisplayName() {
-            return "Logical And";
+            return NbBundle.getMessage(OperationMetadataImpl.class, 
+                            "DN_LogicalAnd"); // NOI18N
         }
 
 //        public String getShortDescription() {
@@ -167,7 +170,8 @@ public abstract class OperationMetadataImpl implements OperationMetadata {
         }
         
         public String getDisplayName() {
-            return "Equal";
+            return NbBundle.getMessage(OperationMetadataImpl.class, 
+                            "DN_Equal"); // NOI18N
         }
 
 //        public String getShortDescription() {
@@ -199,7 +203,8 @@ public abstract class OperationMetadataImpl implements OperationMetadata {
         }
         
         public String getDisplayName() {
-            return "Not Equal";
+            return NbBundle.getMessage(OperationMetadataImpl.class, 
+                            "DN_NotEqual"); // NOI18N
         }
 
 //        public String getShortDescription() {
@@ -225,7 +230,8 @@ public abstract class OperationMetadataImpl implements OperationMetadata {
         }
         
         public String getDisplayName() {
-            return "Less or Equal";
+            return NbBundle.getMessage(OperationMetadataImpl.class, 
+                            "DN_LessOrEqual"); // NOI18N
         }
 
 //        public String getShortDescription() {
@@ -251,7 +257,8 @@ public abstract class OperationMetadataImpl implements OperationMetadata {
         }
         
         public String getDisplayName() {
-            return "Less";
+            return NbBundle.getMessage(OperationMetadataImpl.class, 
+                            "DN_Less"); // NOI18N
         }
 
 //        public String getShortDescription() {
@@ -277,7 +284,8 @@ public abstract class OperationMetadataImpl implements OperationMetadata {
         }
         
         public String getDisplayName() {
-            return "Greater or Equal";
+            return NbBundle.getMessage(OperationMetadataImpl.class, 
+                            "DN_GreaterOrEqual"); // NOI18N
         }
 
 //        public String getShortDescription() {
@@ -303,7 +311,8 @@ public abstract class OperationMetadataImpl implements OperationMetadata {
         }
         
         public String getDisplayName() {
-            return "Greater";
+            return NbBundle.getMessage(OperationMetadataImpl.class, 
+                            "DN_Greater"); // NOI18N
         }
 
 //        public String getShortDescription() {
@@ -345,7 +354,8 @@ public abstract class OperationMetadataImpl implements OperationMetadata {
         }
         
         public String getDisplayName() {
-            return "Addition";
+            return NbBundle.getMessage(OperationMetadataImpl.class, 
+                            "DN_Addition"); // NOI18N
         }
 
 //        public String getShortDescription() {
@@ -377,7 +387,8 @@ public abstract class OperationMetadataImpl implements OperationMetadata {
         }
         
         public String getDisplayName() {
-            return "Subtraction";
+            return NbBundle.getMessage(OperationMetadataImpl.class, 
+                            "DN_Subtraction"); // NOI18N
         }
 
 //        public String getShortDescription() {
@@ -403,7 +414,8 @@ public abstract class OperationMetadataImpl implements OperationMetadata {
         }
         
         public String getDisplayName() {
-            return "Multiplication";
+            return NbBundle.getMessage(OperationMetadataImpl.class, 
+                            "DN_Multiplication"); // NOI18N
         }
 
 //        public String getShortDescription() {
@@ -429,7 +441,8 @@ public abstract class OperationMetadataImpl implements OperationMetadata {
         }
         
         public String getDisplayName() {
-            return "Division";
+            return NbBundle.getMessage(OperationMetadataImpl.class, 
+                            "DN_Division"); // NOI18N
         }
 
 //        public String getShortDescription() {
@@ -450,7 +463,8 @@ public abstract class OperationMetadataImpl implements OperationMetadata {
         }
 
         public String getDisplayName() {
-            return "Remainder";
+            return NbBundle.getMessage(OperationMetadataImpl.class, 
+                            "DN_Remainder"); // NOI18N
         }
 
 //        public String getShortDescription() {
@@ -476,7 +490,8 @@ public abstract class OperationMetadataImpl implements OperationMetadata {
         }
         
         public String getDisplayName() {
-            return "Negative";
+            return NbBundle.getMessage(OperationMetadataImpl.class, 
+                            "DN_Negative"); // NOI18N
         }
 
 //        public String getShortDescription() {
@@ -512,7 +527,8 @@ public abstract class OperationMetadataImpl implements OperationMetadata {
         }
         
         public String getDisplayName() {
-            return "Union";
+            return NbBundle.getMessage(OperationMetadataImpl.class, 
+                            "DN_Union"); // NOI18N
         }
 
 //        public String getShortDescription() {
@@ -530,5 +546,4 @@ public abstract class OperationMetadataImpl implements OperationMetadata {
             mArguments.add(ArgumentDescriptor.Predefined.REPEATED_NODE_SET_2MIN);
         }
     }
-    
 }

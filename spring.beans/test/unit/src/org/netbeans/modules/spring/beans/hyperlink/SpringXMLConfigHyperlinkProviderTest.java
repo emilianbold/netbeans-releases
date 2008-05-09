@@ -43,9 +43,7 @@ package org.netbeans.modules.spring.beans.hyperlink;
 
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.spring.beans.loader.SpringXMLConfigDataLoader;
 import org.netbeans.modules.spring.beans.TestUtils;
-import org.openide.text.CloneableEditorSupport;
 
 /**
  *
@@ -72,8 +70,9 @@ public class SpringXMLConfigHyperlinkProviderTest extends NbTestCase {
                 "factory-method='getInstance' " +
                 "init-method='myInitMethod' " +
                 "destroy-method='myDestroyMethod' " +
-                "p:location='/WEB-INF/jdbc.properties'/>");
-        BaseDocument testDoc = createSpringXMLConfigDocument(config);
+                "p:location='/WEB-INF/jdbc.properties'" +
+                "p:foobar-ref='sampleBeanRef'/>");
+        BaseDocument testDoc = TestUtils.createSpringXMLConfigDocument(config);
         assertHyperlink(testDoc, "org.dummy.config.PropertyConfigurer");
         assertHyperlink(testDoc, "getInstance");
         assertHyperlink(testDoc, "dummyBean");
@@ -81,16 +80,18 @@ public class SpringXMLConfigHyperlinkProviderTest extends NbTestCase {
         assertHyperlink(testDoc, "myInitMethod");
         assertHyperlink(testDoc, "myDestroyMethod");
         assertHyperlink(testDoc, "p:location");
+        assertHyperlink(testDoc, "p:foobar-ref");
+        assertHyperlink(testDoc, "sampleBeanRef");
     }
 
     public void testImportHyperlink() throws Exception {
         String config = TestUtils.createXMLConfigText("<import resource='/WEB-INF/applicationContext.xml'/>");
-        BaseDocument testDoc = createSpringXMLConfigDocument(config);
+        BaseDocument testDoc = TestUtils.createSpringXMLConfigDocument(config);
         assertHyperlink(testDoc, "/WEB-INF/applicationContext.xml");
     }
     
     public void testRefHyperlinks() throws Exception {
-        String config = createXMLConfigText("<bean id='petStore' " +
+        String config = TestUtils.createXMLConfigText("<bean id='petStore' " +
                 "class='org.springframework.PetStoreImpl'>" +
                 "<constructor-arg>" +
                 "<ref bean='sampleBean'/>" +
@@ -99,13 +100,13 @@ public class SpringXMLConfigHyperlinkProviderTest extends NbTestCase {
                 "<ref bean='foobarBean'/>" + 
                 "</property>" +
                 "</bean>");
-        BaseDocument testDoc = createSpringXMLConfigDocument(config);
+        BaseDocument testDoc = TestUtils.createSpringXMLConfigDocument(config);
         assertHyperlink(testDoc, "sampleBean");
         assertHyperlink(testDoc, "foobarBean");
     }
     
     public void testIdRefHyperlinks() throws Exception {
-        String config = createXMLConfigText("<bean id='petStore' " +
+        String config = TestUtils.createXMLConfigText("<bean id='petStore' " +
                 "class='org.springframework.PetStoreImpl'>" +
                 "<property name='accountDao'>" +
                 "<idref bean='foobarBean'/>" + 
@@ -114,17 +115,17 @@ public class SpringXMLConfigHyperlinkProviderTest extends NbTestCase {
                 "<idref local='localBean'/>" + 
                 "</property>" +
                 "</bean>");
-        BaseDocument testDoc = createSpringXMLConfigDocument(config);
+        BaseDocument testDoc = TestUtils.createSpringXMLConfigDocument(config);
         assertHyperlink(testDoc, "localBean");
         assertHyperlink(testDoc, "foobarBean");
     }
     
     public void testConstructorArgHyperlinks() throws Exception {
-        String config = createXMLConfigText("<bean id='petStore' " +
+        String config = TestUtils.createXMLConfigText("<bean id='petStore' " +
                 "class='org.springframework.PetStoreImpl'>" +
                 "<constructor-arg ref='sampleBean'/>" +
                 "</bean>");
-        BaseDocument testDoc = createSpringXMLConfigDocument(config);
+        BaseDocument testDoc = TestUtils.createSpringXMLConfigDocument(config);
         assertHyperlink(testDoc, "sampleBean");
     }
 
@@ -133,33 +134,33 @@ public class SpringXMLConfigHyperlinkProviderTest extends NbTestCase {
                 "class='org.springframework.PetStoreImpl'>" +
                 "<property name='accountDao' ref='accountBean'>" +
                 "</bean>");
-        BaseDocument testDoc = createSpringXMLConfigDocument(config);
+        BaseDocument testDoc = TestUtils.createSpringXMLConfigDocument(config);
         assertHyperlink(testDoc, "accountDao");
         assertHyperlink(testDoc, "accountBean");
     }
     
     public void testAliasHyperlinks() throws Exception {
-        String config = createXMLConfigText("<alias name='foo' alias='bar'");
-        BaseDocument testDoc = createSpringXMLConfigDocument(config);
+        String config = TestUtils.createXMLConfigText("<alias name='foo' alias='bar'");
+        BaseDocument testDoc = TestUtils.createSpringXMLConfigDocument(config);
         assertHyperlink(testDoc, "foo");
     }
     
     public void testLookupMethodHyperlinks() throws Exception {
-        String config = createXMLConfigText("<bean id='commandManager' class='fiona.apple.CommandManager'>" +
+        String config = TestUtils.createXMLConfigText("<bean id='commandManager' class='fiona.apple.CommandManager'>" +
                 "<lookup-method name='createCommand' bean='commandBean'/>" +
                 "</bean>");
-        BaseDocument testDoc = createSpringXMLConfigDocument(config);
+        BaseDocument testDoc = TestUtils.createSpringXMLConfigDocument(config);
         assertHyperlink(testDoc, "createCommand");
         assertHyperlink(testDoc, "commandBean");
     }
     
     public void testReplacedMethodHyperlinks() throws Exception {
-        String config = createXMLConfigText("<bean id='myValueCalculator' class='x.y.z.MyValueCalculator'>" +
+        String config = TestUtils.createXMLConfigText("<bean id='myValueCalculator' class='x.y.z.MyValueCalculator'>" +
                 "<replaced-method name='computeValue' replacer='replacementComputeValue'>" +
                 "<arg-type>String</arg-type>" + 
                 "</replaced-method>" + 
                 "</bean>");
-        BaseDocument testDoc = createSpringXMLConfigDocument(config);
+        BaseDocument testDoc = TestUtils.createSpringXMLConfigDocument(config);
         assertHyperlink(testDoc, "computeValue");
         assertHyperlink(testDoc, "replacementComputeValue");
     }
@@ -171,24 +172,5 @@ public class SpringXMLConfigHyperlinkProviderTest extends NbTestCase {
         int[] span = hyperlinkProvider.getHyperlinkSpan(testDoc, offset);
         assertEquals(offset, span[0]);
         assertEquals(offset + hyperlink.length(), span[1]);
-    }
-
-    private static String createXMLConfigText(String snippet) {
-        return "<?xml version='1.0'?>" +
-                "<beans xmlns='http://www.springframework.org/schema/beans' " +
-                "       xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' " +
-                "       xmlns:p='http://www.springframework.org/schema/p' " +
-                "       xsi:schemaLocation='http://www.springframework.org/schema/beans " +
-                "       http://www.springframework.org/schema/beans/spring-beans-2.5.xsd'>" +
-                snippet +
-                "</beans>";
-    }
-
-    private static BaseDocument createSpringXMLConfigDocument(String content) throws Exception {
-        Class<?> kitClass = CloneableEditorSupport.getEditorKit(
-                SpringXMLConfigDataLoader.REQUIRED_MIME).getClass();
-        BaseDocument doc = new BaseDocument(kitClass, false);
-        doc.insertString(0, content, null);
-        return doc;
     }
 }

@@ -22,6 +22,7 @@ package org.netbeans.modules.bpel.mapper.multiview;
 import java.lang.ref.WeakReference;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.BpelModel;
+import org.netbeans.modules.bpel.model.api.support.VisibilityScope;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 
@@ -38,7 +39,9 @@ public class BpelDesignContextImpl implements BpelDesignContext {
     private WeakReference<BpelEntity> mGraphEntityRef;
     private WeakReference<BpelEntity> mContextEntityRef;
     private String mMessage;
-    
+    private VisibilityScope mVisibilityScope;
+    private StringBuffer validationErrMsgBuffer = new StringBuffer();
+
     public BpelDesignContextImpl(BpelEntity contextEntity, 
             BpelEntity graphEntity, BpelEntity selectedEntity, 
             Node node, Lookup lookup) {
@@ -103,6 +106,7 @@ public class BpelDesignContextImpl implements BpelDesignContext {
                 "SelectedEntity: " + mSelectedEntityRef + 
                 " Lookup: " + mLookup; // NOI18N
     }
+    
     @Override
     public boolean equals(Object otherObj) {
         if (otherObj instanceof BpelDesignContext) {
@@ -122,4 +126,14 @@ public class BpelDesignContextImpl implements BpelDesignContext {
         return mMessage;
     }
 
+    public synchronized VisibilityScope getVisibilityScope() {
+        if (mVisibilityScope == null) {
+            mVisibilityScope = new VisibilityScope(getSelectedEntity());
+        }
+        return mVisibilityScope;
+    }
+
+    public StringBuffer getValidationErrMsgBuffer() {
+        return validationErrMsgBuffer;
+    }
 }

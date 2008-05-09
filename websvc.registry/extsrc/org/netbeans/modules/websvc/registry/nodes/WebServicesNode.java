@@ -96,7 +96,8 @@ public class WebServicesNode extends AbstractNode implements WebServicesCookie {
     public WebServicesNode(WebServiceData wsData) {
         super(new WebServicesNodeChildren(wsData));
         websvcData = wsData;
-        setName(wsData.getDisplayName());
+        setName(wsData.getName());
+        setDisplayName(wsData.getDisplayName());
         setIconBaseWithExtension("org/netbeans/modules/websvc/registry/resources/webservice.png");
         setShortDescription(wsData.getWSDescription());
 		getCookieSet().add(this);

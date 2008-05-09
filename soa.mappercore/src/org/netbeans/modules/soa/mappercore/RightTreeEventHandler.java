@@ -24,7 +24,10 @@ import java.awt.event.MouseEvent;
 import javax.swing.JPopupMenu;
 import javax.swing.tree.TreePath;
 import org.netbeans.modules.soa.mappercore.model.Graph;
+import org.netbeans.modules.soa.mappercore.model.Link;
 import org.netbeans.modules.soa.mappercore.model.MapperModel;
+import org.netbeans.modules.soa.mappercore.model.TreeSourcePin;
+import org.netbeans.modules.soa.mappercore.model.Vertex;
 
 /**
  *
@@ -35,7 +38,6 @@ public class RightTreeEventHandler extends AbstractMapperEventHandler {
     private MouseEvent initialEvent = null;
     private TreePath initialPath = null;
     private Graph initialTargetGraph = null;
-    private AutoScrollSelectionRightTree autoScrollSelection;
 
     /** Creates a new instance of RightTreeEventHandler */
     public RightTreeEventHandler(RightTree rightTree) {
@@ -120,19 +122,42 @@ public class RightTreeEventHandler extends AbstractMapperEventHandler {
 
     public void mouseReleased(MouseEvent e) {
         reset();
-        if (e.isPopupTrigger()) {
+        if (e.isPopupTrigger() && getMapper().getNodeAt(e.getY()) != null) {
             showPopupMenu(e);
         }
     }
 
     public void mouseDragged(MouseEvent e) {
         if ((initialEvent != null) && (initialEvent.getPoint().distance(e.getPoint()) >= 5)) {
-            LeftTree leftTree = getLeftTree();
+            
             LinkTool linkTool = getMapper().getLinkTool();
-            Transferable transferable = linkTool.activateIngoing(
+            Transferable transferable = null;
+            Link link = null;
+            for (int i = initialTargetGraph.getLinkCount() - 1; i >= 0; i--) {
+                if (initialTargetGraph.getLink(i).getTarget() instanceof Graph) {
+                    link = initialTargetGraph.getLink(i);
+                }
+            }
+            if (link != null) {
+                if (link.getSource() instanceof TreeSourcePin) {
+                    TreeSourcePin source = (TreeSourcePin) link.getSource();
+                    transferable = linkTool.activateOutgoing(source, 
+                            link, initialPath);
+                }
+                if (link.getSource() instanceof Vertex  && 
+                        getMapper().getNode(initialPath, true).isGraphExpanded()) 
+                {
+                    Vertex vertex = (Vertex) link.getSource();
+                    transferable = linkTool.activateOutgoing(initialPath, vertex);
+                }
+                    
+            } else {
+                transferable = linkTool.activateIngoing(
                     initialPath, initialTargetGraph, null);
-
-            startDrag(initialEvent, transferable, MOVE);
+            }
+            if (transferable != null) {
+                startDrag(initialEvent, transferable, MOVE);
+            }
             reset();
         }
     }
@@ -144,12 +169,8 @@ public class RightTreeEventHandler extends AbstractMapperEventHandler {
         Mapper mapper = getMapper();
         MapperNode node = mapper.getNodeAt(y);
         if (node != null && e.getClickCount() == 2) {
-            if (node.isLeaf()) {
-                return;
-            } else if (node.isCollapsed()) {
-                mapper.expandNode(node);
-            } else {
-                mapper.collapseNode(node);
+            if (!node.isLeaf()) {
+                mapper.setExpandedState(node.getTreePath(), node.isCollapsed());
             }
         }
     }
@@ -157,7 +178,8 @@ public class RightTreeEventHandler extends AbstractMapperEventHandler {
     
     private void showPopupMenu(MouseEvent event) {
         MapperContext context = getMapper().getContext();
-        MapperModel model = getMapperModel();
+        MapperModel model = getMapper().getModel();
+        
         if (context == null || model == null) {
             return;
         }

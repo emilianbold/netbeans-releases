@@ -73,7 +73,7 @@ import org.xml.sax.SAXException;
  */
 public final class KeyMapsStorage implements StorageDescription<Collection<KeyStroke>, MultiKeyBinding> {
 
-    // -J-Dorg.netbeans.modules.editor.settings.storage.KeyMapsStorage.level=FINE
+    // -J-Dorg.netbeans.modules.editor.settings.storage.keybindings.KeyMapsStorage.level=FINE
     private static final Logger LOG = Logger.getLogger(KeyMapsStorage.class.getName());
 
     public static final String ID = "Keybindings"; //NOI18N
@@ -102,11 +102,11 @@ public final class KeyMapsStorage implements StorageDescription<Collection<KeySt
         return "keybindings.xml"; //NOI18N
     }
 
-    public StorageReader<Collection<KeyStroke>, MultiKeyBinding> createReader(FileObject f) {
-        return new KeyMapsReader();
+    public StorageReader<Collection<KeyStroke>, MultiKeyBinding> createReader(FileObject f, String mimePath) {
+        return new KeyMapsReader(f, mimePath);
     }
 
-    public StorageWriter<Collection<KeyStroke>, MultiKeyBinding> createWriter(FileObject f) {
+    public StorageWriter<Collection<KeyStroke>, MultiKeyBinding> createWriter(FileObject f, String mimePath) {
         return new KeyMapsWriter();
     }
 
@@ -127,6 +127,10 @@ public final class KeyMapsStorage implements StorageDescription<Collection<KeySt
     private static class KeyMapsReader extends StorageReader<Collection<KeyStroke>, MultiKeyBinding> {
         private Map<Collection<KeyStroke>, MultiKeyBinding> keyMap = new HashMap<Collection<KeyStroke>, MultiKeyBinding>();
         private Set<Collection<KeyStroke>> removedShortcuts = new HashSet<Collection<KeyStroke>>();
+
+        public KeyMapsReader(FileObject f, String mimePath) {
+            super(f, mimePath);
+        }
         
         public Map<Collection<KeyStroke>, MultiKeyBinding> getAdded() {
             return keyMap;
@@ -154,9 +158,10 @@ public final class KeyMapsStorage implements StorageDescription<Collection<KeySt
                         // these characters do not work on MAC, Alt should be coded as 'O'
                         // and Ctrl as 'D'
                         int idx = key.indexOf('-'); //NOI18N
-                        if (idx != -1 && (key.charAt(0) == 'A' || key.charAt(0) == 'C')) { //NOI18N
+                        String proccessedFilePath = getProcessedFile().getPath();
+                        if (idx != -1 && (key.charAt(0) == 'A' || key.charAt(0) == 'C') && !proccessedFilePath.endsWith("-mac.xml")) { //NOI18N
                             LOG.warning("The keybinding '" + key + //NOI18N
-                                "' in " + getProcessedFile().getPath() + " may not work correctly on Mac. " + //NOI18N
+                                "' in " + proccessedFilePath + " may not work correctly on Mac. " + //NOI18N
                                 "Keybindings starting with Alt or Ctrl should " + //NOI18N
                                 "be coded with latin capital letters 'O' " + //NOI18N
                                 "or 'D' respectively. For details see org.openide.util.Utilities.stringToKey()."); //NOI18N
@@ -172,6 +177,7 @@ public final class KeyMapsStorage implements StorageDescription<Collection<KeySt
                         String actionName = attributes.getValue(A_ACTION_NAME);
                         if (actionName != null) {
                             MultiKeyBinding mkb = new MultiKeyBinding(shortcut, actionName);
+                            LOG.fine("Adding: Key: '" + key + "' Action: '" + mkb.getActionName() + "'");
                             MultiKeyBinding duplicate = keyMap.put(mkb.getKeyStrokeList(), mkb);
                             if (duplicate != null && !duplicate.getActionName().equals(mkb.getActionName())) {
                                 LOG.warning("Duplicate shortcut '" + key + "' definition; rebound from '" + duplicate.getActionName() //NOI18N

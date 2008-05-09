@@ -41,10 +41,6 @@ public class HTTPComponentValidator
     private ValidationResult mValidationResult;
     private Verb mVerb;
     
-    @SuppressWarnings("unchecked")
-    public static final ValidationResult EMPTY_RESULT = 
-        new ValidationResult(Collections.EMPTY_SET, Collections.EMPTY_SET);
-    
     public HTTPComponentValidator() {}
     
     public String getName() {
@@ -63,6 +59,10 @@ public class HTTPComponentValidator
                                      Validation validation,
                                      ValidationType validationType) {
         
+        if ( !(model instanceof WSDLModel)) {
+          return null;
+        }
+
         mVerb = Verb.GET;
         mValidation = validation;
         mValidationType = validationType;
@@ -78,7 +78,7 @@ public class HTTPComponentValidator
             WSDLModel wsdlModel = (WSDLModel)model;
             
             if (model.getState() == State.NOT_WELL_FORMED) {
-                return EMPTY_RESULT;
+                return null;
             }
             
             Definitions defs = wsdlModel.getDefinitions();
@@ -122,11 +122,11 @@ public class HTTPComponentValidator
                             int countUrlEncoded = bindingInput.getExtensibilityElements(HTTPUrlEncoded.class).size();
                             int countUrlReplacement = bindingInput.getExtensibilityElements(HTTPUrlReplacement.class).size();
                             int sum = countUrlEncoded + countUrlReplacement;
-                            if (sum == 0) {
+                            if (sum == 0 && mVerb == Verb.GET) {
                                 results.add(
                                         new Validator.ResultItem(
                                             this,
-                                            Validator.ResultType.ERROR,
+                                            Validator.ResultType.WARNING,
                                             bindingInput,
                                             NbBundle.getMessage(
                                                 HTTPComponentValidator.class,
@@ -197,8 +197,8 @@ public class HTTPComponentValidator
         // Clear out our state
         mValidation = null;
         mValidationType = null;
-	ValidationResult rv = mValidationResult;
-	mValidationResult = null;
+    ValidationResult rv = mValidationResult;
+    mValidationResult = null;
         
         return rv;
     }

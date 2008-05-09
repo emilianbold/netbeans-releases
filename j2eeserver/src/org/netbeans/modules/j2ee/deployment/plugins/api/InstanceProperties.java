@@ -50,11 +50,11 @@ import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.Target;
 import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
 import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
-import org.netbeans.modules.j2ee.deployment.impl.InstancePropertiesImpl;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeSupport;
 import java.util.Map;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 
 
 /**
@@ -251,6 +251,7 @@ public abstract class InstanceProperties {
      *             instance does not exists
      * @throws InstanceCreationException when instance with same url already
      *             registered
+     * @see #removeInstance(String) 
      * @since 1.37.0
      */
     public static InstanceProperties createInstancePropertiesWithoutUI(String url, String username, 
@@ -263,6 +264,25 @@ public abstract class InstanceProperties {
     }
 
     /**
+     * Removes the given server instance from the JavaEE server registry,
+     * making it unavailable to JavaEE projects.
+     *
+     * It the responsibility of the caller to make any changes in server state
+     * (e.g. stopping the server) that might be desired or required before
+     * calling this method.
+     *
+     * This method is intended to allow server plugins that registered a JavaEE
+     * server instance via {@link #createInstancePropertiesWithoutUI(String, String, String, String, Map) createInstancePropertiesWithoutUI}
+     * to remove those instances later.
+     *
+     * @param url the url connection string to get the instance deployment manager
+     * @since 1.41.0
+     */
+    public static void removeInstance(String url) {
+        ServerRegistry.getInstance().removeServerInstance(url);
+    }
+
+    /**
      * Returns list of URL strings of all registered instances
      * @return array of URL strings
      */
@@ -270,13 +290,6 @@ public abstract class InstanceProperties {
         return ServerRegistry.getInstance().getInstanceURLs();
     }
 
-    /**
-     * Return default instance properties.
-     */
-    public static InstanceProperties getDefaultInstance() {
-        return new InstancePropertiesImpl(ServerRegistry.getInstance().getDefaultInstance().getServerInstance());
-    }
-    
     /**
      * Set instance properties.
      * @param props properties to set for this server instance.
@@ -308,26 +321,9 @@ public abstract class InstanceProperties {
     public abstract java.util.Enumeration propertyNames() throws IllegalStateException;
     
     /**
-     * Is the target server the default J2EE server for deployment?
-     * @return true if the target server or admin server is the default.
-     */
-    public abstract boolean isDefaultInstance();
-    
-    /**
      * Return DeploymentManager associated with this instance.
      */
     public abstract DeploymentManager getDeploymentManager();
-    
-    /**
-     * Return default Target object for the target server from this instance, if any.
-     */
-    public abstract Target getDefaultTarget();
-    
-    /**
-     * Set the target server the default server.
-     * @param targetName name of the target server; null if admin server is also single target.
-     */
-    public abstract void setAsDefaultServer(String targetName);
     
     /**
      * Ask the server instance to reset cached deployment manager, J2EE
@@ -339,7 +335,7 @@ public abstract class InstanceProperties {
      * Add <code>PropertyChangeListener</code> which will be notified of 
      * <code>InstanceProperties</code> changes.
      * 
-     * @param <code>PropertyChangeListener</code> which will be notified of 
+     * @param listener <code>PropertyChangeListener</code> which will be notified of 
      *        <code>InstanceProperties</code> changes.
      *
      */

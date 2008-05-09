@@ -172,7 +172,7 @@ public interface Lines {
      * @param line A line number
      * @return If it has a listener
      */
-    boolean isHyperlink (int line);
+     boolean isHyperlink (int line);
 
     /**
      * Count the total number of characters in the stored text
@@ -197,27 +197,26 @@ public interface Lines {
      * @return A character array containing the range of text specified
      */
     char[] getText (int start, int end, char[] chars);
+
     /**
-      * Get a logical line index for a given point in the display space.
-      * This is to accomodate line wrapping using fixed width fonts - this
-      * method answers the question "What line of output does the nth row
-      * of lines correspond to, given <code>charsPerLine</code> characters
-      * per line?".  If the logical line in question is itself wrapped, it
-      * will also return how many wrapped lines down from the beginning of
-      * the logical line the passed row index is, and the total number of
-      * wraps for this logical line to fit inside <code>charsPerLine</code>.
+      * Get a physical (real) line index for logical (wrapped) line index.
+      * This is to accomodate line wrapping using fixed width fonts. This
+      * method answers the question "Which physical (real) line corresponds
+      * to certain logical (wrapped) line if we wrap at <code>charsPerLine</code>.
+      * It will also return number of wrapped lines for found physical line and
+      * the position (index) on this wrapped line.
       *
-      * @param info A 3 entry array.  Element 0 should be the physical line
-      *        (the line position if no wrapping were happening) when called;
+      * @param info A 3 entry array.  Element 0 should be the logical (wrapped)
+      *        line when called;
       *        the other two elements are ignored.  On return,
       *        it contains: <ul>
-      *         <li>[0] The logical line index for the passed line</li>
-      *         <li>[1] The number of line wraps below the logical line
-      *             index for this physical line</li>
-      *         <li>[2] The total number of line wraps for the logical line</li>
+      *         <li>[0] The physical (real) line index for the passed line</li>
+      *         <li>[1] Index of logical line within this physical line</li>
+      *         <li>[2] The total number of line wraps for the physical line</li>
       *         </ul>
       */
-    void toLogicalLineIndex (int[] info, int charsPerLine);
+    void toPhysicalLineIndex (int[] info, int charsPerLine);
+
     /**
      * Save the contents of the buffer to a file, in platform default encoding.
      *

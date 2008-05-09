@@ -29,7 +29,6 @@ import org.netbeans.modules.xml.schema.model.Schema;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.schema.model.SchemaModelReference;
-//import org.netbeans.modules.xml.schema.model.impl.EmbeddedSchemaModelImpl;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.Import;
 import org.netbeans.modules.xml.wsdl.model.Types;
@@ -43,14 +42,12 @@ import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.openide.filesystems.FileObject;
-import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.netbeans.modules.soa.ui.SoaUtil;
 
 /**
- *
  * @author Vitaly Bychkov
  * @version 1.0
- *
  */
 public class ImportWsdlRegistrationHelper {
     
@@ -115,7 +112,7 @@ public class ImportWsdlRegistrationHelper {
     
     private boolean isSelfFo(FileObject fo) {
         assert fo != null;
-        FileObject modelFo = Util.getFileObjectByModel(myWsdlModel);
+        FileObject modelFo = SoaUtil.getFileObjectByModel(myWsdlModel);
         return modelFo.equals(fo);
     }
     
@@ -148,7 +145,7 @@ public class ImportWsdlRegistrationHelper {
             return;
         }
         
-        FileObject fo = Util.getFileObjectByModel(importedWsdlModel);
+        FileObject fo = SoaUtil.getFileObjectByModel(importedWsdlModel);
         Import new_imp = myWsdlModel.getFactory().createImport();
         
         String location = Util.getNewModelLocation(myWsdlModel ,fo );
@@ -231,7 +228,7 @@ public class ImportWsdlRegistrationHelper {
             if (! isExistSchemaRef(schema, importedSchemaModel)) {
 //            schemaImport.setSchemaLocation("sagjdsahgjhgasdjhg");
 //            schemaImport.setNamespace("testnamespace ");
-                FileObject fo = Util.getFileObjectByModel(importedSchemaModel);
+                FileObject fo = SoaUtil.getFileObjectByModel(importedSchemaModel);
                 if (fo != null) {
                     String location = Util.getNewModelLocation(myWsdlModel ,fo );
                     if (location != null) {

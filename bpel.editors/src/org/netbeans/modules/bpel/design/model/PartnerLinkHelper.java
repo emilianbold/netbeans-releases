@@ -195,7 +195,7 @@ public class PartnerLinkHelper {
 
         if (pattern == null) {
             return null;
-        } else if (pattern instanceof CollapsedPattern) {
+        } else if (model.isCollapsed(pattern.getOMReference())) {
             return pattern.getFirstElement();
         }
 

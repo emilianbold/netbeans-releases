@@ -148,7 +148,7 @@ public class TraceModelTestBase extends ModelImplBaseTestCase {
             System.setOut(streamOut);
             System.setErr(streamErr);
             performModelTest(args, streamOut, streamErr);
-            postTest(args);
+            postTest(args, params);
         } finally {
             // restore err and out
             System.setOut(oldOut);
@@ -156,7 +156,7 @@ public class TraceModelTestBase extends ModelImplBaseTestCase {
         }
     }
     
-    protected void postTest(String[] args) {
+    protected void postTest(String[] args, Object... params) {
         
     }
             

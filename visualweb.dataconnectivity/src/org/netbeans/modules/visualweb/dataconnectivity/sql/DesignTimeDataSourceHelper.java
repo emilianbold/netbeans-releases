@@ -75,6 +75,7 @@ import org.netbeans.modules.visualweb.dataconnectivity.project.datasource.Projec
 import org.netbeans.modules.visualweb.dataconnectivity.utils.ImportDataSource;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
 import org.netbeans.modules.visualweb.project.jsf.services.DesignTimeDataSourceService;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 import org.xml.sax.Attributes;
@@ -498,7 +499,7 @@ public class DesignTimeDataSourceHelper {
     }
     
     
-    public Map updateDataSource(Project currentProj) {       
+    public Map updateDataSource(Project currentProj) throws NamingException {       
          // Manage the migration of legacy projects
         if (ImportDataSource.isLegacyProject(currentProj) && JsfProjectUtils.getProjectProperty(currentProj, "migrated").equals("")) {//NOI18N   
             DataSourceResolver.getInstance().updateSettings();
@@ -615,8 +616,13 @@ public class DesignTimeDataSourceHelper {
     
     public static DataSourceInfo getDsInfo(String dsName) {
         ProjectDataSourceManager projectDataSourceManager  = new ProjectDataSourceManager(CurrentProject.getInstance().getOpenedProject());
-        RequestedJdbcResource jdbcResource = projectDataSourceManager.getDataSourceWithName(dsName);
-        
+        RequestedJdbcResource jdbcResource = null;
+        try {
+            jdbcResource = projectDataSourceManager.getDataSourceWithName(dsName);
+        } catch (NamingException ne) {
+            Exceptions.printStackTrace(ne);
+        }
+
         return new DataSourceInfo(dsName, jdbcResource.getDriverClassName(), jdbcResource.getUrl(), null, jdbcResource.getUsername(), jdbcResource.getPassword());
     }
     

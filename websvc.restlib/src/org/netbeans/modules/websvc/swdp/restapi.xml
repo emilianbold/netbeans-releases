@@ -51,4 +51,8 @@ made subject to such option by the copyright holder.
         <type>classpath</type>
         <resource>jar:nbinst:///modules/ext/rest/jsr311-api.jar!/</resource>
     </volume>  
+     <volume>
+        <type>javadoc</type>
+        <resource>jar:nbinst:///docs/jsr311-api-doc.zip!/</resource>
+    </volume>
 </library>

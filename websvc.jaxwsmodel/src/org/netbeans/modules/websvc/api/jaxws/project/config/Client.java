@@ -149,4 +149,33 @@ public final class Client {
         String value = client.getPackageNameForceReplace();
         return "true".equals(value);
     }
+    
+    public void setUseDispatch(Boolean useDispatch) {
+        client.setUseDispatch(useDispatch);
+    }
+
+    public Boolean getUseDispatch() {
+        Boolean use = client.getUseDispatch();
+        if(use == null){
+            use = false;
+        }
+        return use;
+    }
+     public WsimportOptions newWsimportOptions(){
+        return new WsimportOptions(client.newWsimportOptions());
+    }
+  
+    public void setWsimportOptions(WsimportOptions options){
+        client.setWsimportOptions(options.getOriginal());
+    }
+    
+    public WsimportOptions getWsImportOptions(){
+        org.netbeans.modules.websvc.jaxwsmodel.project_config1_0.WsimportOptions options = client.getWsimportOptions();
+        if(options == null){
+            options = client.newWsimportOptions();
+            client.setWsimportOptions(options);
+        }
+        return new WsimportOptions(options);
+    }
+ 
 }

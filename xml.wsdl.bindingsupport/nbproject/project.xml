@@ -51,7 +51,6 @@
             <friend-packages>
                 <friend>org.netbeans.modules.compapp.casaeditor</friend>
                 <friend>org.netbeans.modules.xml.wsdlui</friend>
-                <friend>org.netbeans.modules.xslt.project</friend>
                 <package>org.netbeans.modules.xml.wsdl.bindingsupport.template</package>
                 <package>org.netbeans.modules.xml.wsdl.bindingsupport.template.localized</package>
             </friend-packages>

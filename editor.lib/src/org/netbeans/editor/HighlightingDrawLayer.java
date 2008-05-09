@@ -73,6 +73,7 @@ import org.netbeans.spi.editor.highlighting.HighlightsChangeListener;
 import org.netbeans.spi.editor.highlighting.HighlightsContainer;
 import org.netbeans.spi.editor.highlighting.HighlightsLayer;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
+import org.netbeans.spi.editor.highlighting.ZOrder;
 import org.openide.util.WeakListeners;
 
 /**
@@ -89,7 +90,9 @@ import org.openide.util.WeakListeners;
     // Using the original name for the caret row highlighting, some clients use it to remove the layer.
     private static final String LAYER_B_NAME = ExtCaret.HIGHLIGHT_ROW_LAYER_NAME; 
     private static final String LAYER_C_NAME = "org-netbeans-lib-editor-nview-HighlightingDrawLayer/C"; //NOI18N
+    private static final String LAYER_D_NAME = "org-netbeans-lib-editor-nview-HighlightingDrawLayer/D"; //NOI18N
     
+    // Above CaretRowHighlighting.LAYER_TYPE_ID
     private static final HighlightsLayerFilter FILTER_A = new HighlightsLayerFilter() {
         public List<? extends HighlightsLayer> filterLayers(List<? extends HighlightsLayer> layers) {
             ArrayList<HighlightsLayer> filteredLayers = new ArrayList<HighlightsLayer>();
@@ -113,16 +116,21 @@ import org.openide.util.WeakListeners;
         }
     }; // End of FILTER_A constant
     
+    // above ZOrder.SYNTAX_RACK and below (including) CaretRowHighlighting.LAYER_TYPE_ID
     private static final HighlightsLayerFilter FILTER_B = new HighlightsLayerFilter() {
         public List<? extends HighlightsLayer> filterLayers(List<? extends HighlightsLayer> layers) {
             ArrayList<HighlightsLayer> filteredLayers = new ArrayList<HighlightsLayer>();
             
+            int syntaxRack = HighlightingSpiPackageAccessor.get().getZOrderRack(ZOrder.SYNTAX_RACK);
             for(HighlightsLayer layer : layers) {
                 HighlightsLayerAccessor layerAccessor = 
                     HighlightingSpiPackageAccessor.get().getHighlightsLayerAccessor(layer);
                 
-                if (CaretRowHighlighting.LAYER_TYPE_ID.equals(layerAccessor.getLayerTypeId())) {
+                if (HighlightingSpiPackageAccessor.get().getZOrderRack(layerAccessor.getZOrder()) > syntaxRack) {
                     filteredLayers.add(layer);
+                }
+                
+                if (CaretRowHighlighting.LAYER_TYPE_ID.equals(layerAccessor.getLayerTypeId())) {
                     break;
                 }
             }
@@ -131,15 +139,41 @@ import org.openide.util.WeakListeners;
         }
     }; // End of FILTER_B constant
     
+    // Only ZOrder.SYNTAX_RACK
     private static final HighlightsLayerFilter FILTER_C = new HighlightsLayerFilter() {
         public List<? extends HighlightsLayer> filterLayers(List<? extends HighlightsLayer> layers) {
             ArrayList<HighlightsLayer> filteredLayers = new ArrayList<HighlightsLayer>();
             
+            int syntaxRack = HighlightingSpiPackageAccessor.get().getZOrderRack(ZOrder.SYNTAX_RACK);
             for(HighlightsLayer layer : layers) {
                 HighlightsLayerAccessor layerAccessor = 
                     HighlightingSpiPackageAccessor.get().getHighlightsLayerAccessor(layer);
                 
-                if (CaretRowHighlighting.LAYER_TYPE_ID.equals(layerAccessor.getLayerTypeId())) {
+                if (HighlightingSpiPackageAccessor.get().getZOrderRack(layerAccessor.getZOrder()) < syntaxRack) {
+                    continue;
+                } else if (HighlightingSpiPackageAccessor.get().getZOrderRack(layerAccessor.getZOrder()) == syntaxRack) {
+                    filteredLayers.add(layer);
+                } else {
+                    break;
+                }
+                
+            }
+
+            return filteredLayers;
+        }
+    }; // End of FILTER_C constant
+
+    // ZOrder.BOTTOM_RACK
+    private static final HighlightsLayerFilter FILTER_D = new HighlightsLayerFilter() {
+        public List<? extends HighlightsLayer> filterLayers(List<? extends HighlightsLayer> layers) {
+            ArrayList<HighlightsLayer> filteredLayers = new ArrayList<HighlightsLayer>();
+            
+            int syntaxRack = HighlightingSpiPackageAccessor.get().getZOrderRack(ZOrder.SYNTAX_RACK);
+            for(HighlightsLayer layer : layers) {
+                HighlightsLayerAccessor layerAccessor = 
+                    HighlightingSpiPackageAccessor.get().getHighlightsLayerAccessor(layer);
+                
+                if (HighlightingSpiPackageAccessor.get().getZOrderRack(layerAccessor.getZOrder()) == syntaxRack) {
                     break;
                 }
                 
@@ -148,7 +182,7 @@ import org.openide.util.WeakListeners;
 
             return filteredLayers;
         }
-    }; // End of FILTER_C constant
+    }; // End of FILTER_D constant
     
     public static void hookUp(EditorUI eui) {
         DrawLayer layerA = eui.findLayer(LAYER_A_NAME);
@@ -190,6 +224,20 @@ import org.openide.util.WeakListeners;
         } else {
             if (LOG.isLoggable(Level.FINE)) {
                 LOG.fine("LayerC is already registered in " + simpleToString(eui)); //NOI18N
+            }
+        }
+
+        DrawLayer layerD = eui.findLayer(LAYER_D_NAME);
+        if (layerD == null) {
+            layerD = new HighlightingDrawLayer(LAYER_D_NAME, FILTER_D);
+            eui.addLayer(layerD, 500);
+
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("Successfully registered layerD in " + simpleToString(eui)); //NOI18N
+            }
+        } else {
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("LayerD is already registered in " + simpleToString(eui)); //NOI18N
             }
         }
     }
@@ -433,6 +481,7 @@ import org.openide.util.WeakListeners;
     }
      
     private void invokeDamageRange(final int startOffset, final int endOffset) {
+//        LOG.log(Level.INFO, "invokeDamageRange: [" + startOffset + ", " + endOffset + "]", new Exception());
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 setNextActivityChangeOffset(0);

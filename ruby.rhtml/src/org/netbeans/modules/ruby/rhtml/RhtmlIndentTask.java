@@ -80,16 +80,23 @@ public class RhtmlIndentTask implements IndentTask {
         int offset = Utilities.getRowStart(doc, end);
         org.netbeans.editor.Formatter editorFormatter = doc.getFormatter();
         List<Integer> offsets = new ArrayList<Integer>();
+        boolean prevWasNonHtml = false;
         while (offset >= start) {
             int lineStart = Utilities.getRowFirstNonWhite(doc, offset);
             if (lineStart != -1) {
+                prevWasNonHtml = false;
                 ts.move(lineStart);
                 if (ts.moveNext()) {
                     TokenId id = ts.token().id();
                     if (id != RhtmlTokenId.HTML) {
+                        prevWasNonHtml = true;
                         offsets.add(offset);
                     }
                 }
+            } else if (prevWasNonHtml) {
+                // Include blank lines leading up to a non-html block since HTML
+                // will treat these as part of the block to be indented
+                offsets.add(offset);
             }
             
             if (offset > 0) {

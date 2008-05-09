@@ -28,7 +28,7 @@
 package org.netbeans.modules.ruby.hints.spi;
 
 import java.util.List;
-import org.netbeans.api.gsf.OffsetRange;
+import org.netbeans.modules.gsf.api.OffsetRange;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -77,6 +77,7 @@ public class Description {
         return priority;
     }
     
+    @Override
     public String toString() {
         return "Description(desc=" + description + ",fixes=" + fixes + ")";
     }

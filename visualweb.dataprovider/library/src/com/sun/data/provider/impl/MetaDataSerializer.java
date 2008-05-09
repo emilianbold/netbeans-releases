@@ -46,8 +46,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.sql.ResultSetMetaData;
-import java.util.logging.Level;
+import java.util.Locale;
+import java.util.ResourceBundle;
 import java.util.logging.Logger;
+import javax.naming.NamingException;
 
 /**
  *
@@ -55,7 +57,11 @@ import java.util.logging.Logger;
  */
 public class MetaDataSerializer {
     private static Logger LOGGER = Logger.getLogger(CachedRowSetDataProvider.class.getName());
-    
+    private static ResourceBundle bundle =
+      ResourceBundle.getBundle("com.sun.data.provider.impl.Bundle", //NOI18N
+                               Locale.getDefault(),
+                               MetaDataSerializer.class.getClassLoader());
+
     /**
      * Creates a new folder in the userdir and if needed and generates a new serialized filename
      * @param serFileName name of file used to generate an absolute filename
@@ -75,7 +81,7 @@ public class MetaDataSerializer {
      * @param mdFileName absolute filename 
      * @return
      */
-    public boolean mdFileNameExists(String mdFileName) {
+    public boolean mdFileNameExists(String mdFileName) {  
         return new File(mdFileName).exists();
     }
     
@@ -85,10 +91,10 @@ public class MetaDataSerializer {
      * @param mdFileName absolute filename
      */
     public void serialize(ResultSetMetaData resultSetMetaData, String mdFileName) {
-
+        mdFileName = mdFileName.replaceAll("\\n", ""); // NOI18N
         if (resultSetMetaData != null) {
             ObjectOutputStream os = null;
-            try {    
+            try {                
                 os = new ObjectOutputStream(new FileOutputStream(mdFileName));
                 os.writeObject(resultSetMetaData);
             } catch (IOException ex) {
@@ -105,6 +111,21 @@ public class MetaDataSerializer {
             }
         }
 
+    }
+    
+    public String generateFilename(String dataSourceName, String command) throws NamingException {
+        if (dataSourceName == null) {
+            throw new NamingException(bundle.getString("NAME_NOT_FOUND")); 
+        }
+        dataSourceName = dataSourceName.replaceFirst("java:comp/env/jdbc/", ""); // NOI18N        
+        String name = dataSourceName + command;   
+        int hashValue = name.hashCode();
+        if (hashValue < 0) {
+            name = "_" + Math.abs(hashValue); // NOI18N
+        } else {
+            name = new Integer(hashValue).toString();
+        }
+        return name; 
     }
 }
 

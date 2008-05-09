@@ -56,7 +56,7 @@ made subject to such option by the copyright holder.
         </testset>
     </testbag>
 
-    <testbag testattribs="test" executor="jvm" name="BlacklistedClassesHandler">
+    <testbag testattribs="stable" executor="jvm" name="BlacklistedClassesHandler">
         <testset dir="unit/src">
             <patternset>
                 <include name="**/BlacklistedClassesHandlerTest.class"/>

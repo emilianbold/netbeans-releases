@@ -5,14 +5,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class CreateConstructorWithDefaultConstructor {
+public class Test {
 
     private int time;
     private double something = 0.0;
     private String text = "";
     private List<String> list;
 
-    public CreateConstructorWithDefaultConstructor() {}
+    public Test() {}
 
     private static class X implements Runnable {
 

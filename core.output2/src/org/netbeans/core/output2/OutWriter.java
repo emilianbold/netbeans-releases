@@ -239,7 +239,6 @@ class OutWriter extends PrintWriter {
             return;
         }
         lines.markDirty();
-        int length = bb.limit();
         closed = false;
         int start = -1;
         try {
@@ -270,6 +269,7 @@ class OutWriter extends PrintWriter {
                 threadDeathClose();
             }
         }
+        int length = bb.limit();
         boolean startedNow = false;
         if (start >= 0 && lineStart == -1) {
             lineStart = start;

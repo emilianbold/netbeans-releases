@@ -61,8 +61,7 @@ public final class StyleBuilderPanel extends JPanel {
     public static StyleBuilderPanel createInstance() {
         return new StyleBuilderPanel();
     }
-    
-    /** Creates new form StyleBuilderPanel */
+        /** Creates new form StyleBuilderPanel */
     private StyleBuilderPanel() {
         initComponents();
         initialize();

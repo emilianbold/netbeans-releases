@@ -7,7 +7,7 @@ This came from http://xml.apache.org/commons/ with Apache license 2.0.
 
 Earlier, it was patched on xml-commons-resolver-1.1 to cater to our needs.
 See resolver.patch file for the patches applied xml-commons-resolver-1.1.
-The patch on org.apache.xml.resolver.tools.CatalogResolver.java causes
+The patch on org.apache.xml.resolver.tools.CatalogResolver.java fixes
 these two issues:
 
 http://www.netbeans.org/issues/show_bug.cgi?id=98212

@@ -51,11 +51,15 @@ import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.netbeans.modules.welcome.content.Constants;
 import java.awt.Image;
+import java.awt.event.FocusListener;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseListener;
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
@@ -155,6 +159,7 @@ class Tabs extends JPanel implements Constants {
             compToHide.setVisible( false );
         
         compToShow.setVisible( true );
+        compToShow.requestFocusInWindow();
         
         invalidate();
         revalidate();
@@ -190,14 +195,33 @@ class Tabs extends JPanel implements Constants {
             }
             lbl = new JLabel(title);
             lbl.setOpaque( false );
-            add( lbl, new GridBagConstraints(0,0,1,1,1.0,1.0,
+            add( lbl, new GridBagConstraints(0,0,1,1,0.0,0.0,
                     GridBagConstraints.CENTER,GridBagConstraints.BOTH,new Insets(5,5,4,0),0,0) );
             lbl.setFont( TAB_FONT );
             lbl.setForeground( Utils.getColor( isSelected
                     ? COLOR_TAB_SEL_FOREGROUND 
                     : COLOR_TAB_UNSEL_FOREGROUND ) );
             lbl.setHorizontalAlignment( JLabel.CENTER );
+            lbl.setFocusable(true);
             
+            lbl.addKeyListener( new KeyListener() {
+
+                public void keyTyped(KeyEvent e) {
+                }
+
+                public void keyPressed(KeyEvent e) {
+                    if( e.getKeyCode() == KeyEvent.VK_SPACE || e.getKeyCode() == KeyEvent.VK_ENTER ) {
+                        setSelected( !isSelected );
+                        if( null != actionListener ) {
+                            actionListener.actionPerformed( new ActionEvent( Tab.this, 0, "clicked") );
+                        }
+                    }
+                }
+
+                public void keyReleased(KeyEvent e) {
+                }
+            });
+
             addMouseListener( new MouseListener() {
                 public void mouseClicked(MouseEvent e) {
                     setSelected( !isSelected );
@@ -229,6 +253,19 @@ class Tabs extends JPanel implements Constants {
                             : COLOR_TAB_UNSEL_FOREGROUND ) );
                 }
             });
+            
+            lbl.addFocusListener( new FocusListener() {
+
+                public void focusGained(FocusEvent e) {
+                    lbl.setForeground( Utils.getColor( MOUSE_OVER_LINK_COLOR  )  );
+                }
+
+                public void focusLost(FocusEvent e) {
+                    lbl.setForeground( Utils.getColor( isSelected
+                            ? COLOR_TAB_SEL_FOREGROUND 
+                            : COLOR_TAB_UNSEL_FOREGROUND ) );
+                }
+            });
         }
         
         public void addActionListener( ActionListener l ) {
@@ -238,9 +275,13 @@ class Tabs extends JPanel implements Constants {
         
         public void setSelected( boolean sel ) {
             this.isSelected = sel;
-            lbl.setForeground( Utils.getColor( isSelected
-                    ? COLOR_TAB_SEL_FOREGROUND 
-                    : COLOR_TAB_UNSEL_FOREGROUND ) );
+            lbl.setForeground( Utils.getColor( lbl.isFocusOwner() 
+                    ? MOUSE_OVER_LINK_COLOR
+                    : isSelected
+                        ? COLOR_TAB_SEL_FOREGROUND 
+                        : COLOR_TAB_UNSEL_FOREGROUND ) );
+            
+            lbl.setFocusable(!sel);
             repaint();
         }
 
@@ -297,4 +338,4 @@ class Tabs extends JPanel implements Constants {
         protected void paintBorder(Graphics g) {
         }
     }
-}
+        }

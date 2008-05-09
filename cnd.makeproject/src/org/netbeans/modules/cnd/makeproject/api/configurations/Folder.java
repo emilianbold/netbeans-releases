@@ -240,8 +240,11 @@ public class Folder {
         ((MakeConfigurationDescriptor)configurationDescriptor).fireFilesAdded(list);
         return item;
     }
-    
     public Item addItem(Item item) {
+        return addItem(item, true);
+    }
+    
+    public Item addItem(Item item, boolean notify) {
         if (item == null)
             return null;
         // Check if already in project. Refresh if it's there.
@@ -256,7 +259,7 @@ public class Folder {
         addElement(item);
         
         // Add item to the dataObject's lookup
-        if (isProjectFiles()) {
+        if (isProjectFiles() && notify) {
             // item.getLastDataObject() should be inited in method item.setFolder(this);
             if (item.getLastDataObject() instanceof CndDataObject) {
                 CndDataObject dataObject = (CndDataObject)item.getLastDataObject();

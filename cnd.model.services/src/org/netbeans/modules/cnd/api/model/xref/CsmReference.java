@@ -69,6 +69,7 @@ import org.netbeans.modules.cnd.api.model.*;
  * @author Vladimir Voskresensky
  */
 public interface CsmReference extends CsmOffsetable {
+    CsmReferenceKind getKind();
     
     /**
      * returns referenced object
@@ -76,5 +77,5 @@ public interface CsmReference extends CsmOffsetable {
      */
     CsmObject getReferencedObject();
     
-    CsmObject getOwner();
+    CsmObject getOwner();    
 }

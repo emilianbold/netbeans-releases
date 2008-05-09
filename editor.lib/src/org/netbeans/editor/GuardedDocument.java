@@ -126,7 +126,7 @@ public class GuardedDocument extends BaseDocument
      * 
      * @param mimeType The mime type for this document.
      * 
-     * @since 1.22
+     * @since 1.26
      */
     public GuardedDocument(String mimeType) {
         this(mimeType, true, new StyleContext());
@@ -155,7 +155,7 @@ public class GuardedDocument extends BaseDocument
      * @param addToRegistry XXX
      * @param styles style context to use
      * 
-     * @since 1.22
+     * @since 1.26
      */
     public GuardedDocument(String mimeType, boolean addToRegistry, StyleContext styles) {
         super(addToRegistry, mimeType);

@@ -47,15 +47,20 @@ import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.api.execution.NativeExecutor;
+import org.netbeans.modules.cnd.api.utils.CppUtils;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.Path;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
@@ -64,22 +69,20 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.makeproject.ui.SelectExecutablePanel;
-import org.netbeans.modules.cnd.settings.CppSettings;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Cancellable;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 
 public class DefaultProjectActionHandler implements ActionListener {
-    private static CustomProjectActionHandlerProvider customBuildActionHandlerProvider = null;
-    private static CustomProjectActionHandlerProvider customRunActionHandlerProvider = null;
-    private static CustomProjectActionHandlerProvider customDebugActionHandlerProvider = null;
+    private CustomProjectActionHandlerProvider customActionHandlerProvider = null;
     private CustomProjectActionHandler customActionHandler = null;
     
     private static DefaultProjectActionHandler instance = null;
@@ -90,16 +93,34 @@ public class DefaultProjectActionHandler implements ActionListener {
         return instance;
     }
     
-    public void setCustomBuildActionHandlerProvider(CustomProjectActionHandlerProvider customBuildActionHandlerProvider) {
-        DefaultProjectActionHandler.customBuildActionHandlerProvider = customBuildActionHandlerProvider;
-    }
-    
-    public void setCustomRunActionHandlerProvider(CustomProjectActionHandlerProvider customRunActionHandlerProvider) {
-        DefaultProjectActionHandler.customRunActionHandlerProvider = customRunActionHandlerProvider;
-    }
-    
+    /*
+     * @deprecated. Register via services using org.netbeans.modules.cnd.makeproject.api.CustomProjectActionHandlerProvider
+     */ 
     public void setCustomDebugActionHandlerProvider(CustomProjectActionHandlerProvider customDebugActionHandlerProvider) {
-        DefaultProjectActionHandler.customDebugActionHandlerProvider = customDebugActionHandlerProvider;
+        customActionHandlerProvider = customDebugActionHandlerProvider;
+    }
+    
+    public CustomProjectActionHandlerProvider getCustomDebugActionHandlerProvider() {
+        // First try old-style registration (deprecated)
+        if (customActionHandlerProvider != null) {
+            return customActionHandlerProvider;
+        }
+        // Then try services
+        Lookup.Template template = new Lookup.Template(CustomProjectActionHandlerProvider.class);
+        Lookup.Result result = Lookup.getDefault().lookup(template);
+        Collection collection = result.allInstances();
+        Iterator iterator = collection.iterator();
+        while (iterator.hasNext()) {
+            Object caop = iterator.next();
+            if (caop instanceof CustomProjectActionHandlerProvider) {
+                customActionHandlerProvider = (CustomProjectActionHandlerProvider)caop;
+                if (customActionHandlerProvider.getClass().getName().contains("dbx")) { // NOI18N
+                    // prefer dbx over gdb ....
+                    break;
+                }
+            }
+        }
+        return customActionHandlerProvider;
     }
     
     public void setCustomActionHandlerProvider(CustomProjectActionHandler customActionHandlerProvider) {
@@ -122,6 +143,7 @@ public class DefaultProjectActionHandler implements ActionListener {
         private String tabNameSeq;
         int currentAction = 0;
         private ExecutorTask executorTask = null;
+        private NativeExecutor projectExecutor = null;
         private StopAction sa = null;
         private RerunAction ra = null;
         private ProgressHandle progressHandle = null;
@@ -170,11 +192,25 @@ public class DefaultProjectActionHandler implements ActionListener {
             return handle;
         }
         
-        private InputOutput getIOTab(String name) {
+        private ProgressHandle createPogressHandleNoCancel() {
+            ProgressHandle handle = ProgressHandleFactory.createHandle(tabNameSeq,
+            new AbstractAction() {
+                public void actionPerformed(ActionEvent e) {
+                    getTab().select();
+                }
+            });
+            handle.setInitialDelay(0);
+            return handle;
+        }
+        
+        private InputOutput getIOTab(String name, boolean reuse) {
             sa = new StopAction(this);
             ra = new RerunAction(this);
-            InputOutput tab = IOProvider.getDefault().getIO(name, false); // This will (sometimes!) find an existing one.
-            tab.closeInputOutput(); // Close it...
+            InputOutput tab;
+            if (reuse) {
+                tab = IOProvider.getDefault().getIO(name, false); // This will (sometimes!) find an existing one.
+                tab.closeInputOutput(); // Close it...
+            }
             tab = IOProvider.getDefault().getIO(name, new Action[] {ra, sa}); // Create a new ...
             try {
                 tab.getOut().reset();
@@ -202,7 +238,7 @@ public class DefaultProjectActionHandler implements ActionListener {
                     if (tabNames.contains(tabName)) {
                         int seq = 2;
                         while (true) {
-                            tabNameSeq = tabName + " #" + seq;
+                            tabNameSeq = tabName + " #" + seq; // NOI18N
                             if (!tabNames.contains(tabNameSeq)) {
                                 break;
                             }
@@ -210,7 +246,7 @@ public class DefaultProjectActionHandler implements ActionListener {
                         }
                     }
                     tabNames.add(tabNameSeq);
-                    ioTab = getIOTab(tabNameSeq);
+                    ioTab = getIOTab(tabNameSeq, true);
                     if (mainTabHandler == null) {
                         mainTab = ioTab;
                         mainTabHandler = this;
@@ -220,7 +256,7 @@ public class DefaultProjectActionHandler implements ActionListener {
             else {
                 tabName = getTabName(paes);
                 tabNameSeq = tabName;
-                ioTab = getIOTab(tabName);
+                ioTab = getIOTab(tabName, false);
             }
         }
         
@@ -255,26 +291,21 @@ public class DefaultProjectActionHandler implements ActionListener {
                     pae.getID() == ProjectActionEvent.DEBUG_LOAD_ONLY ||
                     pae.getID() == ProjectActionEvent.DEBUG_STEPINTO ||
                     pae.getID() == ProjectActionEvent.CUSTOM_ACTION) {
-                if (!checkExecutable(pae))
+                if (!checkExecutable(pae)) {
+                    progressHandle.finish();
                     return;
+                }
             }
             
-            if ((pae.getID() == ProjectActionEvent.BUILD ||
-                    pae.getID() == ProjectActionEvent.CLEAN) &&
-                    customBuildActionHandlerProvider != null) {
-                CustomProjectActionHandler ah = customBuildActionHandlerProvider.factoryCreate();
-                ah.addExecutionListener(this);
-                ah.execute(pae, getTab());
-            } else if (pae.getID() == ProjectActionEvent.RUN &&
-                    customRunActionHandlerProvider != null) {
-                CustomProjectActionHandler ah = customRunActionHandlerProvider.factoryCreate();
-                ah.addExecutionListener(this);
-                ah.execute(pae, getTab());
-            } else if ((pae.getID() == ProjectActionEvent.DEBUG ||
+            if ((pae.getID() == ProjectActionEvent.DEBUG ||
                     pae.getID() == ProjectActionEvent.DEBUG_LOAD_ONLY ||
                     pae.getID() == ProjectActionEvent.DEBUG_STEPINTO) &&
-                    customDebugActionHandlerProvider != null) {
-                CustomProjectActionHandler ah = customDebugActionHandlerProvider.factoryCreate();
+                    getCustomDebugActionHandlerProvider() != null) {
+                // See 130827
+                progressHandle.finish();
+                progressHandle = createPogressHandleNoCancel();
+                progressHandle.start();
+                CustomProjectActionHandler ah = getCustomDebugActionHandlerProvider().factoryCreate();
                 ah.addExecutionListener(this);
                 ah.execute(pae, getTab());
             } else if (pae.getID() == ProjectActionEvent.RUN ||
@@ -309,6 +340,7 @@ public class DefaultProjectActionHandler implements ActionListener {
                                 rcfile = File.createTempFile("nbcnd_rc", "").getAbsolutePath(); // NOI18N
                             } catch (IOException ex) {
                             }
+                            String args2;
                             if (pae.getProfile().getTerminalPath().indexOf("gnome-terminal") != -1) { // NOI18N
                                 /* gnome-terminal has differnt quoting rules... */
                                 StringBuffer b = new StringBuffer();
@@ -319,18 +351,59 @@ public class DefaultProjectActionHandler implements ActionListener {
                                         b.append(args.charAt(i));
                                     }
                                 }
-                                args = b.toString();
-                                exe = "\\\"" + pae.getExecutable() + "\\\""; // NOI18N
+                                args2 = b.toString();
+                            } else {
+                                args2 = "";
                             }
-                            args = MessageFormat.format(pae.getProfile().getTerminalOptions(), rcfile, exe, args);
+                            args = MessageFormat.format(pae.getProfile().getTerminalOptions(), rcfile, exe, args, args2);
                             exe = pae.getProfile().getTerminalPath();
                         }
+                        // See 130827
+                        progressHandle.finish();
+                        progressHandle = createPogressHandleNoCancel();
+                        progressHandle.start();
+                    }
+                    // Append compilerset base to run path. (IZ 120836)
+                    ArrayList<String> env1 = new ArrayList<String>();
+                    String csname = ((MakeConfiguration) pae.getConfiguration()).getCompilerSet().getOption();
+                    CompilerSet cs = CompilerSetManager.getDefault().getCompilerSet(csname);
+                    if (cs != null) {
+                        String csdirs = cs.getDirectory();
+                        if (((MakeConfiguration)pae.getConfiguration()).getCompilerSet().getFlavor().equals(CompilerFlavor.MinGW.toString())) {
+                            // Also add msys to path. Thet's where sh, mkdir, ... are.
+                            String msysBase = CppUtils.getMSysBase();
+                            if (msysBase != null && msysBase.length() > 0) {
+                                csdirs = csdirs + File.pathSeparator + msysBase + File.separator + "bin"; // NOI18N
+                            }
+                        }
+                        boolean gotpath = false;
+                        String pathname = Path.getPathName() + '=';
+                        int i;
+                        for (i = 0; i < env.length; i++) {
+                            if (env[i].startsWith(pathname)) {
+                                env1.add(env[i] + File.pathSeparator + csdirs); // NOI18N
+                                gotpath = true;
+                            } else {
+                                env1.add(env[i]);
+                            }
+                        }
+                        if (!gotpath) {
+                            env1.add(pathname + Path.getPathAsString() + File.pathSeparator + csdirs);
+                        }
+                        env = env1.toArray(new String[env1.size()]);
                     }
                 } else { // Build or Clean
                     String[] env1 = new String[env.length + 1];
                     String csname = ((MakeConfiguration) pae.getConfiguration()).getCompilerSet().getOption();
                     String csdname = ((MakeConfiguration) pae.getConfiguration()).getCompilerSet().getName();
-                    String csdirs = CompilerSetManager.getDefault().getCompilerSet(csname, csdname).getDirectory();
+                    String csdirs = CompilerSetManager.getDefault().getCompilerSet(csname).getDirectory();
+                    if (((MakeConfiguration)pae.getConfiguration()).getCompilerSet().getFlavor().equals(CompilerFlavor.MinGW.toString())) {
+                        // Also add msys to path. Thet's where sh, mkdir, ... are.
+                        String msysBase = CppUtils.getMSysBase();
+                        if (msysBase != null && msysBase.length() > 0) {
+                            csdirs = csdirs + File.pathSeparator + msysBase + File.separator + "bin"; // NOI18N
+                        }
+                    }
                     boolean gotpath = false;
                     String pathname = Path.getPathName() + '=';
                     int i;
@@ -343,11 +416,11 @@ public class DefaultProjectActionHandler implements ActionListener {
                         }
                     }
                     if (!gotpath) {
-                        env1[i] = pathname + csdirs + File.pathSeparator + CppSettings.getDefault().getPath();
+                        env1[i] = pathname + csdirs + File.pathSeparator + Path.getPathAsString();
                     }
                     env = env1;
                 }
-                NativeExecutor projectExecutor =  new NativeExecutor(
+                projectExecutor =  new NativeExecutor(
                         pae.getProfile().getRunDirectory(),
                         exe, args, env,
                         pae.getTabName(),
@@ -365,6 +438,10 @@ public class DefaultProjectActionHandler implements ActionListener {
                 } catch (java.io.IOException ioe) {
                 }
             } else if (pae.getID() == ProjectActionEvent.CUSTOM_ACTION) {
+                progressHandle.finish();
+                progressHandle = createPogressHandleNoCancel();
+                progressHandle.start();
+                customActionHandler.addExecutionListener(this);
                 customActionHandler.execute(pae, getTab());
             } else if (pae.getID() == ProjectActionEvent.DEBUG ||
                     pae.getID() == ProjectActionEvent.DEBUG_STEPINTO ||
@@ -377,6 +454,10 @@ public class DefaultProjectActionHandler implements ActionListener {
         
         public ExecutorTask getExecutorTask() {
             return executorTask;
+        }
+        
+        public NativeExecutor getNativeExecutor() {
+            return projectExecutor;
         }
         
         public void executionStarted() {
@@ -494,6 +575,7 @@ public class DefaultProjectActionHandler implements ActionListener {
                 return;
             setEnabled(false);
             if (handleEvents.getExecutorTask() != null) {
+                handleEvents.getNativeExecutor().stop();
                 handleEvents.getExecutorTask().stop();
             }
         }

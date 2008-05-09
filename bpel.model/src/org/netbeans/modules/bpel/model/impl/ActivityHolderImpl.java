@@ -23,10 +23,9 @@ import org.netbeans.modules.bpel.model.api.ActivityHolder;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.ExtendableActivity;
 import org.w3c.dom.Element;
+import org.netbeans.modules.bpel.model.api.support.Utils;
 
-public abstract class ActivityHolderImpl extends ExtensibleElementsImpl implements
-        ActivityHolder
-{
+public abstract class ActivityHolderImpl extends ExtensibleElementsImpl implements ActivityHolder {
 
     ActivityHolderImpl( BpelModelImpl model, Element e ) {
         super(model, e);
@@ -100,5 +99,4 @@ public abstract class ActivityHolderImpl extends ExtensibleElementsImpl implemen
         }
         return super.getMultiplicity(entity);
     }
-
 }

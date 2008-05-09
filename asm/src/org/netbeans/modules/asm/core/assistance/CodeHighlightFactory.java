@@ -53,7 +53,7 @@ import org.netbeans.spi.editor.highlighting.ZOrder;
 public class CodeHighlightFactory implements HighlightsLayerFactory  {
     
     private static final String ASM_FAST_HIGHLIGHT_LAYER_ID =
-            "asm-fast-highlight-layer-id";
+            "asm-fast-highlight-layer-id"; // NOI18N
     
     public HighlightsLayer[] createLayers(Context ctx) {
         JTextComponent pane = ctx.getComponent();

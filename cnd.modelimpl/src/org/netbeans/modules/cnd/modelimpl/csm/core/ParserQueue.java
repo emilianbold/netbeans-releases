@@ -233,7 +233,7 @@ public final class ParserQueue {
             StringBuilder builder = new StringBuilder();
             Entry cur = head;
             while (cur != null) {
-                builder.append(cur.toString(detailed)).append("\n");
+                builder.append(cur.toString(detailed)).append("\n"); // NOI18N
                 cur = cur.next;
             }
             return builder.toString();

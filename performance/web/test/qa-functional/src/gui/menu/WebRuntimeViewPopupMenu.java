@@ -54,12 +54,14 @@ import org.netbeans.test.web.performance.Macros;
 import org.netbeans.test.web.performance.WebPerformanceTestCase;
 import org.netbeans.jemmy.Timeouts;
 
+import org.netbeans.performance.test.utilities.PerformanceTestCase;
+
 /**
  * Test of typing in opened source editor.
  *
  * @author  mschovanek@netbeans.org
  */
-public class WebRuntimeViewPopupMenu extends WebPerformanceTestCase {
+public class WebRuntimeViewPopupMenu extends PerformanceTestCase {
     private Node dataObjectNode;
     private RuntimeTabOperator runtimeTab = null;
     private boolean isTomcatRunning = false;
@@ -86,7 +88,7 @@ public class WebRuntimeViewPopupMenu extends WebPerformanceTestCase {
     }
     
     protected void init() {
-        super.init();
+//        super.init();
         expectedTime = UI_RESPONSE;
         track_mouse_event = ActionTracker.TRACK_MOUSE_PRESS;
         WAIT_AFTER_PREPARE = 500;
@@ -127,7 +129,7 @@ public class WebRuntimeViewPopupMenu extends WebPerformanceTestCase {
     
     public void prepare() {
         dataObjectNode.select();
-        eventTool().waitNoEvent(1000);
+        waitNoEvent(1000);
     }
     
     public ComponentOperator open(){

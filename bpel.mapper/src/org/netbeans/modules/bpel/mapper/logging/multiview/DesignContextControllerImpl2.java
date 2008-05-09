@@ -16,7 +16,6 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.modules.bpel.mapper.logging.multiview;
 
 import java.awt.EventQueue;
@@ -25,7 +24,7 @@ import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
 import java.util.EventObject;
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.bpel.editors.api.utils.Util;
+import org.netbeans.modules.bpel.editors.api.EditorUtil;
 import org.netbeans.modules.bpel.mapper.logging.model.LoggingMapperModelFactory;
 import org.netbeans.modules.bpel.mapper.model.GraphExpandProcessor;
 import org.netbeans.modules.bpel.mapper.multiview.BpelDesignContext;
@@ -38,7 +37,6 @@ import org.netbeans.modules.bpel.mapper.multiview.ShowMapperCookie;
 import org.netbeans.modules.bpel.mapper.tree.spi.MapperTcContext;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.BpelModel;
-import org.netbeans.modules.bpel.model.api.events.ChangeEvent;
 import org.netbeans.modules.soa.mappercore.Mapper;
 import org.netbeans.modules.soa.mappercore.model.MapperModel;
 import org.netbeans.modules.xml.xam.Model.State;
@@ -123,6 +121,12 @@ public class DesignContextControllerImpl2
     public synchronized void setContext(BpelDesignContext newContext, boolean forceReload) {
         assert EventQueue.isDispatchThread();
         //
+        
+        if (mNewContext == null && forceReload) {
+            reloadMapper(new EventObject(new Object()));
+            return;
+        }
+        
         mNewContext = newContext;
 
         boolean isValidContext = DesignContextUtil.isValidContext(mContext);
@@ -331,8 +335,8 @@ public class DesignContextControllerImpl2
             if (forceReload || !newContextEntity.equals(oldContextEntity)) {
                 myMapperStateManager.storeOldEntityContext(mContext);
                 //
-                MapperModel newMapperModel = new LoggingMapperModelFactory().
-                        constructModel(mMapperTcContext, newContext);
+                MapperModel newMapperModel = new LoggingMapperModelFactory(mMapperTcContext, 
+                    newContext).constructModel();
                 //
 
                 mContext = newContext;
@@ -380,8 +384,8 @@ public class DesignContextControllerImpl2
 //        }
 //
 //
-        MapperModel newMapperModel = new LoggingMapperModelFactory().
-                constructModel(mMapperTcContext, mContext);
+        MapperModel newMapperModel = new LoggingMapperModelFactory(mMapperTcContext, 
+            mContext).constructModel();
 
         myMapperStateManager.storeOldEntityContext(mContext);
         setMapperModel(newMapperModel);
@@ -389,11 +393,12 @@ public class DesignContextControllerImpl2
     }
 
     private synchronized Object getBpelModelUpdateSource() {
-        if (mBpelModelUpdateSourceRef != null) {
+        if (mBpelModelUpdateSourceRef == null) {
+            // Mapper is the default synchronization source
+            return mMapperTcContext.getMapper();
+        } else {
             return mBpelModelUpdateSourceRef.get();
         }
-        //
-        return null;
     }
 
     /**
@@ -431,7 +436,7 @@ public class DesignContextControllerImpl2
         entityName = node != null ? node.getDisplayName() : null;
         if (entityName == null) {
             BpelEntity entity = context.getSelectedEntity();
-            entityName = entity instanceof Nameable ? ((Nameable)entity).getName() : Util.getTagName(entity);
+            entityName = entity instanceof Nameable ? ((Nameable)entity).getName() : EditorUtil.getTagName(entity);
         }
         entityName = entityName == null ? "" : entityName;
         disableMapper(NbBundle.getMessage(MapperMultiviewElement.class,
@@ -445,7 +450,7 @@ public class DesignContextControllerImpl2
         entityName = node != null ? node.getDisplayName() : null;
         if (entityName == null) {
             BpelEntity entity = context.getSelectedEntity();
-            entityName = entity instanceof Nameable ? ((Nameable)entity).getName() : Util.getTagName(entity);
+            entityName = entity instanceof Nameable ? ((Nameable)entity).getName() : EditorUtil.getTagName(entity);
         }
         entityName = entityName == null ? "" : entityName;
         disableMapper(NbBundle.getMessage(MapperMultiviewElement.class,

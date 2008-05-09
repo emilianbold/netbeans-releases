@@ -54,8 +54,7 @@ public class ProcessesNodeModel implements NodeModel {
     public ProcessesNodeModel(
             final ContextProvider contextProvider) {
         
-        myDebugger = (BpelDebugger) 
-                contextProvider.lookupFirst(null, BpelDebugger.class);
+        myDebugger = contextProvider.lookupFirst(null, BpelDebugger.class);
         myVariablesUtil = new VariablesUtil(myDebugger);
     }
     

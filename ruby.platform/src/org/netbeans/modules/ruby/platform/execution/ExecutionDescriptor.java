@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -42,9 +42,12 @@ package org.netbeans.modules.ruby.platform.execution;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.platform.RubyExecution;
+import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Utilities;
 
@@ -67,8 +70,10 @@ public class ExecutionDescriptor {
     private final RubyPlatform platform;
     private FileLocator fileLocator;
     String script;
+    private Map<String, String> additionalEnv;
     private String[] additionalArgs;
     private String initialArgs;
+    private String jrubyProps;
     private FileObject fileObject;
     private String classPath;
     boolean showProgress = true;
@@ -80,7 +85,7 @@ public class ExecutionDescriptor {
     List<OutputRecognizer> outputRecognizers = new ArrayList<OutputRecognizer>();
 
     public ExecutionDescriptor(final RubyPlatform platform) {
-        this.platform = platform;
+        this(platform, null, null);
     }
 
     public ExecutionDescriptor(final RubyPlatform platform, final String displayName, final File pwd) {
@@ -92,12 +97,25 @@ public class ExecutionDescriptor {
         this.displayName = displayName;
         this.pwd = pwd;
         this.script = script;
-        assert (pwd != null) && pwd.isDirectory() : pwd + " is a directory";
+        assert (pwd == null) || pwd.isDirectory() : pwd + " is a directory";
+        if (platform.hasRubyGemsInstalled()) {
+            Map<String, String> env = new HashMap<String, String>();
+            GemManager.adjustEnvironment(platform, env);
+            addAdditionalEnv(env);
+        }
+        if (platform.isJRuby()) {
+            Map<String, String> env = new HashMap<String, String>();
+            String home = platform.getHome().getAbsolutePath();
+            env.put("JRUBY_HOME", home); // NOI18N
+            env.put("JRUBY_BASE", home); // NOI18N
+            env.put("JAVA_HOME", RubyExecution.getJavaHome()); // NOI18N
+            addAdditionalEnv(env);
+        }
     }
     
     public ExecutionDescriptor cmd(final File cmd) {
         this.cmd = cmd;
-        assert (cmd != null) && cmd.isFile() : cmd + " is a file";
+        assert (cmd != null) && cmd.isFile() : cmd + " must be a file";
         return this;
     }
 
@@ -164,6 +182,11 @@ public class ExecutionDescriptor {
         return this;
     }
     
+    public ExecutionDescriptor jrubyProperties(final String jrubyProps) {
+        this.jrubyProps = jrubyProps;
+        return this;
+    }
+
     public ExecutionDescriptor addBinPath(boolean addBinPath) {
         this.addBinPath = addBinPath;
         return this;
@@ -201,7 +224,7 @@ public class ExecutionDescriptor {
         this.classPath = classPath;
         return this;
     }
-    
+
     String getDisplayName() {
         return debug ? displayName + " (debug)" : displayName; // NOI18N
     }
@@ -234,6 +257,11 @@ public class ExecutionDescriptor {
         return initialArgs == null ? null : Utilities.parseParameters(initialArgs);
     }
     
+    /** Properties to be passed to the JVM running the JRuby process. */
+    public String[] getJRubyProps() {
+        return jrubyProps == null ? null : Utilities.parseParameters(jrubyProps);
+    }
+    
     public File getPwd() {
         return pwd;
     }
@@ -260,5 +288,16 @@ public class ExecutionDescriptor {
      */
     public boolean getAppendJdkToPath() {
         return appendJdkToPath;
+    }
+
+    public void addAdditionalEnv(Map<String, String> additionalEnv) {
+        if (this.additionalEnv == null) {
+            this.additionalEnv = new HashMap<String, String>();
+        }
+        this.additionalEnv.putAll(additionalEnv);
+    }
+
+    public Map<String, String> getAdditionalEnvironment() {
+        return additionalEnv;
     }
 }

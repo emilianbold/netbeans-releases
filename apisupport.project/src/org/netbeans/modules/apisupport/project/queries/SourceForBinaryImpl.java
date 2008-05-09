@@ -118,7 +118,7 @@ public final class SourceForBinaryImpl implements SourceForBinaryQueryImplementa
                             continue;
                         }
                         File loc = project.getHelper().resolveFile(text);
-                        URL u = Util.urlForDirOrJar(loc);
+                        URL u = FileUtil.urlForArchiveOrDir(loc);
                         if (u.equals(binaryRoot)) {
                             res = new Result(entry.getKey());
                             break ECUS;
@@ -136,7 +136,7 @@ public final class SourceForBinaryImpl implements SourceForBinaryQueryImplementa
     private URL getClassesUrl() {
         if (classesUrl == null) {
             File classesDir = project.getClassesDirectory();
-            classesUrl = Util.urlForDir(classesDir);
+            classesUrl = FileUtil.urlForArchiveOrDir(classesDir);
         }
         return classesUrl;
     }
@@ -144,7 +144,7 @@ public final class SourceForBinaryImpl implements SourceForBinaryQueryImplementa
     private URL getTestClassesUrl() {
         if (testClassesUrl == null && project.supportsUnitTests()) {
             File testClassesDir = project.getTestClassesDirectory();
-            testClassesUrl = Util.urlForDir(testClassesDir);
+            testClassesUrl = FileUtil.urlForArchiveOrDir(testClassesDir);
         }
         return testClassesUrl;
     }

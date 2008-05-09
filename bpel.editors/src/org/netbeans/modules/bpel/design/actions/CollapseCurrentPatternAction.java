@@ -28,7 +28,7 @@ public class CollapseCurrentPatternAction extends DesignModeAction {
         if (pattern == null) {
             return;
         }
-        if (pattern instanceof CollapsedPattern) {
+        if (getDesignView().getModel().isCollapsed(pattern.getOMReference())) {
             return;
         }
 

@@ -61,6 +61,8 @@ import org.netbeans.api.java.platform.Specification;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.jboss4.JBDeploymentManager;
 import org.netbeans.modules.j2ee.jboss4.customizer.CustomizerSupport;
+import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginUtils;
+import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginUtils.Version;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbCollections;
@@ -100,22 +102,29 @@ public class JBProperties {
 
     private static final Logger LOGGER = Logger.getLogger(JBProperties.class.getName());
 
-
+    private final Version version;
+    
     /** Creates a new instance of JBProperties */
     public JBProperties(JBDeploymentManager manager) {
         this.manager = manager;
         ip = manager.getInstanceProperties();
+        version = JBPluginUtils.getServerVersion(new File(ip.getProperty(PROP_ROOT_DIR)));
     }
 
     public boolean supportsJavaEE5ejb3() {
-        return new File(getServerDir(), "deploy/ejb3.deployer").exists() || // JBoss 4 // NOI18N
-               new File(getServerDir(), "deployers/ejb3.deployer").exists(); // JBoss 5 // NOI18N
+        return new File(getServerDir(), "deploy/ejb3.deployer").exists() // JBoss 4 // NOI18N
+                || new File(getServerDir(), "deployers/ejb3.deployer").exists(); // JBoss 5 // NOI18N
     }
 
     public boolean supportsJavaEE5web() {
-        return new File(getServerDir(), "deployers/jbossweb.deployer").exists(); // JBoss 5 // NOI18N
+        return new File(getServerDir(), "deploy/jboss-web.deployer").exists() // JBoss 4.2 // NOI18N
+                || new File(getServerDir(), "deployers/jbossweb.deployer").exists(); // JBoss 5 // NOI18N
     }
 
+    public boolean supportsJavaEE5ear() {
+        return supportsJavaEE5ejb3() && supportsJavaEE5web()
+                && version != null && version.compareToIgnoreUpdate(new Version("5.0.0")) >= 0; // NOI18N
+    }
     public File getServerDir() {
         return new File(ip.getProperty(PROP_SERVER_DIR));
     }
@@ -127,7 +136,7 @@ public class JBProperties {
     public File getLibsDir() {
         return new File(getServerDir(), "lib"); // NOI18N
     }
-
+    
     public boolean getProxyEnabled() {
         String val = ip.getProperty(PROP_PROXY_ENABLED);
         return val != null ? Boolean.valueOf(val).booleanValue()

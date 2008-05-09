@@ -42,6 +42,7 @@
 package gui.action;
 
 import gui.Utils;
+import javax.swing.JTextField;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.EditorWindowOperator;
 import org.netbeans.jellytools.MainWindowOperator;
@@ -56,6 +57,8 @@ import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
+import org.netbeans.jemmy.operators.JDialogOperator;
+import org.netbeans.jemmy.operators.JLabelOperator;
 
 /**
  * Test of finishing dialogs from EJB source editor.
@@ -66,10 +69,14 @@ public class MeasureSessionBeanAction extends org.netbeans.performance.test.util
     
     private static EditorOperator editor;
     private static NbDialogOperator dialog;
+
+//    private static JTextPaneOperator tc;
     
     private String popup_menu;
     private String title;
     private String name;
+
+
     
     /**
      * Creates a new instance of MeasureSessionBeanAction 
@@ -88,9 +95,9 @@ public class MeasureSessionBeanAction extends org.netbeans.performance.test.util
     }
     
      public void testAddBusinessMethod(){
-        WAIT_AFTER_OPEN = 5000;
+        WAIT_AFTER_OPEN = 1000;
         popup_menu = "EJB Methods|Add Business Method";
-        title = "Add Business Method";
+        title = "Add Business Method...";
         name = "testBusinessMethod";
         doMeasurement();
     }
@@ -100,23 +107,28 @@ public class MeasureSessionBeanAction extends org.netbeans.performance.test.util
         Node openFile = new Node(new ProjectsTabOperator().getProjectRootNode("TestApplication-EJBModule"),"Enterprise Beans|TestSessionSB");
         new OpenAction().performAPI(openFile);
         editor = new EditorWindowOperator().getEditor("TestSessionBean.java");
-        new org.netbeans.jemmy.EventTool().waitNoEvent(5000);
+//        new org.netbeans.jemmy.EventTool().waitNoEvent(5000);
         editor.select(11);
-        JemmyProperties.setCurrentDispatchingModel(JemmyProperties.ROBOT_MODEL_MASK); 
+//        JemmyProperties.setCurrentDispatchingModel(JemmyProperties.ROBOT_MODEL_MASK); 
     }
     
     public void prepare() {
         new ActionNoBlock(null,popup_menu).perform(editor);
         dialog = new NbDialogOperator(title);
-        new JTextFieldOperator(dialog).setText(name+Utils.getTimeIndex());
+        JLabelOperator lblOper = new JLabelOperator(dialog, "Name");
+        new JTextFieldOperator((JTextField)lblOper.getLabelFor()).setText(name+Utils.getTimeIndex());
+
+//        tc=new JTextPaneOperator(dialog); tc.setText(name+Utils.getTimeIndex());
    }
     
     public ComponentOperator open(){
+        repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
         dialog.ok();
         return null;
     }
 
     public void shutdown(){
+        repaintManager().resetRegionFilters();   
         new SaveAllAction().performAPI();
         editor.closeDiscard();
     }

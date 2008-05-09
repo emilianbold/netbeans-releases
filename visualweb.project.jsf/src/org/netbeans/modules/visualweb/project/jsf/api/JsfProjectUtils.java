@@ -63,6 +63,7 @@ import java.io.ByteArrayInputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.WeakHashMap;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
@@ -128,6 +129,9 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 
@@ -222,20 +226,25 @@ public class JsfProjectUtils {
         return wm != null;
     }
 
-    private static final Map<FileObject,Boolean> JsfProjectDir = new WeakHashMap();
+    private static final Map<String,Boolean> JsfProjectDir = new HashMap();
+
+    public static Boolean isUnderJsfProjectDir(FileObject file) {
+        String path = file.getPath();
+        for (Map.Entry<String,Boolean> root : JsfProjectDir.entrySet()) {
+            if (path.startsWith(root.getKey())) {
+                return root.getValue();
+            }
+        }
+
+        return null;
+    }
 
     public static Boolean isJsfProjectDir(FileObject projDir) {
-        return (Boolean) JsfProjectDir.get(projDir);
+        return (Boolean) JsfProjectDir.get(projDir.getPath() + "/"); // NOI18N
     }
 
     public static void setJsfProjectDir(FileObject projDir, Boolean set) {
-        JsfProjectDir.put(projDir, set);
-    }
-
-    public static void setJsfProjectDir(ArrayList<FileObject> projDirs, Boolean set) {
-        for (FileObject projDir : projDirs) {
-            JsfProjectDir.put(projDir, set);
-        }
+        JsfProjectDir.put(projDir.getPath() + "/", set); // NOI18N
     }
 
     /**
@@ -243,22 +252,27 @@ public class JsfProjectUtils {
      * @param fo FileObject to be checked
      */
     public static boolean isJsfProjectFile(FileObject fo) {
-        ArrayList<FileObject> dirs = new ArrayList();
+        Boolean ret = isUnderJsfProjectDir(fo);
+        if (ret != null) {
+            return ret.booleanValue();
+        }
 
         while (fo != null) {
             if (fo.isFolder()) {
-                Boolean ret = isJsfProjectDir(fo);
-                if (ret != null) {
-                    return ret.booleanValue();
-                }
-
-                dirs.add(fo);
-
                 final FileObject projXml = fo.getFileObject("nbproject/project.xml"); // NOI18N
                 // Found the project root directory and got the project.xml file
                 if (projXml != null) {
                     if (fileContains(projXml, RAVE_AUX_NAMESPACE)) {
-                        setJsfProjectDir(dirs, Boolean.TRUE);
+                        setJsfProjectDir(fo, Boolean.TRUE);
+                        return true;
+                    }
+                }
+
+                final FileObject projMaven = fo.getFileObject("nb-configuration.xml"); // NOI18N
+                // Found the project root directory and got the Maven nb-configuration.xml file
+                if (projMaven != null) {
+                    if (fileContains(projMaven, RAVE_AUX_NAMESPACE)) {
+                        setJsfProjectDir(fo, Boolean.TRUE);
                         return true;
                     }
                 }
@@ -268,7 +282,7 @@ public class JsfProjectUtils {
                 if (propFile != null) {
                     // Check Creator property
                     boolean isJsf = fileContains(propFile, "jsf.pagebean.package"); // NOI18N
-                    setJsfProjectDir(dirs, Boolean.valueOf(isJsf));
+                    setJsfProjectDir(fo, Boolean.valueOf(isJsf));
                     return isJsf;
                 }
             }
@@ -582,7 +596,7 @@ public class JsfProjectUtils {
         }
 
         for (int i = 0; i < servlets.length; i++) {
-            if (servlets[i].getServletClass().equals("javax.faces.webapp.FacesServlet")) { // NOI18N
+            if ((servlets[i] != null) && "javax.faces.webapp.FacesServlet".equals(servlets[i].getServletClass())) { // NOI18N
                 String servletName = servlets[i].getServletName();
                 for (int j = 0; j < mapping.length; j++) {
                     if (servletName.equals(mapping[j].getServletName())) {
@@ -1712,17 +1726,7 @@ public class JsfProjectUtils {
     }
     
     public static void addLocalizedRoots(Project project, String[] jarName) throws IOException {
-        ArrayList jars = new ArrayList(jarName.length);
-        for (int i = 0; i < jarName.length; i++) {
-            File f = InstalledFileLocator.getDefault().locate(jarName[i], null, true);
-            if (f != null) {
-                URL root = FileUtil.getArchiveRoot(FileUtil.toFileObject(f)).getURL();
-                if (!hasRootReference(project, root)) {
-                    jars.add(root);
-                }
-            }
-        }
-        addRootReferences(project, (URL[])jars.toArray(new URL[0]));
+        addLocalizedRoots(project, jarName, ClassPath.COMPILE);
     }
 
     public static void addLocalizedRoots(Project project, String[] jarName, String type) throws IOException {
@@ -1739,6 +1743,16 @@ public class JsfProjectUtils {
         addRootReferences(project, (URL[])jars.toArray(new URL[0]), type);
     }
 
+    public static void addLocalizedRoots(Project project, URL[] roots, String type) throws IOException {
+        ArrayList<URL> jars = new ArrayList<URL>(roots.length);
+        for (URL root : roots) {
+            if (!hasRootReference(project, root, type)) {
+                jars.add(root);
+            }
+        }
+        addRootReferences(project, (URL[])jars.toArray(new URL[0]), type);
+    }
+
     public static void updateLocalizedRoots(Project project) {
         try {
             JsfProjectLibrary.updateLocalizedRoots(project);
@@ -1748,7 +1762,7 @@ public class JsfProjectUtils {
     }
 
     public static void addLocalizedTheme(Project project, String themeName) throws IOException {
-        URL root = JsfProjectLibrary.getLocalizedThemeRoot(themeName);
+        URL root = JsfProjectLibrary.getLocalizedThemeRoot(project, themeName);
         if (root != null) {
             if (!hasRootReference(project, root)) {
                 addRootReferences(project, new URL[] { root });
@@ -1757,7 +1771,7 @@ public class JsfProjectUtils {
     }
     
     public static void removeLocalizedTheme(Project project, String themeName)  throws IOException {
-        URL root = JsfProjectLibrary.getLocalizedThemeRoot(themeName);
+        URL root = JsfProjectLibrary.getLocalizedThemeRoot(project, themeName);
         if (root != null) {
             if (hasRootReference(project, root)) {
                 removeRootReferences(project, new URL[] { root });
@@ -1925,5 +1939,24 @@ public class JsfProjectUtils {
                 return new JFileChooser(currentDirectory) ;
             }
         });
+    }
+    
+    public static LibraryManager getProjectLibraryManager(Project project) {
+        LibraryManager lm = ReferenceHelper.getProjectLibraryManager(project);
+        if (lm != null) {
+            return lm;
+        }
+        return LibraryManager.getDefault();
+    }
+    
+    public static String[] getJ2eeClasspathEntries(Project project) {
+        WebPropertyEvaluator webPropertyEvaluator = (WebPropertyEvaluator)project.getLookup().lookup(WebPropertyEvaluator.class);
+        if(webPropertyEvaluator != null) {
+            String property = webPropertyEvaluator.evaluator().getProperty("j2ee.platform.classpath");    //NOI18N
+            if (property != null) {
+                return PropertyUtils.tokenizePath(property);
+            }
+        }
+        return new String[0];
     }
 }

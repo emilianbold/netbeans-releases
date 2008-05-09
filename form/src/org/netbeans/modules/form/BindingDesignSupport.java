@@ -44,7 +44,6 @@ package org.netbeans.modules.form;
 import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
-import java.lang.ref.*;
 import java.lang.reflect.*;
 import java.util.*;
 import java.beans.*;
@@ -59,6 +58,7 @@ import javax.lang.model.type.TypeKind;
 import javax.swing.JList;
 import javax.swing.JTable;
 import javax.swing.JComboBox;
+import javax.swing.JFormattedTextField;
 import javax.swing.JSlider;
 import javax.swing.JSpinner;
 import javax.swing.text.JTextComponent;
@@ -224,6 +224,15 @@ public class BindingDesignSupport {
             } else if (JSpinner.class.isAssignableFrom(clazz)) {
                 PropertyDescriptor desc = new PropertyDescriptor("value", JSpinner.class); // NOI18N
                 descs.add(desc);                
+            } else if (JFormattedTextField.class.isAssignableFrom(clazz)) {
+                for (PropertyDescriptor pd : descs) {
+                    if ("text".equals(pd.getName())) { // NOI18N
+                        descs.remove(pd);
+                        break;
+                    }
+                }
+                PropertyDescriptor desc = new PropertyDescriptor("value", JFormattedTextField.class); // NOI18N
+                descs.add(desc);
             }
         } catch (Exception ex) {
             Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
@@ -441,13 +450,14 @@ public class BindingDesignSupport {
                 } catch (IOException ioex) {
                     Logger.getLogger(getClass().getName()).log(Level.INFO, ioex.getMessage(), ioex);
                 }
-            } while (!Object.class.equals(superClass[0]));
+            } while (!Object.class.getName().equals(superClass[0]));
             typesFromSource = types;
         }
         List<BindingDescriptor>[] list = new List[] {Collections.emptyList(), typesFromSource, Collections.emptyList()};
         Class clazz = (type.getType() == null) ? binarySuperClass : FormUtils.typeToClass(type);
         if ((clazz != null) && !clazz.getName().startsWith("java.lang.") // NOI18N
                 && !Collection.class.isAssignableFrom(clazz)
+                && !java.util.Date.class.isAssignableFrom(clazz)
                 && !clazz.isArray()) {
             try {
                 BeanInfo beanInfo = FormUtils.getBeanInfo(clazz);
@@ -1422,7 +1432,7 @@ public class BindingDesignSupport {
         }
     }
 
-    private static String capitalize(String title) {
+    public static String capitalize(String title) {
         StringBuilder builder = new StringBuilder(title);
         boolean lastWasUpper = false;
         for (int i = 0; i < builder.length(); i++) {

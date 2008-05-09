@@ -76,8 +76,6 @@ class HashMapProcessor extends PropertyProcessor {
                 }
             }
             addProperty(propertyName, b.toString());
-        }  else {
-            throw new IllegalStateException();
-        }
+        }  
     }
 }

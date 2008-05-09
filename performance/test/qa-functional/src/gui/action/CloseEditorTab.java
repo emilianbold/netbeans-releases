@@ -49,6 +49,8 @@ import org.netbeans.jellytools.nodes.SourcePackagesNode;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
 
+import org.netbeans.jemmy.operators.JPopupMenuOperator;
+
 /**
  * Test Closing Editor tab.
  *
@@ -56,6 +58,11 @@ import org.netbeans.jemmy.operators.ComponentOperator;
  */
 public class CloseEditorTab extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
+    /** Menu item name that opens the editor */
+    public static String menuItem;
+    
+    protected static String OPEN = org.netbeans.jellytools.Bundle.getStringTrimmed("org.openide.actions.Bundle", "Open");
+
     /** File to be closed */
     private String closeFile;
     
@@ -69,6 +76,7 @@ public class CloseEditorTab extends org.netbeans.performance.test.utilities.Perf
     public CloseEditorTab(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
+        menuItem = OPEN;
     }
     
     /**
@@ -79,6 +87,7 @@ public class CloseEditorTab extends org.netbeans.performance.test.utilities.Perf
     public CloseEditorTab(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         expectedTime = WINDOW_OPEN;
+        menuItem = OPEN;
     }
     
     public void initialize(){
@@ -92,7 +101,9 @@ public class CloseEditorTab extends org.netbeans.performance.test.utilities.Perf
     
     public void prepare(){
         for(int i=0; i<openFileNodes.length; i++) {
-            new OpenAction().performPopup(openFileNodes[i]); // fix for mdr+java, opening all files at once causes never ending loop
+            JPopupMenuOperator popup =  this.openFileNodes[i].callPopup();
+            popup.pushMenu(this.menuItem);
+//            new OpenAction().performPopup(openFileNodes[i]); // fix for mdr+java, opening all files at once causes never ending loop
         }
     }
     

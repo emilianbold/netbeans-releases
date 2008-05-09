@@ -183,8 +183,8 @@ import org.openide.util.NbBundle;
 public class ADProjectTreeEngine
    implements IProjectTreeEngine, IProjectTreeBuilderFilter
 {
-   private static final Logger LOG =
-    Logger.getLogger("org.netbeans.modules.uml.ui.products.ad.projecttreedefaultengine.ADProjectTreeEngine");
+   private static final Logger logger =
+    Logger.getLogger("uml.ui.products.ad.projecttreedefaultengine.ADProjectTreeEngine");
    
    /** Allow Drag Movement with in the tree. */
    public final static int     MRK_ALLOW_MOVE                        = 0;
@@ -2231,11 +2231,14 @@ public class ADProjectTreeEngine
                     //addDiagram(parent, new ProjectTreeDiagramNode(curDiagram));
                     ITreeDiagram newItem = factory.createDiagramNode(curDiagram);
                     String diagramName = diagrams.get(index).getNameWithAlias();
-                    LOG.info("*** addAllDiagramsInProjec: diagramNameWithAlias = "+ diagramName);
-                    newItem.setDisplayedName(diagramName, false);
-                    newItem.setName(diagramName);
-                    newItem.setSortPriority(m_TreeBuilder.getSortPriority(curDiagram.getDiagramKindName()));
-                    addDiagram(parent, newItem);
+                    logger.fine("*** addAllDiagramsInProjec: diagramNameWithAlias = "+ diagramName);
+                    if ( diagramName != null && diagramName.trim().length() > 0)
+                    {
+                        newItem.setDisplayedName(diagramName, false);
+                        newItem.setName(diagramName);
+                        newItem.setSortPriority(m_TreeBuilder.getSortPriority(curDiagram.getDiagramKindName()));
+                        addDiagram(parent, newItem);
+                    }
                 }
             }
         }
@@ -3105,7 +3108,7 @@ public class ADProjectTreeEngine
               public void run()
               {
                   String formattedValue = getFormattedString(element);
-                  LOG.info("*** notifyElementChanged(IElement): name=" + formattedValue);
+                  //logger.fine("*** notifyElementChanged(IElement): name=" + formattedValue);
                   IProjectTreeModel model = getTreeModel();
                   if (model != null && formattedValue.trim().length() > 0)
                   {
@@ -3128,7 +3131,7 @@ public class ADProjectTreeEngine
       if(element != null)
       {
          String formattedValue = element.getNameWithAlias();
-         LOG.info( "*** notifyElementChanged(IProxyDiagram): diagramName=" + formattedValue);
+         //logger.fine( "*** notifyElementChanged(IProxyDiagram): diagramName=" + formattedValue);
          IProjectTreeModel model = getTreeModel();
          if(model != null)
          {

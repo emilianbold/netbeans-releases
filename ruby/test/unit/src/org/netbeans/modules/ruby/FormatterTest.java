@@ -42,15 +42,12 @@
 package org.netbeans.modules.ruby;
 
 import java.util.List;
-import javax.swing.JTextArea;
-import javax.swing.text.Caret;
-import org.netbeans.api.gsf.ParserResult;
+import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 
 /**
  *
@@ -64,88 +61,9 @@ public class FormatterTest extends RubyTestBase {
         super(testName);
     }
 
-    public void format(String source, String reformatted, IndentPrefs preferences) throws Exception {
-        Formatter formatter = getFormatter(preferences);
-        String BEGIN = "%<%"; // NOI18N
-        int startPos = source.indexOf(BEGIN);
-        if (startPos != -1) {
-            source = source.substring(0, startPos) + source.substring(startPos+BEGIN.length());
-        } else {
-            startPos = 0;
-        }
-        
-        String END = "%>%"; // NOI18N
-        int endPos = source.indexOf(END);
-        if (endPos != -1) {
-            source = source.substring(0, endPos) + source.substring(endPos+END.length());
-        }
-
-        BaseDocument doc = getDocument(source);
-
-        if (endPos == -1) {
-            endPos = doc.getLength();
-        }
-        
-        //ParserResult result = parse(fo);
-        ParserResult result = null;
-        formatter.reindent(doc, startPos, endPos, result);
-
-        String formatted = doc.getText(0, doc.getLength());
-        assertEquals(reformatted, formatted);
-    }
-    
     private void reformatFileContents(String file) throws Exception {
-        FileObject fo = getTestFile(file);
-        assertNotNull(fo);
-        BaseDocument doc = getDocument(fo);
-        assertNotNull(doc);
-        String before = doc.getText(0, doc.getLength());
-        
-        Formatter formatter = new Formatter();
-        IndentPrefs preferences = new IndentPrefs(2,2);
-
-        formatter.reindent(doc, 0, doc.getLength(), null);
-        String after = doc.getText(0, doc.getLength());
-        assertEquals(before, after);
+        reformatFileContents(file, new IndentPrefs(2,2));
     }
-    
-    public void insertNewline(String source, String reformatted, IndentPrefs preferences) throws Exception {
-        Formatter formatter = getFormatter(preferences);
-
-        int sourcePos = source.indexOf('^');     
-        assertNotNull(sourcePos);
-        source = source.substring(0, sourcePos) + source.substring(sourcePos+1);
-
-        int reformattedPos = reformatted.indexOf('^');        
-        assertNotNull(reformattedPos);
-        reformatted = reformatted.substring(0, reformattedPos) + reformatted.substring(reformattedPos+1);
-        
-        BaseDocument doc = getDocument(source);
-
-        JTextArea ta = new JTextArea(doc);
-        Caret caret = ta.getCaret();
-        caret.setDot(sourcePos);
-        doc.atomicLock();
-        DocumentUtilities.setTypingModification(doc, true);
-
-        try {
-            doc.insertString(caret.getDot(), "\n", null);
-        
-            int startPos = caret.getDot()+1;
-            int endPos = startPos;
-
-            //ParserResult result = parse(fo);
-            ParserResult result = null;
-            formatter.reindent(doc, startPos, endPos, result);
-
-            String formatted = doc.getText(0, doc.getLength());
-            assertEquals(reformatted, formatted);
-        } finally {
-            DocumentUtilities.setTypingModification(doc, false);
-            doc.atomicUnlock();
-        }
-    }
-
     // Used to test arbitrary source trees
     //public void testReformatSourceTree() {
     //    List<FileObject> files = new ArrayList<FileObject>();
@@ -186,6 +104,12 @@ public class FormatterTest extends RubyTestBase {
         for (FileObject fo : files) {
             count++;
 
+            
+if (fo.getName().equals("delegating_attributes.rb")) {
+    System.err.println("SKIPPING known bad file " + fo.getNameExt());
+    continue;
+}
+            
 // This bug triggers #108889
 if (fo.getName().equals("action_controller_dispatcher") && fo.getParent().getName().equals("dispatcher")) {
     System.err.println("SKIPPING known bad file " + fo.getNameExt());
@@ -206,10 +130,8 @@ if (fo.getName().equals("httputils") && fo.getParent().getName().equals("webrick
             // check that we end up at indentation level 0
             BaseDocument doc = getDocument(fo);
             
-            ParserResult result =  null;// parse(fo);
-
             try {
-                formatter.reindent(doc, 0, doc.getLength(), result);
+                formatter.reindent(doc, 0, doc.getLength());
             } catch (Exception ex) {
                 System.err.println("Exception processing " + FileUtil.getFileDisplayName(fo));
                 fail(ex.toString());
@@ -232,7 +154,7 @@ if (fo.getName().equals("httputils") && fo.getParent().getName().equals("webrick
                     if (indentation != 0) {
                         // Make sure the file actually compiles - we might be picking up some testfiles in the
                         // JRuby tree which don't actually pass
-                        result = parse(fo);
+                        ParserResult result = parse(fo);
                         RubyParseResult rpr = (RubyParseResult)result;
                         
                         if (rpr.getRootNode() == null) {

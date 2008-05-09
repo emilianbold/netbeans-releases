@@ -63,11 +63,15 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.logger.LogUtil;
+import org.netbeans.modules.sql.framework.model.SQLConstants;
+import org.netbeans.modules.sql.framework.model.SQLObject;
 import org.netbeans.modules.sql.framework.ui.output.ETLOutputPanel;
+import org.netbeans.modules.sql.framework.ui.output.dataview.JoinOperatorDataPanel;
+import org.netbeans.modules.sql.framework.ui.output.dataview.JoinViewDataPanel;
+import org.netbeans.modules.sql.framework.ui.output.dataview.SourceTableDataPanel;
+import org.netbeans.modules.sql.framework.ui.output.dataview.TargetTableDataPanel;
 import org.openide.awt.MouseUtils;
 import org.openide.awt.TabbedPaneFactory;
-import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -92,7 +96,8 @@ public final class ETLOutputWindowTopComponent extends TopComponent {
     private ETLOutputPanel newSelection;
     private JToolBar verticalBar;
     public static final String ICON_RESOURCE = "org/netbeans/modules/sql/framework/ui/resources/images/showOutput.png"; // NOI18N
-    private static transient final Logger mLogger = LogUtil.getLogger(ETLOutputWindowTopComponent.class.getName());
+
+    private static transient final Logger mLogger = Logger.getLogger(ETLOutputWindowTopComponent.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
     private ETLOutputWindowTopComponent() {
@@ -102,11 +107,11 @@ public final class ETLOutputWindowTopComponent extends TopComponent {
         setFocusable(true);
         setBackground(UIManager.getColor("text")); //NOI18N
 
-        String nbBundle1 = mLoc.t("PRSR001: Data Integrator Output");
-        setName(Localizer.parse(nbBundle1));
+        String nbBundle1 = mLoc.t("BUND167: Data Integrator Output");
+        setName(nbBundle1.substring(15));
         setIcon(Utilities.loadImage(ICON_RESOURCE));
-        String nbBundle2 = mLoc.t("PRSR001: Data Integrator Output");
-        setToolTipText(Localizer.parse(nbBundle2));
+        String nbBundle2 = mLoc.t("BUND167: Data Integrator Output");
+        setToolTipText(nbBundle2.substring(15));
 
         // create it but don't add it yet...
         verticalBar = new JToolBar(JToolBar.VERTICAL);
@@ -158,12 +163,14 @@ public final class ETLOutputWindowTopComponent extends TopComponent {
         };
 
     }
-    String nbBundle1 = mLoc.t("PRSR001: Close Tab");
-    String nbBundle2 = mLoc.t("PRSR001: Close All Tabs");
-    String nbBundle3 = mLoc.t("PRSR001: Close Other Tabs");
+    String nbBundle1 = mLoc.t("BUND168: Close Tab");
+    String nbBundle2 = mLoc.t("BUND169: Close All Tabs");
+    String nbBundle3 = mLoc.t("BUND150: Close Other Tabs");
+
     private class Close extends AbstractAction {
+
         public Close() {
-            super(Localizer.parse(nbBundle1));
+            super(nbBundle1.substring(15));
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -177,7 +184,7 @@ public final class ETLOutputWindowTopComponent extends TopComponent {
     private final class CloseAll extends AbstractAction {
 
         public CloseAll() {
-            super(Localizer.parse(nbBundle2));
+            super(nbBundle2.substring(15));
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -192,7 +199,7 @@ public final class ETLOutputWindowTopComponent extends TopComponent {
     private class CloseAllButCurrent extends AbstractAction {
 
         public CloseAllButCurrent() {
-            super(Localizer.parse(nbBundle3));
+            super(nbBundle3.substring(15));
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -266,7 +273,6 @@ public final class ETLOutputWindowTopComponent extends TopComponent {
      * To obtain the singleton instance, use {@link findInstance}.
      * @return ETLOutputWindowTopComponent defaultInstance
      */
-
     public static synchronized ETLOutputWindowTopComponent getDefault() {
         if (instance == null) {
             instance = new ETLOutputWindowTopComponent();
@@ -281,13 +287,13 @@ public final class ETLOutputWindowTopComponent extends TopComponent {
     public static synchronized ETLOutputWindowTopComponent findInstance() {
         TopComponent win = WindowManager.getDefault().findTopComponent(PREFERRED_ID);
         if (win == null) {
-        mLogger.infoNoloc(mLoc.t("PRSR111: Cannot find {0}component. It will not be located properly in the window system.",PREFERRED_ID));
-        return getDefault();
+            mLogger.infoNoloc(mLoc.t("EDIT511: Cannot find {0}component. It will not be located properly in the window system.", PREFERRED_ID));
+            return getDefault();
         }
         if (win instanceof ETLOutputWindowTopComponent) {
             return (ETLOutputWindowTopComponent) win;
         }
-         mLogger.infoNoloc(mLoc.t("PRSR112: There seem to be multiple components with the '{0} ' ID. That is a potential source of errors and unexpected behavior.",PREFERRED_ID));
+        mLogger.infoNoloc(mLoc.t("EDIT512: There seem to be multiple components with the '{0} ' ID. That is a potential source of errors and unexpected behavior.", PREFERRED_ID));
         return getDefault();
     }
 
@@ -316,9 +322,11 @@ public final class ETLOutputWindowTopComponent extends TopComponent {
                 verticalBar.removeAll();
                 JButton[] btns = ((ETLOutputPanel) panel).getVerticalToolBar();
                 for (JButton btn : btns) {
+                    if(btn != null){
                     verticalBar.add(btn);
+                    }
                 }
-                add(verticalBar, BorderLayout.WEST);
+               add(verticalBar, BorderLayout.WEST);
             }
         } else if (tabbedPane.getComponentCount() == 0 && lastKnownSelection != panel) {
             Component comp = (Component) lastKnownSelection;
@@ -344,6 +352,38 @@ public final class ETLOutputWindowTopComponent extends TopComponent {
         requestActive();
     }
 
+    public void findAndRemoveComponent(SQLObject sqlObj) {
+        if (sqlObj.getObjectType() == SQLConstants.SOURCE_TABLE || sqlObj.getObjectType() == SQLConstants.TARGET_TABLE) {
+            if (tabbedPane.getComponentCount() <= 0) {
+                removeAll();
+                close();
+            }
+
+            for (Component comp : tabbedPane.getComponents()) {
+                if (comp instanceof TargetTableDataPanel) {
+                    if (((TargetTableDataPanel) comp).getTable() == sqlObj) {
+                        removePanel(comp);
+                    }
+                } else if (comp instanceof SourceTableDataPanel) {
+                    if (((SourceTableDataPanel) comp).getTable() == sqlObj) {
+                        removePanel(comp);
+                    }
+                } else if (comp instanceof JoinViewDataPanel) {
+                    if (((JoinViewDataPanel) comp).getTable() == sqlObj) {
+                        removePanel(comp);
+                    }
+                } else if (comp instanceof JoinOperatorDataPanel) {
+                    if (((JoinOperatorDataPanel) comp).getTable() == sqlObj) {
+                        removePanel(comp);
+                    // TODO: remove all the source object data view
+                    }
+                }
+            }
+
+        }
+
+    }
+
     @Override
     public int getPersistenceType() {
         return TopComponent.PERSISTENCE_ALWAYS;
@@ -351,12 +391,12 @@ public final class ETLOutputWindowTopComponent extends TopComponent {
 
     @Override
     public void componentOpened() {
-    // TODO add custom code on component opening
+        // TODO add custom code on component opening
     }
 
     @Override
     public void componentClosed() {
-    // TODO add custom code on component closing
+        // TODO add custom code on component closing
     }
 
     @Override
@@ -390,7 +430,7 @@ public final class ETLOutputWindowTopComponent extends TopComponent {
     private void setToolbarButtons(JButton[] buttons) {
         verticalBar.removeAll();
         for (JButton btn : buttons) {
-            if(btn != null) {
+            if (btn != null) {
                 verticalBar.add(btn);
             }
         }

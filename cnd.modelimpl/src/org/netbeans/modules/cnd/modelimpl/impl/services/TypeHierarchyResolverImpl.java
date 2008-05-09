@@ -58,6 +58,7 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceSupport;
 import org.netbeans.modules.cnd.api.model.xref.CsmTypeHierarchyResolver;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
 
@@ -77,57 +78,13 @@ public class TypeHierarchyResolverImpl extends CsmTypeHierarchyResolver {
         if (set != null){
             List<CsmReference> res = new ArrayList<CsmReference>();
             for (CsmClass cls : set){
-                res.add(new RefImpl(cls));
+                res.add(CsmReferenceSupport.createObjectReference(cls));
             }
             return res;
         }
         return Collections.<CsmReference>emptyList();
     }
 
-    private static final class RefImpl extends OffsetableBase implements CsmReference {
-        private final CsmUID<CsmClass> delegate;
-        
-        private RefImpl(CsmClass owner) {
-            super(owner.getContainingFile(), owner.getStartOffset(), owner.getLeftBracketOffset());
-            delegate = owner.getUID();
-        }
-
-        public CsmObject getReferencedObject() {
-            return delegate.getObject();
-        }
-
-        public CsmObject getOwner() {
-            return delegate.getObject();
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (obj == null) {
-                return false;
-            }
-            if (getClass() != obj.getClass()) {
-                return false;
-            }
-            final RefImpl other = (RefImpl) obj;
-            if (this.delegate != other.delegate && (this.delegate == null || !this.delegate.equals(other.delegate))) {
-                return false;
-            }
-            return true;
-        }
-
-        @Override
-        public int hashCode() {
-            int hash = 5;
-            hash = 97 * hash + (this.delegate != null ? this.delegate.hashCode() : 0);
-            return hash;
-        }
-
-        @Override
-        public String toString() {
-            return "Class Reference: " + (this.delegate != null ? delegate.toString() : super.getOffsetString()); // NOI18N
-        }
-    }
-    
     private static final class HierarchyModelImpl {
         private Map<CsmClass,Set<CsmClass>> myMap;
     

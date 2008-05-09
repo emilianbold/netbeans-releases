@@ -43,11 +43,9 @@ package org.netbeans.modules.web.jspcompiler;
 
 import java.io.File;
 import java.io.IOException;
-
 import java.net.MalformedURLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 import org.apache.tools.ant.module.spi.AntEvent;
 import org.apache.tools.ant.module.spi.AntLogger;
 import org.apache.tools.ant.module.spi.AntSession;
@@ -66,19 +64,6 @@ import org.openide.windows.OutputListener;
  */
 public final class JSPJavacAntLogger extends AntLogger {
     
-//    private static PrintWriter debugwriter = null;
-//    private static void debug(String s) {
-//        if (debugwriter == null) {
-//            try {
-//                debugwriter = new PrintWriter(new java.io.FileWriter("/local/repo/trunk/nb_all/nbbuild/AntOutputParser.log")); // NOI18N
-//            } catch (java.io.IOException ioe) {
-//                return;
-//            }
-//        }
-//        debugwriter.println(s);
-//        debugwriter.flush();
-//    }
-    
     private static final Logger ERR = Logger.getLogger(JSPJavacAntLogger.class.getName());
     private static final boolean LOGGABLE = ERR.isLoggable(Level.FINE);
     
@@ -86,15 +71,13 @@ public final class JSPJavacAntLogger extends AntLogger {
      * Regexp matching the compilation error from JspC. Sample message could look like this:
      * org.apache.jasper.JasperException: file:C:/project/AntParseTestProject2/build/web/index.jsp(6,0) Include action: Mandatory attribute page missing
      */
-    private static final Pattern JSP_COMPILER_ERROR = Pattern.compile(
-        "(.*)(org.apache.jasper.JasperException: file:)([^\\(]*)\\(([0-9]+),([0-9]+)\\)(.*)"); // NOI18N
+//    private static final Pattern JSP_COMPILER_ERROR = Pattern.compile(
+//        "(.*)(org.apache.jasper.JasperException: file:)([^\\(]*)\\(([0-9]+),([0-9]+)\\)(.*)"); // NOI18N
 
 
     private static final String[] TASKS_OF_INTEREST = AntLogger.ALL_TASKS;
     
     private static final int[] LEVELS_OF_INTEREST = {
-        //AntEvent.LOG_DEBUG, // XXX is this needed?
-        //AntEvent.LOG_VERBOSE, // XXX is this needed?
         AntEvent.LOG_INFO, // XXX is this needed?
         AntEvent.LOG_WARN, // XXX is this needed?
         AntEvent.LOG_ERR, // XXX is this needed?
@@ -104,49 +87,50 @@ public final class JSPJavacAntLogger extends AntLogger {
     /** Default constructor for lookup. */
     public JSPJavacAntLogger() {}
     
+    @Override
     public boolean interestedInSession(AntSession session) {
         return true;
     }
     
+    @Override
     public boolean interestedInAllScripts(AntSession session) {
         return true;
     }
     
+    @Override
     public boolean interestedInScript(File script, AntSession session) {
         return true;
     }
     
+    @Override
     public String[] interestedInTargets(AntSession session) {
         return AntLogger.ALL_TARGETS;
     }
     
+    @Override
     public String[] interestedInTasks(AntSession session) {
         return TASKS_OF_INTEREST;
     }
     
+    @Override
     public int[] interestedInLogLevels(AntSession session) {
         // XXX could exclude those in [INFO..ERR] greater than session.verbosity
         return LEVELS_OF_INTEREST;
     }
 
     
-    private static FileObject guessWebModuleOutputRoot(WebModule wm, FileObject fo) {
-        /*
-        File outputF = wm.getWebOutputRoot();
-        if (outputF != null) {
-            return FileUtil.toFileObject(outputF);
-        }
-        */
-        FileObject potentialRoot = fo.getParent();
-        while (potentialRoot != null) {
-            if (potentialRoot.getFileObject("WEB-INF") != null) {
-                return potentialRoot;
-            }
-            potentialRoot = potentialRoot.getParent();
-        }
-        return null;
-    }
+//    private static FileObject guessWebModuleOutputRoot(WebModule wm, FileObject fo) {
+//        FileObject potentialRoot = fo.getParent();
+//        while (potentialRoot != null) {
+//            if (potentialRoot.getFileObject("WEB-INF") != null) {
+//                return potentialRoot;
+//            }
+//            potentialRoot = potentialRoot.getParent();
+//        }
+//        return null;
+//    }
     
+    @Override
     public void messageLogged(AntEvent event) {
         if (event.isConsumed()) {
             return;
@@ -255,7 +239,6 @@ public final class JSPJavacAntLogger extends AntLogger {
                 }
                 if (LOGGABLE) ERR.log(Level.FINE, "translate: [" + line1 + ", " + col1 + "]");
                 int newRow = resolver.unmangle(line1, col1);
-//debug ("translated to '" + jspName + ":" + newRow + "'");
                 // some mappings may not exist, so try next or previous lines, too
                 if (newRow == -1) {
                     newRow = resolver.unmangle(line1-1, col1);
@@ -271,7 +254,6 @@ public final class JSPJavacAntLogger extends AntLogger {
                         return null;
                     }
                     FileObject jspFO = wm.getDocumentBase().getFileObject(jspName);
-//debug ("jsp '" + jspFO + "'");
                     if (jspFO != null) {
                         return session.createStandardHyperlink(FileUtil.toFile(jspFO).toURI().toURL(), message, newRow, -1, -1, -1);
                     }

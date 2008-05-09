@@ -45,16 +45,14 @@ import java.util.Collection;
 import javax.swing.Icon;
 import javax.swing.SwingUtilities;
 import javax.swing.text.StyledDocument;
-import org.netbeans.api.gsf.DeclarationFinder.DeclarationLocation;
-import org.netbeans.api.gsf.Element;
-import org.netbeans.api.gsf.OffsetRange;
-import org.netbeans.api.gsf.Parser;
-import org.netbeans.api.gsf.ParserResult;
-import org.netbeans.api.gsf.CancellableTask;
-import org.netbeans.api.gsf.Element;
-import org.netbeans.api.gsf.ElementHandle;
-import org.netbeans.api.gsf.ElementKind;
-import org.netbeans.api.gsf.Modifier;
+import org.netbeans.modules.gsf.api.DeclarationFinder.DeclarationLocation;
+import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.gsf.api.Parser;
+import org.netbeans.modules.gsf.api.ParserResult;
+import org.netbeans.modules.gsf.api.CancellableTask;
+import org.netbeans.modules.gsf.api.ElementHandle;
+import org.netbeans.modules.gsf.api.ElementKind;
+import org.netbeans.modules.gsf.api.Modifier;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.gsf.Language;
 import org.netbeans.modules.gsf.LanguageRegistry;
@@ -121,8 +119,8 @@ public final class UiUtils {
      * @return true if and only if the declaration was correctly opened,
      *                false otherwise
      */
-    public static boolean open(Source js, final ElementHandle<Element> handle) {
-        DeclarationLocation location = getOpenInfo(js, handle, null);
+    public static boolean open(Source js, final ElementHandle handle) {
+        DeclarationLocation location = getOpenInfo(js, handle);
 
         if (location != DeclarationLocation.NONE) {
             return doOpen(location.getFileObject(), location.getOffset());
@@ -131,23 +129,13 @@ public final class UiUtils {
         return false;
     }
 
-    public static boolean open(Source js, final Element element) {
-        DeclarationLocation location = getOpenInfo(js, null, element);
-
-        if (location != DeclarationLocation.NONE) {
-            return doOpen(location.getFileObject(), location.getOffset());
-        }
-
-        return false;
-    }
-    
-    private static DeclarationLocation getOpenInfo(final Source js, final ElementHandle<Element> handle, Element element) {
+    private static DeclarationLocation getOpenInfo(final Source js, final ElementHandle handle) {
         assert js != null;
-        assert element == null || handle == null; // Only one should be set
+        assert handle != null; // Only one should be set
 
         try {
             FileObject fo = js.getFileObjects().iterator().next();
-            return getElementLocation(fo, handle, element);
+            return getElementLocation(fo, handle);
         } catch (IOException e) {
             ErrorManager.getDefault().notify(e);
 
@@ -209,9 +197,9 @@ public final class UiUtils {
         return false;
     }
 
-    private static DeclarationLocation getElementLocation(final FileObject fo, final ElementHandle<Element> handle, final Element element)
+    private static DeclarationLocation getElementLocation(final FileObject fo, final ElementHandle handle)
         throws IOException {
-        assert handle == null || element == null; // Only one should be set
+        assert handle != null;
         final DeclarationLocation[] result = new DeclarationLocation[] { DeclarationLocation.NONE };
 
         Source js = Source.forFileObject(fo);
@@ -226,16 +214,6 @@ public final class UiUtils {
                         ErrorManager.getDefault().notify(ioe);
                     }
 
-                    Element el = element;
-                    if (el == null) {
-                        //assert handle != null;
-                        el = info.getLanguage().getParser().resolveHandle(info, handle);
-                    }
-
-                    if (el == null) {
-                        throw new IllegalArgumentException();
-                    }
-                    
                     FileObject fileObject = info.getFileObject();
                     if (handle != null) {
                         fileObject = handle.getFileObject();
@@ -247,13 +225,13 @@ public final class UiUtils {
                     if (fileObject == info.getFileObject()) {
                         Language language =
                             LanguageRegistry.getInstance()
-                                            .getLanguageByMimeType(info.getFileObject().getMIMEType());
+                                            .getLanguageByMimeType(handle.getMimeType());
                         Parser parser = language.getParser();
-                        ParserResult pr = info.getParserResult();
-                        Element file = pr.getRoot();
+                        //ParserResult pr = handle.getResult();
+                        //ElementHandle file = pr.getRoot();
                         //if (file != null) {
                             try {
-                                OffsetRange range = parser.getPositionManager().getOffsetRange(file, el);
+                                OffsetRange range = parser.getPositionManager().getOffsetRange(info, handle);
  
                                 if (range != OffsetRange.NONE) {
                                     result[0] = new DeclarationLocation(fileObject, range.getStart());

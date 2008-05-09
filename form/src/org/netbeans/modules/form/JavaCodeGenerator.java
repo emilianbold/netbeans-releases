@@ -41,8 +41,6 @@
 
 package org.netbeans.modules.form;
 
-import javax.swing.JEditorPane;
-
 import org.openide.*;
 import org.openide.filesystems.*;
 import org.openide.nodes.*;
@@ -909,6 +907,51 @@ class JavaCodeGenerator extends CodeGenerator {
             + "_" + component.getName(); // NOI18N
     }
 
+    private boolean shouldExpandInitComponents(final int initComponentsOffset) {
+        if (EventQueue.isDispatchThread()) {
+            return shouldExpandInitComponentsInAWT(initComponentsOffset);
+        } else {
+            // We cannot use EQ.invokeAndWait here, see issue 131841
+            // Hence, using a simple fallback
+            return false;
+        }
+    }
+
+    private boolean shouldExpandInitComponentsInAWT(int initComponentsOffset) {
+        boolean expandInitComponents = false;
+        javax.swing.JEditorPane editorPane = formEditorSupport.getEditorPane();
+        if (editorPane != null) {
+            String foldDescription = FormUtils.getBundleString("MSG_GeneratedCode"); // NOI18N
+            FoldHierarchy foldHierarchy = FoldHierarchy.get(editorPane);
+            Fold fold = FoldUtilities.findNearestFold(foldHierarchy, initComponentsOffset);
+            expandInitComponents = (fold != null) && foldDescription.equals(fold.getDescription()) && !fold.isCollapsed();
+        }
+        return expandInitComponents;
+    }
+
+    private void expandInitComponents(final int initComponentsOffset) {
+        if (EventQueue.isDispatchThread()) {
+            expandInitComponentsInAWT(initComponentsOffset);
+        } else {
+            EventQueue.invokeLater(new Runnable() {
+                public void run() {
+                    expandInitComponentsInAWT(initComponentsOffset);
+                }
+            });
+        }
+    }
+
+    private void expandInitComponentsInAWT(int initComponentsOffset) {
+        javax.swing.JEditorPane editorPane = formEditorSupport.getEditorPane();
+        if (editorPane != null) {
+            FoldHierarchy foldHierarchy = FoldHierarchy.get(formEditorSupport.getEditorPane());
+            Fold fold = FoldUtilities.findNearestFold(foldHierarchy, initComponentsOffset);
+            if (fold != null) {
+                foldHierarchy.expand(fold);
+            }
+        }
+    }
+
     void regenerateInitComponents() {
         if (!initialized || !canGenerate)
             return;
@@ -942,15 +985,9 @@ class JavaCodeGenerator extends CodeGenerator {
             boolean expandInitComponents = false;
             boolean foldGeneratedCode = formSettings.getFoldGeneratedCode();
             if (foldGeneratedCode) {
-                String foldDescription = FormUtils.getBundleString("MSG_GeneratedCode"); // NOI18N
-                javax.swing.JEditorPane editorPane = formEditorSupport.getEditorPane();
-                if (editorPane != null) {
-                    FoldHierarchy foldHierarchy = FoldHierarchy.get(editorPane);
-                    Fold fold = FoldUtilities.findNearestFold(foldHierarchy, initComponentsOffset);
-                    expandInitComponents = (fold != null) && foldDescription.equals(fold.getDescription()) && !fold.isCollapsed();
-                }
+                expandInitComponents = shouldExpandInitComponents(initComponentsOffset);
                 writer.write("// <editor-fold defaultstate=\"collapsed\" desc=\""); // NOI18N
-                writer.write(foldDescription);
+                writer.write(FormUtils.getBundleString("MSG_GeneratedCode")); // NOI18N
                 writer.write("\">\n"); // NOI18N
             }
 
@@ -1019,11 +1056,7 @@ class JavaCodeGenerator extends CodeGenerator {
             initComponentsSection.setText(newText);
             
             if (expandInitComponents) {
-                FoldHierarchy foldHierarchy = FoldHierarchy.get(formEditorSupport.getEditorPane());
-                Fold fold = FoldUtilities.findNearestFold(foldHierarchy, initComponentsOffset);
-                if (fold != null) {
-                    foldHierarchy.expand(fold);
-                }
+                expandInitComponents(initComponentsOffset);
             }
             clearUndo();
         }
@@ -1662,10 +1695,7 @@ class JavaCodeGenerator extends CodeGenerator {
         if (!comp.hasHiddenState() 
                 && (genType == null || VALUE_GENERATE_CODE.equals(genType)))
         {   // not serialized
-            FormProperty[] props;
-            if (comp instanceof RADVisualComponent)
-                props = ((RADVisualComponent)comp).getAccessibilityProperties();
-            else return false;
+            FormProperty[] props = comp.getAccessibilityProperties();
 
             for (int i=0; i < props.length; i++) {
                 boolean gen = generateProperty(props[i], comp, null, initCodeWriter, codeData);
@@ -2740,9 +2770,9 @@ class JavaCodeGenerator extends CodeGenerator {
         listenersInMainClass = mainclass ? listenersToImplement : null;
 
         if (innerclass) {
-            String listenerClassName = getListenerClassName();
+            String lClassName = getListenerClassName();
             codeWriter.write("private class "); // NOI18N
-            codeWriter.write(listenerClassName);
+            codeWriter.write(lClassName);
             codeWriter.write(" implements "); // NOI18N
             for (int i=0; i < listenersToImplement.length; i++) {
                 codeWriter.write(getSourceClassName(listenersToImplement[i]));
@@ -2750,7 +2780,7 @@ class JavaCodeGenerator extends CodeGenerator {
                     codeWriter.write(", "); // NOI18N
             }
             codeWriter.write(" {\n"); // NOI18N
-            codeWriter.write(listenerClassName + "() {}\n"); // NOI18N Issue 72346 resp. 15242
+            codeWriter.write(lClassName + "() {}\n"); // NOI18N Issue 72346 resp. 15242
         }
 
         for (int i=0; i < listenersToImplement.length; i++) {
@@ -3050,7 +3080,8 @@ class JavaCodeGenerator extends CodeGenerator {
      */
     private void generateEventHandler(String handlerName,
                                       Method originalMethod,
-                                      String bodyText)
+                                      String bodyText,
+                                      String annotationText)
     {
         if (!initialized || !canGenerate)
             return;
@@ -3069,8 +3100,13 @@ class JavaCodeGenerator extends CodeGenerator {
             Writer codeWriter = engine.createWriter(formEditorSupport.getDocument(),
                                                     sec.getStartPosition().getOffset(),
                                                     buffer);
-            int i1, i2;
+            int i0, i1, i2;
 
+            if (annotationText != null) {
+                codeWriter.write(annotationText);
+                codeWriter.flush();
+            }
+            i0 = buffer.getBuffer().length();
             generateListenerMethodHeader(handlerName, originalMethod, codeWriter);
             codeWriter.flush();
             i1 = buffer.getBuffer().length();
@@ -3082,7 +3118,10 @@ class JavaCodeGenerator extends CodeGenerator {
             codeWriter.write("}\n"); // footer with new line // NOI18N
             codeWriter.flush();
 
-            sec.setHeader(buffer.getBuffer().substring(0,i1));
+            if (i0 != 0) {
+                formEditorSupport.getDocument().insertString(sec.getStartPosition().getOffset(), annotationText, null);
+            }
+            sec.setHeader(buffer.getBuffer().substring(i0,i1));
             sec.setBody(buffer.getBuffer().substring(i1,i2));
             sec.setFooter(buffer.getBuffer().substring(i2));
 
@@ -3201,6 +3240,16 @@ class JavaCodeGenerator extends CodeGenerator {
             return tx;
         }
         return null;
+    }
+
+    private String getEventHandlerAnnotation(String handlerName, boolean removeAnnotations) {
+        String code = null;
+        InteriorSection section = getEventHandlerSection(handlerName);
+        if (section != null) {
+            FormJavaSource fjs = FormEditor.getFormJavaSource(formModel);
+            code = fjs.getAnnotationCode(handlerName, section.getStartPosition(), section.getEndPosition(), removeAnnotations);
+        }
+        return code;
     }
 
     // ------------------------------------------------------------------------------------------
@@ -3791,16 +3840,17 @@ class JavaCodeGenerator extends CodeGenerator {
                 if (ev.getChangeType() == FormModelEvent.EVENT_HANDLER_ADDED) {
                     String handlerName = ev.getEventHandler();
                     String bodyText = ev.getNewEventHandlerContent();
+                    String annotationText = ev.getNewEventHandlerAnnotation();
                     if ((ev.getCreatedDeleted() || bodyText != null) && ev.getComponent().isInModel()) {
-                        if (!ev.getCreatedDeleted())
-                            ev.setOldEventHandlerContent(
-                                getEventHandlerText(handlerName));
+                        if (!ev.getCreatedDeleted()) {
+                            ev.setOldEventHandlerContent(getEventHandlerText(handlerName));
+                        }
 
                         generateEventHandler(handlerName,
                                             (ev.getComponentEvent() == null) ?
                                                 formModel.getFormEvents().getOriginalListenerMethod(handlerName) :
                                                 ev.getComponentEvent().getListenerMethod(),
-                                             bodyText);
+                                             bodyText, annotationText);
                     }
                     if (events.length == 1 && bodyText == null)
                         gotoEventHandler(handlerName);
@@ -3808,8 +3858,8 @@ class JavaCodeGenerator extends CodeGenerator {
                 else if (ev.getChangeType() == FormModelEvent.EVENT_HANDLER_REMOVED) {
                     if (ev.getCreatedDeleted()) {
                         String handlerName = ev.getEventHandler();
-                        ev.setOldEventHandlerContent(
-                            getEventHandlerText(handlerName));
+                        ev.setOldEventHandlerContent(getEventHandlerText(handlerName));
+                        ev.setOldEventHandlerAnnotation(getEventHandlerAnnotation(handlerName, true));
                         deleteEventHandler(handlerName);
                     }
                 }

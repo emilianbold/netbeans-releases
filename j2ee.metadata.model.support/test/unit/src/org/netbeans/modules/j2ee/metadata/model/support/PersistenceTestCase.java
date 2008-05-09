@@ -42,6 +42,8 @@
 package org.netbeans.modules.j2ee.metadata.model.support;
 
 import java.net.URL;
+import java.security.CodeSource;
+import java.security.ProtectionDomain;
 import java.util.Arrays;
 import javax.annotation.Resource;
 import javax.persistence.spi.PersistenceProvider;
@@ -61,7 +63,13 @@ public class PersistenceTestCase extends JavaSourceTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         URL persistenceProviderUrl = FileUtil.getArchiveRoot(PersistenceProvider.class.getProtectionDomain().getCodeSource().getLocation());
-        URL resourceUrl = FileUtil.getArchiveRoot(Resource.class.getProtectionDomain().getCodeSource().getLocation());
+        ProtectionDomain domain = Resource.class.getProtectionDomain();
+        System.out.println("Protection domain: " + domain);
+        CodeSource source = domain.getCodeSource();
+        System.out.println("Code source: " + source);
+        URL location = source.getLocation();
+        System.out.println("Location: " + location);
+        URL resourceUrl = FileUtil.getArchiveRoot(location);
         addCompileRoots(Arrays.asList(persistenceProviderUrl, resourceUrl));
     }
 }

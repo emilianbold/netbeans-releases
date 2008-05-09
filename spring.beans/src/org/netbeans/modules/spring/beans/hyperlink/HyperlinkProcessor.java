@@ -45,6 +45,10 @@ package org.netbeans.modules.spring.beans.hyperlink;
  *
  * @author Rohan Ranade (Rohan.Ranade@Sun.COM)
  */
-public interface HyperlinkProcessor {
-    void process(HyperlinkEnv env);
+public abstract class HyperlinkProcessor {
+    public abstract void process(HyperlinkEnv env);
+    
+    public int[] getSpan(HyperlinkEnv env) {
+        return new int[] { env.getTokenStartOffset() + 1, env.getTokenEndOffset() - 1 };
+    }
 }

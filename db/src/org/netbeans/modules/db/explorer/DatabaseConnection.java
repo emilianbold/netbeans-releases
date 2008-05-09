@@ -736,7 +736,7 @@ public class DatabaseConnection implements DBConnection {
     public void selectInExplorer() {
         String nodeName = null;
         try {
-            nodeName = findConnectionNodeInfo(getName()).getNode().getName();
+            nodeName = findConnectionNodeInfo(getName()).getName();
         } catch (DatabaseException e) {
             Exceptions.printStackTrace(e);
             return;
@@ -821,28 +821,19 @@ public class DatabaseConnection implements DBConnection {
     private ConnectionNodeInfo findConnectionNodeInfo(String connection) throws DatabaseException {
         assert connection != null;
         
-        // Got to retrieve the conn nodes and wait for the "Please wait" node to dissapear.
         // We can't use the info classes here since surprisingly 
         // the CNIs found in RootNode.getInstance().getInfo are different than
-        // the ones the ConnectionNodes in the Databases tree listen to
+        // the ones the ConnectionNodes in the Databases tree listen to.
         
-        Node[] nodes;
-        String waitNode = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("WaitNode"); // NOI18N
+        // This will account for the "Please wait" node.
+        Node[] nodes = RootNode.getInstance().getChildren().getNodes(true);
         
-        for (;;) {
-            nodes = RootNode.getInstance().getChildren().getNodes();
-            if (nodes.length == 1 && waitNode.equals(nodes[0].getName())) {
-                try {
-                    Thread.sleep(60);
-                } catch (InterruptedException e) { 
-                    // PENDING
-                }
-            } else {
-                break;
-            }
-        }
-                
         for (int i = 0; i < nodes.length; i++) {
+            // Skip nodes registered by node providers
+            if ( ! (nodes[i] instanceof DatabaseNode) ) {
+                continue;
+            }
+            
             DatabaseNodeInfo info = (DatabaseNodeInfo)nodes[i].getCookie(DatabaseNodeInfo.class);
             if (info == null) {
                 continue;

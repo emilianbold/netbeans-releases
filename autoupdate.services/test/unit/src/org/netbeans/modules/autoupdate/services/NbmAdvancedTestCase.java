@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -104,6 +104,10 @@ public class NbmAdvancedTestCase extends NbTestCase {
     
     public static String generateModuleElementWithProviders (String codeName, String version, String provides, String... deps) {
         return generateModuleElement (codeName, version, "OpenIDE-Module-Provides", provides, false, false, deps);
+    }
+    
+    public static String generateModuleElementWithJavaDependency (String codeName, String version, String java, String... deps) {
+        return generateModuleElement (codeName, version, "OpenIDE-Module-Java-Dependencies", java, false, false, deps);
     }
     
     public static String generateModuleElement (String codeName, String version, Boolean global, String targetCluster) {
@@ -204,8 +208,13 @@ public class NbmAdvancedTestCase extends NbTestCase {
             InstallSupport.Installer i = is.doValidate (v, null);
             is.doInstall (i, null);
             
-        } catch (OperationException ox) {
-            fail (ox.toString ());
+        } catch (OperationException ex) {
+            if (OperationException.ERROR_TYPE.INSTALL == ex.getErrorType ()) {
+                // can ingore
+                // module system cannot load the module either
+            } else {
+                fail (ex.toString ());
+            }
         }
         
         // check if unit was installed

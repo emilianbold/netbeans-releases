@@ -51,7 +51,11 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.netbeans.modules.compapp.casaeditor.nodes.ServiceUnitNode;
+import org.netbeans.modules.compapp.casaeditor.nodes.WSDLEndpointsNode;
+import org.netbeans.modules.compapp.casaeditor.nodes.CasaNode;
 import org.netbeans.modules.compapp.casaeditor.model.casa.*;
+import org.netbeans.modules.compapp.casaeditor.CasaDataNode;
+import org.netbeans.modules.compapp.casaeditor.CasaDataObject;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.locator.CatalogModel;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
@@ -61,6 +65,7 @@ import org.netbeans.modules.xml.wsdl.model.Port;
 
 import javax.swing.*;
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -79,6 +84,9 @@ import org.openide.filesystems.FileUtil;
  */
 public class LoadWSDLPortsAction extends NodeAction {
 
+    private static final String JBI_SOURCE_DIR = "jbiasa";      // NOI18N
+    private static final String JBI_SU_JAR_DIR = "jbiServiceUnits";      // NOI18N
+
     protected boolean enable(Node[] activatedNodes) {
         return true;
     }
@@ -96,13 +104,28 @@ public class LoadWSDLPortsAction extends NodeAction {
     }
     
     protected void performAction(Node[] activatedNodes) {
-        if (activatedNodes.length > 0 && activatedNodes[0] instanceof ServiceUnitNode) {
-            final ServiceUnitNode node = ((ServiceUnitNode) activatedNodes[0]);
-            SwingUtilities.invokeLater(new Runnable(){
-                public void run(){
-                    showDialog(node);
-                }
-            });
+        if (activatedNodes.length > 0) {
+            CasaNode casaNode = null;
+            CasaWrapperModel casaModel = null;
+            if (activatedNodes[0] instanceof ServiceUnitNode) {
+                casaNode = ((ServiceUnitNode) activatedNodes[0]);
+                casaModel = casaNode.getModel();
+            } else if (activatedNodes[0] instanceof CasaNode) {
+                casaNode = ((CasaNode) activatedNodes[0]);
+                casaModel = casaNode.getModel();
+            } else if (activatedNodes[0] instanceof CasaDataNode) {
+                casaModel = ((CasaDataObject) ((CasaDataNode) activatedNodes[0])
+                        .getDataObject()).getEditorSupport().getModel();
+            }
+            if (casaModel != null) {
+                final CasaNode node = casaNode;
+                final CasaWrapperModel model = casaModel;
+                SwingUtilities.invokeLater(new Runnable(){
+                    public void run(){
+                        showDialog(node, model);
+                    }
+                });
+            }
         }
     }
     
@@ -116,18 +139,42 @@ public class LoadWSDLPortsAction extends NodeAction {
             fs.add(file);
         }
     }
+
+    private String getWsdlFilename(File f, String suName) {
+        String fpath = "";
+        try {
+            fpath = f.getCanonicalPath();
+            if ((suName != null) && (suName.length() > 0)) { // from an SU
+                fpath = fpath.substring(fpath.indexOf(JBI_SU_JAR_DIR)
+                        + JBI_SU_JAR_DIR.length() + 1 + suName.length() + 1);
+            } else if (fpath.indexOf(JBI_SOURCE_DIR) > 0) { // from CompApp src
+                fpath = fpath.substring(fpath.indexOf(JBI_SOURCE_DIR)
+                        + JBI_SOURCE_DIR.length() + 1);
+            }
+            if (fpath.length() > 0) {
+                return " (" + fpath.replace('\\', '/') + ")";  // NOI18N
+            }
+        } catch (IOException ex) {
+            // a bad file path
+        }
+        return fpath;
+    }
     
-    private void showDialog(ServiceUnitNode node) {
-        final CasaWrapperModel model = node.getModel();
-        CasaServiceEngineServiceUnit sesu = (CasaServiceEngineServiceUnit) node.getData();
-        final String suName = sesu.getUnitName();
+    private void showDialog(CasaNode node, final CasaWrapperModel model) {
+        // final CasaWrapperModel model = node.getModel();
+        String suName = "";
         ModelSource ms = model.getModelSource();
         Lookup lookup = ms.getLookup();
         CatalogModel catalogModel = lookup.lookup(CatalogModel.class);
         FileObject casaFO = lookup.lookup(FileObject.class);
         File srcDir = FileUtil.toFile(casaFO).getParentFile().getParentFile();
-        File suRoot = new File(srcDir.getAbsolutePath() + File.separator + 
-                "jbiServiceUnits" + File.separator + suName); // NOI18N
+        String suRootPath = File.separator + "jbiasa" + File.separator ;
+        if ((node != null) && (node instanceof ServiceUnitNode)) {
+            CasaServiceEngineServiceUnit sesu = (CasaServiceEngineServiceUnit) node.getData();
+            suName = sesu.getUnitName();
+            suRootPath = File.separator + "jbiServiceUnits" + File.separator + suName; // NOI18N
+        }
+        File suRoot = new File(srcDir.getAbsolutePath() + suRootPath); // NOI18N
         List<File> fs = new ArrayList<File>();
         List<Port> portList = new ArrayList<Port>();
         Map<Port, File> fileMap = new HashMap<Port, File>();
@@ -167,7 +214,9 @@ public class LoadWSDLPortsAction extends NodeAction {
             for (int i=0; i < portList.size(); i++) {
                 Port p = portList.get(i);
                 String sName = ((Service) p.getParent()).getName();
-                slist[i] = "Service=" + sName + ", Port=" + p.getName();
+                File f = fmap.get(p);
+                String fPath = getWsdlFilename(f, suName);
+                slist[i] = "Service=" + sName + ", Port=" + p.getName() + fPath;
             }
             
             final LoadWsdlPortPanel panel = new LoadWsdlPortPanel(

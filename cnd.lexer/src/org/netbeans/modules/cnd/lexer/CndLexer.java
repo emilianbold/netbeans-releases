@@ -249,7 +249,12 @@ public abstract class CndLexer implements Lexer<CppTokenId> {
 
                     case '*':
                         switch (read(true)) {
-                            case '/': // invalid comment end - */
+                            case '/': // invalid comment end - */ or int*/* */
+                                if (read(true) == '*') {
+                                    backup(2);
+                                    return token(CppTokenId.STAR);
+                                }
+                                backup(1);
                                 return token(CppTokenId.INVALID_COMMENT_END);
                             case '=':
                                 return token(CppTokenId.STAREQ);
@@ -518,7 +523,7 @@ public abstract class CndLexer implements Lexer<CppTokenId> {
             // so do not call translateSurrogates()
             if (c == EOF || !Character.isWhitespace(c) || c == '\n' || c == '\r') {
                 backup(1);
-                return token(CppTokenId.WHITESPACE);
+                return isTokenSplittedByEscapedLine() ? token(CppTokenId.ESCAPED_WHITESPACE) : token(CppTokenId.WHITESPACE);
             }
         }
     }

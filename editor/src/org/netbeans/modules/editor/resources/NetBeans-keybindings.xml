@@ -57,7 +57,7 @@ made subject to such option by the copyright holder.
 <!--    <bind actionName="adjust-window-top" key="O-U$T"/> -->
     <bind actionName="all-completion-show" key="DO-SPACE"/>
     <bind actionName="all-completion-show" key="DO-BACK_SLASH"/>
-    <bind actionName="annotations-cycling" key="DS-C"/>
+    <bind actionName="annotations-cycling" key="OS-C"/>
     <bind actionName="caret-backward" key="LEFT"/>
     <bind actionName="caret-backward" key="KP_LEFT"/>
     <bind actionName="caret-begin" key="D-HOME"/>
@@ -70,7 +70,9 @@ made subject to such option by the copyright holder.
     <bind actionName="caret-forward" key="KP_RIGHT"/>
     <bind actionName="caret-forward" key="RIGHT"/>
     <bind actionName="caret-next-word" key="D-RIGHT"/>
+    <bind actionName="caret-next-word" key="D-KP_RIGHT"/>
     <bind actionName="caret-previous-word" key="D-LEFT"/>
+    <bind actionName="caret-previous-word" key="D-KP_LEFT"/>
     <bind actionName="caret-up" key="KP_UP"/>
     <bind actionName="caret-up" key="UP"/>
     <bind actionName="collapse-all-folds" key="DS-MINUS"/>
@@ -104,13 +106,14 @@ made subject to such option by the copyright holder.
     <bind actionName="incremental-search-forward" key="D-F"/>
     <bind actionName="format" key="OS-F"/>
     <bind actionName="goto" key="D-G"/>
+    <bind actionName="goto-declaration" key="D-B"/>
     <bind actionName="insert-break" key="ENTER"/>
     <bind actionName="insert-tab" key="TAB"/>
     <bind actionName="jump-list-last-edit" key="D-Q"/>
     <bind actionName="jump-list-next" key="O-RIGHT"/>
-    <bind actionName="jump-list-next-component" key="OS-RIGHT"/>
+    <bind actionName="jump-list-next" key="O-KP_RIGHT"/>
     <bind actionName="jump-list-prev" key="O-LEFT"/>
-    <bind actionName="jump-list-prev-component" key="OS-LEFT"/>
+    <bind actionName="jump-list-prev" key="O-KP_LEFT"/>
     <bind actionName="page-down" key="PAGE_DOWN"/>
     <bind actionName="page-up" key="PAGE_UP"/>
     <bind actionName="paste-formated" key="DS-V"/>
@@ -122,35 +125,48 @@ made subject to such option by the copyright holder.
     <!-- <bind actionName="remove-line-begin" key="D-U"/> -->
     <bind actionName="remove-tab" key="S-TAB"/>
     <bind actionName="move-selection-else-line-up" key="OS-UP"/>
+    <bind actionName="move-selection-else-line-up" key="OS-KP_UP"/>
     <bind actionName="move-selection-else-line-down" key="OS-DOWN"/>
+    <bind actionName="move-selection-else-line-down" key="OS-KP_DOWN"/>
     <bind actionName="copy-selection-else-line-up" key="DS-UP"/>
+    <bind actionName="copy-selection-else-line-up" key="DS-KP_UP"/>
     <bind actionName="copy-selection-else-line-down" key="DS-DOWN"/>
+    <bind actionName="copy-selection-else-line-down" key="DS-KP_DOWN"/>
     <!-- #47709 <bind actionName="remove-word" key="D-W"/> -->
     <bind actionName="remove-word-next" key="D-DELETE"/>
     <bind actionName="remove-word-previous" key="D-BACK_SPACE"/>
     <bind actionName="replace" key="D-H"/>
     <bind actionName="scroll-down" key="D-UP"/>
+    <bind actionName="scroll-down" key="D-KP_UP"/>
     <bind actionName="scroll-up" key="D-DOWN"/>
+    <bind actionName="scroll-up" key="D-KP_DOWN"/>
     <bind actionName="select-all" key="D-A"/>
     <bind actionName="select-element-next" key="OS-PERIOD"/>
     <bind actionName="select-element-previous" key="OS-COMMA"/>
     <bind actionName="select-identifier" key="OS-J"/>
     <bind actionName="select-next-parameter" key="D-M"/>
     <bind actionName="selection-backward" key="S-LEFT"/>
+    <bind actionName="selection-backward" key="S-KP_LEFT"/>
     <bind actionName="selection-begin" key="DS-HOME"/>
     <bind actionName="selection-begin-line" key="S-HOME"/>
     <bind actionName="selection-down" key="S-DOWN"/>
+    <bind actionName="selection-down" key="S-KP_DOWN"/>
     <bind actionName="selection-end" key="DS-END"/>
     <bind actionName="selection-end-line" key="S-END"/>
     <bind actionName="selection-forward" key="S-RIGHT"/>
+    <bind actionName="selection-forward" key="S-KP_RIGHT"/>
     <bind actionName="selection-next-word" key="DS-RIGHT"/>
+    <bind actionName="selection-next-word" key="DS-KP_RIGHT"/>
     <bind actionName="selection-page-down" key="S-PAGE_DOWN"/>
     <bind actionName="selection-page-up" key="S-PAGE_UP"/>
     <bind actionName="selection-previous-word" key="DS-LEFT"/>
+    <bind actionName="selection-previous-word" key="DS-KP_LEFT"/>
     <bind actionName="selection-up" key="S-UP"/>
-    <bind actionName="shift-insert-break" key="S-ENTER"/>
+    <bind actionName="selection-up" key="S-KP_UP"/>
     <bind actionName="shift-line-left" key="OS-LEFT"/>
+    <bind actionName="shift-line-left" key="OS-KP_LEFT"/>
     <bind actionName="shift-line-right" key="OS-RIGHT"/>
+    <bind actionName="shift-line-right" key="OS-KP_RIGHT"/>
     <bind actionName="show-popup-menu" key="S-F10"/>
     <bind actionName="split-line" key="D-ENTER"/>
     <!-- <bind actionName="start-macro-recording" key="D-J$S"/> -->

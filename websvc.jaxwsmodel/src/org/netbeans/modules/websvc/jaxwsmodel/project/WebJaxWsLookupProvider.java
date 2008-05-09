@@ -66,6 +66,7 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
+import org.openide.util.MutexException;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -122,8 +123,8 @@ public class WebJaxWsLookupProvider implements LookupProvider {
                         Boolean jsr109 = jaxWsModel.getJsr109();
                         boolean isJsr109 = (jsr109==null?true:jsr109.booleanValue());
                         try {
-                            
-                            if (jaxws_build==null) {
+                            AntBuildExtender.Extension extension = ext.getExtension(JAXWS_EXTENSION);
+                            if (jaxws_build == null || extension == null) {
                                 // generate nbproject/jaxws-build.xml
                                 // add jaxws extension
                                 if (servicesLength+clientsLength > 0) {
@@ -356,10 +357,14 @@ public class WebJaxWsLookupProvider implements LookupProvider {
     
     private void removeJaxWsExtension(
                         FileObject jaxws_build, 
-                        AntBuildExtender ext) throws IOException {
+                        final AntBuildExtender ext) throws IOException {
         AntBuildExtender.Extension extension = ext.getExtension(JAXWS_EXTENSION);
         if (extension!=null) {
-            ext.removeExtension(JAXWS_EXTENSION);
+            ProjectManager.mutex().writeAccess(new Runnable() {
+                public void run() {
+                    ext.removeExtension(JAXWS_EXTENSION);
+                }
+            });           
         }
         if (jaxws_build!=null) {
             FileLock fileLock = jaxws_build.lock();

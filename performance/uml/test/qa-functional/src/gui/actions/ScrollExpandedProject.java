@@ -38,22 +38,16 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
-
 package gui.actions;
-
 
 import java.io.File;
 import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.junit.ide.ProjectSupport;
-import org.netbeans.jellytools.TopComponentOperator;
-import org.netbeans.jemmy.operators.JTreeOperator;
-import javax.swing.tree.TreePath;
 import org.netbeans.jemmy.operators.JScrollBarOperator;
+import org.netbeans.performance.test.guitracker.ActionTracker;
 
 /**
  * Measure UI-RESPONSIVENES and WINDOW_OPENING.
@@ -62,71 +56,64 @@ import org.netbeans.jemmy.operators.JScrollBarOperator;
  *
  */
 public class ScrollExpandedProject extends org.netbeans.performance.test.utilities.PerformanceTestCase {
-    
+
     private static String testProjectName = "jEdit-Model";
-    private JScrollBarOperator projectScroll ;
+    private JScrollBarOperator projectScroll;
     private ProjectsTabOperator pto;
 
     /** Creates a new instance of ScrollExpandedProject*/
     public ScrollExpandedProject(String testName) {
         super(testName);
-        //TODO: Adjust expectedTime value        
         expectedTime = 2000;
-        WAIT_AFTER_OPEN=4000;        
+        WAIT_AFTER_OPEN = 4000;
     }
-    public ScrollExpandedProject(String testName, String  performanceDataName) {
-        super(testName);
-        //TODO: Adjust expectedTime value
+
+    public ScrollExpandedProject(String testName, String performanceDataName) {
+        super(testName, performanceDataName);
         expectedTime = 2000;
-        WAIT_AFTER_OPEN=4000;                
+        WAIT_AFTER_OPEN = 4000;
     }
-    
-    public void initialize(){
+
+    @Override
+    public void initialize() {
         log(":: initialize");
-        
-        ProjectSupport.openProject(System.getProperty("xtest.tmpdir")+File.separator+testProjectName);
-//        new CloseAllDocumentsAction().performAPI();
+
+        ProjectSupport.openProject(System.getProperty("xtest.tmpdir") + File.separator + testProjectName);
         Node pNode = new ProjectsTabOperator().getProjectRootNode(testProjectName);
-        Node nodeModel = new Node(pNode,"Model");
-        Node nodeDiagrams = new Node(pNode,"Diagrams");
+        Node nodeModel = new Node(pNode, "Model");
+        Node nodeDiagrams = new Node(pNode, "Diagrams");
         nodeModel.expand();
         nodeDiagrams.select();
         nodeDiagrams.expand();
         new EventTool().waitNoEvent(1000);
-        pto = new ProjectsTabOperator(); 
-        projectScroll = new JScrollBarOperator(pto,0);
+        pto = new ProjectsTabOperator();
+        projectScroll = new JScrollBarOperator(pto, 0);
+        MY_START_EVENT = ActionTracker.TRACK_OPEN_BEFORE_TRACE_MESSAGE;
     }
-   
+
     public void prepare() {
         log(":: prepare");
-
         projectScroll.scrollToMinimum();
     }
 
     public ComponentOperator open() {
         log("::open");
-
-        
-        projectScroll.scrollToMaximum();  
-         return null;
+        projectScroll.scrollToMaximum();
+        return null;
     }
-    
+
+    @Override
     protected void shutdown() {
         log("::shutdown");
         ProjectSupport.closeProject(testProjectName);
-//        new CloseAllDocumentsAction().performAPI();
     }
-   
 
-    public void close(){
+    @Override
+    public void close() {
         log("::close");
-      
-//      new CloseAllDocumentsAction().performAPI();
- 
-    } 
+    }
+
     public static void main(java.lang.String[] args) {
         junit.textui.TestRunner.run(new ScrollExpandedProject("measureTime"));
-    }      
-
-
+    }
 }

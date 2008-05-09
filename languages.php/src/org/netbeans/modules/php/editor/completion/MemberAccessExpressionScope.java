@@ -43,7 +43,7 @@ package org.netbeans.modules.php.editor.completion;
 
 import java.util.List;
 import java.util.LinkedList;
-import org.netbeans.api.gsf.CompletionProposal;
+import org.netbeans.modules.gsf.api.CompletionProposal;
 import org.netbeans.modules.php.model.Attribute;
 import org.netbeans.modules.php.model.AttributesDeclaration;
 import org.netbeans.modules.php.model.ClassBody;

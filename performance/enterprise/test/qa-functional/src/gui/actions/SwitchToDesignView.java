@@ -43,11 +43,12 @@ package gui.actions;
 
 import gui.EPUtilities;
 
-import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.actions.OpenAction;
 
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.performance.test.guitracker.ActionTracker;
 
 /**
  *
@@ -73,36 +74,34 @@ public class SwitchToDesignView  extends org.netbeans.performance.test.utilities
     
     protected void initialize() {
         log(":: initialize");
+        System.gc();
+        new EventTool().waitNoEvent(5000);
         Node doc = new Node(EPUtilities.getProcessFilesNode("SOATestProject"), testSchemaFileName);
         doc.select();
         new OpenAction().perform(doc);
+        schemaComponentOperator = XMLSchemaComponentOperator.findXMLSchemaComponentOperator(testSchemaFileName);
+        schemaComponentOperator.getSchemaButton().push();        
+
+        track_mouse_event = ActionTracker.TRACK_MOUSE_PRESS;        
     }
         
     public void prepare() {
         log(":: prepare");
-        schemaComponentOperator = XMLSchemaComponentOperator.findXMLSchemaComponentOperator(testSchemaFileName);
-        schemaComponentOperator.getSchemaButton().pushNoBlock();
     }
     
     public ComponentOperator open() {
         log(":: open");
-        schemaComponentOperator = XMLSchemaComponentOperator.findXMLSchemaComponentOperator(testSchemaFileName);
         schemaComponentOperator.getDesignButton().push();
         
-        return XMLSchemaComponentOperator.findXMLSchemaComponentOperator(testSchemaFileName);
+        return schemaComponentOperator;
     }
     
     public void close() {
         log("::close");
-        ((XMLSchemaComponentOperator)testedComponentOperator).close();
+        if (schemaComponentOperator != null) {
+            schemaComponentOperator.getSchemaButton().push();
+        }
     }
-    
-    @Override
-    protected void shutdown() {
-//        new CloseAllDocumentsAction().performAPI();
-    }
-
-    
     
     public static void main(String[] args) {
         repeat = 3;

@@ -90,6 +90,8 @@ public abstract class TreeRuleTestBase extends NbTestCase {
     private void prepareTest(String fileName, String code) throws Exception {
         clearWorkDir();
         
+        FileUtil.refreshFor(File.listRoots());
+        
         FileObject workFO = FileUtil.toFileObject(getWorkDir());
         
         assertNotNull(workFO);
@@ -175,6 +177,14 @@ public abstract class TreeRuleTestBase extends NbTestCase {
     
     protected String performFixTest(String fileName, String code, int pos, String errorDescriptionToString, String fixDebugString, String golden) throws Exception {
         return performFixTest(fileName, code, pos, errorDescriptionToString, fixDebugString, fileName, golden);
+    }
+    
+    protected String performFixTest(String fileName, String code, String errorDescriptionToString, String fixDebugString, String goldenFileName, String golden) throws Exception {
+        int[] offset = new int[1];
+
+        code = org.netbeans.modules.java.hints.TestUtilities.detectOffsets(code, offset);
+
+        return performFixTest(fileName, code, offset[0], errorDescriptionToString, fixDebugString, goldenFileName, golden);
     }
     
     protected String performFixTest(String fileName, String code, int pos, String errorDescriptionToString, String fixDebugString, String goldenFileName, String golden) throws Exception {

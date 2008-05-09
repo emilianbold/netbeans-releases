@@ -398,7 +398,6 @@ made subject to such option by the copyright holder.
                 <built-to>build/antclasses</built-to>
                 <built-to>${cluster}/ant/nblib/${code.name.base.dashes}.jar</built-to>
             </extra-compilation-unit>
-            <javadoc/>
         </data>
     </configuration>
 </project>

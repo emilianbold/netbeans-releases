@@ -258,6 +258,19 @@ public abstract class NbCsmPaintComponent extends CsmPaintComponent {
     
     }    
     
+    public final static class NbFileLocalFunctionPaintComponent extends CsmPaintComponent.FileLocalFunctionPaintComponent{
+        
+        public NbFileLocalFunctionPaintComponent(){
+            super();
+        }
+        
+        @Override
+        protected Icon getIcon(){
+            Icon newIcon = CsmImageLoader.getIcon(CsmDeclaration.Kind.FUNCTION_DEFINITION, getModifiers()|CsmUtilities.GLOBAL|CsmUtilities.STATIC);
+            return newIcon;             
+        }
+    }
+    
     public final static class NbGlobalFunctionPaintComponent extends CsmPaintComponent.GlobalFunctionPaintComponent{
         
         public NbGlobalFunctionPaintComponent(){

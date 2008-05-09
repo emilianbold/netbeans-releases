@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.bpel.nodes;
 
+import org.netbeans.modules.bpel.nodes.BpelNode;
 import java.awt.Component;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,7 +33,7 @@ import org.netbeans.modules.bpel.properties.props.CustomEditorProperty;
 import org.netbeans.modules.bpel.properties.props.PropertyUtils;
 import org.openide.nodes.Sheet;
 import static org.netbeans.modules.bpel.properties.PropertyType.*;
-import org.netbeans.modules.bpel.nodes.actions.ActionType;
+import org.netbeans.modules.bpel.editors.api.nodes.actions.ActionType;
 import org.netbeans.modules.bpel.properties.editors.CorrelationSetMainPanel;
 import org.netbeans.modules.bpel.properties.editors.controls.SimpleCustomEditor;
 import org.netbeans.modules.soa.ui.form.CustomNodeEditor;

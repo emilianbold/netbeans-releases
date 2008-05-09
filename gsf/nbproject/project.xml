@@ -6,16 +6,16 @@
             <code-name-base>org.netbeans.modules.gsf</code-name-base>
             <module-dependencies>
                 <dependency>
-                    <code-name-base>org.netbeans.api.gsf</code-name-base>
+                    <code-name-base>org.netbeans.modules.gsf.api</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>0.40.0</specification-version>
+                        <specification-version>1.1.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.api.gsfpath</code-name-base>
+                    <code-name-base>org.netbeans.modules.gsfpath.api</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
@@ -258,7 +258,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>7.0</specification-version>
+                        <specification-version>7.7</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -360,7 +360,7 @@
                         <code-name-base>org.netbeans.modules.masterfs</code-name-base>
                     </test-dependency>
                     <test-dependency>
-                        <code-name-base>org.netbeans.api.gsf</code-name-base>
+                        <code-name-base>org.netbeans.modules.gsf.api</code-name-base>
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.openide.filesystems</code-name-base>
@@ -377,15 +377,23 @@
                 </test-type>
             </test-dependencies>
             <friend-packages>
+                <friend>org.netbeans.modules.css.devtools</friend>
+                <friend>org.netbeans.modules.erlang.editing</friend>
+                <friend>org.netbeans.modules.erlang.platform</friend>
+                <friend>org.netbeans.modules.erlang.project</friend>
+                <friend>org.netbeans.modules.fortress.editing</friend>
+                <friend>org.netbeans.modules.fortress.platform</friend>
+                <friend>org.netbeans.modules.fortress.project</friend>
                 <friend>org.netbeans.modules.groovy.gsp</friend>
-                <friend>org.netbeans.modules.ruby.rhtml</friend>
-                <!-- These two modules are friends for Auto Update purposes - such that
-                     they can get gsf installed through a dependency on it since gsf api
-                     doesn't depend on gsf -->
                 <friend>org.netbeans.modules.javafx.dataloader</friend>
                 <friend>org.netbeans.modules.languages.php</friend>
+                <friend>org.netbeans.modules.ruby.rhtml</friend>
+                <friend>org.netbeans.modules.scala.debugger.projects</friend>
+                <friend>org.netbeans.modules.scala.editing</friend>
+                <friend>org.netbeans.modules.scala.platform</friend>
+                <friend>org.netbeans.modules.scala.project</friend>
                 <package>org.netbeans.napi.gsfret.source</package>
-             </friend-packages>
+            </friend-packages>
         </data>
     </configuration>
 </project>

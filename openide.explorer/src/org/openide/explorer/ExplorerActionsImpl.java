@@ -559,8 +559,12 @@ final class ExplorerActionsImpl {
         }
 
         public void actionPerformed(ActionEvent ev) {
-            final Node[] sel = manager.getSelectedNodes();
+            ExplorerManager em = manager;
+            if (em == null) {
+                return;
+            }
 
+            final Node[] sel = em.getSelectedNodes();
             if ((sel == null) || (sel.length == 0)) {
                 return;
             }
@@ -578,11 +582,9 @@ final class ExplorerActionsImpl {
             if (!confirmDelete || doConfirm(sel)) {
                 // clear selected nodes
                 try {
-                    if (manager != null) {
-                        manager.setSelectedNodes(new Node[] {  });
-                    }
+                    em.setSelectedNodes(new Node[]{});
                 } catch (PropertyVetoException e) {
-                    // never thrown, setting empty selected nodes cannot be vetoed
+                // never thrown, setting empty selected nodes cannot be vetoed
                 }
 
                 doDestroy(sel);

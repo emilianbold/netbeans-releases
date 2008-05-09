@@ -86,6 +86,7 @@ public class FileStatusCache {
     private static final FileInformation FILE_INFORMATION_EXCLUDED = new FileInformation(FileInformation.STATUS_NOTVERSIONED_EXCLUDED, false);
     private static final FileInformation FILE_INFORMATION_EXCLUDED_DIRECTORY = new FileInformation(FileInformation.STATUS_NOTVERSIONED_EXCLUDED, true);
     private static final FileInformation FILE_INFORMATION_UPTODATE_DIRECTORY = new FileInformation(FileInformation.STATUS_VERSIONED_UPTODATE, true);
+    private static final FileInformation FILE_INFORMATION_UPTODATE = new FileInformation(FileInformation.STATUS_VERSIONED_UPTODATE, false);
     private static final FileInformation FILE_INFORMATION_NOTMANAGED = new FileInformation(FileInformation.STATUS_NOTVERSIONED_NOTMANAGED, false);
     private static final FileInformation FILE_INFORMATION_NOTMANAGED_DIRECTORY = new FileInformation(FileInformation.STATUS_NOTVERSIONED_NOTMANAGED, true);
     private static final FileInformation FILE_INFORMATION_UNKNOWN = new FileInformation(FileInformation.STATUS_UNKNOWN, false);
@@ -165,8 +166,13 @@ public class FileStatusCache {
                     }
                 } else {
                     if (Utils.isAncestorOrEqual(root, file)) {
-                        bContainsFile = true;
-                        break;
+                        File fileRoot = hg.getTopmostManagedParent(file);
+                        File rootRoot = hg.getTopmostManagedParent(root);
+                        // Make sure that file is in same repository as root
+                        if (rootRoot != null && rootRoot.equals(fileRoot)) {
+                            bContainsFile = true;
+                            break;
+                        }
                     }
                 }
             }
@@ -215,8 +221,13 @@ public class FileStatusCache {
                     }
                 } else {
                     if (Utils.isAncestorOrEqual(root, file)) {
-                        set.add(file);
-                        break;
+                        File fileRoot = hg.getTopmostManagedParent(file);
+                        File rootRoot = hg.getTopmostManagedParent(root);
+                        // Make sure that file is in same repository as root
+                        if (rootRoot != null && rootRoot.equals(fileRoot)) {
+                            set.add(file);
+                            break;
+                        }
                     }
                 }
             }
@@ -378,20 +389,28 @@ public class FileStatusCache {
     }
 
     private FileInformation createFileInformation(File file, Boolean callStatus) {        
-        Mercurial.LOG.log(Level.FINE, "createFileInformation(): {0}", file); // NOI18N
+        Mercurial.LOG.log(Level.FINE, "createFileInformation(): {0} {1}", new Object[] {file, callStatus}); // NOI18N
         if (file == null)
             return FILE_INFORMATION_UNKNOWN;
-        if (hg.isAdministrative(file) || HgUtils.isIgnored(file))
-            return file.isDirectory() ? FILE_INFORMATION_EXCLUDED_DIRECTORY : FILE_INFORMATION_EXCLUDED; // Excluded
+        if (hg.isAdministrative(file))
+            return FILE_INFORMATION_EXCLUDED_DIRECTORY; // Excluded
 
         File rootManagedFolder = hg.getTopmostManagedParent(file);        
         if (rootManagedFolder == null)
             return FILE_INFORMATION_UNKNOWN; // Avoiding returning NOT_MANAGED dir or file
         
-        if (file.isDirectory())
-            return FILE_INFORMATION_UPTODATE_DIRECTORY; // Managed dir
+        if (file.isDirectory()) {
+            if (HgUtils.isIgnored(file)) {
+                return FILE_INFORMATION_EXCLUDED_DIRECTORY; // Excluded
+            } else {
+                return FILE_INFORMATION_UPTODATE_DIRECTORY; // Managed dir
+            }
+        }
         
         if (callStatus == false) {
+            if (HgUtils.isIgnored(file)) {
+                return FILE_INFORMATION_EXCLUDED; // Excluded
+            } 
             return null;
         }
 
@@ -546,6 +565,43 @@ public class FileStatusCache {
     }
     
     /**
+     * Refreshes status of the specified file or a specified directory. 
+     *
+     * @param file
+     */
+    @SuppressWarnings("unchecked") // Need to change turbo module to remove warning at source
+    public void refreshAll(File root) {
+        if (root.isDirectory()) {
+            File repository = Mercurial.getInstance().getTopmostManagedParent(root);
+            if (repository == null) {
+                return;
+            }
+            Map<File, FileInformation> files = (Map<File, FileInformation>) turbo.readEntry(root, FILE_STATUS_MAP);
+            Map<File, FileInformation> interestingFiles;
+            try {
+                interestingFiles = HgCommand.getInterestingStatus(repository, root);
+                for (File file : interestingFiles.keySet()) {
+                    FileInformation fi = interestingFiles.get(file);
+                    Mercurial.LOG.log(Level.FINE, "refreshAll() file: {0} {1} ", new Object[] {file.getAbsolutePath(), fi}); // NOI18N
+                    refreshFileStatus(file, fi, interestingFiles, true);
+                }
+                if (files != null) {
+                    for (File file : files.keySet()) {
+                        if (file.isFile() && !interestingFiles.containsKey(file)) {
+                            // A file was in cache but is now up to date
+                            Mercurial.LOG.log(Level.FINE, "refreshAll() uninteresting file: {0} {1}", new Object[] {file, files.get(file)}); // NOI18N
+                            refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN); 
+                        }
+                    }
+                }
+            } catch (HgException ex) {
+                Mercurial.LOG.log(Level.FINE, "refreshAll() file: {0} {1} { 2} ", new Object[] {repository.getAbsolutePath(), root.getAbsolutePath(), ex.toString()}); // NOI18N
+            }
+        } else {
+            refresh(root, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+        }
+    }
+    /**
      * Refreshes information about a given file or directory ONLY if its status is already cached. The
      * only exception are non-existing files (new-in-repository) whose statuses are cached in all cases.
      *
@@ -557,7 +613,7 @@ public class FileStatusCache {
     }
     
     /**
-     * Refreshes status of the specfified file or all files inside the 
+     * Refreshes status of the specified file or all files inside the 
      * specified directory. 
      *
      * @param file

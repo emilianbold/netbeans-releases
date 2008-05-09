@@ -66,8 +66,6 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
 	    FileProxy.RESOURCE_SCHEME_PREFIX + 
             "org/netbeans/installer/products/wsrp/wizard.xml"; // NOI18N
     
-    private static final String GLASSFISH_UID =
-            "glassfish"; // NOI18N
     private static final String APPSERVER_UID =
             "sjsas"; // NOI18N
     
@@ -89,7 +87,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         
         // get the list of suitable glassfish installations
         final List<Dependency> dependencies = 
-                getProduct().getDependencyByUid(GLASSFISH_UID);
+                getProduct().getDependencyByUid(APPSERVER_UID);
         final List<Product> sources = 
                 Registry.getInstance().getProducts(dependencies.get(0));
         
@@ -125,7 +123,6 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         try {
             progress.setDetail(getString("CL.install.wsrp.installer")); // NOI18N
             
-            final File asadmin = GlassFishUtils.getAsadmin(glassfishLocation);
             final File domain1 = new File(new File(glassfishLocation, "domains"),
                     GlassFishUtils.DEFAULT_DOMAIN);
             SystemUtils.executeCommand(
@@ -146,12 +143,14 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     }
     
     public void uninstall(Progress progress) throws UninstallationException {        
+        progress.setPercentage(Progress.COMPLETE);
     }
     
     public List<WizardComponent> getWizardComponents() {
         return wizardComponents;
     }
     
+    @Override
     public boolean registerInSystem() {
         return false;
     }

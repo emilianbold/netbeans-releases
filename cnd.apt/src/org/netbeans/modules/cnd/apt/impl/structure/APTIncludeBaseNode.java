@@ -167,13 +167,24 @@ public abstract class APTIncludeBaseNode extends APTTokenBasedNode
     
     public String getFileName(APTMacroCallback callback) {
         String file = getIncludeString(callback);
-        int len = file.length();
-        String out = "";//NOI18N
-        if (len > 1) {
-            if (file.startsWith("<") || file.startsWith("\"")) { // NOI18N
-                out = file.substring(1, len - 1);
-            } else {
-                out = file;
+        String out = ""; // NOI18N
+        if (file != null) {
+            if (file.length() > 2) {
+                if (file.startsWith("<")) { // NOI18N
+                    for (int i = 2; i < file.length(); i++) {
+                        if (file.charAt(i) == '>') { // NOI18N
+                            out = file.substring(1, i);
+                            break;
+                        }
+                    }
+                } else if (file.startsWith("\"")) { // NOI18N
+                    for (int i = 2; i < file.length(); i++) {
+                        if (file.charAt(i) == '\"') { // NOI18N
+                            out = file.substring(1, i);
+                            break;
+                        }
+                    }
+                }
             }
         }
         return out;

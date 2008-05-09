@@ -45,6 +45,8 @@ import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmNamespace;
+import org.netbeans.modules.cnd.api.model.CsmInitializerListContainer;
 import org.netbeans.modules.cnd.api.model.CsmEnum;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
@@ -61,13 +63,15 @@ import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.deep.CsmDeclarationStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
+import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmSortUtilities;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import org.netbeans.modules.cnd.api.model.CsmNamespace;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 
 /**
  *
@@ -171,7 +175,8 @@ public class CsmContextUtilities {
     }
     
     private static void getFileLocalMacros(CsmFile file, List res, Set alredyInList, String strPrefix, boolean match, boolean caseSensitive){
-        for (Iterator itFile = file.getMacros().iterator(); itFile.hasNext();) {
+        CsmFilter filter = CsmSelect.getDefault().getFilterBuilder().createNameFilter(strPrefix, match, caseSensitive, false);
+        for (Iterator itFile = CsmSelect.getDefault().getMacros(file, filter); itFile.hasNext();) {
             CsmMacro macro = (CsmMacro) itFile.next();
             //if (macro.getStartOffset() > offsetInScope) {
             //    break;
@@ -355,12 +360,16 @@ public class CsmContextUtilities {
         return isInContext(fullContext, elem);
     }
     
-    private static List/*<CsmDeclaration>*/ mergeDeclarations(List/*<CsmDeclaration>*/ decls, List/*<CsmDeclaration>*/ newList) {
-        // XXX: now just add all
-        if (newList != null && newList.size() > 0) {
-            decls.addAll(newList);
+    private static List/*<CsmDeclaration>*/ mergeDeclarations(List/*<CsmDeclaration>*/ prevScopeDecls, List/*<CsmDeclaration>*/ newScopeDecls) {
+        // new scope elements have priority 
+        List res = new ArrayList();
+        if (newScopeDecls != null && newScopeDecls.size() > 0) {
+            res.addAll(newScopeDecls);
         }
-        return decls;
+        if (prevScopeDecls != null && prevScopeDecls.size() > 0) {
+            res.addAll(prevScopeDecls);
+        }
+        return res;
     }
 
 //    public static void updateContextObject(CsmObject obj, CsmContext context) {
@@ -496,10 +505,26 @@ public class CsmContextUtilities {
         return CsmBaseUtilities.getClassNamespace(cls);
     }
     
+    public static boolean isInFunctionBodyOrInitializerList(CsmContext context, int offset) {
+        return isInFunctionBody(context, offset) || isInInitializerList(context, offset);
+    }
+
     public static boolean isInFunctionBody(CsmContext context, int offset) {
         CsmFunctionDefinition funDef = getFunctionDefinition(context);
         return (funDef == null) ? false : CsmOffsetUtilities.isInObject(funDef.getBody(), offset);
     }   
+
+    public static boolean isInInitializerList(CsmContext context, int offset) {
+        CsmFunction f = getFunction(context);
+        if (CsmKindUtilities.isConstructor(f)) {
+            for (CsmExpression izer : ((CsmInitializerListContainer) f).getInitializerList()) {
+                if (CsmOffsetUtilities.isInObject(izer, offset)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
     
     public static boolean isInFunction(CsmContext context, int offset) {
         CsmFunction fun = getFunction(context);

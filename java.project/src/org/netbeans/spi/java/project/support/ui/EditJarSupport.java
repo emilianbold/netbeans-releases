@@ -42,6 +42,7 @@ package org.netbeans.spi.java.project.support.ui;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.util.NbBundle;
 
 /**
  * Factory for creating a dialog for editing jar/folder-based classpath dependencies 
@@ -63,7 +64,7 @@ public final class EditJarSupport {
      */
     public static Item showEditDialog(AntProjectHelper helper, Item item) {
         EditJarPanel panel = new EditJarPanel(item, helper);
-        DialogDescriptor dd = new DialogDescriptor(panel, "Edit jar reference");
+        DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(EditJarSupport.class, "TIT_Edit_jar_reference"));
         Object ret = DialogDisplayer.getDefault().notify(dd);
         if (DialogDescriptor.OK_OPTION == ret) {
             return panel.assignValues();

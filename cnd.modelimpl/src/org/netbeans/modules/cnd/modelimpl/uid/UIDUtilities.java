@@ -48,6 +48,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.netbeans.modules.cnd.api.model.CsmBuiltIn;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
+import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
@@ -123,6 +124,22 @@ public class UIDUtilities {
 
     public static CsmUID<CsmNamespace> createUnresolvedNamespaceUID(CsmProject project) {
 	return UIDManager.instance().getSharedUID(new UnresolvedNamespaceUID(project));
+    }
+
+    public static CsmDeclaration.Kind getKind(CsmUID<CsmOffsetableDeclaration> uid){
+        if (uid instanceof KeyBasedUID) {
+            Key key = ((KeyBasedUID)uid).getKey();
+            return KeyUtilities.getKeyKind(key);
+        }
+        return null;
+    }
+
+    public static CharSequence getName(CsmUID<CsmOffsetableDeclaration> uid){
+        if (uid instanceof KeyBasedUID) {
+            Key key = ((KeyBasedUID)uid).getKey();
+            return KeyUtilities.getKeyName(key);
+        }
+        return null;
     }
     
     private static CsmUID handleUnnamedDeclaration(CsmOffsetableDeclaration decl) {

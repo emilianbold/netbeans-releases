@@ -61,6 +61,10 @@ import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
 import org.netbeans.modules.db.explorer.infos.ViewColumnNodeInfo;
 
 public class ColumnNode extends LeafNode {
+    public ColumnNode(DatabaseNodeInfo info) {
+        super(info);
+    }
+    
     protected PropertySupport createPropertySupport(String name, Class type, String displayName, String shortDescription, DatabaseNodeInfo rep, boolean writable, boolean expert) {
         PropertySupport ps;
         if (name.equals("datatype")) //NOI18N

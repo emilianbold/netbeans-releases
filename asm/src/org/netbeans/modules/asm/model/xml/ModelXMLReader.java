@@ -59,8 +59,8 @@ import java.util.List;
 
 public class ModelXMLReader {
        
-    private final static String START_ELEMENT_SUFFIX = "Start";
-    private final static String END_ELEMENT_SUFFIX = "End";
+    private final static String START_ELEMENT_SUFFIX = "Start"; // NOI18N
+    private final static String END_ELEMENT_SUFFIX = "End"; // NOI18N
     
     public void readModelXml(Reader src, XMLReaderContext ctx)  {
         XMLReader xmlReader = null;
@@ -93,6 +93,7 @@ public class ModelXMLReader {
             ctxStack = new LinkedList<XMLReaderContext>();
         }
         
+        @Override
         public void startElement (String uri, String localName,
 			          String qName, Attributes attributes)
 	      throws SAXException {
@@ -106,6 +107,7 @@ public class ModelXMLReader {
              }                                                                             
         }
 
+        @Override
         public void endElement (String uri, String localName, String qName)
                throws SAXException {
             

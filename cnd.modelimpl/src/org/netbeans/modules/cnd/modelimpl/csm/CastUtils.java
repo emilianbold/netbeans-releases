@@ -86,6 +86,8 @@ public class CastUtils {
 		case CPPTokenTypes.AMPERSAND:
 		case CPPTokenTypes.STAR:
 		case CPPTokenTypes.LITERAL_const:
+                case CPPTokenTypes.LITERAL___const:    
+                case CPPTokenTypes.LITERAL___const__:
 		    sb.append(next.getText());
 		    break;
 		default:

@@ -27,7 +27,9 @@ import java.util.concurrent.Callable;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
-import org.netbeans.modules.bpel.editors.api.utils.Util;
+import org.netbeans.modules.bpel.editors.api.EditorUtil;
+import org.netbeans.modules.bpel.model.api.Activity;
+import org.netbeans.modules.bpel.model.api.Assign;
 import org.netbeans.modules.bpel.model.api.BaseFaultHandlers;
 import org.netbeans.modules.bpel.model.api.BpelContainer;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
@@ -37,6 +39,7 @@ import org.netbeans.modules.bpel.model.api.CatchAll;
 import org.netbeans.modules.bpel.model.api.CompensationHandler;
 import org.netbeans.modules.bpel.model.api.CompensationHandlerHolder;
 import org.netbeans.modules.bpel.model.api.CompositeActivity;
+import org.netbeans.modules.bpel.model.api.Copy;
 import org.netbeans.modules.bpel.model.api.Correlation;
 import org.netbeans.modules.bpel.model.api.CorrelationContainer;
 import org.netbeans.modules.bpel.model.api.CorrelationsHolder;
@@ -248,7 +251,7 @@ public class ActivityNodeChildren extends BpelNodeChildren<BpelContainer> implem
             if (activity == null) {
                 return null;
             }
-            NodeType nodeType = Util.getBasicNodeType(activity);
+            NodeType nodeType = EditorUtil.getBasicNodeType(activity);
             NodeFactory factory = getNodeFactory();
             
             if (factory != null){
@@ -302,6 +305,7 @@ public class ActivityNodeChildren extends BpelNodeChildren<BpelContainer> implem
 
     /**
      * Allows re-ordering of the child nodes.
+     * TODO m
      */
     private class IndexSupport extends Index.Support {
 
@@ -329,24 +333,35 @@ public class ActivityNodeChildren extends BpelNodeChildren<BpelContainer> implem
             }
             
             Object parentRef = ((BpelNode)parentNode).getReference();
-            if (! (parentRef instanceof CompositeActivity)) {
+            if (! (parentRef instanceof CompositeActivity || parentRef instanceof Assign)) {
                 return;
             }
+
             
-            final CompositeActivity parentEntity = (CompositeActivity)parentRef;
-            BpelModel model = parentEntity.getBpelModel();
+            BpelModel model = ((Activity) parentRef).getBpelModel();
             if (model == null) {
                 return;
             }
             try {
-                
-                model.invoke(new Callable() {
-                    public Object call() throws Exception {
-                        reorderEntity(perm, parentEntity);
+                if (parentRef instanceof CompositeActivity) {
+                    final CompositeActivity parentEntity = (CompositeActivity)parentRef;
 
-                        return null;
-                    }
-                }, null);
+                    model.invoke(new Callable() {
+                        public Object call() throws Exception {
+                            reorderEntity(perm, parentEntity);
+                            return null;
+                        }
+                    }, null);
+                } else if (parentRef instanceof Assign) {
+                    final Assign parentEntity = (Assign)parentRef;
+
+                    model.invoke(new Callable() {
+                        public Object call() throws Exception {
+                            reorderEntity(perm, parentEntity);
+                            return null;
+                        }
+                    }, null);
+                }
             } catch (Exception ex) {
                 ErrorManager.getDefault().notify(ex);
             }
@@ -450,6 +465,40 @@ public class ActivityNodeChildren extends BpelNodeChildren<BpelContainer> implem
         // Now add the copies back to the parent.
         for (ExtendableActivity copy : copies) {
             parent.addActivity(copy);
+        }
+    }
+
+    // todo m
+    private static void reorderEntity(int[] perm, Assign parent) {
+        if (perm == null || parent == null) {
+            return;
+        }
+        
+        List<Copy> childrenActivities = parent.getChildren(Copy.class);
+        // Need to create a copy of the list since we would
+        // otherwise be mutating it locally and via the model.
+        childrenActivities = new ArrayList<Copy>(childrenActivities);
+        Copy[] arr = childrenActivities.toArray(
+                new Copy[childrenActivities.size()]);
+        for (int i = 0; i < arr.length; i++) {
+            childrenActivities.set(perm[i], arr[i]);
+        }
+        
+        
+        // Make copies of the children. Need to make a copy,
+        // otherwise model says we are adding a node that is
+        // already a part of the tree.
+        List<Copy> copies = new ArrayList<Copy>();
+        for (Copy child : childrenActivities) {
+            copies.add((Copy)child.cut());
+        }
+//        // Cannot remove children until after they are copied.
+//        for (ExtendableActivity child : childrenActivities) {
+//            parentEntity.remove(child);
+//        }
+        // Now add the copies back to the parent.
+        for (Copy copy : copies) {
+            parent.addAssignChild(copy);
         }
     }
 }

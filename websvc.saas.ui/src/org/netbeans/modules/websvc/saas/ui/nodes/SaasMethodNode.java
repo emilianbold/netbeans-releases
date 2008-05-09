@@ -67,7 +67,17 @@ public class SaasMethodNode extends AbstractNode {
         this.method = method;
     }
     
-    static private final Image ICON = Utilities.loadImage("org/netbeans/modules/websvc/saas/resources/method.png");
+    @Override
+    public String getDisplayName() {
+        return method.getName();
+    }
+    
+    @Override
+    public String getShortDescription() {
+        return method.getDocumentation();
+    }
+
+    static private final Image ICON = Utilities.loadImage("org/netbeans/modules/websvc/saas/ui/resources/method.png");
     
     @Override
     public Image getIcon(int type){
@@ -81,12 +91,7 @@ public class SaasMethodNode extends AbstractNode {
     
     @Override
     public Action[] getActions(boolean context) {
-        List<Action> actions = new ArrayList<Action>();
-        for (SaasNodeActionsProvider ext : SaasUtil.getSaasNodeActionsProviders()) {
-            for (Action a : ext.getSaasActions(this.getLookup())) {
-                actions.add(a);
-            }
-        }
+        List<Action> actions = SaasNode.getActions(getLookup());
         return actions.toArray(new Action[actions.size()]);
     }
     

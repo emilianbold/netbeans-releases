@@ -264,6 +264,10 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
     
     public boolean isInWebModule(org.netbeans.modules.web.api.webmodule.WebModule webModule) {
         FileObject documentBase = webModule.getDocumentBase();
+        if (documentBase == null) {
+            return false;
+        }
+
         Project project = FileOwnerQuery.getOwner(documentBase);
         return JsfProjectUtils.isJsfProject(project);
     }

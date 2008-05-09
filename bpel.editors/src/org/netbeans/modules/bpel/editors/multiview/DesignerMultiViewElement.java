@@ -1,20 +1,42 @@
 /*
- * The contents of this file are subject to the terms of the Common Development
- * and Distribution License (the License). You may not use this file except in
- * compliance with the License.
- * 
- * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
- * or http://www.netbeans.org/cddl.txt.
- * 
- * When distributing Covered Code, include this CDDL Header Notice in each file
- * and include the License file at http://www.netbeans.org/cddl.txt.
- * If applicable, add the following below the CDDL Header, with the fields
- * enclosed by brackets [] replaced by your own identifying information:
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License. When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
+ * Contributor(s):
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
  */
 package org.netbeans.modules.bpel.editors.multiview;
 
@@ -38,7 +60,7 @@ import org.netbeans.modules.bpel.design.DesignView;
 import org.netbeans.modules.bpel.design.NavigationTools;
 import org.netbeans.modules.bpel.design.PartnerLinkFilterButton;
 import org.netbeans.modules.bpel.design.SequenceFilterButton;
-import org.netbeans.modules.bpel.diagram.DiagramImpl;
+import org.netbeans.modules.bpel.search.Diagram;
 import org.openide.awt.UndoRedo;
 import org.openide.windows.TopComponent;
 import java.beans.PropertyChangeListener;
@@ -55,12 +77,13 @@ import javax.swing.JComponent;
 import javax.swing.JToolBar;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.JTextComponent;
+import org.netbeans.modules.soa.validation.action.ValidationAction;
+import org.netbeans.modules.soa.validation.core.Controller;
 import org.netbeans.core.api.multiview.MultiViewHandler;
 import org.netbeans.core.api.multiview.MultiViewPerspective;
 import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
-import org.netbeans.modules.bpel.core.util.BPELValidationController;
-import org.netbeans.modules.bpel.core.util.SelectBpelElement;
+import org.netbeans.modules.bpel.core.SelectBpelElement;
 import org.netbeans.modules.bpel.design.ZoomManager;
 import org.netbeans.modules.bpel.design.actions.BreakpointsDeleteAction;
 import org.netbeans.modules.bpel.design.actions.BreakpointsDisableAction;
@@ -123,8 +146,6 @@ import org.netbeans.modules.bpel.model.api.events.ChangeEventListenerAdapter;
 import org.netbeans.modules.bpel.model.api.events.PropertyUpdateEvent;
 import org.netbeans.modules.bpel.palette.SoaPaletteFactory;
 import org.netbeans.modules.bpel.properties.PropertyNodeFactory;
-import org.netbeans.modules.xml.validation.ValidateAction;
-import org.netbeans.modules.xml.validation.ValidateAction.RunAction;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.Model.State;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
@@ -134,12 +155,12 @@ import org.netbeans.modules.xml.xam.ui.multiview.ActivatedNodesMediator;
 import org.netbeans.modules.xml.xam.ui.multiview.CookieProxyLookup;
 import org.netbeans.modules.reportgenerator.api.CustomizeReportAction;
 import org.netbeans.modules.reportgenerator.api.GenerateReportAction;
-import org.netbeans.modules.bpel.search.api.SearchManager;
-import org.netbeans.modules.bpel.documentation.DocumentationCookie;
+import org.netbeans.modules.xml.search.api.SearchManager;
+import org.netbeans.modules.bpel.documentation.DocumentationGenerator;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.loaders.DataNode;
-import org.openide.util.RequestProcessor;
+import org.openide.util.NbBundle;
 import org.openide.windows.Mode;
 import org.openide.windows.TopComponentGroup;
 import org.openide.windows.WindowManager;
@@ -152,8 +173,6 @@ public class DesignerMultiViewElement extends TopComponent
 {
     private static final long serialVersionUID = 1L;   
     
-    
-    // for deexternalization
     private DesignerMultiViewElement() {
         super();
     }
@@ -164,81 +183,23 @@ public class DesignerMultiViewElement extends TopComponent
     public DesignerMultiViewElement(BPELDataObject dataObject) {
         myDataObject = dataObject;
         initialize();
-//        initializeLookup();
-        //
-        // FIX ME
-        //
         initializeUI();
     }
-    
-//    private void removeActiveNodeChangeListener() {
-//        if (myActiveNodeChangeListener != null) {
-//            removePropertyChangeListener(myActiveNodeChangeListener);
-//        }
-//        myActiveNodeChangeListener = null;
-//    }
-    
-//    private void initActiveNodeChangeListener() {
-//        if (myActiveNodeChangeListener == null) {
-//            myActiveNodeChangeListener = new PropertyChangeListener() {
-//                /**
-//                 * TODO: may not be needed at some point when parenting
-//                 * MultiViewTopComponent delegates properly to its peer's
-//                 * activatedNodes. see
-//                 * http://www.netbeans.org/issues/show_bug.cgi?id=67257 note:
-//                 * TopComponent.setActivatedNodes is final
-//                 */
-//                public void propertyChange(PropertyChangeEvent event) {
-//                    // no constant in TopComponent...lame
-//                    if(event.getPropertyName().equals("activatedNodes")) { // NOI18N
-//                        
-//            TopComponent tc = TopComponent.getRegistry().getActivated();
-//            /* Ignore event coming from my TC */
-//                        // if(DEBUG)
-//                        // Debug.verboseWithin(this,"propertyChange",getDataObject());
-//                        nodesHack.set(Arrays.asList(getActivatedNodes()),null);
-//                    }
-//                };
-//            };
-//        } else {
-//            removePropertyChangeListener(myActiveNodeChangeListener);
-//        }
-//
-//        addPropertyChangeListener(myActiveNodeChangeListener);
-//        setActivatedNodes(new Node[] {getDataObject().getNodeDelegate()});
-//    }
     
     public void writeExternal(ObjectOutput out) throws IOException {
         super.writeExternal(out);
         out.writeObject(myDataObject);
     }
     
-    /**
-     * we are using Externalization semantics so that we can get a hook to call
-     * initialize() upon deserialization
-     */
     public void readExternal( ObjectInput in ) throws IOException,
             ClassNotFoundException {
         super.readExternal(in);
-        
         myDataObject = (BPELDataObject) in.readObject();
         
         initialize();
-//        initializeLookup();
-        //
-        // FIX ME
-        //
         initializeUI();
     }
     
-    
-    ////////////////////////////////////////////////////////////////////////////
-    //                                  UI
-    ////////////////////////////////////////////////////////////////////////////
-    /**
-     * This method is added on QA engeneer request
-     * to simplify automated test creation.
-     */
     public DesignView getDesignView() {
         return myDesignView;
     }
@@ -252,10 +213,6 @@ public class DesignerMultiViewElement extends TopComponent
         gc.anchor = GridBagConstraints.NORTHWEST;
         return gc;
     }
-    
-    ////////////////////////////////////////////////////////////////////////////
-    //                         MultiViewElement
-    ////////////////////////////////////////////////////////////////////////////
     
     public int getPersistenceType() {
         return TopComponent.PERSISTENCE_NEVER;
@@ -284,40 +241,29 @@ public class DesignerMultiViewElement extends TopComponent
     }
     
     public void componentActivated() {
-//        System.out.println("component activated");
         super.componentActivated();
         ExplorerUtils.activateActions(myExplorerManager, true);
-        // not sure that we need to add undo manager each time when 
-        // component is activated, but calling method addUndoManager() more
-        // than once is not a problem.
-//        addUndoManager();
-        myDesignView.getView().requestFocusInWindow();
+
+        addUndoManager();
+        myDesignView.requestFocusInWindow();
         myDesignView.getModel().setActivated();
         
-        // push NodeAction.Listener update context state
         Node[] aNodes = getActivatedNodes();
         setActivatedNodes(new Node[0]);
         setActivatedNodes(aNodes);
-        
-        getValidationController().triggerValidation( true );
+//      getValidationController().triggerValidation();
     }
     
+    private Controller getValidationController() {
+        return (Controller) getDataObject().getLookup().lookup(Controller.class);
+    }
+
     public void componentClosed() {
         super.componentClosed();
-        
-        //required to release all references to OM
-//        myDesignView.closeView();
-//        myDesignView = null;
-        // todo r | m 
         cleanup();
-//        DataObject dObj = getDataObject();
-//        if (dObj.isValid()) {
-//            setActivatedNodes(new Node[] {dObj.getNodeDelegate()});
-//        }
     }
     
     public void componentDeactivated() {
-//        System.out.println("component deactivated");
         super.componentDeactivated();
         ExplorerUtils.activateActions(myExplorerManager, false);
     }
@@ -325,16 +271,10 @@ public class DesignerMultiViewElement extends TopComponent
     public void componentHidden() {
         super.componentHidden();
         
-        //
-        // memory conservation?
-        //
-        
         if (myDesignView != null) {
             myDesignView.setVisible(false);
         }
-        //
         updateBpelTcGroupVisibility(false);
-//        removeActiveNodeChangeListener();
     }
     
     public void componentOpened() {
@@ -354,35 +294,9 @@ public class DesignerMultiViewElement extends TopComponent
         if (myDesignView != null) {
             myDesignView.setVisible(true);
         }
-////        addUndoManager();
+        addUndoManager();
         //
         updateBpelTcGroupVisibility(true);
-
-//        initActiveNodeChangeListener();
-
-        // activate cur node
-//        if (myMultiViewObserver != null) {
-//            TopComponent thisTc = myMultiViewObserver.getTopComponent();
-//            if ( thisTc != null ) {
-//
-//                // data node is the node associated with dataobject(BPELDataObject)
-//                if (curNodes == null || curNodes.length == 0 || curNodes[0] instanceof DataNode) {
-//                    Node node = myDesignView.getNodeForPattern(myDesignView.getRootPattern());
-//                    
-//                    if (node != null) {
-//                        curNodes = new Node[] { node };
-//                    }
-//                }
-//                
-//                if (curNodes != null && curNodes.length > 0) {
-//                    thisTc.setActivatedNodes(new Node[0]);
-//                    setActivatedNodes(new Node[0]);
-//
-//                    thisTc.setActivatedNodes(curNodes);
-//                    setActivatedNodes(curNodes);
-//                }
-//            }
-//        }
     }
 
     public JComponent getToolbarRepresentation() {
@@ -410,7 +324,7 @@ public class DesignerMultiViewElement extends TopComponent
             
             // vlv: report
             toolbar.add(new GenerateReportAction(myDataObject,
-              new DocumentationCookie(myDataObject, getDesignView().getProcessView())));
+              new DocumentationGenerator(myDataObject, getDesignView().getProcessView())));
             toolbar.add(new CustomizeReportAction(myDataObject));
             toolbar.addSeparator();
 
@@ -429,15 +343,12 @@ public class DesignerMultiViewElement extends TopComponent
             toolbar.add(PrintManager.getDefault().getPrintPreviewAction());
 
             // vlv: search
-            SearchManager manager = SearchManager.getDefault();
+            toolbar.addSeparator();
+            toolbar.add(SearchManager.getDefault().getSearchAction());
 
-            if (manager != null) {
-              toolbar.addSeparator();
-              toolbar.add(manager.getSearchAction());
-            }
             // vlv: valdiation
             toolbar.addSeparator();
-            toolbar.add(new BPELValidateAction(myDesignView.getBPELModel()));
+            toolbar.add(new ValidationAction(getValidationController()));
             
             // ksorokin: breakpoints
             toolbar.addSeparator();
@@ -515,13 +426,7 @@ public class DesignerMultiViewElement extends TopComponent
 //        return button;
     }
     private DesignView createDesignView() {
-        DesignView view = new DesignView(getLookup()); // got TC's lookup or no Palette
-        return view;
-    }
-    
-    private BPELValidationController getValidationController() {
-        return (BPELValidationController) getDataObject().
-            getLookup().lookup( BPELValidationController.class );
+        return new DesignView(getLookup()); // got TC's lookup or no Palette
     }
     
     private void initializeUI() {
@@ -551,16 +456,18 @@ public class DesignerMultiViewElement extends TopComponent
         add(myDesignView.getRightStripe(), BorderLayout.EAST);
 
         // vlv: find
-        SearchManager manager = SearchManager.getDefault();
-        
-        if (manager != null) {
-          Component search = manager.createFind(new DiagramImpl(getDesignView()), getDesignView());
-          search.setVisible(false);
-          add(search, BorderLayout.SOUTH);
-        }
+        myFind = SearchManager.getDefault().createFind(new Diagram(getDesignView()), getDesignView());
+        myFind.setVisible(false);
+        add(myFind, BorderLayout.SOUTH);
+
         initActiveNodeContext();
         setVisible(true);
+        
+        getAccessibleContext().setAccessibleName(NbBundle.getMessage(DesignerMultiViewElement.class, "ACSN_DesignerMultiviewElement", getName())); // NOI18N
+        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DesignerMultiViewElement.class, "ACSD_DesignerMultiviewElement", getName())); // NOI18N
     }
+
+    private Component myFind;
 
     private void initActiveNodeContext() {
 
@@ -683,7 +590,6 @@ public class DesignerMultiViewElement extends TopComponent
         myNodesMediator = new ActivatedNodesMediator(delegate);
         myNodesMediator.setExplorerManager(this);
         
-        
 /**
 new ProxyLookup(new Lookup[] {
             //
@@ -740,33 +646,14 @@ new ProxyLookup(new Lookup[] {
         //required to release all references to OM
         myDesignView.closeView();
         myDesignView = null;
+
+        // # 127503
+        if (myFind != null) {
+          myFind.setEnabled(false);
+          myFind = null;
+        }
         removeAll();
     }
-    
-    
-//    private void initializeLookup() {
-//        associateLookup(createAssociateLookup());
-//        initActiveNodeChangeListener();
-////        addPropertyChangeListener( new PropertyChangeListener() {        
-////                /**
-////                 * TODO: may not be needed at some point when parenting
-////                 * MultiViewTopComponent delegates properly to its peer's
-////                 * activatedNodes. see
-////                 * http://www.netbeans.org/issues/show_bug.cgi?id=67257 note:
-////                 * TopComponent.setActivatedNodes is final
-////                 */
-////                public void propertyChange(PropertyChangeEvent event) {
-////                    // no constant in TopComponent...lame
-////                    if(event.getPropertyName().equals("activatedNodes")) {
-////                        // if(DEBUG)
-////                        // Debug.verboseWithin(this,"propertyChange",getDataObject());
-////                        nodesHack.set(Arrays.asList(getActivatedNodes()),null);
-////                    }
-////                };
-////         });
-////        
-////        setActivatedNodes(new Node[] {getDataObject().getNodeDelegate()});
-//    }
     
     private Lookup createAssociateLookup() {
         
@@ -825,39 +712,7 @@ new ProxyLookup(new Lookup[] {
         return getDataObject().getEditorSupport().getBpelModel();
     }
     
-    /*
-        1) Get a element from bpel.api package
-        2) If it does not implement BpelEntity ignore.
-        3) Check if there is matching NodeType.   [Otherwise the bubbling up will eventually lead to a BpelEntity]
-        4) If yes then make an entry into the map.
-     
-        No entry in map as no matching NodeType:
-        [Activity, ActivityHolder, AssignChild, BaseCorrelation, BaseFaultHandlers,
-         BaseScope, BooleanExpr, BpelContainer, Branches,
-         CompensateScope, CompensationHandlerHolder, CompletionCondition, CompositeActivity,
-         Condition, ConditionHolder, CorrelationsHolder, DeadlineExpression, Documentation,
-         DurationExpression, Expression, ExtendableActivity, ExtensibleAssign, ExtensibleElements,
-         Extension, ExtensionActivity, ExtensionContainer, ExtensionEntity, FinalCounterValue,
-         For, From, FromPartContainer, Link*, LinkContainer,  Literal, MessageExchangeContainer,
-         NamedElement, OnAlarmEvent, OnAlarmPick, OnMessage, OnMessageCommon, PartnerLinkContainer,
-         PatternedCorrelationContainer, RepeatEvery, ReThrow, ServiceRef, Source,
-         SourceContainer, StartCounterValue, Target, TargetContainer, TimeEvent, TimeEventHolder,
-         To, Validate, VariableDeclaration,
-     
-     
-     
-        These have an entry in the map:
-        [Assign, Catch, CatchAll, Compensate, CompensatableActivityHolder, CompensationHandler, Copy,
-         Correlation, CorrelationContainer,
-         CorrelationSet, CorrelationSet, Else, ElseIf, Empty, EventHandlers, Exit, FaultHandlers, Flow,
-         ForEach, FromPart, If, Import, Invoke, MessageExchange, OnEvent, PartnerLink, PatternedCorrelation,
-         Pick, Process,
-         Receive, RepeatUntil, Reply, Scope, Sequence, TerminationHandler, Throw, ToPart, Variable,
-         VariableContainer, VariableDeclarationScope, Wait, While]
-     
-     */
-    protected static Map<Class<? extends BpelEntity>, NodeType> 
-        BPELENTITY_NODETYPE_MAP;
+    protected static Map<Class<? extends BpelEntity>, NodeType> BPELENTITY_NODETYPE_MAP;
     static {
         BPELENTITY_NODETYPE_MAP = new HashMap<Class<? extends BpelEntity>,NodeType>();
         BPELENTITY_NODETYPE_MAP.put(Assign.class, NodeType.ASSIGN);
@@ -906,15 +761,12 @@ new ProxyLookup(new Lookup[] {
         BPELENTITY_NODETYPE_MAP.put(While.class, NodeType.WHILE);
     }
     
-    /*
-     * This class could be used for changing diagram with error message 
-     * in the case when model is broken.
-     */
+    public ExplorerManager getExplorerManager() {
+        return myExplorerManager;
+    }
+
     private class ProxyListener extends ChangeEventListenerAdapter {
 
-        /* (non-Javadoc)
-         * @see org.netbeans.modules.bpel.model.api.events.ChangeEventListenerAdapter#notifyPropertyUpdated(org.netbeans.modules.bpel.model.api.events.PropertyUpdateEvent)
-         */
         @Override
         public void notifyPropertyUpdated( PropertyUpdateEvent event )
         {
@@ -926,46 +778,7 @@ new ProxyLookup(new Lookup[] {
         }
 
     }
-    
-    /**
-     *  Override the ValidateAction so that complete validation results
-     *  can be sent to the BPELValidationController.
-     */
-    private class BPELValidateAction extends ValidateAction {
-        
-        public BPELValidateAction(BpelModel model) {
-            super(model);
-        }
-        
-        public void actionPerformed(ActionEvent event) {
-            RequestProcessor.getDefault().post(new Runnable() {
-                public void run() {
-                    RunAction runAction = new RunAction();
-                    runAction.run();
-                    
-                    List<ResultItem> validationResults = 
-                        runAction.getValidationResults();
-                    BPELValidationController controller = 
-                        (BPELValidationController)((BPELDataObject)
-                    getDataObject()).getLookup().lookup(
-                            BPELValidationController.class);
-                    
-                    // Send the complete validation results to the validation controller
-                    // so that clients can be notified.
-                    if(controller != null) {
-                        controller.
-                            notifyCompleteValidationResults(validationResults);
-                    }
-                }
-            });
-        }
-    }
-    
-    public ExplorerManager getExplorerManager() {
-        return myExplorerManager;
-    }
-       
-    
+
     private static final String ACTIVATED_NODES = "activatedNodes";
     private transient MultiViewElementCallback myMultiViewObserver;
     private transient DesignView myDesignView;
@@ -974,136 +787,8 @@ new ProxyLookup(new Lookup[] {
     private BPELDataObject myDataObject;
     private transient JComponent myToolBarPanel;
     private static Boolean groupVisible = null;
-
     private PropertyChangeListener myActiveNodeChangeListener;
     private ExplorerManager myExplorerManager;
     private ActivatedNodesMediator myNodesMediator;
     private CookieProxyLookup myCookieProxyLookup;
-    
-    
-
-    
-//    private class ProxyActionMap extends ActionMap {
-//        private ActionMap originalActionMap;
-//        
-//        public ProxyActionMap(ActionMap originalActionMap) {
-//            this.originalActionMap = originalActionMap;
-//        }
-//        
-//        
-//        public void remove(Object key) {
-//            originalActionMap.remove(key);
-//        }
-//
-//        public Action get(Object key) {
-//            return originalActionMap.get();
-//            Action retValue;
-//            
-//            retValue = super.get(key);
-//            return retValue;
-//        }
-//
-//        public void put(Object key, Action action) {
-//            super.put(key, action);
-//        }
-//
-//        public void setParent(ActionMap map) {
-//            super.setParent(map);
-//        }
-//
-//        public int size() {
-//            int retValue;
-//            
-//            retValue = super.size();
-//            return retValue;
-//        }
-//
-//        public Object[] keys() {
-//            Object[] retValue;
-//            
-//            retValue = super.keys();
-//            return retValue;
-//        }
-//
-//        public ActionMap getParent() {
-//            ActionMap retValue;
-//            
-//            retValue = super.getParent();
-//            return retValue;
-//        }
-//
-//        public void clear() {
-//            super.clear();
-//        }
-//
-//        public Object[] allKeys() {
-//            Object[] retValue;
-//            
-//            retValue = super.allKeys();
-//            return retValue;
-//        }
-//        
-//    }
-    
-    
-//    private class ProxyInputMap extends InputMap {
-//        private InputMap originalInputMap;
-//            
-//        public ProxyInputMap(InputMap originalInputMap) {
-//            this.originalInputMap = originalInputMap;
-//        }
-//                
-//        
-//        public void setParent(InputMap map) {
-//            
-//            originalInputMap.setParent(map);
-//        }
-//        
-//
-//        public void put(KeyStroke keyStroke, Object actionMapKey) {
-//            originalInputMap.put(keyStroke, actionMapKey);
-//        }
-//        
-//
-//        public void remove(KeyStroke key) {
-//            originalInputMap.remove(key);
-//        }
-//
-//        
-//        public Object get(KeyStroke keyStroke) {
-//            return originalInputMap.get(keyStroke);
-//        }
-//
-//        
-//        public int size() {
-//            return originalInputMap.size();
-//        }
-//        
-//
-//        public void clear() {
-//            super.clear();
-//        }
-//        
-//
-//        public KeyStroke[] keys() {
-//            return originalInputMap.keys();
-//        }
-//
-//        
-//        public InputMap getParent() {
-//            InputMap retValue;
-//            
-//            retValue = super.getParent();
-//            return retValue;
-//        }
-//        
-//
-//        public KeyStroke[] allKeys() {
-//            KeyStroke[] retValue;
-//            
-//            retValue = super.allKeys();
-//            return retValue;
-//        }
-//        
-//    }
 }

@@ -14,13 +14,14 @@
  * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
+ * Microsystems, Inc. All Rights Reserved. 
  */
 package org.netbeans.modules.etl.project;
 
 import java.io.File;
 import java.io.IOException;
 
+import java.net.URL;
 import java.sql.Connection;
 import java.sql.SQLException;
 import org.openide.filesystems.FileObject;
@@ -34,13 +35,12 @@ import org.netbeans.spi.project.support.ant.ProjectGenerator;
 
 import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectProperties;
 import net.java.hulp.i18n.Logger;
-import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.logger.LogUtil;
-import org.netbeans.modules.etl.ui.ETLEditorSupport;
 import org.netbeans.modules.mashup.tables.wizard.MashupTableWizardIterator;
 import org.netbeans.modules.sql.framework.common.utils.DBExplorerUtil;
+import org.netbeans.modules.sql.framework.common.utils.MigrationUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.Utilities;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -52,22 +52,27 @@ import org.w3c.dom.Element;
  */
 public class EtlproProjectGenerator {
 
-    private static final String DEFAULT_DOC_BASE_FOLDER = "conf"; //NOI18N
-    private static final String DEFAULT_SRC_FOLDER = "collaborations"; //NOI18N
-    private static final String DEFAULT_RESOURCE_FOLDER = "setup"; //NOI18N
+    private static transient final Logger mLogger = Logger.getLogger(EtlproProjectGenerator.class.getName());
+    //Trimming the initial spaces
+    private static final String DEFAULT_DOC_BASE_FOLDER = "conf";//NOI18N
+    public static final String DEFAULT_SRC_FOLDER = "Collaborations";//NOI18N
+    private static final String DEFAULT_RESOURCE_FOLDER = "setup";//NOI18N
     private static final String DEFAULT_BPELASA_FOLDER = "bpelasa"; //NOI18N
-    private static final String DEFAULT_BUILD_DIR = "build"; //NOI18N
-    private static final String DEFAULT_DATA_DIR = "data"; //NOI18N
-    private static final String DEFAULT_DATABASES_DIR = "databases"; //NOI18N
-    private static final String DEFAULT_NBPROJECT_DIR = "nbproject"; //NOI18N
+
+    private static final String DEFAULT_BUILD_DIR = "build";//NOI18N
+    public static final String DEFAULT_DATA_DIR = "data";//NOI18N
+    private static final String DEFAULT_DB_DIR = "Default"; //NOI18N
+
+    public static final String DEFAULT_DATABASES_DIR = "databases"; //NOI18N
+
+    private static final String DEFAULT_NBPROJECT_DIR = "nbproject";//NOI18N
     private static final String DEFAULT_FLATFILE_JDBC_URL_PREFIX = "jdbc:axiondb:";
     private static FileObject dbObj = null;
     private static File databases = null;
     private static FileObject data = null;
-    
-    private static transient final Logger mLogger = LogUtil.getLogger(EtlproProjectGenerator.class.getName());
-    private static transient final Localizer mLoc = Localizer.get();
     public static String PRJ_LOCATION_DIR = "";
+    private static String prjName = null;
+    private static String fs = File.separator;
 
     private EtlproProjectGenerator() {
     }
@@ -81,6 +86,7 @@ public class EtlproProjectGenerator {
      */
     public static AntProjectHelper createProject(File dir, String name, String j2eeLevel) throws IOException {
         dir.mkdirs();
+        prjName = name;
         // XXX clumsy way to refresh, but otherwise it doesn't work for new folders
         File rootF = dir;
         PRJ_LOCATION_DIR = rootF.getPath();
@@ -90,7 +96,8 @@ public class EtlproProjectGenerator {
         FileObject fo = FileUtil.toFileObject(rootF);
         assert fo != null : "At least disk roots must be mounted! " + rootF;
         fo.getFileSystem().refresh(false);
-        fo = FileUtil.toFileObject(dir);
+        //fo = FileUtil.toFileObject(dir);
+        fo = FileUtil.toFileObject(new File(dir, ""));
 
         // vlv # 113228
         if (fo == null) {
@@ -100,21 +107,27 @@ public class EtlproProjectGenerator {
         assert fo.getChildren().length == 0 : "Dir must have been empty: " + dir;
         AntProjectHelper h = setupProject(fo, name, j2eeLevel);
         fo.createFolder(DEFAULT_SRC_FOLDER); // NOI18N
-        data = fo.createFolder(DEFAULT_DATA_DIR); // NOI18N      
 
-        databases = new File(PRJ_LOCATION_DIR + "\\" + DEFAULT_NBPROJECT_DIR + "\\" + "private" + "\\" + DEFAULT_DATABASES_DIR);
+        data = fo.createFolder(DEFAULT_DATA_DIR); // NOI18N         
+
+        databases = new File(PRJ_LOCATION_DIR + fs + DEFAULT_NBPROJECT_DIR + fs + "private" + fs + DEFAULT_DATABASES_DIR);
         dbObj = FileUtil.createFolder(databases);
+        FileObject defaultFileObj = dbObj.createFolder(DEFAULT_DB_DIR);
         //dbObj.lock();  
-        MashupTableWizardIterator.setProjectInfo(name,PRJ_LOCATION_DIR, true);
-        
+        MashupTableWizardIterator.setProjectInfo(name, PRJ_LOCATION_DIR, true);
 
-        String dbName = databases.getPath();
+
+        String dbName = FileUtil.toFile(defaultFileObj).getAbsolutePath();
         createDefaultDatabase(dbName);
+        setMigrationUtil();
 
         EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         ep.put(IcanproProjectProperties.SOURCE_ROOT, DEFAULT_SRC_FOLDER); //NOI18N
+
         ep.setProperty(IcanproProjectProperties.META_INF, "${" + IcanproProjectProperties.SOURCE_ROOT + "}/" + DEFAULT_DOC_BASE_FOLDER); //NOI18N
+
         ep.setProperty(IcanproProjectProperties.SRC_DIR, "${" + IcanproProjectProperties.SOURCE_ROOT + "}"); //NOI18N
+
         ep.setProperty(IcanproProjectProperties.RESOURCE_DIR, DEFAULT_RESOURCE_FOLDER);
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
 
@@ -129,10 +142,13 @@ public class EtlproProjectGenerator {
         Element data = h.getPrimaryConfigurationData(true);
         Document doc = data.getOwnerDocument();
         Element nameEl = doc.createElementNS(EtlproProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
+
         nameEl.appendChild(doc.createTextNode(name));
         data.appendChild(nameEl);
         Element minant = doc.createElementNS(EtlproProjectType.PROJECT_CONFIGURATION_NAMESPACE, "minimum-ant-version"); // NOI18N
+
         minant.appendChild(doc.createTextNode("1.6")); // NOI18N
+
         data.appendChild(minant);
         h.putPrimaryConfigurationData(data, true);
 
@@ -163,11 +179,17 @@ public class EtlproProjectGenerator {
 
         //============= Start of IcanPro========================================//
         ep.setProperty(IcanproProjectProperties.JBI_SETYPE_PREFIX, "sun-etl-engine"); // NOI18N
+
         ep.setProperty(IcanproProjectProperties.ASSEMBLY_UNIT_ALIAS, "This Assembly Unit"); // NOI18N
+
         ep.setProperty(IcanproProjectProperties.ASSEMBLY_UNIT_DESCRIPTION, "Represents this Assembly Unit"); // NOI18N
+
         ep.setProperty(IcanproProjectProperties.APPLICATION_SUB_ASSEMBLY_ALIAS, "This Application Sub-Assembly"); // NOI18N
+
         ep.setProperty(IcanproProjectProperties.APPLICATION_SUB_ASSEMBLY_DESCRIPTION, "This represents the Application Sub-Assembly"); // NOI18N
+
         ep.setProperty(IcanproProjectProperties.JBI_COMPONENT_CONF_ROOT, "nbproject/private"); // NOI18N
+
         ep.setProperty(IcanproProjectProperties.JBI_DEPLOYMENT_CONF_ROOT, "nbproject/deployment"); // NOI18N            
 
         ep.setProperty(IcanproProjectProperties.BC_DEPLOYMENT_JAR, "${" + IcanproProjectProperties.BUILD_DIR + "}/" + "BCDeployment.jar");
@@ -180,6 +202,7 @@ public class EtlproProjectGenerator {
         //ep.setProperty(IcanproProjectProperties.J2EE_SERVER_INSTANCE, serverInstanceID);
         //============= Start of IcanPro========================================//
         ep.setProperty(IcanproProjectProperties.JBI_COMPONENT_CONF_FILE, "ComponentInformation.xml"); // NOI18N
+
         ep.setProperty(IcanproProjectProperties.JBI_DEPLOYMENT_CONF_FILE, "default.xml"); // NOI18N
         //============= End of IcanPro========================================//
 
@@ -189,25 +212,36 @@ public class EtlproProjectGenerator {
         return h;
     }
 
-    private static void createDefaultDatabase(String name) {
-        String url = DEFAULT_FLATFILE_JDBC_URL_PREFIX + "Default" + ":" + name + "\\" + "Default";
-        File f = new File(name + "\\" + "Default");
+    public static void createDefaultDatabase(String name) {
+        // Modified for Other OS - Solaris
+        /*File f = new File(name + fs + DEFAULT_DB_DIR);
+        try {
+        FileUtil.createFolder(f);
+        } catch (IOException ex) {
+        Exceptions.printStackTrace(ex);
+        }*/
+        String url = DEFAULT_FLATFILE_JDBC_URL_PREFIX + DEFAULT_DB_DIR + ":" + name;
         char[] ch = name.toCharArray();
         if (ch == null) {
+            String nbBundle10 = "No Database name specified.";//mLoc.t("BUND723: No Database name specified.");
+
             NotifyDescriptor d =
-                    new NotifyDescriptor.Message("No Database name specified.", NotifyDescriptor.INFORMATION_MESSAGE);
+                    new NotifyDescriptor.Message(nbBundle10/*.substring(15)*/, NotifyDescriptor.INFORMATION_MESSAGE);
             DialogDisplayer.getDefault().notify(d);
-        } else if (f.exists()) {
-            NotifyDescriptor d =
-                    new NotifyDescriptor.Message("Database '" + name + " already exists.", NotifyDescriptor.INFORMATION_MESSAGE);
-            DialogDisplayer.getDefault().notify(d);
-        } else {
+        } /*else if (f.exists()) {
+        String nbBundle11 = mLoc.t("PRJS001: Database {0} already exists.", name);
+        NotifyDescriptor d =
+        new NotifyDescriptor.Message(Localizer.parse(nbBundle11), NotifyDescriptor.INFORMATION_MESSAGE);
+        DialogDisplayer.getDefault().notify(d);
+        }*/ else {
             Connection conn = null;
             try {
                 conn = DBExplorerUtil.createConnection("org.axiondb.jdbc.AxionDriver", url, "sa", "sa");
             } catch (Exception ex) {
+                String nbBundle12 = "Axion driver could not be loaded.";//mLoc.t("BUND724: Axion driver could not be loaded.");
+
                 NotifyDescriptor d =
-                        new NotifyDescriptor.Message("Axion driver could not be loaded.", NotifyDescriptor.INFORMATION_MESSAGE);
+                        new NotifyDescriptor.Message(nbBundle12/*.substring(15)*/, NotifyDescriptor.INFORMATION_MESSAGE);
                 DialogDisplayer.getDefault().notify(d);
             } finally {
                 try {
@@ -221,17 +255,41 @@ public class EtlproProjectGenerator {
             }
         }
     }
+
     //Need for Migration - Start
     public static File getDatabasesFolder() {
         return databases;
     }
 
     public static String getDatabasesFolderPath() {
-        return databases.getPath();
+        //return databases.getPath();
+        String path = FileUtil.toFile(dbObj).getAbsolutePath();
+        /*if (Utilities.isWindows()) {
+        path = path.replace("\\", "/"); // NOI18N
+        }*/
+        return path;
+    }
+
+    public static String getDataFolderPath() {
+        //return data.getPath();
+        String path = FileUtil.toFile(data).getAbsolutePath();
+        if (Utilities.isWindows()) {
+            path = path.replace("\\", "/"); // NOI18N
+
+        }
+        return path;
     }
     
-    public static String getDataFolderPath() {
-        return data.getPath();
+    public static void setMigrationUtil() {
+        String path = FileUtil.toFile(data).getAbsolutePath();
+        if (Utilities.isWindows()) {
+            path = path.replace("\\", "/"); // NOI18N
+
+        }
+        String path1 = FileUtil.toFile(dbObj).getAbsolutePath();
+        MigrationUtils.setDatabasesFolder(databases);
+        MigrationUtils.setDataFolderPath(path);
+        MigrationUtils.setDatabasesFolderPath(path1);
     }
-    //Need for Migration - End
+    //Need for Migration - End  
 }

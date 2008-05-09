@@ -55,6 +55,7 @@ import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
 import org.netbeans.api.debugger.jpda.MethodBreakpoint;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
+import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.spi.debugger.jpda.EditorContext;
 import org.netbeans.spi.debugger.jpda.SourcePathProvider;
@@ -129,20 +130,6 @@ public class EditorContextBridge {
         }
     }
 
-    public static boolean showSource (LineBreakpoint b, Object timeStamp) {
-        if (b.getLineNumber () < 1)
-            return EditorContextBridge.getContext().showSource (
-                b.getURL (),
-                1,
-                timeStamp
-            );
-        return EditorContextBridge.getContext().showSource (
-            b.getURL (),
-            b.getLineNumber (),
-            timeStamp
-        );
-    }
-
     public static String getDefaultType () {
         String id = getContext().getSelectedIdentifier ();
         try {
@@ -193,7 +180,7 @@ public class EditorContextBridge {
             url,
             lineNumber,
             annotationType,
-            null
+            b
         );
     }
 
@@ -278,7 +265,7 @@ public class EditorContextBridge {
         List annotations = new ArrayList(URLs.length);
         for (int i = 0; i < URLs.length; i++) {
             if (lineNumbers[i] >= 1) {
-                Object annotation = getContext().annotate (URLs[i], lineNumbers[i], annotationType, null);
+                Object annotation = getContext().annotate (URLs[i], lineNumbers[i], annotationType, b);
                 if (annotation != null) {
                     annotations.add(annotation);
                 }

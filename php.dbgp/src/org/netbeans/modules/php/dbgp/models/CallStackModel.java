@@ -150,10 +150,9 @@ public class CallStackModel extends ViewModelSupport
             Stack stack = (Stack)node;
             String commandName = stack.getCurrentCommandName();
             if ( commandName == null ) {
-                return getFile(stack) + ":" + ( stack.getLine() -1 );
-            }
-            else {
-                return getFile(stack) + "." +commandName +":" + ( stack.getLine() -1 );
+                return getFile(stack) + ":" + stack.getLine();
+            } else {
+                return getFile(stack) + "." +commandName +":" + stack.getLine();
             }
         }
         else if (node == ROOT) {

@@ -121,7 +121,7 @@ abstract public class AbstractNameMapper {
 	 * key class
 	 */
 	public String getEjbNameForPersistenceKeyClass(String className) {
-		if (className.toUpperCase().endsWith("OID")) {	// NOI18N
+		if (className.toUpperCase(Locale.ENGLISH).endsWith("OID")) {	// NOI18N
 			return getEjbNameForPersistenceClass(
 				className.substring(0, className.length() - 4));
 		}

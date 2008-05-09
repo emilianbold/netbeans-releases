@@ -486,7 +486,7 @@ public class I18nServiceImpl implements I18nService {
                 if (root != null) {
                     return Collections.singletonList(
                         new File(FileUtil.toFile(root).getPath()
-                            + File.separator + bundleName + ".properties").toURL()); // NOI18N
+                            + File.separator + bundleName + ".properties").toURI().toURL()); // NOI18N
                 }
             }
         } catch (IOException ex) {

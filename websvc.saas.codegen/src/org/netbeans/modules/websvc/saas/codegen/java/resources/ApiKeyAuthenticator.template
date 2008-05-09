@@ -1,12 +1,14 @@
-<#assign licenseFirst = "/*">
-<#assign licensePrefix = " * ">
-<#assign licenseLast = " */">
-<#include "../Licenses/license-${project.license}.txt">
+/*
+ * __NAME__.java
+ *
+ * Created on __DATE__, __TIME__
+ *
+ * To change this template, choose Tools | Template Manager
+ * and open the template in the editor.
+ */
 
-<#if package?? && package != "">
-package ${package};
+package Templates.Classes;
 
-</#if>
 import java.io.IOException;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -14,24 +16,29 @@ import java.util.logging.Logger;
 
 /**
  *
- * @author ${user}
+ * @author __USER__
  */
-public class ${name} {
-
+public class __NAME__ {
+    
     private static String apiKey;
     
+    private static final String PROP_FILE = __NAME__.class.getSimpleName().toLowerCase() + ".properties";
+
     static {
         try {
             Properties props = new Properties();
-            props.load(${name}.class.getResourceAsStream(
-                    "${profile.properties}"));
+            props.load(__NAME__.class.getResourceAsStream(PROP_FILE));
             apiKey = props.getProperty("api_key");
         } catch (IOException ex) {
-            Logger.getLogger(${name}.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(__NAME__.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
-    public static String getApiKey() {
+    public static String getApiKey() throws IOException {
+        if (apiKey == null || apiKey.length() == 0) {
+            throw new IOException("Please specify your api key in the "  + PROP_FILE + " file.");
+        }
+
         return apiKey;
     }
 }

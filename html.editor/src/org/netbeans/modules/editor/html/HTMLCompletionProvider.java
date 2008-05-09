@@ -74,6 +74,7 @@ public class HTMLCompletionProvider implements CompletionProvider {
     
     /** Creates a new instance of JavaDocCompletionProvider */
     public HTMLCompletionProvider() {
+        NbReaderProvider.setupReaders();
     }
     
     public int getAutoQueryTypes(JTextComponent component, String typedText) {

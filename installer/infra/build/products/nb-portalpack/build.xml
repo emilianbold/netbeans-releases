@@ -60,8 +60,19 @@
       Overrides the '-pre-package' target in product.xml.
     -->
     <target name="-pre-package">
-	<delete file="${data.directory}/license.txt"/>
-	<delete file="${data.directory}/THIRDPARTYLICENSE.txt"/>
+        <move todir="${data.directory}">
+            <fileset dir="${data.directory}/portalpack20">
+                <include name="**/*"/>
+            </fileset>
+        </move>
+        
+        <delete includeemptydirs="true">
+            <fileset dir="${data.directory}">
+                <include name="portalpack20"/>
+                <include name="portalpack20/**"/>
+            </fileset>
+        </delete>
+
     </target>
     
     <!-- ============================================================================

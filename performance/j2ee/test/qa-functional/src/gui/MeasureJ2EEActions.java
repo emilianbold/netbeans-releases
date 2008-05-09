@@ -63,6 +63,10 @@ public class MeasureJ2EEActions  {
 		suite.addTest(new Deploy("measureTime", "Deploy Enterprise Application"));
 	} else {
 
+	        suite.addTest(new CreateJ2EEProject("testCreateEnterpriseApplicationProject", "Create Enterprise Application projects"));
+	        suite.addTest(new CreateJ2EEProject("testCreateStandaloneEnterpriseApplicationProject", "Create standalone Enterprise Application project"));
+	        suite.addTest(new CreateJ2EEProject("testCreateEJBModuleProject", "Create EJB Module project"));
+
 	        suite.addTest(new ExpandEJBNodesProjectsView("testExpandEjbProjectNode", "Expand EJB Project node"));
 	        suite.addTest(new ExpandEJBNodesProjectsView("testExpandEjbNode", "Expand Enterprise Beans node"));
 	
@@ -99,9 +103,6 @@ public class MeasureJ2EEActions  {
 /* Unstable	        
 	        suite.addTest(new CreateNewFile("testCreateNewWebService", "Create new web service"));
 */	
-	        suite.addTest(new CreateJ2EEProject("testCreateEnterpriseApplicationProject", "Create Enterprise Application projects"));
-	        suite.addTest(new CreateJ2EEProject("testCreateStandaloneEnterpriseApplicationProject", "Create standalone Enterprise Application project"));
-	        suite.addTest(new CreateJ2EEProject("testCreateEJBModuleProject", "Create EJB Module project"));
         }
         
         return suite;

@@ -16,10 +16,6 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
-/**
- *
- */
 package org.netbeans.modules.bpel.model.impl;
 
 import java.util.List;
@@ -43,10 +39,8 @@ import org.netbeans.modules.xml.xam.Reference;
 import org.netbeans.modules.xml.xam.dom.Attribute;
 import org.w3c.dom.Element;
 
-
 /**
  * @author ads
- *
  */
 public abstract class OnMessageCommonImpl extends ExtensibleElementsImpl implements
         OnMessageCommon
@@ -308,7 +302,5 @@ public abstract class OnMessageCommonImpl extends ExtensibleElementsImpl impleme
         return myAttributes.get();
     }
     
-    private static AtomicReference<Attribute[]> myAttributes = 
-        new AtomicReference<Attribute[]>();
-
+    private static AtomicReference<Attribute[]> myAttributes = new AtomicReference<Attribute[]>();
 }

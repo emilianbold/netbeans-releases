@@ -27,9 +27,11 @@
  */
 package org.netbeans.modules.gsf;
 
+import java.util.List;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.editor.mimelookup.MimePath;
-import org.netbeans.api.gsf.Formatter;
+import org.netbeans.modules.gsf.api.Formatter;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.editor.indent.spi.ExtraLock;
 import org.netbeans.modules.editor.indent.spi.IndentTask;
@@ -44,10 +46,27 @@ public class GsfIndentTask implements IndentTask {
     }
 
     public void reindent() throws BadLocationException {
-        Formatter f = getFormatter();
+        //Formatter f = getFormatter();
+
+        Formatter f = null;
+        BaseDocument baseDoc = (BaseDocument)context.document();
+        List<Language> list = LanguageRegistry.getInstance().getEmbeddedLanguages(baseDoc, context.startOffset());
+        if (context.endOffset()-context.startOffset() < 4) { // for line reindents etc.
+            for (Language l : list) {
+                if (l.getFormatter() != null) {
+                    f = l.getFormatter();
+                    break;
+                }
+            }
+        }
+        
+        if (f == null) {
+            f = getFormatter();
+        }
+        
         
         if (f != null) {
-            f.reindent(context.document(), context.startOffset(), context.endOffset(), null);
+            f.reindent(context.document(), context.startOffset(), context.endOffset());
         }
     }
     

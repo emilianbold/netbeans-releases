@@ -121,7 +121,7 @@ public class ActionFactory {
                 doc.atomicLock();
                 DocumentUtilities.setTypingModification(doc, true);
                 try {
-                if (caret.isSelectionVisible()) { // block selected
+                if (Utilities.isSelectionShowing(caret)) { // block selected
                     try {
                         doc.getFormatter().changeBlockIndent(doc,
                                 target.getSelectionStart(), target.getSelectionEnd(), -1);
@@ -331,11 +331,11 @@ public class ActionFactory {
                 doc.atomicLock();
                 DocumentUtilities.setTypingModification(doc, true);
                 try {
-                    int dotPos = caret.getDot();
-                    int bolPos = Utilities.getRowStart(target, dotPos);
-                    int eolPos = Utilities.getRowEnd(target, dotPos);
-                    eolPos = Math.min(eolPos + 1, doc.getLength()); // include '\n'
-                    doc.remove(bolPos, eolPos - bolPos);
+                        int bolPos = Utilities.getRowStart(target, target.getSelectionStart());
+                        int eolPos = Utilities.getRowEnd(target, target.getSelectionEnd());
+                        eolPos = Math.min(eolPos + 1, doc.getLength()); // include '\n'
+                        doc.remove(bolPos, eolPos - bolPos);
+                        // Caret will be at bolPos due to removal
                 } catch (BadLocationException e) {
                     target.getToolkit().beep();
                 } finally {
@@ -374,7 +374,7 @@ public class ActionFactory {
                     int end = start;
 
                     // check if there is a selection
-                    if (caret.isSelectionVisible()) {
+                    if (Utilities.isSelectionShowing(caret)) {
                         int selStart = caret.getDot();
                         int selEnd = caret.getMark();
                         start = Math.min(selStart, selEnd);
@@ -468,7 +468,7 @@ public class ActionFactory {
                     int end = start;
 
                     // check if there is a selection
-                    if (caret.isSelectionVisible()) {
+                    if (Utilities.isSelectionShowing(caret)) {
                         int selStart = caret.getDot();
                         int selEnd = caret.getMark();
                         start = Math.min(selStart, selEnd);
@@ -563,7 +563,7 @@ public class ActionFactory {
                     int end = start;
 
                     // check if there is a selection
-                    if (caret.isSelectionVisible()) {
+                    if (Utilities.isSelectionShowing(caret)) {
                         int selStart = caret.getDot();
                         int selEnd = caret.getMark();
                         start = Math.min(selStart, selEnd);
@@ -648,7 +648,7 @@ public class ActionFactory {
                     int end = start;
 
                     // check if there is a selection
-                    if (caret.isSelectionVisible()) {
+                    if (Utilities.isSelectionShowing(caret)) {
                         int selStart = caret.getDot();
                         int selEnd = caret.getMark();
                         start = Math.min(selStart, selEnd);
@@ -1005,7 +1005,7 @@ public class ActionFactory {
                 try {
                     Caret caret = target.getCaret();
                     BaseDocument doc = (BaseDocument)target.getDocument();
-                    if (caret.isSelectionVisible()) { // valid selection
+                    if (Utilities.isSelectionShowing(caret)) { // valid selection
                         int startPos = target.getSelectionStart();
                         int endPos = target.getSelectionEnd();
                         Utilities.changeCase(doc, startPos, endPos - startPos, changeCaseMode);
@@ -1085,7 +1085,7 @@ public class ActionFactory {
                 Map revertMap = (Map)props.get(EditorFindSupport.REVERT_MAP);
                 Boolean revertValue = revertMap != null ? (Boolean)revertMap.get(EditorFindSupport.FIND_WHOLE_WORDS) : null;
 
-                if (caret.isSelectionVisible()) { // valid selection
+                if (Utilities.isSelectionShowing(caret)) { // valid selection
                     searchWord = target.getSelectedText();
                     originalValue = (Boolean)props.put(EditorFindSupport.FIND_WHOLE_WORDS, Boolean.FALSE);
                     if (Boolean.FALSE.equals(revertValue)) {
@@ -1308,7 +1308,7 @@ public class ActionFactory {
                 final BaseDocument doc = Utilities.getDocument(target);
 
                 // Possibly remove selection
-                if (caret.isSelectionVisible()) {
+                if (Utilities.isSelectionShowing(caret)) {
                     target.replaceSelection(null);
                 }
 
@@ -1366,7 +1366,7 @@ public class ActionFactory {
                 doc.atomicLock();
                 DocumentUtilities.setTypingModification(doc, true);
                 try {
-                    if (caret.isSelectionVisible()) {
+                    if (Utilities.isSelectionShowing(caret)) {
                         doc.getFormatter().changeBlockIndent(doc,
                         target.getSelectionStart(), target.getSelectionEnd(),
                         right ? +1 : -1);
@@ -1416,7 +1416,7 @@ public class ActionFactory {
                     int startPos;
                     Position endPosition;
 
-                    if (caret.isSelectionVisible()) {
+                    if (Utilities.isSelectionShowing(caret)) {
                         startPos = target.getSelectionStart();
                         endPosition = doc.createPosition(target.getSelectionEnd());
                     } else {
@@ -1530,7 +1530,7 @@ public class ActionFactory {
 
                         int startPos;
                         Position endPosition;
-                        if (caret.isSelectionVisible()) {
+                        if (Utilities.isSelectionShowing(caret)) {
                             startPos = target.getSelectionStart();
                             endPosition = doc.createPosition(target.getSelectionEnd());
                         } else {
@@ -1656,7 +1656,7 @@ public class ActionFactory {
             if (target != null) {
                 Caret caret = target.getCaret();
                 try {
-                    if (caret.isSelectionVisible()) {
+                    if (Utilities.isSelectionShowing(caret)) {
                         caret.setSelectionVisible(false); // unselect if anything selected
                     } else { // selection not visible
                         int block[] = Utilities.getIdentifierBlock((BaseDocument)target.getDocument(),

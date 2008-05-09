@@ -56,7 +56,6 @@ import java.util.Map;
 import net.java.hulp.i18n.Logger;
 import org.axiondb.ExternalConnectionProvider;
 import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.codegen.DB;
 import org.netbeans.modules.sql.framework.codegen.DBFactory;
 import org.netbeans.modules.sql.framework.codegen.StatementContext;
@@ -68,11 +67,13 @@ import org.netbeans.modules.sql.framework.common.utils.DBExplorerUtil;
 import org.netbeans.modules.sql.framework.model.DBConnectionDefinition;
 import org.netbeans.modules.sql.framework.model.RuntimeDatabaseModel;
 import org.netbeans.modules.sql.framework.model.RuntimeInput;
+import org.netbeans.modules.sql.framework.model.SQLCondition;
 import org.netbeans.modules.sql.framework.model.SQLConstants;
 import org.netbeans.modules.sql.framework.model.SQLDBTable;
 import org.netbeans.modules.sql.framework.model.SQLJoinOperator;
 import org.netbeans.modules.sql.framework.model.SQLJoinView;
 import org.netbeans.modules.sql.framework.model.SQLObject;
+import org.netbeans.modules.sql.framework.model.SQLPredicate;
 import org.netbeans.modules.sql.framework.model.SourceTable;
 import org.netbeans.modules.sql.framework.model.TargetTable;
 import org.netbeans.modules.sql.framework.ui.SwingWorker;
@@ -90,13 +91,14 @@ class DataViewWorkerThread extends SwingWorker {
     private SQLObject dbTable;
     private String errMsg;
     DataOutputPanel dataOutputPanel;
-    private static transient final Logger mLogger = LogUtil.getLogger(DataViewWorkerThread.class.getName());
+    private static transient final Logger mLogger = Logger.getLogger(DataViewWorkerThread.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
     public DataViewWorkerThread(SQLObject table, DataOutputPanel dataOutputPanel) {
         super();
         this.dataOutputPanel = dataOutputPanel;
         this.dbTable = table; // May be a SQLDBTable or a JoinView
+
     }
 
     public Object construct() {
@@ -114,8 +116,8 @@ class DataViewWorkerThread extends SwingWorker {
     public void finished() {
 
         if (this.errMsg != null) {
-            String nbBundle = mLoc.t("PRSR001: Error fetching data for table {0}.Cause:{1}", dbTable.getDisplayName(), this.errMsg);
-            String errorMsg = Localizer.parse(nbBundle);
+            String nbBundle = mLoc.t("BUND349: Error fetching data for table {0}.Cause:{1}", dbTable.getDisplayName(), this.errMsg);
+            String errorMsg = nbBundle.substring(15);
             DialogDisplayer.getDefault().notify(new Message(errorMsg, NotifyDescriptor.ERROR_MESSAGE));
         }
         UIUtil.stopProgressDialog();
@@ -124,7 +126,7 @@ class DataViewWorkerThread extends SwingWorker {
         }
         dataOutputPanel.refreshButton.setEnabled(true);
         dataOutputPanel.refreshField.setEnabled(true);
-        if (this.dbTable instanceof SQLDBTable) {
+        if (this.errMsg == null && (this.dbTable instanceof SQLDBTable || dbTable instanceof SQLJoinView || dbTable instanceof SQLJoinOperator)) {
             if (((dataOutputPanel.nowCount - dataOutputPanel.maxRows) > 0) && (dataOutputPanel.totalCount != 0)) {
                 dataOutputPanel.first.setEnabled(true);
                 dataOutputPanel.previous.setEnabled(true);
@@ -145,12 +147,16 @@ class DataViewWorkerThread extends SwingWorker {
                 dataOutputPanel.maxRows = dataOutputPanel.totalCount;
                 dataOutputPanel.refreshField.setText(String.valueOf(dataOutputPanel.maxRows));
             }
-            if (dataOutputPanel.totalCount != 0 && dataOutputPanel.maxRows != 0) {
-                dataOutputPanel.deleteRow.setEnabled(true);
-            } else {
-                dataOutputPanel.deleteRow.setEnabled(false);
+            
+            // editing controls
+            if(this.dbTable instanceof SQLDBTable) {
+                if (dataOutputPanel.totalCount != 0 && dataOutputPanel.maxRows != 0) {
+                    dataOutputPanel.deleteRow.setEnabled(true);
+                } else {
+                    dataOutputPanel.deleteRow.setEnabled(false);
+                }
+                dataOutputPanel.insert.setEnabled(true);
             }
-            dataOutputPanel.insert.setEnabled(true);
         } else {
             dataOutputPanel.first.setEnabled(false);
             dataOutputPanel.next.setEnabled(false);
@@ -164,7 +170,7 @@ class DataViewWorkerThread extends SwingWorker {
         if (dataOutputPanel.totalCount == 0) {
             dataOutputPanel.nowCount = 0;
         }
-
+        
         dataOutputPanel.refreshField.setText("" + dataOutputPanel.maxRows);
         dataOutputPanel.queryView.revalidate();
         dataOutputPanel.queryView.repaint();
@@ -179,6 +185,24 @@ class DataViewWorkerThread extends SwingWorker {
         }
     }
 
+    private void handleException() {
+        dataOutputPanel.queryView.clearView();
+        dataOutputPanel.totalRowsLabel.setText("0");
+    }
+
+    private void shutdownConnection(Connection conn) {
+        if (conn != null) {
+            try {
+                if (conn.getMetaData().getDriverName().contains("Axion")) {
+                    conn.createStatement().execute("shutdown");
+                }
+                conn.close();
+            } catch (SQLException e) {
+                conn = null;
+            }
+        }
+    }
+
     private void showDataForDBTable() {
         Statement stmt = null;
         Connection conn = null;
@@ -186,75 +210,77 @@ class DataViewWorkerThread extends SwingWorker {
         try {
             DBTableMetadata meta = dataOutputPanel.meta;
             DB db = DBFactory.getInstance().getDatabase(meta.getDBType());
+            if (dbTable.getObjectType() == SQLConstants.TARGET_TABLE) {
+                meta.shutdownIfAxion();
+            }
             conn = meta.createConnection();
+            if (conn != null) {
+                String resetFetchSizeSQL = null;
+                if (meta.isDBType(DBConstants.SYBASE)) {
+                    conn.setAutoCommit(false);
+                    stmt = conn.createStatement();
+                    stmt.execute("SET ROWCOUNT " + dataOutputPanel.recordToRefresh);
+                    resetFetchSizeSQL = "SET ROWCOUNT 0";
+                }
 
-            String resetFetchSizeSQL = null;
-            if (meta.isDBType(DBConstants.SYBASE)) {
-                conn.setAutoCommit(false);
-                stmt = conn.createStatement();
-                stmt.execute("SET ROWCOUNT " + dataOutputPanel.recordToRefresh);
-                resetFetchSizeSQL = "SET ROWCOUNT 0";
-            }
+                StatementContext context = new StatementContext();
+                Object limit = (dataOutputPanel.recordToRefresh == 0) ? "" : dataOutputPanel.recordToRefresh;
+                context.putClientProperty("limit", limit);
+                Statements stmts = db.getStatements();
 
-            StatementContext context = new StatementContext();
-            Object limit = (dataOutputPanel.recordToRefresh == 0) ? "" : dataOutputPanel.recordToRefresh;
-            context.putClientProperty("limit", limit);
-            Statements stmts = db.getStatements();
+                String sql = null;
+                if (dbTable.getObjectType() == SQLConstants.SOURCE_TABLE) {
+                    SQLPart sqlPart = stmts.getSelectStatement((SourceTable) dbTable, context);
+                    sql = sqlPart.getSQL();
+                } else {
+                    SQLPart sqlPart = stmts.getSelectStatement((TargetTable) dbTable, context);
+                    sql = sqlPart.getSQL();
+                }
 
-            String sql = null;
-            if (dbTable.getObjectType() == SQLConstants.SOURCE_TABLE) {
-                SQLPart sqlPart = stmts.getSelectStatement((SourceTable) dbTable, context);
-                sql = sqlPart.getSQL();
-            } else {
-                SQLPart sqlPart = stmts.getSelectStatement((TargetTable) dbTable, context);
-                sql = sqlPart.getSQL();
-            }
+                List paramList = new ArrayList();
+                Map attribMap = new HashMap();
+                RuntimeDatabaseModel runtimeModel = dataOutputPanel.getRuntimeDbModel();
+                if (runtimeModel != null) {
+                    RuntimeInput inputTable = runtimeModel.getRuntimeInput();
+                    if (inputTable != null) {
+                        attribMap = inputTable.getRuntimeAttributeMap();
+                    }
+                }
 
-            List paramList = new ArrayList();
-            Map attribMap = new HashMap();
-            RuntimeDatabaseModel runtimeModel = dataOutputPanel.getRuntimeDbModel();
-            if (runtimeModel != null) {
-                RuntimeInput inputTable = runtimeModel.getRuntimeInput();
-                if (inputTable != null) {
-                    attribMap = inputTable.getRuntimeAttributeMap();
+                String psSql = SQLUtils.createPreparedStatement(sql, attribMap, paramList);
+                PreparedStatement pstmt = conn.prepareStatement(psSql);
+                SQLUtils.populatePreparedStatement(pstmt, attribMap, paramList);
+                mLogger.infoNoloc(mLoc.t("EDIT175: Select statement used for show data:{0}for {1}", DataOutputPanel.NL, sql));
+                ResultSet rs = pstmt.executeQuery();
+
+                dataOutputPanel.queryView.setEditable(true);
+                dataOutputPanel.queryView.setResultSet(rs, dataOutputPanel.maxRows, dataOutputPanel.nowCount - 1);
+
+                rs.close();
+                pstmt.close();
+
+                context.putClientProperty("limit", "");
+                SQLPart sqlPart = db.getStatements().getRowCountStatement(meta.getTable(), context);
+                String countSql = db.getStatements().normalizeSQLForExecution(sqlPart).getSQL();
+                mLogger.infoNoloc(mLoc.t("EDIT176: Select count(*) statement used for total rows:{0}for {1}", DataOutputPanel.NL, countSql));
+                paramList.clear();
+                psSql = SQLUtils.createPreparedStatement(countSql, attribMap, paramList);
+                pstmt = conn.prepareStatement(psSql);
+                SQLUtils.populatePreparedStatement(pstmt, attribMap, paramList);
+                ResultSet cntRs = pstmt.executeQuery();
+                dataOutputPanel.setTotalCount(cntRs);
+
+                cntRs.close();
+                pstmt.close();
+
+                if (resetFetchSizeSQL != null) {
+                    stmt.execute(resetFetchSizeSQL);
                 }
             }
-
-            String psSql = SQLUtils.createPreparedStatement(sql, attribMap, paramList);
-            PreparedStatement pstmt = conn.prepareStatement(psSql);
-            SQLUtils.populatePreparedStatement(pstmt, attribMap, paramList);
-            mLogger.infoNoloc(mLoc.t("PRSR155: Select statement used for show data:{0}for {1}", DataOutputPanel.NL, sql));
-            ResultSet rs = pstmt.executeQuery();
-
-            dataOutputPanel.queryView.setEditable(true);
-            dataOutputPanel.queryView.setResultSet(rs, dataOutputPanel.maxRows, dataOutputPanel.nowCount - 1);
-
-            rs.close();
-            pstmt.close();
-
-            context.putClientProperty("limit", "");
-            SQLPart sqlPart = db.getStatements().getRowCountStatement(meta.getTable(), context);
-            String countSql = db.getStatements().normalizeSQLForExecution(sqlPart).getSQL();
-            mLogger.infoNoloc(mLoc.t("PRSR156: Select count(*) statement used for total rows:{0}for {1}", DataOutputPanel.NL, countSql));
-            paramList.clear();
-            psSql = SQLUtils.createPreparedStatement(countSql, attribMap, paramList);
-            pstmt = conn.prepareStatement(psSql);
-            SQLUtils.populatePreparedStatement(pstmt, attribMap, paramList);
-            ResultSet cntRs = pstmt.executeQuery();
-            dataOutputPanel.setTotalCount(cntRs);
-
-            cntRs.close();
-            pstmt.close();
-
-            if (resetFetchSizeSQL != null) {
-                stmt.execute(resetFetchSizeSQL);
-            }
-
         } catch (Exception e) {
             this.errMsg = e.getMessage();
-            mLogger.errorNoloc(mLoc.t("PRSR157: Can\'t get contents for table{0}", ((dbTable != null) ? dbTable.getDisplayName() : "")), e);
-            dataOutputPanel.queryView.clearView();
-            dataOutputPanel.totalRowsLabel.setText("0");
+            mLogger.errorNoloc(mLoc.t("EDIT177: Cannot get contents for table{0}", ((dbTable != null) ? dbTable.getDisplayName() : "")), e);
+            handleException();
         } finally {
             if (stmt != null) {
                 try {
@@ -270,6 +296,7 @@ class DataViewWorkerThread extends SwingWorker {
         ResultSet rs = null;
         Statement stmt = null;
         Connection conn = null;
+        int dbType;
 
         try {
             SQLJoinOperator joinOperator = (SQLJoinOperator) dbTable;
@@ -355,11 +382,10 @@ class DataViewWorkerThread extends SwingWorker {
             } catch (SQLException e) {
             }
         } catch (Exception ex1) {
-            mLogger.errorNoloc(mLoc.t("PRSR158: Can\'t get contents for table{0}", ((dbTable != null) ? dbTable.getDisplayName() : "")), ex1);
-            dataOutputPanel.queryView.clearView();
-            dataOutputPanel.totalRowsLabel.setText("0");
+            mLogger.errorNoloc(mLoc.t("EDIT177: Cannot get contents for table{0}", ((dbTable != null) ? dbTable.getDisplayName() : "")), ex1);
+            handleException();
         } finally {
-            closeConnection(conn);
+            shutdownConnection(conn);
         }
     }
 
@@ -386,6 +412,7 @@ class DataViewWorkerThread extends SwingWorker {
                 }
             }
             String joinSql = "";
+            String srcFiltersStr = "";
             StringBuilder buf = null;
             if (isSameDB) {
                 conn = DBExplorerUtil.createConnection(connDef.getDriverClass(), connDef.getConnectionURL(), connDef.getUserName(), connDef.getPassword());
@@ -394,6 +421,7 @@ class DataViewWorkerThread extends SwingWorker {
                 context.setUseSourceTableAliasName(true);
                 buf = new StringBuilder(db.getStatements().getSelectStatement(joinView, context).getSQL());
                 joinSql = joinSql + db.getGeneratorFactory().generate(joinView.getRootJoin(), context);
+                srcFiltersStr = getSourceWhereCondition(db, joinView.getSourceTables(), context);
             } else {
                 try {
                     Thread.currentThread().getContextClassLoader().loadClass(AxionExternalConnectionProvider.class.getName());
@@ -433,25 +461,47 @@ class DataViewWorkerThread extends SwingWorker {
                 joinContext.setUsingUniqueTableName(true);
                 buf = new StringBuilder(db.getStatements().getSelectStatement(joinView, joinContext).getSQL());
                 joinSql = joinSql + db.getGeneratorFactory().generate(joinView.getRootJoin(), joinContext);
+                srcFiltersStr = getSourceWhereCondition(db, joinView.getSourceTables(), joinContext);
             }
             stmt = conn.createStatement();
             rs = stmt.executeQuery(buf.toString().trim());
             dataOutputPanel.queryView.setEditable(false);
-            dataOutputPanel.queryView.setResultSet(rs, dataOutputPanel.recordToRefresh, 0);
+            dataOutputPanel.queryView.setResultSet(rs, dataOutputPanel.maxRows, dataOutputPanel.nowCount - 1);
             rs.close();
             stmt.close();
             try {
-                ResultSet cntRs = conn.createStatement().executeQuery("SELECT COUNT(*) FROM " + joinSql.trim());
+                ResultSet cntRs = conn.createStatement().executeQuery("SELECT COUNT(*) FROM " + joinSql.trim() + srcFiltersStr.trim());
                 dataOutputPanel.setTotalCount(cntRs);
                 cntRs.close();
             } catch (SQLException e) {
             }
         } catch (Exception e) {
-            mLogger.errorNoloc(mLoc.t("PRSR159: Can\'t get contents for table{0}", ((dbTable != null) ? dbTable.getDisplayName() : "")), e);
-            dataOutputPanel.queryView.clearView();
-            dataOutputPanel.totalRowsLabel.setText("0");
+            mLogger.errorNoloc(mLoc.t("EDIT177: Cannot get contents for table{0}", ((dbTable != null) ? dbTable.getDisplayName() : "")), e);
+            handleException();
         } finally {
-            closeConnection(conn);
+            shutdownConnection(conn);
         }
+    }
+    
+    private String getSourceWhereCondition(DB db, List sTables, StatementContext context) throws Exception {
+        StringBuilder sourceCondition = new StringBuilder(50);
+        Iterator it = sTables.iterator();
+        int cnt = 0;
+
+        while (it.hasNext()) {
+            SourceTable sTable = (SourceTable) it.next();
+            SQLCondition condition = sTable.getExtractionCondition();
+            SQLPredicate predicate = condition.getRootPredicate();
+
+            if (predicate != null && !"full".equalsIgnoreCase(sTable.getExtractionType())) {
+                if (cnt != 0) {
+                    sourceCondition.append(" AND ");
+                }
+                sourceCondition.append(db.getGeneratorFactory().generate(predicate, context));
+                cnt++;
+            }
+        }
+
+        return StringUtil.isNullString(sourceCondition.toString()) ? "" : " WHERE " + sourceCondition.toString();
     }
 }

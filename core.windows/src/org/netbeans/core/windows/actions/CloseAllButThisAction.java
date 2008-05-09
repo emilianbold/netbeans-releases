@@ -62,8 +62,17 @@ import java.awt.event.KeyEvent;
  */
 public class CloseAllButThisAction extends AbstractAction
 implements PropertyChangeListener, Runnable {
+    
+    /** TopComponent to exclude or null for global version of action */
+    private TopComponent tc;
+
+    /** context flag - when true, close only in active mode, otherwise in 
+     * whole window system.
+     */
+    private boolean isContext;
 
     public CloseAllButThisAction() {
+        this.isContext = false;
         putValue(NAME, NbBundle.getMessage(CloseAllButThisAction.class,
             "CTL_CloseAllButThisAction")); //NOI18N
 
@@ -72,9 +81,9 @@ implements PropertyChangeListener, Runnable {
         updateEnabled();
     }
     
-    private TopComponent tc;
-    public CloseAllButThisAction(TopComponent topComp) {
+    public CloseAllButThisAction(TopComponent topComp, boolean isContext) {
         tc = topComp;
+        this.isContext = isContext;
         //Include the name in the label for the popup menu - it may be clicked over
         //a component that is not selected
         putValue(Action.NAME, NbBundle.getMessage(ActionUtils.class,
@@ -86,12 +95,14 @@ implements PropertyChangeListener, Runnable {
     public void actionPerformed(java.awt.event.ActionEvent ev) {
         TopComponent topC = obtainTC();
         if(topC != null) {
-            ActionUtils.closeAllExcept(topC);
+            ActionUtils.closeAllExcept(topC, isContext);
         }
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
-        if(TopComponent.Registry.PROP_ACTIVATED.equals(evt.getPropertyName())) {
+        String propName = evt.getPropertyName();
+        if(TopComponent.Registry.PROP_ACTIVATED.equals(propName) ||
+                TopComponent.Registry.PROP_OPENED.equals(propName)) {
             updateEnabled();
         }
     }
@@ -102,11 +113,18 @@ implements PropertyChangeListener, Runnable {
     
     public void run() {
         TopComponent tc = obtainTC();
-        ModeImpl mode = (ModeImpl)WindowManagerImpl.getInstance().findMode(tc);
+        WindowManagerImpl wmi = WindowManagerImpl.getInstance();
+        ModeImpl mode = (ModeImpl)wmi.findMode(tc);
         
-        setEnabled(tc instanceof TopComponent.Cloneable
-            && mode != null && mode.getKind() == Constants.MODE_KIND_EDITOR
-            && (mode.getOpenedTopComponents().size() > 1));
+        boolean areOtherDocs;
+        if (isContext) {
+            areOtherDocs = mode.getOpenedTopComponents().size() > 1;
+        } else {
+            areOtherDocs = wmi.getEditorTopComponents().length > 1;
+        }
+        
+        setEnabled(mode != null && mode.getKind() == Constants.MODE_KIND_EDITOR
+                    && areOtherDocs);
     }
     
     private TopComponent obtainTC () {

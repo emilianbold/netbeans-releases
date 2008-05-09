@@ -41,7 +41,6 @@
 package org.netbeans.modules.profiler.j2ee.jboss;
 
 import org.openide.util.NbBundle;
-import java.util.Properties;
 
 
 /**

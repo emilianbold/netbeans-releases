@@ -49,6 +49,8 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.modules.ModuleInfo;
+import org.openide.util.Lookup;
 import org.openide.util.datatransfer.PasteType;
 
 /**
@@ -67,6 +69,10 @@ public class ActionCopyPasteTest extends NbTestCase {
     }
     
     protected void setUp() throws Exception {
+        // This magic call will load modules and fill content of default file system
+        // where xml layers live - uaah sometimes I think I just live in another world
+        Lookup.getDefault().lookup(ModuleInfo.class);
+        
         toolbar1 = new ToolbarFolderNode( createFolder( "Toolbars", "tb1" ) );
         toolbar2 = new ToolbarFolderNode( createFolder( "Toolbars", "tb2" ) );
 

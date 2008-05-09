@@ -1,0 +1,8 @@
+x = class; y = 5
+    -----
+HINT:illegal usage of future reserved keyword class; interpreting it as ordinary identifier
+FIX:Show more information about this warning
+class
+-----
+HINT:illegal usage of future reserved keyword class; interpreting it as ordinary identifier
+FIX:Show more information about this warning

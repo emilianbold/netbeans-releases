@@ -63,7 +63,6 @@ import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
-import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.model.DBTable;
 import org.netbeans.modules.sql.framework.model.SQLDBTable;
 
@@ -89,7 +88,7 @@ public class JoinMainDialog extends JDialog {
     private static JoinMainDialog dlg;
     private static int buttonState = OK_BUTTON;
     private static IGraphView graphView;
-    private static transient final Logger mLogger = LogUtil.getLogger(JoinMainDialog.class.getName());
+    private static transient final Logger mLogger = Logger.getLogger(JoinMainDialog.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
     /** Creates a new instance of JoinMainDialog */
@@ -129,11 +128,14 @@ public class JoinMainDialog extends JDialog {
         bottomPanel.add(buttonPanel, BorderLayout.SOUTH);
 
         contentPane.add(bottomPanel, BorderLayout.SOUTH);
-        String nbBundle1 = mLoc.t("PRSR001: Ok");
-        okButton = new JButton(Localizer.parse(nbBundle1));
-        String nbBundle2 = mLoc.t("PRSR001: Cancel");
-        cancelButton = new JButton(Localizer.parse(nbBundle2));
-
+        String nbBundle1 = mLoc.t("BUND408: Ok");
+        okButton = new JButton(nbBundle1.substring(15));
+        okButton.getAccessibleContext().setAccessibleName(nbBundle1.substring(15));
+        okButton.setMnemonic(nbBundle1.substring(15).charAt(0));
+        String nbBundle2 = mLoc.t("BUND048: Cancel");
+        cancelButton = new JButton(nbBundle2.substring(15));
+        cancelButton.setMnemonic(nbBundle2.substring(15).charAt(0));
+        cancelButton.getAccessibleContext().setAccessibleName(nbBundle2.substring(15));
         int maxBWidth = okButton.getPreferredSize().width;
         if (cancelButton.getPreferredSize().width > maxBWidth) {
             maxBWidth = cancelButton.getPreferredSize().width;
@@ -166,8 +168,8 @@ public class JoinMainDialog extends JDialog {
         if (dlg == null) {
             dlg = new JoinMainDialog();
         }
-        String nbBundle3 = mLoc.t("PRSR001: Create New Join View");
-        dlg.setTitle(Localizer.parse(nbBundle3));
+        String nbBundle3 = mLoc.t("BUND466: Create New Join View");
+        dlg.setTitle(nbBundle3.substring(15));
 
         joinMainPanel.reset(view);
 
@@ -182,8 +184,8 @@ public class JoinMainDialog extends JDialog {
         if (dlg == null) {
             dlg = new JoinMainDialog();
         }
-        String nbBundle4 = mLoc.t("PRSR001: Edit Join View");
-        dlg.setTitle(Localizer.parse(nbBundle4) + " (" + jView.getAliasName() + ")");
+        String nbBundle4 = mLoc.t("BUND467: Edit Join View");
+        dlg.setTitle(nbBundle4.substring(15) + " (" + jView.getAliasName() + ")");
 
         joinMainPanel.reset(view);
         joinMainPanel.setSourceList(sList);
@@ -197,8 +199,8 @@ public class JoinMainDialog extends JDialog {
         if (dlg == null) {
             dlg = new JoinMainDialog();
         }
-        String nbBundle5 = mLoc.t("PRSR001: Edit Join View");
-        dlg.setTitle(Localizer.parse(nbBundle5) + " (" + jView.getAliasName() + ")");
+        String nbBundle5 = mLoc.t("BUND467: Edit Join View");
+        dlg.setTitle(nbBundle5.substring(15) + " (" + jView.getAliasName() + ")");
 
         joinMainPanel.reset(view);
         joinMainPanel.setSourceList(sList);

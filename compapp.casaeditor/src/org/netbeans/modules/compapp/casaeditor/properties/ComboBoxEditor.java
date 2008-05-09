@@ -99,6 +99,10 @@ public class ComboBoxEditor<T> extends PropertyEditorSupport
      */
     @Override
     public String[] getTags() {
+        if (vals == null) {
+            return new String[] {""};
+        }
+        
         String[] ret = new String[vals.length];
         for (int i = 0; i < vals.length; i++) {
             ret[i] = vals[i].toString();
@@ -132,7 +136,7 @@ public class ComboBoxEditor<T> extends PropertyEditorSupport
 
     @Override
     public void setValue(Object t) {
-        if (t == null || t.equals("")) {
+        if (t == null || vals == null) {
             return;
         }
         if (!Arrays.asList(vals).contains(t)) {

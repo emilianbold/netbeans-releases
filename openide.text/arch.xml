@@ -407,31 +407,31 @@ in methods
         </question>
 -->
 <answer id="exec-privateaccess">
-No.
+<api name="EditorKitInitialization" category="friend" group="java" type="export">
+    In order to speedup, or remove the load of initialization of kit in AWT during startup,
+    there is a special API that allows to ask the kit to pre-initialize. If the kit
+    implements <code>Callable</code> interface from JDK, it is called in non-AWT thread.
+    This works since version 6.18 and can be disabled by property <code>oldInitialization</code>.
+</api>
 </answer>
 
 
 
-<!-- Question: exec-property
-
-     <question id="exec-property">
-            Is execution of your code influenced by any environment of
-            system (<code>System.getProperty</code>) property?
-            
-            <hint>
-            If there is a property that can change the behaviour of your 
-            code, somebody will likely use it. You should describe what it does 
-            and the stability category of this API. You may use
-            <PRE>
-                &lt;property name="id" category="private" &gt;
-                    description of the property, where it is used, what it influence, etc.
-                &lt;/property&gt;            
-            </PRE>
-            </hint>
-        </question>
--->
 <answer id="exec-property">
-No.
+<api name="oldInitialization" category="devel" group="property" type="export">
+    As the speedup of startup done in version 6.18 is not fully compatible,
+    there is a way to get back the original behaviour: just use
+    <code>this.putClientProperty("oldInitialization", Boolean.TRUE)</code>
+    and the whole initialization will be done in AWT thread. This is generally
+    slower, but compatible.
+</api>
+<api name="org.openide.text.CloneableEditor.oldInitialization" category="private" group="property" type="export">
+    In order to measure startup improvements between AWT and non-AWT startup,
+    we have a property dedicated to testing that can switch all editors to be
+    opened in AWT. Just start NetBeans with 
+    <code>-J-Dorg.openide.text.CloneableEditor.oldInitialization=true</code>.
+    This property may be discontiued anytime.
+</api>
 </answer>
 
 

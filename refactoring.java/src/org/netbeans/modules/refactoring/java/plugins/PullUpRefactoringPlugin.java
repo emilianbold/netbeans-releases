@@ -260,9 +260,9 @@ public final class PullUpRefactoringPlugin extends JavaRefactoringPlugin {
         a.add(RetoucheUtils.getFileObject(treePathHandle));
         fireProgressListenerStart(ProgressEvent.START, a.size());
         TransformTask task = new TransformTask(new PullUpTransformer(refactoring), treePathHandle);
-        createAndAddElements(a, task, refactoringElements, refactoring, cpInfo);
+        Problem problem = createAndAddElements(a, task, refactoringElements, refactoring, cpInfo);
         fireProgressListenerStop();
-        return null;
+        return problem;
     }
 
     protected FileObject getFileObject() {

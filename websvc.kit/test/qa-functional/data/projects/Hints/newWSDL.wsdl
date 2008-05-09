@@ -80,7 +80,7 @@
   <!--
   <service name="newWSDLService">
     <port name="newWSDLPort" binding="tns:newWSDLBinding">
-      <soap:address location="REPLACE_WITH_ACTUAL_WEB_SERVICE_URL"/>
+      <soap:address location="REPLACE_WITH_ACTUAL_URL"/>
     </port>
   </service>
   -->

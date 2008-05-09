@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.ButtonModel;
 import javax.swing.Icon;
+import javax.swing.JButton;
 import javax.swing.JToggleButton;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.bpel.design.DesignView;
@@ -40,7 +41,11 @@ import org.netbeans.modules.bpel.design.OverlayPanel;
 /**
  * @author aa160298
  */
-public class AbstractGlassPaneButton extends JToggleButton implements ActionListener, HierarchyListener, DecorationComponent {
+public class AbstractGlassPaneButton extends JToggleButton implements 
+        ActionListener, 
+        HierarchyListener, 
+        DecorationComponent 
+{
     
     public AbstractGlassPaneButton(Icon icon) {
       this(icon, null, false, null);
@@ -49,7 +54,7 @@ public class AbstractGlassPaneButton extends JToggleButton implements ActionList
     public AbstractGlassPaneButton(Icon icon, String text, boolean editable, ActionListener actionListener) {
         super(icon);
         myIcon = icon;
-        myGlassPane = new GlassPane(text, actionListener, editable);
+        myGlassPane = new GlassPane(text, actionListener, editable, this);
         myActionListener = actionListener;
         addActionListener(this);
         
@@ -60,7 +65,13 @@ public class AbstractGlassPaneButton extends JToggleButton implements ActionList
         setFocusable(false);
         
         updatePreferredSize();
+        
+        addHierarchyListener(this);
         myGlassPane.addHierarchyListener(this);
+    }
+
+    public void updateText(String text) {
+      myGlassPane.updateText(text);
     }
 
     protected void updatePreferredSize() {
@@ -87,6 +98,7 @@ public class AbstractGlassPaneButton extends JToggleButton implements ActionList
         getDesignView().getOverlayView().add(myGlassPane);
         updateGlassPaneBounds();
         myGlassPane.scrollRectToVisible(new Rectangle(0, 0, myGlassPane.getWidth(), myGlassPane.getHeight()));
+        myGlassPane.requestFocus();
     }
     
     protected void addTitle(Icon icon, String text, Color color) {
@@ -112,7 +124,6 @@ public class AbstractGlassPaneButton extends JToggleButton implements ActionList
                 }
             });
         }
-        
     }
     
     private DesignView getDesignView() {
@@ -123,13 +134,11 @@ public class AbstractGlassPaneButton extends JToggleButton implements ActionList
         return myGlassPane.getParent() != null;
     }
     
-    private void updateGlassPaneBounds() {
+    public void updateGlassPaneBounds() {
         DesignView designView = getDesignView();
-        Point coords = SwingUtilities.convertPoint(this, getWidth() + 1, getHeight() / 2, designView);
-        Dimension size = myGlassPane.getPreferredSize();
-        myGlassPane.setBounds(coords.x, coords.y, size.width, size.height);
-        designView.revalidate();
-        designView.repaint();
+        OverlayPanel overlayPanel = designView.getOverlayView();
+        overlayPanel.revalidate();
+        overlayPanel.repaint();
     }
     
     public void hierarchyChanged(HierarchyEvent e) {

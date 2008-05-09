@@ -47,7 +47,7 @@
 
 package org.netbeans.modules.css.visual.ui;
 
-import org.netbeans.modules.css.model.CssRuleContent;
+import org.netbeans.modules.css.editor.model.CssRuleContent;
 import org.openide.util.NbBundle;
 
 /**

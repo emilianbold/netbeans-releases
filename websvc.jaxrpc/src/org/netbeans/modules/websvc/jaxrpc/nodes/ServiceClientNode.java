@@ -47,6 +47,8 @@ import java.beans.PropertyChangeListener;
 import javax.swing.Action;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
+import org.openide.nodes.PropertySupport.Reflection;
+import org.openide.nodes.Sheet.Set;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.netbeans.modules.websvc.api.registry.WebServicesRegistryView;
@@ -57,6 +59,7 @@ import org.netbeans.modules.websvc.core.ConfigureHandlerCookie;
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
 import org.netbeans.modules.websvc.jaxrpc.ServiceInformation;
 import org.netbeans.modules.websvc.wsdl.config.ServiceInformationImpl;
+import org.netbeans.modules.websvc.wsdl.config.WsCompileConfigDataObject;
 import org.openide.loaders.DataObject;
 
 
@@ -107,6 +110,12 @@ public class ServiceClientNode extends FilterNode implements PropertyChangeListe
             if(wsc != null){
                 wsc.removeServiceClient(f.getName());
             }
+            FileObject parentFO = f.getParent();
+            if(parentFO != null && parentFO.isFolder()) {
+                FileObject configFO = parentFO.getFileObject(f.getName() + WsCompileConfigDataObject.WSCOMPILE_CONFIG_FILENAME_SUFFIX, "xml");
+                if(configFO!=null&&configFO.isValid())
+                    configFO.delete();
+            }
         }
         WebServicesRegistryView registryView = (WebServicesRegistryView) Lookup.getDefault().lookup(WebServicesRegistryView.class);
         registryView.removePropertyChangeListener(this);
@@ -129,13 +138,47 @@ public class ServiceClientNode extends FilterNode implements PropertyChangeListe
         return registerNode != null ? registerNode.getShortDescription() : "Unregistered service";
     }
     
+    public String getURL() {
+        WebServicesClientSupport wsc = WebServicesClientSupport.
+                getWebServicesClientSupport(dobj.getPrimaryFile());
+        if(wsc != null){
+            return wsc.getWsdlSource(dobj.getName());
+        }
+        return null;
+    }
+    
     public Node.PropertySet[] getPropertySets() {
         // !PW FIXME should do minimal property set for WSDL node (not the WSDL properties though.)
         // should also massage properties retrieved from registry, as some of them may
         // not apply (such as path to wsdl file.)
         
         // show property sheet for registry node instead of WSDL node
-        return registerNode != null ? registerNode.getPropertySets() : new Node.PropertySet [0];
+        //return registerNode != null ? registerNode.getPropertySets() : new Node.PropertySet [0];
+        if(registerNode!= null) {
+            Node.PropertySet[] registerNodePropSets = registerNode.getPropertySets();
+            if(getURL()!=null) {
+                for(Node.PropertySet registerNodePropSet:registerNodePropSets) {
+                    if(registerNodePropSet instanceof Set && 
+                            "data".equals(((Set)registerNodePropSet).getName())) {
+                        Set propSet = (Set) registerNodePropSet;
+                        try {
+                            Node.Property<String> p = new Reflection<String>(this, String.class, "getURL", null); // NOI18N
+                            Node.Property registerNodeProp = propSet.get("URL");
+                            p.setName(registerNodeProp.getName());
+                            p.setDisplayName(registerNodeProp.getDisplayName());
+                            p.setShortDescription(registerNodeProp.getShortDescription());
+                            propSet.put(p);
+                            break;
+                        } catch (NoSuchMethodException ex) {
+                        }
+                    }
+                }
+            }
+            return registerNodePropSets;
+        }
+        else {
+            return new Node.PropertySet [0];
+        }
     }
     
     public Image getIcon(int type) {

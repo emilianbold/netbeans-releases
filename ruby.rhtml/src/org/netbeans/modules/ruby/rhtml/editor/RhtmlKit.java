@@ -63,14 +63,11 @@ import org.netbeans.modules.editor.gsfret.InstantRenameAction;
 import org.netbeans.modules.gsf.DeleteToNextCamelCasePosition;
 import org.netbeans.modules.gsf.DeleteToPreviousCamelCasePosition;
 import org.netbeans.modules.gsf.GsfEditorKitFactory;
-import org.netbeans.modules.gsf.Language;
-import org.netbeans.modules.gsf.LanguageRegistry;
 import org.netbeans.modules.gsf.NextCamelCasePosition;
 import org.netbeans.modules.gsf.PreviousCamelCasePosition;
 import org.netbeans.modules.gsf.SelectCodeElementAction;
 import org.netbeans.modules.gsf.SelectNextCamelCasePosition;
 import org.netbeans.modules.gsf.SelectPreviousCamelCasePosition;
-import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
 import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
 import org.openide.util.Exceptions;
@@ -91,12 +88,6 @@ import org.openide.util.Exceptions;
  */
 
 public class RhtmlKit extends HTMLKit {
-    /** Completion assistance for Ruby */
-    private Language language;
-
-    /** Index in parent kit's action array where the default key action is found. */
-    private static int defaultKeyActionIndex = -1;
-    
     @Override
     public org.openide.util.HelpCtx getHelpCtx() {
         return new org.openide.util.HelpCtx(RhtmlKit.class);
@@ -106,7 +97,6 @@ public class RhtmlKit extends HTMLKit {
         
     public RhtmlKit(){
         super(RhtmlTokenId.MIME_TYPE);
-        language = LanguageRegistry.getInstance().getLanguageByMimeType(RhtmlTokenId.MIME_TYPE);
     }
     
     @Override
@@ -114,93 +104,34 @@ public class RhtmlKit extends HTMLKit {
         return RhtmlTokenId.MIME_TYPE;
     }
     
-//    @Override
-//    public Document createDefaultDocument() {
-//        Document doc = new RhtmlDocument(RhtmlKit.class);
-//
-//        //doc.putProperty("mimeType", mimeType); //NOI18N
-//
-//        initDocument(doc);
-//        return doc;
-//    }
-//
-//    @Override
-//    public SyntaxSupport createSyntaxSupport(BaseDocument doc) {
-//        return new ExtSyntaxSupport(doc) {
-//
-//            @Override
-//            public int[] findMatchingBlock(int offset, boolean simpleSearch)
-//                    throws BadLocationException {
-//                // Do parenthesis matching, if applicable
-//                BracketCompletion bracketCompletion = language.getBracketCompletion();
-//                if (bracketCompletion != null) {
-//                    OffsetRange range = bracketCompletion.findMatching(getDocument(), offset/*, simpleSearch*/);
-//                    if (range == OffsetRange.NONE) {
-//                        return null;
-//                    } else {
-//                        return new int[] { range.getStart(), range.getEnd() };
-//                    }
-//                }
-//
-//                return null;
-//            }
-//        };
-//    }
-//
-//    @Override
-//    protected void initDocument(BaseDocument doc) {
-//        // XXX This appears in JavaKit, not sure why, but doing it just in case.
-//        //do not ask why, fire bug in the IZ:
-//        CodeTemplateManager.get(doc);
-//    }
+    @Override
+    protected DeleteCharAction createDeletePrevAction() {
+        return new RhtmlDeleteCharAction(deletePrevCharAction, false, super.createDeletePrevAction());
+    }
+    
+    @Override
+    protected ExtDefaultKeyTypedAction createDefaultKeyTypedAction() {
+        return new RhtmlDefaultKeyTypedAction(super.createDefaultKeyTypedAction());
+    }
 
-    
-    
-    private static final String selectNextElementAction = "select-element-next"; //NOI18N
-    private static final String selectPreviousElementAction = "select-element-previous"; //NOI18N
-    
     @Override
     protected Action[] createActions() {
         Action[] superActions = super.createActions();
-        if (defaultKeyActionIndex == -1 || 
-                (defaultKeyActionIndex < superActions.length && 
-                 !(superActions[defaultKeyActionIndex] instanceof ExtDefaultKeyTypedAction))) {
-            for (int i = 0; i < superActions.length; i++) {
-                Action action = superActions[i];
-                if (action instanceof ExtDefaultKeyTypedAction) {
-                    defaultKeyActionIndex = i;
-                }
-
-                // This code assumes that HTML hasn't provided custom implementations of insert break
-                // and ext delete
-                assert !(action instanceof InsertBreakAction && action.getClass() != InsertBreakAction.class);
-                assert !(action instanceof ExtDeleteCharAction && action.getClass() != ExtDeleteCharAction.class);
-            }
-        }
-
-        assert defaultKeyActionIndex != -1;
-        superActions[defaultKeyActionIndex] = new RhtmlDefaultKeyTypedAction((ExtDefaultKeyTypedAction)superActions[defaultKeyActionIndex]);
         
         return TextAction.augmentList(superActions, new Action[] {
             // TODO - also register a Tab key action which tabs out of <% %> if the caret is near the end
-            new RhtmlInsertBreakAction(), 
-            new RhtmlDeleteCharAction(deletePrevCharAction, false),
+            // (Shift Enter inserts a line below the current - perhaps that's good enough)
             new RhtmlToggleCommentAction(),
-            new SelectCodeElementAction(selectNextElementAction, true),
-            new SelectCodeElementAction(selectPreviousElementAction, false),
-            new NextCamelCasePosition(GsfEditorKitFactory.findAction(superActions, nextWordAction), language),
-            new PreviousCamelCasePosition(GsfEditorKitFactory.findAction(superActions, previousWordAction), language),
-            new SelectNextCamelCasePosition(GsfEditorKitFactory.findAction(superActions, selectionNextWordAction), language),
-            new SelectPreviousCamelCasePosition(GsfEditorKitFactory.findAction(superActions, selectionPreviousWordAction), language),
-            new DeleteToNextCamelCasePosition(GsfEditorKitFactory.findAction(superActions, removeNextWordAction), language),
-            new DeleteToPreviousCamelCasePosition(GsfEditorKitFactory.findAction(superActions, removePreviousWordAction), language),
+            new SelectCodeElementAction(SelectCodeElementAction.selectNextElementAction, true),
+            new SelectCodeElementAction(SelectCodeElementAction.selectPreviousElementAction, false),
+            new NextCamelCasePosition(GsfEditorKitFactory.findAction(superActions, nextWordAction)),
+            new PreviousCamelCasePosition(GsfEditorKitFactory.findAction(superActions, previousWordAction)),
+            new SelectNextCamelCasePosition(GsfEditorKitFactory.findAction(superActions, selectionNextWordAction)),
+            new SelectPreviousCamelCasePosition(GsfEditorKitFactory.findAction(superActions, selectionPreviousWordAction)),
+            new DeleteToNextCamelCasePosition(GsfEditorKitFactory.findAction(superActions, removeNextWordAction)),
+            new DeleteToPreviousCamelCasePosition(GsfEditorKitFactory.findAction(superActions, removePreviousWordAction)),
             new InstantRenameAction(),
          });
-    }
-
-    /** Return true if the given offset is inside Ruby code (where ruby completion should kick in */
-    private static boolean shouldDelegateToHtml(BaseDocument doc, int offset) {
-        return LexUtilities.getRubyTokenSequence(doc, offset) == null;
     }
 
     private boolean handleDeletion(BaseDocument doc, int dotPos) {
@@ -233,6 +164,24 @@ public class RhtmlKit extends HTMLKit {
     private boolean handleInsertion(BaseDocument doc, Caret caret, char c) {
         int dotPos = caret.getDot();
         // Bracket matching on <% %>
+        if (c == ' ' && dotPos >= 2) {
+            try {
+                String s = doc.getText(dotPos-2, 2);
+                if ("%=".equals(s) && dotPos >= 3) { // NOI18N
+                    s = doc.getText(dotPos-3, 3);
+                }
+                if ("<%".equals(s) || "<%=".equals(s)) { // NOI18N
+                    doc.insertString(dotPos, "  ", null);
+                    caret.setDot(dotPos+1);
+                    return true;
+                }
+            } catch (BadLocationException ble) {
+                Exceptions.printStackTrace(ble);
+            }
+            
+            return false;
+        }
+        
         if ((dotPos > 0) && (c == '%' || c == '>')) {
             TokenHierarchy<Document> th = TokenHierarchy.get((Document)doc);
             TokenSequence<?> ts = th.tokenSequence();
@@ -244,18 +193,17 @@ public class RhtmlKit extends HTMLKit {
                         // See if there's anything ahead
                         int first = Utilities.getFirstNonWhiteFwd(doc, dotPos, Utilities.getRowEnd(doc, dotPos));
                         if (first == -1) {
-                            doc.insertString(dotPos, "%%>", null);
+                            doc.insertString(dotPos, "%%>", null); // NOI18N
                             caret.setDot(dotPos+1);
                             return true;
                         }
-                    }
-                    if (token.id() == RhtmlTokenId.DELIMITER) {
+                    } else if (token.id() == RhtmlTokenId.DELIMITER) {
                         String tokenText = token.text().toString();
-                        if (tokenText.endsWith("%>")) {
+                        if (tokenText.endsWith("%>")) { // NOI18N
                             // TODO - check that this offset is right
                             int tokenPos = (c == '%') ? dotPos : dotPos-1;
                             CharSequence suffix = DocumentUtilities.getText(doc, tokenPos, 2);
-                            if (CharSequenceUtilities.textEquals(suffix, "%>")) {
+                            if (CharSequenceUtilities.textEquals(suffix, "%>")) { // NOI18N
                                 caret.setDot(dotPos+1);
                                 return true;
                             }
@@ -263,10 +211,25 @@ public class RhtmlKit extends HTMLKit {
                             // See if there's anything ahead
                             int first = Utilities.getFirstNonWhiteFwd(doc, dotPos, Utilities.getRowEnd(doc, dotPos));
                             if (first == -1) {
-                                doc.insertString(dotPos, "%%>", null);
+                                doc.insertString(dotPos, "%%>", null); // NOI18N
                                 caret.setDot(dotPos+1);
                                 return true;
                             }
+                        }
+                    } else if (token.id() == RhtmlTokenId.RUBY || token.id() == RhtmlTokenId.RUBY_EXPR && dotPos >= 1 && dotPos <= doc.getLength()-3) {
+                        // If you type ">" one space away from %> it's likely that you typed
+                        // "<% foo %>" without looking at the screen; I had auto inserted %> at the end
+                        // and because I also auto insert a space without typing through it, you've now
+                        // ended up with "<% foo %> %>". Let's prevent this by interpreting typing a ""
+                        // right before %> as a duplicate for %>.   I can't just do this on % since it's
+                        // quite plausible you'd have
+                        //   <% x = %q(foo) %>  -- if I simply moved the caret to %> when you typed the
+                        // % in %q we'd be in trouble.
+                        String s = doc.getText(dotPos-1, 4);
+                        if ("% %>".equals(s)) { // NOI18N
+                            doc.remove(dotPos-1, 2);
+                            caret.setDot(dotPos+1);
+                            return true;
                         }
                     }
                 }
@@ -277,56 +240,57 @@ public class RhtmlKit extends HTMLKit {
         
         return false;
     }
-    
-    private boolean handleBreak(BaseDocument doc, Caret caret) throws BadLocationException {
-        int dotPos = caret.getDot();
 
-        // First see if we're -right- before a %>, if so, just enter out
-        // of it
-        if (dotPos <= doc.getLength()-3) {
-            String text = doc.getText(dotPos, 3);
-            if (text.equals(" %>") || text.startsWith("%>") || text.equals("-%>") || text.equals("% -%")) { // NOI18N
-                TokenHierarchy<Document> th = TokenHierarchy.get((Document)doc);
-                TokenSequence<?> ts = th.tokenSequence();
-                ts.move(dotPos);
-                if (ts.moveNext()) {
-                    // Go backwards and make sure we have nothing before the previous
-                    // delimiter
-                    TokenId id = ts.token().id();
-                    boolean notJustSpace = false;
-                    if (id == RhtmlTokenId.RUBY || id == RhtmlTokenId.RUBY_EXPR || id == RhtmlTokenId.DELIMITER) {
-                        do {
-                            id = ts.token().id();
-                            if (id == RhtmlTokenId.DELIMITER && ts.token().text().charAt(0) == '<') {
-                                if (notJustSpace ) {
-                                    caret.setDot(dotPos + text.indexOf('>')+1);
-                                    return true;
-                                }
-                                return false;
-                            } else if (id == RhtmlTokenId.RUBY || id == RhtmlTokenId.RUBY_EXPR) {
-                                if (!notJustSpace) {
-                                    TokenSequence<?> ets = ts.embedded();
-                                    if (ets != null) {
-                                        ets.moveStart();
-                                        while (ets.moveNext()) {
-                                            if (ets.token().id() != RubyTokenId.WHITESPACE) {
-                                                notJustSpace = true;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        } while (ts.movePrevious());
-                    }
-                }
-            }
-        }
-        
-        return false;
-    }
-    
+    // This code used to customize the break behavior and insert a newline AFTER the closing %> tag which isn't
+    // always what people want
+    //    private boolean handleBreak(BaseDocument doc, Caret caret) throws BadLocationException {
+    //        int dotPos = caret.getDot();
+    //
+    //        // First see if we're -right- before a %>, if so, just enter out
+    //        // of it
+    //        if (dotPos <= doc.getLength()-3) {
+    //            String text = doc.getText(dotPos, 3);
+    //            if (text.equals(" %>") || text.startsWith("%>") || text.equals("-%>") || text.equals("% -%")) { // NOI18N
+    //                TokenHierarchy<Document> th = TokenHierarchy.get((Document)doc);
+    //                TokenSequence<?> ts = th.tokenSequence();
+    //                ts.move(dotPos);
+    //                if (ts.moveNext()) {
+    //                    // Go backwards and make sure we have nothing before the previous
+    //                    // delimiter
+    //                    TokenId id = ts.token().id();
+    //                    boolean notJustSpace = false;
+    //                    if (id == RhtmlTokenId.RUBY || id == RhtmlTokenId.RUBY_EXPR || id == RhtmlTokenId.DELIMITER) {
+    //                        do {
+    //                            id = ts.token().id();
+    //                            if (id == RhtmlTokenId.DELIMITER && ts.token().text().charAt(0) == '<') {
+    //                                if (notJustSpace ) {
+    //                                    caret.setDot(dotPos + text.indexOf('>')+1);
+    //                                    return true;
+    //                                }
+    //                                return false;
+    //                            } else if (id == RhtmlTokenId.RUBY || id == RhtmlTokenId.RUBY_EXPR) {
+    //                                if (!notJustSpace) {
+    //                                    TokenSequence<?> ets = ts.embedded();
+    //                                    if (ets != null) {
+    //                                        ets.moveStart();
+    //                                        while (ets.moveNext()) {
+    //                                            if (ets.token().id() != RubyTokenId.WHITESPACE) {
+    //                                                notJustSpace = true;
+    //                                            }
+    //                                        }
+    //                                    }
+    //                                }
+    //                            }
+    //                        } while (ts.movePrevious());
+    //                    }
+    //                }
+    //            }
+    //        }
+    //        
+    //        return false;
+    //    }
+
     private class RhtmlDefaultKeyTypedAction extends ExtDefaultKeyTypedAction {
-        private JTextComponent currentTarget;
         private ExtDefaultKeyTypedAction htmlAction;
 
         RhtmlDefaultKeyTypedAction(ExtDefaultKeyTypedAction htmlAction) {
@@ -345,135 +309,16 @@ public class RhtmlKit extends HTMLKit {
                 }
             }
 
-            // Delegate to HTML?
-            if (shouldDelegateToHtml(doc, caret.getDot())) {
-                htmlAction.actionPerformed(evt, target);
-                return;
-            }
-
-            currentTarget = target;
-            super.actionPerformed(evt, target);
-            currentTarget = null;
-        }
-
-        @Override
-        protected void insertString(BaseDocument doc, int dotPos, Caret caret, String str,
-            boolean overwrite) throws BadLocationException {
-            boolean handled =
-                language.getBracketCompletion().beforeCharInserted(doc, dotPos, currentTarget,
-                    str.charAt(0));
-
-            if (!handled) {
-                super.insertString(doc, dotPos, caret, str, overwrite);
-                handled = language.getBracketCompletion().afterCharInserted(doc, dotPos, currentTarget,
-                        str.charAt(0));
-            }
-        }
-
-        @Override
-        protected void replaceSelection(JTextComponent target, int dotPos, Caret caret,
-            String str, boolean overwrite) throws BadLocationException {
-            char insertedChar = str.charAt(0);
-            Document document = target.getDocument();
-
-            if (document instanceof BaseDocument) {
-                BaseDocument doc = (BaseDocument)document;
-
-                try {
-                    int caretPosition = caret.getDot();
-
-                    boolean handled =
-                        language.getBracketCompletion().beforeCharInserted(doc, caretPosition,
-                            target, insertedChar);
-
-                    int p0 = Math.min(caret.getDot(), caret.getMark());
-                    int p1 = Math.max(caret.getDot(), caret.getMark());
-
-                    if (p0 != p1) {
-                        doc.remove(p0, p1 - p0);
-                    }
-
-                    if (!handled) {
-                        if ((str != null) && (str.length() > 0)) {
-                            doc.insertString(p0, str, null);
-                        }
-
-                        language.getBracketCompletion().afterCharInserted(doc, caret.getDot() - 1,
-                            target, insertedChar);
-                    }
-                } catch (BadLocationException e) {
-                    e.printStackTrace();
-                }
-                
-                return;
-            }
-
-            super.replaceSelection(target, dotPos, caret, str, overwrite);
-        }
-        
-        @Override
-        protected void checkIndentHotChars(JTextComponent target, String typedText) {
-            // No reformatting here
+            htmlAction.actionPerformed(evt, target);
         }
     }
     
-    private class RhtmlInsertBreakAction extends InsertBreakAction {
-        static final long serialVersionUID = -1506173310438326380L;
-
-        @Override
-        protected Object beforeBreak(JTextComponent target, BaseDocument doc, Caret caret) {
-            int dotPos = caret.getDot();
-            if (shouldDelegateToHtml(doc, dotPos)) {
-                return super.beforeBreak(target, doc, caret);
-            }
-
-            try {
-                // First see if we're -right- before a %>, if so, just enter out
-                // of it
-                if (handleBreak(doc, caret)) {
-                    return super.beforeBreak(target, doc, caret);
-                }
-                
-                int newOffset = language.getBracketCompletion().beforeBreak(doc, dotPos, target);
-
-                if (newOffset >= 0) {
-                    return new Integer(newOffset);
-                }
-            } catch (BadLocationException ble) {
-                Exceptions.printStackTrace(ble);
-            }
-
-            return null;
-        }
-
-        @Override
-        protected void afterBreak(JTextComponent target, BaseDocument doc, Caret caret,
-            Object cookie) {
-            if (shouldDelegateToHtml(doc, caret.getDot())) {
-                super.afterBreak(target, doc, caret, cookie);
-                return;
-            }
-
-            if (cookie != null) {
-                if (cookie instanceof Integer) {
-                    // integer
-                    int dotPos = ((Integer)cookie).intValue();
-                    if (dotPos != -1) {
-                        caret.setDot(dotPos);
-                    } else {
-                        int nowDotPos = caret.getDot();
-                        caret.setDot(nowDotPos + 1);
-                    }
-                }
-            }
-        }
-    }
-
     private class RhtmlDeleteCharAction extends ExtDeleteCharAction {
-        private JTextComponent currentTarget;
+        private DeleteCharAction htmlAction;
 
-        public RhtmlDeleteCharAction(String nm, boolean nextChar) {
+        public RhtmlDeleteCharAction(String nm, boolean nextChar, DeleteCharAction htmlAction) {
             super(nm, nextChar);
+            this.htmlAction = htmlAction;
         }
 
         @Override
@@ -485,34 +330,13 @@ public class RhtmlKit extends HTMLKit {
                 return;
             }
 
-            currentTarget = target;
-            super.actionPerformed(evt, target);
-            currentTarget = null;
-        }
-
-        @Override
-        protected void charBackspaced(BaseDocument doc, int dotPos, Caret caret, char ch)
-            throws BadLocationException {
-            
-            if (shouldDelegateToHtml(doc, dotPos)) {
-                super.charBackspaced(doc, dotPos, caret, ch);
-                return;
-            }
-
-            boolean success = language.getBracketCompletion().charBackspaced(doc, dotPos, currentTarget, ch);
+            htmlAction.actionPerformed(evt, target);
         }
     }
     
     @Override
     public Object clone() {
         return new RhtmlKit();
-    }
-    
-    @Override
-    protected void initDocument(Document doc) {
-        super.initDocument(doc);
-
-        doc.putProperty(org.netbeans.api.lexer.Language.class, RhtmlTokenId.language());
     }
     
     private static Token<?> getToken(BaseDocument doc, int offset, boolean checkEmbedded) {
@@ -624,7 +448,7 @@ public class RhtmlKit extends HTMLKit {
                         if (caret.isSelectionVisible()) {
                             startPos = Utilities.getRowStart(doc, target.getSelectionStart());
                             endPos = target.getSelectionEnd();
-                            if (endPos > 0 && Utilities.getRowStart(doc, endPos) == endPos) {
+                            if (endPos > 0 && Utilities.getRowStart(doc, endPos) == endPos && endPos > startPos) {
                                 endPos--;
                             }
                             endPos = Utilities.getRowEnd(doc, endPos);

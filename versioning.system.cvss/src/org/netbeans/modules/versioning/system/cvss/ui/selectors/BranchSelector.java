@@ -148,6 +148,84 @@ s     * Selects tag or branch for versioned files. Shows modal UI.
         }
     }
 
+    /**
+     * 1. Checkout (non-recursively) content of the module
+     * 2. Return list of all normal files checked out
+     * 
+     * In case the checkout does not create any normal files (only folders) try to dive into those until we get some
+     * real files that we can log.
+     * 
+     * @param moduleName
+     * @return never returns null
+     */
+    private File [] getLoggableFiles(String moduleName) throws CommandException, AuthenticationException {
+        
+        GlobalOptions gtx = CvsVersioningSystem.createGlobalOptions();
+        if (root != null) {
+            gtx.setCVSRoot(root.toString());  // XXX why is it needed? Client already knows, who is definitive source of cvs root?
+        }
+        
+        File checkoutFolder = Kit.createTmpFolder();
+        if (checkoutFolder == null) {
+            error(org.openide.util.NbBundle.getMessage(BranchSelector.class, "BK2015"));
+            return new File[0];
+        }
+
+        CheckoutCommand checkout = new CheckoutCommand();
+        checkout.setRecursive(false);
+
+        // non recursive operation doe not work with "." module
+        // #58208 so here a random one is choosen
+        if (".".equals(moduleName)) {  // NOI18N
+            Client client = Kit.createClient(root);
+            List l = ModuleSelector.listRepositoryPath(client, root, "");  // NOI18N
+            int max = l.size();
+            int counter = max;
+            Random random = new Random();
+            while (counter-- > 0) {
+                int rnd = random.nextInt(max);
+                String path = (String) l.get(rnd);
+                if ("CVSROOT".equals(path)) continue;  // NOI18N
+                moduleName = path;
+                break;
+            }
+        }
+        checkout.setModule(moduleName);
+        File[] checkoutFiles = new File[] {checkoutFolder};
+        checkout.setFiles(checkoutFiles);
+
+        Client client = Kit.createClient(root);
+        client.setLocalPath(checkoutFolder.getAbsolutePath());
+        client.executeCommand(checkout, gtx);
+
+        File folderToCheck = new File(checkoutFolder, moduleName);
+        if (!folderToCheck.isDirectory()) {
+            folderToCheck = checkoutFolder;
+        }
+        
+        List<File> filesToLog = new ArrayList<File>();
+        for (File child : folderToCheck.listFiles()) {
+            if ("CVSROOT".equals(child.getName())) continue;  // NOI18N
+            if ("CVS".equals(child.getName())) continue;  // NOI18N
+            filesToLog.add(child);
+            
+        }
+        if (filesToLog.size() > 0) return (File[]) filesToLog.toArray(new File[filesToLog.size()]);
+
+        // there are no files to log, let us dive deeper
+        client = Kit.createClient(root);
+        List<String> fileList = ModuleSelector.listRepositoryPath(client, root, moduleName);
+
+        for (String child : fileList) {
+            String childModule = moduleName + "/" + child;
+            File [] childLoggable = getLoggableFiles(childModule);
+            if (childLoggable.length > 0) return childLoggable;
+        }
+        
+        // tried hard but there are no files to log for the module
+        return new File[0];
+    }
+    
     /** Background runnable*/
     public void run() {
 
@@ -161,51 +239,12 @@ s     * Selects tag or branch for versioned files. Shows modal UI.
             File[] files;
             File localPath;
             if (file == null) {
-                // netbeans.org rlog does not work, we need to create some sort of fake log command
-
-                checkoutFolder = Kit.createTmpFolder();
-                if (checkoutFolder == null) {
-                    error(org.openide.util.NbBundle.getMessage(BranchSelector.class, "BK2015"));
-                    return;
-                }
-
-                CheckoutCommand checkout = new CheckoutCommand();
-                checkout.setRecursive(false);
-
-                // non recursive operation doe snot work with "." module
-                // #58208 so here a random one is choosen
-                if (".".equals(module)) {  // NOI18N
-                    Client client = Kit.createClient(root);
-                    List l = ModuleSelector.listRepositoryPath(client, root, "");  // NOI18N
-                    Iterator it = l.iterator();
-                    int max = l.size();
-                    int counter = max;
-                    Random random = new Random();
-                    while (counter-- > 0) {
-                        int rnd = random.nextInt(max);
-                        String path = (String) l.get(rnd);
-                        if ("CVSROOT".equals(path)) continue;  // NOI18N
-                        module = path;
-                        break;
-                    }
-                }
-                checkout.setModule(module);
-                File[] checkoutFiles = new File[] {checkoutFolder};
-                checkout.setFiles(checkoutFiles);
-
-                Client client = Kit.createClient(root);
-                client.setLocalPath(checkoutFolder.getAbsolutePath());
-                client.executeCommand(checkout, gtx);
-
-                files = checkoutFolder.listFiles();
-                localPath = checkoutFolder;
-
-                // seek for the first non-administrative file
-                for (int i = 0; i<files.length; i++) {
-                    if (files[i].isFile()) continue;
-                    if ("CVSROOT".equals(files[i].getName())) continue;  // NOI18N
-                    files = files[i].listFiles();
-                    break;
+ 
+                files = getLoggableFiles(module);
+                if (files.length > 0) {
+                    localPath = files[0].getParentFile();
+                } else {
+                    localPath = null;
                 }
 
             } else {

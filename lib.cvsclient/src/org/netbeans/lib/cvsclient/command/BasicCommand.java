@@ -461,7 +461,7 @@ public abstract class BasicCommand extends BuildableCommand {
         for (int i = 0; i < files.length; i++) {
             final File file = files[i];
             String relativePath = getRelativeToLocalPathInUnixStyle(file);
-            addRequest(new ArgumentRequest(relativePath));
+            addRequest(new ArgumentRequest(relativePath, true));
         }
     }
 

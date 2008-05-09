@@ -75,6 +75,8 @@ public class DoxygenLexer implements Lexer<DoxygenTokenId> {
         return null;
     }
     
+    private final static String DOXYGEN_CONTROL_SYMBOLS = "@<.#"; // NOI18N
+    
     public Token<DoxygenTokenId> nextToken() {
         int ch = input.read();
         
@@ -90,11 +92,11 @@ public class DoxygenLexer implements Lexer<DoxygenTokenId> {
             return token(DoxygenTokenId.IDENT);
         }
         
-        if ("@<.#".indexOf(ch) == (-1)) {
+        if (DOXYGEN_CONTROL_SYMBOLS.indexOf(ch) == (-1)) {
             //TODO: EOF
             ch = input.read();
             
-            while (!CndLexerUtilities.isCppIdentifierStart(ch) && "@<.#".indexOf(ch) == (-1) && ch != EOF)
+            while (!CndLexerUtilities.isCppIdentifierStart(ch) && DOXYGEN_CONTROL_SYMBOLS.indexOf(ch) == (-1) && ch != EOF)
                 ch = input.read();
             
             if (ch != EOF)

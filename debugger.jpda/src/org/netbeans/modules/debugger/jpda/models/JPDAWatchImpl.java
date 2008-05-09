@@ -43,15 +43,20 @@ package org.netbeans.modules.debugger.jpda.models;
 
 import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.ClassNotLoadedException;
+import com.sun.jdi.ClassType;
+import com.sun.jdi.Field;
+import com.sun.jdi.InterfaceType;
 import com.sun.jdi.InvalidTypeException;
-import com.sun.jdi.LocalVariable;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.PrimitiveValue;
+import com.sun.jdi.ReferenceType;
 import com.sun.jdi.Value;
 import org.netbeans.api.debugger.Watch;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDAWatch;
+import org.netbeans.api.debugger.jpda.LocalVariable;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.openide.util.NbBundle;
 
 /**
  * Represents watch in JPDA debugger.
@@ -95,6 +100,14 @@ class JPDAWatchImpl extends AbstractVariable implements JPDAWatch {
         this.exceptionDescription = exception.getLocalizedMessage ();
         if (exceptionDescription == null)
             exceptionDescription = exception.getMessage ();
+        Throwable t = exception.getCause();
+        if (t != null && t instanceof org.omg.CORBA.portable.ApplicationException) {
+            java.io.StringWriter s = new java.io.StringWriter();
+            java.io.PrintWriter p = new java.io.PrintWriter(s);
+            t.printStackTrace(p);
+            p.close();
+            exceptionDescription += " \n"+s.toString();
+        }
         this.nodeRef = new java.lang.ref.WeakReference<Object>(node);
     }
     
@@ -163,26 +176,61 @@ class JPDAWatchImpl extends AbstractVariable implements JPDAWatch {
             getCurrentCallStackFrame ();
         if (frame == null)
             throw new InvalidExpressionException ("No curent frame.");
-        LocalVariable local = null;
+        LocalVariable local;
         try {
-            local = frame.getStackFrame ().visibleVariableByName 
-                (getExpression ());
+            local = frame.getLocalVariable(getExpression ());
         } catch (AbsentInformationException ex) {
-            throw new InvalidExpressionException ("Can not set value to expression.");
+            local = null;
         }
-        if (local == null)
-            throw new InvalidExpressionException ("Can not set value to expression.");
-        try {
-            frame.getStackFrame ().setValue (local, value);
-        } catch (InvalidTypeException ex) {
-            throw new InvalidExpressionException (ex);
-        } catch (ClassNotLoadedException ex) {
-            throw new InvalidExpressionException (ex);
+        if (local != null) {
+            if (local instanceof Local) {
+                ((Local) local).setValue(value);
+            } else {
+                ((ObjectLocalVariable) local).setValue(value);
+            }
+            return ;
+        }
+        // try to set as a field
+        ReferenceType clazz = frame.getStackFrame().location().declaringType();
+        Field field = clazz.fieldByName(getExpression());
+        if (field == null) {
+            throw new InvalidExpressionException (
+                NbBundle.getMessage(JPDAWatchImpl.class, "MSG_CanNotSetValue", getExpression()));
+        }
+        if (field.isStatic()) {
+            if (clazz instanceof ClassType) {
+                try {
+                    ((ClassType) clazz).setValue(field, value);
+                } catch (InvalidTypeException ex) {
+                    throw new InvalidExpressionException (ex);
+                } catch (ClassNotLoadedException ex) {
+                    throw new InvalidExpressionException (ex);
+                } catch (IllegalArgumentException iaex) {
+                    throw new InvalidExpressionException (iaex);
+                }
+            } else {
+                throw new InvalidExpressionException (
+                    NbBundle.getMessage(JPDAWatchImpl.class, "MSG_CanNotSetValue", getExpression()));
+            }
+        } else {
+            ObjectReference thisObject = frame.getStackFrame ().thisObject ();
+            if (thisObject == null) {
+                throw new InvalidExpressionException ("no instance context.");
+            }
+            try {
+                thisObject.setValue (field, value);
+            } catch (InvalidTypeException ex) {
+                throw new InvalidExpressionException (ex);
+            } catch (ClassNotLoadedException ex) {
+                throw new InvalidExpressionException (ex);
+            } catch (IllegalArgumentException iaex) {
+                throw new InvalidExpressionException (iaex);
+            }
         }
     }
     
     public String getToStringValue() throws InvalidExpressionException {
-        return AbstractObjectVariable.getToStringValue(getInnerValue(), getDebugger());
+        return AbstractObjectVariable.getToStringValue(getInnerValue(), getDebugger(), 0);
     }
     
     void setException (String exceptionDescription) {

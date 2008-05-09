@@ -83,7 +83,7 @@ public class CKit extends CCKit {
     
     @Override
     protected Filter<CppTokenId> getFilter() {
-        return CndLexerUtilities.getStdCFilter();
+        return CndLexerUtilities.getGccCFilter();
     }
     
     @Override
@@ -132,7 +132,8 @@ public class CKit extends CCKit {
                         int startPos;
                         int endPos;
                         String endString = insertEndCommentString;
-                        if (caret.isSelectionVisible()) {
+                        //if (caret.isSelectionVisible()) {
+                        if (Utilities.isSelectionShowing(caret)) {
                             startPos = Utilities.getRowStart(doc, target.getSelectionStart());
                             endPos = target.getSelectionEnd();
                             if (endPos > 0 && Utilities.getRowStart(doc, endPos) == endPos) {
@@ -188,7 +189,8 @@ public class CKit extends CCKit {
                     try {
                         int startPos;
                         int endPos;
-                        if (caret.isSelectionVisible()) {
+                        //if (caret.isSelectionVisible()) {
+                        if (Utilities.isSelectionShowing(caret)) {
                             startPos = target.getSelectionStart();
                             endPos = target.getSelectionEnd();
                             if (endPos > 0 && Utilities.getRowStart(doc, endPos) == endPos) {
@@ -270,7 +272,8 @@ public class CKit extends CCKit {
                 try {
                     int startPos;
                     int endPos;
-                    if (caret.isSelectionVisible()) {
+                    //if (caret.isSelectionVisible()) {
+                    if (Utilities.isSelectionShowing(caret)) {
                         startPos = target.getSelectionStart();
                         endPos = target.getSelectionEnd();
                         if (endPos > 0 && Utilities.getRowStart(doc, endPos) == endPos) {

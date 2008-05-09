@@ -41,11 +41,24 @@
 
 package gui.setup;
 
+import javax.swing.tree.TreePath;
+import org.netbeans.jellytools.Bundle;
+import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.BuildProjectAction;
 import org.netbeans.junit.ide.ProjectSupport;
+import org.netbeans.jellytools.RuntimeTabOperator;
 
+import org.netbeans.jemmy.TimeoutExpiredException;
+import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.jemmy.operators.JCheckBoxOperator;
+import org.netbeans.jemmy.operators.JListOperator;
+import org.netbeans.jemmy.operators.JMenuBarOperator;
+import org.netbeans.jemmy.operators.JMenuItemOperator;
+import org.netbeans.jemmy.operators.JPopupMenuOperator;
+import org.netbeans.jemmy.operators.JTextFieldOperator;
+import org.netbeans.jemmy.operators.JTreeOperator;
 
 public class WebSetupTest extends org.netbeans.jellytools.JellyTestCase {
     
@@ -62,6 +75,7 @@ public class WebSetupTest extends org.netbeans.jellytools.JellyTestCase {
         ProjectSupport.openProject(System.getProperty("xtest.tmpdir")+"/PerformanceTestFolderWebApp");
         buildProject("PerformanceTestFolderWebApp");
     }
+
     
     private void buildProject(String name) {
         new BuildProjectAction().perform(new ProjectsTabOperator().

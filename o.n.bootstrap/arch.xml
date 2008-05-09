@@ -582,15 +582,6 @@ made subject to such option by the copyright holder.
                 </api>
             </li>
             <li>
-                <api type="export" group="property" name="org.netbeans.core.startup.specialResource" category="friend">
-                    <p>
-                        Contains comma separated list of package prefixes regarded as "special resource". Packages
-                        that are special resource can be split among several jars. Otherwise it is not allowed
-                        by the NetBeans module system to have one package present in more jars.
-                    </p>
-                </api>
-            </li>
-            <li>
                 <api type="export" group="property" name="org.netbeans.core.systemfilesystem.custom" category="friend">
                     <p>
                         Contains class name of a class that can serve as provider of the writable layer of the
@@ -638,7 +629,22 @@ made subject to such option by the copyright holder.
             </li>
             <li>
                 <api type="export" group="cli" name="--ui" category="devel">
-                    Specify a look &amp; feel.
+                    Specify a look &amp; feel. The same as --laf.
+                    To make human life easier simple translation was added to convert L&amp;F ID to
+                    L&amp;F class name for known L&amp;Fs.
+                    <ul>
+                    <li>Metal is translated to javax.swing.plaf.metal.MetalLookAndFeel</li>
+                    <li>GTK is translated to com.sun.java.swing.plaf.gtk.GTKLookAndFeel</li>
+                    <li>Nimbus is translated to com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel</li>
+                    <li>Windows is translated to com.sun.java.swing.plaf.windows.WindowsLookAndFeel</li>
+                    <li>Aqua is translated to apple.laf.AquaLookAndFeel</li>
+                    </ul>
+                    
+                </api>
+            </li>
+            <li>
+                <api type="export" group="cli" name="--laf" category="devel">
+                    Specify a look &amp; feel. The same as --ui.
                 </api>
             </li>
             <li>
@@ -1364,6 +1370,51 @@ made subject to such option by the copyright holder.
  <answer id="security-policy">
   <p>
    XXX no answer for security-policy
+  </p>
+ </answer>
+
+
+
+
+<!--
+        <question id="compat-deprecation" when="init">
+            How the introduction of your project influences functionality
+            provided by previous version of the product?
+            <hint>
+            If you are planning to deprecate/remove/change any existing APIs,
+            list them here accompanied with the reason explaining why you
+            are doing so.
+            </hint>
+        </question>
+-->
+ <answer id="compat-deprecation">
+  <p>
+   XXX no answer for compat-deprecation
+  </p>
+ </answer>
+
+
+
+<!--
+        <question id="resources-preferences" when="final">
+            Does your module uses preferences via Preferences API? Does your module use NbPreferences or
+            or regular JDK Preferences ? Does it read, write or both ? 
+            Does it share preferences with other modules ? If so, then why ?
+            <hint>
+                You may use
+                    &lt;api type="export" group="preferences"
+                    name="preference node name" category="private"&gt;
+                    description of individual keys, where it is used, what it
+                    influences, whether the module reads/write it, etc.
+                    &lt;/api&gt;
+                Due to XML ID restrictions, rather than /org/netbeans/modules/foo give the "name" as org.netbeans.modules.foo.
+                Note that if you use NbPreferences this name will then be the same as the code name base of the module.
+            </hint>
+        </question>
+-->
+ <answer id="resources-preferences">
+  <p>
+   XXX no answer for resources-preferences
   </p>
  </answer>
 

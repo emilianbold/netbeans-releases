@@ -41,7 +41,7 @@
 
 package org.netbeans.modules.gsf;
 
-import org.netbeans.api.gsf.GsfLanguage;
+import org.netbeans.modules.gsf.api.GsfLanguage;
 import org.netbeans.editor.DrawLayer;
 import org.netbeans.editor.DrawLayerFactory;
 import org.netbeans.editor.Formatter;
@@ -86,6 +86,7 @@ public class GsfDocument extends NbEditorDocument {
     }
 
     /** Get the formatter for this document. */
+    @Override
     public Formatter getFormatter() {
         if (formatter == null) {
             // NbDocument will go looking in the settings map for a formatter - let's make
@@ -101,9 +102,12 @@ public class GsfDocument extends NbEditorDocument {
     
     @Override
     public int getShiftWidth() {
-        org.netbeans.api.gsf.Formatter f = language.getFormatter();
+        org.netbeans.modules.gsf.api.Formatter f = language.getFormatter();
         if (f != null) {
-            return f.indentSize();
+            int shiftWidth = f.indentSize();
+            if (shiftWidth > 0) {
+                return shiftWidth;
+            }
         }
         return super.getShiftWidth();
     }

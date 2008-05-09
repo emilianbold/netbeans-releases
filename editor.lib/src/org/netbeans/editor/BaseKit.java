@@ -74,6 +74,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.KeyStroke;
+import javax.swing.text.AbstractDocument;
 import javax.swing.text.EditorKit;
 import javax.swing.text.Position;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
@@ -82,6 +83,7 @@ import org.netbeans.api.editor.settings.KeyBindingSettings;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.lib.EditorPreferencesDefaults;
 import org.netbeans.modules.editor.lib.EditorPreferencesKeys;
+import org.netbeans.modules.editor.lib.KitsTracker;
 import org.netbeans.modules.editor.lib.NavigationHistory;
 import org.netbeans.modules.editor.lib.SettingsConversions;
 import org.openide.awt.StatusDisplayer;
@@ -331,6 +333,9 @@ public class BaseKit extends DefaultEditorKit {
     private static DeleteCharAction deletePrevCharActionDef = new DeleteCharAction(deletePrevCharAction, false);
     private static DeleteCharAction deleteNextCharActionDef = new DeleteCharAction(deleteNextCharAction, true);
     private static ActionFactory.RemoveSelectionAction removeSelectionActionDef = new ActionFactory.RemoveSelectionAction();
+    private static final Action insertTabActionDef = new InsertTabAction();
+    private static final Action removeTabActionDef = new ActionFactory.RemoveTabAction();
+    private static final Action insertBreakActionDef = new InsertBreakAction();
 
     private static ActionFactory.UndoAction undoActionDef = new ActionFactory.UndoAction();
     private static ActionFactory.RedoAction redoActionDef = new ActionFactory.RedoAction();
@@ -380,6 +385,11 @@ public class BaseKit extends DefaultEditorKit {
                         break;
                     }
                 }
+//                Iterator i = kitActions.entrySet().iterator();
+//                while (i.hasNext()) {
+//                    Map.Entry me = (Map.Entry)i.next();
+//                    updateActionSettings((Action[])me.getValue(), evt, (Class)me.getKey());
+//                }
             }
         }
     }
@@ -449,13 +459,11 @@ public class BaseKit extends DefaultEditorKit {
      */
     public static BaseKit getKit(Class kitClass) {
         if (kitClass != null && BaseKit.class.isAssignableFrom(kitClass) && BaseKit.class != kitClass) {
-            if (!noKitsTracker) {
-                String mimeType = kitsTracker_FindMimeType(kitClass);
-                if (mimeType != null) {
-                    EditorKit kit = MimeLookup.getLookup(MimePath.parse(mimeType)).lookup(EditorKit.class);
-                    if (kit instanceof BaseKit) {
-                        return (BaseKit) kit;
-                    }
+            String mimeType = KitsTracker.getInstance().findMimeType(kitClass);
+            if (mimeType != null) {
+                EditorKit kit = MimeLookup.getLookup(MimePath.parse(mimeType)).lookup(EditorKit.class);
+                if (kit instanceof BaseKit) {
+                    return (BaseKit) kit;
                 }
             }
         } else {
@@ -489,27 +497,6 @@ public class BaseKit extends DefaultEditorKit {
         }
     }
 
-    private static volatile boolean noKitsTracker = false;
-    /* package */ static String kitsTracker_FindMimeType(Class kitClass) {
-        String mimeType = null;
-        
-        if (!noKitsTracker) {
-            try {
-                ClassLoader cl = Lookup.getDefault().lookup(ClassLoader.class);
-                Class clazz = cl.loadClass("org.netbeans.modules.editor.impl.KitsTracker"); //NOI18N
-                Method getInstanceMethod = clazz.getDeclaredMethod("getInstance"); //NOI18N
-                Method findMimeTypeMethod = clazz.getDeclaredMethod("findMimeType", Class.class); //NOI18N
-                Object kitsTracker = getInstanceMethod.invoke(null);
-                mimeType = (String) findMimeTypeMethod.invoke(kitsTracker, kitClass);
-            } catch (Exception e) {
-                // ignore
-                noKitsTracker = true;
-            }
-        }
-        
-        return mimeType;
-    }
-    
     /**
      * Creates a new instance of <code>BaseKit</code>.
      * 
@@ -737,8 +724,7 @@ public class BaseKit extends DefaultEditorKit {
         c.enableInputMethods(enableIM);
         executeInstallActions(c);
         
-        c.putClientProperty("hyperlink-operation", // NOI18N
-                org.netbeans.lib.editor.hyperlink.HyperlinkOperation.create(c, getContentType()));
+        org.netbeans.lib.editor.hyperlink.HyperlinkOperation.ensureRegistered(c, getContentType());
 
         // Mark that the editor's multi keymap adheres to context API in status displayer
         c.putClientProperty("context-api-aware", Boolean.TRUE); // NOI18N
@@ -832,9 +818,9 @@ public class BaseKit extends DefaultEditorKit {
         return new Action[] {
                    new DefaultKeyTypedAction(),
                    new InsertContentAction(),
-                   new InsertBreakAction(),
+                   insertBreakActionDef,
 		   new SplitLineAction(),
-                   new InsertTabAction(),
+                   insertTabActionDef,
                    deletePrevCharActionDef,
                    deleteNextCharActionDef,
                    new ReadOnlyAction(),
@@ -878,7 +864,7 @@ public class BaseKit extends DefaultEditorKit {
                    new SelectLineAction(),
                    new SelectAllAction(),
                    new RemoveTrailingSpacesAction(),
-                   new ActionFactory.RemoveTabAction(),
+                   removeTabActionDef,
                    //new ActionFactory.RemoveWordAction(), #47709
                    new ActionFactory.RemoveWordPreviousAction(),
                    new ActionFactory.RemoveWordNextAction(),
@@ -1086,7 +1072,7 @@ public class BaseKit extends DefaultEditorKit {
                             try {
                                 boolean doInsert = true; // editorUI.getAbbrev().checkAndExpand(ch, evt);
                                 if (doInsert) {
-                                    if (caret.isSelectionVisible()) { // valid selection
+                                    if (Utilities.isSelectionShowing(caret)) { // valid selection
                                         boolean ovr = (overwriteMode != null && overwriteMode.booleanValue());
                                         try {
                                             doc.putProperty(DOC_REPLACE_SELECTION_PROPERTY, true);
@@ -1247,7 +1233,6 @@ public class BaseKit extends DefaultEditorKit {
 
                 BaseDocument doc = (BaseDocument)target.getDocument();
                 Caret caret = target.getCaret();
-                int dotPos = caret.getDot();
 
                 Formatter formatter = doc.getFormatter();
                 formatter.indentLock();
@@ -1255,9 +1240,9 @@ public class BaseKit extends DefaultEditorKit {
                 DocumentUtilities.setTypingModification(doc, true);
                 try{
                     target.replaceSelection("");
-                    int newDotPos = dotPos; 		  // dot stays where it was
+                    final int dotPos = caret.getDot();      // dot stays where it was
                     formatter.indentNewLine(doc, dotPos);   // newline
-                    caret.setDot(newDotPos);
+                    caret.setDot(dotPos);
                 } finally {
                     DocumentUtilities.setTypingModification(doc, false);
                     doc.atomicUnlock();
@@ -1289,7 +1274,7 @@ public class BaseKit extends DefaultEditorKit {
                 doc.atomicLock();
                 DocumentUtilities.setTypingModification(doc, true);
                 try {
-                if (caret.isSelectionVisible()) { // block selected
+                if (Utilities.isSelectionShowing(caret)) { // block selected
                     try {
                         doc.getFormatter().changeBlockIndent(doc,
                                 target.getSelectionStart(), target.getSelectionEnd(), +1);
@@ -1578,6 +1563,15 @@ public class BaseKit extends DefaultEditorKit {
             //#54893 putValue ("helpID", CutAction.class.getName ()); // NOI18N
         }
 
+        @Override
+        public void setEnabled(boolean newValue) {
+            // In order to allow the action to operate even if there is no selection
+            // (to cut a single line) the setEnabled(false) is ignored.
+            if (enabled) {
+                super.setEnabled(enabled);
+            }
+        }
+        
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
             if (target != null) {
                 if (!target.isEditable() || !target.isEnabled()) {
@@ -1595,6 +1589,13 @@ public class BaseKit extends DefaultEditorKit {
                 doc.atomicLock();
                 DocumentUtilities.setTypingModification(doc, true);
                 try {
+                    // If there is no selection then pre-select a current line including newline
+                    if (!Utilities.isSelectionShowing(target)) {
+                        Element elem = ((AbstractDocument) target.getDocument()).getParagraphElement(
+                                target.getCaretPosition());
+                        target.select(elem.getStartOffset(), elem.getEndOffset());
+                    }
+
                     target.cut();
                 } finally {
                     DocumentUtilities.setTypingModification(doc, false);
@@ -1614,8 +1615,23 @@ public class BaseKit extends DefaultEditorKit {
             //#54893 putValue ("helpID", CopyAction.class.getName ()); // NOI18N
         }
 
+        @Override
+        public void setEnabled(boolean enabled) {
+            // In order to allow the action to operate even if there is no selection
+            // (to copy a single line) the setEnabled(false) is ignored.
+            if (enabled) {
+                super.setEnabled(enabled);
+            }
+        }
+        
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
             if (target != null) {
+                // If there is no selection then pre-select a current line including newline
+                if (!Utilities.isSelectionShowing(target)) {
+                    Element elem = ((AbstractDocument) target.getDocument()).getParagraphElement(
+                            target.getCaretPosition());
+                    target.select(elem.getStartOffset(), elem.getEndOffset());
+                }
                 target.copy();
             }
         }
@@ -1969,7 +1985,7 @@ public class BaseKit extends DefaultEditorKit {
                 Caret caret = target.getCaret();
                 try {
                     int pos;
-                    if (!select && caret.isSelectionVisible())
+                    if (!select && Utilities.isSelectionShowing(caret))
                     {
                         pos = target.getSelectionEnd(); 
                         if (pos != caret.getDot()) {
@@ -2113,7 +2129,7 @@ public class BaseKit extends DefaultEditorKit {
                 Caret caret = target.getCaret();
                 try {
                     int pos;
-                    if (!select && caret.isSelectionVisible())
+                    if (!select && Utilities.isSelectionShowing(caret))
                     {
                         pos = target.getSelectionStart(); 
                         if (pos != caret.getDot()) {
@@ -2434,20 +2450,35 @@ public class BaseKit extends DefaultEditorKit {
     }
 
     /** Select line around caret */
-    public static class SelectLineAction extends KitCompoundAction {
+    public static class SelectLineAction extends LocalBaseAction {
 
         static final long serialVersionUID =-7407681863035740281L;
 
         public SelectLineAction() {
-            super(selectLineAction,
-                  new String[] {
-                      lineFirstColumnAction,
-                      selectionEndLineAction
-                      //selectionForwardAction //#41371
-                  }
-                 );
+            super(selectLineAction);
         }
 
+        public void actionPerformed(ActionEvent evt, JTextComponent target) {
+            if (target != null) {
+                Caret caret = target.getCaret();
+                BaseDocument doc = (BaseDocument)target.getDocument();
+                doc.atomicLock();
+                DocumentUtilities.setTypingModification(doc, true);
+                try {
+                    int dotPos = caret.getDot();
+                    int bolPos = Utilities.getRowStart(target, dotPos);
+                    int eolPos = Utilities.getRowEnd(target, dotPos);
+                    eolPos = Math.min(eolPos + 1, doc.getLength()); // include '\n'
+                    caret.setDot(bolPos);
+                    caret.moveDot(eolPos);
+                } catch (BadLocationException e) {
+                    target.getToolkit().beep();
+                } finally {
+                    DocumentUtilities.setTypingModification(doc, false);
+                    doc.atomicUnlock();
+                }
+            }
+        }
     }
 
     /** Select text of whole document */

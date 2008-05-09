@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -48,7 +48,6 @@ import org.netbeans.jellytools.OutputOperator;
 import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.QueueTool;
-import org.netbeans.jemmy.operators.JTreeOperator;
 
 import org.netbeans.modules.visualweb.gravy.*;
 import org.netbeans.modules.visualweb.gravy.designer.DesignerPaneOperator;
@@ -61,11 +60,9 @@ import org.netbeans.modules.visualweb.test.components.util.ComponentUtils;
 import org.netbeans.modules.visualweb.gravy.dataconnectivity.ServerNavigatorOperator;
 
 import org.netbeans.jemmy.operators.*;
-import org.netbeans.jemmy.drivers.text.SwingTextKeyboardDriver;
 import org.netbeans.jemmy.operators.JRadioButtonOperator;
 
 import java.awt.Point;
-import javax.swing.JRadioButton;
 
 import java.io.File;
 import java.io.IOException;
@@ -367,6 +364,7 @@ public class AcceptanceTest extends RaveTestCase {
         log("make sure property sheet is visible");
         Util.getMainMenu().pushMenu(_propertySheet,_separator);
         try { Thread.sleep(2000); } catch(Exception e) {}
+        ComponentUtils.selectForm1Component("hiddenField1");
         
         log("**Start Bind text to #{Page1.textField1.text}");
         log("open dialog");

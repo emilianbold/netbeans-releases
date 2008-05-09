@@ -294,17 +294,9 @@ public final class JavaAntLogger extends AntLogger {
             while (tok.hasMoreTokens()) {
                 String binrootS = tok.nextToken();
                 File f = FileUtil.normalizeFile(new File(binrootS));
-                URL binroot;
-                try {
-                    binroot = f.toURI().toURL();
-                } catch (MalformedURLException e) {
-                    throw new AssertionError(e);
-                }
-                if (FileUtil.isArchiveFile(binroot)) {
-                    URL root = FileUtil.getArchiveRoot(binroot);
-                    if (root != null) {
-                        binroot = root;
-                    }
+                URL binroot = FileUtil.urlForArchiveOrDir(f);
+                if (binroot == null) {
+                    continue;
                 }
                 FileObject[] someRoots = SourceForBinaryQuery.findSourceRoots(binroot).getRoots();
                 data.classpathSourceRoots.addAll(Arrays.asList(someRoots));

@@ -316,7 +316,7 @@ public class ProductDescriptor extends Task {
      * @return The value of the property as a string.
      */
     private String get(String name) {
-        return getProject().getProperty(name);
+        return Utils.resolveProperty(getProject().getProperty(name));
     }
     
     /**

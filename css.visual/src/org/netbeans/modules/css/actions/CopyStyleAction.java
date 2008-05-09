@@ -116,11 +116,11 @@ public abstract class CopyStyleAction extends BaseAction {
     /** Produces XML PI text. */
     public final static class XML extends CopyStyleAction {
         
-        public static final String copyStyleAction = "copy-xml-style"; // NOI18N
+        public static final String copyStyleAction =  NbBundle.getMessage(CopyStyleAction.class, "Copy-XML-Style");//NOI18N
         
         public XML() {
             super(copyStyleAction);
-            putValue(SHORT_DESCRIPTION, NbBundle.getMessage(CopyStyleAction.class, "Copy-XML-Style"));
+            putValue(SHORT_DESCRIPTION, copyStyleAction);
         }
         
         protected String createText(DataObject csso) {
@@ -132,11 +132,11 @@ public abstract class CopyStyleAction extends BaseAction {
     /** Produces HTML style text. */
     public final static class HTML extends CopyStyleAction {
 
-        public static final String copyStyleAction = "copy-html-style"; // NOI18N
+        public static final String copyStyleAction = NbBundle.getMessage(CopyStyleAction.class, "Copy-HTML-Style");//NOI18N
         
         public HTML() {
             super(copyStyleAction);
-            putValue(SHORT_DESCRIPTION, NbBundle.getMessage(CopyStyleAction.class, "Copy-HTML-Style"));
+            putValue(SHORT_DESCRIPTION, copyStyleAction);
         }
         
         protected String createText(DataObject csso) {

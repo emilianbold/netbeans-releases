@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -53,6 +53,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.ruby.RubyUtils;
+import org.netbeans.modules.ruby.rubyproject.templates.NewRubyFileWizardIterator.Type;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
@@ -63,24 +64,23 @@ import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 /**
- *
- * @author  Petr Hrebejk
+ * @author Petr Hrebejk
  */
 public final class RubyTargetChooserPanel implements WizardDescriptor.Panel<WizardDescriptor>, ChangeListener {    
 
-    private static final String FOLDER_TO_DELETE = "folderToDelete";    //NOI18N
+    private static final String FOLDER_TO_DELETE = "folderToDelete"; // NOI18N
 
     //private final SpecificationVersion JDK_14 = new SpecificationVersion ("1.4");   //NOI18N
     private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
     private RubyTargetChooserPanelGUI gui;
-    private WizardDescriptor.Panel<WizardDescriptor> bottomPanel;
+    private final WizardDescriptor.Panel<WizardDescriptor> bottomPanel;
     private WizardDescriptor wizard;
 
-    private Project project;
-    private SourceGroup folders[];
-    private int type;
+    private final Project project;
+    private final SourceGroup folders[];
+    private final Type type;
     
-    public RubyTargetChooserPanel( Project project, SourceGroup folders[], WizardDescriptor.Panel<WizardDescriptor> bottomPanel, int type) {
+    public RubyTargetChooserPanel( Project project, SourceGroup folders[], WizardDescriptor.Panel<WizardDescriptor> bottomPanel, Type type) {
         this.project = project;
         this.folders = folders;
         this.bottomPanel = bottomPanel;
@@ -92,7 +92,7 @@ public final class RubyTargetChooserPanel implements WizardDescriptor.Panel<Wiza
 
     public Component getComponent() {
         if (gui == null) {
-            gui = new RubyTargetChooserPanelGUI( project, folders, bottomPanel == null ? null : bottomPanel.getComponent(), type );
+            gui = new RubyTargetChooserPanelGUI(project, folders, bottomPanel == null ? null : bottomPanel.getComponent(), type);
             gui.addChangeListener(this);
         }
         return gui;
@@ -119,7 +119,7 @@ public final class RubyTargetChooserPanel implements WizardDescriptor.Panel<Wiza
 
         setLocalizedErrorMessage(null);
         
-        if (type == NewRubyFileWizardIterator.TYPE_SPEC) {
+        if (type == Type.SPEC) {
             if (gui.getClassName() == null || !RubyUtils.isValidRubyClassName(gui.getClassName())) {
                 setErrorMessage("ERR_RubyTargetChooser_InvalidClass"); // NOI18N
                 return false;
@@ -128,9 +128,9 @@ public final class RubyTargetChooserPanel implements WizardDescriptor.Panel<Wiza
             if (msg != null) {
                 setLocalizedErrorMessage(msg); // warning only, don't return false
             }
-        } else if (type == NewRubyFileWizardIterator.TYPE_CLASS || type == NewRubyFileWizardIterator.TYPE_MODULE ||
-            type == NewRubyFileWizardIterator.TYPE_TEST) {
-            if (type == NewRubyFileWizardIterator.TYPE_CLASS || type == NewRubyFileWizardIterator.TYPE_TEST) {
+        } else if (type == Type.CLASS || type == Type.MODULE ||
+            type == Type.TEST) {
+            if (type == Type.CLASS || type == Type.TEST) {
                 if (gui.getClassName() == null || !RubyUtils.isValidRubyClassName(gui.getClassName())) {
                     setErrorMessage("ERR_RubyTargetChooser_InvalidClass"); // NOI18N
                     return false;
@@ -154,7 +154,7 @@ public final class RubyTargetChooserPanel implements WizardDescriptor.Panel<Wiza
                     }
                 }
             }
-            if (type == NewRubyFileWizardIterator.TYPE_MODULE) {
+            if (type == Type.MODULE) {
                 if (gui.getClassName() == null || !RubyUtils.isValidRubyClassName(gui.getClassName())) {
                     setErrorMessage("ERR_RubyTargetChooser_InvalidModule"); // NOI18N
                     return false;
@@ -199,10 +199,8 @@ public final class RubyTargetChooserPanel implements WizardDescriptor.Panel<Wiza
         
         // this enables to display error messages from the bottom panel
         // Nevertheless, the previous error messages have bigger priorities 
-        if (returnValue && bottomPanel != null) {
-           if (!bottomPanel.isValid()) {
-                return false;
-            }
+        if (returnValue && bottomPanel != null && !bottomPanel.isValid()) {
+            return false;
         }
         
         return returnValue;
@@ -261,13 +259,13 @@ public final class RubyTargetChooserPanel implements WizardDescriptor.Panel<Wiza
             Templates.setTargetFolder(settings, getTargetFolderFromGUI(settings));
             Templates.setTargetName(settings, gui.getTargetName());
             
-            if (type == NewRubyFileWizardIterator.TYPE_SPEC) {
+            if (type == Type.SPEC) {
                 wizard.putProperty("classname", gui.getClassName()); // NOI18N
                 String name = RubyUtils.camelToUnderlinedName(gui.getClassName());
                 wizard.putProperty("classfile", name); // NOI18N
                 wizard.putProperty("classfield", name); // NOI18N
-            } else if (type == NewRubyFileWizardIterator.TYPE_CLASS || 
-                    type == NewRubyFileWizardIterator.TYPE_TEST) {
+            } else if (type == Type.CLASS || 
+                    type == Type.TEST) {
                 wizard.putProperty("class", gui.getClassName()); // NOI18N
                 String name = RubyUtils.camelToUnderlinedName(gui.getClassName());
                 if (name.startsWith("test_")) {
@@ -278,7 +276,7 @@ public final class RubyTargetChooserPanel implements WizardDescriptor.Panel<Wiza
                 wizard.putProperty("classfile", name); // NOI18N
                 wizard.putProperty("module", gui.getModuleName()); // NOI18N
                 wizard.putProperty("extend", gui.getExtends()); // NOI18N
-            } else if (type == NewRubyFileWizardIterator.TYPE_MODULE) {
+            } else if (type == Type.MODULE) {
                 // NOTE - even when adding a -module-, we will use the "class" textfield
                 // to represent the name of the module, and the "module" text field to represent
                 // modules surrounding the current module
@@ -371,12 +369,7 @@ public final class RubyTargetChooserPanel implements WizardDescriptor.Panel<Wiza
     }
     
     static boolean isValidTypeIdentifier(String ident) {
-        if (ident == null || "".equals(ident) || !Utilities.isJavaIdentifier( ident ) ) {
-            return false;
-        }
-        else {
-            return true;
-        }
+        return Utilities.isJavaIdentifier(ident);
     }
 
     static boolean isValidFileName(String ident) {
@@ -398,7 +391,7 @@ public final class RubyTargetChooserPanel implements WizardDescriptor.Panel<Wiza
      * @param extension extension of created file
      * @return localized error message or null if all right
      */    
-    final public static String canUseFileName(String folderName, String newObjectName, String extension) {
+    public static String canUseFileName(String folderName, String newObjectName, String extension) {
         String newObjectNameToDisplay = newObjectName;
         if (newObjectName != null) {
             newObjectName = newObjectName.replace ('.', '/'); // NOI8N

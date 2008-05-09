@@ -125,21 +125,29 @@ public class DragOverSceneLayer extends LayerWidget {
             }
         }
         if (icon != null) {
-            Rectangle bounds = icon.getBounds();
-            if (bounds != null) {
-                bounds = icon.convertLocalToScene(bounds);
-
-                //make bounds bigger than it actually is.
-                int boundInc = 200;
-                bounds.y -= boundInc;
-                bounds.height += boundInc;
-                bounds.x -= boundInc;
-                bounds.width += boundInc;
-                getScene().getView().scrollRectToVisible(bounds);
-            }
+            
+            //cursor icon size, otherwise icon gets settled near the mouse point.
             scenePoint.x += 16;
             
             icon.setPreferredLocation(convertSceneToLocal(scenePoint));
+            getScene().validate();
+            
+            Rectangle sceneBounds = getScene().getBounds();
+            Rectangle visibleRect = getScene().getView().getVisibleRect();
+
+            //35 seems to be good.
+            int boundInc = 35;
+
+            Rectangle reducedVisibleRect = new Rectangle(visibleRect.x + boundInc, visibleRect.y + boundInc, visibleRect.height - boundInc, visibleRect.width - boundInc);
+            Rectangle iconBounds = icon.getBounds();
+            Rectangle scrollRect = new Rectangle (scenePoint.x - boundInc, scenePoint.y - boundInc,
+                    iconBounds.width + boundInc, iconBounds.height + boundInc);
+            Rectangle sceneIntersect = sceneBounds.intersection(scrollRect);
+            
+            if (!reducedVisibleRect.contains(sceneIntersect)) {
+                getScene().getView().scrollRectToVisible(sceneIntersect);
+            }
+
             getScene().validate();
         }
         return false;

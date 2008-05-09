@@ -58,6 +58,8 @@ import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.modules.tomcat5.TomcatManager;
 import org.netbeans.modules.tomcat5.util.LogSupport.LineInfo;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -205,7 +207,7 @@ public class LogViewer extends Thread {
     
     private File getLogFile(String timestamp) throws IOException {
         File f = new File(directory, prefix + timestamp + suffix);
-        f.createNewFile(); // create, if does not exist
+        FileUtil.createData(f);
         return f;
     }
     

@@ -159,8 +159,7 @@ public class AcceptanceTest extends RaveTestCase {
             ComponentUtils.createNewProject(_projectName);
         } catch(Exception e) {
             log(">> Project Creation Failed");
-            e.printStackTrace();
-            log(e.toString());
+            e.printStackTrace(getLog());
             fail();
         }
         log("**Done");

@@ -107,6 +107,35 @@ is the proper place.
 
     <changes>
 
+        <change id="AntEvent-references">
+            <api name="general"/>
+            <summary>Ant loggers can now inspect Ant reference objects</summary>
+            <version major="3" minor="29"/>
+            <date day="6" month="3" year="2008"/>
+            <author login="jglick"/>
+            <compatibility modification="yes" semantic="compatible">
+                <p>
+                    Properties of the same name take precedence over references,
+                    so only code which relied on a property name <em>not</em>
+                    being set would see different behavior.
+                </p>
+            </compatibility>
+            <description>
+                <p>
+                    The <code>AntEvent</code> methods <code>getProperty</code> and
+                    <code>getPropertyNames</code> can now work with Ant references
+                    as well as plain properties. This is critical for loggers which
+                    wish to inspect e.g. the runtime value of a classpath given as:
+                </p>
+                <pre>&lt;classpath refid="my.cp"/&gt;</pre>
+                <p>
+                    which otherwise would be inaccessible.
+                </p>
+            </description>
+            <class package="org.apache.tools.ant.module.spi" name="AntEvent"/>
+            <issue number="128778"/>
+        </change>
+
         <change id="IntrospectedInfo.serializable">
             <api name="general"/>
             <summary><code>IntrospectedInfo</code> no longer serializable</summary>

@@ -74,8 +74,6 @@ include Services/org-netbeans-modules-xml-core-settings-CoreSettings.settings
 include HTTPMonitor/.*
 
 include J2EE/.*
-include Services/J2EEServers/.*
-
 include Databases/.*
 include Services/org-netbeans-modules-db-explorer-DatabaseOption\.settings
 include Services/org-netbeans-modules-derby-DerbyOptions\.settings
@@ -86,17 +84,18 @@ include Services/org-netbeans-modules-java-settings-JavaSettings\.settings
 
 include Editors/AnnotationTypes/.*
 include Editors/.*
+exclude Editors/.*/Popup.*
+exclude Editors/.*/.*\.instance
+exclude Editors/.*/Settings\.settings
 include Services/IndentEngine/.*
+#does not import C/C++ indent settings
+exclude Services/IndentEngine/org-netbeans-modules-cnd-editor-cplusplus-CCIndentEngine\.settings
+exclude Services/IndentEngine/org-netbeans-modules-cnd-editor-cplusplus-CIndentEngine\.settings
 
 include Services/org-netbeans-modules-javadoc-settings-DocumentationSettings\.settings
 
 include Services/formsettings\.settings
 include FormDesignerPalette/.*
-
-include Services/org-netbeans-modules-i18n-I18nOptions\.settings
-include Services/org-netbeans-modules-junit-JUnitSettings\.settings
-
-include Services/org-netbeans-modules-pdf-PDFSettings\.settings
 
 include Services/org-apache-tools-ant-module-AntSettings\.settings
 

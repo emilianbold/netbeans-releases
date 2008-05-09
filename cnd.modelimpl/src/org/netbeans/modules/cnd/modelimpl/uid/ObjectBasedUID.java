@@ -65,15 +65,18 @@ public abstract class ObjectBasedUID<T extends CsmIdentifiable> implements CsmUI
         return this.ref;
     }
     
+    @Override
     public String toString() {
         String retValue = "UID for " + ref.toString(); // NOI18N
         return retValue;
     }
     
+    @Override
     public int hashCode() {
         return ref.hashCode();
     }
     
+    @Override
     public boolean equals(Object obj) {
         if (this == obj) {
             return true;

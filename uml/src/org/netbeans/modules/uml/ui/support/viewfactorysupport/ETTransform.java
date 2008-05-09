@@ -123,14 +123,14 @@ public class ETTransform
 
    public void setWinClientRectangle(IETRect winClient)
    {
-
       if (isTSWorldCoordinate() == true)
       {
          setTSAbsolute(winClient);
       }
       else
       {
-         setTSAbsolute(getDrawingAreaControl().deviceToLogicalRect(winClient));
+          if (getDrawingAreaControl() != null)
+              setTSAbsolute(getDrawingAreaControl().deviceToLogicalRect(winClient));
       }
    }
 

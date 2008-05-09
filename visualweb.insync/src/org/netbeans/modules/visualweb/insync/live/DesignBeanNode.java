@@ -206,8 +206,8 @@ public class DesignBeanNode extends AbstractNode implements DesignBeanListener {
     private DesignBeanNode(DesignBean liveBean, Children children, Lookup fixedLookup, DesignBeanNodeLookup designBeanNodeLookup) {
         super(children, new ProxyLookup(new Lookup[] {fixedLookup, designBeanNodeLookup}));
         
-        if (TIMERS.isLoggable(Level.FINE)) {
-            LogRecord rec = new LogRecord(Level.FINE, "DesignBeanNode"); // NOI18N
+        if (TIMERS.isLoggable(Level.FINER)) {
+            LogRecord rec = new LogRecord(Level.FINER, "DesignBeanNode"); // NOI18N
             rec.setParameters(new Object[]{this });
             TIMERS.log(rec);
         }
@@ -447,7 +447,7 @@ public class DesignBeanNode extends AbstractNode implements DesignBeanListener {
     
     private void doDestroy() throws IOException {
         LiveUnit liveUnit = (LiveUnit) liveBean.getDesignContext();
-        UndoEvent undoEvent = liveUnit.getModel().writeLock("destroy"); // TODO I18N
+        UndoEvent undoEvent = liveUnit.getModel().writeLock(NbBundle.getMessage(DesignBeanNode.class, "DeleteBean")); // TODO I18N
         try {
             liveUnit.deleteBean(liveBean);
         } finally {

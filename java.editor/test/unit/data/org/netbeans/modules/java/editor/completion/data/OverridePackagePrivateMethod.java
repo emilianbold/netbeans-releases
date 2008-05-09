@@ -2,8 +2,8 @@ package test;
 
 import javax.swing.JFrame;
 
-public class OverridePackagePrivateMethod extends JFrame {
+public class Test extends JFrame {
     
-    public OverridePackagePrivateMethod() {}
+    public Test() {}
     
 }

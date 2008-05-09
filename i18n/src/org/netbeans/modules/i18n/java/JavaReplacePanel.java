@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -46,8 +46,10 @@ import java.awt.AWTEvent;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.lang.reflect.Modifier;
+import java.util.EnumSet;
 import java.util.ResourceBundle;
+import java.util.Set;
+import javax.lang.model.element.Modifier;
 import javax.swing.ButtonGroup;
 import javax.swing.JPanel;
 
@@ -529,23 +531,23 @@ public class JavaReplacePanel extends JPanel {
 
     /** Event handler delegate. */
     private void modifiersActionPerformed() {
-        int modifiers = 0;
+        Set<Modifier> modifiers = EnumSet.noneOf(Modifier.class);
         
         if(privateRadio.isSelected())
-            modifiers |= Modifier.PRIVATE;
+            modifiers.add(Modifier.PRIVATE);
         else if(protectedRadio.isSelected())
-            modifiers |= Modifier.PROTECTED;
+            modifiers.add(Modifier.PROTECTED);
         else if(publicRadio.isSelected())
-            modifiers |= Modifier.PUBLIC;
+            modifiers.add(Modifier.PUBLIC);
         
         if(staticCheck.isSelected())
-            modifiers |= Modifier.STATIC;
+            modifiers.add(Modifier.STATIC);
         if(finalCheck.isSelected())
-            modifiers |= Modifier.FINAL;
+            modifiers.add(Modifier.FINAL);
         if(transientCheck.isSelected())
-            modifiers |= Modifier.TRANSIENT;
+            modifiers.add(Modifier.TRANSIENT);
         
-        if(modifiers != javaI18nSupport.getModifiers())
+        if (!modifiers.equals(javaI18nSupport.getModifiers()))
             javaI18nSupport.setModifiers(modifiers);
     }
 

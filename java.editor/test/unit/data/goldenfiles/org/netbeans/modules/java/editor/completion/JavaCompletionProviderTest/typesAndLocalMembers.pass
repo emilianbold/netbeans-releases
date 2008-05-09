@@ -1,3 +1,4 @@
+int hashCode() - parameters
 public static int staticField
 protected native Object clone()
 public boolean equals(Object arg0)

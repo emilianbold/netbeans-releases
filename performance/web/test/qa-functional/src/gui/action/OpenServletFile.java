@@ -48,13 +48,19 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.test.web.performance.WebPerformanceTestCase;
+import org.netbeans.performance.test.utilities.PerformanceTestCase;
+import java.util.logging.Handler;
+import java.util.logging.Logger;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+
 
 /**
  * Test of opening files.
  *
  * @author  mmirilovic@netbeans.org
  */
-public class OpenServletFile extends WebPerformanceTestCase {
+public class OpenServletFile extends PerformanceTestCase {
     
     /** Node to be opened/edited */
     public static Node openNode ;
@@ -93,11 +99,32 @@ public class OpenServletFile extends WebPerformanceTestCase {
         super(testName, performanceDataName);
         expectedTime = WINDOW_OPEN;
     }
+
+        class PhaseHandler extends Handler {
+            
+            public boolean published = false;
+
+            public void publish(LogRecord record) {
+
+            if (record.getMessage().equals("Open Editor, phase 1, AWT [ms]")) 
+               org.netbeans.performance.test.guitracker.ActionTracker.getInstance().stopRecording();
+
+            }
+
+            public void flush() {
+            }
+
+            public void close() throws SecurityException {
+            }
+            
+        }
+
+    PhaseHandler phaseHandler=new PhaseHandler();
     
     public void testOpeningServletFile(){
-        WAIT_AFTER_OPEN = 6000;
+        WAIT_AFTER_OPEN = 1000;
        //repaintManager().setOnlyEditor(true);
-        repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
+//        repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
         setJavaEditorCaretFilteringOn();
         fileProject = "TestWebProject";
         filePackage = "test";
@@ -107,10 +134,8 @@ public class OpenServletFile extends WebPerformanceTestCase {
     }
     
     public void testOpeningJavaFile(){
-        WAIT_AFTER_OPEN = 6000;
+        WAIT_AFTER_OPEN = 1000;
         //repaintManager().setOnlyEditor(true);
-        repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
-        setJavaEditorCaretFilteringOn();
         fileProject = "TestWebProject";
         filePackage = "test";
         fileName = "Main.java";
@@ -123,10 +148,12 @@ public class OpenServletFile extends WebPerformanceTestCase {
     }
 
     public void shutdown(){
+        Logger.getLogger("TIMER").removeHandler(phaseHandler);
         EditorOperator.closeDiscardAll();
     }
     
     public void prepare(){
+        Logger.getLogger("TIMER").addHandler(phaseHandler);
         this.openNode = new Node(new ProjectsTabOperator().getProjectRootNode(fileProject),"Source Packages" + '|' +  filePackage + '|' + fileName);
         
         if (this.openNode == null) {
@@ -142,6 +169,8 @@ public class OpenServletFile extends WebPerformanceTestCase {
         }
         log("------------------------- after popup invocation ------------");
         try {
+        repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
+        setJavaEditorCaretFilteringOn();
             popup.pushMenu(this.menuItem);
         }
         catch (org.netbeans.jemmy.TimeoutExpiredException tee) {

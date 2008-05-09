@@ -132,7 +132,7 @@ public class ServerFileDistributor extends ServerProgress {
         
         ModuleType moduleType = (ModuleType) module.getModuleType ();
         List serverDescriptorRelativePaths = Arrays.asList(instance.getServer().getDeploymentPlanFiles(moduleType));
-        return new AppChanges(descriptorRelativePaths, serverDescriptorRelativePaths, (ModuleType) dtarget.getModule ().getModuleType ());
+        return new AppChanges(descriptorRelativePaths, serverDescriptorRelativePaths, moduleType);
     }
     
     public AppChangeDescriptor distribute(TargetModule targetModule, ModuleChangeReporter mcr) throws IOException {
@@ -207,8 +207,7 @@ public class ServerFileDistributor extends ServerProgress {
             Logger.getLogger("global").log(Level.SEVERE, "There is no contents for " + target); //NOI18N
             throw new IOException(NbBundle.getMessage(ServerFileDistributor.class, "MSG_NoContents", target));
         }
-        setStatusDistributeRunning(NbBundle.getMessage(
-        ServerFileDistributor.class, "MSG_RunningIncrementalDeploy", target));
+        setStatusDistributeRunning(NbBundle.getMessage(ServerFileDistributor.class, "MSG_RunningIncrementalDeploy", target));
         try {
             //get relative-path-key map from FDL
             File dir = incremental.getDirectoryForModule(target);
@@ -236,7 +235,7 @@ public class ServerFileDistributor extends ServerProgress {
                 }
                 // refactor to make the finally easier to write and read in the 
                 // future.
-                createOrReplace(sourceFO,targetFO,destRoot,relativePath,mc,destMap);
+                createOrReplace(sourceFO,targetFO,destRoot,relativePath,mc,destMap,lastDeployTime);
             }
                     
             ModuleType moduleType = (ModuleType) dtarget.getModule ().getModuleType ();
@@ -250,7 +249,7 @@ public class ServerFileDistributor extends ServerProgress {
             File[] paths = new File[rPaths.length];
             for (int n=0; n<rPaths.length; n++) {
                 paths[n] = new File(FileUtil.toFile(destRoot), rPaths[n]);
-                if (! paths[n].exists() || paths[n].lastModified() < configFile.lastModified())
+                if (paths[n].exists() && paths[n].lastModified() > configFile.lastModified())
                     mc.record(rPaths[n]);
             }
             
@@ -264,10 +263,11 @@ public class ServerFileDistributor extends ServerProgress {
     }
     
     private static void createOrReplace(FileObject sourceFO, FileObject targetFO,
-            FileObject destRoot, String relativePath, AppChanges mc, Map destMap) throws IOException {
+            FileObject destRoot, String relativePath, AppChanges mc, Map destMap,long lastDeployTime) throws IOException {
         FileObject destFolder;
         OutputStream destStream = null;
         InputStream sourceStream = null;
+        Date ldDate = new Date(lastDeployTime);
         try {
             // double check that the target does not exist... 107526
             //   the destMap seems to be incomplete....
@@ -279,6 +279,11 @@ public class ServerFileDistributor extends ServerProgress {
             } else {
                 // remove from map to form of to-remove-target-list
                 destMap.remove(relativePath);
+                
+                // for web app changes... since the 'copy' was already done by 
+                // the build target.
+                if (targetFO.equals(sourceFO) && targetFO.lastModified().after(ldDate))
+                    mc.record(relativePath);
                 
                 //check timestamp
                 if (! sourceFO.lastModified().after(targetFO.lastModified())) {
@@ -391,7 +396,9 @@ public class ServerFileDistributor extends ServerProgress {
         
         private void record(String relativePath) {
             if (! classesChanged) {
-                boolean classes = !moduleType.equals (ModuleType.WAR) || relativePath.startsWith ("WEB-INF/classes/"); //NOI18N
+                boolean classes = ( !moduleType.equals (ModuleType.WAR) && !relativePath.startsWith("META-INF") )|| relativePath.startsWith ("WEB-INF/classes/"); //NOI18N
+                if (moduleType.equals(ModuleType.EAR))
+                    classes = false;
                 boolean importantLib = !moduleType.equals (ModuleType.WAR) || relativePath.startsWith ("WEB-INF/lib/"); //NOI18N
                 boolean libs = importantLib && (relativePath.endsWith(".jar") || relativePath.endsWith(".zip")); //NOI18N
                 if (classes || libs) {

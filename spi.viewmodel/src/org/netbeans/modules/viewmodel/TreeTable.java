@@ -215,18 +215,33 @@ ExplorerManager.Provider, PropertyChangeListener, TreeExpansionListener {
       * Called whenever an item in the tree has been expanded.
       */
     public void treeExpanded (TreeExpansionEvent event) {
-        Object obj = Visualizer.findNode 
-            (event.getPath ().getLastPathComponent ()).getLookup().lookup(Object.class);
-        model.nodeExpanded (obj);
+        model.nodeExpanded (initExpandCollapseNotify(event));
     }
 
     /**
       * Called whenever an item in the tree has been collapsed.
       */
     public void treeCollapsed (TreeExpansionEvent event) {
-        Object obj = Visualizer.findNode 
-            (event.getPath ().getLastPathComponent ()).getLookup().lookup(Object.class);
-        model.nodeCollapsed (obj);
+        model.nodeCollapsed (initExpandCollapseNotify(event));
+    }
+    
+    private Object initExpandCollapseNotify(TreeExpansionEvent event) {
+        Node node = Visualizer.findNode(event.getPath ().getLastPathComponent());
+        Object obj = node.getLookup().lookup(Object.class);
+        Object actOn;
+        node = node.getParentNode();
+        if (node == null) {
+            actOn = new Integer(0);
+        } else {
+            Children ch = node.getChildren();
+            if (ch instanceof TreeModelNode.TreeModelChildren) {
+                actOn = ((TreeModelNode.TreeModelChildren) ch).getTreeDepth();
+            } else {
+                actOn = ch;
+            }
+        }
+        DefaultTreeExpansionManager.get(model).setChildrenToActOn(actOn);
+        return obj;
     }
     
     private boolean equalNodes () {

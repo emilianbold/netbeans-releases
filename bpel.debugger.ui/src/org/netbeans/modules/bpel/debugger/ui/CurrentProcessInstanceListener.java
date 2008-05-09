@@ -73,7 +73,7 @@ public class CurrentProcessInstanceListener extends DebuggerManagerAdapter {
             return;
         }
         
-        debugger = (BpelDebugger) engine.lookupFirst(null, BpelDebugger.class);
+        debugger = engine.lookupFirst(null, BpelDebugger.class);
         
         if (debugger == null) {
             return;
@@ -81,7 +81,7 @@ public class CurrentProcessInstanceListener extends DebuggerManagerAdapter {
         
         debugger.addPropertyChangeListener(this);
         
-        sourcePath = (SourcePath) engine.lookupFirst(null, SourcePath.class);
+        sourcePath = engine.lookupFirst(null, SourcePath.class);
         
         if (sourcePath == null) {
             return;

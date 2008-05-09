@@ -170,6 +170,7 @@
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.websvc.rest</friend>
+                <friend>org.netbeans.modules.websvc.saas.codegen</friend>
                 <package>org.netbeans.modules.websvc.rest.model.api</package>
                 <package>org.netbeans.modules.websvc.rest.model.spi</package>
                 <package>org.netbeans.modules.websvc.rest.spi</package>

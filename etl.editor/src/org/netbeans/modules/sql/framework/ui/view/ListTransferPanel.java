@@ -833,6 +833,7 @@ public class ListTransferPanel extends JPanel implements ActionListener, ListSel
         JPanel searchPanel = new JPanel();
         searchPanel.setLayout(new BorderLayout());
         srcLabel = new JLabel(srcLabelStr);
+        srcLabel.getAccessibleContext().setAccessibleName(srcLabelStr);
         //srcLabel.setDisplayedMnemonic('s');
         srcLabel.setLabelFor(sourceList);
 
@@ -889,6 +890,7 @@ public class ListTransferPanel extends JPanel implements ActionListener, ListSel
 
         JPanel destPanel = new JPanel();
         destLabel = new JLabel(destLabelStr);
+        destLabel.getAccessibleContext().setAccessibleName(destLabelStr);
         // DestLabel.setDisplayedMnemonic('o');
         destLabel.setLabelFor(destList);
 

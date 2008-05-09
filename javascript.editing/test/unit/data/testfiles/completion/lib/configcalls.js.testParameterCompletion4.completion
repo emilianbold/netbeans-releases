@@ -1,0 +1,3 @@
+Results for somefunction({}, {}, {}); with queryType=COMPLETION and nameKind=PREFIX
+------------------------------------
+METHOD     somefunction(abc, def, ghi) :              configcalls.js

@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -49,13 +49,14 @@ import java.io.File;
  * @author Anil K. Vijendran
  */
 public final class Mark {
-    int line, col;	// position within current stream
-    String fileName;            // name of the current file
+    private final int line; // position within current stream
+    private final int col; // position within current stream
+    private final String fileName; // name of the current file
 
     public Mark(String filename, int line, int col) {
-	this.line = line;
-	this.col = col;
-	this.fileName = filename;
+        this.line = line;
+        this.col = col;
+        this.fileName = filename;
     }
 
     // -------------------- Locator interface --------------------
@@ -68,8 +69,9 @@ public final class Mark {
         return col;
     }
 
+    @Override
     public String toString() {
-	return getFile()+"("+line+","+col+")";
+        return getFile() + "(" + line + "," + col + ")"; // NOI18N
     }
 
     public String getFile() {
@@ -77,17 +79,18 @@ public final class Mark {
     }
     
     public String toShortString() {
-        return "("+line+","+col+")";
+        return "(" + line + "," + col + ")"; // NOI18N
     }
 
+    @Override
     public boolean equals(Object other) {
-	if (other instanceof Mark) {
-	    Mark m = (Mark) other;
-	    return this.line == m.line 
-		&& this.col == m.col
+        if (other instanceof Mark) {
+            Mark m = (Mark) other;
+            return line == m.line
+                && col == m.col
                 && new File(fileName).equals(new File(m.fileName));
-	} 
-	return false;
+        } 
+        return false;
     }
 }
 

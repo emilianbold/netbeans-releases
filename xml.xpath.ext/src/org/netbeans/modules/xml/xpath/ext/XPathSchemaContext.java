@@ -20,13 +20,18 @@
 package org.netbeans.modules.xml.xpath.ext;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.xml.schema.model.Attribute;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
+import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.xam.Named;
+import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext.SchemaCompPair;
 
 /**
  * It is intended to: 
@@ -90,6 +95,13 @@ public interface XPathSchemaContext {
     boolean equalsChain(XPathSchemaContext obj);
     
     /**
+     * Calculates a text which represents the context. 
+     * Text must not contain mentioning the parent context.
+     * @return
+     */
+    String toStringWithoutParent();
+    
+    /**
      * This class contans current and parent schema components. 
      * It keeps track from which parent schema component the current 
      * component was taken from. 
@@ -113,7 +125,7 @@ public interface XPathSchemaContext {
         
         @Override
         public String toString() {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             //
             SchemaComponent parentComp = getParetnComp();
             if (parentComp != null) {
@@ -140,7 +152,7 @@ public interface XPathSchemaContext {
         /**
          * Helper method for toString
          */ 
-        public static void appendCompName(StringBuffer sb, SchemaComponent schemaComp) {
+        public static void appendCompName(StringBuilder sb, SchemaComponent schemaComp) {
             if (schemaComp instanceof Attribute) {
                 sb.append("@");
             }
@@ -186,6 +198,10 @@ public interface XPathSchemaContext {
          * @return
          */
         public static SchemaComponent getSchemaComp(XPathSchemaContext context) {
+            if (context == null)  {
+                return null;
+            }
+            //
             Set<SchemaCompPair> scPairSet = context.getUsedSchemaCompPairs();
             if (scPairSet != null && scPairSet.size() == 1) {
                 SchemaCompPair scPair = scPairSet.iterator().next();
@@ -387,7 +403,126 @@ public interface XPathSchemaContext {
             //
             return result;
         }
-        
-    }
-}
 
+        /**
+         * Calculates the effective namespace of the schema component.
+         * 
+         * @param sComp
+         * @param parentContext is the schema context of the previous 
+         * element of a location step.
+         * @return
+         */
+        public static Set<String> getEffectiveNamespaces(
+                SchemaComponent sComp, XPathSchemaContext parentContext) {
+            //
+            SchemaModel ownerModel = sComp.getModel();
+            String namespaceUri = ownerModel.getEffectiveNamespace(sComp);
+            //
+            if (namespaceUri != null && namespaceUri.length() != 0) {
+                return Collections.singleton(namespaceUri);
+            }
+            //
+            //------------------------------------------------------------------
+            //
+            // The target namespace isn't defined
+            //
+            if (parentContext == null) {
+                // parent context is required here!
+                return Collections.EMPTY_SET;
+            }
+            //
+            // Result collects possible target namespaces.
+            HashSet<String> result = new HashSet<String>();
+            //
+            // The set of schema components, which require deeper investigations.
+            // It is impossible to obtain an effective namespace if a schema 
+            // component from the parent context (parentContext) is also located 
+            // in the (same or another) schema without a targetNamespace. 
+            // So it is required to go to the next schema context (parent of the parent)
+            // to resolve the namespace. This set is intended to prevent scanning 
+            // unnecessary parent components.
+            HashSet<SchemaComponent> unresolvedParents = null;
+            //
+            // The set of models which already has been checked for getting 
+            // the effective namespace. It prevents repeated call of the 
+            // getEffectiveNamespace method, which is quite expensive. 
+            HashSet<SchemaModel> checkedModels = new HashSet<SchemaModel>();
+            //
+            while (parentContext != null) {
+                Set<SchemaCompPair> scPairsSet = parentContext.getUsedSchemaCompPairs();
+                HashSet<SchemaComponent> unresolvedComp = null;
+                if (!(unresolvedParents == null || unresolvedParents.isEmpty())) {
+                    // Copy unresolved components which was obtained at previous 
+                    // step to separate set. It's necessary because the previous 
+                    // containter is going to be used here. 
+                    unresolvedComp = new HashSet<SchemaComponent>(unresolvedParents);
+                }
+                for (SchemaCompPair scPair : scPairsSet) {
+                    SchemaComponent contextSComp = scPair.getComp();
+                    if (contextSComp != null) {
+                        //
+                        if (unresolvedComp != null && 
+                                !unresolvedComp.contains(contextSComp)) {
+                            // This components' chain has already resolved!
+                            // Try take another component
+                            continue;
+                        }
+                        //
+                        SchemaModel sModel = contextSComp.getModel();
+                        unresolvedParents = new HashSet<SchemaComponent>();
+                        //
+                        if (sModel == ownerModel) {
+                            // Skip the same schema model. 
+                            // This model doesn't have the target namespace
+                            SchemaComponent parentComp = scPair.getParetnComp();
+                            if (parentComp != null) {
+                                unresolvedParents.add(parentComp);
+                            }
+                            continue;
+                        }
+                        //
+                        String targetNs = sModel.getSchema().getTargetNamespace();
+                        if (targetNs == null || targetNs.length() == 0) {
+                            // Skip the parent schema without a targetNamespace
+                            SchemaComponent parentComp = scPair.getParetnComp();
+                            if (parentComp != null) {
+                                unresolvedParents.add(parentComp);
+                            }
+                            continue;
+                        }
+                        //
+                        if (checkedModels.contains(sModel)) {
+                            // Skip the schema model if it has already checked.
+                            SchemaComponent parentComp = scPair.getParetnComp();
+                            if (parentComp != null) {
+                                unresolvedParents.add(parentComp);
+                            }
+                            continue;
+                        }
+                        //
+                        namespaceUri = sModel.getEffectiveNamespace(sComp);
+                        if (namespaceUri != null) {
+                            result.add(namespaceUri);
+                        }
+                        //
+                        // Remember the schema model to prevent the repeated call 
+                        // of the getEffectiveNamespace method.
+                        checkedModels.add(sModel);
+                    }
+                }
+                //
+                if (unresolvedParents == null || unresolvedParents.isEmpty()) {
+                    // No reason to check the next context layer.
+                    break;
+                }
+                //
+                // Move to the parent context
+                parentContext = parentContext.getParentContext();
+            }
+            // 
+            return result;
+        }
+    
+    }
+    
+}

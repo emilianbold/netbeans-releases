@@ -52,8 +52,6 @@ import org.tigris.subversion.svnclientadapter.*;
 /**
  * File revisions cache. It can access pristine files.
  *
- * XXX and what exactly is cached here?!
- * 
  * @author Petr Kuzel
  */
 public class VersionsCache {
@@ -152,16 +150,6 @@ public class VersionsCache {
                 throw ioex;
             }
         }
-
-        // TODO how to cache locally? In SVN there are no per file revisions
-        // like in CVS, revision that comes here is repositoty revision
-        //
-        // Example:
-        // unmodified file has many repository revisions
-        // and effective caching should store just one version
-        // (mapping all repository revisions to it)
-        //
-        // File caching is leveraged in Search History
     }
 
     private File getMetadataDir(File dir) {

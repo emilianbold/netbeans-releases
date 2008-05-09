@@ -415,7 +415,7 @@ public class Util {
             List<Method> candidateMethods = new ArrayList<Method>();
             
             for (int i = 0; i < methods.length; i++) {
-                if (methods[i].getName().equalsIgnoreCase(modelMethod.getName())) {
+                if (isSimilarMethod(methods[i].getName(), modelMethod.getName())) {
                     candidateMethods.add(methods[i]);
                 }
             }
@@ -442,6 +442,16 @@ public class Util {
         }catch (IOException ex) {
             return null;
         }
+    }
+    
+    private static boolean isSimilarMethod(String jaxRpcName, String modelName) {
+        if (jaxRpcName.equalsIgnoreCase(modelName)) {
+            return true;
+        }else if (jaxRpcName.replace("_", "").equalsIgnoreCase(modelName)) { // NOI18N
+            return true;
+        }
+        
+        return false;
     }
     
     private static int getMatchingParametersCount(Method method, JavaMethod model) {

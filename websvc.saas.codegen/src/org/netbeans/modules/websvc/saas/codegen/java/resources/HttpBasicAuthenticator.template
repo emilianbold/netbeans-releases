@@ -1,47 +1,44 @@
 /*
- * To change this template, choose Tools | Templates
+ * __NAME__.java
+ *
+ * Created on __DATE__, __TIME__
+ *
+ * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
  */
-<#assign licenseFirst = "/*">
-<#assign licensePrefix = " * ">
-<#assign licenseLast = " */">
-<#include "../Licenses/license-${project.license}.txt">
 
-<#if package?? && package != "">
-package ${package};
-
-</#if>
+package Templates.Classes;
 
 import java.io.IOException;
-import java.net.*;
+import java.net.Authenticator;
+import java.net.PasswordAuthentication;
 import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 
 /**
  *
- * @author ${user}
+ * @author __USER__
  */
-public class ${name} extends Authenticator {
+public class __NAME__ extends Authenticator {
     private String username;
     
     private String password;
     
-    public ${name}(String username, String password) {
+    private static final String PROP_FILE = __NAME__.class.getSimpleName().toLowerCase() + ".properties";
+
+    public __NAME__(String username, String password) {
         this.username = username;
         this.password = password;
     }
     
-    public ${name}() {
-        try {
-            Properties props = new Properties();
-            props.load(${name}.class.getResourceAsStream(
-                    "${profile.properties}"));
-            username = props.getProperty("username");
-            password = props.getProperty("password");
-        } catch (IOException ex) {
-            Logger.getLogger(${name}.class.getName()).log(Level.SEVERE, null, ex);
+    public __NAME__() throws IOException {
+        Properties props = new Properties();
+        props.load(__NAME__.class.getResourceAsStream(PROP_FILE));
+        username = props.getProperty("username");
+        password = props.getProperty("password");
+
+        if (username == null || username.length() == 0 || 
+            password == null || password.length() == 0) {
+            throw new IOException("Please specify your username and password in the "  + PROP_FILE + " file.");
         }
     }
     

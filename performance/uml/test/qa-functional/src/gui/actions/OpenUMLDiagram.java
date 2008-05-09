@@ -38,10 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
-
 package gui.actions;
-
 
 import java.io.File;
 
@@ -60,63 +57,57 @@ import org.netbeans.junit.ide.ProjectSupport;
  *
  */
 public class OpenUMLDiagram extends org.netbeans.performance.test.utilities.PerformanceTestCase {
-    
+
     private static String testProjectName = "jEdit-Model";
-    private static String testDiagramName = "ClassDiagram";    
-   
+    private static String testDiagramName = "ClassDiagram";
+
     /** Creates a new instance of OpenUMLDiagram */
     public OpenUMLDiagram(String testName) {
         super(testName);
-        //TODO: Adjust expectedTime value        
         expectedTime = 2000;
-        WAIT_AFTER_OPEN=4000;        
+        WAIT_AFTER_OPEN = 4000;
     }
-    
-    public OpenUMLDiagram(String testName, String  performanceDataName) {
+
+    public OpenUMLDiagram(String testName, String performanceDataName) {
         super(testName, performanceDataName);
-        //TODO: Adjust expectedTime value
         expectedTime = 2000;
-        WAIT_AFTER_OPEN=4000;                
+        WAIT_AFTER_OPEN = 4000;
     }
-    
-    public void initialize(){
+
+    @Override
+    public void initialize() {
         log(":: initialize");
-        
-        ProjectSupport.openProject(System.getProperty("xtest.tmpdir")+File.separator+testProjectName);
-//        new CloseAllDocumentsAction().performAPI();
+        ProjectSupport.openProject(System.getProperty("xtest.tmpdir") + File.separator + testProjectName);
     }
-   
+
     public void prepare() {
         log(":: prepare");
-
     }
 
     public ComponentOperator open() {
         log("::open");
-     
+
         Node pNode = new ProjectsTabOperator().getProjectRootNode(testProjectName);
-        Node diag = new Node(pNode,"Diagrams"+"|"+testDiagramName);
+        Node diag = new Node(pNode, "Diagrams" + "|" + testDiagramName);
         diag.select();
         diag.performPopupAction("Open");
-        
- 
-      return new TopComponentOperator(testDiagramName);
+
+        return new TopComponentOperator(testDiagramName);
     }
-    
+
+    @Override
     protected void shutdown() {
         log("::shutdown");
         ProjectSupport.closeProject(testProjectName);
     }
-   
 
-    public void close(){
+    @Override
+    public void close() {
         log("::close");
-      new CloseAllDocumentsAction().performAPI();
- 
-    } 
+        new CloseAllDocumentsAction().performAPI();
+    }
+
     public static void main(java.lang.String[] args) {
         junit.textui.TestRunner.run(new OpenUMLDiagram("measureTime"));
-    }      
-
-
+    }
 }

@@ -51,10 +51,8 @@ import org.netbeans.modules.mercurial.ui.update.RevertModificationsAction;
 import org.netbeans.modules.mercurial.ui.diff.DiffAction;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.HgProgressSupport;
-import org.netbeans.modules.mercurial.util.HgUtils;
-import org.netbeans.modules.mercurial.util.HgLogMessage;
+import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.netbeans.modules.versioning.util.Utils;
-import org.openide.*;
 import org.openide.loaders.*;
 import org.openide.filesystems.*;
 import org.openide.text.*;
@@ -189,6 +187,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         this.foldHierarchy = FoldHierarchy.get(editorUI.getComponent());
         this.doc = editorUI.getDocument();
         this.caret = textComponent.getCaret();
+        setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
     }
     
     // public contract ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -421,6 +420,8 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
 
     private void revert(final File file, String revision) {
         final File root = Mercurial.getInstance().getTopmostManagedParent(file);
+        if(root == null) return;
+        
         File[] files = new File [1];
         files[0] = file; 
         final RevertModifications revertModifications = new RevertModifications(root, files, revision);
@@ -428,10 +429,12 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
             return;
         }
         final String revStr =  revertModifications.getSelectionRevision();
+        final boolean doBackup = revertModifications.isBackupRequested();
+
         RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root);
         HgProgressSupport support = new HgProgressSupport() {
             public void perform() {                 
-                RevertModificationsAction.performRevert(root, revStr, file);
+                RevertModificationsAction.performRevert(root, revStr, file, doBackup, this.getLogger());
             }
         };
         support.start(rp, root.getAbsolutePath(), NbBundle.getMessage(AnnotationBar.class, "MSG_Revert_Progress")); // NOI18N
@@ -439,9 +442,9 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
 
     private String getPreviousRevision(String revision) {
         for(int i = 0; i < logs.length; i++) {
-            if (logs[i].getRevision() == Long.parseLong(revision)) {
+            if (logs[i].getRevision().equals(revision)) {
                 if (i < logs.length - 1)
-                    return Long.toString(logs[i+1].getRevision());
+                    return logs[i+1].getRevision();
             }
         }
         return null;
@@ -592,15 +595,6 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         dim.width = width;
         dim.height *=2;  // XXX
         return dim;
-    }
-
-    /**
-     * Gets the maximum size of this component.
-     *
-     * @return the maximum size of this component
-     */
-    public Dimension getMaximumSize() {
-        return getPreferredSize();
     }
 
     /**

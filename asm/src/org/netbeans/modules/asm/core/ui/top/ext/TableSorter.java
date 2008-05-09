@@ -150,7 +150,7 @@ public class TableSorter extends AbstractTableModel {
         setTableModel(tableModel);
     }
 
-    private void clearSortingState() {
+    private synchronized void clearSortingState() {
         viewToModel = null;
         modelToView = null;
     }
@@ -263,7 +263,7 @@ public class TableSorter extends AbstractTableModel {
         return LEXICAL_COMPARATOR;
     }
 
-    private Row[] getViewToModel() {
+    private synchronized Row[] getViewToModel() {
         if (viewToModel == null) {
             int tableModelRowCount = tableModel.getRowCount();
             viewToModel = new Row[tableModelRowCount];
@@ -282,7 +282,7 @@ public class TableSorter extends AbstractTableModel {
         return getViewToModel()[viewIndex].modelIndex;
     }
 
-    private int[] getModelToView() {
+    private synchronized int[] getModelToView() {
         if (modelToView == null) {
             int n = getViewToModel().length;
             modelToView = new int[n];

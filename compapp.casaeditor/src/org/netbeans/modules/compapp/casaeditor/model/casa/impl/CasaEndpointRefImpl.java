@@ -40,12 +40,16 @@
  */
 package org.netbeans.modules.compapp.casaeditor.model.casa.impl;
 
+import java.util.List;
 import javax.xml.namespace.QName;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaEndpointRef;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaEndpoint;
+import org.netbeans.modules.compapp.casaeditor.model.casa.CasaExtensibilityElement;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaModel;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.w3c.dom.Element;
+
+import static org.netbeans.modules.compapp.projects.jbi.api.JbiEndpointExtensionConstants.*;
 
 /**
  *
@@ -84,6 +88,18 @@ public abstract class CasaEndpointRefImpl extends CasaComponentImpl
     
     public String getFullyQualifiedEndpointName() {
         return getServiceQName() + "." + getEndpointName(); // NOI18N                
+    }
+             
+    public String getDisplayName() {
+        return getCasaEndpoint().getDisplayName();
+    }
+         
+    public String getProcessName() {
+        return getCasaEndpoint().getProcessName();
+    }
+         
+    public String getFilePath() {
+        return getCasaEndpoint().getFilePath();
     }
     
     private CasaEndpoint getCasaEndpoint() {

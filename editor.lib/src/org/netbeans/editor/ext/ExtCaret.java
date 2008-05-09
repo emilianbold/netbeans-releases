@@ -41,16 +41,7 @@
 
 package org.netbeans.editor.ext;
 
-import java.awt.event.MouseEvent;
-import java.lang.reflect.Method;
-import java.util.prefs.Preferences;
-import javax.swing.text.JTextComponent;
-import org.netbeans.api.editor.mimelookup.MimeLookup;
-import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.editor.BaseCaret;
-import org.netbeans.editor.Utilities;
-import org.netbeans.lib.editor.util.swing.DocumentUtilities;
-import org.openide.util.Lookup;
 
 /**
 * Extended caret implementation
@@ -141,8 +132,6 @@ public class ExtCaret extends BaseCaret {
 //
 //    private int matchBraceOffset = MATCH_BRACE_EITHER;
     
-    private boolean popupMenuEnabled;
-
     static final long serialVersionUID =-4292670043122577690L;
 
 // XXX: remove    
@@ -371,54 +360,7 @@ public class ExtCaret extends BaseCaret {
 // XXX: remove
 //        matchBraceUpdateSync = true;
     }
-
-    private boolean dontTryTheOldCompletion = false;
-    public @Override void mousePressed(MouseEvent evt) {
-        if (!dontTryTheOldCompletion) {
-// XXX: remove, this was replaced by the reflection code below to preserv backwards compatibility
-//        Completion completion = ExtUtilities.getCompletion(component);
-//        if (completion != null && completion.isPaneVisible()) {
-//            // Hide completion if visible
-//            completion.setPaneVisible(false);
-//        }
-            try {
-                ClassLoader loader = Lookup.getDefault().lookup(ClassLoader.class);
-                Class extUtilitiesClass = loader.loadClass("org.netbeans.editor.ext.ExtUtilities"); //NOI18N
-                Method getCompletionMethod = extUtilitiesClass.getMethod("getCompletion", JTextComponent.class); //NOI18N
-                Object completion = getCompletionMethod.invoke(null, component);
-                if (completion != null) {
-                    Method isPaneVisibleMethod = completion.getClass().getMethod("isPaneVisible"); //NOI18N
-                    if (((Boolean) isPaneVisibleMethod.invoke(completion)).booleanValue()) {
-                        Method setPaneVisibleMethod = completion.getClass().getMethod("setPaneVisible", Boolean.TYPE); //NOI18N
-                        setPaneVisibleMethod.invoke(completion, Boolean.FALSE);
-                    }
-                }
-            } catch (Exception e) {
-                dontTryTheOldCompletion = true;
-            }
-        }
-        
-        super.mousePressed(evt);
-	showPopup(evt);        
-    }
     
-    private boolean showPopup (MouseEvent evt) {
-        // Show popup menu for right click
-        if (component != null && evt.isPopupTrigger()) {
-            Preferences prefs = MimeLookup.getLookup(DocumentUtilities.getMimeType(component)).lookup(Preferences.class);
-            if (prefs.getBoolean(SimpleValueNames.POPUP_MENU_ENABLED, true)) {
-                Utilities.getEditorUI(component).showPopupMenu(evt.getX(), evt.getY());
-                return true;
-            }
-        }
-        return false;
-    }
-    
-    public @Override void mouseReleased(MouseEvent evt) {
-        if (!showPopup(evt)) {
-            super.mouseReleased(evt);
-        }
-    }
 // XXX: remove
 //    /* package */ static boolean NO_HIGHLIGHT_BRACE_LAYER = Boolean.getBoolean("nbeditor-no-HighlightBraceLayer");
 //    

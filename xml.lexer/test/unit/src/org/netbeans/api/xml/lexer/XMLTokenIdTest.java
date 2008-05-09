@@ -51,8 +51,9 @@ import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.editor.NbEditorDocument;
 
 /**
- *
- * @author Samaresh
+ * The XMLTokenIdTest tests the parsing algorithm of XMLLexer.
+ * Various tests include, sanity, regression, performance etc.
+ * @author Samaresh (samaresh.panda@sun.com)
  */
 public class XMLTokenIdTest extends TestCase {
     
@@ -71,9 +72,64 @@ public class XMLTokenIdTest extends TestCase {
     public static Test suite() {
         TestSuite suite = new TestSuite();
         suite.addTest(new XMLTokenIdTest("testTokens"));
+        //two regression tests
+        suite.addTest(new XMLTokenIdTest("testParse1"));
+        suite.addTest(new XMLTokenIdTest("testParse2"));
+        //measure performace
+        suite.addTest(new XMLTokenIdTest("testParsePerformance"));
         return suite;
     }
     
+    /**
+     * Parses a XML document using XMLLexer and loops through all tokens.
+     * @param document
+     * @throws java.lang.Exception
+     */
+    private void parse(javax.swing.text.Document document) throws Exception {
+        TokenHierarchy th = TokenHierarchy.get(document);
+        TokenSequence ts = th.tokenSequence();
+        assert(true);
+        while(ts.moveNext()) {
+            Token token = ts.token();
+            assert(token.id() != null);
+        }        
+    }
+    
+    /**
+     * This test parses a particular schema that was earlier failing.
+     * See http://www.netbeans.org/issues/show_bug.cgi?id=124731
+     * See http://hg.netbeans.org/main?cmd=changeset;node=34612be91839
+     */
+    public void testParse1() throws Exception {
+        javax.swing.text.Document document = getDocument("resources/UBL-CommonAggregateComponents-1.0.xsd");
+        parse(document);
+    }
+    
+    /**
+     * This test parses a particular schema that was earlier failing.
+     * See http://www.netbeans.org/issues/show_bug.cgi?id=125005
+     * See http://hg.netbeans.org/main?cmd=changeset;node=dcd138bddc6c
+     */
+    public void testParse2() throws Exception {
+        javax.swing.text.Document document = getDocument("resources/wsdl.xml");
+        parse(document);
+    }
+    
+    /**
+     * This test measures the performance of XMLLexer on healthcare schema.
+     */
+    public void testParsePerformance() throws Exception {
+        javax.swing.text.Document document = getDocument("resources/fields.xsd");
+        long start = System.currentTimeMillis();
+        parse(document);
+        long end = System.currentTimeMillis();
+        System.out.println("Time taken to parse healthcare schema: " + (end-start) + "ms.");
+    }
+    
+    /**
+     * This test validates all tokens obtained by parsing test.xml against
+     * an array of expected tokens.
+     */
     public void testTokens() throws Exception {
         XMLTokenId[] expectedIds = {XMLTokenId.PI_START, XMLTokenId.PI_TARGET, XMLTokenId.WS, XMLTokenId.PI_CONTENT,
             XMLTokenId.PI_END, XMLTokenId.TEXT, XMLTokenId.TAG, XMLTokenId.WS, XMLTokenId.ARGUMENT,

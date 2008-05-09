@@ -1,0 +1,43 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<!--       
+ *     Copyright © 2008 Sun Microsystems, Inc. All rights reserved.
+ *     Use is subject to license terms.
+ *
+-->
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+        <title>Quick Fixes and Semantic Checks (JavaScript Files)</title>
+        <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+        
+    </head>
+    <body>
+        <h2>Quick Fixes and Semantic Checks (JavaScript Files)</h2> 
+        <ul class="note">
+            <li>For an illustrated description of JavaScript editing features in the NetBeans IDE,
+                see:
+                <p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                    <param name="content" value="http://www.netbeans.org/kb/61/ide/javascript-editor.html">
+                    <param name="text" value="<html><u>Editing JavaScript (Web document)</u></html>">
+                    <param name="textFontSize" value="medium">
+                    <param name="textColor" value="blue">
+                </object>
+            </li>
+        </ul>
+        <p>To display quick fixes, select Source &gt; Fix Code (Alt-Enter). The semantic checks include:</p>
+        <ul><li>Reassigning a parameter.</li>
+            <li>Anonymous function does not always return a value.</li>
+            <li>Variable hides argument.</li>
+            <li> Code which has no side effects (no calls, no assignments).</li>
+            <li>An assignment in a conditional (if x = y). This semantic error has several  quickfixes associated with it, such as converting to an == expression, and  adding double parentheses to turn off the warning. </li>
+            <li>Inconsistent returns from a function (where some return expressions return a value, and some do not).</li>
+            
+        </ul>
+        
+        <h3>Task List</h3>
+        <p>The background parser and the warning quick fixes are  integrated with the task list. Open the tasklist (Window &gt; Task List) to view errors in any  of your files that are associated with JavaScript. Double-click a task in that list and the editor goes to the relevant line.</p>
+        <hr> 
+        <small><a href="../credits.html">Legal Notices</a></small>
+    </body>
+</html>

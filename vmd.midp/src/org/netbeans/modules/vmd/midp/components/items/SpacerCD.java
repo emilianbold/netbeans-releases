@@ -107,9 +107,9 @@ public class SpacerCD extends ComponentDescriptor {
                     PropertyEditorPreferredSize.createInstance(NbBundle.getMessage(SpacerCD.class, "LBL_Spacer_Preferred_Height"), // NOI18N
                         NbBundle.getMessage(SpacerCD.class, "DISP_Spacer_Preferred_Height")), ItemCD.PROP_PREFERRED_HEIGHT) // NOI18N
                 .addProperty(NbBundle.getMessage(SpacerCD.class, "DISP_Spacer_Minimum_Width"), // NOI18N
-                    PropertyEditorNumber.createIntegerInstance(false, NbBundle.getMessage(SpacerCD.class, "LBL_Spacer_Minimum_Width")), PROP_MIN_WIDTH) // NOI18N
+                    PropertyEditorNumber.createPositiveIntegerInstance(false, NbBundle.getMessage(SpacerCD.class, "LBL_Spacer_Minimum_Width")), PROP_MIN_WIDTH) // NOI18N
                 .addProperty(NbBundle.getMessage(SpacerCD.class, "DISP_Spacer_Minimum_Height"), // NOI18N
-                    PropertyEditorNumber.createIntegerInstance(false, NbBundle.getMessage(SpacerCD.class, "LBL_Spacer_Minimum_Height")), PROP_MIN_HEIGHT); // NOI18N
+                    PropertyEditorNumber.createPositiveIntegerInstance(false, NbBundle.getMessage(SpacerCD.class, "LBL_Spacer_Minimum_Height")), PROP_MIN_HEIGHT); // NOI18N
     }
    
     private static Presenter createSetterPresenter() {

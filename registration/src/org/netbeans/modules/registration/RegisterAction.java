@@ -52,6 +52,7 @@ import org.openide.util.actions.CallableSystemAction;
 
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.awt.Mnemonics;
 
 /** The action that shows the Register dialog.
 *
@@ -74,15 +75,27 @@ public class RegisterAction extends CallableSystemAction implements ActionListen
         
         registerNow.addActionListener(l);
         registerNow.setActionCommand(StatusData.STATUS_REGISTERED);
-        registerNow.setText(NbBundle.getMessage(RegisterAction.class,"LBL_RegisterNow"));
+        //registerNow.setText(NbBundle.getMessage(RegisterAction.class,"LBL_RegisterNow"));
+        Mnemonics.setLocalizedText(registerNow, NbBundle.getMessage(
+                RegisterAction.class, "LBL_RegisterNow"));
+        registerNow.getAccessibleContext().setAccessibleDescription(
+                NbBundle.getMessage(RegisterAction.class,"ACSD_RegisterNow"));
         
         registerLater.addActionListener(l);
         registerLater.setActionCommand(StatusData.STATUS_LATER);
-        registerLater.setText(NbBundle.getMessage(RegisterAction.class,"LBL_RegisterLater"));
+        //registerLater.setText(NbBundle.getMessage(RegisterAction.class,"LBL_RegisterLater"));
+        Mnemonics.setLocalizedText(registerLater, NbBundle.getMessage(
+                RegisterAction.class, "LBL_RegisterLater"));
+        registerLater.getAccessibleContext().setAccessibleDescription(
+                NbBundle.getMessage(RegisterAction.class,"ACSD_RegisterLater"));
         
         registerNever.addActionListener(l);
         registerNever.setActionCommand(StatusData.STATUS_NEVER);
-        registerNever.setText(NbBundle.getMessage(RegisterAction.class,"LBL_RegisterNever"));
+        //registerNever.setText(NbBundle.getMessage(RegisterAction.class,"LBL_RegisterNever"));
+        Mnemonics.setLocalizedText(registerNever, NbBundle.getMessage(
+                RegisterAction.class, "LBL_RegisterNever"));
+        registerNever.getAccessibleContext().setAccessibleDescription(
+                NbBundle.getMessage(RegisterAction.class,"ACSD_RegisterNever"));
     }
 
     public void performAction () {

@@ -124,6 +124,7 @@ org.netbeans.api.debugger.jpda.LocalVariable {
         try {
             StackFrame sf = ((CallStackFrameImpl) thread.getCallStack(depth, depth + 1)[0]).getStackFrame();
             sf.setValue (local, value);
+            setInnerValue(value);
         } catch (AbsentInformationException aiex) {
             throw new InvalidExpressionException(aiex);
         } catch (InvalidTypeException ex) {

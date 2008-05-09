@@ -16,10 +16,6 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
-/**
- *
- */
 package org.netbeans.modules.bpel.model.impl;
 
 import java.util.Collection;
@@ -34,10 +30,8 @@ import org.netbeans.modules.bpel.model.xam.BpelElements;
 import org.openide.util.Lookup;
 import org.openide.util.Lookup.Result;
 
-
 /**
  * @author ads
- *
  */
 final class EntityFactoryRegistry {
 
@@ -60,14 +54,6 @@ final class EntityFactoryRegistry {
         return INSTANCE;
     }
 
-//    public void register( EntityFactory factory ){
-//        myFactories.add( factory );
-//    }
-//    
-//    public void unregister( EntityFactory factory ){
-//        myFactories.remove( factory );
-//    }
-    
     public Collection<EntityFactory> getFactories(){
         return Collections.unmodifiableCollection( myFactories );
     }

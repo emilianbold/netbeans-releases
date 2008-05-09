@@ -183,7 +183,7 @@ public class PreprocLexerTestCase extends NbTestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.COMMA, ",");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_IDENTIFIER, "y");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.RPAREN, ")");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " \\\n ");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.ESCAPED_WHITESPACE, " \\\n ");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.LPAREN, "(");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.LPAREN, "(");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.LPAREN, "(");

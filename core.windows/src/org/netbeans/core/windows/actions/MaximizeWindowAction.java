@@ -54,6 +54,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import org.openide.util.Mutex;
 
 
 /** An action that can toggle maximized window system mode for specific window.
@@ -148,15 +149,11 @@ public class MaximizeWindowAction extends AbstractAction {
      * #44825 - Shortcuts folder can call our constructor from non-AWT thread.
      */
     private void updateState() {
-        if (SwingUtilities.isEventDispatchThread()) {
-            doUpdateState();
-        } else {
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    doUpdateState();
-                }
-            });
-        }
+        Mutex.EVENT.readAccess( new Runnable() {
+            public void run() {
+                doUpdateState();
+            }
+        });
     }
     
     /** Updates state and text of this action.
@@ -164,10 +161,12 @@ public class MaximizeWindowAction extends AbstractAction {
     private void doUpdateState() {
         WindowManagerImpl wm = WindowManagerImpl.getInstance();
         TopComponent active = getTCToWorkWith();
-        Object param = active == null ? "" : active.getName(); // NOI18N
         boolean maximize;
         ModeImpl activeMode = (ModeImpl)wm.findMode(active);
         if (activeMode == null) {
+            String label = NbBundle.getMessage(MaximizeWindowAction.class, "CTL_MaximizeWindowAction"); //NOI18N
+            putValue(Action.NAME, (isPopup ? Actions.cutAmpersand(label) : label));
+            setEnabled(false);
             return;
         }
 
@@ -183,9 +182,9 @@ public class MaximizeWindowAction extends AbstractAction {
 
         String label;
         if(maximize) {
-            label = NbBundle.getMessage(MaximizeWindowAction.class, "CTL_MaximizeWindowAction", param);
+            label = NbBundle.getMessage(MaximizeWindowAction.class, "CTL_MaximizeWindowAction");
         } else {
-            label = NbBundle.getMessage(MaximizeWindowAction.class, "CTL_UnmaximizeWindowAction", param);
+            label = NbBundle.getMessage(MaximizeWindowAction.class, "CTL_UnmaximizeWindowAction");
         }
         putValue(Action.NAME, (isPopup ? Actions.cutAmpersand(label) : label));
         

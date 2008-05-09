@@ -57,9 +57,11 @@ made subject to such option by the copyright holder.
     
     <bind key="O-W" remove="true"/>
     <bind key="M-W" actionName="copy-to-clipboard"/>
-    
-    <bind key="O-G" remove="true"/>
-    <bind key="M-G" actionName="goto"/>
+
+    <bind key="O-G$G" remove="true"/>
+    <bind key="O-G$O-G" remove="true"/>
+    <bind key="M-G$G" actionName="goto"/>
+    <bind key="M-G$M-G" actionName="goto" />
     
     <bind key="O-V" remove="true"/>
     <bind key="M-V" actionName="page-up"/>
@@ -74,8 +76,11 @@ made subject to such option by the copyright holder.
     <bind actionName="caret-next-word" key="M-F"/>
     
     <!-- Things we add only on the mac -->
+    <bind key="C-P" actionName="caret-up"/>
     <bind key="C-W" actionName="cut-to-clipboard"/>
     <bind key="C-D" actionName="delete-next"/>
     <bind key="C-V" actionName="page-down"/>
+    <bind key="M-UP" actionName="page-up"/> <!-- macbook support -->
+    <bind key="M-DOWN" actionName="page-down"/> <!-- macbook support -->
     
 </bindings>

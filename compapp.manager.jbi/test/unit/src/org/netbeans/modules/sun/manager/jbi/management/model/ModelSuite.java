@@ -48,6 +48,8 @@ import org.junit.runners.Suite;
  */
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
+        org.netbeans.modules.sun.manager.jbi.management.model.ComponentInformationParserTest.class,
+        org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentActionDescriptorTest.class,
         org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentConfigurationDescriptorTest.class,
         org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentConfigurationParserTest.class
 })

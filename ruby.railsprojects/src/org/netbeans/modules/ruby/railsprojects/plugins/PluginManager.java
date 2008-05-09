@@ -513,6 +513,9 @@ public class PluginManager {
             argList.add(revision);
         }
         
+        // see #123758
+        argList.add("--force"); //NOI18N
+        
         String[] args = argList.toArray(new String[argList.size()]);
         
         String title = NbBundle.getMessage(PluginManager.class, "Installation");

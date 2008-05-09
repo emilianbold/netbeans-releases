@@ -48,7 +48,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.event.*;
+import javax.xml.XMLConstants;
+import javax.xml.namespace.NamespaceContext;
 import javax.xml.parsers.*;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
 import org.netbeans.modules.j2ee.websphere6.ui.wizard.WSInstantiatingIterator;
 import org.w3c.dom.*;
 import org.xml.sax.*;
@@ -183,6 +188,43 @@ public class ServerProperties {
         // convert the vector to an array and return
         return (String[]) result.toArray(new String[result.size()]);
     }
+
+    public static boolean isSecurityEnabled(String cellPath) {
+        File securityFile = new File(cellPath, "security.xml"); // NOI18N
+        try {
+            InputStream is = new BufferedInputStream(new FileInputStream(securityFile));
+            try {
+                XPath xpath = XPathFactory.newInstance().newXPath();
+                xpath.setNamespaceContext(new NamespaceContext() {
+
+                    public String getNamespaceURI(String prefix) {
+                        if ("security".equals(prefix)) { // NOI18N
+                            return "http://www.ibm.com/websphere/appserver/schemas/5.0/security.xmi"; // NOI18N
+                        }
+                        return XMLConstants.NULL_NS_URI;
+                    }
+
+                    public String getPrefix(String namespaceURI) {
+                        throw new UnsupportedOperationException("Not needed");
+                    }
+
+                    public Iterator getPrefixes(String namespaceURI) {
+                        throw new UnsupportedOperationException("Not needed");
+                    }
+                });
+                String value = xpath.evaluate("/security:Security/@enabled", new InputSource(is)); // NOI18N
+                return value != null && Boolean.parseBoolean(value);
+            } finally {
+                is.close();
+            }
+        } catch (IOException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+        } catch (XPathExpressionException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+        }
+        return false;
+    }
+
     /**
      * Gets the port for a given cell basing on the cell's root directory.
      *
@@ -686,6 +728,7 @@ public class ServerProperties {
                 for (int j = 0; j < files.length; j++){
                     String nextCellPath = file.getAbsolutePath() + File.separator +
                             files[j];
+                    boolean securityEnabled = ServerProperties.isSecurityEnabled(nextCellPath);
                     String address = "localhost";                          // NOI18N
                     String port = ServerProperties.getCellPort(nextCellPath);
                     String adminPort = ServerProperties.getCellAdminPort(nextCellPath);
@@ -694,7 +737,7 @@ public class ServerProperties {
                     String configXmlPath = ServerProperties.getConfigXmlPath(nextCellPath);
                     String defaultHostPort = ServerProperties.getCellDefaultHostPort(nextCellPath);
                     result.add(new Instance(serverName, address, port, domains[i],
-                            configXmlPath, adminPort,httpPort,defaultHostPort));
+                            configXmlPath, adminPort, httpPort, defaultHostPort, securityEnabled));
                 }
             }
         }

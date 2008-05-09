@@ -286,6 +286,15 @@ public final class CreatedModifiedFilesFactory {
             } else {
                 copyAndSubstituteTokens(content, target, tokens);
             }
+            // #129446: form editor doesn't work sanely unless you do this:
+            if (target.hasExt("form")) { // NOI18N
+                FileObject java = FileUtil.findBrother(target, "java"); // NOI18N
+                if (java != null) {
+                    java.setAttribute("justCreatedByNewWizard", true); // NOI18N
+                }
+            } else if (target.hasExt("java") && FileUtil.findBrother(target, "form") != null) { // NOI18N
+                target.setAttribute("justCreatedByNewWizard", true); // NOI18N
+            }
         }
         
     }
@@ -305,7 +314,9 @@ public final class CreatedModifiedFilesFactory {
     }
     
     private static void copyAndSubstituteTokens(FileObject content, FileObject target, Map<String,String> tokens) throws IOException {
-        ScriptEngine engine = new ScriptEngineManager().getEngineByName("freemarker");
+        ScriptEngineManager scriptEngineManager = new ScriptEngineManager();
+        ScriptEngine engine = scriptEngineManager.getEngineByName("freemarker");
+        assert engine != null : scriptEngineManager.getEngineFactories();
         Map<String,Object> bindings = engine.getContext().getBindings(ScriptContext.ENGINE_SCOPE);
         String basename = target.getName();
         for (CreateFromTemplateAttributesProvider provider : Lookup.getDefault().lookupAll(CreateFromTemplateAttributesProvider.class)) {
@@ -550,7 +561,7 @@ public final class CreatedModifiedFilesFactory {
             if (layer != null && layer.findResource(layerPath) != null) {
                 layerOp = new CreatedModifiedFiles.Operation() {
                     public void run() throws IOException {
-                        throw new IOException("cannot run"); // NOI18N
+                        throw new IOException("cannot overwrite " + layerPath); // NOI18N
                     }
                     public String[] getModifiedPaths() {
                         return new String[0];

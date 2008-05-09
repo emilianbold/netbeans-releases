@@ -93,7 +93,7 @@ public class AddBreakpointPanel extends javax.swing.JPanel implements HelpCtx.Pr
     private javax.swing.JPanel      pEvent;
     /** <CODE>HelpCtx</CODE> of the selected breakpoint type's customizer */
     private HelpCtx                 helpCtx;
-    private List                    breakpointTypes;
+    private List<? extends BreakpointType> breakpointTypes;
 
 
     // init ....................................................................
@@ -102,10 +102,8 @@ public class AddBreakpointPanel extends javax.swing.JPanel implements HelpCtx.Pr
     public AddBreakpointPanel () {
         breakpointTypes = DebuggerManager.getDebuggerManager ().lookup 
             (null, BreakpointType.class);
-        int i, k = breakpointTypes.size ();
         String def = null;
-        for (i = 0; i < k; i++) {
-            BreakpointType bt = (BreakpointType) breakpointTypes.get (i);
+        for (BreakpointType bt : breakpointTypes) {
             String dn = bt.getCategoryDisplayName ();
             if (!cathegories.contains (dn)) {
                 cathegories.add (dn);
@@ -239,9 +237,8 @@ public class AddBreakpointPanel extends javax.swing.JPanel implements HelpCtx.Pr
         doNotRefresh = true;
         cbEvents.removeAllItems ();
         types = new ArrayList ();
-        int i, k = breakpointTypes.size (), defIndex = 0;
-        for (i = 0; i < k; i++) {
-            BreakpointType bt = (BreakpointType) breakpointTypes.get (i);
+        int defIndex = 0;
+        for (BreakpointType bt : breakpointTypes) {
             if (!bt.getCategoryDisplayName ().equals (c))
                 continue;
             cbEvents.addItem (bt.getTypeDisplayName ());

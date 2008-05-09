@@ -50,6 +50,7 @@
 package org.netbeans.modules.uml.integration.ide.events;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -59,6 +60,8 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Iterator;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.uml.core.metamodel.core.constructs.IClass;
 import org.netbeans.modules.uml.core.metamodel.core.constructs.IEnumeration;
 import org.netbeans.modules.uml.core.metamodel.core.constructs.IEnumerationLiteral;
@@ -172,6 +175,7 @@ import org.openide.filesystems.FileUtil;
  */
 public class ClassInfo extends ElementInfo
 {
+    private static final Logger logger = Logger.getLogger(ClassInfo.class.getName());
     /**
      * Describe id for class elements.
      */
@@ -362,7 +366,7 @@ public class ClassInfo extends ElementInfo
         }
         catch (Exception e)
         {
-            Log.stackTrace(e);
+            logger.log(Level.WARNING, null, e);
         }
         return null;
     }
@@ -381,8 +385,6 @@ public class ClassInfo extends ElementInfo
             while ((owner = owner.getOwner()) != null &&
                 !(owner instanceof IPackage));
             
-
-	    
             if (owner == null)
             {
                 // What manner of demonic IClassifier is this anyway?
@@ -402,12 +404,10 @@ public class ClassInfo extends ElementInfo
 	    }
             return createPath(getExportSourceFolderName(), packName);
         }
-        
         catch (Exception e)
         {
-            Log.stackTrace(e);
+            logger.log(Level.WARNING, null, e);
         }
-        
         return null;
     }
     
@@ -476,7 +476,7 @@ public class ClassInfo extends ElementInfo
             }
             catch (Exception e)
             {
-                Log.stackTrace(e);
+                logger.log(Level.WARNING, null, e);
             }
         }
         return sourceDir;
@@ -1172,8 +1172,7 @@ public class ClassInfo extends ElementInfo
         }
         catch (Exception e)
         {
-//            e.printStackTrace();
-            Log.stackTrace(e);
+            logger.log(Level.WARNING, null, e);
         }
         finally
         {
@@ -2348,15 +2347,17 @@ public class ClassInfo extends ElementInfo
 
     public FileObject getExportSourceFolderFileObject()
     {
-        File file = new File(getExportSourceFolderName());
-
-        if (!file.exists())
+        FileObject fileObj = null;
+        try
         {
-            if (!file.mkdirs())
-                return null;
+            File file = new File(getExportSourceFolderName());
+            fileObj = FileUtil.createFolder(file);
         }
-       
-        return FileUtil.toFileObject(file);
+        catch (IOException ex)
+        {
+            logger.log(Level.WARNING, null, ex);
+        }
+        return fileObj;
     }
     
     
@@ -2367,20 +2368,22 @@ public class ClassInfo extends ElementInfo
     
     public FileObject getExportPackageFileObject(String subfolder)
     {
-        String pathName = getExportSourcePackage();
-
-        if (subfolder != null)
-             pathName += File.separatorChar + subfolder;
-        
-        File file = new File(pathName);
-
-        if (!file.exists())
+         FileObject fileObj = null;
+        try
         {
-            if (!file.mkdirs())
-                return null;
+            String pathName = getExportSourcePackage();
+            if (subfolder != null)
+            {
+                pathName += File.separatorChar + subfolder;
+            }
+            File file = new File(pathName);
+            fileObj = FileUtil.createFolder(file);
         }
-        
-        return FileUtil.toFileObject(file);
+        catch (IOException ex)
+        {
+            logger.log(Level.WARNING, null, ex);
+        }
+        return fileObj;
     }
     
     private static Hashtable refClassInfos = new Hashtable();

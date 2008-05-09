@@ -43,7 +43,11 @@ package org.netbeans.modules.cnd.actions;
 
 import java.io.File;
 import java.io.IOException;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.execution.NativeExecutor;
+import org.netbeans.modules.cnd.api.utils.CppUtils;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.Path;
 import org.netbeans.modules.cnd.builds.MakeExecSupport;
@@ -99,6 +103,23 @@ public abstract class MakeBaseAction extends NodeAction {
         DataObject dataObject = (DataObject) node.getCookie(DataObject.class);
         FileObject fileObject = dataObject.getPrimaryFile();
         
+        CompilerSet cs = null;
+        String csdirs = ""; // NOI18N
+        String dcsn = CppSettings.getDefault().getCompilerSetName();
+        if (dcsn != null && dcsn.length() > 0) {
+            cs = CompilerSetManager.getDefault().getCompilerSet(dcsn);
+            if (cs != null) {
+                csdirs = cs.getDirectory();
+                if (cs.getCompilerFlavor() == CompilerFlavor.MinGW) {
+                    // Also add msys to path. Thet's where sh, mkdir, ... are.
+                    String msysBase = CppUtils.getMSysBase();
+                    if (msysBase != null && msysBase.length() > 0) {
+                        csdirs += File.pathSeparator + msysBase + File.separator + "bin"; // NOI18N
+                    }
+                }
+            }
+        }
+        
         if (MakeSettings.getDefault().getSaveAll()) {
             LifecycleManager.getDefault().saveAll();
         }
@@ -130,7 +151,7 @@ public abstract class MakeBaseAction extends NodeAction {
             tabName += " " + target; // NOI18N
         
         // Execute the makefile
-        String[] envp = { Path.getPathName() + '=' + CppSettings.getDefault().getPath() };
+        String[] envp = { Path.getPathName() + '=' + Path.getPathAsString() + File.pathSeparatorChar + csdirs};
         try {
             new NativeExecutor(
                     buildDir.getPath(),

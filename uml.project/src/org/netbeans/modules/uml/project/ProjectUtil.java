@@ -428,7 +428,7 @@ public class ProjectUtil
             "<default package>"; // NOI18N
     
     
-    public static void selectInModel(Project proj, DataObject obj)
+    public static void selectInModel(List<Project> projects, DataObject obj)
     {
         String resourceName = "";
         String className = "";
@@ -461,7 +461,6 @@ public class ProjectUtil
             packageName = resourceName;
         }
         
-        StringTokenizer st = new StringTokenizer(packageName, "/");
         TopComponent tc = WindowManager.getDefault()
                 .findTopComponent("projectTabLogical_tc");
         
@@ -482,10 +481,11 @@ public class ProjectUtil
             
             Node selected = null;
             
-            if (p == proj)
+            if (projects.contains(p))
             {
                 Node selectedNode = null;
                 
+                StringTokenizer st = new StringTokenizer(packageName, "/");
                 if (st.hasMoreTokens())
                 {
                     String token = st.nextToken();
@@ -497,13 +497,16 @@ public class ProjectUtil
                     }
                 }
                 
-                if (!isPackage)
+                if (!isPackage && selectedNode!=null)
                 {
                     selectedNode = findNodeByName(selectedNode, className, false);
                 }
                 
                 final Node node = selectedNode;
-                selectNodeAsync(node);
+                if (node != null) {
+                    selectNodeAsync(node);
+                    return;
+                }
             }
         }
         return;
@@ -512,7 +515,7 @@ public class ProjectUtil
     
     public static Node findNodeByName(Node root, String name, boolean isPackage)
     {
-        if (root.isLeaf())
+        if (root == null || root.isLeaf())
             return null;
         
         Children children = root.getChildren();

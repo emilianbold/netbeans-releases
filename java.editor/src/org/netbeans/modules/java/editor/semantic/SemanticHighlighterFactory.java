@@ -63,4 +63,8 @@ public class SemanticHighlighterFactory extends EditorAwareJavaSourceTaskFactory
         return new SemanticHighlighter(file);
     }
 
+    final void rescheduleImpl(FileObject file) throws IllegalArgumentException {
+        reschedule(file);
+    }
+    
 }

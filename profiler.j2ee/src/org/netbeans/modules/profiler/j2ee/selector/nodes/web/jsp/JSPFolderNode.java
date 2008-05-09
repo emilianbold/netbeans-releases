@@ -41,15 +41,15 @@
 package org.netbeans.modules.profiler.j2ee.selector.nodes.web.jsp;
 
 import org.netbeans.modules.profiler.j2ee.ui.Utils;
-import org.netbeans.modules.profiler.selector.api.SelectorChildren;
-import org.netbeans.modules.profiler.selector.api.SelectorNode;
-import org.netbeans.modules.profiler.selector.api.nodes.ContainerNode;
-import org.netbeans.modules.profiler.selector.api.nodes.GreedySelectorChildren;
 import org.openide.filesystems.FileObject;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import org.netbeans.modules.profiler.selector.spi.nodes.ContainerNode;
+import org.netbeans.modules.profiler.selector.spi.nodes.GreedySelectorChildren;
+import org.netbeans.modules.profiler.selector.spi.nodes.SelectorChildren;
+import org.netbeans.modules.profiler.selector.spi.nodes.SelectorNode;
 
 
 /**

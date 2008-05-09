@@ -66,7 +66,7 @@ public class CompletionPerfTest extends AbstractTestCase {
     public void testPerformance() throws Exception {
         long startTime = System.currentTimeMillis();
         setupCompletion(COMPLETION_TEST_DOCUMENT, null);
-        List<CompletionResultItem> items = query(819239);
+        List<CompletionResultItem> items = query(819173);
         long endTime = System.currentTimeMillis();
         System.out.println(endTime - startTime);
         String[] expectedResult = {"xs:include", "xs:import", "xs:redefine",

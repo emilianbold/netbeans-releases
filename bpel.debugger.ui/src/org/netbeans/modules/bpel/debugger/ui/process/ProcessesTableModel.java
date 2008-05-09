@@ -55,8 +55,7 @@ public class ProcessesTableModel implements TableModel {
     public ProcessesTableModel(
             final ContextProvider lookupProvider) {
         
-        myDebugger = (BpelDebugger)
-                lookupProvider.lookupFirst(null, BpelDebugger.class);
+        myDebugger = lookupProvider.lookupFirst(null, BpelDebugger.class);
         myVariablesUtil = new VariablesUtil(myDebugger);
     }
     

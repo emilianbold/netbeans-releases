@@ -2,4 +2,4 @@
 char* v = "S  ;
 #endif
 
-int foo();
+int foo_incomplete_string();

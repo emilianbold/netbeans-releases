@@ -75,12 +75,14 @@ public class StyleClassPropertyEditor extends PropertyEditorBase implements
         this.styleClassList = Arrays.asList(styleClasses);
     }
 
+    @Override
     public Object getValue() {
         if (styleClassList == null || styleClassList.size() == 0)
             return null;
         return getAsText();
     }
 
+    @Override
     public void setValue(Object value) {
         String text = (String) value;
         if (text == null || text.trim().length() == 0) {
@@ -90,6 +92,7 @@ public class StyleClassPropertyEditor extends PropertyEditorBase implements
         }
     }
 
+    @Override
     public String getAsText() {
         if (styleClassList == null || styleClassList.size() == 0)
             return "";
@@ -102,7 +105,8 @@ public class StyleClassPropertyEditor extends PropertyEditorBase implements
         return buffer.toString();
     }
 
-    public void setAsText(String text) throws IllegalArgumentException {
+    @Override
+    public void setAsText(String text) {
         text = text.trim();
         if (text == null || text.length() == 0) {
             this.styleClassList = null;
@@ -154,37 +158,29 @@ public class StyleClassPropertyEditor extends PropertyEditorBase implements
             } else {
                 // text is space separated.
                 styleClasses = text.split("\\s");
-                String[] styleClassesInContext = getAvailableStyleClasses();
-                this.styleClassList = new ArrayList();
-                List notFoundStyleClassList = new ArrayList();                          
+                this.styleClassList = new ArrayList();                   
                 for (int i = 0; i < styleClasses.length; i++) {
-                    int index = Arrays.binarySearch(styleClassesInContext, styleClasses[i]);
-                    if (index >= 0)
-                        this.styleClassList.add(styleClassesInContext[index]);
-                    else
-                        notFoundStyleClassList.add(styleClasses[i]);
+                    this.styleClassList.add(styleClasses[i]);
                 }            
-                if (notFoundStyleClassList.size() > 0) {
-                    throw new IllegalTextArgumentException(
-                            bundle.getMessage("StyleClassPropertyEditor.classNotFound", notFoundStyleClassList.toString()));
-                }
             }
         }
     }
 
+    @Override
     public boolean supportsCustomEditor() {
         return true;
     }
 
+    @Override
     public Component getCustomEditor() {
         return new StyleClassPropertyPanel(this);
     }
 
     String[] getAvailableStyleClasses() {
-        DesignProperty designProperty = this.getDesignProperty();
-        if (designProperty == null)
+        DesignProperty designProp = this.getDesignProperty();
+        if (designProp == null)
             return new String[0];
-        DesignContext designContext = designProperty.getDesignBean().getDesignContext();
+        DesignContext designContext = designProp.getDesignBean().getDesignContext();
         // According to the API documentation, this should return an array of
         // StyleClassDescriptor objects, but this does not appear to have been
         // implemented yet.

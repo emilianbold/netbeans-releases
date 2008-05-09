@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.ws.qaf.utilities;
 
+import java.util.logging.Logger;
 import org.netbeans.junit.diff.LineDiff;
 
 /**
@@ -49,6 +50,8 @@ import org.netbeans.junit.diff.LineDiff;
  */
 public class FilteringLineDiff extends LineDiff {
 
+    private static final Logger LOGGER = Logger.getLogger(FilteringLineDiff.class.getName());
+    
     /**
      * Creates a new instance of FilteringLineDiff
      *
@@ -66,8 +69,9 @@ public class FilteringLineDiff extends LineDiff {
     }
 
     /**
-     *  Lines beginning with " * Created " or " * @author " and empty lines
-     * are treated equals.
+     *  Lines beginning with " * Created ", " * @author " or "import " and empty
+     * lines are treated equals. One can check import statements by buildng
+     * a project.
      *
      * @param l1 first line to compare
      * @param l2 second line to compare
@@ -78,10 +82,27 @@ public class FilteringLineDiff extends LineDiff {
         if (super.compareLines(l1, l2)) {
             return true;
         }
-        if (((l1.indexOf(" * Created ") == 0) && (l2.indexOf(" * Created ") == 0)) || ((l1.indexOf(" * @author ") == 0) && (l2.indexOf(" * @author ") == 0)) || ((l1.indexOf("Created-By: ") == 0) && (l2.indexOf("Created-By: ") == 0))) {
+        if (((l1.indexOf(" * Created ") == 0) && (l2.indexOf(" * Created ") == 0))
+                || ((l1.indexOf(" * @author ") == 0) && (l2.indexOf(" * @author ") == 0))
+                || ((l1.indexOf("Created-By: ") == 0) && (l2.indexOf("Created-By: ") == 0))
+                || ((l1.indexOf("import ") == 0) && (l2.indexOf("import ") == 0))
+                ) {
             return true;
         }
-        if (l1.trim().length() == 0 && super.compareLines(l1.trim(), l2.trim())) {
+        //we're not interested in changes in whitespaces, only content is important
+        if (super.compareLines(l1.trim(), l2.trim())) {
+            return true;
+        }
+        //WA: there's some strange random issue which causes that some
+        //"randomly" chosen types are used with FQN
+        String pkg = "o.n.m.ws.qaf.rest.crud.service.";//NOI18N
+        if (l1.replaceAll(pkg, "").equals(l2.replaceAll(pkg, ""))) {
+            LOGGER.warning("skiping \"" + l1 + "\" and \"" + l2 + "\""); //NOI18N
+            return true;
+        }
+        pkg = "o.n.m.ws.qaf.rest.crud.converter.";//NOI18N
+        if (l1.replaceAll(pkg, "").equals(l2.replaceAll(pkg, ""))) {
+            LOGGER.warning("skiping \"" + l1 + "\" and \"" + l2 + "\""); //NOI18N
             return true;
         }
         return false;

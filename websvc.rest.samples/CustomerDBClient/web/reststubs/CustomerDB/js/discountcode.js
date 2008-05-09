@@ -108,15 +108,8 @@ DiscountCode.prototype = {
    findValue : function(field, value) {
       if(value == undefined)
           return field;
-      if(value['$'] == undefined) {
-         var r = {};
-         for(var i in value) {
-            r[i] = value[i]['$'];
-         }
-         return r;
-      } else {
-         return value['$'];
-      }
+      else
+         return value;
    },
 
    flush : function() {
@@ -136,8 +129,8 @@ DiscountCode.prototype = {
          '"discountCode":'+
          '{'+
          '"@uri":"'+this.uri+'",'+
-                  '"discountCode":{"$":"'+this.discountCode+'"},'+
-         '"rate":{"$":"'+this.rate+'"},'+
+                  '"discountCode":"'+this.discountCode+'",'+
+         '"rate":"'+this.rate+'",'+
          this.customers.toString()+''+
 
          '}';

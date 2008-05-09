@@ -2,7 +2,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -26,7 +26,7 @@ your own identifying information:
 Contributor(s):
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
 Microsystems, Inc. All Rights Reserved.
 
 If you wish your version of this file to be governed by only the CDDL
@@ -43,6 +43,9 @@ made subject to such option by the copyright holder.
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
     <folder name="Actions">
+        <folder name="Ruby">
+            <file name="org-netbeans-modules-ruby-rubyproject-rake-RakeRunnerAction.instance"/>
+        </folder>
         <folder name="Window">
             <file name="org-netbeans-modules-ruby-rubyproject-IrbAction.instance"/>
         </folder>
@@ -59,6 +62,7 @@ made subject to such option by the copyright holder.
     <folder name="Menu">
         <folder name="Window">
             <folder name="Other">
+                <attr name="position" intvalue="1700"/>
                 <file name="IrbAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-ruby-rubyproject-IrbAction.instance"/>
                     <attr name="position" intvalue="900"/>
@@ -67,6 +71,11 @@ made subject to such option by the copyright holder.
         </folder>
     </folder>
 
+    <folder name="Shortcuts">
+        <file name="OS-R.shadow">
+            <attr name="originalFile" stringvalue="Actions/Ruby/org-netbeans-modules-ruby-rubyproject-rake-RakeRunnerAction.instance"/>
+        </file>
+    </folder>
     <folder name="Templates">
         <folder name="Ruby">
             <attr name="position" intvalue="1400"/>
@@ -98,9 +107,9 @@ made subject to such option by the copyright holder.
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/ruby/rubyproject/ui/resources/rubymodule.html"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.ruby.rubyproject.templates.RubyTemplates.createRubyModuleTemplateIterator"/>
             </file>
-            <file name="rakefile.rb" url="rakefile.rb">
+            <file name="Rakefile" url="Rakefile">
                 <attr name="position" intvalue="500"/>
-                <attr name="template" boolvalue="true"/>
+                <attr name="template" boolvalue="false"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ruby.rubyproject.ui.resources.Bundle"/>
                 <attr name="templateCategory" stringvalue="ruby"/>
@@ -211,7 +220,7 @@ made subject to such option by the copyright holder.
             </folder>
             
             <folder name="Nodes">
-                <file name="org-netbeans-modules-ruby-rubyproject-ui-SourceNodeFactory.instance"/>
+                <file name="org-netbeans-modules-ruby-rubyproject-ui-ProjectRootNodeFactory.instance"/>
             </folder>
             
             <folder name="Lookup"/>

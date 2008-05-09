@@ -509,7 +509,7 @@ public class TableColumnDesignState {
         // If the child is a DropDown and its items property is not set then set it to valueexpression
         if(tableColumnChildBean.getInstance() instanceof DropDown){
             DesignProperty itemsProperty = tableColumnChildBean.getProperty(ITEMS_PROPERTY);
-            if((valueExpression != null) && (itemsProperty != null) && (itemsProperty.getValue() == null)){
+            if((valueExpression != null) && (itemsProperty != null) && (itemsProperty.getValueSource() == null)){
                 itemsProperty.setValue(valueExpression);
             }
         }
@@ -542,8 +542,8 @@ public class TableColumnDesignState {
             int startIndex = valueExpression.indexOf('[');
             int endIndex = valueExpression.indexOf(']');
             if ((startIndex != -1) && (endIndex != -1)){
-                String columnName =  valueExpression.substring(startIndex + 2, endIndex - 1);
-                if(columnName.trim().equals(columnName.trim())){
+                String columnName1 =  valueExpression.substring(startIndex + 2, endIndex - 1);
+                if(columnName.trim().equals(columnName1.trim())){
                     return true;
                 }
             }

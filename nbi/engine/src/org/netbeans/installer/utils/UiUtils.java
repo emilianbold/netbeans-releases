@@ -39,11 +39,15 @@ package org.netbeans.installer.utils;
 import java.awt.GraphicsEnvironment;
 import java.awt.HeadlessException;
 import java.awt.Toolkit;
+import java.io.File;
+import java.io.FileFilter;
 import java.security.cert.Certificate;
 import java.security.Principal;
 import java.security.cert.X509Certificate;
 import java.text.DateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Properties;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -52,7 +56,9 @@ import javax.swing.JProgressBar;
 import javax.swing.LookAndFeel;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import org.netbeans.installer.Installer;
 import org.netbeans.installer.utils.exceptions.InitializationException;
+import org.netbeans.installer.utils.helper.NbiThread;
 import org.netbeans.installer.utils.helper.Platform;
 import org.netbeans.installer.utils.helper.UiMode;
 
@@ -99,21 +105,58 @@ public final class UiUtils {
                         intMessageType);
                 break;
             case SILENT:
+                LogManager.log(message);
                 System.err.println(message);
                 break;
         }
     }
-    
+    /**
+     * 
+     * @param title The title of the dialog
+     * @param message The message of the dialog
+     * @return true if user click YES option. 
+     * If installer is running silently then false is returned.
+     */
     public static boolean showYesNoDialog(
             final String title,
             final String message) {
-        final int result = JOptionPane.showConfirmDialog(
-                null,
-                message,
-                title,
-                YES_NO_OPTION);
+        return showYesNoDialog(title, message, false);
+    }
+    /**
+     * @param title The title of the dialog
+     * @param message The message of the dialog
+     * @param silentDefault The dafault return value if installer is running silently
+     * @return true if user click YES option. In silent mode return <code>silentDefault</code>
+     */
+    public static boolean showYesNoDialog(
+            final String title,
+            final String message,
+            final boolean silentDefault) {
         
-        return result == YES_OPTION;
+        switch (UiMode.getCurrentUiMode()) {
+            case SWING:
+                final int result = JOptionPane.showConfirmDialog(
+                        null,
+                        message,
+                        title,
+                        YES_NO_OPTION);
+                return result == YES_OPTION;
+                
+            case SILENT:
+                LogManager.log(message);                
+                final String option = StringUtils.format(
+                        ResourceUtils.getString(UiUtils.class,
+                        silentDefault ? 
+                            RESOURCE_SILENT_DEFAULT_TRUE : 
+                            RESOURCE_SILENT_DEFAULT_FALSE));
+                System.err.println(message);
+                System.err.println(option);
+                LogManager.log(message);
+                LogManager.log(option);
+                return silentDefault;
+        }
+        //never get this line...
+        return true;
     }
     
     public static CertificateAcceptanceStatus showCertificateAcceptanceDialog(
@@ -267,6 +310,7 @@ public final class UiUtils {
                     }
                     
                     try {
+                        Thread jdkFileChooserWarningLogThread = null;
                         try {
                             // this helps to avoid some GTK L&F bugs for some locales
                             LogManager.log("... get installed L&Fs");
@@ -292,7 +336,54 @@ public final class UiUtils {
                                 // http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6449933
                                 // http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6489447
                                 LogManager.log("... creating JFileChooser object to check possible issues with UI");
-                                new JFileChooser();
+                                
+                                if (System.getProperty("java.version").startsWith("1.6")) {
+                                    File desktop = new File(SystemUtils.getUserHomeDirectory(), "Desktop");
+                                    File[] zips = null;
+                                    final List<String> names = new ArrayList<String>();
+                                    if (FileUtils.exists(desktop)) {
+                                        zips = desktop.listFiles(new FileFilter() {
+                                            public boolean accept(File pathname) {
+                                                boolean result = pathname.getName().endsWith(".zip") && pathname.length() > 1000000L;
+                                                if (result) {
+                                                    names.add(pathname.getName());
+                                                }
+                                                return result;
+                                            }
+                                        });
+                                    }
+                                    if (zips != null && zips.length > 0) {
+                                        jdkFileChooserWarningLogThread = new NbiThread() {
+                                            @Override
+                                            public void run() {
+                                                try {
+                                                    sleep(8000); //8 seconds
+                                                } catch (InterruptedException e) {
+                                                    return;
+                                                }
+                                                
+                                                LogManager.log("\n... !!! WARNING !!!");
+                                                LogManager.log("... There are some big zip files on your desktop: " + StringUtils.asString(names));
+                                                LogManager.log("... In case installer UI does not appear for a long time:");
+                                                LogManager.log("...    1) kill the installer process");
+                                                LogManager.log("...    2) move those zip files somewhere from the desktop");
+                                                LogManager.log("...    3) delete " + new File(System.getProperty(Installer.LOCAL_DIRECTORY_PATH_PROPERTY), Installer.LOCK_FILE_NAME));
+                                                LogManager.log("...    4) run installer again");                                                
+                                                LogManager.log("... For more details see the following bugs descriptions: ");
+                                                LogManager.log("... http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6372808");
+                                                LogManager.log("... http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=5050516");
+                                            }
+                                        };
+                                        jdkFileChooserWarningLogThread.start();
+                                    }
+                                }
+                                
+                                
+                                new JFileChooser();                                
+                                if(jdkFileChooserWarningLogThread!=null) {
+                                    jdkFileChooserWarningLogThread.interrupt();
+                                    jdkFileChooserWarningLogThread = null;
+                                }
                                 
                                 LogManager.log("... getting default Toolkit to check possible issues with UI");
                                 Toolkit.getDefaultToolkit();
@@ -307,6 +398,10 @@ public final class UiUtils {
                             }
                             LogManager.log("... L&F is set");
                         } catch (Throwable e) {
+                            if(jdkFileChooserWarningLogThread!=null) {
+                                jdkFileChooserWarningLogThread.interrupt();
+                                jdkFileChooserWarningLogThread = null;
+                            }
                             // we're catching Throwable here as pretty much anything can happen
                             // while setting the look and feel and we have no control over it
                             // if something wrong happens we should fall back to the default
@@ -572,4 +667,8 @@ public final class UiUtils {
             "UI.error.failed.to.init.ui";//NOI18N
     private static final String RESOURCE_FAILED_TO_FORCE_GTK =
             "UI.error.failed.to.force.gtk";//NOI18N
+    private static final String RESOURCE_SILENT_DEFAULT_TRUE = 
+            "UI.silent.default.true";//NOI18N
+    private static final String RESOURCE_SILENT_DEFAULT_FALSE = 
+            "UI.silent.default.false";//NOI18N
 }

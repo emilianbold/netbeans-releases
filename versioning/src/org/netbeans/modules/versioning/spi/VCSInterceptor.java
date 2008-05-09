@@ -57,6 +57,24 @@ public abstract class VCSInterceptor {
     }
     
     // ==================================================================================================
+    // QUERIES
+    // ==================================================================================================
+
+    /**
+     * Queries the versioning system for file mutability (write, delete, move). Versioning systems that keep files
+     * read-only in working copy can override this method to signal that such files are in fact mutable even if
+     * they appear read-only on local file system. When IDE eventually tries to delete or write to these files then
+     * the Versioning system should intercept these calls and make requested files writable on-demand.
+     * 
+     * @param file a file to query
+     * @return true if the file is mutable (writable, deletable and movable), false otherwise
+     * @since 1.7
+     */
+    public boolean isMutable(File file) {
+        return file.canWrite();
+    }
+    
+    // ==================================================================================================
     // DELETE
     // ==================================================================================================
     

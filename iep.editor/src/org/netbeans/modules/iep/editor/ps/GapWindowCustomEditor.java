@@ -224,14 +224,14 @@ public class GapWindowCustomEditor extends TcgComponentNodePropertyEditor implem
         
         private void updateTable() {
             try {
-                Vector data = new Vector();
+                Vector<Vector<String>> data = new Vector<Vector<String>>();
                 String indexAttribute = mAttributePanel.getStringValue();
                 boolean indexSelected = indexAttribute != null && !indexAttribute.trim().equals("");
                 List<SchemaAttribute> attributeList = mPartitionKeyPanel.getSelectedAttributeList();
-                Vector r;
+                Vector<String> r;
                 for (int i = 0, I = attributeList.size(); i < I; i++) {
                     SchemaAttribute attr = attributeList.get(i);
-                    r = new Vector();
+                    r = new Vector<String>();
                     r.add(attr.getAttributeName());
                     r.add(attr.getAttributeType());
                     r.add(attr.getAttributeSize());
@@ -240,7 +240,7 @@ public class GapWindowCustomEditor extends TcgComponentNodePropertyEditor implem
                 }
                 if (indexSelected) {
                     SchemaAttribute attr = mPartitionKeyPanel.getAttribute(indexAttribute);
-                    r = new Vector();
+                    r = new Vector<String>();
                     r.add(attr.getAttributeName());
                     r.add(attr.getAttributeType());
                     r.add(attr.getAttributeSize());
@@ -457,19 +457,6 @@ public class GapWindowCustomEditor extends TcgComponentNodePropertyEditor implem
             }
         }
         
-        private List getAttributeMetadataAsList() {
-            List attributeMetadataList = new ArrayList();
-            Vector r = mTableModel.getDataVector();
-            for (int i = 0, I = r.size(); i < I; i++) {
-                Vector c = (Vector) r.elementAt(i);
-                attributeMetadataList.add(c.elementAt(0));
-                attributeMetadataList.add(c.elementAt(1));
-                attributeMetadataList.add(c.elementAt(2));
-                attributeMetadataList.add(c.elementAt(3));
-                attributeMetadataList.add("");
-            }
-            return attributeMetadataList;
-        }
         
         public List<SchemaAttribute> getAttributes() {
             List<SchemaAttribute> attributeList = new ArrayList<SchemaAttribute>();

@@ -52,7 +52,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.gsf.EditorAction;
+import org.netbeans.modules.gsf.api.EditorAction;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
@@ -195,7 +195,7 @@ public final class GenerateAction extends NodeAction implements EditorAction {
 
                 final FileObject dir = project.getProjectDirectory();
                 final File pwd = FileUtil.toFile(project.getProjectDirectory());
-                final String script = "script" + File.separator + "generate"; // NOI18N
+                final String script = "script" + File.separator + panel.getScript(); // NOI18N
                 List<String> argvList = new ArrayList<String>();
                 argvList.add(type);
 

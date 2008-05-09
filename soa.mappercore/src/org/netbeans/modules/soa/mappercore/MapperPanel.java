@@ -65,7 +65,7 @@ public class MapperPanel extends JPanel {
     
     
     public MapperModel getMapperModel() {
-        return mapper.getModel();
+        return mapper.getFilteredModel();
     }
     
     

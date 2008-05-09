@@ -43,61 +43,58 @@
             <xsd:element name="faultString" type="xsd:string"/>
         </xsd:schema>
     </types>
+
     <message name="reserveMesg">
-        <part name="reservePart"
-              element="ns:reserve"></part>              
+        <part name="reservePart" element="ns:reserve"></part>
     </message>
+
     <message name="reservationStatus">
-        <part name="reservationStatusPart"
-              element="ns:reservationStatusOfAll"></part>
+        <part name="reservationStatusPart" element="ns:reservationStatusOfAll"></part>
     </message>
+
     <message name="reservationFailed">
-        <part name="faultInfo"
-              element="tns:faultString"></part>
+        <part name="faultInfo" element="tns:faultString"></part>
     </message>
+
     <portType name="doReservePortType">
         <operation name="reserve">
-            <input name="reserveMesg"
-                   message="tns:reserveMesg"></input>
-            <output name="reservationStatus"
-                    message="tns:reservationStatus"></output>
-            <fault name="reservationFailed"
-                   message="tns:reservationFailed"></fault>
-        </operation>        
+            <input name="reserveMesg" message="tns:reserveMesg"></input>
+            <output name="reservationStatus" message="tns:reservationStatus"></output>
+            <fault name="reservationFailed" message="tns:reservationFailed"></fault>
+        </operation>
     </portType>
-    <binding name="reservationBinding"
-             type="tns:doReservePortType">
-        <soap:binding style="document"
-                      transport="http://schemas.xmlsoap.org/soap/http"/>
+    
+    <binding name="reservationBinding" type="tns:doReservePortType">
+        <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
         <operation name="reserve">
             <input name="reserveMesg">
-                <soap:body parts="reservePart"
-                           use="literal"/>
+                <soap:body parts="reservePart" use="literal"/>
             </input>
             <output name="reservationStatus">
-                <soap:body parts="reservationStatusPart"
-                           use="literal"/>
+                <soap:body parts="reservationStatusPart" use="literal"/>
             </output>
             <fault name="reservationFailed">
-                <soap:fault name="reservationFailed"
-                            use="literal"/>
+                <soap:fault name="reservationFailed" use="literal"/>
             </fault>
         </operation>
     </binding>
+
     <service name="reservationService">
         <port name="reservationServicePort"
               binding="tns:reservationBinding">
-            <soap:address location="http://localhost:12100/wsdl/ReservationService/ServiceLocation"/>
+            <soap:address location="http://localhost:18181/wsdl/ReservationService/ServiceLocation"/>
         </port>
     </service>
+    
     <plink:partnerLinkType name="reservationPLinkType">
-        <plink:role name="reservationServicing"
-                    portType="tns:doReservePortType"></plink:role>
+        <plink:role name="reservationServicing" portType="tns:doReservePortType"></plink:role>
     </plink:partnerLinkType>
+
     <bpws:property name="reservationID" type="xsd:long"></bpws:property>
+    
     <bpws:propertyAlias part="reservePart"
                         propertyName="tns:reservationID"
                         messageType="tns:reserveMesg">
-        <bpws:query>/ns:reserve/ns:reservationID</bpws:query>                            
-    </bpws:propertyAlias>        
+        <bpws:query>/ns:reserve/ns:reservationID</bpws:query>
+    </bpws:propertyAlias>
 </definitions>

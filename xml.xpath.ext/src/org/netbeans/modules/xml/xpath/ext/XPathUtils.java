@@ -9,6 +9,8 @@
 
 package org.netbeans.modules.xml.xpath.ext;
 
+import java.util.List;
+import javax.xml.namespace.NamespaceContext;
 import javax.xml.namespace.QName;
 import org.netbeans.modules.xml.schema.model.ElementReference;
 import org.netbeans.modules.xml.schema.model.Form;
@@ -17,6 +19,7 @@ import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.LocalAttribute;
 import org.netbeans.modules.xml.schema.model.LocalElement;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
+import org.netbeans.modules.xml.xpath.ext.schema.FindAllChildrenSchemaVisitor;
 
 /**
  * Utility class.
@@ -58,6 +61,31 @@ public class XPathUtils {
         } else {
             return "{" + nsUri + "}" + prefix;
         }
+    }
+    
+    /**
+     * Check if the namespace URI is specified for the name. 
+     * If the name isn't specified, then try resolve it from the prefix.
+     * Returns the corrected name if possible. Otherwise returns old name.
+     * @param nsContext
+     * @param name
+     * @return
+     */
+    public static QName resolvePrefix(NamespaceContext nsContext, QName name) {
+        String nsUri = name.getNamespaceURI();
+        if (nsUri == null || nsUri.length() == 0 && nsContext != null) {
+            //
+            String nsPrefix = name.getPrefix();
+            nsUri = nsContext.getNamespaceURI(nsPrefix);
+            //
+            if (nsUri != null) {
+                String localPart = name.getLocalPart();
+                QName newName = new QName(nsUri, localPart);
+                name = newName;
+            }
+        }
+        //
+        return name;
     }
     
     public static boolean equalsIgnorNsUri(QName qName1, QName qName2) {
@@ -119,5 +147,18 @@ public class XPathUtils {
         //
         assert true : "Unsupported schema component in the BPEL mapper tree!"; // NOI18N
         return false;
+    }
+    
+    /**
+     * Checks if the specified Schema component has any subcomponents.
+     * @param sComp
+     * @return
+     */
+    public static boolean hasSubcomponents(SchemaComponent sComp) {
+        FindAllChildrenSchemaVisitor checker = 
+                new FindAllChildrenSchemaVisitor(true, true, true);
+        checker.lookForSubcomponents(sComp);
+        List<SchemaComponent> found = checker.getFound();
+        return found != null && !found.isEmpty();
     }
 }

@@ -47,6 +47,7 @@ import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
+import java.awt.event.FocusEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -375,7 +376,7 @@ public final class CompletionLayout {
                 
             } // otherwise present popup size will be retained
         }
-
+        
         public CompletionItem getSelectedCompletionItem() {
             return isVisible() ? completionScrollPane.getSelectedCompletionItem() : null;
         }
@@ -430,7 +431,17 @@ public final class CompletionLayout {
                 getLayout().updateLayout(this);
             } // otherwise leave present doc displayed
         }
-
+        
+        @Override
+        protected boolean isFocusable() {
+            return true; // lets have documentation popup focusable, for copying
+        }
+        
+        @Override
+        protected JComponent getFocusListeningComponent() {
+            return (JComponent) getDocumentationScrollPane().getViewport().getView();
+        }
+        
         public void processKeyEvent(KeyEvent evt) {
             if (isVisible()) {
                 Object actionMapKey = getDocumentationScrollPane().getInputMap().get(

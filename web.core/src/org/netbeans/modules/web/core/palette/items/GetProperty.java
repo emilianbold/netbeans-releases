@@ -40,6 +40,7 @@
  */
 
 package org.netbeans.modules.web.core.palette.items;
+
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.text.BadLocationException;
@@ -105,7 +106,6 @@ public class GetProperty implements ActiveEditorDrop {
     }
 
     private String createBody() {
-        
         String strBean = " name=\"\""; // NOI18N
         if (beanIndex == -1)
             strBean = " name=\"" + bean + "\""; // NOI18N
@@ -115,7 +115,6 @@ public class GetProperty implements ActiveEditorDrop {
         String strProperty = " property=\"" + property + "\""; // NOI18N
         
         String gp = "<jsp:getProperty" + strBean + strProperty + " />"; // NOI18N
-        
         return gp;
     }
 

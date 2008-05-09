@@ -141,6 +141,7 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
     private final DeploymentManagerProperties dmProps;
     private String domain;
     private String domainDir;
+    private String storedMPW = null;
     
     private StartSunServer(DeploymentManager deploymentManager) {
         this.dm = deploymentManager;
@@ -448,15 +449,25 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
             if (debug){
                 debugString = "true";//NOI18N
             }
-            String mpw = readMasterPasswordFile();
-            if (mpw==null){
-                pes.fireHandleProgressEvent(null,new Status(ActionType.EXECUTE,
-                        ct, NbBundle.getMessage(StartSunServer.class, "LBL_ErrorStartingServer"), StateType.FAILED));//NOI18N
+            String mpw;
+            try {
+                mpw = readMasterPasswordFile();
+                if (mpw == null) {
+                    pes.fireHandleProgressEvent(null, new Status(ActionType.EXECUTE,
+                            ct, NbBundle.getMessage(StartSunServer.class, "LBL_BadMasterPassword"), StateType.FAILED));//NOI18N
+                    cmd = CMD_NONE;
+                    pes.clearProgressListener();
+                    resetProfiler();
+                    return; //we failed to start the server.                
+                }
+            } catch (IllegalStateException ise) {
+                // the user cancelled... so give a diffeerent message
+                pes.fireHandleProgressEvent(null, new Status(ActionType.EXECUTE,
+                        ct, NbBundle.getMessage(StartSunServer.class, "LBL_CancelMasterPassword"), StateType.FAILED));//NOI18N
                 cmd = CMD_NONE;
                 pes.clearProgressListener();
                 resetProfiler();
-                return; //we failed to start the server.
-                
+                return; //we failed to start the server.                
             }
             File passWordFile =  Utils.createTempPasswordFile(sunDm.getPassword(), mpw);//NOI18N
             if (passWordFile==null){
@@ -480,7 +491,8 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
             };
             
             //Starts JavaDB if it is not running:
-            if (ServerLocationManager.isJavaDBPresent(sunDm.getPlatformRoot())){
+            if ((ServerLocationManager.isJavaDBPresent(sunDm.getPlatformRoot())) 
+                    && (dmProps.isDatabaseStartEnabled())){
                 DerbySupport.ensureStarted();
             }
             
@@ -613,7 +625,7 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
                 } else {
                     
                     // startup timeout support
-                    new Thread(new Runnable() {
+                    Thread tmp = new Thread(new Runnable() {
 
                         public void run() {
                             try {
@@ -633,6 +645,11 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
                     
                         
                     });
+                    
+                    if (null == tmp) {
+                        Logger.getLogger(StartSunServer.class.getName()).finer(
+                                "timeout support thread is null");
+                    }
 
                     // use the return value to determine if we want to make 
                     // sure the command has been successful...  
@@ -682,12 +699,12 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
     
     /* can return null if no mpw is known or entered by user
      **/
-    private String readMasterPasswordFile() {
+    private String readMasterPasswordFile() throws IllegalStateException {
         String mpw= "changeit";//NOI18N
         
-        String domain = dmProps.getDomainName();
-        String domainDir = dmProps.getLocation();
-        final File pwdFile = new File(domainDir + File.separator + domain  +File.separator+"master-password");
+        String lDomain = dmProps.getDomainName();
+        String lDomainDir = dmProps.getLocation();
+        final File pwdFile = new File(lDomainDir + File.separator + lDomain  +File.separator+"master-password");
         if (pwdFile.exists()) {
             try {                
                 SunDeploymentManagerInterface sdm = (SunDeploymentManagerInterface)dm;
@@ -705,28 +722,31 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
                 return mpw;
             }
         } else {
-            MasterPasswordInputDialog d=new MasterPasswordInputDialog();
-            if (DialogDisplayer.getDefault().notify(d) ==NotifyDescriptor.OK_OPTION){
-                mpw = d.getInputText();
-                //now validate the password:
-                try {
-                    
-                    File pwdFile2 = new File(domainDir + File.separator + domain  +File.separator+"config/domain-passwords");
-                    SunDeploymentManagerInterface sdm = (SunDeploymentManagerInterface)dm;
-                    ClassLoader loader = ServerLocationManager.getNetBeansAndServerClassLoader(sdm.getPlatformRoot());
-                    Class pluginRootFactoryClass =loader.loadClass("com.sun.enterprise.security.store.PasswordAdapter");//NOI18N
-                    java.lang.reflect.Constructor constructor =pluginRootFactoryClass.getConstructor(new Class[] {String.class, getMasterPasswordPassword().getClass()});
-                    //this would throw an ioexception of the password is not the good one
-                    constructor.newInstance(new Object[] {pwdFile2.getAbsolutePath(),mpw.toCharArray() });
-                    
-                    return mpw;
-                    
-                } catch (Exception ex) {
-                   return null;
+            if (null == storedMPW) {
+                MasterPasswordInputDialog d = new MasterPasswordInputDialog();
+                if (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.OK_OPTION) {
+                    mpw = d.getInputText();
+                    //now validate the password:
+                    try {
+
+                        File pwdFile2 = new File(lDomainDir + File.separator + lDomain + File.separator + "config/domain-passwords");
+                        SunDeploymentManagerInterface sdm = (SunDeploymentManagerInterface) dm;
+                        ClassLoader loader = ServerLocationManager.getNetBeansAndServerClassLoader(sdm.getPlatformRoot());
+                        Class pluginRootFactoryClass = loader.loadClass("com.sun.enterprise.security.store.PasswordAdapter");//NOI18N
+                        java.lang.reflect.Constructor constructor = pluginRootFactoryClass.getConstructor(new Class[]{String.class, getMasterPasswordPassword().getClass()});
+                        //this would throw an ioexception of the password is not the good one
+                        constructor.newInstance(new Object[]{pwdFile2.getAbsolutePath(), mpw.toCharArray()});
+                        storedMPW = mpw;
+                        return mpw;
+
+                    } catch (Exception ex) {
+                        return null;
+                    }
+                } else {
+                    throw new IllegalStateException();
                 }
-            } else{
-                return null;
-                
+            } else {
+                return storedMPW;
             }
         }
     }

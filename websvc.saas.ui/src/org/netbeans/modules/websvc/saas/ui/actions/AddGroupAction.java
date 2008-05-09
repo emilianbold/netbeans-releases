@@ -41,11 +41,12 @@
 
 package org.netbeans.modules.websvc.saas.ui.actions;
 
+import org.netbeans.modules.websvc.saas.model.SaasGroup;
+import org.netbeans.modules.websvc.saas.model.SaasServicesModel;
 import org.netbeans.modules.websvc.saas.model.jaxb.Group;
 import org.openide.util.actions.NodeAction;
 import org.openide.util.*;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 
@@ -53,8 +54,12 @@ import org.openide.nodes.Node;
  */
 public class AddGroupAction extends NodeAction {
     
-    protected boolean enable(org.openide.nodes.Node[] node) {
-        return true;
+    protected boolean enable(org.openide.nodes.Node[] nodes) {
+        if (nodes != null && nodes.length == 1) {
+            SaasGroup g = nodes[0].getLookup().lookup(SaasGroup.class);
+            return g != null;
+        }
+        return false;
     }
     
     public org.openide.util.HelpCtx getHelpCtx() {
@@ -66,25 +71,26 @@ public class AddGroupAction extends NodeAction {
     }
     
     protected void performAction(Node[] nodes) {
-        String defaultName = NbBundle.getMessage(AddGroupAction.class, "NEW_GROUP"); 
+        if (nodes == null || nodes.length != 1) {
+            return;
+        }
         
+        String defaultName = NbBundle.getMessage(AddGroupAction.class, "NEW_GROUP"); 
         NotifyDescriptor.InputLine dlg = new NotifyDescriptor.InputLine(
                 NbBundle.getMessage(AddGroupAction.class, "CTL_GroupLabel"),
                 NbBundle.getMessage(AddGroupAction.class, "CTL_GroupTitle"));
         dlg.setInputText(defaultName);
+        
         if (NotifyDescriptor.OK_OPTION.equals(DialogDisplayer.getDefault().notify(dlg))) {
             try {
                 String newName = dlg.getInputText().trim();
                 if (newName == null || newName.length() == 0) {
                     newName = defaultName;
                 }
-                
-                Group wsGroup = new Group();
-                wsGroup.setName(newName);
-                //TODO:nam find context and add properly
-                //SaasServicesModel.getInstance().addWebServiceGroup(wsGroup);                
+                SaasGroup parent = nodes[0].getLookup().lookup(SaasGroup.class);
+                SaasServicesModel.getInstance().createGroup(parent, newName);                
             } catch (IllegalArgumentException e) {
-                ErrorManager.getDefault().notify(e);
+                Exceptions.printStackTrace(e);
             }
         }
     }

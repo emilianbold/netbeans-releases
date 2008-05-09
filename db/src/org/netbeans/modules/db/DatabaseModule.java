@@ -43,14 +43,15 @@ package org.netbeans.modules.db;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.lib.ddl.DBConnection;
 import org.netbeans.modules.db.explorer.ConnectionList;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
-import org.netbeans.modules.db.explorer.DatabaseNodeChildren;
-import org.netbeans.modules.db.explorer.nodes.RootNode;
+import org.netbeans.modules.db.explorer.infos.RootNodeInfo;
 import org.netbeans.modules.db.runtime.DatabaseRuntimeManager;
 import org.netbeans.spi.db.explorer.DatabaseRuntime;
 import org.openide.modules.ModuleInstall;
+import org.openide.util.Exceptions;
 
 public class DatabaseModule extends ModuleInstall {
     
@@ -60,8 +61,15 @@ public class DatabaseModule extends ModuleInstall {
         
         // disconnect all connected connections
         // but try to not initialize the nodes if they haven't been initialized yet
-        DatabaseNodeChildren rootNodeChildren = (DatabaseNodeChildren)RootNode.getInstance().getChildren();
-        if (rootNodeChildren.getChildrenInitialized()) {
+        RootNodeInfo rootInfo;
+        try {
+            rootInfo = RootNodeInfo.getInstance();
+        } catch ( DatabaseException e ) {
+            Exceptions.printStackTrace(e);
+            return;
+        }
+        
+        if ( rootInfo.isChildrenInitialized() ) {
             DBConnection[] conns = ConnectionList.getDefault().getConnections();
             for (int i = 0; i < conns.length; i++) {
                 try {

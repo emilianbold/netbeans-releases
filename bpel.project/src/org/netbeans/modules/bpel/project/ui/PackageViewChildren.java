@@ -789,7 +789,7 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
                     }
                 }
                 while (!commonFolder.equals(source)) {
-                    if (source.getChildren().length==0) {
+                    if (source.getChildren().length == 0) {
                         FileObject tmp = source;
                         source = source.getParent();
                         tmp.delete();

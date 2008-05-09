@@ -72,6 +72,7 @@ public class NativeExecutor implements Runnable {
     private String rcfile;
     private boolean parseOutputForErrors;
     private boolean showInput;
+    private NativeExecution nativeExecution;
     
     private boolean showHeader = true;
     private boolean showFooter = true;
@@ -132,7 +133,7 @@ public class NativeExecutor implements Runnable {
     
     /** Start it going. */
     public ExecutorTask execute() throws IOException {
-        return execute(getTab(actionName, tabName));
+        return execute(getTab(tabName));
     }
     
     /** Start it going. */
@@ -149,8 +150,16 @@ public class NativeExecutor implements Runnable {
         return task;
     }
     
-    public InputOutput getTab(String actionName, String tabName) {
-        return IOProvider.getDefault().getIO(tabName, false);
+    private InputOutput getTab(String tabName) {
+        return IOProvider.getDefault().getIO(tabName, true);
+    }
+    
+    public InputOutput getTab() {
+        return io;
+    }
+    
+    public String getTabeName() {
+        return tabName;
     }
     
     public void setExitValueOverride(String rcfile) {
@@ -178,7 +187,8 @@ public class NativeExecutor implements Runnable {
         
         try {
             // Execute the selected command
-            rc = new NativeExecution().executeCommand(
+            nativeExecution = new NativeExecution();
+            rc = nativeExecution.executeCommand(
                     runDirFile,
                     executable,
                     arguments,
@@ -234,6 +244,10 @@ public class NativeExecutor implements Runnable {
         }
         executionFinished(rc);
         out.close();
+    }
+    
+    public void stop() {
+        nativeExecution.stop();
     }
     
     private void executionStarted() {

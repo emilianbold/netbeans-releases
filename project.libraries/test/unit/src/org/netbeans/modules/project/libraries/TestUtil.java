@@ -19,13 +19,16 @@
 
 package org.netbeans.modules.project.libraries;
 
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -33,11 +36,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.netbeans.modules.project.libraries.ui.LibrariesModel;
 import org.netbeans.spi.project.libraries.ArealLibraryProvider;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
+import org.netbeans.spi.project.libraries.LibraryImplementation2;
 import org.netbeans.spi.project.libraries.LibraryProvider;
 import org.netbeans.spi.project.libraries.LibraryStorageArea;
-import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.openide.util.WeakSet;
 
 /**
@@ -126,10 +130,10 @@ public class TestUtil {
 
     }
 
-    public static final class ALP implements ArealLibraryProvider<Area,LibraryImplementation> {
+    public static final class ALP implements ArealLibraryProvider<Area,TestLibraryImplementation> {
 
         final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
-        public final Map<Area,List<LibraryImplementation>> libs = new HashMap<Area,List<LibraryImplementation>>();
+        public final Map<Area,List<TestLibraryImplementation>> libs = new HashMap<Area,List<TestLibraryImplementation>>();
         final Set<LP> lps = new WeakSet<LP>();
         final Set<Area> open = new HashSet<Area>();
 
@@ -145,8 +149,8 @@ public class TestUtil {
             return Area.class;
         }
 
-        public Class<LibraryImplementation> libraryType() {
-            return LibraryImplementation.class;
+        public Class<TestLibraryImplementation> libraryType() {
+            return TestLibraryImplementation.class;
         }
 
         public Area createArea() {
@@ -172,7 +176,7 @@ public class TestUtil {
             pcs.firePropertyChange(PROP_OPEN_AREAS, null, null);
         }
 
-        private class LP implements LibraryProvider<LibraryImplementation> {
+        private class LP implements LibraryProvider<TestLibraryImplementation> {
 
             final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
             final Area area;
@@ -182,11 +186,11 @@ public class TestUtil {
                 lps.add(this);
             }
 
-            public LibraryImplementation[] getLibraries() {
+            public TestLibraryImplementation[] getLibraries() {
                 if (libs.containsKey(area)) {
-                    return libs.get(area).toArray(new LibraryImplementation[0]);
+                    return libs.get(area).toArray(new TestLibraryImplementation[0]);
                 } else {
-                    return new LibraryImplementation[0];
+                    return new TestLibraryImplementation[0];
                 }
             }
 
@@ -200,19 +204,19 @@ public class TestUtil {
 
         }
 
-        public LibraryProvider<LibraryImplementation> getLibraries(Area area) {
+        public LibraryProvider<TestLibraryImplementation> getLibraries(Area area) {
             return new LP(area);
         }
 
-        public LibraryImplementation createLibrary(String type, String name, Area area, Map<String,List<URL>> contents) throws IOException {
-            LibraryImplementation lib = LibrariesSupport.createLibraryImplementation(type, contents.keySet().toArray(new String[0]));
+        public TestLibraryImplementation createLibrary(String type, String name, Area area, Map<String,List<URI>> contents) throws IOException {
+            TestLibraryImplementation lib = new TestLibraryImplementation(type, contents.keySet().toArray(new String[0]));
             lib.setName(name);
-            for (Map.Entry<String,List<URL>> entry : contents.entrySet()) {
-                lib.setContent(entry.getKey(), entry.getValue());
+            for (Map.Entry<String,List<URI>> entry : contents.entrySet()) {
+                lib.setURIContent(entry.getKey(), entry.getValue());
             }
-            List<LibraryImplementation> l = libs.get(area);
+            List<TestLibraryImplementation> l = libs.get(area);
             if (l == null) {
-                l = new ArrayList<LibraryImplementation>();
+                l = new ArrayList<TestLibraryImplementation>();
                 libs.put(area, l);
             }
             l.add(lib);
@@ -224,8 +228,8 @@ public class TestUtil {
             return lib;
         }
 
-        public void remove(LibraryImplementation library) throws IOException {
-            for (Map.Entry<Area,List<LibraryImplementation>> entry : libs.entrySet()) {
+        public void remove(TestLibraryImplementation library) throws IOException {
+            for (Map.Entry<Area,List<TestLibraryImplementation>> entry : libs.entrySet()) {
                 if (entry.getValue().remove(library)) {
                     for (LP lp : lps) {
                         if (lp.area.equals(entry.getKey())) {
@@ -242,4 +246,114 @@ public class TestUtil {
         return new URL("jar:http://nowhere.net/" + name + "!/");
     }
 
+    private static class TestLibraryImplementation implements LibraryImplementation2 {
+        private String description;
+        private Map<String,List<URI>> contents;
+        private String name;
+        private String libraryType;
+        private String localizingBundle;
+        private List<PropertyChangeListener> listeners;
+
+        /**
+         * Create new LibraryImplementation supporting given <tt>library</tt>.
+         */
+        public TestLibraryImplementation(String libraryType, String[] volumeTypes) {
+            assert libraryType != null && volumeTypes != null;
+            this.libraryType = libraryType;
+            contents = new HashMap<String,List<URI>>();
+            for (String vtype : volumeTypes) {
+                contents.put(vtype, Collections.<URI>emptyList());
+            }
+        }
+
+
+        public String getType() {
+            return libraryType;
+        }
+
+        public void setName(final String name) throws UnsupportedOperationException {
+            String oldName = this.name;
+            this.name = name;
+            firePropertyChange (PROP_NAME, oldName, this.name);
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public List<URL> getContent(String contentType) throws IllegalArgumentException {
+            return LibrariesModel.convertURIsToURLs(getURIContent(contentType));
+        }
+        
+        public List<URI> getURIContent(String contentType) throws IllegalArgumentException {
+            List<URI> content = contents.get(contentType);
+            if (content == null)
+                throw new IllegalArgumentException ();
+            return Collections.unmodifiableList (content);
+        }
+
+        public void setContent(String contentType, List<URL> path) throws IllegalArgumentException {
+            setURIContent(contentType, LibrariesModel.convertURLsToURIs(path));
+        }
+        
+        public void setURIContent(String contentType, List<URI> path) throws IllegalArgumentException {
+            if (path == null) {
+                throw new IllegalArgumentException ();
+            }
+            if (contents.keySet().contains(contentType)) {
+                contents.put(contentType, new ArrayList<URI>(path));
+                firePropertyChange(PROP_CONTENT,null,null);
+            } else {
+                throw new IllegalArgumentException ("Volume '"+contentType+
+                    "' is not support by this library. The only acceptable values are: "+contents.keySet());
+            }
+        }
+
+        public String getDescription () {
+            return description;
+        }
+
+        public void setDescription (String text) {
+            String oldDesc = description;
+            description = text;
+            firePropertyChange (PROP_DESCRIPTION, oldDesc, description);
+        }
+
+        public String getLocalizingBundle() {
+            return localizingBundle;
+        }
+
+        public void setLocalizingBundle(String resourceName) {
+            localizingBundle = resourceName;
+        }
+
+        public synchronized void addPropertyChangeListener (PropertyChangeListener l) {
+            if (listeners == null)
+                listeners = new ArrayList<PropertyChangeListener>();
+            listeners.add (l);
+        }
+
+        public synchronized void removePropertyChangeListener (PropertyChangeListener l) {
+            if (listeners == null)
+                return;
+            listeners.remove (l);
+        }
+
+        public @Override String toString() {
+            return "TestLibraryImplementation[" + name + "]"; // NOI18N
+        }
+
+        private void firePropertyChange (String propName, Object oldValue, Object newValue) {
+            List<PropertyChangeListener> ls;
+            synchronized (this) {
+                if (listeners == null)
+                    return;
+                ls = new ArrayList<PropertyChangeListener>(listeners);
+            }
+            PropertyChangeEvent event = new PropertyChangeEvent (this, propName, oldValue, newValue);
+            for (PropertyChangeListener l : ls) {
+                l.propertyChange(event);
+            }
+        }
+    }
 }

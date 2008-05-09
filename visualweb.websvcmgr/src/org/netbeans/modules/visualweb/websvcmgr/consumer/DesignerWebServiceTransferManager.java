@@ -66,17 +66,18 @@ import org.netbeans.modules.visualweb.websvcmgr.util.Util;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
 import org.netbeans.modules.websvc.manager.api.WebServiceDescriptor;
-import org.netbeans.modules.websvc.manager.api.WebServiceMetaDataTransfer;
 import org.netbeans.modules.websvc.manager.model.WebServiceData;
 import org.netbeans.modules.websvc.manager.util.WebServiceLibReferenceHelper;
-import org.netbeans.modules.websvc.manager.spi.WebServiceTransferManager;
+import org.netbeans.modules.websvc.saas.model.WsdlSaasMethod;
+import org.netbeans.modules.websvc.saas.model.WsdlSaasPort;
+import org.netbeans.modules.websvc.saas.spi.ConsumerFlavorProvider;
 import org.openide.util.datatransfer.ExTransferable;
 
 /**
  *
  * @author quynguyen
  */
-public class DesignerWebServiceTransferManager implements WebServiceTransferManager {
+public class DesignerWebServiceTransferManager implements ConsumerFlavorProvider {
     static DataFlavor FLAVOR_METHOD_DISPLAY_ITEM;
     static DataFlavor FLAVOR_PORT_DISPLAY_ITEM;
     
@@ -95,51 +96,49 @@ public class DesignerWebServiceTransferManager implements WebServiceTransferMana
         }
     }
     
-
-    
     public DesignerWebServiceTransferManager() {
     }
 
     public Transferable addDataFlavors(Transferable transferable) {
         try {
             ExTransferable result = ExTransferable.create(transferable);
-            if (transferable.isDataFlavorSupported(WebServiceMetaDataTransfer.METHOD_FLAVOR) &&
-                !transferable.isDataFlavorSupported(FLAVOR_METHOD_DISPLAY_ITEM)) {
-                final WebServiceMetaDataTransfer.Method method = 
-                        (WebServiceMetaDataTransfer.Method)transferable.getTransferData(WebServiceMetaDataTransfer.METHOD_FLAVOR);
-                if (method != null) {
-                    JavaMethod javaMethod = method.getMethod();
+            if (transferable.isDataFlavorSupported(ConsumerFlavorProvider.WSDL_METHOD_FLAVOR) &&
+                !transferable.isDataFlavorSupported(FLAVOR_METHOD_DISPLAY_ITEM)) 
+            {
+                Object data = transferable.getTransferData(ConsumerFlavorProvider.WSDL_METHOD_FLAVOR);
+                if (data instanceof WsdlSaasMethod) {
+                    final WsdlSaasMethod method = (WsdlSaasMethod) data;
+                    final JavaMethod javaMethod = method.getJavaMethod();
                     if (javaMethod != null && !Util.hasOutput(javaMethod)) { // NOI18N
                         result.put(new ExTransferable.Single(FLAVOR_PORT_DISPLAY_ITEM) {
-                        protected Object getData() throws IOException, UnsupportedFlavorException {
+                            protected Object getData() throws IOException, UnsupportedFlavorException {
                                 return new PortBeanCreateInfo(
-                                        method.getWebServiceData(),
-                                        method.getWebServiceData().getWsdlService().getPortByName(method.getPortName()));
+                                        (WebServiceData) method.getSaas().getWsdlData(),
+                                        method.getWsdlPort());
                             }
                         });
                     } else {
                         result.put(new ExTransferable.Single(FLAVOR_METHOD_DISPLAY_ITEM) {
                             protected Object getData() throws IOException, UnsupportedFlavorException {
-                            return new MethodBeanCreateInfo(
-                                    method.getWebServiceData(),
-                                    method.getWebServiceData().getWsdlService().getPortByName(method.getPortName()),
-                                    method.getMethod());
+                                return new MethodBeanCreateInfo(
+                                    (WebServiceData) method.getSaas().getWsdlData(),
+                                    method.getWsdlPort(),
+                                    javaMethod);
                         }  
                         });
                     }
                     return result;
                 }
-            } else if (transferable.isDataFlavorSupported(WebServiceMetaDataTransfer.PORT_FLAVOR) &&
+            } else if (transferable.isDataFlavorSupported(ConsumerFlavorProvider.PORT_FLAVOR) &&
                       !transferable.isDataFlavorSupported(FLAVOR_PORT_DISPLAY_ITEM)) {
-                final WebServiceMetaDataTransfer.Port port =
-                        (WebServiceMetaDataTransfer.Port)transferable.getTransferData(WebServiceMetaDataTransfer.PORT_FLAVOR);
-                
-                if (port != null) {
+                final Object data = transferable.getTransferData(ConsumerFlavorProvider.PORT_FLAVOR);
+                if (data instanceof WsdlSaasPort) {
+                    final WsdlSaasPort port = (WsdlSaasPort) data;
                     result.put(new ExTransferable.Single(FLAVOR_PORT_DISPLAY_ITEM) {
                         protected Object getData() throws IOException, UnsupportedFlavorException {
                             return new PortBeanCreateInfo(
-                                    port.getWebServiceData(),
-                                    port.getWebServiceData().getWsdlService().getPortByName(port.getPortName()));
+                                    (WebServiceData) port.getParentSaas().getWsdlData(),
+                                    port.getWsdlPort());
                         }
                     });
                     return result;

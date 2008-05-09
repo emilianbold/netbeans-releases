@@ -498,13 +498,11 @@ public abstract class TagPanel extends ABEBaseDropPanel implements ComponentList
     boolean recalculateRequired = true;
     Dimension myDim;
     public Dimension getPreferredSize() {
-        synchronized(this){
-            if(recalculateRequired){
-                myDim = _getPreferredSize();
-                recalculateRequired = false;
-            }
-            return myDim;
+        if(recalculateRequired){
+            myDim = _getPreferredSize();
+            recalculateRequired = false;
         }
+        return myDim;
     }
     
     public Dimension getMinimumSize() {

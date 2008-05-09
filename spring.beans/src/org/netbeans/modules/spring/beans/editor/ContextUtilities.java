@@ -58,6 +58,19 @@ public final class ContextUtilities {
     private ContextUtilities() {
     }
     
+    public static final String P_NAMESPACE = "http://www.springframework.org/schema/p"; // NOI18N
+    
+    public static boolean isPNamespaceName(DocumentContext context, String nodeName) {
+        String prefix = ContextUtilities.getPrefixFromNodeName(nodeName);
+        if (prefix != null) {
+            String namespaceUri = context.lookupNamespacePrefix(prefix);
+            if (P_NAMESPACE.equals(namespaceUri)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
     public static boolean isValueToken(TokenItem currentToken) {
         if(currentToken != null) {
             if (currentToken.getTokenID().getNumericID() == XMLDefaultTokenContext.VALUE_ID) {
@@ -199,5 +212,8 @@ public final class ContextUtilities {
         return root;
     }
     
+    public static boolean isPNamespaceAdded(DocumentContext dc) {
+        return dc.getDeclaredNamespaces().contains(ContextUtilities.P_NAMESPACE);
+    }
 }
 

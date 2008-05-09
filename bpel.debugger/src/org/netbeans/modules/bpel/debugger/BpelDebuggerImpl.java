@@ -82,7 +82,7 @@ public class BpelDebuggerImpl extends BpelDebugger {
         super(lookupProvider);
         
         //TODO:why not just call lookupFirst?
-        List l = lookupProvider.lookup(null, DebuggerEngineProvider.class);
+        List<? extends DebuggerEngineProvider> l = lookupProvider.lookup(null, DebuggerEngineProvider.class);
         int i;
         int k = l.size();
         
@@ -108,8 +108,7 @@ public class BpelDebuggerImpl extends BpelDebugger {
     public SourcePath getSourcePath() {
         
         if (mSourcePath == null) {
-            mSourcePath = (SourcePath)getLookupProvider().
-                lookupFirst(null, SourcePath.class);
+            mSourcePath = getLookupProvider().lookupFirst(null, SourcePath.class);
         }
         return mSourcePath;
     }

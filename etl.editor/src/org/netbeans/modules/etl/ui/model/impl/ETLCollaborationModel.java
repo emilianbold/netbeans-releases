@@ -40,16 +40,23 @@
  */
 package org.netbeans.modules.etl.ui.model.impl;
 
+import java.beans.PropertyChangeListener;
+import java.io.IOException;
 import java.io.StringReader;
 import java.util.List;
 
 import com.sun.sql.framework.exception.BaseException;
 
+import javax.swing.event.UndoableEditListener;
 import org.netbeans.modules.etl.model.impl.ETLDefinitionImpl;
 import org.netbeans.modules.etl.ui.ETLDataObject;
 import org.netbeans.modules.sql.framework.common.utils.XmlUtil;
 import org.netbeans.modules.sql.framework.ui.model.CollabSQLUIModel;
 import org.netbeans.modules.sql.framework.ui.model.impl.CollabSQLUIModelImpl;
+import org.netbeans.modules.xml.xam.Component;
+import org.netbeans.modules.xml.xam.ComponentListener;
+import org.netbeans.modules.xml.xam.Model.State;
+import org.netbeans.modules.xml.xam.ModelSource;
 
 /**
  * This class represents a model for GUI collaboration objects
@@ -152,6 +159,78 @@ public class ETLCollaborationModel extends CollabSQLUIModelImpl implements Colla
         } catch (BaseException ex) {
             ex.printStackTrace();
         }
+    }
+
+    public void removeComponentListener(ComponentListener cl) {
+       // throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void addComponentListener(ComponentListener cl) {
+        //throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void addPropertyChangeListener(PropertyChangeListener pcl) {
+       // throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void removePropertyChangeListener(PropertyChangeListener pcl) {
+       // throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void removeUndoableEditListener(UndoableEditListener uel) {
+       // throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void addUndoableEditListener(UndoableEditListener uel) {
+        //throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void removeUndoableRefactorListener(UndoableEditListener uel) {
+       // throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void addUndoableRefactorListener(UndoableEditListener uel) {
+       // throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void sync() throws IOException {
+      //  throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public boolean inSync() {
+        return true;
+      //  throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public State getState() {
+        return null;
+      //  throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public boolean isIntransaction() {
+        return true;
+       // throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public boolean startTransaction() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void endTransaction() {
+       // throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void addChildComponent(Component target, Component child, int index) {
+       // throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void removeChildComponent(Component child) {
+        //throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public ModelSource getModelSource() {
+        return null;
+       // throw new UnsupportedOperationException("Not supported yet.");
     }
 }
 

@@ -78,7 +78,6 @@ import org.openide.windows.TopComponent;
  */
 public class SQLCloneableEditor extends CloneableEditor {
 
-    private transient JPanel container;
     private transient JSplitPane splitter;
     private transient SQLResultPanel resultComponent;
 
