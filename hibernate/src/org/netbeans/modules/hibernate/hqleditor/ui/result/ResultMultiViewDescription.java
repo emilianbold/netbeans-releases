@@ -61,7 +61,7 @@ public class ResultMultiViewDescription implements MultiViewDescription, Seriali
     }
 
     public String getDisplayName() {
-        return "Output";
+        return "Result";
     }
 
     public Image getIcon() {
