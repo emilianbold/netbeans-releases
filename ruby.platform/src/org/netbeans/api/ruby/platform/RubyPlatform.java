@@ -82,12 +82,6 @@ public final class RubyPlatform {
     static final String RUBY_DEBUG_IDE_NAME = "ruby-debug-ide"; // NOI18N
     static final String RUBY_DEBUG_BASE_NAME = "ruby-debug-base"; // NOI18N
     
-    /** Required version of ruby-debug-ide gem. */
-    static final String RDEBUG_IDE_VERSION = "0.1.10"; // NOI18N
-    
-    /** Required version of ruby-debug-base gem. */
-    static final String RDEBUG_BASE_VERSION = "0.10.0"; // NOI18N
-
     private final Info info;
     
     private final String id;
@@ -603,21 +597,62 @@ public final class RubyPlatform {
     public String getFastDebuggerProblemsInHTML() {
         assert gemManager != null : "has gemManager when asking whether Fast Debugger is installed";
         StringBuilder errors = new StringBuilder();
-        checkAndReport(RUBY_DEBUG_IDE_NAME, RDEBUG_IDE_VERSION, errors);
-        checkAndReport(RUBY_DEBUG_BASE_NAME, RDEBUG_BASE_VERSION, errors);
+        checkAndReport(RUBY_DEBUG_IDE_NAME, getRequiredRDebugIDEVersions(), errors);
+        checkAndReport(RUBY_DEBUG_BASE_NAME, getRequiredRDebugBaseVersions(), errors);
         return errors.length() == 0 ? null : errors.toString();
     }
 
-    private void checkAndReport(final String gemName, final String gemVersion, final StringBuilder errors) {
-        if (!gemManager.isGemInstalledForPlatform(gemName, gemVersion, true)) {
-            errors.append(NbBundle.getMessage(RubyPlatform.class, "RubyPlatform.GemInVersionMissing", gemName, gemVersion));
+    /**
+     * Find out required version(s) of <i>ruby-debug-ide</i> gem for this
+     * platform sorted incrementally.
+     */
+    String[] getRequiredRDebugIDEVersions() {
+        if (isJRuby() && Util.compareVersions(info.getJVersion(), "1.1.1") >= 0) { // NOI18N
+            return new String[]{"0.1.11"}; // NOI18N
+        } else {
+            return new String[]{"0.1.10", "0.1.11"}; // NOI18N
+        }
+    }
+
+    /**
+     * Find out required version(s) of <i>ruby-debug-base</i> gem for this
+     * platform sorted incrementally.
+     */
+    String[] getRequiredRDebugBaseVersions() {
+        if (isJRuby() && Util.compareVersions(info.getJVersion(), "1.1.1") >= 0) { // NOI18N
+            return new String[]{"0.10.1"}; // NOI18N
+        } else {
+            return new String[]{"0.10.0", "0.10.1"}; // NOI18N
+        }
+    }
+
+    private void checkAndReport(final String gemName, final String[] gemVersions, final StringBuilder errors) {
+        boolean available = false;
+        for (String gemVersion : gemVersions) {
+            if (gemManager.isGemInstalledForPlatform(gemName, gemVersion, true)) {
+                available = true;
+                break;
+            }
+        }
+        if (!available) {
+            errors.append(NbBundle.getMessage(RubyPlatform.class, "RubyPlatform.GemInVersionMissing", gemName, gemVersions[gemVersions.length - 1]));
             errors.append("<br>"); // NOI18N
         }
     }
 
+    String getLatestRequiredRDebugIDEVersion() {
+        String[] versions = getRequiredRDebugIDEVersions();
+        return versions[versions.length - 1];
+    }
+    
+    String getLatestRequiredRDebugBaseVersion() {
+        String[] versions = getRequiredRDebugBaseVersions();
+        return versions[versions.length - 1];
+    }
+    
     public boolean installFastDebugger() {
         assert gemManager != null : "has gemManager when trying to install fast debugger";
-        gemManager.installGem(RUBY_DEBUG_IDE_NAME, false, false, RDEBUG_IDE_VERSION);
+        gemManager.installGem(RUBY_DEBUG_IDE_NAME, false, false, getLatestRequiredRDebugIDEVersion());
         return hasFastDebuggerInstalled();
     }
 
