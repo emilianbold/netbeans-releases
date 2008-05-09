@@ -159,29 +159,23 @@ public class TaskProcessor {
             parserLock.lock();
             try {
                 Parser.Result currentResult = null;
-                synchronized (source) {
-                    final Set<SourceFlags> flags = SourceAccessor.getINSTANCE().getFlags(source);
-                    currentResult = SourceAccessor.getINSTANCE().getResult(source);
-                    if (!shared) {
-                        flags.add(SourceFlags.INVALID);
-                    }                        
+                final Parser parser = ParserManagerImpl.getParser(source);
+                if (parser == null) {
+                    throw new IllegalAccessException("Source: " + source + " has no parser.");  //NOI18N
                 }
-                
-                if (currentResult == null) {
-                    final Parser parser = ParserManagerImpl.getParser(source);
-                    if (parser == null) {
-                        throw new IllegalAccessException();
-                    }                    
-                    parser.parse(source.createSnapshot(), userTask);
-                    if (shared) {
-                        synchronized (source) {
-                            final Parser.Result tmpResult = SourceAccessor.getINSTANCE().getResult(source);
-                            if (tmpResult == null) {
-                                SourceAccessor.getINSTANCE().setResult(source, tmpResult);
-                            }
-                            else {
-                                currentResult = tmpResult;
-                            }
+                synchronized (source) { //tzezula: rough grained lock - may cause deadlock, but Hanz doesn't want the parsing API to do caching of results
+                    final Set<SourceFlags> flags = SourceAccessor.getINSTANCE().getFlags(source);
+                    if (!flags.contains(SourceFlags.INVALID)) {
+                        currentResult = parser.getResult(userTask);
+                        if (!shared) {
+                            flags.add(SourceFlags.INVALID);
+                        }
+                    }                                                                            
+                    if (currentResult == null) {                                        
+                        parser.parse(source.createSnapshot(), userTask);
+                        currentResult = parser.getResult(userTask);
+                        if (shared) {
+                            flags.remove(SourceFlags.INVALID);
                         }
                     }
                 }
@@ -411,17 +405,15 @@ public class TaskProcessor {
                                         parserLock.unlock();
                                     }
                                 }
-                                else {
-                                    Parser.Result currentResult;
+                                else {                                    
                                     synchronized (INTERNAL_LOCK) {
                                         //Not only the finishedRequests for the current request.javaSource should be cleaned,
                                         //it will cause a starvation
                                         if (toRemove.remove(r.task)) {
                                             continue;
-                                        }
+                                        }                                        
                                         synchronized (source) {
-                                            final Set<SourceFlags> flags = SourceAccessor.getINSTANCE().getFlags(source);
-                                            boolean changeExpected = flags.contains(SourceFlags.CHANGE_EXPECTED);
+                                            boolean changeExpected = SourceAccessor.getINSTANCE().getFlags(source).contains(SourceFlags.CHANGE_EXPECTED);
                                             if (changeExpected) {
                                                 //Skeep the task, another invalidation is comming
                                                 Collection<Request> rc = waitingRequests.get (r.source);
@@ -431,24 +423,24 @@ public class TaskProcessor {
                                                 }
                                                 rc.add(r);
                                                 continue;
-                                            }
-                                            currentResult = SourceAccessor.getINSTANCE().getResult(source);
+                                            }                                            
                                         }
                                     }
-                                    parserLock.lock();
+                                    
+                                    parserLock.lock();                                    
                                     try {
-                                        if (currentResult == null) {
-                                            final Parser parser = ParserManagerImpl.getParser(source);
-                                            assert parser != null;
-                                            parser.parse(source.createSnapshot(), r.task);
-                                            synchronized (source) {                                                
-                                                final Parser.Result tmpResult = SourceAccessor.getINSTANCE().getResult(source);                                            
-                                                if (tmpResult == null) {
-                                                    SourceAccessor.getINSTANCE().setResult(source, tmpResult);
-                                                }
-                                                else {
-                                                    currentResult = tmpResult;
-                                                }
+                                        final Parser parser = ParserManagerImpl.getParser(source);
+                                        assert parser != null;
+                                        Parser.Result currentResult = null;
+                                        synchronized (source) { //tzezula: rough grained lock - may cause deadlock, but Hanz doesn't want the parsing API to do caching of results
+                                            final Set<SourceFlags> flags = SourceAccessor.getINSTANCE().getFlags(source);
+                                            if (!flags.contains(SourceFlags.INVALID)) {
+                                                currentResult = parser.getResult(r.task);
+                                            }                                        
+                                            if (currentResult == null) {
+                                                parser.parse(source.createSnapshot(), r.task);
+                                                currentResult = parser.getResult(r.task);
+                                                flags.remove(SourceFlags.INVALID);
                                             }
                                         }
                                         assert currentResult != null;

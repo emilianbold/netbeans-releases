@@ -75,22 +75,7 @@ public abstract class SourceAccessor {
      * @return
      */
     public abstract Set<SourceFlags> getFlags (Source source);
-           
-    /**
-     * Returns cached {@link Parser.Result} when available
-     * @param source for which the parser result should be obtained
-     * @return the {@link Parser.Result} or null
-     */
-    public abstract Parser.Result getResult (Source source);
-    
-    /**
-     * Sets a cached {@link Parser.Result}.
-     * Used only by {@link TaskProcessor}
-     * @param source for which the parser result should be set
-     * @param the result
-     */
-    public abstract void setResult (Source source, Parser.Result result);
-    
+                   
     /**
      * Returns cached {@link Parser} when available
      * @param source for which the parser should be obtained

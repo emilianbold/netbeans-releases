@@ -93,8 +93,7 @@ public final class Source {
     private Document        document;
     private FileObject      fileObject;
     private final Set<SourceFlags> 
-                            flags = EnumSet.noneOf(SourceFlags.class);
-    private Parser.Result   result;
+                            flags = EnumSet.of(SourceFlags.INVALID);
     private volatile Parser          cachedParser;
     
    
@@ -199,29 +198,6 @@ public final class Source {
             return source.flags;
         }
         
-        @Override
-        public Parser.Result getResult (Source source) {
-            assert source != null;
-            synchronized (source) {
-                if (source.flags.contains(SourceFlags.INVALID)) {
-                    return null;
-                }
-                else {
-                    return source.result;
-                }
-            }
-        }
-
-        @Override
-        public void setResult(Source source, Result result) {
-            assert source != null;
-            assert result != null;
-            synchronized (source) {                
-                source.result = result;
-                source.flags.remove(SourceFlags.INVALID);
-            }            
-        }
-
         @Override
         public Parser getParser(Source source) {
             assert source != null;
