@@ -57,36 +57,56 @@ import org.openide.nodes.Node;
  */
 public class ServerNodeProvider implements NodeProvider {
 
-    private static final ServerNodeProvider DEFAULT = new ServerNodeProvider();
+    private static volatile ServerNodeProvider DEFAULT;
     private static final MySQLOptions options = MySQLOptions.getDefault();
     private final ArrayList<Node> nodes = new ArrayList<Node>();
     private static final ArrayList<Node> emptyNodeList = new ArrayList<Node>();
     private final CopyOnWriteArrayList<ChangeListener> listeners = 
             new CopyOnWriteArrayList<ChangeListener>();
     
-    public static ServerNodeProvider getDefault() {
+    public static synchronized ServerNodeProvider getDefault() {
+        // Issue 134577 - getDefault() is called by Lookup. If we try to
+        // get the DatabaseServer implementation here, we cause
+        // deadlocks, as this lookup will wait until the lookup calling
+        // getDefault() completes, which will never happen.
+        //
+        // So we lazily look up the DatabaseServer as part of the call
+        // to getNodes(), which happens from application code and *not*
+        // as part of lookup.
+        if ( DEFAULT == null ) {
+                DEFAULT = new ServerNodeProvider();
+        }
         return DEFAULT;
     }
     
-    private ServerNodeProvider() {
-        // Right now only one server, although this may (likely) change
-        nodes.add(ServerNode.create(DatabaseServerManager.getDatabaseServer()));
-    }
-
     public List<Node> getNodes() {
-        /**
-         * Temporarily disable until we track down deadlock issues
-         if ( options.isProviderRegistered() ) {
-            DatabaseServerManager.getDatabaseServer().reconnectAsync(true);
+        checkNodeArray();
+        
+        if ( options.isProviderRegistered() ) {
+            DatabaseServerManager.getDatabaseServer().reconnectAsync();
             return nodes;
         } else {
+            DatabaseServerManager.getDatabaseServer().disconnect();
             return emptyNodeList;
         }
-        */
-        return emptyNodeList;
-    } 
-    
-    public synchronized void setRegistered(boolean registered) {
+    }
+
+    /**
+     * Check to see if the nodes list has been initialized, and if not,
+     * initialize it.
+     */
+    private void checkNodeArray() {
+        if ( nodes.size() == 0 ) {
+            Node node = ServerNode.create(DatabaseServerManager.getDatabaseServer());
+            
+            synchronized(this) {
+                if ( nodes.size() == 0 ) {
+                    nodes.add(node);
+                }
+            }
+        }        
+    }
+    public void setRegistered(boolean registered) {
         boolean old = isRegistered();
         if ( registered != old ) {
             DatabaseServer instance = DatabaseServerManager.getDatabaseServer();
