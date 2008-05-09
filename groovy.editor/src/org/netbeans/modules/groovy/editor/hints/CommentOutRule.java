@@ -37,9 +37,12 @@ import org.netbeans.modules.groovy.editor.hints.spi.SelectionRule;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.text.JTextComponent;
 import org.codehaus.groovy.ast.ASTNode;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Utilities;
 import org.netbeans.modules.groovy.editor.AstUtilities;
+import org.netbeans.modules.groovy.editor.Formatter;
 import org.netbeans.modules.groovy.editor.hints.spi.EditList;
 import org.netbeans.modules.groovy.editor.hints.spi.Fix;
 import org.netbeans.modules.gsf.api.OffsetRange;
@@ -49,8 +52,9 @@ import org.openide.util.NbBundle;
 public class CommentOutRule implements SelectionRule {
     
     public static final Logger LOG = Logger.getLogger(CommentOutRule.class.getName()); // NOI18N
+    String bulbDesc = NbBundle.getMessage(CommentOutRule.class, "CommentOutRuleDescription");
     
-    String bulbDesc = NbBundle.getMessage(CommentOutRule.class, "CommentOutRuleHintDescription");
+    enum OPERATION { COMMENT_OUT, ADD_IF };
 
     public void run(RuleContext context, List<Description> result) {
         CompilationInfo info = context.compilationInfo;
@@ -83,19 +87,29 @@ public class CommentOutRule implements SelectionRule {
             return;
         }
         
-        // create only but one fix to comment-out the selection
-        
-        Fix fix = new SimpleFix(bulbDesc, baseDoc, context);
         OffsetRange range = new OffsetRange(start, end);
-        
-        List<Fix> fixList = new ArrayList<Fix>(1);
-        fixList.add(fix);
-        Description desc = new Description(this, fix.getDescription(), info.getFileObject(), range,
-                fixList, 292);
-        result.add(desc);
+
+        result.add(getDescriptor(OPERATION.COMMENT_OUT, "CommentOutRuleHintDescription", context, baseDoc, range));
+        result.add(getDescriptor(OPERATION.ADD_IF, "AddIfAroundBlockHintDescription", context, baseDoc, range));
         
         return;
     }
+    
+    Description getDescriptor(OPERATION operation, String bulbDescriptionMsgBundle, RuleContext context,
+            BaseDocument baseDoc, OffsetRange range) {
+
+        int DEFAULT_PRIORITY = 292;
+        String descriptionString = NbBundle.getMessage(CommentOutRule.class, bulbDescriptionMsgBundle);
+        Fix fixToApply = new SimpleFix(operation, descriptionString, baseDoc, context);
+
+        List<Fix> fixList = new ArrayList<Fix>(1);
+        fixList.add(fixToApply);
+        Description descriptor = new Description(this, fixToApply.getDescription(), context.compilationInfo.getFileObject(), range,
+                fixList, DEFAULT_PRIORITY);
+
+        return descriptor;
+    }
+    
 
     public boolean appliesTo(CompilationInfo compilationInfo) {
         return true;
@@ -118,11 +132,13 @@ public class CommentOutRule implements SelectionRule {
         BaseDocument baseDoc;
         String desc;
         RuleContext context;
+        OPERATION operation;
 
-        public SimpleFix(String desc, BaseDocument baseDoc, RuleContext context) {
+        public SimpleFix(OPERATION operation ,String desc, BaseDocument baseDoc, RuleContext context) {
             this.desc = desc;
             this.baseDoc = baseDoc;
             this.context = context;
+            this.operation = operation;
         }
 
         public String getDescription() {
@@ -135,9 +151,36 @@ public class CommentOutRule implements SelectionRule {
             int start = context.selectionStart;
             int end = context.selectionEnd;
             
-            edits.replace(end, 0, "*/", false, 0);
-            edits.replace(start, 0, "/*", false, 1);
-            edits.apply();
+            JTextComponent component = Utilities.getFocusedComponent();
+            
+            switch(operation){
+                case COMMENT_OUT:
+                    edits.replace(end, 0, "*/", false, 0);
+                    edits.replace(start, 0, "/*", false, 1);
+                    edits.apply();
+
+                    // Clear selection 
+                    component.setCaretPosition(start);
+                    
+                    break;
+                case ADD_IF:
+                    String START_INSERT = "if (true) {\n";
+                    String END_INSERT = "\n}";
+                    
+                    edits.replace(end, 0, END_INSERT, false, 0);
+                    
+                    int startOfRow = Utilities.getRowStart(baseDoc, start);
+                    
+                    edits.replace(startOfRow, 0, START_INSERT, false, 1);
+                    edits.format();
+                    edits.apply();
+                    
+                    component.setCaretPosition(start + 4);
+                    component.moveCaretPosition(start + 8);
+                    
+                    break;
+            }
+            
             
             return;
         }
@@ -151,7 +194,5 @@ public class CommentOutRule implements SelectionRule {
         }
         
     }
-    
-    
 
 }
