@@ -10,6 +10,11 @@ public interface ExternalTablePollingStreamOperatorComponent extends OperatorCom
 	
 	public static String PROP_DATABASE_JNDI_NAME = "databaseJndiName";
 	
+//        public static String PROP_RECORD_IDENTIFIER_COLUMNS = "recordIdentifierColumns";
+        
+        public static String PROP_RECORD_IDENTIFIER_COLUMNS_SCHEMA = "recordIdentifierColumnsSchema";
+        
+                
         public static String PROP_IS_DELETE_RECORDS = "isDeleteRecords";
         
 	public void setPollingInterval(String pollingInterval);
