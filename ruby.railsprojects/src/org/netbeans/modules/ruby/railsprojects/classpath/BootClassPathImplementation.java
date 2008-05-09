@@ -132,6 +132,7 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
             RubyPlatform platform = new RubyPlatformProvider(evaluator).getPlatform();
             if (platform == null) {
                 LOGGER.severe("Cannot resolve platform for project: " + projectDirectory);
+                return Collections.emptyList();
             }
             
             if (!platform.hasRubyGemsInstalled()) {
