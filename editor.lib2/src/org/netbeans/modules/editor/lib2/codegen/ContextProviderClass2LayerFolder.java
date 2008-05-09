@@ -38,51 +38,30 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.editor.lib2.codegen;
 
-package org.netbeans.modules.spring.api.beans.model;
 
-import java.util.List;
-import java.util.Set;
-import org.openide.filesystems.FileObject;
+import org.netbeans.spi.editor.codegen.CodeGeneratorContextProvider;
+import org.netbeans.spi.editor.mimelookup.Class2LayerFolder;
+import org.netbeans.spi.editor.mimelookup.InstanceProvider;
 
 /**
- * Encapsulates the root of a Spring config model. It provides access to the
- * list of bean definitions and useful methods for retrieving beans
- * by id, etc.
  *
- * @author Andrei Badea
+ *
+ * @author Dusan Balek
  */
-public interface SpringBeans {
+public class ContextProviderClass2LayerFolder implements Class2LayerFolder<CodeGeneratorContextProvider> {
 
-    /**
-     * Finds a bean by its id or name or alias.
-     *
-     * @param  idOrName the bean id or name or alias; never null.
-     * @return the bean with the specified id or name; {@code null} if no such
-     *         bean was found.
-     */
-    SpringBean findBean(String idOrName);
+    public Class<CodeGeneratorContextProvider> getClazz() {
+        return CodeGeneratorContextProvider.class;
+    }
 
-    /**
-     * Returns the list of beans in the specified beans config file.
-     *
-     * @param  fo the beans config file.
-     * @return the list of beans or {@code null} if {@code fo} was not
-     *         used to create the contents of this {@code SpringBeans}.
-     */
-    FileSpringBeans getFileBeans(FileObject fo);
+    public String getLayerFolderName() {
+        return "CodeGeneratorContextProviders"; //NOI18N
+    }
 
-    /**
-     * Returns the list of beans in the Spring config model.
-     *
-     * @return the list of beans; never {@code null}.
-     */
-    List<SpringBean> getBeans();
-    
-    /**
-     * Returns all registered alias names in the Spring config model
-     * 
-     * @return registered aliases; never {@code null}.
-     */
-    Set<String> getAliases();
+    public InstanceProvider<CodeGeneratorContextProvider> getInstanceProvider() {
+        return null;
+    }
+
 }

@@ -115,6 +115,7 @@ is the proper place.
              <description>
                  Added TypeUtilities.substitute.
              </description>
+             <class package="org.netbeans.api.java.source" name="TypeUtilities" />
         </change>
         <change id="GeneratorUtilities.createMethod">
              <api name="general"/>

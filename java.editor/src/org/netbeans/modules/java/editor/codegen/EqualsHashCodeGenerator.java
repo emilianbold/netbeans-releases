@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.java.editor.codegen;
 
+import org.netbeans.spi.editor.codegen.CodeGenerator;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
@@ -91,6 +92,7 @@ import org.netbeans.modules.java.editor.codegen.ui.EqualsHashCodePanel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
@@ -103,35 +105,36 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
         
     public static class Factory implements CodeGenerator.Factory {
         
-        public Factory() {
-        }
-        
-        public Iterable<? extends CodeGenerator> create(CompilationController cc, TreePath path) throws IOException {
-            path = Utilities.getPathElementOfKind(Tree.Kind.CLASS, path);
-            if (path == null)
-                return Collections.emptySet();
-            cc.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-            
-            Element elem = cc.getTrees().getElement(path);
-            if (elem == null) {
-                return Collections.emptySet();
+        public List<? extends CodeGenerator> create(Lookup context) {
+            ArrayList<CodeGenerator> ret = new ArrayList<CodeGenerator>();
+            JTextComponent component = context.lookup(JTextComponent.class);
+            CompilationController controller = context.lookup(CompilationController.class);
+            TreePath path = context.lookup(TreePath.class);
+            path = path != null ? Utilities.getPathElementOfKind(Tree.Kind.CLASS, path) : null;
+            if (component == null || controller == null || path == null)
+                return ret;
+            try {
+                controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                Element elem = controller.getTrees().getElement(path);
+                if (elem != null) {
+                    EqualsHashCodeGenerator gen = createEqualsHashCodeGenerator(component, controller, elem);
+                    if (gen != null)
+                        ret.add(gen);
+                }
+            } catch (IOException ioe) {
             }
-            EqualsHashCodeGenerator gen = createEqualsHashCodeGenerator(cc, elem);
-            
-            if (gen == null) {
-                return Collections.emptySet();
-            } else {
-                return Collections.singleton(gen);
-            }
+            return ret;
         }
     }
 
-    final ElementNode.Description description;
-    final boolean generateEquals;
-    final boolean generateHashCode;
+    private JTextComponent component;
+    private ElementNode.Description description;
+    private boolean generateEquals;
+    private boolean generateHashCode;
     
     /** Creates a new instance of EqualsHashCodeGenerator */
-    private EqualsHashCodeGenerator(ElementNode.Description description, boolean generateEquals, boolean generateHashCode) {
+    private EqualsHashCodeGenerator(JTextComponent component, ElementNode.Description description, boolean generateEquals, boolean generateHashCode) {
+        this.component = component;
         this.description = description;        
         this.generateEquals = generateEquals;
         this.generateHashCode = generateHashCode;
@@ -146,7 +149,7 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
         return org.openide.util.NbBundle.getMessage(EqualsHashCodeGenerator.class, "LBL_equals"); //NOI18N
     }
     
-    static EqualsHashCodeGenerator createEqualsHashCodeGenerator(CompilationController cc, Element el) throws IOException {
+    static EqualsHashCodeGenerator createEqualsHashCodeGenerator(JTextComponent component, CompilationController cc, Element el) throws IOException {
         if (el.getKind() != ElementKind.CLASS)
             return null;
         //#125114: ignore anonymous innerclasses:
@@ -165,6 +168,7 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
         if (descriptions.isEmpty() || (equalsHashCode[0] != null && equalsHashCode[1] != null))
             return null;
         return new EqualsHashCodeGenerator(
+            component,
             ElementNode.Description.create(typeElement, descriptions, false, false),
             equalsHashCode[0] == null,
             equalsHashCode[1] == null
@@ -280,12 +284,12 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
                     cc.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                     Element e = handle.resolveElement(cc);
                     
-                    gen = createEqualsHashCodeGenerator(cc, e);
+                    gen = createEqualsHashCodeGenerator(component, cc, e);
                 }
                 
                 public void invoke() {
                     if (gen != null) {
-                        gen.invoke(component);
+                        gen.invoke();
                     }
                 }
 
@@ -300,7 +304,7 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
         }
     }
     
-    public void invoke(JTextComponent component) {
+    public void invoke() {
         final EqualsHashCodePanel panel = new EqualsHashCodePanel(description, generateEquals, generateHashCode);
         String title = NbBundle.getMessage(ConstructorGenerator.class, "LBL_generate_equals_and_hashcode"); //NOI18N
         if( !generateEquals )
