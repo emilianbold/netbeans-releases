@@ -128,9 +128,9 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
     }
 
     private JTextComponent component;
-    private ElementNode.Description description;
-    private boolean generateEquals;
-    private boolean generateHashCode;
+    final ElementNode.Description description;
+    final boolean generateEquals;
+    final boolean generateHashCode;
     
     /** Creates a new instance of EqualsHashCodeGenerator */
     private EqualsHashCodeGenerator(JTextComponent component, ElementNode.Description description, boolean generateEquals, boolean generateHashCode) {
