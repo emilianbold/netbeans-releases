@@ -91,8 +91,8 @@ public final class ElementHeaders {
         assert info != null;
         assert formatString != null;
         TreePath tp = info.getTrees().getPath(element);
-        Tree tree = tp.getLeaf();
-        if (tree != null) {
+        if (tp != null) {
+            Tree tree = tp.getLeaf();
             if (tree.getKind() == Tree.Kind.METHOD) {
                 while (tp != null && tp.getLeaf().getKind() != Tree.Kind.CLASS) {
                     tp = tp.getParentPath();
