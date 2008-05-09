@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,52 +31,51 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.spring.api.beans.model;
+package org.netbeans.spi.editor.codegen;
 
-import java.util.List;
-import java.util.Set;
-import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
 
 /**
- * Encapsulates the root of a Spring config model. It provides access to the
- * list of bean definitions and useful methods for retrieving beans
- * by id, etc.
+ * Serves for adding an additonal content to the context which is passed
+ * as a parameter to the {@link CodeGenerator.Factory#create(org.openide.util.Lookup)}
+ * method.<br/> Instances of this interface are looked up by the
+ * {@link org.netbeans.api.editor.mimelookup.MimeLookup} so they should be
+ * registered in an xml-layer in
+ * <i>Editors/&lt;mime-type&gt;/CodeGeneratorContextProviders</i> directory.
  *
- * @author Andrei Badea
+ * @author Dusan Balek
+ * @since 1.8
  */
-public interface SpringBeans {
+public interface CodeGeneratorContextProvider {
 
     /**
-     * Finds a bean by its id or name or alias.
-     *
-     * @param  idOrName the bean id or name or alias; never null.
-     * @return the bean with the specified id or name; {@code null} if no such
-     *         bean was found.
+     * Adds an additional content to the original context and runs the given task
+     * with the new context as a parameter.
+     * @param context the original context
+     * @param task the task to be run
+     * @since 1.8
      */
-    SpringBean findBean(String idOrName);
-
-    /**
-     * Returns the list of beans in the specified beans config file.
-     *
-     * @param  fo the beans config file.
-     * @return the list of beans or {@code null} if {@code fo} was not
-     *         used to create the contents of this {@code SpringBeans}.
-     */
-    FileSpringBeans getFileBeans(FileObject fo);
-
-    /**
-     * Returns the list of beans in the Spring config model.
-     *
-     * @return the list of beans; never {@code null}.
-     */
-    List<SpringBean> getBeans();
+    public void runTaskWithinContext(Lookup context, Task task);
     
     /**
-     * Returns all registered alias names in the Spring config model
-     * 
-     * @return registered aliases; never {@code null}.
+     * Represents the task passed to the {@link #runTaskWithinContext(org.openide.util.Lookup,Task)}
+     * method. It is supposed to be implemented by the infrastructure implementor
+     * (not by the SPI clients).
+     * @since 1.8
      */
-    Set<String> getAliases();
+    public interface Task {
+        
+        /**
+         * Runs the task.
+         * @param context the task's context
+         * @since 1.8
+         */
+        public void run(Lookup context);
+    }
 }

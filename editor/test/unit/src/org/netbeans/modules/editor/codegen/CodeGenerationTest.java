@@ -38,51 +38,48 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.editor.codegen;
 
-package org.netbeans.modules.spring.api.beans.model;
-
-import java.util.List;
-import java.util.Set;
-import org.openide.filesystems.FileObject;
+import javax.swing.text.Document;
+import org.netbeans.modules.editor.*;
+import java.net.URL;
+import javax.swing.text.DefaultStyledDocument;
+import junit.framework.TestCase;
 
 /**
- * Encapsulates the root of a Spring config model. It provides access to the
- * list of bean definitions and useful methods for retrieving beans
- * by id, etc.
  *
- * @author Andrei Badea
+ * @author Dusan Balek
  */
-public interface SpringBeans {
+public class CodeGenerationTest extends TestCase {
 
-    /**
-     * Finds a bean by its id or name or alias.
-     *
-     * @param  idOrName the bean id or name or alias; never null.
-     * @return the bean with the specified id or name; {@code null} if no such
-     *         bean was found.
-     */
-    SpringBean findBean(String idOrName);
+    public CodeGenerationTest(String testName) {
+        super(testName);
+    }
 
-    /**
-     * Returns the list of beans in the specified beans config file.
-     *
-     * @param  fo the beans config file.
-     * @return the list of beans or {@code null} if {@code fo} was not
-     *         used to create the contents of this {@code SpringBeans}.
-     */
-    FileSpringBeans getFileBeans(FileObject fo);
+    // TODO add test methods here. The name must begin with 'test'. For example:
+    // public void testHello() {}
+    protected void setUp() throws Exception {
+        EditorTestLookup.setLookup(
+                new URL[]{EditorTestConstants.EDITOR_LAYER_URL,
+                    getClass().getClassLoader().getResource("org/netbeans/modules/editor/resources/codegen-test-layer.xml")
+                },
+                new Object[]{},
+                getClass().getClassLoader());
+    }
 
-    /**
-     * Returns the list of beans in the Spring config model.
-     *
-     * @return the list of beans; never {@code null}.
-     */
-    List<SpringBean> getBeans();
-    
-    /**
-     * Returns all registered alias names in the Spring config model
-     * 
-     * @return registered aliases; never {@code null}.
-     */
-    Set<String> getAliases();
+    public void testSimpleCodeGenerator() {
+        Document doc = new DefaultStyledDocument();
+        doc.putProperty(NbEditorDocument.MIME_TYPE_PROP, "text/x-simple-codegen-test");
+        String[] generatorNames = NbGenerateCodeAction.test(doc, 0);
+        assertEquals(generatorNames.length, 1);
+        assertEquals(generatorNames[0], "SimpleCodeGenerator");
+    }
+
+    public void testCodeGenerator() {
+        Document doc = new DefaultStyledDocument();
+        doc.putProperty(NbEditorDocument.MIME_TYPE_PROP, "text/x-codegen-test");
+        String[] generatorNames = NbGenerateCodeAction.test(doc, 0);
+        assertEquals(generatorNames.length, 1);
+        assertEquals(generatorNames[0], "CodeGenerator");
+    }
 }
