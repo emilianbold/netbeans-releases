@@ -40,10 +40,12 @@ package org.netbeans.modules.ruby.testrunner;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.logging.Logger;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.platform.RubyExecution;
 import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
@@ -76,9 +78,11 @@ public final class TestRunnerImpl implements TestRunner {
     }
 
     public void runTest(FileObject testFile) {
-        Project project = FileOwnerQuery.getOwner(testFile);
-        FileLocator locator = project.getLookup().lookup(FileLocator.class);
-        runTest(project, testFile, locator);
+        String testFilePath = FileUtil.toFile(testFile).getAbsolutePath();
+        List<String> additionalArgs = new ArrayList<String>();
+        additionalArgs.add("-f"); //NOI18N
+        additionalArgs.add(testFilePath);
+        run(FileOwnerQuery.getOwner(testFile), additionalArgs, testFile.getName());
 
     }
 
@@ -90,41 +94,35 @@ public final class TestRunnerImpl implements TestRunner {
             throw new IllegalStateException("Could not locate " + MEDIATOR_SCRIPT); // NOI18N
 
         }
-
         return mediatorScript;
 
     }
 
-
-    private void runTest(Project project, FileObject target, FileLocator fileLocator) {
-
-        RubyPlatform platform = RubyPlatform.platformFor(project);
-
-
-        String testFilePath = FileUtil.toFile(target).getAbsolutePath();
-        if (testFilePath.endsWith(".rb")) { //NOI18N
-            testFilePath = testFilePath.substring(0, testFilePath.length() - 3);
-        }
-
+    public void runAllTests(Project project) {
         List<String> additionalArgs = new ArrayList<String>();
-        additionalArgs.add("-f"); //NOI18N
-        additionalArgs.add(testFilePath);
-
+        additionalArgs.add("-d"); //NOI18N
+        additionalArgs.add(FileUtil.toFile(project.getProjectDirectory()).getAbsolutePath());
+        
+        String name = ProjectUtils.getInformation(project).getDisplayName();
+        
+        run(project, additionalArgs, name);
+    }
+    
+    private void run(Project project, List<String> additionalArgs, String name) {
+        FileLocator locator = project.getLookup().lookup(FileLocator.class);
+        RubyPlatform platform = RubyPlatform.platformFor(project);
+        
         String targetPath = getMediatorScript().getAbsolutePath();
         ExecutionDescriptor desc = null;
         String charsetName = null;
-        desc = new ExecutionDescriptor(platform, target.getName(), FileUtil.toFile(project.getProjectDirectory()), targetPath);
+        desc = new ExecutionDescriptor(platform, name, FileUtil.toFile(project.getProjectDirectory()), targetPath);
         desc.additionalArgs(additionalArgs.toArray(new String[additionalArgs.size()]));
 
         desc.debug(false);
         desc.allowInput();
-        desc.fileLocator(fileLocator);
+        desc.fileLocator(locator);
         desc.addStandardRecognizers();
-        desc.addOutputRecognizer(new TestRecognizer(Manager.getInstance(), new TestSession(fileLocator)));
+        desc.addOutputRecognizer(new TestRecognizer(Manager.getInstance(), new TestSession(locator)));
         new RubyExecution(desc, charsetName).run();
-    }
-
-    public void runAllTests(Project project) {
-        throw new UnsupportedOperationException("Not supported yet.");
     }
 }

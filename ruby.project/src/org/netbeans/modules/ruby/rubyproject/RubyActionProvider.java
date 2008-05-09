@@ -624,13 +624,18 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
         }
 
         if (COMMAND_TEST.equals(command)) {
-            File pwd = FileUtil.toFile(project.getProjectDirectory());
-            RakeRunner runner = new RakeRunner(project);
-            runner.setPWD(pwd);
-            runner.setFileLocator(new RubyFileLocator(context, project));
-            runner.showWarnings(true);
-            runner.setDebug(COMMAND_DEBUG_SINGLE.equals(command));
-            runner.run("test"); // NOI18N
+            TestRunner testRunner = Lookup.getDefault().lookup(TestRunner.class);
+            if (testRunner != null) {
+                testRunner.getInstance().runAllTests(project);
+            } else {
+                File pwd = FileUtil.toFile(project.getProjectDirectory());
+                RakeRunner runner = new RakeRunner(project);
+                runner.setPWD(pwd);
+                runner.setFileLocator(new RubyFileLocator(context, project));
+                runner.showWarnings(true);
+                runner.setDebug(COMMAND_DEBUG_SINGLE.equals(command));
+                runner.run("test"); // NOI18N
+            }
             return;
         }
         

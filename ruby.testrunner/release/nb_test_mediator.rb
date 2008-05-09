@@ -40,15 +40,21 @@ require 'test/unit'
 require 'test/unit/testcase'
 require 'test/unit/ui/testrunnermediator'
 require 'getoptlong'
+require 'rubygems'
+require 'rake'
 
 class NbTestMediator
 
   def parse_args
+    @suites = []
+
     parser = GetoptLong.new
     parser.set_options(
-      ["-f", "--file", GetoptLong::REQUIRED_ARGUMENT],
+      ["-f", "--file", GetoptLong::OPTIONAL_ARGUMENT],
+      ["-d", "--directory", GetoptLong::OPTIONAL_ARGUMENT],
       ["-m", "--testmethod", GetoptLong::OPTIONAL_ARGUMENT]
     )
+    
     
     loop do
       begin
@@ -56,16 +62,20 @@ class NbTestMediator
         break if not opt
         case opt
         when "-f"
-          @filename = arg
-          require "#{@filename}"
-          last_slash = @filename.rindex("/")
-          test_class = @filename[last_slash + 1..@filename.length]
-          instance = Object.const_get(camelize(test_class))
-          if (instance.respond_to?(:suite))
-            @suite = instance.suite
-          else
-            @suite = instance
-          end
+          add_to_suites arg
+          #          @filename = arg
+          #          require "#{@filename}"
+          #          last_slash = @filename.rindex("/")
+          #          test_class = @filename[last_slash + 1..@filename.length]
+          #          instance = Object.const_get(camelize(test_class))
+          #          if (instance.respond_to?(:suite))
+          #            @suite = instance.suite
+          #          else
+          #            @suite = instance
+          #          end
+          #        end
+        when "-d"
+          Rake::FileList["#{arg}/test/**/*.rb"].each { |file| add_to_suites(file) }
         when "-m"
           if "-m" != ""
             @testmethod = arg
@@ -73,8 +83,23 @@ class NbTestMediator
         end
       end
     end
+    @suites.each { |item| puts item }
   end
 
+  def add_to_suites file_name
+    file_name = file_name[0..file_name.length - 4]
+    require "#{file_name}"
+    last_slash = file_name.rindex("/")
+    test_class = file_name[last_slash + 1..file_name.length]
+    instance = Object.const_get(camelize(test_class))
+    if (instance.respond_to?(:suite))
+      @suites << instance.suite
+    else
+      @suites << instance
+    end
+    
+  end
+  
   def get_filename class_name
     class_name.to_s.gsub(/::/, '/').
       gsub(/([A-Z]+)([A-Z][a-z])/,'\1_\2').
@@ -91,6 +116,13 @@ class NbTestMediator
     end
   end
 
+  def run_all
+    @test_files = Rake::FileList['test/**/*.rb']
+    @test_files.each do |t|
+      puts t
+    end
+  end
+  
   def run
     #      class_name = ARGV[0]
     #      file_name = ARGV[1]
@@ -100,18 +132,20 @@ class NbTestMediator
   end
   
   def run_mediator
-#    @suite.tests.each { |i| puts "test #{i}" }
+    #    @suite.tests.each { |i| puts "test #{i}" }
     
-    @mediator = Test::Unit::UI::TestRunnerMediator.new(@suite)
-    attach_listeners
-    begin
-      puts "%SUITE_STARTING% #{@suite}"
-      result = @mediator.run_suite
-      puts "%SUITE_SUCCESS% #{result.passed?}"
-      puts "%SUITE_FAILURES% #{result.failure_count}"
-      puts "%SUITE_ERRORS% #{result.error_count}"
-    rescue => err
-      puts err
+    @suites.each do |suite| 
+      @mediator = Test::Unit::UI::TestRunnerMediator.new(suite)
+      attach_listeners
+      begin
+        puts "%SUITE_STARTING% #{suite}"
+        result = @mediator.run_suite
+        puts "%SUITE_SUCCESS% #{result.passed?}"
+        puts "%SUITE_FAILURES% #{result.failure_count}"
+        puts "%SUITE_ERRORS% #{result.error_count}"
+      rescue => err
+        puts err
+      end
     end
     
   end
@@ -166,3 +200,4 @@ end
 tm = NbTestMediator.new
 tm.parse_args
 tm.run_mediator
+#tm.run_all
