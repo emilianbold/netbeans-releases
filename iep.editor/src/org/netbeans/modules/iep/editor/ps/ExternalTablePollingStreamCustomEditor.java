@@ -14,12 +14,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.border.CompoundBorder;
@@ -49,6 +51,7 @@ import org.netbeans.modules.iep.model.OperatorComponent;
 import org.netbeans.modules.iep.model.Property;
 import org.netbeans.modules.iep.model.SchemaAttribute;
 import org.netbeans.modules.iep.model.SchemaComponent;
+import org.netbeans.modules.iep.model.SchemaComponentContainer;
 import org.netbeans.modules.iep.model.lib.TcgPropertyType;
 import org.netbeans.modules.iep.model.lib.TcgType;
 import org.openide.DialogDescriptor;
@@ -93,9 +96,11 @@ public class ExternalTablePollingStreamCustomEditor extends DefaultCustomEditor 
         protected PropertyPanel mPollingIntervalPanel;
         protected PropertyPanel mPollingIntervalTimeUnitPanel;
         protected PropertyPanel mPollingRecordSizePanel;
+        protected JTextField mRecordIdentifyingColumnsTextField;
         protected PropertyPanel mDatabaseJndiNamePanel;
         protected PropertyPanel mIsDeleteRecordsPanel;
         
+        private SchemaComponent mRecordIdentifyingColumnsSchema;
         
         public MyCustomizer(TcgPropertyType propertyType, OperatorComponent component, PropertyEnv env) {
             super(propertyType, component, env);
@@ -104,30 +109,6 @@ public class ExternalTablePollingStreamCustomEditor extends DefaultCustomEditor 
         public MyCustomizer(TcgPropertyType propertyType, OperatorComponent component, TcgComponentNodePropertyCustomizerState customizerState) {
             super(propertyType, component, customizerState);
         }
-        
-//        protected void initialize() {
-//        	Property pollingInterval = mComponent.getProperty(ExternalTablePollingStreamOperatorComponent.PROP_POLLING_INTERVAL);
-//        	if(pollingInterval != null) {
-//        		mPollingInterval = pollingInterval.getValue();
-//        	}
-//        	Property pollingIntervalTimeUnit = mComponent.getProperty(ExternalTablePollingStreamOperatorComponent.PROP_POLLING_INTERVAL_TIME_UNIT);
-//        	if(pollingIntervalTimeUnit != null) {
-//        		mPollingIntervalUnit = pollingIntervalTimeUnit.getValue();
-//        	}
-//        	
-//        	Property pollingRecordSize = mComponent.getProperty(ExternalTablePollingStreamOperatorComponent.PROP_POLLING_RECORD_SIZE);
-//        	if(pollingRecordSize != null) {
-//        		mRecordSize = pollingRecordSize.getValue();
-//        	}
-//        	
-//        	Property databaseJndiName = mComponent.getProperty(ExternalTablePollingStreamOperatorComponent.PROP_DATABASE_JNDI_NAME);
-//        	if(databaseJndiName != null) {
-//        		mDatabaseJNDIName = databaseJndiName.getValue();
-//        	}
-//        	
-//        	super.initialize();
-//        	
-//        }
         
         protected JPanel createPropertyPanel() throws Exception {
             
@@ -170,7 +151,7 @@ public class ExternalTablePollingStreamCustomEditor extends DefaultCustomEditor 
 //            List attributeList = mSelectPanel.getQuantityAttributeList();
 //            attributeList.add(0, "");
 //            mAttributePanel = PropertyPanel.createComboBoxPanel(attributeStr, attributeProp, (String[])attributeList.toArray(new String[0]), false);
-            mPollingIntervalPanel = PropertyPanel.createSingleLineTextPanelWithoutFilter(pollingIntervalLabel, pollingInterval, false);
+            mPollingIntervalPanel = PropertyPanel.createIntNumberPanel(pollingIntervalLabel, pollingInterval, false);
             
             gbc.gridx = 2;
             gbc.gridy = 0;
@@ -253,7 +234,7 @@ public class ExternalTablePollingStreamCustomEditor extends DefaultCustomEditor 
             if (mIsSchemaOwner) {
                 if (mOutputSchemaNamePanel.getStringValue() == null || mOutputSchemaNamePanel.getStringValue().trim().equals("")) {
                 	IEPModel model = mComponent.getModel();
-                	String schemaName = NameGenerator.generateSchemaName(model.getPlanComponent().getSchemaComponentContainer());
+                        String schemaName = NameGenerator.generateSchemaName(model.getPlanComponent().getSchemaComponentContainer());
                     mOutputSchemaNamePanel.setStringValue(schemaName);
                 }
             } else {
@@ -297,7 +278,7 @@ public class ExternalTablePollingStreamCustomEditor extends DefaultCustomEditor 
 //            List attributeList = mSelectPanel.getQuantityAttributeList();
 //            attributeList.add(0, "");
 //            mAttributePanel = PropertyPanel.createComboBoxPanel(attributeStr, attributeProp, (String[])attributeList.toArray(new String[0]), false);
-            mPollingRecordSizePanel = PropertyPanel.createSingleLineTextPanelWithoutFilter(pollingRecordSizeLabel, pollingRecordSize, false);
+            mPollingRecordSizePanel = PropertyPanel.createIntNumberPanel(pollingRecordSizeLabel, pollingRecordSize, false);
             
             gbc.gridx = 2;
             gbc.gridy = 1;
@@ -339,6 +320,8 @@ public class ExternalTablePollingStreamCustomEditor extends DefaultCustomEditor 
             pane.add(mIsDeleteRecordsPanel.input[0], gbc);
             
             //row 3
+            
+            //record identifying columns
             //database jndi name
             Property databaseJndiName = mComponent.getProperty(ExternalTablePollingStreamOperatorComponent.PROP_DATABASE_JNDI_NAME);
             String databaseJndiNameLabel = NbBundle.getMessage(ExternalTablePollingStreamCustomEditor.class, "ExternalTablePollingStreamCustomEditor.DATABASE_JNDI_NAME");
@@ -368,7 +351,61 @@ public class ExternalTablePollingStreamCustomEditor extends DefaultCustomEditor 
             pane.add(mDatabaseJndiNamePanel.component[1], gbc);
             
            
+            //record identifying prop
+            Property recordIdentifyingColumnsSchema = mComponent.getProperty(ExternalTablePollingStreamOperatorComponent.PROP_RECORD_IDENTIFIER_COLUMNS_SCHEMA);
+            String recordIdentifyingColumnsLabelStr = NbBundle.getMessage(ExternalTablePollingStreamCustomEditor.class, "ExternalTablePollingStreamCustomEditor.RECORD_IDENTIFYING_COLUMNS");
             
+            
+            
+            List<String> columnList = (List<String>) new ArrayList<String>();
+            
+            String schemaName = recordIdentifyingColumnsSchema.getValue();
+            if(schemaName != null) {
+                IEPModel model = mComponent.getModel();
+                SchemaComponentContainer scContainer = model.getPlanComponent().getSchemaComponentContainer();
+                SchemaComponent recordIdColumnSchema  = scContainer.findSchema(schemaName);
+                if(recordIdColumnSchema != null) {
+                    List<SchemaAttribute> saList = recordIdColumnSchema.getSchemaAttributes();
+                    Iterator<SchemaAttribute> it = saList.iterator();
+                    while(it.hasNext()) {
+                        SchemaAttribute sa = it.next();
+                        String cName = sa.getAttributeName();
+                        columnList.add(cName);
+                    }
+                }
+            }
+                    
+            String displayColumnNames = convertListToCommaSeperatedValues(columnList);
+//            mRecordIdentifyingColumnsPanel = PropertyPanel.createSingleLineTextPanelWithoutFilter(recordIdentifyingColumnsLabel, recordIdentifyingColumns, false);
+//            mRecordIdentifyingColumnsPanel.setStringValue();
+            
+            JLabel recordIdentifyingColumnsLabel = new JLabel(recordIdentifyingColumnsLabelStr);
+            mRecordIdentifyingColumnsTextField = new JTextField(displayColumnNames); 
+            gbc.gridx = 2;
+            gbc.gridy = 2;
+            gbc.gridwidth = 1;
+            gbc.gridheight = 1;
+            gbc.anchor = GridBagConstraints.WEST;
+            gbc.weightx = 0.0D;
+            gbc.weighty = 0.0D;
+            gbc.fill = GridBagConstraints.NONE;
+//            pane.add(mRecordIdentifyingColumnsPanel.component[0], gbc);
+            pane.add(recordIdentifyingColumnsLabel, gbc);
+            
+            gbc.gridx = 3;
+            gbc.gridy = 2;
+            gbc.gridwidth = 3;
+            gbc.gridheight = 1;
+            gbc.anchor = GridBagConstraints.WEST;
+            gbc.weightx = 1.0D;
+            gbc.weighty = 0.0D;
+            gbc.fill = GridBagConstraints.HORIZONTAL;
+//            pane.add(mRecordIdentifyingColumnsPanel.component[1], gbc);
+            pane.add(mRecordIdentifyingColumnsTextField, gbc);
+            
+//            ((JTextField) mRecordIdentifyingColumnsPanel.component[1]).setEditable(false);
+            mRecordIdentifyingColumnsTextField.setEditable(false);
+                    
 //            gbc.gridx = 6;
 //            gbc.gridy = 2;
 //            gbc.gridwidth = 1;
@@ -425,6 +462,7 @@ public class ExternalTablePollingStreamCustomEditor extends DefaultCustomEditor 
                 mPollingIntervalTimeUnitPanel.validateContent(evt);
                 mPollingRecordSizePanel.validateContent(evt);
                 mDatabaseJndiNamePanel.validateContent(evt);
+//                mRecordIdentifyingColumnsPanel.validateContent(evt);
                 
             } catch (Exception e) {
                 String msg = e.getMessage();
@@ -442,9 +480,36 @@ public class ExternalTablePollingStreamCustomEditor extends DefaultCustomEditor 
             mPollingIntervalPanel.store();
             mPollingIntervalTimeUnitPanel.store();
             mPollingRecordSizePanel.store();
+//            mRecordIdentifyingColumnsPanel.store();
             mDatabaseJndiNamePanel.store();
             mIsDeleteRecordsPanel.store();
             
+            
+            //store record identifying columns
+            Property recordIdentifyingColumnsSchema = mComponent.getProperty(ExternalTablePollingStreamOperatorComponent.PROP_RECORD_IDENTIFIER_COLUMNS_SCHEMA);
+            if(mRecordIdentifyingColumnsSchema != null) {
+                IEPModel model = getOperatorComponent().getModel();
+                model.startTransaction();
+                SchemaComponentContainer sc = model.getPlanComponent().getSchemaComponentContainer();
+                sc.addSchemaComponent(mRecordIdentifyingColumnsSchema);
+                recordIdentifyingColumnsSchema.setValue(mRecordIdentifyingColumnsSchema.getName());
+                model.endTransaction();
+            }
+            
+//            String columns = mRecordIdentifyingColumnsPanel.getStringValue();
+//            StringTokenizer st = new StringTokenizer(columns, ",");
+//            List<String> cList = new ArrayList<String>();
+//            
+//            while(st.hasMoreElements()) {
+//                String c = (String) st.nextElement();
+//                cList.add(c);
+//            }
+//            
+//            String val = recordIdentifyingColumns.getPropertyType().getType().format(cList);
+//            mComponent.getModel().startTransaction();
+//            recordIdentifyingColumns.setValue(val);
+//            mComponent.getModel().endTransaction();
+//            
             //store from clause
             
             if(mFromClause != null) {
@@ -468,6 +533,58 @@ public class ExternalTablePollingStreamCustomEditor extends DefaultCustomEditor 
 
         }
         
+        private String convertListToCommaSeperatedValues(List<String> list) {
+            StringBuffer strBuf = new StringBuffer();
+            Iterator<String> it = list.iterator();
+            while(it.hasNext()) {
+                String value = it.next();
+                strBuf.append(value);
+                if(it.hasNext()) {
+                    strBuf.append(",");
+                }
+            }
+            
+            return strBuf.toString();
+        }
+        
+        
+        private SchemaAttribute createSchemaAttributeFromColumnInfo(ColumnInfo column) {
+            IEPModel model = getOperatorComponent().getModel();
+            IEPComponentFactory factory = model.getFactory();
+            SchemaAttribute sa = factory.createSchemaAttribute(model);
+            String attrName  = mSelectPanel.generateUniqueAttributeName(column.getColumnName());
+            sa.setAttributeName(attrName);
+            String dataType = column.getColumnDataType();
+            sa.setAttributeType(dataType);
+
+            int precision = column.getPrecision();
+            int scale = column.getScale();
+            sa.setAttributeSize("");
+            sa.setAttributeScale("");
+
+            if(dataType.equalsIgnoreCase("CHAR")
+               || dataType.equalsIgnoreCase("VARCHAR")
+               || dataType.equalsIgnoreCase("DECIMAL") 
+               || dataType.equalsIgnoreCase("REAL")
+               || dataType.equalsIgnoreCase("DOUBLE")
+               ) {
+                if(precision != 0) {
+                    sa.setAttributeSize(""+column.getPrecision());
+                } 
+            }
+
+            if(dataType.equalsIgnoreCase("DECIMAL") 
+               || dataType.equalsIgnoreCase("REAL")
+               || dataType.equalsIgnoreCase("DOUBLE")
+               ) {
+                if(scale != 0) {
+                    sa.setAttributeScale(""+column.getScale());
+                } 
+            }
+            
+            return sa;
+        }
+        
         class SelectIEPProcessOperatorActionListener implements ActionListener {
 
             public void actionPerformed(ActionEvent e) {
@@ -489,7 +606,31 @@ public class ExternalTablePollingStreamCustomEditor extends DefaultCustomEditor 
                     String recordSize = (String) wizardDescriptor.getProperty(DatabaseTableWizardConstants.PROP_POLLING_RECORD_SIZE);
                     String databaseJNDIName = (String) wizardDescriptor.getProperty(DatabaseTableWizardConstants.PROP_JNDI_NAME);
                     String isDeleteRecords = (String) wizardDescriptor.getProperty(DatabaseTableWizardConstants.PROP_IS_DELETE_RECORDS);
-                            
+                    List<ColumnInfo> recordIdentifyingColumns =  (List) wizardDescriptor.getProperty(DatabaseTableWizardConstants.PROP_POLLING_UNIQUE_RECORD_IDENTIFIER_COLUMNS);
+                    
+                    if(recordIdentifyingColumns != null && recordIdentifyingColumns.size() > 0) {
+                        List<String> skipSchemaNames = new ArrayList<String>();
+                        skipSchemaNames.add(mOutputSchemaNamePanel.getStringValue());
+                        String schemaName = NameGenerator.generateSchemaName(model.getPlanComponent().getSchemaComponentContainer(), skipSchemaNames);
+                        mRecordIdentifyingColumnsSchema = model.getFactory().createSchema(model);
+                        mRecordIdentifyingColumnsSchema.setName(schemaName);
+                        
+                        List<String> columnList = new ArrayList<String>();
+                        List<SchemaAttribute> attrs = new ArrayList<SchemaAttribute>();
+                        
+                        Iterator<ColumnInfo> it = recordIdentifyingColumns.iterator();
+                        while(it.hasNext()) {
+                            ColumnInfo column = it.next();
+                            SchemaAttribute sa = createSchemaAttributeFromColumnInfo(column);
+                            attrs.add(sa);
+                            columnList.add(sa.getAttributeName());
+                        }
+                        mRecordIdentifyingColumnsSchema.setSchemaAttributes(attrs);
+                        mRecordIdentifyingColumnsTextField.setText(convertListToCommaSeperatedValues(columnList));
+                        
+//                        mRecordIdentifyingColumnsPanel.setStringValue(convertListToCommaSeperatedValues(columnList));
+                    }
+                    
                     mPollingIntervalPanel.setStringValue(pollingInterval);
                     mPollingIntervalTimeUnitPanel.setStringValue(pollingIntervalUnit);
                     mPollingRecordSizePanel.setStringValue(recordSize);
@@ -516,39 +657,7 @@ public class ExternalTablePollingStreamCustomEditor extends DefaultCustomEditor 
                     Iterator<ColumnInfo> it = columns.iterator();
                     while(it.hasNext()) {
                         ColumnInfo column = it.next();
-                        IEPComponentFactory factory = model.getFactory();
-                        SchemaAttribute sa = factory.createSchemaAttribute(model);
-                        String attrName  = mSelectPanel.generateUniqueAttributeName(column.getColumnName());
-                        sa.setAttributeName(attrName);
-                        String dataType = column.getColumnDataType();
-                        sa.setAttributeType(dataType);
-                        
-                        int precision = column.getPrecision();
-                        int scale = column.getScale();
-                        sa.setAttributeSize("");
-                        sa.setAttributeScale("");
-                        
-                        if(dataType.equalsIgnoreCase("CHAR")
-                           || dataType.equalsIgnoreCase("VARCHAR")
-                           || dataType.equalsIgnoreCase("DECIMAL") 
-                           || dataType.equalsIgnoreCase("REAL")
-                           || dataType.equalsIgnoreCase("DOUBLE")
-                           ) {
-                            if(precision != 0) {
-                                sa.setAttributeSize(""+column.getPrecision());
-                            } 
-                        }
-                        
-                        if(dataType.equalsIgnoreCase("DECIMAL") 
-                           || dataType.equalsIgnoreCase("REAL")
-                           || dataType.equalsIgnoreCase("DOUBLE")
-                           ) {
-                            if(scale != 0) {
-                                sa.setAttributeScale(""+column.getScale());
-                            } 
-                        }
-                        
-                        
+                        SchemaAttribute sa = createSchemaAttributeFromColumnInfo(column);
                         attrs.add(sa);
                         expressionList.add(column.getQualifiedName());
                     }
