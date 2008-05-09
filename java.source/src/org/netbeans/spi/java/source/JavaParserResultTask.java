@@ -37,41 +37,17 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.java.source.parsing;
+package org.netbeans.spi.java.source;
 
-import java.io.IOException;
-import javax.tools.JavaFileManager;
-import javax.tools.JavaFileObject;
-import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
-import org.openide.filesystems.FileObject;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.modules.parsing.spi.ParserResultTask;
 
 /**
- * Factory for creating {@link JavaFileObject}s used by the {@link JavacParser}.
- * The unit tests may implement this interface to force the {@link JavacParser} to
- * use different implementation of the {@link JavaFileObject}.
- * @see JavacParser
- * @see JavaFileObject
- * @see JavaFileManager
+ *
  * @author Tomas Zezula
  */
-interface JavaFileObjectProvider {
+public abstract class JavaParserResultTask extends ParserResultTask {
     
-    /**
-     * Creates {@link JavaFileObject} for given file under given root.
-     * @param fo for which the {@link JavaFileObject} should be created
-     * @param root the owner root of the file
-     * @param filter used to read the content
-     * @param content of the file object if null, the snapshot from fo is taken
-     * @return the {@link JavaFileObject}
-     * @throws java.io.IOException on io failure.
-     */
-    public JavaFileObject createJavaFileObject (FileObject fo, FileObject root, JavaFileFilterImplementation filter, CharSequence content) throws IOException;
-       
-    /**
-     * Forces the provider to refresh the content of the given file,
-     * @param javaFileObject to be refreshed
-     * @param content of the file object if null, the snapshot from fo is taken
-     * @throws java.io.IOException on io failure.
-     */
-    public void update (JavaFileObject javaFileObject, CharSequence content) throws IOException;
+    public abstract JavaSource.Phase getPhase ();
+
 }

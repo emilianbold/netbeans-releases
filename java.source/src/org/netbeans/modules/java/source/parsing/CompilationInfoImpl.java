@@ -64,6 +64,7 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.modules.java.source.JavaFileFilterQuery;
 import org.netbeans.modules.java.source.parsing.SourceFileObject;
 import org.netbeans.modules.java.source.usages.Pair;
+import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -86,6 +87,7 @@ public final class CompilationInfoImpl {
     private final FileObject root;
     final JavaFileObject jfo;    
     private final Source source;
+    private final Snapshot snapshot;
     private final JavacParser parser;
     boolean needsRestart;
     JavaSource.Phase parserCrashed = JavaSource.Phase.UP_TO_DATE;      //When javac throws an error, the moveToPhase sets this to the last safe phase        
@@ -95,15 +97,17 @@ public final class CompilationInfoImpl {
                          final Source source,
                          final FileObject file,
                          final FileObject root,
-                         final JavacTaskImpl javacTask) throws IOException {
+                         final JavacTaskImpl javacTask,
+                         final Snapshot snapshot) throws IOException {
         assert parser != null;
-        assert source != null;
+        assert source != null;        
         this.parser = parser;
         this.source = source;
         this.file = file;
         this.root = root;
-        assert file == null || root != null;
-        this.jfo = file != null ? JavacParser.jfoProvider.createJavaFileObject(file, root, JavaFileFilterQuery.getFilter(file)) : null;
+        this.snapshot = snapshot;
+        assert file == null || (root != null && snapshot != null);
+        this.jfo = file != null ? JavacParser.jfoProvider.createJavaFileObject(file, root, JavaFileFilterQuery.getFilter(file), snapshot.getText()) : null;
         this.javacTask = javacTask;
     }
     

@@ -93,7 +93,6 @@ import org.netbeans.api.lexer.TokenHierarchyEventType;
 import org.netbeans.api.lexer.TokenHierarchyListener;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.lib.editor.util.swing.PositionRegion;
-import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.JavadocEnv;
 import org.netbeans.modules.java.source.PostFlowAnalysis;
@@ -109,8 +108,9 @@ import org.netbeans.modules.java.source.util.LowMemoryNotifier;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.Task;
+import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.Parser;
-import org.netbeans.modules.parsing.spi.ParserResultTask;
+import org.netbeans.spi.java.source.JavaParserResultTask;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -187,22 +187,29 @@ public class JavacParser extends Parser {
     @Override
     public void parse(final Snapshot snapshot, final Task task) {
         assert task != null;
-        ciImpl = new CompilationInfoImpl(this, source, file, root, null);
+        ciImpl = new CompilationInfoImpl(this, source, file, root, null,snapshot);
     }
     
     @Override
     public CompilationInfo getResult (final Task task) {
         assert ciImpl != null;
-        final boolean isParserResultTask = task instanceof ParserResultTask;
-        CompilationInfo result;
+        final boolean isParserResultTask = task instanceof JavaParserResultTask;
+        final boolean isUserTask = task instanceof UserTask;
+        CompilationInfo result = null;
         if (isParserResultTask) {
-            Index.cancel.set(canceled);
-            result = JavaSourceAccessor.getINSTANCE().createCompilationInfo(ciImpl);
+            final Phase requiredPhase = null;
+            final Phase reachedPhase = moveToPhase(requiredPhase, ciImpl, true, false);
+            if (reachedPhase.compareTo(requiredPhase)>=0) {
+                Index.cancel.set(canceled);
+                result = JavaSourceAccessor.getINSTANCE().createCompilationInfo(ciImpl);
+            }
         }
-        else {
+        else if (isUserTask) {
             result = JavaSourceAccessor.getINSTANCE().createCompilationController(ciImpl);
         }
-        assert result != null;
+        else {
+            LOGGER.warning("Ignoring unknown task: " + task);
+        }
         return result;
     }
     
@@ -543,21 +550,7 @@ public class JavacParser extends Parser {
     }
     
     //Helper classes
-    
-    /**
-     * Default implementation of {@link JavaFileObjectProvider} used by {@link JavacParser}
-     */
-    static final class DefaultJavaFileObjectProvider implements JavaFileObjectProvider {
-        public JavaFileObject createJavaFileObject (FileObject fo, FileObject root, JavaFileFilterImplementation filter) throws IOException {
-            return FileObjects.nbFileObject(fo, root, filter, true);
-        }
-        
-        public void update (final JavaFileObject jfo) throws IOException {
-            assert jfo instanceof SourceFileObject;
-            ((SourceFileObject)jfo).update();
-        }        
-    }
-    
+            
     /**
      * Implementation of CancelService responsible for stopping
      * expensive parser operations when the result is not needed any more.

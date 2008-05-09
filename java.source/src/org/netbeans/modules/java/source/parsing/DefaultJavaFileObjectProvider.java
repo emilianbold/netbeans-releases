@@ -40,38 +40,23 @@
 package org.netbeans.modules.java.source.parsing;
 
 import java.io.IOException;
-import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
 import org.openide.filesystems.FileObject;
 
 /**
- * Factory for creating {@link JavaFileObject}s used by the {@link JavacParser}.
- * The unit tests may implement this interface to force the {@link JavacParser} to
- * use different implementation of the {@link JavaFileObject}.
- * @see JavacParser
- * @see JavaFileObject
- * @see JavaFileManager
+ * Default implementation of {@link JavaFileObjectProvider} used by {@link JavacParser}
  * @author Tomas Zezula
  */
-interface JavaFileObjectProvider {
+final class DefaultJavaFileObjectProvider implements JavaFileObjectProvider {
     
-    /**
-     * Creates {@link JavaFileObject} for given file under given root.
-     * @param fo for which the {@link JavaFileObject} should be created
-     * @param root the owner root of the file
-     * @param filter used to read the content
-     * @param content of the file object if null, the snapshot from fo is taken
-     * @return the {@link JavaFileObject}
-     * @throws java.io.IOException on io failure.
-     */
-    public JavaFileObject createJavaFileObject (FileObject fo, FileObject root, JavaFileFilterImplementation filter, CharSequence content) throws IOException;
-       
-    /**
-     * Forces the provider to refresh the content of the given file,
-     * @param javaFileObject to be refreshed
-     * @param content of the file object if null, the snapshot from fo is taken
-     * @throws java.io.IOException on io failure.
-     */
-    public void update (JavaFileObject javaFileObject, CharSequence content) throws IOException;
+    public JavaFileObject createJavaFileObject (final FileObject fo, final FileObject root,
+            final JavaFileFilterImplementation filter, final CharSequence content) throws IOException {
+        return FileObjects.nbFileObject(fo, root, filter, content);
+    }
+        
+    public void update (final JavaFileObject jfo, final CharSequence content) throws IOException {
+        assert jfo instanceof SourceFileObject;
+        ((SourceFileObject)jfo).update(content);
+    }        
 }
