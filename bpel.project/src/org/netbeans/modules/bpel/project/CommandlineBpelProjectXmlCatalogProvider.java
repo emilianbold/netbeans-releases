@@ -98,5 +98,4 @@ public class CommandlineBpelProjectXmlCatalogProvider {
     public URI getProjectCatalogUri() {
         return mProjectCatalogUri;
     }        
-
 }

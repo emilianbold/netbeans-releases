@@ -58,14 +58,14 @@ public class RunSingleCommand extends RunCommand {
     public RunSingleCommand(PhpProject project) {
         super(project);
     }
-    
+
     @Override
     public void invokeAction(Lookup context) throws IllegalArgumentException {
-        LifecycleManager.getDefault().saveAll ();
+        LifecycleManager.getDefault().saveAll();
         try {
             showURLForContext(context);
         } catch (MalformedURLException ex) {
-            //TODO: improve error handling
+            //TODO improve error handling
             Exceptions.printStackTrace(ex);
         }
     }
@@ -74,9 +74,9 @@ public class RunSingleCommand extends RunCommand {
     public boolean isActionEnabled(Lookup context) throws IllegalArgumentException {
         return fileForContext(context) != null;
     }
-    
+
     @Override
     public String getCommandId() {
         return ID;
-    }    
+    }
 }

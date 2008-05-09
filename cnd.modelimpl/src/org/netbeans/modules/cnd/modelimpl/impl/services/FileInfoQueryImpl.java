@@ -186,4 +186,12 @@ public class FileInfoQueryImpl extends CsmFileInfoQuery {
         }
         return null;
     }
+
+    @Override
+    public NativeFileItem getNativeFileItem(CsmFile file) {
+        if (file instanceof FileImpl) {
+            return ((FileImpl)file).getNativeFileItem();
+        }
+        return null;
+    }
 }

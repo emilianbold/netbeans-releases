@@ -39,6 +39,7 @@
 package org.netbeans.modules.ruby.platform.gems;
 
 import java.io.File;
+import org.netbeans.modules.ruby.platform.Util;
 import org.openide.util.Parameters;
 
 /**
@@ -79,7 +80,7 @@ public class GemInfo implements Comparable<GemInfo> {
         int nameComparison = getName().compareTo(o.getName());
         
         return nameComparison == 0 
-                ? GemManager.compareGemVersions(o.getVersion(), getVersion())
+                ? Util.compareVersions(o.getVersion(), getVersion())
                 : nameComparison;
     }
 

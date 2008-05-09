@@ -90,8 +90,22 @@ made subject to such option by the copyright holder.
         <property name="xtest.ide.handler" value="true"/>
         <!-- BlacklistedClassesHandler support -->
         <property name="xtest.ide.blacklist.txt" location="${xtest.ide.blacklist}"/>
-        <condition property="xtest.ide.blacklist.args" value=" -J-Dorg.netbeans.ProxyClassLoader.level=ALL -J-Dxtest.ide.blacklist=${xtest.ide.blacklist.txt} " else="">
+        <property name="xtest.ide.whitelist.txt" location="${xtest.ide.whitelist}"/>        
+        <condition property="xtest.ide.blacklist.args.part1" value="-J-Dxtest.ide.blacklist=${xtest.ide.blacklist.txt}" else="">
             <isset property="xtest.ide.blacklist"/>
+        </condition>            
+        <condition property="xtest.ide.blacklist.args.part2" value="-J-Dxtest.ide.whitelist=${xtest.ide.whitelist.txt}" else="">
+            <isset property="xtest.ide.whitelist"/>
+        </condition>            
+        <condition property="xtest.ide.blacklist.args.part3" value="-J-Dxtest.ide.generate.whitelist=${xtest.ide.generate.whitelist}" else="">
+            <isset property="xtest.ide.generate.whitelist"/>
+        </condition>            
+        <condition property="xtest.ide.blacklist.args" value=" -J-Dorg.netbeans.ProxyClassLoader.level=ALL ${xtest.ide.blacklist.args.part1} ${xtest.ide.blacklist.args.part2} ${xtest.ide.blacklist.args.part3} " else="">
+            <or>
+                <isset property="xtest.ide.blacklist"/>
+                <isset property="xtest.ide.whitelist"/>
+                <isset property="xtest.ide.generate.whitelist"/>
+            </or>
         </condition>            
         <!-- Use prebuilt JDK mdr storage at specified location. It sets 
              IDE option -J-Dprebuilt.storage.dir -->

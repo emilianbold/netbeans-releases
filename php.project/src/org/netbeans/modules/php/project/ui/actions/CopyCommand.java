@@ -34,10 +34,10 @@ import org.netbeans.spi.project.ActionProvider;
  * @author Radek Matous
  */
 public class CopyCommand extends GlobalCommand {
-    public CopyCommand(PhpProject project){
+    public CopyCommand(PhpProject project) {
         super(project);
     }
-    
+
     @Override
     public String getCommandId() {
         return ActionProvider.COMMAND_COPY;
@@ -45,11 +45,11 @@ public class CopyCommand extends GlobalCommand {
 
     @Override
     public void invokeAction()  {
-        //TODO: check this comment - why?
+        //TODO check this comment - why?
         //        DefaultProjectOperations.performDefaultCopyOperation(myProject);
         // checks are copied from DefaultProjectOperations.performDefaultCopyOperation
-        // DefaultProjectOperationsImplementation.copyProject 
-        // is replaced by our implementation.                
+        // DefaultProjectOperationsImplementation.copyProject
+        // is replaced by our implementation.
         PhpProjectOperationsImplementation.copyProject(getProject());
     }
 }

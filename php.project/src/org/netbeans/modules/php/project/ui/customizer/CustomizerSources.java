@@ -81,6 +81,7 @@ public class CustomizerSources extends JPanel implements WebFolderNameProvider {
     private final CopyFilesVisual copyFilesVisual;
     private final boolean originalCopySrcFiles;
     private final String originalCopySrcTarget;
+    private final String originalSources;
 
     public CustomizerSources(final Category category, final PhpProjectProperties properties) {
         initComponents();
@@ -91,6 +92,7 @@ public class CustomizerSources extends JPanel implements WebFolderNameProvider {
 
         initEncoding();
         LocalServer sources = initSources();
+        originalSources = sources.getSrcRoot();
         originalCopySrcFiles = initCopyFiles();
         LocalServer copyTarget = initCopyTarget();
         LocalServer[] copyTargets = getCopyTargets(copyTarget);
@@ -222,7 +224,7 @@ public class CustomizerSources extends JPanel implements WebFolderNameProvider {
                 return;
             }
             err = LocalServerController.validateLocalServer(copyFilesVisual.getLocalServer(), "Folder", // NOI18N
-                    allowNonEmptyDirectory(copyTargetDir.getAbsolutePath()), true);
+                    allowNonEmptyDirectory(copyTargetDir.getAbsolutePath(), srcDir.getAbsolutePath()), true);
             if (err != null) {
                 category.setErrorMessage(err);
                 category.setValid(false);
@@ -289,8 +291,9 @@ public class CustomizerSources extends JPanel implements WebFolderNameProvider {
         return FileUtil.normalizeFile(new File(srcRoot));
     }
 
-    private boolean allowNonEmptyDirectory(String copyTargetDir) {
-        return originalCopySrcFiles && originalCopySrcTarget.equals(copyTargetDir);
+    private boolean allowNonEmptyDirectory(String copyTargetDir, String srcDir) {
+        return originalCopySrcFiles && originalCopySrcTarget.equals(copyTargetDir)
+                && originalSources.equals(srcDir); // #133109
     }
 
     /** This method is called from within the constructor to
@@ -342,28 +345,27 @@ public class CustomizerSources extends JPanel implements WebFolderNameProvider {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(projectFolderLabel)
-                    .add(sourceFolderLabel)
-                    .add(urlLabel)
-                    .add(indexFileLabel)
-                    .add(encodingLabel))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(encodingComboBox, 0, 261, Short.MAX_VALUE)
-                    .add(indexFileTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 261, Short.MAX_VALUE)
-                    .add(urlTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 261, Short.MAX_VALUE)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(copyFilesPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 361, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
-                        .add(localServerComboBox, 0, 166, Short.MAX_VALUE)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(projectFolderLabel)
+                            .add(sourceFolderLabel)
+                            .add(urlLabel)
+                            .add(indexFileLabel)
+                            .add(encodingLabel))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(localServerButton))
-                    .add(projectFolderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 261, Short.MAX_VALUE))
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(encodingComboBox, 0, 261, Short.MAX_VALUE)
+                            .add(indexFileTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 261, Short.MAX_VALUE)
+                            .add(urlTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 261, Short.MAX_VALUE)
+                            .add(layout.createSequentialGroup()
+                                .add(localServerComboBox, 0, 166, Short.MAX_VALUE)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(localServerButton))
+                            .add(projectFolderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 261, Short.MAX_VALUE))))
                 .addContainerGap())
-            .add(layout.createSequentialGroup()
-                .add(12, 12, 12)
-                .add(copyFilesPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 349, Short.MAX_VALUE)
-                .add(12, 12, 12))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -377,7 +379,7 @@ public class CustomizerSources extends JPanel implements WebFolderNameProvider {
                     .add(localServerButton)
                     .add(localServerComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(copyFilesPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 61, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(copyFilesPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(urlTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)

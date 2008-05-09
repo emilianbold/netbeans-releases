@@ -211,7 +211,7 @@ public abstract class RefactoringTestCase extends NbTestCase {
     
     @Override
     protected void setUp() throws Exception {
-        
+        System.out.println("Test "+getName()+" started");
     }
 
     @Override
@@ -219,6 +219,7 @@ public abstract class RefactoringTestCase extends NbTestCase {
         getRef().close();
         System.out.println();
         assertFile("Golden file differs ", new File(getWorkDir(),getName()+".ref"), getGoldenFile(), getWorkDir(), new LineDiff());
+        System.out.println("Test "+getName()+" finished");
         
     }
 

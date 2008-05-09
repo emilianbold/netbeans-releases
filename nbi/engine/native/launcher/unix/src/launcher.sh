@@ -102,6 +102,7 @@ MSG_ARG_CPA="nlu.arg.cpa"
 MSG_ARG_CPP="nlu.arg.cpp"
 MSG_ARG_DISABLE_FREE_SPACE_CHECK="nlu.arg.disable.space.check"
 MSG_ARG_LOCALE="nlu.arg.locale"
+MSG_ARG_SILENT="nlu.arg.silent"
 MSG_ARG_HELP="nlu.arg.help"
 MSG_USAGE="nlu.msg.usage"
 
@@ -446,7 +447,8 @@ showHelp() {
 	msg7=`message "$MSG_ARG_CPP $ARG_CLASSPATHP"`
 	msg8=`message "$MSG_ARG_DISABLE_FREE_SPACE_CHECK $ARG_NOSPACECHECK"`
         msg9=`message "$MSG_ARG_LOCALE $ARG_LOCALE"`
-	msg10=`message "$MSG_ARG_HELP $ARG_HELP"`
+        msg10=`message "$MSG_ARG_SILENT $ARG_SILENT"`
+	msg11=`message "$MSG_ARG_HELP $ARG_HELP"`
 	out "$msg0"
 	out "$msg1"
 	out "$msg2"
@@ -458,6 +460,7 @@ showHelp() {
 	out "$msg8"
 	out "$msg9"
 	out "$msg10"
+	out "$msg11"
 	exitProgram $ERROR_OK
 }
 

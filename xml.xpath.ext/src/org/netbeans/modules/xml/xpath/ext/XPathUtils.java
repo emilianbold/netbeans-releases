@@ -156,7 +156,7 @@ public class XPathUtils {
      */
     public static boolean hasSubcomponents(SchemaComponent sComp) {
         FindAllChildrenSchemaVisitor checker = 
-                new FindAllChildrenSchemaVisitor(true, true);
+                new FindAllChildrenSchemaVisitor(true, true, true);
         checker.lookForSubcomponents(sComp);
         List<SchemaComponent> found = checker.getFound();
         return found != null && !found.isEmpty();

@@ -113,9 +113,9 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
       return;
     }
     String fromName = ((Named) fromType).getName();
-//out("  form name: " + fromName);
+//out("  from name: " + fromName);
     String toName = ((Named) toType).getName();
-//out("    to name: " + fromName);
+//out("    to name: " + toName);
 
     if (fromName == null || toName == null) {
       return;
@@ -126,6 +126,9 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
     if (fromName.equals("anyType") || toName.equals("anyType")) { // NOI18N
       return;
     }
+//out("  from based: " + ValidationUtil.getBasedSimpleType(fromType));
+//out("    to based: " + ValidationUtil.getBasedSimpleType(toType));
+
     if (ValidationUtil.getBasedSimpleType(fromType) != ValidationUtil.getBasedSimpleType(toType)) {
       addWarning("FIX_TYPE_IN_COPY", copy, getTypeName(fromType), getTypeName(toType)); // NOI18N
     }
@@ -177,10 +180,13 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
   }
 
   private Component getType(From from) {
+//out();
+//out("get type: " + from);
     if (from == null) {
       return null;
     }
     Component variableType = getVariableType(from);
+//out("  var: " + variableType);
 
     if (variableType != null) {
       Component partType = getPartType(from);
@@ -192,6 +198,7 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
         return partType;
       }
     }
+//out("  see xpath: " + checkXPath(from));
     return checkXPath(from);
   }
 
@@ -298,7 +305,7 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
   
   @Override
   public void visit(BooleanExpr bool) {
-      checkXPath(bool);
+    checkXPath(bool);
   }
 
   @Override

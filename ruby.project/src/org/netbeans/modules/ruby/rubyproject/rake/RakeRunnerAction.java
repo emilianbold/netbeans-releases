@@ -66,7 +66,7 @@ public final class RakeRunnerAction extends CallableSystemAction {
         }
 
         TaskDescriptor taskDesc = RakeTaskChooser.select(project);
-        if (taskDesc != null) {
+        if (taskDesc != null && taskDesc.getRakeTask() != null) {
             RakeRunner.runTask(project, taskDesc.getRakeTask(), taskDesc.isDebug());
         }
     }

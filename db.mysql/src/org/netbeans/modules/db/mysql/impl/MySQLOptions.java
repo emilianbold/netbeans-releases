@@ -97,7 +97,7 @@ public class MySQLOptions {
     // In milliseconds
     private static final String DEFAULT_CONNECT_TIMEOUT = "15000";
     // In milliseconds
-    private static final long DEFAULT_REFRESH_THREAD_SLEEP_INTERVAL = 3000;
+    private static final long DEFAULT_REFRESH_THREAD_SLEEP_INTERVAL = 5000;
     
     private CopyOnWriteArrayList<PropertyChangeListener> listeners = 
             new CopyOnWriteArrayList<PropertyChangeListener>();

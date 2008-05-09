@@ -44,7 +44,6 @@ package org.netbeans.modules.php.project.ui.actions;
 import java.net.MalformedURLException;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.spi.project.ActionProvider;
-import org.openide.LifecycleManager;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -52,7 +51,7 @@ import org.openide.util.NbBundle;
 /**
  * @author Radek Matous
  */
-public class RunCommand extends Command implements Displayable {    
+public class RunCommand extends Command implements Displayable {
     public static final String ID = ActionProvider.COMMAND_RUN;
     /**
      * @param project
@@ -60,13 +59,13 @@ public class RunCommand extends Command implements Displayable {
     public RunCommand(PhpProject project) {
         super(project);
     }
-                
+
     @Override
     public  void invokeAction(Lookup context) throws IllegalArgumentException {
         try {
             showURLForProjectFile();
         } catch (MalformedURLException ex) {
-            //TODO: improve error handling
+            //TODO improve error handling
             Exceptions.printStackTrace(ex);
         }
     }
@@ -74,14 +73,14 @@ public class RunCommand extends Command implements Displayable {
     @Override
     public boolean isActionEnabled(Lookup context) throws IllegalArgumentException {
         return true;
-    }    
-    
+    }
+
     @Override
     public String getCommandId() {
         return ID;
     }
-    
+
     public String getDisplayName() {
-        return NbBundle.getMessage(RunCommand.class, "LBL_RunProject");//NOI18N
-    }    
+        return NbBundle.getMessage(RunCommand.class, "LBL_RunProject");
+    }
 }

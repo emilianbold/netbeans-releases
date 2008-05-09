@@ -46,6 +46,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import org.netbeans.modules.gsf.api.CancellableTask;
 import org.netbeans.modules.gsf.api.ParserResult;
@@ -152,7 +154,12 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
             Language language = registry.getLanguageByMimeType(mimeType);
             StructureScanner scanner = language.getStructure();
             if (scanner != null) {
+                long startTime = System.currentTimeMillis();
                 List<? extends StructureItem> children = scanner.scan(info, new NavigatorFormatter());
+                long endTime = System.currentTimeMillis();
+                Logger.getLogger("TIMER").log(Level.FINE, "Structure (" + mimeType + ")",
+                    new Object[] {info.getFileObject(), endTime - startTime});
+                
                 if(children.size() > 0) {
                     mimetypesWithElements++;
                 }
