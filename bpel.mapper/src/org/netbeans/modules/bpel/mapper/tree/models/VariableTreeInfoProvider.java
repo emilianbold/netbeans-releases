@@ -51,6 +51,8 @@ import org.netbeans.modules.bpel.mapper.tree.spi.RestartableIterator;
 import org.netbeans.modules.bpel.model.api.VariableDeclaration;
 import org.netbeans.modules.bpel.model.api.VariableDeclarationScope;
 import org.netbeans.modules.soa.mappercore.Mapper;
+import org.netbeans.modules.xml.schema.model.AnyAttribute;
+import org.netbeans.modules.xml.schema.model.AnyElement;
 import org.netbeans.modules.xml.schema.model.Attribute;
 import org.netbeans.modules.xml.schema.model.Attribute.Use;
 import org.netbeans.modules.xml.schema.model.Element;
@@ -79,6 +81,13 @@ import org.openide.util.NbBundle;
  */
 public class VariableTreeInfoProvider implements TreeItemInfoProvider {
 
+    public static final String ANY_ELEMENT = 
+            NbBundle.getMessage(VariableTreeInfoProvider.class, "ANY_ELEMENT"); // NOI18N
+    
+    public static final String ANY_ATTRIBUTE = 
+            NbBundle.getMessage(VariableTreeInfoProvider.class, "ANY_ATTRIBUTE"); // NOI18N
+    
+    
     private static VariableTreeInfoProvider singleton = new VariableTreeInfoProvider();
     
     public static VariableTreeInfoProvider getInstance() {
@@ -191,6 +200,14 @@ public class VariableTreeInfoProvider implements TreeItemInfoProvider {
             return "(" + gType + ")" + getDisplayName(castableObject);
         }
         //
+        if (treeItem instanceof AnyElement) {
+            return ANY_ELEMENT;
+        }
+        //
+        if (treeItem instanceof AnyAttribute) {
+            return ANY_ATTRIBUTE;
+        }
+        //
         return null;
     }
 
@@ -287,6 +304,43 @@ public class VariableTreeInfoProvider implements TreeItemInfoProvider {
             if (treeItem instanceof GlobalType) {
                 return NodeIcons.UNKNOWN_IMAGE;
             } 
+            //
+            if (treeItem instanceof AnyElement) {
+                AnyElement anyElement = (AnyElement)treeItem;
+                boolean isOptional = anyElement.getMinOccursEffective() < 1;
+                String maxOccoursStr = anyElement.getMaxOccursEffective();
+                //
+                boolean isRepeating = false;
+                //
+                if (maxOccoursStr != null) {
+                    try {
+                        int maxOccoursInt = Integer.parseInt(maxOccoursStr);
+                        isRepeating = maxOccoursInt > 1;  
+                    } catch (NumberFormatException ex) {
+                        // Do Nothing
+                        isRepeating = true;
+                    }
+                }
+                //
+                if (isOptional) {
+                    if (isRepeating) {
+                        return NodeIcons.ELEMENT_OPTIONAL_REPEATING.getIcon();
+                    } else {
+                        return NodeIcons.ELEMENT_OPTIONAL.getIcon();
+                    }
+                } else {
+                    if (isRepeating) {
+                        return NodeIcons.ELEMENT_REPEATING.getIcon();
+                    } else {
+                        return NodeIcons.ELEMENT.getIcon();
+                    }
+                }
+            }
+            //
+            if (treeItem instanceof AnyAttribute) {
+                // The Any Attribute doesn't have multiplisity parameters
+                return NodeIcons.ATTRIBUTE.getIcon();
+            }
         } 
         //
         if (treeItem instanceof Part) {

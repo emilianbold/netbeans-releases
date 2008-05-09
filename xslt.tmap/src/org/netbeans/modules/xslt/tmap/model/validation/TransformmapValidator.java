@@ -16,20 +16,22 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-package org.netbeans.modules.xslt.mapper.model;
+package org.netbeans.modules.xslt.tmap.model.validation;
 
+import java.io.File;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.xml.axi.AXIComponent;
-import org.netbeans.modules.xslt.model.XslModel;
+import org.netbeans.modules.xslt.tmap.model.api.TMapModel;
+import org.openide.filesystems.FileObject;
 
 /**
- * @author Alexey
+ * @author Vitaly Bychkov
+ * @version 1.0
  */
-public interface MapperContext {
-    
-    XslModel getXSLModel();
-    AXIComponent getTargetType();
-    AXIComponent getSourceType();
-    void addMapperContextChangeListener(MapperContextChangeListener listener);
-    void removeMapperContextChangeListener(MapperContextChangeListener listener);
-    String getValidationMessage();
+public interface TransformmapValidator {
+
+    String validate(AXIComponent axiComp, String typeParam);
+    String validate(File transformDescriptor);
+    String validate(Project project);
+    String validate(TMapModel model, FileObject xsltFo);
 }

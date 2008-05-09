@@ -41,6 +41,8 @@ import org.netbeans.modules.xslt.project.spi.ProjectsFilesChangeListener;
 import org.netbeans.modules.xslt.tmap.model.api.Transform;
 import org.netbeans.modules.xslt.tmap.model.api.VariableReference;
 import org.netbeans.modules.xslt.tmap.model.api.WSDLReference;
+import org.netbeans.modules.xslt.tmap.model.validation.TransformmapValidator;
+import org.netbeans.modules.xslt.tmap.model.validation.TransformmapValidatorImpl;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -741,5 +743,28 @@ public class MapperContextImpl implements MapperContext {
         public void fileDeleted(FileObject fo) {
             reinitContext();
         }
+    }
+
+    public String getValidationMessage() {
+        String result = null;
+        TransformmapValidator validator = TransformmapValidatorImpl.getInstance();
+
+        if (myXslFo != null) {
+            result = validator.validate(Util.getTransformationDescriptor(Util.getProject(myXslFo)));
+
+            if (result == null) {
+                result = validator.validate(myTMapModel, myXslFo);
+            }
+            if (result == null) {
+                AXIComponent typeIn = getSourceType();
+                result = validator.validate(typeIn, "source"); // NOI18N
+
+            }
+            if (result == null) {
+                AXIComponent typeOut = getTargetType();
+                result = validator.validate(typeOut, "target"); // NOI18N
+            }
+        }
+        return result;
     }
 }

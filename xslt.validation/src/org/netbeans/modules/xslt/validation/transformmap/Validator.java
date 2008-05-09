@@ -42,6 +42,8 @@ package org.netbeans.modules.xslt.validation.transformmap;
 
 import java.util.List;
 
+import org.netbeans.modules.xslt.tmap.TMapConstants;
+import org.netbeans.modules.xslt.tmap.model.api.TMapComponent;
 import org.netbeans.modules.xslt.tmap.model.api.TMapVisitor;
 import org.netbeans.modules.xslt.tmap.model.api.TMapVisitorAdapter;
 import org.netbeans.modules.xslt.tmap.model.api.TransformMap;
@@ -59,7 +61,14 @@ public final class Validator extends TMapValidator {
 
   @Override
   public void visit(TransformMap transformMap) {
-//addError("FIX_Reference", transformMap); // NOI18N
+    String targetNamespace = transformMap.getTargetNamespace();
+
+    if (TMapConstants.OLD_TRANSFORM_MAP_NS_URI.equals(targetNamespace)) {
+      addError("FIX_IncorrectNamespace", transformMap, targetNamespace); // NOI18N
+    }
+    if ( !TMapComponent.TRANSFORM_MAP_NS_URI.equals(targetNamespace)) {
+      addError("FIX_DeprecatedTMap", transformMap, targetNamespace); // NOI18N
+    }
   }
 
 };}}
