@@ -53,6 +53,7 @@ import java.util.Map;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.types.Reference;
+import org.netbeans.modules.xslt.tmap.model.api.TMapModel;
 import org.netbeans.modules.xslt.model.XslModel;
 import org.netbeans.modules.xslt.project.CommandlineXsltProjectXmlCatalogProvider;
 import org.netbeans.modules.xml.xam.Component;
@@ -186,15 +187,10 @@ public class IdeValidateProjectTask extends Task {
         }
     }
 
-    // vlv # 100036
     private void processFile(File file) throws BuildException {
-        XslModel model = null;
-
-        try {
-            model = IdeXslCatalogModel.getDefault().getXslModel(file);
-        } catch (Exception e) {
-            throw new RuntimeException("Error while trying to get Model", e);
-        }
+//System.out.println();
+//System.out.println("see: " + file);
+//System.out.println();
         if (isFileModified(file)) {
             try {
                 validateFile(file);
@@ -221,17 +217,35 @@ public class IdeValidateProjectTask extends Task {
     }
 
     private void validateFile(File file) throws BuildException {
+//System.out.println();
+//System.out.println("validate: " + file);
+//System.out.println();
+      Model model = null;
+      
       try {
-        Model model = IdeXslCatalogModel.getDefault().getXslModel(file);
-        boolean isError = new Controller(model).ideValidate(file);
-
-        if (isError) {
-          throw new BuildException(LineUtil.FOUND_VALIDATION_ERRORS);
-        }
+        model = IDETMapCatalogModel.getDefault().getTMapModel(file);
       }
       catch (Exception e) {
-        throw new BuildException(e);
-//        throw new RuntimeException("Error while trying to create Model", e);
+        model = null;
+      }
+      validateModel(file, model);
+
+      try {
+        model = IdeXslCatalogModel.getDefault().getXslModel(file);
+      }
+      catch (Exception e) {
+        model = null;
+      }
+      validateModel(file, model);
+    }
+
+    private void validateModel(File file, Model model) throws BuildException {
+//System.out.println("   model: " + file);
+      if (model == null) {
+        return;
+      }
+      if (new Controller(model).ideValidate(file)) {
+        throw new BuildException(LineUtil.FOUND_VALIDATION_ERRORS);
       }
     }
 

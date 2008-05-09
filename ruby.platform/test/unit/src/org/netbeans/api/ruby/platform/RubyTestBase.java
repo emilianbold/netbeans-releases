@@ -116,9 +116,10 @@ public abstract class RubyTestBase extends GsfTestBase {
         
         FileObject bin = testRubyHome.createFolder("bin");
         FileObject libRuby = FileUtil.createFolder(testRubyHome, "lib");
+        FileObject libRuby18 = null;
         if (!isRubinius) {
             libRuby = FileUtil.createFolder(testRubyHome, "lib/ruby");
-            libRuby.createFolder(RubyPlatform.DEFAULT_RUBY_RELEASE);
+            libRuby18 = libRuby.createFolder(RubyPlatform.DEFAULT_RUBY_RELEASE);
         }
         
         FileObject interpreter = isRubinius
@@ -134,6 +135,10 @@ public abstract class RubyTestBase extends GsfTestBase {
         props.put(Info.RUBY_VERSION, "0.1");
         props.put(Info.RUBY_RELEASE_DATE, "2000-01-01");
         props.put(Info.RUBY_PLATFORM, "abcd");
+        props.put(Info.RUBY_PLATFORM, "abcd");
+        if (!isRubinius) {
+            props.put(Info.RUBY_LIB_DIR, FileUtil.toFile(libRuby18).getAbsolutePath());
+        }
         if (withGems) {
             assertFalse("setuping Rubinius with RubyGems is not supported yet", isRubinius);
             // Build a fake rubygems repository

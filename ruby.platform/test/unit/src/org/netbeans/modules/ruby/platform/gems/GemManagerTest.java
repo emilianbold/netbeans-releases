@@ -42,8 +42,6 @@ package org.netbeans.modules.ruby.platform.gems;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
@@ -69,7 +67,7 @@ public class GemManagerTest extends RubyTestBase {
     public void testGetRubyLibGemDir() throws Exception {
         RubyPlatform platform = RubyPlatformManager.addPlatform(setUpRubyWithGems());
         GemManager gemManager = platform.getGemManager();
-        assertEquals("righ gem dir", new File(platform.getLib(), "ruby/gems/1.8"), new File(gemManager.getGemHome()));
+        assertEquals("righ gem dir", new File(platform.getLibDir(), "ruby/gems/1.8"), new File(gemManager.getGemHome()));
     }
     
     public void testGetGem() throws Exception {

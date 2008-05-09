@@ -73,7 +73,7 @@ public class Validation {
      * @param type Type of validation: complete or partial.
      */
     public void validate(Model model, ValidationType type) {
-//      isStopped = false; // vlv todo a
+        isStopped = false;
         
         if (myValidatedModels.contains(model)) {
             return;
@@ -85,11 +85,11 @@ public class Validation {
         for (Validator validator : ourValidators) {
             if (isStopped) {
 //System.out.println("-- STOPPED !!! --");
-//              myValidationResult = null; // vlv todo a
-//              myValidatedModels = new ArrayList<Model>();
-//              break;
+                myValidationResult = null;
+                myValidatedModels = new ArrayList<Model>();
+                break;
             }
-//System.out.println("see provider: " + provider.getClass().getName());
+//System.out.println("see provider: " + validator.getClass().getName());
             ValidationResult result = validator.validate(model, this, type);
 
             if (result == null) {
@@ -130,8 +130,8 @@ public class Validation {
     }
 
     public static void stop() {
-//      System.out.println("-- PLEASE STOP --");
-//      isStopped = true; // vlv todo a
+//System.out.println("-- PLEASE STOP --");
+        isStopped = true;
     }
 
     private static Collection<Validator> ourValidators;

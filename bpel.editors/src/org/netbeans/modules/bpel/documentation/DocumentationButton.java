@@ -63,11 +63,12 @@ final class DocumentationButton extends AbstractGlassPaneButton {
     super(ICON, text, true, new ActionListener() {
       public void actionPerformed(ActionEvent event) {
         String text = event.getSource().toString().trim();
+        String documentation = getExtensibleElement(id).getDocumentation();
 //out();
 //out("text: '" + text + "'");
 
         try {
-          if ( !text.equals(getExtensibleElement(id).getDocumentation().trim())) {
+          if (documentation == null || !text.equals(documentation.trim())) {
             getExtensibleElement(id).setDocumentation(text);
           }
 //out("get: '" + getExtensibleElement(id).getDocumentation() + "'");

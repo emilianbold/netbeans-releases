@@ -1020,7 +1020,7 @@ public final class GemManager {
             // Install standard libraries
             // lib/ruby/1.8/ 
             if (!SKIP_INDEX_LIBS) {
-                String rubyLibDir = platform.getLibDir();
+                String rubyLibDir = platform.getVersionLibDir();
                 if (rubyLibDir != null) {
                     File libs = new File(rubyLibDir);
                     assert libs.exists() && libs.isDirectory();

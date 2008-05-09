@@ -62,7 +62,7 @@ import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext.SchemaCompPair;
 public class VariableTreeModel implements MapperTreeExtensionModel<Object> {
 
     private FindAllChildrenSchemaVisitor sSchemaSearcher = 
-            new FindAllChildrenSchemaVisitor(true, true);
+            new FindAllChildrenSchemaVisitor(true, true, true);
     
     private Set<VariableDeclaration> mOverriddenVariables;
     private BpelDesignContext mDesignContext;

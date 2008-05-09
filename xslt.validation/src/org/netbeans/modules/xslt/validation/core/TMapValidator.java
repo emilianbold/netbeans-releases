@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -11,20 +11,20 @@
  * http://www.netbeans.org/cddl-gplv2.html
  * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
  * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
+ * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
  * particular file as subject to the "Classpath" exception as provided
  * by Sun in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,56 +38,51 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.xslt.validation.core;
 
-package org.netbeans.modules.ruby.rubyproject.rake;
+import org.netbeans.modules.xml.xam.Model;
+import org.netbeans.modules.xml.xam.spi.Validation;
+import org.netbeans.modules.xml.xam.spi.Validation.ValidationType;
+import org.netbeans.modules.xml.xam.spi.ValidationResult;
 
-import org.netbeans.api.ruby.platform.RubyPlatform;
-import org.netbeans.modules.ruby.rubyproject.RubyBaseProject;
-import org.netbeans.modules.ruby.rubyproject.Util;
-import org.netbeans.modules.ruby.rubyproject.rake.RakeTaskChooser.TaskDescriptor;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.actions.CallableSystemAction;
+import org.netbeans.modules.xslt.tmap.model.api.TMapModel;
+import org.netbeans.modules.xslt.tmap.model.api.TransformMap;
+import org.netbeans.modules.xslt.tmap.model.api.TMapVisitor;
+
+import org.netbeans.modules.soa.validation.core.Validator;
+import static org.netbeans.modules.xml.ui.UI.*;
 
 /**
- * Shows convenient runner for running or debugging Rake tasks, similar to e.g.
- * Go To File dialog.
+ * @author Vladimir Yaroslavskiy
+ * @version 2008.05.07
  */
-public final class RakeRunnerAction extends CallableSystemAction {
+public abstract class TMapValidator extends Validator {
 
-    public void performAction() {
-        RubyBaseProject project = Util.inferRubyProject();
-        if (project == null) {
-            return;
-        }
+  public abstract TMapVisitor getVisitor();
 
-        if (!RubyPlatform.platformFor(project).showWarningIfInvalid()) {
-            return;
-        }
-
-        TaskDescriptor taskDesc = RakeTaskChooser.select(project);
-        if (taskDesc != null && taskDesc.getRakeTask() != null) {
-            RakeRunner.runTask(project, taskDesc.getRakeTask(), taskDesc.isDebug());
-        }
+  public synchronized ValidationResult validate(Model m, Validation validation, ValidationType type) {
+    if ( !(m instanceof TMapModel)) {
+      return null;
     }
-
-    public String getName() {
-        return NbBundle.getMessage(RakeRunnerAction.class, "RakeRunnerAction.RunDebugRakeTask");
+//out();
+//out("TMAP VALIDATOR");
+//out();
+    TMapModel model = (TMapModel) m;
+    
+    if (model.getState() == Model.State.NOT_WELL_FORMED) {
+      return null;
     }
+    init(validation, type);
 
-    @Override
-    protected void initialize() {
-        super.initialize();
-        // see org.openide.util.actions.SystemAction.iconResource() Javadoc for more details
-        putValue("noIconInMenu", Boolean.TRUE);
-    }
+    TransformMap transformMap = model.getTransformMap();
 
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
+    if (transformMap == null) {
+      return null;
     }
+    startTime();
+    transformMap.accept(getVisitor());
+    endTime(getDisplayName());
 
-    @Override
-    protected boolean asynchronous() {
-        return false;
-    }
+    return createValidationResult(model);
+  }
 }
