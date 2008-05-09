@@ -50,9 +50,11 @@ import javax.tools.DiagnosticListener;
 import javax.tools.JavaFileObject;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.PositionConverter;
+import org.netbeans.modules.java.source.parsing.CompilationInfoImpl;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -119,6 +121,20 @@ public abstract class JavaSourceAccessor {
     public abstract JavaSource create(final ClasspathInfo cpInfo, final PositionConverter binding, final Collection<? extends FileObject> files) throws IllegalArgumentException;
     
     public abstract PositionConverter create(final FileObject fo, int offset, int length, final JTextComponent component);
+    
+    /**
+     * Creates CompilationInfo for given CompilationInfoImpl
+     * @param impl the spi
+     * @return the api wrapper
+     */
+    public abstract CompilationInfo createCompilationInfo (CompilationInfoImpl impl);
+    
+    /**
+     * Creates CompilationController for given CompilationInfoImpl
+     * @param impl the spi
+     * @return the api wrapper
+     */
+    public abstract CompilationController createCompilationController (CompilationInfoImpl impl);
     
     /**
      * Returns true when the caller is a {@link JavaSource} worker thread

@@ -83,7 +83,7 @@ import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ClasspathInfo.PathKind;
-import org.netbeans.api.java.source.JavaParserResult;
+import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.lexer.TokenChange;
@@ -94,6 +94,7 @@ import org.netbeans.api.lexer.TokenHierarchyListener;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.lib.editor.util.swing.PositionRegion;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
+import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.JavadocEnv;
 import org.netbeans.modules.java.source.PostFlowAnalysis;
 import org.netbeans.modules.java.source.TreeLoader;
@@ -190,13 +191,19 @@ public class JavacParser extends Parser {
     }
     
     @Override
-    public JavaParserResult getResult (final Task task) {
+    public CompilationInfo getResult (final Task task) {
         assert ciImpl != null;
-        final boolean isCancelable = task instanceof ParserResultTask;
-        if (isCancelable) {
+        final boolean isParserResultTask = task instanceof ParserResultTask;
+        CompilationInfo result;
+        if (isParserResultTask) {
             Index.cancel.set(canceled);
+            result = JavaSourceAccessor.getINSTANCE().createCompilationInfo(ciImpl);
         }
-        return JavaParserResultAccessor.getINSTANCE().create(this,ciImpl,isCancelable);
+        else {
+            result = JavaSourceAccessor.getINSTANCE().createCompilationController(ciImpl);
+        }
+        assert result != null;
+        return result;
     }
     
     @Override

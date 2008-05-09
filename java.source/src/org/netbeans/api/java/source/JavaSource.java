@@ -155,6 +155,7 @@ import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementa
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaSourceProvider;
 import org.netbeans.modules.java.source.PostFlowAnalysis;
 import org.netbeans.modules.java.source.TreeLoader;
+import org.netbeans.modules.java.source.parsing.CompilationInfoImpl;
 import org.netbeans.modules.java.source.parsing.OutputFileManager;
 import org.netbeans.modules.java.source.parsing.SourceFileObject;
 import org.netbeans.modules.java.source.tasklist.CompilerSettings;
@@ -2157,6 +2158,14 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
 
         public PositionConverter create(FileObject fo, int offset, int length, JTextComponent component) {
             return new PositionConverter(fo, offset, length, component);
+        }
+        
+        public CompilationInfo createCompilationInfo (final CompilationInfoImpl impl) {
+            return new CompilationInfo(impl);
+        }
+        
+        public CompilationController createCompilationController (final CompilationInfoImpl impl) {
+            return new CompilationController(impl);
         }
     }
     
