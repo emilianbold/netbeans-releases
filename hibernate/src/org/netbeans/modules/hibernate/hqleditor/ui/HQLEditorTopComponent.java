@@ -140,6 +140,7 @@ public final class HQLEditorTopComponent extends TopComponent {
         runHQLButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         toolBar.add(runHQLButton);
 
+        hqlEditor.setContentType("text/x-hql");
         jScrollPane1.setViewportView(hqlEditor);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);

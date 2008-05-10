@@ -69,6 +69,11 @@
       <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
       <SubComponents>
         <Component class="javax.swing.JEditorPane" name="hqlEditor">
+          <Properties>
+            <Property name="contentType" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+              <Connection code="&quot;text/x-hql&quot;" type="code"/>
+            </Property>
+          </Properties>
         </Component>
       </SubComponents>
     </Container>

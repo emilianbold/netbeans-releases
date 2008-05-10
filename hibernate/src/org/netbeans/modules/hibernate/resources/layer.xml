@@ -252,6 +252,7 @@ made subject to such option by the copyright holder.
             <file name="HibernateRevengResolver.xml" url="HibernateRevengResolver.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.hibernate.resources.Bundle"/>
             </file>
+            <file name="text-hql-mime-resolver.xml" url="text-hql-mime-resolver.xml"/>
         </folder>
     </folder>
     <folder name="Plugins">
@@ -306,7 +307,10 @@ made subject to such option by the copyright holder.
     </folder>
        <folder name="Editors">
        <folder name="text">
-           <folder name="x-hibernate-cfg+xml">
+           <folder name="x-hql">
+                <file name="language.nbs" url="hql-language.nbs"/>
+            </folder>
+            <folder name="x-hibernate-cfg+xml">
                <folder name="CompletionProviders">
                    <file name="org-netbeans-modules-hibernate-completion-HibernateCfgCompletionProvider.instance"/>
                </folder>
@@ -340,6 +344,9 @@ made subject to such option by the copyright holder.
     <folder name="Navigator">
         <folder name="Panels">
             <folder name="text">
+                <folder name="hql">
+                    <file name="org-netbeans-modules-languages-features-LanguagesNavigator.instance"/>
+                </folder>
                 <folder name="x-hibernate-cfg+xml">
                     <file name="org-netbeans-modules-xml-text-navigator-XMLNavigatorPanel.instance"/>
                 </folder>
@@ -363,10 +370,10 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
         <folder name="Groups">
-            <file name="HQLEditorGroup.wsgrp" url="HQLEditorGroup.wsgrp" />
+            <file name="HQLEditorGroup.wsgrp" url="HQLEditorGroup.wsgrp"/>
             <folder name="HQLEditorGroup">
-                <file name="HQLEditorTopComponent.wstcgrp" url="HQLEditorTopComponent.wstcgrp" />
-                <file name="HQLEditorOutputTopComponent.wstcgrp" url="HQLEditorOutputTopComponent.wstcgrp" />
+                <file name="HQLEditorTopComponent.wstcgrp" url="HQLEditorTopComponent.wstcgrp"/>
+                <file name="HQLEditorOutputTopComponent.wstcgrp" url="HQLEditorOutputTopComponent.wstcgrp"/>
             </folder>
         </folder>
     </folder>
