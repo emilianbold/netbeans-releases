@@ -12,8 +12,12 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -548,11 +552,42 @@ public class ExternalTablePollingStreamCustomEditor extends DefaultCustomEditor 
         }
         
         
-        private SchemaAttribute createSchemaAttributeFromColumnInfo(ColumnInfo column) {
+       
+        
+        private String generateUniqueAsColumnName(ColumnInfo column, 
+        										  Set<String> nameSet) {
+        	String baseName = column.getColumnName();
+        	
+        	String newName = baseName;
+        	
+        	int counter = 0;
+            while(nameSet.contains(newName)) {
+            	newName = baseName + "_" + counter;
+            	counter++;
+            }
+        	return newName;
+        
+        }
+        
+        private Set<String> getColumnNames(List<ColumnInfo> remainingColumns, 
+        								   Set<String> usedUpNames) {
+        	Set<String> nameSet = new HashSet<String>();
+        	nameSet.addAll(usedUpNames);
+        	
+        	for (int i = 0; i < remainingColumns.size(); i++) {
+            	ColumnInfo c = remainingColumns.get(i);
+                String colName = c.getColumnName();
+                nameSet.add(colName);
+            }
+        	
+        	return nameSet;
+        }
+        
+        private SchemaAttribute createSchemaAttributeFromColumnInfo(ColumnInfo column, String attrName) {
             IEPModel model = getOperatorComponent().getModel();
             IEPComponentFactory factory = model.getFactory();
             SchemaAttribute sa = factory.createSchemaAttribute(model);
-            String attrName  = mSelectPanel.generateUniqueAttributeName(column.getColumnName());
+            
             sa.setAttributeName(attrName);
             String dataType = column.getColumnDataType();
             sa.setAttributeType(dataType);
@@ -604,28 +639,6 @@ public class ExternalTablePollingStreamCustomEditor extends DefaultCustomEditor 
                     String isDeleteRecords = (String) wizardDescriptor.getProperty(DatabaseTableWizardConstants.PROP_IS_DELETE_RECORDS);
                     List<ColumnInfo> recordIdentifyingColumns =  (List) wizardDescriptor.getProperty(DatabaseTableWizardConstants.PROP_POLLING_UNIQUE_RECORD_IDENTIFIER_COLUMNS);
                     
-                    if(recordIdentifyingColumns != null && recordIdentifyingColumns.size() > 0) {
-                        List<String> skipSchemaNames = new ArrayList<String>();
-                        skipSchemaNames.add(mOutputSchemaNamePanel.getStringValue());
-                        String schemaName = NameGenerator.generateSchemaName(model.getPlanComponent().getSchemaComponentContainer(), skipSchemaNames);
-                        mRecordIdentifyingColumnsSchema = model.getFactory().createSchema(model);
-                        mRecordIdentifyingColumnsSchema.setName(schemaName);
-                        
-                        List<String> columnList = new ArrayList<String>();
-                        List<SchemaAttribute> attrs = new ArrayList<SchemaAttribute>();
-                        
-                        Iterator<ColumnInfo> it = recordIdentifyingColumns.iterator();
-                        while(it.hasNext()) {
-                            ColumnInfo column = it.next();
-                            SchemaAttribute sa = createSchemaAttributeFromColumnInfo(column);
-                            attrs.add(sa);
-                            columnList.add(sa.getAttributeName());
-                        }
-                        mRecordIdentifyingColumnsSchema.setSchemaAttributes(attrs);
-                        mRecordIdentifyingColumnsTextField.setText(convertListToCommaSeperatedValues(columnList));
-                        
-//                        mRecordIdentifyingColumnsPanel.setStringValue(convertListToCommaSeperatedValues(columnList));
-                    }
                     
                     mPollingIntervalPanel.setStringValue(pollingInterval);
                     mPollingIntervalTimeUnitPanel.setStringValue(pollingIntervalUnit);
@@ -650,12 +663,32 @@ public class ExternalTablePollingStreamCustomEditor extends DefaultCustomEditor 
                     List<SchemaAttribute> attrs = new ArrayList<SchemaAttribute>();
                     List<String> expressionList = new ArrayList<String>();
                     
+                    Map<String, String> fromColumnToAsColumnMap = new HashMap<String, String>();
+                    
+                    List<ColumnInfo> remainingColumns = new ArrayList<ColumnInfo>(columns);
+                    Set<String> usedupNames = new HashSet<String>();
+                    
+                    int counter = 0;
+                    //go through user selected columns
                     Iterator<ColumnInfo> it = columns.iterator();
                     while(it.hasNext()) {
                         ColumnInfo column = it.next();
-                        SchemaAttribute sa = createSchemaAttributeFromColumnInfo(column);
+                        remainingColumns.remove(column);
+                        Set<String> cnames = getColumnNames(remainingColumns, usedupNames);
+                        String asColumnName = null;
+                        //first column we want to keep name as it is.
+                        if(counter ==0) {
+                        	asColumnName = column.getColumnName();
+                        } else {
+                        	asColumnName = generateUniqueAsColumnName(column, cnames);
+                        }
+                        	
+                        usedupNames.add(asColumnName);
+                        SchemaAttribute sa = createSchemaAttributeFromColumnInfo(column, asColumnName);
+                        fromColumnToAsColumnMap.put(column.getQualifiedName(), sa.getAttributeName());
                         attrs.add(sa);
                         expressionList.add(column.getQualifiedName());
+                        counter++;
                     }
                     
                     mSelectPanel.clearTable();
@@ -667,6 +700,30 @@ public class ExternalTablePollingStreamCustomEditor extends DefaultCustomEditor 
                     	mWherePanel.setStringValue(mWhereClause);
                     }
                     
+                    if(recordIdentifyingColumns != null && recordIdentifyingColumns.size() > 0) {
+                        List<String> skipSchemaNames = new ArrayList<String>();
+                        skipSchemaNames.add(mOutputSchemaNamePanel.getStringValue());
+                        String schemaName = NameGenerator.generateSchemaName(model.getPlanComponent().getSchemaComponentContainer(), skipSchemaNames);
+                        mRecordIdentifyingColumnsSchema = model.getFactory().createSchema(model);
+                        mRecordIdentifyingColumnsSchema.setName(schemaName);
+                        
+                        List<String> columnList = new ArrayList<String>();
+                        attrs = new ArrayList<SchemaAttribute>();
+                        
+                        it = recordIdentifyingColumns.iterator();
+                        while(it.hasNext()) {
+                            ColumnInfo column = it.next();
+                            String asColumnName = fromColumnToAsColumnMap.get(column.getQualifiedName());
+                            SchemaAttribute sa = createSchemaAttributeFromColumnInfo(column, asColumnName);
+                            attrs.add(sa);
+                            columnList.add(sa.getAttributeName());
+                        }
+                        
+                        mRecordIdentifyingColumnsSchema.setSchemaAttributes(attrs);
+                        mRecordIdentifyingColumnsTextField.setText(convertListToCommaSeperatedValues(columnList));
+                        
+//                        mRecordIdentifyingColumnsPanel.setStringValue(convertListToCommaSeperatedValues(columnList));
+                    }
                     
                 }
             }

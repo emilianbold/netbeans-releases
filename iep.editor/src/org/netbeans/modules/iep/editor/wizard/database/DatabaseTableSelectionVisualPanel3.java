@@ -40,7 +40,9 @@ public final class DatabaseTableSelectionVisualPanel3 extends JPanel {
         DefaultComboBoxModel model = new DefaultComboBoxModel(new Vector(DatabaseTableWizardConstants.getTimeUnitInfos()));
         pollingTimeUnitComboBox.setModel(model);
         pollingTimeUnitComboBox.setSelectedItem(DatabaseTableWizardConstants.TIMEUNIT_SECOND);
-
+        pollingIntervalTextField.setText("1");
+        recordsToPollTextField.setText("1");
+        jndiNameTextField.setText("jdbc/iepExternalTable");
     }
     
     
