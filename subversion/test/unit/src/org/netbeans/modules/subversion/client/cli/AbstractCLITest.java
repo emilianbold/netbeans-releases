@@ -54,6 +54,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.modules.subversion.AbstractSvnTest;
+import org.netbeans.modules.subversion.util.FileUtils;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.ISVNDirEntry;
 import org.tigris.subversion.svnclientadapter.ISVNInfo;
@@ -80,22 +81,14 @@ public abstract class AbstractCLITest extends AbstractSvnTest {
     }
     
     @Override
-    protected void setUp() throws Exception {
-        importWC = true;
-        if(getName().startsWith("testCheckout")) {
-            importWC = false;            
-        } 
+    protected void setUp() throws Exception {        
         super.setUp();
         if(getName().startsWith("testCheckout") ) {
             cleanUpRepo(new String[] {CI_FOLDER});
         }        
         CmdLineClientAdapterFactory.setup13(null);      
     }
-
-    protected boolean importOnSetup() {
-        return importWC;
-    }
-
+    
     @Override
     protected void tearDown() throws Exception {
         if(getName().startsWith("testInfoLocked")) { 
@@ -107,7 +100,20 @@ public abstract class AbstractCLITest extends AbstractSvnTest {
         }
         super.tearDown();
     }    
-        
+ 
+
+    protected void setAnnonWriteAccess() throws IOException {
+        FileUtils.copyFile(new File(getRepoDir().getAbsolutePath() + "/conf/svnserve.conf"), new File(getRepoDir().getAbsolutePath() + "/conf/svnserve.conf.bk"));
+        write(new File(getRepoDir().getAbsolutePath() + "/conf/svnserve.conf"), "[general]\nanon-access = write\nauth-access = write\nauthz-db = authz");
+        FileUtils.copyFile(new File(getRepoDir().getAbsolutePath() + "/conf/authz"), new File(getRepoDir().getAbsolutePath() + "/conf/authz.bk"));        
+        write(new File(getRepoDir().getAbsolutePath() + "/conf/authz"), "[/]\n* = rw");
+    }
+
+    protected void restoreAuthSettings() throws IOException {
+        FileUtils.copyFile(new File(getRepoDir().getAbsolutePath() + "/conf/svnserve.conf.bk"), new File(getRepoDir().getAbsolutePath() + "/conf/svnserve.conf"));
+        FileUtils.copyFile(new File(getRepoDir().getAbsolutePath() + "/conf/authz.bk"), new File(getRepoDir().getAbsolutePath() + "/conf/authz"));        
+    }
+    
     protected void assertInfos(ISVNInfo info, ISVNInfo refInfo) {
         assertNotNull(info);   
         assertNotNull(refInfo);   
@@ -177,10 +183,6 @@ public abstract class AbstractCLITest extends AbstractSvnTest {
         }        
     }
 
-    protected SVNUrl getFileUrl(File file) {
-        return getTestUrl().appendPath(getWC().getName()).appendPath(file.getName());
-    }
-
     protected class FileNotifyListener implements ISVNNotifyListener {
         private Set<File> files = new HashSet<File>();
         public void setCommand(int arg0) { }
@@ -221,17 +223,17 @@ public abstract class AbstractCLITest extends AbstractSvnTest {
         return file;
     }
 
-    protected ISVNClientAdapter getNbClient() {        
+    protected ISVNClientAdapter getNbClient() throws Exception {        
         ISVNClientAdapter c = new CommandlineClient();        
         fileNotifyListener = new FileNotifyListener();
         c.addNotifyListener(fileNotifyListener);
         return c;
     }
     
-    protected ISVNClientAdapter getReferenceClient() {        
+    protected ISVNClientAdapter getReferenceClient() throws Exception {        
         ISVNClientAdapter c = SVNClientAdapterFactory.createSVNClient(CmdLineClientAdapterFactory.COMMANDLINE_CLIENT);        
         fileNotifyListener = new FileNotifyListener();
-        c.addNotifyListener(fileNotifyListener);
+        c.addNotifyListener(fileNotifyListener);        
         return c;
     }
 
@@ -302,13 +304,13 @@ public abstract class AbstractCLITest extends AbstractSvnTest {
         }
     }
     
-    protected void assertProperty(File file, String prop, String val) throws SVNClientException {
+    protected void assertProperty(File file, String prop, String val) throws Exception {
         ISVNClientAdapter c = getReferenceClient();
         ISVNProperty p = c.propertyGet(file, prop);
         assertEquals(val, new String(p.getData()));        
     }
     
-    protected void assertProperty(File file, String prop, byte[] data) throws SVNClientException {
+    protected void assertProperty(File file, String prop, byte[] data) throws Exception {
         ISVNClientAdapter c = getReferenceClient();
         ISVNProperty p = c.propertyGet(file, prop);
         for (int i = 0; i < data.length; i++) {

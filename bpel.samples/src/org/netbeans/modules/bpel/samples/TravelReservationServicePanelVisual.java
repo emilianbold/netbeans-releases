@@ -61,18 +61,18 @@ public class TravelReservationServicePanelVisual extends SampleWizardPanelVisual
         projectNoteArea.setWrapStyleWord(true);
         projectNoteArea.setOpaque(false);
         projectNoteArea.setFocusable(false);
-        projectNoteArea.setText(NbBundle.getMessage(TravelReservationServicePanelVisual.class,"MSG_TRSProjectNote"));
+        projectNoteArea.setText(NbBundle.getMessage(TravelReservationServicePanelVisual.class,"MSG_TRSProjectNote")); // NOI18N
 
         GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 1+2;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 2+2+2, 0, 0);
         add(projectNoteArea, gridBagConstraints);
     }
     

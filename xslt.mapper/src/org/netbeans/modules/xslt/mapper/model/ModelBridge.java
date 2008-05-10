@@ -91,6 +91,7 @@ public abstract class ModelBridge implements ComponentListener, PropertyChangeLi
     protected boolean checkErrors() {
         String errorMessages = "";
         if (getMapper().getContext() != null) {
+
             String valMessage = getMapper().getContext().getValidationMessage();
             if (valMessage != null) {
                 errorMessages += valMessage;

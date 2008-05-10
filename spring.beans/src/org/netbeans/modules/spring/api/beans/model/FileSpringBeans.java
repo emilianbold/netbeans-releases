@@ -42,6 +42,7 @@
 package org.netbeans.modules.spring.api.beans.model;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * Encapsulates the Spring beans in a file. All beans obtained through
@@ -78,4 +79,20 @@ public interface FileSpringBeans {
      * @return the list of beans; never null.
      */
     List<SpringBean> getBeans();
+    
+    /**
+     * Returns the name of the bean (or another alias) that the specied alias
+     * aliases
+     * 
+     * @param name alias name
+     * @return name of bean or alias; {@code null} if no such alias was found
+     */
+    String findAliasName(String alias);
+    
+    /**
+     * Returns all registered aliases in this beans config file
+     * 
+     * @return aliases; never null
+     */
+    Set<String> getAliases();
 }

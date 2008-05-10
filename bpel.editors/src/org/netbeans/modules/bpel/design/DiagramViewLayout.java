@@ -170,4 +170,3 @@ public class DiagramViewLayout implements java.awt.LayoutManager {
     public static int MARGIN_BOTTOM = 32;
     public static int MARGIN_RIGHT = 18;
 }
- 

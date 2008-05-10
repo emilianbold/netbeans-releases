@@ -77,7 +77,7 @@ import org.netbeans.junit.ide.ProjectSupport;
 public class PropertiesEditorTestCase extends JellyTestCase {
     
     protected static final String defaultProjectName = "properties_test";
-    private String projectName;
+    public String projectName;
     private String treeSubPackagePathToFile;
     protected String treeSeparator = "|";
     protected String menuSeparator = "#";
@@ -128,6 +128,7 @@ public class PropertiesEditorTestCase extends JellyTestCase {
     
     private final String WIZARD_TREE_STRING = "";//Bundle.getStringTrimmed("org.netbeans.modules.text.Bundle", "Templates/Other")+"|"+Bundle.getStringTrimmed("org.netbeans.modules.properties.Bundle", "Templates/Other/properties.properties"); // String : "Other|Properties File";
     
+    public EditorOperator eo;
     
     /** This constructor only creates operator's object and then does nothing. */
     public PropertiesEditorTestCase(String testMethodName) {
@@ -286,14 +287,15 @@ public class PropertiesEditorTestCase extends JellyTestCase {
      */
     public void closePropertiesFile(String fileName) {
         EditorOperator eo = new EditorOperator(fileName);
-        eo.close();
+        eo.close(false);
     }
     
     /** This close all files in editor. This method should be called in teardown method
      */
     public void closeFiles() {
-        EditorOperator.closeDiscardAll();
+        eo.closeDiscardAll();
     }
+   
     
     
     /** This fill three textafields in 'New property' dialog.
@@ -1069,8 +1071,8 @@ public class PropertiesEditorTestCase extends JellyTestCase {
     public boolean existsFileInEditor(String fileName) {
         try {
             log("Testing name of file in tab of Editor window : \""+fileName+"\"");
-            EditorOperator ewo = new EditorOperator(fileName);
-            ewo.close();
+            eo = new EditorOperator(fileName);
+            eo.close();
             return true;
         } catch (TimeoutExpiredException ex) {
             return false;

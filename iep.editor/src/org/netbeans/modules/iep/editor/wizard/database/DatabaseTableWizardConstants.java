@@ -65,6 +65,8 @@ public class DatabaseTableWizardConstants {
     
     public static final String PROP_POLLING_RECORD_SIZE = "PROP_POLLING_RECORD_SIZE";
     
+    public static final String PROP_POLLING_UNIQUE_RECORD_IDENTIFIER_COLUMNS = "PROP_POLLING_UNIQUE_RECORD_IDENTIFIER_COLUMNS";
+    
     public static final String PROP_JNDI_NAME = "PROP_JNDI_NAME";
     
     public static final String PROP_IS_DELETE_RECORDS = "PROP_IS_DELETE_RECORDS";

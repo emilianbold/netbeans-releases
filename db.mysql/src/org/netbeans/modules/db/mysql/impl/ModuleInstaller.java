@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.db.mysql.impl;
 
-import org.netbeans.modules.db.mysql.*;
 import org.netbeans.modules.db.mysql.util.Utils;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -56,7 +55,6 @@ import org.netbeans.modules.db.mysql.util.DatabaseUtils;
 import org.netbeans.modules.db.mysql.util.DatabaseUtils.ConnectStatus;
 import org.netbeans.modules.db.mysql.util.DatabaseUtils.URLParser;
 import org.openide.modules.ModuleInstall;
-import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.WindowManager;
 
@@ -79,8 +77,9 @@ public class ModuleInstaller extends ModuleInstall {
         if ( options.isConnectionRegistered() && options.isProviderRegistered()) {
             return;
         }
-            
-        WindowManager.getDefault().invokeWhenUIReady(new RegisterMySQL());
+          
+        // Commenting out until we can track down the deadlock issues.
+        //WindowManager.getDefault().invokeWhenUIReady(new RegisterMySQL());
     }
 
     private static final class RegisterMySQL implements Runnable {
