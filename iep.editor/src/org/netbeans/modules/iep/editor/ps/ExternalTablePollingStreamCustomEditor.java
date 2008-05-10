@@ -565,18 +565,14 @@ public class ExternalTablePollingStreamCustomEditor extends DefaultCustomEditor 
             if(dataType.equalsIgnoreCase("CHAR")
                || dataType.equalsIgnoreCase("VARCHAR")
                || dataType.equalsIgnoreCase("DECIMAL") 
-               || dataType.equalsIgnoreCase("REAL")
-               || dataType.equalsIgnoreCase("DOUBLE")
+               || dataType.equalsIgnoreCase("FLOAT")
                ) {
                 if(precision != 0) {
                     sa.setAttributeSize(""+column.getPrecision());
                 } 
             }
 
-            if(dataType.equalsIgnoreCase("DECIMAL") 
-               || dataType.equalsIgnoreCase("REAL")
-               || dataType.equalsIgnoreCase("DOUBLE")
-               ) {
+            if(dataType.equalsIgnoreCase("DECIMAL")) {
                 if(scale != 0) {
                     sa.setAttributeScale(""+column.getScale());
                 } 
