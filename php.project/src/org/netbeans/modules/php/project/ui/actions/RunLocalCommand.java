@@ -60,7 +60,7 @@ public class RunLocalCommand extends Command implements Displayable {
     @Override
     public void invokeAction(final Lookup context) throws IllegalArgumentException {
         String command = getPhpInterpreter();
-        FileObject scriptFo = fileForContext(context);
+        FileObject scriptFo = (context == null) ? fileForProject() : fileForContext(context);
         File scriptFile = (scriptFo != null) ? FileUtil.toFile(scriptFo) : null;
         if (command == null || scriptFile == null) {
             //TODO mising error handling
@@ -105,7 +105,7 @@ public class RunLocalCommand extends Command implements Displayable {
 
     @Override
     public boolean isActionEnabled(Lookup context) throws IllegalArgumentException {
-        return fileForContext(context) != null;
+        return ((context == null) ? fileForProject() : fileForContext(context)) != null;
     }
 
     @Override
