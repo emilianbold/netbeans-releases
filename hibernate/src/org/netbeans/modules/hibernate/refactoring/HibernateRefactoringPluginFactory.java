@@ -60,7 +60,11 @@ public class HibernateRefactoringPluginFactory implements RefactoringPluginFacto
     public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {
         
         if (refactoring instanceof WhereUsedQuery) {
-            return new HibernateFindUsagesPlugin((WhereUsedQuery) refactoring);
+            if (isMappingFile(refactoring)) {
+                return new HibernateMappingFindUsagesPlugin((WhereUsedQuery)refactoring);
+            } else {
+                return new HibernateFindUsagesPlugin((WhereUsedQuery) refactoring);
+            }
         } else if (refactoring instanceof RenameRefactoring) {
             if (isMappingFile(refactoring)) {
                 return new HibernateMappingRenamePlugin((RenameRefactoring) refactoring);
@@ -69,7 +73,7 @@ public class HibernateRefactoringPluginFactory implements RefactoringPluginFacto
             }
         } else if (refactoring instanceof MoveRefactoring) {
             if (isMappingFile(refactoring)) {
-                System.err.println("!!!!!!!!!!MOVING Hibernate mapping file. TBD");
+                return new HibernateMappingMovePlugin((MoveRefactoring)refactoring);
                 
             } else {
                 return new HibernateMovePlugin((MoveRefactoring) refactoring);

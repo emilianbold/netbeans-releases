@@ -58,7 +58,10 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.hibernate.cfg.model.HibernateConfiguration;
 import org.netbeans.modules.hibernate.cfg.model.SessionFactory;
+import org.netbeans.modules.hibernate.loaders.cfg.HibernateCfgDataLoader;
 import org.netbeans.modules.hibernate.loaders.cfg.HibernateCfgDataObject;
+import org.netbeans.modules.hibernate.loaders.mapping.HibernateMappingDataLoader;
+import org.netbeans.modules.hibernate.loaders.reveng.HibernateRevengDataLoader;
 import org.netbeans.modules.hibernate.service.TableColumn;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -158,7 +161,7 @@ public class HibernateUtil {
             Enumeration<? extends FileObject> enumeration = root.getChildren(false);
             while(enumeration.hasMoreElements()) {
                 FileObject fo = enumeration.nextElement();
-                if(fo.getNameExt() != null && fo.getNameExt().endsWith("cfg.xml")) { //NOI18N
+                if(fo.getNameExt() != null && fo.getMIMEType().equals(HibernateCfgDataLoader.REQUIRED_MIME)) { 
                         configFiles.add(fo);
                 }
             }
@@ -181,7 +184,7 @@ public class HibernateUtil {
             Enumeration<? extends FileObject> enumeration = root.getChildren(true);
             while(enumeration.hasMoreElements()) {
                 FileObject fo = enumeration.nextElement();
-                if(fo.getNameExt() != null && fo.getNameExt().endsWith("hbm.xml")) { //NOI18N
+                if(fo.getNameExt() != null && fo.getMIMEType().equals(HibernateMappingDataLoader.REQUIRED_MIME)) { 
                         mappingFiles.add(fo);
                 }
             }
@@ -217,7 +220,7 @@ public class HibernateUtil {
             Enumeration<? extends FileObject> enumeration = root.getChildren(true);
             while(enumeration.hasMoreElements()) {
                 FileObject fo = enumeration.nextElement();
-                if(fo.getNameExt() != null && fo.getNameExt().endsWith("hbm.xml")) { //NOI18N
+                if(fo.getNameExt() != null && fo.getMIMEType().equals(HibernateMappingDataLoader.REQUIRED_MIME)) { 
                         mappingFiles.add(
                                 getRelativeSourcePath(fo, root)
                                 );
@@ -225,6 +228,26 @@ public class HibernateUtil {
             }
         }
         return mappingFiles;
+    }
+
+    public static ArrayList<FileObject> getAllHibernateReverseEnggFileObjects(Project project) {
+        ArrayList<FileObject> reverseEnggFiles = new ArrayList<FileObject>();
+        Sources projectSources = ProjectUtils.getSources(project);
+        SourceGroup[] javaSourceGroup = projectSources.getSourceGroups(
+                JavaProjectConstants.SOURCES_TYPE_JAVA
+                );
+        
+        for(SourceGroup sourceGroup : javaSourceGroup) {
+            FileObject root = sourceGroup.getRootFolder();
+            Enumeration<? extends FileObject> enumeration = root.getChildren(true);
+            while(enumeration.hasMoreElements()) {
+                FileObject fo = enumeration.nextElement();
+                if(fo.getNameExt() != null && fo.getMIMEType().equals(HibernateRevengDataLoader.REQUIRED_MIME)) { 
+                        reverseEnggFiles.add(fo);
+                }
+            }
+        }
+        return reverseEnggFiles;
     }
     
     /**

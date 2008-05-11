@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.hibernate.mimeresolver;
 
+import org.netbeans.modules.hibernate.loaders.cfg.HibernateCfgDataLoader;
+import org.netbeans.modules.hibernate.loaders.mapping.HibernateMappingDataLoader;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.MIMEResolver;
 
@@ -48,11 +50,6 @@ import org.openide.filesystems.MIMEResolver;
  * @author Vadiraj Deshpande (Vadiraj.Deshpande@Sun.COM)
  */
 public class HibernateMIMEResolver extends MIMEResolver{
-
-    // Values for the variables below are copied from respective 
-    // data loaders.
-    private static final String HIBERNATE_CONFIG_MIME_TYPE = "text/x-hibernate-cfg+xml";
-    private static final String HIBERNATE_MAPPING_MIME_TYPE = "text/x-hibernate-mapping+xml";
     
     @Override
     public String findMIMEType(FileObject fo) {
@@ -66,11 +63,11 @@ public class HibernateMIMEResolver extends MIMEResolver{
         }
         
         if(fo.getNameExt().endsWith("cfg.xml")) {
-            return HIBERNATE_CONFIG_MIME_TYPE;
+            return HibernateCfgDataLoader.REQUIRED_MIME;
         }
         
         if(fo.getNameExt().endsWith("hbm.xml")){
-            return HIBERNATE_MAPPING_MIME_TYPE;
+            return HibernateMappingDataLoader.REQUIRED_MIME;
         }
         
         return null;
