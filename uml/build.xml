@@ -55,7 +55,8 @@ made subject to such option by the copyright holder.
         </zip>
     </target>
     --> 
-
+    <!-- Test string -->
+    
     <target name="jar-prep" depends="init">
         <mkdir dir="${cluster}/${module.jar.dir}"/>
         <tstamp>
