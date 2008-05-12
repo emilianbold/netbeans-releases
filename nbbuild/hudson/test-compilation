@@ -2,5 +2,6 @@
 hg --config extensions.purge= clean --all || exit
 ant build || exit
 ant -Dtest.fail.on.error=false build-test-dist
-ant commit-validation
+ant commit-validation || true
+
 
