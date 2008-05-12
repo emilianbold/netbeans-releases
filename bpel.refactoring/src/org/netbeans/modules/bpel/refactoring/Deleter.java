@@ -153,13 +153,10 @@ final class Deleter extends Plugin {
     return null;
   }
 
-  public void doRefactoring(List<RefactoringElementImplementation> elements)
-    throws IOException
-  {
+  public void doRefactoring(List<RefactoringElementImplementation> elements) throws IOException {
 //out();
 //out("DO: " + myRequest.getRefactoringSource());
-    Referenceable referenceable =
-      myRequest.getRefactoringSource().lookup(Referenceable.class);
+    Referenceable referenceable = myRequest.getRefactoringSource().lookup(Referenceable.class);
 
     if ( !(referenceable instanceof Component)) {
       return;
