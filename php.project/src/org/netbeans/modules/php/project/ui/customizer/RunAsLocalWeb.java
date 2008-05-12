@@ -50,7 +50,6 @@ import javax.swing.event.DocumentListener;
 import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAsType;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -65,11 +64,11 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
     private String displayName;
 
     public RunAsLocalWeb(ConfigManager manager, Category category) {
-        this(manager, category, "Local Web Site (running on local web server)");
+        this(manager, category, NbBundle.getMessage(RunAsScript.class, "RunAsType.localweb"));
     }
     
     /** Creates new form LocalWebPanel */
-    public RunAsLocalWeb(ConfigManager manager, Category category, String displayName) {
+    private RunAsLocalWeb(ConfigManager manager, Category category, String displayName) {
         super(manager, category);
         initComponents();
         this.displayName = displayName;
