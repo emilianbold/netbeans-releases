@@ -97,7 +97,7 @@ public class HibernateConfigurationWizardPanel extends javax.swing.JPanel implem
 
     public void fillPanel() {
         if (forNewProjectWizard) {
-            if (cmbDbConnection.getItemCount() != 0) {
+            if (cmbDbConnection.getItemCount() != 0 && cmbDbConnection.getItemCount() >= 1) {
                 cmbDbConnection.setSelectedIndex(1);
             }
         }
@@ -110,7 +110,7 @@ public class HibernateConfigurationWizardPanel extends javax.swing.JPanel implem
 
     private void fillComponents() {
         DatabaseConnection dbConn = getDatabaseConnection();
-        if (dbConn != null) {
+        if (dbConn != null  && cmbDbConnection.getItemCount() != 0) {
             txtDialect.setText(Util.getDialectName(dbConn.getDriverClass()));
         }
     }
