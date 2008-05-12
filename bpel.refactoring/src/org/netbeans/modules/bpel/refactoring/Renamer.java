@@ -199,9 +199,7 @@ final class Renamer extends Plugin {
     return null;
   }
       
-  public void doRefactoring(
-    List<RefactoringElementImplementation> elements) throws IOException
-  {
+  public void doRefactoring(List<RefactoringElementImplementation> elements) throws IOException {
     Map<Model, Set<RefactoringElementImplementation>> map = getModelMap(elements);
     Set<Model> models = map.keySet();
     Referenceable reference =
@@ -225,9 +223,7 @@ final class Renamer extends Plugin {
     return null;
   }
 
-  private Map<Model, Set<RefactoringElementImplementation>> getModelMap(
-    List<RefactoringElementImplementation> elements)
-  {
+  private Map<Model, Set<RefactoringElementImplementation>> getModelMap(List<RefactoringElementImplementation> elements) {
     Map<Model, Set<RefactoringElementImplementation>> results =
       new HashMap<Model, Set<RefactoringElementImplementation>>();
   
@@ -247,9 +243,7 @@ final class Renamer extends Plugin {
     return results;
   }
 
-  private List<Component> getComponents(
-    Set<RefactoringElementImplementation> elements)
-  {
+  private List<Component> getComponents(Set<RefactoringElementImplementation> elements) {
     List<Component> component = new ArrayList<Component>(elements.size());
   
     for (RefactoringElementImplementation element : elements) {
@@ -258,12 +252,7 @@ final class Renamer extends Plugin {
     return component;
   }
        
-  private void rename(
-    List<Component> components,
-    Model model,
-    Named target,
-    String oldName) throws IOException
-  {
+  private void rename(List<Component> components, Model model, Named target, String oldName) throws IOException {
     if (target == null || components == null || model == null) {
       return;
     }
@@ -316,18 +305,10 @@ final class Renamer extends Plugin {
 //out("RENAME: " + Util.getName(target));
 //out("    in: " + Util.getName(component));
 //out();
-    if (component instanceof PartReference &&
-      ((PartReference) component).getPart() != null &&
-      component instanceof ReferenceCollection &&
-      target instanceof Part)
-    {
+    if (component instanceof PartReference && ((PartReference) component).getPart() != null && component instanceof ReferenceCollection && target instanceof Part) {
       rename((PartReference) component, (Part) target);
     }
-    else if (component instanceof PropertyReference &&
-      ((PropertyReference) component).getProperty() != null &&
-      component instanceof ReferenceCollection &&
-      target instanceof CorrelationProperty)
-    {
+    else if (component instanceof PropertyReference && ((PropertyReference) component).getProperty() != null && component instanceof ReferenceCollection && target instanceof CorrelationProperty) {
       rename((PropertyReference) component, (CorrelationProperty) target);
     }
     else if (component instanceof Variable) {
@@ -339,22 +320,13 @@ final class Renamer extends Plugin {
   }
 
   private void renameCamponent(Component component, Named target) throws IOException{
-    if (component instanceof OperationReference &&
-      component instanceof ReferenceCollection &&
-      target instanceof Operation)
-    {
+    if (component instanceof OperationReference && component instanceof ReferenceCollection && target instanceof Operation) {
       rename((OperationReference) component, (Operation) target);
     }
-    else if (component instanceof PortTypeReference &&
-      component instanceof ReferenceCollection &&
-      target instanceof PortType)
-    {
+    else if (component instanceof PortTypeReference && component instanceof ReferenceCollection && target instanceof PortType) {
       rename((PortTypeReference) component, (PortType) target);
     }
-    else if (component instanceof MessageExchangeReference &&
-      component instanceof ReferenceCollection &&
-      target instanceof MessageExchange)
-    {
+    else if (component instanceof MessageExchangeReference && component instanceof ReferenceCollection && target instanceof MessageExchange) {
       rename((MessageExchangeReference) component, (MessageExchange) target);
     }
     else {
@@ -363,9 +335,7 @@ final class Renamer extends Plugin {
   }
 
   private void renameCampanent(Component component, Named target) throws IOException{
-    if (component instanceof Role &&
-      target instanceof PortType)
-    {
+    if (component instanceof Role && target instanceof PortType) {
       rename((Role) component, (PortType) target);
     }
     else if (component instanceof Catch) {
@@ -398,9 +368,7 @@ final class Renamer extends Plugin {
     if (component instanceof CorrelationSet) {
       rename((CorrelationSet) component, target);
     }
-    else if (component instanceof ContentElement &&
-      component instanceof BpelEntity)
-    {
+    else if (component instanceof ContentElement && component instanceof BpelEntity) {
       rename((ContentElement) component);
     }
     else if (component instanceof Query) {
@@ -456,10 +424,7 @@ final class Renamer extends Plugin {
     }
   }
 
-  private void rename(
-    CorrelationProperty property,
-    Named target) throws IOException
-  {
+  private void rename(CorrelationProperty property, Named target) throws IOException {
     NamedComponentReference<GlobalElement> element = property.getElement();
 
     if (element != null && target instanceof GlobalElement) {
@@ -535,10 +500,7 @@ final class Renamer extends Plugin {
     }
   }
 
-  private void rename(
-    CorrelationSet correlationSet,
-    Named target) throws IOException
-  {
+  private void rename(CorrelationSet correlationSet, Named target) throws IOException {
     if (target instanceof CorrelationProperty) {
 //out();
 //out("RENAME");
@@ -616,10 +578,7 @@ final class Renamer extends Plugin {
     }
   }
 
-  private void renameFaultNameReference(
-    FaultNameReference reference,
-    Named target) throws IOException
-  {
+  private void renameFaultNameReference(FaultNameReference reference, Named target) throws IOException {
     try {
       reference.setFaultName(getQName(reference.getFaultName(), target));
     }

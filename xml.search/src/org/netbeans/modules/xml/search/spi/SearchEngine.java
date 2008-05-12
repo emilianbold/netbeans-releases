@@ -112,9 +112,7 @@ public interface SearchEngine {
       mySearchListeners = new LinkedList<SearchListener>();
     }
 
-    protected final synchronized void fireSearchStarted(SearchOption option)
-      throws SearchException
-    {
+    protected final synchronized void fireSearchStarted(SearchOption option) throws SearchException{
       try {
         createSearchPattern(option);
       }

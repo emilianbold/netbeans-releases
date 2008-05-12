@@ -76,9 +76,7 @@ import static org.netbeans.modules.print.impl.ui.UI.*;
  * @author Vladimir Yaroslavskiy
  * @version 2006.02.14
  */
-final class Attribute extends Dialog
-  implements FocusListener, Macro.Listener, Percent.Listener
-{
+final class Attribute extends Dialog implements FocusListener, Macro.Listener, Percent.Listener {
   Attribute(Preview preview) {
     myPreview = preview;
 
@@ -94,8 +92,7 @@ final class Attribute extends Dialog
   }
 
   @Override
-  protected DialogDescriptor createDescriptor()
-  {
+  protected DialogDescriptor createDescriptor() {
     myDescriptor = new DialogDescriptor(
       getResizable(createPanel()),
       i18n("LBL_Print_Options"), // NOI18N
@@ -719,11 +716,7 @@ final class Attribute extends Dialog
     return panel;
   }
 
-  private ItemListener createItemListener(
-    final boolean width,
-    final boolean height,
-    final boolean factor)
-  {
+  private ItemListener createItemListener(final boolean width, final boolean height, final boolean factor) {
     return new ItemListener() {
       public void itemStateChanged(ItemEvent event) {
         if (myZoomWidth != null) {
@@ -895,8 +888,7 @@ final class Attribute extends Dialog
   }
 
   @Override
-  protected void opened()
-  {
+  protected void opened() {
     myHeaderLeft.requestFocus();
   }
 

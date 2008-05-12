@@ -131,7 +131,6 @@ public class BPELDataEditorSupport extends DataEditorSupport implements
         return getModelFactory().getModel(modelSource);
     }
 
-    /** {@inheritDoc} */
     public void saveDocument() throws IOException {
         super.saveDocument();
         syncModel();
@@ -164,8 +163,7 @@ public class BPELDataEditorSupport extends DataEditorSupport implements
     }
 
     @Override
-    protected void notifyClosed()
-    {
+    protected void notifyClosed() {
         QuietUndoManager undo = getUndoManager();
         StyledDocument doc = getDocument();
         synchronized (undo) {
@@ -230,8 +228,7 @@ public class BPELDataEditorSupport extends DataEditorSupport implements
     }
 
     @Override
-    public Task prepareDocument()
-    {
+    public Task prepareDocument() {
         QuietUndoManager undo = (QuietUndoManager) getUndoRedo();
         Task task = super.prepareDocument();
         // Avoid listening to the same task more than once.
@@ -269,8 +266,7 @@ public class BPELDataEditorSupport extends DataEditorSupport implements
     }
 
     @Override
-    public Task reloadDocument()
-    {
+    public Task reloadDocument() {
         Task task = super.reloadDocument();
         task.addTaskListener(new TaskListener() {
 
@@ -430,12 +426,8 @@ public class BPELDataEditorSupport extends DataEditorSupport implements
                  * means the resultItem was generated when the model was broken.
                  *  In the above cases switch to the source multiview.
                  */ 
-                if (resultItem.getModel().getState().equals(
-                        State.NOT_WELL_FORMED)
-                        || resultItem.getComponents() == null)
-                {
-                    for (int index1 = 0; index1 < mvh.getPerspectives().length; index1++)
-                    {
+                if (resultItem.getModel().getState().equals(State.NOT_WELL_FORMED) || resultItem.getComponents() == null) {
+                    for (int index1 = 0; index1 < mvh.getPerspectives().length; index1++) {
                         if (mvh.getPerspectives()[index1].preferredID().equals(
                                 BPELSourceMultiViewElementDesc.PREFERED_ID))
                             mvh.requestActive(mvh.getPerspectives()[index1]);
@@ -463,9 +455,7 @@ public class BPELDataEditorSupport extends DataEditorSupport implements
                         }
                     }
                 }
-                else if (mvp.preferredID().equals(
-                        BPELSourceMultiViewElementDesc.PREFERED_ID))
-                {
+                else if (mvp.preferredID().equals(BPELSourceMultiViewElementDesc.PREFERED_ID)) {
                     Line line = LineUtil.getLine(resultItem);
 
                     if (line != null) {
@@ -520,8 +510,7 @@ public class BPELDataEditorSupport extends DataEditorSupport implements
      * @see org.openide.text.CloneableEditorSupport#updateTitles()
      */
     @Override
-    protected void updateTitles()
-    {
+    protected void updateTitles() {
         /* This method is invoked by DataEditorSupport.DataNodeListener
          * whenever the DataNode displayName property is changed. It is
          * also called when the CloneableEditorSupport is (un)modified.
@@ -557,8 +546,7 @@ public class BPELDataEditorSupport extends DataEditorSupport implements
     }
 
     @Override
-    protected UndoRedo.Manager createUndoRedoManager()
-    {
+    protected UndoRedo.Manager createUndoRedoManager() {
         // Override so the superclass will use our proxy undo manager
         // instead of the default, then we can intercept edits.
         return new QuietUndoManager(super.createUndoRedoManager());
@@ -590,18 +578,13 @@ public class BPELDataEditorSupport extends DataEditorSupport implements
         List<TopComponent> associatedTCs = new ArrayList<TopComponent>();
         DataObject targetDO = getDataObject();
         TopComponent activeTC = TopComponent.getRegistry().getActivated();
-        if (activeTC != null
-                && targetDO == (DataObject) activeTC.getLookup().lookup(
-                        DataObject.class))
-        {
+        if (activeTC != null && targetDO == (DataObject) activeTC.getLookup().lookup(DataObject.class)) {
             associatedTCs.add(activeTC);
         }
         Set openTCs = TopComponent.getRegistry().getOpened();
         for (Object tc : openTCs) {
             TopComponent tcc = (TopComponent) tc;
-            if (targetDO == (DataObject) tcc.getLookup().lookup(
-                    DataObject.class))
-            {
+            if (targetDO == (DataObject) tcc.getLookup().lookup(DataObject.class)) {
                 associatedTCs.add(tcc);
             }
         }
@@ -634,9 +617,7 @@ public class BPELDataEditorSupport extends DataEditorSupport implements
     // /////////////////////// CloseOperationHandler ///////////////////////////
     // /////////////////////////////////////////////////////////////////////////
 
-    public static class CloseHandler implements CloseOperationHandler,
-            Serializable
-    {
+    public static class CloseHandler implements CloseOperationHandler, Serializable {
 
         private static final long serialVersionUID = -4621077799099893176L;
 
