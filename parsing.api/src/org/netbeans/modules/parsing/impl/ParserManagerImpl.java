@@ -101,7 +101,7 @@ public class ParserManagerImpl {
         }
         if (parser == null) {
             ParserFactory pf = null;    //Get parser factory for givem MIME Type
-            parser = pf.createParser(source);
+            parser = pf.createParser (Collections.singleton (source));
             assert parser != null : "Factory: " + pf.getClass().getName()+" returned null parser for: " + source;   //NOI18N
         }
         synchronized (source) {

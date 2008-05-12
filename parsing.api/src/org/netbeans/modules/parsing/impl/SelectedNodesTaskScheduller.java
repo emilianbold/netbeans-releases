@@ -55,7 +55,7 @@ import org.netbeans.modules.parsing.api.Source;
  *
  * @author Jan Jancura
  */
-public abstract class SelectedNodesTaskScheduller extends FileObjectsTaskScheduller {
+public class SelectedNodesTaskScheduller extends FileObjectsTaskScheduller {
     
     public SelectedNodesTaskScheduller () {
         refresh ();
@@ -67,9 +67,11 @@ public abstract class SelectedNodesTaskScheduller extends FileObjectsTaskSchedul
         Node[] nodes = TopComponent.getRegistry ().getActivatedNodes ();
         for (Node node : nodes) {
             DataObject dataObject = node.getLookup ().lookup (DataObject.class);
-            FileObject fileObject = dataObject.getPrimaryFile ();
-            Source source = Source.create (fileObject);
-            sources.add (source);
+            if (dataObject != null) {
+                FileObject fileObject = dataObject.getPrimaryFile ();
+                Source source = Source.create (fileObject);
+                sources.add (source);
+            }
         }
         scheduleTasks (sources);
     }

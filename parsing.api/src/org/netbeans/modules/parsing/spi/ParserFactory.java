@@ -39,7 +39,7 @@
 
 package org.netbeans.modules.parsing.spi;
 
-import javax.swing.text.Document;
+import java.util.Collection;
 import org.netbeans.modules.parsing.api.Source;
 
 
@@ -61,7 +61,7 @@ public abstract class ParserFactory {
      * @param document      A source.
      * @return              A new instance of parser.
      */
-    public abstract Parser createParser (Source source);
+    public abstract Parser createParser (Collection<Source> source);
 }
 
 
