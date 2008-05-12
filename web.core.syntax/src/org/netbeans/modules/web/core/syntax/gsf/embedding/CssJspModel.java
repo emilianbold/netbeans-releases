@@ -52,18 +52,16 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.css.parser.ASCII_CharStream;
 import org.netbeans.modules.css.parser.CSSParser;
 import org.netbeans.modules.css.parser.CSSParserTreeConstants;
+import org.netbeans.modules.css.parser.CssParserAccess;
 import org.netbeans.modules.css.parser.NodeVisitor;
-import org.netbeans.modules.css.parser.ParseException;
 import org.netbeans.modules.css.parser.SimpleNode;
 import org.netbeans.modules.css.parser.SimpleNodeUtil;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.html.editor.gsf.embedding.CssModel;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
-import org.openide.util.Exceptions;
 
 /**
  * Creates a CSS model from HTML source code in JSP page. 
@@ -74,13 +72,6 @@ public class CssJspModel extends CssModel {
 
     private static CSSParser PARSER;
 
-    private static synchronized CSSParser parser() {
-        if (PARSER == null) {
-            PARSER = new CSSParser();
-        }
-        return PARSER;
-
-    }
     private static final Logger LOGGER = Logger.getLogger(CssJspModel.class.getName());
     private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
 
@@ -102,15 +93,25 @@ public class CssJspModel extends CssModel {
     
     private static final String FIXED_SELECTOR = PREFIX + "FIXED_SELECTOR";
     
-    private static final String CODE_FIXED = "code_fixed";
+    private CssParserAccess.CssParserResult cachedParserResult = null;
     
     private CssJspModel(Document doc) {
         super(doc);
     }
 
+    public CssParserAccess.CssParserResult getCachedParserResult() {
+        if(!documentDirty) {
+            return cachedParserResult;
+        } else {
+            return null;
+        }
+    }
+    
     @Override
     public String getCode() {
         if (documentDirty) {
+            cachedParserResult = null;
+            
             long a = System.currentTimeMillis();
             
             documentDirty = false;
@@ -171,26 +172,12 @@ public class CssJspModel extends CssModel {
 
         }
 
-
-
-
         return code;
     }
 
-    //TODO reuse the parser result - now the parser result is lost and reparsed again in CSSGSFParser
     private void sanitizeCode(final StringBuilder buff, final List<OffsetRange> templatingBlocks) {
-        //final StringBuffer buff = new StringBuffer(code);
-        try {
-//            for (ParseException pe : (List<ParseException>) parser().errors()) {
-//                org.netbeans.modules.css.parser.Token lastSuccessToken = pe.currentToken;
-//                org.netbeans.modules.css.parser.Token errorToken = lastSuccessToken.next;
-//
-//                int from = errorToken.offset;
-//                int to = from + errorToken.image.length();
-//
-//                LOGGER.log(Level.FINE, "Parser Error " + from + " -  " + to + ": " + pe.getMessage());
-//            }
-            final boolean[] cleared = new boolean[1];
+        
+        final boolean[] cleared = new boolean[1];
             
             NodeVisitor visitor = new NodeVisitor() {
 
@@ -255,16 +242,18 @@ public class CssJspModel extends CssModel {
             for(; i < 4; i++) {
                 cleared[0] = false;
                 //parse the buffer
-                parser().errors().clear();
-                parser().ReInit(new ASCII_CharStream(new StringReader(buff.toString())));
-                SimpleNode root = parser().styleSheet();
+                CssParserAccess parserAccess = CssParserAccess.getDefault();
+                CssParserAccess.CssParserResult result = parserAccess.parse(new StringReader(buff.toString()));
+                
+                SimpleNode root = result.root();
                 root.visitChildren(visitor);
 
                 if(!cleared[0]) {
+                    //cache the parser result
+                    cachedParserResult = result;
                     //source checking finished without any correction => finish
                     break;
                 }
-                
             }
             
             long endTime = System.currentTimeMillis();
@@ -276,18 +265,8 @@ public class CssJspModel extends CssModel {
             Logger.getLogger("TIMER").log(Level.FINE, "CSS Sanitizing [" + i + "]",
                     new Object[] {fo, endTime - startTime});                
             
-        } catch (ParseException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+        
 
-    }
-    
-    /** returns a distance of the first occurance of the searched char from the end of the node image or 0 if the char hasn't been found */
-    private int charEndDelta(SimpleNode node, StringBuilder buff, char searched) {
-        int from = node.startOffset();
-        int to = node.endOffset();
-        int index = buff.substring(from, to).indexOf(searched);
-        return index == -1 ? 0 : node.image().length() - index;
     }
     
     private boolean clearNode(SimpleNode node, StringBuilder buff, 
