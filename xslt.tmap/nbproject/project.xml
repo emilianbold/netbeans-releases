@@ -251,16 +251,27 @@
                         <specification-version>6.16</specification-version>
                     </run-dependency>
                 </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.soa.validation</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.1</specification-version>
+                    </run-dependency>
+                </dependency>
             </module-dependencies>
             <friend-packages>
-                <friend>org.netbeans.modules.xslt.project</friend>
                 <friend>org.netbeans.modules.xslt.core</friend>
-                <package>org.netbeans.modules.xslt.tmap.model.validation</package>
+                <friend>org.netbeans.modules.xslt.project</friend>
+                <friend>org.netbeans.modules.xslt.validation</friend>
+                <package>org.netbeans.modules.xslt.tmap</package>
                 <package>org.netbeans.modules.xslt.tmap.model.api</package>
                 <package>org.netbeans.modules.xslt.tmap.model.api.events</package>
                 <package>org.netbeans.modules.xslt.tmap.model.spi</package>
                 <package>org.netbeans.modules.xslt.tmap.model.impl</package>
                 <package>org.netbeans.modules.xslt.tmap.model.xsltmap</package>
+                <package>org.netbeans.modules.xslt.tmap.model.validation</package>
                 <package>org.netbeans.modules.xslt.tmap.util</package>
             </friend-packages>
         </data>

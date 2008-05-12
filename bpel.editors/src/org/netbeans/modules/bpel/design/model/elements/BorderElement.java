@@ -68,4 +68,3 @@ public abstract class BorderElement extends VisualElement {
         shape = shape.reshape(x, y, w, h);
     }
 }
- 

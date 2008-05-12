@@ -83,6 +83,7 @@ import org.netbeans.editor.MacroDialogSupport;
 import org.netbeans.editor.Settings;
 import org.netbeans.editor.SettingsNames;
 import org.netbeans.editor.ext.ExtSettingsNames;
+import org.netbeans.modules.editor.codegen.NbGenerateCodeAction;
 import org.netbeans.modules.editor.impl.ActionsList;
 import org.netbeans.modules.editor.impl.CustomizableSideBar;
 import org.netbeans.modules.editor.impl.SearchBar;
@@ -191,6 +192,7 @@ public class NbEditorKit extends ExtKit implements Callable {
                                        new ToggleToolbarAction(),
                                        new NbGenerateGoToPopupAction(),
                                        new GenerateFoldPopupAction(),
+                                       new NbGenerateCodeAction(),
                                        new NavigationHistoryLastEditAction(),
                                        new NavigationHistoryBackAction(),
                                        new NavigationHistoryForwardAction(),

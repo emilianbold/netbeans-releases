@@ -248,8 +248,9 @@ public final class LineUtil {
         return findPosition((Element) node, buf, root, getRootElementPosition(buf, root));
       }
     }
-    catch (BadLocationException e) {}
-
+    catch (BadLocationException e) {
+      return -1;
+    }
     return -1;
   }
 

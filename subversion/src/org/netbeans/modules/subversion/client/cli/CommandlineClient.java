@@ -39,14 +39,19 @@
 
 package org.netbeans.modules.subversion.client.cli;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.cli.commands.AddCommand;
+import org.netbeans.modules.subversion.client.cli.commands.BlameCommand;
 import org.netbeans.modules.subversion.client.cli.commands.CatCommand;
 import org.netbeans.modules.subversion.client.cli.commands.CheckoutCommand;
 import org.netbeans.modules.subversion.client.cli.commands.CommitCommand;
@@ -55,6 +60,7 @@ import org.netbeans.modules.subversion.client.cli.commands.ListPropertiesCommand
 import org.netbeans.modules.subversion.client.cli.commands.ImportCommand;
 import org.netbeans.modules.subversion.client.cli.commands.InfoCommand;
 import org.netbeans.modules.subversion.client.cli.commands.ListCommand;
+import org.netbeans.modules.subversion.client.cli.commands.LogCommand;
 import org.netbeans.modules.subversion.client.cli.commands.MergeCommand;
 import org.netbeans.modules.subversion.client.cli.commands.MkdirCommand;
 import org.netbeans.modules.subversion.client.cli.commands.MoveCommand;
@@ -69,8 +75,9 @@ import org.netbeans.modules.subversion.client.cli.commands.SwitchToCommand;
 import org.netbeans.modules.subversion.client.cli.commands.UpdateCommand;
 import org.netbeans.modules.subversion.client.parser.LocalSubversionException;
 import org.netbeans.modules.subversion.client.parser.SvnWcParser;
-import org.openide.util.Exceptions;
 import org.tigris.subversion.svnclientadapter.AbstractClientAdapter;
+import org.tigris.subversion.svnclientadapter.Annotations;
+import org.tigris.subversion.svnclientadapter.Annotations.Annotation;
 import org.tigris.subversion.svnclientadapter.ISVNAnnotations;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.ISVNDirEntry;
@@ -86,6 +93,7 @@ import org.tigris.subversion.svnclientadapter.SVNNodeKind;
 import org.tigris.subversion.svnclientadapter.SVNNotificationHandler;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
 import org.tigris.subversion.svnclientadapter.SVNRevision.Number;
+import org.tigris.subversion.svnclientadapter.SVNScheduleKind;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
@@ -284,39 +292,55 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
     }
     
     @Override
-    public ISVNLogMessage[] getLogMessages(SVNUrl arg0, SVNRevision arg1, SVNRevision arg2) throws SVNClientException {
-        return super.getLogMessages(arg0, arg1, arg2);
+    public ISVNLogMessage[] getLogMessages(SVNUrl url, SVNRevision revStart, SVNRevision revEnd) throws SVNClientException {
+        return super.getLogMessages(url, revStart, revEnd);
     }
 
-    public ISVNLogMessage[] getLogMessages(SVNUrl arg0, SVNRevision arg1, SVNRevision arg2, boolean arg3) throws SVNClientException {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public ISVNLogMessage[] getLogMessages(SVNUrl url, SVNRevision revStart, SVNRevision revEnd, boolean fetchChangePath) throws SVNClientException {
+        return getLogMessages(url, null, revStart, revEnd, false, fetchChangePath);
     }
 
-    public ISVNLogMessage[] getLogMessages(SVNUrl arg0, String[] arg1, SVNRevision arg2, SVNRevision arg3, boolean arg4, boolean arg5) throws SVNClientException {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public ISVNLogMessage[] getLogMessages(SVNUrl url, String[] paths, SVNRevision revStart, SVNRevision revEnd, boolean stopOnCopy, boolean fetchChangePath) throws SVNClientException {
+        LogCommand cmd = new LogCommand(url, paths, revStart, revEnd, stopOnCopy, fetchChangePath, 0);
+        return getLog(cmd);
     }
 
+    public ISVNLogMessage[] getLogMessages(SVNUrl url, SVNRevision revPeg, SVNRevision revStart, SVNRevision revEnd, boolean stopOnCopy, boolean fetchChangePath, long limit) throws SVNClientException {
+        LogCommand cmd = new LogCommand(url, null, revStart, revEnd, stopOnCopy, fetchChangePath, limit);
+        return getLog(cmd);
+    }
+    
     @Override
-    public ISVNLogMessage[] getLogMessages(File arg0, SVNRevision arg1, SVNRevision arg2) throws SVNClientException {
-        return super.getLogMessages(arg0, arg1, arg2);
+    public ISVNLogMessage[] getLogMessages(File file, SVNRevision revStart, SVNRevision revEnd) throws SVNClientException {
+        return super.getLogMessages(file, revStart, revEnd);
     }
 
-    public ISVNLogMessage[] getLogMessages(File arg0, SVNRevision arg1, SVNRevision arg2, boolean arg3) throws SVNClientException {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public ISVNLogMessage[] getLogMessages(File file, SVNRevision revStart, SVNRevision revEnd, boolean fetchChangePath) throws SVNClientException {
+        return getLogMessages(file, revStart, revEnd, false, fetchChangePath);
     }
 
-    public ISVNLogMessage[] getLogMessages(File arg0, SVNRevision arg1, SVNRevision arg2, boolean arg3, boolean arg4) throws SVNClientException {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public ISVNLogMessage[] getLogMessages(File file, SVNRevision revStart, SVNRevision revEnd, boolean stopOnCopy, boolean fetchChangePath) throws SVNClientException {
+        return getLogMessages(file, revStart, revEnd, stopOnCopy, fetchChangePath, 0);
     }
 
-    public ISVNLogMessage[] getLogMessages(File arg0, SVNRevision arg1, SVNRevision arg2, boolean arg3, boolean arg4, long arg5) throws SVNClientException {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public ISVNLogMessage[] getLogMessages(File file, SVNRevision revStart, SVNRevision revEnd, boolean stopOnCopy, boolean fetchChangePath, long limit) throws SVNClientException {
+        LogCommand logCmd;
+        ISVNInfo info = getInfoFromWorkingCopy(file);
+        if (info.getSchedule().equals(SVNScheduleKind.ADD) && 
+            info.getCopyUrl() != null) 
+        {
+            logCmd = new LogCommand(info.getCopyUrl(), null, revStart, revEnd, stopOnCopy, fetchChangePath, limit);
+        } else {
+            logCmd = new LogCommand(file, revStart, revEnd, stopOnCopy, fetchChangePath, limit);
+        }
+        return getLog(logCmd);
     }
 
-    public ISVNLogMessage[] getLogMessages(SVNUrl arg0, SVNRevision arg1, SVNRevision arg2, SVNRevision arg3, boolean arg4, boolean arg5, long arg6) throws SVNClientException {
-        throw new UnsupportedOperationException("Not supported yet.");
+    private ISVNLogMessage[] getLog(LogCommand cmd) throws SVNClientException {
+        exec(cmd);
+        return cmd.getLogMessages();
     }
-
+    
     public InputStream getContent(SVNUrl url, SVNRevision rev) throws SVNClientException {
         CatCommand cmd = new CatCommand(url, rev);
         return execBinary(cmd);
@@ -444,12 +468,48 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
         super.setIgnoredPatterns(file, l);
     }
 
-    public ISVNAnnotations annotate(SVNUrl arg0, SVNRevision arg1, SVNRevision arg2) throws SVNClientException {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public ISVNAnnotations annotate(SVNUrl url, SVNRevision revStart, SVNRevision revEnd) throws SVNClientException {
+        return annotate(new BlameCommand(url, revStart, revEnd), new CatCommand(url, revEnd));
     }
 
-    public ISVNAnnotations annotate(File arg0, SVNRevision arg1, SVNRevision arg2) throws SVNClientException {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public ISVNAnnotations annotate(File file, SVNRevision revStart, SVNRevision revEnd) throws SVNClientException {        
+        BlameCommand blameCommand;
+        ISVNInfo info = getInfoFromWorkingCopy(file);
+        if (info.getSchedule().equals(SVNScheduleKind.ADD) && 
+            info.getCopyUrl() != null) 
+        {
+            blameCommand = new BlameCommand(info.getCopyUrl(), revStart, revEnd);
+        } else {
+            blameCommand = new BlameCommand(file, revStart, revEnd);
+        }
+        return annotate(blameCommand, new CatCommand(file, revEnd));
+    }
+    
+    public ISVNAnnotations annotate(BlameCommand blameCmd, CatCommand catCmd) throws SVNClientException {
+        exec(blameCmd);
+        Annotation[] annotations = blameCmd.getAnnotation();        
+        InputStream is = execBinary(catCmd);
+        
+        Annotations ret = new Annotations();
+        BufferedReader r = new BufferedReader(new InputStreamReader(is)); 
+        try {
+            for (Annotation annotation : annotations) {
+                String line = null;
+                try {
+                    line = r.readLine();
+                } catch (IOException ex) {
+                    // try at least to return the annotations
+                    Subversion.LOG.log(Level.INFO, ex.getMessage(), ex);
+                }
+                annotation.setLine(line);
+                ret.addAnnotation(annotation);            
+            }
+        } finally {
+            if (r != null) { 
+                try { r.close(); } catch (IOException e) {} 
+            }
+        }        
+        return ret;
     }
 
     public ISVNProperty[] getProperties(File file) throws SVNClientException {

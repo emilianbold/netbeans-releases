@@ -212,17 +212,16 @@ public final class Controller implements ComponentListener {
   private void cancelValidation() {
     myTimer.cancel();
     myTimer = new Timer();
-//  Validation.stop(); todo a
+    Validation.stop();
   }
 
   private void notifyListeners(List<ResultItem> items) {
-    myResult = new LinkedList<ResultItem>();
-
-    synchronized (items) {
-      for (ResultItem item : items) {
-        myResult.add(item);
-      }
+    if (items == null) {
+      return;
     }
+    myResult = items;
+    log("+++: Notify listeners"); // NOI18N
+
     synchronized (myListeners) {
       for (Listener listener : myListeners.keySet()) {
         if (listener != null) {

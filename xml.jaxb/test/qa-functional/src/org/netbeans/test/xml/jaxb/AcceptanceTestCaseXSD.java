@@ -95,11 +95,11 @@ public class AcceptanceTestCaseXSD extends AcceptanceTestCase {
         "ExploreJAXBBinding",
         "ChangeJAXBOptions",
         "DeleteJAXBBinding",
-        "OpenSchemaFile", // <--
-        "RefreshSchemaFile", // <--
-        "RegenerateJavaCode", // <--
-        "CodeCompletion1", // <--
-        "CodeCompletion2", // <--
+        "OpenSchemaFile",
+        "RefreshSchemaFile",
+        "RegenerateJavaCode",
+        "CodeCompletion1",
+        "CodeCompletion2",
         "RunTheProject"
     };
 

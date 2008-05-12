@@ -43,7 +43,6 @@ import java.io.File;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.ISVNInfo;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
-import org.tigris.subversion.svnclientadapter.SVNScheduleKind;
 
 /**
  *
@@ -56,6 +55,17 @@ public class InfoTest extends AbstractCLITest {
     }
 
     @Override
+    protected void setUp() throws Exception {        
+        if(getName().equals("testInfoNullAuthor")) {
+            setAnnonWriteAccess();
+            String[] cmd = new String[]{"svnserve", "-d"};
+            Process p = Runtime.getRuntime().exec(cmd);
+            p.waitFor();   
+        }                        
+        super.setUp();
+    }
+    
+    @Override
     protected void tearDown() throws Exception {
         if(getName().startsWith("testInfoLocked")) { 
             try {
@@ -63,8 +73,18 @@ public class InfoTest extends AbstractCLITest {
             } catch (Exception e) {
                 // ignore
             }
+        } else if(getName().equals("testInfoNullAuthor")) {        
+            restoreAuthSettings();
         }
         super.tearDown();
+    }    
+
+    @Override
+    protected String getRepoURLProtocol() {
+        if(getName().equals("testInfoNullAuthor")) {        
+            return "svn://localhost/";
+        }
+        return super.getRepoURLProtocol();
     }    
         
     public void testInfoWrongUrl() throws Exception {                                
@@ -172,6 +192,17 @@ public class InfoTest extends AbstractCLITest {
         ISVNInfo info2 = getInfo(getFileUrl(copy));
         
         assertInfos(info1, info2);
+    }        
+    
+    public void testInfoNullAuthor() throws Exception {                                        
+        File file = createFile("file");
+        add(file);
+        commit(file);
+               
+        ISVNClientAdapter c = getNbClient();
+       
+        ISVNInfo info = c.getInfo(getFileUrl(file));                
+        assertNull(info.getLastCommitAuthor());        
     }        
 
 }

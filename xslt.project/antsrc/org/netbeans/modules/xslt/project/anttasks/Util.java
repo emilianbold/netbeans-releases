@@ -126,10 +126,14 @@ public final class Util {
           if (fileExtension.equalsIgnoreCase(XSLT_FILE_EXTENSION)) {
             return true;
           }
+          if (fileExtension.equalsIgnoreCase(XML_FILE_EXTENSION)) {
+            return true;
+          }
           return false;
       }
   }
   
+  private static final String XML_FILE_EXTENSION = "xml"; // NOI18N
   private static final String XSL_FILE_EXTENSION = "xsl"; // NOI18N
   private static final String XSLT_FILE_EXTENSION = "xslt"; // NOI18N
 }

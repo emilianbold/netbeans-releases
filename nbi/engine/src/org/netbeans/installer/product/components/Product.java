@@ -343,8 +343,12 @@ public final class Product extends RegistryNode implements StatusInterface {
         if (configurationLogic.registerInSystem()) {
             try {
                 progress.setDetail(StringUtils.format(MESSAGE_SYSTEM_REGISTRATION_STRING));
-                SystemUtils.addComponentToSystemInstallManager(getApplicationDescriptor());
+                installedFiles.add(SystemUtils.addComponentToSystemInstallManager(getApplicationDescriptor()));
             } catch (NativeException e) {
+                throw new InstallationException(ResourceUtils.getString(Product.class,
+                        ERROR_SYSTEM_INTEGRATION_FAILER_KEY,
+                        getDisplayName()),e);
+            } catch (IOException e) {
                 throw new InstallationException(ResourceUtils.getString(Product.class,
                         ERROR_SYSTEM_INTEGRATION_FAILER_KEY,
                         getDisplayName()),e);
@@ -363,6 +367,7 @@ public final class Product extends RegistryNode implements StatusInterface {
         
         installationPhase = InstallationPhase.COMPLETE;
         progress.setPercentage(Progress.COMPLETE);
+        progress.setDetail(StringUtils.EMPTY_STRING);
         setStatus(Status.INSTALLED);
         LogManager.logUnindent("... finished installation of " + getDisplayName() + "(" + getUid() + "/" + getVersion()+")");
     }
