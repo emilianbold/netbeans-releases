@@ -109,7 +109,7 @@ public final class GrailsProject implements Project {
                 new GrailsSources(projectDir),
                 new GrailsServerState(this, getProjectDirectory().getName()),
                 new GrailsProjectCustomizerProvider(this),
-                new GrailsProjectDeleteImplementation(this),
+                new GrailsProjectOperations(this),
                 new GrailsProjectEncodingQueryImpl(),
                 new OpenHook(),
                 getSearchInfo(projectDir),

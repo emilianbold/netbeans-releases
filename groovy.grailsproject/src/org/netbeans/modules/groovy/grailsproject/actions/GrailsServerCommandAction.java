@@ -40,8 +40,8 @@ import org.openide.util.actions.Presenter;
 
 public class GrailsServerCommandAction extends AbstractAction implements Presenter.Popup {
 
-    JMenu grailsCommandMenu = new JMenu("Grails");
-    Project project;
+    private final JMenu grailsCommandMenu = new JMenu("Grails");
+    private final Project project;
     
     public GrailsServerCommandAction (Project project){
         this.project = project;
@@ -51,7 +51,6 @@ public class GrailsServerCommandAction extends AbstractAction implements Present
         grailsCommandMenu.add(new GrailsTargetAction(project, "Statistics", "stats"));
         grailsCommandMenu.add(new GrailsTargetAction(project, "Upgrade", "upgrade"));
         grailsCommandMenu.add(new GrailsTargetAction(project, "Help", "help"));
-        grailsCommandMenu.add(new ShellAction(project));
         
         List<String> cmdlist = getCustomScripts();
         

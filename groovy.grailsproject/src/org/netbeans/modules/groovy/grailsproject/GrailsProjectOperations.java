@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,9 +20,9 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
 
@@ -30,6 +30,7 @@ package org.netbeans.modules.groovy.grailsproject;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import org.netbeans.spi.project.DeleteOperationImplementation;
 import org.openide.filesystems.FileObject;
@@ -39,14 +40,14 @@ import org.netbeans.api.project.Project;
  *
  * @author schmidtm
  */
-public class GrailsProjectDeleteImplementation implements DeleteOperationImplementation {
-    Project project;
+public class GrailsProjectOperations implements DeleteOperationImplementation {
 
-    public GrailsProjectDeleteImplementation(Project project) {
+    private final Project project;
+
+    public GrailsProjectOperations(Project project) {
         this.project = project;
     }
 
-    
     public void notifyDeleting() throws IOException {
         return;
     }
@@ -56,14 +57,14 @@ public class GrailsProjectDeleteImplementation implements DeleteOperationImpleme
     }
 
     public List<FileObject> getMetadataFiles() {
-        return getDataFiles();
+        return Collections.emptyList();
     }
 
     public List<FileObject> getDataFiles() {
         List<FileObject> dataFiles = new ArrayList<FileObject>();
-        
+
         dataFiles.add(project.getProjectDirectory());
-        
+
         return dataFiles;
     }
 

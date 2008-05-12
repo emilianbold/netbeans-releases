@@ -54,6 +54,7 @@ import org.netbeans.modules.groovy.grailsproject.execution.DefaultDescriptor;
 import org.netbeans.modules.groovy.grailsproject.execution.ExecutionService;
 import org.netbeans.modules.groovy.grailsproject.execution.LineSnooper;
 import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.openide.LifecycleManager;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.Lookup;
@@ -64,11 +65,16 @@ import org.openide.util.Lookup;
  */
 public class GrailsActionProvider implements ActionProvider {
 
+    public static final String COMMAND_GRAILS_SHELL = "grails-shell"; // NOI18N
+
     private static final Logger LOGGER = Logger.getLogger(GrailsActionProvider.class.getName());
 
     private static final String[] supportedActions = {
         COMMAND_RUN,
-        COMMAND_TEST
+        COMMAND_TEST,
+        COMMAND_CLEAN,
+        COMMAND_DELETE,
+        COMMAND_GRAILS_SHELL
     };
 
     private final GrailsProject project;
@@ -91,11 +97,15 @@ public class GrailsActionProvider implements ActionProvider {
 
         if (COMMAND_RUN.equals(command)) {
             LifecycleManager.getDefault().saveAll();
-            // FIXME this is just temporary hack - content of the action with stop
-            // and rerun has to be wrapped to nice class
-            runAction();
+            executeRunAction();
+        } else if (COMMAND_GRAILS_SHELL.equals(command)) {
+            executeShellAction();
         } else if (COMMAND_TEST.equals(command)) {
-            // FIXME
+            executeSimpleAction("test-app"); // NOI18N
+        } else if (COMMAND_CLEAN.equals(command)) {
+            executeSimpleAction("clean"); // NOI18N
+        } else if (COMMAND_DELETE.equals(command)) {
+            DefaultProjectOperations.performDefaultDeleteOperation(project);
         }
     }
 
@@ -103,13 +113,7 @@ public class GrailsActionProvider implements ActionProvider {
         return true;
     }
 
-    private void runAction() {
-        final GrailsRuntime runtime = GrailsRuntime.getInstance();
-        if (!runtime.isConfigured()) {
-            ConfigSupport.showConfigurationWarning(runtime);
-            return;
-        }
-
+    private void executeRunAction() {
         final GrailsServerState serverState = project.getLookup().lookup(GrailsServerState.class);
         if (serverState != null && serverState.isRunning()) {
             return;
@@ -135,8 +139,32 @@ public class GrailsActionProvider implements ActionProvider {
                 serverState.setProcess(null);
             }
         };
+
         ExecutionService service = new ExecutionService(callable, displayName,
                 new DefaultDescriptor(project, new HttpSnooper(), runnable, true));
+
+        service.run();
+    }
+
+    private void executeShellAction() {
+        Callable<Process> callable = ExecutionSupport.getInstance().createSimpleCommand("shell",
+                GrailsProjectConfig.forProject(project));
+        ProjectInformation inf = project.getLookup().lookup(ProjectInformation.class);
+        String displayName = inf.getDisplayName() + " (shell)"; // NOI18N
+        ExecutionService service = new ExecutionService(callable, displayName,
+                new DefaultDescriptor(project, true));
+
+        service.run();
+    }
+
+    private void executeSimpleAction(String command) {
+        ProjectInformation inf = project.getLookup().lookup(ProjectInformation.class);
+        String displayName = inf.getDisplayName() + " (" + command + ")"; // NOI18N
+
+        Callable<Process> callable = ExecutionSupport.getInstance().createSimpleCommand(
+                command, GrailsProjectConfig.forProject(project));
+        ExecutionService service = new ExecutionService(callable, displayName,
+                new DefaultDescriptor(project, false));
 
         service.run();
     }

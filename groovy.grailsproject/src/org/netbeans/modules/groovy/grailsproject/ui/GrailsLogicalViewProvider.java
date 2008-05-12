@@ -62,9 +62,9 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.groovy.grailsproject.GrailsActionProvider;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
 import org.netbeans.modules.groovy.grailsproject.actions.GrailsServerCommandAction;
-import org.netbeans.modules.groovy.grailsproject.actions.GrailsProjectDeleteAction;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
@@ -93,27 +93,27 @@ import org.openide.util.lookup.Lookups;
  * @author Martin Adamek
  */
 public class GrailsLogicalViewProvider implements LogicalViewProvider {
-    
+
     private final GrailsProject project;
     GrailsLogicalViewRootNode rootNode = null;
-       
+
     public GrailsLogicalViewProvider(GrailsProject project) {
         this.project = project;
         }
-    
+
     public Node createLogicalView() {
         if (rootNode == null){
             rootNode = new GrailsLogicalViewRootNode();
         }
-        
+
         return rootNode;
     }
-    
-    
+
+
     //==========================================================================
-    
+
     private final class GrailsLogicalViewRootNode extends AbstractNode implements ChangeListener, FileStatusListener, PropertyChangeListener, Runnable {
-        
+
         private ChangeListener sourcesListener;
         private Map<SourceGroup, PropertyChangeListener> groupsListeners;
         private RequestProcessor.Task task;
@@ -122,7 +122,7 @@ public class GrailsLogicalViewProvider implements LogicalViewProvider {
         private final Object privateLock = new Object();
         private boolean iconChange;
         private boolean nameChange;
-        
+
         public GrailsLogicalViewRootNode() {
             super(NodeFactorySupport.createCompositeChildren(
                     project,
@@ -130,27 +130,27 @@ public class GrailsLogicalViewProvider implements LogicalViewProvider {
                     Lookups.singleton(project)
                     );
             setProjectFiles(project);
-            
+
             String prefix = "";
-            
+
             if(!Utilities.isWindows())
                 prefix = File.separator;
-                        
+
             setShortDescription("Grails Project in " + prefix + project.getProjectDirectory().getPath());
         }
-        
+
         public Image getIcon(int type) {
             return Utilities.loadImage("org/netbeans/modules/groovy/grailsproject/resources/GrailsIcon16x16.png");
         }
-        
+
         public Image getOpenedIcon(int type) {
             return getIcon(type);
         }
-        
+
         public String getDisplayName() {
             return project.getProjectDirectory().getName();
         }
-        
+
         protected final void setProjectFiles(Project project) {
             Sources sources = ProjectUtils.getSources(project);  // returns singleton
             if (sourcesListener == null) {
@@ -184,13 +184,13 @@ public class GrailsLogicalViewProvider implements LogicalViewProvider {
                     e.getKey().removeFileStatusListener(e.getValue());
                 }
             }
-            
+
             fileSystemListeners = new HashMap<FileSystem, FileStatusListener>();
             this.files = files;
             if (files == null) {
                 return;
             }
-            
+
             Set<FileSystem> hookedFileSystems = new HashSet<FileSystem>();
             for (FileObject fo : files) {
                 try {
@@ -213,7 +213,7 @@ public class GrailsLogicalViewProvider implements LogicalViewProvider {
         public void stateChanged(ChangeEvent event) {
             setProjectFiles(project);
         }
-        
+
         public void propertyChange(PropertyChangeEvent event) {
             setProjectFiles(project);
         }
@@ -227,7 +227,7 @@ public class GrailsLogicalViewProvider implements LogicalViewProvider {
             if (task == null) {
                 task = RequestProcessor.getDefault().create(this);
             }
-            
+
             synchronized (privateLock) {
                 if ((iconChange == false && event.isIconChange()) || (nameChange == false && event.isNameChange())) {
                     for (FileObject fo : files) {
@@ -238,7 +238,7 @@ public class GrailsLogicalViewProvider implements LogicalViewProvider {
                     }
                 }
             }
-            
+
             task.schedule(50); // batch by 50 ms
         }
 
@@ -259,34 +259,36 @@ public class GrailsLogicalViewProvider implements LogicalViewProvider {
                 fireDisplayNameChange(null, null);
             }
         }
-        
+
         private Action[] getAdditionalActions() {
-            
+
             List<Action> actions = new ArrayList<Action>();
             actions.add(new GrailsServerCommandAction(project));
-            actions.add(null);            
-            actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_RUN,
-                    NbBundle.getMessage(GrailsLogicalViewProvider.class, "LBL_RunAction_Name"), null)); // NOI18N
             actions.add(null);
+            actions.add(ProjectSensitiveActions.projectCommandAction(GrailsActionProvider.COMMAND_GRAILS_SHELL,
+                    NbBundle.getMessage(GrailsLogicalViewProvider.class, "LBL_ShellAction_Name"), null));
+            actions.add(null);
+            actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_RUN,
+                    NbBundle.getMessage(GrailsLogicalViewProvider.class, "LBL_RunAction_Name"), null));
             actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_TEST,
-                    NbBundle.getMessage(GrailsLogicalViewProvider.class, "LBL_TestAction_Name"), null)); // NOI18N            
+                    NbBundle.getMessage(GrailsLogicalViewProvider.class, "LBL_TestAction_Name"), null));
             actions.add(null);
             actions.add(CommonProjectActions.setAsMainProjectAction());
             actions.add(CommonProjectActions.closeProjectAction());
             actions.add(null);
             actions.add(SystemAction.get(FindAction.class));
             actions.add(null);
-            actions.add(new GrailsProjectDeleteAction(project));
+            actions.add(CommonProjectActions.deleteProjectAction());
             actions.add(null);
-            
+
             // honor 57874 contact
             addFromLayers(actions, "Projects/Actions"); //NOI18N
-            
+
             actions.add(null);
             actions.add(CommonProjectActions.customizeProjectAction());
-            
+
             return actions.toArray(new Action[actions.size()]);
-            
+
         }
 
         private void addFromLayers(List<Action> actions, String path) {
@@ -301,20 +303,20 @@ public class GrailsLogicalViewProvider implements LogicalViewProvider {
         }
 
     }
-    
+
     public Node findPath(Node root, Object target) {
         Project project = root.getLookup().lookup(Project.class);
         if (project == null) {
             return null;
         }
-        
+
         if (target instanceof FileObject) {
             FileObject fo = (FileObject) target;
             Project owner = FileOwnerQuery.getOwner(fo);
             if (!project.equals(owner)) {
                 return null; // Don't waste time if project does not own the fo
             }
-            
+
             for (Node n : root.getChildren().getNodes(true)) {
                 Node result = TreeRootNode.findPath(n, target);
                 if (result != null) {
@@ -322,7 +324,7 @@ public class GrailsLogicalViewProvider implements LogicalViewProvider {
                 }
             }
         }
-        
+
         return null;
     }
 
