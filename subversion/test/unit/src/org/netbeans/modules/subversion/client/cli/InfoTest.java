@@ -107,6 +107,24 @@ public class InfoTest extends AbstractCLITest {
         assertNotNull(e2);
         assertTrue(e2.getMessage().indexOf(e1.getMessage()) > -1);
     }    
+
+    public void testInfoNotManaged() throws Exception {                                
+        File folder = createFolder("folder");
+        File file = createFile(folder, "file");                
+        notManaged(folder);
+        notManaged(file);
+    }  
+           
+//    public void testInfoUnversioned() throws Exception {                                
+//        File unversioned = createFile("unversioned");
+//        
+//        ISVNClientAdapter c = getNbClient();
+//
+//        ISVNInfo info1 = c.getInfo(new File[] {unversioned});
+//        ISVNInfo info2 = getInfo(new File[] {unversioned});
+//                        
+//        assertInfos(info1, info2);
+//    }    
     
     public void testInfoFile() throws Exception {                                
         File file = createFile("file");
@@ -203,6 +221,26 @@ public class InfoTest extends AbstractCLITest {
        
         ISVNInfo info = c.getInfo(getFileUrl(file));                
         assertNull(info.getLastCommitAuthor());        
-    }        
+    }
+
+    private void notManaged(File file) throws Exception {
+        ISVNClientAdapter c = getNbClient();
+        SVNClientException e1 = null;
+        try {
+            c.getInfo(getFileUrl(file));
+        } catch (SVNClientException ex) {
+            e1 = ex;
+        }
+        SVNClientException e2 = null;
+        try {
+            getInfo(getFileUrl(file));
+        } catch (SVNClientException ex) {
+            e2 = ex;
+        }
+
+        assertNotNull(e1);
+        assertNotNull(e2);
+        assertTrue(e2.getMessage().indexOf(e1.getMessage()) > -1);
+    }
 
 }
