@@ -47,14 +47,12 @@ import javax.swing.Action;
 import org.netbeans.modules.php.project.ui.actions.Command;
 import org.netbeans.modules.php.project.ui.actions.CopyCommand;
 import org.netbeans.modules.php.project.ui.actions.DebugCommand;
-import org.netbeans.modules.php.project.ui.actions.DebugLocalCommand;
 import org.netbeans.modules.php.project.ui.actions.DebugSingleCommand;
 import org.netbeans.modules.php.project.ui.actions.DeleteCommand;
 import org.netbeans.modules.php.project.ui.actions.Displayable;
 import org.netbeans.modules.php.project.ui.actions.MoveCommand;
 import org.netbeans.modules.php.project.ui.actions.RenameCommand;
 import org.netbeans.modules.php.project.ui.actions.RunCommand;
-import org.netbeans.modules.php.project.ui.actions.RunLocalCommand;
 import org.netbeans.modules.php.project.ui.actions.RunSingleCommand;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
@@ -64,20 +62,17 @@ import org.openide.util.RequestProcessor;
 
 /**
  * @author Radek Matous
- *
  */
 public class PhpActionProvider implements ActionProvider {
     private final Map<String, Command> commands;
 
     PhpActionProvider(PhpProject project) {
         commands = new LinkedHashMap<String, Command>();
-        Command[] commandArray = new Command[] {       
+        Command[] commandArray = new Command[] {
             new RunCommand(project),
             new DebugCommand(project),
             new RunSingleCommand(project),
-            new DebugSingleCommand(project),            
-            new RunLocalCommand(project),
-            new DebugLocalCommand(project),
+            new DebugSingleCommand(project),
             new DeleteCommand(project),
             new CopyCommand(project),
             new MoveCommand(project),
@@ -88,52 +83,43 @@ public class PhpActionProvider implements ActionProvider {
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.spi.project.ActionProvider#getSupportedActions()
-     */
     public String[] getSupportedActions() {
         Set<String> commandIds = commands.keySet();
         return commandIds.toArray(new String[commandIds.size()]);
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.spi.project.ActionProvider#invokeAction(java.lang.String, org.openide.util.Lookup)
-     */
     public void invokeAction(final String commandId, final Lookup lookup) throws IllegalArgumentException {
         final Command command = getCommand(commandId);
         command.getProject().getCopySupport().waitFinished();
         if (command.saveRequired()) {
-            LifecycleManager.getDefault().saveAll ();
-        }        
+            LifecycleManager.getDefault().saveAll();
+        }
         if (!command.asyncCallRequired()) {
-            command.invokeAction(lookup);    
+            command.invokeAction(lookup);
         } else {
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
                     command.invokeAction(lookup);
                 }
-            });            
-        }                
+            });
+        }
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.spi.project.ActionProvider#isActionEnabled(java.lang.String, org.openide.util.Lookup)
-     */
     public boolean isActionEnabled(String commandId, Lookup lookup) throws IllegalArgumentException {
         return getCommand(commandId).isActionEnabled(lookup);
     }
 
     public Command getCommand(String commandId) {
         Command retval = commands.get(commandId);
-        assert retval != null:commandId;                
+        assert retval != null : commandId;
         return retval;
     }
-    
+
     public Action getAction(String commandId) {
         Command command = getCommand(commandId);
         assert command != null;
         assert command instanceof Displayable;
-        return ProjectSensitiveActions.projectCommandAction(command.getCommandId() ,
-                ((Displayable)command).getDisplayName(), null);
-    }    
+        return ProjectSensitiveActions.projectCommandAction(command.getCommandId(),
+                ((Displayable) command).getDisplayName(), null);
+    }
 }

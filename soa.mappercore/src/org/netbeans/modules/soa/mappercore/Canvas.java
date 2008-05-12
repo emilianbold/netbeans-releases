@@ -316,11 +316,19 @@ public class Canvas extends MapperPanel implements VertexCanvas,
         inplaceEditor.setVertexItemEditor(valueType, editor);
     }
     
+    public void setCustomVertexItemEditor(Class valueType, 
+            CustomVertexItemEditor editor)
+    {
+        inplaceEditor.setCustomVertexItemEditor(valueType, editor);
+    }
     
     public VertexItemEditor getVertexItemEditor(Class valueType) {
         return inplaceEditor.getVertexItemEditor(valueType);
     }
     
+    public CustomVertexItemEditor getCustomVertexItemEditor(Class valueType) {
+        return inplaceEditor.getCustomVertexItemEditor(valueType);
+    }
     
     public void startEdit(TreePath treePath, VertexItem vertexItem) {
         inplaceEditor.startEdit(treePath, vertexItem);

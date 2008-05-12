@@ -823,17 +823,11 @@ public class SQLDBModelImpl extends AbstractSQLObject implements Cloneable, SQLD
 
         String connNamePrefix = type == SQLConstants.SOURCE_DBMODEL?"SourceConnection":"TargetConnection";
         if (!name.startsWith(connNamePrefix)) {
-            try {
-                String modelName = generateDBModelName(type == SQLConstants.SOURCE_DBMODEL);
-                name = modelName;
-                ((SQLDBConnectionDefinitionImpl) connectionDefinition).setName(name);
-                DataObjectProvider.getProvider().getActiveDataObject().getETLEditorSupport().saveDocument();
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+            String modelName = generateDBModelName(type == SQLConstants.SOURCE_DBMODEL);
+            name = modelName;
+            ((SQLDBConnectionDefinitionImpl) connectionDefinition).setName(name);
+                DataObjectProvider.getProvider().getActiveDataObject().getETLEditorSupport().setUpdatedDuringLoad(true);        
         }
-        
-
     }
     
         

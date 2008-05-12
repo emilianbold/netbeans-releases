@@ -12,12 +12,9 @@ import javax.swing.JFileChooser;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentListener;
-import org.netbeans.modules.db.mysql.Installation;
-import org.netbeans.modules.db.mysql.Installation.Command;
-import org.netbeans.modules.db.mysql.InstallationSupport;
-import org.netbeans.modules.db.mysql.MySQLOptions;
-import org.netbeans.modules.db.mysql.ServerInstance;
-import org.netbeans.modules.db.mysql.Utils;
+import org.netbeans.modules.db.mysql.DatabaseServer;
+import org.netbeans.modules.db.mysql.impl.MySQLOptions;
+import org.netbeans.modules.db.mysql.util.Utils;
 import org.openide.DialogDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -87,15 +84,8 @@ public class AdminPropertiesPanel extends javax.swing.JPanel {
         }
     }
     
-    /** If one command is updated, fill in the other values if it is for
-     * a known installation.
-     */
-    private void fillInCommands() {
-        
-    }
-
     /** Creates new form PropertiesPanel */
-    public AdminPropertiesPanel(ServerInstance server) {
+    public AdminPropertiesPanel(DatabaseServer server) {
         nbErrorForeground = UIManager.getColor("nb.errorForeground"); //NOI18N
         if (nbErrorForeground == null) {
             //nbErrorForeground = new Color(89, 79, 191); // RGB suggested by Bruce in #28466

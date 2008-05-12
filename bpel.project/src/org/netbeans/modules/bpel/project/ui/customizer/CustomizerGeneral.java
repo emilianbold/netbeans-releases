@@ -16,15 +16,11 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
-
 package org.netbeans.modules.bpel.project.ui.customizer;
 
 import java.awt.event.ItemEvent;
 import java.io.File;
-
 import javax.swing.JPanel;
-
 import org.netbeans.modules.bpel.project.ProjectConstants;
 
 import org.openide.filesystems.FileObject;
@@ -43,17 +39,14 @@ public class CustomizerGeneral extends JPanel implements IcanproCustomizer.Panel
     private VisualPropertySupport vps;
     private boolean bValidation = true;
     
-    /** Creates new form CustomizerCompile */
     public CustomizerGeneral(IcanproProjectProperties webProperties) {
         initComponents();
         this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerGeneral.class, "ACS_CustomizeGeneral_A11YDesc")); //NOI18N
 
         this.webProperties = webProperties;
         vps = new VisualPropertySupport(webProperties);
-    
-        Object validationObject =webProperties.get(ProjectConstants.VALIDATION_FLAG);
+        Object validationObject = webProperties.get(ProjectConstants.VALIDATION_FLAG);
         
-        // BpelProjectHelper.getInstance().getProjectProperty(IcanproProjectProperties.VALIDATION_FLAG);
         if (validationObject != null ){
             boolean validation = ((Boolean)validationObject).booleanValue();
             if (validation) {
@@ -65,19 +58,16 @@ public class CustomizerGeneral extends JPanel implements IcanproCustomizer.Panel
         }else {
             jCheckBox1.setSelected(false);
         }
-        
     }
 
     public void initValues(  ) {
         FileObject projectFolder = webProperties.getProject().getProjectDirectory();
         File pf = FileUtil.toFile(projectFolder);
         jTextFieldProjectFolder.setText(pf == null ? "" : pf.getPath()); // NOI18N
-
         vps.register(jTextFieldProjectType, IcanproProjectProperties.JBI_SE_TYPE);
     }
-
     
-      /** Help context where to find more about the paste type action.
+    /** Help context where to find more about the paste type action.
      * @return the help context for this action
      */
     public HelpCtx getHelpCtx() {

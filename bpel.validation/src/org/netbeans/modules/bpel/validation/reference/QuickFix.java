@@ -87,32 +87,16 @@ class QuickFix {
       myName = name;
     }
 
-    public boolean canFix() {
-      myVariables = getAppropriateVariables();
+    @Override
+    public String doFix() {
+      Variable [] variables = getAppropriateVariables();
 
-      if (myVariables == null) {
-        return false;
+      if (variables == null) {
+        return null;
       }
-      if (myVariables.length == 0) {
-        return false;
-      }
-      if (myVariables.length != 1) { // todo m
-        return false;
-      }
-      return true;
-    }
-
-    public void doFix() {
-      Variable variable = myVariables [0];
-
-      myDescription = i18n(QuickFix.class, "QUICK_FIX_Change_varibale_name", variable.getName()); // NOI18N
-
-      myReference.setVariable(
-        ((ReferenceCollection) myReference).createReference(variable, VariableDeclaration.class));
-    }
-
-    public String getDescription() {
-      return myDescription; 
+      Variable variable = variables [0];
+      myReference.setVariable(((ReferenceCollection) myReference).createReference(variable, VariableDeclaration.class));
+      return i18n(QuickFix.class, "QUICK_FIX_Change_varibale_name", variable.getName()); // NOI18N
     }
 
     private Variable [] getAppropriateVariables() {
@@ -137,6 +121,10 @@ class QuickFix {
         return null;
       }
       List<Named> named = SetUtil.getAppropriate(toList(variables), myName);
+
+      if (named.size() == 0) {
+        return null;
+      }
       Variable [] appropriate = new Variable [named.size()];
 
       for (int i=0; i < named.size(); i++) {
@@ -155,8 +143,6 @@ class QuickFix {
     }
 
     private String myName;
-    private String myDescription;
-    private Variable [] myVariables;
     private VariableReference myReference;
   }
 }

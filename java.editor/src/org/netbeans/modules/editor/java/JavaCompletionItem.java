@@ -1323,8 +1323,11 @@ public abstract class JavaCompletionItem implements CompletionItem {
                                 controller.toPhase(JavaSource.Phase.PARSED);
                                 TreePath tp = controller.getTreeUtilities().pathFor(c.getSelectionEnd());
                                 Tree tree = tp.getLeaf();
-                                if (tree.getKind() == Tree.Kind.IDENTIFIER || tree.getKind() == Tree.Kind.PRIMITIVE_TYPE)
+                                if (tree.getKind() == Tree.Kind.IDENTIFIER || tree.getKind() == Tree.Kind.PRIMITIVE_TYPE) {
                                     tp = tp.getParentPath();
+                                    if (tp.getLeaf().getKind() == Tree.Kind.VARIABLE && ((VariableTree)tp.getLeaf()).getType() == tree)
+                                        ret[0] = ";"; //NOI18N
+                                }
                                 if (tp.getLeaf().getKind() == Tree.Kind.MEMBER_SELECT ||
                                     (tp.getLeaf().getKind() == Tree.Kind.METHOD_INVOCATION && ((MethodInvocationTree)tp.getLeaf()).getMethodSelect() == tree))
                                     tp = tp.getParentPath();
@@ -1337,15 +1340,18 @@ public abstract class JavaCompletionItem implements CompletionItem {
                     }
                 }
             }
+            boolean pairCompletion = Utilities.pairCharactersCompletion();
             if (inImport || params.isEmpty()) {
-                String add = inImport ? ";" : CodeStyle.getDefault(null).spaceBeforeMethodCallParen() ? " ()" : "()"; //NOI18N
+                String add = inImport ? ";" : CodeStyle.getDefault(null).spaceBeforeMethodCallParen() ? " (" : "("; //NOI18N
+                if (pairCompletion)
+                    add += ")"; //NOI18N
                 if (toAdd != null && !add.startsWith(toAdd))
                     add += toAdd;
                 super.substituteText(c, offset, len, add);
-                if ("(".equals(toAdd)) //NOI18N
+                if ("(".equals(toAdd) && pairCompletion) //NOI18N
                     c.setCaretPosition(c.getCaretPosition() - 1);
             } else {
-                String add = "()"; //NOI18N
+                String add = Utilities.pairCharactersCompletion()? "()" : "("; //NOI18N
                 if (toAdd != null && !add.startsWith(toAdd))
                     add += toAdd;
                 BaseDocument doc = (BaseDocument)c.getDocument();
@@ -1875,7 +1881,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 }
                 sequence.moveNext();
             }
-            String add = isAbstract ? "() {}" : "()"; //NOI18N
+            String add = isAbstract ? "() {}" : Utilities.pairCharactersCompletion() ? "()" : "("; //NOI18N
             if (toAdd != null && !add.startsWith(toAdd)) {
                 add += toAdd;
             } else {
@@ -2072,7 +2078,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 }
                 sequence.moveNext();
             }
-            String add = isAbstract ? "() {}" : "()"; //NOI18N
+            String add = isAbstract ? "() {}" : Utilities.pairCharactersCompletion() ? "()" : "("; //NOI18N
             if (toAdd != null && !add.startsWith(toAdd))
                 add += toAdd;
             String text = CodeStyle.getDefault(null).spaceBeforeMethodCallParen() ? " " : ""; //NOI18N

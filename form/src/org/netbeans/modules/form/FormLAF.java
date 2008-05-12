@@ -126,19 +126,30 @@ public class FormLAF {
 
             PreviewInfo info = new PreviewInfo(previewLookAndFeel, previewDefaults);
             if (isNimbusLAF(lafClass) && !isNimbusLAF(UIManager.getLookAndFeel().getClass())) {
+                Object control = null;
                 try {
+                    // Nimbus is based on "control" default. So, make sure that we use the correct one.
+                    control = UIManager.getDefaults().remove("control"); // NOI18N
                     // The update of derived colors must be performed within preview block
                     FormLAF.setUsePreviewDefaults(formClassLoader, info);
                     for (PropertyChangeListener listener : UIManager.getPropertyChangeListeners()) {
-                        if (listener.getClass().getName().endsWith("UIDefaultColorListener")) { // NOI18N
-                            // Forces update of derived colors, see NimbusDefaults.UIDefaultColorListener
-                            listener.propertyChange(new PropertyChangeEvent(UIManager.class, "lookAndFeel", null, null)); // NOI18N
-                            // Remove listener added by NimbusLookAndFeel.initialize()
+                        if (listener.getClass().getName().contains("NimbusDefaults")) { // NOI18N
+                            // Forces update of derived colors, see NimbusDefaults.DefaultsListener
+                            // We must fire the event several times because some values are dependent
+                            for (int i=0; i<5; i++) {
+                                listener.propertyChange(new PropertyChangeEvent(UIManager.class, "lookAndFeel", null, null)); // NOI18N
+                            }
+                            // Remove listeners added by NimbusLookAndFeel.initialize()
                             UIManager.removePropertyChangeListener(listener);
+                            UIManager.getDefaults().removePropertyChangeListener(listener);
                         }
                     }
                 } finally {
                     FormLAF.setUsePreviewDefaults(null, null);
+                }
+                // Return the old "control" default back
+                if (control != null) {
+                    UIManager.getDefaults().put("control", control); // NOI18N
                 }
             }
 

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -48,8 +48,8 @@ import javax.swing.JFileChooser;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
-import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.railsprojects.ui.FoldersListSettings;
+import org.netbeans.modules.ruby.rubyproject.Util;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
@@ -253,10 +253,9 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
             return false;
         }
         
-        String msg = RubyUtils.getIdentifierWarning(projectNameTextField.getText(), 0);
+        String msg = Util.getProjectNameWarning(projectNameTextField.getText());
         if (msg != null) {
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", // NOI18N
-                    msg);
+            wizardDescriptor.putProperty("WizardPanel_errorMessage", msg); // NOI18N
             // warning only, don't return false
         }
         

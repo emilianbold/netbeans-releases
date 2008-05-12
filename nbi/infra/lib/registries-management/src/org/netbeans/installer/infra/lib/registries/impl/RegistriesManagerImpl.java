@@ -686,6 +686,7 @@ public class RegistriesManagerImpl implements RegistriesManager {
                 "nb-soa",
                 "nb-uml",
                 "nb-ruby",
+                "nb-php",
                 "glassfish",
                 "openesb",
                 "sjsam",
@@ -695,7 +696,7 @@ public class RegistriesManagerImpl implements RegistriesManager {
         final List<String> hidden = Arrays.asList(
                 "nb-platform",
                 //"nb-base",
-                "nb-php",
+                //"nb-php",
                 "openesb",
                 "sjsam",
                 "jdk");

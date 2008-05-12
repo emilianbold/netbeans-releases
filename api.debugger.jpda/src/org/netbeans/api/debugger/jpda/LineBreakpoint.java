@@ -484,8 +484,14 @@ public class LineBreakpoint extends JPDABreakpoint {
             } else if (source instanceof Collection) {
                 for (DataObject dobj : ((Collection<DataObject>) source)) {
                     if (registryListener != null) {
+                        FileObject fileObject = this.fo;
+                        if (fileObject == null) {
+                            DataObject.getRegistry().removeChangeListener(registryListener);
+                            registryListener = null;
+                            return ;
+                        }
                         FileObject primary = dobj.getPrimaryFile();
-                        if (fo.equals(primary)) {
+                        if (fileObject.equals(primary)) {
                             dobj.addPropertyChangeListener(WeakListeners.propertyChange(this, dobj));
                             DataObject.getRegistry().removeChangeListener(registryListener);
                             registryListener = null;

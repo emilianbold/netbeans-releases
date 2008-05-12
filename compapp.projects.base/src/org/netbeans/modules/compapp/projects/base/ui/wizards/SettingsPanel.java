@@ -24,11 +24,11 @@ import javax.swing.JPanel;
 import org.openide.WizardDescriptor;
 
 
-abstract class SettingsPanel extends JPanel {
+public abstract class SettingsPanel extends JPanel {
 
-    abstract void store (WizardDescriptor settings);
+    public abstract void store (WizardDescriptor settings);
 
-    abstract void read (WizardDescriptor settings);
+    public abstract void read (WizardDescriptor settings);
 
-    abstract boolean valid (WizardDescriptor settings);
+    public abstract boolean valid (WizardDescriptor settings);
 }
