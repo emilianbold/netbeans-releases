@@ -264,7 +264,7 @@ final class GemRunner {
 
     private void includeDeps(List<String> argList) {
         // -y and --include-dependencies is deprecated since 0.9.5 (and automatic)
-        if (GemManager.compareGemVersions(platform.getInfo().getGemVersion(), "0.9.5") < 0) { // NOI18N
+        if (Util.compareVersions(platform.getInfo().getGemVersion(), "0.9.5") < 0) { // NOI18N
             argList.add("--include-dependencies"); // NOI18N
         }
     }

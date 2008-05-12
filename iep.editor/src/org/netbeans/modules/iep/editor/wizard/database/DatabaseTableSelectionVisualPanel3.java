@@ -5,16 +5,25 @@
 
 package org.netbeans.modules.iep.editor.wizard.database;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Vector;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JPanel;
 
+import javax.swing.SwingUtilities;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.TreeCellEditor;
+import javax.swing.tree.TreeCellRenderer;
+import javax.swing.tree.TreePath;
+import org.netbeans.module.iep.editor.xsd.SchemaArtifactTreeCellEditor;
+import org.netbeans.module.iep.editor.xsd.SchemaArtifactTreeCellRenderer;
 import org.openide.util.NbBundle;
 
 public final class DatabaseTableSelectionVisualPanel3 extends JPanel {
 
+    private List<ColumnInfo> mExistingColumnNames = new ArrayList<ColumnInfo>();
     
     /** Creates new form DatabaseTableSelectionVisualPanel3 */
     public DatabaseTableSelectionVisualPanel3() {
@@ -31,8 +40,12 @@ public final class DatabaseTableSelectionVisualPanel3 extends JPanel {
         DefaultComboBoxModel model = new DefaultComboBoxModel(new Vector(DatabaseTableWizardConstants.getTimeUnitInfos()));
         pollingTimeUnitComboBox.setModel(model);
         pollingTimeUnitComboBox.setSelectedItem(DatabaseTableWizardConstants.TIMEUNIT_SECOND);
-
+        pollingIntervalTextField.setText("1");
+        recordsToPollTextField.setText("1");
+        jndiNameTextField.setText("jdbc/iepExternalTable");
     }
+    
+    
     
     /** This method is called from within the constructor to
      * initialize the form.
@@ -42,32 +55,39 @@ public final class DatabaseTableSelectionVisualPanel3 extends JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jLabel3 = new javax.swing.JLabel();
-        jndiNameTextField = new javax.swing.JTextField();
         jPanel1 = new javax.swing.JPanel();
+        jLabel5 = new javax.swing.JLabel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        jTree1 = new javax.swing.JTree();
+        jPanel2 = new javax.swing.JPanel();
+        jLabel1 = new javax.swing.JLabel();
+        jLabel2 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
         deleteRecordsCheckBox = new javax.swing.JCheckBox();
-        jLabel2 = new javax.swing.JLabel();
         recordsToPollTextField = new javax.swing.JTextField();
-        jLabel1 = new javax.swing.JLabel();
         pollingIntervalTextField = new javax.swing.JTextField();
         pollingTimeUnitComboBox = new javax.swing.JComboBox();
+        jPanel3 = new javax.swing.JPanel();
+        jLabel3 = new javax.swing.JLabel();
+        jndiNameTextField = new javax.swing.JTextField();
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, "JNDI Name:");
+        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Polling Configuration"));
 
-        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Polling"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel5, "Select column(s) which uniquely identify a record and increasing in value (ex: system timestamp)");
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, "Delete Records:");
+        jScrollPane1.setViewportView(jTree1);
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, "Interval:"); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, "Record Size:"); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, "Delete Records:"); // NOI18N
 
         deleteRecordsCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 deleteRecordsCheckBoxActionPerformed(evt);
             }
         });
-
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, "Record Size:");
-
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, "Interval:");
 
         pollingTimeUnitComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         pollingTimeUnitComboBox.addActionListener(new java.awt.event.ActionListener() {
@@ -76,41 +96,89 @@ public final class DatabaseTableSelectionVisualPanel3 extends JPanel {
             }
         });
 
-        org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1Layout.createSequentialGroup()
-                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+        org.jdesktop.layout.GroupLayout jPanel2Layout = new org.jdesktop.layout.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(jLabel4)
                     .add(jLabel2)
                     .add(jLabel1))
                 .add(6, 6, 6)
-                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1Layout.createSequentialGroup()
+                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(deleteRecordsCheckBox)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel2Layout.createSequentialGroup()
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(pollingIntervalTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 195, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(pollingTimeUnitComboBox, 0, 187, Short.MAX_VALUE))
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, recordsToPollTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 388, Short.MAX_VALUE)
+                        .add(pollingTimeUnitComboBox, 0, 177, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, recordsToPollTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 378, Short.MAX_VALUE))
+                .addContainerGap())
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(pollingTimeUnitComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabel1)
+                    .add(pollingIntervalTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(recordsToPollTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabel2))
+                .add(4, 4, 4)
+                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel4)
                     .add(deleteRecordsCheckBox))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .add(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jLabel5)
+                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 461, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel1Layout.createSequentialGroup()
-                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(pollingTimeUnitComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(jLabel1)
-                    .add(pollingIntervalTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(jLabel5)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(recordsToPollTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(jLabel2))
-                .add(4, 4, 4)
-                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel4)
-                    .add(deleteRecordsCheckBox))
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 119, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jPanel2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder("Database Configuration"));
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, "JNDI Name:"); // NOI18N
+
+        org.jdesktop.layout.GroupLayout jPanel3Layout = new org.jdesktop.layout.GroupLayout(jPanel3);
+        jPanel3.setLayout(jPanel3Layout);
+        jPanel3Layout.setHorizontalGroup(
+            jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel3Layout.createSequentialGroup()
+                .add(jLabel3)
+                .add(37, 37, 37)
+                .add(jndiNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 377, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        jPanel3Layout.setVerticalGroup(
+            jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel3Layout.createSequentialGroup()
+                .add(jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel3)
+                    .add(jndiNameTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -119,25 +187,51 @@ public final class DatabaseTableSelectionVisualPanel3 extends JPanel {
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(jLabel3)
-                .add(26, 26, 26)
-                .add(jndiNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 384, Short.MAX_VALUE)
-                .add(20, 20, 20))
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel3)
-                    .add(jndiNameTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(166, Short.MAX_VALUE))
+                .add(jPanel3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    public void setSelectedTables(List<TableInfo> tables) {
+        DBArtifactTreeModel model = new DBArtifactTreeModel(new DefaultMutableTreeNode("root"), tables);
+        this.jTree1.setModel(model);
+        this.jTree1.setRootVisible(false);
+        TreeCellRenderer renderer = new SchemaArtifactTreeCellRenderer();
+        TreeCellEditor editor = new SchemaArtifactTreeCellEditor(jTree1, renderer, this.mExistingColumnNames);
+        this.jTree1.setCellRenderer(renderer);
+        this.jTree1.setCellEditor(editor);
+        this.jTree1.setEditable(true);
+        
+        final List<TableNode> tableNodes = model.getTableNodes();
+        
+        Runnable r = new Runnable() {
+        	public void run() {
+                    Iterator<TableNode> it = tableNodes.iterator();
+                
+                    while(it.hasNext()) {
+                            TableNode node = it.next();
+                            TreePath path = new TreePath(node.getPath());
+                            jTree1.expandPath(path);
+                    }
+        		
+        	}
+        };
+        
+        
+        SwingUtilities.invokeLater(r);
+    }
+    
+    public List<ColumnInfo> getSelectedColumns() {
+    	return this.mExistingColumnNames;
+    }
+    
     public String getPollingInterval() {
         return pollingIntervalTextField.getText();
     }
@@ -175,7 +269,12 @@ private void deleteRecordsCheckBoxActionPerformed(java.awt.event.ActionEvent evt
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel3;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JTree jTree1;
     private javax.swing.JTextField jndiNameTextField;
     private javax.swing.JTextField pollingIntervalTextField;
     private javax.swing.JComboBox pollingTimeUnitComboBox;

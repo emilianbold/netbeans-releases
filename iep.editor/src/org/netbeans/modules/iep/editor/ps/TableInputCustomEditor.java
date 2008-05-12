@@ -21,17 +21,20 @@ package org.netbeans.modules.iep.editor.ps;
 
 import org.netbeans.modules.iep.editor.designer.GuiConstants;
 import org.netbeans.modules.iep.editor.model.NameGenerator;
-import org.netbeans.modules.iep.editor.tcg.ps.TcgComponentNodeProperty;
 import org.netbeans.modules.iep.editor.tcg.ps.TcgComponentNodePropertyCustomizerState;
 import java.awt.Component;
+import java.awt.Dialog;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.util.logging.Logger;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -39,11 +42,13 @@ import javax.swing.border.CompoundBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 
+import org.netbeans.modules.iep.editor.wizard.database.TablePollingStreamWizardHelper;
 import org.netbeans.modules.iep.model.IEPModel;
 import org.netbeans.modules.iep.model.OperatorComponent;
 import org.netbeans.modules.iep.model.Property;
-import org.netbeans.modules.iep.model.lib.TcgProperty;
 import org.netbeans.modules.iep.model.lib.TcgPropertyType;
+import org.openide.DialogDisplayer;
+import org.openide.WizardDescriptor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.NbBundle;
 
@@ -69,7 +74,7 @@ public class TableInputCustomEditor extends DefaultCustomEditor {
         return new MyCustomizer(getPropertyType(), getOperatorComponent(), mCustomizerState);
     }
     
-    private static class MyCustomizer extends DefaultCustomizer {
+    private class MyCustomizer extends DefaultCustomizer {
         protected PropertyPanel mIsGlobalPanel;
         protected PropertyPanel mGlobalIdPanel;
         
@@ -162,7 +167,7 @@ public class TableInputCustomEditor extends DefaultCustomEditor {
             // is global
             gbc.gridx = 3;
             gbc.gridy = 0;
-            gbc.gridwidth = 2;
+            gbc.gridwidth = 1;
             gbc.gridheight = 1;
             gbc.anchor = GridBagConstraints.WEST;
             gbc.weightx = 0.0D;
@@ -176,6 +181,22 @@ public class TableInputCustomEditor extends DefaultCustomEditor {
             }
             pane.add(mIsGlobalPanel.panel, gbc);
             
+            //select external table
+            JButton selectIEPProcessButton = new JButton(NbBundle.getMessage(TableInputCustomEditor.class, "TableInputCustomEditor.SELECT_TABLE"));
+            selectIEPProcessButton.addActionListener(new SelectIEPProcessOperatorActionListener());
+            //selectIEPProcessButton.setAction(SystemAction.get(DatabaseTableSelectionWizardAction.class));
+            gbc.gridx = 4;
+            gbc.gridy = 0;
+            gbc.gridwidth = 1;
+            gbc.gridheight = 1;
+            gbc.anchor = GridBagConstraints.WEST;
+            gbc.weightx = 0.0D;
+            gbc.weighty = 0.0D;
+            gbc.fill = GridBagConstraints.NONE;
+            //pane.add(selectIEPProcessButton, gbc);
+            
+            
+            //second row
             // global id
             Property globalIdProp = mComponent.getProperty(GLOBAL_ID_KEY);
             String globalIdStr = NbBundle.getMessage(TableInputCustomEditor.class, "CustomEditor.GLOBAL_ID");
@@ -237,5 +258,23 @@ public class TableInputCustomEditor extends DefaultCustomEditor {
             mGlobalIdPanel.store();
         }
         
+    }
+    
+     class SelectIEPProcessOperatorActionListener implements ActionListener {
+
+            public void actionPerformed(ActionEvent e) {
+                IEPModel model = getOperatorComponent().getModel();
+                
+                TablePollingStreamWizardHelper helper = new TablePollingStreamWizardHelper();
+                WizardDescriptor wizardDescriptor = helper.createWizardDescriptor();
+                
+                Dialog dialog = DialogDisplayer.getDefault().createDialog(wizardDescriptor);
+                dialog.setVisible(true);
+                dialog.toFront();
+                boolean cancelled = wizardDescriptor.getValue() != WizardDescriptor.FINISH_OPTION;
+                if (!cancelled) {
+                    
+            }
+        }
     }
 }

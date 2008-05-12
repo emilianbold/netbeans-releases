@@ -47,14 +47,12 @@ import javax.swing.Action;
 import org.netbeans.modules.php.project.ui.actions.Command;
 import org.netbeans.modules.php.project.ui.actions.CopyCommand;
 import org.netbeans.modules.php.project.ui.actions.DebugCommand;
-import org.netbeans.modules.php.project.ui.actions.DebugLocalCommand;
 import org.netbeans.modules.php.project.ui.actions.DebugSingleCommand;
 import org.netbeans.modules.php.project.ui.actions.DeleteCommand;
 import org.netbeans.modules.php.project.ui.actions.Displayable;
 import org.netbeans.modules.php.project.ui.actions.MoveCommand;
 import org.netbeans.modules.php.project.ui.actions.RenameCommand;
 import org.netbeans.modules.php.project.ui.actions.RunCommand;
-import org.netbeans.modules.php.project.ui.actions.RunLocalCommand;
 import org.netbeans.modules.php.project.ui.actions.RunSingleCommand;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
@@ -75,8 +73,6 @@ public class PhpActionProvider implements ActionProvider {
             new DebugCommand(project),
             new RunSingleCommand(project),
             new DebugSingleCommand(project),
-            new RunLocalCommand(project),
-            new DebugLocalCommand(project),
             new DeleteCommand(project),
             new CopyCommand(project),
             new MoveCommand(project),

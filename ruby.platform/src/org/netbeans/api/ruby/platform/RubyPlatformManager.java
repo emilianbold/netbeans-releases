@@ -234,7 +234,10 @@ public final class RubyPlatformManager {
                     props.put(Info.RUBY_RELEASE_DATE, p.get(PLATFORM_PREFIX + idDot + Info.RUBY_RELEASE_DATE));
 //                    props.put(Info.RUBY_EXECUTABLE, p.get(PLATFORM_PREFIX + idDot + Info.RUBY_EXECUTABLE));
                     props.put(Info.RUBY_PLATFORM, p.get(PLATFORM_PREFIX + idDot + Info.RUBY_PLATFORM));
-                    props.put(Info.RUBY_LIB_DIR, p.get(PLATFORM_PREFIX + idDot + Info.RUBY_LIB_DIR));
+                    String libDir = p.get(PLATFORM_PREFIX + idDot + Info.RUBY_LIB_DIR);
+                    if (libDir != null) {
+                        props.put(Info.RUBY_LIB_DIR, libDir);
+                    }
                     String gemHome = p.get(PLATFORM_PREFIX + idDot + Info.GEM_HOME);
                     if (gemHome != null) {
                         props.put(Info.GEM_HOME, gemHome);
@@ -242,6 +245,9 @@ public final class RubyPlatformManager {
                         props.put(Info.GEM_VERSION, p.get(PLATFORM_PREFIX + idDot + Info.GEM_VERSION));
                     }
                     String interpreterPath = entry.getValue();
+                    if (libDir == null) {
+                        LOGGER.warning("no libDir for platform: " + interpreterPath); // NOI18N
+                    }
                     Info info = new Info(props);
                     platforms.add(new RubyPlatform(id, interpreterPath, info));
                     foundDefault |= id.equals(PLATFORM_ID_DEFAULT);

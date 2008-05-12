@@ -43,6 +43,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.netbeans.modules.spring.api.Action;
 import org.netbeans.modules.spring.api.beans.model.SpringBean;
 import org.netbeans.modules.spring.api.beans.model.SpringBeans;
@@ -100,8 +101,7 @@ public class BeansRefCompletor extends Completor {
         model.runReadAction(new Action<SpringBeans>() {
 
             public void run(SpringBeans sb) {
-                List<SpringBean> beans = includeGlobal ? sb.getBeans() : sb.getFileBeans(fo).getBeans();
-                Map<String, SpringBean> name2Bean = getName2Beans(beans, includeGlobal); // if local beans, then add only bean ids;
+                Map<String, SpringBean> name2Bean = getName2Beans(sb); // if local beans, then add only bean ids;
 
                 for (String beanName : name2Bean.keySet()) {
                     if (!beanName.startsWith(prefix) || cNames.contains(beanName)) {
@@ -115,17 +115,29 @@ public class BeansRefCompletor extends Completor {
                 }
             }
 
-            private Map<String, SpringBean> getName2Beans(List<SpringBean> beans, boolean addNames) {
+            private Map<String, SpringBean> getName2Beans(SpringBeans sb) {
+                List<SpringBean> beans = includeGlobal ? sb.getBeans() : sb.getFileBeans(fo).getBeans();
                 Map<String, SpringBean> name2Bean = new HashMap<String, SpringBean>();
                 for (SpringBean bean : beans) {
                     String beanId = bean.getId();
                     if (beanId != null) {
                         name2Bean.put(beanId, bean);
                     }
-                    if (addNames) {
+                    if (includeGlobal) {
                         List<String> beanNames = bean.getNames();
                         for (String beanName : beanNames) {
                             name2Bean.put(beanName, bean);
+                        }
+                    }
+                }
+                
+                // handle aliases also
+                if(includeGlobal) {
+                    Set<String> aliases = sb.getAliases();
+                    for (String alias : aliases) {
+                        SpringBean bean = sb.findBean(alias);
+                        if (bean != null) {
+                            name2Bean.put(alias, bean);
                         }
                     }
                 }
