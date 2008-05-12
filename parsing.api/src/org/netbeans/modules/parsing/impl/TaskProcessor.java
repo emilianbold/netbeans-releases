@@ -443,11 +443,12 @@ public class TaskProcessor {
                                                 flags.remove(SourceFlags.INVALID);
                                             }
                                         }
-                                        assert currentResult != null;
+                                        boolean shouldCall = currentResult != null;
                                         //tzezula: Ideally the parserLock should be aquired here, but it will call parse outside critical section
-                                        boolean shouldCall;                                            
-                                        synchronized (source) {
-                                            shouldCall = SourceAccessor.getINSTANCE().getFlags(source).contains(SourceFlags.INVALID);
+                                        if (shouldCall) { 
+                                            synchronized (source) {
+                                                shouldCall &= !SourceAccessor.getINSTANCE().getFlags(source).contains(SourceFlags.INVALID);
+                                            }
                                         }
                                         if (shouldCall) {
                                             try {

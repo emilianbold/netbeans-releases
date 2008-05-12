@@ -229,7 +229,7 @@ public class JavacParser extends Parser {
         final boolean isUserTask = task instanceof UserTask;
         CompilationInfo result = null;
         if (isParserResultTask) {
-            final Phase requiredPhase = null;   //todo: 
+            final Phase requiredPhase = ((JavaParserResultTask)task).getPhase();
             Phase reachedPhase;
             try {
                 reachedPhase = moveToPhase(requiredPhase, ciImpl, true, false);
