@@ -137,8 +137,7 @@ public interface SearchElement {
     public void unhighlight() {}
 
     @Override
-    public String toString()
-    {
+    public String toString() {
       return getName();
     }
 

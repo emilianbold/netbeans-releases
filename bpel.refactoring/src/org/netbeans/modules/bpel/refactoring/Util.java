@@ -66,23 +66,12 @@ final class Util {
 
   private Util() {}
   
-  public static void visit( 
-    NamedComponentReference<GlobalType> type,
-    NamedComponentReference<GlobalElement> element,
-    Referenceable target,
-    Component component,
-    List<Component> usage)
-  {
+  public static void visit(NamedComponentReference<GlobalType> type, NamedComponentReference<GlobalElement> element, Referenceable target, Component component, List<Component> usage) {
     visit(type, target, component, usage);
     visit(element, target, component, usage);
   }        
           
-  public static void visit(
-    Reference reference,
-    Referenceable target,
-    Component component,
-    List<Component> usage)
-  {
+  public static void visit(Reference reference, Referenceable target, Component component, List<Component> usage) {
     if (reference == null || reference.get() == null) {
       return;
     }
@@ -96,12 +85,7 @@ final class Util {
     }
   }
 
-  public static void visit(
-    QName qName,
-    Referenceable target,
-    Component component,
-    List<Component> usage)
-  {
+  public static void visit(QName qName, Referenceable target, Component component, List<Component> usage) {
 //out();
 //out("VISIT: " + qName);
     if (target instanceof Named && contains(qName, (Named) target)) {
