@@ -49,7 +49,7 @@ import org.openide.util.NbPreferences;
 public final class TestRunnerSettings {
 
     private static final String RESULTS_SPLITPANE_DIVIDER = "resultsSplitDivider"; //NOI18N
-    private static final int DEFAUL_DIVIDER_LOCATION = 300;
+    private static final int DEFAULT_DIVIDER_LOCATION = 300;
 
     private static final TestRunnerSettings INSTANCE = new TestRunnerSettings();
 
@@ -65,12 +65,11 @@ public final class TestRunnerSettings {
     }
 
     public int getResultsSplitPaneDivider() {        
-        return getPreferences().getInt(RESULTS_SPLITPANE_DIVIDER, DEFAUL_DIVIDER_LOCATION);
+        return getPreferences().getInt(RESULTS_SPLITPANE_DIVIDER, DEFAULT_DIVIDER_LOCATION);
     }
 
     public void setResultsSplitPaneDivider(int dividerLocation) {
         getPreferences().putInt(RESULTS_SPLITPANE_DIVIDER, dividerLocation);
     }    
-
     
 }
