@@ -46,6 +46,8 @@ import org.netbeans.api.debugger.ActionsManager;
 
 import org.netbeans.api.debugger.ActionsManagerListener;
 import org.netbeans.api.debugger.LazyActionsManagerListener;
+import org.netbeans.api.debugger.jpda.JPDADebugger;
+import org.netbeans.spi.debugger.ContextProvider;
 
 
 /**
@@ -53,7 +55,10 @@ import org.netbeans.api.debugger.LazyActionsManagerListener;
  */
 public class DebuggingViewLazyListener extends LazyActionsManagerListener {
 
-    public DebuggingViewLazyListener () {
+    JPDADebugger debugger;
+    
+    public DebuggingViewLazyListener (ContextProvider contextProvider) {
+        this.debugger = contextProvider.lookupFirst(null, JPDADebugger.class);
     }
 
     protected void destroy () {
@@ -68,7 +73,15 @@ public class DebuggingViewLazyListener extends LazyActionsManagerListener {
         if (action == ActionsManager.ACTION_START) {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    DebuggingView.getInstance().requestActive();
+                    
+                    System.out.println("DEBUGGER: " + debugger);
+                    
+                    DebuggingView debuggingView = DebuggingView.getInstance();
+                    debuggingView.open();
+                    debuggingView.requestActive();
+                    ThreadsListener threadsListener = ThreadsListener.getDefault();
+                    threadsListener.setDebuggingView(debuggingView);
+                    threadsListener.changeDebugger(debugger);
                 }
             });
         }
