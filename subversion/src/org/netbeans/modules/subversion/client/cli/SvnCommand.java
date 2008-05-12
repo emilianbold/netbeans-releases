@@ -84,6 +84,9 @@ public abstract class SvnCommand implements CommandNotificationListener {
      */
     private boolean commandExecuted;
     private Arguments arguments;
+    private File configDir;
+    private String username;
+    private String password;
 
     protected SvnCommand() {
         arguments = new Arguments();        
@@ -92,8 +95,21 @@ public abstract class SvnCommand implements CommandNotificationListener {
     public void setListener(ISVNNotifyListener listener) {
         this.listener = listener;
     }    
+
+    public void setConfigDir(File configDir) {
+        this.configDir = configDir;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
     
     void prepareCommand() throws IOException {
+        config(arguments);
         prepareCommand(arguments);
     }
     
@@ -236,12 +252,18 @@ public abstract class SvnCommand implements CommandNotificationListener {
         }        
     }
 
+    private void config(Arguments arguments) {
+        // XXX
+        arguments.addConfigDir(configDir);
+        arguments.add("--non-interactive");
+        arguments.addCredentials(username, password);
+    }
+        
     public final class Arguments implements Iterable<String> {
 
         private final List<String> args = new ArrayList<String>(5);
 
         public Arguments() {
-            addConfigDir();
         }
         
         public void add(String argument) {
@@ -252,6 +274,12 @@ public abstract class SvnCommand implements CommandNotificationListener {
             }
         }
 
+        public void add(File... files) {
+            for (File file : files) {
+                add(file.getAbsolutePath());    
+            }            
+        }
+        
         public void add(File argument) {
             add(argument.getAbsolutePath());
         }
@@ -308,14 +336,23 @@ public abstract class SvnCommand implements CommandNotificationListener {
             String msgFile = createTempCommandFile((message != null) ? message : "");
             add(msgFile);                               		
         }
-
-        private void addConfigDir() {
-            String configDir = SvnConfigFiles.getNBConfigPath();
+        
+        private void addConfigDir(File configDir) {            
             if (configDir != null) {
-                add("--config-dir");
-                add(configDir);
+                arguments.add("--config-dir");
+                arguments.add(configDir.getAbsolutePath());
             }
         }         
+    
+        public void addCredentials(String user, String psswd) {
+            if(user == null || user.trim().equals("")) {
+                return;
+            }            
+            add("--username");                               		
+            add(user);                               		
+            add("--password");                               		
+            add(psswd);                               		
+        }
     
         public Iterator<String> iterator() {
             return args.iterator();

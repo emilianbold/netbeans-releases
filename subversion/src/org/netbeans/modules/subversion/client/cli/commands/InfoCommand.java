@@ -68,24 +68,58 @@ public class InfoCommand extends SvnCommand {
 
     private static DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss Z");
 
+    private enum InfoType {
+        files,
+        url
+    }
+    
     private List<String> output = new ArrayList<String>();
     private final SVNUrl url;
+    private final File[] files;
     private final SVNRevision revision;
     private final SVNRevision pegging;
 
+    private final InfoType type;
+    
     public InfoCommand(SVNUrl url, SVNRevision revision, SVNRevision pegging) {
         this.url = url;
         this.revision = revision;
         this.pegging = pegging;
+        
+        files = null;
+        
+        type = InfoType.url;
+    }
+    
+    public InfoCommand(File[] files, SVNRevision revision, SVNRevision pegging) {
+        this.files = files;
+        this.revision = revision;
+        this.pegging = pegging;
+        
+        url = null;
+        
+        type = InfoType.files;
     }
     
     @Override
     public void prepareCommand(Arguments arguments) throws IOException {
         // XXX what if empty url list?
         arguments.add("info");
-        // XXX arguments.add("--xml");
-        arguments.add(revision);                
-        arguments.add(url, pegging);        
+        // XXX arguments.add("--xml");           
+        if(revision != null) { // XXX all other commands
+            arguments.add(revision);
+        }   
+        switch(type) {
+            case url :
+                arguments.add(url, pegging);        
+                break;
+            case files:
+                arguments.addFileArguments(files);               
+                // XXX peg unsupported
+                break;
+            default:
+                throw new IllegalStateException("Unsupported infotype: " + type);    
+        }        
     }
 
     @Override
@@ -96,12 +130,22 @@ public class InfoCommand extends SvnCommand {
         output.add(lineString);
     }
     
-    public ISVNInfo getInfo() throws SVNClientException {
-        Map<String, String> map = new HashMap<String, String>();
+    public ISVNInfo[] getInfo() throws SVNClientException {
+        List<Info> infos = new ArrayList<Info>();        
+        
+        Map<String, String> map = null;
         
         StringBuffer comment = new StringBuffer();
         for (int i = 0; i < output.size(); i++) {
+
             String outputLine = output.get(i);
+            if(outputLine.startsWith("Path:")) {
+                if(map != null) {
+                    infos.add(new Info(map));            
+                }
+                map = new HashMap<String, String>();
+            }
+            
             if(outputLine == null || outputLine.trim().equals("")) {
                 continue;
             }
@@ -117,9 +161,10 @@ public class InfoCommand extends SvnCommand {
             }
             
             String infoValue = outputLine.substring(idx + 1);
-            map .put(info, infoValue.trim());                                
+            map.put(info, infoValue.trim());                                
         }
-        return new Info(map );
+        infos.add(new Info(map));        
+        return infos.toArray(new Info[infos.size()]);
     }
     
     private class Info implements ISVNInfo {
