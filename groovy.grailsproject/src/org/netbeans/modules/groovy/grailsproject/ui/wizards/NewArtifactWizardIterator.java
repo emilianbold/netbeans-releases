@@ -82,27 +82,27 @@ public class NewArtifactWizardIterator implements  WizardDescriptor.Instantiatin
         switch(cat){
             case DOMAIN:
                 wizardTitle = NbBundle.getMessage(NewArtifactWizardIterator.class,"WIZARD_TITLE_DOMAIN");
-                serverCommand = NbBundle.getMessage(NewArtifactWizardIterator.class,"SERVER_COMMAND_DOMAIN");
+                serverCommand = "create-domain-class"; // NOI18N
                 break;
             case CONTROLLERS:
                 wizardTitle = NbBundle.getMessage(NewArtifactWizardIterator.class,"WIZARD_TITLE_CONTROLLERS");
-                serverCommand = NbBundle.getMessage(NewArtifactWizardIterator.class,"SERVER_COMMAND_CONTROLLERS");
+                serverCommand = "create-controller"; // NOI18N
                 break;
             case SERVICES:
                 wizardTitle = NbBundle.getMessage(NewArtifactWizardIterator.class,"WIZARD_TITLE_SERVICES");
-                serverCommand = NbBundle.getMessage(NewArtifactWizardIterator.class,"SERVER_COMMAND_SERVICES");
+                serverCommand = "create-service"; // NOI18N
                 break; 
             case VIEWS:
                 wizardTitle = NbBundle.getMessage(NewArtifactWizardIterator.class,"WIZARD_TITLE_VIEWS");
-                serverCommand = NbBundle.getMessage(NewArtifactWizardIterator.class,"SERVER_COMMAND_VIEWS");
+                serverCommand = "generate-views"; // NOI18N
                 break;    
             case TAGLIB:
                 wizardTitle = NbBundle.getMessage(NewArtifactWizardIterator.class,"WIZARD_TITLE_TAGLIB");
-                serverCommand = NbBundle.getMessage(NewArtifactWizardIterator.class,"SERVER_COMMAND_TAGLIB");
+                serverCommand = "create-tag-lib"; // NOI18N
                 break;    
             case SCRIPTS:
                 wizardTitle = NbBundle.getMessage(NewArtifactWizardIterator.class,"WIZARD_TITLE_SCRIPTS");
-                serverCommand = NbBundle.getMessage(NewArtifactWizardIterator.class,"SERVER_COMMAND_SCRIPTS");
+                serverCommand = "create-script"; // NOI18N
                 break;    
             }
         }
