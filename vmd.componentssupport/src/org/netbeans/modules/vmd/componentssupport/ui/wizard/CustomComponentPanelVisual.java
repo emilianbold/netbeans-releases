@@ -65,6 +65,8 @@ class CustomComponentPanelVisual extends JPanel implements DocumentListener {
     public static final String MSG_CANT_CREATE_FOLDER = "MSG_CanNotCreateFolder";
     public static final String MSG_ILLEGAL_FOLDER_PATH = "MSG_IllegalFolderPath";
     public static final String MSG_FOLDER_EXISTS = "MSG_ProjectFolderExists";
+    //default values
+    public static final String TXT_DEFAULT_PROJECT_NAME = "TXT_DefaultProjectName";
 
     private CustomComponentWizardPanel panel;
 
@@ -74,10 +76,6 @@ class CustomComponentPanelVisual extends JPanel implements DocumentListener {
         // Register listener on the textFields to make the automatic updates
         projectNameTextField.getDocument().addDocumentListener(this);
         projectLocationTextField.getDocument().addDocumentListener(this);
-    }
-
-    public String getProjectName() {
-        return this.projectNameTextField.getText();
     }
 
     /** This method is called from within the constructor to
@@ -268,11 +266,23 @@ class CustomComponentPanelVisual extends JPanel implements DocumentListener {
     }
 
     void read(WizardDescriptor settings) {
+
+        this.projectLocationTextField.setText(
+                getProjectLocation(settings).getAbsolutePath());
+        
+        this.projectNameTextField.setText(getProjectName(settings));
+        this.projectNameTextField.selectAll();
+    }
+    
+    /**
+     * Returns project location value stored in WizardDescriptor, or
+     * default value if it wasn't stored yet
+     * @param settings WizardDescriptor
+     * @return File Directory that will contain project folder
+     */
+    File getProjectLocation(WizardDescriptor settings){
         File projectLocation = (File) settings
                 .getProperty(CustomComponentWizardIterator.PROJECT_DIR);
-        String projectName = (String) settings
-                .getProperty(CustomComponentWizardIterator.PROJECT_NAME);
-
         // project directory
         if (projectLocation == null 
                 || projectLocation.getParentFile() == null 
@@ -282,14 +292,33 @@ class CustomComponentPanelVisual extends JPanel implements DocumentListener {
         } else {
             projectLocation = projectLocation.getParentFile();
         }
-        this.projectLocationTextField.setText(projectLocation.getAbsolutePath());
+        return projectLocation;
+    }
 
+    /**
+     * Returns project name value stored in WizardDescriptor, or
+     * default value if it wasn't stored yet
+     * @param settings WizardDescriptor
+     * @return String project name loaded from WizardDescriptor or default 
+     * name wich is not used as directory name in project location directory yet.
+     */
+    String getProjectName(WizardDescriptor settings){
+        String projectName = (String) settings
+                .getProperty(CustomComponentWizardIterator.PROJECT_NAME);
         // project name
         if (projectName == null) {
-            projectName = "CustomComponent";
+            projectName = getDefaultFreeName(getProjectLocation(settings));
         }
-        this.projectNameTextField.setText(projectName);
-        this.projectNameTextField.selectAll();
+        return projectName;
+    }
+    
+    private String getDefaultFreeName(File projectLocation) {
+        int i = 1;
+        String projectName;
+        do {
+            projectName = validFreeProjectName(projectLocation, i++);
+        } while (projectName == null);
+        return projectName;
     }
 
     void validate(WizardDescriptor d) throws WizardValidationException {
@@ -319,6 +348,16 @@ class CustomComponentPanelVisual extends JPanel implements DocumentListener {
             firePropertyChange(PROP_PROJECT_NAME, 
                     null, this.projectNameTextField.getText());
         }
+    }
+
+    private String validFreeProjectName(File parentFolder, int index) {
+        String name = NbBundle.getMessage(CustomComponentPanelVisual.class,
+                    TXT_DEFAULT_PROJECT_NAME, new Object[] {index} );
+        File file = new File(parentFolder, name);
+        if (file.exists()) {
+            return null;
+        }
+        return name;
     }
 
     /** Handles changes in the Project name and project directory, */
