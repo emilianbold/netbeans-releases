@@ -2,8 +2,10 @@ package org.netbeans.modules.iep.editor.designer.actions;
 
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -40,9 +42,9 @@ public class DeleteAction extends AbstractAction {
 	}
 	
 	public void actionPerformed(ActionEvent e) {
-		List<OperatorComponent> nodeList = new ArrayList<OperatorComponent>();
-        List<LinkComponent> linkList = new ArrayList<LinkComponent>();
-        List<SchemaComponent> schemaList =  new ArrayList<SchemaComponent>();
+		Set<OperatorComponent> nodeSet = new HashSet<OperatorComponent>();
+        Set<LinkComponent> linkSet = new HashSet<LinkComponent>();
+        Set<SchemaComponent> schemaSet =  new HashSet<SchemaComponent>();
         
         JGoSelection sel = mCanvas.getSelection();
         JGoListPosition pos = sel.getFirstObjectPos();
@@ -56,16 +58,16 @@ public class DeleteAction extends AbstractAction {
             obj = obj.getDraggingObject();
             if (obj instanceof EntityNode) {
             	OperatorComponent oc = (OperatorComponent) ((EntityNode)obj).getModelComponent(); 
-                nodeList.add(oc);
+                nodeSet.add(oc);
                 
-                addInputLinksOfAnOperator(oc, linkList);
+                addInputLinksOfAnOperator(oc, linkSet);
                 
-                addOutputLinksOfAnOperator(oc, linkList);
+                addOutputLinksOfAnOperator(oc, linkSet);
             
                 if(oc.isSchemaOwner()) {
                 	SchemaComponent schema = oc.getOutputSchemaId();
                 	if(schema != null) {
-                		schemaList.add(schema);
+                		schemaSet.add(schema);
                 	}
                 }
                 
@@ -73,7 +75,7 @@ public class DeleteAction extends AbstractAction {
             }
             
             if (obj instanceof Link) {
-                linkList.add((LinkComponent) ((Link)obj).getModelComponent());
+                linkSet.add((LinkComponent) ((Link)obj).getModelComponent());
                 continue;
             }
         }
@@ -88,25 +90,29 @@ public class DeleteAction extends AbstractAction {
         
         mModel.startTransaction();
         
-        for (int i = 0, I = nodeList.size(); i < I; i++) {
-            OperatorComponent opComp = (OperatorComponent)nodeList.get(i);
+        Iterator<OperatorComponent> itComp = nodeSet.iterator();
+        while(itComp.hasNext()) {
+        	OperatorComponent opComp = itComp.next();
             opContainer.removeOperatorComponent(opComp);
         }
         
-        for (int i = 0, I = linkList.size(); i < I; i++) {
-            LinkComponent lc = (LinkComponent)linkList.get(i);
-            linkContainer.removeLinkComponent(lc);
+        Iterator<LinkComponent> itLink = linkSet.iterator();
+        while(itLink.hasNext()) {
+        	LinkComponent lc = itLink.next();
+        	linkContainer.removeLinkComponent(lc);
         }
         
-        for (int i = 0, I = schemaList.size(); i < I; i++) {
-            SchemaComponent sc = (SchemaComponent)schemaList.get(i);
+        Iterator<SchemaComponent> itSchema = schemaSet.iterator();
+        while(itSchema.hasNext()) {
+        	SchemaComponent sc = itSchema.next();
             schemaContainer.removeSchemaComponent(sc);
         }
+        
         
         mModel.endTransaction();
 	}
 	
-	private void addInputLinksOfAnOperator(OperatorComponent opComp, List linkList) {
+	private void addInputLinksOfAnOperator(OperatorComponent opComp, Set linkList) {
 		List<OperatorComponent> inputOps = opComp.getInputOperatorList();
 		Iterator<OperatorComponent> it = inputOps.iterator();
 		
@@ -123,7 +129,7 @@ public class DeleteAction extends AbstractAction {
 		
 	}
 	
-	private void addOutputLinksOfAnOperator(OperatorComponent opComp, List linkList) {
+	private void addOutputLinksOfAnOperator(OperatorComponent opComp, Set linkList) {
 		PlanComponent planComp = opComp.getModel().getPlanComponent();
 		LinkComponentContainer lcContainer = planComp.getLinkComponentContainer();
 		OperatorComponentContainer ocContainer = planComp.getOperatorComponentContainer();

@@ -45,7 +45,6 @@ import java.util.List;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Reference;
 import org.netbeans.modules.xml.xam.dom.DocumentComponent;
-import org.netbeans.modules.xml.schema.model.GlobalType;
 
 import org.netbeans.modules.xslt.model.AttributeSet;
 import org.netbeans.modules.xslt.model.CallTemplate;
@@ -54,7 +53,6 @@ import org.netbeans.modules.xslt.model.TypeSpec;
 import org.netbeans.modules.xslt.model.UseAttributesSetsSpec;
 import org.netbeans.modules.xslt.model.UseCharacterMapsSpec;
 import org.netbeans.modules.xslt.model.WithParam;
-import org.netbeans.modules.xslt.model.XslComponent;
 import org.netbeans.modules.xslt.model.XslReference;
 import org.netbeans.modules.xslt.model.XslVisitor;
 import org.netbeans.modules.xslt.model.XslVisitorAdapter;
@@ -71,28 +69,24 @@ public final class Validator extends XsltValidator {
   public XslVisitor getVisitor() { return new XslVisitorAdapter() {
 
   @Override
-  public void visit(CallTemplate callTemplate)
-  {
+  public void visit(CallTemplate callTemplate) {
 //out();
 //out("callTemplate: " + callTemplate);
 
-// todo a    
-checkReference(callTemplate, callTemplate.getName());
+    checkReference(callTemplate, callTemplate.getName());
 //todo r
 //addError("FIX_Reference", callTemplate);
   }
 
   @Override
-  public void visit(TypeSpec typeSpec)
-  {
+  public void visit(TypeSpec typeSpec) {
 //out();
 //out("typeSpec: " + typeSpec);
     checkReference(typeSpec, typeSpec.getType());
   }
 
   @Override
-  public void visit(UseAttributesSetsSpec useAttributesSetsSpec)
-  {
+  public void visit(UseAttributesSetsSpec useAttributesSetsSpec) {
 //out();
 //out("useAttributesSetsSpec: " + useAttributesSetsSpec);
     List<XslReference<AttributeSet>> sets = useAttributesSetsSpec.getUseAttributeSets();
@@ -103,8 +97,7 @@ checkReference(callTemplate, callTemplate.getName());
   }
 
   @Override
-  public void visit(UseCharacterMapsSpec useCharacterMapsSpec)
-  {
+  public void visit(UseCharacterMapsSpec useCharacterMapsSpec) {
 //out();
 //out("useCharacterMapsSpec: " + useCharacterMapsSpec);
     List<XslReference<CharacterMap>> sets = useCharacterMapsSpec.getUseCharacterMaps();
@@ -115,8 +108,7 @@ checkReference(callTemplate, callTemplate.getName());
   }
 
   @Override
-  public void visit(WithParam withParam)
-  {
+  public void visit(WithParam withParam) {
 //out();
 //out("withParam: " + withParam);
     checkReference(withParam, withParam.getName());

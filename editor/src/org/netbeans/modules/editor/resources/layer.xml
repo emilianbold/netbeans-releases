@@ -191,6 +191,9 @@ made subject to such option by the copyright holder.
                 <attr name="position" intvalue="2000"/>
             </file>
             
+            <file name="org-netbeans-modules-editor-codegen-NbGenerateCodeAction$GlobalAction.instance">
+                <attr name="position" intvalue="2200"/>
+            </file>
 
             <file name="SeparatorBeforeWordMatchInsert.instance">
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>

@@ -37,7 +37,7 @@ import javax.swing.ListModel;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.jemmy.operators.JListOperator;
-import org.netbeans.modules.java.editor.codegen.CodeGenerator;
+import org.netbeans.spi.editor.codegen.CodeGenerator;
 import org.netbeans.modules.java.editor.codegen.ConstructorGenerator;
 import org.netbeans.modules.java.editor.codegen.DelegateMethodGenerator;
 import org.netbeans.modules.java.editor.codegen.EqualsHashCodeGenerator;

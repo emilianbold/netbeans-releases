@@ -5,6 +5,9 @@
 package org.netbeans.modules.iep.editor.wizard.database;
 
 import java.awt.Component;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
@@ -79,6 +82,15 @@ public class DatabaseTableSelectionWizardPanel3 implements WizardDescriptor.Pane
     // WizardDescriptor.getProperty & putProperty to store information entered
     // by the user.
     public void readSettings(Object settings) {
+        WizardDescriptor wiz = (WizardDescriptor) settings;
+        List<TableInfo> selectedTables = (List<TableInfo>) wiz.getProperty(DatabaseTableWizardConstants.PROP_SELECTED_TABLES);
+        List<ColumnInfo> selectedColumns = (List<ColumnInfo>) wiz.getProperty(DatabaseTableWizardConstants.PROP_SELECTED_COLUMNS);
+        if(selectedTables != null && selectedColumns != null) { 
+            List<TableInfo> newTablesWithSelectedColumns = createNewTableWithSelectedColumns(selectedTables, selectedColumns);
+            
+            component.setSelectedTables(newTablesWithSelectedColumns);
+        }
+        
     }
 
     public void storeSettings(Object settings) {
@@ -90,13 +102,46 @@ public class DatabaseTableSelectionWizardPanel3 implements WizardDescriptor.Pane
         String jndiName = component.getJNDIName();
         boolean isDeleteRecords = component.isDeleteRecords();
         String isDeleteRecordsString = Boolean.toString(isDeleteRecords);
+        List<ColumnInfo> recordIdentifyingColumns = component.getSelectedColumns();
+        
         
         wiz.putProperty(DatabaseTableWizardConstants.PROP_POLLING_INTERVAL, pollingInterval);
         wiz.putProperty(DatabaseTableWizardConstants.PROP_POLLING_INTERVAL_TIME_UNIT, timeUnit);
         wiz.putProperty(DatabaseTableWizardConstants.PROP_POLLING_RECORD_SIZE, pollingRecordSize);
         wiz.putProperty(DatabaseTableWizardConstants.PROP_JNDI_NAME, jndiName);
         wiz.putProperty(DatabaseTableWizardConstants.PROP_IS_DELETE_RECORDS, isDeleteRecordsString);
+        wiz.putProperty(DatabaseTableWizardConstants.PROP_POLLING_UNIQUE_RECORD_IDENTIFIER_COLUMNS, recordIdentifyingColumns);
+    }
+    
+    private List<TableInfo> createNewTableWithSelectedColumns(List<TableInfo> selectedTables, List<ColumnInfo> selectedColumns) {
+        List<TableInfo> tablesWithSelectedColumns = new ArrayList<TableInfo>();
         
+        Iterator<TableInfo> it = selectedTables.iterator();
+        while(it.hasNext()) {
+            TableInfo tInfo = it.next();
+            TableInfo newTable = createNewTable(tInfo, selectedColumns);
+            tablesWithSelectedColumns.add(newTable);
+        }
+        
+        return tablesWithSelectedColumns;
+    }
+    
+    private TableInfo createNewTable(TableInfo selectedTable, List<ColumnInfo> columns) {
+        
+        TableInfo table = new TableInfo(selectedTable.getCatalogName(), 
+                                        selectedTable.getSchemaName(), 
+                                        selectedTable.getTableName(), 
+                                        selectedTable.getTableType());
+        
+        Iterator<ColumnInfo> it = columns.iterator();
+        while(it.hasNext()) {
+            ColumnInfo c = it.next();
+            if(c.getTable().equals(selectedTable)) {
+                table.addColumn(c);
+            }
+        }
+        
+        return table;
     }
 }
 

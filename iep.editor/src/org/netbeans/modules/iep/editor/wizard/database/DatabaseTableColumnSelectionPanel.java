@@ -7,14 +7,16 @@
 package org.netbeans.modules.iep.editor.wizard.database;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import javax.swing.SwingUtilities;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeCellEditor;
 import javax.swing.tree.TreeCellRenderer;
 
+import javax.swing.tree.TreePath;
 import org.netbeans.module.iep.editor.xsd.SchemaArtifactTreeCellEditor;
 import org.netbeans.module.iep.editor.xsd.SchemaArtifactTreeCellRenderer;
-import org.netbeans.modules.xml.axi.AXIComponent;
 
 /**
  *
@@ -79,18 +81,13 @@ public class DatabaseTableColumnSelectionPanel extends javax.swing.JPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 400, Short.MAX_VALUE)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(jLabel1)
-                        .addContainerGap())
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 380, Short.MAX_VALUE)
-                            .add(jPanel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addContainerGap())))
+                    .add(jLabel1)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 380, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -114,6 +111,24 @@ public class DatabaseTableColumnSelectionPanel extends javax.swing.JPanel {
         this.jTree1.setCellRenderer(renderer);
         this.jTree1.setCellEditor(editor);
         this.jTree1.setEditable(true);
+        
+        final List<TableNode> tableNodes = model.getTableNodes();
+        
+        Runnable r = new Runnable() {
+        	public void run() {
+                    Iterator<TableNode> it = tableNodes.iterator();
+                
+                    while(it.hasNext()) {
+                            TableNode node = it.next();
+                            TreePath path = new TreePath(node.getPath());
+                            jTree1.expandPath(path);
+                    }
+        		
+        	}
+        };
+        
+        
+        SwingUtilities.invokeLater(r);
     }
     
     public void setJoinCondition(String joinCondition) {

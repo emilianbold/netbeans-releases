@@ -23,6 +23,7 @@ package org.netbeans.modules.iep.editor.ps;
 import java.awt.dnd.*;
 import java.util.ArrayList;
 import javax.swing.JTextArea;
+import javax.swing.event.CaretListener;
 
 /**
  * SmartTextArea.java
@@ -35,6 +36,7 @@ public class SmartTextArea extends JTextArea {
     private static int mAcceptableActions = DnDConstants.ACTION_COPY;
     private DropTarget mDropTarget;
     
+    
     public SmartTextArea(int rows, int columns) {
         super(rows, columns);
         mDropTarget = new DropTarget(this, new MyDropTargetAdapter());
@@ -42,6 +44,14 @@ public class SmartTextArea extends JTextArea {
     
     public SmartTextArea() {
         this(0, 0);
+    }
+    
+    public void addAttributeDropNotificationListener(AttributeDropNotificationListener l) {
+    	this.listenerList.add(AttributeDropNotificationListener.class, l);
+    }
+    
+    public void removeAttributeDropNotificationListener(AttributeDropNotificationListener l) {
+    	this.listenerList.remove(AttributeDropNotificationListener.class, l);
     }
     
     class MyDropTargetAdapter extends DropTargetAdapter {
@@ -75,6 +85,11 @@ public class SmartTextArea extends JTextArea {
                 if(obj instanceof AttributeInfo) {
                     AttributeInfo ai = (AttributeInfo)obj;
                     msg = ai.getEntityAndColumnName();
+                    
+                    //if there is a handler then notify it
+                    AttributeDropNotificationEvent evt = new AttributeDropNotificationEvent(ai);
+                	fireOnDropComplete(evt);
+                
                 } else {
                     if(obj instanceof String) {
                         msg = (String)obj;
@@ -108,4 +123,14 @@ public class SmartTextArea extends JTextArea {
         }
     }
     
+    private void fireOnDropComplete(AttributeDropNotificationEvent evt) {
+    	Object[] listeners = listenerList.getListenerList();
+        // Process the listeners last to first, notifying
+        // those that are interested in this event
+        for (int i = listeners.length-2; i>=0; i-=2) {
+            if (listeners[i]==AttributeDropNotificationListener.class) {
+                ((AttributeDropNotificationListener)listeners[i+1]).onDropComplete(evt);
+            }
+        }
+    }
 }

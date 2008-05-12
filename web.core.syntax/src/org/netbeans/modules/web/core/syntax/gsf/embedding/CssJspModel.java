@@ -102,6 +102,8 @@ public class CssJspModel extends CssModel {
     
     private static final String FIXED_SELECTOR = PREFIX + "FIXED_SELECTOR";
     
+    private static final String CODE_FIXED = "code_fixed";
+    
     private CssJspModel(Document doc) {
         super(doc);
     }
@@ -179,35 +181,17 @@ public class CssJspModel extends CssModel {
     private void sanitizeCode(final StringBuilder buff, final List<OffsetRange> templatingBlocks) {
         //final StringBuffer buff = new StringBuffer(code);
         try {
-
-            long startTime = System.currentTimeMillis();
+//            for (ParseException pe : (List<ParseException>) parser().errors()) {
+//                org.netbeans.modules.css.parser.Token lastSuccessToken = pe.currentToken;
+//                org.netbeans.modules.css.parser.Token errorToken = lastSuccessToken.next;
+//
+//                int from = errorToken.offset;
+//                int to = from + errorToken.image.length();
+//
+//                LOGGER.log(Level.FINE, "Parser Error " + from + " -  " + to + ": " + pe.getMessage());
+//            }
+            final boolean[] cleared = new boolean[1];
             
-            parser().errors().clear();
-            parser().ReInit(new ASCII_CharStream(new StringReader(buff.toString())));
-            SimpleNode root = parser().styleSheet();
-            
-            long endTime = System.currentTimeMillis();
-
-            DataObject od = (DataObject)doc.getProperty(doc.StreamDescriptionProperty);
-            FileObject fo = null;
-            if(od != null) {
-                fo = od.getPrimaryFile();
-            }
-                
-            Logger.getLogger("TIMER").log(Level.FINE, "CSS Virtual Source Parsing",
-                    new Object[] {fo, endTime - startTime});                
-                    
-            
-            for (ParseException pe : (List<ParseException>) parser().errors()) {
-                org.netbeans.modules.css.parser.Token lastSuccessToken = pe.currentToken;
-                org.netbeans.modules.css.parser.Token errorToken = lastSuccessToken.next;
-
-                int from = errorToken.offset;
-                int to = from + errorToken.image.length();
-
-                LOGGER.log(Level.FINE, "Parser Error " + from + " -  " + to + ": " + pe.getMessage());
-            }
-
             NodeVisitor visitor = new NodeVisitor() {
 
                 public void visit(SimpleNode node) {
@@ -217,17 +201,34 @@ public class CssJspModel extends CssModel {
                         LOGGER.log(Level.FINE, "Tree Error  on " + node + "; parent: " + parent);
 
                         if (parent.kind() == CSSParserTreeConstants.JJTDECLARATION) {
-                            char justAfterDeclarationNode = buff.charAt(parent.endOffset()); 
                             //possibly clear also the semicolon which is not part of the declaration node
-                            clearNode(parent, buff, 0, justAfterDeclarationNode == ';' ? 1 : 0, templatingBlocks, false);   
+                            char justAfterDeclarationNode = buff.length() == parent.endOffset() ? ' ' : buff.charAt(parent.endOffset()); 
+                            
+                            //possibly clear the declaration even there is no generated code inside
+                            //the error may be caused by previous incorrectly fixed declaration
+                            boolean fixesInPreviousDeclaration = false;
+                            SimpleNode siblingBefore = SimpleNodeUtil.getSibling(parent, true);
+                            if(siblingBefore != null && siblingBefore.kind() == CSSParserTreeConstants.JJTDECLARATION) {
+                                fixesInPreviousDeclaration = containsGeneratedCode(siblingBefore, buff);
+                            }
+                            
+                            if(justAfterDeclarationNode == ';') {
+                                //clear only if the previous declaration has been fixed and the error ends with ;
+                                if(clearNode(parent, buff, 0, 1, templatingBlocks, fixesInPreviousDeclaration)) {
+                                    cleared[0] = true;
+                                }
+                            }
                         }
                         if (parent.kind() == CSSParserTreeConstants.JJTSTYLERULE) {
                             SimpleNode siblingBefore = SimpleNodeUtil.getSibling(node, true);
                             if (siblingBefore.kind() == CSSParserTreeConstants.JJTREPORTERROR) {
                                 siblingBefore = SimpleNodeUtil.getSibling(siblingBefore, true);
                                 if (siblingBefore.kind() == CSSParserTreeConstants.JJTDECLARATION) {
-                                    clearNode(siblingBefore, buff, 0, 0, templatingBlocks, false); //clear the last declaration node
-                                    clearNode(node, buff, 0, -1, templatingBlocks, true); //clear the skipblock itself, exclude closing symbol
+                                    boolean modif = clearNode(siblingBefore, buff, 0, 0, templatingBlocks, false); //clear the last declaration node
+                                    if (modif) {
+                                        clearNode(node, buff, 0, -1, templatingBlocks, true); //clear the skipblock itself, exclude closing symbol
+                                        cleared[0] = true;
+                                    }
                                 } else if(siblingBefore.kind() == CSSParserTreeConstants.JJTSELECTORLIST) {
                                     //error in selector list
                                     //repair the code from the selector list beginning to first left curly bracket
@@ -235,6 +236,7 @@ public class CssJspModel extends CssModel {
                                     int curlyBracketIndex = buff.indexOf("{", from);
                                     if(curlyBracketIndex > 0) {
                                         clearAndWrite(buff, from, curlyBracketIndex, FIXED_SELECTOR);
+                                        cleared[0] = true;
                                     }
                                     
                                 }
@@ -246,12 +248,32 @@ public class CssJspModel extends CssModel {
                 }
             };
 
-            startTime = System.currentTimeMillis();
-
-            root.visitChildren(visitor);
+            long startTime = System.currentTimeMillis();
             
-            endTime = System.currentTimeMillis();
-            Logger.getLogger("TIMER").log(Level.FINE, "CSS Virtual Source Fixing",
+            //parse the buffer until the templating issue gets fixed.
+            int i = 0;
+            for(; i < 4; i++) {
+                cleared[0] = false;
+                //parse the buffer
+                parser().errors().clear();
+                parser().ReInit(new ASCII_CharStream(new StringReader(buff.toString())));
+                SimpleNode root = parser().styleSheet();
+                root.visitChildren(visitor);
+
+                if(!cleared[0]) {
+                    //source checking finished without any correction => finish
+                    break;
+                }
+                
+            }
+            
+            long endTime = System.currentTimeMillis();
+            DataObject od = (DataObject)doc.getProperty(doc.StreamDescriptionProperty);
+            FileObject fo = null;
+            if(od != null) {
+                fo = od.getPrimaryFile();
+            }
+            Logger.getLogger("TIMER").log(Level.FINE, "CSS Sanitizing [" + i + "]",
                     new Object[] {fo, endTime - startTime});                
             
         } catch (ParseException ex) {
@@ -259,28 +281,60 @@ public class CssJspModel extends CssModel {
         }
 
     }
-
-    private void clearNode(SimpleNode node, StringBuilder buff, 
+    
+    /** returns a distance of the first occurance of the searched char from the end of the node image or 0 if the char hasn't been found */
+    private int charEndDelta(SimpleNode node, StringBuilder buff, char searched) {
+        int from = node.startOffset();
+        int to = node.endOffset();
+        int index = buff.substring(from, to).indexOf(searched);
+        return index == -1 ? 0 : node.image().length() - index;
+    }
+    
+    private boolean clearNode(SimpleNode node, StringBuilder buff, 
             int startDelta, int endDelta, 
             List<OffsetRange> templatingBlocks,
             boolean forceClear) {
-        int from = node.startOffset() + startDelta;
-        int to = node.endOffset() + endDelta;
+        int from = node.startOffset();
+        int to = node.endOffset();
+        
+        if(from >= to) {
+            System.err.println("clearNode from >= to! node: " + node);
+            return false;
+        }
+        
+        from += startDelta;
+        to += endDelta;
 
-        //fast hack, I should rather use the templating ranges
-        if(forceClear || buff.substring(from, to).contains(PREFIX)) {
+        if(from >= to) {
+            System.err.println("clearNode from+startDelta >= to+endDelta! node: " + node);
+            return false;
+        }
+        
+        if(forceClear || containsGeneratedCode(node, buff)) {
             LOGGER.log(Level.FINE, "CLEARING NODE " + node + " [" + buff.substring(from, to) + "]");
             clear(buff, from, to);
+            return true;
         }
+        return false;
+    }
+    
+    private boolean containsGeneratedCode(SimpleNode node, StringBuilder buff) {
+        int from = node.startOffset();
+        int to = node.endOffset();
+
+        //fast hack, I should rather use the templating ranges
+        return buff.substring(from, to).contains(PREFIX);
     }
     
     private void clear(StringBuilder buff, int from, int to) {
+        assert from < to;
         for (int i = from; i < to; i++) {
                 buff.setCharAt(i, ' ');
             }
     }
     
     private void clearAndWrite(StringBuilder buff, int from, int to, String text) {
+        LOGGER.log(Level.FINE, "CLEARING&&REPLACING [" + buff.substring(from, to) + "]: " + text);
         clear(buff, from, to);
         buff.replace(from, from + text.length(), text);
     }

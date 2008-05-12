@@ -173,12 +173,10 @@ public class BindingDesignSupport {
     }
 
     private static boolean hasRelativeType(Class clazz, String property) {
-        return ("elements".equals(property) // NOI18N
-            // selectedElement(_...), selectedElements(_...)
-            || property.startsWith("selectedElement")) // NOI18N
-          && (javax.swing.JTable.class.isAssignableFrom(clazz)
-            || javax.swing.JList.class.isAssignableFrom(clazz)
-            || javax.swing.JComboBox.class.isAssignableFrom(clazz));
+        // selectedElement(_...), selectedElements(_...)
+        return (("elements".equals(property) || property.startsWith("selectedElement")) // NOI18N
+                && (javax.swing.JTable.class.isAssignableFrom(clazz) || javax.swing.JList.class.isAssignableFrom(clazz)))
+            || (("selectedItem".equals(property)) && javax.swing.JComboBox.class.isAssignableFrom(clazz)); // NOI18N
     }
 
     // Used to determine binding properties only
@@ -693,10 +691,16 @@ public class BindingDesignSupport {
                         subSourcePath = (subSourcePath == null) ? null : BindingDesignSupport.unwrapSimpleExpression(subSourcePath);
                         // PENDING beware of stack overflow
                         TypeHelper t = determineType(subComp, subSourcePath);
-                        if ("selectedElement".equals(pathItem) || pathItem.startsWith("selectedElement_")) { // NOI18N
-                            type = typeOfElement(t);
-                        } else if (pathItem.startsWith("selectedElements") || "elements".equals(pathItem)) { // NOI18N
-                            type = t;
+                        if (javax.swing.JComboBox.class.isAssignableFrom(comp.getBeanClass())) {
+                            if ("selectedItem".equals(pathItem)) { // NOI18N
+                                type = typeOfElement(t);
+                            }
+                        } else {
+                            if ("selectedElement".equals(pathItem) || pathItem.startsWith("selectedElement_")) { // NOI18N
+                                type = typeOfElement(t);
+                            } else if (pathItem.startsWith("selectedElements") || "elements".equals(pathItem)) { // NOI18N
+                                type = t;
+                            }
                         }
                     } else {
                         type = new TypeHelper();
