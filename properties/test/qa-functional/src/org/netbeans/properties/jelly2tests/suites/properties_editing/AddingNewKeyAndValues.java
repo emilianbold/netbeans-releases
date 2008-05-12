@@ -73,7 +73,7 @@ public class AddingNewKeyAndValues extends PropertiesEditorTestCase {
         suite.addTest(new AddingNewKeyAndValues("testCreateNewBundle"));
         suite.addTest(new AddingNewKeyAndValues("testOpenningSimpleEditor"));
         suite.addTest(new AddingNewKeyAndValues("testOpenningAdvanceEditor"));
-//        suite.addTest(new AddingNewKeyAndValues("testAddNewKeyAndValue"));
+        suite.addTest(new AddingNewKeyAndValues("testAddNewKeyAndValue"));
         return suite;
     }
     public static void main(String[] args) {
