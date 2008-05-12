@@ -32,6 +32,7 @@ import org.netbeans.modules.soa.mappercore.model.MapperModel;
 /**
  *
  * @author nk160297
+ * @author AlexanderPermyakov
  */
 public class PredicatesMapperFactory {
 
@@ -48,8 +49,17 @@ public class PredicatesMapperFactory {
         String deleteActionKey = "delete-something"; // NOI18N
         inputMap1.put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0), 
                 deleteActionKey); // NOI18N
+        inputMap1.put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 
+                KeyEvent.SHIFT_DOWN_MASK), deleteActionKey); // NOI18N
+        inputMap1.put(KeyStroke.getKeyStroke(KeyEvent.VK_X, 
+                KeyEvent.CTRL_DOWN_MASK), deleteActionKey); // NOI18N
+        
         inputMap2.put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0), 
                 deleteActionKey); // NOI18N
+        inputMap2.put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 
+                KeyEvent.SHIFT_DOWN_MASK), deleteActionKey); // NOI18N
+        inputMap2.put(KeyStroke.getKeyStroke(KeyEvent.VK_X, 
+                KeyEvent.CTRL_DOWN_MASK), deleteActionKey); // NOI18N
         actionMap.put(deleteActionKey, 
                 new DeleteGraphSelectionAction(newMapper)); // NOI18N
         //
