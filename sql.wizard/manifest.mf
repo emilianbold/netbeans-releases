@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 AutoUpdate-Show-In-Client: false
-OpenIDE-Module-Specification-Version: 1.1
+OpenIDE-Module-Specification-Version: 1.1.1
 OpenIDE-Module: org.netbeans.modules.sql.wizard
 OpenIDE-Module-Layer: org/netbeans/modules/jdbcwizard/resources/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/jdbcwizard/resources/Bundle.properties
