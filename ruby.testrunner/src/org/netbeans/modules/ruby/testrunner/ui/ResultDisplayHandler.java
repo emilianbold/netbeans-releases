@@ -50,6 +50,7 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.JSplitPane;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.ruby.testrunner.TestRunnerSettings;
 import org.openide.ErrorManager;
 
 /**
@@ -67,8 +68,6 @@ final class ResultDisplayHandler {
     private ResultPanelOutput outputListener;
     /** */
     private Component displayComp;
-    // TODO: read from settings
-    private static final int DIVIDER_LOC = 300;
 
     /** Creates a new instance of ResultDisplayHandler */
     ResultDisplayHandler() {
@@ -89,21 +88,21 @@ final class ResultDisplayHandler {
         Component left = new StatisticsPanel(this);
         Component right = new ResultPanelOutput(this);
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, left, right) {
-
+        final TestRunnerSettings settings = TestRunnerSettings.getDefault();
             @Override
             public void addNotify() {
                 super.addNotify();
                 SwingUtilities.invokeLater(new Runnable() {
 
                     public void run() {
-                        setDividerLocation(DIVIDER_LOC);
+                        setDividerLocation(settings.getResultsSplitPaneDivider());
                     }
                 });
             }
 
             @Override
             public void removeNotify() {
-//                JUnitSettings.getDefault().setResultsSplitPaneDivider(getDividerLocation());
+                settings.setResultsSplitPaneDivider(getDividerLocation());
                 super.removeNotify();
             }
         };
