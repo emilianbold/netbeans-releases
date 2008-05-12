@@ -128,13 +128,6 @@ public class XMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
         return new XMLSyntaxSupport(doc);
     }
     
-
-    @Override
-    public Completion createCompletion(ExtEditorUI extEditorUI) {
-        //return new org.netbeans.modules.xml.text.completion.XMLCompletion(extEditorUI);
-        return null;
-    }
-    
     public Completion createCompletionForProvider(ExtEditorUI extEditorUI) {
         return new XMLCompletion(extEditorUI);
     }

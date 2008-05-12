@@ -43,6 +43,7 @@ package org.netbeans.modules.properties.syntax;
 
 import java.util.Collections;
 import java.util.List;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.editor.Acceptor;
 import org.netbeans.editor.AcceptorFactory;
 
@@ -52,11 +53,11 @@ import org.netbeans.editor.AcceptorFactory;
  * @author  Mila Metelka
  */
 public final class PropertiesSettingsInitializer {
-    public static List getTokenContext() {
+    public static List getTokenContext(MimePath mimePath, String settingName) {
         return Collections.singletonList(PropertiesTokenContext.context);
     }
 
-    public static Acceptor getIdentifierAcceptor() {
+    public static Acceptor getIdentifierAcceptor(MimePath mimePath, String settingName) {
         return AcceptorFactory.JAVA_IDENTIFIER;
     }
 }
