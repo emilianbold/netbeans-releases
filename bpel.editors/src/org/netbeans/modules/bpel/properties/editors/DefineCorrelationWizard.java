@@ -759,12 +759,12 @@ public class DefineCorrelationWizard implements WizardProperties {
             NamedComponentReference<GlobalElement> partElementRef = part.getElement();
             if (partElementRef != null) {
                 GlobalElement partElement = partElementRef.get();
-                addSchemaComponentNode(partNode, partElement, new FindAllChildrenSchemaVisitor(true, true));                    
+                addSchemaComponentNode(partNode, partElement, new FindAllChildrenSchemaVisitor(true, true, false));                    
             } else {
                 NamedComponentReference<GlobalType> partTypeRef = part.getType();
                 if (partTypeRef != null) {
                     GlobalType partType = partTypeRef.get();
-                    addSchemaComponentNode(partNode, partType, new FindAllChildrenSchemaVisitor(true, true)); 
+                    addSchemaComponentNode(partNode, partType, new FindAllChildrenSchemaVisitor(true, true, false)); 
                 }
             }
             return partNode;
@@ -782,7 +782,8 @@ public class DefineCorrelationWizard implements WizardProperties {
                 schemaTypeFinder.lookForSubcomponents(schemaComponent);
                 childSchemaTypeComponentList = schemaTypeFinder.getFound();
                 for (SchemaComponent childSchemaTypeComponent : childSchemaTypeComponentList) {
-                    addSchemaComponentNode(schemaComponentNode, childSchemaTypeComponent, new FindAllChildrenSchemaVisitor(true, true));
+                    addSchemaComponentNode(schemaComponentNode, childSchemaTypeComponent, 
+                            new FindAllChildrenSchemaVisitor(true, true, false));
                 }
             }
             if ((schemaComponent instanceof Element) && 

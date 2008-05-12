@@ -53,20 +53,27 @@ import org.openide.util.NbBundle;
  */
 public class RunCommand extends Command implements Displayable {
     public static final String ID = ActionProvider.COMMAND_RUN;
+    private final RunLocalCommand localCommand;
+    
     /**
      * @param project
      */
     public RunCommand(PhpProject project) {
         super(project);
+        localCommand = new RunLocalCommand(project);        
     }
 
     @Override
-    public  void invokeAction(Lookup context) throws IllegalArgumentException {
-        try {
-            showURLForProjectFile();
-        } catch (MalformedURLException ex) {
-            //TODO improve error handling
-            Exceptions.printStackTrace(ex);
+    public void invokeAction(Lookup context) throws IllegalArgumentException {
+        if (useInterpreter()) {
+            localCommand.invokeAction(null);
+        } else {
+            try {
+                showURLForProjectFile();
+            } catch (MalformedURLException ex) {
+                //TODO: improve error handling
+                Exceptions.printStackTrace(ex);
+            }
         }
     }
 

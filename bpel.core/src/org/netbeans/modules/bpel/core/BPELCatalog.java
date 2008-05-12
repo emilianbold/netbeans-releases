@@ -49,9 +49,7 @@ import org.xml.sax.SAXException;
  *
  * @author ads
  */
-public class BPELCatalog implements CatalogReader, CatalogDescriptor,
-    EntityResolver  
-{
+public class BPELCatalog implements CatalogReader, CatalogDescriptor, EntityResolver  {
         
     private static final String URL_BPEL_1_1 =
         "nbres:/" +
@@ -140,8 +138,7 @@ public class BPELCatalog implements CatalogReader, CatalogDescriptor,
         "org/netbeans/modules/bpel/core/resources/" +               // NOI18N
         "bpel_catalog.gif";                                         // NOI18N
     
-    public BPELCatalog() {
-    }
+    public BPELCatalog() {}
     
     /**
      * 
@@ -156,7 +153,7 @@ public class BPELCatalog implements CatalogReader, CatalogDescriptor,
             Lookup.Result res = userCatalogLookup.lookup(templ);
             Collection impls = res.allInstances();
 
-            for(Object obj : impls){
+            for(Object obj : impls) {
                 if (obj instanceof BPELCatalog) {
                     bpelCatalog = (BPELCatalog)obj;
                     break;
@@ -222,26 +219,22 @@ public class BPELCatalog implements CatalogReader, CatalogDescriptor,
     /**
      * Refresh content according to content of mounted catalog.
      */
-    public void refresh() {
-    }
+    public void refresh() {}
     
     /**
      * Optional operation allowing to listen at catalog for changes.
      * @throws UnsupportedOpertaionException if not supported by the implementation.
      */
-    public void addCatalogListener(CatalogListener l) {
-    }
+    public void addCatalogListener(CatalogListener l) {}
     
     /**
      * Optional operation couled with addCatalogListener.
      * @throws UnsupportedOpertaionException if not supported by the implementation.
      */
-    public void removeCatalogListener(CatalogListener l) {
-    }
+    public void removeCatalogListener(CatalogListener l) {}
     
     /** Registers new listener.  */
-    public void addPropertyChangeListener(PropertyChangeListener l) {
-    }
+    public void addPropertyChangeListener(PropertyChangeListener l) {}
     
     /**
      * @return I18N display name
@@ -267,8 +260,7 @@ public class BPELCatalog implements CatalogReader, CatalogDescriptor,
     }
     
     /** Unregister the listener.  */
-    public void removePropertyChangeListener(PropertyChangeListener l) {
-    }
+    public void removePropertyChangeListener(PropertyChangeListener l) {}
     
     /**
      * Resolves schema definition file for deployment descriptor (spec.2_4)
@@ -276,9 +268,7 @@ public class BPELCatalog implements CatalogReader, CatalogDescriptor,
      * @param systemId systemId for resolved entity
      * @return InputSource for 
      */    
-    public InputSource resolveEntity(String publicId, String systemId) 
-        throws SAXException, IOException 
-    {
+    public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
         if (BPEL_2_0.equals(systemId)) {
             return new org.xml.sax.InputSource(URL_BPEL_2_0);
         }
@@ -339,12 +329,8 @@ public class BPELCatalog implements CatalogReader, CatalogDescriptor,
         }
         return null;
     }
-    /**
-     * Get registered URI for the given publicId or null if not registered.
-     * @return null if not registered
-     */ 
+
     public String resolvePublic(String publicId) {
         return null;
     }
-    
 }

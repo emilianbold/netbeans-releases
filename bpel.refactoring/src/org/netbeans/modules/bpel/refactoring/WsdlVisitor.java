@@ -69,8 +69,7 @@ final class WsdlVisitor extends ChildVisitor {
   }
 
   @Override
-  public void visit(ExtensibilityElement element) 
-  {
+  public void visit(ExtensibilityElement element) {
     checkUsages(element);
 
     if (element instanceof CorrelationProperty) {

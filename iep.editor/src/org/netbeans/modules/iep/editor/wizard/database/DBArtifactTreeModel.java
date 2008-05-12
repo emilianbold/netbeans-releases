@@ -39,10 +39,12 @@
 
 package org.netbeans.modules.iep.editor.wizard.database;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreePath;
 
 
 /**
@@ -54,6 +56,8 @@ public class DBArtifactTreeModel extends DefaultTreeModel {
     private DefaultMutableTreeNode mRoot;
     
     private List<TableInfo> mTables;
+    
+    private List<TableNode> mTableNodes = new ArrayList<TableNode>();
     
     DBArtifactTreeModel(DefaultMutableTreeNode root, List<TableInfo> tables) {
         super(root, true);
@@ -70,6 +74,7 @@ public class DBArtifactTreeModel extends DefaultTreeModel {
             
             TableNode tNode = new TableNode(table);
             this.mRoot.insert(tNode, this.mRoot.getChildCount());
+            mTableNodes.add(tNode);
             populateColumnNodes(table, tNode);
             
         }
@@ -82,6 +87,11 @@ public class DBArtifactTreeModel extends DefaultTreeModel {
             ColumnInfo column = it.next();
             ColumnNode cNode = new ColumnNode(column);
             tNode.insert(cNode, tNode.getChildCount());
+           
         }
+    }
+    
+    public List<TableNode> getTableNodes() {
+        return this.mTableNodes;
     }
 }

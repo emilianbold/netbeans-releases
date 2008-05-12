@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.java.editor.codegen;
 
+import org.netbeans.spi.editor.codegen.CodeGenerator;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
@@ -81,6 +82,7 @@ import org.netbeans.modules.java.editor.codegen.ui.ElementNode;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
@@ -93,26 +95,34 @@ public class DelegateMethodGenerator implements CodeGenerator {
 
     public static class Factory implements CodeGenerator.Factory {
         
-        public Factory() {            
-        }
-        
-        public Iterable<? extends CodeGenerator> create(CompilationController controller, TreePath path) throws IOException {
-            path = Utilities.getPathElementOfKind(Tree.Kind.CLASS, path);
-            if (path == null)
-                return Collections.emptySet();
-            controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+        public List<? extends CodeGenerator> create(Lookup context) {
+            ArrayList<CodeGenerator> ret = new ArrayList<CodeGenerator>();
+            JTextComponent component = context.lookup(JTextComponent.class);
+            CompilationController controller = context.lookup(CompilationController.class);
+            TreePath path = context.lookup(TreePath.class);
+            path = path != null ? Utilities.getPathElementOfKind(Tree.Kind.CLASS, path) : null;
+            if (component == null || controller == null || path == null)
+                return ret;
+            try {
+                controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+            } catch (IOException ioe) {
+                return ret;
+            }
             List<ElementNode.Description> descriptions = computeUsableFieldsDescriptions(controller, path);
-            if (descriptions.isEmpty())
-                return Collections.emptySet();
-            Collections.reverse(descriptions);
-            return Collections.singleton(new DelegateMethodGenerator(ElementNode.Description.create(descriptions)));
+            if (!descriptions.isEmpty()) {
+                Collections.reverse(descriptions);
+                ret.add(new DelegateMethodGenerator(component, ElementNode.Description.create(descriptions)));
+            }
+            return ret;
         }
     }
 
+    private JTextComponent component;
     private ElementNode.Description description;
     
     /** Creates a new instance of DelegateMethodGenerator */
-    private DelegateMethodGenerator(ElementNode.Description description) {
+    private DelegateMethodGenerator(JTextComponent component, ElementNode.Description description) {
+        this.component = component;
         this.description = description;
     }
 
@@ -120,7 +130,7 @@ public class DelegateMethodGenerator implements CodeGenerator {
         return org.openide.util.NbBundle.getMessage(DelegateMethodGenerator.class, "LBL_delegate_method"); //NOI18N
     }
 
-    public void invoke(JTextComponent component) {
+    public void invoke() {
         final DelegatePanel panel = new DelegatePanel(component, description);
         DialogDescriptor dialogDescriptor = GeneratorUtils.createDialogDescriptor(panel, NbBundle.getMessage(ConstructorGenerator.class, "LBL_generate_delegate")); //NOI18N
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);

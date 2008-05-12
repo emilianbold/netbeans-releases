@@ -98,26 +98,22 @@ public class Engine extends SearchEngine.Adapter {
     }
 
     @Override
-    public void gotoSource()
-    {
+    public void gotoSource() {
       myElement.gotoSource();
     }
 
     @Override
-    public void gotoVisual()
-    {
+    public void gotoVisual() {
       myElement.gotoDesign();
     }
 
     @Override
-    public void highlight()
-    {
+    public void highlight() {
       myElement.highlight();
     }
 
     @Override
-    public void unhighlight()
-    {
+    public void unhighlight() {
       myElement.unhighlight();
     }
 
