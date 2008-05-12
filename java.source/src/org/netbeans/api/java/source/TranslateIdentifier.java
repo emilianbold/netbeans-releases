@@ -80,7 +80,7 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
         this.seq = seq;
         this.copyComments = copyComments;
         this.resolveImports = resolveImports;
-        this.commentService = CommentHandlerService.instance(info.impl.impl.getJavacTask().getContext());
+        this.commentService = CommentHandlerService.instance(info.impl.getJavacTask().getContext());
     }
 
     public Tree visitAnnotation(AnnotationTree node, Void p) {

@@ -71,6 +71,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.event.ChangeEvent;
 import  javax.swing.event.ChangeListener;
 import javax.swing.text.Document;
 import javax.tools.DiagnosticListener;
@@ -93,11 +94,14 @@ import org.netbeans.api.lexer.TokenHierarchyEventType;
 import org.netbeans.api.lexer.TokenHierarchyListener;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.lib.editor.util.swing.PositionRegion;
+import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
+import org.netbeans.modules.java.source.JavaFileFilterQuery;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.JavadocEnv;
 import org.netbeans.modules.java.source.PostFlowAnalysis;
 import org.netbeans.modules.java.source.TreeLoader;
 import org.netbeans.modules.java.source.tasklist.CompilerSettings;
+import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
 import org.netbeans.modules.java.source.usages.Index;
 import org.netbeans.modules.java.source.usages.Pair;
 import org.netbeans.modules.java.source.usages.RepositoryUpdater;
@@ -114,6 +118,8 @@ import org.netbeans.spi.java.source.JavaParserResultTask;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
@@ -125,9 +131,10 @@ import org.openide.util.WeakListeners;
  */
 public class JavacParser extends Parser {
     //Timer logger
-    private static final Logger TIME_LOGGER = Logger.getLogger("TIMER");        //NOI18N
-    //Debug logger
+    private static final Logger TIME_LOGGER = Logger.getLogger("TIMER");        //NOI18N    
+    //Debug logger    
     private static final Logger LOGGER = Logger.getLogger(JavaSource.class.getName());
+    private static final String MIME_TYPE = "text/x-java";
     //JavaFileObjectProvider used by the JavacParser - may be overriden by unit test
     static JavaFileObjectProvider jfoProvider = new DefaultJavaFileObjectProvider (); 
     //No output writer like /dev/null
@@ -166,7 +173,9 @@ public class JavacParser extends Parser {
     //Incremental parsing support
     private MethodTree changedMethod;
     //Incremental parsing support
-    private final DocListener listener;    
+    private final DocListener listener;
+    //J2ME preprocessor support
+    private final FilterListener filterListener;
     //Cached javac impl
     private CompilationInfoImpl ciImpl;
     
@@ -181,13 +190,31 @@ public class JavacParser extends Parser {
         assert cp != null;
         this.root = cp.findOwnerRoot(file);
         assert root != null;
-        //todo: Init supportsReparse & listener
+        this.supportsReparse = MIME_TYPE.equals(source.getMimeType());
+        EditorCookie.Observable ec = null;
+        JavaFileFilterImplementation filter = null;
+        if (this.supportsReparse) {
+            filter = JavaFileFilterQuery.getFilter(file);            
+            try {
+                final DataObject dobj = DataObject.find(file);
+                ec = dobj.getCookie(EditorCookie.Observable.class);
+                if (ec == null) {
+                    LOGGER.log(Level.WARNING,
+                        String.format("File: %s has no EditorCookie.Observable", //NOI18N
+                        FileUtil.getFileDisplayName (file)));
+                }
+            } catch (DataObjectNotFoundException e) {
+                Exceptions.printStackTrace(e);
+            }
+        }
+        this.filterListener = filter != null ? new FilterListener (filter) : null;
+        this.listener = ec != null ? new DocListener(ec) : null;
     }
         
     @Override
     public void parse(final Snapshot snapshot, final Task task) {
         assert task != null;
-        ciImpl = new CompilationInfoImpl(this, source, file, root, null,snapshot);
+        ciImpl = createCurrentInfo (this, source, file, root,snapshot, null);
     }
     
     @Override
@@ -376,6 +403,20 @@ public class JavacParser extends Parser {
         return currentPhase;
     }
     
+    private static CompilationInfoImpl createCurrentInfo (final JavacParser parser,
+            final Source source,
+            final FileObject file,
+            final FileObject root,
+            final Snapshot snapshot,
+            final JavacTaskImpl javac) throws IOException {                
+        CompilationInfoImpl info = new CompilationInfoImpl(parser, source, file, root, null,snapshot);
+        if (file != null) {
+            Logger.getLogger("TIMER").log(Level.FINE, "CompilationInfo",    //NOI18N
+                    new Object[] {file, info});
+        }
+        return info;
+    }
+    
     JavacTaskImpl createJavacTask(final DiagnosticListener<? super JavaFileObject> diagnosticListener, ClassNamesForFileOraculum oraculum) {
         String sourceLevel = null;
         if (this.file != null) {
@@ -436,7 +477,9 @@ public class JavacParser extends Parser {
             //it should be load by the current module's classloader (should delegate to other module's classloaders as necessary)
             Thread.currentThread().setContextClassLoader(ClasspathInfo.class.getClassLoader());
             JavaCompiler tool = ToolProvider.getSystemJavaCompiler();
-            JavacTaskImpl task = (JavacTaskImpl)tool.getTask(null, cpInfo.getFileManager(), diagnosticListener, options, null, Collections.<JavaFileObject>emptySet());
+            JavacTaskImpl task = (JavacTaskImpl)tool.getTask(null, 
+                    ClasspathInfoAccessor.getINSTANCE().getFileManager(cpInfo),
+                    diagnosticListener, options, null, Collections.<JavaFileObject>emptySet());
             Context context = task.getContext();
             
             if (backgroundCompilation) {
@@ -690,4 +733,19 @@ public class JavacParser extends Parser {
         }        
     }
 
+    
+    /**
+     * Filter listener to listen on j2me preprocessor
+     */
+    private final class FilterListener implements ChangeListener {        
+        
+        public FilterListener (final JavaFileFilterImplementation filter) {
+            filter.addChangeListener(WeakListeners.change(this, filter));
+        }
+        
+        public void stateChanged(ChangeEvent event) {
+            listeners.fireChange();
+        }
+    }
+    
 }
