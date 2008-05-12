@@ -5,13 +5,13 @@ import java.util.*;
 
 public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants, CSSParserConstants {/*@bgen(jjtree)*/
   protected JJTCSSParserState jjtree = new JJTCSSParserState();
-    private ArrayList errors = new ArrayList();
+    private ArrayList<ParseException> errors = new ArrayList<ParseException>();
 
     public CSSParser() {
        this((CharStream) null);
     }
 
-    public List errors() {
+    public List<ParseException> errors() {
         return errors;
     }
 
@@ -2445,8 +2445,7 @@ try {StringBuffer sb = new StringBuffer();
  try {ParseException e = generateParseException();
     //System.err.println("** error_skipdecl **\n" + e.toString());
 
-  getNextToken();
-  Token t = getToken(1);
+  Token t = getNextToken();
   while (t.kind != SEMICOLON && t.kind != RBRACE && t.kind != EOF ) {
       getNextToken();
       t = getToken(1);

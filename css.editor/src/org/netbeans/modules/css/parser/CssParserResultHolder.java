@@ -34,54 +34,20 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.core.syntax.gsf.embedding;
+package org.netbeans.modules.css.parser;
 
-import org.netbeans.modules.css.parser.CssParserResultHolder;
-import org.netbeans.modules.css.parser.CssParserAccess.CssParserResult;
-import org.netbeans.modules.gsf.api.EmbeddingModel;
-import org.netbeans.modules.gsf.api.TranslatedSource;
+import org.netbeans.modules.css.parser.CssParserAccess;
 
 /**
  *
- * @author Tor Norbye
+ * @author Marek Fukala
  */
-public class CssJspTranslatedSource implements TranslatedSource, CssParserResultHolder {
-    private CssJspModel model;
-    private CssJspEmbeddingModel embeddingModel;
+public interface CssParserResultHolder {
 
-    public CssJspTranslatedSource(CssJspEmbeddingModel embeddingModel, CssJspModel model) {
-        this.embeddingModel = embeddingModel;
-        this.model = model;
-    }
-
-    public int getAstOffset(int lexicalOffset) {
-        return model.sourceToGeneratedPos(lexicalOffset);
-    }
-
-    public int getLexicalOffset(int astOffset) {
-        return model.generatedToSourcePos(astOffset);
-    }
-
-    public String getSource() {
-        return model.getCode();
-    }
-
-    public EmbeddingModel getModel() {
-        return embeddingModel;
-    }
-
-    public int getSourceStartOffset() {
-        return 0;
-    }
-
-    public int getSourceEndOffset() {
-        return model.getCode().length();
-    }
-
-    public CssParserResult result() {
-        return model.getCachedParserResult();
-    }
+    /** returns cached parser result instance */
+    public CssParserAccess.CssParserResult result();
+    
 }
