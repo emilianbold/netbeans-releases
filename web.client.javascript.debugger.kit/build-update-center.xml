@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="Build update center decriptor for JavaScript Debugger" default="all" basedir=".">
+    <property name="update.center.descriptor.folder" value="build/updatecenter"/>
+    <property name="update.center.distbase.url" value="http://blogs.sun.com/scblog/resource/communityone"/>
+
+    <target name="clean">
+        <delete file="${update.center.descriptor.folder}/update-center.xml"/>
+        <delete file="${update.center.descriptor.folder}/org-netbeans-modules-web-client-javascript-debugger-api.nbm"/>
+        <delete file="${update.center.descriptor.folder}/org-netbeans-modules-web-client-javascript-debugger-ant.nbm"/>
+        <delete file="${update.center.descriptor.folder}/org-netbeans-modules-web-client-javascript-debugger-kit.nbm"/>
+    </target>
+    <target name="-build-bootstrap">
+        <ant dir="${basedir}/../nbbuild" antfile="build.xml" target="nbm"/>
+    </target>
+    <target name="-build-modules">
+        <ant dir="../web.client.javascript.debugger.api" antfile="build.xml" target="nbm"/>
+        <ant dir="../web.client.javascript.debugger.ant" antfile="build.xml" target="nbm"/>
+        <ant dir="." antfile="build.xml" target="nbm"/>
+    </target>
+    <target name="all" depends="-build-bootstrap,-build-modules">
+        <mkdir dir="${update.center.descriptor.folder}"/>
+        <copy file="../web.client.javascript.debugger.api/build/org-netbeans-modules-web-client-javascript-debugger-api.nbm" todir="${update.center.descriptor.folder}" overwrite="true"/>
+        <copy file="../web.client.javascript.debugger.ant/build/org-netbeans-modules-web-client-javascript-debugger-ant.nbm" todir="${update.center.descriptor.folder}" overwrite="true"/>
+        <copy file="build/org-netbeans-modules-web-client-javascript-debugger-kit.nbm" todir="${update.center.descriptor.folder}" overwrite="true"/>
+        <taskdef name="makeupdatedesc"
+                 classname="org.netbeans.nbbuild.MakeUpdateDesc"
+                 classpath="${basedir}/../nbbuild/nbantext.jar"/>
+        <makeupdatedesc desc="${update.center.descriptor.folder}/update-center.xml" distbase="${update.center.distbase.url}">
+            <group name="JavaScript Debugger">
+                <fileset dir="${update.center.descriptor.folder}">
+                    <include name="**/*.nbm"/>
+                </fileset>
+            </group>
+        </makeupdatedesc>
+    </target>
+    <target name="all-clean" depends="clean,all"/>
+</project>
