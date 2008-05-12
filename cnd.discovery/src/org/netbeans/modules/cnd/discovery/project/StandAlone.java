@@ -47,6 +47,8 @@ import org.netbeans.modules.cnd.discovery.api.KnownProject;
  * @author Alexander Simon
  */
 public class StandAlone {
+    private StandAlone() {
+    }
 
     public static void main(String[] args) {
         System.setProperty("org.netbeans.modules.cnd.makeproject.api.runprofiles", "true");

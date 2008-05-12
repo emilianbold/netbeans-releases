@@ -45,17 +45,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
-import org.openide.text.DataEditorSupport;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputWriter;
 
-import org.netbeans.modules.xml.xam.spi.Validation;
-import org.netbeans.modules.xml.xam.spi.Validation.ValidationType;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
-
 import org.netbeans.modules.soa.validation.core.Controller;
 import org.netbeans.modules.soa.validation.core.QuickFix;
 import org.netbeans.modules.soa.validation.core.QuickFixable;

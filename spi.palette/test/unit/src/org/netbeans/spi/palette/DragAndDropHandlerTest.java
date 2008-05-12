@@ -50,6 +50,7 @@ import org.netbeans.modules.palette.Model;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Index;
+import org.openide.util.Lookup;
 import org.openide.util.datatransfer.ExTransferable;
 
 /**
@@ -102,6 +103,25 @@ public class DragAndDropHandlerTest extends AbstractPaletteTestHid {
         assertTrue( handler.canDrop( cat.getLookup(), flavors, DnDConstants.ACTION_COPY_OR_MOVE ) );
         
         flavors = new DataFlavor[] { new DataFlavor( "text/xml" )  };
+        assertFalse( handler.canDrop( cat.getLookup(), flavors, DnDConstants.ACTION_COPY_OR_MOVE ) );
+    }
+    
+    public void testCanDropText() throws Exception {
+        PaletteActions actions = new DummyActions();
+        PaletteController pc = PaletteFactory.createPalette( getRootFolderName(), actions );
+        Model model = pc.getModel();
+
+        Category cat = model.getCategories()[0];
+        
+        DragAndDropHandler handler = new TextDragAndDropHandler();
+        
+        DataFlavor[] flavors = new DataFlavor[] { new DataFlavor( "text/xml" )  };
+        assertTrue( handler.canDrop( cat.getLookup(), flavors, DnDConstants.ACTION_COPY_OR_MOVE ) );
+        
+        flavors = new DataFlavor[] { new DataFlavor( "text/html" )  };
+        assertTrue( handler.canDrop( cat.getLookup(), flavors, DnDConstants.ACTION_COPY_OR_MOVE ) );
+        
+        flavors = new DataFlavor[] { new DataFlavor( "unsupported/mimetype" )  };
         assertFalse( handler.canDrop( cat.getLookup(), flavors, DnDConstants.ACTION_COPY_OR_MOVE ) );
     }
     
@@ -215,6 +235,16 @@ public class DragAndDropHandlerTest extends AbstractPaletteTestHid {
             if( Index.class.equals( type ) )
                 return null;
             return super.getCookie(type);
+        }
+    }
+    
+    private static class TextDragAndDropHandler extends DragAndDropHandler {
+        public TextDragAndDropHandler() {
+            super( true );
+        }
+
+        @Override
+        public void customize(ExTransferable t, Lookup item) {
         }
     }
 }

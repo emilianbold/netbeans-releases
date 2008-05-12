@@ -66,6 +66,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeKind;
@@ -217,7 +218,8 @@ public final class UncaughtException implements ErrorRule<Void> {
                 //if the method header is inside a guarded block, do nothing:
                 if (!org.netbeans.modules.java.hints.errors.Utilities.isMethodHeaderInsideGuardedBlock(info, (MethodTree) pathRec.getLeaf())) {
                     List<ElementDescription> eds = new LinkedList<ElementDescription>();
-                    AnnotationType at = IsOverriddenAnnotationHandler.detectOverrides(info, (TypeElement) method.getEnclosingElement(), method, eds);
+                    TypeElement enclosingType = (TypeElement) method.getEnclosingElement();
+                    AnnotationType at = IsOverriddenAnnotationHandler.detectOverrides(info, enclosingType, method,eds);
                     List<TypeMirror> declaredThrows = null;
                     
                     if (at != null) {
@@ -225,7 +227,8 @@ public final class UncaughtException implements ErrorRule<Void> {
 
                         for (ElementDescription ed : eds) {
                             ExecutableElement ee = (ExecutableElement) ed.getHandle().resolve(info);
-                            List<TypeMirror> thisDeclaredThrows = new LinkedList<TypeMirror>(ee.getThrownTypes());
+                            ExecutableType et = (ExecutableType) info.getTypes().asMemberOf((DeclaredType) enclosingType.asType(), ee);
+                            List<TypeMirror> thisDeclaredThrows = new LinkedList<TypeMirror>(et.getThrownTypes());
                             
                             for (Iterator<TypeMirror> dt = declaredThrows.iterator(); dt.hasNext(); ) {
                                 for (Iterator<TypeMirror> tdt = thisDeclaredThrows.iterator(); tdt.hasNext(); ) {

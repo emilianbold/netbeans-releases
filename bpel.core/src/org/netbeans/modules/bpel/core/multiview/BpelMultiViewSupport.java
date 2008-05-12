@@ -52,9 +52,7 @@ public final class BpelMultiViewSupport {
         super();
     }
     
-    public static CloneableTopComponent createMultiView( final BPELDataObject 
-            dataObject ) 
-    {
+    public static CloneableTopComponent createMultiView( final BPELDataObject dataObject) {
         Collection coll = getMultiviewProviders();
         MultiViewDescription views[] = new MultiViewDescription[coll.size()+1];
         
@@ -94,9 +92,7 @@ public final class BpelMultiViewSupport {
         Set openTCs = TopComponent.getRegistry().getOpened();
         for (Object tc : openTCs) {
             TopComponent topComponent = (TopComponent) tc;
-            if (targetDO == (DataObject)topComponent.getLookup().lookup(
-                    DataObject.class)) 
-            {
+            if (targetDO == (DataObject)topComponent.getLookup().lookup(DataObject.class)) {
                 associatedTCs.add(topComponent);
             }
         }
@@ -111,9 +107,7 @@ public final class BpelMultiViewSupport {
             }
             MultiViewPerspective[] p = handler.getPerspectives();
             for (MultiViewPerspective mvp : p) {
-                if ( !mvp.preferredID().equals( 
-                        BPELSourceMultiViewElementDesc.PREFERED_ID)) 
-                {
+                if ( !mvp.preferredID().equals(BPELSourceMultiViewElementDesc.PREFERED_ID)) {
                     handler.requestActive(mvp);
                     found = true;
                     break;
@@ -149,5 +143,4 @@ public final class BpelMultiViewSupport {
     }
     
     private final static BpelMultiViewSupport INSTANCE = new BpelMultiViewSupport();
-
 }

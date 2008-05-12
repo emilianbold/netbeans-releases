@@ -129,7 +129,11 @@ public class SimpleNode implements Node {
                 + startOffset()
                 + " - " 
                 + endOffset() 
-                + "]";
+                + "]"
+                + " '"
+                + image() 
+                + "'";
+                
     }
 
     public String toString(String prefix) {

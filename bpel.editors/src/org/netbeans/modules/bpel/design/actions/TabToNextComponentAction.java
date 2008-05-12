@@ -146,5 +146,4 @@ public class TabToNextComponentAction extends DesignViewAction {
         }
         return null;
     }
-
 }

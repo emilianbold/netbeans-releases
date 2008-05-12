@@ -53,13 +53,7 @@ import org.netbeans.modules.print.spi.PrintPage;
  */
 final class ComponentPage implements PrintPage {
 
-  ComponentPage (
-    JComponent component,
-    Rectangle piece,
-    double zoom,
-    int row,
-    int column)
-  {
+  ComponentPage (JComponent component, Rectangle piece, double zoom, int row, int column) {
     myComponent = component;
     myPiece = piece;
     myZoom = zoom;

@@ -194,7 +194,7 @@ public class J2EEValidation extends JellyTestCase {
             // "Run Project"
             String runProjectItem = Bundle.getString("org.netbeans.modules.web.project.ui.Bundle", "LBL_RunAction_Name");
             new Action(null, runProjectItem).perform(new ProjectsTabOperator().getProjectRootNode(SAMPLE_WEB_PROJECT_NAME));
-           // waitText(SAMPLE_WEB_PROJECT_NAME, 240000, "JSP Page");
+            waitText(SAMPLE_WEB_PROJECT_NAME, 240000, "JSP Page");
         } finally {
             // log messages from output
             getLog("RunOutput").print(new OutputTabOperator(SAMPLE_WEB_PROJECT_NAME).getText()); // NOI18N
@@ -220,7 +220,7 @@ public class J2EEValidation extends JellyTestCase {
             public Object actionProduced(Object obj) {
                 InputStream is = null;
                 try {
-                    URLConnection connection = new URI("http://localhost:8080/"+urlSuffix).toURL().openConnection();
+                    URLConnection connection = new URI("http://localhost:8090/"+urlSuffix).toURL().openConnection();
                     connection.setReadTimeout(Long.valueOf(timeout).intValue());
                     is = connection.getInputStream();
                     BufferedReader br = new BufferedReader(new InputStreamReader(is));
@@ -247,7 +247,7 @@ public class J2EEValidation extends JellyTestCase {
                 return null;
             }
             public String getDescription() {
-                return("Text \""+text+"\" at http://localhost:8080/"+urlSuffix);
+                return("Text \""+text+"\" at http://localhost:8090/"+urlSuffix);
             }
         };
         Waiter waiter = new Waiter(waitable);

@@ -859,7 +859,10 @@ if (cancellable && currentRequest.isCanceled()) {
     // running after the phace completion task may still use it.
     return Phase.MODIFIED;
 }
-                
+// <editor-fold defaultstate="collapsed" desc="Peformance">                
+long vsTime = -1;
+long parseTime = -1;
+// </editor-fold>
                 if (parser != null) {
                     if (model != null) {
                         Document document;
@@ -885,18 +888,34 @@ if (cancellable && currentRequest.isCanceled()) {
     // running after the phace completion task may still use it.
     return Phase.MODIFIED;
 }
-                        
+// <editor-fold defaultstate="collapsed" desc="Peformance">                     
+long vsStart = System.currentTimeMillis();  
+// </editor-fold>
                         Collection<? extends TranslatedSource> translations = model.translate(document);
 if (cancellable && currentRequest.isCanceled()) {
     // Keep the currentPhase unchanged, it may happen that an userActionTask
     // running after the phace completion task may still use it.
     return Phase.MODIFIED;
 }
+// <editor-fold defaultstate="collapsed" desc="Peformance">                                        
+vsTime = System.currentTimeMillis() - vsStart; //some impls. may compute and cache the results just on model.translate(document)
+parseTime = 0;
+// </editor-fold>
                         for (TranslatedSource translatedSource : translations) {
+// <editor-fold defaultstate="collapsed" desc="Peformance">                                                 
+vsStart = System.currentTimeMillis();
+// </editor-fold>
                             String buffer = translatedSource.getSource();
+// <editor-fold defaultstate="collapsed" desc="Peformance">                                                 
+vsTime += System.currentTimeMillis() - vsStart;
+long parseStart = System.currentTimeMillis();
+// </editor-fold>
                             SourceFileReader reader = new StringSourceFileReader(buffer, bufferFo);
                             Parser.Job job = new Parser.Job(sourceFiles, listener, reader, translatedSource);
                             parser.parseFiles(job);
+// <editor-fold defaultstate="collapsed" desc="Peformance">                                                 
+parseTime += System.currentTimeMillis() - parseStart;     
+// </editor-fold>
 if (cancellable && currentRequest.isCanceled()) {
     // Keep the currentPhase unchanged, it may happen that an userActionTask
     // running after the phace completion task may still use it.
@@ -908,10 +927,16 @@ if (cancellable && currentRequest.isCanceled()) {
                             currentInfo.addEmbeddingResult(language.getMimeType(), result);
                         }
                     } else {
+// <editor-fold defaultstate="collapsed" desc="Peformance">                                             
+long parseStart = System.currentTimeMillis();    
+// </editor-fold>
                         String buffer = currentInfo.getText();
                         SourceFileReader reader = new StringSourceFileReader(buffer, bufferFo);
                         Parser.Job job = new Parser.Job(sourceFiles, listener, reader, null);
                         parser.parseFiles(job);
+// <editor-fold defaultstate="collapsed" desc="Peformance">                     
+parseTime = System.currentTimeMillis() - parseStart;
+// </editor-fold>
 if (cancellable && currentRequest.isCanceled()) {
     // Keep the currentPhase unchanged, it may happen that an userActionTask
     // running after the phace completion task may still use it.
@@ -922,12 +947,23 @@ if (cancellable && currentRequest.isCanceled()) {
                         currentInfo.addEmbeddingResult(language.getMimeType(), result);
                     }
                 }
+// <editor-fold defaultstate="collapsed" desc="Peformance">                     
+
+if(vsTime > 0) {                
+    Logger.getLogger("TIMER").log(Level.FINE, "Virtual Source (" + language.getMimeType() + ")", 
+        new Object[] {currentInfo.getFileObject(), vsTime});
+}
+if(parseTime > 0) {                
+    Logger.getLogger("TIMER").log(Level.FINE, "Parsing (" + language.getMimeType() + ")",
+        new Object[] {currentInfo.getFileObject(), parseTime});
+}
+// </editor-fold>
             }
                 currentPhase = Phase.PARSED;
-                long end = System.currentTimeMillis();
-                FileObject file = currentInfo.getFileObject();
-                //TimesCollector.getDefault().reportReference(file, "compilationUnit", "[M] Compilation Unit", unit);     //NOI18N
-                logTime (file,currentPhase,(end-start));
+//                long end = System.currentTimeMillis();
+//                FileObject file = currentInfo.getFileObject();
+//                //TimesCollector.getDefault().reportReference(file, "compilationUnit", "[M] Compilation Unit", unit);     //NOI18N
+//                logTime (file,currentPhase,(end-start));
             }
             if (lmListener != null && lmListener.lowMemory.getAndSet(false)) {
                 currentInfo.needsRestart = true;

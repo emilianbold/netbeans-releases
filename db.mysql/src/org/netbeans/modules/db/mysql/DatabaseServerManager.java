@@ -47,7 +47,7 @@ import org.openide.util.lookup.Lookups;
  * @author David Van Couvering
  */
 public class DatabaseServerManager {
-    private static DatabaseServer SERVER = lookupDatabaseServer();
+    private static volatile DatabaseServer SERVER = lookupDatabaseServer();
     
     private static final String SERVER_PROVIDER_PATH = 
             "Databases/MySQL/Servers"; // NOI18N
@@ -64,6 +64,9 @@ public class DatabaseServerManager {
             // Don't do the lookup in a synchronized block, it causes trouble
             // because the DB Explorer may also be looking up the db.mysql
             // layer file at the same time.
+            // 
+            // TODO - fix the DB Explorer so it refreshes its children
+            // on a separate thread, so we don't get into this situation.
             DatabaseServer server = lookupDatabaseServer();
             
             synchronized(DatabaseServerManager.class) {
