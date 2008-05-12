@@ -65,6 +65,7 @@ import org.netbeans.modules.soa.mappercore.graphics.VerticalGradient;
 import org.netbeans.modules.soa.mappercore.graphics.XRange;
 import org.netbeans.modules.soa.mappercore.model.Constant;
 import org.netbeans.modules.soa.mappercore.model.GraphItem;
+import org.netbeans.modules.soa.mappercore.model.GraphSubset;
 import org.netbeans.modules.soa.mappercore.model.Operation;
 import org.netbeans.modules.soa.mappercore.model.Vertex;
 import org.netbeans.modules.soa.mappercore.model.VertexItem;
@@ -75,6 +76,7 @@ import org.openide.util.NbBundle;
 /**
  *
  * @author anjeleevich
+ * @author AlexanderPermyakov
  */
 public class Canvas extends MapperPanel implements VertexCanvas,
         FocusListener, MapperSelectionListener,
@@ -92,6 +94,7 @@ public class Canvas extends MapperPanel implements VertexCanvas,
             = new DefaultVertexItemRenderer();
 
     private InplaceEditor inplaceEditor;
+    private GraphSubset bufferCopyPaste;
     private boolean printMode = false;
     
     public Canvas(Mapper mapper) {
@@ -129,6 +132,8 @@ public class Canvas extends MapperPanel implements VertexCanvas,
         registerAction(new MoveUpCanvasAction(this));
         registerAction(new MoveDownCanvasAction(this));
         registerAction(new LinkConnectAction(this));
+        registerAction(new CopyCanvasAction(this));
+        registerAction(new PasteCanvasAction(this));
     
         getAccessibleContext().setAccessibleName(NbBundle
                 .getMessage(Canvas.class, "ACSN_Canvas")); // NOI18N
@@ -187,7 +192,11 @@ public class Canvas extends MapperPanel implements VertexCanvas,
                 ? linkTool.getCanvasRendererContext()
                 : getDefaultRendererContext();
     }
-
+    
+    public GraphSubset getBufferCopyPaste() {
+        return bufferCopyPaste;
+    }
+    
     JScrollPane getScrollPane() {
         return scrollPane;
     }
@@ -274,6 +283,10 @@ public class Canvas extends MapperPanel implements VertexCanvas,
         if (renderer != vertexItemRenderer) {
             this.vertexItemRenderer = renderer;
         }
+    }
+    
+    public void setBufferCopyPaste(GraphSubset graphSubset) {
+        bufferCopyPaste = new GraphSubset(graphSubset);
     }
     
     

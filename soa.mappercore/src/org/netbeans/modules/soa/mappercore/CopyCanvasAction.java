@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -40,39 +40,43 @@
 package org.netbeans.modules.soa.mappercore;
 
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import javax.swing.ActionMap;
+import javax.swing.InputMap;
+import javax.swing.JComponent;
 import javax.swing.KeyStroke;
 import javax.swing.tree.TreePath;
-import org.netbeans.modules.soa.mappercore.model.VertexItem;
+import org.netbeans.modules.soa.mappercore.model.GraphSubset;
 
 /**
  *
- * @author alex
+ * @author AlexanderPermyakov
  */
-class StartInplaceEditor extends MapperKeyboardAction {
-
-    public StartInplaceEditor(Canvas canvas) {
-        super(canvas);
+public class CopyCanvasAction extends MapperKeyboardAction {
+    CopyCanvasAction(Canvas canvas) {
+        super(canvas); 
     }
     
-    public void actionPerformed(ActionEvent e) {
-        SelectionModel selectionModel = canvas.getSelectionModel();
-        TreePath treePath = selectionModel.getSelectedPath();
-        VertexItem vertexItem = selectionModel.getSelectedVertexItem();
-        if (vertexItem != null && treePath != null) {
-            canvas.startEdit(treePath, vertexItem);
-        }
-    }
-
     @Override
     public String getActionKey() {
-        return "start-Inplace-editor";
+        return "Copy-Action";
     }
 
     @Override
     public KeyStroke[] getShortcuts() {
-        return new KeyStroke[]{
-            KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0)
+        return new KeyStroke[] {
+          KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.CTRL_DOWN_MASK),
+          KeyStroke.getKeyStroke(KeyEvent.VK_INSERT, KeyEvent.CTRL_DOWN_MASK),
+          KeyStroke.getKeyStroke(KeyEvent.VK_COPY, 0)
         };
+    }
+
+    public void actionPerformed(ActionEvent e) {
+        SelectionModel selectionModel = canvas.getSelectionModel();
+        TreePath treePath = selectionModel.getSelectedPath();
+        if (treePath == null) { return; }
+        
+        canvas.setBufferCopyPaste(selectionModel.getSelectedSubset());
     }
 }
