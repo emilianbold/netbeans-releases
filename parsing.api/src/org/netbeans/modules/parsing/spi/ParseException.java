@@ -45,6 +45,18 @@ package org.netbeans.modules.parsing.spi;
  * @author Jan Jancura
  */
 public class ParseException extends Exception {
+    
+    public ParseException () {
+        
+    }
+    
+    public ParseException (final String message) {
+        super (message);
+    }
+    
+    public ParseException (final String message, final Throwable cause) {
+        super (message, cause);
+    }
 
 }
 

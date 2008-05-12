@@ -113,6 +113,7 @@ import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.Task;
 import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.spi.java.source.JavaParserResultTask;
 import org.openide.cookies.EditorCookie;
@@ -212,20 +213,29 @@ public class JavacParser extends Parser {
     }
         
     @Override
-    public void parse(final Snapshot snapshot, final Task task) {
+    public void parse(final Snapshot snapshot, final Task task) throws ParseException {
         assert task != null;
-        ciImpl = createCurrentInfo (this, source, file, root,snapshot, null);
+        try {
+            ciImpl = createCurrentInfo (this, source, file, root,snapshot, null);
+        } catch (IOException ioe) {
+            throw new ParseException ("JavacParser failure", ioe);            //NOI18N
+        }
     }
     
     @Override
-    public CompilationInfo getResult (final Task task) {
+    public CompilationInfo getResult (final Task task) throws ParseException {
         assert ciImpl != null;
         final boolean isParserResultTask = task instanceof JavaParserResultTask;
         final boolean isUserTask = task instanceof UserTask;
         CompilationInfo result = null;
         if (isParserResultTask) {
-            final Phase requiredPhase = null;
-            final Phase reachedPhase = moveToPhase(requiredPhase, ciImpl, true, false);
+            final Phase requiredPhase = null;   //todo: 
+            Phase reachedPhase;
+            try {
+                reachedPhase = moveToPhase(requiredPhase, ciImpl, true, false);
+            } catch (IOException ioe) {
+                throw new ParseException ("JavacParser failure", ioe);      //NOI18N
+            }
             if (reachedPhase.compareTo(requiredPhase)>=0) {
                 Index.cancel.set(canceled);
                 result = JavaSourceAccessor.getINSTANCE().createCompilationInfo(ciImpl);
