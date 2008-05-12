@@ -41,7 +41,7 @@
 
 package org.netbeans.performance.j2se;
 
-import org.netbeans.performance.j2se.menus.MenuSetup;
+
 import org.netbeans.performance.j2se.menus.MainMenu;
 import org.netbeans.performance.j2se.menus.MainSubMenus;
 
@@ -60,9 +60,8 @@ public class MeasureMenusTest extends NbTestCase {
         
         NbTestSuite s = new NbTestSuite();
 
-        //s.addTest(NbModuleSuite.create(MenuSetup.class,".*",".*"));
 	s.addTest(NbModuleSuite.create(MainMenu.class,".*",".*"));
-        //s.addTest(NbModuleSuite.create(MainSubMenus.class,".*",".*"));
+        s.addTest(NbModuleSuite.create(MainSubMenus.class,".*",".*"));
         
         return s;
     }

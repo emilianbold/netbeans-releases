@@ -38,12 +38,14 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.j2se;
 
-import org.netbeans.performance.j2se.setup.IDESetup;
+import org.netbeans.performance.j2se.setup.J2SESetup;
 
+import junit.framework.Test;
+import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 
 /**
  * Test suite that actually does not perform any test but sets up user directory
@@ -51,30 +53,17 @@ import org.netbeans.junit.NbTestSuite;
  *
  * @author  rkubacki@netbeans.org, mmirilovic@netbeans.org
  */
-public class MeasuringSetup extends NbTestSuite {
+public class MeasureJ2SESetupTest extends NbTestCase {
 
-    public MeasuringSetup (java.lang.String testName) {
+    public MeasureJ2SESetupTest(java.lang.String testName) {
         super(testName);
     }
 
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite("UI Responsiveness Setup suite");
 
-        suite.addTest(new IDESetup("closeMemoryToolbar"));
-        
-        suite.addTest(new IDESetup("closeWelcome"));
+        suite.addTest(NbModuleSuite.create(J2SESetup.class, ".*", ".*"));
 
-        suite.addTest(new IDESetup("testAddAppServer"));
-        
-        suite.addTest(new IDESetup("openFoldersProject"));
-        suite.addTest(new IDESetup("openDataProject"));
-
-	suite.addTest(new IDESetup("openWebProject"));
-        suite.addTest(new IDESetup("openNBProject"));
-
-        suite.addTest(new IDESetup("closeAllDocuments"));
-        
         return suite;
     }
-    
 }

@@ -38,10 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.j2se.setup;
-
-import org.netbeans.performance.j2se.Utilities;
 
 import javax.swing.tree.TreePath;
 import org.netbeans.jellytools.Bundle;
@@ -51,6 +48,7 @@ import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.BuildProjectAction;
 //import org.netbeans.junit.ide.ProjectSupport;
 import org.netbeans.jellytools.RuntimeTabOperator;
+import org.netbeans.modules.performance.utilities.CommonUtilities;
 
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JButtonOperator;
@@ -61,6 +59,10 @@ import org.netbeans.jemmy.operators.JMenuItemOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
+import org.netbeans.modules.project.ui.test.ProjectSupport;
+import java.io.File;
+import java.io.IOException;
+import org.netbeans.jellytools.JellyTestCase;
 
 /**
  * Test suite that actually does not perform any test but sets up user directory
@@ -68,92 +70,109 @@ import org.netbeans.jemmy.operators.JTreeOperator;
  *
  * @author  mmirilovic@netbeans.org
  */
-public class IDESetup extends org.netbeans.jellytools.JellyTestCase {
-    
-    public IDESetup(java.lang.String testName) {
+public class J2SESetup extends JellyTestCase {
+
+    public J2SESetup(java.lang.String testName) {
         super(testName);
     }
-    
-    public void openDataProject() {
-        Utilities.waitProjectOpenedScanFinished(System.getProperty("xtest.tmpdir") + java.io.File.separator + "PerformanceTestData");
-    }
-    
-    public void openWebProject() {
-        Utilities.waitProjectOpenedScanFinished(System.getProperty("xtest.tmpdir") + java.io.File.separator + "PerformanceTestWebApplication");
-    }
-    
-    public void openFoldersProject() {
-        Utilities.waitProjectOpenedScanFinished(System.getProperty("xtest.tmpdir") + java.io.File.separator + "PerformanceTestFoldersData");
-    }
-    
-    public void openNBProject() {
-        Utilities.waitProjectOpenedScanFinished(System.getProperty("xtest.tmpdir") + java.io.File.separator + "SystemProperties");
-    }
-    
-    /**
-     * Close Welcome.
-     */
-    public void closeWelcome(){
-        Utilities.closeWelcome();
-    }
-    
-    /**
-     * Close BluePrints.
-     */
-    public void closeBluePrints(){
-        Utilities.closeBluePrints();
-    }
-    
-    /**
-     * Close All Documents.
-     */
-    public void closeAllDocuments(){
-        Utilities.closeAllDocuments();
-    }
-    
-    /**
-     * Close Memory Toolbar.
-     */
-    public void closeMemoryToolbar(){
-        Utilities.closeMemoryToolbar();
+
+    public void testCloseWelcome() {
+        CommonUtilities.closeWelcome();
     }
 
+    public void testCloseBluePrints() {
+        CommonUtilities.closeBluePrints();
+    }
+
+    public void testCloseAllDocuments() {
+        CommonUtilities.closeAllDocuments();
+    }
+
+    public void testCloseMemoryToolbar() {
+        CommonUtilities.closeMemoryToolbar();
+    }
+
+    public void testOpenProject() {
+
+        String workdir = System.getProperty("nbjunit.workdir");
+
+        String projectsDir = workdir + java.io.File.separator + "tmpdir" + java.io.File.separator + "jEdit41";
+        ProjectSupport.openProject(projectsDir);
+        CommonUtilities.waitProjectTasksFinished();
+    }
+
+    public void testOpenDataProject() {
+
+        String workdir = System.getProperty("nbjunit.workdir");
+
+        String projectsDir = workdir + java.io.File.separator + "tmpdir" + java.io.File.separator + "PerformanceTestData";
+        ProjectSupport.openProject(projectsDir);
+        CommonUtilities.waitProjectTasksFinished();
+    }
+
+    public void testOpenWebProject() {
+
+        String workdir = System.getProperty("nbjunit.workdir");
+
+        String projectsDir = workdir + java.io.File.separator + "tmpdir" + java.io.File.separator + "PerformanceTestWebApplication";
+        ProjectSupport.openProject(projectsDir);
+        CommonUtilities.waitProjectTasksFinished();
+    }
+
+    public void testOpenFoldersProject() {
+
+        String workdir = System.getProperty("nbjunit.workdir");
+
+        String projectsDir = workdir + java.io.File.separator + "tmpdir" + java.io.File.separator + "PerformanceTestFoldersData";
+        ProjectSupport.openProject(projectsDir);
+        CommonUtilities.waitProjectTasksFinished();
+    }
+
+    public void testOpenNBProject() {
+
+        String workdir = System.getProperty("nbjunit.workdir");
+
+        String projectsDir = workdir + java.io.File.separator + "tmpdir" + java.io.File.separator + "SystemProperties";
+        ProjectSupport.openProject(projectsDir);
+        CommonUtilities.waitProjectTasksFinished();
+    }
+    //  TBD
+    /*
     public void testAddAppServer() {
-
-        String appServerPath = System.getProperty("com.sun.aas.installRoot");
-        String addServerMenuItem = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.actions.Bundle", "LBL_Add_Server_Instance"); // Add Server...
-        String addServerInstanceDialogTitle = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.wizard.Bundle", "LBL_ASIW_Title"); //"Add Server Instance"
-        String serverItem = "Tomcat 6.0";
-        String nextButtonCaption = Bundle.getStringTrimmed("org.openide.Bundle", "CTL_NEXT");
-        String finishButtonCaption = Bundle.getStringTrimmed("org.openide.Bundle", "CTL_FINISH");
-
-        RuntimeTabOperator rto = RuntimeTabOperator.invoke();        
-        JTreeOperator runtimeTree = rto.tree();
-        
-        long oldTimeout = runtimeTree.getTimeouts().getTimeout("JTreeOperator.WaitNextNodeTimeout");
-        runtimeTree.getTimeouts().setTimeout("JTreeOperator.WaitNextNodeTimeout", 60000);
-        
-        TreePath path = runtimeTree.findPath("Servers");
-        runtimeTree.selectPath(path);
-        
-        try {
-            //log("Let's check whether GlassFish V2 is already added");
-            runtimeTree.findPath("Servers|Tomcat 6.0");
-        } catch (TimeoutExpiredException tee) {
-            //log("There is no GlassFish V2 node so we'll add it");
-            
-            new JPopupMenuOperator(runtimeTree.callPopupOnPath(path)).pushMenuNoBlock(addServerMenuItem);
-            NbDialogOperator addServerInstanceDialog = new NbDialogOperator(addServerInstanceDialogTitle);
-            new JListOperator(addServerInstanceDialog,1).selectItem(serverItem);
-            new JButtonOperator(addServerInstanceDialog,nextButtonCaption).push();
-            new JTextFieldOperator(addServerInstanceDialog,1).enterText(appServerPath);
-            new JCheckBoxOperator(addServerInstanceDialog,1).changeSelection(false);
-            new JButtonOperator(addServerInstanceDialog,finishButtonCaption).push();
-        }
-        
-        runtimeTree.getTimeouts().setTimeout("JTreeOperator.WaitNextNodeTimeout", oldTimeout);
-
+    
+    String appServerPath = System.getProperty("com.sun.aas.installRoot");
+    String addServerMenuItem = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.actions.Bundle", "LBL_Add_Server_Instance"); // Add Server...
+    String addServerInstanceDialogTitle = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.wizard.Bundle", "LBL_ASIW_Title"); //"Add Server Instance"
+    String serverItem = "Tomcat 6.0";
+    String nextButtonCaption = Bundle.getStringTrimmed("org.openide.Bundle", "CTL_NEXT");
+    String finishButtonCaption = Bundle.getStringTrimmed("org.openide.Bundle", "CTL_FINISH");
+    
+    RuntimeTabOperator rto = RuntimeTabOperator.invoke();        
+    JTreeOperator runtimeTree = rto.tree();
+    
+    long oldTimeout = runtimeTree.getTimeouts().getTimeout("JTreeOperator.WaitNextNodeTimeout");
+    runtimeTree.getTimeouts().setTimeout("JTreeOperator.WaitNextNodeTimeout", 60000);
+    
+    TreePath path = runtimeTree.findPath("Servers");
+    runtimeTree.selectPath(path);
+    
+    try {
+    //log("Let's check whether GlassFish V2 is already added");
+    runtimeTree.findPath("Servers|Tomcat 6.0");
+    } catch (TimeoutExpiredException tee) {
+    //log("There is no GlassFish V2 node so we'll add it");
+    
+    new JPopupMenuOperator(runtimeTree.callPopupOnPath(path)).pushMenuNoBlock(addServerMenuItem);
+    NbDialogOperator addServerInstanceDialog = new NbDialogOperator(addServerInstanceDialogTitle);
+    new JListOperator(addServerInstanceDialog,1).selectItem(serverItem);
+    new JButtonOperator(addServerInstanceDialog,nextButtonCaption).push();
+    new JTextFieldOperator(addServerInstanceDialog,1).enterText(appServerPath);
+    new JCheckBoxOperator(addServerInstanceDialog,1).changeSelection(false);
+    new JButtonOperator(addServerInstanceDialog,finishButtonCaption).push();
     }
-
-
+    
+    runtimeTree.getTimeouts().setTimeout("JTreeOperator.WaitNextNodeTimeout", oldTimeout);
+    
+    }
+     */
 }
