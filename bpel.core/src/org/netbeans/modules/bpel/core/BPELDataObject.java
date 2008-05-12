@@ -161,6 +161,7 @@ public class BPELDataObject extends MultiDataObject {
         };
     }
     
+    @Override
     public final Lookup getLookup() {
         if (myLookup.get() == null) {
             

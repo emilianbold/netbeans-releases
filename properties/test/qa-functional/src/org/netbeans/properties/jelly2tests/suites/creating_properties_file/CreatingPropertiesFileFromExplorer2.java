@@ -101,7 +101,7 @@ public class CreatingPropertiesFileFromExplorer2 extends PropertiesEditorTestCas
          * In explorer create new properties file. Right click on any directory and
          * select in appeared context menu New|Other|Properties File.
          */
-        Node node = new Node(new SourcePackagesNode(defaultProjectName),PACKAGE_PATH);
+        Node node = new Node(new SourcePackagesNode(DEFAULT_PROJECT_NAME),PACKAGE_PATH);
         node.select();
         node.callPopup().pushMenuNoBlock("New"+menuSeparator+"Other...",menuSeparator);
         NewFileWizardOperator newWizard = new NewFileWizardOperator();
