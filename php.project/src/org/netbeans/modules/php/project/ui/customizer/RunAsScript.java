@@ -46,6 +46,7 @@ import javax.swing.event.DocumentListener;
 import org.netbeans.modules.php.project.api.PhpOptions;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAsType;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -59,11 +60,11 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
     private String displayName;
 
     public RunAsScript(ConfigManager manager, Category category) {
-        this(manager, category, "Script (run in command line)");
+        this(manager, category, NbBundle.getMessage(RunAsScript.class, "RunAsType.script"));//NOI18N
     }
     
     /** Creates new form LocalWebPanel */
-    public RunAsScript(ConfigManager manager, Category category, String displayName) {
+    private RunAsScript(ConfigManager manager, Category category, String displayName) {
         super(manager, category);
         initComponents();
         this.displayName = displayName;

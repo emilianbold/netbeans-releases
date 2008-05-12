@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -43,36 +43,71 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import javax.swing.KeyStroke;
 import javax.swing.tree.TreePath;
-import org.netbeans.modules.soa.mappercore.model.VertexItem;
+import org.netbeans.modules.soa.mappercore.model.Graph;
+import org.netbeans.modules.soa.mappercore.model.GraphSubset;
+import org.netbeans.modules.soa.mappercore.model.MapperModel;
+import org.netbeans.modules.soa.mappercore.model.Vertex;
 
 /**
  *
- * @author alex
+ * @author AlexanderPermyakov
  */
-class StartInplaceEditor extends MapperKeyboardAction {
-
-    public StartInplaceEditor(Canvas canvas) {
+public class PasteCanvasAction extends MapperKeyboardAction {
+    
+    PasteCanvasAction(Canvas canvas) {
         super(canvas);
     }
     
-    public void actionPerformed(ActionEvent e) {
-        SelectionModel selectionModel = canvas.getSelectionModel();
-        TreePath treePath = selectionModel.getSelectedPath();
-        VertexItem vertexItem = selectionModel.getSelectedVertexItem();
-        if (vertexItem != null && treePath != null) {
-            canvas.startEdit(treePath, vertexItem);
-        }
-    }
-
     @Override
     public String getActionKey() {
-        return "start-Inplace-editor";
+        return "Paste-Action";
     }
 
     @Override
     public KeyStroke[] getShortcuts() {
-        return new KeyStroke[]{
-            KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0)
+        return new KeyStroke[] {
+          KeyStroke.getKeyStroke(KeyEvent.VK_V, KeyEvent.CTRL_DOWN_MASK),  
+          KeyStroke.getKeyStroke(KeyEvent.VK_INSERT, KeyEvent.SHIFT_DOWN_MASK),
+          KeyStroke.getKeyStroke(KeyEvent.VK_PASTE, 0)
         };
     }
+
+    public void actionPerformed(ActionEvent e) {
+        GraphSubset graphSubset = canvas.getBufferCopyPaste();
+        if (graphSubset == null) { return; }
+        if (graphSubset.getVertexCount() < 1) { return; }
+        
+        SelectionModel selectionModel = canvas.getSelectionModel();
+        TreePath treePath = selectionModel.getSelectedPath();
+        if (treePath == null) { return; }
+        
+        MapperModel model = canvas.getMapperModel();
+        Graph graph = selectionModel.getSelectedGraph();
+        
+        Vertex vertex = graph.getPrevVertex(null);
+        
+        int step = canvas.getStep();
+        int x;
+        int y;
+        
+        if (vertex == null) {
+            x = canvas.toGraph(canvas.getRendererContext().getCanvasVisibleMinX());
+            x = (int) (Math.round(((double) (x)) / step)) + 2;
+            y = 0;
+        } else {
+            x = vertex.getX() + vertex.getWidth() + 3;
+            y = 0;
+        }
+        
+        x = x + graphSubset.getMinYVertex().getX() - graphSubset.getMinXVertex().getX();
+                
+        graphSubset = model.copy(treePath, graphSubset, x, y);
+
+        if (graphSubset != null && !graphSubset.isEmpty()) {
+            selectionModel.setSelected(treePath, graphSubset);
+        }
+        
+        //canvas.setBufferCopyPaste(null);
+    }
+
 }

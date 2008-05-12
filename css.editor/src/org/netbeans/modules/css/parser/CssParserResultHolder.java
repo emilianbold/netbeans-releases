@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
+ * 
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -11,22 +11,16 @@
  * http://www.netbeans.org/cddl-gplv2.html
  * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
  * specific language governing permissions and limitations under the
- * License. When distributing the software, include this License Header
+ * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
  * particular file as subject to the "Classpath" exception as provided
  * by Sun in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,56 +31,23 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.xml.search.impl.action;
 
-import java.awt.event.ActionEvent;
-import javax.swing.Action;
+package org.netbeans.modules.css.parser;
 
-import org.openide.loaders.DataObject;
-import org.openide.nodes.Node;
-
-import org.netbeans.modules.xml.search.api.SearchManager;
-import org.netbeans.modules.xml.search.spi.SearchProvider;
-import org.netbeans.modules.xml.search.impl.output.View;
-import static org.netbeans.modules.xml.ui.UI.*;
+import org.netbeans.modules.css.parser.CssParserAccess;
 
 /**
- * @author Vladimir Yaroslavskiy
- * @version 2006.11.13
+ *
+ * @author Marek Fukala
  */
-public final class SearchAction extends IconAction {
+public interface CssParserResultHolder {
 
-  public SearchAction() {
-    this(null, "TLT_Search_Action", "search"); // NOI18N
-  }
-
-  private SearchAction(String name, String toolTip, String icon) {
-    super(
-      i18n(SearchAction.class, name),
-      i18n(SearchAction.class, toolTip),
-      icon(View.class, icon)
-    );
-    setEnabled(false);
-  }
-
-  public void actionPerformed(ActionEvent event) {
-    SearchManager.getDefault().showSearch(getProvider(getLastNode()));
-  }
-
-  private SearchProvider getProvider(Node node) {
-    DataObject data = getDataObject(node);
-
-    if (data == null) {
-      return null;
-    }
-    return data.getLookup().lookup(SearchProvider.class);
-  }
-
-  @Override
-  public boolean isEnabled() {
-    return true;
-  }
-
-  public static final Action DEFAULT = new SearchAction();
+    /** returns cached parser result instance */
+    public CssParserAccess.CssParserResult result();
+    
 }

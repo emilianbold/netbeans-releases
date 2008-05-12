@@ -59,6 +59,8 @@ import javax.swing.ListCellRenderer;
 import javax.swing.ListModel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.ruby.rubyproject.RubyBaseProject;
 import org.openide.DialogDescriptor;
@@ -67,6 +69,8 @@ import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
 public final class RakeTaskChooser extends JPanel {
+    
+    private final static Object NO_TASK_ITEM = getMessage("RakeTaskChooser.no.matching.task");
 
     private final RubyBaseProject project;
     private final List<RakeTask> allTasks;
@@ -81,6 +85,11 @@ public final class RakeTaskChooser extends JPanel {
 
         final JButton runButton = new JButton(getMessage("RakeTaskChooser.runButton"));
         runButton.getAccessibleContext().setAccessibleDescription (getMessage("RakeTaskChooser.runButton.accessibleDescription"));
+        chooserPanel.matchingTaskList.addListSelectionListener(new ListSelectionListener() {
+            public void valueChanged(ListSelectionEvent e) {
+                setRunButtonState(runButton, chooserPanel);
+            }
+        });
 
         final JButton refreshButton = new JButton();
         Mnemonics.setLocalizedText(refreshButton, getMessage("RakeTaskChooser.refreshButton"));
@@ -93,7 +102,7 @@ public final class RakeTaskChooser extends JPanel {
                     public void run() {
                         assert EventQueue.isDispatchThread() : "is EDT";
                         refreshButton.setEnabled(true);
-                        runButton.setEnabled(true);
+                        setRunButtonState(runButton, chooserPanel);
                     }
                 });
             }
@@ -118,6 +127,11 @@ public final class RakeTaskChooser extends JPanel {
             return new TaskDescriptor(task, chooserPanel.debugCheckbox.isSelected());
         }
         return null;
+    }
+    
+    private static void setRunButtonState(final JButton runButton, final RakeTaskChooser chooserPanel) {
+        Object val = chooserPanel.matchingTaskList.getSelectedValue();
+        runButton.setEnabled(val != null && !NO_TASK_ITEM.equals(val));
     }
 
     static class TaskDescriptor {
@@ -169,6 +183,9 @@ public final class RakeTaskChooser extends JPanel {
             }
         }
         matchingTaskList.setModel(model);
+        if (model.isEmpty()) {
+            model.addElement(NO_TASK_ITEM);
+        }
         matchingTaskList.setSelectedIndex(0);
     }
     
