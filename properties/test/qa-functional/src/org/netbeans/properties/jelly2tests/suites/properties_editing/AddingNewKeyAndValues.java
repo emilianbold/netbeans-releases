@@ -40,13 +40,13 @@
 package org.netbeans.properties.jelly2tests.suites.properties_editing;
 
 import lib.PropertiesEditorTestCase;
-import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NewFileNameLocationStepOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jellytools.nodes.PropertiesNode;
+import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.junit.NbTestSuite;
@@ -60,6 +60,9 @@ public class AddingNewKeyAndValues extends PropertiesEditorTestCase {
     //Variables of test
     public String WORKING_PACKAGE = "working";
     public String BUNDLE_NAME = "bundle";
+    public ProjectsTabOperator pto;
+    public ProjectRootNode prn;
+    public PropertiesNode pn;
 
     public AddingNewKeyAndValues(String name) {
         super(name);
@@ -67,8 +70,10 @@ public class AddingNewKeyAndValues extends PropertiesEditorTestCase {
     
     public static NbTestSuite suite(){
         NbTestSuite suite = new NbTestSuite();
-       // suite.addTest(new AddingNewKeyAndValues("testCreateNewBundle"));
+        suite.addTest(new AddingNewKeyAndValues("testCreateNewBundle"));
         suite.addTest(new AddingNewKeyAndValues("testOpenningSimpleEditor"));
+        suite.addTest(new AddingNewKeyAndValues("testOpenningAdvanceEditor"));
+//        suite.addTest(new AddingNewKeyAndValues("testAddNewKeyAndValue"));
         return suite;
     }
     public static void main(String[] args) {
@@ -105,11 +110,8 @@ public class AddingNewKeyAndValues extends PropertiesEditorTestCase {
     
     public void testOpenningSimpleEditor() {
         
-        //select bundle node in Project Window
-        ProjectsTabOperator pto = ProjectsTabOperator.invoke();
-        ProjectRootNode prn = new ProjectRootNode(new JTreeOperator(pto), DEFAULT_PROJECT_NAME);
-        PropertiesNode pn = new PropertiesNode(prn, "Source Packages" + TREE_SEPARATOR + WORKING_PACKAGE + TREE_SEPARATOR +BUNDLE_NAME + ".properties");
-        pn.edit();
+        //select bundle node in Project Window and do edit action
+        selectBundle().edit();
         
         //Check that Advance Editor was opened
        if (!existsFileInEditor(BUNDLE_NAME)) {
@@ -117,6 +119,27 @@ public class AddingNewKeyAndValues extends PropertiesEditorTestCase {
         }
     }
     
-
+    public void testOpenningAdvanceEditor(){
+        
+         //select bundle node in Project Window and do open action
+        selectBundle().open();
+        
+       if (!existsFileInAdvanceEditor(BUNDLE_NAME+".properties")) {
+           fail("File " + BUNDLE_NAME + " not opened in Advance Editor window");
+       }
+    }
     
+    public void testAddNewKeyAndValue(){
+        selectBundle().open();
+        TopComponentOperator tco = new TopComponentOperator(BUNDLE_NAME+".properties");
+        JButtonOperator jbo = new JButtonOperator(tco, "New Property...");
+        jbo.push();
+    }
+
+    public PropertiesNode selectBundle(){
+        pto = ProjectsTabOperator.invoke();
+        prn = new ProjectRootNode(new JTreeOperator(pto), DEFAULT_PROJECT_NAME);
+        pn = new PropertiesNode(prn, "Source Packages" + TREE_SEPARATOR + WORKING_PACKAGE + TREE_SEPARATOR +BUNDLE_NAME + ".properties");
+        return pn;
+    }
 }
