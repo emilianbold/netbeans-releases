@@ -152,10 +152,7 @@ final class Element extends SimpleRefactoringElementImplementation implements Tr
   }
 
   protected String getNewFileContent() {
-    if (
-      myComponent.getModel() instanceof AbstractDocumentModel &&
-      myTransaction != null)
-    {
+    if (myComponent.getModel() instanceof AbstractDocumentModel && myTransaction != null) {
       return myTransaction.refactorForPreview(myComponent.getModel());
     }
     return null;

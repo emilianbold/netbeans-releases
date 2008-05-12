@@ -136,9 +136,7 @@ public class BPELSourceMultiViewElement extends CloneableEditor implements Multi
      * we are using Externalization semantics so that we can get a hook to call
      * initialize() upon deserialization
      */
-    public void readExternal(ObjectInput in)
-        throws IOException, ClassNotFoundException 
-    {
+    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
         super.readExternal(in);
         Object obj = in.readObject();
         if ( obj instanceof BPELDataObject) {
@@ -556,9 +554,8 @@ public class BPELSourceMultiViewElement extends CloneableEditor implements Multi
         if (myPreviousTask != null) {
             myPreviousTask.cancel();
         }
-        if (myPreviousTask != null && !myPreviousTask.isFinished()
-                && RequestProcessor.getDefault().isRequestProcessorThread()) // issue 125 439
-        {
+        // issue 125 439
+        if (myPreviousTask != null && !myPreviousTask.isFinished() && RequestProcessor.getDefault().isRequestProcessorThread()) {
             myPreviousTask.waitFinished();
             myPreviousTask = null;
         }

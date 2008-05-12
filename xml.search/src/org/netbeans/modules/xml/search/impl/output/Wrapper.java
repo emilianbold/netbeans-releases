@@ -166,10 +166,8 @@ final class Wrapper extends JPanel {
     return results;
   }
 
-  // -------------------------------------------
-  private class MultiListener extends KeyAdapter
-    implements DocumentListener, FocusListener
-  {
+  // ----------------------------------------------------------------------------------------
+  private class MultiListener extends KeyAdapter implements DocumentListener, FocusListener {
     public MultiListener() {
       myResults = new LinkedList<TreePath>();
     }

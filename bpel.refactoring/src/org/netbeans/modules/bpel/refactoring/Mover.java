@@ -139,9 +139,7 @@ final class Mover extends Plugin {
     return null;
   }
       
-  public void doRefactoring(
-    List<RefactoringElementImplementation> elements) throws IOException
-  {
+  public void doRefactoring(List<RefactoringElementImplementation> elements) throws IOException {
     Map<Model, Set<RefactoringElementImplementation>> map = getModelMap(elements);
     Set<Model> models = map.keySet();
     Referenceable reference =
@@ -161,9 +159,7 @@ final class Mover extends Plugin {
     return null;
   }
 
-  private Map<Model, Set<RefactoringElementImplementation>> getModelMap(
-    List<RefactoringElementImplementation> elements)
-  {
+  private Map<Model, Set<RefactoringElementImplementation>> getModelMap(List<RefactoringElementImplementation> elements) {
     Map<Model, Set<RefactoringElementImplementation>> results =
       new HashMap<Model, Set<RefactoringElementImplementation>>();
   
@@ -183,9 +179,7 @@ final class Mover extends Plugin {
     return results;
   }
 
-  private List<Component> getComponents(
-    Set<RefactoringElementImplementation> elements)
-  {
+  private List<Component> getComponents(Set<RefactoringElementImplementation> elements) {
     List<Component> component = new ArrayList<Component>(elements.size());
   
     for (RefactoringElementImplementation element : elements) {

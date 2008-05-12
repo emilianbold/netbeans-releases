@@ -84,7 +84,13 @@ import org.netbeans.modules.bpel.model.api.support.Roles;
  * @author AlexanderPermyakov
  */
 public class VariableTreeInfoProvider implements TreeItemInfoProvider {
-
+    
+    public static final String ANY_ELEMENT = 
+            NbBundle.getMessage(VariableTreeInfoProvider.class, "ANY_ELEMENT"); // NOI18N
+    
+    public static final String ANY_ATTRIBUTE = 
+            NbBundle.getMessage(VariableTreeInfoProvider.class, "ANY_ATTRIBUTE"); // NOI18N
+    
     private static VariableTreeInfoProvider singleton = new VariableTreeInfoProvider();
     
     public static VariableTreeInfoProvider getInstance() {
@@ -197,14 +203,14 @@ public class VariableTreeInfoProvider implements TreeItemInfoProvider {
             return "(" + gType + ")" + getDisplayName(castableObject);
         }
         //
-//        if (treeItem instanceof AnyElement) {
-//            return ANY_ELEMENT;
-//        }
-//        //
-//        if (treeItem instanceof AnyAttribute) {
-//            return ANY_ATTRIBUTE;
-//        }
-//        //
+        if (treeItem instanceof AnyElement) {
+            return ANY_ELEMENT;
+        }
+        //
+        if (treeItem instanceof AnyAttribute) {
+            return ANY_ATTRIBUTE;
+        }
+        //
         return null;
     }
 

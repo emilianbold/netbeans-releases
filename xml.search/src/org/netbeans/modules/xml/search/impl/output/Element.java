@@ -59,14 +59,12 @@ final class Element extends SearchElement.Adapter {
   }
 
   @Override
-  public void gotoSource()
-  {
+  public void gotoSource() {
     myElement.gotoSource();
   }
 
   @Override
-  public void gotoVisual()
-  {
+  public void gotoVisual() {
     myElement.gotoVisual();
   }
 
