@@ -44,6 +44,7 @@ import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.php.project.api.PhpOptions;
+import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAsType;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.util.NbBundle;
@@ -117,7 +118,22 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
         }        
     }
         
-    protected void validateFields() {}
+    protected void validateFields() {
+        String indexFile = indexFileTextField.getText();
+        String err = null;
+        
+        if (!Utils.isValidFileName(indexFile)) {
+            err = NbBundle.getMessage(RunAsLocalWeb.class, "MSG_IllegalIndexName");
+        }
+        //TODO: no validation for arguments        
+        if (err != null) {
+            getCategory().setErrorMessage(err);
+            getCategory().setValid(false);
+        } else {
+            getCategory().setErrorMessage(null);
+            getCategory().setValid(true);
+        }
+    }
 
     private class FieldUpdater implements DocumentListener {
 
