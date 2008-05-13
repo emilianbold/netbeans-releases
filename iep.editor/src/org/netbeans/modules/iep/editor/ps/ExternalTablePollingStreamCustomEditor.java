@@ -491,12 +491,35 @@ public class ExternalTablePollingStreamCustomEditor extends DefaultCustomEditor 
             
             //store record identifying columns
             Property recordIdentifyingColumnsSchema = mComponent.getProperty(ExternalTablePollingStreamOperatorComponent.PROP_RECORD_IDENTIFIER_COLUMNS_SCHEMA);
+            String ridschemaName = recordIdentifyingColumnsSchema.getValue();
             if(mRecordIdentifyingColumnsSchema != null) {
                 IEPModel model = getOperatorComponent().getModel();
                 model.startTransaction();
                 SchemaComponentContainer sc = model.getPlanComponent().getSchemaComponentContainer();
+                //remove previous record identifer schema component if
+                //any
+                if(ridschemaName != null && !ridschemaName.trim().equals("")) {
+                	SchemaComponent sComp = sc.findSchema(ridschemaName);
+                    if(sComp != null) {
+                    	sc.removeSchemaComponent(sComp);
+                    }
+                }
                 sc.addSchemaComponent(mRecordIdentifyingColumnsSchema);
                 recordIdentifyingColumnsSchema.setValue(mRecordIdentifyingColumnsSchema.getName());
+                model.endTransaction();
+            } else {
+            	IEPModel model = getOperatorComponent().getModel();
+                model.startTransaction();
+                
+                if(ridschemaName != null && !ridschemaName.trim().equals("")) {
+                	SchemaComponentContainer sc = model.getPlanComponent().getSchemaComponentContainer();
+                    SchemaComponent sComp = sc.findSchema(ridschemaName);
+                    if(sComp != null) {
+                    	sc.removeSchemaComponent(sComp);
+                    }
+                }
+                
+                recordIdentifyingColumnsSchema.setValue("");
                 model.endTransaction();
             }
             
@@ -569,10 +592,8 @@ public class ExternalTablePollingStreamCustomEditor extends DefaultCustomEditor 
         
         }
         
-        private Set<String> getColumnNames(List<ColumnInfo> remainingColumns, 
-        								   Set<String> usedUpNames) {
+        private Set<String> getColumnNames(List<ColumnInfo> remainingColumns) {
         	Set<String> nameSet = new HashSet<String>();
-        	nameSet.addAll(usedUpNames);
         	
         	for (int i = 0; i < remainingColumns.size(); i++) {
             	ColumnInfo c = remainingColumns.get(i);
@@ -674,14 +695,9 @@ public class ExternalTablePollingStreamCustomEditor extends DefaultCustomEditor 
                     while(it.hasNext()) {
                         ColumnInfo column = it.next();
                         remainingColumns.remove(column);
-                        Set<String> cnames = getColumnNames(remainingColumns, usedupNames);
                         String asColumnName = null;
-                        //first column we want to keep name as it is.
-                        if(counter ==0) {
-                        	asColumnName = column.getColumnName();
-                        } else {
-                        	asColumnName = generateUniqueAsColumnName(column, cnames);
-                        }
+                        
+                    	asColumnName = generateUniqueAsColumnName(column, usedupNames);
                         	
                         usedupNames.add(asColumnName);
                         SchemaAttribute sa = createSchemaAttributeFromColumnInfo(column, asColumnName);
@@ -723,6 +739,9 @@ public class ExternalTablePollingStreamCustomEditor extends DefaultCustomEditor 
                         mRecordIdentifyingColumnsTextField.setText(convertListToCommaSeperatedValues(columnList));
                         
 //                        mRecordIdentifyingColumnsPanel.setStringValue(convertListToCommaSeperatedValues(columnList));
+                    } else {
+                    	mRecordIdentifyingColumnsSchema = null;
+                    	mRecordIdentifyingColumnsTextField.setText("");
                     }
                     
                 }

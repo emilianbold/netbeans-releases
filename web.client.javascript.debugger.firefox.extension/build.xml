@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir="." default="netbeans" name="web.client.javascript.debugger.firefox.extension">
+    <description>Builds, tests, and runs the project org.netbeans.modules.web.client.javascript.debugger.firefox.extension</description>
+    <import file="../nbbuild/templates/projectized.xml"/>
+    <!-- build netbeans-firefox-extension -->
+    <target name="-create-netbeans-firefox-extension-jar">
+        <echo message="Build netbeans-firefox-extension.jar"/>
+        <mkdir dir="${nbm.target.dir}"/>
+        <zip destfile="${nbm.target.dir}/netbeans-firefox-extension.jar">
+            <zipfileset dir="extension/firefox/netbeans-firefox-extension" includes="content/**" />
+            <zipfileset dir="extension/firefox/netbeans-firefox-extension" includes="locale/**" />
+            <zipfileset dir="extension/firefox/netbeans-firefox-extension" includes="skin/**" />
+        </zip>
+    </target>
+    <target name="-gen-manifest">
+        <echo message="Configuring chrome-manifest"/>
+        <mkdir dir="${nbm.target.dir}"/>
+        <copy file="extension/firefox/netbeans-firefox-extension/chrome.manifest" tofile="${nbm.target.dir}/chrome.manifest" overwrite="true"/>
+        <replaceregexp file="${nbm.target.dir}/chrome.manifest" 
+             match="^(content\s+\S*\s+)(\S*/)$"
+             replace="\1jar:chrome/netbeans-firefox-extension.jar!/\2"
+             flags="g" byline="true"/>
+        <replaceregexp file="${nbm.target.dir}/chrome.manifest"
+             match="^(skin|locale)(\s+\S*\s+\S*\s+)(.*/)$"
+             replace="\1\2jar:chrome/netbeans-firefox-extension.jar!/\3"
+             flags="g" byline="true"/>
+    </target>
+    <target name="-create-netbeans-firefox-extension-xpi" depends="-create-netbeans-firefox-extension-jar,-gen-manifest">
+        <echo message="Build netbeans-firefox-extension.xpi"/>
+        <mkdir dir="${cluster}/modules/ext"/>
+        <zip destfile="${cluster}/modules/ext/netbeans-firefox-extension.xpi">
+            <zipfileset dir="${nbm.target.dir}" includes="netbeans-firefox-extension.jar" prefix="chrome" />
+            <zipfileset dir="${nbm.target.dir}" includes="chrome.manifest" />
+            <zipfileset dir="extension/firefox/netbeans-firefox-extension"   
+                                    includes="install.rdf" />
+        </zip>
+    </target>
+    <target name="netbeans-extra" depends="-create-netbeans-firefox-extension-xpi"/>
+    
+    <target name="-clean-netbeans-firefox-extension">
+        <echo message="Clean netbeans-firefox-extension"/>
+        <delete file="${nbm.target.dir}/netbeans-firefox-extension.jar" failonerror="false"/>
+        <delete file="${nbm.target.dir}/chrome.manifest" failonerror="false"/>
+        <delete file="${web.client.javascript.debugger.api.dir}/modules/ext/netbeans-firefox-extension.xpi" failonerror="false"/>
+    </target>
+    <target name="clean" depends="-clean-netbeans-firefox-extension,projectized-common.clean"/>
+</project>
