@@ -64,7 +64,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.groovy.grailsproject.GrailsActionProvider;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
-import org.netbeans.modules.groovy.grailsproject.actions.GrailsServerCommandAction;
+import org.netbeans.modules.groovy.grailsproject.actions.GrailsCommandAction;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
@@ -263,7 +263,7 @@ public class GrailsLogicalViewProvider implements LogicalViewProvider {
         private Action[] getAdditionalActions() {
 
             List<Action> actions = new ArrayList<Action>();
-            actions.add(new GrailsServerCommandAction(project));
+            actions.add(new GrailsCommandAction(project));
             actions.add(null);
             actions.add(ProjectSensitiveActions.projectCommandAction(GrailsActionProvider.COMMAND_GRAILS_SHELL,
                     NbBundle.getMessage(GrailsLogicalViewProvider.class, "LBL_ShellAction_Name"), null));
