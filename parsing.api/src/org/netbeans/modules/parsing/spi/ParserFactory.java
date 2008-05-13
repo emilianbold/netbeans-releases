@@ -40,6 +40,7 @@
 package org.netbeans.modules.parsing.spi;
 
 import java.util.Collection;
+import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 
 
@@ -55,13 +56,13 @@ import org.netbeans.modules.parsing.api.Source;
 public abstract class ParserFactory {
 
     /**
-     * Returns new instance of {@link Parser} for given {@link Document} 
+     * Returns new instance of {@link Parser} for given {@link Snapshot}s 
      * or <code>null</code>.
      * 
-     * @param document      A source.
+     * @param snapshots     A snapshots.
      * @return              A new instance of parser.
      */
-    public abstract Parser createParser (Collection<Source> source);
+    public abstract Parser createParser (Collection<Snapshot> snapshots);
 }
 
 

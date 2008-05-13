@@ -40,6 +40,7 @@
 package org.netbeans.modules.languages;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import javax.swing.event.ChangeListener;
 
@@ -54,8 +55,10 @@ import org.netbeans.modules.languages.parser.StringInput;
 import org.netbeans.modules.languages.parser.SyntaxError;
 import org.netbeans.modules.languages.parser.TokenInputUtils;
 import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.Task;
 import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.parsing.spi.ParserFactory;
 
 
 /**
@@ -306,6 +309,13 @@ public class ParserImpl extends Parser {
 //            ttype = (String) t.getProperty ("type");
 //        }
 //    }
+    
+    public static class AParserFactory extends ParserFactory {
+
+        @Override
+        public Parser createParser (Collection<Source> source) {
+        }
+    }
 }
 
 

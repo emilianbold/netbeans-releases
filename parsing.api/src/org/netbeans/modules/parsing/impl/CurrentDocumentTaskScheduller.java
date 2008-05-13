@@ -40,6 +40,8 @@
 package org.netbeans.modules.parsing.impl;
 
 import java.util.Collections;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 
@@ -52,14 +54,35 @@ import org.netbeans.modules.parsing.api.Source;
  */
 public class CurrentDocumentTaskScheduller extends CurrentEditorTaskScheduller {
     
-    private Document currentDocument;
+    private Document        currentDocument;
+    private Source          source;
+    private DocumentListener 
+                            documentListener = new ADocumentListener ();
     
     protected void setEditor (JTextComponent editor) {
         Document document = editor.getDocument ();
         if (currentDocument == document) return;
+        if (currentDocument != null)
+            currentDocument.removeDocumentListener (documentListener);
         currentDocument = document;
-        Source source = Source.create (currentDocument);
+        source = Source.create (currentDocument);
         scheduleTasks (Collections.singleton (source));
+        document.addDocumentListener (documentListener);
+    }
+    
+    private class ADocumentListener implements DocumentListener {
+
+        public void insertUpdate (DocumentEvent e) {
+            scheduleTasks (Collections.singleton (source));
+        }
+
+        public void removeUpdate (DocumentEvent e) {
+            scheduleTasks (Collections.singleton (source));
+        }
+
+        public void changedUpdate (DocumentEvent e) {
+            scheduleTasks (Collections.singleton (source));
+        }
     }
 }
 

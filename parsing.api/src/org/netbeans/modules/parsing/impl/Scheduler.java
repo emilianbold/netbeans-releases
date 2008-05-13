@@ -41,21 +41,16 @@ package org.netbeans.modules.parsing.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
-
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.netbeans.modules.parsing.spi.TaskFactory;
 import org.netbeans.modules.parsing.spi.TaskScheduler;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.FolderLookup;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
@@ -70,9 +65,7 @@ public class Scheduler {
     private static Collection<? extends TaskScheduler> taskSchedulers;
     
     static void init () {
-        System.out.println("Scheduler.init");
         taskSchedulers = Lookup.getDefault ().lookupAll (TaskScheduler.class);
-        System.out.println("  schedullers " + taskSchedulers.size ());
     }
     
     private static Map<TaskScheduler,Map<Source,Collection<SchedulerTask>>> tasks = new HashMap<TaskScheduler, Map<Source, Collection<SchedulerTask>>> (); 
@@ -87,15 +80,11 @@ public class Scheduler {
             sourceToTasks = new HashMap<Source,Collection<SchedulerTask>> ();
             tasks.put (taskScheduler, sourceToTasks);
         }
-        System.err.println("1");
         Set<Source> oldSources = new HashSet<Source> (sourceToTasks.keySet ());
-        System.err.println("2");
         for (Source source : sources) {
             Collection<SchedulerTask> tasks = sourceToTasks.get (source);
             if (tasks == null) {
-                System.err.println("createTasks");
                 tasks = createTasks (source, taskScheduler);
-                System.err.println("createTasks end");
                 sourceToTasks.put (source, tasks);
                 for (SchedulerTask task : tasks)
                     TaskProcessor.addPhaseCompletionTask (task, source);
@@ -104,13 +93,11 @@ public class Scheduler {
                     TaskProcessor.rescheduleTask (task, source);
             oldSources.remove (source);
         }
-        System.err.println("3");
         for (Source source : oldSources) {
             Collection<SchedulerTask> tasks = sourceToTasks.remove (source);
             for (SchedulerTask task : tasks)
                 TaskProcessor.removePhaseCompletionTask (task, source);
         }
-        System.err.println("4");
     }
     
     private static Collection<SchedulerTask> createTasks (
@@ -120,7 +107,6 @@ public class Scheduler {
         List<SchedulerTask> tasks = new ArrayList<SchedulerTask> ();
         String mimeType = source.getMimeType ();
         Lookup lookup = getLookup (mimeType);
-        System.out.println("getLookup end ");
         for (TaskFactory factory : lookup.lookupAll (TaskFactory.class)) {
             for (SchedulerTask task : factory.create (source))
                 if (task.getSchedulerClass () == taskScheduler.getClass ())
@@ -130,27 +116,12 @@ public class Scheduler {
     }
     
     private static Lookup getLookup (String mimeType) {
-        System.err.println("getLookup " + mimeType);
-        if (mimeType.equals ("content/unknown"))
-            return Lookup.EMPTY;
-//        FileSystem fileSystem = Repository.getDefault ().getDefaultFileSystem ();
-//        FileObject fileObject1 = fileSystem.findResource ("Editors");
-//        DataFolder dataFolder1 = fileObject1 == null ? null : DataFolder.findFolder (fileObject1);
-//        FileObject fileObject2 = fileSystem.findResource ("Editors/" + mimeType);
-//        DataFolder dataFolder2 = fileObject2 == null ? null : DataFolder.findFolder (fileObject2);
-//        System.err.println("getLookup 2 " + dataFolder1 + ":" + dataFolder2);
+//        if (mimeType.equals ("content/unknown"))
+//            return Lookup.EMPTY;
         return new ProxyLookup (
-            Lookups.forPath ("Editors"),
+            Lookups.forPath ("Editors/text/base"),
             Lookups.forPath ("Editors" + mimeType)
         );
-//        return dataFolder2 == null ? 
-//            (Lookup) (dataFolder1 == null ? 
-//                Lookup.EMPTY :
-//                new FolderLookup (dataFolder1).getLookup ()) :
-//            new ProxyLookup (
-//                new FolderLookup (dataFolder1).getLookup (),
-//                new FolderLookup (dataFolder2).getLookup ()
-//            );
     }
 }
 
