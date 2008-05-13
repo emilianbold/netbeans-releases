@@ -49,6 +49,7 @@ import junit.framework.AssertionFailedError;
 import org.netbeans.Module;
 import org.netbeans.ModuleManager;
 import org.netbeans.core.startup.ModuleHistory;
+import org.netbeans.core.startup.SetupHid;
 import org.netbeans.junit.NbTestCase;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -97,8 +98,10 @@ public abstract class InstanceDataObjectModuleTestHid extends NbTestCase {
         ERR = ErrManager.getDefault().getInstance("TEST-" + getName());
         
         mgr = org.netbeans.core.startup.Main.getModuleSystem().getManager();
-        final File jar1 = toFile (InstanceDataObjectModuleTestHid.class.getResource("data/test1.jar"));
-        final File jar2 = toFile (InstanceDataObjectModuleTestHid.class.getResource("data/test2.jar"));
+        File data = new File(getDataDir(), "lookup");
+        File jars = getWorkDir();
+        final File jar1 = SetupHid.createTestJAR(data, jars, "test1", null);
+        final File jar2 = SetupHid.createTestJAR(data, jars, "test2", null);
         try {
             mgr.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
                 public Void run() throws Exception {

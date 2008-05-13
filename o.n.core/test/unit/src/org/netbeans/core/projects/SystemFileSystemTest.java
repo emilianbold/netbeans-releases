@@ -61,6 +61,7 @@ import java.beans.BeanInfo;
 import java.awt.image.PixelGrabber;
 import java.awt.image.ImageObserver;
 import org.netbeans.core.startup.MainLookup;
+import org.netbeans.core.startup.SetupHid;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 
@@ -83,7 +84,9 @@ public class SystemFileSystemTest extends NbTestCase {
         try {
             mgr.mutex().readAccess(new Mutex.ExceptionAction<Void>() {
                 public Void run() throws Exception {
-                    satJar = new File(SystemFileSystemTest.class.getResource("data/sfs-attr-test.jar").getFile());
+                    File data = new File(getDataDir(), "projects");
+                    File jars = getWorkDir();
+                    satJar = SetupHid.createTestJAR(data, jars, "sfs-attr-test", null);
                     satModule = mgr.create(satJar, new ModuleHistory(satJar.getAbsolutePath()), false, false, false);
                     assertEquals("no problems installing sfs-attr-test.jar", Collections.EMPTY_SET, satModule.getProblems());
                     mgr.enable(satModule);

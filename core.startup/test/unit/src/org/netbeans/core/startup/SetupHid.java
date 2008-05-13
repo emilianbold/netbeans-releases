@@ -498,6 +498,9 @@ public abstract class SetupHid extends NbTestCase {
         }
     }
     private File createTestJAR(String name, String srcdir, File... classpath) throws IOException {
+        return createTestJAR(data, jars, name, srcdir, classpath);
+    }
+    public static File createTestJAR(File data, File jars, String name, String srcdir, File... classpath) throws IOException {
         File srcdirF = null;
         File d = new File(data, srcdir != null ? srcdir : name);
         if (d.isDirectory()) {

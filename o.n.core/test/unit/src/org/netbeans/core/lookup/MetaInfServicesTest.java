@@ -49,6 +49,7 @@ import javax.print.PrintServiceLookup;
 import org.netbeans.Module;
 import org.netbeans.ModuleManager;
 import org.netbeans.core.startup.ModuleHistory;
+import org.netbeans.core.startup.SetupHid;
 import org.netbeans.junit.NbTestCase;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -80,8 +81,10 @@ public class MetaInfServicesTest extends NbTestCase {
         try {
             mgr.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
                 public Void run() throws Exception {
-                    File jar1 = InstanceDataObjectModuleTestHid.toFile(MetaInfServicesTest.class.getResource("data/services-jar-1.jar"));
-                    File jar2 = InstanceDataObjectModuleTestHid.toFile(MetaInfServicesTest.class.getResource("data/services-jar-2.jar"));
+                    File data = new File(getDataDir(), "lookup");
+                    File jars = getWorkDir();
+                    File jar1 = SetupHid.createTestJAR(data, jars, "services-jar-1", null);
+                    File jar2 = SetupHid.createTestJAR(data, jars, "services-jar-2", null, jar1);
                     m1 = mgr.create(jar1, new ModuleHistory(jar1.getAbsolutePath()), false, false, false);
                     m2 = mgr.create(jar2, new ModuleHistory(jar2.getAbsolutePath()), false, false, false);
                     return null;
