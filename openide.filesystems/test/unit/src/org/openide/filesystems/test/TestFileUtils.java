@@ -30,13 +30,13 @@ package org.openide.filesystems.test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
@@ -78,7 +78,21 @@ public class TestFileUtils {
      */
     public static FileObject writeZipFile(FileObject root, String path, String... entries) throws IOException {
         FileObject fo = FileUtil.createData(root, path);
-        OutputStream os = fo.getOutputStream();
+        writeZipFile(fo.getOutputStream(), entries);
+        return fo;
+    }
+
+    /**
+     * Create a new ZIP file.
+     * @param jar the ZIP file to create
+     * @param entries a list of entries in the form of "filename:UTF8-contents"; parent dirs created automatically
+     * @throws IOException for the usual reasons
+     */
+    public static void writeZipFile(File jar, String... entries) throws IOException {
+        writeZipFile(new FileOutputStream(jar), entries);
+    }
+
+    private static void writeZipFile(OutputStream os, String... entries) throws IOException {
         ZipOutputStream zos = new ZipOutputStream(os);
         Set<String> parents = new HashSet<String>();
         for (String entry : entries) {
@@ -113,7 +127,6 @@ public class TestFileUtils {
         zos.finish();
         zos.close();
         os.close();
-        return fo;
     }
 
     /**
