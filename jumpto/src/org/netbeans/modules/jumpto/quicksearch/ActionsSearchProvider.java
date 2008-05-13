@@ -83,7 +83,7 @@ public class ActionsSearchProvider implements SearchProvider {
     public SearchResultGroup evaluate(String pattern) {
         ActionsResultGroup r = new ActionsResultGroup(pattern);
         for (ShortcutAction a:getActions()) {
-            if (a.getDisplayName().startsWith(pattern)) {
+            if (a.getDisplayName().toLowerCase().indexOf(pattern) != -1) {
                 r.addAction(a);
             }
         }
