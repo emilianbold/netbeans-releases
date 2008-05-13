@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -45,158 +45,193 @@ package org.netbeans.modules.properties;
 
 import java.awt.event.KeyEvent;
 import java.awt.event.ActionEvent;
-import javax.swing.*;
-
+import java.awt.event.ActionListener;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JRootPane;
+import javax.swing.JTextField;
+import javax.swing.KeyStroke;
+import org.jdesktop.layout.GroupLayout;
+import org.openide.awt.Mnemonics;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import static org.jdesktop.layout.LayoutStyle.RELATED;
+import static org.jdesktop.layout.GroupLayout.BASELINE;
+import static org.jdesktop.layout.GroupLayout.DEFAULT_SIZE;
+import static org.jdesktop.layout.GroupLayout.LEADING;
+import static org.jdesktop.layout.GroupLayout.PREFERRED_SIZE;
 
 
 /**
  * Panel for customizing <code>Element.ItemElem</code> element.
  *
  * @author  Peter Zavadsky
+ * @author  Marian Petras
  * @see Element.ItemElem
  */
-public class PropertyPanel extends JPanel {
+final class PropertyPanel extends JPanel {
 
     /** Element to customize. */
-    private Element.ItemElem element;
+    private final Element.ItemElem element;
 
+    private JTextField keyText;
+    private JTextField valueText;
+    private JTextField commentText;
 
-    /** Creates new <code>PropertyPanel</code>.
-     * @param element element to customize */
-    public PropertyPanel(Element.ItemElem element) {
+    /**
+     * Creates a new {@code PropertyPanel}.
+     */
+    PropertyPanel() {
+        this(null);
+    }
+
+    /**
+     * Creates a new {@code PropertyPanel}.
+     * 
+     * @param  element  element to customize, or {@code null}
+     */
+    PropertyPanel(Element.ItemElem element) {
         this.element = element;
         
         initComponents();
+        initInteraction();
         initAccessibility();             
                 
-        keyText.setText(element.getKey());
-        valueText.setText(element.getValue());
-        commentText.setText(element.getComment());
+        if (element != null) {
+            keyText.setText(element.getKey());
+            valueText.setText(element.getValue());
+            commentText.setText(element.getComment());
+        }
 
         // Unregister Enter on text fields so default button could work.
-        keyText.getKeymap().removeKeyStrokeBinding(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0));
-        valueText.getKeymap().removeKeyStrokeBinding(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0));
-        commentText.getKeymap().removeKeyStrokeBinding(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0));
+        final KeyStroke enterKeyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0);
+        keyText.getKeymap().removeKeyStrokeBinding(enterKeyStroke);
+        valueText.getKeymap().removeKeyStrokeBinding(enterKeyStroke);
+        commentText.getKeymap().removeKeyStrokeBinding(enterKeyStroke);
         
         HelpCtx.setHelpIDString(this, Util.HELP_ID_ADDING);
     }
 
     private void initAccessibility() {
-        this.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(PropertyPanel.class).getString("ACS_PropertyPanel"));                
-        
+        this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(getClass(), "ACS_PropertyPanel"));                
+        keyText.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(getClass(), "ACS_PropertyPanel"));                
+        valueText.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(getClass(), "ACS_PropertyPanel"));                
+        commentText.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(getClass(), "ACS_PropertyPanel"));                
+    }
+    
+    // <editor-fold defaultstate="collapsed" desc="UI initialization code">
+    private void initComponents() {
+
+        JLabel keyLabel = new JLabel();
+        JLabel valueLabel = new JLabel();
+        JLabel commentLabel = new JLabel();
+
         keyLabel.setLabelFor(keyText);
         valueLabel.setLabelFor(valueText);
         commentLabel.setLabelFor(commentText);
         
-        keyText.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(PropertyPanel.class).getString("ACS_PropertyPanel"));                
-        valueText.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(PropertyPanel.class).getString("ACS_PropertyPanel"));                
-        commentText.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(PropertyPanel.class).getString("ACS_PropertyPanel"));                
-    }
-    
-    /** This method is called from within the constructor to
-     * initialize the form.
-     * WARNING: Do NOT modify this code. The content of this method is
-     * always regenerated by the Form Editor.
-     */
-    // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
-    private void initComponents() {
-        java.awt.GridBagConstraints gridBagConstraints;
+        Mnemonics.setLocalizedText(keyLabel, NbBundle.getMessage(getClass(), "LBL_KeyLabel")); // NOI18N
+        Mnemonics.setLocalizedText(valueLabel, NbBundle.getMessage(getClass(), "LBL_ValueLabel")); // NOI18N
+        Mnemonics.setLocalizedText(commentLabel, NbBundle.getMessage(getClass(), "LBL_CommentLabel")); // NOI18N
 
-        keyLabel = new javax.swing.JLabel();
         keyText = new JTextField(25);
-        valueLabel = new javax.swing.JLabel();
         valueText = new JTextField(25);
-        commentLabel = new javax.swing.JLabel();
         commentText = new JTextField(25);
 
-        setLayout(new java.awt.GridBagLayout());
+        GroupLayout layout = new GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(LEADING)
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(layout.createParallelGroup(LEADING)
+                    .add(keyLabel)
+                    .add(valueLabel)
+                    .add(commentLabel))
+                .addPreferredGap(RELATED)
+                .add(layout.createParallelGroup(LEADING)
+                    .add(commentText, DEFAULT_SIZE, PREFERRED_SIZE, Short.MAX_VALUE)
+                    .add(valueText, DEFAULT_SIZE, PREFERRED_SIZE, Short.MAX_VALUE)
+                    .add(keyText, DEFAULT_SIZE, PREFERRED_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(LEADING)
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(layout.createParallelGroup(BASELINE)
+                    .add(keyLabel)
+                    .add(keyText, PREFERRED_SIZE, PREFERRED_SIZE, PREFERRED_SIZE))
+                .addPreferredGap(RELATED)
+                .add(layout.createParallelGroup(BASELINE)
+                    .add(valueText, PREFERRED_SIZE, PREFERRED_SIZE, PREFERRED_SIZE)
+                    .add(valueLabel))
+                .addPreferredGap(RELATED)
+                .add(layout.createParallelGroup(BASELINE)
+                    .add(commentText, PREFERRED_SIZE, PREFERRED_SIZE, PREFERRED_SIZE)
+                    .add(commentLabel))
+                .addContainerGap())
+        );
+    }// </editor-fold>
 
-        org.openide.awt.Mnemonics.setLocalizedText(keyLabel, NbBundle.getBundle(PropertyPanel.class).getString("LBL_KeyLabel")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
-        add(keyLabel, gridBagConstraints);
+    private void initInteraction() {
+        final Listener listener = new Listener();
 
-        keyText.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                keyTextActionPerformed(evt);
+        keyText.addActionListener(listener);
+        valueText.addActionListener(listener);
+        commentText.addActionListener(listener);
+
+        if (element != null) {
+            keyText.addFocusListener(listener);
+            valueText.addFocusListener(listener);
+            commentText.addFocusListener(listener);
+        }
+    }
+
+    private final class Listener extends FocusAdapter implements ActionListener {
+
+        @Override
+        public void focusLost(FocusEvent e) {
+            storeText(e.getSource());
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            storeText(e.getSource());
+            workaround11364();      //press the dialogue's default button
+        }
+
+        private void storeText(Object source) {
+            if (element != null) {
+                if (source == keyText) {
+                    element.getKeyElem().setValue(keyText.getText());
+                } else if (source == valueText) {
+                    element.getValueElem().setValue(valueText.getText());
+                } else if (source == commentText) {
+                    element.getCommentElem().setValue(commentText.getText());
+                } else {
+                    assert false;
+                }
             }
-        });
-        keyText.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent evt) {
-                keyTextFocusLost(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(12, 7, 0, 11);
-        add(keyText, gridBagConstraints);
+        }
 
-        org.openide.awt.Mnemonics.setLocalizedText(valueLabel, NbBundle.getBundle(PropertyPanel.class).getString("LBL_ValueLabel")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
-        add(valueLabel, gridBagConstraints);
+    }
 
-        valueText.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                valueTextActionPerformed(evt);
-            }
-        });
-        valueText.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent evt) {
-                valueTextFocusLost(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(5, 7, 0, 11);
-        add(valueText, gridBagConstraints);
+    String getKey() {
+        return keyText.getText();
+    }
 
-        org.openide.awt.Mnemonics.setLocalizedText(commentLabel, NbBundle.getBundle(PropertyPanel.class).getString("LBL_CommentLabel")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 12, 11, 0);
-        add(commentLabel, gridBagConstraints);
+    String getValue() {
+        return valueText.getText();
+    }
 
-        commentText.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                commentTextActionPerformed(evt);
-            }
-        });
-        commentText.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent evt) {
-                commentTextFocusLost(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(5, 7, 11, 11);
-        add(commentText, gridBagConstraints);
-    }// </editor-fold>//GEN-END:initComponents
+    String getComment() {
+        return commentText.getText();
+    }
 
-    private void valueTextFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_valueTextFocusLost
-        valueTextHandler();
-    }//GEN-LAST:event_valueTextFocusLost
-
-    private void workaround11364(ActionEvent evt) {
+    private void workaround11364() {
         JRootPane root = getRootPane();
         if (root != null) {
             JButton defaultButton = root.getDefaultButton();
@@ -205,53 +240,5 @@ public class PropertyPanel extends JPanel {
             }
         }
     }
-
-    private void valueTextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_valueTextActionPerformed
-        valueTextHandler();
-        workaround11364(evt);
-    }//GEN-LAST:event_valueTextActionPerformed
-
-    
-    /** Value text field event handler. */
-    private void valueTextHandler() {
-        element.getValueElem().setValue(valueText.getText());
-    }
-    
-    private void keyTextFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_keyTextFocusLost
-        keyTextHandler();
-    }//GEN-LAST:event_keyTextFocusLost
-
-    private void keyTextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_keyTextActionPerformed
-        keyTextHandler();
-        workaround11364(evt);
-    }//GEN-LAST:event_keyTextActionPerformed
-
-    /** Key text field event handler. */
-    private void keyTextHandler() {
-        element.getKeyElem().setValue(keyText.getText());
-    }
-    
-    private void commentTextFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_commentTextFocusLost
-        commentTextHandler();
-    }//GEN-LAST:event_commentTextFocusLost
-
-    private void commentTextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_commentTextActionPerformed
-        commentTextHandler();
-        workaround11364(evt);
-    }//GEN-LAST:event_commentTextActionPerformed
-
-    /** Comment text field event handler. */
-    private void commentTextHandler() {
-        element.getCommentElem().setValue(commentText.getText());
-    }
-    
-    // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel commentLabel;
-    private javax.swing.JTextField commentText;
-    private javax.swing.JLabel keyLabel;
-    private javax.swing.JTextField keyText;
-    private javax.swing.JLabel valueLabel;
-    private javax.swing.JTextField valueText;
-    // End of variables declaration//GEN-END:variables
 
 }
