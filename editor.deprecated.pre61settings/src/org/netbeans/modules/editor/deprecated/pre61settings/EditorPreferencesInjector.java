@@ -86,12 +86,18 @@ public final class EditorPreferencesInjector extends StorageFilter<String, Typed
     
     @Override
     public void afterLoad(Map<String, TypedValue> preferences, MimePath mimePath, String profile, boolean defaults) {
+        
         Class kitClass = null;
         
         if (mimePath.size() > 0) {
-            EditorKit kit = MimeLookup.getLookup(mimePath).lookup(EditorKit.class);
-            if (kit != null) {
-                kitClass = kit.getClass();
+            ignoreInitializerChanges.set(true);
+            try {
+                EditorKit kit = MimeLookup.getLookup(mimePath).lookup(EditorKit.class);
+                if (kit != null) {
+                    kitClass = kit.getClass();
+                }
+            } finally {
+                ignoreInitializerChanges.remove();
             }
         } else {
             kitClass = BaseKit.class;
@@ -205,7 +211,9 @@ public final class EditorPreferencesInjector extends StorageFilter<String, Typed
     
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt == null || "initializers".equals(evt.getPropertyName())) { //NOI18N
-            notifyChanges();
+            if (!ignoreInitializerChanges.get()) {
+                notifyChanges();
+            }
         }
     }
 
@@ -255,5 +263,13 @@ public final class EditorPreferencesInjector extends StorageFilter<String, Typed
 
     private static final Map<MimePath, Map<String, Object>> COMPLEX = new WeakHashMap<MimePath, Map<String, Object>>();
     private final ThreadLocal<Map> currentSettingsMap = new ThreadLocal<Map>();
+    
+    // to prevent deadlocks caused by EditorKits that hook up settings initializers
+    // from their constructor
+    private final ThreadLocal<Boolean> ignoreInitializerChanges = new ThreadLocal<Boolean>() {
+        protected @Override Boolean initialValue() {
+            return false;
+        }
+    };
     
 } // End of EditorPreferencesInjector class
