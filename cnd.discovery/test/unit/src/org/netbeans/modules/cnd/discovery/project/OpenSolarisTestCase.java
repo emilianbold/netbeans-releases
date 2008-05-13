@@ -54,8 +54,9 @@ public class OpenSolarisTestCase extends NbTestCase {
 
     public void testCreateproject() {
         StandAlone.main(new String[]{"-Project=OpenSolaris",
-                                     "-Root=/export/opensolaris/testws87",
-                                     "-NBProject=/export/opensolaris/testws87/pomona"
+                                     //"-Root=/net/d-espb04-127-6/export/home/alexvsimon/opensolaris/java_cp/wsb88",
+                                     "-Root=/export/opensolaris/testws88",
+                                     "-NBProject=/export/opensolaris/testws88/pomona"
         });
     }
 }

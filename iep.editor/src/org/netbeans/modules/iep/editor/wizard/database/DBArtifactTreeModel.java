@@ -39,10 +39,14 @@
 
 package org.netbeans.modules.iep.editor.wizard.database;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreePath;
+
+
 
 
 /**
@@ -55,10 +59,16 @@ public class DBArtifactTreeModel extends DefaultTreeModel {
     
     private List<TableInfo> mTables;
     
-    DBArtifactTreeModel(DefaultMutableTreeNode root, List<TableInfo> tables) {
+    private List<TableNode> mTableNodes = new ArrayList<TableNode>();
+    
+    private List<ColumnInfo> mExistingColumnNames = new ArrayList<ColumnInfo>();
+    
+    DBArtifactTreeModel(DefaultMutableTreeNode root, 
+    					List<TableInfo> tables, List<ColumnInfo> existingColumnNames) {
         super(root, true);
         this.mRoot = root;
         this.mTables = tables;
+        this.mExistingColumnNames = existingColumnNames;
         init();
     }
     
@@ -70,6 +80,7 @@ public class DBArtifactTreeModel extends DefaultTreeModel {
             
             TableNode tNode = new TableNode(table);
             this.mRoot.insert(tNode, this.mRoot.getChildCount());
+            mTableNodes.add(tNode);
             populateColumnNodes(table, tNode);
             
         }
@@ -81,7 +92,15 @@ public class DBArtifactTreeModel extends DefaultTreeModel {
         while(it.hasNext()) {
             ColumnInfo column = it.next();
             ColumnNode cNode = new ColumnNode(column);
+            if(mExistingColumnNames.contains(column)) {
+            	cNode.setSelected(true);
+            }
             tNode.insert(cNode, tNode.getChildCount());
+           
         }
+    }
+    
+    public List<TableNode> getTableNodes() {
+        return this.mTableNodes;
     }
 }

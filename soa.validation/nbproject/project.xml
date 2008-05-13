@@ -135,6 +135,7 @@
                 <friend>org.netbeans.modules.bpel.validation</friend>
                 <friend>org.netbeans.modules.xslt.core</friend>
                 <friend>org.netbeans.modules.xslt.project</friend>
+                <friend>org.netbeans.modules.xslt.tmap</friend>
                 <friend>org.netbeans.modules.xslt.validation</friend>
                 <package>org.netbeans.modules.soa.validation.action</package>
                 <package>org.netbeans.modules.soa.validation.core</package>

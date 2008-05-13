@@ -42,9 +42,7 @@ package org.netbeans.modules.soa.validation.core;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-
 import org.openide.text.Annotatable;
-import org.openide.text.Line;
 
 /**
  * @author Vladimir Yaroslavskiy

@@ -648,7 +648,8 @@ public class PlatformImpl extends J2eePlatformImpl {
     public JavaPlatform getJavaPlatform() {
         if (dmProps.getSunDeploymentManager().isLocal()) {
             Asenv envData = new Asenv(root);
-            FileObject currHome = FileUtil.toFileObject(new File(envData.get(Asenv.AS_JAVA)));
+            File jdkPath = new File(envData.get(Asenv.AS_JAVA));
+            FileObject currHome = FileUtil.toFileObject(FileUtil.normalizeFile(jdkPath));
             JavaPlatformManager jpm = JavaPlatformManager.getDefault();
 
             if (currHome != null) {

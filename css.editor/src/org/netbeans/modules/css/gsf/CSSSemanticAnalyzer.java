@@ -48,6 +48,7 @@ import org.netbeans.modules.gsf.api.SemanticAnalyzer;
 import org.netbeans.modules.gsf.api.TranslatedSource;
 import org.netbeans.modules.css.editor.Css;
 import org.netbeans.modules.css.parser.CSSParserTreeConstants;
+import org.netbeans.modules.css.parser.CssParserAccess;
 import org.netbeans.modules.css.parser.NodeVisitor;
 import org.netbeans.modules.css.parser.SimpleNode;
 
@@ -107,10 +108,7 @@ public class CSSSemanticAnalyzer implements SemanticAnalyzer {
                     if (!range.isEmpty()) { //filter virtual nodes
 
                         String propertyName = node.image().trim();
-                        //filter out generated code coloring
-                        if("EXPRESSION_LANGUAGE".equals(propertyName) 
-                                ||  "JAVA_CODE".equals(propertyName)
-                                || "PHP_CODE".equals(propertyName)) {
+                        if(CssParserAccess.containsGeneratedCode(propertyName)) {
                             return;
                         }
                         

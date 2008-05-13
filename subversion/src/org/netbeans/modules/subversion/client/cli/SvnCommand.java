@@ -280,6 +280,11 @@ public abstract class SvnCommand implements CommandNotificationListener {
             add(revision == null || revision.toString().trim().equals("") ? "HEAD" : revision.toString());
         }                    
 
+        public void addPathArguments(String... paths) throws IOException {        
+            add("--targets");
+            add(createTempCommandFile(paths));
+        }
+        
         public void addFileArguments(File... files) throws IOException {        
             add("--targets");
             add(createTempCommandFile(files));
