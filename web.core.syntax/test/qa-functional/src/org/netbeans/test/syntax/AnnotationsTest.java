@@ -115,15 +115,15 @@ public class AnnotationsTest extends BasicOpenFileTest {
     }
 
     public void testIssue134518() throws Exception {
-        runTest("issue1334518.jsp");
+        runTest("issue134518.jsp");
     }
 
     public void testIssue134877() throws Exception {
-        runTest("issue13344877.jsp");
+        runTest("issue134877.jsp");
     }
 
     public void testIssue134879() throws Exception {
-        runTest("issue13344879.jspf");
+        runTest("issue134879.jspf");
     }
     
     public void testMissingEndTag() throws Exception {
