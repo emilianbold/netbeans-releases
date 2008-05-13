@@ -292,7 +292,8 @@ implements java.io.Serializable {
             
             private Enumeration<? extends DataLoader> delegate() {
                 if (delegate == null) {
-                    delegate = Collections.enumeration(Lookups.forPath("Loaders/" + fo.getMIMEType()).lookupAll(DataLoader.class));
+                    String path = "Loaders/" + fo.getMIMEType() + "/Factories"; // NOI18N
+                    delegate = Collections.enumeration(Lookups.forPath(path).lookupAll(DataLoader.class));
                 }
                 return delegate;
             }
