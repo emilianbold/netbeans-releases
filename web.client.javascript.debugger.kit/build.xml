@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir="." default="netbeans" name="web.client.javascript.debugger.kit">
+    <description>Builds, tests, and runs the project org.netbeans.modules.web.client.javascript.debugger.kit</description>
+    <import file="../nbbuild/templates/projectized.xml"/>
+    <target name="release" depends="files-init,compile-postinstall">
+        <mkdir dir="main"/>
+        <copy todir="main" overwrite="true">
+            <fileset dir="postinstallsrc">
+                <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
+    </target>
+  
+    <target name="compile-postinstall">
+        <javac srcdir="postinstallsrc" destdir="postinstallsrc" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" optimize="${build.compiler.optimize}" source="1.4"/>
+    </target>
+  
+    <target name="nbm" depends="init,netbeans,-nbm-prompt-for-storepass" description="Build NBM archive.">
+        <mkdir dir="build"/>
+        <makenbm file="build/${nbm}"
+                 productdir="${cluster}"
+                 module="${module.jar}"
+                 homepage="${nbm.homepage}"
+                 distribution="${nbm.distribution}"
+                 needsrestart="${nbm.needs.restart}"
+                 releasedate="${nbm.release.date}"
+                 moduleauthor="${nbm.module.author}">
+            <license file="${license.file}"/>
+            <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
+            <main dir="main"/>
+        </makenbm>
+        <delete dir="main"/>
+        <delete>
+            <fileset dir="postinstallsrc">
+                <include name="**/*.class"/>
+            </fileset>
+        </delete>
+    </target>
+</project>

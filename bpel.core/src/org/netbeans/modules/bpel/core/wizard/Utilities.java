@@ -79,9 +79,7 @@ public final class Utilities {
      * taken from j2ee module
      * Recursively gets all components in the components array and puts it in allComponents
      */
-    private static void getAllComponents( Component[] components, 
-            Collection allComponents ) 
-    {
+    private static void getAllComponents( Component[] components, Collection allComponents) {
         for( int i = 0; i < components.length; i++ ) {
             if( components[i] != null ) {
                 allComponents.add( components[i] );
@@ -113,6 +111,4 @@ public final class Utilities {
         }
         return null;
     }
-    
-    
 }

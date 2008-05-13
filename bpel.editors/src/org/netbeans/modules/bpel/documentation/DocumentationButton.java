@@ -84,8 +84,7 @@ final class DocumentationButton extends AbstractGlassPaneButton {
   }
 
   @Override
-  public String getToolTipText()
-  {
+  public String getToolTipText() {
     String text = getExtensibleElement(myID).getDocumentation();
 
     if (text != null) {
