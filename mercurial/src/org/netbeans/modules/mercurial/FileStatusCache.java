@@ -326,11 +326,7 @@ public class FileStatusCache {
         if( fi != null) return fi;
 
         if (file.isDirectory()) {
-            if (hg.isAdministrative(file) || HgUtils.isIgnored(file, bCheckSharability)) {
-                return FileStatusCache.FILE_INFORMATION_EXCLUDED_DIRECTORY;
-            } else {
-                return FileStatusCache.FILE_INFORMATION_UPTODATE_DIRECTORY;
-            }
+            return FileStatusCache.FILE_INFORMATION_UPTODATE_DIRECTORY;
         }
 
         return fi;
