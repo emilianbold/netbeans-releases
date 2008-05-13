@@ -39,7 +39,8 @@
 
 package org.netbeans.modules.java.source.parsing;
 
-import org.netbeans.modules.parsing.api.Source;
+import java.util.Collection;
+import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.ParserFactory;
 
 /**
@@ -49,9 +50,9 @@ import org.netbeans.modules.parsing.spi.ParserFactory;
 public class JavacParserFactory extends ParserFactory {
 
     @Override
-    public JavacParser createParser(final Source source) {
-        assert source != null;
-        return new JavacParser(source);
+    public JavacParser createParser(final Collection<Snapshot> snapshots) {
+        assert snapshots != null;
+        return new JavacParser(snapshots);
     }
 
 }

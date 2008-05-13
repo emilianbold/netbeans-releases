@@ -62,6 +62,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -159,14 +160,12 @@ public class JavacParser extends Parser {
     private final ChangeSupport listeners = new ChangeSupport(this);
     //Cancelling of parser & index
     private final AtomicBoolean canceled = new AtomicBoolean();
-    //Source may be null
-    private final Source source;
     //File processed by this javac
-    private final FileObject file;
+    private FileObject file;
     //Root owning the file
-    private final FileObject root;
+    private FileObject root;
     //ClassPaths used by the parser
-    private final ClasspathInfo cpInfo;
+    private ClasspathInfo cpInfo;
     //Incremental parsing support
     private final boolean supportsReparse;
     //Incremental parsing support
@@ -179,25 +178,19 @@ public class JavacParser extends Parser {
     private final FilterListener filterListener;
     //Cached javac impl
     private CompilationInfoImpl ciImpl;
+    //State of the parser
+    private boolean initialized;
     
-    
-    JavacParser (final Source source) {
-        this.source = source;
-        final FileObject file = this.source.getFileObject();
-        assert file != null;    //tzezula: Not sure what the parsing API provides.
-        this.file = file;
-        cpInfo = ClasspathInfo.create(file);
-        final ClassPath cp = cpInfo.getClassPath(PathKind.SOURCE);
-        assert cp != null;
-        this.root = cp.findOwnerRoot(file);
-        assert root != null;
-        this.supportsReparse = MIME_TYPE.equals(source.getMimeType());
+    JavacParser (final Collection<Snapshot> snapshots) {
+        boolean isSingleFile = snapshots.size() == 1;
+        this.supportsReparse = isSingleFile && MIME_TYPE.equals(snapshots.iterator().next().getSource().getMimeType());
         EditorCookie.Observable ec = null;
         JavaFileFilterImplementation filter = null;
         if (this.supportsReparse) {
-            filter = JavaFileFilterQuery.getFilter(file);            
+            final Source source = snapshots.iterator().next().getSource();
+            filter = JavaFileFilterQuery.getFilter(source.getFileObject());            
             try {
-                final DataObject dobj = DataObject.find(file);
+                final DataObject dobj = DataObject.find(source.getFileObject());
                 ec = dobj.getCookie(EditorCookie.Observable.class);
                 if (ec == null) {
                     LOGGER.log(Level.WARNING,
@@ -211,12 +204,28 @@ public class JavacParser extends Parser {
         this.filterListener = filter != null ? new FilterListener (filter) : null;
         this.listener = ec != null ? new DocListener(ec) : null;
     }
+    
+    private void init (final Snapshot snapshot, final Task task) {
+        if (!initialized) {
+            final Source source = snapshot.getSource();
+            final FileObject file = source.getFileObject();
+            assert file != null;
+            this.file = file;
+            cpInfo = ClasspathInfo.create(file);
+            final ClassPath cp = cpInfo.getClassPath(PathKind.SOURCE);
+            assert cp != null;
+            this.root = cp.findOwnerRoot(file);
+            assert root != null;
+            initialized = true;
+        }
+    }
         
     @Override
     public void parse(final Snapshot snapshot, final Task task) throws ParseException {
         assert task != null;
         try {
-            ciImpl = createCurrentInfo (this, source, file, root,snapshot, null);
+            init (snapshot, task);
+            ciImpl = createCurrentInfo (this, snapshot.getSource(), file, root,snapshot, null);
         } catch (IOException ioe) {
             throw new ParseException ("JavacParser failure", ioe);            //NOI18N
         }
