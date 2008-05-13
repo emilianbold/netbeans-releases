@@ -160,6 +160,12 @@ public class Utilities {
         return opt.getGuessMethodArguments();
     }
 
+    public static boolean pairCharactersCompletion() {
+        Lookup lkp = MimeLookup.getLookup("text/x-java"); //NOI18N
+        JavaOptions opt = lkp != null ? lkp.lookup(JavaOptions.class) : null;
+        return opt.getPairCharactersCompletion();
+    }
+
     private static void lazyInit() {
         if (!inited) {
             inited = true;

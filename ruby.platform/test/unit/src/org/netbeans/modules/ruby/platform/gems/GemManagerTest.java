@@ -42,14 +42,13 @@ package org.netbeans.modules.ruby.platform.gems;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
 import org.netbeans.api.ruby.platform.RubyPlatformManagerTest;
 import org.netbeans.api.ruby.platform.RubyTestBase;
 import org.netbeans.api.ruby.platform.TestUtil;
+import org.netbeans.modules.ruby.platform.Util;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -69,7 +68,7 @@ public class GemManagerTest extends RubyTestBase {
     public void testGetRubyLibGemDir() throws Exception {
         RubyPlatform platform = RubyPlatformManager.addPlatform(setUpRubyWithGems());
         GemManager gemManager = platform.getGemManager();
-        assertEquals("righ gem dir", new File(platform.getLib(), "ruby/gems/1.8"), new File(gemManager.getGemHome()));
+        assertEquals("righ gem dir", new File(platform.getLibDir(), "ruby/gems/1.8"), new File(gemManager.getGemHome()));
     }
     
     public void testGetGem() throws Exception {
@@ -188,22 +187,22 @@ public class GemManagerTest extends RubyTestBase {
     }
     
     public void testCompareGemVersions() {
-        assertTrue(GemManager.compareGemVersions("1.0.0", "0.9.9") > 0);
-        assertTrue(GemManager.compareGemVersions("0.4.0", "0.3.0") > 0);
-        assertTrue(GemManager.compareGemVersions("0.4.0", "0.3.9") > 0);
-        assertTrue(GemManager.compareGemVersions("0.0.2", "0.0.1") > 0);
-        assertTrue(GemManager.compareGemVersions("0.10.0", "0.9.0") > 0);
-        assertTrue(GemManager.compareGemVersions("0.9.0", "0.10.0") < 0);
-        assertTrue(GemManager.compareGemVersions("1.0.0", "4.9.9") < 0);
-        assertTrue(GemManager.compareGemVersions("0.3.0", "0.4.0") < 0);
-        assertTrue(GemManager.compareGemVersions("0.3.9", "0.4.0") < 0);
-        assertTrue(GemManager.compareGemVersions("0.0.1", "0.0.2") < 0);
-        assertTrue(GemManager.compareGemVersions("4.4.4", "4.4.4") == 0);
-        assertTrue(GemManager.compareGemVersions("4.4.4-platform", "4.4.4") != 0);
-        assertTrue(GemManager.compareGemVersions("0.10.0-ruby", "0.9.0") > 0);
-        assertTrue(GemManager.compareGemVersions("0.9.0-ruby", "0.10.0") < 0);
-        assertTrue(GemManager.compareGemVersions("0.10.0", "0.9.0-ruby") > 0);
-        assertTrue(GemManager.compareGemVersions("0.9.0", "0.10.0-ruby") < 0);
+        assertTrue(Util.compareVersions("1.0.0", "0.9.9") > 0);
+        assertTrue(Util.compareVersions("0.4.0", "0.3.0") > 0);
+        assertTrue(Util.compareVersions("0.4.0", "0.3.9") > 0);
+        assertTrue(Util.compareVersions("0.0.2", "0.0.1") > 0);
+        assertTrue(Util.compareVersions("0.10.0", "0.9.0") > 0);
+        assertTrue(Util.compareVersions("0.9.0", "0.10.0") < 0);
+        assertTrue(Util.compareVersions("1.0.0", "4.9.9") < 0);
+        assertTrue(Util.compareVersions("0.3.0", "0.4.0") < 0);
+        assertTrue(Util.compareVersions("0.3.9", "0.4.0") < 0);
+        assertTrue(Util.compareVersions("0.0.1", "0.0.2") < 0);
+        assertTrue(Util.compareVersions("4.4.4", "4.4.4") == 0);
+        assertTrue(Util.compareVersions("4.4.4-platform", "4.4.4") != 0);
+        assertTrue(Util.compareVersions("0.10.0-ruby", "0.9.0") > 0);
+        assertTrue(Util.compareVersions("0.9.0-ruby", "0.10.0") < 0);
+        assertTrue(Util.compareVersions("0.10.0", "0.9.0-ruby") > 0);
+        assertTrue(Util.compareVersions("0.9.0", "0.10.0-ruby") < 0);
     }
 
     public void testChooseGems() throws Exception {

@@ -44,8 +44,15 @@ import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.datatransfer.Transferable;
+import java.awt.dnd.DropTargetAdapter;
+import java.awt.dnd.DropTargetDragEvent;
+import java.awt.dnd.DropTargetDropEvent;
+import java.awt.dnd.DropTargetEvent;
+import java.awt.dnd.DropTargetListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -123,7 +130,7 @@ public class DefaultCustomizer extends TcgComponentNodePropertyCustomizer implem
             
             mSelectPanel = createSelectPanel(model, mComponent);
             
-            ExpressionAttributeDropNotificationListener listener = new ExpressionAttributeDropNotificationListener();
+            UpdateFromClauseExpressionAttributeDropNotificationListener listener = new UpdateFromClauseExpressionAttributeDropNotificationListener();
             mSelectPanel.addAttributeDropNotificationListener(listener);
             
             // property pane
@@ -214,6 +221,7 @@ public class DefaultCustomizer extends TcgComponentNodePropertyCustomizer implem
                     gbc.fill = GridBagConstraints.BOTH;
                     Property whereProp = mComponent.getProperty(WHERE_CLAUSE_KEY);
                     mWherePanel = PropertyPanel.createSmartMultiLineTextPanel("WHERE", whereProp);
+                    ((SmartTextArea) mWherePanel.input[0]).addAttributeDropNotificationListener(listener);
                     rightPane.add(mWherePanel.panel, gbc);
                 }
                 if (mHasGroupBy) {
@@ -596,7 +604,26 @@ public class DefaultCustomizer extends TcgComponentNodePropertyCustomizer implem
         return null;
     }
     
-    class ExpressionAttributeDropNotificationListener implements AttributeDropNotificationListener {
+    private void updateFromClause(AttributeInfo info) {
+    	//generate form clause automatically
+		String from = mFromPanel.getStringValue();
+		String entityName = info.getEntityName();
+		
+		if(from == null || from.trim().equals("")) {
+			mFromPanel.setStringValue(entityName);
+		} else {
+			if(!(from != null && from.contains(entityName))) {
+				StringBuffer strBuf = new StringBuffer();
+				strBuf.append(from);
+				strBuf.append(",");
+				strBuf.append(entityName);
+				mFromPanel.setStringValue(strBuf.toString());
+			}
+		}
+    	
+    }
+    
+    class UpdateFromClauseExpressionAttributeDropNotificationListener implements AttributeDropNotificationListener {
 
 		public void onDropComplete(AttributeDropNotificationEvent evt) {
 			if(mFromPanel == null) {
@@ -604,23 +631,11 @@ public class DefaultCustomizer extends TcgComponentNodePropertyCustomizer implem
 			}
 			
 			//generate form clause automatically
-			String from = mFromPanel.getStringValue();
 			AttributeInfo info = evt.getAttributeInfo();
-			String entityName = info.getEntityName();
-			
-			if(from == null || from.trim().equals("")) {
-				mFromPanel.setStringValue(entityName);
-			} else {
-				if(!(from != null && from.contains(entityName))) {
-					StringBuffer strBuf = new StringBuffer();
-					strBuf.append(from);
-					strBuf.append(",");
-					strBuf.append(entityName);
-					mFromPanel.setStringValue(strBuf.toString());
-				}
-			}
+			updateFromClause(info);
 			
 		}
     	
     }
+    
 }

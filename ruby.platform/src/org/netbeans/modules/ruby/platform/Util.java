@@ -52,6 +52,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.JComboBox;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
@@ -63,6 +65,12 @@ import org.openide.util.NbCollections;
 import org.openide.util.NbPreferences;
 
 public final class Util {
+    
+    /**
+     * Regexp for matching version number in gem packages:  name-x.y.z (we need
+     * to pull out x,y,z such that we can do numeric comparisons on them)
+     */
+    private static final Pattern VERSION_PATTERN = Pattern.compile("(\\d+)\\.(\\d+)\\.(\\d+)(-\\S+)?"); // NOI18N
     
     private static final Logger LOGGER = Logger.getLogger(Util.class.getName());
 
@@ -253,5 +261,50 @@ public final class Util {
             is.close();
         }
     }
-    
+
+    /**
+     * Return &gt; 0 if <code>version1</code> is greater than
+     * <code>version2</code>, 0 if equal and -1 otherwise.
+     */
+    public static int compareVersions(String version1, String version2) {
+        if (version1.equals(version2)) {
+            return 0;
+        }
+
+        Matcher matcher1 = VERSION_PATTERN.matcher(version1);
+
+        if (matcher1.matches()) {
+            int major1 = Integer.parseInt(matcher1.group(1));
+            int minor1 = Integer.parseInt(matcher1.group(2));
+            int micro1 = Integer.parseInt(matcher1.group(3));
+
+            Matcher matcher2 = VERSION_PATTERN.matcher(version2);
+
+            if (matcher2.matches()) {
+                int major2 = Integer.parseInt(matcher2.group(1));
+                int minor2 = Integer.parseInt(matcher2.group(2));
+                int micro2 = Integer.parseInt(matcher2.group(3));
+
+                if (major1 != major2) {
+                    return major1 - major2;
+                }
+
+                if (minor1 != minor2) {
+                    return minor1 - minor2;
+                }
+
+                if (micro1 != micro2) {
+                    return micro1 - micro2;
+                }
+            } else {
+                // TODO uh oh
+                //assert false : "no version match on " + version2;
+            }
+        } else {
+            // TODO assert false : "no version match on " + version1;
+        }
+
+        // Just do silly alphabetical comparison
+        return version1.compareTo(version2);
+    }
 }
