@@ -123,21 +123,23 @@ public class SimpleNode implements Node {
     your output uses more than one line you should override
     toString(String), otherwise overriding toString() is probably all
     you need to do. */
-    public String toString() {
+    public String toString(boolean addImage) {
         return CSSParserTreeConstants.jjtNodeName[id] 
                 + " [" 
                 + startOffset()
                 + " - " 
                 + endOffset() 
                 + "]"
-                + " '"
-                + image() 
-                + "'";
+                + (addImage ? " '" + image() + "'" : "");
                 
+    }
+    
+    public String toString() {
+        return toString(true);
     }
 
     public String toString(String prefix) {
-        return prefix + toString();
+        return prefix + toString(false);
     }
 
     /* Override this method if you want to customize how the node dumps

@@ -38,35 +38,20 @@
  */
 package org.netbeans.api.xml.lexer;
 
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import javax.swing.text.Document;
 import junit.framework.*;
-import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.editor.NbEditorKit;
-import org.netbeans.modules.editor.NbEditorDocument;
 
 /**
  * The XMLTokenIdTest tests the parsing algorithm of XMLLexer.
  * Various tests include, sanity, regression, performance etc.
  * @author Samaresh (samaresh.panda@sun.com)
  */
-public class XMLTokenIdTest extends TestCase {
+public class XMLTokenIdTest extends AbstractTestCase {
     
     public XMLTokenIdTest(String testName) {
         super(testName);
-    }
-
-    @Override
-    public void setUp() throws Exception {
-    }
-
-    @Override
-    public void tearDown() {
     }
 
     public static Test suite() {
@@ -78,21 +63,6 @@ public class XMLTokenIdTest extends TestCase {
         //measure performace
         suite.addTest(new XMLTokenIdTest("testParsePerformance"));
         return suite;
-    }
-    
-    /**
-     * Parses a XML document using XMLLexer and loops through all tokens.
-     * @param document
-     * @throws java.lang.Exception
-     */
-    private void parse(javax.swing.text.Document document) throws Exception {
-        TokenHierarchy th = TokenHierarchy.get(document);
-        TokenSequence ts = th.tokenSequence();
-        assert(true);
-        while(ts.moveNext()) {
-            Token token = ts.token();
-            assert(token.id() != null);
-        }        
     }
     
     /**
@@ -152,30 +122,5 @@ public class XMLTokenIdTest extends TestCase {
             assert(token.id() == expectedIds[index]);
             index++;
         }
-    }
-    
-    private javax.swing.text.Document getDocument(String path) throws Exception {
-        javax.swing.text.Document doc = getResourceAsDocument(path);
-        //must set the language inside unit tests
-        doc.putProperty(Language.class, XMLTokenId.language());
-        return doc;
-    }
-                 
-    public static Document getResourceAsDocument(String path) throws Exception {
-        InputStream in = XMLTokenIdTest.class.getResourceAsStream(path);
-        Document sd = (Document)new NbEditorDocument(NbEditorKit.class);
-        BufferedReader br = new BufferedReader(new InputStreamReader(in,"UTF-8"));
-        StringBuffer sbuf = new StringBuffer();
-        try {
-            String line = null;
-            while ((line = br.readLine()) != null) {
-                sbuf.append(line);
-                sbuf.append(System.getProperty("line.separator"));
-            }
-        } finally {
-            br.close();
-        }
-        sd.insertString(0,sbuf.toString(),null);
-        return sd;
-    }
+    }    
 }

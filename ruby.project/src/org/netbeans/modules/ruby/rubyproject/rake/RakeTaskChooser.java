@@ -85,6 +85,7 @@ public final class RakeTaskChooser extends JPanel {
 
         final JButton runButton = new JButton(getMessage("RakeTaskChooser.runButton"));
         runButton.getAccessibleContext().setAccessibleDescription (getMessage("RakeTaskChooser.runButton.accessibleDescription"));
+        setRunButtonState(runButton, chooserPanel);
         chooserPanel.matchingTaskList.addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
                 setRunButtonState(runButton, chooserPanel);

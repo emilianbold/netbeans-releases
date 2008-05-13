@@ -417,7 +417,12 @@ getLauncherLocation() {
 }
 
 getLauncherSize() {
-	ls -l "$LAUNCHER_FULL_PATH" | awk ' { print $5 }' 2>/dev/null
+	lsOutput=`ls -l --block-size=1 "$LAUNCHER_FULL_PATH" 2>/dev/null`
+	if [ $? -ne 0 ] ; then
+	    #default block size
+	    lsOutput=`ls -l "$LAUNCHER_FULL_PATH" 2>/dev/null`
+	fi
+	echo "$lsOutput" | awk ' { print $5 }' 2>/dev/null
 }
 
 verifyIntegrity() {
