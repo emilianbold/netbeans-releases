@@ -52,9 +52,9 @@ import org.netbeans.performance.j2se.actions.*;
  *
  * @author  mmirilovic@netbeans.org
  */
-public class MeasureActions  extends NbTestCase {
+public class MeasureJ2SEActionsTest  extends NbTestCase {
 
-    public MeasureActions(String name) {
+    public MeasureJ2SEActionsTest(String name) {
         super(name);
     }
 

@@ -38,36 +38,41 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.performance.j2se;
 
-package org.netbeans.performance.j2se.footprint;
+import org.netbeans.performance.j2se.menus.*;
 
-import org.netbeans.modules.performance.utilities.CommonUtilities;
-import org.netbeans.jellytools.RuntimeTabOperator;
-import org.netbeans.jellytools.nodes.Node;
+import junit.framework.Test;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 
-/**
- * Utilities for Memory footprint tests
- *
- * @author  anebuzelsky@netbeans.org, mmirilovic@netbeans.org
- */
-public class FootprintUtilities extends CommonUtilities{
-    
-    static void killRunOnProject(String project) {
-        killProcessOnProject(project, "run");
+public class MeasureJ2SEMenusTest extends NbTestCase {
+
+    public MeasureJ2SEMenusTest(String name) {
+        super(name);
     }
-    
-    static void killDebugOnProject(String project) {
-        killProcessOnProject(project, "debug");
+
+    public static Test suite() {
+
+        NbTestSuite s = new NbTestSuite("UI Responsiveness J2SE Menus suite");
+
+        s.addTest(NbModuleSuite.create(MainMenu.class, ".*", ".*"));
+        s.addTest(NbModuleSuite.create(MainSubMenus.class, ".*", ".*"));
+
+/* TBD        
+
+        s.addTest(NbModuleSuite.create(EditorDownButtonPopupMenu.class, ".*", ".*"));
+        s.addTest(NbModuleSuite.create(FilesViewPopupMenu.class, ".*", ".*"));
+        s.addTest(NbModuleSuite.create(FormInspectorNodePopupMenu.class, ".*", ".*"));
+        s.addTest(NbModuleSuite.create(ProjectsViewPopupMenu.class, ".*", ".*"));
+        s.addTest(NbModuleSuite.create(ProjectsViewSubMenus.class, ".*", ".*"));
+        s.addTest(NbModuleSuite.create(RuntimeViewPopupMenu.class, ".*", ".*"));
+        s.addTest(NbModuleSuite.create(SourceEditorPopupMenu.class, ".*", ".*"));
+        s.addTest(NbModuleSuite.create(ToolsMenu.class, ".*", ".*"));
+        s.addTest(NbModuleSuite.create(ValidatePopupMenuOnNodes.class, ".*", ".*"));
+
+*/ 
+        return s;
     }
-    
-    private static void killProcessOnProject(String project, String process) {
-        // prepare Runtime tab
-        RuntimeTabOperator runtime = RuntimeTabOperator.invoke();
-        
-        // kill the execution
-        Node node = new Node(runtime.getRootNode(), "Processes|"+project+ " (" + process + ")");
-        node.select();
-        node.performPopupAction("Terminate Process");
-    }
-    
 }

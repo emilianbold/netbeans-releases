@@ -42,6 +42,7 @@
 package org.netbeans.performance.j2se.footprint;
 
 import org.netbeans.modules.performance.utilities.MemoryFootprintTestCase;
+import org.netbeans.modules.performance.utilities.CommonUtilities;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.nodes.Node;
@@ -84,8 +85,8 @@ public class FindUsages extends MemoryFootprintTestCase {
     @Override
     public void initialize() {
         super.initialize();
-        FootprintUtilities.closeAllDocuments();
-        FootprintUtilities.closeMemoryToolbar();
+        CommonUtilities.closeAllDocuments();
+        CommonUtilities.closeMemoryToolbar();
     }
 
     @Override
@@ -99,8 +100,8 @@ public class FindUsages extends MemoryFootprintTestCase {
     public ComponentOperator open(){
         // jEdit project
         log("Opening project jEdit");
-        FootprintUtilities.waitProjectOpenedScanFinished(System.getProperty("xtest.tmpdir")+ java.io.File.separator +"jEdit41");
-        FootprintUtilities.waitForPendingBackgroundTasks();
+        CommonUtilities.waitProjectOpenedScanFinished(System.getProperty("xtest.tmpdir")+ java.io.File.separator +"jEdit41");
+        CommonUtilities.waitForPendingBackgroundTasks();
         
         // invoke Find Usages
         Node filenode = new Node(new SourcePackagesNode("jEdit"), "org.gjt.sp.jedit" + "|" + "jEdit.java");

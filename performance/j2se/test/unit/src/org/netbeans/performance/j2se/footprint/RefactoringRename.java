@@ -90,8 +90,8 @@ public class RefactoringRename extends MemoryFootprintTestCase {
     @Override
     public void initialize() {
         super.initialize();
-        FootprintUtilities.closeAllDocuments();
-        FootprintUtilities.closeMemoryToolbar();
+        CommonUtilities.closeAllDocuments();
+        CommonUtilities.closeMemoryToolbar();
     }
     
     @Override
@@ -108,8 +108,8 @@ public class RefactoringRename extends MemoryFootprintTestCase {
         // jEdit project
         log("Opening project jEdit");
         ProjectsTabOperator.invoke();
-        FootprintUtilities.waitProjectOpenedScanFinished(System.getProperty("xtest.tmpdir")+ java.io.File.separator +"jEdit41");
-        FootprintUtilities.waitForPendingBackgroundTasks();
+        CommonUtilities.waitProjectOpenedScanFinished(System.getProperty("xtest.tmpdir")+ java.io.File.separator +"jEdit41");
+        CommonUtilities.waitForPendingBackgroundTasks();
         
         // find existing node
         Node packagenode = new Node(new SourcePackagesNode("jEdit"), "org.gjt.sp.jedit");

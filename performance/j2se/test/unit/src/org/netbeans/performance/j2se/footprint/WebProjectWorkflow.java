@@ -44,6 +44,7 @@ package org.netbeans.performance.j2se.footprint;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.modules.performance.utilities.MemoryFootprintTestCase;
+import org.netbeans.modules.performance.utilities.CommonUtilities;
 
 /**
  * Measure Web Project Workflow Memory footprint
@@ -76,8 +77,8 @@ public class WebProjectWorkflow extends MemoryFootprintTestCase {
     @Override
     public void initialize() {
         super.initialize();
-        FootprintUtilities.closeAllDocuments();
-        FootprintUtilities.closeMemoryToolbar();
+        CommonUtilities.closeAllDocuments();
+        CommonUtilities.closeMemoryToolbar();
     }
     
     @Override
@@ -90,19 +91,19 @@ public class WebProjectWorkflow extends MemoryFootprintTestCase {
     
     public ComponentOperator open(){
         // Web project
-        webproject = FootprintUtilities.createproject("Samples|Web", "Tomcat Servlet Example", false);
+        webproject = CommonUtilities.createproject("Samples|Web", "Tomcat Servlet Example", false);
         
-        FootprintUtilities.openFile(webproject, "<default package>", "SessionExample.java", true);
-        FootprintUtilities.buildproject(webproject);
-        FootprintUtilities.deployProject(webproject);
-        //FootprintUtilities.collapseProject(webproject);
+        CommonUtilities.openFile(webproject, "<default package>", "SessionExample.java", true);
+        CommonUtilities.buildproject(webproject);
+        CommonUtilities.deployProject(webproject);
+        //CommonUtilities.collapseProject(webproject);
         
         return null;
     }
     
     @Override
     public void close(){
-        FootprintUtilities.deleteProject(webproject);
+        CommonUtilities.deleteProject(webproject);
     }
     
     public static void main(java.lang.String[] args) {

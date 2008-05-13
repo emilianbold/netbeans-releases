@@ -42,6 +42,7 @@
 package org.netbeans.performance.j2se.footprint;
 
 import org.netbeans.modules.performance.utilities.MemoryFootprintTestCase;
+import org.netbeans.modules.performance.utilities.CommonUtilities;
 import org.netbeans.jemmy.operators.ComponentOperator;
 
 /**
@@ -83,17 +84,17 @@ public class J2SEProjectWorkflow extends MemoryFootprintTestCase {
     @Override
     public void initialize() {
         super.initialize();
-        FootprintUtilities.closeAllDocuments();
-        FootprintUtilities.closeMemoryToolbar();
+        CommonUtilities.closeAllDocuments();
+        CommonUtilities.closeMemoryToolbar();
     }
     
     public ComponentOperator open(){
         // Create, edit, build and execute a sample J2SE project
-        j2seproject = FootprintUtilities.createproject("Samples|Java", "Anagram Game", true);
+        j2seproject = CommonUtilities.createproject("Samples|Java", "Anagram Game", true);
         
-        FootprintUtilities.openFile(j2seproject, "com.toy.anagrams.ui", "Anagrams.java", false);
-        FootprintUtilities.editFile(j2seproject, "com.toy.anagrams.ui", "Anagrams.java");
-        FootprintUtilities.buildproject(j2seproject);
+        CommonUtilities.openFile(j2seproject, "com.toy.anagrams.ui", "Anagrams.java", false);
+        CommonUtilities.editFile(j2seproject, "com.toy.anagrams.ui", "Anagrams.java");
+        CommonUtilities.buildproject(j2seproject);
         //runProject(j2seproject,true);
         //debugProject(j2seproject,true);
         //testProject(j2seproject);
@@ -104,7 +105,7 @@ public class J2SEProjectWorkflow extends MemoryFootprintTestCase {
     
     @Override
     public void close(){
-        FootprintUtilities.deleteProject(j2seproject);
+        CommonUtilities.deleteProject(j2seproject);
     }
     
     public static void main(java.lang.String[] args) {
