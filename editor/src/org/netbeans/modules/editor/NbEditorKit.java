@@ -238,7 +238,7 @@ public class NbEditorKit extends ExtKit implements Callable {
                 "Warning: KitClass "+this.getClass().getName()+" doesn't override the method getContentType."); //NOI18N
         }
         return (contentTypeTable.containsKey(this.getClass().getName())) ? 
-            (String)contentTypeTable.get(this.getClass().getName()) : "text/"+this.getClass().getName().replace('.','_'); //NOI18N
+            (String)contentTypeTable.get(this.getClass().getName()) : super.getContentType(); //NOI18N
     }
 
     private static ResourceBundle getBundleFromName (String name) {

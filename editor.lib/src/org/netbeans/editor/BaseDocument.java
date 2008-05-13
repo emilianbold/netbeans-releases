@@ -493,7 +493,6 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         // Initialize preferences and document properties
         prefs = MimeLookup.getLookup(mimeType).lookup(Preferences.class);
         prefsListener.preferenceChange(null);
-        weakPrefsListener = WeakListeners.create(PreferenceChangeListener.class, prefsListener, prefs);
 
         // Additional initialization of the document through the kit
         EditorKit kit = getEditorKit();
@@ -516,8 +515,13 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         
         // start listening
         super.addDocumentListener(org.netbeans.lib.editor.util.swing.DocumentUtilities.initPriorityListening(this));
-        prefs.addPreferenceChangeListener(weakPrefsListener);
         FindSupport.getFindSupport().addPropertyChangeListener(findSupportListener);
+        if (weakPrefsListener == null) {
+            // the listening could have already been initialized from setMimeType(), which
+            // is called by some kits from initDocument()
+            weakPrefsListener = WeakListeners.create(PreferenceChangeListener.class, prefsListener, prefs);
+            prefs.addPreferenceChangeListener(weakPrefsListener);
+        }
     }
     
     private DocumentContent getDocumentContent() {
@@ -1525,8 +1529,9 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
                 prefs.removePreferenceChangeListener(weakPrefsListener);
             }
             prefs = MimeLookup.getLookup(mimeType).lookup(Preferences.class);
-            weakPrefsListener = WeakListeners.create(PreferenceChangeListener.class, prefsListener, prefs);
             prefsListener.preferenceChange(null);
+            weakPrefsListener = WeakListeners.create(PreferenceChangeListener.class, prefsListener, prefs);
+            prefs.addPreferenceChangeListener(prefsListener);
         }
     }
     

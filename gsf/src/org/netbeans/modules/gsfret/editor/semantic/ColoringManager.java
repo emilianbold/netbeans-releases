@@ -56,9 +56,9 @@ import javax.swing.text.StyleConstants;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.EditorStyleConstants;
+import org.netbeans.api.editor.settings.FontColorNames;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.editor.Coloring;
-import org.netbeans.editor.SettingsDefaults;
 import org.netbeans.modules.gsf.api.ColoringAttributes;
 import static org.netbeans.modules.gsf.api.ColoringAttributes.*;
 
@@ -80,8 +80,26 @@ public final class ColoringManager {
     private String mimeType;
     private final Map<Set<ColoringAttributes>, String> type2Coloring;
     
-    private static final Font ITALIC = SettingsDefaults.defaultFont.deriveFont(Font.ITALIC);
-    private static final Font BOLD = SettingsDefaults.defaultFont.deriveFont(Font.BOLD);
+    private static Font italic = null;
+    private static Font getItalic() {
+        if (italic == null) {
+            FontColorSettings fcs = MimeLookup.getLookup(MimePath.EMPTY).lookup(FontColorSettings.class);
+            AttributeSet attribs = fcs.getFontColors(FontColorNames.DEFAULT_COLORING);
+            Font defaultFont = Coloring.fromAttributeSet(attribs).getFont();
+            italic = defaultFont.deriveFont(Font.ITALIC);
+        }
+        return italic;
+    }
+    private static Font bold = null;
+    private static Font getBold() {
+        if (bold == null) {
+            FontColorSettings fcs = MimeLookup.getLookup(MimePath.EMPTY).lookup(FontColorSettings.class);
+            AttributeSet attribs = fcs.getFontColors(FontColorNames.DEFAULT_COLORING);
+            Font defaultFont = Coloring.fromAttributeSet(attribs).getFont();
+            bold = defaultFont.deriveFont(Font.BOLD);
+        }
+        return bold;
+    }
 
     
     public ColoringManager(String mimeType) {
@@ -191,7 +209,7 @@ public final class ColoringManager {
                         if (font != null) {
                             font = font.deriveFont(font.isItalic() ? (Font.BOLD | Font.ITALIC) : Font.BOLD);
                         } else {
-                            font = BOLD;
+                            font = getBold();
                         }
                         fontMode |= Coloring.FONT_MODE_APPLY_STYLE;
                     }
@@ -199,7 +217,7 @@ public final class ColoringManager {
                         if (font != null) {
                             font = font.deriveFont(font.isBold() ? (Font.BOLD | Font.ITALIC) : Font.ITALIC);
                         } else {
-                            font = ITALIC;
+                            font = getItalic();
                         }
                         fontMode |= Coloring.FONT_MODE_APPLY_STYLE;
                     }

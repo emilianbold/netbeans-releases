@@ -93,6 +93,8 @@ public final class EditorPreferencesKeys {
     public static final @Deprecated String TEXT_LIMIT_LINE_COLOR = SimpleValueNames.TEXT_LIMIT_LINE_COLOR;
     public static final String TEXT_LIMIT_LINE_VISIBLE = SimpleValueNames.TEXT_LIMIT_LINE_VISIBLE;
     public static final String TEXT_LIMIT_WIDTH = SimpleValueNames.TEXT_LIMIT_WIDTH;
+    public static final String PAIR_CHARACTERS_COMPLETION = SimpleValueNames.COMPLETION_PAIR_CHARACTERS;
+    
     
     /** Acceptor that recognizes the identifier characters.
     * If set it's used instead of the default Syntax.isIdentifierPart() call.
@@ -162,10 +164,6 @@ public final class EditorPreferencesKeys {
     */
     public static final String ABBREV_RESET_ACCEPTOR = "abbrev-reset-acceptor"; // NOI18N
 
-    /** Completion of { } [ ] " " ' ' and tags */
-    public static final String PAIR_CHARACTERS_COMPLETION 
-      = "pair-characters-completion"; // NOI18N
-    
     /** Whether to display line numbers when printing to the printer.
     * Values: java.lang.Boolean instances
     */

@@ -350,15 +350,15 @@ public class EditorUI implements ChangeListener, PropertyChangeListener {
     */
     protected void installUI(JTextComponent c) {
         
-        // Initialize the coloring map
-        String mimeType = Utilities.getMimeType(c);
-        this.coloringMap = ColoringMap.get(mimeType);
-        this.coloringMap.addPropertyChangeListener(WeakListeners.propertyChange(this, coloringMap));
-
         // initialize preferences
+        String mimeType = Utilities.getMimeType(c);
         MimePath mimePath = MimePath.parse(mimeType);
         prefs = MimeLookup.getLookup(mimePath).lookup(Preferences.class);
         
+        // Initialize the coloring map
+        this.coloringMap = ColoringMap.get(mimeType);
+        this.coloringMap.addPropertyChangeListener(WeakListeners.propertyChange(this, coloringMap));
+
         // initialize rendering hints
         renderingHints = EditorRenderingHints.get(mimePath);
         
@@ -399,13 +399,14 @@ public class EditorUI implements ChangeListener, PropertyChangeListener {
     * from the component.
     */
     protected void uninstallUI(JTextComponent c) {
-        
+
+        // stop listening
         if (prefs != null && weakPrefsListener != null) {
             prefs.removePreferenceChangeListener(weakPrefsListener);
-            prefs = null;
-            weakPrefsListener = null;
         }
-        renderingHints = null;
+        if (coloringMap != null) {
+            coloringMap.removePropertyChangeListener(this);
+        }
         
         synchronized (getComponentLock()) {
             // fix for issue 12996
@@ -434,11 +435,11 @@ public class EditorUI implements ChangeListener, PropertyChangeListener {
             FontMetricsCache.clear();
         }
 
-        // destroy the coloring map
-        if (coloringMap != null) {
-            coloringMap.removePropertyChangeListener(this);
-            coloringMap = null;
-        }
+        // destroy all the stuff we created
+        coloringMap = null;
+        prefs = null;
+        weakPrefsListener = null;
+        renderingHints = null;
     }
 
     /** Get the lock assuring the component will not be changed
@@ -1551,6 +1552,11 @@ public class EditorUI implements ChangeListener, PropertyChangeListener {
     private class Listener implements PreferenceChangeListener {
 
         public void preferenceChange(PreferenceChangeEvent evt) {
+            // ignore events that come after uninstalling the EditorUI from a component
+            if (prefs == null) {
+                return;
+            }
+            
             String settingName = evt == null ? null : evt.getKey();
             settingsChangeImpl(settingName);
             

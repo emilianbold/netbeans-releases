@@ -291,6 +291,13 @@ public final class SimpleValueNames {
     public static final String COMPLETION_PANE_MAX_SIZE = "completion-pane-max-size"; // NOI18N
     
     /**
+     * Whether to complete pair characters such as [], (), {}, ''  and tags
+     * Values: java.lang.Boolean
+     * @since 1.18
+     */
+    public static final String COMPLETION_PAIR_CHARACTERS = "pair-characters-completion"; // NOI18N
+    
+    /**
      * Background color of javaDoc popup window 
      *  Values: java.awt.Color
      * @deprecated Use FontColorNames#DOCUMENTATION_POPUP_COLORING

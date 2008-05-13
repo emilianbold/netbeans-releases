@@ -104,6 +104,22 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="added.SimpleValueNames.COMPLETION_PAIR_CHARACTRES">
+            <summary>Added switch for auto completing pair characters</summary>
+            <version major="1" minor="18"/>
+            <date day="13" month="5" year="2008"/>
+            <author login="vstejskal"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes" deprecation="no" deletion="no" modification="no" />
+            <description>
+            <p>
+                Adding new constant to <code>SimpleValueNames</code> as the name
+                of an editor setting that determins if pair characters should be
+                autocompleted or not.
+            </p>
+            </description>
+            <issue number="108161"/>
+        </change>
+
         <change id="added.EditorStyleConstants.xxxBorderLineColor">
             <summary>Added border related constants to EditorStyleConstants</summary>
             <version major="1" minor="16"/>

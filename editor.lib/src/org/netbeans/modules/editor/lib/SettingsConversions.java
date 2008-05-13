@@ -174,9 +174,28 @@ public final class SettingsConversions {
             ClassLoader loader = Lookup.getDefault().lookup(ClassLoader.class);
             try {
                 Class factoryClass = loader.loadClass(classFqn);
-                Method factoryMethod = factoryClass.getDeclaredMethod(methodName, MimePath.class, String.class);
-
-                Object value = factoryMethod.invoke(null, mimePath, settingName);
+                Method factoryMethod;
+                
+                try {
+                    // normally the method should accept mime path and the a setting name
+                    factoryMethod = factoryClass.getDeclaredMethod(methodName, MimePath.class, String.class);
+                } catch (NoSuchMethodException nsme) {
+                    // but there might be methods that don't need those params
+                    try {
+                        factoryMethod = factoryClass.getDeclaredMethod(methodName);
+                    } catch (NoSuchMethodException nsme2) {
+                        // throw the first exception complaining about the full signature
+                        throw nsme;
+                    }
+                }
+                
+                Object value;
+                if (factoryMethod.getParameterTypes().length == 2) {
+                    value = factoryMethod.invoke(null, mimePath, settingName);
+                } else {
+                    value = factoryMethod.invoke(null);
+                }
+                
                 if (value != null) {
                     return value;
                 }

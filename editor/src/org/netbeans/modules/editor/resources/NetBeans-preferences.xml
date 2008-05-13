@@ -127,12 +127,14 @@ made subject to such option by the copyright holder.
     <entry category="private" javaType="java.lang.Boolean" name="highlight-caret-row" xml:space="preserve">
         <value><![CDATA[true]]></value>
     </entry>
+<!-- these settings are no longer used
     <entry category="private" javaType="java.lang.Boolean" name="highlight-match-brace" xml:space="preserve">
         <value><![CDATA[true]]></value>
     </entry>
     <entry category="deprecated" javaType="java.lang.Integer" name="highlight-match-brace-delay" xml:space="preserve">
         <value><![CDATA[100]]></value>
     </entry>
+-->
     <entry category="deprecated" javaType="java.lang.Boolean" name="home-key-column-one" xml:space="preserve">
         <value><![CDATA[false]]></value>
     </entry>
@@ -159,6 +161,9 @@ made subject to such option by the copyright holder.
     </entry>
     <entry category="deprecated" javaType="java.lang.Integer" name="min-mark-distance" xml:space="preserve">
         <value><![CDATA[50]]></value>
+    </entry>
+    <entry category="private" javaType="java.lang.Boolean" name="pair-characters-completion" xml:space="preserve">
+        <value><![CDATA[true]]></value>
     </entry>
     <entry category="deprecated" javaType="java.lang.Boolean" name="print-line-number-visible" xml:space="preserve">
         <value><![CDATA[true]]></value>

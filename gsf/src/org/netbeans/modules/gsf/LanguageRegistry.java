@@ -42,8 +42,6 @@ package org.netbeans.modules.gsf;
 
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -70,7 +68,6 @@ import org.netbeans.modules.gsfpath.spi.classpath.ClassPathImplementation;
 import org.netbeans.modules.gsfpath.spi.classpath.PathResourceImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.util.Exceptions;
@@ -651,35 +648,6 @@ public class LanguageRegistry implements Iterable<Language> {
     void initializeLanguageForEditor(Language l) {
         FileSystem fs = Repository.getDefault().getDefaultFileSystem();
         final FileObject root = fs.findResource("Editors/" + l.getMimeType()); // NOI18N
-        if (root.getFileObject("Settings.settings") == null) {
-            // NOI18N
-            try {
-                fs.runAtomicAction(new AtomicAction() {
-
-                    public void run() {
-                        try {
-                            InputStream is = getClass().getClassLoader().getResourceAsStream("org/netbeans/modules/gsf/GsfOptions.settings"); // NOI18N
-                            try {
-                                FileObject fo = root.createData("Settings.settings"); // NOI18N
-                                OutputStream os = fo.getOutputStream();
-
-                                try {
-                                    FileUtil.copy(is, os);
-                                } finally {
-                                    os.close();
-                                }
-                            } finally {
-                                is.close();
-                            }
-                        } catch (IOException ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
-                    }
-                });
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
 
         // init code folding bar
         if ((root.getFileObject("SideBar/org-netbeans-modules-editor-gsfret-GsfCodeFoldingSideBarFactory.instance") == null) && (l.getParser() != null)) {

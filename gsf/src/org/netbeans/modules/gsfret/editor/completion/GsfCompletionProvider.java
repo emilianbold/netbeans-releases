@@ -45,13 +45,18 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
+import java.util.prefs.Preferences;
 import javax.swing.JToolTip;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.completion.Completion;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.modules.gsf.api.CompletionProposal;
 import org.netbeans.modules.gsf.api.Completable;
 import org.netbeans.modules.gsf.api.CancellableTask;
@@ -61,7 +66,6 @@ import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.modules.gsf.api.ParameterInfo;
 import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.napi.gsfret.source.CompilationController;
 import org.netbeans.napi.gsfret.source.CompilationInfo;
@@ -70,13 +74,6 @@ import org.netbeans.napi.gsfret.source.Source;
 import org.netbeans.napi.gsfret.source.SourceUtils;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Registry;
-import org.netbeans.editor.Settings;
-import org.netbeans.editor.SettingsChangeEvent;
-import org.netbeans.editor.SettingsChangeListener;
-import org.netbeans.editor.SettingsUtil;
-import org.netbeans.editor.ext.ExtSettingsDefaults;
-import org.netbeans.editor.ext.ExtSettingsNames;
-import org.netbeans.modules.gsf.GsfEditorKitFactory;
 import org.netbeans.modules.gsf.GsfHtmlFormatter;
 import org.netbeans.modules.gsf.Language;
 import org.netbeans.modules.gsf.LanguageRegistry;
@@ -87,6 +84,7 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 
 
 /**
@@ -758,23 +756,29 @@ public class GsfCompletionProvider implements CompletionProvider {
     private static boolean caseSensitive = true;
     private static boolean inited;
 
-    public static boolean isCaseSensitive() {
+    private static boolean isCaseSensitive() {
         lazyInit();
         return caseSensitive;
     }
 
-    private static class SettingsListener implements SettingsChangeListener {
+    private static class SettingsListener implements PreferenceChangeListener {
 
-        public void settingsChange(SettingsChangeEvent evt) {
-            setCaseSensitive(SettingsUtil.getBoolean(GsfEditorKitFactory.GsfEditorKit.class,
-                    ExtSettingsNames.COMPLETION_CASE_SENSITIVE,
-                    ExtSettingsDefaults.defaultCompletionCaseSensitive));
+//        public void settingsChange(SettingsChangeEvent evt) {
+//            setCaseSensitive(SettingsUtil.getBoolean(GsfEditorKitFactory.GsfEditorKit.class,
+//                    ExtSettingsNames.COMPLETION_CASE_SENSITIVE,
+//                    ExtSettingsDefaults.defaultCompletionCaseSensitive));
+//        }
+
+        public void preferenceChange(PreferenceChangeEvent evt) {
+            if (evt.getKey() == null || SimpleValueNames.COMPLETION_CASE_SENSITIVE.equals(evt.getKey())) {
+                setCaseSensitive(Boolean.valueOf(evt.getNewValue()));
+            }
         }
     }
 
-    private static SettingsChangeListener settingsListener = new SettingsListener();
+    private static PreferenceChangeListener settingsListener = new SettingsListener();
 
-    public static void setCaseSensitive(boolean b) {
+    private static void setCaseSensitive(boolean b) {
         lazyInit();
         caseSensitive = b;
     }
@@ -782,10 +786,15 @@ public class GsfCompletionProvider implements CompletionProvider {
     private static void lazyInit() {
         if (!inited) {
             inited = true;
-            Settings.addSettingsChangeListener(settingsListener);
-            setCaseSensitive(SettingsUtil.getBoolean(GsfEditorKitFactory.GsfEditorKit.class,
-                    ExtSettingsNames.COMPLETION_CASE_SENSITIVE,
-                    ExtSettingsDefaults.defaultCompletionCaseSensitive));
+            
+            // correctly we should use a proper mime type for the document where the completion runs,
+            // but at the moment this is enough, because completion settings are mainted globaly for all mime types
+            // (ie. their the same for all mime types). Also, if using a specific mime type
+            // this code should hold the prefs instance somewhere, but not in a static field!
+            Preferences prefs = MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class);
+            prefs.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, settingsListener, prefs));
+            
+            setCaseSensitive(prefs.getBoolean(SimpleValueNames.COMPLETION_CASE_SENSITIVE, false));
         }
     }
 }
