@@ -89,7 +89,7 @@ made subject to such option by the copyright holder.
                     <code-name-base>org.netbeans.modules.visualweb.dataconnectivity</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>2.0</specification-version>
+                        <specification-version>2.2.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -102,7 +102,7 @@ made subject to such option by the copyright holder.
                     <code-name-base>org.netbeans.modules.visualweb.dataprovider.designtime</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>2.0</specification-version>
+                        <specification-version>2.1.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

@@ -20,13 +20,13 @@
                 <dependency>
                     <code-name-base>org.netbeans.modules.j2ee.earproject</code-name-base>
                     <run-dependency>
-                        <specification-version>1.7</specification-version>
+                        <specification-version>1.8.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.j2ee.ejbcore</code-name-base>
                     <run-dependency>
-                        <specification-version>1.6</specification-version>
+                        <specification-version>1.8.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

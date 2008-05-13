@@ -50,7 +50,7 @@
                     <code-name-base>org.netbeans.modules.editor.completion</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.9</specification-version>
+                        <specification-version>1.11.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -92,7 +92,7 @@
                     <code-name-base>org.netbeans.modules.editor.plain</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.4</specification-version>
+                        <specification-version>1.5.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -162,7 +162,7 @@
                     <code-name-base>org.netbeans.modules.options.editor</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.4</specification-version>
+                        <specification-version>1.7.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -216,7 +216,7 @@
                     <code-name-base>org.netbeans.spi.editor.hints</code-name-base>
                     <run-dependency>
                         <release-version>0</release-version>
-                        <specification-version>1.2</specification-version>
+                        <specification-version>1.4.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
