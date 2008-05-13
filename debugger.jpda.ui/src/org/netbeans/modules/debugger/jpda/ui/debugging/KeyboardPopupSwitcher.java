@@ -66,7 +66,6 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.Utilities;
-import org.openide.windows.WindowManager;
 
 /**
  * Represents Popup for "Keyboard document switching" which is shown after
@@ -358,7 +357,6 @@ public final class KeyboardPopupSwitcher implements WindowFocusListener {
             popup.setAlwaysOnTop(true);
             popup.getContentPane().add(pTable);
             popup.setLocation(x, y);
-            popup.setModal(true); // [TODO] added
             popup.pack();
             popup.setVisible(true);
              */
@@ -371,7 +369,7 @@ public final class KeyboardPopupSwitcher implements WindowFocusListener {
 //                            addWindowFocusListener( KeyboardPopupSwitcher.this );
 //                }
 //            });
-            // shown = true; [TODO]
+            // shown = true;
         }
     }
     

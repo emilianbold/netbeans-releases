@@ -162,7 +162,7 @@ public final class ThreadsListener implements PropertyChangeListener {
                                 removeBreakpointHit(thread);
                             }
                         } else {
-                            removeBreakpointHit(thread); // [TODO]
+                            removeBreakpointHit(thread);
                         }
                     }
                 });

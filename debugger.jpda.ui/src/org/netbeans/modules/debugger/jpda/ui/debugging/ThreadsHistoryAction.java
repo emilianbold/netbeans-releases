@@ -61,7 +61,7 @@ public final class ThreadsHistoryAction extends AbstractAction {
     
     /** Creates a new instance of ThreadsHistoryAction */
     public ThreadsHistoryAction() {
-        putValue(NAME, NbBundle.getMessage(ThreadsHistoryAction.class, "CTL_ThreadsHistoryAction")); // [TODO] bundle
+        putValue(NAME, NbBundle.getMessage(ThreadsHistoryAction.class, "CTL_ThreadsHistoryAction"));
     }
     
     public void actionPerformed(ActionEvent evt) {
