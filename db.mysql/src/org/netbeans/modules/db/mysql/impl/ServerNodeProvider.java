@@ -83,7 +83,6 @@ public class ServerNodeProvider implements NodeProvider {
         checkNodeArray();
         
         if ( options.isProviderRegistered() ) {
-            DatabaseServerManager.getDatabaseServer().reconnectAsync();
             return nodes;
         } else {
             DatabaseServerManager.getDatabaseServer().disconnect();
@@ -115,7 +114,7 @@ public class ServerNodeProvider implements NodeProvider {
             if ( ! registered ) {
                 instance.disconnect();
             } else {
-                instance.reconnectAsync(true /* quiet */);
+                instance.reconnect(true, true ); // quiet, async
             }
             notifyChange();
         }

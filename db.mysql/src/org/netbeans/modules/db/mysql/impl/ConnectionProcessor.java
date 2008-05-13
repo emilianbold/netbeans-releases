@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -36,67 +36,50 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.db.mysql.actions;
 
-import org.netbeans.modules.db.mysql.DatabaseServer;
-import org.netbeans.modules.db.mysql.util.Utils;
-import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
-import org.openide.util.actions.CookieAction;
+package org.netbeans.modules.db.mysql.impl;
+
+import java.sql.Connection;
+import java.util.concurrent.BlockingQueue;
+import java.util.logging.Logger;
 
 /**
- * Connect to a database
- * 
+ * This class encapsulates a database connection and serializes
+ * interaction with this connection through a blocking queue.
+ *
  * @author David Van Couvering
  */
-public class ConnectServerAction extends CookieAction {
-    private static final Class[] COOKIE_CLASSES = 
-            new Class[] { DatabaseServer.class };
+public class ConnectionProcessor implements Runnable {
+    private static final Logger LOGGER = Logger.getLogger(ConnectionProcessor.class.getName());
+    final BlockingQueue<Runnable> inqueue;
     
-    public ConnectServerAction() {
-        putValue("noIconInMenu", Boolean.TRUE);
+    private Connection conn;
+    
+    void setConnection(Connection conn) {
+        this.conn = conn;
     }
-
-    @Override
-    protected boolean asynchronous() {
-        return false;
+    
+    Connection getConnection() {
+        return this.conn;
     }
-
-    public String getName() {
-        return Utils.getBundle().getString("LBL_ConnectServerAction");
+    
+    boolean isConnected() {
+        return conn != null;
     }
-
-    public HelpCtx getHelpCtx() {
-        return new HelpCtx(ConnectServerAction.class);
-    }
-
-    @Override
-    public boolean enable(Node[] activatedNodes) {
-        if ( activatedNodes == null || activatedNodes.length == 0 ) {
-            return false;
+    
+    public ConnectionProcessor(BlockingQueue<Runnable> inqueue) {
+        this.inqueue = inqueue;
+    } 
+    
+    public void run() {
+        for ( ; ; ) {
+            try {              
+                Runnable command = inqueue.take();
+                
+                command.run();                
+            } catch ( InterruptedException ie ) {
+                return;
+            }
         }
-        
-        DatabaseServer server = activatedNodes[0].getCookie(DatabaseServer.class);
-        
-        return server != null && !server.isConnected();
-    }
-
-    @Override
-    protected void performAction(Node[] activatedNodes) {
-        DatabaseServer server = activatedNodes[0].getCookie(DatabaseServer.class);
-
-        // Run this on a separate thread so that we don't hang up the AWT 
-        // thread if the database server is not responding
-        server.reconnect(false, true); // quiet, async
-    }
-    
-    @Override
-    protected int mode() {
-        return MODE_EXACTLY_ONE;
-    }
-
-    @Override
-    protected Class<?>[] cookieClasses() {
-        return COOKIE_CLASSES;
-    }
+    }    
 }
