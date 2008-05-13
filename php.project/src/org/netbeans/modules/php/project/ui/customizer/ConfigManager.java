@@ -62,7 +62,7 @@ public class ConfigManager {
     public ConfigManager(PhpProjectProperties properties) {
         this.changeSupport = new ChangeSupport(this);
         this.properties = properties;
-        this.configs = properties.RUN_CONFIGS;
+        this.configs = properties.getRunConfigs();
         ArrayList<String> tmp = new ArrayList<String>(Arrays.asList(PhpProjectProperties.CFG_PROPS));
         tmp.add(PROP_DISPLAY_NAME);
         this.propertyNames = tmp.toArray(new String[tmp.size()]);

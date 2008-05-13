@@ -82,9 +82,9 @@ public class PhpProjectProperties {
     public static final String INDEX_FILE = "index.file"; // NOI18N
     public static final String INCLUDE_PATH = "include.path"; // NOI18N
     public static final String GLOBAL_INCLUDE_PATH = "php.global.include.path"; // NOI18N
-    public static final String ARGS = "script.arguments";
-    public static final String RUN_AS = "run.as";
-    public static final String[] CFG_PROPS = new String[]{
+    public static final String ARGS = "script.arguments"; // NOI18N
+    public static final String RUN_AS = "run.as"; // NOI18N
+    public static final String[] CFG_PROPS = new String[] {
         URL,
         INDEX_FILE,
         ARGS,
@@ -96,9 +96,9 @@ public class PhpProjectProperties {
         SCRIPT,
         REMOTE
     }
-    // CustomizerRun
-    Map<String/*|null*/, Map<String, String/*|null*/>/*|null*/> RUN_CONFIGS;
-    String activeConfig;
+
+    static final String CONFIG_PRIVATE_PROPERTIES_PATH = "nbproject/private/config.properties"; // NOI18N
+
     private final PhpProject project;
     private final IncludePathSupport includePathSupport;
 
@@ -111,6 +111,10 @@ public class PhpProjectProperties {
     private String indexFile;
     private String encoding;
 
+    // CustomizerRun
+    Map<String/*|null*/, Map<String, String/*|null*/>/*|null*/> runConfigs;
+    String activeConfig;
+
     // CustomizerPhpIncludePath
     private DefaultListModel includePathListModel = null;
     private ListCellRenderer includePathListRenderer = null;
@@ -121,8 +125,8 @@ public class PhpProjectProperties {
 
         this.project = project;
         this.includePathSupport = includePathSupport;
-        this.RUN_CONFIGS = readRunConfigs();
-        this.activeConfig = project.getEvaluator().getProperty("config");
+        runConfigs = readRunConfigs();
+        activeConfig = project.getEvaluator().getProperty("config"); // NOI18N
     }
 
     public String getCopySrcFiles() {
@@ -236,7 +240,7 @@ public class PhpProjectProperties {
 
         // get properties
         EditableProperties projectProperties = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-        EditableProperties privateProperties = helper.getProperties( AntProjectHelper.PRIVATE_PROPERTIES_PATH );
+        EditableProperties privateProperties = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
 
         // sources
         if (srcDir != null) {
@@ -258,16 +262,16 @@ public class PhpProjectProperties {
         }
 
         // configs
-        storeRunConfigs(RUN_CONFIGS, projectProperties, privateProperties);
-        EditableProperties ep = helper.getProperties("nbproject/private/config.properties"); // NOI18N
+        storeRunConfigs(runConfigs, projectProperties, privateProperties);
+        EditableProperties ep = helper.getProperties(CONFIG_PRIVATE_PROPERTIES_PATH);
         if (activeConfig == null) {
-            ep.remove("config");//NOI18N
+            ep.remove("config"); // NOI18N
         } else {
-            ep.setProperty("config", activeConfig);//NOI18N
+            ep.setProperty("config", activeConfig); // NOI18N
         }
 
         // store all the properties
-        helper.putProperties("nbproject/private/config.properties", ep); // NOI18N
+        helper.putProperties(CONFIG_PRIVATE_PROPERTIES_PATH, ep);
         helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties);
         helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties);
 
@@ -313,6 +317,9 @@ public class PhpProjectProperties {
         return project;
     }
 
+    public Map<String, Map<String, String>> getRunConfigs() {
+        return runConfigs;
+    }
 
     /**
      * A mess.
@@ -325,36 +332,42 @@ public class PhpProjectProperties {
             }
         });
         Map<String, String> def = new TreeMap<String, String>();
+        EditableProperties privateProperties = getProject().getHelper().getProperties(
+                AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+        EditableProperties projectProperties = getProject().getHelper().getProperties(
+                AntProjectHelper.PROJECT_PROPERTIES_PATH);
         for (String prop : CFG_PROPS) {
-            String v = getProject().getHelper().getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH).getProperty(prop);
+            String v = privateProperties.getProperty(prop);
             if (v == null) {
-                v = getProject().getHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).getProperty(prop);
+                v = projectProperties.getProperty(prop);
             }
             if (v != null) {
                 def.put(prop, v);
             }
         }
         m.put(null, def);
-        FileObject configs = project.getProjectDirectory().getFileObject("nbproject/configs");
+        FileObject configs = project.getProjectDirectory().getFileObject("nbproject/configs"); // NOI18N
         if (configs != null) {
             for (FileObject kid : configs.getChildren()) {
-                if (!kid.hasExt("properties")) {
+                if (!kid.hasExt("properties")) { // NOI18N
                     continue;
                 }
-                m.put(kid.getName(), new TreeMap<String, String>(getProject().getHelper().getProperties(FileUtil.getRelativePath(project.getProjectDirectory(), kid))));
+                String path = FileUtil.getRelativePath(project.getProjectDirectory(), kid);
+                m.put(kid.getName(), new TreeMap<String, String>(getProject().getHelper().getProperties(path)));
             }
         }
-        configs = project.getProjectDirectory().getFileObject("nbproject/private/configs");
+        configs = project.getProjectDirectory().getFileObject("nbproject/private/configs"); // NOI18N
         if (configs != null) {
             for (FileObject kid : configs.getChildren()) {
-                if (!kid.hasExt("properties")) {
+                if (!kid.hasExt("properties")) { // NOI18N
                     continue;
                 }
                 Map<String, String> c = m.get(kid.getName());
                 if (c == null) {
                     continue;
                 }
-                c.putAll(new HashMap<String, String>(getProject().getHelper().getProperties(FileUtil.getRelativePath(project.getProjectDirectory(), kid))));
+                String path = FileUtil.getRelativePath(project.getProjectDirectory(), kid);
+                c.putAll(new HashMap<String, String>(getProject().getHelper().getProperties(path)));
             }
         }
         //System.err.println("readRunConfigs: " + m);
