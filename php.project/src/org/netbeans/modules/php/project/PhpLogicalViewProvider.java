@@ -63,9 +63,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.queries.VisibilityQuery;
-import org.netbeans.modules.php.project.ui.actions.DebugLocalCommand;
 import org.netbeans.modules.php.project.ui.actions.DebugSingleCommand;
-import org.netbeans.modules.php.project.ui.actions.RunLocalCommand;
 import org.netbeans.modules.php.project.ui.actions.RunSingleCommand;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.spi.project.ActionProvider;
@@ -526,9 +524,6 @@ class PhpLogicalViewProvider implements LogicalViewProvider {
                 null,
                 provider.getAction(RunSingleCommand.ID),
                 provider.getAction(DebugSingleCommand.ID),
-                null,
-                provider.getAction(RunLocalCommand.ID),
-                provider.getAction(DebugLocalCommand.ID)
             };
             int idx = actions.indexOf(SystemAction.get(PasteAction.class));
             for (int i = 0; i < toAdd.length; i++) {

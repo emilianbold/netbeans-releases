@@ -54,27 +54,33 @@ import org.openide.util.NbBundle;
 public class DebugCommand extends Command implements Displayable {
 
     public static final String ID = ActionProvider.COMMAND_DEBUG;
+    private final DebugLocalCommand debugLocalCommand;
 
     public DebugCommand(PhpProject project) {
         super(project);
+        debugLocalCommand = new DebugLocalCommand(project);        
     }
 
     @Override
     public void invokeAction(final Lookup context) throws IllegalArgumentException {
-        Runnable runnable = new Runnable() {
-            public void run() {
-                try {
-                    showURLForDebugProjectFile();
-                } catch (MalformedURLException ex) {
-                    //TODO improve error handling
-                    Exceptions.printStackTrace(ex);
-                }
+        if (useInterpreter()) {
+            debugLocalCommand.invokeAction(null);
+        } else {
+            Runnable runnable = new Runnable() {
+                public void run() {
+                        try {
+                            showURLForDebugProjectFile();
+                        } catch (MalformedURLException ex) {
+                        //TODO improve error handling
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+            };
+            //temporary; after narrowing deps. will be changed
+            XDebugStarter dbgStarter = XDebugStarterFactory.getInstance();
+            if (dbgStarter != null) {
+                dbgStarter.start(getProject(), runnable, fileForProject());
             }
-        };
-        //temporary; after narrowing deps. will be changed
-        XDebugStarter dbgStarter = XDebugStarterFactory.getInstance();
-        if (dbgStarter != null) {
-            dbgStarter.start(getProject(), runnable, fileForProject());
         }
     }
 

@@ -135,7 +135,10 @@ public class FormLAF {
                     for (PropertyChangeListener listener : UIManager.getPropertyChangeListeners()) {
                         if (listener.getClass().getName().contains("NimbusDefaults")) { // NOI18N
                             // Forces update of derived colors, see NimbusDefaults.DefaultsListener
-                            listener.propertyChange(new PropertyChangeEvent(UIManager.class, "lookAndFeel", null, null)); // NOI18N
+                            // We must fire the event several times because some values are dependent
+                            for (int i=0; i<5; i++) {
+                                listener.propertyChange(new PropertyChangeEvent(UIManager.class, "lookAndFeel", null, null)); // NOI18N
+                            }
                             // Remove listeners added by NimbusLookAndFeel.initialize()
                             UIManager.removePropertyChangeListener(listener);
                             UIManager.getDefaults().removePropertyChangeListener(listener);

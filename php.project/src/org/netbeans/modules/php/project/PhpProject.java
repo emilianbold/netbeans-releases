@@ -40,9 +40,11 @@
  */
 package org.netbeans.modules.php.project;
 
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
+import java.util.Collections;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.api.project.Project;
@@ -57,10 +59,14 @@ import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
+import org.netbeans.spi.project.support.ant.FilterPropertyProvider;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.netbeans.spi.project.support.ant.PropertyProvider;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
@@ -85,12 +91,15 @@ public class PhpProject implements Project, AntProjectListener {
     private final AntProjectHelper helper;
     private final ReferenceHelper refHelper;
     private Lookup lookup;
+    private final PropertyEvaluator eval;    
+    
 
     PhpProject(AntProjectHelper helper) {
         assert helper != null;
 
         this.helper = helper;
         AuxiliaryConfiguration configuration = helper.createAuxiliaryConfiguration();
+        eval = createEvaluator();
         refHelper = new ReferenceHelper(helper, configuration, getEvaluator());
         helper.addAntProjectListener(this);
         initLookup(configuration);
@@ -100,6 +109,31 @@ public class PhpProject implements Project, AntProjectListener {
         return lookup;
     }
 
+    public PropertyEvaluator getEvaluator() {
+        return eval;
+    }
+    
+    private PropertyEvaluator createEvaluator() {
+        // It is currently safe to not use the UpdateHelper for PropertyEvaluator; UH.getProperties() delegates to APH
+        // Adapted from APH.getStandardPropertyEvaluator (delegates to ProjectProperties):
+        PropertyEvaluator baseEval1 = PropertyUtils.sequentialPropertyEvaluator(
+                helper.getStockPropertyPreprovider(),
+                helper.getPropertyProvider(PhpConfigurationProvider.CONFIG_PROPS_PATH));
+        PropertyEvaluator baseEval2 = PropertyUtils.sequentialPropertyEvaluator(
+                helper.getStockPropertyPreprovider(),
+                helper.getPropertyProvider(AntProjectHelper.PRIVATE_PROPERTIES_PATH));
+        return PropertyUtils.sequentialPropertyEvaluator(
+                helper.getStockPropertyPreprovider(),
+                helper.getPropertyProvider(PhpConfigurationProvider.CONFIG_PROPS_PATH),
+                new ConfigPropertyProvider(baseEval1, "nbproject/private/configs", helper), // NOI18N
+                helper.getPropertyProvider(AntProjectHelper.PRIVATE_PROPERTIES_PATH),
+                helper.getProjectLibrariesPropertyProvider(),
+                PropertyUtils.userPropertiesProvider(baseEval2,
+                    "user.properties.file", FileUtil.toFile(getProjectDirectory())), // NOI18N
+                new ConfigPropertyProvider(baseEval1, "nbproject/configs", helper), // NOI18N
+                helper.getPropertyProvider(AntProjectHelper.PROJECT_PROPERTIES_PATH));
+    }    
+     
     public FileObject getProjectDirectory() {
         return getHelper().getProjectDirectory();
     }
@@ -175,10 +209,6 @@ public class PhpProject implements Project, AntProjectListener {
         return helper;
     }
 
-    public PropertyEvaluator getEvaluator() {
-        return helper.getStandardPropertyEvaluator();
-    }
-
     CopySupport getCopySupport() {
         return getLookup().lookup(CopySupport.class);
     }
@@ -191,6 +221,7 @@ public class PhpProject implements Project, AntProjectListener {
                 configuration,
                 new PhpOpenedHook(),
                 new PhpActionProvider(this),
+                new PhpConfigurationProvider(this),
                 getHelper().createCacheDirectoryProvider(), // XXX needed?
                 new ClassPathProviderImpl(getHelper(), getEvaluator(), phpSources),
                 new PhpLogicalViewProvider(this),
@@ -266,4 +297,30 @@ public class PhpProject implements Project, AntProjectListener {
             }
         }
     }
+    
+    private static final class ConfigPropertyProvider extends FilterPropertyProvider implements PropertyChangeListener {
+        private final PropertyEvaluator baseEval;
+        private final String prefix;
+        private final AntProjectHelper helper;
+        public ConfigPropertyProvider(PropertyEvaluator baseEval, String prefix, AntProjectHelper helper) {
+            super(computeDelegate(baseEval, prefix, helper));
+            this.baseEval = baseEval;
+            this.prefix = prefix;
+            this.helper = helper;
+            baseEval.addPropertyChangeListener(this);
+        }
+        public void propertyChange(PropertyChangeEvent ev) {
+            if (PhpConfigurationProvider.PROP_CONFIG.equals(ev.getPropertyName())) {
+                setDelegate(computeDelegate(baseEval, prefix, helper));
+            }
+        }
+        private static PropertyProvider computeDelegate(PropertyEvaluator baseEval, String prefix, AntProjectHelper helper) {
+            String config = baseEval.getProperty(PhpConfigurationProvider.PROP_CONFIG);
+            if (config != null) {
+                return helper.getPropertyProvider(prefix + "/" + config + ".properties"); // NOI18N
+            } else {
+                return PropertyUtils.fixedPropertyProvider(Collections.<String,String>emptyMap());
+            }
+        }
+    }    
 }
