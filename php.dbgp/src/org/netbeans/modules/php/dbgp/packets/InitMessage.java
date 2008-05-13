@@ -86,7 +86,7 @@ public class InitMessage extends DbgpMessage {
         
         setBreakpoints( session );
         final String transactionId = session.getTransactionId();        
-        DbgpCommand startCommand = DebuggerOptions.isDebuggerStoppedAtTheFirstLine() ? 
+        DbgpCommand startCommand = DebuggerOptions.getGlobalInstance().isDebuggerStoppedAtTheFirstLine() ? 
             new StepIntoCommand(transactionId) : new RunCommand(transactionId);
         session.sendCommandLater( startCommand );
     }
