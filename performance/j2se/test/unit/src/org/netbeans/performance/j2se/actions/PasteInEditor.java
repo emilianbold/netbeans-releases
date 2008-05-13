@@ -42,7 +42,6 @@
 package org.netbeans.performance.j2se.actions;
 
 import java.awt.event.KeyEvent;
-import org.netbeans.modules.performance.guitracker.ActionTracker;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.EditorWindowOperator;
@@ -76,6 +75,7 @@ public class PasteInEditor extends PerformanceTestCase {
     
     private EditorOperator editorOperator1, editorOperator2;
     
+    @Override
     public void initialize() {
         EditorOperator.closeDiscardAll();
         
@@ -109,6 +109,7 @@ public class PasteInEditor extends PerformanceTestCase {
         return null;
     }
     
+    @Override
     public void shutdown() {
         // close the second file without saving it
         editorOperator2.closeDiscard();

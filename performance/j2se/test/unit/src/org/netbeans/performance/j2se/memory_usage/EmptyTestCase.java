@@ -69,6 +69,7 @@ public class EmptyTestCase extends PerformanceTestCase {
         return suite;
     }
 
+    @Override
     public void initialize(){
         // do nothing
     }
@@ -82,6 +83,7 @@ public class EmptyTestCase extends PerformanceTestCase {
         return null;
     }
     
+    @Override
     public void shutdown(){
         // do nothing
     }

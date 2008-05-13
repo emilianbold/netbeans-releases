@@ -126,6 +126,7 @@ public class ScanClasspath extends PerformanceTestCase {
         return null;
     }
     
+    @Override
     public void close(){
     }
     

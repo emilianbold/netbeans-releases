@@ -76,6 +76,7 @@ public class OpenProjectDialog extends PerformanceTestCase {
         // do nothing
     }
     
+    @Override
     public void initialize() {
         MENU = Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/File") + "|" + Bundle.getStringTrimmed("org.netbeans.modules.project.ui.actions.Bundle","LBL_OpenProjectAction_Name");
         TITLE = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle","LBL_PrjChooser_Title");

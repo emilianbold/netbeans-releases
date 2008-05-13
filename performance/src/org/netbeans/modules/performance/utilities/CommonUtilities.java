@@ -694,4 +694,22 @@ public class CommonUtilities {
         }
     }
     
+    public static void killRunOnProject(String project) {
+        killProcessOnProject(project, "run");
+    }
+    
+    public static void killDebugOnProject(String project) {
+        killProcessOnProject(project, "debug");
+    }
+    
+    private static void killProcessOnProject(String project, String process) {
+        // prepare Runtime tab
+        RuntimeTabOperator runtime = RuntimeTabOperator.invoke();
+        
+        // kill the execution
+        Node node = new Node(runtime.getRootNode(), "Processes|"+project+ " (" + process + ")");
+        node.select();
+        node.performPopupAction("Terminate Process");
+    }
+    
 }

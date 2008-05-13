@@ -104,6 +104,7 @@ public class DeleteFolder extends PerformanceTestCase {
         doMeasurement();
     }
     
+    @Override
     public void initialize(){
         projectTab = new ProjectsTabOperator();
         new MaximizeWindowAction().performAPI(projectTab);
@@ -121,6 +122,7 @@ public class DeleteFolder extends PerformanceTestCase {
         return null;
     }
     
+    @Override
     public void close(){
         //do nothing
     }
@@ -182,6 +184,7 @@ public class DeleteFolder extends PerformanceTestCase {
         }
     }
 
+    @Override
     public void shutdown() {
         new RestoreWindowAction().performAPI(projectTab);
         repaintManager().resetRegionFilters();

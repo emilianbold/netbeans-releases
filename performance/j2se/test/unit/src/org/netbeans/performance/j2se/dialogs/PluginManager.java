@@ -71,6 +71,7 @@ public class PluginManager extends PerformanceTestCase {
         expectedTime = WINDOW_OPEN;
     }
     
+    @Override
     public void initialize() {
         BUNDLE = "org.netbeans.modules.autoupdate.ui.actions.Bundle";
         MENU = Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Tools") + "|" + Bundle.getStringTrimmed(BUNDLE,"PluginManagerAction_Name");

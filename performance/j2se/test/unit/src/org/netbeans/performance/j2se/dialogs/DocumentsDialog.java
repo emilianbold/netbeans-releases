@@ -68,6 +68,7 @@ public class DocumentsDialog extends PerformanceTestCase {
         expectedTime = WINDOW_OPEN;
     }
     
+    @Override
     public void initialize(){
         CommonUtilities.openFiles("jEdit", getTenSelectedFiles());
         waitNoEvent(20000);
@@ -83,6 +84,7 @@ public class DocumentsDialog extends PerformanceTestCase {
         return new DocumentsDialogOperator();
     }
 
+    @Override
     public void shutdown(){
         EditorWindowOperator.closeDiscard();
     }

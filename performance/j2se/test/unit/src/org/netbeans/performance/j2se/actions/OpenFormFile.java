@@ -44,7 +44,6 @@ package org.netbeans.performance.j2se.actions;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.modules.form.FormDesignerOperator;
 import org.netbeans.modules.performance.guitracker.LoggingRepaintManager.RegionFilter;
-import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 
@@ -99,6 +98,7 @@ public class OpenFormFile extends OpenFilesNoCloneableEditor {
         repaintManager().resetRegionFilters();
     }
     
+    @Override
     public ComponentOperator open(){
         JPopupMenuOperator popup =  this.openNode.callPopup();
         if (popup == null) {
@@ -115,6 +115,7 @@ public class OpenFormFile extends OpenFilesNoCloneableEditor {
         return new FormDesignerOperator("JFrame20kB");
     }
 
+    @Override
     public void close() {
 //        ((FormDesignerOperator)testedComponentOperator).close();
     }

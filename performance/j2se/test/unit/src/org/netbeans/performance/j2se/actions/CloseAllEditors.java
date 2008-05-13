@@ -42,7 +42,6 @@
 package org.netbeans.performance.j2se.actions;
 
 import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.modules.performance.guitracker.ActionTracker;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
 import org.netbeans.jellytools.actions.OpenAction;
@@ -83,11 +82,13 @@ public class CloseAllEditors extends PerformanceTestCase {
         WAIT_AFTER_PREPARE=1000;
     }
     
+    @Override
     public void initialize(){
         EditorOperator.closeDiscardAll();
         prepareFiles();
     }
 
+    @Override
     public void shutdown(){
         EditorOperator.closeDiscardAll();
     }

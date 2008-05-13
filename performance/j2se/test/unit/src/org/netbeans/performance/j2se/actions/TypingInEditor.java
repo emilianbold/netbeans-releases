@@ -41,16 +41,13 @@
 
 package org.netbeans.performance.j2se.actions;
 
-import org.netbeans.modules.editor.options.BaseOptions;
-import org.netbeans.modules.performance.guitracker.ActionTracker;
+
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.EditorWindowOperator;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
-import org.netbeans.jellytools.modules.web.nodes.WebPagesNode;
-
 import org.netbeans.jemmy.operators.ComponentOperator;
 
 import org.netbeans.junit.NbTestSuite;
@@ -128,6 +125,7 @@ public class TypingInEditor extends PerformanceTestCase {
         doMeasurement();
     }
 */   
+    @Override
     public void initialize() {
         // open a java file in the editor
         new OpenAction().performAPI(fileToBeOpened);
@@ -152,11 +150,13 @@ public class TypingInEditor extends PerformanceTestCase {
         return null;
     }
     
+    @Override
     public void close() {
         // do nothing
     }
     
     
+    @Override
     public void shutdown() {
         setEditorForMeasuringOff();
         editorOperator.closeDiscard();

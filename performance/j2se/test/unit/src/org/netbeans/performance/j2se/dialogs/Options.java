@@ -82,6 +82,7 @@ public class Options extends PerformanceTestCase {
         return options;
     }
     
+    @Override
     public void close(){
         if(options != null)
             options.close();

@@ -71,6 +71,7 @@ public class AttachDialog extends PerformanceTestCase {
         expectedTime = WINDOW_OPEN;
     }
     
+    @Override
     public void initialize() {
         MENU = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle","Menu/RunProject") + "|" + Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle","CTL_Connect");
         TITLE = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle","CTL_Connect_to_running_process");

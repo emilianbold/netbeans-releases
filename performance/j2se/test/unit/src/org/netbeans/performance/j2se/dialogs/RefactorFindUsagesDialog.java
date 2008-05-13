@@ -72,6 +72,7 @@ public class RefactorFindUsagesDialog extends PerformanceTestCase {
         expectedTime = WINDOW_OPEN;
     }
     
+    @Override
     public void initialize() {
         String BUNDLE = "org.netbeans.modules.refactoring.ui.Bundle";
         TITLE = Bundle.getStringTrimmed(BUNDLE,"LBL_WhereUsed");  // "Find Usages"

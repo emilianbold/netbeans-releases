@@ -55,7 +55,6 @@ import org.netbeans.modules.performance.guitracker.ActionTracker;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import java.util.logging.Handler;
 import java.util.logging.Logger;
-import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
 /**
@@ -157,6 +156,7 @@ public class OpenFiles extends PerformanceTestCase {
         doMeasurement();
     }
     
+    @Override
     protected void initialize(){
         EditorOperator.closeDiscardAll();
 //        repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
@@ -186,6 +186,7 @@ public class OpenFiles extends PerformanceTestCase {
         return new EditorOperator(this.fileName);
     }
     
+    @Override
     public void close(){
         if (testedComponentOperator != null) {
             hookEditorDocument(testedComponentOperator.getSource());
@@ -195,6 +196,7 @@ public class OpenFiles extends PerformanceTestCase {
         }
     }
     
+    @Override
     protected void shutdown(){
         Logger.getLogger("TIMER").removeHandler(phaseHandler);
         testedComponentOperator = null; // allow GC of editor and documents

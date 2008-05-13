@@ -41,9 +41,7 @@
 package org.netbeans.performance.j2se.menus;
 
 import org.netbeans.modules.performance.utilities.CommonUtilities;
-import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.modules.form.ComponentInspectorOperator;
 import org.netbeans.jellytools.nodes.Node;
 
@@ -70,13 +68,16 @@ public class FormInspectorNodePopupMenu extends ValidatePopupMenuOnNodes {
         doMeasurement();
     }
    
+    @Override
      public void initialize(){
         CommonUtilities.openSmallFormFile();
      }
     
+    @Override
     public void shutdown(){
         EditorOperator.closeDiscardAll();
     }    
+    @Override
     public void prepare(){
         String path = "[JFrame]";
         dataObjectNode = new Node(new ComponentInspectorOperator().treeComponents(), path);

@@ -81,6 +81,7 @@ public class AddProfilingPointWizard  extends PerformanceTestCase {
         super(testName,performanceDataName);
         expectedTime = WINDOW_OPEN;        
     }
+    @Override
     public void initialize() {
         log(":: initialize");
         commandName = "Profiling Points"; //NOI18N
@@ -118,10 +119,12 @@ public class AddProfilingPointWizard  extends PerformanceTestCase {
         wizard =new NbDialogOperator("New Profiling Point"); //NOI18N
         return null;
     }
+    @Override
     public void close() {
         wizard.close();
     }
     
+    @Override
     public void shutdown() {
         ppointsPane.closeWindow();
     }

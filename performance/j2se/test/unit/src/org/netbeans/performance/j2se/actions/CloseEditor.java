@@ -40,7 +40,7 @@
  */
 
 package org.netbeans.performance.j2se.actions;
-import org.netbeans.modules.performance.guitracker.ActionTracker;
+
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.actions.CloseViewAction;
@@ -105,10 +105,12 @@ public class CloseEditor extends PerformanceTestCase {
         doMeasurement();
     }
     
+    @Override
     public void initialize(){
         EditorOperator.closeDiscardAll();
     }
 
+    @Override
     public void shutdown(){
         EditorOperator.closeDiscardAll();
     }

@@ -51,7 +51,6 @@ import javax.swing.KeyStroke;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.actions.ActionNoBlock;
-import org.netbeans.jellytools.actions.Action.Shortcut;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
 
@@ -77,6 +76,7 @@ public class GotoLineDialog extends PerformanceTestCase {
         expectedTime = WINDOW_OPEN;
     }
     
+    @Override
     public void initialize() {
         TITLE = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.editor.Bundle", "goto-title");
         // open a java file in the editor
@@ -93,6 +93,7 @@ public class GotoLineDialog extends PerformanceTestCase {
         return new NbDialogOperator(TITLE); // NOI18N
     }
     
+    @Override
     public void shutdown(){
         if(editor!=null && editor.isShowing())
             editor.closeDiscard();

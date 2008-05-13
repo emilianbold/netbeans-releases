@@ -77,6 +77,7 @@ public class InternationalizeDialog extends PerformanceTestCase {
         WAIT_AFTER_OPEN = 1500;
     }
     
+    @Override
     public void initialize() {
         BUNDLE = "org.netbeans.modules.i18n.Bundle";
         MENU = Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Tools") + "|" + Bundle.getStringTrimmed(BUNDLE,"LBL_I18nGroupActionName") + "|" + Bundle.getStringTrimmed(BUNDLE,"CTL_I18nAction");
@@ -96,6 +97,7 @@ public class InternationalizeDialog extends PerformanceTestCase {
         return new NbDialogOperator(TITLE);
     }
  
+    @Override
     public void shutdown(){
         if(editor!=null && editor.isShowing())
             editor.closeDiscard();

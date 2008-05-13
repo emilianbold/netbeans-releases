@@ -71,6 +71,7 @@ public class HttpMonitorWindow extends PerformanceTestCase {
         expectedTime = WINDOW_OPEN;
     }
     
+    @Override
     public void initialize() {
         MENU = Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Window") + "|" + Bundle.getStringTrimmed("org.netbeans.modules.web.monitor.client.Bundle", "MON_HTTP_Transaction_13");
         TITLE = Bundle.getStringTrimmed("org.netbeans.modules.web.monitor.client.Bundle", "MON_Title");        
@@ -86,6 +87,7 @@ public class HttpMonitorWindow extends PerformanceTestCase {
         return new TopComponentOperator(TITLE);
     }
     
+    @Override
     public void close() {
         // close the tab
         new TopComponentOperator(TITLE).close();

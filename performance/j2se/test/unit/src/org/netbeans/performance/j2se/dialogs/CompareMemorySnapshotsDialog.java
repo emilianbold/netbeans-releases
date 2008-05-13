@@ -71,6 +71,7 @@ public class CompareMemorySnapshotsDialog  extends PerformanceTestCase {
         super(testName, performanceDataName);
         expectedTime = WINDOW_OPEN;        
     }
+    @Override
     public void initialize() {
         log(":: initialize");
     }
@@ -84,10 +85,12 @@ public class CompareMemorySnapshotsDialog  extends PerformanceTestCase {
         comparerDlg = new JDialogOperator("Select Snapshots to Compare");  // NOI18N              
         return null;
     }
+    @Override
     public void close() {
         log(":: close");
         comparerDlg.close();
     }
+    @Override
     public void shutdown() {
         log(":: shutdown");
     }

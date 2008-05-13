@@ -44,9 +44,7 @@ package org.netbeans.performance.j2se.actions;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
-import org.netbeans.jemmy.QueueTool;
-import org.netbeans.modules.performance.guitracker.ActionTracker;
-import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+
 
 /**
  * Test of opening files if Editor is already opened.
@@ -77,6 +75,7 @@ public class OpenFilesNoCloneableEditorWithOpenedEditor extends OpenFilesNoClone
         super(testName, performanceDataName);
     }
     
+    @Override
     public void testOpening20kBPropertiesFile(){
         WAIT_AFTER_OPEN = 1500;
         fileProject = "PerformanceTestData";
@@ -87,6 +86,7 @@ public class OpenFilesNoCloneableEditorWithOpenedEditor extends OpenFilesNoClone
         doMeasurement();
     }
 
+    @Override
     public void testOpening20kBPictureFile(){
         WAIT_AFTER_OPEN = 1500;
         fileProject = "PerformanceTestData";
@@ -100,6 +100,7 @@ public class OpenFilesNoCloneableEditorWithOpenedEditor extends OpenFilesNoClone
     /**
      * Initialize test - open Main.java file in the Source Editor.
      */
+    @Override
     public void initialize(){
         super.initialize();
 	SourcePackagesNode spn=new SourcePackagesNode("PerformanceTestData");

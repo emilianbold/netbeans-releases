@@ -84,6 +84,7 @@ public class JavaCompletionInEditor extends PerformanceTestCase {
         expectedTime = WINDOW_OPEN;
     }
     
+    @Override
     public void initialize() {
         // prepare editor/completion for measuring
         setCompletionForMeasuringOn();
@@ -119,12 +120,14 @@ public class JavaCompletionInEditor extends PerformanceTestCase {
         return new CompletionJListOperator();
     }
     
+    @Override
     public void close() {
         super.close();
         editorOperator.setCaretPositionRelative(-1);
         editorOperator.delete(1);
     }
     
+    @Override
     public void shutdown() {
         // set default values after measuring
         setCompletionForMeasuringOff();

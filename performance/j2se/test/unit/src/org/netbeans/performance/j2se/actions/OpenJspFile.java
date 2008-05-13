@@ -45,8 +45,6 @@ import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.modules.web.nodes.WebPagesNode;
-import org.netbeans.modules.performance.guitracker.ActionTracker;
-import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.jemmy.operators.ComponentOperator;
 
 /**
@@ -86,12 +84,14 @@ public class OpenJspFile extends OpenFiles {
         doMeasurement();
     }
     
+    @Override
     public void prepare(){
         this.openNode = new Node(new WebPagesNode(fileProject),fileName);
         this.openNode.select();
         log("========== Open file path ="+this.openNode.getPath());
     }
     
+    @Override
     public ComponentOperator open(){
         new OpenAction().performPopup(this.openNode);
         return new EditorOperator(this.fileName);

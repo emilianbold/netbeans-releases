@@ -76,11 +76,13 @@ public class FilesWindow extends PerformanceTestCase {
         return new FilesTabOperator();
     }
     
+    @Override
     public void close() {
         if(testedComponentOperator!=null && testedComponentOperator.isShowing())
             ((FilesTabOperator)testedComponentOperator).close();
     }
     
+    @Override
     public void shutdown() {
         new FilesViewAction().perform();
     }

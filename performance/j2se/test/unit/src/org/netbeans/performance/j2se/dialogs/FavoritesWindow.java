@@ -81,6 +81,7 @@ public class FavoritesWindow extends PerformanceTestCase {
         return new FavoritesOperator();
     }
 
+    @Override
     public void close() {
         if(testedComponentOperator!=null && testedComponentOperator.isShowing())
             ((FavoritesOperator)testedComponentOperator).close();

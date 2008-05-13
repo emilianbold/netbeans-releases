@@ -72,6 +72,7 @@ public class EditorDownButtonPopupMenu extends PerformanceTestCase {
         doMeasurement();
     }
     
+    @Override
     public void initialize(){
         CommonUtilities.openFiles("jEdit", getTenSelectedFiles());
         waitNoEvent(20000);
@@ -87,6 +88,7 @@ public class EditorDownButtonPopupMenu extends PerformanceTestCase {
         return popupComponent;
   }
     
+    @Override
     public void shutdown(){
         EditorWindowOperator.closeDiscard();
     }

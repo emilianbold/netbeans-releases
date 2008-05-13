@@ -73,6 +73,7 @@ public class WebProjectWorkflow extends MemoryFootprintTestCase {
         prefix = "Web Project Workflow |";
     }
     
+    @Override
     public void initialize() {
         super.initialize();
         FootprintUtilities.closeAllDocuments();
@@ -99,6 +100,7 @@ public class WebProjectWorkflow extends MemoryFootprintTestCase {
         return null;
     }
     
+    @Override
     public void close(){
         FootprintUtilities.deleteProject(webproject);
     }

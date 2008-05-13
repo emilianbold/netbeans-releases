@@ -41,7 +41,6 @@
 
 package org.netbeans.performance.j2se.actions;
 
-import org.netbeans.modules.performance.guitracker.ActionTracker;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.NbDialogOperator;
@@ -86,12 +85,14 @@ public class CloseEditorModified extends PerformanceTestCase {
         WAIT_AFTER_OPEN=1500;
     }
     
+    @Override
     public void initialize(){
         EditorOperator.closeDiscardAll();
         new OpenAction().performPopup(new Node(new SourcePackagesNode("PerformanceTestData"), "org.netbeans.test.performance|Main.java"));
         editorOperator = new EditorOperator("Main.java");
     }
 
+    @Override
     public void shutdown(){
         EditorOperator.closeDiscardAll();
     }
@@ -108,6 +109,7 @@ public class CloseEditorModified extends PerformanceTestCase {
         return dialog;
     }
     
+    @Override
     public void close(){
         dialog.cancel();
     }

@@ -44,14 +44,10 @@ package org.netbeans.performance.j2se.actions;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
-import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
-import org.netbeans.modules.performance.guitracker.ActionTracker;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.modules.project.ui.test.ProjectSupport;
-//import org.netbeans.junit.ide.ProjectSupport;
-//import org.netbeans.junit.ide.ProjectSupport;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
@@ -106,6 +102,7 @@ public class CreateNBProject extends PerformanceTestCase {
         doMeasurement();
     }
 
+    @Override
     public void initialize(){
     }
     
@@ -147,6 +144,7 @@ public class CreateNBProject extends PerformanceTestCase {
         org.netbeans.junit.Log.assertInstances("GC:"); 
     }
   
+    @Override
     public void close(){
         ProjectSupport.closeProject(project_name);
 //        new CloseAllDocumentsAction().performAPI(); //avoid issue 68671 - editors are not closed after closing project by ProjectSupport

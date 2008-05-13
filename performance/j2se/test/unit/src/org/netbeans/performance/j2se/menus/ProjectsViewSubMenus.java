@@ -131,16 +131,19 @@ public class ProjectsViewSubMenus extends PerformanceTestCase {
         return mio;
     }
     
+    @Override
     public void close() {
         testedComponentOperator.pushKey(java.awt.event.KeyEvent.VK_ESCAPE);
         testedComponentOperator.pushKey(java.awt.event.KeyEvent.VK_ESCAPE);
     }
     
+    @Override
     public void setUp () {
         super.setUp();
         repeat = 1; // only first use is interesting
     }
     
+    @Override
     public void tearDown() {
         super.tearDown();
         repeat = repeat_original; // initialize original value

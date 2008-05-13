@@ -39,6 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
+package org.netbeans.performance.j2se.startup;
 
 import org.netbeans.modules.performance.utilities.MeasureStartupTimeTestCase;
 

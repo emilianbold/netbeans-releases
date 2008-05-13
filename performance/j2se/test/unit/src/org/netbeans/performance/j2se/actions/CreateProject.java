@@ -45,13 +45,12 @@ import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
-import org.netbeans.modules.performance.guitracker.ActionTracker;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.modules.performance.utilities.CommonUtilities;
+
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.modules.project.ui.test.ProjectSupport;
-//import org.netbeans.junit.ide.ProjectSupport;
-//import org.netbeans.junit.ide.ProjectSupport;
 
 
 /**
@@ -121,6 +120,7 @@ public class CreateProject extends PerformanceTestCase {
         doMeasurement();
     }*/
 
+    @Override
     public void initialize(){
     }
     
@@ -145,13 +145,14 @@ public class CreateProject extends PerformanceTestCase {
     }
     
     public ComponentOperator open(){
-        if (project_type=="WebProject") wizard_location.next();
+        if (project_type.equals("WebProject")) wizard_location.next();
         wizard_location.finish();
-//        ProjectSupport.waitScanFinished();
+        CommonUtilities.waitProjectTasksFinished();
         new EventTool().waitNoEvent(1000);
         return null;
     }
     
+    @Override
     public void close(){
         if (index != repeat) { // ignore last round tha reports LRU caches
             Object /* Project */ prj = ProjectSupport.openProject(

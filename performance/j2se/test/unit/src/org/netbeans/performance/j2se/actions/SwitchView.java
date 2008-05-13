@@ -47,7 +47,6 @@ import org.netbeans.jellytools.FilesTabOperator;
 import org.netbeans.jellytools.FavoritesOperator;
 import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.modules.performance.guitracker.ActionTracker;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 /**
  *
@@ -103,13 +102,14 @@ public class SwitchView  extends PerformanceTestCase {
     }
 
     
+    @Override
     protected void initialize() {
         log(":: initialize");
     }
         
     public void prepare() {
         log(":: prepare");
-        if (operator!="Projects") ProjectsTabOperator.invoke();
+        if (!operator.equals("Projects")) ProjectsTabOperator.invoke();
            else RuntimeTabOperator.invoke();
     }
     

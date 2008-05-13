@@ -44,8 +44,7 @@ package org.netbeans.performance.j2se.actions;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
-import org.netbeans.modules.performance.guitracker.ActionTracker;
-import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+
 /**
  * Test of opening files if Editor is already opened.
  * OpenFiles is used as a base for tests of opening files
@@ -72,6 +71,7 @@ public class OpenFormFileWithOpenedEditor extends OpenFormFile {
         super(testName, performanceDataName);
     }
 
+    @Override
     public void testOpening20kBFormFile(){
         super.testOpening20kBFormFile();
         WAIT_AFTER_OPEN = 9000;
@@ -80,6 +80,7 @@ public class OpenFormFileWithOpenedEditor extends OpenFormFile {
     /**
      * Initialize test - open Main.java file in the Source Editor.
      */
+    @Override
     public void initialize(){
         super.initialize();
         new OpenAction().performAPI(new Node(new SourcePackagesNode("PerformanceTestData"), "org.netbeans.test.performance|Main.java"));

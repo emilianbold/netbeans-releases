@@ -77,6 +77,7 @@ public class RuntimeWindow extends PerformanceTestCase {
         return new RuntimeTabOperator();
     }
     
+    @Override
     public void close() {
         if(testedComponentOperator!=null && testedComponentOperator.isShowing())
             ((RuntimeTabOperator)testedComponentOperator).close();

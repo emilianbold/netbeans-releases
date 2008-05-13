@@ -45,7 +45,6 @@ package org.netbeans.performance.j2se.footprint;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.modules.performance.utilities.CommonUtilities;
@@ -53,7 +52,6 @@ import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
-import org.netbeans.jemmy.QueueTool;
 import org.netbeans.modules.performance.utilities.MemoryFootprintTestCase;
 import org.netbeans.modules.project.ui.test.ProjectSupport;
 //import org.netbeans.junit.ide.ProjectSupport;
@@ -89,6 +87,7 @@ public class RefactoringRename extends MemoryFootprintTestCase {
         prefix = "Refactoring Rename |";
     }
     
+    @Override
     public void initialize() {
         super.initialize();
         FootprintUtilities.closeAllDocuments();
@@ -157,6 +156,7 @@ public class RefactoringRename extends MemoryFootprintTestCase {
 	return null;
     }
     
+    @Override
     public void close(){
         ProjectSupport.closeProject("jEdit");
     }

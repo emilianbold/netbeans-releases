@@ -73,6 +73,7 @@ public class DeleteFileDialog extends PerformanceTestCase {
         expectedTime = WINDOW_OPEN;
     }
     
+    @Override
     public void initialize() {
         TITLE = Bundle.getStringTrimmed("org.openide.explorer.Bundle","MSG_ConfirmDeleteObjectTitle"); //Confirm Object Deletion
         testNode = new Node(new SourcePackagesNode("jEdit"),"org.gjt.sp.jedit|jEdit.java");
@@ -88,6 +89,7 @@ public class DeleteFileDialog extends PerformanceTestCase {
         return new NbDialogOperator(TITLE);
     }
 
+    @Override
     public void close() {
         if(testedComponentOperator!=null && testedComponentOperator.isShowing())
             ((NbDialogOperator)testedComponentOperator).no();

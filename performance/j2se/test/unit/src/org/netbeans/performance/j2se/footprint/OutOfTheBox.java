@@ -84,9 +84,11 @@ public class OutOfTheBox extends MemoryFootprintTestCase {
     public void prepare() {
     }
     
+    @Override
     public void close(){
     }
     
+    @Override
     public void shutdown(){
     }
     

@@ -46,7 +46,6 @@ import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.actions.SaveAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
-import org.netbeans.modules.performance.guitracker.ActionTracker;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.jemmy.operators.ComponentOperator;
 
@@ -81,6 +80,7 @@ public class SaveModifiedFile extends PerformanceTestCase {
         WAIT_AFTER_PREPARE=2000;
     }
     
+    @Override
     public void initialize(){
         EditorOperator.closeDiscardAll();
 	SourcePackagesNode spn=new SourcePackagesNode("PerformanceTestData");
@@ -89,6 +89,7 @@ public class SaveModifiedFile extends PerformanceTestCase {
         editorOperator = new EditorOperator("Main.java");
     }
 
+    @Override
     public void shutdown(){
         EditorOperator.closeDiscardAll();
     }

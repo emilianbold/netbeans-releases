@@ -102,6 +102,7 @@ public abstract class ValidatePopupMenuOnNodes extends PerformanceTestCase {
     /**
      * Closes the popup by sending ESC key event.
      */
+    @Override
     public void close(){
         //testedComponentOperator.pressKey(java.awt.event.KeyEvent.VK_ESCAPE);
         // Above sometimes fails in QUEUE mode waiting to menu become visible.

@@ -76,6 +76,7 @@ public class FindInSourceEditor extends PerformanceTestCase {
         expectedTime = WINDOW_OPEN;
     }
     
+    @Override
     public void initialize() {
         MENU = Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Edit") + "|" + Bundle.getStringTrimmed("org.openide.actions.Bundle","Find"); //Edit|Find...
         TITLE = Bundle.getStringTrimmed("org.netbeans.editor.Bundle", "find");
@@ -93,6 +94,7 @@ public class FindInSourceEditor extends PerformanceTestCase {
         return new NbDialogOperator(TITLE);
     }
 
+    @Override
     public void shutdown(){
         if(editor!=null && editor.isShowing())
             editor.closeDiscard();

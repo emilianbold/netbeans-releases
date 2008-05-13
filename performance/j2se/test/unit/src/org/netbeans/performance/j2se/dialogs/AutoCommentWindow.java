@@ -73,6 +73,7 @@ public class AutoCommentWindow extends PerformanceTestCase {
         expectedTime = WINDOW_OPEN;
     }
     
+    @Override
     public void initialize() {
         MENU = Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Tools") + "|" + Bundle.getStringTrimmed("org.netbeans.modules.javadoc.comments.Bundle","CTL_AUTOCOMMENT_MenuItem");
         TITLE = Bundle.getStringTrimmed("org.netbeans.modules.javadoc.comments.Bundle","CTL_AUTOCOMMENT_WindowTitle");
@@ -91,11 +92,13 @@ public class AutoCommentWindow extends PerformanceTestCase {
         return new TopComponentOperator(TITLE);
     }
     
+    @Override
     public void close() {
         // close the tab
         new TopComponentOperator(TITLE).close();
     }
     
+    @Override
     public void shutdown(){
         if(editor!=null && editor.isShowing())
             editor.closeDiscard();

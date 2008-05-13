@@ -73,6 +73,7 @@ public class NewDatabaseConnectionDialog extends PerformanceTestCase {
         expectedTime = WINDOW_OPEN;
     }
     
+    @Override
     public void initialize() {
         BUNDLE = "org.netbeans.modules.db.resources.Bundle";
         MENU = Bundle.getStringTrimmed(BUNDLE,"ConnectUsing");

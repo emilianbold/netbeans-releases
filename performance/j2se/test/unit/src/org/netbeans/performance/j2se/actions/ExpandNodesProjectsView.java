@@ -42,7 +42,6 @@
 package org.netbeans.performance.j2se.actions;
 
 import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.modules.performance.guitracker.ActionTracker;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.jellytools.actions.MaximizeWindowAction;
 import org.netbeans.jellytools.actions.RestoreWindowAction;
@@ -141,6 +140,7 @@ public class ExpandNodesProjectsView extends PerformanceTestCase {
     }
     
     
+    @Override
     public void initialize(){
         projectTab = new ProjectsTabOperator();
         new MaximizeWindowAction().performAPI(projectTab);
@@ -172,10 +172,12 @@ nodeToBeExpanded.tree().doExpandPath(nodeToBeExpanded.getTreePath());
         return null;
     }
     
+    @Override
     public void close(){
         nodeToBeExpanded.collapse();
     }
     
+    @Override
     public void shutdown() {
         repaintManager().resetRegionFilters();
         turnBadgesOn();

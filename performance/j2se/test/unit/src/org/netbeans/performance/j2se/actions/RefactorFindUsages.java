@@ -46,7 +46,6 @@ import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
-import org.netbeans.modules.performance.guitracker.ActionTracker;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.ComponentOperator;
@@ -77,6 +76,7 @@ public class RefactorFindUsages extends PerformanceTestCase {
         expectedTime = 120000; // the action has progress indication and it is expected it will last
     }
     
+    @Override
     public void initialize() {
         String BUNDLE = "org.netbeans.modules.refactoring.ui.Bundle";
         NEXT = Bundle.getStringTrimmed("org.netbeans.modules.refactoring.api.ui.Bundle","CTL_Finish");  // "Next >"
@@ -103,6 +103,7 @@ public class RefactorFindUsages extends PerformanceTestCase {
     }
 
     
+    @Override
     public void close() {
         usagesWindow.close();
     }

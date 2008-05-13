@@ -44,7 +44,6 @@ package org.netbeans.performance.j2se.menus;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
-import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.performance.utilities.CommonUtilities;
 /**

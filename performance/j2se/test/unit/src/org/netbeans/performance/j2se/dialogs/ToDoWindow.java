@@ -72,6 +72,7 @@ public class ToDoWindow extends PerformanceTestCase {
         expectedTime = WINDOW_OPEN;
     }
     
+    @Override
     public void initialize() {
         MENU = Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Window") + "|" + Bundle.getStringTrimmed("org.netbeans.modules.tasklist.ui.Bundle","CTL_TaskListAction");
         TITLE = Bundle.getStringTrimmed("org.netbeans.modules.tasklist.ui.Bundle","CTL_TaskListTopComponent");
@@ -87,6 +88,7 @@ public class ToDoWindow extends PerformanceTestCase {
         return new TopComponentOperator(TITLE);
     }
     
+    @Override
     public void close() {
         if(testedComponentOperator!=null && testedComponentOperator.isShowing())
             ((TopComponentOperator)testedComponentOperator).close();

@@ -42,7 +42,6 @@
 package org.netbeans.performance.j2se.menus;
 
 import org.netbeans.modules.performance.guitracker.ActionTracker;
-import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
@@ -95,6 +94,7 @@ public class ToolsMenu extends MainMenu {
         testToolsMenu("textfile.txt");
     }
     
+    @Override
     public void prepare() {
         dataObjectNode.select();
     }

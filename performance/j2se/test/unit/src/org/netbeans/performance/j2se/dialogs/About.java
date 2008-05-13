@@ -69,6 +69,7 @@ public class About extends PerformanceTestCase {
         expectedTime = WINDOW_OPEN;
     }
     
+    @Override
     public void initialize() {
         MENU = Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Help") + "|" + Bundle.getStringTrimmed("org.netbeans.core.actions.Bundle" , "About");
         ABOUT = Bundle.getStringTrimmed("org.netbeans.core.Bundle_nb", "CTL_About_Title");

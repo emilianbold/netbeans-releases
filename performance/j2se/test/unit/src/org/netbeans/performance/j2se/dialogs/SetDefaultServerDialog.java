@@ -79,6 +79,7 @@ public class SetDefaultServerDialog extends PerformanceTestCase {
     private RuntimeTabOperator thetab;
     private Node thenode;
     
+    @Override
     public void initialize() {
         MENU = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.actions.Bundle","LBL_SetDefaultServer");
         TITLE = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.actions.Bundle","LBL_SetDefaultDlgTitle");
@@ -103,6 +104,7 @@ public class SetDefaultServerDialog extends PerformanceTestCase {
         return new NbDialogOperator(TITLE);
     }
     
+    @Override
     public void shutdown() {
         // restore the original size of Runtime tab
         new RestoreWindowAction().performAPI(thetab);

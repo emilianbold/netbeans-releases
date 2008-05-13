@@ -41,8 +41,6 @@
 package org.netbeans.performance.j2se;
 
 import org.netbeans.performance.j2se.setup.J2SESetup;
-
-import junit.framework.Test;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
@@ -60,7 +58,7 @@ public class MeasureJ2SESetupTest extends NbTestCase {
     }
 
     public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite("UI Responsiveness Setup suite");
+        NbTestSuite suite = new NbTestSuite("UI Responsiveness J2SE Setup suite");
 
         suite.addTest(NbModuleSuite.create(J2SESetup.class, ".*", ".*"));
 

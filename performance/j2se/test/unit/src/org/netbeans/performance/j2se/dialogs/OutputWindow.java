@@ -77,6 +77,7 @@ public class OutputWindow extends PerformanceTestCase {
         return new OutputOperator();
     }
     
+    @Override
     public void close() {
         if(testedComponentOperator!=null && testedComponentOperator.isShowing())
             ((OutputOperator)testedComponentOperator).close();

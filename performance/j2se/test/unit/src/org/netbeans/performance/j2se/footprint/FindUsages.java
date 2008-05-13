@@ -81,6 +81,7 @@ public class FindUsages extends MemoryFootprintTestCase {
         prefix = "Find Usages |";
     }
     
+    @Override
     public void initialize() {
         super.initialize();
         FootprintUtilities.closeAllDocuments();
@@ -112,6 +113,7 @@ public class FindUsages extends MemoryFootprintTestCase {
         return new TopComponentOperator("Usages"); // NOI18N
     }
     
+    @Override
     public void close(){
         ProjectSupport.closeProject("jEdit");
     }

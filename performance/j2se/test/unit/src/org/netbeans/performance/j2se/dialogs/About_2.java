@@ -41,10 +41,7 @@
 
 package org.netbeans.performance.j2se.dialogs;
 
-import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-
 import org.netbeans.modules.performance.guitracker.ActionTracker;
-
 import org.netbeans.jellytools.NbDialogOperator;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
@@ -72,10 +69,12 @@ public class About_2 extends About {
         track_mouse_event = ActionTracker.TRACK_MOUSE_PRESS;
     }
     
+    @Override
     public void prepare(){
         about = (NbDialogOperator)super.open();
     }
     
+    @Override
     public ComponentOperator open(){
         new JTabbedPaneOperator(about).selectPage(DETAIL);
         return new NbDialogOperator("About");

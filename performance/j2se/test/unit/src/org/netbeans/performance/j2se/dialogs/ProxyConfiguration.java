@@ -41,8 +41,6 @@
 
 package org.netbeans.performance.j2se.dialogs;
 
-import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.OptionsOperator;
 import org.netbeans.jellytools.WizardOperator;
@@ -75,6 +73,7 @@ public class ProxyConfiguration extends PluginManager {
         expectedTime = WINDOW_OPEN;
     }
     
+    @Override
     public void initialize() {
         super.initialize();
         String BUNDLE2 =  "org.netbeans.modules.autoupdate.ui.Bundle";

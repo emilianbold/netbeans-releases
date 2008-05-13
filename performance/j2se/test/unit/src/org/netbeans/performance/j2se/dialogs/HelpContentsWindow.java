@@ -77,6 +77,7 @@ public class HelpContentsWindow extends PerformanceTestCase {
         return new HelpOperator();
     }
     
+    @Override
     public void close() {
         if(testedComponentOperator!=null && testedComponentOperator.isShowing())
             ((HelpOperator)testedComponentOperator).close();

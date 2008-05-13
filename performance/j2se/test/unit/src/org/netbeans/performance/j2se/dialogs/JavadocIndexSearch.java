@@ -71,6 +71,7 @@ public class JavadocIndexSearch extends PerformanceTestCase {
         expectedTime = WINDOW_OPEN;
     }
     
+    @Override
     public void initialize() {
         BUNDLE = "org.netbeans.modules.javadoc.search.Bundle";
         MENU = Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Tools") + "|" + Bundle.getStringTrimmed(BUNDLE,"CTL_SEARCH_MenuItem");
@@ -86,6 +87,7 @@ public class JavadocIndexSearch extends PerformanceTestCase {
         return new TopComponentOperator(TITLE);
     }
     
+    @Override
     public void close(){
         if (testedComponentOperator != null) {
             ((TopComponentOperator)testedComponentOperator).close();

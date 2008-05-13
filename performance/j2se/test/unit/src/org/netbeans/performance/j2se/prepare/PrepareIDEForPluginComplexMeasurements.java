@@ -92,6 +92,7 @@ public class PrepareIDEForPluginComplexMeasurements extends PrepareIDEForComplex
     /**
      * Open 3 selected files from jEdit project.
      */
+    @Override
     public void openFiles(){
         
         try {

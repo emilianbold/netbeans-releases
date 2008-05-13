@@ -44,8 +44,7 @@ package org.netbeans.performance.j2se.actions;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jellytools.actions.OpenAction;
-import org.netbeans.modules.performance.guitracker.ActionTracker;
-import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+
 /**
  * Test of opening JSP file if Editor is opened.
  *
@@ -72,6 +71,7 @@ public class OpenJspFileWithOpenedEditor extends OpenJspFile {
         expectedTime = WINDOW_OPEN;
     }
     
+    @Override
     public void testOpening20kBJSPFile(){
         WAIT_AFTER_OPEN = 3000;
         setJSPEditorCaretFilteringOn();
@@ -84,6 +84,7 @@ public class OpenJspFileWithOpenedEditor extends OpenJspFile {
     /**
      * Initialize test - open Main.java file in the Source Editor.
      */
+    @Override
     public void initialize(){
         super.initialize();
         new OpenAction().performAPI(new Node(new SourcePackagesNode("PerformanceTestData"),"org.netbeans.test.performance|Main.java"));

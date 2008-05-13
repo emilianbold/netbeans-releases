@@ -43,10 +43,7 @@ package org.netbeans.performance.j2se.actions;
 
 import org.netbeans.modules.performance.utilities.CommonUtilities;
 import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.modules.form.ComponentInspectorOperator;
-import org.netbeans.modules.performance.guitracker.ActionTracker;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.jellytools.nodes.Node;
 
@@ -81,11 +78,13 @@ public class ExpandNodesInComponentInspector extends PerformanceTestCase {
         expectedTime = WINDOW_OPEN;
     }
     
+    @Override
     public void initialize(){
         CommonUtilities.openSmallFormFile();
         waitNoEvent(5000);
     }
     
+    @Override
     public void shutdown(){
         EditorOperator.closeDiscardAll();
     }
@@ -102,6 +101,7 @@ public class ExpandNodesInComponentInspector extends PerformanceTestCase {
         return null;
     }
     
+    @Override
     public void close(){
         nodeToBeExpanded.collapse();
     }

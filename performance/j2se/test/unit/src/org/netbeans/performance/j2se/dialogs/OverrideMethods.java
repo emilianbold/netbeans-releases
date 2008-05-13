@@ -75,6 +75,7 @@ public class OverrideMethods extends PerformanceTestCase {
         expectedTime = WINDOW_OPEN;
     }
     
+    @Override
     public void initialize() {
         MENU = Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Source") + "|" + Bundle.getStringTrimmed("org.netbeans.modules.java.tools.Bundle","LAB_OverrideTool");
         TITLE = Bundle.getStringTrimmed("org.netbeans.modules.java.tools.Bundle","LBL_OverridePanel2_Title");
@@ -94,6 +95,7 @@ public class OverrideMethods extends PerformanceTestCase {
         return new NbDialogOperator(TITLE);
     }
     
+    @Override
     public void shutdown(){
         if(editor!=null && editor.isShowing())
             editor.closeDiscard();

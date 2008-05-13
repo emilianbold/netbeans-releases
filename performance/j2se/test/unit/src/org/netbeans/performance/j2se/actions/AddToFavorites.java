@@ -46,7 +46,6 @@ import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.FavoritesOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
-import org.netbeans.modules.performance.guitracker.ActionTracker;
 import org.netbeans.jemmy.operators.ComponentOperator;
 
 /**
@@ -98,6 +97,7 @@ public class AddToFavorites extends PerformanceTestCase {
         return favoritesWindow;
     }
 
+    @Override
     public void close() {
 	Node n=new Node(favoritesWindow.tree(), fileName);
 	n.performPopupAction(REMOVE_FROM_FAVORITES);

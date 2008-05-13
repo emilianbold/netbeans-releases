@@ -42,7 +42,6 @@
 package org.netbeans.performance.j2se.actions;
 
 import org.netbeans.jellytools.NewFileWizardOperator;
-import org.netbeans.modules.performance.guitracker.ActionTracker;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.jemmy.operators.ComponentOperator;
 
@@ -98,6 +97,7 @@ public class SelectCategoriesInNewFile extends PerformanceTestCase {
         doMeasurement();
     }
    
+    @Override
     protected void initialize(){
     }
     
@@ -110,6 +110,7 @@ public class SelectCategoriesInNewFile extends PerformanceTestCase {
         return null;
     }
     
+    @Override
     public void close(){
         newFile.cancel();        
     }

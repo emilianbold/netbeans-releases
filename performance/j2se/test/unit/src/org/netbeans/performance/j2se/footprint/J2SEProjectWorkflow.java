@@ -80,6 +80,7 @@ public class J2SEProjectWorkflow extends MemoryFootprintTestCase {
     public void prepare() {
     }
     
+    @Override
     public void initialize() {
         super.initialize();
         FootprintUtilities.closeAllDocuments();
@@ -101,6 +102,7 @@ public class J2SEProjectWorkflow extends MemoryFootprintTestCase {
         return null;
     }
     
+    @Override
     public void close(){
         FootprintUtilities.deleteProject(j2seproject);
     }

@@ -74,6 +74,7 @@ public class VersioningWindow extends PerformanceTestCase {
         // do nothing
     }
     
+    @Override
     protected void initialize() {
         MENU = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Window") + '|' + 
                Bundle.getStringTrimmed("org.netbeans.modules.versioning.Bundle","Menu/Window/Versioning") + '|' +
@@ -86,6 +87,7 @@ public class VersioningWindow extends PerformanceTestCase {
         return new VersioningOperator();
     }
     
+    @Override
     public void close() {
         if(testedComponentOperator!=null && testedComponentOperator.isShowing())
             ((VersioningOperator)testedComponentOperator).close();

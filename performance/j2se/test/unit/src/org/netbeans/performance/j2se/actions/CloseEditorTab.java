@@ -43,10 +43,8 @@ package org.netbeans.performance.j2se.actions;
 
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.actions.CloseViewAction;
-import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
-import org.netbeans.modules.performance.guitracker.ActionTracker;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.jemmy.operators.ComponentOperator;
 
@@ -91,11 +89,13 @@ public class CloseEditorTab extends PerformanceTestCase {
         menuItem = OPEN;
     }
     
+    @Override
     public void initialize(){
         EditorOperator.closeDiscardAll();
         prepareFiles();
     }
     
+    @Override
     public void shutdown(){
         EditorOperator.closeDiscardAll();
     }

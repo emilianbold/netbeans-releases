@@ -38,33 +38,41 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.j2se;
 
-
-import org.netbeans.performance.j2se.menus.MainMenu;
-import org.netbeans.performance.j2se.menus.MainSubMenus;
+import org.netbeans.performance.j2se.menus.*;
 
 import junit.framework.Test;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
 
-
 public class MeasureMenusTest extends NbTestCase {
-    public MeasureMenusTest(String name) {
-	super(name);
-    }
-    
-    public static Test suite() {
-        
-        NbTestSuite s = new NbTestSuite();
 
-	s.addTest(NbModuleSuite.create(MainMenu.class,".*",".*"));
-        s.addTest(NbModuleSuite.create(MainSubMenus.class,".*",".*"));
-        
+    public MeasureMenusTest(String name) {
+        super(name);
+    }
+
+    public static Test suite() {
+
+        NbTestSuite s = new NbTestSuite("UI Responsiveness J2SE Menus suite");
+
+        s.addTest(NbModuleSuite.create(MainMenu.class, ".*", ".*"));
+        s.addTest(NbModuleSuite.create(MainSubMenus.class, ".*", ".*"));
+
+/* TBD        
+
+        s.addTest(NbModuleSuite.create(EditorDownButtonPopupMenu.class, ".*", ".*"));
+        s.addTest(NbModuleSuite.create(FilesViewPopupMenu.class, ".*", ".*"));
+        s.addTest(NbModuleSuite.create(FormInspectorNodePopupMenu.class, ".*", ".*"));
+        s.addTest(NbModuleSuite.create(ProjectsViewPopupMenu.class, ".*", ".*"));
+        s.addTest(NbModuleSuite.create(ProjectsViewSubMenus.class, ".*", ".*"));
+        s.addTest(NbModuleSuite.create(RuntimeViewPopupMenu.class, ".*", ".*"));
+        s.addTest(NbModuleSuite.create(SourceEditorPopupMenu.class, ".*", ".*"));
+        s.addTest(NbModuleSuite.create(ToolsMenu.class, ".*", ".*"));
+        s.addTest(NbModuleSuite.create(ValidatePopupMenuOnNodes.class, ".*", ".*"));
+
+*/ 
         return s;
     }
-    
-  
 }

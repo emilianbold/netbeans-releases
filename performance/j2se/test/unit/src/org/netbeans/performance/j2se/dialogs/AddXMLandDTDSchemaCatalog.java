@@ -77,6 +77,7 @@ public class AddXMLandDTDSchemaCatalog extends PerformanceTestCase {
         expectedTime = WINDOW_OPEN;
     }
     
+    @Override
     public void initialize() {
         BUNDLE = "org.netbeans.modules.xml.catalog.Bundle";
         MENU = Bundle.getStringTrimmed(BUNDLE,"LBL_mount");

@@ -42,7 +42,6 @@
 package org.netbeans.performance.j2se.actions;
 
 import java.awt.event.KeyEvent;
-import org.netbeans.modules.performance.guitracker.ActionTracker;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.EditorWindowOperator;
@@ -91,6 +90,7 @@ public class PageUpPageDownInEditor extends PerformanceTestCase {
         doMeasurement();
     }
     
+    @Override
     public void initialize() {
         EditorOperator.closeDiscardAll();
         
@@ -120,6 +120,7 @@ public class PageUpPageDownInEditor extends PerformanceTestCase {
         return null;
     }
 
+    @Override
     protected void shutdown() {
         super.shutdown();
         repaintManager().resetRegionFilters();

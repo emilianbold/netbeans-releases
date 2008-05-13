@@ -45,12 +45,10 @@ import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jellytools.FilesTabOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jellytools.EditorWindowOperator;
 import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.modules.performance.guitracker.ActionTracker;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 /**
  *
@@ -108,6 +106,7 @@ public class SwitchToFile  extends PerformanceTestCase {
     }
 
     
+    @Override
     protected void initialize() {
         log(":: initialize");
 
@@ -142,6 +141,7 @@ public class SwitchToFile  extends PerformanceTestCase {
         return new EditorOperator(filenameTo);
     }
     
+    @Override
     public void close() {
         log("::close");
     }

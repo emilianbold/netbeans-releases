@@ -43,8 +43,6 @@ package org.netbeans.performance.j2se.actions;
 
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.TopComponentOperator;
-import org.netbeans.modules.performance.guitracker.ActionTracker;
-import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 
@@ -104,6 +102,7 @@ public class OpenFilesNoCloneableEditor extends OpenFiles {
         EditorOperator.closeDiscardAll();
     }
     
+    @Override
     public ComponentOperator open(){
         JPopupMenuOperator popup =  this.openNode.callPopup();
         if (popup == null) {
@@ -122,6 +121,7 @@ public class OpenFilesNoCloneableEditor extends OpenFiles {
         return new TopComponentOperator(compName);
     }
     
+    @Override
     public void close(){
 /*        if (testedComponentOperator != null) {
             ((TopComponentOperator)testedComponentOperator).close();

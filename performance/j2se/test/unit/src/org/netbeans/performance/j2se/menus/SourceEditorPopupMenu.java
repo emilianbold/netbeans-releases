@@ -127,6 +127,7 @@ public class SourceEditorPopupMenu extends PerformanceTestCase {
     }
     
     
+    @Override
     public void initialize(){
         Node fileNode = new Node(new SourcePackagesNode("PerformanceTestData"), "org.netbeans.test.performance|" + fileName);
         

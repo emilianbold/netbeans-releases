@@ -109,6 +109,7 @@ public class PrepareIDEForComplexMeasurements extends JellyTestCase {
     }
     
     
+    @Override
     public void setUp() {
 //        err = System.out;
         err = getLog();
