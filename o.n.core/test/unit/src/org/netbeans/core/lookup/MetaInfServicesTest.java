@@ -70,7 +70,7 @@ public class MetaInfServicesTest extends NbTestCase {
     
     private ModuleManager mgr;
     private Module m1, m2;
-    protected void setUp() throws Exception {
+    protected @Override void setUp() throws Exception {
         //System.err.println("setUp");
         //Thread.dumpStack();
         clearWorkDir();
@@ -78,8 +78,8 @@ public class MetaInfServicesTest extends NbTestCase {
         // Make a couple of modules.
         mgr = org.netbeans.core.startup.Main.getModuleSystem().getManager();
         try {
-            mgr.mutex().writeAccess(new Mutex.ExceptionAction() {
-                public Object run() throws Exception {
+            mgr.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                public Void run() throws Exception {
                     File jar1 = InstanceDataObjectModuleTestHid.toFile(MetaInfServicesTest.class.getResource("data/services-jar-1.jar"));
                     File jar2 = InstanceDataObjectModuleTestHid.toFile(MetaInfServicesTest.class.getResource("data/services-jar-2.jar"));
                     m1 = mgr.create(jar1, new ModuleHistory(jar1.getAbsolutePath()), false, false, false);
@@ -92,10 +92,10 @@ public class MetaInfServicesTest extends NbTestCase {
         }
         assertEquals(Collections.EMPTY_SET, m1.getProblems());
     }
-    protected void tearDown() throws Exception {
+    protected @Override void tearDown() throws Exception {
         try {
-            mgr.mutex().writeAccess(new Mutex.ExceptionAction() {
-                public Object run() throws Exception {
+            mgr.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                public Void run() throws Exception {
                     if (m2.isEnabled()) mgr.disable(m2);
                     mgr.delete(m2);
                     if (m1.isEnabled()) mgr.disable(m1);
@@ -114,8 +114,8 @@ public class MetaInfServicesTest extends NbTestCase {
     protected static final int TWIDDLE_DISABLE = 1;
     protected void twiddle(final Module m, final int action) throws Exception {
         try {
-            mgr.mutex().writeAccess(new Mutex.ExceptionAction() {
-                public Object run() throws Exception {
+            mgr.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                public Void run() throws Exception {
                     switch (action) {
                     case TWIDDLE_ENABLE:
                         mgr.enable(m);
@@ -140,9 +140,9 @@ public class MetaInfServicesTest extends NbTestCase {
     public void testEverything() throws Exception {
         twiddle(m1, TWIDDLE_ENABLE);
         ClassLoader systemClassLoader = Lookup.getDefault().lookup(ClassLoader.class);
-        Class xface = systemClassLoader.loadClass("org.foo.Interface");
-        Lookup.Result r = Lookup.getDefault().lookupResult(xface);
-        List instances = new ArrayList(r.allInstances());
+        Class<?> xface = systemClassLoader.loadClass("org.foo.Interface");
+        Lookup.Result<?> r = Lookup.getDefault().lookupResult(xface);
+        List<?> instances = new ArrayList<Object>(r.allInstances());
         // Expect to get Impl1 from first JAR.
         assertEquals(1, instances.size());
         Object instance1 = instances.get(0);
@@ -153,7 +153,7 @@ public class MetaInfServicesTest extends NbTestCase {
         r.addLookupListener(l);
         twiddle(m2, TWIDDLE_ENABLE);
         assertTrue("Turning on a second module with a manifest service fires a lookup change", l.gotSomething());
-        instances = new ArrayList(r.allInstances());
+        instances = new ArrayList<Object>(r.allInstances());
         assertEquals(2, instances.size());
         assertEquals(instance1, instances.get(0));
         assertEquals("org.bar.Implementation2", instances.get(1).getClass().getName());
@@ -161,26 +161,26 @@ public class MetaInfServicesTest extends NbTestCase {
         l.count = 0;
         twiddle(m2, TWIDDLE_DISABLE);
         assertTrue(l.gotSomething());
-        instances = new ArrayList(r.allInstances());
+        instances = new ArrayList<Object>(r.allInstances());
         assertEquals(1, instances.size());
         assertEquals(instance1, instances.get(0));
         // Expect to lose Impl1 too.
         l.count = 0;
         twiddle(m1, TWIDDLE_DISABLE);
         assertTrue(l.gotSomething());
-        instances = new ArrayList(r.allInstances());
+        instances = new ArrayList<Object>(r.allInstances());
         assertEquals(0, instances.size());
         // Expect to not get anything: wrong xface version
         l.count = 0;
         twiddle(m1, TWIDDLE_ENABLE);
         // not really important: assertFalse(l.gotSomething());
-        instances = new ArrayList(r.allInstances());
+        instances = new ArrayList<Object>(r.allInstances());
         assertEquals(0, instances.size());
         systemClassLoader = Lookup.getDefault().lookup(ClassLoader.class);
-        Class xface2 = systemClassLoader.loadClass("org.foo.Interface");
+        Class<?> xface2 = systemClassLoader.loadClass("org.foo.Interface");
         assertTrue(xface != xface2);
-        Lookup.Result r2 = Lookup.getDefault().lookupResult(xface2);
-        instances = new ArrayList(r2.allInstances());
+        Lookup.Result<?> r2 = Lookup.getDefault().lookupResult(xface2);
+        instances = new ArrayList<Object>(r2.allInstances());
         assertEquals(1, instances.size());
         // Let's also check up on some standard JDK services.
         PrintServiceLookup psl = Lookup.getDefault().lookup(PrintServiceLookup.class);

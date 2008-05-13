@@ -77,12 +77,12 @@ public class SystemFileSystemTest extends NbTestCase {
     private ModuleManager mgr;
     private File satJar;
     private Module satModule;
-    protected void setUp() throws Exception {
+    protected @Override void setUp() throws Exception {
         mgr = org.netbeans.core.startup.Main.getModuleSystem().getManager();
         org.netbeans.core.startup.Main.initializeURLFactory ();
         try {
-            mgr.mutex().readAccess(new Mutex.ExceptionAction() {
-                public Object run() throws Exception {
+            mgr.mutex().readAccess(new Mutex.ExceptionAction<Void>() {
+                public Void run() throws Exception {
                     satJar = new File(SystemFileSystemTest.class.getResource("data/sfs-attr-test.jar").getFile());
                     satModule = mgr.create(satJar, new ModuleHistory(satJar.getAbsolutePath()), false, false, false);
                     assertEquals("no problems installing sfs-attr-test.jar", Collections.EMPTY_SET, satModule.getProblems());
@@ -94,10 +94,10 @@ public class SystemFileSystemTest extends NbTestCase {
             throw me.getException();
         }
     }
-    protected void tearDown() throws Exception {
+    protected @Override void tearDown() throws Exception {
         try {
-            mgr.mutex().readAccess(new Mutex.ExceptionAction() {
-                public Object run() throws Exception {
+            mgr.mutex().readAccess(new Mutex.ExceptionAction<Void>() {
+                public Void run() throws Exception {
                     mgr.disable(satModule);
                     mgr.delete(satModule);
                     return null;

@@ -74,7 +74,6 @@ public abstract class InstanceDataObjectModuleTestHid extends NbTestCase {
         org.netbeans.core.startup.MainLookup.register (new ErrManager ());
     }
     
-    
     protected InstanceDataObjectModuleTestHid(String name) {
         super(name);
     }
@@ -82,7 +81,7 @@ public abstract class InstanceDataObjectModuleTestHid extends NbTestCase {
     private ModuleManager mgr;
     protected Module m1, m2;
 
-    protected void runTest () throws Throwable {
+    protected @Override void runTest() throws Throwable {
         ErrManager.messages.setLength (0);
         ErrManager.log = getLog ();
         try {
@@ -94,16 +93,15 @@ public abstract class InstanceDataObjectModuleTestHid extends NbTestCase {
         }
     }
     
-    
-    protected void setUp() throws Exception {
+    protected @Override void setUp() throws Exception {
         ERR = ErrManager.getDefault().getInstance("TEST-" + getName());
         
         mgr = org.netbeans.core.startup.Main.getModuleSystem().getManager();
         final File jar1 = toFile (InstanceDataObjectModuleTestHid.class.getResource("data/test1.jar"));
         final File jar2 = toFile (InstanceDataObjectModuleTestHid.class.getResource("data/test2.jar"));
         try {
-            mgr.mutex().writeAccess(new Mutex.ExceptionAction() {
-                public Object run() throws Exception {
+            mgr.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                public Void run() throws Exception {
                     m1 = mgr.create(jar1, new ModuleHistory(jar1.getAbsolutePath()), false, false, false);
                     if (!m1.getProblems().isEmpty()) throw new IllegalStateException("m1 is uninstallable: " + m1.getProblems());
                     m2 = mgr.create(jar2, new ModuleHistory(jar2.getAbsolutePath()), false, false, false);
@@ -139,11 +137,11 @@ public abstract class InstanceDataObjectModuleTestHid extends NbTestCase {
         return f;
     }
     
-    protected void tearDown() throws Exception {
+    protected @Override void tearDown() throws Exception {
         ERR.log("going to teardown");
         try {
-            mgr.mutex().writeAccess(new Mutex.ExceptionAction() {
-                public Object run() throws Exception {
+            mgr.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                public Void run() throws Exception {
                     del(m1);
                     del(m2);
                     return null;
@@ -177,8 +175,8 @@ public abstract class InstanceDataObjectModuleTestHid extends NbTestCase {
     protected static final int TWIDDLE_RELOAD = 2;
     protected void twiddle(final Module m, final int action) throws Exception {
         try {
-            mgr.mutex().writeAccess(new Mutex.ExceptionAction() {
-                public Object run() throws Exception {
+            mgr.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                public Void run() throws Exception {
                     switch (action) {
                     case TWIDDLE_ENABLE:
                         mgr.enable(m);
@@ -201,7 +199,7 @@ public abstract class InstanceDataObjectModuleTestHid extends NbTestCase {
         }
     }
     
-    protected boolean existsSomeAction(Class c) {
+    protected boolean existsSomeAction(Class<?> c) {
         return existsSomeAction(c, Lookup.getDefault().lookupResult(c));
     }
     
