@@ -44,5 +44,18 @@ package org.netbeans.modules.groovy.editor;
  * @author schmidtm
  */
 public enum GroovyCompilerErrorID {
-    FAILURE1, CLASS_NOT_FOUND
+
+    CLASS_NOT_FOUND("CLASS_NOT_FOUND"),
+    UNDEFINED("UNDEFINED");
+    
+    private String id;
+
+    GroovyCompilerErrorID(String id) {
+        this.id = id;
+    }
+
+    public String getID() {
+        return id;
+    }
+    
 }

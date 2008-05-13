@@ -55,39 +55,32 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.groovy.editor.hints.spi.Fix;
 import org.netbeans.modules.gsf.api.OffsetRange;
-
+import org.openide.util.NbBundle;
+import org.netbeans.modules.groovy.editor.parser.GroovyParser.GroovyError;
 
 /**
  *
  * @author schmidtm
  */
-public class ClassNotFoundRule implements ErrorRule{
+public class ClassNotFoundRule implements ErrorRule {
 
-    public static final Logger LOG = Logger.getLogger(CommentOutRule.class.getName()); // NOI18N
-    String DESC = "Fix imports";
-
+    public static final Logger LOG = Logger.getLogger(ClassNotFoundRule.class.getName()); // NOI18N
+    String DESC = NbBundle.getMessage(ClassNotFoundRule.class, "FixImportsHintDescription");
+    
     public ClassNotFoundRule() {
         LOG.setLevel(Level.FINEST);
     }
     
     public Set<GroovyCompilerErrorID> getCodes() {
+        LOG.log(Level.FINEST, "getCodes()");
         Set<GroovyCompilerErrorID> result = new HashSet<GroovyCompilerErrorID>();
         result.add(GroovyCompilerErrorID.CLASS_NOT_FOUND);
         return result;
     }
 
-    public void run(RuleContext context, Message error, List<Description> result) {
+    public void run(RuleContext context, GroovyError error, List<Description> result) {
         LOG.log(Level.FINEST, "run()");
-        CompilationInfo info = context.compilationInfo;
-        Fix fix = new SimpleFix(DESC);
-        
-        List<Fix> fixList = new ArrayList<Fix>(1);
-        fixList.add(fix);
-        
-        OffsetRange range = new OffsetRange(1,2);
-        Description desc = new Description(this, fix.getDescription(), info.getFileObject(), range,
-                fixList, 292);
-        result.add(desc);
+        LOG.log(Level.FINEST, "Processing : " + error.getDescription());
         
         return;
     }
