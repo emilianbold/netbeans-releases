@@ -89,25 +89,10 @@ public class DatabaseTableSelectionWizardPanel2 implements WizardDescriptor.Pane
         Connection connection = (Connection) wiz.getProperty(DatabaseTableWizardConstants.PROP_SELECTED_DB_CONNECTION);
         List<TableInfo> selectedTables = (List<TableInfo>) wiz.getProperty(DatabaseTableWizardConstants.PROP_SELECTED_TABLES);
         if(connection != null && selectedTables != null) {
-        	//now load table columns, primarykey, foreign keys.
-        	try {
-        	Iterator<TableInfo> it = selectedTables.iterator();
-        	while(it.hasNext()) {
-        		TableInfo table = it.next();
-        		table.cleanUp();
-        		DatabaseMetaDataHelper.populateTableColumns(table, connection);
-        		DatabaseMetaDataHelper.populatePrimaryKeys(table, connection);
-        		DatabaseMetaDataHelper.populateForeignKeys(table, connection);
-        	}
-        	
         	component.setSelectedTables(selectedTables);
         	String joinCondition = DatabaseMetaDataHelper.findJoinCondition(selectedTables);
         	if(joinCondition != null && !joinCondition.equals("")) {
         		component.setJoinCondition(joinCondition);
-        	}
-        	
-        	} catch(Exception ex) {
-        		ErrorManager.getDefault().notify(ex);
         	}
         }
         
