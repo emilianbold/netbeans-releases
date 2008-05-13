@@ -87,7 +87,7 @@ public class CssParserAccess {
 
     }
 
-    private static boolean containsGeneratedCode(String text) {
+    public static boolean containsGeneratedCode(String text) {
         return text.contains(PREFIX);
     }
 
