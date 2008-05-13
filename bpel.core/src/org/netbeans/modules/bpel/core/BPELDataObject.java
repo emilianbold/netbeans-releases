@@ -119,8 +119,7 @@ public class BPELDataObject extends MultiDataObject {
     }
 
     @Override
-    public void setModified( boolean modified )
-    {
+    public void setModified( boolean modified ) {
         super.setModified(modified);
         if (modified) {
             getCookieSet().add(getSaveCookie());
@@ -148,14 +147,12 @@ public class BPELDataObject extends MultiDataObject {
             }
 
             @Override
-            public int hashCode()
-            {
+            public int hashCode() {
                 return getClass().hashCode();
             }
 
             @Override
-            public boolean equals( Object other )
-            {
+            public boolean equals(Object other) {
                 return other != null && getClass().equals(other.getClass());
             }
         };
@@ -245,12 +242,9 @@ public class BPELDataObject extends MultiDataObject {
                     private static final long serialVersionUID = 1L;
             public void actionPerformed(ActionEvent e) {
                 // Fix for #81066
-                if ( myEditorSupport.getOpenedPanes()==null ||
-                        myEditorSupport.getOpenedPanes().length==0 ) 
-                {
+                if (myEditorSupport.getOpenedPanes() == null || myEditorSupport.getOpenedPanes().length == 0) {
                     myEditorSupport.open();
-                    BpelMultiViewSupport support = 
-                        BpelMultiViewSupport.getInstance();
+                    BpelMultiViewSupport support = BpelMultiViewSupport.getInstance();
                     support.requestViewOpen(myEditorSupport);
                 }
                 else {

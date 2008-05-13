@@ -14,13 +14,13 @@ import java.util.*;
 
 public class CSSParser {
 
-    private ArrayList errors = new ArrayList();
+    private ArrayList<ParseException> errors = new ArrayList<ParseException>();
 
     public CSSParser() {
        this((CharStream) null);
     }
 
-    public List errors() {
+    public List<ParseException> errors() {
         return errors;
     }
 
