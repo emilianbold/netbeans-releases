@@ -101,7 +101,7 @@ public class PhpProjectProperties {
     String activeConfig;
     private final PhpProject project;
     private final IncludePathSupport includePathSupport;
-    
+
     // all these fields don't have to be volatile - this ensures request processor
     // CustomizerSources
     private String srcDir;
@@ -122,7 +122,7 @@ public class PhpProjectProperties {
         this.project = project;
         this.includePathSupport = includePathSupport;
         this.RUN_CONFIGS = readRunConfigs();
-        this.activeConfig = project.getEvaluator().getProperty("config");        
+        this.activeConfig = project.getEvaluator().getProperty("config");
     }
 
     public String getCopySrcFiles() {
@@ -236,7 +236,7 @@ public class PhpProjectProperties {
 
         // get properties
         EditableProperties projectProperties = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-        EditableProperties privateProperties = helper.getProperties( AntProjectHelper.PRIVATE_PROPERTIES_PATH );                
+        EditableProperties privateProperties = helper.getProperties( AntProjectHelper.PRIVATE_PROPERTIES_PATH );
 
         // sources
         if (srcDir != null) {
@@ -257,9 +257,21 @@ public class PhpProjectProperties {
             projectProperties.setProperty(INCLUDE_PATH, includePath);
         }
 
-        // store properties
-        helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties);
+        // configs
+        storeRunConfigs(RUN_CONFIGS, projectProperties, privateProperties);
+        EditableProperties ep = helper.getProperties("nbproject/private/config.properties"); // NOI18N
+        if (activeConfig == null) {
+            ep.remove("config");//NOI18N
+        } else {
+            ep.setProperty("config", activeConfig);//NOI18N
+        }
 
+        // store all the properties
+        helper.putProperties("nbproject/private/config.properties", ep); // NOI18N
+        helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties);
+        helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties);
+
+        // additional changes
         // encoding
         if (encoding != null) {
             try {
@@ -283,16 +295,6 @@ public class PhpProjectProperties {
             srcDirectory = FileUtil.toFileObject(srcFolder);
         }
         logUI(helper.getProjectDirectory(), srcDirectory, Boolean.valueOf(getCopySrcFiles()));
-        storeRunConfigs(RUN_CONFIGS, projectProperties, privateProperties);
-        EditableProperties ep = helper.getProperties("nbproject/private/config.properties");//NOI18N
-        if (activeConfig == null) {
-            ep.remove("config");//NOI18N
-        } else {
-            ep.setProperty("config", activeConfig);//NOI18N
-        }
-        helper.putProperties("nbproject/private/config.properties", ep);//NOI18N
-        helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties);
-        helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties);
     }
 
     // http://wiki.netbeans.org/UILoggingInPHP
@@ -310,8 +312,8 @@ public class PhpProjectProperties {
     public PhpProject getProject() {
         return project;
     }
-    
-    
+
+
     /**
      * A mess.
      */
@@ -368,7 +370,7 @@ public class PhpProjectProperties {
         Map<String, String> def = configs.get(null);
         for (String prop : CFG_PROPS) {
             String v = def.get(prop);
-            EditableProperties ep = projectProperties;
+            EditableProperties ep = prop.equals(ARGS) ? privateProperties : projectProperties;
             if (!Utilities.compareObjects(v, ep.getProperty(prop))) {
                 if (v != null && v.length() > 0) {
                     ep.setProperty(prop, v);
