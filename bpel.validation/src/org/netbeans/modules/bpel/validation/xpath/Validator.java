@@ -96,12 +96,10 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
   }
 
   @Override
-  protected final SimpleBpelModelVisitor getVisitor() { return new SimpleBpelModelVisitorAdaptor()
-  {
+  protected final SimpleBpelModelVisitor getVisitor() { return new SimpleBpelModelVisitorAdaptor() {
 
   @Override
-  public void visit(Copy copy)
-  {
+  public void visit(Copy copy) {
 //out();
 //out("Assign: " + ((Named) copy.getParent()).getName());
     Component fromType = getTypeOfElement(getType(copy.getFrom()));
