@@ -326,11 +326,7 @@ public class FileStatusCache {
         if( fi != null) return fi;
 
         if (file.isDirectory()) {
-            if (hg.isAdministrative(file) || HgUtils.isIgnored(file, bCheckSharability)) {
-                return FileStatusCache.FILE_INFORMATION_EXCLUDED_DIRECTORY;
-            } else {
-                return FileStatusCache.FILE_INFORMATION_UPTODATE_DIRECTORY;
-            }
+            return FileStatusCache.FILE_INFORMATION_UPTODATE_DIRECTORY;
         }
 
         return fi;
@@ -587,7 +583,7 @@ public class FileStatusCache {
                 }
                 if (files != null) {
                     for (File file : files.keySet()) {
-                        if (file.isFile() && !interestingFiles.containsKey(file)) {
+                        if ((file.isFile() || !file.exists()) && !interestingFiles.containsKey(file)) {
                             // A file was in cache but is now up to date
                             Mercurial.LOG.log(Level.FINE, "refreshAll() uninteresting file: {0} {1}", new Object[] {file, files.get(file)}); // NOI18N
                             refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN); 

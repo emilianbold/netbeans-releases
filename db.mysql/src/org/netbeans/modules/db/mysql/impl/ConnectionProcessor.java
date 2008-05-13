@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,46 +31,55 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.versioning.util;
+package org.netbeans.modules.db.mysql.impl;
 
-import javax.swing.table.DefaultTableCellRenderer;
-import java.awt.FontMetrics;
-import java.awt.Graphics;
+import java.sql.Connection;
+import java.util.concurrent.BlockingQueue;
+import java.util.logging.Logger;
 
 /**
- * Treats values in cells as file paths and renders them so that the end of the path is always visible.
+ * This class encapsulates a database connection and serializes
+ * interaction with this connection through a blocking queue.
  *
- * @author Maros Sandor
+ * @author David Van Couvering
  */
-public class FilePathCellRenderer extends DefaultTableCellRenderer {
-
-    private static final int VISIBLE_START_CHARS = 0;
-
-    private String computeFitText(String text) {
-        if (text == null || text.length() <= VISIBLE_START_CHARS + 3) return text;
-
-        FontMetrics fm = getFontMetrics(getFont());
-        int width = getSize().width;
-            
-        String prefix = text.substring(0, VISIBLE_START_CHARS) + "...";
-        int prefixLength = fm.stringWidth(prefix);
-        int desired = width - prefixLength - 2;
-        if (desired <= 0) return text;
-        
-        for (int i = text.length() - 1; i >= 0; i--) {
-            String suffix = text.substring(i);
-            int swidth = fm.stringWidth(suffix);
-            if (swidth >= desired) {
-                return suffix.length() > 0 ? prefix + suffix.substring(1) : text;
-            }
-        }
-        return text;
+public class ConnectionProcessor implements Runnable {
+    private static final Logger LOGGER = Logger.getLogger(ConnectionProcessor.class.getName());
+    final BlockingQueue<Runnable> inqueue;
+    
+    private Connection conn;
+    
+    void setConnection(Connection conn) {
+        this.conn = conn;
     }
     
-    protected void paintComponent(Graphics g) {
-        setText(computeFitText(getText()));
-        super.paintComponent(g);
+    Connection getConnection() {
+        return this.conn;
     }
+    
+    boolean isConnected() {
+        return conn != null;
+    }
+    
+    public ConnectionProcessor(BlockingQueue<Runnable> inqueue) {
+        this.inqueue = inqueue;
+    } 
+    
+    public void run() {
+        for ( ; ; ) {
+            try {              
+                Runnable command = inqueue.take();
+                
+                command.run();                
+            } catch ( InterruptedException ie ) {
+                return;
+            }
+        }
+    }    
 }
