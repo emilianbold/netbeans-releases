@@ -47,10 +47,12 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -66,8 +68,10 @@ import org.netbeans.modules.ruby.spi.project.support.rake.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.io.ReaderInputStream;
 
@@ -90,11 +94,12 @@ public final class RubyPlatformManager {
     private static final Logger LOGGER = Logger.getLogger(RubyPlatformManager.class.getName());
     
     private static Set<RubyPlatform> platforms;
+    
     /**
      * Change support for notifying of platform changes, using vetoable for 
      * making it possible to prevent removing of a used platform.
      */
-    private static final VetoableChangeSupport vetoableChangeSupport = new VetoableChangeSupport(RubyPlatformManager.class);
+    private static final VetoableChangeSupport VETOABLE_CHANGE_SUPPORT = new VetoableChangeSupport(RubyPlatformManager.class);
 
     private RubyPlatformManager() {
         // static methods only
@@ -116,7 +121,7 @@ public final class RubyPlatformManager {
         return new HashSet<RubyPlatform>(getPlatformsInternal());
     }
 
-    public static void performPlatformDetection() {
+    public synchronized static void performPlatformDetection() {
         if (PREINDEXING) {
             return;
         }
@@ -148,7 +153,7 @@ public final class RubyPlatformManager {
 
     private static void firePlatformsChanged() {
         try {
-            vetoableChangeSupport.fireVetoableChange("platforms", null, null); //NOI18N
+            VETOABLE_CHANGE_SUPPORT.fireVetoableChange("platforms", null, null); //NOI18N
         } catch (PropertyVetoException ex) {
             // do nothing, vetoing not implemented yet
         }
@@ -210,6 +215,7 @@ public final class RubyPlatformManager {
                 p = Collections.emptyMap();
             }
             boolean foundDefault = false;
+            final List<String> skipped = new ArrayList<String>();
             for (Map.Entry<String, String> entry : p.entrySet()) {
                 String key = entry.getKey();
                 if (key.startsWith(PLATFORM_PREFIX) && key.endsWith(PLATFORM_INTEPRETER)) {
@@ -217,9 +223,22 @@ public final class RubyPlatformManager {
                             key.length() - PLATFORM_INTEPRETER.length());
                     String idDot = id + '.';
                     Properties props = new Properties();
+                    String libDir = p.get(PLATFORM_PREFIX + idDot + Info.RUBY_LIB_DIR);
                     String kind = p.get(PLATFORM_PREFIX + idDot + Info.RUBY_KIND);
+                    String interpreterPath = entry.getValue();
                     if (kind == null) { // not supporting old 6.0 platform, skip
+                        skipped.add(interpreterPath);
                         continue;
+                    }
+                    if (libDir != null) { // NOI18N
+                        props.put(Info.RUBY_LIB_DIR, libDir);
+                    } else {
+                        // Rubinius libDir is not detected by script
+                        if (!"Rubinius".equals(kind)) { // NOI18N
+                            LOGGER.warning("no libDir for platform: " + interpreterPath); // NOI18N
+                            skipped.add(interpreterPath);
+                            continue;
+                        }
                     }
                     props.put(Info.RUBY_KIND, kind);
                     props.put(Info.RUBY_VERSION, p.get(PLATFORM_PREFIX + idDot + Info.RUBY_VERSION));
@@ -234,19 +253,11 @@ public final class RubyPlatformManager {
                     props.put(Info.RUBY_RELEASE_DATE, p.get(PLATFORM_PREFIX + idDot + Info.RUBY_RELEASE_DATE));
 //                    props.put(Info.RUBY_EXECUTABLE, p.get(PLATFORM_PREFIX + idDot + Info.RUBY_EXECUTABLE));
                     props.put(Info.RUBY_PLATFORM, p.get(PLATFORM_PREFIX + idDot + Info.RUBY_PLATFORM));
-                    String libDir = p.get(PLATFORM_PREFIX + idDot + Info.RUBY_LIB_DIR);
-                    if (libDir != null) {
-                        props.put(Info.RUBY_LIB_DIR, libDir);
-                    }
                     String gemHome = p.get(PLATFORM_PREFIX + idDot + Info.GEM_HOME);
                     if (gemHome != null) {
                         props.put(Info.GEM_HOME, gemHome);
                         props.put(Info.GEM_PATH, p.get(PLATFORM_PREFIX + idDot + Info.GEM_PATH));
                         props.put(Info.GEM_VERSION, p.get(PLATFORM_PREFIX + idDot + Info.GEM_VERSION));
-                    }
-                    String interpreterPath = entry.getValue();
-                    if (libDir == null) {
-                        LOGGER.warning("no libDir for platform: " + interpreterPath); // NOI18N
                     }
                     Info info = new Info(props);
                     platforms.add(new RubyPlatform(id, interpreterPath, info));
@@ -259,6 +270,17 @@ public final class RubyPlatformManager {
                     platforms.add(new RubyPlatform(PLATFORM_ID_DEFAULT, loc, Info.forDefaultPlatform()));
                 }
             }
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    for (String interpreter : skipped) {
+                        try {
+                            addPlatform(new File(interpreter));
+                        } catch (IOException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                }
+            });
             LOGGER.fine("RubyPlatform initial list: " + platforms);
         }
 
@@ -316,6 +338,9 @@ public final class RubyPlatformManager {
      * @throws java.io.IOException
      */
     public static RubyPlatform addPlatform(final File interpreter) throws IOException {
+        if (!interpreter.isFile()) {
+            return null;
+        }
         RubyPlatform plaf = getPlatformByFile(interpreter);
         if (plaf != null) {
             return plaf;
@@ -499,11 +524,11 @@ public final class RubyPlatformManager {
     }
     
     public static void addVetoableChangeListener(VetoableChangeListener listener) {
-        vetoableChangeSupport.addVetoableChangeListener(listener);
+        VETOABLE_CHANGE_SUPPORT.addVetoableChangeListener(listener);
     }
     
     public static void removeVetoableChangeListener(VetoableChangeListener listener) {
-        vetoableChangeSupport.removeVetoableChangeListener(listener);
+        VETOABLE_CHANGE_SUPPORT.removeVetoableChangeListener(listener);
     }
 
 }

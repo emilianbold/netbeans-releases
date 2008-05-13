@@ -54,6 +54,7 @@ import org.netbeans.modules.soa.mappercore.utils.Utils;
  * 
  * @author nk160297
  * @author Vitaly Bychkov
+ * @author AlexanderPermyakov
  */
 public class BpelMapperModel implements MapperModel, MapperTcContext.Provider {
 
@@ -418,7 +419,7 @@ public class BpelMapperModel implements MapperModel, MapperTcContext.Provider {
                 graphSubset = null;
             }
         } else {
-            graphSubset = new GraphSubset(graphSubset);
+            graphSubset = new GraphSubset(graphSubset, treePath);
         }
         
         if (graphSubset == null) {
@@ -430,9 +431,12 @@ public class BpelMapperModel implements MapperModel, MapperTcContext.Provider {
         int x0 = 0;
         int y0 = 0;
         if (graphSubset.getVertexCount() > 0) {
-            x0 = graphSubset.getVertex(0).getX();
-            y0 = graphSubset.getVertex(0).getY();
+            x0 = graphSubset.getMinYVertex().getX();
+            y0 = graphSubset.getMinYVertex().getY();
         }
+        
+        if (y < 0) {y = 0;}
+            
         for (int i = 0; i < graphSubset.getVertexCount(); i++) {
             Vertex vertex = graphSubset.getVertex(i);
 
@@ -472,12 +476,16 @@ public class BpelMapperModel implements MapperModel, MapperTcContext.Provider {
         int x0 = 0;
         int y0 = 0;
         if (graphSubset.getVertexCount() > 0) {
-            x0 = graphSubset.getVertex(0).getX();
-            y0 = graphSubset.getVertex(0).getY();
+            x0 = graphSubset.getMinYVertex().getX();
+            y0 = graphSubset.getMinYVertex().getY();
         }
+        
+
+        if (newY < 0) {newY = 0;}
+        
         for (int i = graphSubset.getVertexCount() - 1; i >= 0; i--) {
             Vertex vertex = graphSubset.getVertex(i);
-
+                        
             if (vertex.getGraph() != null) {
                 oldGraph = vertex.getGraph();
                 if (oldGraph != graph) {
@@ -496,13 +504,14 @@ public class BpelMapperModel implements MapperModel, MapperTcContext.Provider {
                         }
                     }
                 }
-
+                
                 int xi = graphSubset.getVertex(i).getX();
                 int yi = graphSubset.getVertex(i).getY();
+                
                 vertex.setLocation(xi - x0 + newX, yi - y0 + newY);
             }
         }
-        
+                
         if (oldGraph != graph) {
             for (int i = graphSubset.getLinkCount() - 1; i >= 0; i--) {
                 Link link = graphSubset.getLink(i);

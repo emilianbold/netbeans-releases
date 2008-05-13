@@ -165,4 +165,27 @@ public class ColumnInfo {
     	}
     	return str.toString();
     }
+    
+    
+    @Override
+    public boolean equals(Object other) {
+    	boolean result = true;
+    	if(!(other instanceof ColumnInfo)) {
+    		result = false;
+    	}
+    	
+    	ColumnInfo otherColumn = (ColumnInfo) other;
+    	
+    	result &= this.getQualifiedName().equals(otherColumn.getQualifiedName()); 
+    	return result;
+    }
+    
+    
+    
+    @Override
+    public int hashCode() {
+    	int hashCode = getQualifiedName().hashCode();
+    	return hashCode;
+    	
+    }
 }

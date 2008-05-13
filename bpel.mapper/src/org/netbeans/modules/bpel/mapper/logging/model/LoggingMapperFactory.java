@@ -31,6 +31,7 @@ import org.netbeans.modules.soa.mappercore.model.MapperModel;
 /**
  *
  * @author Vitaly Bychkov
+ * @author AlexanderPermyakov
  * @version 1.0
  */
 public class LoggingMapperFactory {
@@ -47,8 +48,18 @@ public class LoggingMapperFactory {
         String deleteActionKey = "delete-something"; // NOI18N
         inputMap1.put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0), 
                 deleteActionKey); // NOI18N
+        inputMap1.put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 
+                KeyEvent.SHIFT_DOWN_MASK), deleteActionKey); // NOI18N
+        inputMap1.put(KeyStroke.getKeyStroke(KeyEvent.VK_X, 
+                KeyEvent.CTRL_DOWN_MASK), deleteActionKey); // NOI18N
+        
         inputMap2.put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0), 
                 deleteActionKey); // NOI18N
+        inputMap2.put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 
+                KeyEvent.SHIFT_DOWN_MASK), deleteActionKey); // NOI18N
+        inputMap2.put(KeyStroke.getKeyStroke(KeyEvent.VK_X, 
+                KeyEvent.CTRL_DOWN_MASK), deleteActionKey); // NOI18N
+        
         actionMap.put(deleteActionKey, 
                 new DeleteGraphSelectionAction(newMapper)); // NOI18N
         //
