@@ -132,7 +132,9 @@ public class FFExtensionManager {
     private static boolean extensionInstalled = false;
 
     public static boolean installFirefoxExtensions(HtmlBrowser.Factory browser) {
-        File nbExtensionFile = InstalledFileLocator.getDefault().locate(FIREFOX_EXTENSION_PATH, null, false);
+        File nbExtensionFile = InstalledFileLocator.getDefault().locate(FIREFOX_EXTENSION_PATH,
+                "org.netbeans.modules.web.client.javascript.debugger.firefox", // NOI18N 
+                false);
         if (nbExtensionFile == null) {
             Log.getLogger().severe("Could not find firefox extension in installation directory");
             return false;
