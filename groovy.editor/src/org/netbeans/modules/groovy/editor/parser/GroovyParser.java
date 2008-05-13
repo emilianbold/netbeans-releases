@@ -676,6 +676,12 @@ public class GroovyParser implements Parser {
             key = description;
         }
         
+        // FIXME: we silently drop errors which have no description here.
+        // There might be still a way to recover.
+        if(description == null) {
+            return;
+        }
+        
         Error error =
             new GroovyError(key, description, details, context.file.getFileObject(),
                 startOffset, endOffset, severity, getIdForErrorMessage(description));

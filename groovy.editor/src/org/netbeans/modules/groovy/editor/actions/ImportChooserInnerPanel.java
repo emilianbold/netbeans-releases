@@ -120,7 +120,7 @@ public class ImportChooserInnerPanel extends javax.swing.JPanel{
             for (Iterator it = multipleCandidates.keySet().iterator(); it.hasNext();) {
                 String  name = (String)it.next();
                 
-                List<FixImportsAction.ImportCandidate> importCandidates = multipleCandidates.get(name);
+                List<FixImportsHelper.ImportCandidate> importCandidates = multipleCandidates.get(name);
                 
                 int size = importCandidates.size();
                 int iNum = 0;
@@ -130,7 +130,7 @@ public class ImportChooserInnerPanel extends javax.swing.JPanel{
                 String defaultSelection = null;
                 int maxImportantsLevel = 0;
                 
-                for (FixImportsAction.ImportCandidate importCandidate : importCandidates) {
+                for (FixImportsHelper.ImportCandidate importCandidate : importCandidates) {
                     choices[iNum] = importCandidate.getFqnName();
                     icons[iNum] = importCandidate.getIcon();
                     

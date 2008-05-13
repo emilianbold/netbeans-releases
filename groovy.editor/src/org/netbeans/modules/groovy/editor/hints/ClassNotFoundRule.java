@@ -40,11 +40,9 @@
 package org.netbeans.modules.groovy.editor.hints;
 
 import java.util.ArrayList;
-import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import org.codehaus.groovy.control.messages.Message;
 import org.netbeans.modules.groovy.editor.GroovyCompilerErrorID;
 import org.netbeans.modules.groovy.editor.hints.spi.Description;
 import org.netbeans.modules.groovy.editor.hints.spi.ErrorRule;
@@ -53,10 +51,13 @@ import org.netbeans.modules.groovy.editor.hints.spi.RuleContext;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.groovy.editor.actions.FixImportsHelper;
+import org.netbeans.modules.groovy.editor.actions.FixImportsHelper.ImportCandidate;
 import org.netbeans.modules.groovy.editor.hints.spi.Fix;
-import org.netbeans.modules.gsf.api.OffsetRange;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.groovy.editor.parser.GroovyParser.GroovyError;
+import org.netbeans.modules.gsf.api.OffsetRange;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -67,8 +68,10 @@ public class ClassNotFoundRule implements ErrorRule {
     public static final Logger LOG = Logger.getLogger(ClassNotFoundRule.class.getName()); // NOI18N
     String DESC = NbBundle.getMessage(ClassNotFoundRule.class, "FixImportsHintDescription");
     
+    FixImportsHelper helper = new FixImportsHelper();
+    
     public ClassNotFoundRule() {
-        LOG.setLevel(Level.FINEST);
+        // LOG.setLevel(Level.FINEST);
     }
     
     public Set<GroovyCompilerErrorID> getCodes() {
@@ -80,8 +83,50 @@ public class ClassNotFoundRule implements ErrorRule {
 
     public void run(RuleContext context, GroovyError error, List<Description> result) {
         LOG.log(Level.FINEST, "run()");
-        LOG.log(Level.FINEST, "Processing : " + error.getDescription());
+//        LOG.log(Level.FINEST, "context : " + context);
+//        LOG.log(Level.FINEST, "error : " + error);
+
+        String desc = error.getDescription();
+
+        if (desc == null) {
+            LOG.log(Level.FINEST, "desc == null");
+            return;
+        }
+
+        LOG.log(Level.FINEST, "Processing : " + desc);
+
+        String missingClassName = helper.getMissingClassName(desc);
+
+        if (missingClassName == null) {
+            return;
+        }
+
+        FileObject fo = context.compilationInfo.getFileObject();
+
+        List<ImportCandidate> importCandidates = 
+                helper.getImportCandidate(fo, missingClassName);
         
+
+        if (importCandidates.isEmpty()) {
+            return;
+        }
+        
+        int DEFAULT_PRIORITY = 292;
+        
+        OffsetRange range = new OffsetRange(error.getStartPosition(), error.getEndPosition());
+        
+        for (ImportCandidate candidate : importCandidates) {
+            List<Fix> fixList = new ArrayList<Fix>(1);
+            String fqn = candidate.getFqnName();
+            Fix fixToApply = new AddImportFix(fo, fqn);
+            fixList.add(fixToApply);
+            
+            Description descriptor = new Description(this, fixToApply.getDescription(), fo, range,
+            fixList, DEFAULT_PRIORITY);
+
+            result.add(descriptor);
+        }
+
         return;
     }
 
@@ -101,19 +146,23 @@ public class ClassNotFoundRule implements ErrorRule {
         return HintSeverity.ERROR;
     }
     
-        private class SimpleFix implements Fix {
-        
-        String desc;
+    private class AddImportFix implements Fix {
 
-        public SimpleFix(String desc) {
-            this.desc = desc;
+        String HINT_PREFIX = NbBundle.getMessage(ClassNotFoundRule.class, "ClassNotFoundRuleHintDescription");
+        FileObject fo;
+        String fqn;
+        
+        public AddImportFix(FileObject fo, String fqn) {
+            this.fo = fo;
+            this.fqn = fqn;
         }
 
         public String getDescription() {
-            return desc;
+            return HINT_PREFIX + " " + fqn;
         }
 
         public void implement() throws Exception {
+            helper.doImport(fo, fqn);
             return;
         }
 
@@ -124,8 +173,5 @@ public class ClassNotFoundRule implements ErrorRule {
         public boolean isInteractive() {
             return false;
         }
-        
     }
-    
-
 }
