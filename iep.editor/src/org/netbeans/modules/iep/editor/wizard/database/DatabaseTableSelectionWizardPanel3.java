@@ -137,7 +137,11 @@ public class DatabaseTableSelectionWizardPanel3 implements WizardDescriptor.Pane
         while(it.hasNext()) {
             ColumnInfo c = it.next();
             if(c.getTable().equals(selectedTable)) {
-                table.addColumn(c);
+            	ColumnInfo column = new ColumnInfo(c.getColumnName(),
+            									   c.getColumnDataType(),
+            									   c.getPrecision(),
+            									   c.getScale());
+                table.addColumn(column);
             }
         }
         

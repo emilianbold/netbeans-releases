@@ -47,6 +47,8 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
 
+
+
 /**
  *
  * @author radval
@@ -59,10 +61,14 @@ public class DBArtifactTreeModel extends DefaultTreeModel {
     
     private List<TableNode> mTableNodes = new ArrayList<TableNode>();
     
-    DBArtifactTreeModel(DefaultMutableTreeNode root, List<TableInfo> tables) {
+    private List<ColumnInfo> mExistingColumnNames = new ArrayList<ColumnInfo>();
+    
+    DBArtifactTreeModel(DefaultMutableTreeNode root, 
+    					List<TableInfo> tables, List<ColumnInfo> existingColumnNames) {
         super(root, true);
         this.mRoot = root;
         this.mTables = tables;
+        this.mExistingColumnNames = existingColumnNames;
         init();
     }
     
@@ -86,6 +92,9 @@ public class DBArtifactTreeModel extends DefaultTreeModel {
         while(it.hasNext()) {
             ColumnInfo column = it.next();
             ColumnNode cNode = new ColumnNode(column);
+            if(mExistingColumnNames.contains(column)) {
+            	cNode.setSelected(true);
+            }
             tNode.insert(cNode, tNode.getChildCount());
            
         }

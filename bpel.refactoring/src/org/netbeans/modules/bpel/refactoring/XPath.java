@@ -95,11 +95,7 @@ import static org.netbeans.modules.xml.ui.UI.*;
  */
 final class XPath extends AbstractXPathVisitor {
 
-  XPath(
-    List<Component> usage,
-    Named target,
-    String oldName)
-  {
+  XPath(List<Component> usage, Named target, String oldName) {
     myOldName = oldName;
     myTarget = target;
     myUsage = usage;
@@ -191,8 +187,7 @@ final class XPath extends AbstractXPathVisitor {
   }
 
   @Override
-  public void visit(XPathExpressionPath expressionPath)
-  {
+  public void visit(XPathExpressionPath expressionPath) {
 //out();
 //out("EXPRESION: " + expressionPath);
     XPathExpression rootExpression = expressionPath.getRootExpression();
@@ -256,21 +251,13 @@ final class XPath extends AbstractXPathVisitor {
     visitReference(part.getType(), createList(steps), ""); // NOI18N
   }
 
-  private void visitReference(
-    NamedComponentReference reference,
-    List<LocationStep> steps,
-    String indent)
-  {
+  private void visitReference(NamedComponentReference reference, List<LocationStep> steps, String indent) {
     if (reference != null) {
       visitComponent(reference.get(), steps, indent);
     }
   }
 
-  private void visitComponent(
-    Object object,
-    List<LocationStep> steps,
-    String indent)
-  {
+  private void visitComponent(Object object, List<LocationStep> steps, String indent) {
     if (object instanceof ComplexType) {
 //out("  visit complex");
       visitComplexType((ComplexType) object, steps, indent);
@@ -293,11 +280,7 @@ final class XPath extends AbstractXPathVisitor {
     }
   }
 
-  private void visitMessage(
-    Message message,
-    List<LocationStep> steps,
-    String indent)
-  {
+  private void visitMessage(Message message, List<LocationStep> steps, String indent) {
     Iterator<Part> parts = message.getParts().iterator();
 
     while (parts.hasNext()) {
@@ -320,11 +303,7 @@ final class XPath extends AbstractXPathVisitor {
     }
   }
 
-  private void visitElement(
-    Element element,
-    List<LocationStep> steps,
-    String indent)
-  {
+  private void visitElement(Element element, List<LocationStep> steps, String indent) {
 //out(indent + "ELEMENT: " + Util.getName(element));
     if (checkUsages(element, steps, false)) {
       return;
@@ -333,8 +312,7 @@ final class XPath extends AbstractXPathVisitor {
 
     element.accept(new DeepSchemaVisitor() {
       @Override
-      public void visit(ComplexExtension extension)
-      {
+      public void visit(ComplexExtension extension) {
         myTypeReference = extension.getBase();
       }
     });
@@ -351,11 +329,7 @@ final class XPath extends AbstractXPathVisitor {
     }
   }
 
-  private void visitComplexType(
-    ComplexType type,
-    List<LocationStep> steps,
-    String indent)
-  {
+  private void visitComplexType(ComplexType type, List<LocationStep> steps, String indent) {
 //out(indent + "COMPLEX.TYPE: " + Util.getName(type));
     if (myVisitedComplexType.contains(type)) {
       return;
@@ -386,20 +360,12 @@ final class XPath extends AbstractXPathVisitor {
     }
   }
 
-  private void visitAttribute(
-    LocalAttribute attribute,
-    List<LocationStep> steps,
-    String indent)
-  {
+  private void visitAttribute(LocalAttribute attribute, List<LocationStep> steps, String indent) {
 //out(indent + "ATTRIBUTE: " + Util.getName(attribute));
     checkUsages(attribute, steps, true);
   }
 
-  private void visitComplexContent(
-    ComplexContent content,
-    List<LocationStep> steps,
-    String indent)
-  {
+  private void visitComplexContent(ComplexContent content, List<LocationStep> steps, String indent) {
     ComplexContentDefinition definition = content.getLocalDefinition();
 
     if (definition instanceof ComplexExtension) {
@@ -432,11 +398,7 @@ final class XPath extends AbstractXPathVisitor {
 //out(indent + " [===========================");
   }
 
-  private void visitSequence(
-    Sequence sequence,
-    List<LocationStep> steps,
-    String indent)
-  {
+  private void visitSequence(Sequence sequence, List<LocationStep> steps, String indent) {
 //out(indent + " [sequnce] ==================");
     List<SequenceDefinition> content = sequence.getContent();
 
@@ -469,18 +431,13 @@ final class XPath extends AbstractXPathVisitor {
 //out(indent + " [===========================");
   }
 
-  private void visitSimpleType(
-    SimpleType type,
-    List<LocationStep> steps,
-    String indent)
-  {
+  private void visitSimpleType(SimpleType type, List<LocationStep> steps, String indent) {
 //out(indent + "SIMPLE.TYPE: " + Util.getName(type));
     checkUsages(type, steps, true);
   }
 
   @Override
-  public void visit(XPathVariableReference reference)
-  {
+  public void visit(XPathVariableReference reference) {
     QName qName = reference.getVariableName();
 //out("VAR REFER: " + qName);
     String name = qName.getLocalPart();
@@ -519,8 +476,7 @@ final class XPath extends AbstractXPathVisitor {
   }
 
   @Override
-  public void visit(LocationStep locationStep)
-  {
+  public void visit(LocationStep locationStep) {
 //out("=== LOCATION STEP: " + locationStep);
     XPathPredicateExpression [] predicates = locationStep.getPredicates();
 //out("  predicates: " + predicates);
@@ -534,38 +490,30 @@ final class XPath extends AbstractXPathVisitor {
   }
 
   @Override
-  public void visit(XPathCoreFunction coreFunction)
-  {
+  public void visit(XPathCoreFunction coreFunction) {
 //out("CORE FUNC: " + coreFunction);
     visitChildren(coreFunction);
   }
 
   @Override
-  public void visit(XPathCoreOperation coreOperation)
-  {
+  public void visit(XPathCoreOperation coreOperation) {
 //out("CORE OPER: " + coreOperation);
     visitChildren(coreOperation);
   }
 
   @Override
-  public void visit(XPathExtensionFunction extensionFunction)
-  {
+  public void visit(XPathExtensionFunction extensionFunction) {
 //out("EXT  FUNC: " + extensionFunction);
     visitChildren(extensionFunction);
   }
 
   @Override
-  public void visit(XPathLocationPath locationPath)
-  {
+  public void visit(XPathLocationPath locationPath) {
 //out("LOCAL PATH: " + locationPath);
     visit(locationPath.getSteps());
   }
 
-  private boolean checkUsages(
-    Component component,
-    List<LocationStep> steps,
-    boolean nextStep)
-  {
+  private boolean checkUsages(Component component, List<LocationStep> steps, boolean nextStep) {
     if (component == null) {
       return false;
     }

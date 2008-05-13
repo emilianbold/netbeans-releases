@@ -85,8 +85,7 @@ public final class Find extends SearchControlPanel {
   }
 
   @Override
-  public void setEnabled(boolean enabled)
-  {
+  public void setEnabled(boolean enabled) {
     super.setEnabled(enabled);
 
     if (enabled) {
@@ -98,8 +97,7 @@ public final class Find extends SearchControlPanel {
   }
 
   @Override
-  protected void hideResults()
-  {
+  protected void hideResults() {
 //out("Hide selection");
     if (myElements == null) {
       return;
@@ -111,8 +109,7 @@ public final class Find extends SearchControlPanel {
   }
 
   @Override
-  protected void showSearchResult(Object object)
-  {
+  protected void showSearchResult(Object object) {
 //out("show result");
     if ( !(object instanceof SearchElement)) {
       return;
@@ -138,10 +135,8 @@ public final class Find extends SearchControlPanel {
     keys.put(stroke, key);
   }
 
-  // ---------------------------------------------------------------------
-  private final class Provider implements
-    org.netbeans.modules.xml.xam.ui.search.SearchProvider, SearchListener
-  {
+  // ------------------------------------------------------------------------------------------------------------
+  private final class Provider implements org.netbeans.modules.xml.xam.ui.search.SearchProvider, SearchListener {
     private Provider(SearchEngine engine, SearchProvider provider) {
       mySearchEngine = engine;
       mySearchEngine.addSearchListener(this);
@@ -164,9 +159,7 @@ public final class Find extends SearchControlPanel {
       return i18n(Provider.class, "LBL_Input_Description"); // NOI18N
     }
 
-    public List<Object> search(Query query)
-      throws org.netbeans.modules.xml.xam.ui.search.SearchException
-    {
+    public List<Object> search(Query query) throws org.netbeans.modules.xml.xam.ui.search.SearchException {
       SearchMatch match = getMatch(query);
       String text = getText(query, match);
 

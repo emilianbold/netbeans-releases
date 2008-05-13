@@ -62,8 +62,7 @@ final class SearchProvider extends org.netbeans.modules.xml.search.spi.SearchPro
   }
 
   @Override
-  protected final Component getRoot(DataObject data)
-  {
+  protected final Component getRoot(DataObject data) {
     BpelModel model = EditorUtil.getBpelModel(data);
 
     if (model == null) {
@@ -73,26 +72,22 @@ final class SearchProvider extends org.netbeans.modules.xml.search.spi.SearchPro
   }
 
   @Override
-  protected final String getType(Component component)
-  {
+  protected final String getType(Component component) {
     return ((BpelEntity) component).getElementType().getName();
   }
 
   @Override
-  protected final Icon getIcon(Component component)
-  {
+  protected final Icon getIcon(Component component) {
     return EditorUtil.getIcon(component);
   }
 
   @Override
-  protected void gotoSource(Component component)
-  {
+  protected void gotoSource(Component component) {
     EditorUtil.goToSource((BpelEntity) component);
   }
 
   @Override
-  protected final void gotoVisual(Component component)
-  {
+  protected final void gotoVisual(Component component) {
     EditorUtil.goToDesign((BpelEntity) component);
   }
 
@@ -101,8 +96,7 @@ final class SearchProvider extends org.netbeans.modules.xml.search.spi.SearchPro
   }
 
   @Override
-  public SearchTarget [] getTargets()
-  {
+  public SearchTarget [] getTargets() {
     return TARGETS;
   }
 
