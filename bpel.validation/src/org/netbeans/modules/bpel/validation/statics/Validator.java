@@ -227,7 +227,17 @@ public final class Validator extends BpelValidator {
   }
 
   private void checkDuplicate(Model model1, Model model2) {
-    if ( !getTargetNamespace(model1).equals(getTargetNamespace(model2))) {
+    String targetNamespace1 = getTargetNamespace(model1);
+
+    if (targetNamespace1 == null) {
+      return;
+    }
+    String targetNamespace2 = getTargetNamespace(model2);
+
+    if (targetNamespace2 == null) {
+      return;
+    }
+    if ( !targetNamespace1.equals(targetNamespace2)) {
       return;
     }
 //out("check: ");
