@@ -80,6 +80,7 @@ import org.netbeans.modules.gsf.api.SourceFileReader;
 import org.netbeans.modules.groovy.editor.AstNodeAdapter;
 import org.netbeans.modules.groovy.editor.AstUtilities;
 import org.netbeans.modules.groovy.editor.GroovyUtils;
+import org.netbeans.modules.groovy.editor.GroovyCompilerErrorID;
 import org.netbeans.modules.groovy.editor.elements.AstElement;
 import org.netbeans.modules.groovy.editor.elements.AstRootElement;
 import org.netbeans.modules.groovy.editor.elements.CommentElement;
@@ -94,6 +95,8 @@ import java.util.logging.Logger;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
+import org.netbeans.modules.gsf.api.annotations.NonNull;
+import org.netbeans.modules.gsf.api.annotations.Nullable;
 
 /**
  *
@@ -674,8 +677,9 @@ public class GroovyParser implements Parser {
         }
         
         Error error =
-            new DefaultError(key, description, details, context.file.getFileObject(),
-                startOffset, endOffset, severity);
+            new GroovyError(key, description, details, context.file.getFileObject(),
+                startOffset, endOffset, severity, getIdForErrorMessage(description));
+        
         context.listener.error(error);
 
         if (sanitizing == Sanitize.NONE) {
@@ -684,6 +688,20 @@ public class GroovyParser implements Parser {
         }
     }
 
+    static GroovyCompilerErrorID getIdForErrorMessage(String errorMessage) {
+        String ERR_PREFIX = "unable to resolve class "; // NOI18N
+
+        if (errorMessage != null) {
+            if (errorMessage.startsWith(ERR_PREFIX)) {
+                return GroovyCompilerErrorID.CLASS_NOT_FOUND;
+            }
+        }
+
+        return GroovyCompilerErrorID.UNDEFINED;
+    }
+    
+    
+    
     private static void handleErrorCollector(ErrorCollector errorCollector, Context context, ModuleNode moduleNode, boolean ignoreErrors, Sanitize sanitizing) {
         if (!ignoreErrors && errorCollector != null) {
             List errors = errorCollector.getErrors();
@@ -856,5 +874,97 @@ public class GroovyParser implements Parser {
             return errorOffset;
         }
     }
+    
+    /**
+     * This is a copy of DefaultError with the additional Groovy
+     * information.
+     * 
+     */
+    
+    
+    public static class GroovyError implements Error {
+    private String displayName;
+    private String description;
+
+    private FileObject file;
+    private int start;
+    private int end;
+    private String key;
+    private Severity severity;
+    private Object[] parameters;
+    
+    private GroovyCompilerErrorID id;
+    
+    /** Creates a new instance of GroovyError */
+    public GroovyError(
+            @Nullable String key, 
+            @NonNull String displayName, 
+            @Nullable String description, 
+            @NonNull FileObject file, 
+            @NonNull int start, 
+            @NonNull int end, 
+            @NonNull Severity severity,
+            @NonNull GroovyCompilerErrorID id) {
+        this.key = key;
+        this.displayName = displayName;
+        this.description = description;
+        this.file = file;
+        this.start = start;
+        this.end = end;
+        this.severity = severity;
+        this.id = id;
+    }
+
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    // TODO rename to getStartOffset
+    public int getStartPosition() {
+        return start;
+    }
+
+    // TODO rename to getEndOffset
+    public int getEndPosition() {
+        return end;
+    }
+
+    @Override
+    public String toString() {
+        return "GroovyError[" + displayName + ", " + description + ", " + severity + "]";
+    }
+
+    public String getKey() {
+        return key;
+    }
+
+    public Object[] getParameters() {
+        return parameters;
+    }
+
+    public void setParameters(final Object[] parameters) {
+        this.parameters = parameters;
+    }
+
+    public Severity getSeverity() {
+        return severity;
+    }
+
+    public FileObject getFile() {
+        return file;
+    }
+    
+    public GroovyCompilerErrorID getId(){
+        return id;
+    }
+    
+}
+
+    
+    
 
 }

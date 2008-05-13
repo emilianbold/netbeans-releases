@@ -45,6 +45,7 @@ import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.groovy.editor.GroovyCompilerErrorID;
 import org.codehaus.groovy.control.messages.Message;
+import org.netbeans.modules.groovy.editor.parser.GroovyParser.GroovyError;
 
 /** 
  * Represents a rule to be run on the java source in case the compiler 
@@ -63,7 +64,7 @@ public interface ErrorRule extends Rule {//XXX: should ErrorRule extend Rule?
 
     /** Return possible fixes for a given diagnostic report.
      */
-    public void run(RuleContext context, Message error,
+    public void run(RuleContext context, GroovyError error,
              List<Description> result);
 
 }
