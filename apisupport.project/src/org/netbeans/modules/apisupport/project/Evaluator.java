@@ -373,6 +373,7 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
         // XXX would be good to add in any other types defined in project.xml
         for (String testType : testTypes) {
             defaults.put("test." + testType + ".src.dir", "test/" + testType + "/src"); // NOI18N
+            defaults.put("test." + testType + ".data.dir", "test/" + testType + "/data"); // NOI18N
             defaults.put("build.test." + testType + ".classes.dir", "build/test/" + testType + "/classes"); // NOI18N
         }
         providers.add(PropertyUtils.fixedPropertyProvider(defaults));
