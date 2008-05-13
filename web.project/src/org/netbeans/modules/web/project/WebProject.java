@@ -502,6 +502,10 @@ public final class WebProject implements Project, AntProjectListener {
         return storedName == null ? GeneratedFilesHelper.BUILD_XML_PATH : storedName;
     }
     
+    public void refreshLibraryProperties() {
+        librariesLocationUpdater.storeLibLocations();
+    }
+    
     // Package private methods -------------------------------------------------
     
     /**
