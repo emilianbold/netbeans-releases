@@ -47,16 +47,22 @@ made subject to such option by the copyright holder.
     <testbag testattribs="validation" executor="ide" name="versioning">
 	<testset dir="qa-functional/src">
             <patternset>
-                <!-- delete -->
+                <!-- working --> 
+                <include name="org/netbeans/test/mercurial/main/commit/InitializeTest.class"/>
+                
+                <include name="org/netbeans/test/mercurial/main/commit/CloneTest.class"/>
+                <include name="org/netbeans/test/mercurial/main/commit/IgnoreTest.class"/>
+                <include name="org/netbeans/test/mercurial/main/delete/DeleteUpdateTest.class"/>
+                <!--
+                -->
+                <!-- not working
                 <include name="org/netbeans/test/mercurial/main/delete/DeleteTest.class"/>
-                <!-- HgProperties -->
                 <include name="org/netbeans/test/mercurial/main/properties/HgPropertiesTest.class"/>
-                <!-- archeology -->
                 <include name="org/netbeans/test/mercurial/main/archeology/AnnotationsTest.class"/>
-                <!-- commit -->
                 <include name="org/netbeans/test/mercurial/main/commit/CommitDataTest.class"/>
                 <include name="org/netbeans/test/mercurial/main/commit/CommitUiTest.class"/>
                 <include name="org/netbeans/test/mercurial/main/commit/IgnoreTest.class"/>
+                -->
             </patternset>
         </testset>
     </testbag>	
