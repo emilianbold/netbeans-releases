@@ -60,7 +60,7 @@ import org.openide.nodes.Node;
 
 public class ExpandFolderTest extends NbTestCase implements Callable<Long> {
     private FileObject root;
-    private long len;
+    private AtomicLong len = new AtomicLong();
     public ExpandFolderTest(String s) {
         super(s);
     }
@@ -103,7 +103,7 @@ public class ExpandFolderTest extends NbTestCase implements Callable<Long> {
         
         assertEquals("1000 nodes", 1000, arr.length);
         
-        len = CountingSecurityManager.assertCounts("About 1000 * 5?", 5000);
+        CountingSecurityManager.assertCounts("About 1000 * 5?", 5000, len);
     }
 
     public void testGetNodesForAFolderExtxml() throws Exception {
@@ -115,11 +115,11 @@ public class ExpandFolderTest extends NbTestCase implements Callable<Long> {
         
         assertEquals("1000 nodes", 1000, arr.length);
         
-        len = CountingSecurityManager.assertCounts("About 1000 * 15?", 15000);
+        CountingSecurityManager.assertCounts("About 1000 * 15?", 15000, len);
     }
 
     public Long call() throws Exception {
-        return len;
+        return len.longValue();
     }
 
     private static final class CompareResults implements Test {
@@ -160,6 +160,7 @@ public class ExpandFolderTest extends NbTestCase implements Callable<Long> {
                         if (time > max.longValue()) {
                             max.set(time);
                         }
+                        // append(t.toString()).append(" value: ")
                         times.append("Run: ").append(v).append('\n');
                     } catch (Exception ex) {
                         result.addError(this, ex);

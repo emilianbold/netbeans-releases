@@ -45,6 +45,7 @@ import java.io.StringWriter;
 import java.security.Permission;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 import junit.framework.Assert;
 
 /**
@@ -79,11 +80,13 @@ public final class CountingSecurityManager extends SecurityManager {
         Statistics.reset();
     }
     
-    public static int assertCounts(String msg, int expectedCnt) {
-        int real = cnt;
+    public static void assertCounts(String msg, int expectedCnt, AtomicLong property) {
         msgs = new StringWriter();
         pw = new PrintWriter(msgs);
         Statistics.getDefault().print(pw);
+        
+        property.set(cnt);
+        
         if (cnt < expectedCnt / 10) {
             throw new AssertionError("Too small expectations:\n" + msg + "\n" + msgs + " exp: " + expectedCnt + " was: " + cnt);
         }
@@ -94,7 +97,6 @@ public final class CountingSecurityManager extends SecurityManager {
         msgs = new StringWriter();
         pw = new PrintWriter(msgs);
         Statistics.getDefault().print(pw);
-        return real;
     }
 
     @Override
