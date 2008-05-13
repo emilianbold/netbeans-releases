@@ -39,10 +39,6 @@ derby\.log
 ^cnd.modelimpl/test/whitebox/dwarf-vs-model/test/obj$
 ^cnd.modelimpl/test/whitebox/dwarf-vs-model/test/res$
 ^cnd.modelimpl/test/whitebox/dwarf-vs-model/test/test\.gcc$
-^core.startup/test/unit/src/org/netbeans/core/startup/jars/.*\.jar$
-^core.startup/test/unit/src/org/netbeans/core/startup/jars/locale$
-^core.startup/test/unit/src/org/netbeans/core/startup/jars/patches$
-^core.startup/test/unit/src/org/netbeans/core/startup/jars/cyclic-1/org/bar$
 ^o.n.core/test/unit/src/org/netbeans/core/lookup/data/.*\.jar$
 ^o.n.core/test/unit/src/org/netbeans/core/modules/jars/.*\.jar$
 ^o.n.core/test/unit/src/org/netbeans/core/modules/jars/locale$
