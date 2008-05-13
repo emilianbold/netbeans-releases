@@ -157,7 +157,7 @@ public class ExecutionService {
             // try to find free output windows
             synchronized (this) {
                 if (io == null) {
-                    FreeIOHandler freeIO = FreeIOHandler.findFreeIO(originalDisplayName);
+                    FreeIOHandler freeIO = FreeIOHandler.findFreeIO(originalDisplayName, descriptor.isControlable());
                     if (freeIO != null) {
                         io = freeIO.getIO();
                         displayName = freeIO.getDisplayName();
@@ -173,10 +173,14 @@ public class ExecutionService {
             if (io == null) { // free IO was not found, create new one
                 displayName = getNonActiveDisplayName(originalDisplayName);
 
-                stopAction = new StopAction();
-                rerunAction = new RerunAction(this, descriptor.getFileObject());
+                if (descriptor.isControlable()) {
+                    stopAction = new StopAction();
+                    rerunAction = new RerunAction(this, descriptor.getFileObject());
 
-                io = IOProvider.getDefault().getIO(displayName, new Action[]{rerunAction, stopAction});
+                    io = IOProvider.getDefault().getIO(displayName, new Action[]{rerunAction, stopAction});
+                } else {
+                    io = IOProvider.getDefault().getIO(displayName, true);
+                }
 
                 try {
                     io.getOut().reset();
@@ -203,7 +207,9 @@ public class ExecutionService {
                         Process process = processCreator.call();
 
                         RUNNING_PROCESSES.add(ExecutionService.this);
-                        stopAction.setProcess(process);
+                        if (stopAction != null) {
+                            stopAction.setProcess(process);
+                        }
                         runIO(stopAction, process, io, descriptor.getOutputSnooper(),
                                 descriptor.getFileObject());
 
@@ -223,13 +229,14 @@ public class ExecutionService {
         if (descriptor.showProgress() || descriptor.showSuspended()) {
             handle =
                 ProgressHandleFactory.createHandle(displayName,
-                    new Cancellable() {
-                        public boolean cancel() {
-                            stopAction.actionPerformed(null);
-
-                            return true;
-                        }
-                    },
+                    stopAction != null
+                        ? new Cancellable() {
+                            public boolean cancel() {
+                                stopAction.actionPerformed(null);
+                                return true;
+                            }
+                          }
+                        : null,
                     new AbstractAction() {
                         public void actionPerformed(ActionEvent e) {
                             io.select();
@@ -245,8 +252,10 @@ public class ExecutionService {
             handle = null;
         }
 
-        stopAction.setEnabled(true);
-        rerunAction.setEnabled(false);
+        if (descriptor.isControlable()) {
+            stopAction.setEnabled(true);
+            rerunAction.setEnabled(false);
+        }
 
         Task task = PROCESSOR.post(runnable);
 
@@ -268,13 +277,17 @@ public class ExecutionService {
                         handle.finish();
                     }
 
-                    stopAction.setEnabled(false);
-                    rerunAction.setEnabled(true);
-
-                    Process process = stopAction.getProcess();
-                    stopAction.setProcess(null);
-                    if (process != null) {
-                        process.destroy();
+                    if (descriptor.isControlable()) {
+                        stopAction.setEnabled(false);
+                        rerunAction.setEnabled(true);
+                    }
+                    
+                    if (stopAction != null) {
+                        Process process = stopAction.getProcess();
+                        stopAction.setProcess(null);
+                        if (process != null) {
+                            process.destroy();
+                        }
                     }
                 }
             });
@@ -328,7 +341,9 @@ public class ExecutionService {
             if (errorThread != null) {
                 errorThread.interrupt();
             }
-            FileUtil.refreshFor(FileUtil.toFile(toRefresh));
+            if (toRefresh != null) {
+                FileUtil.refreshFor(FileUtil.toFile(toRefresh));
+            }
         }
     }
 

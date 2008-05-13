@@ -28,36 +28,49 @@
 package org.netbeans.modules.groovy.grailsproject.actions;
 
 import java.awt.event.ActionEvent;
+import java.util.concurrent.Callable;
 import javax.swing.AbstractAction;
 import org.netbeans.api.project.Project;
 import java.util.logging.Logger;
+import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.modules.groovy.grails.api.ExecutionSupport;
+import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
 import org.netbeans.modules.groovy.grails.api.GrailsRuntime;
+import org.netbeans.modules.groovy.grailsproject.execution.DefaultDescriptor;
+import org.netbeans.modules.groovy.grailsproject.execution.ExecutionService;
 
 public class GrailsTargetAction extends AbstractAction {
 
-    Project prj;
-    String command;
-    
-    Logger LOG = Logger.getLogger(GrailsTargetAction.class.getName());
-            
+    private final Project prj;
+
+    private final String command;
+
     public GrailsTargetAction (Project prj, String desc, String command){
         super (desc);
         this.prj = prj;
         this.command = command;
-        
     }
 
+    @Override
     public boolean isEnabled(){
-            return true;
-        }
-            
+        return true;
+    }
+
     public void actionPerformed(ActionEvent e) {
         final GrailsRuntime runtime = GrailsRuntime.getInstance();
         if (!runtime.isConfigured()) {
             ConfigSupport.showConfigurationWarning(runtime);
             return;
         }
-        new PublicSwingWorker(prj, command).start();
 
+        ProjectInformation inf = prj.getLookup().lookup(ProjectInformation.class);
+        String displayName = inf.getDisplayName() + " (" + command + ")"; // NOI18N
+
+        Callable<Process> callable = ExecutionSupport.getInstance().createSimpleCommand(
+                command, GrailsProjectConfig.forProject(prj)); // NOI18N
+        ExecutionService service = new ExecutionService(callable, displayName,
+                new DefaultDescriptor(prj, false));
+
+        service.run();
     }
 }

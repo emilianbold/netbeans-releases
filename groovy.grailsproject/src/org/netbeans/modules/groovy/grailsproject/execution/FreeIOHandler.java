@@ -96,7 +96,7 @@ final class FreeIOHandler {
      * @param name the name of the free tab. Other free tabs are ignored.
      * @return free tab and its current display name or <tt>null</tt>
      */
-    static FreeIOHandler findFreeIO(final String name) {
+    static FreeIOHandler findFreeIO(final String name, boolean actions) {
         FreeIOHandler result = null;
         synchronized (FREE_IOS) {
             for (Iterator<Entry<InputOutput, Data>> it = FREE_IOS.entrySet().iterator(); it.hasNext();) {
@@ -109,14 +109,17 @@ final class FreeIOHandler {
                 }
 
                 if (result == null && ExecutionService.isAppropriateName(name, data.displayName)) {
-                    // Reuse it.
-                    result = new FreeIOHandler(freeIO, data);
-                    try {
-                        freeIO.getOut().reset();
-                    } catch (IOException ioe) {
-                        Exceptions.printStackTrace(ioe);
+                    if ((actions && data.rerunAction != null && data.stopAction != null)
+                            || !actions && data.rerunAction == null && data.stopAction == null) {
+                        // Reuse it.
+                        result = new FreeIOHandler(freeIO, data);
+                        try {
+                            freeIO.getOut().reset();
+                        } catch (IOException ioe) {
+                            Exceptions.printStackTrace(ioe);
+                        }
+                        it.remove();
                     }
-                    it.remove();
                     // continue to remove all closed tabs
                 }// else {
             // if ('auto close tabs' options implemented and checked) { // see #47753

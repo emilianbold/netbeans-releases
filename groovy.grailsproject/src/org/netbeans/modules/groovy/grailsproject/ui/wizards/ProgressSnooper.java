@@ -37,35 +37,39 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.groovy.grailsproject.execution;
+package org.netbeans.modules.groovy.grailsproject.ui.wizards;
 
-import org.openide.filesystems.FileObject;
+import java.io.IOException;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.modules.groovy.grailsproject.execution.LineSnooper;
 
 /**
  *
  * @author Petr Hejl
  */
-public interface Descriptor {
+public class ProgressSnooper implements LineSnooper {
 
-        FileObject getFileObject();
+    private final ProgressHandle progress;
 
-        LineSnooper getOutputSnooper();
+    private final int max;
 
-        boolean isControlable();
-        
-        /* Select the tab on run */
-        boolean isFrontWindow();
+    private final int step;
 
-        /* Allows user input */
-        boolean isInputVisible();
+    private int value;
 
-        /* Suspend the progress bar on run */
-        boolean showSuspended();
+    public ProgressSnooper(ProgressHandle progress, int max, int step) {
+        this.progress = progress;
+        this.max = max;
+        this.step = step;
+    }
 
-        /* Show progress bar */
-        boolean showProgress();
+    public void lineFilter(String line) throws IOException {
+        value += step;
+        if (value > max) {
+                        value = max;
+        }
 
-        /* Action to run when action is finished */
-        Runnable getPostExecution();
+        progress.progress(value);
+    }
 
 }

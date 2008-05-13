@@ -4,6 +4,7 @@
  */
 package org.netbeans.modules.groovy.grailsproject.actions;
 
+import java.util.concurrent.Callable;
 import javax.swing.JComponent;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
@@ -15,9 +16,14 @@ import javax.swing.Action;
 import org.openide.awt.DynamicMenuContent;
 import javax.swing.JMenuItem;
 import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.modules.groovy.grails.api.ExecutionSupport;
+import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
 import org.netbeans.modules.groovy.grails.api.GrailsRuntime;
 import org.openide.awt.Actions;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
+import org.netbeans.modules.groovy.grailsproject.execution.DefaultDescriptor;
+import org.netbeans.modules.groovy.grailsproject.execution.ExecutionService;
 
 public final class GenerateAllAction extends NodeAction {
     
@@ -28,17 +34,22 @@ public final class GenerateAllAction extends NodeAction {
         if (!runtime.isConfigured()) {
             ConfigSupport.showConfigurationWarning(runtime);
             return;
-        }        
-        
+        }
+
         DataObject dataObject = activatedNodes[0].getLookup().lookup(DataObject.class);
-        
-        GrailsProject prj = (GrailsProject)FileOwnerQuery.getOwner(dataObject.getFolder().getPrimaryFile());
-       
-        String command = "generate-all " + dataObject.getPrimaryFile().getName();
 
-        assert prj != null;
-        new PublicSwingWorker(prj, command).start();
+        GrailsProject prj = (GrailsProject) FileOwnerQuery.getOwner(dataObject.getFolder().getPrimaryFile());
 
+        String command = "generate-all"; // NOI18N
+        ProjectInformation inf = prj.getLookup().lookup(ProjectInformation.class);
+        String displayName = inf.getDisplayName() + " (" + command + ")"; // NOI18N
+
+        Callable<Process> callable = ExecutionSupport.getInstance().createSimpleCommand(
+                command, GrailsProjectConfig.forProject(prj), dataObject.getPrimaryFile().getName()); // NOI18N
+        ExecutionService service = new ExecutionService(callable, displayName,
+                new DefaultDescriptor(prj, false));
+
+        service.run();
     }
 
     public String getName() {

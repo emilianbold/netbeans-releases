@@ -83,18 +83,28 @@ public final class ExecutionSupport {
         return new ExecutionSupport(runtime);
     }
 
+    public Callable<Process> createCreateApp(final File directory) {
+        return new Callable<Process>() {
+
+            public Process call() throws Exception {
+                if (directory.exists()) {
+                    throw new IOException("Project directory already exists"); // NOI18N
+                }
+
+                File work = directory.getAbsoluteFile().getParentFile();
+                FileUtil.createFolder(work);
+                String name = directory.getName();
+
+                GrailsRuntime.CommandDescriptor descriptor = new GrailsRuntime.CommandDescriptor(
+                        "create-app", work, null, new String[] {name}); // NOI18N
+
+                return runtime.createCommand(descriptor).call();
+            }
+        };
+    }
+
     public Process executeCreateApp(File directory) throws Exception {
-        if (directory.exists()) {
-            throw new IOException("Project directory already exists"); // NOI18N
-        }
-
-        File work = directory.getAbsoluteFile().getParentFile();
-        FileUtil.createFolder(work);
-        String name = directory.getName();
-
-        GrailsRuntime.CommandDescriptor descriptor = new GrailsRuntime.CommandDescriptor(
-                "create-app", work, null, new String[] {name}); // NOI18N
-        return execute(descriptor);
+        return execute(createCreateApp(directory));
     }
 
     public Callable<Process> createRunApp(final GrailsProjectConfig config) {
@@ -122,44 +132,30 @@ public final class ExecutionSupport {
     }
 
     public Process executeRunApp(GrailsProjectConfig config) throws Exception {
-        File directory = FileUtil.toFile(config.getProject().getProjectDirectory());
-
-        Properties props = new Properties();
-        String port = config.getPort();
-        if (port != null) {
-            props.setProperty("server.port", port); // NOI18N
-        }
-
-        // FIXME fix this hack
-        String argument = Utilities.isWindows() ? " REM NB:" +  // NOI18N
-                    config.getProject().getProjectDirectory().getName() : "";
-
-        GrailsRuntime.CommandDescriptor descriptor = new GrailsRuntime.CommandDescriptor(
-                "run-app", directory, config.getEnvironment(), new String[] {argument}, props); // NOI18N
-        return execute(descriptor);
+        return execute(createRunApp(config));
     }
 
-    public Callable<Process> createSimpleCommand(final String command, final GrailsProjectConfig config) {
+    public Callable<Process> createSimpleCommand(final String command, final GrailsProjectConfig config,
+            final String... arguments) {
+
         return new Callable<Process>() {
 
             public Process call() throws Exception {
                 File directory = FileUtil.toFile(config.getProject().getProjectDirectory());
                 GrailsRuntime.CommandDescriptor descriptor = new GrailsRuntime.CommandDescriptor(
-                        command, directory, config.getEnvironment());
+                        command, directory, config.getEnvironment(), arguments);
                 return runtime.createCommand(descriptor).call();
             }
         };
     }
 
-    public Process executeSimpleCommand(String command, GrailsProjectConfig config) throws Exception {
-        File directory = FileUtil.toFile(config.getProject().getProjectDirectory());
-        GrailsRuntime.CommandDescriptor descriptor = new GrailsRuntime.CommandDescriptor(
-                command, directory, config.getEnvironment());
-        return execute(descriptor);
+    public Process executeSimpleCommand(String command, GrailsProjectConfig config,
+            String... arguments) throws Exception {
+
+        return execute(createSimpleCommand(command, config, arguments));
     }
 
-    private Process execute(GrailsRuntime.CommandDescriptor descriptor) throws Exception {
-        Callable<Process> callable = runtime.createCommand(descriptor);
+    private Process execute(Callable<Process> callable) throws Exception {
         Future<Process> future = EXECUTOR.submit(callable);
         try {
             return future.get();

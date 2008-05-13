@@ -61,17 +61,19 @@ public final class DefaultDescriptor implements Descriptor {
     private final boolean front;
 
     private final boolean input;
+    
+    private final boolean controlable;
 
     public DefaultDescriptor(Project project, boolean suspend) {
-        this(project, null, null, suspend, true, true, true);
+        this(project, null, null, suspend, true, true, true, true);
     }
 
     public DefaultDescriptor(Project project, LineSnooper snooper, Runnable post, boolean suspend) {
-        this(project, snooper, post, suspend, true, true, true);
+        this(project, snooper, post, suspend, true, true, true, true);
     }
 
     public DefaultDescriptor(Project project, LineSnooper snooper, Runnable post,
-            boolean suspend, boolean progress, boolean front, boolean input) {
+            boolean suspend, boolean progress, boolean front, boolean input, boolean controlable) {
         this.project = project;
         this.snooper = snooper;
         this.post = post;
@@ -79,6 +81,7 @@ public final class DefaultDescriptor implements Descriptor {
         this.progress = progress;
         this.front = front;
         this.input = input;
+        this.controlable = controlable;
     }
 
     public FileObject getFileObject() {
@@ -109,5 +112,8 @@ public final class DefaultDescriptor implements Descriptor {
         return suspend;
     }
 
+    public boolean isControlable() {
+        return controlable;
+    }
 
 }

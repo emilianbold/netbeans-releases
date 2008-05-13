@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,9 +20,9 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
 
@@ -34,6 +34,7 @@ import java.text.MessageFormat;
 import java.util.HashSet;
 import java.util.Set;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.groovy.grailsproject.execution.LineSnooper;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
 import java.util.NoSuchElementException;
@@ -42,15 +43,20 @@ import org.openide.util.NbBundle;
 import java.io.File;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 import java.util.logging.Logger;
 import org.netbeans.api.progress.ProgressHandle;
 import java.io.BufferedReader;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
+import org.netbeans.modules.groovy.grails.api.ExecutionSupport;
+import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
 import org.netbeans.modules.groovy.grails.api.GrailsRuntime;
 import org.netbeans.modules.groovy.grailsproject.GrailsProjectSettings;
-import org.netbeans.modules.groovy.grailsproject.actions.PublicSwingWorker;
+import org.netbeans.modules.groovy.grailsproject.execution.DefaultDescriptor;
+import org.netbeans.modules.groovy.grailsproject.execution.Descriptor;
+import org.netbeans.modules.groovy.grailsproject.execution.ExecutionService;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
+import org.openide.util.Task;
 
 
 
@@ -62,11 +68,11 @@ public class NewGrailsProjectWizardIterator implements  WizardDescriptor.Instant
                                                         WizardDescriptor.ProgressInstantiatingIterator{
 
     private static final Logger LOGGER = Logger.getLogger(NewGrailsProjectWizardIterator.class.getName());
-    
+
     private transient int index;
     private transient WizardDescriptor.Panel[] panels;
     private transient WizardDescriptor wiz;
-    
+
     BufferedReader procOutput = null;
     GetProjectLocationStep pls = null;
     ProgressHandle handle = null;
@@ -74,20 +80,20 @@ public class NewGrailsProjectWizardIterator implements  WizardDescriptor.Instant
     boolean        serverRunning = false;
     boolean        serverConfigured = true;
     int baseCount;
-    
+
     private WizardDescriptor.Panel[] createPanels () {
-        
+
         pls = new GetProjectLocationStep(serverRunning, serverConfigured);
-        
+
         return new WizardDescriptor.Panel[] { pls };
     }
-    
+
      private String[] createSteps() {
             return new String[] {
-                NbBundle.getMessage(NewGrailsProjectWizardIterator.class,"LAB_ConfigureProject") 
+                NbBundle.getMessage(NewGrailsProjectWizardIterator.class,"LAB_ConfigureProject")
             };
     }
-    
+
    public Set instantiate(ProgressHandle handle) throws IOException {
         this.handle = handle;
 
@@ -95,15 +101,19 @@ public class NewGrailsProjectWizardIterator implements  WizardDescriptor.Instant
 
         serverRunning = true;
 
-        new PublicSwingWorker( null, "create-app " + (String) wiz.getProperty("projectName"), 
-                                ((File) wiz.getProperty("projectFolder")).getAbsolutePath(), 
-                                handle, serverFinished).start();
-
+        handle.start(100);
         try {
-            serverFinished.await();
-            } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
-                }
+            String displayName = "<new project> (create-app)"; // NOI18N
+            Callable<Process> callable = ExecutionSupport.getInstance().createCreateApp(
+                    (File) wiz.getProperty("projectFolder")); // NOI18N
+            ExecutionService service = new ExecutionService(callable, displayName,
+                    new CreateDescriptor(new ProgressSnooper(handle, 100, 2)));
+
+            Task task = service.run();
+            task.waitFinished();
+        } finally {
+            handle.progress(100);
+        }
 
         serverRunning = false;
         File dirF = (File) wiz.getProperty("projectFolder");
@@ -132,7 +142,7 @@ public class NewGrailsProjectWizardIterator implements  WizardDescriptor.Instant
 
        return resultSet;
     }
-    
+
     public Set instantiate() throws IOException {
 
             Set<FileObject> resultSet = new HashSet<FileObject>();
@@ -144,22 +154,22 @@ public class NewGrailsProjectWizardIterator implements  WizardDescriptor.Instant
     public void initialize(WizardDescriptor wizard) {
         this.wiz = wizard;
         index = 0;
-        
+
         if(!GrailsRuntime.getInstance().isConfigured()) {
-            wizard.putProperty("WizardPanel_errorMessage", 
-                    NbBundle.getMessage(NewGrailsProjectWizardIterator.class, 
+            wizard.putProperty("WizardPanel_errorMessage",
+                    NbBundle.getMessage(NewGrailsProjectWizardIterator.class,
                     "NewGrailsProjectWizardIterator.NoGrailsServerConfigured"));
             serverConfigured = false;
             }
-        
+
         // get project counter from GrailsConfiguration
-        
+
         baseCount = GrailsProjectSettings.getDefault().getNewProjectCount() + 1;
-        wizard.putProperty("WizardPanel_GrailsProjectCounter", new Integer(baseCount));      
-        
+        wizard.putProperty("WizardPanel_GrailsProjectCounter", new Integer(baseCount));
+
         panels = createPanels();
         String[] steps = createSteps();
-        
+
         for (int i = 0; i < panels.length; i++) {
             Component c = panels[i].getComponent();
             if (steps[i] == null) {
@@ -188,7 +198,7 @@ public class NewGrailsProjectWizardIterator implements  WizardDescriptor.Instant
 
     public String name() {
         return MessageFormat.format (NbBundle.getMessage(NewGrailsProjectWizardIterator.class,"LAB_IteratorName"),
-            new Object[] {new Integer (index + 1), new Integer (panels.length) });      
+            new Object[] {new Integer (index + 1), new Integer (panels.length) });
     }
 
     public boolean hasNext() {
@@ -212,7 +222,47 @@ public class NewGrailsProjectWizardIterator implements  WizardDescriptor.Instant
     public void addChangeListener(ChangeListener l) {}
 
     public void removeChangeListener(ChangeListener l) {}
-    
 
-    
+
+    private static class CreateDescriptor implements Descriptor {
+
+        private final LineSnooper snooper;
+
+        public CreateDescriptor(LineSnooper snooper) {
+            this.snooper = snooper;
+        }
+        
+        public FileObject getFileObject() {
+            return null;
+        }
+
+        public LineSnooper getOutputSnooper() {
+            return snooper;
+        }
+
+        public Runnable getPostExecution() {
+            return null;
+        }
+
+        public boolean isFrontWindow() {
+            return true;
+        }
+
+        public boolean isInputVisible() {
+            return true;
+        }
+
+        public boolean showProgress() {
+            return false;
+        }
+
+        public boolean showSuspended() {
+            return false;
+        }
+
+        public boolean isControlable() {
+            return false;
+        }
+
+    }
 }

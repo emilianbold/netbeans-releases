@@ -33,23 +33,28 @@ import javax.swing.AbstractAction;
 import java.io.File;
 import java.io.IOException;
 import org.netbeans.api.project.Project;
-import org.openide.windows.OutputWriter;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.util.Enumeration;
+import java.util.concurrent.Callable;
+import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.modules.groovy.grails.api.ExecutionSupport;
 import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
 import org.netbeans.modules.groovy.grails.api.GrailsRuntime;
+import org.netbeans.modules.groovy.grailsproject.execution.DefaultDescriptor;
+import org.netbeans.modules.groovy.grailsproject.execution.ExecutionService;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 public class CreateWarFileAction extends AbstractAction implements LineSnooper {
 
-    Logger LOG = Logger.getLogger(CreateWarFileAction.class.getName());
-    Project prj;
-    OutputWriter writer = null;
-    PublicSwingWorker psw;
-    GrailsProjectConfig prjConfig;
-    boolean autodeploy;
+    private static final Logger LOG = Logger.getLogger(CreateWarFileAction.class.getName());
+
+    private final Project prj;
+
+    private final GrailsProjectConfig prjConfig;
+
+    private final boolean autodeploy;
 
     public CreateWarFileAction(Project prj) {
         super("Create war file");
@@ -69,43 +74,43 @@ public class CreateWarFileAction extends AbstractAction implements LineSnooper {
             ConfigSupport.showConfigurationWarning(runtime);
             return;
         }
-        
-        psw = new PublicSwingWorker(prj, "war", this);
-        psw.start();
 
+        String command = "war"; // NOI18N
+        ProjectInformation inf = prj.getLookup().lookup(ProjectInformation.class);
+        String displayName = inf.getDisplayName() + " (" + command + ")"; // NOI18N
+
+        Callable<Process> callable = ExecutionSupport.getInstance().createSimpleCommand(
+                command, GrailsProjectConfig.forProject(prj)); // NOI18N
+        ExecutionService service = new ExecutionService(callable, displayName,
+                new DefaultDescriptor(prj, autodeploy ? this : null, null, false));
+
+        service.run();
     }
 
     public void lineFilter(String line) throws IOException {
-        if (writer == null) {
-            writer = psw.getWriter();
-        }
+        if (line.contains("Done creating WAR") || line.contains("Created WAR")) { // NOI18N
+            LOG.log(Level.FINEST, "War file created, copy");
+            FileObject prjDir = prj.getProjectDirectory();
 
-        writer.println(line);
-        if (autodeploy) {
-            if (line.contains("Done creating WAR")) {
-                LOG.log(Level.FINEST, "War file created, copy");
-                FileObject prjDir = prj.getProjectDirectory();
+            LOG.log(Level.FINEST, "Project Directory: " + prjDir.getPath());
 
-                LOG.log(Level.FINEST, "Project Directory: " + prjDir.getPath());
+            for (Enumeration e = prjDir.getChildren(false); e.hasMoreElements();) {
+                FileObject fo = (FileObject) e.nextElement();
+                if (fo != null) {
+                    if (fo.getExt().toUpperCase().startsWith("WAR")) {
+                        LOG.log(Level.FINEST, "Extention is OK: " + fo.getExt());
+                        String deployDir = prjConfig.getDeployDir();
 
-                for (Enumeration e = prjDir.getChildren(false); e.hasMoreElements();) {
-                    FileObject fo = (FileObject) e.nextElement();
-                    if (fo != null) {
-                        if (fo.getExt().toUpperCase().startsWith("WAR")) {
-                            LOG.log(Level.FINEST, "Extention is OK: " + fo.getExt());
-                            String deployDir = prjConfig.getDeployDir();
+                        LOG.log(Level.FINEST, "Target dir from config: " + deployDir);
 
-                            LOG.log(Level.FINEST, "Target dir from config: " + deployDir);
+                        if (deployDir != null && deployDir.length() > 0) {
 
-                            if (deployDir != null && deployDir.length() > 0) {
-
-                                File targetFile = new File(deployDir);
-                                FileObject target = FileUtil.toFileObject(targetFile);
-                                LOG.log(Level.FINEST, "Copy file (source)     :" + fo.getPath());
-                                LOG.log(Level.FINEST, "Copy file (destination):" + target.getPath());
-                                LOG.log(Level.FINEST, "Copy file (name)       :" + fo.getName());
-                                FileUtil.copyFile(fo, target, fo.getName());
-                            }
+                            File targetFile = new File(deployDir);
+                            FileObject target = FileUtil.toFileObject(targetFile);
+                            LOG.log(Level.FINEST, "Copy file (source)     :" + fo.getPath());
+                            LOG.log(Level.FINEST, "Copy file (destination):" + target.getPath());
+                            LOG.log(Level.FINEST, "Copy file (name)       :" + fo.getName());
+                            FileUtil.copyFile(fo, target, fo.getName());
                         }
                     }
                 }
