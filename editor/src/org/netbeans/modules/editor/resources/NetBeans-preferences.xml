@@ -79,16 +79,16 @@ made subject to such option by the copyright holder.
     <entry category="private" javaType="java.lang.Boolean" name="completion-natural-sort" xml:space="preserve">
         <value><![CDATA[false]]></value>
     </entry>
-    <entry category="private" javaType="java.lang.String" name="completion-pane-max-size" xml:space="preserve">
+    <entry category="private" javaType="java.awt.Dimension" name="completion-pane-max-size" xml:space="preserve">
         <value><![CDATA[400,300]]></value>
     </entry>
-    <entry category="private" javaType="java.lang.String" name="completion-pane-min-size" xml:space="preserve">
+    <entry category="private" javaType="java.awt.Dimension" name="completion-pane-min-size" xml:space="preserve">
         <value><![CDATA[60,17]]></value>
     </entry>
     <entry category="deprecated" javaType="java.lang.Integer" name="completion-refresh-delay" xml:space="preserve">
         <value><![CDATA[200]]></value>
     </entry>
-    <entry category="deprecated" javaType="java.lang.String" name="component-size-increment" xml:space="preserve">
+    <entry category="deprecated" javaType="java.awt.Dimension" name="component-size-increment" xml:space="preserve">
         <value><![CDATA[-5,-30]]></value>
     </entry>
     <entry category="private" javaType="java.lang.Boolean" name="expand-tabs" xml:space="preserve">
@@ -148,7 +148,7 @@ made subject to such option by the copyright holder.
     <entry category="private" javaType="java.lang.Boolean" name="line-number-visible" xml:space="preserve">
         <value><![CDATA[false]]></value>
     </entry>
-    <entry category="private" javaType="java.lang.String" name="margin" xml:space="preserve">
+    <entry category="private" javaType="java.awt.Insets" name="margin" xml:space="preserve">
         <value><![CDATA[0,0,0,0]]></value>
     </entry>
     <entry category="deprecated" javaType="java.lang.Integer" name="mark-distance" xml:space="preserve">
@@ -169,10 +169,10 @@ made subject to such option by the copyright holder.
     <entry category="deprecated" javaType="java.lang.Integer" name="read-mark-distance" xml:space="preserve">
         <value><![CDATA[180]]></value>
     </entry>
-    <entry category="private" javaType="java.lang.String" name="scroll-find-insets" xml:space="preserve">
+    <entry category="private" javaType="java.awt.Insets" name="scroll-find-insets" xml:space="preserve">
         <value><![CDATA[-10,-10,-10,-10]]></value>
     </entry>
-    <entry category="private" javaType="java.lang.String" name="scroll-jump-insets" xml:space="preserve">
+    <entry category="private" javaType="java.awt.Insets" name="scroll-jump-insets" xml:space="preserve">
         <value><![CDATA[-5,-10,-5,-30]]></value>
     </entry>
     <entry category="private" javaType="java.lang.Boolean" name="show-deprecated-members" xml:space="preserve">
