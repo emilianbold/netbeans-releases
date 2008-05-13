@@ -101,7 +101,7 @@ public class Utils {
                     // This should match the code name base of the module in
                     // which this file lives. The code name base can be found in
                     // nbproject/project.xml
-                    "org.netbeans.modules.web.client.javascript.debugger.api", // NOI18N
+                    "org.netbeans.modules.web.client.javascript.debugger.firefox", // NOI18N
                     false));
         }
         return debuggerDotHtmlFileObject;
@@ -114,7 +114,7 @@ public class Utils {
                     // This should match the code name base of the module in
                     // which this file lives. The code name base can be found in
                     // nbproject/project.xml
-                    "org.netbeans.modules.web.client.javascript.debugger.api", // NOI18N
+                    "org.netbeans.modules.web.client.javascript.debugger.firefox", // NOI18N
                     false));
         }
         return netbeansDotJpgFileObject;
@@ -129,7 +129,7 @@ public class Utils {
                 // This should match the code name base of the module in
                 // which this file lives. The code name base can be found in
                 // nbproject/project.xml
-                "org.netbeans.modules.web.client.javascript.debugger.api", // NOI18N
+                "org.netbeans.modules.web.client.javascript.debugger.firefox", // NOI18N
                 false);
         }
         assert launchfirefoxDotCommandFile != null;

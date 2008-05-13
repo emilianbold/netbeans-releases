@@ -130,6 +130,14 @@ public class FormLAF {
                 try {
                     // Nimbus is based on "control" default. So, make sure that we use the correct one.
                     control = UIManager.getDefaults().remove("control"); // NOI18N
+                    // Issue 130221 - Nimbus needs "defaultFont" on some places outside
+                    // our control (e.g. outside our preview LAF blocks). Unfortunately,
+                    // it is not possible to use Nimbus.Overrides for this purpose because
+                    // we don't have access to all components that needs this key. For example,
+                    // it is needed by tooltips that are created on demand.
+                    // Modification of IDE defaults may be dangerous, but AFAIK there is no other
+                    // look and feel or library using "defaultFont" key.
+                    UIManager.getDefaults().put("defaultFont", previewDefaults.get("defaultFont")); // NOI18N
                     // The update of derived colors must be performed within preview block
                     FormLAF.setUsePreviewDefaults(formClassLoader, info);
                     for (PropertyChangeListener listener : UIManager.getPropertyChangeListeners()) {
@@ -338,7 +346,9 @@ public class FormLAF {
         if (!preview) {
             setUseDesignerDefaults(null);
         } else if (ideLafIsMetal) {
-            MetalLookAndFeel.setCurrentTheme(lafToTheme.get(UIManager.getLookAndFeel().getClass()));
+            if (!isNimbusLAF(previewLaf)) { // Issue 134846
+                MetalLookAndFeel.setCurrentTheme(lafToTheme.get(UIManager.getLookAndFeel().getClass()));
+            }
         }
 
         UIManager.getDefaults().putAll(netbeansDefaults);
