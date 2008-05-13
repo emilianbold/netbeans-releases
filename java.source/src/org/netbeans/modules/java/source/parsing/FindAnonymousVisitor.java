@@ -49,9 +49,9 @@ import com.sun.tools.javac.tree.JCTree.JCClassDecl;
  * @author Tomas Zezula
  */
 class FindAnonymousVisitor extends TreeScanner<Void,Void> {
-    private int firstInner = -1;
-    private int noInner;
-    private boolean hasLocalClass;
+    int firstInner = -1;
+    int noInner;
+    boolean hasLocalClass;
 
     public final void reset () {
         this.firstInner = -1;

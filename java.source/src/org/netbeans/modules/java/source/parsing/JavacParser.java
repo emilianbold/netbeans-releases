@@ -39,17 +39,26 @@
 
 package org.netbeans.modules.java.source.parsing;
 
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.api.ClassNamesForFileOraculum;
 import com.sun.tools.javac.api.JavacTaskImpl;
+import com.sun.tools.javac.api.JavacTrees;
 import com.sun.tools.javac.parser.DocCommentScanner;
+import com.sun.tools.javac.tree.JCTree;
+import com.sun.tools.javac.tree.JCTree.JCBlock;
+import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
+import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.util.Abort;
 import com.sun.tools.javac.util.CancelAbort;
 import com.sun.tools.javac.util.CancelService;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.CouplingAbort;
+import com.sun.tools.javac.util.Log;
 import com.sun.tools.javadoc.JavadocMemberEnter;
 import com.sun.tools.javadoc.Messager;
 import java.beans.PropertyChangeEvent;
@@ -75,6 +84,7 @@ import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import  javax.swing.event.ChangeListener;
 import javax.swing.text.Document;
+import javax.tools.Diagnostic;
 import javax.tools.DiagnosticListener;
 import javax.tools.JavaCompiler;
 import javax.tools.JavaFileObject;
@@ -609,6 +619,144 @@ public class JavacParser extends Parser {
                     "check that you have write permission to '" + dumpDir + "' and " + // NOI18N
                     "clean all *.dump files in that directory."); // NOI18N
         }
+    }
+    
+    
+    private static boolean reparseMethod (final CompilationInfoImpl ci,
+            final Snapshot snapshot,
+            final MethodTree orig,
+            final String newBody) throws IOException {        
+        assert ci != null;         
+        final FileObject fo = ci.getFileObject();
+        if (LOGGER.isLoggable(Level.FINER)) {
+            LOGGER.finer("Reparse method in: " + fo);          //NOI18N
+        }
+        if (((JCMethodDecl)orig).localEnv == null) {
+            //We are seeing interface method or abstract or native method with body.
+            //Don't do any optimalization of this broken code - has no attr env.
+            return false;
+        }
+        final Phase currentPhase = ci.getPhase();
+        if (Phase.PARSED.compareTo(currentPhase) > 0) {
+            return false;
+        }
+        try {
+            final CompilationUnitTree cu = ci.getCompilationUnit();
+            if (cu == null || newBody == null) {
+                return false;
+            }
+            final JavacTaskImpl task = ci.getJavacTask();
+            final JavacTrees jt = JavacTrees.instance(task);
+            final int origStartPos = (int) jt.getSourcePositions().getStartPosition(cu, orig.getBody());
+            final int origEndPos = (int) jt.getSourcePositions().getEndPosition(cu, orig.getBody());
+            if (origStartPos > origEndPos) {
+                LOGGER.warning("Javac returned startpos: "+origStartPos+" > endpos: "+origEndPos);  //NOI18N
+                return false;
+            }
+            final FindAnonymousVisitor fav = new FindAnonymousVisitor();
+            fav.scan(orig.getBody(), null);
+            if (fav.hasLocalClass) {
+                if (LOGGER.isLoggable(Level.FINER)) {
+                    LOGGER.finer("Skeep reparse method (old local classes): " + fo);   //NOI18N
+                }
+                return false;
+            }
+            final int firstInner = fav.firstInner;
+            final int noInner = fav.noInner;
+            final Context ctx = task.getContext();
+            final TreeLoader treeLoader = TreeLoader.instance(ctx);
+            if (treeLoader != null) {
+                treeLoader.startPartialReparse();
+            }
+            try {
+                final Log l = Log.instance(ctx);
+                l.startPartialReparse();
+                final JavaFileObject prevLogged = l.useSource(cu.getSourceFile());
+                JCBlock block;
+                try {
+                    DiagnosticListener dl = ctx.get(DiagnosticListener.class);
+                    assert dl instanceof CompilationInfoImpl.DiagnosticListenerImpl;
+                    ((CompilationInfoImpl.DiagnosticListenerImpl)dl).startPartialReparse(origStartPos, origEndPos);
+                    long start = System.currentTimeMillis();
+                    block = task.reparseMethodBody(cu, orig, newBody, firstInner);                
+                    if (LOGGER.isLoggable(Level.FINER)) {
+                        LOGGER.finer("Reparsed method in: " + fo);     //NOI18N
+                    }
+                    assert block != null;
+                    fav.reset();
+                    fav.scan(block, null);
+                    final int newNoInner = fav.noInner;
+                    if (fav.hasLocalClass || noInner != newNoInner) {
+                        if (LOGGER.isLoggable(Level.FINER)) {
+                            LOGGER.finer("Skeep reparse method (new local classes): " + fo);   //NOI18N
+                        }
+                        return false;
+                    }
+                    long end = System.currentTimeMillis();                
+                    if (fo != null) {
+                        logTime (fo,Phase.PARSED,(end-start));
+                    }
+                    final int newEndPos = (int) jt.getSourcePositions().getEndPosition(cu, block);
+                    final int delta = newEndPos - origEndPos;
+                    final Map<JCTree,Integer> endPos = ((JCCompilationUnit)cu).endPositions;
+                    final TranslatePosVisitor tpv = new TranslatePosVisitor(orig, endPos, delta);
+                    tpv.scan(cu, null);
+                    ((JCMethodDecl)orig).body = block;
+                    if (Phase.RESOLVED.compareTo(currentPhase)<=0) {
+                        start = System.currentTimeMillis();
+                        task.reattrMethodBody(orig, block);
+                        if (LOGGER.isLoggable(Level.FINER)) {
+                            LOGGER.finer("Resolved method in: " + fo);     //NOI18N
+                        }
+                        if (!((CompilationInfoImpl.DiagnosticListenerImpl)dl).hasPartialReparseErrors()) {
+                            final JavacFlowListener fl = JavacFlowListener.instance(ctx);
+                            if (fl != null && fl.hasFlowCompleted(fo)) {
+                                if (LOGGER.isLoggable(Level.FINER)) {
+                                    final List<? extends Diagnostic> diag = ci.getDiagnostics();
+                                    if (!diag.isEmpty()) {
+                                        LOGGER.finer("Reflow with errors: " + fo + " " + diag);     //NOI18N
+                                    }                            
+                                }
+                                TreePath tp = TreePath.getPath(cu, orig);       //todo: store treepath in changed method => improve speed
+                                Tree t = tp.getParentPath().getLeaf();
+                                task.reflowMethodBody(cu, (ClassTree) t, orig);
+                                if (LOGGER.isLoggable(Level.FINER)) {
+                                    LOGGER.finer("Reflowed method in: " + fo); //NOI18N
+                                }
+                            }
+                        }
+                        end = System.currentTimeMillis();
+                        if (fo != null) {
+                            logTime (fo, Phase.ELEMENTS_RESOLVED,0L);
+                            logTime (fo,Phase.RESOLVED,(end-start));
+                        }
+                    }
+                    ((CompilationInfoImpl.DiagnosticListenerImpl)dl).endPartialReparse (delta);
+                } finally {
+                    l.endPartialReparse();
+                    l.useSource(prevLogged);
+                }
+                jfoProvider.update(ci.jfo, snapshot.getText());
+            } finally {
+              if (treeLoader != null) {
+                  treeLoader.endPartialReparse();
+              }  
+            }
+        } catch (CouplingAbort ca) {
+            //Needs full reparse
+            return false;
+        } catch (Throwable t) {
+            if (t instanceof ThreadDeath) {
+                throw (ThreadDeath) t;
+            }
+            boolean a = false;
+            assert a = true; 
+            if (a) {
+                dumpSource(ci, t);
+            }
+            return false;
+        }
+        return true;
     }
     
     //Helper classes
