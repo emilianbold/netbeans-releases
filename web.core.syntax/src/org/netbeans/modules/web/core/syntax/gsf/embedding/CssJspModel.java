@@ -52,7 +52,6 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.css.parser.CSSParser;
 import org.netbeans.modules.css.parser.CSSParserTreeConstants;
 import org.netbeans.modules.css.parser.CssParserAccess;
 import org.netbeans.modules.css.parser.NodeVisitor;
@@ -70,13 +69,9 @@ import org.openide.loaders.DataObject;
  */
 public class CssJspModel extends CssModel {
 
-    private static CSSParser PARSER;
-
     private static final Logger LOGGER = Logger.getLogger(CssJspModel.class.getName());
     private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
 
-    private static final String LINE_SEPARATOR = System.getProperty("line.separator");
-    
     public static CssJspModel get(Document doc) {
         CssJspModel model = (CssJspModel) doc.getProperty(CssJspModel.class);
         if (model == null) {
@@ -243,11 +238,14 @@ public class CssJspModel extends CssModel {
                 CssParserAccess.CssParserResult result = parserAccess.parse(new StringReader(buff.toString()));
                 
                 SimpleNode root = result.root();
-                System.out.println("> LEVEL " + i + " >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-                System.out.println(buff);
-                System.out.println("------------------------");
-                root.dump("");
-                System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+                if(LOG) {
+                    LOGGER.fine("> SANITIZING LEVEL #" + i + " >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+                    LOGGER.fine(buff.toString());
+                    LOGGER.fine("------------------------");
+                    LOGGER.fine(root.dump(""));
+                    LOGGER.fine("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+                }
+                
                 root.visitChildren(visitor);
 
                 if(!cleared[0]) {
@@ -256,6 +254,10 @@ public class CssJspModel extends CssModel {
                     //source checking finished without any correction => finish
                     break;
                 }
+            }
+            
+            if(cleared[0]) {
+                LOGGER.warning("CSS source sanitization didn't success even after four passes!");
             }
             
             long endTime = System.currentTimeMillis();
