@@ -68,6 +68,7 @@ import org.axiondb.AxionException;
 import org.axiondb.Database;
 import org.axiondb.engine.Databases;
 import org.netbeans.modules.etl.ui.ETLEditorSupport;
+import org.netbeans.modules.mashup.tables.wizard.MashupTableWizardIterator;
 import org.openide.util.Exceptions;
 
 /**
@@ -253,7 +254,11 @@ public class DBExplorerUtil {
                 }
                 dbconn = DatabaseConnection.create(drv, url, username, schema, password, true);
 
-                if (url.indexOf("InstanceDB") == -1 && url.indexOf("MonitorDB") == -1 && url.indexOf(ETLEditorSupport.PRJ_PATH) == -1) {
+				 //Fix for 6697129: No mashup database found when try to add external table Tools - MashupDatabase.
+				 //ETLEditorSupport.PRJ_PATH  is "" and url.indexOf(ETLEditorSupport.PRJ_PATH) returns 0 if no projects are 
+				 //opened in the netbeans and gives a warning no mashup db found if we try to add an external table from Tools menu.
+				 //if (url.indexOf("InstanceDB") == -1 && url.indexOf("MonitorDB") == -1 && url.indexOf(ETLEditorSupport.PRJ_PATH)) {
+                 if (url.indexOf("InstanceDB") == -1 && url.indexOf("MonitorDB") == -1 && !(MashupTableWizardIterator.IS_PROJECT_CALL)) {
                     ConnectionManager.getDefault().addConnection(dbconn);
                 }
             }
