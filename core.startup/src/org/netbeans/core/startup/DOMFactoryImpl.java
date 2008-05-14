@@ -58,6 +58,7 @@ public class DOMFactoryImpl extends DocumentBuilderFactory {
     private static Class<? extends DocumentBuilderFactory> first;
 
     private Map<String,Object> attributes = new LinkedHashMap<String,Object>();
+    private Map<String,Boolean> features = new LinkedHashMap<String,Boolean>();
     
     /** The default property name according to the JAXP spec */
     private static final String Factory_PROP =
@@ -87,16 +88,19 @@ public class DOMFactoryImpl extends DocumentBuilderFactory {
     }
     
     public boolean getFeature (String name) {
-        return Boolean.TRUE.equals (getAttribute (name));
+        return Boolean.TRUE.equals(features.get(name));
     }
     
     public void setFeature(String name, boolean value) throws ParserConfigurationException {
+        Boolean old = features.put(name, value);
         try {
-            setAttribute(name, value);
-        } catch (IllegalArgumentException ex) {
-            ParserConfigurationException p = new ParserConfigurationException ();
-            p.initCause (ex);
-            throw p;
+            tryCreate();
+        } catch (IllegalArgumentException e) {
+            features.put(name, old);
+            throw e;
+        } catch (ParserConfigurationException e) {
+            features.put(name, old);
+            throw e;
         }
     }
 
@@ -109,10 +113,14 @@ public class DOMFactoryImpl extends DocumentBuilderFactory {
     }
 
     public void setAttribute(String name, Object value) throws IllegalArgumentException {
-        attributes.put(name, value);
+        Object old = attributes.put(name, value);
         try {
             tryCreate();
+        } catch (IllegalArgumentException x) {
+            attributes.put(name, old);
+            throw x;
         } catch (ParserConfigurationException e) {
+            attributes.put(name, old);
             throw (IllegalArgumentException) new IllegalArgumentException(e.toString()).initCause(e);
         }
     }
@@ -143,7 +151,14 @@ public class DOMFactoryImpl extends DocumentBuilderFactory {
             delegate.setCoalescing(isCoalescing());
 
             for (Map.Entry<String,Object> entry : attributes.entrySet()) {
-                delegate.setAttribute(entry.getKey(), entry.getValue());
+                if (entry.getValue() != null) {
+                    delegate.setAttribute(entry.getKey(), entry.getValue());
+                }
+            }
+            for (Map.Entry<String,Boolean> entry : features.entrySet()) {
+                if (entry.getValue() != null) {
+                    delegate.setFeature(entry.getKey(), entry.getValue());
+                }
             }
             return delegate.newDocumentBuilder();
         } catch (InstantiationException e) {

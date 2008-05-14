@@ -55,10 +55,12 @@ public class DOMFactoryImplTest extends TestCase {
             dbf.setAttribute("http://java.sun.com/xml/jaxp/properties/schemaSource", "http://nowhere.net/foo/ http://nowhere.net/foo.xsd");
             fail("Should have rejected setting schemaSource before schemaLanguage");
         } catch (IllegalArgumentException x) {/* OK */}
+        assertEquals(null, dbf.getAttribute("http://java.sun.com/xml/jaxp/properties/schemaSource"));
         dbf = new DOMFactoryImpl();
         dbf.setValidating(true);
         dbf.setAttribute("http://java.sun.com/xml/jaxp/properties/schemaLanguage", "http://www.w3.org/2001/XMLSchema");
         dbf.setAttribute("http://java.sun.com/xml/jaxp/properties/schemaSource", "http://nowhere.net/foo/ http://nowhere.net/foo.xsd");
+        assertEquals("http://nowhere.net/foo/ http://nowhere.net/foo.xsd", dbf.getAttribute("http://java.sun.com/xml/jaxp/properties/schemaSource"));
         dbf.newDocumentBuilder();
         dbf = new DOMFactoryImpl();
     }
