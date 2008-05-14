@@ -36,121 +36,183 @@
  * to extend the choice of license to its licensees as provided above.
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
+ * made subject to such option by the copyright hdefaultElementer.
  */
-
-
 /*
  * AttributeContainerOperator.java
  *
  * Created on January 27, 2006, 1:31 PM
  *
  */
-
 package org.netbeans.test.umllib.values.attributes;
 
-import java.awt.event.KeyEvent;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.util.ArrayList;
+import java.util.List;
+import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
+import org.netbeans.modules.uml.diagrams.nodes.AttributeWidget;
+import org.netbeans.modules.uml.diagrams.nodes.FeatureWidget;
 import org.netbeans.test.umllib.CompartmentOperator;
 import org.netbeans.test.umllib.CompartmentTypes;
 import org.netbeans.test.umllib.DiagramElementOperator;
+import org.netbeans.test.umllib.DiagramOperator;
 import org.netbeans.test.umllib.EditControlOperator;
+import org.netbeans.test.umllib.UMLWidgetOperator;
+import org.netbeans.test.umllib.Utils;
 import org.netbeans.test.umllib.util.LabelsAndTitles;
 import org.netbeans.test.umllib.values.ValueOperator;
-import org.netbeans.test.umllib.values.operatons.OperationElement;
 
 /**
  *
  * @author Alexandr Scherbatiy
  */
-
 public class AttributeContainerOperator extends ValueOperator {
-    
-    private DiagramElementOperator elementOperator;
+
+    private DiagramElementOperator  diagramElementOperator;
     private CompartmentOperator attributeCompartment;
-    
     
     /** Creates a new instance of AttributeContainerOperator */
     public AttributeContainerOperator(DiagramElementOperator elementOperator) {
-        this.elementOperator = elementOperator;
-        this.attributeCompartment = new CompartmentOperator(elementOperator, CompartmentTypes.ATTRIBUTE_LIST_COMPARTMENT);
+        this.diagramElementOperator = elementOperator;
+        this.attributeCompartment = new CompartmentOperator(elementOperator, CompartmentTypes.ATTRIBUTE_LIST_COMPARTMENT, "Attributes");
     }
-
+ 
     
     //  ======================   Getting  Action  ================================
-    
-    public AttributeElement getAttribute(String name){
-        
-        if (name == null ) { return null; }
-        
+    public AttributeElement getAttribute(String name) {
+        Utils.log("getAttribute(String name) called");
+        if (name == null) {
+            return null;
+        }
+  
         AttributeElement[] elems = getAttributes();
 
-        for(AttributeElement elem : elems){
-            if( name.equals(elem.getName())){
+        for (AttributeElement elem : elems) {
+            Utils.log("attrib="+elem.getName());
+            if (name.equals(elem.getName())) {
                 return elem;
             }
         }
-            
+        
         return null;
     }
-    
 
-    public AttributeElement getAttribute( int index){
+    public AttributeElement getAttribute(int index) {
         AttributeElement[] elems = getAttributes();
         return elems[index];
     }
-    
-    
-    
-    public AttributeElement[] getAttributes(){
-        
-        ArrayList<CompartmentOperator> list = attributeCompartment.getCompartments();
+
+    public AttributeElement[] getAttributes() {
+
+        List<Widget> list = attributeCompartment.getSource().getChildren();
         ArrayList<AttributeElement> attributeList = new ArrayList<AttributeElement>();
-        
-        for(CompartmentOperator compar : list ){
-            String parse = compar.getName();
-            //System.out.println("--- get operation: \"" +  parse+ "\"");
-            AttributeElement elem = AttributeElement.parseOperationElement(parse);
-            attributeList.add(elem);
-            
+
+        for (Widget attrib : list) {
+            if (attrib instanceof AttributeWidget) {
+                Utils.log("attrib=" + attrib.toString());
+                String parse = ((FeatureWidget) attrib).getText();
+                Utils.log("parse=" + parse);
+                //System.out.println("--- get operation: \"" +  parse+ "\"");
+                AttributeElement elem = AttributeElement.parseOperationElement(parse);
+                attributeList.add(elem);
+
+            }
         }
-        
-        return attributeList.toArray(new AttributeElement[] {});
+        return attributeList.toArray(new AttributeElement[]{});
     }
-    
+
     //  ======================= Add / Rename / Remove Actions ===================
-    
-    
-    public void addAttribute(AttributeElement attributeElement){
+    public void addAttribute(AttributeElement attributeElement) {
         addOperationByContextMenu(attributeElement);
     }
-    
-    private void addOperationByContextMenu(AttributeElement attributeElement){
-        
+
+    private void addOperationByContextMenu(AttributeElement attributeElement) {
+
         System.out.println("***************************************************");
-        AttributeElement old = new AttributeElement();
+        AttributeElement defaultElement = new AttributeElement();
         System.out.println("***  element  = " + attributeElement);
-        System.out.println("***  old      = " + old);
+        System.out.println("***  defaultElement      = " + defaultElement);
         System.out.println("***  text     = \"" + attributeElement.getText() + "\"");
-        System.out.println("***  old text = \"" + old.getText() + "\"");
+        System.out.println("***  defaultElement text = \"" + defaultElement.getText() + "\"");
         attributeCompartment.getPopup().pushMenu(LabelsAndTitles.POPUP_ADD_ATTRIBUTE);
+        Utils.log("looking for menu: "+ LabelsAndTitles.POPUP_ADD_ATTRIBUTE);
         
-        EditControlOperator ec = new EditControlOperator();
-        JTextFieldOperator textFieldOperator=ec.getTextFieldOperator();
+        // Enter Edit control mode
+        Widget source=attributeCompartment.getSource();
+        List<Widget> _attributes = source.getChildren();
+        if (_attributes != null) {
+            for (Widget child : _attributes) {
+                Utils.log("AttributeContainterOperator(): child=" + child.toString());
+                if (child instanceof AttributeWidget) {
+                    String parse = ((FeatureWidget) child).getText(); 
+                    AttributeElement elem = AttributeElement.parseOperationElement(parse);
+                    if (elem.getName().equals(defaultElement.getName())) {
+                    Utils.log("AttributeContainterOperator(): atrributeWidget found");
+                    Utils.log("AttributeContainterOperator(): attribute = " + ((FeatureWidget) child).getText());                    
+                    UMLWidgetOperator wo = new UMLWidgetOperator(child);
+                    Point p = wo.getCenterPoint();
+                    wo.clickOn(p, 2);
+                    try {
+                        Thread.sleep(1000);
+                    } catch (Exception ex) {
+                    }
+                    wo.clickOn(p, 2);                  
+                }
+                }
+            }
+        } else
+            Utils.log("AttributeContainterOperator(): _attribute=null");
+       
+        try {
+            Thread.sleep(1000);
+        } catch (Exception ex) {
+        }
+           
         
+        EditControlOperator ec = new EditControlOperator(MainWindowOperator.getDefault());
+        JTextFieldOperator textFieldOperator = ec.getTextFieldOperator();
+          
         //tf.setText(operationElement.getText());
-        textFieldOperator.setCaretPosition(0);
+         textFieldOperator.setCaretPosition(0);
+ 
+        changeText(attributeElement.getVisibility().getValue(), defaultElement.getVisibility().getValue(), textFieldOperator);
+        changeText(attributeElement.getType().getValue(), defaultElement.getType().getValue(), textFieldOperator);
+        changeText(attributeElement.getName(), defaultElement.getName(), textFieldOperator);
+
+        //textFieldOperator.pushKey(KeyEvent.VK_ENTER);
+        try {
+            Thread.sleep(1000);
+        } catch (Exception ex) {
+        }
         
-        changeText( attributeElement.getVisibility().getValue(), old.getVisibility().getValue(), textFieldOperator);
-        changeText( attributeElement.getType().getValue(), old.getType().getValue(), textFieldOperator);
-        changeText( attributeElement.getName(), old.getName(), textFieldOperator);
-        
-        textFieldOperator.pushKey(KeyEvent.VK_ENTER);
-        
+       DiagramOperator.getDrawingArea().clickMouse();
+       
+        try {
+            Thread.sleep(100);
+        } catch (Exception ex) {
+        }
+    }
+    public void clickOnLeftCenterPoint(Widget w) {
+        Point p = getLeftCenterPoint(w, 10);
     }
     
+    public Point getLeftCenterPoint(Widget w, int shift) {
+        Rectangle rect = getRectangle(w);
+        return new Point(rect.x+shift, (int)rect.getCenterY());
+    }
     
-    
-    
+     public Rectangle getRectangle(Widget w) {
+         Rectangle localRect = w.getBounds();
+         Point scenePoint = w.convertLocalToScene(new Point(localRect.x, localRect.y));
+         Rectangle sceneRect = new Rectangle(scenePoint.x, scenePoint.y, localRect.width, localRect.height);
+         return sceneRect;
+     }
+     
+      public Point getCenterPoint(Widget w) {         
+        Point centerPoint = new Point((int)getRectangle(w).getCenterX(),(int)getRectangle(w).getCenterY());
+        return centerPoint;
+    }
 }

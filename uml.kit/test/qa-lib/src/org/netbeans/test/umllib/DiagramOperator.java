@@ -52,8 +52,10 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.InputEvent;
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.Collection;
+import java.util.Set;
 import javax.swing.JComponent;
+import javax.swing.JPanel;
 import org.netbeans.core.windows.view.ui.tabcontrol.TabbedAdapter;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
@@ -70,23 +72,29 @@ import org.netbeans.jemmy.drivers.MouseDriver;
 import org.netbeans.jemmy.drivers.input.MouseRobotDriver;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.jemmy.operators.Operator;
-import org.netbeans.modules.uml.drawingarea.DiagramTopComponent;
-import org.netbeans.modules.uml.ui.swing.drawingarea.ADDrawingAreaControl;
+import org.netbeans.jemmy.JemmyProperties;
+
+import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.modules.uml.drawingarea.UMLDiagramTopComponent;
+import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
+import org.netbeans.modules.uml.drawingarea.view.UMLEdgeWidget;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
+
 import org.netbeans.test.umllib.customelements.LifelineOperator;
 import org.netbeans.test.umllib.exceptions.NotFoundException;
-import org.netbeans.test.umllib.exceptions.NotFoundOnDiagramException;
 import org.netbeans.test.umllib.exceptions.UMLCommonException;
 import org.netbeans.test.umllib.util.LibProperties;
 
 import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
-import org.netbeans.modules.uml.core.support.umlutils.ETList;
-import org.netbeans.modules.uml.ui.support.applicationmanager.NodePresentation;
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.IETGraphObject;
-import org.netbeans.modules.uml.ui.swing.drawingarea.ADGraphWindow;
-import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaControl;
+import org.netbeans.jemmy.drivers.input.MouseRobotDriver;
+
+//6.0import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaControl;
+import org.netbeans.jemmy.operators.JComponentOperator;
+import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
 import org.openide.windows.TopComponent;
 
 
@@ -96,8 +104,9 @@ import org.openide.windows.TopComponent;
  */
 public class DiagramOperator extends TopComponentOperator {
     private Component tcoSource = null;
-    private IDrawingAreaControl drawingAreaControl = null;
-    private DrawingAreaOperator drawingArea = null;
+    private UMLDiagramTopComponent umlTC=null;
+    private static DesignerScene designerScene = null;
+    public static DrawingAreaOperator drawingArea = null;
     private String diagramName = null;
     private DiagramToolbarOperator mToolbar = null;
     private UMLPaletteOperator mPaletter = null;
@@ -116,25 +125,41 @@ public class DiagramOperator extends TopComponentOperator {
         super((JComponent)waitForDiagram(diagramName,getDefaultStringComparator()));
         this.diagramName = diagramName;
         tcoSource = getSource();
-        drawingAreaControl = (IDrawingAreaControl)findSubComponent((ComponentChooser)new DrawingAreaControlChooser());
+        //6.0 drawingAreaControl = (IDrawingAreaControl)findSubComponent((ComponentChooser)new DrawingAreaControlChooser());
+
         Component areaComp = findSubComponent((ComponentChooser)new DrawingAreaChooser());
-        drawingArea = new DrawingAreaOperator((ADGraphWindow)areaComp);
+        umlTC=(UMLDiagramTopComponent)findDiagram(diagramName,getDefaultStringComparator());
+        if (umlTC==null)
+            org.netbeans.jemmy.JemmyProperties.getCurrentOutput().print("umlTC=null");
+        designerScene=umlTC.getScene();
+        //6.0 drawingArea = new DrawingAreaOperator((ADGraphWindow)areaComp);
+        //6.1
+        drawingArea = new DrawingAreaOperator((JPanel)areaComp, this);
+        
     }
     
     
     /**
-     * Returns instance of IDrawingAreaControl for this diagram
+     * Return insttance of UMLDiagramTopComponent for this diagram
      * @return instance of IDrawingAreaControl for this diagram
      */
-    public IDrawingAreaControl getDrawingAreaControl() {
-        return drawingAreaControl;
+    public UMLDiagramTopComponent getUMLDiagramTopComponent() {
+        return umlTC;
+    }
+    
+    /**
+     * Return insttance of UMLDiagramTopComponent for this diagram
+     * @return instance of IDrawingAreaControl for this diagram
+     */
+    public DesignerScene getDesignerScene() {
+        return designerScene;
     }
     
     /**
      * Returns DrawingAreaOperator for this diagram
      * @return DrawingAreaOperator for this diagram
      */
-    public DrawingAreaOperator getDrawingArea() {
+    public static DrawingAreaOperator getDrawingArea() {
         return drawingArea;
     }
     
@@ -261,7 +286,9 @@ public class DiagramOperator extends TopComponentOperator {
      * @throws qa.uml.exceptions.NotFoundException when Button for the element is not found on paletter
      */
     public void createGenericElementOnDiagram(String name, ExpandedElementTypes elementType, int x, int y) throws NotFoundException{
-        createGenericElementOnDiagram(name, elementType, x, y, LibProperties.getCurrentNamer(elementType));
+        // workround for bug 127512
+        // createGenericElementOnDiagram(name, elementType, x, y, LibProperties.getCurrentNamer(elementType));
+        createGenericElementOnDiagram(name, elementType, x, y, new DiagramElementOperator.DefaultNamer());
     }
     
     
@@ -278,6 +305,7 @@ public class DiagramOperator extends TopComponentOperator {
      * @return Operator for created element
      */
     public DiagramElementOperator putElementOnDiagram(String name, ElementTypes elementType, int x, int y, SetName namer) throws NotFoundException{
+        Utils.log("ElementOnDiagram(): namer = "+ namer.toString());
         createGenericElementOnDiagram(name, elementType, x, y, namer);
         new EventTool().waitNoEvent(500);
         try{Thread.sleep(100);}catch(Exception ex){}
@@ -312,11 +340,10 @@ public class DiagramOperator extends TopComponentOperator {
         } else return new DiagramElementOperator(this, name, elementType, 0);
     }
     
-    
-    
+ 
     /**
-     * Put element on diagram by pressing paletter butoon and clicking on
-     * the diagram
+     * Put element on diagram by drag elment from palette and drop
+     * to canvas
      * @param name Name for new element
      * @param elementType Type of new element
      * @param x X cooordinate of point where element will be created
@@ -326,23 +353,37 @@ public class DiagramOperator extends TopComponentOperator {
      * @throws qa.uml.exceptions.NotFoundException
      */
     public void createGenericElementOnDiagram(String name, ElementTypes elementType, int x, int y, SetName namer) throws NotFoundException{
-        int old=getAllDiagramElements().size();
+        int old = getAllDiagramElements().size();  
+        //paletter().selectToolByType(elementType);
         paletter().selectToolByType(elementType);
-        getDrawingArea().clickMouse(x,y,1);
+        getDrawingArea().clickMouse(x, y, 1);
+        //Drag and drop an elment to drawing area
+            JemmyProperties.setCurrentDispatchingModel(JemmyProperties.ROBOT_MODEL_MASK);
+        //       paletter().dndToolByType(elementType, getDrawingArea(), new Point(x,y) );
+
         //check if any element was added
-        try{Thread.sleep(100);}catch(Exception ex){}
+        
+        try{Thread.sleep(2000);}catch(Exception ex){}
         for(int i=0;i<50 && getAllDiagramElements().size()==old;i++)
         {
             try{Thread.sleep(100);}catch(Exception ex){}
         }
         if(old==getAllDiagramElements().size())throw new UMLCommonException("No new elements appear on diagram in 5 seconds (new "+elementType+" was expected)");
         //
-        toolbar().selectDefault();
-        try{Thread.sleep(100);}catch(Exception ex){}
+        //TODO: Toolbar is not fully implemented 
+        // toolbar().selectDefault();
+         
+            Utils.log("put element at " + x + "," +y);
+         
+        try{Thread.sleep(3000);}catch(Exception ex){}
         if (name!=null){
-            namer.setName(getDrawingArea(), x, y, name);
+            Utils.log("DiagramOperator:"+namer.getClass().getName());
+           //  namer.setName(getDrawingArea(), x, y, name);
+            namer.setName(this, name);
         }
+       // getDrawingArea().clickMouse(x+2 ,y+2 ,1);     
         try{Thread.sleep(100);}catch(Exception ex){}
+       //  JemmyProperties.setCurrentDispatchingModel(JemmyProperties.QUEUE_MODEL_MASK );
     }
     
     /**
@@ -361,7 +402,7 @@ public class DiagramOperator extends TopComponentOperator {
         paletter().selectToolByType(elementType);
         getDrawingArea().clickMouse(x,y,1);
         //check if any element was added
-        try{Thread.sleep(100);}catch(Exception ex){}
+        new EventTool().waitNoEvent(100);
         for(int i=0;i<50 && getAllDiagramElements().size()==old;i++)
         {
             try{Thread.sleep(100);}catch(Exception ex){}
@@ -425,50 +466,48 @@ public class DiagramOperator extends TopComponentOperator {
      * @param toElement target element
      * @throws qa.uml.exceptions.NotFoundException when source or target is not found
      */
-    public void createGenericRelationshipOnDiagram(LinkTypes linkElementType, DiagramElementOperator fromElement, DiagramElementOperator toElement) throws NotFoundException{
-        paletter().selectToolByType(linkElementType);
-        paletter().waitSelection(linkElementType,true);
-        try{Thread.sleep(100);}catch(Exception ex){}
-        fromElement.clickOnCenter();
-        new Timeout("",500).sleep();
-        try{Thread.sleep(100);}catch(Exception ex){}
-        toElement.clickOnCenter();
-        new Timeout("",500).sleep();
-        try{Thread.sleep(100);}catch(Exception ex){}
-        toolbar().selectDefault();
-        //toElement.clickOnCenter(1,InputEvent.BUTTON3_MASK);
-        //paletter().selectToolByType(linkElementType);
-    }
-    
+ 
+      public void createGenericRelationshipOnDiagram(LinkTypes linkElementType, DiagramElementOperator fromElement, DiagramElementOperator toElement) throws NotFoundException{
+          LinkPaletteOperator lpo = new LinkPaletteOperator(fromElement); 
+          JComponentOperator linkButton = lpo.getLinkButtonByIndex(linkElementType);
+          Point buttonClickPoint = lpo.getClickPoint(linkButton);
+          Utils.log("palette button click point = "+ buttonClickPoint.x + ", "+ buttonClickPoint.y);
+          Point elementClickPoint = toElement.getCenterPoint();
+          Utils.log("element click point = "+ elementClickPoint.x + ", "+ elementClickPoint.y);
+          JemmyProperties.setCurrentDispatchingModel(JemmyProperties.ROBOT_MODEL_MASK);
+          linkButton.clickMouse();
+          //TODO: Wait for Trey's option to not hide context palette.
+           //DNDDriver dndDriver = new DNDDriver();
+//          dndDriver.dnd(linkButton, buttonClickPoint, getDrawingArea(), elementClickPoint,
+//          InputEvent.BUTTON1_MASK, 0);
+      }
     
     /**
      * Returns all element from this diagram exclude NodePresentation elements
      * @return all elements from this diagram exclude NodePresentation elements
      */
-    public  ArrayList<DiagramElementOperator> getDiagramElements(){
+ 
+     public  ArrayList<DiagramElementOperator> getDiagramElements(){
         ArrayList<DiagramElementOperator> elements = new ArrayList<DiagramElementOperator>();
-        
-        //searching for elements matching elemenFinder criteria
-        ETList<IETGraphObject> allGraphs = getDrawingAreaControl().getAllItems6();
-        Iterator<IETGraphObject> tsIt = allGraphs.iterator();
-        while(tsIt.hasNext()) {
-            IETGraphObject graphObject = tsIt.next();
-            IPresentationElement presElement = graphObject.getPresentationElement();
-            if (presElement == null) {
+        DesignerScene scene = getDesignerScene();
+         //searching for elements matching elemenFinder criteria
+        Collection<IPresentationElement> children =scene.getNodes();
+        for (IPresentationElement presentation : children)
+        {
+            Widget widget = (Widget)scene.findWidget(presentation);
+            if (presentation == null) {
                 continue;
             }
-            if(!(presElement instanceof NodePresentation)) { //We are looking only for nodes here
+            if(!(widget instanceof UMLNodeWidget)) { //We are looking only for nodes here
                 continue;
             }
-            
-            
-            elements.add(new DiagramElementOperator(this,graphObject));
-            
+             
+            elements.add(new DiagramElementOperator(this,widget));
+             
         }
-        return elements;
-        
-    }
-    
+        return elements;        
+     }
+  
     
     /**
      * Returns all element from this diagram
@@ -476,19 +515,17 @@ public class DiagramOperator extends TopComponentOperator {
      */
     public  ArrayList<DiagramElementOperator> getAllDiagramElements(){
         ArrayList<DiagramElementOperator> elements = new ArrayList<DiagramElementOperator>();
-        
-        //searching for elements matching elemenFinder criteria
-        ETList<IETGraphObject> allGraphs = getDrawingAreaControl().getAllItems6();
-        Iterator<IETGraphObject> tsIt = allGraphs.iterator();
-        while(tsIt.hasNext()) {
-            IETGraphObject graphObject = tsIt.next();
-            IPresentationElement presElement = graphObject.getPresentationElement();
-            if (presElement == null) {
-                continue;
+        DesignerScene scene = getDesignerScene();
+         //searching for elements matching elemenFinder criteria
+        Collection<IPresentationElement> children =scene.getNodes();
+        for (IPresentationElement presentation : children)
+        {
+            Widget widget = (Widget)scene.findWidget(presentation);
+
+            if (widget != null) 
+            {
+                elements.add(new DiagramElementOperator(this,widget));
             }
-            
-            elements.add(new DiagramElementOperator(this,graphObject));
-            
         }
         return elements;
         
@@ -498,18 +535,33 @@ public class DiagramOperator extends TopComponentOperator {
      * Returns if there any selected objects on diagram
      * @return if there any selected objects on diagram
      */
-    public boolean getHasSelectedElements(){
+    public boolean getHasSelectedElements() {
         
-        return  getDrawingAreaControl().getHasSelected(true);
+        DesignerScene scene = getDesignerScene();
+        Set<IPresentationElement> selected =
+                (Set<IPresentationElement>) scene.getSelectedObjects();
+        if (selected.size() > 0)
+            return true;
+        else
+            return false;
     }
     
     /**
      * Returns if there any selected links on diagram
      * @return if there any selected links on diagram
      */
-    public boolean getHasSelectedLinks(){
-        
-        return  getDrawingAreaControl().getHasSelectedEdges(true);
+    public boolean getHasSelectedLinks() {
+        boolean hasSelectedLinks = false;
+        DesignerScene scene = getDesignerScene();
+        Set<IPresentationElement> selected =
+                (Set<IPresentationElement>) scene.getSelectedObjects();
+        for (IPresentationElement element : selected) {
+            Widget widget = scene.findWidget(element);
+            if (widget instanceof UMLEdgeWidget) {
+                hasSelectedLinks = true;
+            }
+        }
+        return hasSelectedLinks;
     }
     
     /**
@@ -517,15 +569,17 @@ public class DiagramOperator extends TopComponentOperator {
      * @param name
      * @return
      */
-    public  DiagramElementOperator getDiagramElement(String name){
-        
-        
-        for (DiagramElementOperator elem : getDiagramElements()){
-            if( name.equals(elem.getSubjectVNs().get(0)) ){
-                return elem;
+    public DiagramElementOperator getDiagramElement(String name) {
+        if (getDiagramElements() != null) {
+            Utils.log("DiagramOperator - getDiagramElement(): number of element found = " + getDiagramElements().size());
+            for (DiagramElementOperator elem : getDiagramElements()) {
+                Utils.log("DiagramOperator - getDiagramElement(): getSubjectVNs().get(0)) = " + elem.getSubjectVNs().get(0));
+                if (name.equals(elem.getSubjectVNs().get(0))) {
+                    return elem;
+                }
             }
         }
-        
+        Utils.log("DiagramOperator - getDiagramElement() = null");
         return null;
     }
     
@@ -702,7 +756,8 @@ public class DiagramOperator extends TopComponentOperator {
          * @return
          */
         public boolean checkComponent( java.awt.Component arg0 ) {
-            if(arg0 instanceof DiagramTopComponent) {
+            //6.0 if(arg0 instanceof DiagramTopComponent) {
+            if(arg0 instanceof UMLDiagramTopComponent) {
                 return cmp.equals(arg0.getName(),nm);
             }
             return false;
@@ -733,7 +788,8 @@ public class DiagramOperator extends TopComponentOperator {
          * @return
          */
         public boolean checkComponent( java.awt.Component arg0 ) {
-            if(arg0 instanceof ADDrawingAreaControl) {
+           //6.0 if(arg0 instanceof ADDrawingAreaControl) {
+            if(arg0 instanceof JComponent) {
                 return true;
             }
             return false;
@@ -772,7 +828,7 @@ public class DiagramOperator extends TopComponentOperator {
          * @return
          */
         public boolean checkComponent( java.awt.Component arg0 ) {
-            if(arg0 instanceof ADGraphWindow) {
+            if(arg0 instanceof JPanel) {
                 return true;
             }
             return false;

@@ -42,38 +42,34 @@
 
 
 package org.netbeans.test.umllib;
-import com.tomsawyer.drawing.geometry.TSConstPoint;//look in tsalleditor601dev.jar
+// import com.tomsawyer.drawing.geometry.TSConstPoint;//look in tsalleditor601dev.jar
 import java.awt.AWTException;
 import java.awt.Color;
-//import com.tomsawyer.util.TSConstPoint; changed with buzz3
 import java.awt.Point;
-import java.awt.Robot;
-import java.awt.event.KeyEvent;
+import java.awt.Rectangle;
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.Collection;
+import javax.swing.JPanel;
+import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.jellytools.MainWindowOperator;
-import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.Timeout;
 import org.netbeans.jemmy.drivers.DriverManager;
 import org.netbeans.jemmy.drivers.input.KeyRobotDriver;
 import org.netbeans.jemmy.drivers.input.MouseRobotDriver;
 import org.netbeans.jemmy.operators.ComponentOperator;
+//6.0import org.netbeans.modules.uml.ui.support.viewfactorysupport.IETGraphObject;
+//6.0import org.netbeans.modules.uml.ui.support.viewfactorysupport.PointConversions;
+//6.0import org.netbeans.modules.uml.ui.swing.drawingarea.ADGraphWindow;
+//6.0import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaControl;
+//6.1
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
-import org.netbeans.modules.uml.core.support.umlsupport.ETRect;
-import org.netbeans.modules.uml.core.support.umlsupport.IETPoint;
-import org.netbeans.modules.uml.core.support.umlsupport.IETRect;
-import org.netbeans.modules.uml.core.support.umlutils.ETList;
-import org.netbeans.modules.uml.ui.support.applicationmanager.LabelPresentation;
-import org.netbeans.modules.uml.ui.support.applicationmanager.NodePresentation;
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.IETGraphObject;
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.PointConversions;
-import org.netbeans.modules.uml.ui.swing.drawingarea.ADGraphWindow;
-import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaControl;
+import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
+import org.netbeans.modules.uml.drawingarea.UMLDiagramTopComponent;
+import org.netbeans.modules.uml.drawingarea.ZoomManager;
+import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
 import org.netbeans.test.umllib.actions.Actionable;
-import org.netbeans.test.umllib.exceptions.UMLCommonException;
 import org.netbeans.test.umllib.util.JPopupByPointChooser;
-
 
 /**
  * This is operator for diagram drawing area.
@@ -85,37 +81,42 @@ import org.netbeans.test.umllib.util.JPopupByPointChooser;
 public class DrawingAreaOperator extends ComponentOperator implements Actionable{   
     private final int WIDTH_BORDER = 100;
     private final int HEIGHT_BORDER = 100;
-       
+    
+    DiagramOperator diagramOperator ;
+    
     static{
         DriverManager.setDriver(DriverManager.MOUSE_DRIVER_ID, new MouseRobotDriver(new Timeout("",10)), DrawingAreaOperator.class);        
         DriverManager.setKeyDriver(new KeyRobotDriver(new Timeout("autoDelay",50)));     
     }
     
     /**
-     * Constructs new DrawingAreaOperator using instance of
-     * ADGraphWindow.
-     * @param area instance of ADGraphWindow.
+     * Constructs new DrawingAreaOperator  
+     * @param area instance of JPanel.
      */
-    public DrawingAreaOperator(ADGraphWindow area) {
-        super(area);        
+    
+    public DrawingAreaOperator(JPanel area, DiagramOperator diagramOperator) {
+        super(area);   
+        this.diagramOperator = diagramOperator;
     }
     
-        
+       
     /**
      * Returns underlying ADGraphWindow
      * @return underlying ADGraphWindow
      */
-    public ADGraphWindow getArea(){
-        return (ADGraphWindow)getSource();
+    public JPanel getArea(){
+       //6.0 return (ADGraphWindow)getSource();
+        return (JPanel)getSource();
     } 
     
     /**
      * Returns underlying ADGraphWindow ZoomLevel
      * @return double 
      */
-    public double getZoomLevel()
-    {
-       return  getArea().getZoomLevel();
+    public int getZoomLevel() {
+        UMLDiagramTopComponent umlTC = diagramOperator.getUMLDiagramTopComponent();
+        ZoomManager zooManager = umlTC.getLookup().lookup(ZoomManager.class);
+        return zooManager.getZoom();
     }
     
     /**
@@ -123,10 +124,12 @@ public class DrawingAreaOperator extends ComponentOperator implements Actionable
      * to place an element or invoke popup menu
      * @return free point
      */
-    public Point getFreePoint(){
+    public Point getFreePoint() {
         return getFreePoint(10);
     }
+ 
     
+     
     /**
      * Return free point. the nearest element would be not closer than 
      * <CODE>span</CODE> points.
@@ -135,88 +138,103 @@ public class DrawingAreaOperator extends ComponentOperator implements Actionable
      * @return free point
      */
     public Point getFreePoint(int span) {
-        //
-        try{Thread.sleep(100);}catch(Exception ex){}
+        UMLWidgetOperator umlWidgetOperator;
+        
+        try {
+            Thread.sleep(100);
+        } catch (Exception ex) {
+        }
         //
         int width = getSource().getWidth();
         int height = getSource().getHeight();
-        IDrawingAreaControl daControl = getArea().getDrawingArea();        
-        //searching for elements matching elemenFinder criteria
-        ETList<IETGraphObject> allGraphs = daControl.getAllItems6();
-        Iterator<IETGraphObject> tsIt = allGraphs.iterator();
-        ArrayList<IETRect> elementBounds = new ArrayList<IETRect>();
-        while(tsIt.hasNext()) {
-            IETGraphObject graphObject = tsIt.next();
-            IPresentationElement presElement = graphObject.getPresentationElement();
-            if (presElement == null) {
+
+        DesignerScene scene = diagramOperator.getDesignerScene();
+        Collection<IPresentationElement> children = scene.getNodes();
+        ArrayList<Rectangle> elementBounds = new ArrayList<Rectangle>();
+        for (IPresentationElement presentation : children) {
+            Widget widget = (Widget) scene.findWidget(presentation);
+            if (presentation == null) {
+                continue;
+            }     
+          if(!(widget instanceof UMLNodeWidget)) { //We are looking only for nodes here
                 continue;
             }
-            if(!(presElement instanceof NodePresentation)) { //We are looking only for nodes here
-                continue;
-            }
-            IETRect rect = graphObject.getEngine().getLogicalBoundingRect(true);
-            rect.inflate(10+span);
+            umlWidgetOperator= new UMLWidgetOperator(widget);
+            Rectangle rect =  umlWidgetOperator.getRectangle(); 
+            Utils.log("Before inflate" + rect.toString());
+            //rect = umlWidgetOperator.inflateRect(span+10);
+            Utils.log("After inflate" + rect.toString());
             elementBounds.add(rect);
+
         }
-        
-        IETPoint p = null;
-        for(int w=WIDTH_BORDER;w<width-WIDTH_BORDER;w+=10) {
-            for(int h=HEIGHT_BORDER;h<height-HEIGHT_BORDER;h+=10 ) {
-                p =  daControl.deviceToLogicalPoint(w, h);
+
+        Point p = null;
+        for (int w = WIDTH_BORDER; w < width - WIDTH_BORDER; w += 10) {
+            for (int h = HEIGHT_BORDER; h < height - HEIGHT_BORDER; h += 10) {
+                p = scene.convertViewToScene(new Point(w, h));
+                Utils.log("current point: "+ p.getX() +" , " + p.getY());
                 boolean pointIsFree = true;
-                for (int i=0; i<elementBounds.size(); i++){
-                    if (elementBounds.get(i).contains(p)){
+                for (int i = 0; i < elementBounds.size(); i++) {    
+                    if (elementBounds.get(i).contains(p)) {
                         pointIsFree = false;
                         break;
                     }
                 }
-                if (pointIsFree){
-                    //add small links check
-                     ETList<IPresentationElement> tmp1=daControl.getAllEdgesViaRect(new ETRect(p.getX(),p.getY(),0,0),true);
-                     ETList<IPresentationElement> tmp2=daControl.getAllEdgesViaRect(new ETRect(p.getX(),p.getY(),1,1),true);
-                     ETList<IPresentationElement> tmp3=daControl.getAllEdgesViaRect(new ETRect(p.getX()-1,p.getY()-1,2,2),true);
-                     ETList<IPresentationElement> tmp4=daControl.getAllEdgesViaRect(new ETRect(p.getX()-2,p.getY()-2,3,3),true);
-                     ETList<IPresentationElement> tmp5=daControl.getAllEdgesViaRect(new ETRect(p.getX()-2,p.getY()-2,4,4),true);
-                     if(tmp1==null && tmp2==null && tmp3==null && tmp4==null && tmp5==null)
-                         return daControl.logicalToDevicePoint(p).asPoint();
-                }
+                // TODO: Need api getAllEdgesViaRect() from Trey 
+//              if (pointIsFree){
+//                    //add small links check
+//                     ETList<IPresentationElement> tmp1=daControl.getAllEdgesViaRect(new ETRect(p.getX(),p.getY(),0,0),true);
+//                     ETList<IPresentationElement> tmp2=daControl.getAllEdgesViaRect(new ETRect(p.getX(),p.getY(),1,1),true);
+//                     ETList<IPresentationElement> tmp3=daControl.getAllEdgesViaRect(new ETRect(p.getX()-1,p.getY()-1,2,2),true);
+//                     ETList<IPresentationElement> tmp4=daControl.getAllEdgesViaRect(new ETRect(p.getX()-2,p.getY()-2,3,3),true);
+//                     ETList<IPresentationElement> tmp5=daControl.getAllEdgesViaRect(new ETRect(p.getX()-2,p.getY()-2,4,4),true);
+//                     if(tmp1==null && tmp2==null && tmp3==null && tmp4==null && tmp5==null)
+//                         return daControl.logicalToDevicePoint(p).asPoint();
+//                }
+               if (pointIsFree) { 
+                   Utils.log("the point is free");
+                   return scene.convertSceneToView(p);
+               }
+             
             }
         }
-        
         return centerAtPoint(new Point(width+50,height/2));
-    }
-    
+    } 
     
     /**
      * 
      * @param point 
      * @return 
      */
-    boolean isFreePoint(Point point){
-        IDrawingAreaControl daControl = getArea().getDrawingArea();        
+    public boolean isFreePoint(Point point){
+        UMLWidgetOperator umlWidgetOperator;
         
-        //searching for elements 
-        ETList<IETGraphObject> allGraphs = daControl.getAllItems6();
-        Iterator<IETGraphObject> tsIt = allGraphs.iterator();
-        ArrayList<IETRect> elementBounds = new ArrayList<IETRect>();
-        while(tsIt.hasNext()) {
-            IETGraphObject graphObject = tsIt.next();
-            IPresentationElement presElement = graphObject.getPresentationElement();
-            if (presElement == null) {
-                continue;
-            }
-            if(!(presElement instanceof NodePresentation || presElement instanceof LabelPresentation)) { //We are looking only for nodes here
-                continue;
-            }
-            IETRect rect = graphObject.getEngine().getLogicalBoundingRect(true);
-            rect.inflate(5);
-            elementBounds.add(rect);
+        try {
+            Thread.sleep(100);
+        } catch (Exception ex) {
         }
+        //
+        int width = getSource().getWidth();
+        int height = getSource().getHeight();
+
+        DesignerScene scene = diagramOperator.getDesignerScene();
+        Collection<IPresentationElement> children = scene.getNodes();
+        ArrayList<Rectangle> elementBounds = new ArrayList<Rectangle>();
+        for (IPresentationElement presentation : children) {
+            Widget widget = (Widget) scene.findWidget(presentation);
+            if (presentation == null) {
+                continue;
+            }
+            umlWidgetOperator = new UMLWidgetOperator(widget);
+            Rectangle rect =  umlWidgetOperator.getRectangle(); 
+            umlWidgetOperator.inflateRect(5);
+            elementBounds.add(rect);
+         }
         
-        IETPoint p = null;
-        p =  daControl.deviceToLogicalPoint(point.x, point.y);
-        for (int i=0; i<elementBounds.size(); i++){
-            if (elementBounds.get(i).contains(p)){
+        Point p = null;
+        p = scene.convertViewToScene(point);
+        for (int i = 0; i < elementBounds.size(); i++) {
+            if (elementBounds.get(i).contains(p)) {
                 return false;
             }
         }
@@ -229,13 +247,17 @@ public class DrawingAreaOperator extends ComponentOperator implements Actionable
      * @param point device point to center at
      * @return the new device coordinates of the point specified
      */
-    public Point centerAtPoint(Point point) {        
-        IDrawingAreaControl daControl = getArea().getDrawingArea();
-        IETPoint etPoint = daControl.deviceToLogicalPoint(point.x,point.y);
-        TSConstPoint tsPoint = PointConversions.ETPointToTSPoint(etPoint);
-        getArea().centerPointInWindow(tsPoint, true);
-        new EventTool().waitNoEvent(500);
-        return daControl.logicalToDevicePoint(PointConversions.newETPoint(tsPoint)).asPoint();
+    public Point centerAtPoint(Point point) {  
+        //TODO:  Wait for Trey  to work on ceternPointInWindow()
+        
+//6.0        IDrawingAreaControl daControl = getArea().getDrawingArea();
+//        IETPoint etPoint = daControl.deviceToLogicalPoint(point.x,point.y);
+//        TSConstPoint tsPoint = PointConversions.ETPointToTSPoint(etPoint);
+//        getArea().centerPointInWindow(tsPoint, true);
+//        new EventTool().waitNoEvent(500);
+//6.0        return daControl.logicalToDevicePoint(PointConversions.newETPoint(tsPoint)).asPoint();
+             
+        return point;
     }
 
 
@@ -275,6 +297,11 @@ public class DrawingAreaOperator extends ComponentOperator implements Actionable
         Point fr=getFreePoint(25);
         super.clickMouse(fr.x,fr.y,1);
     }
+    
+    public void dragNDrop() {
+        Point fr=getFreePoint(25);
+        super.clickMouse(fr.x,fr.y,1);
+    }
     //
     /**
      * 
@@ -298,6 +325,7 @@ public class DrawingAreaOperator extends ComponentOperator implements Actionable
         super.clickMouse(x,y,count);
     }
 
+    
     /**
      * 
      * @param p 

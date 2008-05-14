@@ -57,16 +57,16 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
+import org.netbeans.api.visual.graph.GraphScene;
+import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.jellytools.MainWindowOperator;
-import org.netbeans.jellytools.PaletteOperator;
 import org.netbeans.jellytools.properties.Property;
 import org.netbeans.jellytools.properties.PropertySheetOperator;
 import org.netbeans.jemmy.EventTool;
-import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.Timeout;
 import org.netbeans.jemmy.Timeouts;
@@ -75,26 +75,18 @@ import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.drivers.input.MouseRobotDriver;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
+import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.jemmy.operators.Operator.StringComparator;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.PresentationElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
-import org.netbeans.modules.uml.core.support.umlsupport.ETDeviceRect;
-import org.netbeans.modules.uml.core.support.umlsupport.ETRect;
-import org.netbeans.modules.uml.core.support.umlsupport.IETPoint;
-import org.netbeans.modules.uml.core.support.umlsupport.IETRect;
+import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
-import org.netbeans.modules.uml.project.ui.palette.UMLPalette;
-import org.netbeans.modules.uml.ui.products.ad.drawengines.INodeDrawEngine;
-import org.netbeans.modules.uml.ui.support.applicationmanager.NodePresentation;
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.ETRectEx;
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.IETEdge;
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.IETGraphObject;
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.IETNode;
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.IETNodeUI;
-import org.netbeans.modules.uml.ui.swing.drawingarea.ADGraphWindow;
-import org.netbeans.modules.uml.ui.swing.drawingarea.IDrawingAreaControl;
+import org.netbeans.modules.uml.drawingarea.persistance.PersistanceUtil;
+import org.netbeans.modules.uml.drawingarea.view.UMLEdgeWidget;
+import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
 import org.netbeans.test.umllib.actions.Actionable;
 import org.netbeans.test.umllib.actions.ActionablePoint;
 import org.netbeans.test.umllib.actions.LabelsNameElementAction;
@@ -109,13 +101,15 @@ import org.netbeans.test.umllib.util.JPopupByPointChooser;
 public class DiagramElementOperator extends Operator implements Actionable {
 
     private DiagramOperator diagramOperator = null;
-    private IETGraphObject elementGraphObject = null;
+    private Widget elementGraphObject = null;
+    private DrawingAreaOperator drawingArea = null;
+     
 
 
     /**
      * Default delay for Diagram Element Waiter. Real value can be changed
      * as for the all other operators(For example via JemmyProperties)
-     */
+     */ 
     public static final long WAIT_GRAPHOBJECT_TIMEOUT = 60000;
 
     /**
@@ -140,6 +134,7 @@ public class DiagramElementOperator extends Operator implements Actionable {
 
     public DiagramElementOperator(DiagramOperator diagramOperator, String elementVN, ExpandedElementTypes elementType, int index) throws NotFoundException {
         this(diagramOperator, new ElementByVNChooser(elementVN, elementType), index);
+         
     }
 
     /**
@@ -153,6 +148,7 @@ public class DiagramElementOperator extends Operator implements Actionable {
      */
     public DiagramElementOperator(DiagramOperator diagramOperator, String elementVN, ElementTypes elementType, int index) throws NotFoundException {
         this(diagramOperator, new ElementByVNChooser(elementVN, elementType), index);
+      
     }
 
     /**
@@ -164,6 +160,7 @@ public class DiagramElementOperator extends Operator implements Actionable {
      */
     public DiagramElementOperator(DiagramOperator diagramOperator, String elementVN, ElementTypes elementType) throws NotFoundException {
         this(diagramOperator, new ElementByVNChooser(elementVN, elementType), 0);
+        
     }
 
     /**
@@ -175,6 +172,7 @@ public class DiagramElementOperator extends Operator implements Actionable {
      */
     public DiagramElementOperator(DiagramOperator diagramOperator, String elementVN, int index) throws NotFoundException {
         this(diagramOperator, new ElementByVNChooser(elementVN, ElementTypes.ANY), index);
+         
     }
 
     /**
@@ -205,9 +203,11 @@ public class DiagramElementOperator extends Operator implements Actionable {
      * @param diagramOperator Diagram to look for element
      * @param graphObject given graph object
      */
-    public DiagramElementOperator(DiagramOperator diagramOperator, IETGraphObject graphObject) {
-        this.diagramOperator = diagramOperator;
-        this.elementGraphObject = graphObject;
+    public DiagramElementOperator(DiagramOperator diagramOperator,  Widget graphObject) {
+         this.diagramOperator = diagramOperator;
+         this.elementGraphObject = graphObject;
+         this.drawingArea=this.diagramOperator.getDrawingArea();
+         
     }
 
 
@@ -221,34 +221,33 @@ public class DiagramElementOperator extends Operator implements Actionable {
      * @param index index
      * @throws qa.uml.exceptions.NotFoundException when nothing suitable found
      */
-    public static IETGraphObject findGraphObject(DiagramOperator diagramOperator, DiagramElementChooser elementFinder, int index, boolean lookForAllElements) throws NotFoundException {
-        ArrayList<IETGraphObject> elementsFound = new ArrayList<IETGraphObject>();
+     
+     public static Widget findGraphObject(DiagramOperator diagramOperator, DiagramElementChooser elementFinder, int index, boolean lookForAllElements) throws NotFoundException {
+        ArrayList<Widget> elementsFound = new ArrayList<Widget>();
 
         //searching for elements matching elemenFinder criteria
-        IDrawingAreaControl cntrl = diagramOperator.getDrawingAreaControl();
-        ETList<IETGraphObject> allGraphs = cntrl.getAllItems6();
-        Iterator<IETGraphObject> tsIt = allGraphs.iterator();
-        while (tsIt.hasNext()) {
-            IETGraphObject graphObject = tsIt.next();
-            IPresentationElement presElement = graphObject.getPresentationElement();
-            if (presElement == null) {
-                continue;
-            }
+        DesignerScene scene = diagramOperator.getDesignerScene();
+        Collection<IPresentationElement> children =scene.getNodes();
+        for (IPresentationElement presElement : children)
+        {
+            Widget widget = scene.findWidget(presElement);
 
             if (!lookForAllElements) {
-                if (!(presElement instanceof NodePresentation)) {
+                if (!(widget instanceof UMLNodeWidget)) {
                     //We are looking only for nodes here
-continue;       }
+                    continue;
+                }
             }
 
-            if (elementFinder.checkElement(graphObject)) {
-                elementsFound.add(graphObject);
+            if (elementFinder.checkElement(widget)) {
+                elementsFound.add(widget);
             }
         }
-
+        
+        
         //sorting found elements
-        DiagramElementComparator<IETGraphObject> c = new DiagramElementComparator<IETGraphObject>();
-        IETGraphObject[] arr = (IETGraphObject[]) elementsFound.toArray(new IETGraphObject[0]);
+        DiagramElementComparator<Widget> c = new DiagramElementComparator<Widget>();
+        Widget[] arr = (Widget[]) elementsFound.toArray(new Widget[0]);
         Arrays.sort(arr, c);
         if (arr.length > index) {
             return arr[index];
@@ -266,11 +265,11 @@ continue;       }
      * @throws qa.uml.exceptions.NotFoundException
      * @return
      */
-    public static IETGraphObject findGraphObject(DiagramOperator diagramOperator, DiagramElementChooser elementFinder, int index) throws NotFoundException {
+    public static Widget findGraphObject(DiagramOperator diagramOperator, DiagramElementChooser elementFinder, int index) throws NotFoundException {
         return findGraphObject(diagramOperator, elementFinder, index, false);
-    }
-
-
+     }
+    
+  
     /**
      * Wait for suitable graph object
      * @return Element's GraphObject if found
@@ -279,13 +278,18 @@ continue;       }
      * @param elementFinder custom finder
      * @param index index
      */
-    public static IETGraphObject waitForGraphObject(final DiagramOperator diagramOperator, final DiagramElementChooser elementFinder, final int index, final boolean lookForAllElements) {
+     
+     public static Widget waitForGraphObject(final DiagramOperator diagramOperator, final DiagramElementChooser elementFinder, final int index, final boolean lookForAllElements) {
         try {
             Waiter w = new Waiter(new Waitable() {
 
                 public Object actionProduced(Object obj) {
                     try {
-                        IETGraphObject go = findGraphObject(diagramOperator, elementFinder, index, lookForAllElements);
+                       
+                        Utils.log("elmentFinder="+elementFinder);
+                        Utils.log("index="+index);
+                        Utils.log("lookForAllElements="+lookForAllElements);
+                        Widget go = findGraphObject(diagramOperator, elementFinder, index, lookForAllElements);
                         return go;
                     } catch (NotFoundException e) {
                         return null;
@@ -298,12 +302,13 @@ continue;       }
             });
             Timeouts t = JemmyProperties.getCurrentTimeouts();
             t.setTimeout("Waiter.WaitingTime", t.getTimeout("DiagramElementOperator.WaitDiagramElementTime"));
-            return (IETGraphObject) w.waitAction(null);
+            return (Widget) w.waitAction(null);
         } catch (InterruptedException ie) {
             return null;
         }
-    }
-
+     }
+      
+     
     /**
      *
      * @param diagramOperator
@@ -311,9 +316,10 @@ continue;       }
      * @param index
      * @return
      */
-    public static IETGraphObject waitForGraphObject(final DiagramOperator diagramOperator, final DiagramElementChooser elementFinder, final int index) {
+     public static Widget waitForGraphObject(final DiagramOperator diagramOperator, final DiagramElementChooser elementFinder, final int index) {
         return waitForGraphObject(diagramOperator, elementFinder, index, false);
     }
+ 
 
     /**
      * Wait for suitable graph object disaapearnce
@@ -328,7 +334,7 @@ continue;       }
 
                 public Object actionProduced(Object obj) {
                     try {
-                        IETGraphObject go = findGraphObject(diagramOperator, elementFinder, index);
+                        Widget go = findGraphObject(diagramOperator, elementFinder, index);
                         if (go != null) {
                             return null;
                         }
@@ -351,7 +357,7 @@ continue;       }
             }
         } catch (InterruptedException ie) {
             return false;
-        }
+        }        
     }
 
     /**
@@ -377,7 +383,9 @@ continue;       }
                 return;
             }
         }
-        throw new UMLCommonException("Failed to wait for '" + selected + "' selection state//debug: " + elementGraphObject.isSelected() + ":" + elementGraphObject + ":" + elementGraphObject.getText() + ":" + elementGraphObject.isEdge() + ":" + elementGraphObject.isNode() + ":" + elementGraphObject.getPresentationElement() + ":" + elementGraphObject.getPresentationElement().getFirstSubject() + ":" + elementGraphObject.getPresentationElement().getFirstSubject().getExpandedElementType());
+       //TODO: isNode(), isEdge()
+        //throw new UMLCommonException("Failed to wait for '" + selected + "' selection state//debug: " + (new UMLWidgetOperator(elementGraphObject).isSelected() + ":" + elementGraphObject + ":" + getText() + ":" + elementGraphObject.isEdge() + ":" + elementGraphObject.isNode() + ":" + elementGraphObject.getPresentationElement() + ":" + elementGraphObject.getPresentationElement().getFirstSubject() + ":" + elementGraphObject.getPresentationElement().getFirstSubject().getExpandedElementType());
+        throw new UMLCommonException("Failed to wait for '" + selected + "' selection state//debug: "   );
     }
 
     /**
@@ -385,12 +393,13 @@ continue;       }
      * @return
      */
     public Color getBorderColor() {
-        try {
-            INodeDrawEngine engine = (INodeDrawEngine) elementGraphObject.getEngine();
-            return engine.getBorderColor();
-        } catch (Exception e) {
-            return null;
-        }
+//6.0        try {
+//            INodeDrawEngine engine = (INodeDrawEngine) elementGraphObject.getEngine();
+//            return engine.getBorderColor();
+//        } catch (Exception e) {
+//            return null;
+//6.0        }
+        return null;
     }
 
 
@@ -399,9 +408,10 @@ continue;       }
      * @return
      */
     public Color getBackgroundColor() {
-        try {
-            INodeDrawEngine engine = (INodeDrawEngine) elementGraphObject.getEngine();
-            return engine.getFillColor();
+        try {   
+            Color backGroundColor =(Color)elementGraphObject.getBackground();
+            return backGroundColor;
+        
         } catch (Exception e) {
             return null;
         }
@@ -414,8 +424,8 @@ continue;       }
      */
     public Font getFont() {
         try {
-            IETNodeUI ui = (IETNodeUI) elementGraphObject.getETUI();
-            return ui.getFont().getFont();
+
+            return elementGraphObject.getFont();
         } catch (Exception e) {
             return null;
         }
@@ -426,8 +436,13 @@ continue;       }
      * Return element type
      * @return Type of element
      */
-    public String getElementType() {
-        return elementGraphObject.getEngine().getElementType();
+    public String getElementType() {  
+         Class clazz = getGraphObject().getClass();
+         String elementType= PersistanceUtil.getModelElement(getGraphObject()).getElementType().toString();
+         Utils.log("DiagramElementOperator:getElementType(): element = "+ clazz.toString() + " elementType= "+ elementType);
+         return elementType;
+         //return getPresentationElement().getElementType();
+        
     }
 
     /**
@@ -438,8 +453,8 @@ continue;       }
      */
     public void resize(int x, int y) {
         //TODO: add scrolling support
-        IETRect rect = elementGraphObject.getEngine().getBoundingRect();
-        Point point = rect.getBottomRight();
+        UMLWidgetOperator wo = new UMLWidgetOperator(elementGraphObject);
+        Point point = wo.getBottomRight();
         this.select();
         new Timeout("", 500).sleep();
         diagramOperator.getDrawingArea().moveMouse(point.x + 4, point.y + 4);
@@ -460,19 +475,30 @@ continue;       }
 
 
     /**
-     * Returns GraphObject for this diagram element
-     * @return GraphObject for this diagram element
+     * Returns Widget for this diagram element
+     * @return Widget for this diagram element
      */
-    public IETGraphObject getGraphObject() {
+     public  Widget getGraphObject() {
         return elementGraphObject;
     }
 
+    /**
+     * Return Presentation for this diagram element
+     * @return Presentation for this diagram element
+     */
+     
+     public PresentationElement getPresentationElement() {
+            Utils.log("getPresentationElement()" );
+            GraphScene scene = (GraphScene) getGraphObject().getScene();
+            return (PresentationElement) scene.findObject(elementGraphObject);
+     }
+     
     /**
      * Wrapper for elementGraphObject.getEngine().getBoundingRect().getRectangle();
      * @return Rectangle
      */
     public Rectangle getElementRectangle() {
-        return elementGraphObject.getEngine().getBoundingRect().getRectangle();
+         return elementGraphObject.getBounds();    
     }
 
     /**
@@ -491,19 +517,17 @@ continue;       }
 
     public String getName() {
 
-        String name = "";
-
-        ETList<IElement> subjects = getGraphObject().getPresentationElement().getSubjects();
+       String name = "";
+       
+       ETList<IElement> subjects = getPresentationElement().getSubjects();
 
         if (subjects.size() > 0) {
             name = subjects.get(0).toString();
         }
 
-        if (name.equals("")) {
-            name = getGraphObject().getText();
-        }
-
-
+//        if (name.equals("")) {
+//            name = getText();
+//        }
         return name;
     }
 
@@ -513,10 +537,11 @@ continue;       }
      * @return type or null if we have several subjects. Should be overriden in subclasses
      */
     public String getType() {
-        if (elementGraphObject.getPresentationElement().getSubjectCount() == 1) {
-            return elementGraphObject.getPresentationElement().getFirstSubject().getElementType();
+       if ( getPresentationElement().getSubjectCount() == 1) {
+            return  getPresentationElement().getFirstSubject().getElementType();
         }
-        return null; //We can't detect type
+      return null; //We can't detect type
+        
     }
 
     /**
@@ -524,10 +549,11 @@ continue;       }
      * @return expanded type or null if we have several subjects. Should be overriden in subclasses
      */
     public String getExpandedType() {
-        if (elementGraphObject.getPresentationElement().getSubjectCount() == 1) {
-            return elementGraphObject.getPresentationElement().getFirstSubject().getExpandedElementType();
+        if ( getPresentationElement().getSubjectCount() == 1) {
+            return  getPresentationElement().getFirstSubject().getExpandedElementType();
         }
         return null; //We can't detect type
+         
     }
 
     /**
@@ -536,20 +562,22 @@ continue;       }
      */
     public HashSet<LinkOperator> getLinks() {
         HashSet<LinkOperator> links = new HashSet<LinkOperator>();
-        IETGraphObject sObject = getGraphObject();
-        if ((sObject != null) && (sObject instanceof IETNode)) {
-            IETNode node = (IETNode) sObject;
-
-            ETList<IETEdge> list = node.getEdges();
-            Iterator<IETEdge> it = list.iterator();
-            while (it.hasNext()) {
-                IETEdge edge = (IETEdge) it.next();
-                IPresentationElement presentation = edge.getPresentationElement();
+     Widget sObject = getGraphObject();
+        if ((sObject != null) && (sObject instanceof UMLNodeWidget)) {
+            UMLNodeWidget node = (UMLNodeWidget) sObject;
+            UMLWidgetOperator wo = new UMLWidgetOperator(sObject);
+            Collection<UMLEdgeWidget> edges = wo.getScene().findNodeEdges(wo.getPresentationElement(), true, true);
+            Iterator<UMLEdgeWidget> it = edges.iterator();
+            UMLWidgetOperator eo ;
+              while (it.hasNext()) {
+                UMLEdgeWidget edge = (UMLEdgeWidget) it.next();
+                  eo = new UMLWidgetOperator(edge);
+                IPresentationElement presentation = eo.getPresentationElement();
                 if (presentation != null) {
                     links.add(new LinkOperator(diagramOperator, edge));
                 }
             }
-        }
+         }
         return links;
     }
 
@@ -559,19 +587,23 @@ continue;       }
      */
     public HashSet<LinkOperator> getInLinks() {
         HashSet<LinkOperator> links = new HashSet<LinkOperator>();
-        IETGraphObject sObject = getGraphObject();
-        if ((sObject != null) && (sObject instanceof IETNode)) {
-            IETNode node = (IETNode) sObject;
-            List list = node.getInEdges();
-            Iterator it = list.iterator();
-            while (it.hasNext()) {
-                IETEdge edge = (IETEdge) it.next();
-                IPresentationElement presentation = edge.getPresentationElement();
+    
+     Widget sObject = getGraphObject();
+        if ((sObject != null) && (sObject instanceof UMLNodeWidget)) {
+            UMLNodeWidget node = (UMLNodeWidget) sObject;
+            UMLWidgetOperator wo = new UMLWidgetOperator(sObject);
+            Collection<UMLEdgeWidget> edges = wo.getScene().findNodeEdges(wo.getPresentationElement(), true, false);
+            Iterator<UMLEdgeWidget> it = edges.iterator();
+            UMLWidgetOperator eo ;
+              while (it.hasNext()) {
+                UMLEdgeWidget edge = (UMLEdgeWidget) it.next();
+                  eo = new UMLWidgetOperator(edge);
+                IPresentationElement presentation = eo.getPresentationElement();
                 if (presentation != null) {
                     links.add(new LinkOperator(diagramOperator, edge));
                 }
             }
-        }
+         }
         return links;
     }
 
@@ -581,20 +613,25 @@ continue;       }
      */
     public HashSet<LinkOperator> getOutLinks() {
         HashSet<LinkOperator> links = new HashSet<LinkOperator>();
-        IETGraphObject sObject = getGraphObject();
-        if ((sObject != null) && (sObject instanceof IETNode)) {
-            IETNode node = (IETNode) sObject;
-            List list = node.getOutEdges();
-            Iterator it = list.iterator();
+
+        Widget sObject = getGraphObject();
+        if ((sObject != null) && (sObject instanceof UMLNodeWidget)) {
+            UMLNodeWidget node = (UMLNodeWidget) sObject;
+            UMLWidgetOperator wo = new UMLWidgetOperator(sObject);
+            Collection<UMLEdgeWidget> edges = wo.getScene().findNodeEdges(wo.getPresentationElement(), false, true);
+            Iterator<UMLEdgeWidget> it = edges.iterator();
+            UMLWidgetOperator eo;
             while (it.hasNext()) {
-                IETEdge edge = (IETEdge) it.next();
-                IPresentationElement presentation = edge.getPresentationElement();
+                UMLEdgeWidget edge = (UMLEdgeWidget) it.next();
+                eo = new UMLWidgetOperator(edge);
+                IPresentationElement presentation = eo.getPresentationElement();
                 if (presentation != null) {
                     links.add(new LinkOperator(diagramOperator, edge));
                 }
             }
         }
         return links;
+
     }
 
 
@@ -615,19 +652,11 @@ continue;       }
      * @return bounding rect for element
      */
     public Rectangle getBoundingRect() {
-        IETRect tmpRect = elementGraphObject.getEngine().getBoundingRect();
-        ETDeviceRect tmpDevRect = null;
-        int x;
-        int y;
-        //transform to device coordinates
-        if (tmpRect instanceof ETRect || tmpRect instanceof ETRectEx) {
-            // This special case is for all the code that depends
-            // on the bounding rectangle in device coordinates.
-            tmpDevRect = ((ETRect) tmpRect).getAsDeviceRect();
-        } else if (tmpRect instanceof ETDeviceRect) {
-            tmpDevRect = ((ETDeviceRect) tmpRect);
-        }
-        return tmpDevRect.getBounds();
+         Rectangle localRect = elementGraphObject.getBounds();
+         Point scenePoint = elementGraphObject.convertLocalToScene(new Point(localRect.x, localRect.y));
+         Rectangle sceneRect = new Rectangle(scenePoint.x, scenePoint.y, localRect.width, localRect.height);
+         return sceneRect;
+              
     }
 
     /**
@@ -664,11 +693,13 @@ continue;       }
      */
     public void clickOn(Point p, int clickCount, int mouseButton, int modifiers) {
         p = makeVisible(p);
-        diagramOperator.getDrawingArea().clickMouse(p.x, p.y, clickCount, mouseButton, modifiers);
+        if (p!=null )
+            Utils.log("Click on point= ("+p.x +", "+ p.y+")");
+        drawingArea.clickMouse(p.x, p.y, clickCount, mouseButton, modifiers);
     }
 
     public void clickForPopup() {
-        if (ElementTypes.COMBINED_FRAGMENT.toString().equals(getType())) {
+        if (ElementTypes.COMBINED_FRAGMENT.toString().equals(getElementType())) {
             //workaround for 90586
             Point loc = getBoundingRect().getLocation();
             loc.translate(2, 2);
@@ -696,20 +727,21 @@ continue;       }
      * @param deselectOthers
      */
     public void center(boolean selectIt, boolean deselectOthers) {
-        try {
-            Thread.sleep(100);
-        } catch (Exception ex) {
-        }
-        ADGraphWindow area = diagramOperator.getDrawingArea().getArea();
-        try {
-            Thread.sleep(100);
-        } catch (Exception ex) {
-        }
-        area.getDrawingArea().centerPresentationElement(elementGraphObject.getPresentationElement(), selectIt, deselectOthers);
-        try {
-            Thread.sleep(100);
-        } catch (Exception ex) {
-        }
+        //TODO: Wait for trey's center api
+//6.0        try {
+//            Thread.sleep(100);
+//        } catch (Exception ex) {
+//        }
+//        ADGraphWindow area = diagramOperator.getDrawingArea().getArea();
+//        try {
+//            Thread.sleep(100);
+//        } catch (Exception ex) {
+//        }
+//        area.getDrawingArea().centerPresentationElement(elementGraphObject.getPresentationElement(), selectIt, deselectOthers);
+//        try {
+//            Thread.sleep(100);
+//        } catch (Exception ex) {
+//6.0        }
     }
 
     /**
@@ -719,37 +751,42 @@ continue;       }
      * @return
      */
     public Point makeVisible(Point point) {
-        ADGraphWindow area = diagramOperator.getDrawingArea().getArea();
-        IDrawingAreaControl daControl = area.getDrawingArea();
-
-        IETPoint etPoint = daControl.deviceToLogicalPoint(point.x, point.y);
-
-        IETRect eDeviceAreaRect = new ETRect(area.getVisibleRect());
-        IETRect eVisibleAreaRect = daControl.deviceToLogicalRect(eDeviceAreaRect);
-        IETRect eElementRect = elementGraphObject.getEngine().getLogicalBoundingRect(true);
-
-        if (!eVisibleAreaRect.contains(eElementRect)) {
-            center();
-            new Timeout("", 500);
-        }
-        return daControl.logicalToDevicePoint(etPoint).asPoint();
+        //TODO: wait for Trey's cener API
+// 6.0       ADGraphWindow area = diagramOperator.getDrawingArea().getArea();
+//        IDrawingAreaControl daControl = area.getDrawingArea();
+//
+//        IETPoint etPoint = daControl.deviceToLogicalPoint(point.x, point.y);
+//
+//        IETRect eDeviceAreaRect = new ETRect(area.getVisibleRect());
+//        IETRect eVisibleAreaRect = daControl.deviceToLogicalRect(eDeviceAreaRect);
+//        IETRect eElementRect = elementGraphObject.getEngine().getLogicalBoundingRect(true);
+//
+//        if (!eVisibleAreaRect.contains(eElementRect)) {
+//            center();
+//            new Timeout("", 500);
+//        }
+//6.0        return daControl.logicalToDevicePoint(etPoint).asPoint();
+     return point;
     }
 
-
+ 
     /**
      *
      * @return
      */
     public ArrayList<String> getSubjectVNs() {
         ArrayList<String> al = new ArrayList<String>();
-        ETList<IElement> subjects = getGraphObject().getPresentationElement().getSubjects();
+         
+        ETList<IElement> subjects = (new UMLWidgetOperator(getGraphObject())).getPresentationElement().getSubjects();
         Iterator<IElement> itSubj = subjects.iterator();
         while (itSubj.hasNext()) {
             IElement sbj = (IElement) itSubj.next();
-            if (sbj instanceof INamedElement) {
+            Utils.log("DiagramElementOperator:getSubjectVNs() sbj = "+ sbj.toString());
+            
+            if (sbj instanceof INamedElement) {              
                 al.add(((INamedElement) sbj).getName());
             }
-        }
+         }
         return al;
     }
 
@@ -781,7 +818,7 @@ continue;       }
             Thread.sleep(100);
         } catch (Exception ex) {
         }
-        JPopupMenuOperator ret = new JPopupMenuOperator(JPopupMenuOperator.waitJPopupMenu((java.awt.Container) (MainWindowOperator.getDefault().getSource()), new JPopupByPointChooser(loc, diagramOperator.getDrawingArea().getSource(), 0)));
+        JPopupMenuOperator ret = new JPopupMenuOperator(JPopupMenuOperator.waitJPopupMenu((java.awt.Container) (MainWindowOperator.getDefault().getSource()), new JPopupByPointChooser(loc, drawingArea.getSource(), 0)));
 
         return ret;
     }
@@ -819,14 +856,16 @@ continue;       }
             Thread.sleep(100);
         } catch (Exception ex) {
         }
-        JPopupMenuOperator ret = new JPopupMenuOperator(JPopupMenuOperator.waitJPopupMenu((java.awt.Container) (MainWindowOperator.getDefault().getSource()), new JPopupByPointChooser(loc, diagramOperator.getDrawingArea().getSource(), 0)));
+        JPopupMenuOperator ret = new JPopupMenuOperator(JPopupMenuOperator.waitJPopupMenu((java.awt.Container) (MainWindowOperator.getDefault().getSource()), new JPopupByPointChooser(loc, drawingArea.getSource(), 0)));
 
         return ret;
     }
 
     public void select() {
-        if (!isSelected()) {
-            if (ElementTypes.COMBINED_FRAGMENT.toString().equals(getType())) {
+        Utils.log("DiagramElementOperator:select():ElementType=" + getElementType());
+       // if (!isSelected()) {
+            if (ElementTypes.COMBINED_FRAGMENT.toString().equals(getElementType())) {
+                 Utils.log("DiagramElementOperator:select(): it is COMBINED_FRAGMENT");
                 //workaround for 90586
                 Point loc = getBoundingRect().getLocation();
                 loc.translate(2, 2);
@@ -839,13 +878,30 @@ continue;       }
                     clickOn(loc, 1, MouseEvent.BUTTON1_MASK, 0);
                     waitSelection(true);
                 }
+            }
+            if (ElementTypes.LIFELINE.toString().equals(getElementType())) {
+                Utils.log("DiagramElementOperator:select(): it is LIFELINE");
+                UMLWidgetOperator lwo = new UMLWidgetOperator(getGraphObject());
+                try {
+                    UMLWidgetOperator ewo = lwo.findEditableCompartmentWidget();
+                    Point p = ewo.getCenterPoint();
+                    //There is offset of center point, so add it on
+                    p = new Point((int) p.getX(), (int) p.getY() + 50);
+                    ewo.clickOn(p, 1);
+                } catch (Exception ex) {
+
+                }
+               
             } else {
+                Utils.log("DiagramElementOperator:select(): elementType = "+ getElementType());
+                Utils.log("DiagramElementOperator:select(): it is not neither COMBINED_FRAGMENT nor LIFELINE. So click on center");
                 clickOnCenter();
                 waitSelection(true);
             }
-        } else {
-            waitSelection(true);
-        }
+//        } else {
+//            Utils.log("DiagramElementOperator:select(): element is selected already");
+//            waitSelection(true);
+//        }
     }
 
     /**
@@ -898,7 +954,7 @@ continue;       }
      * @return
      */
     public boolean isSelected() {
-        return elementGraphObject.isSelected();
+       return getGraphObject().getState().isSelected(); 
     }
 
 
@@ -934,7 +990,7 @@ continue;       }
             select();
         }
         java.awt.Rectangle parB = getBoundingRect();
-        DrawingAreaOperator drA = diagramOperator.getDrawingArea();
+        DrawingAreaOperator drA = drawingArea;
         int shift = (int) (Math.round(4.0*drA.getZoomLevel()));
         MouseRobotDriver driver = new MouseRobotDriver(new Timeout("", 250));
         driver.moveMouse(drA, parB.x + parB.width + shift, parB.y + parB.height + shift);
@@ -962,7 +1018,7 @@ continue;       }
      */
     public void moveTo(int x, int y) {
         java.awt.Rectangle parB = getBoundingRect();
-        DrawingAreaOperator drA = diagramOperator.getDrawingArea();
+        DrawingAreaOperator drA = drawingArea;
         MouseRobotDriver driver = new MouseRobotDriver(new Timeout("", 250));
         int corner_shift = 4;
         driver.moveMouse(drA, parB.x + corner_shift, parB.y + corner_shift);
@@ -990,7 +1046,7 @@ continue;       }
      */
     public void shift(int dx, int dy) {
         java.awt.Rectangle parB = getBoundingRect();
-        DrawingAreaOperator drA = diagramOperator.getDrawingArea();
+        DrawingAreaOperator drA = drawingArea;
         MouseRobotDriver driver = new MouseRobotDriver(new Timeout("", 250));
         int corner_shift = 4;
         driver.moveMouse(drA, parB.x + corner_shift, parB.y + corner_shift);
@@ -1033,7 +1089,7 @@ continue;       }
      */
 
 
-    public static class DiagramElementComparator<C extends IETGraphObject> implements Comparator<C> {
+    public static class DiagramElementComparator<C extends Widget> implements Comparator<C> {
 
         /**
          *
@@ -1042,8 +1098,8 @@ continue;       }
          * @return
          */
         public int compare(C o1, C o2) {
-            Point o1Center = o1.getEngine().getBoundingRect().getCenterPoint();
-            Point o2Center = o2.getEngine().getBoundingRect().getCenterPoint();
+            Point o1Center = (new UMLWidgetOperator(o1)).getCenterPoint();
+            Point o2Center = (new UMLWidgetOperator(o2)).getCenterPoint();
             if (o1Center.y > o2Center.y) {
                 return 1;
             } else if (o1Center.y == o2Center.y) {
@@ -1054,7 +1110,8 @@ continue;       }
                 }
             } else {
                 return -1;
-            }
+           }
+             
         }
     }
 
@@ -1115,42 +1172,51 @@ continue;       }
 
         /**
          *
-         * @param graphObject
+         * @param widget
          * @return
          */
-        public boolean checkElement(IETGraphObject graphObject) {
+ 
+         public boolean checkElement(Widget graphObject) {
             //check type
-            String inType = null;
-            String any = null;
-            if (graphObject.getPresentationElement().getSubjectCount() == 1) {
-                if (elemTypeEnu != null) {
-                    inType = graphObject.getPresentationElement().getFirstSubject().getElementType();
-                    any = elemTypeEnu.ANY.toString();
-                } else if (elemExTypeEnu != null) {
-                    inType = graphObject.getPresentationElement().getFirstSubject().getExpandedElementType();
-                    any = elemExTypeEnu.ANY.toString();
-                }
+             String inType = null;
+             String any = null;
+             GraphScene scene = (GraphScene) graphObject.getScene();
+             PresentationElement presentationElement = (PresentationElement) scene.findObject(graphObject);
+             if (presentationElement.getSubjectCount() == 1) {
+                 if (elemTypeEnu != null) {
+                     inType = presentationElement.getFirstSubject().getElementType();
+                 } else if (elemExTypeEnu != null) {
+                     inType = presentationElement.getFirstSubject().getExpandedElementType();
+                     
+                 }
+             }   any = elemExTypeEnu.ANY.toString();
+
+
+             if ((elementType == null) || (!elementType.equals(inType) && !elementType.equals(any))) {              
+                 Utils.log("ElementByVNChooser:checkElment() return false as elment type = null or elemnt type does not match");
+                 Utils.log("elementType="+elementType);
+                 Utils.log("inType="+inType);
+                 Utils.log("any="+any);
+                 return false;
             }
-
-
-            if ((elementType == null) || (!elementType.equals(inType) && !elementType.equals(any))) {
-                return false;
-            }
-
-            IPresentationElement presElement = graphObject.getPresentationElement();
-            ETList<IElement> subjects = presElement.getSubjects();
+      
+            ETList<IElement> subjects = presentationElement.getSubjects();
             Iterator<IElement> itSubj = subjects.iterator();
             while (itSubj.hasNext()) {
-                IElement sbj = (IElement) itSubj.next();
+                IElement sbj = (IElement) itSubj.next();   
+                //Utils.log("sbj.getName()="+((INamedElement) sbj).getName());
                 if (sbj instanceof INamedElement) {
                     if (comparator.equals(((INamedElement) sbj).getName(), vn)) {
+                        Utils.log("ElementByVNChooser:checkElment() return true as (INamedElement) sbj).getName() = "+ ((INamedElement) sbj).getName());
                         return true;
                     } else if (vn == null && "".equals(((INamedElement) sbj).getName())) {
                         //consider requested null name as empty name
+                        Utils.log("ElementByVNChooser:checkElment() return true as name equals null");
                         return true;
                     }
                 }
-            }
+            }      
+            Utils.log("return false at end");
             return false;
         }
 
@@ -1160,7 +1226,7 @@ continue;       }
          */
         public String getDescription() {
             //
-            return "Choose element with Name: " + vn + "; Type: " + elemTypeEnu + "; or exType: " + elemExTypeEnu + "; string type: " + elementType + ";";
+            return "Choose element by name: " + vn + "; Type: " + elemTypeEnu + "; or exType: " + elemExTypeEnu + "; string type: " + elementType + ";";
         }
     }
 
@@ -1184,17 +1250,24 @@ continue;       }
          * @param graphObject
          * @return
          */
-        public boolean checkElement(IETGraphObject graphObject) {
-            String inType = null;
-            if (graphObject.getPresentationElement().getSubjectCount() == 1) {
-                inType = graphObject.getPresentationElement().getFirstSubject().getElementType();
-            }
+
+         public boolean checkElement(Widget graphObject) {
+             String inType = null;
+             UMLWidgetOperator wo = new UMLWidgetOperator(graphObject);
+             if (wo.getPresentationElement().getSubjectCount() == 1){
+                     inType =  wo.getElementType();
+             }
+//            String inType = null;
+//            if ( getPresentationElement().getSubjectCount() == 1) {
+//                inType =  getPresentationElement().getFirstSubject().getElementType();
+//            }
 
             if ((elementType == null) || (!elementType.equals(inType))) {
                 return false;
             } else {
                 return true;
-            }
+           }
+               
         }
 
         /**
@@ -1205,11 +1278,6 @@ continue;       }
             return "Choose element by Type:" + elementType;
         }
     }
-
-
-
-
-
 
     public static class DefaultNamer implements SetName {
 
@@ -1223,17 +1291,44 @@ continue;       }
          * @param y
          * @param name
          */
-        public void setName(ComponentOperator drawingArea, int x, int y, String name) {
+        public void setName(ComponentOperator co , int x, int y, String name) {
+
+            org.netbeans.jemmy.JemmyProperties.getCurrentOutput().print("setName() from DefaultNamer");
             new EventTool().waitNoEvent(1000);
             for (int i = 0; i < name.length(); i++) {
-                drawingArea.typeKey(name.charAt(i));
+                co.typeKey(name.charAt(i));
             }
-            drawingArea.typeKey('\n');
+            co.typeKey('\n');
             new Timeout("", 500).sleep();
+      
         }
+        
+        public void setName(DiagramOperator diagramOperator, String name ) {
+            setName(diagramOperator, name, org.netbeans.test.umllib.tests.utils.Utils.defaultNewElementName);
+        }
+        
+             
+        public void setName(DiagramOperator diagramOperator, String newName, String oldName) {
+            DiagramElementOperator currentElement = new DiagramElementOperator(diagramOperator, oldName);
+            UMLWidgetOperator lwo = new UMLWidgetOperator(currentElement.getGraphObject());
+            try {
+                UMLWidgetOperator ewo = lwo.findEditableCompartmentWidget();
+                Point p = ewo.getCenterPoint();
+                ewo.clickOn(p, 3);
+                new EventTool().waitNoEvent(500);
+
+                EditControlOperator ec = new EditControlOperator(MainWindowOperator.getDefault());
+                JTextFieldOperator textFieldOperator = ec.getTextFieldOperator();
+                textFieldOperator.clearText();
+                textFieldOperator.enterText(newName);
+                DiagramOperator.getDrawingArea().clickMouse();
+                new EventTool().waitNoEvent(500);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        }
+
     }
-
-
 
 
     public static class LabelsNamer implements SetName {
@@ -1243,19 +1338,32 @@ continue;       }
 
         /**
          *
-         * @param drawingArea
+         * @param co
          * @param x
          * @param y
          * @param name
          */
-        public void setName(ComponentOperator drawingArea, int x, int y, String name) {
-            new LabelsNameElementAction().performPopup(new ActionablePoint(drawingArea, x, y));
+        public void setName(ComponentOperator co, int x, int y, String name) {
+            new LabelsNameElementAction().performPopup(new ActionablePoint(co, x, y));
             for (int i = 0; i < name.length(); i++) {
-                drawingArea.typeKey(name.charAt(i));
+                co.typeKey(name.charAt(i));
             }
-            drawingArea.typeKey('\n');
+            co.typeKey('\n');
             new Timeout("", 500).sleep();
         }
+        
+        //TODO
+         public void setName(DiagramOperator diagramOperator, String name ) {
+            setName(diagramOperator, name, org.netbeans.test.umllib.tests.utils.Utils.defaultNewElementName);
+        }
+         
+        //TODO:   
+        public void setName(DiagramOperator diagramOperator, String newName, String oldName) {
+            DiagramElementOperator currentElement = new DiagramElementOperator(diagramOperator, oldName);
+            UMLWidgetOperator lwo = new UMLWidgetOperator(currentElement.getGraphObject());
+            
+        }
+         
     }
 
     public static class PropertyNamer implements SetName {
@@ -1265,12 +1373,12 @@ continue;       }
 
         /**
          *
-         * @param drawingArea
+         * @param co
          * @param x
          * @param y
          * @param name
          */
-        public void setName(ComponentOperator drawingArea, int x, int y, String name) {
+        public void setName(ComponentOperator co, int x, int y, String name) {
             PropertySheetOperator ps = new PropertySheetOperator();
             Property nmProp = new Property(ps, "Name");
             double nmPntX = ps.tblSheet().getCellRect(nmProp.getRow(), 1, false).getCenterX();
@@ -1282,5 +1390,20 @@ continue;       }
             ps.pushKey(KeyEvent.VK_ENTER);
             new Timeout("", 500).sleep();
         }
+        
+         //TODO
+         public void setName(DiagramOperator diagramOperator, String name ) {
+            setName(diagramOperator, name, org.netbeans.test.umllib.tests.utils.Utils.defaultNewElementName);
+        }
+         
+        //TODO:   
+        public void setName(DiagramOperator diagramOperator, String newName, String oldName) {
+            DiagramElementOperator currentElement = new DiagramElementOperator(diagramOperator, oldName);
+            UMLWidgetOperator lwo = new UMLWidgetOperator(currentElement.getGraphObject());
+            
+        }
+        
+         
     }
+        
 }

@@ -49,16 +49,22 @@
 
 package org.netbeans.test.umllib.values.operatons;
 
-import java.awt.event.KeyEvent;
+import java.awt.Point;
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.modules.uml.diagrams.nodes.OperationWidget;
+import org.netbeans.modules.uml.diagrams.nodes.FeatureWidget;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.test.umllib.CompartmentOperator;
 import org.netbeans.test.umllib.CompartmentTypes;
 import org.netbeans.test.umllib.DiagramElementOperator;
+import org.netbeans.test.umllib.DiagramOperator;
+import org.netbeans.test.umllib.UMLWidgetOperator;
 import org.netbeans.test.umllib.EditControlOperator;
+import org.netbeans.test.umllib.Utils;
 import org.netbeans.test.umllib.util.LabelsAndTitles;
 import org.netbeans.test.umllib.util.PopupConstants;
 import org.netbeans.test.umllib.values.Argument;
@@ -70,14 +76,14 @@ import org.netbeans.test.umllib.values.ValueOperator;
 
 public class OperationContainerOperator extends ValueOperator {
     
-    private DiagramElementOperator elementOperator;
+    private DiagramElementOperator diagramElementOperator;
     private CompartmentOperator operationCompartment;
     
     
     /** Creates a new instance of OperationOperator */
-    public OperationContainerOperator(DiagramElementOperator elementOperator) {
-        this.elementOperator = elementOperator;
-        this.operationCompartment = new CompartmentOperator(elementOperator, CompartmentTypes.OPERATION_LIST_COMPARTMENT);
+    public OperationContainerOperator(DiagramElementOperator diagramElementOperator) {
+        this.diagramElementOperator = diagramElementOperator;
+        this.operationCompartment = new CompartmentOperator(diagramElementOperator, CompartmentTypes.OPERATION_LIST_COMPARTMENT, "Operations");
     }
     
     
@@ -105,19 +111,21 @@ public class OperationContainerOperator extends ValueOperator {
     
     public OperationElement[] getOperations(String name){
         
-        ArrayList<CompartmentOperator> list = operationCompartment.getCompartments();
+        List<Widget> list = operationCompartment.getSource().getChildren();;
         ArrayList<OperationElement> operationList = new ArrayList<OperationElement>();
         
-        for(CompartmentOperator compar : list ){
-            String parse = compar.getName();
-            //System.out.println("--- get operation: \"" +  parse+ "\"");
-            OperationElement elem = OperationElement.parseOperationElement(parse);
-            if (name == null || elem.getName().equals(name)){
-                operationList.add(elem);
+        for (Widget op : list) {
+            if (op instanceof OperationWidget) {
+                String parse = ((FeatureWidget) op).getText();
+                Utils.log(" get operation=  \"" +  parse+ "\"");
+                OperationElement elem = OperationElement.parseOperationElement(parse);
+                Utils.log(" parsed operation name= " + elem.getName());
+                Utils.log(" expect to add operation name=" + name);
+                if (name == null || elem.getName().equals(name)) {
+                    operationList.add(elem);
+                }
             }
-            
-        }
-        
+        }  
         return operationList.toArray(new OperationElement[] {});
     }
     
@@ -145,25 +153,54 @@ public class OperationContainerOperator extends ValueOperator {
     private void addOperationByContextMenu(OperationElement operationElement){
         
         System.out.println("***************************************************");
-        OperationElement old = new OperationElement();
+        OperationElement defaultElement = new OperationElement();
         System.out.println("***  element  = " + operationElement);
-        System.out.println("***  old      = " + old);
+        System.out.println("***  old      = " + defaultElement);
         System.out.println("***  text     = \"" + operationElement.getText() + "\"");
-        System.out.println("***  old text = \"" + old.getText() + "\"");
+        System.out.println("***  old text = \"" + defaultElement.getText() + "\"");
         operationCompartment.getPopup().pushMenu(LabelsAndTitles.POPUP_ADD_OPERATION);
         
+        // Enter Edit control mode
+        Widget source=operationCompartment.getSource();
+        List<Widget> _operations = source.getChildren();
+        if (_operations != null) {
+            for (Widget child : _operations) {           
+                if (child instanceof OperationWidget) {
+                    String parse = ((FeatureWidget) child).getText(); 
+                    OperationElement elem = OperationElement.parseOperationElement(parse);
+                    if (elem.getName().equals(defaultElement.getName())) {
+                        UMLWidgetOperator wo = new UMLWidgetOperator(child);
+                        Point p = wo.getCenterPoint();
+                        wo.clickOn(p, 2);
+                        try {
+                            Thread.sleep(1000);
+                        } catch (Exception ex) {
+                        }
+                        wo.clickOn(p, 2);
+                      }
+                    }
+            }
+        } else
+            Utils.log("AttributeContainterOperator(): _attribute=null");
+       
+        try {
+            Thread.sleep(500);
+        } catch (Exception ex) {
+            
+        }
+                
         EditControlOperator ec = new EditControlOperator();
         JTextFieldOperator textFieldOperator=ec.getTextFieldOperator();
         
         //tf.setText(operationElement.getText());
         textFieldOperator.setCaretPosition(0);
         
-        changeText( operationElement.getVisibility().getValue(), old.getVisibility().getValue(), textFieldOperator);
-        changeText( operationElement.getType().getValue(), old.getType().getValue(), textFieldOperator);
-        changeText( operationElement.getName(), old.getName(), textFieldOperator);
+        changeText( operationElement.getVisibility().getValue(), defaultElement.getVisibility().getValue(), textFieldOperator);
+        changeText( operationElement.getType().getValue(), defaultElement.getType().getValue(), textFieldOperator);
+        changeText( operationElement.getName(), defaultElement.getName(), textFieldOperator);
         
         
-        List<Argument> argList    = operationElement.getArguments();
+        List<Argument> argList = operationElement.getArguments();
         
         // TBD: should add multiple arguments!!!
         
@@ -174,6 +211,12 @@ public class OperationContainerOperator extends ValueOperator {
         }
         
         pressEnter(textFieldOperator);
+        DiagramOperator.getDrawingArea().clickMouse();
+        try {
+            Thread.sleep(1000);
+        } catch (Exception ex) {
+            
+        }
     }
     
     

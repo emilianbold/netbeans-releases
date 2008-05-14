@@ -200,7 +200,7 @@ public class OperationRE implements IOperationRE
       return m_cpElementLocator;
    }
 
-   protected void insertMessage(IElement pFromElement, IElement pToElement, IOperation pOperation, int kind, int lLineNumber)
+   protected IMessage insertMessage(IElement pFromElement, IElement pToElement, IOperation pOperation, int kind, int lLineNumber)
    {
       // Input parameters are checked by the corresponding InsertMessage() calls.
 
@@ -235,7 +235,7 @@ public class OperationRE implements IOperationRE
 
          if (IMessageKind.MK_SYNCHRONOUS == kind)
          {
-            insertMessage(pToElement, cpLifeline, pOperation, IMessageKind.MK_RESULT, lLineNumber);
+            insertMessage(pToElement, cpLifeline, pOperation, IMessageKind.MK_RESULT, lLineNumber).setSendingMessage(cpMessage);
          }
       }
       else
@@ -251,6 +251,7 @@ public class OperationRE implements IOperationRE
       {
          cpMessage.setLineNumber(lLineNumber);
       }
+      return cpMessage;
    }
 
    protected IClassifier getClassifier(IREClass pREClass)

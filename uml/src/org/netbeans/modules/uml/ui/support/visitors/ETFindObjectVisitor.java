@@ -43,7 +43,6 @@
 
 package org.netbeans.modules.uml.ui.support.visitors;
 
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.IETGraphObject;
 
 /**
  * @author KevinM
@@ -52,16 +51,17 @@ import org.netbeans.modules.uml.ui.support.viewfactorysupport.IETGraphObject;
  */
 public class ETFindObjectVisitor implements IETGraphObjectVisitor
 {
-   protected IETGraphObject searchFor;
-
-   public ETFindObjectVisitor(IETGraphObject searchingForObject)
-   {
-      searchFor = searchingForObject;
-   }
-
-   public boolean visit(IETGraphObject object)
-   {
-      // If the objects are equal break the traversal.
-      return object != searchFor;
-   }
+    // TODO: meteora
+//   protected IETGraphObject searchFor;
+//
+//   public ETFindObjectVisitor(IETGraphObject searchingForObject)
+//   {
+//      searchFor = searchingForObject;
+//   }
+//
+//   public boolean visit(IETGraphObject object)
+//   {
+//      // If the objects are equal break the traversal.
+//      return object != searchFor;
+//   }
 }

@@ -42,12 +42,7 @@
 
 package org.netbeans.modules.uml.ui.support;
 
-import com.tomsawyer.util.TSObject;
-//import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
-import org.netbeans.modules.uml.core.support.umlutils.ETList;
-import org.netbeans.modules.uml.ui.products.ad.diagramengines.DiagramEngineResources;
-//import org.netbeans.modules.uml.ui.support.viewfactorysupport.TypeConversions;
-//import org.openide.util.NbBundle;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -56,7 +51,7 @@ import org.netbeans.modules.uml.ui.products.ad.diagramengines.DiagramEngineResou
 public class ElementDeletePanel extends javax.swing.JPanel {
     
     /** Creates new form NewJPanel */
-    public ElementDeletePanel(ETList<TSObject> objects, boolean displayRemove) {
+    public ElementDeletePanel(boolean displayRemove) {
         initComponents();
         jCheckBox2.setVisible(displayRemove);
 //        if (objects.size() > 1) {
@@ -72,7 +67,7 @@ public class ElementDeletePanel extends javax.swing.JPanel {
 //                        "ElementDeletePanel.jLabel1.text_unnamed", e.getElementType()));
 //            }
 //        }
-        jLabel1.setText(DiagramEngineResources.getString("ADCoreEngine.DELETE_GRAPH_OBJECTS_MESSAGE"));
+        jLabel1.setText(NbBundle.getMessage(ElementDeletePanel.class, "DELETE_GRAPH_OBJECTS_MESSAGE"));
     }
 
     public boolean getDeleteFromOriginal()

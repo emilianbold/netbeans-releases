@@ -43,17 +43,13 @@
 
 package org.netbeans.modules.uml.core.metamodel.diagrams;
 
-import java.awt.Frame;
-import java.awt.Rectangle;
 
-import org.netbeans.modules.uml.common.generics.ETPairT;
+import java.io.IOException;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
-import org.netbeans.modules.uml.core.support.umlsupport.IETPoint;
-import org.netbeans.modules.uml.core.support.umlsupport.IETRect;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
-import org.netbeans.modules.uml.core.workspacemanagement.ITwoPhaseCommit;
+import org.openide.filesystems.FileLock;
 
 public interface IDiagram extends IPresentationElement
 {
@@ -72,13 +68,13 @@ public interface IDiagram extends IPresentationElement
 	/**
 	 * Saves the diagram.
 	*/
-	public void save();
+	public void save() throws IOException;
 
-   /** 
-    * Allows the diagram to perform some cleanup before the diagram is actually
-    * closed. 
-    */
-   public void preClose();
+//       /** 
+//        * Allows the diagram to perform some cleanup before the diagram is actually
+//        * closed. 
+//        */
+//       public void preClose();
    
 	/**
 	 * Is this diagram readonly?
@@ -88,19 +84,19 @@ public interface IDiagram extends IPresentationElement
 	/**
 	 * Is this diagram readonly?
 	*/
-	public void setReadOnly( boolean value );
+	public FileLock setReadOnly( boolean value );
 
 	/**
 	 * Saves the diagram as a BMP, EMF or JPG file.
 	*/
 	public void saveAsGraphic( String sFilename, /* SaveAsGraphicKind */ int nKind );
 
-	/**
-	 * Saves the diagram as a BMP, EMF or JPG file.  Use pMap to get the details of the graphic.
-	*/
-	public IGraphicExportDetails saveAsGraphic2( String sFilename, /* SaveAsGraphicKind */ int nKind );
+//	/**
+//	 * Saves the diagram as a BMP, EMF or JPG file.  Use pMap to get the details of the graphic.
+//	*/
+//	public IGraphicExportDetails saveAsGraphic( String sFilename, /* SaveAsGraphicKind */ int nKind );
 	
-	public IGraphicExportDetails saveAsGraphic2( String sFilename, /* SaveAsGraphicKind */ int nKind, double scale);
+	public IGraphicExportDetails saveAsGraphic( String sFilename, /* SaveAsGraphicKind */ int nKind, double scale);
 
 	/**
 	 * Get/Set the name of this drawing.
@@ -127,11 +123,11 @@ public interface IDiagram extends IPresentationElement
 	*/
 	public String getNameWithAlias();
 
-	/**
-	 * Sets / Gets the name or alias of this element.
-	*/
-	public void setNameWithAlias( String value );
-
+//	/**
+//	 * Sets / Gets the name or alias of this element.
+//	*/
+//	public void setNameWithAlias( String value );
+//
 	/**
 	 * Retrieves the fully qualified name of the element. This will be in the form 'A::B::C'.
 	*/
@@ -142,90 +138,90 @@ public interface IDiagram extends IPresentationElement
 	*/
 	public String getFilename();
 
-	/**
-	 * Set/Get the current layout style.
-	*/
-	public void setLayoutStyle( /* LayoutKind */ int value );
-
-	/**
-	 * Set/Get the current layout style.
-	*/
-	public int getLayoutStyle();
-
-	/**
-	 * Set/Get the current layout style.
-	*/
-	public void setLayoutStyleSilently( /* LayoutKind */ int value );
-
-	/**
-	 * Immediately sets the layout style.  It bypasses the delayed actions.
-	*/
-	public void immediatelySetLayoutStyle( /* LayoutKind */ int nLayoutStyle, boolean bSilent );
-
-	/**
-	 * Use a delayed action to perform the layout style, possibly ignoring containment
-	*/
-	public void delayedLayoutStyle( /* LayoutKind */ int nLayoutStyle, boolean bIgnoreContainment );
-
-	/**
-	 * Show/Close the image dialog..
-	*/
-	public void showImageDialog();
-
-	/**
-	 * Print preview this window
-	*/
-	public void printPreview( String sTitle, boolean bCanMoveParent );
-
-	/**
-	 * Shows the print setup dialog
-	*/
-	public void loadPrintSetupDialog();
-
-	/**
-	 * Prints this control
-	*/
-	public void printGraph( boolean bShowDialog );
-
-	/**
-	 * Is the diagram currently undergoing layout.
-	*/
-	public boolean getLayoutRunning();
-
-	/**
-	 * What is the current zoom of the diagram.
-	*/
-	public double getCurrentZoom();
-
-	/**
-	 * Get the extreme values for the zoom.
-	*/
-	public ETPairT<Double, Double> getExtremeZoomValues();
-
-	/**
-	 * Zoom the diagram.
-	*/
-	public void zoom( double nScaleFactor );
-
-	/**
-	 * Zoom in.
-	*/
-	public void zoomIn();
-
-	/**
-	 * Zoom out.
-	*/
-	public void zoomOut();
-
-	/**
-	 * Fit the current diagram to the window.
-	*/
-	public void fitInWindow();
-
-	/**
-	 * Show the custom zoom dialog.
-	*/
-	public void onCustomZoom();
+//	/**
+//	 * Set/Get the current layout style.
+//	*/
+//	public void setLayoutStyle( /* LayoutKind */ int value );
+//
+//	/**
+//	 * Set/Get the current layout style.
+//	*/
+//	public int getLayoutStyle();
+//
+//	/**
+//	 * Set/Get the current layout style.
+//	*/
+//	public void setLayoutStyleSilently( /* LayoutKind */ int value );
+//
+//	/**
+//	 * Immediately sets the layout style.  It bypasses the delayed actions.
+//	*/
+//	public void immediatelySetLayoutStyle( /* LayoutKind */ int nLayoutStyle, boolean bSilent );
+//
+//	/**
+//	 * Use a delayed action to perform the layout style, possibly ignoring containment
+//	*/
+//	public void delayedLayoutStyle( /* LayoutKind */ int nLayoutStyle, boolean bIgnoreContainment );
+//
+//	/**
+//	 * Show/Close the image dialog..
+//	*/
+//	public void showImageDialog();
+//
+//	/**
+//	 * Print preview this window
+//	*/
+//	public void printPreview( String sTitle, boolean bCanMoveParent );
+//
+//	/**
+//	 * Shows the print setup dialog
+//	*/
+//	public void loadPrintSetupDialog();
+//
+//	/**
+//	 * Prints this control
+//	*/
+//	public void printGraph( boolean bShowDialog );
+//
+//	/**
+//	 * Is the diagram currently undergoing layout.
+//	*/
+//	public boolean getLayoutRunning();
+//
+//	/**
+//	 * What is the current zoom of the diagram.
+//	*/
+//	public double getCurrentZoom();
+//
+//	/**
+//	 * Get the extreme values for the zoom.
+//	*/
+//	public ETPairT<Double, Double> getExtremeZoomValues();
+//
+//	/**
+//	 * Zoom the diagram.
+//	*/
+//	public void zoom( double nScaleFactor );
+//
+//	/**
+//	 * Zoom in.
+//	*/
+//	public void zoomIn();
+//
+//	/**
+//	 * Zoom out.
+//	*/
+//	public void zoomOut();
+//
+//	/**
+//	 * Fit the current diagram to the window.
+//	*/
+//	public void fitInWindow();
+//
+//	/**
+//	 * Show the custom zoom dialog.
+//	*/
+//	public void onCustomZoom();
 
 	/**
 	 * Gets the drawing area namespace
@@ -242,90 +238,90 @@ public interface IDiagram extends IPresentationElement
 	*/
 	public INamespace getNamespaceForCreatedElements();
 
-	/**
-	 * Load this diagram from a .etl file.
-	*/
-	public int load( String sFilename, boolean fitToZoom );
+//	/**
+//	 * Load this diagram from a .etl file.
+//	*/
+//	public int load( String sFilename );
 
-	/**
-	 * Puts the drawing area into a certain mouse mode
-	*/
-	public void enterMode( /* DrawingToolKind */ int nDrawingToolKind );
-
-	/**
-	 * Puts the drawing area into a specific mode based on the sButtonID.  sButtonID is a key in the PresentationTypes.etc file.
-	*/
-	public void enterModeFromButton( String sButtonID );
-
-	/**
-	 * Invalidates the drawing area
-	*/
-	public void refresh( boolean bPostMessage /*=false*/ );
-
-	/**
-	 * Cut the selected objects
-	*/
-	public void cut();
-
-	/**
-	 * Copy the selected objects
-	*/
-	public void copy();
-
-	/**
-	 * Paste the selected objects
-	*/
-	public void paste();
-
-	/**
-	 * Clears the clipboard of selected objects
-	*/
-	public void clearClipboard();
-
-	/**
-	 * Deletes the selected objects
-	*/
-	public void deleteSelected( boolean bAskUser );
-
-	/**
-	 * Are there items on the clipbaord
-	*/
-	public void itemsOnClipboard( boolean bItemsOnClipboard );
+//	/**
+//	 * Puts the drawing area into a certain mouse mode
+//	*/
+//	public void enterMode( /* DrawingToolKind */ int nDrawingToolKind );
+//
+//	/**
+//	 * Puts the drawing area into a specific mode based on the sButtonID.  sButtonID is a key in the PresentationTypes.etc file.
+//	*/
+//	public void enterModeFromButton( String sButtonID );
+//
+//	/**
+//	 * Invalidates the drawing area
+//	*/
+//	public void refresh( boolean bPostMessage /*=false*/ );
+//
+//	/**
+//	 * Cut the selected objects
+//	*/
+//	public void cut();
+//
+//	/**
+//	 * Copy the selected objects
+//	*/
+//	public void copy();
+//
+//	/**
+//	 * Paste the selected objects
+//	*/
+//	public void paste();
+//
+//	/**
+//	 * Clears the clipboard of selected objects
+//	*/
+//	public void clearClipboard();
+//
+//	/**
+//	 * Deletes the selected objects
+//	*/
+//	public void deleteSelected( boolean bAskUser );
+//
+//	/**
+//	 * Are there items on the clipbaord
+//	*/
+//	public void itemsOnClipboard( boolean bItemsOnClipboard );
 
 	/**
 	 * Select all presentation elements
 	*/
 	public void selectAll( boolean bSelect );
 
-	/**
-	 * Select all similar presentation elements
-	*/
-	public void selectAllSimilar();
-
-	/**
-	 * Transforms a rect from logical coordinates to device coordinates.
-	*/
-	public IETRect logicalToDeviceRect( IETRect rcLogical );
-
-	/**
-	 * Transforms a point from logical coordinates to device coordinates.
-	*/
-	public IETPoint logicalToDevicePoint( IETPoint ptLogical );
-
-	/**
-	 * Transforms a rect from device coordinates to logical coordinates.
-	*/
-	public IETRect deviceToLogicalRect( IETRect rcDevice );
-
-	/**
-	 * Transforms a point from device coordinates to logical coordinates.
-	*/
-	public IETPoint deviceToLogicalPoint( IETPoint ptDevice );
-   
-   /**
-    * Transforms a point from device coordinates to logical coordinates.
-   */
-   public IETPoint deviceToLogicalPoint( int x, int y );
+//	/**
+//	 * Select all similar presentation elements
+//	*/
+//	public void selectAllSimilar();
+//
+//	/**
+//	 * Transforms a rect from logical coordinates to device coordinates.
+//	*/
+//	public IETRect logicalToDeviceRect( IETRect rcLogical );
+//
+//	/**
+//	 * Transforms a point from logical coordinates to device coordinates.
+//	*/
+//	public IETPoint logicalToDevicePoint( IETPoint ptLogical );
+//
+//	/**
+//	 * Transforms a rect from device coordinates to logical coordinates.
+//	*/
+//	public IETRect deviceToLogicalRect( IETRect rcDevice );
+//
+//	/**
+//	 * Transforms a point from device coordinates to logical coordinates.
+//	*/
+//	public IETPoint deviceToLogicalPoint( IETPoint ptDevice );
+//   
+//   /**
+//    * Transforms a point from device coordinates to logical coordinates.
+//   */
+//   public IETPoint deviceToLogicalPoint( int x, int y );
 
 	/**
 	 * Centers the drawing area on the presentation element.
@@ -337,15 +333,15 @@ public interface IDiagram extends IPresentationElement
 	*/
 	public void centerPresentationElement2( String sXMIID, boolean bSelectIt, boolean bDeselectAllOthers );
 
-	/**
-	 * Does the stacking command nStackingCommand make sense?  Used for update of stacking order buttons.
-	*/
-	public boolean isStackingCommandAllowed( /* StackingOrderKind */ int nStackingCommand );
-
-	/**
-	 * Execute this stacking command.
-	*/
-	public void executeStackingCommand( /* StackingOrderKind */ int nStackingCommand );
+//	/**
+//	 * Does the stacking command nStackingCommand make sense?  Used for update of stacking order buttons.
+//	*/
+//	public boolean isStackingCommandAllowed( /* StackingOrderKind */ int nStackingCommand );
+//
+//	/**
+//	 * Execute this stacking command.
+//	*/
+//	public void executeStackingCommand( /* StackingOrderKind */ int nStackingCommand );
 
 	/**
 	 * Does this graph have edges, labels or nodes?
@@ -356,47 +352,47 @@ public interface IDiagram extends IPresentationElement
 	 * Get/Set the type of this drawing.
 	*/
 	public int getDiagramKind();
+//
+//	/**
+//	 * Get/Set the type of this drawing.
+//	*/
+//	public void setDiagramKind( /* DiagramKind */ int value );
 
 	/**
 	 * Get/Set the type of this drawing.
 	*/
-	public void setDiagramKind( /* DiagramKind */ int value );
+	public String getDiagramKindAsString();
+//
+//	/**
+//	 * Get/Set the type of this drawing.
+//	*/
+//	public void setDiagramKind2( String value );
+//
+//	/**
+//	 * Initialize a newly created diagram.  This adds the diagram to the current IWorkspace.
+//	*/
+//	public void initializeNewDiagram( INamespace pNamespace, String sName, /* DiagramKind */ int pKind );
 
-	/**
-	 * Get/Set the type of this drawing.
-	*/
-	public String getDiagramKind2();
-
-	/**
-	 * Get/Set the type of this drawing.
-	*/
-	public void setDiagramKind2( String value );
-
-	/**
-	 * Initialize a newly created diagram.  This adds the diagram to the current IWorkspace.
-	*/
-	public void initializeNewDiagram( INamespace pNamespace, String sName, /* DiagramKind */ int pKind );
-
-	/**
-	 * Inverts the selected objects.
-	*/
-	public void invertSelection();
-
+//	/**
+//	 * Inverts the selected objects.
+//	*/
+//	public void invertSelection();
+//
 	/**
 	 * Returns a list of the selected items.
 	*/
 	public ETList<IPresentationElement> getSelected();
-
-	/**
-	 * Returns a list of the selected items that are of the indicated type (ie Class).
-	*/
-	public ETList<IPresentationElement> getSelectedByType( String bstrType );
-
-	/**
-	 * Returns the HWND to the drawing area.
-	*/
-	public Frame getWindowHandle();
-
+//
+//	/**
+//	 * Returns a list of the selected items that are of the indicated type (ie Class).
+//	*/
+//	public ETList<IPresentationElement> getSelectedByType( String bstrType );
+//
+//	/**
+//	 * Returns the HWND to the drawing area.
+//	*/
+//	public Frame getWindowHandle();
+//
 	/**
 	 * Returns a list of all the items.
 	*/
@@ -405,162 +401,162 @@ public interface IDiagram extends IPresentationElement
 	/**
 	 * Returns a list of all the items that represent the IElement.
 	*/
-	public ETList<IPresentationElement> getAllItems2( IElement pModelElement );
+	public ETList<IPresentationElement> getAllItems( IElement pModelElement );
 
 	/**
 	 * Returns a list of all the model elements on the diagram.
 	*/
-	public ETList<IElement> getAllItems3();
+//	public ETList<IElement> getAllItems3();
 
-	/**
-	 * Select all the objects on the diagram that are of the indicated type
-	*/
-	public ETList<IPresentationElement> getAllByType( String bstrType );
-
-	/**
-	 * Is the layout properties window open.
-	*/
-	public boolean getIsLayoutPropertiesDialogOpen();
-
-	/**
-	 * Show/Close the layout property window.
-	*/
-	public void layoutPropertiesDialog( boolean bShow );
-
-	/**
-	 * Is the graph preferences window open.
-	*/
-	public boolean getIsGraphPreferencesDialogOpen();
-
-	/**
-	 * Show/Close the graph preferences window.
-	*/
-	public void graphPreferencesDialog( boolean bShow );
-
-	/**
-	 * Is the overview window open.
-	*/
-	public boolean getIsOverviewWindowOpen();
-
-	/**
-	 * Show/Hide the overview window.
-	*/
-	public void overviewWindow( boolean bShowIt );
-
-	/**
-	 * Returns the window rect of the overview window, if it is open.
-	*/
-	public Rectangle getOverviewWindowRect( int pLeft, int pTop, int pWidth, int pHeight );
-
-	/**
-	 * Sets the window rect of the overview window, if it is open.
-	*/
-	public void setOverviewWindowRect( int nLeft, int nTop, int nWidth, int nHeight );
-
-	/**
-	 * Are the tooltips enabled?
-	*/
-	public boolean getAreTooltipsEnabled();
-
-	/**
-	 * Enable/Disable tooltips.
-	*/
-	public void setEnableTooltips( boolean bEnable );
-
-	/**
-	 * Does this diagram have selected nodes?
-	*/
-	public boolean getHasSelected( boolean bDeep );
-
-	/**
-	 * Does this diagram have selected nodes?
-	*/
-	public boolean getHasSelectedNodes( boolean bDeep );
-
-	/**
-	 * Hide/Show the grid
-	*/
-	public boolean getShowGrid();
-
-	/**
-	 * Hide/Show the grid
-	*/
-	public void setShowGrid( boolean value );
-
-	/**
-	 * Sets/Gets the current grid size
-	*/
-	public int getGridSize();
-
-	/**
-	 * Sets/Gets the current grid size
-	*/
-	public void setGridSize( int value );
-
-	/**
-	 * Sets/Gets the type of grid this is being displayed
-	*/
-	public int getGridType();
-
-	/**
-	 * Sets/Gets the type of grid this is being displayed
-	*/
-	public void setGridType( /* GridKind */ int value );
-
-	/**
-	 * Returns the two phase commit object for the diagram.
-	*/
-	public ITwoPhaseCommit getTwoPhaseCommit();
-
-	/**
-	 * Get/Set the locked state for the current mode.
-	*/
-	public boolean getModeLocked();
-
-	/**
-	 * Get/Set the locked state for the current mode.
-	*/
-	public void setModeLocked( boolean value );
-
-	/**
-	 * Used to set sticky buttons.  The user of the diagram can set/get this to determine when to lock/unlock the current tool.
-	*/
-	public int getLastSelectedButton();
-
-	/**
-	 * Used to set sticky buttons.  The user of the diagram can set/get this to determine when to lock/unlock the current tool.
-	*/
-	public void setLastSelectedButton( int value );
-
-	/**
-	 * Validates the diagram.
-	*/
-	public IDiagramValidationResult validateDiagram( boolean bOnlySelectedElements, IDiagramValidation pDiagramValidation );
-
-	/**
-	 * Sync the selected (or all) elements.
-	*/
-	public void syncElements( boolean bOnlySelectedElements );
-
-	/**
-	 * Causes the diagram to take focus.
-	*/
-	public void setFocus();
-
-	/**
-	 * Try to reconnect the link from pOldNode to pNewNode.
-	*/
-	public boolean reconnectLink( IPresentationElement pLink, IPresentationElement pFromNode, IPresentationElement pToNode );
-
-	/**
-	 * Resizes the elements (selected or all) to their contents.
-	*/
-	public void sizeToContents( boolean bJustSelectedElements );
-
-	/**
-	 * Posts a delayed action to the diagram.  Use when you may be in a dangerous callstack to perform the necessary action
-	*/
-	public void postDelayedAction( IDelayedAction pAction );
+//	/**
+//	 * Select all the objects on the diagram that are of the indicated type
+//	*/
+//	public ETList<IPresentationElement> getAllByType( String bstrType );
+//
+//	/**
+//	 * Is the layout properties window open.
+//	*/
+//	public boolean getIsLayoutPropertiesDialogOpen();
+//
+//	/**
+//	 * Show/Close the layout property window.
+//	*/
+//	public void layoutPropertiesDialog( boolean bShow );
+//
+//	/**
+//	 * Is the graph preferences window open.
+//	*/
+//	public boolean getIsGraphPreferencesDialogOpen();
+//
+//	/**
+//	 * Show/Close the graph preferences window.
+//	*/
+//	public void graphPreferencesDialog( boolean bShow );
+//
+//	/**
+//	 * Is the overview window open.
+//	*/
+//	public boolean getIsOverviewWindowOpen();
+//
+//	/**
+//	 * Show/Hide the overview window.
+//	*/
+//	public void overviewWindow( boolean bShowIt );
+//
+//	/**
+//	 * Returns the window rect of the overview window, if it is open.
+//	*/
+//	public Rectangle getOverviewWindowRect( int pLeft, int pTop, int pWidth, int pHeight );
+//
+//	/**
+//	 * Sets the window rect of the overview window, if it is open.
+//	*/
+//	public void setOverviewWindowRect( int nLeft, int nTop, int nWidth, int nHeight );
+//
+//	/**
+//	 * Are the tooltips enabled?
+//	*/
+//	public boolean getAreTooltipsEnabled();
+//
+//	/**
+//	 * Enable/Disable tooltips.
+//	*/
+//	public void setEnableTooltips( boolean bEnable );
+//
+//	/**
+//	 * Does this diagram have selected nodes?
+//	*/
+//	public boolean getHasSelected( boolean bDeep );
+//
+//	/**
+//	 * Does this diagram have selected nodes?
+//	*/
+//	public boolean getHasSelectedNodes( boolean bDeep );
+//
+//	/**
+//	 * Hide/Show the grid
+//	*/
+//	public boolean getShowGrid();
+//
+//	/**
+//	 * Hide/Show the grid
+//	*/
+//	public void setShowGrid( boolean value );
+//
+//	/**
+//	 * Sets/Gets the current grid size
+//	*/
+//	public int getGridSize();
+//
+//	/**
+//	 * Sets/Gets the current grid size
+//	*/
+//	public void setGridSize( int value );
+//
+//	/**
+//	 * Sets/Gets the type of grid this is being displayed
+//	*/
+//	public int getGridType();
+//
+//	/**
+//	 * Sets/Gets the type of grid this is being displayed
+//	*/
+//	public void setGridType( /* GridKind */ int value );
+//
+//	/**
+//	 * Returns the two phase commit object for the diagram.
+//	*/
+//	public ITwoPhaseCommit getTwoPhaseCommit();
+//
+//	/**
+//	 * Get/Set the locked state for the current mode.
+//	*/
+//	public boolean getModeLocked();
+//
+//	/**
+//	 * Get/Set the locked state for the current mode.
+//	*/
+//	public void setModeLocked( boolean value );
+//
+//	/**
+//	 * Used to set sticky buttons.  The user of the diagram can set/get this to determine when to lock/unlock the current tool.
+//	*/
+//	public int getLastSelectedButton();
+//
+//	/**
+//	 * Used to set sticky buttons.  The user of the diagram can set/get this to determine when to lock/unlock the current tool.
+//	*/
+//	public void setLastSelectedButton( int value );
+//
+//	/**
+//	 * Validates the diagram.
+//	*/
+//	public IDiagramValidationResult validateDiagram( boolean bOnlySelectedElements, IDiagramValidation pDiagramValidation );
+//
+//	/**
+//	 * Sync the selected (or all) elements.
+//	*/
+//	public void syncElements( boolean bOnlySelectedElements );
+//
+//	/**
+//	 * Causes the diagram to take focus.
+//	*/
+//	public void setFocus();
+//
+//	/**
+//	 * Try to reconnect the link from pOldNode to pNewNode.
+//	*/
+//	public boolean reconnectLink( IPresentationElement pLink, IPresentationElement pFromNode, IPresentationElement pToNode );
+//
+//	/**
+//	 * Resizes the elements (selected or all) to their contents.
+//	*/
+//	public void sizeToContents( boolean bJustSelectedElements );
+//
+//	/**
+//	 * Posts a delayed action to the diagram.  Use when you may be in a dangerous callstack to perform the necessary action
+//	*/
+//	public void postDelayedAction( IDelayedAction pAction );
 
 	/**
 	 * Receives notification of a broadcast.  Used by the IProxyDiagramManager to broadcast functions to all open views.
@@ -570,12 +566,12 @@ public interface IDiagram extends IPresentationElement
 	/**
 	 * IsDirty is true when there is data that needs to be saved
 	*/
-	public boolean getIsDirty();
+	public boolean isDirty();
 
-	/**
-	 * IsDirty is true when there is data that needs to be saved
-	*/
-	public void setIsDirty( boolean value );
+//	/**
+//	 * IsDirty is true when there is data that needs to be saved
+//	*/
+//	public void setIsDirty( boolean value );
 
 	/**
 	 * Is this diagram the same diagram as the one passed in?
@@ -592,10 +588,10 @@ public interface IDiagram extends IPresentationElement
 	*/
 	public ICoreRelationshipDiscovery getRelationshipDiscovery();
 
-	/**
-	 * Processes all the diagram messages
-	*/
-	public void pumpMessages( boolean bJustDrawingMessages );
+//	/**
+//	 * Processes all the diagram messages
+//	*/
+//	public void pumpMessages( boolean bJustDrawingMessages );
 
 	/**
 	 * Adds an associated diagram
@@ -667,31 +663,31 @@ public interface IDiagram extends IPresentationElement
 	*/
 	public boolean isAssociatedElement2( IElement pElement );
 
-   /**
-    * This method sets wheter the graph should be updated automatically or on
-    * request.
-    * 
-    * @param value <code>true</code> if the boudns should update automatcially.
-    */
-   public void setAutoUpdateBounds(boolean value);
-
-	/*
-	 * Returns if the displaywindow should be allowed to redraw.
-	 */   
-	public boolean getAllowRedraw();
-	
-	/*
-	 * Set if window should process draw events or ignore them.
-	 */
-	public void setAllowRedraw(boolean allow);
-
-	/*
-	 * Set when the diagrma is creating itself from selected elements.
-	 */
-	public void setPopulating(boolean busy);
-	
-	/*
-	 * Returns if the is busy populating
-	 */
-	public boolean getPopulating();
+//   /**
+//    * This method sets wheter the graph should be updated automatically or on
+//    * request.
+//    * 
+//    * @param value <code>true</code> if the boudns should update automatcially.
+//    */
+//   public void setAutoUpdateBounds(boolean value);
+//
+//	/*
+//	 * Returns if the displaywindow should be allowed to redraw.
+//	 */   
+//	public boolean getAllowRedraw();
+//	
+//	/*
+//	 * Set if window should process draw events or ignore them.
+//	 */
+//	public void setAllowRedraw(boolean allow);
+//
+//	/*
+//	 * Set when the diagrma is creating itself from selected elements.
+//	 */
+//	public void setPopulating(boolean busy);
+//	
+//	/*
+//	 * Returns if the is busy populating
+//	 */
+//	public boolean getPopulating();
 }

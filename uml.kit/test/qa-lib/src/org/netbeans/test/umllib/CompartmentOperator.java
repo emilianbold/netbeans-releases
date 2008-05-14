@@ -46,24 +46,17 @@ import java.awt.Font;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.List;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.Timeouts;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
-import org.netbeans.modules.uml.core.support.umlsupport.ETDeviceRect;
-import org.netbeans.modules.uml.core.support.umlsupport.ETRect;
-import org.netbeans.modules.uml.core.support.umlsupport.IETRect;
-import org.netbeans.modules.uml.core.support.umlutils.ETList;
-import org.netbeans.modules.uml.ui.products.ad.drawengines.ETNodeDrawEngine;
-import org.netbeans.modules.uml.ui.products.ad.drawengines.INodeDrawEngine;
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.ETRectEx;
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.ICompartment;
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.IListCompartment;
+import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.modules.uml.diagrams.nodes.ElementListWidget;
+import org.netbeans.modules.uml.diagrams.nodes.FeatureWidget;
 import org.netbeans.test.umllib.actions.Actionable;
 import org.netbeans.test.umllib.exceptions.NotFoundException;
 import org.netbeans.test.umllib.util.JPopupByPointChooser;
@@ -88,13 +81,14 @@ public class CompartmentOperator implements Actionable {
     }
     
     protected DiagramElementOperator sourceElement = null;
-    protected ICompartment sourceCompartment = null;
+    protected Widget sourceCompartment = null;
+    protected DrawingAreaOperator drawingArea = null;
     
     /**
      * 
      * @return 
      */
-    public ICompartment getSource(){
+    public Widget getSource() {
         return sourceCompartment;
     }
     
@@ -127,26 +121,37 @@ public class CompartmentOperator implements Actionable {
     public CompartmentOperator(DiagramElementOperator el, CompartmentTypes type) throws NotFoundException{
         this(el, waitForCompartment(el, new CompartmentByTypeChooser(type), 0));
     }
+    
+      public CompartmentOperator(DiagramElementOperator el, CompartmentTypes type, String typeInfo) throws NotFoundException{
+        
+        this(el, waitForCompartment(el, new CompartmentByTypeChooser(type), 0, typeInfo));
+    }
     /**
      * Construct compartment by compartment class
      * @param el Instance of DiagramElementOperator
-     * @param co Instance of ICompartment
+     * @param co Instance of Widget
      */
-    public CompartmentOperator(DiagramElementOperator el, ICompartment co){
+    public CompartmentOperator(DiagramElementOperator el, Widget co){
         sourceElement = el;
-        sourceCompartment = co;
+        sourceCompartment = co; 
+        drawingArea = DiagramOperator.getDrawingArea();
     }
     
+     
     
     /**
-     *method return name of comparment from compartment source
-     *@return compartmant name
+     * method return name of comparment from compartment source
+     * @return compartmant name
      */
     public String getName(){
-        return sourceCompartment.getName();
+       return ((FeatureWidget)sourceCompartment).getText();
+       
+     
     }
     
-    
+    public static Widget waitForCompartment(final DiagramElementOperator source, final CompartmentChooser chooser, final int index) throws NotFoundException {
+         return waitForCompartment(source, chooser, index, "");
+    }
     /**
      * Wait for suitable compartment
      * @param source DiagramElementOperator to look in
@@ -155,11 +160,12 @@ public class CompartmentOperator implements Actionable {
      * @throws qa.uml.exceptions.NotFoundException When now suitable compartment found
      * @return CompartmentOperator if found
      */
-    public static ICompartment waitForCompartment(final DiagramElementOperator source, final CompartmentChooser chooser, final int index) throws NotFoundException {
-        try{
+      
+     public static Widget waitForCompartment(final DiagramElementOperator source, final CompartmentChooser chooser, final int index, final String type) throws NotFoundException { 
+         try{
             Waiter w = new Waiter(new Waitable() {
                 public Object actionProduced(Object obj) {
-                    return findCompartment(source, chooser, index);
+                   return findCompartment(source, chooser, index, type);
                 }
                 public String getDescription() {
                     return("Wait for " + chooser.getDescription());
@@ -169,7 +175,7 @@ public class CompartmentOperator implements Actionable {
             Timeouts t = JemmyProperties.getCurrentTimeouts();
             t.setTimeout("Waiter.WaitingTime", t.getTimeout("CompartmentOperator.WaitCompartmentTime"));
             
-            ICompartment c = (ICompartment)w.waitAction(null);
+            Widget c = (Widget)w.waitAction(null);
             if(c!=null) {
                 return c;
             }
@@ -188,32 +194,33 @@ public class CompartmentOperator implements Actionable {
      * @param index index
      * @return CompartmentOperator if found
      */
-    public static ICompartment findCompartment(DiagramElementOperator source, CompartmentChooser chooser, int index) {
+        
+    public static Widget findCompartment(DiagramElementOperator source, CompartmentChooser chooser, int index, String type) {
         if (( source == null ) || (chooser == null)) {
             return null;
         }
         
-        ETList<ICompartment> compartments = source.getGraphObject().getEngine().getCompartments();
-        if(compartments == null){
-            return null;
-        }
+        ArrayList<Widget> compartmentsFound = new ArrayList<Widget>();
         
-        Iterator<ICompartment> it = compartments.iterator();
-        ArrayList<ICompartment> compartmentsFound = new ArrayList<ICompartment>();
-        while(it.hasNext()) {
-            ICompartment co = it.next();
-            if (chooser.checkCompartment(co)){
-                compartmentsFound.add(co);
+        List<Widget> children = source.getGraphObject().getChildren();
+        Utils.log("findCompartment(): children = "+ children);
+        if (children != null & children.size() > 0) {
+            for (Widget child : children) {
+                if (chooser.checkCompartment(child, type)) {
+                    compartmentsFound.add(child);
+                }
+                //Find subcompartment
+                compartmentsFound.addAll(getCompartments(chooser, child, type));
             }
-            compartmentsFound.addAll(getCompartments(chooser, co));
+
+            if (compartmentsFound.size() > index) {
+                Utils.log( "debug: return widget =" +compartmentsFound.toArray(new Widget[1])[index]);
+                return compartmentsFound.toArray(new Widget[1])[index];
+            }
+            return null; //Nothing suitable found
+
         }
-        
-        
-        if(compartmentsFound.size()>index) {
-            return compartmentsFound.toArray(new ICompartment[1])[index];
-        }
-        return null; //Nothing suitable found
-        
+         return null;
     }
     
     /**
@@ -225,19 +232,39 @@ public class CompartmentOperator implements Actionable {
     }
     
     
+     
     /**
      * Returns all sub compartments accepted by the specified chooser
      * @param chooser to be used for compartment selection
      * @return list of sub compartments
      */
     public ArrayList<CompartmentOperator> getCompartments(CompartmentChooser chooser){
-        ArrayList<ICompartment> iComps = CompartmentOperator.getCompartments(chooser, sourceCompartment);
+       return  getCompartments(chooser, "");
+    }
+    /**
+     * Returns all sub compartments accepted by the specified chooser
+     * @param chooser to be used for compartment selection
+     * @return list of sub compartments
+     */
+    public ArrayList<CompartmentOperator> getCompartments(CompartmentChooser chooser, String type){      
+        ArrayList<Widget> iComps = CompartmentOperator.getCompartments(chooser, sourceCompartment, type);
         ArrayList<CompartmentOperator> comps = new ArrayList<CompartmentOperator>();
         for (int i=0; i<iComps.size(); i++){
             comps.add(new CompartmentOperator(sourceElement, iComps.get(i)));
         }
         return comps;
     }
+    
+    
+    /**
+     * Returns list of sub compartmens
+     * @return list of sub compartmens
+     * @param chooser Custom chooser
+     * @param parentCompartment Parent Compartment
+     */
+     private static ArrayList<Widget> getCompartments(CompartmentChooser chooser, Widget parentCompartment){
+          return getCompartments(chooser, parentCompartment, "");
+     }
     
     
     
@@ -247,27 +274,25 @@ public class CompartmentOperator implements Actionable {
      * @param chooser Custom chooser
      * @param parentCompartment Parent Compartment
      */
-    private static ArrayList<ICompartment> getCompartments(CompartmentChooser chooser, ICompartment parentCompartment){
-        ArrayList<ICompartment> compartmentsFound = new ArrayList<ICompartment>();
-        if (parentCompartment instanceof IListCompartment){
-            ETList<ICompartment> compartments = ((IListCompartment)parentCompartment).getCompartments();
+     private static ArrayList<Widget> getCompartments(CompartmentChooser chooser, Widget parentCompartment, String type){  
+        ArrayList<Widget> compartmentsFound = new ArrayList<Widget>();
+        if (parentCompartment instanceof Widget){
+            List<Widget> compartments = ((Widget)parentCompartment).getChildren();
             if(compartments == null){
                 return compartmentsFound;
             }
-            Iterator<ICompartment> it = compartments.iterator();
-            while(it.hasNext()) {
-                ICompartment co = it.next();
-                if (chooser.checkCompartment(co)){
-                    compartmentsFound.add(co);
+            for (Widget child : compartments) { 
+                if (chooser.checkCompartment(child, type)){
+                    compartmentsFound.add(child);
                 }
-                compartmentsFound.addAll(getCompartments(chooser, co));
+                compartmentsFound.addAll(getCompartments(chooser, child, type));
             }
             return compartmentsFound;
         } else {
             return compartmentsFound;
         }
-    }
-    
+         
+     }   
         
     
     //Methods from Actionable interface
@@ -284,7 +309,7 @@ public class CompartmentOperator implements Actionable {
         }
         clickForPopup();
         
-        JPopupMenuOperator ret=new JPopupMenuOperator(JPopupMenuOperator.waitJPopupMenu((java.awt.Container)(MainWindowOperator.getDefault().getSource()),new JPopupByPointChooser(getCenterPoint(),sourceElement.getDiagram().getDrawingArea().getSource(),0)));
+        JPopupMenuOperator ret=new JPopupMenuOperator(JPopupMenuOperator.waitJPopupMenu((java.awt.Container)(MainWindowOperator.getDefault().getSource()),new JPopupByPointChooser(getCenterPoint(),drawingArea.getSource(),0)));
         return ret;
     }
     
@@ -308,10 +333,11 @@ public class CompartmentOperator implements Actionable {
      * Returns center point of this compartment
      * @return center point of this compartment
      */
-    public Point getCenterPoint() {
+    public Point getCenterPoint() {         
         Point centerPoint = new Point((int)getRectangle().getCenterX(),(int)getRectangle().getCenterY());
         return centerPoint;
     }
+    
     /**
      * Returns left horizontal, center vertical point of this compartment
      * @param shift - shift from left border
@@ -337,20 +363,10 @@ public class CompartmentOperator implements Actionable {
      * @return bounding rectangle for compartment
      */
     public Rectangle getRectangle() {
-        //return sourceElement.getDiagram().getDrawingAreaControl().logicalToDeviceRect(sourceCompartment.getEngine().getLogicalBoundingRect(true)).getRectangle();
-        
-        IETRect tmpRect=sourceCompartment.getBoundingRect();
-        ETDeviceRect tmpDevRect=null;
-        int x,y;
-        //transform to device coordinates
-        if (tmpRect instanceof ETRect || tmpRect instanceof ETRectEx) {
-            // This special case is for all the code that depends
-            // on the bounding rectangle in device coordinates.
-            tmpDevRect=((ETRect) tmpRect).getAsDeviceRect();
-        } else if (tmpRect instanceof ETDeviceRect) {
-            tmpDevRect=((ETDeviceRect) tmpRect);
-        }
-        return tmpDevRect.getBounds();        
+         Rectangle localRect = sourceCompartment.getBounds();
+         Point scenePoint = sourceCompartment.convertLocalToScene(new Point(localRect.x, localRect.y));
+         Rectangle sceneRect = new Rectangle(scenePoint.x, scenePoint.y, localRect.width, localRect.height);
+         return sceneRect;        
     }
     
     
@@ -427,7 +443,9 @@ public class CompartmentOperator implements Actionable {
      * @return Font of text in this compartment
      */
     public Font getFont(){
-        return sourceCompartment.getCompartmentFont(sourceElement.getDiagram().getDrawingAreaControl().getCurrentZoom());
+        //TODO: 
+        //6.0 return sourceCompartment.getCompartmentFont(sourceElement.getDiagram().getDrawingAreaControl().getCurrentZoom());
+        return null;
     }
     
     
@@ -436,7 +454,7 @@ public class CompartmentOperator implements Actionable {
      * @return Color of text in this compartment
      */
     public Color getFontColor(){        
-        return sourceCompartment.getCompartmentFontColor();
+        return null;
     }
     
     
@@ -445,12 +463,14 @@ public class CompartmentOperator implements Actionable {
      * @return 
      */
     public Color getBorderColor(){
-        try{
-            INodeDrawEngine engine =  (INodeDrawEngine)sourceCompartment.getEngine();
-            return engine.getBorderColor();
-        }catch(Exception e){
-            return null;
-        }
+        //TODO: Wait for Trey's API
+//6.0        try{
+//            INodeDrawEngine engine =  (INodeDrawEngine)sourceCompartment.getEngine();
+//            return engine.getBorderColor();
+//        }catch(Exception e){
+//            return null;
+//6.0        }
+        return null;
     }
     
 
@@ -463,12 +483,14 @@ public class CompartmentOperator implements Actionable {
      * @return Color background color
      */
     public Color getBackgroundColor(){
-        try{
-            INodeDrawEngine engine =  (INodeDrawEngine)sourceCompartment.getEngine();
-            return engine.getFillColor();
-        }catch(Exception e){
-            return null;
-        }
+        //TODO: Wait for Trey's API
+//6.0        try{
+//            INodeDrawEngine engine =  (INodeDrawEngine)sourceCompartment.getEngine();
+//            return engine.getFillColor();
+//        }catch(Exception e){
+//            return null;
+//6.0        }
+        return null;
     }
     
     /**
@@ -477,12 +499,14 @@ public class CompartmentOperator implements Actionable {
      * @return Color background fill color
      */
     public Color getFillColor(){
-        try{
-            ETNodeDrawEngine engine =  (ETNodeDrawEngine)sourceCompartment.getEngine();
-            return engine.getFillColor();
-        }catch(Exception e){
-            return null;
-        }
+         //TODO: Wait for Trey's API
+//        try{
+//            ETNodeDrawEngine engine =  (ETNodeDrawEngine)sourceCompartment.getEngine();
+//            return engine.getFillColor();
+//        }catch(Exception e){
+//            return null;
+//6.0        }
+        return null;
     }
     
     /**
@@ -491,12 +515,14 @@ public class CompartmentOperator implements Actionable {
      * @return Color light gradient background fill color
      */
     public Color getLightGradientFillColor(){
-        try{
-            ETNodeDrawEngine engine =  (ETNodeDrawEngine)sourceCompartment.getEngine();
-            return engine.getLightGradientFillColor();
-        }catch(Exception e){
-            return null;
-        }
+        //TODO: Wait for Trey's API
+//6.0        try{
+//            ETNodeDrawEngine engine =  (ETNodeDrawEngine)sourceCompartment.getEngine();
+//            return engine.getLightGradientFillColor();
+//        }catch(Exception e){
+//            return null;
+//6.0        }
+        return null;
     }
     
     
@@ -507,27 +533,56 @@ public class CompartmentOperator implements Actionable {
     public static class CompartmentByTypeChooser implements CompartmentChooser {
         
         private Class clazz = null;
+         
         
         /**
          * Select compartment by type
          * @param compType compartment type
          */
-        public CompartmentByTypeChooser(CompartmentTypes compType){
+        public CompartmentByTypeChooser(CompartmentTypes compType){      
             try{
-                this.clazz = Class.forName(compType.toString());
+               Utils.log("Looking for compartment " + compType.toString());
+               this.clazz = Class.forName(compType.toString());  
             }catch(Exception e){
                 clazz = null;
             }
         }
         
+        
+        public boolean checkCompartment(Widget co) {
+            return this.checkCompartment(co, "");
+        }
+          
+         
         /**
          * Check param by it's type
          * @param co Compartment to check
          * @return true if suitable and false otherwise
          */
-        public boolean checkCompartment(ICompartment co) {
-            return (clazz!=null && clazz.isInstance(co));
-        }
+
+         public boolean checkCompartment(Widget co, String typeInfo) {
+            Utils.log("CompartmentByTypeChooser:checkCompartment() typeInfo=" + typeInfo);
+//            if (clazz != null && clazz.isInstance(co) && typeInfo != null) {
+//                return ((ElementListWidget) co).getLabel().equals(typeInfo);
+//            } else if (typeInfo == null) {
+//                Utils.log("CompartmentByTypeChooser:checkCompartment() return"+ (clazz != null && clazz.isInstance(co)));
+//                Utils.log("clazz="+ clazz.toString());
+//                Utils.log("clazz.isInstance("+co.toString()+") = " + clazz.isInstance(co));
+//                return (clazz != null && clazz.isInstance(co)) ;
+//            }
+//            Utils.log("CompartmentByTypeChooser:checkCompartment() return false at end");
+//            return false;
+            if (clazz != null && clazz.isInstance(co)) {
+                Utils.log("CompartmentOperator:CompartmentByTypeChooser:checkCompartment():clazz != null && clazz.isInstance(co)=true ");
+                if (typeInfo.equals("Attributes") || typeInfo.equals("Operations")) {
+                    // It is ElementListWidget compartment
+                     return ((ElementListWidget) co).getLabel().equals(typeInfo);
+                }    
+            }
+            return (clazz != null && clazz.isInstance(co)) ; 
+             
+         }
+        
         
         /**
          * Returns description of this chooser
@@ -536,7 +591,6 @@ public class CompartmentOperator implements Actionable {
         public String getDescription( ) {
             return "Chooser that accepts compartments of specific type ";
         }
-        
         
     }
     
@@ -557,13 +611,21 @@ public class CompartmentOperator implements Actionable {
             this.name = compname;
         }
         
+         public boolean checkCompartment(Widget co) {
+            return this.checkCompartment(co, "");
+        }
+        
         /**
          * Check param by it's name
          * @param co Compartment to check
          * @return true if suitable and false otherwise
          */
-        public boolean checkCompartment(ICompartment co) {
-            return name.equals(co.getName());
+       //6.0 public boolean checkCompartment(Widget co) {
+        public boolean checkCompartment(Widget co, String name) {
+            if (!name.equals("") )
+               return name.equals(co.getClass().getName());
+            else
+               return true;
         }
         
         /**
@@ -576,13 +638,7 @@ public class CompartmentOperator implements Actionable {
         
         
     }
-    
-    
-    
-    
-    
-    
-    
+   
     
     /**
      * Any compartment chooser. Used for looking by index.
@@ -595,12 +651,16 @@ public class CompartmentOperator implements Actionable {
         public AnyCompartmentChooser(){
         }
         
+        public boolean checkCompartment(Widget co) {
+            return  checkCompartment(co, "");
+        }
         /**
          * Check compartment
          * @param co Compartment to check
          * @return Always true
          */
-        public boolean checkCompartment(ICompartment co) {
+ 
+         public boolean checkCompartment(Widget co, String name) {
             return true;
         }
         
@@ -610,13 +670,6 @@ public class CompartmentOperator implements Actionable {
          */
         public String getDescription( ) {
             return "Chooser that accepts any compartment ";
-        }
-        
-        
-    }
-    
-    
-    
-    
-    
+        }  
+    }    
 }
