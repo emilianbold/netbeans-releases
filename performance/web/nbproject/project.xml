@@ -44,43 +44,11 @@ made subject to such option by the copyright holder.
     <type>org.netbeans.modules.apisupport.project</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
-            <code-name-base>org.netbeans.modules.web.performancetests</code-name-base>
+            <code-name-base>org.netbeans.performance.web</code-name-base>
+            <standalone/>
             <module-dependencies/>
             <test-dependencies>
                 <test-type>
-                    <name>qa-functional</name>
-                    <test-dependency>
-                        <code-name-base>org.netbeans.modules.editor</code-name-base>
-                        <compile-dependency/>
-                    </test-dependency>
-                    <test-dependency>
-                        <code-name-base>org.netbeans.modules.html.editor</code-name-base>
-                        <compile-dependency/>
-                    </test-dependency>
-                    <test-dependency>
-                        <code-name-base>org.netbeans.modules.java.editor</code-name-base>
-                        <compile-dependency/>
-                    </test-dependency>
-<!--                    <test-dependency>
-                        <code-name-base>org.netbeans.modules.tomcat5</code-name-base>
-                        <compile-dependency/>
-                    </test-dependency>       -->
-                    <test-dependency>
-                        <code-name-base>org.netbeans.modules.web.core.syntax</code-name-base>
-                        <compile-dependency/>
-                    </test-dependency>
-                    <test-dependency>
-                        <code-name-base>org.netbeans.modules.xml.text</code-name-base>
-                        <compile-dependency/>
-                    </test-dependency>
-                    <test-dependency>
-                        <code-name-base>org.openide.options</code-name-base>
-                        <compile-dependency/>
-                    </test-dependency>
-                    <test-dependency>
-                        <code-name-base>org.openide.util</code-name-base>
-                        <compile-dependency/>
-                    </test-dependency>
                 </test-type>
             </test-dependencies>
             <public-packages/>
