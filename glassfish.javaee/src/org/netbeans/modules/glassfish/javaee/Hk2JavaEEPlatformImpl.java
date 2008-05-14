@@ -100,7 +100,9 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
         if("defaultPersistenceProviderJavaEE5".equals(toolName)) {
             return true;
         }
-        
+        if("eclipseLinkPersistenceProviderIsDefault".equals(toolName)) {
+            return true;
+        }        
         return false;     
     }
     
