@@ -163,15 +163,17 @@ final class ClassPathProviderMerger implements LookupMerger<ClassPathProvider> {
                     impls.add(getClassPathImplementation(path));
                 }
             }
-            for (ClassPathImplementation cpImpl : impls) {
-                if (cpImpl == null) {
-                    continue;
-                }
-                cpImpl.addPropertyChangeListener(WeakListeners.propertyChange(classPathsListener, cpImpl));
-            }
             synchronized (this) {
                 if (classPaths != null) {
-                    //TODO how to remove weak listeners
+                    for (ClassPathImplementation old : classPaths) {
+                        old.removePropertyChangeListener(classPathsListener);
+                    }
+                }
+                for (ClassPathImplementation cpImpl : impls) {
+                    if (cpImpl == null) {
+                        continue;
+                    }
+                    cpImpl.addPropertyChangeListener(classPathsListener);
                 }
                 this.classPaths = impls.toArray(new ClassPathImplementation[impls.size()]);
             }
