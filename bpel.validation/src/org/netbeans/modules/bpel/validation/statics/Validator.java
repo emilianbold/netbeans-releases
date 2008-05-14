@@ -278,42 +278,47 @@ public final class Validator extends BpelValidator {
       Named named = list1.get(i);
 
       if (contains(named, list2)) {
+        String file1 = getFileName(named);
+
+        if (file1 == null) {
+          continue;
+        }
+        String file2 = getFileName(list2.get(0));
+
+        if (file2 == null) {
+          continue;
+        }
         // todo a: warning for identical, error for different
-        addError("FIX_SA00014", process, named.getName(), getFileName(named), getFileName(list2.get(0))); // NOI18N
+        addError("FIX_SA00014", process, named.getName(), file1, file2); // NOI18N
       }
     }
   }
 
   private String getFileName(Component component) {
     if (component == null) {
-      return N_A;
+      return null;
     }
     Model model = component.getModel();
 
     if (model == null) {
-      return N_A;
+      return null;
     }
     ModelSource source = model.getModelSource();
 
     if (source == null) {
-      return N_A;
+      return null;
     }
     Lookup lookup = source.getLookup();
 
     if (lookup == null) {
-      return N_A;
+      return null;
     }
     FileObject file = lookup.lookup(FileObject.class);
 
     if (file == null) {
-      return N_A;
+      return null;
     }
-    String name = file.getPath();
-
-    if (name == null) {
-      return N_A;
-    }
-    return name;
+    return file.getPath();
   }
 
   private boolean contains(Named named, List<Named> list) {
@@ -2951,5 +2956,4 @@ public final class Validator extends BpelValidator {
   private static final String FIX_VARIABLE_TYPES = "FIX_VariableTypes";
   private static final String FIX_SUPPORTED_LANGUAGE ="FIX_SupportedLanguage";
   private static final String FIX_UNSUPPORTED_EXTENSION = "FIX_UnsupportedExtension";
-  private static final String N_A = i18n(Validator.class, "LBL_N_A"); // NOI18N
 }
