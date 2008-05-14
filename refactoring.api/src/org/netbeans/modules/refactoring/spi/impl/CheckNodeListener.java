@@ -40,12 +40,16 @@
  */
 package org.netbeans.modules.refactoring.spi.impl;
 
+import java.awt.Component;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.util.Collection;
+import javax.swing.Action;
+import javax.swing.JPopupMenu;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
@@ -105,10 +109,10 @@ class CheckNodeListener implements MouseListener, KeyListener {
                     if (o instanceof TreeElement) {
                         o = ((TreeElement) o).getUserObject();
                         if (o instanceof RefactoringElement) {
-                            openDiff(node);
+                                openDiff(node);
+                            }
                         }
                     }
-                }
             } else {
                 Rectangle chRect = CheckRenderer.getCheckBoxRectangle();
                 Rectangle rowRect = tree.getPathBounds(path);
@@ -127,9 +131,9 @@ class CheckNodeListener implements MouseListener, KeyListener {
                     if (o instanceof TreeElement) {
                         o = ((TreeElement) o).getUserObject();
                         if (o instanceof RefactoringElement) {
-                            openDiff(node);
+                                openDiff(node);
+                            }
                         }
-                    }
                     ((DefaultTreeModel) tree.getModel()).nodeChanged(node);
                     if (row == 0) {
                         tree.revalidate();
@@ -162,7 +166,7 @@ class CheckNodeListener implements MouseListener, KeyListener {
             }
         }
     }
-
+    
     public void keyTyped(KeyEvent e) {
     }
 
@@ -193,8 +197,41 @@ class CheckNodeListener implements MouseListener, KeyListener {
     }
 
     public void mousePressed(MouseEvent e) {
+        JTree tree = (JTree) e.getSource();
+        int x = e.getX();
+        int y = e.getY();
+
+        int row = tree.getRowForLocation(x, y);
+        TreePath path = tree.getPathForRow(row);
+
+        // if path exists and mouse is clicked exactly once
+        if (path != null) {
+            CheckNode node = (CheckNode) path.getLastPathComponent();
+
+
+            if (e.isPopupTrigger()) {
+                Object o = node.getUserObject();
+                if (o instanceof TreeElement) {
+                    o = ((TreeElement) o).getUserObject();
+                    if (o instanceof RefactoringElement) {
+                        showPopup(((RefactoringElement) o).getLookup().lookupAll(Action.class), tree, x, y);
+                    }
+                }
+            }
+        }
     }
 
+    private void showPopup(Collection<? extends Action> actions, Component c, int x, int y) {
+        if (actions.isEmpty())
+            return;
+        JPopupMenu menu = new JPopupMenu();
+        for (Action a:actions) {
+            menu.add(a);
+        }
+        menu.show(c, x, y);
+    }
+
+    
     public void mouseReleased(MouseEvent e) {
     }
 
