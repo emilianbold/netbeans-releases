@@ -44,10 +44,11 @@ import org.netbeans.modules.groovy.grails.settings.GrailsSettings;
 
 
 /**
+ * Represents IDE configuration of the Grails project.
  *
- * @author schmidtm
+ * @author schmidtm, Petr Hejl
  */
-public class GrailsProjectConfig {
+public final class GrailsProjectConfig {
 
     private static final String DEFAULT_PORT = "8080"; // NOI18N
 
@@ -59,14 +60,30 @@ public class GrailsProjectConfig {
         this.prj = prj;
     }
 
+    /**
+     * Returns the configuration of the given project.
+     *
+     * @param project project for which the returned configuration will serve
+     * @return the configuration of the given project
+     */
     public static GrailsProjectConfig forProject(Project project) {
         return new GrailsProjectConfig(project);
     }
 
+    /**
+     * Returns the project for wich the configuration is used.
+     *
+     * @return the project for wich the configuration is used
+     */
     public Project getProject() {
         return prj;
     }
 
+    /**
+     * Returns the port configured for the project.
+     *
+     * @return the port configured for the project
+     */
     public String getPort() {
         String port = settings.getPortForProject(prj);
         if (port == null) {
@@ -75,33 +92,70 @@ public class GrailsProjectConfig {
         return port;
     }
 
+    /**
+     * Sets the port for the project.
+     *
+     * @param port the port to set
+     */
     public void setPort(String port) {
         assert port != null;
         settings.setPortForProject(prj, port);
     }
 
+    /**
+     * Returns the environment configured for the project.
+     *
+     * @return the environment configured for the project or <code>null</code>
+     *             if no environment has been configured yet
+     */
     public GrailsEnvironment getEnvironment() {
         return settings.getEnvForProject(prj);
     }
 
+    /**
+     * Sets the environment for the project.
+     *
+     * @param env the environment to set
+     */
     public void setEnvironment(GrailsEnvironment env) {
         assert env != null;
         settings.setEnvForProject(prj, env);
     }
 
+    /**
+     * Returns the deployment dir configured for the project.
+     *
+     * @return the deployment dir configured for the project or <code>null</code>
+     *             if no deployment dir has been configured yet
+     */
     public String getDeployDir() {
         return settings.getDeployDirForProject(prj);
     }
 
+    /**
+     * Sets the deployment dir for the project.
+     *
+     * @param dir deployemnt dir to set
+     */
     public void setDeployDir(String dir) {
         assert dir != null;
         settings.setDeployDirForProject(prj, dir);
     }
 
+    /**
+     * Returns the autodeploy flag of the project.
+     *
+     * @return the autodeploy flag of the project
+     */
     public boolean getAutoDeployFlag() {
         return settings.getAutoDeployFlagForProject(prj);
     }
 
+    /**
+     * Sets the autodeploy flag of the project.
+     *
+     * @param flag the autodeploy flag to set
+     */
     public void setAutoDeployFlag(boolean flag) {
         settings.setAutoDeployFlagForProject(prj, flag);
     }

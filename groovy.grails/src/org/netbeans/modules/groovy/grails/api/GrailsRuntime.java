@@ -56,13 +56,19 @@ import org.netbeans.modules.groovy.grails.server.GrailsInstanceProvider;
 import org.netbeans.modules.groovy.grails.settings.GrailsSettings;
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
 /**
+ * Class providing the access to basic Grails runtime routines.
+ * The class may not be configured and the method {@link #isConfigured()} can
+ * be used to find out the state.
  *
  * @author Petr Hejl
  */
+// TODO instance should be always configured in future
+// TODO more appropriate would be getDefault and forProject
 public final class GrailsRuntime {
 
     static {
@@ -87,6 +93,11 @@ public final class GrailsRuntime {
         super();
     }
 
+    /**
+     * Return the instance representing the IDE configured Grails runtime.
+     *
+     * @return the instance representing the IDE configured Grails runtime
+     */
     public static synchronized GrailsRuntime getInstance() {
         if (instance == null) {
             instance = new GrailsRuntime();
@@ -104,13 +115,32 @@ public final class GrailsRuntime {
         return instance;
     }
 
+    /**
+     * Creates the callable spawning the command (process) described
+     * by the command descriptor. Usually you don't need to use this method
+     * directly as most of use cases can be solved with {@link ExecutionSupport}.
+     *
+     * @param descriptor descriptor of the command and its environment
+     * @return the callable spawning the command (process)
+     * @throws IllegalStateException if the runtime is not configured
+     *
+     * @see #isConfigured()
+     * @see ExecutionSupport
+     */
     public Callable<Process> createCommand(CommandDescriptor descriptor) {
+        Parameters.notNull("descriptor", descriptor);
+
         if (!isConfigured()) {
             throw new IllegalStateException("Grails not configured"); // NOI18N
         }
         return new GrailsCallable(descriptor);
     }
 
+    /**
+     * Returns <code>true</code> if the runtime is configured (usable).
+     *
+     * @return <code>true</code> if the runtime is configured (usable)
+     */
     public boolean isConfigured() {
         String grailsBase = GrailsSettings.getInstance().getGrailsBase();
         if (grailsBase == null) {
@@ -120,13 +150,20 @@ public final class GrailsRuntime {
         return RuntimeHelper.isValidRuntime(new File(grailsBase));
     }
 
+    /**
+     * Returns the grails home of the configured runtime.
+     *
+     * @return the grails home
+     * @throws IllegalStateException if the runtime is not configured
+     */
+    // TODO this should be removed with CP abstraction
     public File getGrailsHome() {
         String grailsBase = GrailsSettings.getInstance().getGrailsBase();
-        File grailsBaseFile = new File(grailsBase);
-        if (grailsBase != null && RuntimeHelper.isValidRuntime(grailsBaseFile)) {
-            return grailsBaseFile;
+        if (grailsBase == null || RuntimeHelper.isValidRuntime(new File(grailsBase))) {
+            throw new IllegalStateException("Grails not configured"); // NOI18N
         }
-        return null;
+
+        return new File(grailsBase);
     }
 
     // TODO not public API unless it is really needed
@@ -218,7 +255,9 @@ public final class GrailsRuntime {
     }
 
     /**
-     * <i>Immutable</i>
+     * Class describing the command to invoke and its environment.
+     *
+     * This class is <i>Immutable</i>.
      */
     public static final class CommandDescriptor {
 
@@ -232,14 +271,38 @@ public final class GrailsRuntime {
 
         private final Properties props;
 
+        /**
+         * Creates the minimal descriptor.
+         *
+         * @param name command name
+         * @param directory working directory
+         * @param env grails environment
+         */
         public CommandDescriptor(String name, File directory, GrailsEnvironment env) {
             this(name, directory, env, new String[] {}, new Properties());
         }
 
+        /**
+         * Creates the descriptor including arguments.
+         *
+         * @param name command name
+         * @param directory working directory
+         * @param env grails environment
+         * @param arguments command arguments
+         */
         public CommandDescriptor(String name, File directory, GrailsEnvironment env, String[] arguments) {
             this(name, directory, env, arguments, new Properties());
         }
 
+        /**
+         * Creates the full customizable command descriptor.
+         *
+         * @param name command name
+         * @param directory working directory
+         * @param env grails environment
+         * @param arguments command arguments
+         * @param props environment properties
+         */
         public CommandDescriptor(String name, File directory, GrailsEnvironment env, String[] arguments, Properties props) {
             this.name = name;
             this.directory = directory;
@@ -248,22 +311,47 @@ public final class GrailsRuntime {
             this.props = new Properties(props);
         }
 
+        /**
+         * Returns the command name.
+         *
+         * @return the command name
+         */
         public String getName() {
             return name;
         }
 
+        /**
+         * Returns the working directory.
+         *
+         * @return the working directory
+         */
         public File getDirectory() {
             return directory;
         }
 
+        /**
+         * Returns the grails environment.
+         *
+         * @return the grails environment
+         */
         public GrailsEnvironment getEnvironment() {
             return environment;
         }
 
+        /**
+         * Returns the command arguments.
+         *
+         * @return the command arguments
+         */
         public String[] getArguments() {
             return arguments.clone();
         }
 
+        /**
+         * Returns the environment properties.
+         *
+         * @return the environment properties
+         */
         public Properties getProps() {
             return new Properties(props);
         }
@@ -289,7 +377,7 @@ public final class GrailsRuntime {
                 return null;
             }
 
-            LOGGER.log(Level.FINEST, "About to run: " + descriptor.getName());
+            LOGGER.log(Level.FINEST, "About to run: {0}", descriptor.getName());
 
             Properties props = new Properties(descriptor.getProps());
             if (descriptor.getEnvironment() != null && descriptor.getEnvironment().isCustom()) {
@@ -304,7 +392,7 @@ public final class GrailsRuntime {
             command.append(" ").append(descriptor.getName());
             command.append(" ").append(createCommandArguments(descriptor.getArguments()));
 
-            LOGGER.log(Level.FINEST, "Command is: " + command.toString());
+            LOGGER.log(Level.FINEST, "Command is: {0}", command.toString());
 
             NbProcessDescriptor grailsProcessDesc = new NbProcessDescriptor(
                     grailsExecutable.getAbsolutePath(), command.toString());

@@ -120,9 +120,13 @@ final class BootClassPathImplementation implements ClassPathImplementation {
     private List<PathResourceImplementation> findGroovyPlatform() {
         List<PathResourceImplementation> result = new ArrayList<PathResourceImplementation>();
         
-        File grailsHome = GrailsRuntime.getInstance().getGrailsHome();
+        final GrailsRuntime runtime = GrailsRuntime.getInstance();
+        if (!runtime.isConfigured()) {
+            return Collections.unmodifiableList(result);
+        }
+        File grailsHome = runtime.getGrailsHome();
         if (!grailsHome.exists()) {
-            return Collections.<PathResourceImplementation>emptyList();
+            return Collections.unmodifiableList(result);
         }
         
         List<File> jars = new ArrayList<File>();

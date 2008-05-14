@@ -43,15 +43,20 @@ import org.openide.util.Parameters;
 
 /**
  * Represents the environment of the Grails.
+ * <p>
+ * This class is <i>Immutable</i>.
  *
  * @author Petr Hejl
  */
 public final class GrailsEnvironment {
 
+    /** Development environment. */
     public static final GrailsEnvironment DEV = new GrailsEnvironment("dev"); // NOI18N
 
+    /** Production environment. */
     public static final GrailsEnvironment PROD = new GrailsEnvironment("prod"); // NOI18N
 
+    /** Test environment. */
     public static final GrailsEnvironment TEST = new GrailsEnvironment("test"); // NOI18N
 
     private final String value;
@@ -60,6 +65,14 @@ public final class GrailsEnvironment {
         this.value = value;
     }
 
+    /**
+     * Parses the string value and returns the proper environment object.
+     * If the value is well known environment (dev, prod or test) returns
+     * the corresponding constant (DEV, PROD or TEST).
+     *
+     * @param value string representation to parse
+     * @return environment object
+     */
     public static GrailsEnvironment valueOf(String value) {
         Parameters.notNull("value", value);
 
@@ -74,10 +87,20 @@ public final class GrailsEnvironment {
         }
     }
 
+    /**
+     * Returns the well known environment values.
+     *
+     * @return the well known environment values
+     */
     public static GrailsEnvironment[] standardValues() {
         return new GrailsEnvironment[] {DEV, PROD, TEST};
     }
 
+    /**
+     * Returns <code>true</code> if this environment is well known (DEV, PROD or TEST).
+     *
+     * @return <code>true</code> if this environment is well known (DEV, PROD or TEST)
+     */
     public boolean isCustom() {
         return this != DEV && this != PROD && this != TEST;
     }
