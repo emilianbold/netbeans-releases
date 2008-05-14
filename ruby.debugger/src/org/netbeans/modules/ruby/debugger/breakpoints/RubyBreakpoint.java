@@ -58,10 +58,16 @@ public final class RubyBreakpoint extends Breakpoint implements IRubyBreakpoint 
 
     private boolean enabled;
     private Line line;
+    private String condition;
 
     RubyBreakpoint(final Line line) {
+        this(line, null);
+    }
+
+    RubyBreakpoint(final Line line, final String condition) {
         this.line = line;
         this.enabled = true;
+        this.condition = condition;
     }
 
     private void updateBreakpoint() {
@@ -108,6 +114,16 @@ public final class RubyBreakpoint extends Breakpoint implements IRubyBreakpoint 
         firePropertyChange(PROP_UPDATED, false, true);
     }
 
+    public void setCondition(final String condition) {
+        this.condition = condition;
+        updateBreakpoint();
+        firePropertyChange(RubyBreakpoint.PROP_UPDATED, null, null);
+    }
+
+    public String getCondition() {
+        return condition;
+    }
+    
     public FileObject getFileObject() {
         return getLine().getLookup().lookup(FileObject.class);
     }
@@ -124,4 +140,5 @@ public final class RubyBreakpoint extends Breakpoint implements IRubyBreakpoint 
     public @Override String toString() {
         return getFilePath() + ':' + getLineNumber();
     }
+
 }
