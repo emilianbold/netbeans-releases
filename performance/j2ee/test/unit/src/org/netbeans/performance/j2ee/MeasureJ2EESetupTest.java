@@ -52,9 +52,9 @@ import junit.framework.Test;
  *
  * @author  Radim Kubacki
  */
-public class MeasuringEJBSetup extends NbTestCase {
+public class MeasureJ2EESetupTest extends NbTestCase {
     
-    public MeasuringEJBSetup (java.lang.String testName) {
+    public MeasureJ2EESetupTest (java.lang.String testName) {
         super(testName);
     }
     

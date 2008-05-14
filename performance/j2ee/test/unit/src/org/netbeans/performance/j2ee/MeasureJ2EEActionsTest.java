@@ -50,7 +50,7 @@ import org.netbeans.junit.NbTestSuite;
  *
  * @author  lmartinek@netbeans.org
  */
-public class MeasureJ2EEActions  {
+public class MeasureJ2EEActionsTest  {
     
     public static void main(java.lang.String[] args) {
         junit.textui.TestRunner.run(suite());
