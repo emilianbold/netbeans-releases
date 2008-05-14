@@ -234,8 +234,14 @@ public final class SingleModuleProperties extends ModuleProperties {
         autoUpdateShowInClient = manifestManager.getAutoUpdateShowInClient();
         String nbDestDirS = getEvaluator().getProperty("netbeans.dest.dir"); // NOI18N
         if (nbDestDirS != null) {
-            originalPlatform = activePlatform = NbPlatform.getPlatformByDestDir(
-                    getHelper().resolveFile(nbDestDirS));
+            NbPlatform plaf = NbPlatform.getPlatformByDestDir(getHelper().resolveFile(nbDestDirS));
+            if (!plaf.isValid()) { // #134492
+                NbPlatform def = NbPlatform.getDefaultPlatform();
+                if (def != null) {
+                    plaf = def;
+                }
+            }
+            originalPlatform = activePlatform = plaf;
         }
         String activeJdk = getEvaluator().getProperty("nbjdk.active"); // NOI18N
         if (activeJdk != null) {

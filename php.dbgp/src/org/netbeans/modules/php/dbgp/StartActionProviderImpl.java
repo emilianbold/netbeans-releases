@@ -102,9 +102,9 @@ public class StartActionProviderImpl  implements StartActionProvider
     public synchronized void start( ) {
     }
     
-    public synchronized void start( SessionId sessionId) {
-            int port = DebuggerOptions.getPort();
-            myThread = new ServerThread( port, sessionId );
+    public synchronized void start( DebugSession session) {
+            int port = session.getOptions().getPort();
+            myThread = new ServerThread( port, session.getSessionId() );
             RequestProcessor.getDefault().post( myThread );
     }
     
@@ -126,18 +126,6 @@ public class StartActionProviderImpl  implements StartActionProvider
         if ( id == null ) {
             return null;
         }
-        /*Session[] sessions = DebuggerManager.getDebuggerManager().getSessions();
-        for (Session session : sessions) {
-            SessionId sessId = (SessionId)
-                    session.lookupFirst( null , SessionId.class);
-            if ( id.equals(sessId) ) {
-                DebugSession retval = myCurrentSessions.get( session );
-                if (retval != ConversionUtils.toDebugSession(id)) {
-                     ConversionUtils.toDebugSession(id);
-                }
-                return retval;
-            }
-        }*/
         return ConversionUtils.toDebugSession(id);
     }
     
@@ -224,7 +212,7 @@ public class StartActionProviderImpl  implements StartActionProvider
     }
     
     private int findFreePort() {
-        int dbgPort = DebuggerOptions.getPort();
+        int dbgPort = DebuggerOptions.getGlobalInstance().getPort();
         for (int port = dbgPort ; port < dbgPort + PORT_RANGE; port++) {
             Socket testClient = null;
             

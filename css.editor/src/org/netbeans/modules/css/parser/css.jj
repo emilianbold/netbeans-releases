@@ -18,13 +18,13 @@ public class CSSParser/*@bgen(jjtree)*/implements CSSParserTreeConstants/*@egen*
 
 /*@egen*/
 
-    private ArrayList errors = new ArrayList();
+    private ArrayList<ParseException> errors = new ArrayList<ParseException>();
 
     public CSSParser() {
        this((CharStream) null);
     }
 
-    public List errors() {
+    public List<ParseException> errors() {
         return errors;
     }
 
@@ -1532,7 +1532,7 @@ void error_skipdecl() {/*@bgen(jjtree) error_skipdecl */
     ParseException e = generateParseException();
     //System.err.println("** error_skipdecl **\n" + e.toString());
 
-  Token t = getToken(1);
+  Token t = getNextToken();
   while (t.kind != SEMICOLON && t.kind != RBRACE && t.kind != EOF ) {
       getNextToken();
       t = getToken(1);

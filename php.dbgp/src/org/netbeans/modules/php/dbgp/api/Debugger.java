@@ -40,11 +40,13 @@
  */
 package org.netbeans.modules.php.dbgp.api;
 
+import org.netbeans.modules.php.dbgp.DebuggerOptions;
+
 /**
  * @author Radek Matous
  *
  */
 //keeps php.rt compilable (after deleteing php.rt should be deleted)
 public interface Debugger {
-    public void debug( SessionId id );
+    public void debug( SessionId id, DebuggerOptions options );
 }

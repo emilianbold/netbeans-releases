@@ -1055,6 +1055,7 @@ OpenIDE-Module-Long-Description=Delivers ${locales} localization of whole NetBea
       <taskdef name="releasefileslicense" classname="org.netbeans.nbbuild.extlibs.ReleaseFilesLicense" classpath="${nb_all}/nbbuild/nbantext.jar"/>
       <releasefileslicense license="${license.file.override}" standardlicense="${nb_all}/nbbuild/standard-nbm-license.txt" extralicensefiles="${extra.license.files}"/>
       <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="${nb_all}/nbbuild/nbantext.jar"/>
+      <property name="nbm_alias" value="nb_ide"/>
       <makenbm file="build/ml/${code.name.base.dashes}.nbm"
                productdir="${cluster}"
                module="${module.jar}"

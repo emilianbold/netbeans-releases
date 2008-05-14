@@ -509,7 +509,7 @@ public final class EarProject implements Project, AntProjectListener, ProjectPro
             EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
             ArrayList<ClassPathSupport.Item> l = new ArrayList<ClassPathSupport.Item>();
             l.addAll(cs.itemsList(props.getProperty(EarProjectProperties.JAR_CONTENT_ADDITIONAL), EarProjectProperties.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES));
-            ProjectProperties.storeLibrariesLocations(helper, l.iterator(), props);
+            ProjectProperties.storeLibrariesLocations(helper, l.iterator(), helper.isSharableProject() ? props : ep);
             
             // #129316
             ProjectProperties.removeObsoleteLibraryLocations(ep);
