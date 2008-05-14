@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package gui.action;
+package org.netbeans.performance.web.actions;
 
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;

@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package gui.action;
+package org.netbeans.performance.web.actions;
 
 import java.awt.event.KeyEvent;
 
@@ -55,9 +55,7 @@ import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.modules.editor.options.BaseOptions;
 import org.netbeans.modules.web.core.syntax.JSPKit;
 import org.netbeans.modules.web.core.syntax.settings.JSPOptions;
-import org.netbeans.test.web.performance.WebPerformanceTestCase;
-import org.netbeans.performance.test.utilities.PerformanceTestCase;
-
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 /**
  * Test of Page Up and Page Down in opened source editor.
  *

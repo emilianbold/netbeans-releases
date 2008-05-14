@@ -39,48 +39,37 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.performance.web.actions;
+package org.netbeans.performance.web;
 
-import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jellytools.actions.OpenAction;
-
-import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.jemmy.operators.JPopupMenuOperator;
+import junit.framework.Test;
+import junit.framework.TestSuite;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.performance.web.setup.*;
 
 /**
- * Test of opening files.
+ * Test suite that actually does not perform any test but sets up user directory
+ * for UI responsiveness tests
  *
- * @author  mmirilovic@netbeans.org
+ * @author  Radim Kubacki
  */
-public class OpenServletFileWithOpenedEditor extends OpenServletFile {
+public class MeasuringWebSetupTest extends NbTestCase {
     
-    /**
-     * Creates a new instance of OpenFiles
-     * @param testName the name of the test
-     */
-    public OpenServletFileWithOpenedEditor(String testName) {
+    public MeasuringWebSetupTest (String testName) {
         super(testName);
-        expectedTime = WINDOW_OPEN;
     }
     
-    /**
-     * Creates a new instance of OpenFiles
-     * @param testName the name of the test
-     * @param performanceDataName measured values will be saved under this name
-     */
-    public OpenServletFileWithOpenedEditor(String testName, String performanceDataName) {
-        super(testName, performanceDataName);
-        expectedTime = WINDOW_OPEN;
+    public static void main(java.lang.String[] args) {
+        junit.textui.TestRunner.run(suite());
     }
     
-    /**
-     * Initialize test - open Main.java file in the Source Editor.
-     */
-    public void initialize(){
-        super.initialize();
-        new OpenAction().perform(new Node(new ProjectsTabOperator().getProjectRootNode("TestWebProject"),"Source Packages|test|Test.java"));
+    public static Test suite() {
+        TestSuite suite = new NbTestSuite("UI Responsiveness Web Setup suite");
+
+        // suite.addTest(NbModuleSuite.create(WebSetup.class, ".*", ".*"));
+        
+        return suite;
     }
     
 }

@@ -52,11 +52,7 @@ import org.netbeans.performance.j2se.actions.*;
  *
  * @author  mmirilovic@netbeans.org
  */
-public class MeasureJ2SEActionsTest  extends NbTestCase {
-
-    public MeasureJ2SEActionsTest(String name) {
-        super(name);
-    }
+public class MeasureJ2SEActionsTest {
 
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite("UI Responsiveness J2SE Actions suite");

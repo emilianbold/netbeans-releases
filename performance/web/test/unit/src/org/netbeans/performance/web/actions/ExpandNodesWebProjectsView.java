@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package gui.action;
+package org.netbeans.performance.web.actions;
 
 import org.netbeans.jellytools.ProjectsTabOperator;
 
@@ -49,9 +49,8 @@ import org.netbeans.jellytools.actions.RestoreWindowAction;
 import org.netbeans.jellytools.nodes.Node;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.test.web.performance.WebPerformanceTestCase;
 
-import org.netbeans.performance.test.utilities.PerformanceTestCase;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 /**
  * Test of expanding nodes/folders in the Explorer.
  *

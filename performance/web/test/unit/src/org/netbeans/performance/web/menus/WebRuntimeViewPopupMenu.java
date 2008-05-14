@@ -39,7 +39,8 @@
  * made subject to such option by the copyright holder.
  */
 
-package gui.menu;
+package org.netbeans.performance.web.menus;
+
 import java.awt.Point;
 import java.awt.event.KeyEvent;
 import org.netbeans.jellytools.Bundle;
@@ -49,12 +50,10 @@ import org.netbeans.jellytools.actions.Action.Shortcut;
 import org.netbeans.jellytools.nodes.Node;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.performance.test.guitracker.ActionTracker;
-import org.netbeans.test.web.performance.Macros;
-import org.netbeans.test.web.performance.WebPerformanceTestCase;
+import org.netbeans.modules.performance.guitracker.ActionTracker;
 import org.netbeans.jemmy.Timeouts;
 
-import org.netbeans.performance.test.utilities.PerformanceTestCase;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 
 /**
  * Test of typing in opened source editor.
@@ -114,7 +113,7 @@ public class WebRuntimeViewPopupMenu extends PerformanceTestCase {
     
     private void testMenu(String path, boolean startTomcat){
         if (startTomcat) {
-            Macros.startBundledTomact();
+            //Macros.startBundledTomact();
             isTomcatRunning = true;
         }
         RuntimeTabOperator runtimeTab = RuntimeTabOperator.invoke();
@@ -147,7 +146,7 @@ public class WebRuntimeViewPopupMenu extends PerformanceTestCase {
     
     protected void shutdown() {
         if (isTomcatRunning) {
-            Macros.stopBundledTomact();
+      //      Macros.stopBundledTomact();
         }
         super.shutdown();
     }

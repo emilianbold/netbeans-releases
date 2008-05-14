@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package gui.action;
+package org.netbeans.performance.web.actions;
 
 import java.awt.event.KeyEvent;
 import javax.swing.JComponent;
@@ -51,10 +51,8 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.performance.test.guitracker.LoggingRepaintManager;
-import org.netbeans.test.web.performance.WebPerformanceTestCase;
-import org.netbeans.performance.test.utilities.PerformanceTestCase;
-/**
+import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;/**
  * Test of java completion in opened source editor.
  *
  * @author  anebuzelsky@netbeans.org, mmirilovic@netbeans.org

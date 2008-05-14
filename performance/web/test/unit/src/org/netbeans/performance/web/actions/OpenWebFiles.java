@@ -39,16 +39,17 @@
  * made subject to such option by the copyright holder.
  */
 
-package gui.action;
+package org.netbeans.performance.web.actions;
+
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
-import org.netbeans.test.web.performance.WebPerformanceTestCase;
-import org.netbeans.performance.test.utilities.PerformanceTestCase;
-
+//import org.netbeans.test.web.performance.WebPerformanceTestCase;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.modules.performance.guitracker.ActionTracker;
 import java.util.logging.Handler;
 import java.util.logging.Logger;
 import java.util.logging.Level;
@@ -110,7 +111,7 @@ public class OpenWebFiles extends PerformanceTestCase {
             public void publish(LogRecord record) {
 
             if (record.getMessage().equals("Open Editor, phase 1, AWT [ms]")) 
-               org.netbeans.performance.test.guitracker.ActionTracker.getInstance().stopRecording();
+               ActionTracker.getInstance().stopRecording();
 
             }
 

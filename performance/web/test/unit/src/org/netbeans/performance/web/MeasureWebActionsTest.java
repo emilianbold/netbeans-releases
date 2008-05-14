@@ -39,53 +39,40 @@
  * made subject to such option by the copyright holder.
  */
 
-package gui;
+package org.netbeans.performance.web;
 
-import gui.action.OpenServletFile;
-import gui.action.OpenServletFileWithOpenedEditor;
-import gui.action.OpenWebFiles;
-import gui.action.OpenWebFilesWithOpenedEditor;
+
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.performance.web.actions.*;
 
 /**
  * Measure UI-RESPONSIVENES and WINDOW_OPENING.
  *
  * @author  mmirilovic@netbeans.org
  */
-public class MeasureWebDialogs extends NbTestCase {
+public class MeasureWebActionsTest extends NbTestCase {
     
-    private MeasureWebDialogs(String name) {
+    private MeasureWebActionsTest(String name) {
         super(name);
     }
     
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
     
     public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-
-        suite.addTest(new OpenWebFiles("testOpeningTagFile", "Open Tag file"));
-        suite.addTest(new OpenServletFile("testOpeningJavaFile", "Open Java file"));
-        suite.addTest(new OpenServletFile("testOpeningServletFile", "Open Servlet file"));
-        suite.addTest(new OpenServletFile("testOpeningServletFile", "Open Servlet file II"));
-        suite.addTest(new OpenWebFiles("testOpeningWebXmlFile", "Open web.xml file"));
-        suite.addTest(new OpenWebFiles("testOpeningContextXmlFile", "Open context.xml file"));
-        suite.addTest(new OpenWebFiles("testOpeningBigJSPFile", "Open Big JSP file"));
-        suite.addTest(new OpenWebFiles("testOpeningHTMLFile", "Open HTML file"));
-        suite.addTest(new OpenWebFiles("testOpeningTldFile", "Open TLD file"));
-
-        suite.addTest(new OpenServletFileWithOpenedEditor("testOpeningJavaFile", "Open Java file if Editor opened"));
-        suite.addTest(new OpenServletFileWithOpenedEditor("testOpeningServletFile", "Open Servlet file if Editor opened"));
-        suite.addTest(new OpenWebFilesWithOpenedEditor("testOpeningWebXmlFile", "Open web.xml file if Editor opened"));
-        suite.addTest(new OpenWebFilesWithOpenedEditor("testOpeningContextXmlFile", "Open context.xml file if Editor opened"));
-        suite.addTest(new OpenWebFilesWithOpenedEditor("testOpeningJSPFile", "Open JSP file if Editor opened"));
-        suite.addTest(new OpenWebFilesWithOpenedEditor("testOpeningBigJSPFile", "Open Big JSP file if Editor opened"));
-        suite.addTest(new OpenWebFilesWithOpenedEditor("testOpeningHTMLFile", "Open HTML file if Editor opened"));
-        suite.addTest(new OpenWebFilesWithOpenedEditor("testOpeningTagFile", "Open Tag file if Editor opened"));
-        suite.addTest(new OpenWebFilesWithOpenedEditor("testOpeningTldFile", "Open TLD file if Editor opened"));
-        suite.addTest(new OpenWebFiles("testOpeningJSPFile", "Open JSP file"));        
+        NbTestSuite suite = new NbTestSuite("UI Responsiveness Web Actions suite");
+/*
+        suite.addTest(NbModuleSuite.create(ExpandNodesWebProjectsView.class, ".*", ".*"));
+        suite.addTest(NbModuleSuite.create(JavaCompletionInJspEditor.class, ".*", ".*"));
+        suite.addTest(NbModuleSuite.create(OpenServletFile.class, ".*", ".*"));
+        suite.addTest(NbModuleSuite.create(OpenServletFileWithOpenedEditor.class, ".*", ".*"));
+        suite.addTest(NbModuleSuite.create(OpenWebFiles.class, ".*", ".*"));
+        suite.addTest(NbModuleSuite.create(OpenWebFilesWithOpenedEditor.class, ".*", ".*"));
+        suite.addTest(NbModuleSuite.create(PageUpPageDownInJspEditor.class, ".*", ".*"));
+        suite.addTest(NbModuleSuite.create(PasteInJspEditor.class, ".*", ".*"));
+        suite.addTest(NbModuleSuite.create(ToggleBreakpoint.class, ".*", ".*"));
+        suite.addTest(NbModuleSuite.create(TypingInJspEditor.class, ".*", ".*"));
+  */      
         return suite;
     }
     

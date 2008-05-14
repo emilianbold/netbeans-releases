@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package gui.action;
+package org.netbeans.performance.web.actions;
 import java.awt.event.KeyEvent;
 
 import org.netbeans.jellytools.EditorOperator;
@@ -53,9 +53,7 @@ import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.actions.Action.Shortcut;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.test.web.performance.WebPerformanceTestCase;
-import org.netbeans.performance.test.utilities.PerformanceTestCase;
-
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 /**
  * Test of Paste text to opened source editor.
  *

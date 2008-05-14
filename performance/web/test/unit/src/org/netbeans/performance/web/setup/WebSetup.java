@@ -39,16 +39,17 @@
  * made subject to such option by the copyright holder.
  */
 
-package gui.setup;
+package org.netbeans.performance.web.setup;
 
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import javax.swing.tree.TreePath;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.BuildProjectAction;
-import org.netbeans.junit.ide.ProjectSupport;
 import org.netbeans.jellytools.RuntimeTabOperator;
+import org.netbeans.jellytools.JellyTestCase;
 
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JButtonOperator;
@@ -60,20 +61,20 @@ import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 
-public class WebSetupTest extends org.netbeans.jellytools.JellyTestCase {
+public class WebSetup extends JellyTestCase {
     
-    public WebSetupTest(java.lang.String testName) {
+    public WebSetup(java.lang.String testName) {
         super(testName);
     }
     
     public void testOpenWebProject() {
-        ProjectSupport.openProject(System.getProperty("xtest.data")+"/TestWebProject");
-        buildProject("TestWebProject");
+/*        ProjectSupport.openProject(System.getProperty("xtest.data")+"/TestWebProject");
+        buildProject("TestWebProject");*/
     }
     
     public void testOpenWebFoldersProject() {
-        ProjectSupport.openProject(System.getProperty("xtest.tmpdir")+"/PerformanceTestFolderWebApp");
-        buildProject("PerformanceTestFolderWebApp");
+ /*       ProjectSupport.openProject(System.getProperty("xtest.tmpdir")+"/PerformanceTestFolderWebApp");
+        buildProject("PerformanceTestFolderWebApp");*/
     }
 
     

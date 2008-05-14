@@ -39,24 +39,27 @@
  * made subject to such option by the copyright holder.
  */
 
-package gui.menu;
+package org.netbeans.performance.web.menus;
+
+import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
-
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.jemmy.operators.JPopupMenuOperator;
 
-import gui.menu.*;
 
 /**
  * Test of popup menu on nodes in Projects View.
  * @author  mmirilovic@netbeans.org
  */
-public class WebProjectsViewPopupMenu extends ValidatePopupMenuOnNodes {
+public class WebProjectsViewPopupMenu extends PerformanceTestCase {
     
     private static ProjectsTabOperator projectsTab = null;
-    
+        protected static Node dataObjectNode;
+
     /** Creates a new instance of ProjectsViewPopupMenu */
     public WebProjectsViewPopupMenu(String testName) {
         super(testName);
@@ -131,6 +134,28 @@ public class WebProjectsViewPopupMenu extends ValidatePopupMenuOnNodes {
         
         return projectsTab.getProjectRootNode("TestWebProject");
     }
-
+        /**
+     * Closes the popup by sending ESC key event.
+     */
+    @Override
+    public void close(){
+        //testedComponentOperator.pressKey(java.awt.event.KeyEvent.VK_ESCAPE);
+        // Above sometimes fails in QUEUE mode waiting to menu become visible.
+        // This pushes Escape on underlying JTree which should be always visible
+        dataObjectNode.tree().pushKey(java.awt.event.KeyEvent.VK_ESCAPE);
+    }
     
+    
+    @Override
+    public void prepare() {
+        dataObjectNode.select();
+    }
+
+    @Override
+    public ComponentOperator open() {
+        java.awt.Point point = dataObjectNode.tree().getPointToClick(dataObjectNode.getTreePath());
+        int button = dataObjectNode.tree().getPopupMouseButton();
+        dataObjectNode.tree().clickMouse(point.x, point.y, 1, button);
+        return new JPopupMenuOperator();
+    }
 }

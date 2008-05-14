@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,38 +39,35 @@
  * made subject to such option by the copyright holder.
  */
 
-package gui;
+package org.netbeans.performance.web;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
+
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.performance.web.menus.*;
 
 /**
- * Test suite that actually does not perform any test but sets up user directory
- * for UI responsiveness tests
+ * Measure UI-RESPONSIVENES and WINDOW_OPENING.
  *
- * @author  Radim Kubacki
+ * @author  mmirilovic@netbeans.org
  */
-public class MeasuringWebSetup extends NbTestCase {
+public class MeasureWebMenusTest extends NbTestCase {
     
-    public MeasuringWebSetup (String testName) {
-        super(testName);
+    private MeasureWebMenusTest(String name) {
+        super(name);
     }
     
     public static void main(java.lang.String[] args) {
         junit.textui.TestRunner.run(suite());
     }
     
-    public static Test suite() {
-        TestSuite suite = new NbTestSuite("UI Responsiveness Setup suite");
-        suite.addTest(new gui.setup.IDESetupTest("closeWelcome"));
-        suite.addTest(new gui.setup.IDESetupTest("closeAllDocuments"));
-        suite.addTest(new gui.setup.IDESetupTest("closeMemoryToolbar"));
-        suite.addTest(new gui.setup.IDESetupTest("testAddAppServer"));
-        suite.addTest(new gui.setup.WebSetupTest("testOpenWebProject"));
-        suite.addTest(new gui.setup.IDESetupTest("openFoldersProject"));
-        suite.addTest(new gui.setup.WebSetupTest("testOpenWebFoldersProject"));
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite("UI Responsiveness Web Menus suite"); 
+   
+      //  suite.addTest(NbModuleSuite.create(WebProjectsViewPopupMenu.class, ".*", ".*"));
+      //  suite.addTest(NbModuleSuite.create(WebRuntimeViewPopupMenu.class, ".*", ".*"));
+        
         return suite;
     }
     
