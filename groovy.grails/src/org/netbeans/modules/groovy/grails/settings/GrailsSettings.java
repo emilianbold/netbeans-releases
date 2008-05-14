@@ -79,7 +79,7 @@ public final class GrailsSettings {
     }
 
     public void setGrailsBase(String path) {
-        String oldValue = null;
+        String oldValue;
         synchronized (this) {
             oldValue = getGrailsBase();
             getPreferences().put(GRAILS_HOME_KEY, path);

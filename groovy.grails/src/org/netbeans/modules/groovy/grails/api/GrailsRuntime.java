@@ -128,7 +128,7 @@ public final class GrailsRuntime {
         }
         return null;
     }
-    
+
     // TODO not public API unless it is really needed
     private String getVersion() {
         synchronized (this) {
@@ -159,7 +159,7 @@ public final class GrailsRuntime {
         RequestProcessor.getDefault().post(new Runnable() {
 
             public void run() {
-                synchronized (this) {
+                synchronized (GrailsRuntime.this) {
                     if (initialized) {
                         return;
                     }

@@ -39,9 +39,6 @@
 
 package org.netbeans.modules.groovy.grails.server;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -52,7 +49,6 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.groovy.grails.api.GrailsRuntime;
-import org.netbeans.modules.groovy.grails.settings.GrailsSettings;
 import org.netbeans.spi.server.ServerInstanceFactory;
 import org.netbeans.spi.server.ServerInstanceProvider;
 import org.openide.util.ChangeSupport;
