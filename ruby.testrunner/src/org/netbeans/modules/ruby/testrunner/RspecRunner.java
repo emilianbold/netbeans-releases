@@ -40,9 +40,9 @@ package org.netbeans.modules.ruby.testrunner;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.logging.Logger;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -50,83 +50,101 @@ import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.platform.RubyExecution;
 import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.FileLocator;
+import org.netbeans.modules.ruby.rubyproject.rake.RakeRunner;
+import org.netbeans.modules.ruby.rubyproject.rake.RakeSupport;
+import org.netbeans.modules.ruby.rubyproject.rake.RakeTask;
 import org.netbeans.modules.ruby.rubyproject.spi.TestRunner;
-import org.netbeans.modules.ruby.testrunner.ui.TestSession;
 import org.netbeans.modules.ruby.testrunner.ui.Manager;
-import org.netbeans.modules.ruby.testrunner.ui.TestRecognizer;
+import org.netbeans.modules.ruby.testrunner.ui.RspecRecognizer;
+import org.netbeans.modules.ruby.testrunner.ui.TestSession;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 
 /**
- * Test runner implmentation for running test/unit tests.
+ * Test runner for RSpec tests.
  *
  * @author Erno Mononen
  */
-public final class TestRunnerImpl implements TestRunner {
+public class RspecRunner implements TestRunner {
 
-    private static final Logger LOGGER = Logger.getLogger(TestRunnerImpl.class.getName());
-    private static final String MEDIATOR_SCRIPT = "nb_test_mediator.rb";
-    private static final TestRunner INSTANCE = new TestRunnerImpl();
+    private static final TestRunner INSTANCE = new RspecRunner();
+    private static final String RSPEC_MEDIATOR_SCRIPT = "nb_rspec_mediator.rb";
 
     public TestRunner getInstance() {
         return INSTANCE;
+    }
+
+    public boolean supports(TestType type) {
+        return TestType.RSPEC == type;
+    }
+
+    public void runTest(FileObject testFile) {
+        List<String> specFile = new ArrayList<String>();
+        specFile.add(FileUtil.toFile(testFile).getAbsolutePath());
+        run(FileOwnerQuery.getOwner(testFile), 
+                Collections.<String>singletonList(FileUtil.toFile(testFile).getAbsolutePath()),
+                testFile.getName());
     }
 
     public void runSingleTest(FileObject testFile, String testMethod) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public void runTest(FileObject testFile) {
-        String testFilePath = FileUtil.toFile(testFile).getAbsolutePath();
-        List<String> additionalArgs = new ArrayList<String>();
-        additionalArgs.add("-f"); //NOI18N
-        additionalArgs.add(testFilePath);
-        run(FileOwnerQuery.getOwner(testFile), additionalArgs, testFile.getName());
-
-    }
-
-    static File getMediatorScript() {
-        File mediatorScript = InstalledFileLocator.getDefault().locate(
-                MEDIATOR_SCRIPT, "org.netbeans.modules.ruby.testrunner", false);  // NOI18N
-
-        if (mediatorScript == null) {
-            throw new IllegalStateException("Could not locate " + MEDIATOR_SCRIPT); // NOI18N
-
-        }
-        return mediatorScript;
-
-    }
-
     public void runAllTests(Project project) {
-        List<String> additionalArgs = new ArrayList<String>();
-        additionalArgs.add("-d"); //NOI18N
-        additionalArgs.add(FileUtil.toFile(project.getProjectDirectory()).getAbsolutePath());
-        
-        String name = ProjectUtils.getInformation(project).getDisplayName();
-        
-        run(project, additionalArgs, name);
+        // collect all tests from the spec/ dir - would be better to use the rake
+        // spec task but couldn't make it work with all the params - need to revisit
+        // that.
+        FileObject specDir = project.getProjectDirectory().getFileObject("spec/");
+        Enumeration<? extends FileObject> children = specDir.getChildren(true);
+        List<String> specs = new ArrayList<String>();
+        while (children.hasMoreElements()) {
+            FileObject each = children.nextElement();
+            if ("rb".equals(each.getExt())) {
+                specs.add(FileUtil.toFile(each).getAbsolutePath());
+            }
+        }
+        run(project, specs, ProjectUtils.getInformation(project).getDisplayName());
     }
-    
+
     private void run(Project project, List<String> additionalArgs, String name) {
         FileLocator locator = project.getLookup().lookup(FileLocator.class);
         RubyPlatform platform = RubyPlatform.platformFor(project);
+
+        List<String> arguments = new ArrayList<String>();
+        arguments.add("--require"); //NOI18N
+        arguments.add(getMediatorScript().getAbsolutePath());
+        arguments.add("--runner"); //NOI18N
+        arguments.add("NbRspecMediator"); //NOI18N
+        arguments.addAll(additionalArgs);
         
-        String targetPath = getMediatorScript().getAbsolutePath();
         ExecutionDescriptor desc = null;
         String charsetName = null;
-        desc = new ExecutionDescriptor(platform, name, FileUtil.toFile(project.getProjectDirectory()), targetPath);
-        desc.additionalArgs(additionalArgs.toArray(new String[additionalArgs.size()]));
+        desc = new ExecutionDescriptor(platform, name, FileUtil.toFile(project.getProjectDirectory()));
+        desc.additionalArgs(arguments.toArray(new String[arguments.size()]));
 
         desc.debug(false);
         desc.allowInput();
         desc.fileLocator(locator);
         desc.addStandardRecognizers();
-        desc.addOutputRecognizer(new TestRecognizer(Manager.getInstance(), new TestSession(locator)));
+        desc.addOutputRecognizer(new RspecRecognizer(Manager.getInstance(), new TestSession(locator)));
+        desc.cmd(getSpec(platform));
         new RubyExecution(desc, charsetName).run();
     }
 
-    public boolean supports(TestType type) {
-        return type == TestType.TEST_UNIT;
+    private File getSpec(RubyPlatform platform) {
+        String spec = platform.findExecutable("spec"); //NOI18N
+        return new File(spec);
+    }
+
+    private static File getMediatorScript() {
+        File mediatorScript = InstalledFileLocator.getDefault().locate(
+                RSPEC_MEDIATOR_SCRIPT, "org.netbeans.modules.ruby.testrunner", false);  // NOI18N
+
+        if (mediatorScript == null) {
+            throw new IllegalStateException("Could not locate " + RSPEC_MEDIATOR_SCRIPT); // NOI18N
+
+        }
+        return mediatorScript;
     }
 }

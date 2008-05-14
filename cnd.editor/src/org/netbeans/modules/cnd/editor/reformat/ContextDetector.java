@@ -96,6 +96,7 @@ public class ContextDetector extends ExtendedTokenSequence {
                         if (depth == 0) {
                             return true;
                         }
+                        break;
                     case LBRACE:
                     case RBRACE:
                     case SEMICOLON:

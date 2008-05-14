@@ -73,6 +73,7 @@ public class RunLocalCommand extends Command implements Displayable {
 
         //prepare & start external process
         ProcessBuilder processBuilder = new ProcessBuilder(new String[]{command, scriptFile.getAbsolutePath()});
+        processBuilder.directory(scriptFile.getParentFile());
         initProcessBuilder(processBuilder);
         try {
             Process process = processBuilder.start();

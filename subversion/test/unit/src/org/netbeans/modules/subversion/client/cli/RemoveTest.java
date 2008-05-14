@@ -64,7 +64,8 @@ public class RemoveTest extends AbstractCLITest {
         c.remove(new File[] {file}, true);
 
         assertFalse(file.exists());
-        assertStatus(SVNStatusKind.DELETED, file);        
+        assertStatus(SVNStatusKind.DELETED, file);    
+        assertNotifiedFiles(new File[] {file});        
     }            
     
     public void testRemoveFolder() throws Exception {                                        
@@ -78,7 +79,8 @@ public class RemoveTest extends AbstractCLITest {
         c.remove(new File[] {folder}, true);
 
         assertTrue(folder.exists());
-        assertStatus(SVNStatusKind.DELETED, folder);        
+        assertStatus(SVNStatusKind.DELETED, folder);   
+        assertNotifiedFiles(new File[] {folder});        
     }            
     
     public void testRemoveFileTree() throws Exception {                                        
@@ -99,6 +101,7 @@ public class RemoveTest extends AbstractCLITest {
         assertStatus(SVNStatusKind.DELETED, folder);        
         assertStatus(SVNStatusKind.DELETED, file1);        
         assertStatus(SVNStatusKind.DELETED, file2);        
+        assertNotifiedFiles(new File[] {folder, file1, file2});        
     }            
     
 }

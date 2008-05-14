@@ -1735,7 +1735,9 @@ public class HgCommand {
             }
             
             if (!list.isEmpty()
-                    && (isErrorNotTracked(list.get(0)) || isErrorCannotReadCommitMsg(list.get(0))))
+                    && (isErrorNotTracked(list.get(0)) || 
+                    isErrorCannotReadCommitMsg(list.get(0)) ||
+                    isErrorAbort(list.get(0))))
                 handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_COMMIT_FAILED"), logger);
             
         }catch (IOException ex){

@@ -190,7 +190,7 @@ public final class RakeSupport {
     /**
      * Returns namespace-task tree for the given project.
      */
-    public static List<RakeTask> getRakeTaskTree(final RubyBaseProject project) {
+    public static List<RakeTask> getRakeTaskTree(final Project project) {
         RakeTaskReader rtreader = new RakeTaskReader(project);
         return rtreader.getRakeTaskTree();
     }
@@ -199,7 +199,7 @@ public final class RakeSupport {
      * Returns flat, namespace-ignoring, list of Rake tasks for the given
      * project.
      */
-    static List<RakeTask> getRakeTasks(final RubyBaseProject project) {
+    static List<RakeTask> getRakeTasks(final Project project) {
         List<RakeTask> taskTree = RakeSupport.getRakeTaskTree(project);
         List<RakeTask> tasks = new ArrayList<RakeTask>();
         addTasks(tasks, taskTree);
@@ -223,7 +223,7 @@ public final class RakeSupport {
      * @param task task to be find
      * @return <tt>null</tt> if not found; {@link RakeTask} instance othewise
      */
-    public static RakeTask getRakeTask(final RubyBaseProject project, final String task) {
+    public static RakeTask getRakeTask(final Project project, final String task) {
         List<RakeTask> tasks = getRakeTasks(project);
         for (RakeTask rakeTask : tasks) {
             if (rakeTask.getTask().equals(task)) {
