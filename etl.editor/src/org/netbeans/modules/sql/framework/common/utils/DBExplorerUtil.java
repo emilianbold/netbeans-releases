@@ -210,7 +210,10 @@ public class DBExplorerUtil {
                 }
             }
         } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
+            //Exceptions.printStackTrace(ex);
+			 if(ex.getMessage().indexOf("Specified JDBC Driver not found in DB Explorer: ") != -1) {
+                mLogger.warnNoloc(ex.getMessage());
+            }
         }
         return conn;
     }
@@ -291,7 +294,7 @@ public class DBExplorerUtil {
             driver = registerAxionDriverInstance();
         } else {
             if (drivers.length == 0) {
-                throw new Exception("Specified JDBC Driver not found in DB Explorer.");
+                throw new Exception("Specified JDBC Driver not found in DB Explorer: "+ driverName);
             } else {
                 driver = drivers[0];
             }
