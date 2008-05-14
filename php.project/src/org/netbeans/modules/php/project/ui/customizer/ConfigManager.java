@@ -154,8 +154,7 @@ public class ConfigManager {
         public String getDisplayName() {
             String retval = getValue(PROP_DISPLAY_NAME);
             retval = retval != null ? retval : getName();
-            return retval != null ? retval : NbBundle.getMessage(PhpConfigurationProvider.class, 
-                    "PhpConfigurationProvider.default.label");//NOI18N
+            return retval != null ? retval : NbBundle.getMessage(PhpConfigurationProvider.class, "LBL_DefaultConfiguration");
         }
         
         public boolean isDefault() {

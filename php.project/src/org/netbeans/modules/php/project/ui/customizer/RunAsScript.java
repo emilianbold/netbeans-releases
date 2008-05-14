@@ -159,15 +159,19 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
         indexFileTextField = new javax.swing.JTextField();
         hintLabel = new javax.swing.JTextArea();
 
-        org.openide.awt.Mnemonics.setLocalizedText(interpreterLabel, org.openide.util.NbBundle.getMessage(RunAsScript.class, "RunAsScript.scriptLabel.text")); // NOI18N
+        interpreterLabel.setLabelFor(interpreterTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(interpreterLabel, org.openide.util.NbBundle.getMessage(RunAsScript.class, "LBL_PhpInterpreter")); // NOI18N
 
         interpreterTextField.setEditable(false);
 
-        org.openide.awt.Mnemonics.setLocalizedText(argsLabel, org.openide.util.NbBundle.getMessage(RunAsScript.class, "RunAsScript.argsLabel.text")); // NOI18N
+        argsLabel.setLabelFor(argsTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(argsLabel, org.openide.util.NbBundle.getMessage(RunAsScript.class, "LBL_Arguments")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(runAsLabel, org.openide.util.NbBundle.getMessage(RunAsScript.class, "RunAsLocalWeb.runAsLabel.text")); // NOI18N
+        runAsLabel.setLabelFor(runAsCombo);
+        org.openide.awt.Mnemonics.setLocalizedText(runAsLabel, org.openide.util.NbBundle.getMessage(RunAsScript.class, "LBL_RunAs")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(indexFileLabel, org.openide.util.NbBundle.getMessage(RunAsScript.class, "RunAsScript.indexFileLabel.text")); // NOI18N
+        indexFileLabel.setLabelFor(indexFileTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(indexFileLabel, org.openide.util.NbBundle.getMessage(RunAsScript.class, "LBL_IndexFile")); // NOI18N
 
         hintLabel.setEditable(false);
         hintLabel.setLineWrap(true);

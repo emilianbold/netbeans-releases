@@ -218,13 +218,13 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
         runAsCombo = new javax.swing.JComboBox();
 
         urlLabel.setLabelFor(urlTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(urlLabel, org.openide.util.NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.urlLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(urlLabel, org.openide.util.NbBundle.getMessage(RunAsLocalWeb.class, "LBL_ProjectUrl")); // NOI18N
 
         indexFileLabel.setLabelFor(indexFileTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(indexFileLabel, org.openide.util.NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.indexFileLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(indexFileLabel, org.openide.util.NbBundle.getMessage(RunAsLocalWeb.class, "LBL_IndexFile")); // NOI18N
 
         argsLabel.setLabelFor(argsTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(argsLabel, org.openide.util.NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.argsLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(argsLabel, org.openide.util.NbBundle.getMessage(RunAsLocalWeb.class, "LBL_Arguments")); // NOI18N
 
         hintLabel.setEditable(false);
         hintLabel.setLineWrap(true);
@@ -234,7 +234,8 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
         hintLabel.setEnabled(false);
         hintLabel.setOpaque(false);
 
-        org.openide.awt.Mnemonics.setLocalizedText(runAsLabel, org.openide.util.NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.runAsLabel.text")); // NOI18N
+        runAsLabel.setLabelFor(runAsCombo);
+        org.openide.awt.Mnemonics.setLocalizedText(runAsLabel, org.openide.util.NbBundle.getMessage(RunAsLocalWeb.class, "LBL_RunAs")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);

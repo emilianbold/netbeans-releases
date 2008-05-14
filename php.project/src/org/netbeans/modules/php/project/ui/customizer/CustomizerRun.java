@@ -84,10 +84,6 @@ public class CustomizerRun extends javax.swing.JPanel {
         return manager.configurationFor(configName);
     }
 
-    private Configuration defaultConfiguration() {
-        return manager.defaultConfiguration();
-    }
-
     private void selectCurrentItem() {
         final Configuration config = manager.currentConfiguration();
         configCombo.setSelectedItem(config.getName());//NOI18N
@@ -167,9 +163,9 @@ public class CustomizerRun extends javax.swing.JPanel {
         jSeparator1 = new javax.swing.JSeparator();
         jPanel1 = new org.netbeans.modules.php.project.ui.customizer.RunAsPanel(manager, category);
 
-        org.openide.awt.Mnemonics.setLocalizedText(configLabel, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.configLabel.text")); // NOI18N
+        configLabel.setLabelFor(configCombo);
+        org.openide.awt.Mnemonics.setLocalizedText(configLabel, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_Configuration")); // NOI18N
 
-        configCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "<default>" }));
         configCombo.setRenderer(new ConfigListCellRenderer());
         configCombo.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -177,14 +173,14 @@ public class CustomizerRun extends javax.swing.JPanel {
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(configNew, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.configNew.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(configNew, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_New")); // NOI18N
         configNew.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 configNewActionPerformed(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(configDel, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.configDel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(configDel, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_Delete")); // NOI18N
         configDel.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 configDelActionPerformed(evt);

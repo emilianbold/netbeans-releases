@@ -147,16 +147,16 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         uploadFilesHintLabel = new javax.swing.JLabel();
 
         runAsLabel.setLabelFor(runAsComboBox);
-        org.openide.awt.Mnemonics.setLocalizedText(runAsLabel, org.openide.util.NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.runAsLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(runAsLabel, org.openide.util.NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_RunAs")); // NOI18N
 
         urlLabel.setLabelFor(urlTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(urlLabel, org.openide.util.NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.urlLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(urlLabel, org.openide.util.NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_ProjectUrl")); // NOI18N
 
         indexFileLabel.setLabelFor(indexFileTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(indexFileLabel, org.openide.util.NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.indexFileLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(indexFileLabel, org.openide.util.NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_IndexFile")); // NOI18N
 
         argsLabel.setLabelFor(argsTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(argsLabel, org.openide.util.NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.argsLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(argsLabel, org.openide.util.NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_Arguments")); // NOI18N
 
         urlHintLabel.setEditable(false);
         urlHintLabel.setLineWrap(true);
@@ -167,15 +167,15 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         urlHintLabel.setOpaque(false);
 
         ftpConnectionLabel.setLabelFor(ftpConnectionComboBox);
-        org.openide.awt.Mnemonics.setLocalizedText(ftpConnectionLabel, org.openide.util.NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.ftpConnectionLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(ftpConnectionLabel, org.openide.util.NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_FtpConnection")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(manageFtpConnectionButton, org.openide.util.NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.manageFtpConnectionButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(manageFtpConnectionButton, org.openide.util.NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_Manage")); // NOI18N
 
         uploadDirectoryLabel.setLabelFor(uploadDirectoryTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(uploadDirectoryLabel, org.openide.util.NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.uploadDirectoryLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(uploadDirectoryLabel, org.openide.util.NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_UploadDirectory")); // NOI18N
 
         uploadFilesLabel.setLabelFor(uploadFilesComboBox);
-        org.openide.awt.Mnemonics.setLocalizedText(uploadFilesLabel, org.openide.util.NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.uploadFilesLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(uploadFilesLabel, org.openide.util.NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_UploadFiles")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(uploadFilesHintLabel, "dummy"); // NOI18N
         uploadFilesHintLabel.setEnabled(false);
@@ -244,7 +244,7 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
                     .add(uploadFilesComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(uploadFilesHintLabel)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(27, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
