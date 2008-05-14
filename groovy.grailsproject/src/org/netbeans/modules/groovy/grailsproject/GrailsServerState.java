@@ -28,6 +28,7 @@
 
 package org.netbeans.modules.groovy.grailsproject;
 
+import java.net.URL;
 import org.netbeans.api.project.Project;
 
 /**
@@ -43,7 +44,10 @@ public class GrailsServerState {
     /** <i>GuardedBy("this")</i> */
     private Process process;
 
-    public GrailsServerState(Project prj, String name){
+    /** <i>GuardedBy("this")</i> */
+    private URL url;
+
+    public GrailsServerState(Project prj, String name) {
         this.name = name;
         this.project = prj;
     }
@@ -58,6 +62,17 @@ public class GrailsServerState {
 
     public synchronized void setProcess(Process process) {
         this.process = process;
+    }
+
+    public synchronized URL getRunningUrl() {
+        if (isRunning()) {
+            return url;
+        }
+        return null;
+    }
+
+    public synchronized void setRunningUrl(URL url) {
+        this.url = url;
     }
 
 }

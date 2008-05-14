@@ -116,8 +116,13 @@ public class GrailsActionProvider implements ActionProvider {
     private void executeRunAction() {
         final GrailsServerState serverState = project.getLookup().lookup(GrailsServerState.class);
         if (serverState != null && serverState.isRunning()) {
+            URL url = serverState.getRunningUrl();
+            if (url != null) {
+                HtmlBrowser.URLDisplayer.getDefault().showURL(url);
+            }
             return;
         }
+
         Callable<Process> callable = new Callable<Process>() {
 
             public Process call() throws Exception {
@@ -136,12 +141,15 @@ public class GrailsActionProvider implements ActionProvider {
         Runnable runnable = new Runnable() {
             public void run() {
                 final GrailsServerState serverState = project.getLookup().lookup(GrailsServerState.class);
-                serverState.setProcess(null);
+                if (serverState != null) {
+                    serverState.setProcess(null);
+                    serverState.setRunningUrl(null);
+                }
             }
         };
 
         ExecutionService service = new ExecutionService(callable, displayName,
-                new DefaultDescriptor(project, new HttpSnooper(), runnable, true));
+                new DefaultDescriptor(project, new HttpSnooper(project), runnable, true));
 
         service.run();
     }
@@ -171,30 +179,30 @@ public class GrailsActionProvider implements ActionProvider {
 
     private static class HttpSnooper implements LineSnooper {
 
-        private String urlLine;
+        private final GrailsProject project;
 
-        public synchronized void lineFilter(String line) throws IOException {
+        public HttpSnooper(GrailsProject project) {
+            this.project = project;
+        }
+
+        public void lineFilter(String line) throws IOException {
             if (line.contains("Browse to http:/")) {
-                urlLine = line;
-                startBrowserWithUrl();
-            }
-        }
+                String urlString = line.substring(line.indexOf("http://"));
 
-        public synchronized void reset() {
-            urlLine = null;
-        }
+                URL url;
+                try {
+                    url = new URL(urlString);
+                } catch (MalformedURLException ex) {
+                    LOGGER.log(Level.WARNING, "Could not start browser", ex);
+                    return;
+                }
 
-        public synchronized  void startBrowserWithUrl() {
-            if (urlLine == null) {
-                return;
-            }
+                GrailsServerState state = project.getLookup().lookup(GrailsServerState.class);
+                if (state != null) {
+                    state.setRunningUrl(url);
+                }
 
-            String urlString = urlLine.substring(urlLine.indexOf("http://"));
-
-            try {
-                HtmlBrowser.URLDisplayer.getDefault().showURL(new URL(urlString));
-            } catch (MalformedURLException ex) {
-                LOGGER.log(Level.WARNING, "Could not start browser " + ex.getMessage());
+                HtmlBrowser.URLDisplayer.getDefault().showURL(url);
             }
         }
 
