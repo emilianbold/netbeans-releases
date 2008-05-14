@@ -2197,8 +2197,6 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 try {
                     uqImpl.setDirty(null);
                     final JavaFileFilterImplementation filter = JavaFileFilterQuery.getFilter(fo);
-                    ClasspathInfo cpInfo = ClasspathInfoAccessor.getINSTANCE().create (fo, filter, true, false);
-                    final JavaFileManager fileManager = ClasspathInfoAccessor.getINSTANCE().getFileManager(cpInfo);
                     final File rootFile = FileUtil.toFile(rootFo);
                     final File fileFile = FileUtil.toFile(fo);
                     final File classCache = Index.getClassFolder (rootFile);
