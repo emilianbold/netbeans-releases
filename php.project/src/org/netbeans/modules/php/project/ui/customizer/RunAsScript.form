@@ -20,18 +20,18 @@
               <EmptySpace max="-2" attributes="0"/>
           </Group>
           <Group type="102" alignment="0" attributes="0">
-              <EmptySpace min="-2" pref="2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="interpreterLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="indexFileLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="interpreterLabel" min="-2" max="-2" attributes="0"/>
+                  <Component id="indexFileLabel" min="-2" max="-2" attributes="0"/>
                   <Component id="argsLabel" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace min="-2" pref="13" max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="argsTextField" pref="344" max="32767" attributes="2"/>
-                  <Component id="indexFileTextField" alignment="0" pref="344" max="32767" attributes="3"/>
-                  <Component id="runAsCombo" alignment="1" pref="344" max="32767" attributes="2"/>
-                  <Component id="interpreterTextField" alignment="1" pref="344" max="32767" attributes="2"/>
+                  <Component id="argsTextField" alignment="1" pref="222" max="32767" attributes="3"/>
+                  <Component id="indexFileTextField" alignment="1" pref="222" max="32767" attributes="3"/>
+                  <Component id="runAsCombo" alignment="1" pref="222" max="32767" attributes="3"/>
+                  <Component id="interpreterTextField" alignment="1" pref="222" max="32767" attributes="3"/>
+                  <Component id="hintLabel" alignment="0" pref="222" max="32767" attributes="0"/>
               </Group>
               <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
           </Group>
@@ -45,20 +45,22 @@
                   <Component id="runAsCombo" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace type="separate" min="-2" max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="interpreterLabel" min="-2" max="-2" attributes="0"/>
-                  <Component id="interpreterTextField" min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="interpreterLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="interpreterTextField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="2" attributes="0">
-                  <Component id="indexFileLabel" alignment="2" min="-2" max="-2" attributes="0"/>
-                  <Component id="indexFileTextField" alignment="2" min="-2" pref="19" max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="indexFileTextField" alignment="3" min="-2" pref="19" max="-2" attributes="0"/>
+                  <Component id="indexFileLabel" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="argsLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="argsTextField" alignment="3" min="-2" pref="19" max="-2" attributes="0"/>
+                  <Component id="argsLabel" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="hintLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="32767" attributes="0"/>
           </Group>
       </Group>
@@ -103,6 +105,19 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="indexFileTextField">
+    </Component>
+    <Component class="javax.swing.JTextArea" name="hintLabel">
+      <Properties>
+        <Property name="editable" type="boolean" value="false"/>
+        <Property name="lineWrap" type="boolean" value="true"/>
+        <Property name="rows" type="int" value="2"/>
+        <Property name="wrapStyleWord" type="boolean" value="true"/>
+        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+          <Border info="null"/>
+        </Property>
+        <Property name="enabled" type="boolean" value="false"/>
+        <Property name="opaque" type="boolean" value="false"/>
+      </Properties>
     </Component>
   </SubComponents>
 </Form>

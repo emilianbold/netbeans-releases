@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,9 +31,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.project.ui.customizer;
@@ -46,8 +46,11 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.netbeans.modules.php.project.ui.customizer.ConfigManager.Configuration;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAsType;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
@@ -65,9 +68,10 @@ public final class RunAsPanel extends JPanel {
 
     public RunAsPanel(ConfigManager manager, final Category category) {
         allInsidePanels = new LinkedHashMap<String, InsidePanel>();
-        InsidePanel[] cards = new InsidePanel[]{
+        InsidePanel[] cards = new InsidePanel[] {
             new RunAsLocalWeb(manager, category),
-            new RunAsScript(manager, category)
+            new RunAsRemoteWeb(manager, category),
+            new RunAsScript(manager, category),
         };
         for (InsidePanel basicCard : cards) {
             this.allInsidePanels.put(basicCard.getDisplayName(), basicCard);
@@ -93,17 +97,20 @@ public final class RunAsPanel extends JPanel {
             comboBoxModel.addElement(insidePanel.getDisplayName());
         }
     }
-    
-    public static abstract class InsidePanel extends JPanel implements ChangeListener {
 
-        private static final long serialVersionUID = -5643489817914071L;
-        private ConfigManager manager;
-        private Category category;
+    private void selectInsidePanel(String name) {
+        CardLayout cl = (CardLayout) (getLayout());
+        cl.show(this, name);
+    }
+
+    public abstract static class InsidePanel extends JPanel implements ChangeListener {
+        private final ConfigManager manager;
+        private final Category category;
 
         public InsidePanel(ConfigManager manager, Category category) {
             this.manager = manager;
             this.category = category;
-            this.manager.addChangeListener(this);
+            manager.addChangeListener(this);
         }
 
         protected abstract RunAsType getRunAsType();
@@ -198,15 +205,47 @@ public final class RunAsPanel extends JPanel {
         protected final Category getCategory() {
             return category;
         }
-    }
 
-    private void selectInsidePanel(String name) {
-        CardLayout cl = (CardLayout) (getLayout());
-        cl.show(this, name);
+        protected abstract class TextFieldUpdater implements DocumentListener {
+            private final JLabel label;
+            private final JTextField field;
+            private final String propName;
+
+            public TextFieldUpdater(String propName, JLabel label, JTextField field) {
+                this.propName = propName;
+                this.label = label;
+                this.field = field;
+            }
+
+            abstract String getDefaultValue();
+
+            public final void insertUpdate(DocumentEvent e) {
+                processUpdate();
+            }
+
+            public final void removeUpdate(DocumentEvent e) {
+                processUpdate();
+            }
+
+            public final void changedUpdate(DocumentEvent e) {
+                processUpdate();
+            }
+
+            final String getPropName() {
+                return propName;
+            }
+
+            // can be overriden
+            protected void processUpdate() {
+                putValue(propName, field.getText());
+                markAsModified(label, propName, field.getText());
+                validateFields();
+            }
+        }
     }
 
     private class ComboModel extends DefaultComboBoxModel {
-
+        private static final long serialVersionUID = -569511034282161517L;
         private boolean isInitialized;
 
         private void setAsInitialized() {
@@ -222,7 +261,7 @@ public final class RunAsPanel extends JPanel {
                 InsidePanel current = allInsidePanels.get(name);
                 if (current != null) {
                     current.loadFields();
-                    current.validateFields();                    
+                    current.validateFields();
                     current.putValue(PhpProjectProperties.RUN_AS, current.getRunAsType().name());
                     current.markAsModified(current.getRunAsLabel(), PhpProjectProperties.RUN_AS, current.getRunAsType().name());
                 }

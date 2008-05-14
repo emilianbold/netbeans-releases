@@ -50,7 +50,6 @@ import javax.swing.event.DocumentListener;
 import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAsType;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -58,14 +57,14 @@ import org.openide.util.NbBundle;
  * @author  Radek Matous
  */
 public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
-    private static final long serialVersionUID = -5593489817914071L;
+    private static final long serialVersionUID = -5348981723432471L;
     private final JLabel[] labels;
     private final JTextField[] textFields;
     private final String[] propertyNames;
     private String displayName;
 
     public RunAsLocalWeb(ConfigManager manager, Category category) {
-        this(manager, category, "Local Web Site (running on local web server)");
+        this(manager, category, NbBundle.getMessage(RunAsLocalWeb.class, "LBL_ConfigLocalWeb"));
     }
     
     /** Creates new form LocalWebPanel */
@@ -129,7 +128,7 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
         }
     }
         
-    private String composeHint() {
+    String composeHint() {
         String baseURL = urlTextField.getText();
         String indexFile = indexFileTextField.getText();
         String args = argsTextField.getText();
@@ -182,44 +181,20 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
         }
     }
 
-    private class FieldUpdater implements DocumentListener {
-
-        private final JLabel label;
-        private final JTextField field;
-        private final String propName;
+    private class FieldUpdater extends TextFieldUpdater {
 
         public FieldUpdater(String propName, JLabel label, JTextField field) {
-            this.propName = propName;
-            this.label = label;
-            this.field = field;
-        }
-
-        public final void insertUpdate(DocumentEvent e) {
-            changed();
-            validateFields();
-        }
-
-        public final void removeUpdate(DocumentEvent e) {
-            insertUpdate(e);
-        }
-
-        public final void changedUpdate(DocumentEvent e) {
-        }
-
-        final String getPropName() {
-            return propName;
+            super(propName, label, field);
         }
 
         final String getDefaultValue() {
-            return RunAsLocalWeb.this.getDefaultValue(getPropName()); //NOI18N
-
+            return RunAsLocalWeb.this.getDefaultValue(getPropName());
         }
 
-        void changed() {
-            putValue(propName, field.getText());
-            markAsModified(label, propName, field.getText());
+        @Override
+        protected void processUpdate() {
+            super.processUpdate();
             hintLabel.setText(composeHint());
-            validateFields();
         }
     }
 
@@ -242,16 +217,18 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
         runAsLabel = new javax.swing.JLabel();
         runAsCombo = new javax.swing.JComboBox();
 
+        urlLabel.setLabelFor(urlTextField);
         org.openide.awt.Mnemonics.setLocalizedText(urlLabel, org.openide.util.NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.urlLabel.text")); // NOI18N
 
+        indexFileLabel.setLabelFor(indexFileTextField);
         org.openide.awt.Mnemonics.setLocalizedText(indexFileLabel, org.openide.util.NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.indexFileLabel.text")); // NOI18N
 
+        argsLabel.setLabelFor(argsTextField);
         org.openide.awt.Mnemonics.setLocalizedText(argsLabel, org.openide.util.NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.argsLabel.text")); // NOI18N
 
-        hintLabel.setColumns(20);
         hintLabel.setEditable(false);
         hintLabel.setLineWrap(true);
-        hintLabel.setRows(5);
+        hintLabel.setRows(2);
         hintLabel.setWrapStyleWord(true);
         hintLabel.setBorder(null);
         hintLabel.setEnabled(false);
@@ -271,13 +248,13 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
                     .add(argsLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 72, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(indexFileLabel)
                     .add(urlLabel))
-                .add(29, 29, 29)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, hintLabel, 0, 0, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, argsTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 203, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, indexFileTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 203, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, runAsCombo, 0, 203, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, urlTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 203, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, hintLabel, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, argsTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 220, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, indexFileTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 220, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, runAsCombo, 0, 220, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, urlTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 220, Short.MAX_VALUE))
                 .add(0, 0, 0))
         );
         layout.setVerticalGroup(
