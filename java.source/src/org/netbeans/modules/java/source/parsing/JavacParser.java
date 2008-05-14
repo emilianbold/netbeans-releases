@@ -146,7 +146,8 @@ public class JavacParser extends Parser {
     private static final Logger TIME_LOGGER = Logger.getLogger("TIMER");        //NOI18N    
     //Debug logger    
     private static final Logger LOGGER = Logger.getLogger(JavaSource.class.getName());
-    private static final String MIME_TYPE = "text/x-java";
+    //Java Mime Type
+    public static final String MIME_TYPE = "text/x-java";
     //JavaFileObjectProvider used by the JavacParser - may be overriden by unit test
     static JavaFileObjectProvider jfoProvider = new DefaultJavaFileObjectProvider (); 
     //No output writer like /dev/null
@@ -235,7 +236,7 @@ public class JavacParser extends Parser {
         assert task != null;
         try {
             init (snapshot, task);
-            ciImpl = createCurrentInfo (this, snapshot.getSource(), file, root,snapshot, null);
+            ciImpl = createCurrentInfo (this, file, root,snapshot, null);
         } catch (IOException ioe) {
             throw new ParseException ("JavacParser failure", ioe);            //NOI18N
         }
@@ -433,12 +434,11 @@ public class JavacParser extends Parser {
     }
     
     private static CompilationInfoImpl createCurrentInfo (final JavacParser parser,
-            final Source source,
             final FileObject file,
             final FileObject root,
             final Snapshot snapshot,
             final JavacTaskImpl javac) throws IOException {                
-        CompilationInfoImpl info = new CompilationInfoImpl(parser, source, file, root, null,snapshot);
+        CompilationInfoImpl info = new CompilationInfoImpl(parser, file, root, null,snapshot);
         if (file != null) {
             Logger.getLogger("TIMER").log(Level.FINE, "CompilationInfo",    //NOI18N
                     new Object[] {file, info});
@@ -446,17 +446,23 @@ public class JavacParser extends Parser {
         return info;
     }
     
-    JavacTaskImpl createJavacTask(final DiagnosticListener<? super JavaFileObject> diagnosticListener, ClassNamesForFileOraculum oraculum) {
+    static JavacTaskImpl createJavacTask(
+            final FileObject file,
+            final FileObject root,
+            final ClasspathInfo cpInfo,
+            final JavacParser parser,
+            final DiagnosticListener<? super JavaFileObject> diagnosticListener,
+            final ClassNamesForFileOraculum oraculum) {
         String sourceLevel = null;
-        if (this.file != null) {
+        if (file != null) {
             if (LOGGER.isLoggable(Level.FINER)) {
-                LOGGER.finer("Created new JavacTask for: " + FileUtil.getFileDisplayName(this.file));
+                LOGGER.finer("Created new JavacTask for: " + FileUtil.getFileDisplayName(file));
             }            
-            sourceLevel = SourceLevelQuery.getSourceLevel(this.file);
+            sourceLevel = SourceLevelQuery.getSourceLevel(file);
                                   
-            if (this.root != null && sourceLevel != null) {
+            if (root != null && sourceLevel != null) {
                 try {
-                    RepositoryUpdater.getDefault().verifySourceLevel(this.root.getURL(), sourceLevel);
+                    RepositoryUpdater.getDefault().verifySourceLevel(root.getURL(), sourceLevel);
                 } catch (IOException ex) {
                     LOGGER.log(Level.FINE, null, ex);
                 }
@@ -465,18 +471,27 @@ public class JavacParser extends Parser {
         if (sourceLevel == null) {
             sourceLevel = JavaPlatformManager.getDefault().getDefaultPlatform().getSpecification().getVersion().toString();
         }
-        JavacTaskImpl javacTask = createJavacTask(getClasspathInfo(), diagnosticListener, sourceLevel, false, oraculum);
+        JavacTaskImpl javacTask = createJavacTask(cpInfo, diagnosticListener, sourceLevel, false, oraculum);
         Context context = javacTask.getContext();
-        JavacCancelService.preRegister(context, this);
+        if (parser != null) {
+            JavacCancelService.preRegister(context, parser);
+        }
         JavacFlowListener.preRegister(context);
-        TreeLoader.preRegister(context, getClasspathInfo());
+        TreeLoader.preRegister(context, cpInfo);
         Messager.preRegister(context, null, DEV_NULL, DEV_NULL, DEV_NULL);
         ErrorHandlingJavadocEnter.preRegister(context);
         JavadocMemberEnter.preRegister(context);       
-        JavadocEnv.preRegister(context, getClasspathInfo());
+        JavadocEnv.preRegister(context, cpInfo);
         DocCommentScanner.Factory.preRegister(context);
         com.sun.tools.javac.main.JavaCompiler.instance(context).keepComments = true;
         return javacTask;
+    }
+    
+    public static JavacTaskImpl createJavacTask (final ClasspathInfo cpInfo, final DiagnosticListener<? super JavaFileObject> diagnosticListener, String sourceLevel,  ClassNamesForFileOraculum cnih) {
+        if (sourceLevel == null) {
+            sourceLevel = JavaPlatformManager.getDefault().getDefaultPlatform().getSpecification().getVersion().toString();
+        }
+        return createJavacTask(cpInfo, diagnosticListener, sourceLevel, true, cnih);
     }
     
     private static JavacTaskImpl createJavacTask(final ClasspathInfo cpInfo, final DiagnosticListener<? super JavaFileObject> diagnosticListener, final String sourceLevel, final boolean backgroundCompilation, ClassNamesForFileOraculum cnih) {
@@ -699,7 +714,7 @@ public class JavacParser extends Parser {
                     final int newEndPos = (int) jt.getSourcePositions().getEndPosition(cu, block);
                     final int delta = newEndPos - origEndPos;
                     final Map<JCTree,Integer> endPos = ((JCCompilationUnit)cu).endPositions;
-                    final TranslatePosVisitor tpv = new TranslatePosVisitor(orig, endPos, delta);
+                    final TranslatePositionsVisitor tpv = new TranslatePositionsVisitor(orig, endPos, delta);
                     tpv.scan(cu, null);
                     ((JCMethodDecl)orig).body = block;
                     if (Phase.RESOLVED.compareTo(currentPhase)<=0) {

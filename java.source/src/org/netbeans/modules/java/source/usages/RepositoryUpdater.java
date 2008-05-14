@@ -2259,7 +2259,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                             active = FileObjects.nbFileObject(fo, rootFo, filter, false);
                         }
                         if (active != null) {   //Prevent NPE when VirtualSourceProvider behaves wrongly
-                            JavacTaskImpl jt = JavaSourceAccessor.getINSTANCE().createJavacTask(cpInfo, listener, sourceLevel);
+                            JavacTaskImpl jt = JavacParser.createJavacTask(cpInfo, listener, sourceLevel,null);
                             if (LOGGER.isLoggable(Level.FINE)) {
                                 LOGGER.fine("Created new javac for: " + FileUtil.getFileDisplayName(fo)+ " "+ cpInfo.toString());   //NOI18N
                             }
@@ -2895,7 +2895,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                             }
                         }
                         if (jt == null) {
-                            jt = JavaSourceAccessor.getINSTANCE().createJavacTask(cpInfo, listener, sourceLevel, new ClassNamesForFileOraculumImpl(misplacedSource2FQNsLocal));
+                            jt = JavacParser.createJavacTask(cpInfo, listener, sourceLevel, new ClassNamesForFileOraculumImpl(misplacedSource2FQNsLocal));
                             jt.setTaskListener(listener);
                             if (LOGGER.isLoggable(Level.FINE)) {
                                 LOGGER.fine("Created new JavacTask for: " + FileUtil.getFileDisplayName(rootFo) + " " + cpInfo.toString());    //NOI18N

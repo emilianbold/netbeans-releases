@@ -90,14 +90,7 @@ public abstract class JavaSourceAccessor {
     
     protected abstract void runSpecialTaskImpl (CancellableTask<CompilationInfo> task, JavaSource.Priority priority);
         
-    public final JavacTaskImpl createJavacTask(ClasspathInfo cpInfo, DiagnosticListener<? super JavaFileObject> diagnosticListener, String sourceLevel) {
-        return createJavacTask(cpInfo, diagnosticListener, sourceLevel, null);
-    }
-    
-    public abstract JavacTaskImpl createJavacTask(ClasspathInfo cpInfo, DiagnosticListener<? super JavaFileObject> diagnosticListener, String sourceLevel, ClassNamesForFileOraculum cnih);
-    
-    
-    /**
+        /**
      * Returns the JavacTaskImpl associated with given {@link CompilationInfo},
      * when it's not available it's created.
      * Expert: May violate confinement

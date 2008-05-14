@@ -56,6 +56,10 @@ public final class ResultIterator<T extends Parser.Result> {
     
     private ResultIterator () {}
     
+    public Source getSource () {
+        return null;
+    }
+    
     /**
      * Returns parse {@link Result} for current source.
      * 

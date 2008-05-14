@@ -82,11 +82,11 @@ public final class CompilationInfoImpl {
     private CompilationUnitTree compilationUnit;    
     
     private JavacTaskImpl javacTask;
+    private final ClasspathInfo cpInfo;
     Pair<DocPositionRegion,MethodTree> changedMethod;
     private final FileObject file;
     private final FileObject root;
     final JavaFileObject jfo;    
-    private final Source source;
     private final Snapshot snapshot;
     private final JavacParser parser;
     boolean needsRestart;
@@ -94,15 +94,14 @@ public final class CompilationInfoImpl {
         
     
     CompilationInfoImpl (final JavacParser parser,
-                         final Source source,
                          final FileObject file,
                          final FileObject root,
                          final JavacTaskImpl javacTask,
                          final Snapshot snapshot) throws IOException {
         assert parser != null;
-        assert source != null;        
         this.parser = parser;
-        this.source = source;
+        this.cpInfo = parser.getClasspathInfo();
+        assert cpInfo != null;
         this.file = file;
         this.root = root;
         this.snapshot = snapshot;
@@ -111,7 +110,16 @@ public final class CompilationInfoImpl {
         this.javacTask = javacTask;
     }
     
-    
+    public CompilationInfoImpl (final ClasspathInfo cpInfo) {
+        assert cpInfo != null;
+        this.parser = null;
+        this.file = null;
+        this.root = null;
+        this.jfo = null;
+        this.snapshot = null;
+        this.cpInfo = cpInfo;
+    }
+        
     /**
      * Returns the current phase of the {@link JavaSource}.
      * @return {@link JavaSource.Phase} the state which was reached by the {@link JavaSource}.
@@ -198,29 +206,13 @@ public final class CompilationInfoImpl {
     }
     
                    
-                
-    /**
-     * Returns {@link Source} for which this {@link CompilationInfoImpl} was created.
-     * @return the Source
-     */
-    public Source getSource() {
-        return source;
-    }
-    
-    /**
-     * Returns the parser which created this {@link CompilationInfoImpl}
-     * @return the parser
-     */
-    public JavacParser getParser () {
-        return this.parser;
-    }
-    
+        
     /**
      * Returns {@link ClasspathInfo} for which this {@link CompilationInfoImpl} was created.
      * @return ClasspathInfo
      */
     public ClasspathInfo getClasspathInfo() {
-	return parser.getClasspathInfo();
+	return this.cpInfo;
     }
     
     
@@ -336,7 +328,8 @@ public final class CompilationInfoImpl {
      */
     public synchronized JavacTaskImpl getJavacTask() {	
         if (javacTask == null) {
-            javacTask = parser.createJavacTask(new DiagnosticListenerImpl(this.jfo), null);
+            javacTask = parser.createJavacTask(this.file, this.root, this.cpInfo,
+                    this.parser, new DiagnosticListenerImpl(this.jfo), null);
         }
 	return javacTask;
     }

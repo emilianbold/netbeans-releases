@@ -51,7 +51,7 @@ import java.util.Map;
  * Updates tree positions by the given delta.
  * @author Tomas Zezula
  */
-class TranslatePosVisitor extends TreeScanner<Void,Void> {
+class TranslatePositionsVisitor extends TreeScanner<Void,Void> {
 
     private final MethodTree changedMethod;
     private final Map<JCTree,Integer> endPos;
@@ -59,7 +59,7 @@ class TranslatePosVisitor extends TreeScanner<Void,Void> {
     boolean active;
     boolean inMethod;
 
-    public TranslatePosVisitor (final MethodTree changedMethod, final Map<JCTree, Integer> endPos, final int delta) {
+    public TranslatePositionsVisitor (final MethodTree changedMethod, final Map<JCTree, Integer> endPos, final int delta) {
         assert changedMethod != null;
         assert endPos != null;
         this.changedMethod = changedMethod;

@@ -45,6 +45,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -118,6 +119,8 @@ public class TaskProcessor {
     private static final Pattern excludedTasks;
     //Regexp of class names of tasks which should be scheduled - used for debugging & performance testing
     private static final Pattern includedTasks;
+    //Already logged warninig about running in AWT
+    private static final Set<StackTraceElement> warnedAboutRunInEQ = new HashSet<StackTraceElement>();
     
     static {
         Executors.newSingleThreadExecutor(factory).submit (new CompilationJob());
@@ -150,6 +153,15 @@ public class TaskProcessor {
         assert parserLock.isHeldByCurrentThread() || !holdsDocumentWriteLock(
                 Collections.singleton(source)) :
                 "JavaSource.runCompileControlTask called under Document write lock.";    //NOI18N        
+        
+        boolean a = false;
+        assert a = true;
+        if (a && javax.swing.SwingUtilities.isEventDispatchThread()) {
+            StackTraceElement stackTraceElement = findCaller(Thread.currentThread().getStackTrace());
+            if (stackTraceElement != null && warnedAboutRunInEQ.add(stackTraceElement)) {
+                LOGGER.warning("Source.runUserTask called in AWT event thread by: " + stackTraceElement); // NOI18N
+            }
+        }
         
         final Request request = currentRequest.getTaskToCancel();
         try {
@@ -356,6 +368,21 @@ public class TaskProcessor {
             Exceptions.printStackTrace(e);
         }
         return false;
+    }
+    
+    private static StackTraceElement findCaller(StackTraceElement[] elements) {
+        for (StackTraceElement e : elements) {
+            if (Source.class.getName().equals(e.getClassName())) {
+                continue;
+            }
+            
+            if (e.getClassName().startsWith("java.lang.")) {
+                continue;
+            }
+            
+            return e;
+        }        
+        return null;
     }
        
     //Private classes

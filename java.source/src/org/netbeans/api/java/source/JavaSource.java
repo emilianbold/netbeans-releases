@@ -56,6 +56,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -78,8 +79,17 @@ import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaSourceProvider;
 import org.netbeans.modules.java.source.parsing.CompilationInfoImpl;
+import org.netbeans.modules.java.source.parsing.JavacParser;
 import org.netbeans.modules.java.source.usages.Pair;
 import org.netbeans.modules.java.source.usages.RepositoryUpdater;
+import org.netbeans.modules.parsing.api.Embedding;
+import org.netbeans.modules.parsing.api.MultiLanguageUserTask;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -154,10 +164,14 @@ public final class JavaSource {
     
     static {
         JavaSourceAccessor.setINSTANCE (new JavaSourceAccessorImpl ());
-     }
-    private final Collection<FileObject> files;    
+    }
+    
+    //Source files being processed, may be empty
+    private final Collection<Source> sources;    
+    //Cached parser for case when JavaSource was constructed without sources => special case no parsing API support
+    private CompilationInfoImpl cachedCi;
+    //Classpath info when explicitely given, may be null
     private final ClasspathInfo classpathInfo;    
-    private CompilationInfoImpl currentInfo;
     
     private static final Logger LOGGER = Logger.getLogger(JavaSource.class.getName());
     /**
@@ -270,20 +284,21 @@ public final class JavaSource {
                 } catch (IOException ioe) {
                     Exceptions.printStackTrace(ioe);
                 }
-            } else {
-            PositionConverter binding = null;
-            if (!"text/x-java".equals(FileUtil.getMIMEType(fileObject)) && !"java".equals(fileObject.getExt())) {  //NOI18N
-                for (JavaSourceProvider provider : Lookup.getDefault().lookupAll(JavaSourceProvider.class)) {
-                    JavaFileFilterImplementation filter = provider.forFileObject(fileObject);
-                    if (filter != null) {
-                        binding = new PositionConverter(fileObject, filter);
-                        break;
+            } 
+            else {
+                PositionConverter binding = null;
+                if (!"text/x-java".equals(FileUtil.getMIMEType(fileObject)) && !"java".equals(fileObject.getExt())) {  //NOI18N
+                    for (JavaSourceProvider provider : Lookup.getDefault().lookupAll(JavaSourceProvider.class)) {
+                        JavaFileFilterImplementation filter = provider.forFileObject(fileObject);
+                        if (filter != null) {
+                            binding = new PositionConverter(fileObject, filter);
+                            break;
+                        }
                     }
+                    if (binding == null)
+                        return null;
                 }
-                if (binding == null)
-                    return null;
-            }
-            js = create(ClasspathInfo.create(fileObject), binding, Collections.singletonList(fileObject));
+                js = create(null, binding, Collections.singletonList(fileObject));
             }
             file2JavaSource.put(fileObject, new WeakReference<JavaSource>(js));
         }
@@ -322,23 +337,26 @@ public final class JavaSource {
      * @param files to create JavaSource for
      * @param cpInfo classpath info
      */
-    private JavaSource (ClasspathInfo cpInfo, PositionConverter binding, Collection<? extends FileObject> files) throws IOException {
-        this.files = Collections.unmodifiableList(new ArrayList<FileObject>(files));   //Create a defensive copy, prevent modification
-        boolean multipleSources = this.files.size() > 1;
-        for (Iterator<? extends FileObject> it = this.files.iterator(); it.hasNext();) {
+    private JavaSource (ClasspathInfo cpInfo, PositionConverter binding, Collection<? extends FileObject> files) throws IOException {        
+        boolean multipleSources = files.size() > 1;
+        final List<Source> sources = new LinkedList<Source>();
+        for (Iterator<? extends FileObject> it = files.iterator(); it.hasNext();) {
             FileObject file = it.next();
             Logger.getLogger("TIMER").log(Level.FINE, "JavaSource",
                 new Object[] {file, this});                
             if (!file.isValid()) {
                 if (multipleSources) {
                     LOGGER.warning("Ignoring non existent file: " + FileUtil.getFileDisplayName(file));     //NOI18N
-                    it.remove();
                 }
                 else {
                     DataObject.find(file);  //throws IOE
                 }
-            }                
+            }
+            else {
+                sources.add(Source.create(file));
+            }
         }
+        this.sources = Collections.unmodifiableList(sources);
         this.classpathInfo = cpInfo;        
     }
     
@@ -346,7 +364,7 @@ public final class JavaSource {
         assert info != null;
         assert classFileObject != null;
         assert root != null;
-        this.files = Collections.<FileObject>singletonList(classFileObject);
+        this.sources = Collections.<Source>singletonList(Source.create(classFileObject));
         this.classpathInfo =  info;
     }
        
@@ -373,147 +391,68 @@ public final class JavaSource {
         if (task == null) {
             throw new IllegalArgumentException ("Task cannot be null");     //NOI18N
         }
-        
-        assert javacLock.isHeldByCurrentThread() || !holdsDocumentWriteLock(files) : "JavaSource.runCompileControlTask called under Document write lock.";    //NOI18N
-        
-        boolean a = false;
-        assert a = true;
-        if (a && javax.swing.SwingUtilities.isEventDispatchThread()) {
-            StackTraceElement stackTraceElement = findCaller(Thread.currentThread().getStackTrace());
-            if (stackTraceElement != null && warnedAboutRunInEQ.add(stackTraceElement)) {
-                LOGGER.warning("JavaSource.runUserActionTask called in AWT event thread by: " + stackTraceElement); // NOI18N
-            }
-        }
-        
-        if (this.files.size()<=1) {                        
-            final JavaSource.Request request = currentRequest.getTaskToCancel();
-            try {
-                if (request != null) {
-                    request.task.cancel();
-                }            
-                this.javacLock.lock();                                
-                try {
-                    CompilationInfoImpl currentInfo = null;
-                    boolean jsInvalid;
-                    Pair<DocPositionRegion, MethodTree> changedMethod = null;
-                    synchronized (this) {                        
-                        jsInvalid = this.currentInfo == null || (this.flags & INVALID)!=0;
-                        currentInfo = this.currentInfo;
-                        changedMethod = (currentInfo == null ? null : this.currentInfo.getChangedTree());
-                        if (!shared) {
-                            this.flags|=INVALID;
-                        }                        
-                    }                    
-                    if (jsInvalid) {
-                        boolean needsFullReparse = true;
-                        if (changedMethod != null && currentInfo != null) {
-                            needsFullReparse = !reparseMethod(currentInfo,
-                                    changedMethod.second,
-                                    changedMethod.first.getText());
-                        }
-                        if (needsFullReparse) {
-                            currentInfo = createCurrentInfo(this, binding, null);
-                        }
-                        if (shared) {
-                            synchronized (this) {                        
-                                if (this.currentInfo == null || (this.flags & INVALID) != 0) {
-                                    this.currentInfo = currentInfo;
-                                    this.flags&=~INVALID;
-                                }
-                                else {
-                                    currentInfo = this.currentInfo;
-                                }
-                            }
-                        }
+        if (sources.isEmpty()) {
+            ParserManager.run(new Runnable() {
+                public void run() {
+                    if (cachedCi == null) {
+                        assert cachedCi != null;
+                        cachedCi = new CompilationInfoImpl(classpathInfo);
                     }
-                    assert currentInfo != null;
-                    if (shared) {
-                        if (!infoStack.isEmpty()) {
-                            currentInfo = infoStack.peek();
-                        }
-                    }
-                    else {
-                        infoStack.push (currentInfo);
-                    }
+                    final CompilationController cc = new CompilationController(cachedCi);
                     try {
-                        final CompilationController clientController = new CompilationController (currentInfo);
-                        try {
-                            task.run (clientController);
-                        } finally {
-                            if (shared) {
-                                clientController.invalidate();
-                            }
-                        }
+                        task.run(cc);
                     } finally {
-                        if (!shared) {
-                            infoStack.pop ();
-                        }
-                    }                    
+                        cc.invalidate();
+                    }
                 }
-                catch (CompletionFailure e) {
-                    IOException ioe = new IOException ();
-                    ioe.initCause(e);
-                    throw ioe;
-                }
-                catch (RuntimeException e) {
-                    throw e;
-                }
-                catch (Exception e) {
-                    IOException ioe = new IOException ();
-                    ioe.initCause(e);
-                    throw ioe;
-                } finally {                    
-                    this.javacLock.unlock();
-                }
-            } finally {
-                currentRequest.cancelCompleted (request);
-            }            
+            });
         }
         else {
-            final JavaSource.Request request = currentRequest.getTaskToCancel();
             try {
-                if (request != null) {
-                    request.task.cancel();
-                }
-                this.javacLock.lock();
-                try {
-                    JavacTaskImpl jt = null;
-                    FileObject activeFile = null;
-                    Iterator<FileObject> files = this.files.iterator();                    
-                    while (files.hasNext() || activeFile != null) {
-                        boolean restarted;
-                        if (activeFile == null) {
-                            activeFile = files.next();                            
-                            restarted = false;
-                        }
-                        else {
-                            restarted = true;
-                        }
-                        CompilationInfoImpl ci = createCurrentInfo(this, new PositionConverter(activeFile, null), jt);
-                        CompilationController clientController = new CompilationController(ci);
-                        try {
-                            task.run (clientController);
-                        } finally {
-                            if (shared) {
-                                clientController.invalidate();
+                    MultiLanguageUserTask _task = new MultiLanguageUserTask() {
+                        @Override
+                        public void run(ResultIterator resultIterator) {
+                            final Source source = resultIterator.getSource();
+                            if (JavacParser.MIME_TYPE.equals(source.getMimeType())) {
+                                Parser.Result result = resultIterator.getParserResult();
+                                assert result instanceof CompilationController;
+                                task.run ((CompilationController)result);
+                            }
+                            else {
+                                Parser.Result result = findEmbeddedJava (resultIterator);
+                                if (result == null) {
+                                    //No embedded java
+                                    return;
+                                }
+                                assert result instanceof CompilationController;
+                                task.run ((CompilationController)result);
                             }
                         }
-                        if (!ci.needsRestart) {
-                            jt = ci.getJavacTask();
-                            Log.instance(jt.getContext()).nerrors = 0;
-                            activeFile = null;
-                        }
-                        else {                            
-                            jt = null;
-                            ci = null;
-                            System.gc();
-                            if (restarted) {
-                                throw new InsufficientMemoryException (activeFile);
+                        
+                        private Parser.Result findEmbeddedJava (final ResultIterator theMess) {
+                            final Collection<Embedding> todo = new LinkedList<Embedding>();
+                            //BFS should perform better than DFS in this dark.
+                            for (Iterator<Embedding> it = theMess.getEmbeddedSources(); it.hasNext();) {
+                                Embedding embedding = it.next();
+                                if (JavacParser.MIME_TYPE.equals(embedding.getMimeType())) {
+                                    return theMess.getResultIterator(embedding).getParserResult();
+                                }
+                                else {
+                                    todo.add(embedding);
+                                }
                             }
+                            for (Embedding embedding : todo) {
+                                Parser.Result result  = findEmbeddedJava(theMess.getResultIterator(embedding));
+                                if (result != null) {
+                                    return result;
+                                }
+                            }
+                            return null;
                         }
-                    }                
-                } 
-                catch (CompletionFailure e) {
+                        
+                    };
+                    ParserManager.parse(sources, _task);
+                } catch (CompletionFailure e) {
                     IOException ioe = new IOException ();
                     ioe.initCause(e);
                     throw ioe;
@@ -525,12 +464,7 @@ public final class JavaSource {
                     IOException ioe = new IOException ();
                     ioe.initCause(e);
                     throw ioe;
-                } finally {
-                    this.javacLock.unlock();
                 }
-            } finally {
-                currentRequest.cancelCompleted(request);
-            }
         }
     }
 
@@ -554,70 +488,10 @@ public final class JavaSource {
      * @since 0.12
      */
     public Future<Void> runWhenScanFinished (final Task<CompilationController> task, final boolean shared) throws IOException {
-        assert task != null;
-        final ScanSync sync = new ScanSync (task);
-        final DeferredTask r = new DeferredTask (this,task,shared,sync);
-        //0) Add speculatively task to be performed at the end of background scan
-        todo.add (r);
-        if (RepositoryUpdater.getDefault().isScanInProgress()) {
-            return sync;
-        }
-        //1) Try to aquire javac lock, if successfull no task is running
-        //   perform the given taks synchronously if it wasn't already performed
-        //   by background scan.
-        final boolean locked = javacLock.tryLock();
-        if (locked) {
-            try {
-                if (todo.remove(r)) {
-                    try {
-                        runUserActionTask(task, shared);
-                    } finally {
-                        sync.taskFinished();
-                    }
-                }
-            } finally {
-                javacLock.unlock();
-            }
-        }
-        else {
-            //Otherwise interrupt currently running task and try to aquire lock
-            do {
-                final JavaSource.Request[] request = new JavaSource.Request[1];
-                boolean isScanner = currentRequest.getUserTaskToCancel(request);
-                try {
-                    if (isScanner) {
-                        return sync;
-                    }
-                    if (request[0] != null) {
-                        request[0].task.cancel();
-                    }
-                    if (javacLock.tryLock(100, TimeUnit.MILLISECONDS)) {
-                        try {
-                            if (todo.remove(r)) {
-                                try {
-                                    runUserActionTask(task, shared);
-                                    return sync;
-                                } finally {
-                                    sync.taskFinished();
-                                }
-                            }
-                            else {
-                                return sync;
-                            }
-                        } finally {
-                            javacLock.unlock();
-                        }
-                    }
-                } catch (InterruptedException e) {
-                    throw (InterruptedIOException) new InterruptedIOException ().initCause(e);
-                }
-                finally {
-                    if (!isScanner) {
-                        currentRequest.cancelCompleted(request[0]);
-                    }
-                }
-            } while (true);            
-        }
+        //todo: Implement me, when there will be a support from parsing API!
+        runUserActionTask(task, shared);
+        final ScanSync sync = new ScanSync(task);
+        sync.taskFinished();
         return sync;
     }
 
@@ -636,18 +510,7 @@ public final class JavaSource {
         if (task == null) {
             throw new IllegalArgumentException ("Task cannot be null");     //NOI18N
         }
-        
-        assert javacLock.isHeldByCurrentThread() || !holdsDocumentWriteLock(files) : "JavaSource.runModificationTask called under Document write lock.";    //NOI18N
-        
-        boolean a = false;
-        assert a = true;        
-        if (a && javax.swing.SwingUtilities.isEventDispatchThread()) {
-            StackTraceElement stackTraceElement = findCaller(Thread.currentThread().getStackTrace());
-            if (stackTraceElement != null && warnedAboutRunInEQ.add(stackTraceElement)) {
-                LOGGER.warning("JavaSource.runModificationTask called in AWT event thread by: " + stackTraceElement);     //NOI18N
-            }
-        }
-        
+                        
         ModificationResult result = new ModificationResult(this);
         if (this.files.size()<=1) {
             long start = System.currentTimeMillis();            
@@ -883,14 +746,7 @@ public final class JavaSource {
         protected @Override void runSpecialTaskImpl (CancellableTask<CompilationInfo> task, Priority priority) {
             handleAddRequest(new Request (task, null, null, priority, false));
         }                
-
-        @Override
-        public JavacTaskImpl createJavacTask(ClasspathInfo cpInfo, DiagnosticListener<? super JavaFileObject> diagnosticListener, String sourceLevel, ClassNamesForFileOraculum oraculum) {
-            if (sourceLevel == null)
-                sourceLevel = JavaPlatformManager.getDefault().getDefaultPlatform().getSpecification().getVersion().toString();
-            return JavaSource.createJavacTask(cpInfo, diagnosticListener, sourceLevel, true, oraculum);
-        }
-                
+                        
         @Override
         public JavacTaskImpl getJavacTask (final CompilationInfo compilationInfo) {
             assert compilationInfo != null;
