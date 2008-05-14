@@ -159,7 +159,7 @@ public final class GrailsRuntime {
     // TODO this should be removed with CP abstraction
     public File getGrailsHome() {
         String grailsBase = GrailsSettings.getInstance().getGrailsBase();
-        if (grailsBase == null || RuntimeHelper.isValidRuntime(new File(grailsBase))) {
+        if (grailsBase == null || !RuntimeHelper.isValidRuntime(new File(grailsBase))) {
             throw new IllegalStateException("Grails not configured"); // NOI18N
         }
 
