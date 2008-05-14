@@ -48,6 +48,7 @@ import org.tigris.subversion.svnclientadapter.SVNClientException;
  *
  * @author tomas
  */
+// XXX add referenceclient
 public class InfoTest extends AbstractCLITest {
     
     public InfoTest(String testName) throws Exception {

@@ -40,8 +40,11 @@
 package org.netbeans.modules.subversion.client.cli;
 
 import java.io.File;
+import java.io.IOException;
+import org.netbeans.modules.subversion.Subversion;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
-import org.tigris.subversion.svnclientadapter.ISVNInfo;
+import org.tigris.subversion.svnclientadapter.ISVNStatus;
+import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNStatusKind;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
@@ -49,46 +52,36 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  *
  * @author tomas
  */
-public class MkdirTest extends AbstractCLITest {
+public class ParsedStatusTest extends AbstractCLITest {
     
-    public MkdirTest(String testName) throws Exception {
+    // XXX terst remote change
+    
+    private enum StatusCall {
+        filearray,
+        file
+    }
+    
+    public ParsedStatusTest(String testName) throws Exception {
         super(testName);
     }
-            
-    public void testMkdirUrl() throws Exception {                                                
-                        
-        ISVNClientAdapter c = getNbClient();        
-        SVNUrl url = getRepoUrl().appendPath("mrkvadir");
-        c.mkdir(url, "trkvadir");       
 
-        ISVNInfo info = getInfo(url);
-        assertNotNull(info);        
-        assertEquals(url.toString(), info.getUrl().toString());        
-        assertNotifiedFiles(new File[] {});        
-    }
-    
-    public void testMkdirFile() throws Exception {                                                
-                        
-        File folder = new File(getWC(), "folder");
+    // XXX check with javahl
+    public void testGetStatusWrongAmount() throws Exception {                                
+        File folder = createFolder("folder");        
+        File folder1 = createFolder(folder, "folder1");        
+        File folder2 = createFolder(folder, "folder2");        
+        File file1 = createFolder(folder2, "file1");        
         
-        ISVNClientAdapter c = getNbClient();                
-        c.mkdir(folder);       
-
-        ISVNInfo info = getInfo(folder);
-        assertNotNull(info);        
-        assertStatus(SVNStatusKind.ADDED, folder);
-        assertNotifiedFiles(new File[] {folder});        
+        add(folder);
+        add(folder1);
+        add(folder2);
+        add(file1);
+        commit(getWC());
+                
+        ISVNStatus[] s1 = getNbClient().getStatus(folder, true, false);        
+        
+        assertEquals(4, s1.length);                        
     }
     
-    public void testMkdirUrlParents() throws Exception {                                                                        
-        ISVNClientAdapter c = getNbClient();        
-        SVNUrl url = getRepoUrl().appendPath("mrkvadira").appendPath("mrkvadirb").appendPath("mrkvadirc").appendPath("mrkvadird");
-        c.mkdir(url, true, "trkvadir");       
-
-        ISVNInfo info = getInfo(url);
-        assertNotNull(info);        
-        assertEquals(url.toString(), info.getUrl().toString());                
-        assertNotifiedFiles(new File[] {});        
-    }            
     
 }

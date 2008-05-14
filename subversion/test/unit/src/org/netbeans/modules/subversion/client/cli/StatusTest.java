@@ -74,6 +74,7 @@ public class StatusTest extends AbstractCLITest {
     }
         
     private void statusWrong(StatusCall call) throws Exception {
+        // XXX add ref client
         // does not exist
         File file = new File(getWC(), "file") ;
 

@@ -68,9 +68,8 @@ public class SwitchToTest extends AbstractCLITest {
         
         c.switchToUrl(file, getFileUrl(filecopy), SVNRevision.HEAD, false);
         
-        assertInfo(file, getFileUrl(filecopy)); 
-        // XXX no notification from the cli 
-        // assertNotifiedFiles(file);
+        assertInfo(file, getFileUrl(filecopy));         
+        assertNotifiedFiles();// XXX empty also in svnCA - why?! - no output from cli
     }                 
     
     public void testSwitchToFilePrevRev() throws Exception {                                        
@@ -109,6 +108,7 @@ public class SwitchToTest extends AbstractCLITest {
         assertContents(file, 1);
         SVNRevision rev = getRevision(file);
         assertEquals(((SVNRevision.Number)prevrev).getNumber() , ((SVNRevision.Number)rev).getNumber());
+        assertNotifiedFiles(file);        
     }                 
 
     public void testSwitchToFolderNonRec() throws Exception {                                        
@@ -139,6 +139,7 @@ public class SwitchToTest extends AbstractCLITest {
         assertInfo(file, getFileUrl(foldercopy).appendPath(file.getName()));        
         assertInfo(folder1, getFileUrl(folder).appendPath(folder1.getName()));
         assertInfo(file1, getFileUrl(folder).appendPath(folder1.getName()).appendPath(file1.getName()));
+        assertNotifiedFiles(new File[] {});  // XXX empty also in svnCA - why?! - no output from cli      
     }
 
     public void testSwitchToFolderRec() throws Exception {                                        
@@ -169,6 +170,7 @@ public class SwitchToTest extends AbstractCLITest {
         assertInfo(file, getFileUrl(foldercopy).appendPath(file.getName()));        
         assertInfo(folder1, getFileUrl(foldercopy).appendPath(folder1.getName()));
         assertInfo(file1, getFileUrl(foldercopy).appendPath(folder1.getName()).appendPath(file1.getName()));
+        assertNotifiedFiles(new File[] {});       // XXX empty also in svnCA - why?! - no output from cli 
     }
         
 }
