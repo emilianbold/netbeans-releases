@@ -40,9 +40,13 @@
 package org.netbeans.modules.groovy.editor.hints;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import javax.swing.text.BadLocationException;
 import org.netbeans.modules.groovy.editor.GroovyCompilerErrorID;
 import org.netbeans.modules.groovy.editor.hints.spi.Description;
 import org.netbeans.modules.groovy.editor.hints.spi.ErrorRule;
@@ -51,6 +55,7 @@ import org.netbeans.modules.groovy.editor.hints.spi.RuleContext;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.editor.Utilities;
 import org.netbeans.modules.groovy.editor.actions.FixImportsHelper;
 import org.netbeans.modules.groovy.editor.actions.FixImportsHelper.ImportCandidate;
 import org.netbeans.modules.groovy.editor.hints.spi.Fix;
@@ -70,8 +75,11 @@ public class ClassNotFoundRule implements ErrorRule {
     
     FixImportsHelper helper = new FixImportsHelper();
     
+    Map<String, Set<Integer>> notfoundMap = new HashMap();
+    
     public ClassNotFoundRule() {
         // LOG.setLevel(Level.FINEST);
+        LOG.log(Level.FINEST, "Constructor");
     }
     
     public Set<GroovyCompilerErrorID> getCodes() {
@@ -95,7 +103,7 @@ public class ClassNotFoundRule implements ErrorRule {
 
         LOG.log(Level.FINEST, "Processing : " + desc);
 
-        String missingClassName = helper.getMissingClassName(desc);
+        String missingClassName = FixImportsHelper.getMissingClassName(desc);
 
         if (missingClassName == null) {
             return;
@@ -111,9 +119,34 @@ public class ClassNotFoundRule implements ErrorRule {
             return;
         }
         
+        
+        
+        
         int DEFAULT_PRIORITY = 292;
         
-        OffsetRange range = new OffsetRange(error.getStartPosition(), error.getEndPosition());
+        // FIXME: for CLASS_NOT_FOUND errors we mark the whole line.
+        // This should be replaced with marking the indentifier only.
+        // OffsetRange range = new OffsetRange(error.getStartPosition(), error.getEndPosition());
+        int lineStart = 0;
+        int lineEnd = 0;
+        
+        try {
+            // get line number
+            // Integer lineno = new Integer(Utilities.getLineOffset(context.doc, error.getStartPosition()));
+            
+//            if(hasBeenMarkedBofore(missingClassName, lineno)){
+//                return;
+//            }
+            
+            lineStart  = Utilities.getRowStart(context.doc, error.getStartPosition());
+            lineEnd    = Utilities.getRowEnd(context.doc, error.getEndPosition());
+            
+        } catch (BadLocationException ex) {
+            LOG.log(Level.FINEST, "Processing : " + ex);
+            return;
+        }
+        
+        OffsetRange range = new OffsetRange(lineStart, lineEnd);
         
         for (ImportCandidate candidate : importCandidates) {
             List<Fix> fixList = new ArrayList<Fix>(1);
@@ -130,6 +163,40 @@ public class ClassNotFoundRule implements ErrorRule {
         return;
     }
 
+    boolean hasBeenMarkedBofore(String missingClassName, Integer lineno) {
+        
+        // FIXME: test whether this combination is in the Map:
+        // This could be done in one go ...
+        
+        for (String name : notfoundMap.keySet()) {
+            if(name.equals(missingClassName)){
+                Set<Integer> setOfLines = notfoundMap.get(name);
+                
+                for (Iterator it = setOfLines.iterator(); it.hasNext();) {
+                    Integer number = (Integer) it.next();
+                    if(number.equals(lineno)){
+                        return true;
+                    }    
+                }
+            }
+        }
+ 
+        Set<Integer> setOfLines;
+        
+        if(notfoundMap.containsKey(missingClassName)) {
+            setOfLines = notfoundMap.get(missingClassName);
+            setOfLines.add(lineno);
+        } else {
+            setOfLines = new HashSet<Integer>();
+            setOfLines.add(lineno);
+            notfoundMap.put(missingClassName, setOfLines);
+        }
+        
+        return false;
+        
+    }
+    
+    
     public boolean appliesTo(CompilationInfo compilationInfo) {
         return true;
     }

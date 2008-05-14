@@ -140,8 +140,7 @@ public class GroovyHintsProvider implements HintsProvider{
         // Return all the errors we -haven't- added custom error hints for:
         
        // LOG.setLevel(Level.FINEST);
-       LOG.log(Level.FINEST, "computeErrors()");
-       
+       LOG.log(Level.FINEST, "@@@ computeErrors()");
         
        try {
             if (info.getDocument() == null) {
@@ -159,7 +158,7 @@ public class GroovyHintsProvider implements HintsProvider{
         }
 
         List<Error> errors = rpr.getDiagnostics();
-        LOG.log(Level.FINEST, "errors.size() : " + errors.size());
+        LOG.log(Level.FINEST, "@@@ errors.size() : {0}", errors.size());
 
         if (errors == null || errors.size() == 0) {
             return Collections.emptyList();
@@ -176,8 +175,7 @@ public class GroovyHintsProvider implements HintsProvider{
         if (hints.isEmpty() || isCancelled()) {
             return errors;
         }
-        
-        LOG.log(Level.FINEST, "hints.size() : " + hints.size());
+        LOG.log(Level.FINEST, "@@@ hints.size() : {0}", hints.size());
         
         List<Description> descriptions = new ArrayList<Description>();
         
@@ -185,16 +183,23 @@ public class GroovyHintsProvider implements HintsProvider{
         
         for (Error error : errors) {
             if (error instanceof GroovyError) {
-                LOG.log(Level.FINEST, "error instanceof GroovyError : " + error.getDescription());
+                LOG.log(Level.FINEST, "@@@ ----------------------------------------------------\n");
+                LOG.log(Level.FINEST, "@@@ error.getDescription()   : {0}\n", error.getDescription());
+                LOG.log(Level.FINEST, "@@@ error.getKey()           : {0}\n", error.getKey());
+                LOG.log(Level.FINEST, "@@@ error.getDisplayName()   : {0}\n", error.getDisplayName());
+                LOG.log(Level.FINEST, "@@@ error.getStartPosition() : {0}\n", error.getStartPosition());
+                LOG.log(Level.FINEST, "@@@ error.getEndPosition()   : {0}\n", error.getEndPosition());
                 if (!applyRules((GroovyError) error, info, hints, descriptions)) {
-                    LOG.log(Level.FINEST, "Adding error to unhandled");
+                    LOG.log(Level.FINEST, "@@@ Adding error to unhandled");
                     unhandled.add(error);
                 }
             }
         }
+        LOG.log(Level.FINEST, "@@@ descriptions.size() =  {0}", descriptions.size());
         
         if (descriptions.size() > 0) {
             for (Description desc : descriptions) {
+                LOG.log(Level.FINEST, "@@@ Creating this description : {0}\n", desc.getDescription());
                 ErrorDescription errorDesc = createDescription(desc, info, -1);
                 result.add(errorDesc);
             }

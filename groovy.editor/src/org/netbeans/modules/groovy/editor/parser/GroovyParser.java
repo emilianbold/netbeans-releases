@@ -92,6 +92,7 @@ import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
@@ -621,9 +622,12 @@ public class GroovyParser implements Parser {
                 }
             }
 
-            if (!ignoreErrors) {
-                notifyError(context, null, Severity.ERROR, errorMessage, localizedMessage, offset, sanitizing);
-            }
+            // TODO: This seems to be a duplicate call into notifyError(), since it's done
+            // indirectly from handleErrorCollector() below. Have to doublecheck.
+            
+            // if (!ignoreErrors) {
+            //      notifyError(context, null, Severity.ERROR, errorMessage, localizedMessage, offset, sanitizing);
+            // }
         }
 
         CompileUnit compileUnit = compilationUnit.getAST();
@@ -669,27 +673,42 @@ public class GroovyParser implements Parser {
         notifyError(context, key, severity, description, details, offset, offset, sanitizing);
     }
 
-    private static void notifyError(Context context, String key, Severity severity, String description, String details, 
+    private static void notifyError(Context context, String key, Severity severity, String description, String displayName, 
             int startOffset, int endOffset, Sanitize sanitizing) {
-        // Initialize keys for errors needing it
-        if (key == null) {
-            key = description;
-        }
+
+        Logger LOG = Logger.getLogger(GroovyParser.class.getName());
+        // LOG.setLevel(Level.FINEST);
+        LOG.log(Level.FINEST, "---------------------------------------------------");
+        LOG.log(Level.FINEST, "key         : {0}\n", key);
+        LOG.log(Level.FINEST, "description : {0}\n", description);
+        LOG.log(Level.FINEST, "displayName : {0}\n", displayName);
+        LOG.log(Level.FINEST, "startOffset : {0}\n", startOffset);
+        LOG.log(Level.FINEST, "endOffset   : {0}\n", endOffset);
         
         // FIXME: we silently drop errors which have no description here.
         // There might be still a way to recover.
         if(description == null) {
+            LOG.log(Level.FINEST, "dropping error");
             return;
         }
         
+        // TODO: we might need a smarter way to provide a key in the long run.
+        if (key == null) {
+            key = description;
+        }
+
+        // We gotta have a display name.
+        if (displayName == null) {
+            displayName = description;
+        }
+        
         Error error =
-            new GroovyError(key, description, details, context.file.getFileObject(),
+            new GroovyError(key, displayName, description, context.file.getFileObject(),
                 startOffset, endOffset, severity, getIdForErrorMessage(description));
         
         context.listener.error(error);
 
         if (sanitizing == Sanitize.NONE) {
-//            System.out.println("@@@ " + error);
             context.errorOffset = startOffset;
         }
     }
@@ -889,86 +908,84 @@ public class GroovyParser implements Parser {
     
     
     public static class GroovyError implements Error {
-    private String displayName;
-    private String description;
 
-    private FileObject file;
-    private int start;
-    private int end;
-    private String key;
-    private Severity severity;
-    private Object[] parameters;
-    
-    private GroovyCompilerErrorID id;
-    
-    /** Creates a new instance of GroovyError */
-    public GroovyError(
-            @Nullable String key, 
-            @NonNull String displayName, 
-            @Nullable String description, 
-            @NonNull FileObject file, 
-            @NonNull int start, 
-            @NonNull int end, 
-            @NonNull Severity severity,
-            @NonNull GroovyCompilerErrorID id) {
-        this.key = key;
-        this.displayName = displayName;
-        this.description = description;
-        this.file = file;
-        this.start = start;
-        this.end = end;
-        this.severity = severity;
-        this.id = id;
-    }
+        private final String displayName;
+        private final String description;
+        private final FileObject file;
+        private final int start;
+        private final int end;
+        private final String key;
+        private final Severity severity;
+        private Object[] parameters;
+        private final GroovyCompilerErrorID id;
 
-    public String getDisplayName() {
-        return displayName;
-    }
+        /** Creates a new instance of GroovyError */
+        public GroovyError(
+                @Nullable String key,
+                @NonNull String displayName,
+                @Nullable String description,
+                @NonNull FileObject file,
+                @NonNull int start,
+                @NonNull int end,
+                @NonNull Severity severity,
+                @NonNull GroovyCompilerErrorID id) {
+            this.key = key;
+            this.displayName = displayName;
+            this.description = description;
+            this.file = file;
+            this.start = start;
+            this.end = end;
+            this.severity = severity;
+            this.id = id;
+        }
 
-    public String getDescription() {
-        return description;
-    }
+        public String getDisplayName() {
+            return displayName;
+        }
 
-    // TODO rename to getStartOffset
-    public int getStartPosition() {
-        return start;
-    }
+        public String getDescription() {
+            return description;
+        }
 
-    // TODO rename to getEndOffset
-    public int getEndPosition() {
-        return end;
-    }
+        // TODO rename to getStartOffset
+        public int getStartPosition() {
+            return start;
+        }
 
-    @Override
-    public String toString() {
-        return "GroovyError[" + displayName + ", " + description + ", " + severity + "]";
-    }
+        // TODO rename to getEndOffset
+        public int getEndPosition() {
+            return end;
+        }
 
-    public String getKey() {
-        return key;
-    }
+        @Override
+        public String toString() {
+            return "GroovyError[" + displayName + ", " + description + ", " + severity + "]";
+        }
 
-    public Object[] getParameters() {
-        return parameters;
-    }
+        public String getKey() {
+            return key;
+        }
 
-    public void setParameters(final Object[] parameters) {
-        this.parameters = parameters;
-    }
+        public Object[] getParameters() {
+            return parameters;
+        }
 
-    public Severity getSeverity() {
-        return severity;
-    }
+        public void setParameters(final Object[] parameters) {
+            this.parameters = parameters;
+        }
 
-    public FileObject getFile() {
-        return file;
+        public Severity getSeverity() {
+            return severity;
+        }
+
+        public FileObject getFile() {
+            return file;
+        }
+
+        public GroovyCompilerErrorID getId() {
+            return id;
+        }
     }
-    
-    public GroovyCompilerErrorID getId(){
-        return id;
-    }
-    
-}
 
     
     
