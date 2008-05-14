@@ -46,6 +46,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
@@ -99,11 +100,11 @@ public class ClassPathProviderMergerTest extends NbTestCase {
         assertNotNull(fos);
         assertEquals(1, fos.length);
         
-        final List semaphor = new ArrayList();
+        final AtomicInteger count = new AtomicInteger();
         compile.addPropertyChangeListener(new PropertyChangeListener() {
 
             public void propertyChange(PropertyChangeEvent evt) {
-                semaphor.add(new Object());
+                count.incrementAndGet();
             }
         });
         
@@ -120,7 +121,7 @@ public class ClassPathProviderMergerTest extends NbTestCase {
         fos = compile.getRoots();
         assertNotNull(fos);
         assertEquals(2, fos.length);
-        assertEquals(2, semaphor.size()); // why 2 changes are fired?
+        assertEquals(2, count.get()); // why 2 changes are fired?
         
         cp = result.findClassPath(null, ClassPath.COMPILE);
         assertEquals(cp, compile);
@@ -137,7 +138,7 @@ public class ClassPathProviderMergerTest extends NbTestCase {
         fos = compile.getRoots();
         assertNotNull(fos);
         assertEquals(1, fos.length);
-        assertEquals(4, semaphor.size()); // why 2 changes are fired?
+        assertEquals(4, count.get()); // why 2 changes are fired?
         
 
     }
