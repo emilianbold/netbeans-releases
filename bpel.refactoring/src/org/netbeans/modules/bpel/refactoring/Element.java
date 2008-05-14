@@ -66,6 +66,7 @@ import org.netbeans.modules.xml.xam.dom.DocumentModelAccess;
 
 import org.netbeans.modules.xml.refactoring.XMLRefactoringTransaction;
 import org.netbeans.modules.xml.refactoring.spi.SharedUtils;
+import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.editors.api.EditorUtil;
 import static org.netbeans.modules.xml.ui.UI.*;
 
@@ -178,6 +179,11 @@ final class Element extends SimpleRefactoringElementImplementation implements Tr
 
     public void actionPerformed(ActionEvent event) {
       EditorUtil.goToDesign(myComponent);
+    }
+
+    @Override
+    public boolean isEnabled() {
+      return myComponent instanceof BpelEntity;
     }
   }
 
