@@ -52,7 +52,6 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.css.parser.CSSParser;
 import org.netbeans.modules.css.parser.CSSParserTreeConstants;
 import org.netbeans.modules.css.parser.CssParserAccess;
 import org.netbeans.modules.css.parser.NodeVisitor;
@@ -69,8 +68,6 @@ import org.openide.loaders.DataObject;
  * @author Tor Norbye, Marek Fukala
  */
 public class CssJspModel extends CssModel {
-
-    private static CSSParser PARSER;
 
     private static final Logger LOGGER = Logger.getLogger(CssJspModel.class.getName());
     private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
@@ -188,22 +185,17 @@ public class CssJspModel extends CssModel {
                         LOGGER.log(Level.FINE, "Tree Error  on " + node + "; parent: " + parent);
 
                         if (parent.kind() == CSSParserTreeConstants.JJTDECLARATION) {
-                            //possibly clear also the semicolon which is not part of the declaration node
-                            char justAfterDeclarationNode = buff.length() == parent.endOffset() ? ' ' : buff.charAt(parent.endOffset()); 
-                            
                             //possibly clear the declaration even there is no generated code inside
                             //the error may be caused by previous incorrectly fixed declaration
                             boolean fixesInPreviousDeclaration = false;
                             SimpleNode siblingBefore = SimpleNodeUtil.getSibling(parent, true);
                             if(siblingBefore != null && siblingBefore.kind() == CSSParserTreeConstants.JJTDECLARATION) {
+                                //force clear if there was fixes in the previous declaration
                                 fixesInPreviousDeclaration = containsGeneratedCode(siblingBefore, buff);
                             }
-                            
-                            if(justAfterDeclarationNode == ';') {
-                                //clear only if the previous declaration has been fixed and the error ends with ;
-                                if(clearNode(parent, buff, 0, 1, templatingBlocks, fixesInPreviousDeclaration)) {
-                                    cleared[0] = true;
-                                }
+
+                            if(clearNode(parent, buff, 0, 0, templatingBlocks, fixesInPreviousDeclaration, true)) {
+                                cleared[0] = true;
                             }
                         }
                         if (parent.kind() == CSSParserTreeConstants.JJTSTYLERULE) {
@@ -211,9 +203,9 @@ public class CssJspModel extends CssModel {
                             if (siblingBefore.kind() == CSSParserTreeConstants.JJTREPORTERROR) {
                                 siblingBefore = SimpleNodeUtil.getSibling(siblingBefore, true);
                                 if (siblingBefore.kind() == CSSParserTreeConstants.JJTDECLARATION) {
-                                    boolean modif = clearNode(siblingBefore, buff, 0, 0, templatingBlocks, false); //clear the last declaration node
+                                    boolean modif = clearNode(siblingBefore, buff, 0, 0, templatingBlocks, false, false); //clear the last declaration node
                                     if (modif) {
-                                        clearNode(node, buff, 0, -1, templatingBlocks, true); //clear the skipblock itself, exclude closing symbol
+                                        clearNode(node, buff, 0, -1, templatingBlocks, true, false); //clear the skipblock itself, exclude closing symbol
                                         cleared[0] = true;
                                     }
                                 } else if(siblingBefore.kind() == CSSParserTreeConstants.JJTSELECTORLIST) {
@@ -246,6 +238,14 @@ public class CssJspModel extends CssModel {
                 CssParserAccess.CssParserResult result = parserAccess.parse(new StringReader(buff.toString()));
                 
                 SimpleNode root = result.root();
+                if(LOG) {
+                    LOGGER.fine("> SANITIZING LEVEL #" + i + " >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+                    LOGGER.fine(buff.toString());
+                    LOGGER.fine("------------------------");
+                    LOGGER.fine(root.dump(""));
+                    LOGGER.fine("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+                }
+                
                 root.visitChildren(visitor);
 
                 if(!cleared[0]) {
@@ -254,6 +254,10 @@ public class CssJspModel extends CssModel {
                     //source checking finished without any correction => finish
                     break;
                 }
+            }
+            
+            if(cleared[0]) {
+                LOGGER.warning("CSS source sanitization didn't success even after four passes!");
             }
             
             long endTime = System.currentTimeMillis();
@@ -272,7 +276,7 @@ public class CssJspModel extends CssModel {
     private boolean clearNode(SimpleNode node, StringBuilder buff, 
             int startDelta, int endDelta, 
             List<OffsetRange> templatingBlocks,
-            boolean forceClear) {
+            boolean forceClear, boolean wholeLine) {
         int from = node.startOffset();
         int to = node.endOffset();
         
@@ -280,6 +284,34 @@ public class CssJspModel extends CssModel {
             System.err.println("clearNode from >= to! node: " + node);
             return false;
         }
+        
+        if(wholeLine) {
+            //find line start and end
+            int linestart = from;
+            while(linestart >= 0) {
+                char ch = buff.charAt(linestart);
+                if(ch == '\n') {
+                    break;
+                } else {
+                    linestart--;
+                }
+            }
+            
+            int lineend = to;
+            while(lineend < buff.length()) {
+                char ch = buff.charAt(lineend);
+                
+                if(ch == '\n') {
+                    break;
+                } else {
+                    lineend++;
+                }
+            }
+            
+            from = linestart;
+            to = lineend;
+        }
+        
         
         from += startDelta;
         to += endDelta;

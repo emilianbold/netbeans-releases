@@ -103,7 +103,13 @@ public class DatabaseTableColumnSelectionPanel extends javax.swing.JPanel {
 
 
     public void setSelectedTables(List<TableInfo> tables) {
-        DBArtifactTreeModel model = new DBArtifactTreeModel(new DefaultMutableTreeNode("root"), tables);
+    	if(tables == null) {
+    		return;
+    	}
+    	
+    	updateExistColumnList(tables);
+    	
+        DBArtifactTreeModel model = new DBArtifactTreeModel(new DefaultMutableTreeNode("root"), tables, this.mExistingColumnNames);
         this.jTree1.setModel(model);
         this.jTree1.setRootVisible(false);
         TreeCellRenderer renderer = new SchemaArtifactTreeCellRenderer();
@@ -141,6 +147,24 @@ public class DatabaseTableColumnSelectionPanel extends javax.swing.JPanel {
     
     public List<ColumnInfo> getSelectedColumns() {
     	return this.mExistingColumnNames;
+    }
+    
+    private void updateExistColumnList(List<TableInfo> tables) {
+    	
+    	List<ColumnInfo> invalidExistingColumns = new ArrayList<ColumnInfo>();
+    	
+    	Iterator<ColumnInfo> it = this.mExistingColumnNames.iterator();
+    	while(it.hasNext()) {
+    		ColumnInfo column = it.next();
+    		TableInfo table = column.getTable();
+    		if(!tables.contains(table)) {
+    			invalidExistingColumns.add(column);
+    		}
+    	}
+    	
+    	//remove old invalid columns
+    	this.mExistingColumnNames.removeAll(invalidExistingColumns);
+    	
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

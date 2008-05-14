@@ -77,7 +77,7 @@ public class DebugSingleCommand extends DebugCommand {
             };
             XDebugStarter dbgStarter =  XDebugStarterFactory.getInstance();
             if (dbgStarter != null) {
-                dbgStarter.start(getProject(), runnable, fileForContext(context));
+                dbgStarter.start(getProject(), runnable, fileForContext(context), useInterpreter());
             }
         }
     }

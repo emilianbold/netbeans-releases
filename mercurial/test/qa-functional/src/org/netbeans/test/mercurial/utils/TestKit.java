@@ -6,7 +6,6 @@
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
  */
-
 package org.netbeans.test.mercurial.utils;
 
 import java.io.BufferedInputStream;
@@ -40,21 +39,25 @@ import org.netbeans.junit.ide.ProjectSupport;
  * @author peter
  */
 public final class TestKit {
+
     public final static String MODIFIED_COLOR = "#0000FF";
     public final static String NEW_COLOR = "#008000";
     public final static String CONFLICT_COLOR = "#FF0000";
     public final static String IGNORED_COLOR = "#999999";
-    
     public final static String MODIFIED_STATUS = "[Modified ]";
     public final static String NEW_STATUS = "[New ]";
     public final static String CONFLICT_STATUS = "[Conflict ]";
     public final static String IGNORED_STATUS = "[Ignored ]";
     public final static String UPTODATE_STATUS = "";
-
     private final static String TMP_PATH = "/tmp";
     private final static String WORK_PATH = "work";
-    
-    public static File prepareProject(String category, String project, String project_name) throws Exception {
+    public static final String PROJECT_NAME = "JavaApp";
+    public static final String PROJECT_TYPE = "Java Application";
+    public static final String PROJECT_CATEGORY = "Java";
+    public static final String CLONE_SUF_0 = "_clone0";
+    public static final String CLONE_SUF_1 = "_clone1";
+
+    public static File prepareProject(String prj_category, String prj_type, String prj_name) throws Exception {
         //create temporary folder for test
         String folder = "work" + File.separator + "w" + System.currentTimeMillis();
         File file = new File("/tmp", folder); // NOI18N
@@ -63,48 +66,46 @@ public final class TestKit {
         file.mkdirs();
         //PseudoVersioned project
         NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
-        npwo.selectCategory(category);
-        npwo.selectProject(project);
+        npwo.selectCategory(prj_category);
+        npwo.selectProject(prj_type);
         npwo.next();
         NewProjectNameLocationStepOperator npnlso = new NewProjectNameLocationStepOperator();
-        new JTextFieldOperator(npnlso, 1).setText(file.getAbsolutePath()); // NOI18N
-        new JTextFieldOperator(npnlso, 0).setText(project_name); // NOI18N
-        //new JTextFieldOperator(npnlso, 2).setText(folder); // NOI18N
+        new JTextFieldOperator(npnlso, 1).setText(file.getAbsolutePath());
+        new JTextFieldOperator(npnlso, 0).setText(prj_name);
         new NewProjectWizardOperator().finish();
-        Node rootNode = new ProjectsTabOperator().getProjectRootNode(project_name);
-        
-        // wait classpath scanning finished
-        ProjectSupport.waitScanFinished();
-        //new QueueTool().waitEmpty(1000);
-        //ProjectSupport.waitScanFinished();
-        
+
+        waitForScanFinishedAndQueueEmpty();
+
         return file;
     }
-    
+
     public static String getColor(String nodeHtmlDisplayName) {
-        
-        if (nodeHtmlDisplayName == null || nodeHtmlDisplayName.length() < 1)
+
+        if (nodeHtmlDisplayName == null || nodeHtmlDisplayName.length() < 1) {
             return "";
+        }
         int hashPos = nodeHtmlDisplayName.indexOf('#');
         nodeHtmlDisplayName = nodeHtmlDisplayName.substring(hashPos);
         hashPos = nodeHtmlDisplayName.indexOf('"');
         nodeHtmlDisplayName = nodeHtmlDisplayName.substring(0, hashPos);
         return nodeHtmlDisplayName;
     }
-    
+
     public static String getStatus(String nodeHtmlDisplayName) {
-        if (nodeHtmlDisplayName == null || nodeHtmlDisplayName.length() < 1)
+        if (nodeHtmlDisplayName == null || nodeHtmlDisplayName.length() < 1) {
             return "";
+        }
         String status;
         int pos1 = nodeHtmlDisplayName.indexOf('[');
         int pos2 = nodeHtmlDisplayName.indexOf(']');
-        if ((pos1 != -1) && (pos2 != -1))
+        if ((pos1 != -1) && (pos2 != -1)) {
             status = nodeHtmlDisplayName.substring(pos1, pos2 + 1);
-        else
+        } else {
             status = "";
+        }
         return status;
     }
-    
+
     public static void removeAllData(String projectName) {
         Node rootNode = new ProjectsTabOperator().getProjectRootNode(projectName);
         rootNode.performPopupActionNoBlock("Delete Project");
@@ -114,41 +115,51 @@ public final class TestKit {
         ndo.yes();
         ndo.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
         ndo.waitClosed();
-        //TestKit.deleteRecursively(file);
+    //TestKit.deleteRecursively(file);
     }
-    
+
     public static void closeProject(String projectName) {
         try {
             Node rootNode = new ProjectsTabOperator().getProjectRootNode(projectName);
-            rootNode.performPopupActionNoBlock("Close");
+            Thread.sleep(1000);
+            rootNode.performPopupAction("Close");
+        } catch (Exception e) {
+        } finally {
+            new ProjectsTabOperator().tree().clearSelection();
             try {
-                Thread.sleep(2000);
+                Thread.sleep(1000);
             } catch (InterruptedException ex) {
                 ex.printStackTrace();
             }
-        } catch (Exception e) {
-            
-        } finally {
-            new ProjectsTabOperator().tree().clearSelection();
         }
     }
-    
+
+    public static String getProjectAbsolutePath(String projectName) {
+        Node rootNode = new ProjectsTabOperator().getProjectRootNode(projectName);
+        rootNode.performPopupActionNoBlock("Properties");
+        NbDialogOperator ndo = new NbDialogOperator("Project Properties");
+        String result = new JTextFieldOperator(ndo).getText();
+        ndo.cancel();
+        return result;
+    }
+
     public static void waitForScanFinishedAndQueueEmpty() {
         ProjectSupport.waitScanFinished();
         new QueueTool().waitEmpty(1000);
         ProjectSupport.waitScanFinished();
     }
-    
+
     public static void finalRemove() throws Exception {
         closeProject("JavaApp");
         //closeProject("SVNApplication");
         RepositoryMaintenance.deleteFolder(new File("/tmp/work"));
     }
-    
+
     public static int compareThem(Object[] expected, Object[] actual, boolean sorted) {
         int result = 0;
-        if (expected == null || actual == null)
+        if (expected == null || actual == null) {
             return -1;
+        }
         if (sorted) {
             if (expected.length != actual.length) {
                 return -1;
@@ -178,7 +189,7 @@ public final class TestKit {
         }
         return result;
     }
-    
+
     public static void createNewElements(String projectName, String packageName, String name) {
         NewFileWizardOperator nfwo = NewFileWizardOperator.invoke();
         nfwo.selectProject(projectName);
@@ -189,7 +200,7 @@ public final class TestKit {
         nfnlso.txtObjectName().clearText();
         nfnlso.txtObjectName().typeText(packageName);
         nfnlso.finish();
-        
+
         nfwo = NewFileWizardOperator.invoke();
         nfwo.selectProject(projectName);
         nfwo.selectCategory("Java");
@@ -201,7 +212,7 @@ public final class TestKit {
         nfnlso.selectPackage(packageName);
         nfnlso.finish();
     }
-    
+
     public static void createNewPackage(String projectName, String packageName) {
         NewFileWizardOperator nfwo = NewFileWizardOperator.invoke();
         nfwo.selectProject(projectName);
@@ -213,7 +224,7 @@ public final class TestKit {
         nfnlso.txtObjectName().typeText(packageName);
         nfnlso.finish();
     }
-    
+
     public static void createNewElement(String projectName, String packageName, String name) {
         NewFileWizardOperator nfwo = NewFileWizardOperator.invoke();
         nfwo.selectProject(projectName);
@@ -226,7 +237,7 @@ public final class TestKit {
         nfnlso.selectPackage(packageName);
         nfnlso.finish();
     }
-    
+
     public static void copyTo(String source, String destination) {
         try {
             BufferedInputStream bis = new BufferedInputStream(new FileInputStream(source));
@@ -254,28 +265,29 @@ public final class TestKit {
             e.printStackTrace();
         }
     }
-    
+
     public static void printLogStream(PrintStream stream, String message) {
         if (stream != null) {
             stream.println(message);
         }
     }
-    
+
     public static void showStatusLabels() {
         JMenuBarOperator mbo = new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar());
         JMenuItemOperator mo = mbo.showMenuItem("View|Show Versioning Labels");
         JCheckBoxMenuItemOperator cbmio = new JCheckBoxMenuItemOperator((JCheckBoxMenuItem) mo.getSource());
-        if (!cbmio.getState())
+        if (!cbmio.getState()) {
             cbmio.push();
+        }
     }
- 
+
     public static void openProject(File location, String project) throws Exception {
-         new ActionNoBlock("File|Open Project", null).perform();
-         NbDialogOperator nb = new NbDialogOperator("Open Project");
-         JFileChooserOperator fco = new JFileChooserOperator(nb);
-         fco.setCurrentDirectory(new File(location, project));
-         fco.approve();
-         ProjectSupport.waitScanFinished();
+        new ActionNoBlock("File|Open Project", null).perform();
+        NbDialogOperator nb = new NbDialogOperator("Open Project");
+        JFileChooserOperator fco = new JFileChooserOperator(nb);
+        fco.setCurrentDirectory(new File(location, project));
+        fco.approve();
+        ProjectSupport.waitScanFinished();
     }
 
     public static File loadOpenProject(String projectName, File dataDir) throws Exception {

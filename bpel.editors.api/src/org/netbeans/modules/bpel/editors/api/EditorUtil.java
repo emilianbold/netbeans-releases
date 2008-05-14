@@ -455,7 +455,7 @@ public class EditorUtil {
 
     public static void goToSource(Component component) {
         if (component.getModel() == null) { // deleted
-          return;
+            return;
         }
         if ( !(component instanceof DocumentComponent)) {
             return;
@@ -495,7 +495,7 @@ public class EditorUtil {
     }
 
     public static void goToLoggingAlerting(Component component) {
-        assert component instanceof BpelEntity ;
+        assert component instanceof BpelEntity;
 
         final BpelEntity bpelEntity = (BpelEntity) component;
         FileObject fo = SoaUtil.getFileObjectByModel(bpelEntity.getBpelModel());
@@ -523,7 +523,7 @@ public class EditorUtil {
     }
 
     public static void goToBusinessRules(Component component) {
-        assert component instanceof BpelEntity ;
+        assert component instanceof BpelEntity;
 
         final BpelEntity bpelEntity = (BpelEntity) component;
         FileObject fo = SoaUtil.getFileObjectByModel(bpelEntity.getBpelModel());
@@ -564,9 +564,14 @@ public class EditorUtil {
         }
     }
 
-    public static void goToDesign(final BpelEntity bpelEntity) {
+    public static void goToDesign(Component component) {
+        if ( !(component instanceof BpelEntity)) {
+            return;
+        }
+        final BpelEntity bpelEntity = (BpelEntity) component;
+
         if (bpelEntity.getModel() == null) { // deleted
-          return;
+            return;
         }
         FileObject fo = SoaUtil.getFileObjectByModel(bpelEntity.getBpelModel());
 
@@ -835,9 +840,7 @@ public class EditorUtil {
         return true;
     }
 
-    public static void goToDocumentComponentSource(
-            DocumentComponent<DocumentComponent> component)
-    {
+    public static void goToDocumentComponentSource(DocumentComponent<DocumentComponent> component) {
         if (component == null) return;
 
         Model model = component.getModel();

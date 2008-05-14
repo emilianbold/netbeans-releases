@@ -94,4 +94,9 @@ public class TestSession {
         }
         return report;
     }
+
+    String getSuiteName() {
+        return suiteName;
+    }
+    
 }

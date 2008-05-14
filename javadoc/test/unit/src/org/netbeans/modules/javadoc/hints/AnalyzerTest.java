@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.javadoc.hints;
 
+import com.sun.javadoc.Doc;
+import com.sun.javadoc.MethodDoc;
 import com.sun.source.util.TreePath;
 import java.util.List;
 import javax.lang.model.element.ExecutableElement;
@@ -69,7 +71,7 @@ public class AnalyzerTest extends JavadocTestSupport {
                 "/***/" +
                 "interface Zima {\n" +
                 "   /** leden doc */" +
-                "   int leden();" +
+                "   int leden();\n" +
                 "}\n";
         
         prepareTest(code);
@@ -88,4 +90,38 @@ public class AnalyzerTest extends JavadocTestSupport {
         assertNotNull(errs);
         assertTrue(errs.toString(), errs.isEmpty());
     }
+    
+    public void testParamInheritance() throws Exception {
+        String code =
+                "package test;\n" +
+                "class ZimaImpl implements Zima {\n" +
+                "    /**\n" +
+                "     * \n" +
+                "     */\n" +
+                "    public <T> void leden(T prvniho) {\n" +
+                "    }\n" +
+                "}\n" +
+                "interface Zima {\n" +
+                "    /**\n" +
+                "     * \n" +
+                "     * @param prvniho \n" +
+                "     * @param <T> \n" +
+                "     */\n" +
+                "    <T> void leden(T prvniho);\n" +
+                "}\n";
+        
+        prepareTest(code);
+        
+        TypeElement zimaImpl = info.getTopLevelElements().get(0);
+        assertNotNull(zimaImpl);
+        ExecutableElement leden = (ExecutableElement) zimaImpl.getEnclosedElements().get(1);
+        assertEquals("leden", leden.getSimpleName().toString());
+        Doc ledenDoc = info.getElementUtilities().javaDocFor(leden);
+        assertTrue(ledenDoc instanceof MethodDoc);
+        MethodDoc mLedenDoc = (MethodDoc) ledenDoc;
+        
+        assertNotNull(JavadocUtilities.findParamTag(info, mLedenDoc, "prvniho", false, true));
+        assertNotNull(JavadocUtilities.findParamTag(info, mLedenDoc, "T", true, true));
+}
+    
 }
