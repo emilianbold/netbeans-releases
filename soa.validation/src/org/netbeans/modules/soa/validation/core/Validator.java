@@ -121,8 +121,11 @@ public abstract class Validator implements org.netbeans.modules.xml.xam.spi.Vali
 
   protected final void addError(String key, Component component, String param1, String param2) {
 //out("add error: " + key + " " + param1 + " " + param2);
-//out("      msg: " + i18n(getClass(), key, param1, param2));
     addMessage(i18n(getClass(), key, param1, param2), ResultType.ERROR, component);
+  }
+
+  protected final void addError(String key, Component component, String param1, String param2, String param3) {
+    addMessage(i18n(getClass(), key, param1, param2, param3), ResultType.ERROR, component);
   }
 
   protected final void addWarning(String key, Component component) {

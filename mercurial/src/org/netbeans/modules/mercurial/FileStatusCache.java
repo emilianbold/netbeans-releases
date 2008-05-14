@@ -445,7 +445,7 @@ public class FileStatusCache {
         Map<File, FileInformation> files;
         
         files = (Map<File, FileInformation>) turbo.readEntry(dir, FILE_STATUS_MAP);
-         if (files != null) return files;
+        if (files != null) return files;
         if (isNotManagedByDefault(dir)) {
             if (interestingFiles == null) return FileStatusCache.NOT_MANAGED_MAP;
         }
@@ -453,7 +453,7 @@ public class FileStatusCache {
         dir = FileUtil.normalizeFile(dir);
         files = scanFolder(dir, interestingFiles);
         assert files.containsKey(dir) == false;
-        turbo.writeEntry(dir, FILE_STATUS_MAP, files);
+        turbo.writeEntry(dir, FILE_STATUS_MAP, files.size() == 0 ? null : files);
         if(interestingFiles == null){
             for (Iterator i = files.keySet().iterator(); i.hasNext();) {
                 File file = (File) i.next();
@@ -484,16 +484,25 @@ public class FileStatusCache {
                 if (HgUtils.isIgnored(file)) {
                     Mercurial.LOG.log(Level.FINE, "refreshFileStatus() file: {0} was LocallyNew but is NotSharable", file.getAbsolutePath()); // NOI18N
                     fi = FILE_INFORMATION_EXCLUDED;
-                 } else {
-                     return;
-                 }
+                } else {
+                    if (alwaysFireEvent) {
+                        fireFileStatusChanged(file, null, fi);
+                    }
+                    return;
+                }
             } else if (!FileStatusCache.equivalent(FILE_INFORMATION_REMOVEDLOCALLY, fi)) {
+                if (alwaysFireEvent) {
+                    fireFileStatusChanged(file, null, fi);
+                }
                 return;
             }
         }
         if (FileStatusCache.equivalent(FILE_INFORMATION_NEWLOCALLY, fi)) {
             if (FileStatusCache.equivalent(FILE_INFORMATION_EXCLUDED, current)) {
                 Mercurial.LOG.log(Level.FINE, "refreshFileStatus() file: {0} was LocallyNew but is Excluded", file.getAbsolutePath()); // NOI18N
+                if (alwaysFireEvent) {
+                    fireFileStatusChanged(file, null, fi);
+                }
                 return;
             } else if (current == null) {
                 if (HgUtils.isIgnored(file)) {
@@ -513,8 +522,8 @@ public class FileStatusCache {
         } else {
             newFiles.put(file, fi);
         }
-        assert files.containsKey(dir) == false;
-        turbo.writeEntry(dir, FILE_STATUS_MAP, newFiles);
+        assert newFiles.containsKey(dir) == false;
+        turbo.writeEntry(dir, FILE_STATUS_MAP, newFiles.size() == 0 ? null : newFiles);
 
         if(interestingFiles == null){ 
             fireFileStatusChanged(file, current, fi);

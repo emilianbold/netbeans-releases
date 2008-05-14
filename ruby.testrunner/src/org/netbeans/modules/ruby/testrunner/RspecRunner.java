@@ -40,13 +40,19 @@ package org.netbeans.modules.ruby.testrunner;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Enumeration;
 import java.util.List;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.platform.RubyExecution;
 import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.FileLocator;
+import org.netbeans.modules.ruby.rubyproject.rake.RakeRunner;
+import org.netbeans.modules.ruby.rubyproject.rake.RakeSupport;
+import org.netbeans.modules.ruby.rubyproject.rake.RakeTask;
 import org.netbeans.modules.ruby.rubyproject.spi.TestRunner;
 import org.netbeans.modules.ruby.testrunner.ui.Manager;
 import org.netbeans.modules.ruby.testrunner.ui.RspecRecognizer;
@@ -74,16 +80,11 @@ public class RspecRunner implements TestRunner {
     }
 
     public void runTest(FileObject testFile) {
-        String testFilePath = FileUtil.toFile(testFile).getAbsolutePath();
-        List<String> additionalArgs = new ArrayList<String>();
-        additionalArgs.add("--require"); //NOI18N
-
-        additionalArgs.add(getMediatorScript().getAbsolutePath());
-        additionalArgs.add("--runner"); //NOI18N
-        additionalArgs.add("NbRspecMediator"); //NOI18N
-
-        additionalArgs.add(testFilePath);
-        run(FileOwnerQuery.getOwner(testFile), additionalArgs, testFile.getName());
+        List<String> specFile = new ArrayList<String>();
+        specFile.add(FileUtil.toFile(testFile).getAbsolutePath());
+        run(FileOwnerQuery.getOwner(testFile), 
+                Collections.<String>singletonList(FileUtil.toFile(testFile).getAbsolutePath()),
+                testFile.getName());
     }
 
     public void runSingleTest(FileObject testFile, String testMethod) {
@@ -91,18 +92,36 @@ public class RspecRunner implements TestRunner {
     }
 
     public void runAllTests(Project project) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        // collect all tests from the spec/ dir - would be better to use the rake
+        // spec task but couldn't make it work with all the params - need to revisit
+        // that.
+        FileObject specDir = project.getProjectDirectory().getFileObject("spec/");
+        Enumeration<? extends FileObject> children = specDir.getChildren(true);
+        List<String> specs = new ArrayList<String>();
+        while (children.hasMoreElements()) {
+            FileObject each = children.nextElement();
+            if ("rb".equals(each.getExt())) {
+                specs.add(FileUtil.toFile(each).getAbsolutePath());
+            }
+        }
+        run(project, specs, ProjectUtils.getInformation(project).getDisplayName());
     }
 
     private void run(Project project, List<String> additionalArgs, String name) {
         FileLocator locator = project.getLookup().lookup(FileLocator.class);
         RubyPlatform platform = RubyPlatform.platformFor(project);
 
-        String targetPath = getMediatorScript().getAbsolutePath();
+        List<String> arguments = new ArrayList<String>();
+        arguments.add("--require"); //NOI18N
+        arguments.add(getMediatorScript().getAbsolutePath());
+        arguments.add("--runner"); //NOI18N
+        arguments.add("NbRspecMediator"); //NOI18N
+        arguments.addAll(additionalArgs);
+        
         ExecutionDescriptor desc = null;
         String charsetName = null;
-        desc = new ExecutionDescriptor(platform, name, FileUtil.toFile(project.getProjectDirectory()), targetPath);
-        desc.additionalArgs(additionalArgs.toArray(new String[additionalArgs.size()]));
+        desc = new ExecutionDescriptor(platform, name, FileUtil.toFile(project.getProjectDirectory()));
+        desc.additionalArgs(arguments.toArray(new String[arguments.size()]));
 
         desc.debug(false);
         desc.allowInput();
