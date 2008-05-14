@@ -58,7 +58,7 @@ import org.xml.sax.SAXNotSupportedException;
  * @author Petr Nejedly
  */
 public class SAXFactoryImpl extends SAXParserFactory {
-    private static Class first;
+    private static Class<? extends SAXParserFactory> first;
     
     private Map<String,Boolean> features = new HashMap<String,Boolean>();
     
@@ -94,14 +94,14 @@ public class SAXFactoryImpl extends SAXParserFactory {
     }
 
     public void setFeature(java.lang.String name, boolean value) throws ParserConfigurationException, SAXNotRecognizedException, SAXNotSupportedException {
-        features.put(name, Boolean.valueOf(value));
+        features.put(name, value);
         tryCreate();
     }
 
     private SAXParser tryCreate() throws ParserConfigurationException, SAXNotRecognizedException, SAXNotSupportedException {
-        for (Iterator it = new LazyIterator(first, SAXParserFactory.class, SAXFactoryImpl.class); it.hasNext(); ) {
+        for (Iterator<Class<? extends SAXParserFactory>> it = new LazyIterator<SAXParserFactory>(first, SAXParserFactory.class, SAXFactoryImpl.class); it.hasNext(); ) {
             try {
-                SAXParser parser = tryCreate((Class)it.next());
+                SAXParser parser = tryCreate(it.next());
                 return parser;
             } catch (ParserConfigurationException e) {
                 if (!it.hasNext()) throw e;
@@ -116,15 +116,14 @@ public class SAXFactoryImpl extends SAXParserFactory {
         throw new IllegalStateException("Can't get here!"); // NOI18N
     }
 
-    private SAXParser tryCreate(Class delClass) throws ParserConfigurationException, SAXException {
+    private SAXParser tryCreate(Class<? extends SAXParserFactory> delClass) throws ParserConfigurationException, SAXException {
         Exception ex = null;
         try {
-            SAXParserFactory delegate = (SAXParserFactory)delClass.newInstance();
+            SAXParserFactory delegate = delClass.newInstance();
             delegate.setValidating(isValidating());
             delegate.setNamespaceAware(isNamespaceAware());
-            for (Iterator it = features.entrySet().iterator(); it.hasNext(); ) {
-                Map.Entry entry = (Map.Entry)it.next();
-                delegate.setFeature((String)entry.getKey(), ((Boolean)entry.getValue()).booleanValue());
+            for (Map.Entry<String,Boolean> entry : features.entrySet()) {
+                delegate.setFeature(entry.getKey(), entry.getValue());
             }
             return delegate.newSAXParser();
         } catch (InstantiationException e) {

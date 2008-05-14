@@ -55,7 +55,7 @@ import javax.xml.parsers.ParserConfigurationException;
  * @author Petr Nejedly
  */
 public class DOMFactoryImpl extends DocumentBuilderFactory {
-    private static Class first;
+    private static Class<? extends DocumentBuilderFactory> first;
 
     private Map<String, Object> attributes = new HashMap<String, Object>();
     
@@ -118,7 +118,7 @@ public class DOMFactoryImpl extends DocumentBuilderFactory {
     }
     
     private DocumentBuilder tryCreate() throws ParserConfigurationException, IllegalArgumentException {
-        for (Iterator<Class> it = new LazyIterator(first, DocumentBuilderFactory.class, DOMFactoryImpl.class); it.hasNext(); ) {
+        for (Iterator<Class<? extends DocumentBuilderFactory>> it = new LazyIterator<DocumentBuilderFactory>(first, DocumentBuilderFactory.class, DOMFactoryImpl.class); it.hasNext(); ) {
             try {
                 DocumentBuilder builder = tryCreate(it.next());
                 return builder;
@@ -131,10 +131,10 @@ public class DOMFactoryImpl extends DocumentBuilderFactory {
         throw new IllegalStateException("Can't get here!"); // NOI18N
     }
 
-    private DocumentBuilder tryCreate(Class delClass) throws ParserConfigurationException, IllegalArgumentException {
+    private DocumentBuilder tryCreate(Class<? extends DocumentBuilderFactory> delClass) throws ParserConfigurationException, IllegalArgumentException {
         Exception ex = null;
         try {
-            DocumentBuilderFactory delegate = (DocumentBuilderFactory)delClass.newInstance();
+            DocumentBuilderFactory delegate = delClass.newInstance();
             delegate.setNamespaceAware(isNamespaceAware());
             delegate.setValidating(isValidating());
             delegate.setIgnoringElementContentWhitespace(isIgnoringElementContentWhitespace());
