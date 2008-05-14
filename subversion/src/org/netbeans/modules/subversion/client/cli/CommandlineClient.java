@@ -46,13 +46,10 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.logging.Level;
 import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.subversion.client.cli.commands.AddCommand;
 import org.netbeans.modules.subversion.client.cli.commands.BlameCommand;
 import org.netbeans.modules.subversion.client.cli.commands.CatCommand;
@@ -94,7 +91,6 @@ import org.tigris.subversion.svnclientadapter.ISVNProperty;
 import org.tigris.subversion.svnclientadapter.ISVNStatus;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNKeywords;
-import org.tigris.subversion.svnclientadapter.SVNNodeKind;
 import org.tigris.subversion.svnclientadapter.SVNNotificationHandler;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
 import org.tigris.subversion.svnclientadapter.SVNRevision.Number;
@@ -119,7 +115,7 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
     public CommandlineClient() {
         this.notificationHandler = new NotificationHandler();
         wcParser = new SvnWcParser();  
-        cli = new Commandline(notificationHandler);     
+        cli = new Commandline();     
     }
         
     public void addNotifyListener(ISVNNotifyListener l) {
@@ -686,27 +682,7 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
     }
     
     // parser end
-    
-//    // notify listener start
-//    public void setCommand(int arg0) { /* boring */ }
-//    public void logCommandLine(String arg0) { /* boring */ }
-//    public void logMessage(String msg) { 
-//        ISVNNotifyListener[] la = getListeners();
-//        for (ISVNNotifyListener l : la) {
-//            l.logMessage(msg);
-//        }
-//    };
-//    public void logError(String arg0) { /* boring */ }
-//    public void logRevision(long arg0, String arg1) { /* boring */ }
-//    public void logCompleted(String arg0) { /* boring */ }
-//    public void onNotify(File file, SVNNodeKind kind) {
-//        ISVNNotifyListener[] la = getListeners();
-//        for (ISVNNotifyListener l : la) {
-//            l.onNotify(file, kind);
-//        }
-//    }    
-//    // notify listener end
-    
+        
     private void exec(SvnCommand cmd) throws SVNClientException {
         try {            
             config(cmd);
@@ -716,18 +692,6 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
         }
         checkErrors(cmd);
     }
-
-//    private InputStream execBinary(SvnCommand cmd) throws SVNClientException {
-//        InputStream ret;
-//        try {           
-//            config(cmd);            
-//            ret = cli.execBinary(cmd);
-//        } catch (IOException ex) {
-//            throw new SVNClientException(ex);
-//        }
-//        checkErrors(cmd);
-//        return ret;
-//    }
     
     private void checkErrors(SvnCommand cmd) throws SVNClientException {
 
@@ -779,8 +743,6 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
     
     // unsupported start
     
-
-
     @Override
     public long[] commitAcrossWC(File[] arg0, String arg1, boolean arg2, boolean arg3, boolean arg4) throws SVNClientException {
         return super.commitAcrossWC(arg0, arg1, arg2, arg3, arg4);
@@ -916,7 +878,5 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
     
     // unsupported start
 
-    class NotificationHandler extends SVNNotificationHandler {
-
-    }
+    class NotificationHandler extends SVNNotificationHandler {   }
 }

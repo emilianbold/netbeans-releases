@@ -48,8 +48,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import org.netbeans.modules.subversion.SvnModuleConfig;
-import org.netbeans.modules.subversion.client.cli.CommandlineClient.NotificationHandler;
-import org.openide.util.Exceptions;
 
 /**
  * Encapsulates svn shell process. 
@@ -67,7 +65,7 @@ class Commandline {
     /**
      * Creates a new cleartool shell process.
      */
-    Commandline(NotificationHandler notificationHandler) {
+    Commandline() {
         executable = SvnModuleConfig.getDefault().getExecutableBinaryPath();
         if(executable == null || executable.trim().equals("")) {
             executable = "svn";
@@ -110,12 +108,8 @@ class Commandline {
         
         try {
             cli = Runtime.getRuntime().exec(command.getCliArguments(executable), getEnvVar());
-//            cli.waitFor();
             ctOutput = new BufferedReader(new InputStreamReader(cli.getInputStream()));
             ctError = new BufferedReader(new InputStreamReader(cli.getErrorStream()));
-//        } catch (InterruptedException ex) {
-//            Logger.getLogger(Commandline.class.getName()).log(Level.WARNING, null, ex);
-//            throw new IOException(ex.getMessage());
         } catch (IOException ex) {
             Logger.getLogger(Commandline.class.getName()).log(Level.WARNING, null, ex);
             throw ex;
