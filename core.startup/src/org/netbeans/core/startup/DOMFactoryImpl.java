@@ -99,8 +99,6 @@ public class DOMFactoryImpl extends DocumentBuilderFactory {
             throw p;
         }
     }
-    
-    
 
     public DocumentBuilder newDocumentBuilder() throws javax.xml.parsers.ParserConfigurationException {
         try {
@@ -109,7 +107,6 @@ public class DOMFactoryImpl extends DocumentBuilderFactory {
             throw (ParserConfigurationException) new ParserConfigurationException(e.toString()).initCause(e);
         }
     }
-
 
     public void setAttribute(java.lang.String name, java.lang.Object value) throws java.lang.IllegalArgumentException {
         attributes.put(name, value);
@@ -121,9 +118,9 @@ public class DOMFactoryImpl extends DocumentBuilderFactory {
     }
     
     private DocumentBuilder tryCreate() throws ParserConfigurationException, IllegalArgumentException {
-        for (Iterator it = new LazyIterator(first, DocumentBuilderFactory.class, DOMFactoryImpl.class); it.hasNext(); ) {
+        for (Iterator<Class> it = new LazyIterator(first, DocumentBuilderFactory.class, DOMFactoryImpl.class); it.hasNext(); ) {
             try {
-                DocumentBuilder builder = tryCreate((Class)it.next());
+                DocumentBuilder builder = tryCreate(it.next());
                 return builder;
             } catch (ParserConfigurationException e) {
                 if (!it.hasNext()) throw e;
@@ -145,9 +142,8 @@ public class DOMFactoryImpl extends DocumentBuilderFactory {
             delegate.setIgnoringComments(isIgnoringComments());
             delegate.setCoalescing(isCoalescing());
 
-            for (Iterator it = attributes.entrySet().iterator(); it.hasNext(); ) {
-                Map.Entry entry = (Map.Entry)it.next();
-                delegate.setAttribute((String)entry.getKey(), entry.getValue());
+            for (Map.Entry<String,Object> entry : attributes.entrySet()) {
+                delegate.setAttribute(entry.getKey(), entry.getValue());
             }
             return delegate.newDocumentBuilder();
         } catch (InstantiationException e) {
