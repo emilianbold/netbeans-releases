@@ -39,12 +39,13 @@
  * made subject to such option by the copyright holder.
  */
 
-package gui;
+package org.netbeans.performance.j2ee;
 
-import org.netbeans.junit.NbTestCase;
+
 import org.netbeans.junit.NbTestSuite;
-import junit.framework.TestSuite;
-import junit.framework.Test;
+import org.netbeans.performance.j2ee.setup.*;
+import org.netbeans.junit.NbModuleSuite;
+
 
 /**
  * Test suite that actually does not perform any test but sets up user directory
@@ -52,23 +53,13 @@ import junit.framework.Test;
  *
  * @author  Radim Kubacki
  */
-public class MeasureJ2EESetupTest extends NbTestCase {
+public class MeasureJ2EESetupTest {
     
-    public MeasureJ2EESetupTest (java.lang.String testName) {
-        super(testName);
-    }
-    
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
-    public static Test suite() {
-        TestSuite suite = new NbTestSuite("UI Responsiveness Setup suite");
-        suite.addTest(new gui.setup.EJBSetupTest("testCloseMemoryToolbar"));
-        suite.addTest(new gui.setup.EJBSetupTest("closeAllDocuments"));
-        suite.addTest(new gui.setup.EJBSetupTest("closeNavigator"));
-        //suite.addTest(new gui.setup.EJBSetupTest("testAddAppServer"));
-        suite.addTest(new gui.setup.EJBSetupTest("testOpenEJBProject"));
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite("UI Responsiveness J2EE Setup suite");
+
+        //suite.addTest(NbModuleSuite.create(J2EESetup.class, ".*", ".*"));
+       
         return suite;
     }
     

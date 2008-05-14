@@ -39,11 +39,12 @@
  * made subject to such option by the copyright holder.
  */
 
-package gui.action;
+package org.netbeans.performance.j2ee.actions;
+
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.EditorWindowOperator;
-import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.ActionNoBlock;
@@ -53,8 +54,6 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.JemmyProperties;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.jemmy.operators.JMenuBarOperator;
-import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 
 /**
@@ -62,7 +61,7 @@ import org.netbeans.jemmy.operators.JTreeOperator;
  *
  * @author  lmartinek@netbeans.org
  */
-public class MeasureCallEjbAction extends org.netbeans.performance.test.utilities.PerformanceTestCase {
+public class MeasureCallEjbAction extends PerformanceTestCase {
     
     private static EditorOperator editor;
     private static NbDialogOperator dialog;
@@ -87,6 +86,7 @@ public class MeasureCallEjbAction extends org.netbeans.performance.test.utilitie
         WAIT_AFTER_OPEN = 5000;
     }
      
+    @Override
     public void initialize() {
     	index = 1;
         // open a java file in the editor
@@ -111,6 +111,7 @@ public class MeasureCallEjbAction extends org.netbeans.performance.test.utilitie
         return null;
     }
 
+    @Override
     public void shutdown(){
         new SaveAllAction().performAPI();
         editor.closeDiscard();

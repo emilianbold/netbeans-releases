@@ -39,9 +39,11 @@
  * made subject to such option by the copyright holder.
  */
 
-package gui.action;
+package org.netbeans.performance.j2ee.actions;
 
-import gui.Utils;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.modules.performance.utilities.CommonUtilities;
+
 import java.io.InputStream;
 import java.net.URL;
 import org.netbeans.jellytools.Bundle;
@@ -61,7 +63,7 @@ import org.netbeans.jemmy.operators.Operator;
  *
  * @author  lmartinek@netbeans.org
  */
-public class Deploy extends org.netbeans.performance.test.utilities.PerformanceTestCase {
+public class Deploy extends PerformanceTestCase {
     
     private Node node;
     
@@ -87,8 +89,9 @@ public class Deploy extends org.netbeans.performance.test.utilities.PerformanceT
     }
     
     
+    @Override
     public void initialize(){
-        Utils.startStopServer(true);
+        CommonUtilities.startApplicationServer();
         
         JTreeOperator tree = ProjectsTabOperator.invoke().tree();
         tree.setComparator(new Operator.DefaultStringComparator(true, true));
@@ -98,6 +101,7 @@ public class Deploy extends org.netbeans.performance.test.utilities.PerformanceT
         MainWindowOperator.getDefault().waitStatusText("Finished building build.xml (dist)");
     }
     
+    @Override
     public void shutdown() {
         RuntimeTabOperator runtimeTab = RuntimeTabOperator.invoke();
         Node node = new Node(runtimeTab.getRootNode(), Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.Bundle", "SERVER_REGISTRY_NODE")
@@ -108,7 +112,7 @@ public class Deploy extends org.netbeans.performance.test.utilities.PerformanceT
         node.performPopupAction(Bundle.getStringTrimmed("org.netbeans.modules.j2ee.sun.ide.j2ee.runtime.nodes.Bundle", "LBL_Undeploy"));
         node.waitNotPresent();
         
-        Utils.startStopServer(false);
+        CommonUtilities.stopApplicationServer();
     }
     
     public void prepare(){
@@ -120,6 +124,7 @@ public class Deploy extends org.netbeans.performance.test.utilities.PerformanceT
         return null;
     }
     
+    @Override
     public void close() {
         MainWindowOperator.getDefault().waitStatusText("Finished building build.xml (run-deploy).");
         try {

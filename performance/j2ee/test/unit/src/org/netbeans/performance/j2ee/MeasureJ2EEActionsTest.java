@@ -39,11 +39,12 @@
  * made subject to such option by the copyright holder.
  */
 
-package gui;
+package org.netbeans.performance.j2ee;
 
 
-import gui.action.*;
+import org.netbeans.performance.j2ee.actions.*;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 
 /**
  * Measure UI-RESPONSIVENES and WINDOW_OPENING.
@@ -52,59 +53,23 @@ import org.netbeans.junit.NbTestSuite;
  */
 public class MeasureJ2EEActionsTest  {
     
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
+
     
     public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
+        NbTestSuite suite = new NbTestSuite("UI Responsiveness J2EE Actions suite");
         
-	if (System.getProperty("onlyDeployment") != null && System.getProperty("onlyDeployment").equals("true")) {
-		suite.addTest(new Deploy("measureTime", "Deploy Enterprise Application"));
-	} else {
-
-	        suite.addTest(new CreateJ2EEProject("testCreateEnterpriseApplicationProject", "Create Enterprise Application projects"));
-	        suite.addTest(new CreateJ2EEProject("testCreateStandaloneEnterpriseApplicationProject", "Create standalone Enterprise Application project"));
-	        suite.addTest(new CreateJ2EEProject("testCreateEJBModuleProject", "Create EJB Module project"));
-
-	        suite.addTest(new ExpandEJBNodesProjectsView("testExpandEjbProjectNode", "Expand EJB Project node"));
-	        suite.addTest(new ExpandEJBNodesProjectsView("testExpandEjbNode", "Expand Enterprise Beans node"));
-	
-	        suite.addTest(new OpenJ2EEFiles("testOpeningJava", "Open Java file"));
-	        suite.addTest(new OpenJ2EEFiles("testOpeningSessionBean", "Open Session Bean file"));
-	        suite.addTest(new OpenJ2EEFiles("testOpeningEntityBean", "Open Entity Bean file"));
-	        suite.addTest(new OpenJ2EEFiles("testOpeningEjbJarXml", "Open ejb-jar.xml file"));
-	        suite.addTest(new OpenJ2EEFiles("testOpeningSunEjbJarXml", "Open sun-ejb-jar.xml file"));
-	        suite.addTest(new OpenJ2EEFiles("testOpeningApplicationXml", "Open application.xml file"));
-	        suite.addTest(new OpenJ2EEFiles("testOpeningSunApplicationXml", "Open sun-application.xml file"));
-	        
-	        suite.addTest(new OpenJ2EEFilesWithOpenedEditor("testOpeningSessionBean", "Open Session Bean file if Editor opened"));
-	        suite.addTest(new OpenJ2EEFilesWithOpenedEditor("testOpeningEntityBean", "Open Entity Bean file if Editor opened"));
-	        suite.addTest(new OpenJ2EEFilesWithOpenedEditor("testOpeningEjbJarXml", "Open ejb-jar.xml file if Editor opened"));
-	        suite.addTest(new OpenJ2EEFilesWithOpenedEditor("testOpeningSunEjbJarXml", "Open sun-ejb-jar.xml file if Editor opened"));
-	        suite.addTest(new OpenJ2EEFilesWithOpenedEditor("testOpeningApplicationXml", "Open application.xml file if Editor opened"));
-	        suite.addTest(new OpenJ2EEFilesWithOpenedEditor("testOpeningSunApplicationXml", "Open sun-application.xml file if Editor opened"));
-
-/* Wrong tests results, disabled util further investigation	        
-	        suite.addTest(new MeasureSessionBeanAction("testAddBusinessMethod", "Add business method to SB"));
-	        suite.addTest(new MeasureEntityBeanAction("testAddBusinessMethod", "Add business method to EB"));
-                suite.addTest(new MeasureEntityBeanAction("testAddFinderMethod", "Add finder method to EB"));
-	        suite.addTest(new MeasureEntityBeanAction("testAddSelectMethod", "Add select method to EB"));
-	        suite.addTest(new MeasureWebServiceAction("testAddOperation", "Add operation to WS"));
-	        
-                
-	        suite.addTest(new MeasureCallEjbAction("measureTime", "Call EJB in session bean"));
-*/	        
-	        //suite.addTest(new Deploy("measureTime", "Deploy Enterprise Application"));
-
-	        suite.addTest(new CreateNewFile("testCreateNewSessionBean", "Create new session bean"));
-	        suite.addTest(new CreateNewFile("testCreateNewEntityBean", "Create new entity bean"));
-            
-/* Unstable	        
-	        suite.addTest(new CreateNewFile("testCreateNewWebService", "Create new web service"));
-*/	
-        }
-        
+        /* TBD
+        suite.addTest(NbModuleSuite.create(Deploy.class, ".*", ".*"));
+        suite.addTest(NbModuleSuite.create(CreateJ2EEProject.class, ".*", ".*"));
+        suite.addTest(NbModuleSuite.create(CreateNewFile.class, ".*", ".*"));
+        suite.addTest(NbModuleSuite.create(ExpandEJBNodesProjectsView.class, ".*", ".*"));
+        suite.addTest(NbModuleSuite.create(MeasureCallEjbAction.class, ".*", ".*"));
+        suite.addTest(NbModuleSuite.create(MeasureEntityBeanAction.class, ".*", ".*"));
+        suite.addTest(NbModuleSuite.create(MeasureSessionBeanAction.class, ".*", ".*"));
+        suite.addTest(NbModuleSuite.create(MeasureWebServiceAction.class, ".*", ".*"));
+        suite.addTest(NbModuleSuite.create(OpenJ2EEFiles.class, ".*", ".*"));
+        suite.addTest(NbModuleSuite.create(OpenJ2EEFilesWithOpenedEditor.class, ".*", ".*"));
+*/
         return suite;
     }
     

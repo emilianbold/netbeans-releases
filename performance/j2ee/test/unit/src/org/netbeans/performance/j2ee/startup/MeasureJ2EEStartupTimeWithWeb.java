@@ -39,17 +39,12 @@
  * made subject to such option by the copyright holder.
  */
 
-package startup;
+package org.netbeans.performance.j2ee.startup;
 
-import java.io.File;
 import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.*;
-import junit.framework.Test;
-import junit.framework.TestSuite;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.ide.ProjectSupport;
 
 
 /**
@@ -67,17 +62,6 @@ public class MeasureJ2EEStartupTimeWithWeb extends JellyTestCase {
         super(testName);
     }
     
-    /** Testsuite
-     * @return testuite
-     */
-    public static Test suite() {
-        TestSuite suite = new NbTestSuite();
-        suite.addTest(new IDESetupTest("testCloseMemoryToolbar"));
-        suite.addTest(new IDESetupTest("closeAllDocuments"));
-        suite.addTest(new MeasureJ2EEStartupTimeWithWeb("testOpenProjects"));
-        suite.addTest(new MeasureJ2EEStartupTimeWithWeb("openFiles"));
-        return suite;
-    }
     
     @Override
     public void setUp() {
@@ -85,7 +69,7 @@ public class MeasureJ2EEStartupTimeWithWeb extends JellyTestCase {
     }
     
     public void testOpenProjects() {
-        String prjsDir = System.getProperty("xtest.tmpdir")+"/startup/";
+/*        String prjsDir = System.getProperty("xtest.tmpdir")+"/startup/";
         assertTrue(new File(prjsDir).canRead());
         String[] projects = {
             "TestStartupWeb1", "TestStartupWeb2", "TestStartupWeb3"
@@ -94,7 +78,7 @@ public class MeasureJ2EEStartupTimeWithWeb extends JellyTestCase {
             assertTrue("Cannot read project folder: "+prj, new File(prjsDir+prj).canRead());
             assertNotNull("Cannot open project: "+prj, ProjectSupport.openProject(prjsDir+prj));
             ProjectSupport.waitScanFinished();
-        }
+        }*/
     }
     
     /**
@@ -121,8 +105,5 @@ public class MeasureJ2EEStartupTimeWithWeb extends JellyTestCase {
         new OpenAction().performAPI(openFileNodes);
         new org.netbeans.jemmy.EventTool().waitNoEvent(15000);
     }
-    
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
+
 }

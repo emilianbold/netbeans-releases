@@ -39,8 +39,10 @@
  * made subject to such option by the copyright holder.
  */
 
-package gui.action;
+package org.netbeans.performance.j2ee.actions;
 
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.modules.performance.guitracker.ActionTracker;
 import java.util.HashMap;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
@@ -58,7 +60,6 @@ import org.netbeans.modules.editor.options.BaseOptions;
 
 import java.util.logging.Handler;
 import java.util.logging.Logger;
-import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
 /**
@@ -66,7 +67,7 @@ import java.util.logging.LogRecord;
  *
  * @author  lmartinek@netbeans.org
  */
-public class OpenJ2EEFiles extends org.netbeans.performance.test.utilities.PerformanceTestCase {
+public class OpenJ2EEFiles extends PerformanceTestCase {
     
     /** Node to be opened/edited */
     public static Node openNode ;
@@ -113,7 +114,7 @@ public class OpenJ2EEFiles extends org.netbeans.performance.test.utilities.Perfo
             public void publish(LogRecord record) {
 
             if (record.getMessage().equals("Open Editor, phase 1, AWT [ms]")) 
-               org.netbeans.performance.test.guitracker.ActionTracker.getInstance().stopRecording();
+               ActionTracker.getInstance().stopRecording();
 
             }
 
@@ -219,6 +220,7 @@ public class OpenJ2EEFiles extends org.netbeans.performance.test.utilities.Perfo
         doMeasurement();
     }
     
+    @Override
     public void initialize(){
         //repaintManager().setOnlyEditor(true);
         EditorOperator.closeDiscardAll();
@@ -234,6 +236,7 @@ public class OpenJ2EEFiles extends org.netbeans.performance.test.utilities.Perfo
          */ 
     }
 
+    @Override
     public void shutdown(){
         Logger.getLogger("TIMER").removeHandler(phaseHandler);
         //repaintManager().setOnlyEditor(false);
@@ -269,6 +272,7 @@ public class OpenJ2EEFiles extends org.netbeans.performance.test.utilities.Perfo
         return new TopComponentOperator(this.editorTitle);
     }
     
+    @Override
     public void close(){
         if (testedComponentOperator != null) {
             // HACK

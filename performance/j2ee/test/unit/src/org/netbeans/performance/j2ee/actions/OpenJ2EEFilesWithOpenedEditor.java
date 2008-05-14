@@ -39,18 +39,13 @@
  * made subject to such option by the copyright holder.
  */
 
-package gui.action;
+package org.netbeans.performance.j2ee.actions;
 
-import javax.swing.JDialog;
-import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.NbDialogOperator;
+
 import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
 
-import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.jemmy.operators.JPopupMenuOperator;
 
 /**
  * Test of opening files.
@@ -81,6 +76,7 @@ public class OpenJ2EEFilesWithOpenedEditor extends OpenJ2EEFiles {
      /**
      * Initialize test - open Main.java file in the Source Editor.
      */
+    @Override
     public void initialize(){
         super.initialize();
         new OpenAction().performAPI(new Node(new ProjectsTabOperator().getProjectRootNode("TestApplication-EJBModule"), "Source Packages|test|TestSessionRemote.java"));

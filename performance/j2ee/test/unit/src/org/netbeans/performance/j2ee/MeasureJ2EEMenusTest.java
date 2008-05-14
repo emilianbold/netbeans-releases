@@ -39,11 +39,13 @@
  * made subject to such option by the copyright holder.
  */
 
-package gui;
+package org.netbeans.performance.j2ee;
 
 
 import org.netbeans.junit.NbTestSuite;
-import gui.menu.*;
+import org.netbeans.performance.j2ee.menus.*;
+import org.netbeans.junit.NbModuleSuite;
+
 
 /**
  * Measure UI-RESPONSIVENES and WINDOW_OPENING.
@@ -52,31 +54,13 @@ import gui.menu.*;
  */
 public class MeasureJ2EEMenusTest  {
 
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }    
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-
-// workaround. JAX-RPC support is a separate plugin, this test just closes warning dialog
-//        suite.addTest(new gui.setup.EJBSetupTest("testJAXRPC"));
-               
-        suite.addTest(new J2EEProjectsViewPopupMenu("testEARProjectNodePopupMenu", "EAR Project node popup in Projects View"));
-        suite.addTest(new J2EEProjectsViewPopupMenu("testEARConfFilesNodePopupMenu", "EAR Configuration Files node popup in Projects View"));
-        suite.addTest(new J2EEProjectsViewPopupMenu("testApplicationXmlPopupMenu", "Application.xml node popup in Projects View"));
-        suite.addTest(new J2EEProjectsViewPopupMenu("testSunApplicationXmlPopupMenu", "Sun-application.xml node popup in Projects View"));
-        suite.addTest(new J2EEProjectsViewPopupMenu("testJ2eeModulesNodePopupMenu", "J2EE Modules node popup in Projects View"));
-        suite.addTest(new J2EEProjectsViewPopupMenu("testJ2eeModulesEJBNodePopupMenu", "EJB node under J2EE Modules popup in Projects View"));
-        suite.addTest(new J2EEProjectsViewPopupMenu("testJ2eeModulesWebNodePopupMenu", "Web node under J2EE Modules popup in Projects View"));
-        suite.addTest(new J2EEProjectsViewPopupMenu("testEJBProjectNodePopupMenu", "EJB Project node popup in Projects View"));
-        suite.addTest(new J2EEProjectsViewPopupMenu("testEJBsNodePopupMenu", "Enterprise Beans node popup in Projects View"));
-        suite.addTest(new J2EEProjectsViewPopupMenu("testEntityBeanNodePopupMenu", "Entity Bean node popup in Projects View"));
-        suite.addTest(new J2EEProjectsViewPopupMenu("testSessionBeanNodePopupMenu", "Session Bean node popup in Projects View"));
-        suite.addTest(new J2EEProjectsViewPopupMenu("testEjbJarXmlPopupMenu", "Ejb-jar.xml node popup in Projects View"));
-        suite.addTest(new J2EEProjectsViewPopupMenu("testSunEjbJarXmlPopupMenu", "Sun-ejb-jar.xml node popup in Projects View"));
  
-        suite.addTest(new AppServerPopupMenu("testAppServerPopupMenuRuntime", "AppServer node popup in Runtime View"));
-                
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite("UI Responsiveness J2EE Menus suite");
+
+       // suite.addTest(NbModuleSuite.create(AppServerPopupMenu.class, ".*", ".*"));
+       // suite.addTest(NbModuleSuite.create(J2EEProjectsViewPopupMenu.class, ".*", ".*"));
+       
         return suite;
     }
     

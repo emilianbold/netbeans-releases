@@ -39,22 +39,20 @@
  * made subject to such option by the copyright holder.
  */
 
-package gui.action;
+package org.netbeans.performance.j2ee.actions;
 
-import gui.Utils;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.modules.performance.utilities.CommonUtilities;
+
 import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.MainWindowOperator;
-import org.netbeans.jellytools.NbDialogOperator;
+
 import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.actions.NewFileAction;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
-
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
-import org.netbeans.jemmy.operators.JMenuBarOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 
 
@@ -63,7 +61,7 @@ import org.netbeans.jemmy.operators.JTextFieldOperator;
  *
  * @author  lmartinek@netbeans.org
  */
-public class CreateNewFile extends org.netbeans.performance.test.utilities.PerformanceTestCase {
+public class CreateNewFile extends PerformanceTestCase {
     
     private NewFileWizardOperator wizard;
     
@@ -120,10 +118,12 @@ public class CreateNewFile extends org.netbeans.performance.test.utilities.Perfo
         doMeasurement();
     }
      
+    @Override
     public void initialize() {
         new OpenAction().performAPI(new Node(new ProjectsTabOperator().getProjectRootNode("TestApplication-EJBModule"), "Source Packages|test|TestSessionRemote.java"));
     }
     
+    @Override
     public void shutdown() {
         new EditorOperator("TestSessionRemote.java").closeDiscard();
     }
@@ -140,7 +140,7 @@ public class CreateNewFile extends org.netbeans.performance.test.utilities.Perfo
              eBname = new JTextFieldOperator(wizard,1);
         else
              eBname = new JTextFieldOperator(wizard);
-        eBname.setText(fileName+Utils.getTimeIndex());
+        eBname.setText(fileName+CommonUtilities.getTimeIndex());
         new JComboBoxOperator(wizard,1).enterText(packageName);
     }
 
@@ -150,6 +150,7 @@ public class CreateNewFile extends org.netbeans.performance.test.utilities.Perfo
         return new EditorOperator(fileName);
     }
     
+    @Override
     public void close() {
         repaintManager().resetRegionFilters();
         if (testedComponentOperator != null){

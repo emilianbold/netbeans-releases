@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package startup;
+package org.netbeans.performance.j2ee.startup;
 
 import java.io.PrintStream;
 
@@ -47,15 +47,6 @@ import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.actions.EditAction;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jellytools.nodes.SourcePackagesNode;
-
-import org.netbeans.jemmy.operators.*;
-
-import junit.framework.Test;
-import junit.framework.TestSuite;
-
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.ide.ProjectSupport;
 
 
 /**
@@ -83,19 +74,8 @@ public class MeasureNB40WebStartupTimeOpenedFilesPrepare extends JellyTestCase {
         super(testName);
     }
 
-    /** Testsuite
-     * @return testuite
-     */
-    public static Test suite() {
-        TestSuite suite = new NbTestSuite();
-        suite.addTest(new IDESetupTest("testCloseMemoryToolbar"));
-        suite.addTest(new IDESetupTest("testCloseWelcome"));
-        suite.addTest(new MeasureNB40WebStartupTimeOpenedFilesPrepare("testOpenProjects"));
-        suite.addTest(new MeasureNB40WebStartupTimeOpenedFilesPrepare("openFiles"));
-        return suite;
-    }
     
-    
+    @Override
     public void setUp() {
 //        err = System.out;
         err = getLog();
@@ -106,8 +86,8 @@ public class MeasureNB40WebStartupTimeOpenedFilesPrepare extends JellyTestCase {
     
     
     public void testOpenProjects() {
-        ProjectSupport.openProject(System.getProperty("xtest.tmpdir")+"/startup_nb40/TestWebApp");
-        ProjectSupport.waitScanFinished();
+//        ProjectSupport.openProject(System.getProperty("xtest.tmpdir")+"/startup_nb40/TestWebApp");
+  //      ProjectSupport.waitScanFinished();
         //waitForScan();
     }
     
@@ -152,8 +132,5 @@ public class MeasureNB40WebStartupTimeOpenedFilesPrepare extends JellyTestCase {
         
     }
     
-
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }    
+  
 }

@@ -39,15 +39,14 @@
  * made subject to such option by the copyright holder.
  */
 
-package gui.action;
+package org.netbeans.performance.j2ee.actions;
+
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 
 import org.netbeans.jellytools.ProjectsTabOperator;
-
 import org.netbeans.jellytools.actions.MaximizeWindowAction;
 import org.netbeans.jellytools.actions.RestoreWindowAction;
-
 import org.netbeans.jellytools.nodes.Node;
-
 import org.netbeans.jemmy.operators.ComponentOperator;
 
 
@@ -56,7 +55,7 @@ import org.netbeans.jemmy.operators.ComponentOperator;
  *
  * @author  mmirilovic@netbeans.org
  */
-public class ExpandEJBNodesProjectsView extends org.netbeans.performance.test.utilities.PerformanceTestCase {
+public class ExpandEJBNodesProjectsView extends PerformanceTestCase {
     
     /** Name of the folder which test creates and expands */
     private static String project;
@@ -110,6 +109,7 @@ public class ExpandEJBNodesProjectsView extends org.netbeans.performance.test.ut
     }
     
     
+    @Override
     public void initialize(){
         projectTab = new ProjectsTabOperator();
         new MaximizeWindowAction().performAPI(projectTab);
@@ -135,10 +135,12 @@ public class ExpandEJBNodesProjectsView extends org.netbeans.performance.test.ut
         return null;
     }
     
+    @Override
     public void close(){
         nodeToBeExpanded.collapse();
     }
     
+    @Override
     public void shutdown() {
         //repaintManager().setOnlyExplorer(false);
         repaintManager().resetRegionFilters();

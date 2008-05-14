@@ -39,16 +39,14 @@
  * made subject to such option by the copyright holder.
  */
 
-package gui.menu;
+package org.netbeans.performance.j2ee.menus;
 
-import gui.Utils;
+import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+
 import org.netbeans.jellytools.RuntimeTabOperator;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jemmy.TimeoutExpiredException;
-import org.netbeans.jemmy.operators.JButtonOperator;
-import org.netbeans.jemmy.operators.JFrameOperator;
-
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.jemmy.operators.JPopupMenuOperator;
 
 /**
  * Test of popup menu on nodes in Runtime View
@@ -56,9 +54,10 @@ import org.netbeans.junit.NbTestSuite;
  */
 
 
-public class AppServerPopupMenu extends ValidatePopupMenuOnNodes{
+public class AppServerPopupMenu extends PerformanceTestCase {
     
     private static RuntimeTabOperator runtimeTab;
+    protected static Node dataObjectNode;
     
     private final String SERVER_REGISTRY = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.Bundle", "SERVER_REGISTRY_NODE");
     
@@ -91,14 +90,40 @@ public class AppServerPopupMenu extends ValidatePopupMenuOnNodes{
         }
     }
     
+            /**
+     * Closes the popup by sending ESC key event.
+     */
+    @Override
+    public void close(){
+        //testedComponentOperator.pressKey(java.awt.event.KeyEvent.VK_ESCAPE);
+        // Above sometimes fails in QUEUE mode waiting to menu become visible.
+        // This pushes Escape on underlying JTree which should be always visible
+        dataObjectNode.tree().pushKey(java.awt.event.KeyEvent.VK_ESCAPE);
+    }
+    
+    
+    @Override
+    public void prepare() {
+        dataObjectNode.select();
+    }
+
+    @Override
+    public ComponentOperator open() {
+        java.awt.Point point = dataObjectNode.tree().getPointToClick(dataObjectNode.getTreePath());
+        int button = dataObjectNode.tree().getPopupMouseButton();
+        dataObjectNode.tree().clickMouse(point.x, point.y, 1, button);
+        return new JPopupMenuOperator();
+    }
+    
+    @Override
     public void initialize() {
         //Utils.startStopServer(true);
     }
     
+    @Override
     public void shutdown() {
         //Utils.startStopServer(false);
     }
 
-   
-    
+ 
 }

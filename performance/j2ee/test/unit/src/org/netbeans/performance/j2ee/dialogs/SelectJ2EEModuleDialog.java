@@ -39,8 +39,9 @@
  * made subject to such option by the copyright holder.
  */
 
-package gui.window;
+package org.netbeans.performance.j2ee.dialogs;
 
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.ProjectsTabOperator;
@@ -55,7 +56,7 @@ import org.netbeans.jemmy.operators.Operator;
  *
  * @author  mmirilovic@netbeans.org
  */
-public class SelectJ2EEModuleDialog extends org.netbeans.performance.test.utilities.PerformanceTestCase {
+public class SelectJ2EEModuleDialog extends PerformanceTestCase {
     
     private static Node testNode;
     private String TITLE;
@@ -78,6 +79,7 @@ public class SelectJ2EEModuleDialog extends org.netbeans.performance.test.utilit
         WAIT_AFTER_OPEN = 2000;
     }
     
+    @Override
     public void initialize() {
         JTreeOperator tree = new ProjectsTabOperator().tree();
         tree.setComparator(new Operator.DefaultStringComparator(true, true));

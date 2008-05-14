@@ -39,12 +39,13 @@
  * made subject to such option by the copyright holder.
  */
 
-package gui.setup;
+package org.netbeans.performance.j2ee.setup;
+
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 
 import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.*;
-import org.netbeans.junit.ide.ProjectSupport;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.TopComponentOperator;
@@ -52,19 +53,21 @@ import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
 
 
 
-public class EJBSetupTest extends org.netbeans.junit.NbTestCase {
+public class J2EESetup extends PerformanceTestCase {
     
-    public EJBSetupTest(java.lang.String testName) {
+    public J2EESetup(java.lang.String testName) {
         super(testName);
     }
 
     public void testOpenEJBProject() {
+        
+        /*
         ProjectSupport.openProject(System.getProperty("xtest.tmpdir")+"/perf/TestApplication");
         ProjectSupport.waitScanFinished();
         ProjectSupport.openProject(System.getProperty("xtest.tmpdir")+"/perf/TestApplication/TestApplication-ejb");
         ProjectSupport.waitScanFinished();
         ProjectSupport.openProject(System.getProperty("xtest.tmpdir")+"/perf/TestApplication/TestApplication-war");
-        ProjectSupport.waitScanFinished();
+        ProjectSupport.waitScanFinished();*/
 /*        ProjectSupport.openProject(System.getProperty("xtest.tmpdir")+"/perf/DeployTest");
         ProjectSupport.waitScanFinished();
         ProjectSupport.openProject(System.getProperty("xtest.tmpdir")+"/perf/DeployTest/DeployTest-ejb");
@@ -147,6 +150,16 @@ public class EJBSetupTest extends org.netbeans.junit.NbTestCase {
         // scanning can last for a long time => wait max. 5 minutes
         scanningDialogOper.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 300000);
         scanningDialogOper.waitClosed();
-    }    
+    }
+
+    @Override
+    public void prepare() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public ComponentOperator open() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 
 }

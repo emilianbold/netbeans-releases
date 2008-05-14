@@ -39,20 +39,15 @@
  * made subject to such option by the copyright holder.
  */
 
-package startup;
+package org.netbeans.performance.j2ee.startup;
 
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.*;
-import junit.framework.Test;
-import junit.framework.TestSuite;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
-
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.ide.ProjectSupport;
 
 
 /**
@@ -71,26 +66,14 @@ public class MeasureJ2EEStartupTimeOpenedFilesPrepare extends JellyTestCase {
         super(testName);
     }
 
-    /** Testsuite
-     * @return testuite
-     */
-    public static Test suite() {
-        TestSuite suite = new NbTestSuite();
-        suite.addTest(new IDESetupTest("testCloseMemoryToolbar"));
-        suite.addTest(new IDESetupTest("closeAllDocuments"));
-        suite.addTest(new IDESetupTest("testAddAppServer"));
-        suite.addTest(new MeasureJ2EEStartupTimeOpenedFilesPrepare("testOpenProjects"));
-        suite.addTest(new MeasureJ2EEStartupTimeOpenedFilesPrepare("openFiles"));
-        return suite;
-    }
-    
+   
     @Override
     public void setUp() {
         System.out.println("########  "+getName()+"  ########");
     }
     
     public void testOpenProjects() {
-        ProjectSupport.openProject(System.getProperty("xtest.tmpdir")+"/startup/TestStartupApp");
+ /*       ProjectSupport.openProject(System.getProperty("xtest.tmpdir")+"/startup/TestStartupApp");
         ProjectSupport.waitScanFinished();
         ProjectSupport.openProject(System.getProperty("xtest.tmpdir")+"/startup/TestStartupApp/TestStartupApp-ejb");
         ProjectSupport.waitScanFinished();
@@ -100,7 +83,7 @@ public class MeasureJ2EEStartupTimeOpenedFilesPrepare extends JellyTestCase {
         ProjectSupport.waitScanFinished();
         ProjectSupport.openProject(System.getProperty("xtest.tmpdir")+"/startup/TestStartupEJB2");
         ProjectSupport.waitScanFinished();
-        //waitForScan();
+        //waitForScan();*/
     }
     
     private void waitForScan() {
@@ -155,7 +138,5 @@ public class MeasureJ2EEStartupTimeOpenedFilesPrepare extends JellyTestCase {
     }
    
 
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }    
+
 }

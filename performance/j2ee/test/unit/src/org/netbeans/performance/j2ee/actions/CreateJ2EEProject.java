@@ -39,17 +39,17 @@
  * made subject to such option by the copyright holder.
  */
 
-package gui.action;
+package org.netbeans.performance.j2ee.actions;
 
-import gui.Utils;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.modules.performance.utilities.CommonUtilities;
+
 import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
-import org.netbeans.jemmy.operators.JTextFieldOperator;
 
-import org.netbeans.junit.ide.ProjectSupport;
 
 
 /**
@@ -57,7 +57,7 @@ import org.netbeans.junit.ide.ProjectSupport;
  *
  * @author  lmartinek@netbeans.org
  */
-public class CreateJ2EEProject extends org.netbeans.performance.test.utilities.PerformanceTestCase {
+public class CreateJ2EEProject extends PerformanceTestCase {
     
     private NewProjectNameLocationStepOperator wizard_location;
     
@@ -108,6 +108,7 @@ public class CreateJ2EEProject extends org.netbeans.performance.test.utilities.P
         doMeasurement();
     }
     
+    @Override
     public void initialize(){
     }
     
@@ -118,7 +119,7 @@ public class CreateJ2EEProject extends org.netbeans.performance.test.utilities.P
         wizard.next();
         wizard_location = new NewProjectNameLocationStepOperator();
         wizard_location.txtProjectLocation().setText(System.getProperty("xtest.tmpdir"));
-        project_name += Utils.getTimeIndex();
+        project_name += CommonUtilities.getTimeIndex();
         wizard_location.txtProjectName().setText(project_name);
         //project_name = wizard_location.txtProjectName().getText();
         wizard_location.next();
@@ -135,10 +136,11 @@ public class CreateJ2EEProject extends org.netbeans.performance.test.utilities.P
         return null;
     }
     
+    @Override
     public void close(){
-        ProjectSupport.closeProject(project_name);
+   /*     ProjectSupport.closeProject(project_name);
         ProjectSupport.closeProject(project_name+"-EJBModule");
-        ProjectSupport.closeProject(project_name+"-WebModule");
+        ProjectSupport.closeProject(project_name+"-WebModule");*/
     }
     
     

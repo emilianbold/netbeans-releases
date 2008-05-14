@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package memory;
+package org.netbeans.performance.j2ee.memory;
 
 import java.io.BufferedReader;
 import java.io.File;

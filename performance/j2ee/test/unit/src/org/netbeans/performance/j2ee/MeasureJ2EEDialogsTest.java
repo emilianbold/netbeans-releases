@@ -39,12 +39,12 @@
  * made subject to such option by the copyright holder.
  */
 
-package gui;
+package org.netbeans.performance.j2ee;
 
 
 import org.netbeans.junit.NbTestSuite;
-import gui.window.*;
-import org.netbeans.junit.NbTestCase;
+import org.netbeans.performance.j2ee.dialogs.*;
+import org.netbeans.junit.NbModuleSuite;
 
 /**
  * Measure UI-RESPONSIVENES and WINDOW_OPENING.
@@ -53,22 +53,13 @@ import org.netbeans.junit.NbTestCase;
  */
 public class MeasureJ2EEDialogsTest {
 
-
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
     
     public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
+        NbTestSuite suite = new NbTestSuite("UI Responsiveness J2EE Dialogs suite");
 
-// workaround. JAX-RPC support is a separate plugin, this test just closes warning dialog
-//        suite.addTest(new gui.setup.EJBSetupTest("testJAXRPC"));
-
-        suite.addTest(new SelectJ2EEModuleDialog("measureTime", "Select J2EE Module Dialog open"));
-        suite.addTest(new InvokeEJBAction("testAddBusinessMethodDialog", "Add Business method Dialog open"));
-        suite.addTest(new InvokeEJBAction("testCallEJBDialog", "Call EJB Dialog open"));
-        //Disabled because JAX-RPC issues in NB6.0 - enable again when fixed
-//        suite.addTest(new InvokeWSAction("testAddOperationDialog", "Add Operation Dialog open"));
+        //suite.addTest(NbModuleSuite.create(InvokeEJBAction.class, ".*", ".*"));
+        //suite.addTest(NbModuleSuite.create(InvokeWSAction.class, ".*", ".*"));
+        //suite.addTest(NbModuleSuite.create(SelectJ2EEModuleDialog.class, ".*", ".*"));
 
         return suite;
     }

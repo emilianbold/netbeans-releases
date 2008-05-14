@@ -39,10 +39,10 @@
  * made subject to such option by the copyright holder.
  */
 
-package startup;
+package org.netbeans.performance.j2ee.startup;
 
 import java.io.IOException;
-import org.netbeans.performance.test.utilities.MeasureStartupTimeTestCase;
+import org.netbeans.modules.performance.utilities.MeasureStartupTimeTestCase;
 
 /**
  * Measures startup time by MeasureStartupTimeTestCase class.
