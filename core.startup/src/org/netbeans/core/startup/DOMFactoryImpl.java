@@ -82,7 +82,7 @@ public class DOMFactoryImpl extends DocumentBuilderFactory {
         SAXFactoryImpl.install();
     }
     
-    public java.lang.Object getAttribute(java.lang.String name) throws java.lang.IllegalArgumentException {
+    public Object getAttribute(String name) throws IllegalArgumentException {
         return attributes.get(name);
     }
     
@@ -100,7 +100,7 @@ public class DOMFactoryImpl extends DocumentBuilderFactory {
         }
     }
 
-    public DocumentBuilder newDocumentBuilder() throws javax.xml.parsers.ParserConfigurationException {
+    public DocumentBuilder newDocumentBuilder() throws ParserConfigurationException {
         try {
             return tryCreate();
         } catch (IllegalArgumentException e) {
@@ -108,7 +108,7 @@ public class DOMFactoryImpl extends DocumentBuilderFactory {
         }
     }
 
-    public void setAttribute(java.lang.String name, java.lang.Object value) throws java.lang.IllegalArgumentException {
+    public void setAttribute(String name, Object value) throws IllegalArgumentException {
         attributes.put(name, value);
         try {
             tryCreate();

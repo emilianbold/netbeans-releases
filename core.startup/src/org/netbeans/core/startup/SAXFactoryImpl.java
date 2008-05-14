@@ -88,12 +88,12 @@ public class SAXFactoryImpl extends SAXParserFactory {
         return features.get(name);
     }
 
-    public javax.xml.parsers.SAXParser newSAXParser() throws ParserConfigurationException, SAXException {
+    public SAXParser newSAXParser() throws ParserConfigurationException, SAXException {
         SAXParser parser = tryCreate();
         return parser;
     }
 
-    public void setFeature(java.lang.String name, boolean value) throws ParserConfigurationException, SAXNotRecognizedException, SAXNotSupportedException {
+    public void setFeature(String name, boolean value) throws ParserConfigurationException, SAXNotRecognizedException, SAXNotSupportedException {
         features.put(name, value);
         tryCreate();
     }
