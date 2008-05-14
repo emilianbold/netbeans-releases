@@ -41,18 +41,32 @@
 
 package org.netbeans.test.ide;
 
+import java.io.File;
 import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.junit.NbTestSuite;
 
 /**
  * Overall sanity check suite for IDE before commit.<br>
  * Look at IDEValidation.java for test specification and implementation.
  *
- * @author Jiri.Skrivanek@sun.com
+ * @author Jiri.Skrivanek@sun.com, mrkam@netbeans.org
  */
 public class IDECommitValidationTest extends JellyTestCase {
+
+    private static boolean initBlacklistedClassesHandler() {
+        String configFN = System.getProperty("nbjunit.datadir")
+                + File.separator + "BlacklistedClassesHandlerConfig.xml";
+        BlacklistedClassesHandler bcHandler = BlacklistedClassesHandlerSingleton.getInstance();
+        
+        if (bcHandler.initSingleton(configFN)) {
+            bcHandler.register();
+            System.out.println("BlacklistedClassesHandler handler added");
+            return true;
+        } else {
+            return false;
+        }
+    }
     
     
     /** Need to be defined because of JUnit */
@@ -61,13 +75,15 @@ public class IDECommitValidationTest extends JellyTestCase {
     }
     
     public static Test suite() {
+        
+        boolean blacklistEnabled = initBlacklistedClassesHandler();
+        
         NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(
             IDEValidation.class
         ).clusters(".*").enableModules(".*");
 
         
-        if (System.getProperty("xtest.ide.blacklist") != null
-                || System.getProperty("xtest.ide.whitelist") != null) {
+        if (blacklistEnabled) {
             conf = conf.addTest("testBlacklistedClassesHandler");
         }
         conf = conf.addTest("testInitGCProjects");

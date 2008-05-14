@@ -118,9 +118,6 @@ import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
-/* XXX commenting out until can be moved out of xtest:
-import org.netbeans.xtest.plugin.ide.BlacklistedClassesHandler;
- */
 
 /**
  * Overall validation suite for IDE.
@@ -1409,9 +1406,8 @@ public class IDEValidation extends JellyTestCase {
         WatchProjects.assertProjects();
     }
 
-    /* XXX
     public void testBlacklistedClassesHandler() throws Exception {
-        BlacklistedClassesHandler bcHandler = BlacklistedClassesHandler.getBlacklistedClassesHandler();
+        BlacklistedClassesHandler bcHandler = BlacklistedClassesHandlerSingleton.getBlacklistedClassesHandler();
         assertNotNull("BlacklistedClassesHandler should be available", bcHandler);
         if (bcHandler.isGeneratingWhitelist()) {
             bcHandler.saveWhiteList(getLog("whitelist.txt"));
@@ -1419,10 +1415,9 @@ public class IDEValidation extends JellyTestCase {
         try {
             assertTrue(bcHandler.listViolations(), bcHandler.noViolations());
         } finally {
-            bcHandler.remove();
+            bcHandler.unregister();
         }        
     }
-     */
     
     /** Closes help window if any. It should not stay open between test cases.
      *  Otherwise it can break next tests.
