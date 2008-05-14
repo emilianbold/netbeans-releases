@@ -98,6 +98,7 @@ public abstract class DiagramView extends JPanel implements Autoscroll {
         paintContent(g, getDesignView().getCorrectedZoom(), false);
        // System.out.println("Paint (" + (System.currentTimeMillis() - start) + " ms):" + this );
     }
+    
 
      @Override
     public void print(Graphics g) {
@@ -169,6 +170,8 @@ public abstract class DiagramView extends JPanel implements Autoscroll {
             }
         }
     }
+    
+    
 
     public FPoint convertScreenToDiagram(Point point) {
         return convertScreenToDiagram(point, designView.getCorrectedZoom());

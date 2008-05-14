@@ -623,6 +623,7 @@ public class FileStatusCache {
      *
      * @param file
      */
+    @SuppressWarnings("unchecked") // Need to change turbo module to remove warning at source
     public void refreshCached(File root) {
         if (root.isDirectory()) {
             File repository = Mercurial.getInstance().getTopmostManagedParent(root);
@@ -643,7 +644,15 @@ public class FileStatusCache {
                     FileInformation fi = allFiles.get(file);
                     if (fi == null) {
                         // We have a file in the cache which seems to have disappeared
-                        refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+                        // so remove it from the cache and fireFileStatusChanged
+                        File parent = file.getParentFile();
+                        
+                        Map<File, FileInformation> oldFiles = (Map<File, FileInformation>) turbo.readEntry(parent, FILE_STATUS_MAP);
+                        Map<File, FileInformation> newFiles = new HashMap<File, FileInformation>(oldFiles);
+                        newFiles.remove(file);
+                        turbo.writeEntry(parent, FILE_STATUS_MAP, newFiles.size() == 0 ? null : newFiles);
+                        fi = oldFiles != null ? oldFiles.get(file) : null;
+                        fireFileStatusChanged(file, fi, FILE_INFORMATION_UNKNOWN);
                     } else {
                         refreshFileStatus(file, fi, null);
                     }
