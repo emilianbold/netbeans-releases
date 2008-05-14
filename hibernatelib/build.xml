@@ -42,27 +42,5 @@ made subject to such option by the copyright holder.
 -->
 <project basedir="." default="netbeans" name="contrib/hibernatelib">
     <description>Builds, tests, and runs the project org.netbeans.modules.hibernatelib</description>
-    <import file="../../nbbuild/templates/projectized.xml"/>
-    
-    <target name="release" depends="projectized.release">
-        <mkdir dir="${cluster}/modules/ext/hibernate"/>
-        <unzip src="external/hibernate-3.2.5-lib.zip" dest="${cluster}/modules/ext/hibernate">
-            <patternset>
-                <include name="hibernate-3.2.5-lib/antlr-2.7.6.jar"/>
-                <include name="hibernate-3.2.5-lib/asm.jar"/>
-                <include name="hibernate-3.2.5-lib/asm-attrs.jar"/>
-                <include name="hibernate-3.2.5-lib/cglib-2.1.3.jar"/>
-                <include name="hibernate-3.2.5-lib/commons-collections-2.1.1.jar"/>
-                <include name="hibernate-3.2.5-lib/commons-logging-1.0.4.jar"/>
-                <include name="hibernate-3.2.5-lib/dom4j-1.6.1.jar"/>
-                <include name="hibernate-3.2.5-lib/ehcache-1.2.3.jar"/>
-                <include name="hibernate-3.2.5-lib/jdbc2_0-stdext.jar"/>
-                <include name="hibernate-3.2.5-lib/jta.jar"/>
-                <include name="hibernate-3.2.5-lib/hibernate3.jar"/>
-                <include name="hibernate-3.2.5-lib/hibernate-tools.jar"/>
-                <include name="hibernate-3.2.5-lib/hibernate-annotations.jar"/>
-            </patternset>
-            <mapper type="flatten"/>
-        </unzip>
-    </target>
+    <import file="../../nbbuild/templates/projectized.xml"/>    
 </project>

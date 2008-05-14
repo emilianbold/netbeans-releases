@@ -17,6 +17,13 @@
             </module-dependencies>
             <public-packages>
                 <subpackages>org.hibernate</subpackages>
+                <subpackages>org.dom4j</subpackages>
+                <subpackages>org.apache</subpackages>
+                <subpackages>javax.sql</subpackages>
+                <subpackages>javax.transaction</subpackages>
+                <subpackages>net.sf</subpackages>
+                <subpackages>antrl</subpackages>
+                <subpackages>org.objectweb</subpackages>
             </public-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/hibernate/hibernate3.jar</runtime-relative-path>
