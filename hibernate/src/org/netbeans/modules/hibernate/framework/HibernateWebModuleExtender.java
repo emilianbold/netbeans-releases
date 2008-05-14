@@ -146,7 +146,7 @@ public class HibernateWebModuleExtender extends WebModuleExtender {
         try {
             SourceGroup[] javaSourceGroup = sources.getSourceGroups(
                     JavaProjectConstants.SOURCES_TYPE_RESOURCES);
-            if (javaSourceGroup == null) {
+            if (javaSourceGroup == null || javaSourceGroup.length == 0) {
                 javaSourceGroup = sources.getSourceGroups(
                         JavaProjectConstants.SOURCES_TYPE_JAVA);
             }

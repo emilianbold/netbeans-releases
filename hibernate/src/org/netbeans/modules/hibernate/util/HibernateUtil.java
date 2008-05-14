@@ -196,7 +196,7 @@ public class HibernateUtil {
         Sources projectSources = ProjectUtils.getSources(project);
         SourceGroup[] javaSourceGroup = projectSources.getSourceGroups(
                 JavaProjectConstants.SOURCES_TYPE_RESOURCES);
-        if (javaSourceGroup == null) {
+        if (javaSourceGroup == null || javaSourceGroup.length == 0) {
             javaSourceGroup = projectSources.getSourceGroups(
                     JavaProjectConstants.SOURCES_TYPE_JAVA);
         }

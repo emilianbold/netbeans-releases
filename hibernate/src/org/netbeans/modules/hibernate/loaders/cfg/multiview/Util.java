@@ -120,7 +120,7 @@ public class Util {
         if (proj==null) return new SourceGroup[]{};
         Sources sources = ProjectUtils.getSources(proj);
         SourceGroup[] toRet = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_RESOURCES);
-        if (toRet != null) {
+        if (toRet != null && toRet.length != 0) {
             return toRet;
         }
         return sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
