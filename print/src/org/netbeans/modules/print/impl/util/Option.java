@@ -104,10 +104,7 @@ public final class Option {
       if (get(PAPER_WIDTH, null) != null && get(PAPER_HEIGHT, null) != null) {
         paper.setSize(get(PAPER_WIDTH, INCH), get(PAPER_HEIGHT, INCH));
       }
-      if (
-        get(AREA_X, null) != null && get(AREA_Y, null) != null && 
-        get(AREA_WIDTH, null) != null && get(AREA_HEIGHT, null) != null)
-      {
+      if (get(AREA_X, null) != null && get(AREA_Y, null) != null && get(AREA_WIDTH, null) != null && get(AREA_HEIGHT, null) != null) {
         paper.setImageableArea(
           get(AREA_X, INCH),
           get(AREA_Y, INCH),

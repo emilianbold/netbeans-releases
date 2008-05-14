@@ -110,6 +110,17 @@ public final class RubyProjectGenerator {
         // Rakefile
         final Map<String, String> rakeProps = new HashMap<String, String>();
         rakeProps.put("PROJECT_NAME", dir.getName()); // NOI18N
+        if (RSpecSupport.hasRSpecInstalled(platform)) {
+            rakeProps.put("REQUIRE_SPEC_TASK", "require 'spec/rake/spectask'\n"); // NOI18N
+            String specTaskDef = "\nSpec::Rake::SpecTask.new do |t|\n" + // NOI18N
+                    "  t.spec_files = FileList['spec/**/*.rb']\n" + // NOI18N
+                    "end"; // NOI18N
+            rakeProps.put("SPEC_TASK_DEF", specTaskDef); // NOI18N
+        } else {
+            rakeProps.put("REQUIRE_SPEC_TASK", ""); // NOI18N
+            rakeProps.put("SPEC_TASK_DEF", ""); // NOI18N
+            
+        }
         
         createFromTemplate("Rakefile", dirFO, "Templates/Ruby/Rakefile", rakeProps); // NOI18N
         

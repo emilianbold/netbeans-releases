@@ -236,11 +236,11 @@ public class ProxyClassLoader extends ClassLoader implements Util.PackageAccessi
                 if (del.contains(pcl) && shouldDelegateResource(path, pcl)) { // that cover given package
                     cls = pcl.selfLoadClass(pkg, name);
                     if (cls != null) break;
-                    }
-                } 
+                }
+            } 
             if (cls == null && del.contains(this)) cls = selfLoadClass(pkg, name); 
             if (cls != null) sclPackages.put(pkg, false); 
-            } 
+        } 
         if (cls == null && shouldDelegateResource(path, null)) cls = systemCL.loadClass(name); // may throw CNFE
         if (cls == null) throw new ClassNotFoundException(name); 
         if (resolve) resolveClass(cls); 
