@@ -140,7 +140,16 @@ NodeActionsProviderFilter, ExtendedNodeModelFilter, TableModelFilter {
     public FixedWatchesManager (ContextProvider contextProvider) {
         this.contextProvider = contextProvider;
     }
-    
+
+    public void deleteAllFixedWatches() {
+        Collection nodes = new ArrayList(fixedWatches.keySet());
+        for (Iterator iter = nodes.iterator(); iter.hasNext();) {
+            fixedWatches.remove(iter.next());
+            fireModelChanged(new ModelEvent.NodeChanged(FixedWatchesManager.this,
+                TreeModel.ROOT,
+                ModelEvent.NodeChanged.CHILDREN_MASK));
+        }
+    }
 
     // TreeModelFilter .........................................................
     
