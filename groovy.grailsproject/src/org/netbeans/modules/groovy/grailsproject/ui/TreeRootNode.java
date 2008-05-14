@@ -93,7 +93,6 @@ public final class TreeRootNode extends FilterNode implements PropertyChangeList
     private SourceCategory category = SourceCategory.NONE;
     private final Logger LOG = Logger.getLogger(TreeRootNode.class.getName());
     GrailsProject project;
-    private static DataObject[] templates;
 
     public TreeRootNode(SourceGroup g, GrailsProject project) {
         this(DataFolder.findFolder(g.getRootFolder()), g);

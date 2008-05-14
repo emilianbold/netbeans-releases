@@ -47,12 +47,9 @@ import java.util.logging.Logger;
 import org.netbeans.api.progress.ProgressHandle;
 import java.io.BufferedReader;
 import java.util.concurrent.Callable;
-import java.util.concurrent.CountDownLatch;
 import org.netbeans.modules.groovy.grails.api.ExecutionSupport;
-import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
 import org.netbeans.modules.groovy.grails.api.GrailsRuntime;
 import org.netbeans.modules.groovy.grailsproject.GrailsProjectSettings;
-import org.netbeans.modules.groovy.grailsproject.execution.DefaultDescriptor;
 import org.netbeans.modules.groovy.grailsproject.execution.Descriptor;
 import org.netbeans.modules.groovy.grailsproject.execution.ExecutionService;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
@@ -75,8 +72,6 @@ public class NewGrailsProjectWizardIterator implements  WizardDescriptor.Instant
 
     BufferedReader procOutput = null;
     GetProjectLocationStep pls = null;
-    ProgressHandle handle = null;
-    CountDownLatch serverFinished = new CountDownLatch(1);
     boolean        serverRunning = false;
     boolean        serverConfigured = true;
     int baseCount;
@@ -95,8 +90,6 @@ public class NewGrailsProjectWizardIterator implements  WizardDescriptor.Instant
     }
 
    public Set instantiate(ProgressHandle handle) throws IOException {
-        this.handle = handle;
-
         Set<FileObject> resultSet = new HashSet<FileObject>();
 
         serverRunning = true;
@@ -165,7 +158,7 @@ public class NewGrailsProjectWizardIterator implements  WizardDescriptor.Instant
         // get project counter from GrailsConfiguration
 
         baseCount = GrailsProjectSettings.getDefault().getNewProjectCount() + 1;
-        wizard.putProperty("WizardPanel_GrailsProjectCounter", new Integer(baseCount));
+        wizard.putProperty("WizardPanel_GrailsProjectCounter", Integer.valueOf(baseCount));
 
         panels = createPanels();
         String[] steps = createSteps();
@@ -198,7 +191,7 @@ public class NewGrailsProjectWizardIterator implements  WizardDescriptor.Instant
 
     public String name() {
         return MessageFormat.format (NbBundle.getMessage(NewGrailsProjectWizardIterator.class,"LAB_IteratorName"),
-            new Object[] {new Integer (index + 1), new Integer (panels.length) });
+            new Object[] {Integer.valueOf(index + 1), Integer.valueOf(panels.length)});
     }
 
     public boolean hasNext() {

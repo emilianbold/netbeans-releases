@@ -36,6 +36,7 @@ import org.netbeans.api.project.Project;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.util.Enumeration;
+import java.util.Locale;
 import java.util.concurrent.Callable;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.groovy.grails.api.ExecutionSupport;
@@ -97,7 +98,7 @@ public class CreateWarFileAction extends AbstractAction implements LineSnooper {
             for (Enumeration e = prjDir.getChildren(false); e.hasMoreElements();) {
                 FileObject fo = (FileObject) e.nextElement();
                 if (fo != null) {
-                    if (fo.getExt().toUpperCase().startsWith("WAR")) {
+                    if (fo.getExt().toUpperCase(Locale.ENGLISH).startsWith("WAR")) { // NOI18N
                         LOG.log(Level.FINEST, "Extention is OK: " + fo.getExt());
                         String deployDir = prjConfig.getDeployDir();
 

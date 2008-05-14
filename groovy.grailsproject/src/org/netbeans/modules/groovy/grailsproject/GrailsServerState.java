@@ -43,7 +43,7 @@ public class GrailsServerState {
     /** <i>GuardedBy("this")</i> */
     private Process process;
 
-    public GrailsServerState (Project prj, String name){
+    public GrailsServerState(Project prj, String name){
         this.name = name;
         this.project = prj;
     }

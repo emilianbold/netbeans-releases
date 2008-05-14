@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,9 +31,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
 
@@ -42,7 +42,6 @@ package org.netbeans.modules.groovy.grailsproject.ui;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.modules.groovy.grailsproject.SourceCategory;
 
 /**
  *
@@ -50,21 +49,10 @@ import org.netbeans.modules.groovy.grailsproject.SourceCategory;
  */
 public class TemplatesImpl implements PrivilegedTemplates  , RecommendedTemplates  {
 
-    SourceGroup g;
-    String dirName;
-    
-    // this constructor is to keep track which Node displays
-    // which SourceGroup to provide different "New File..." templates. 
-    
-    public TemplatesImpl(SourceGroup g) {
-        this.g = g;
-        this.dirName =  TreeRootNode.getDirName(g);
-    }
-    
     private static final String[] PROPERTIES_FILE = new String[] {
         "Templates/Other/properties.properties"
     };
-    
+
     private static final String[] GROOVY_TEMPLATES = new String[] {
         "Templates/Groovy/GroovyClass.groovy",
         "Templates/Other/Folder"
@@ -83,33 +71,45 @@ public class TemplatesImpl implements PrivilegedTemplates  , RecommendedTemplate
         "Templates/Groovy/GroovyClass.groovy"
     };
 
+    private static final String[] TYPES = new String[] {
+        "simple-files"
+    };
+
+    private final SourceGroup g;
+
+    private final String dirName;
+
+    // this constructor is to keep track which Node displays
+    // which SourceGroup to provide different "New File..." templates.
+
+    public TemplatesImpl(SourceGroup g) {
+        this.g = g;
+        this.dirName =  TreeRootNode.getDirName(g);
+    }
+
     public String[] getPrivilegedTemplates() {
         switch (TreeRootNode.getCategoryForName(dirName)) {
             case CONFIGURATION:
-                return GROOVY_TEMPLATES;
+                return GROOVY_TEMPLATES.clone();
             case TAGLIB:
-                return GROOVY_FILE;
+                return GROOVY_FILE.clone();
             case TESTS:
-                return FOLDER_ONLY;
+                return FOLDER_ONLY.clone();
             case SRC:
-                return FOLDER_ONLY;
+                return FOLDER_ONLY.clone();
             case VIEWS:
-                return GSP_TEMPLATES;
+                return GSP_TEMPLATES.clone();
             case WEBAPP:
-                return GSP_TEMPLATES;
+                return GSP_TEMPLATES.clone();
             default:
-                return PROPERTIES_FILE;
+                return PROPERTIES_FILE.clone();
         }
     }
-    
-    private static final String[] TYPES = new String[] { 
-        "simple-files"
-        };
-    
+
     public String[] getRecommendedTypes() {
-        return TYPES;
+        return TYPES.clone();
     }
-    
-    
-    
+
+
+
 }
