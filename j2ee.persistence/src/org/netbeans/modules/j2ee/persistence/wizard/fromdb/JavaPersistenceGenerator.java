@@ -322,7 +322,9 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 FileObject entity = GenerationUtils.createClass(packageFileObject, entityClassName, NbBundle.getMessage(JavaPersistenceGenerator.class, "MSG_Javadoc_Class"));
                 generatedEntityFOs.add(entity);
                 generatedFOs.add(entity);
-                if (!entityClass.isUsePkField()) {
+                
+                // NO PK classes for views
+                if (entityClass.isForTable() && !entityClass.isUsePkField()) {
                     String pkClassName = createPKClassName(entityClassName);
                     if (packageFileObject.getFileObject(pkClassName, "java") == null) { // NOI18N
                         FileObject pkClass = GenerationUtils.createClass(packageFileObject, pkClassName, NbBundle.getMessage(JavaPersistenceGenerator.class, "MSG_Javadoc_PKClass", pkClassName, entityClassName));
@@ -442,7 +444,9 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
 
                 this.entityClass = entityClass;
                 dbMappings = entityClass.getCMPMapping();
-                needsPKClass = !entityClass.isUsePkField();
+                // NO PK for views
+                needsPKClass = entityClass.isForTable() && !entityClass.isUsePkField();
+                    
                 pkClassName = needsPKClass ? createPKClassName(entityClass.getClassName()) : null;
                 pkFQClassName = entityClass.getPackage() + "." + pkClassName; // NOI18N
 
@@ -884,46 +888,50 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
             }
             
             protected void finish() {
-                // create a constructor which takes the primary key field as argument
-                VariableTree pkFieldParam = genUtils.removeModifiers(pkProperty.getField());
-                List<VariableTree> pkFieldParams = Collections.singletonList(pkFieldParam);
-                constructors.add(genUtils.createAssignmentConstructor(genUtils.createModifiers(Modifier.PUBLIC), entityClassName, pkFieldParams));
+                
+                if(pkProperty != null) {
+                    // create a constructor which takes the primary key field as argument    
+                    VariableTree pkFieldParam = genUtils.removeModifiers(pkProperty.getField());
+                    List<VariableTree> pkFieldParams = Collections.singletonList(pkFieldParam);
+                    constructors.add(genUtils.createAssignmentConstructor(genUtils.createModifiers(Modifier.PUBLIC), entityClassName, pkFieldParams));
 
-                // if different than pk fields constructor, add constructor
-                // which takes all non-nullable non-relationship fields as args
-                if (nonNullableProps.size() > 0) {
-                    List<VariableTree> nonNullableParams = new ArrayList<VariableTree>(nonNullableProps.size() + 1);
-                    nonNullableParams.add(pkFieldParam);
-                    for (Property property : nonNullableProps) {
-                        nonNullableParams.add(genUtils.removeModifiers(property.getField()));
+                    // if different than pk fields constructor, add constructor
+                    // which takes all non-nullable non-relationship fields as args
+                    if (nonNullableProps.size() > 0) {
+                        List<VariableTree> nonNullableParams = new ArrayList<VariableTree>(nonNullableProps.size() + 1);
+                        nonNullableParams.add(pkFieldParam);
+                        for (Property property : nonNullableProps) {
+                            nonNullableParams.add(genUtils.removeModifiers(property.getField()));
+                        }
+                        constructors.add(genUtils.createAssignmentConstructor(genUtils.createModifiers(Modifier.PUBLIC), entityClassName, nonNullableParams));
                     }
-                    constructors.add(genUtils.createAssignmentConstructor(genUtils.createModifiers(Modifier.PUBLIC), entityClassName, nonNullableParams));
-                }
 
-                // create a constructor which takes the fields of the primary key class as arguments
-                if (pkClassVariables.size() > 0) {
-                    StringBuilder body = new StringBuilder(30 + 30 * pkClassVariables.size());
-                    body.append("{"); // NOI18N
-                    body.append("this." + pkProperty.getField().getName() + " = new " + pkClassName + "("); // NOI18N
-                    for (Iterator<VariableTree> i = pkClassVariables.iterator(); i.hasNext();) {
-                        body.append(i.next().getName());
-                        body.append(i.hasNext() ? ", " : ");"); // NOI18N
+                    // create a constructor which takes the fields of the primary key class as arguments
+                    if (pkClassVariables.size() > 0) {
+                        StringBuilder body = new StringBuilder(30 + 30 * pkClassVariables.size());
+                        body.append("{"); // NOI18N
+                        body.append("this." + pkProperty.getField().getName() + " = new " + pkClassName + "("); // NOI18N
+                        for (Iterator<VariableTree> i = pkClassVariables.iterator(); i.hasNext();) {
+                            body.append(i.next().getName());
+                            body.append(i.hasNext() ? ", " : ");"); // NOI18N
+                        }
+                        body.append("}"); // NOI18N
+                        TreeMaker make = copy.getTreeMaker();
+                        constructors.add(make.Constructor(
+                                make.Modifiers(EnumSet.of(Modifier.PUBLIC), Collections.<AnnotationTree>emptyList()),
+                                Collections.<TypeParameterTree>emptyList(),
+                                pkClassVariables,
+                                Collections.<ExpressionTree>emptyList(),
+                                body.toString()));
                     }
-                    body.append("}"); // NOI18N
-                    TreeMaker make = copy.getTreeMaker();
-                    constructors.add(make.Constructor(
-                            make.Modifiers(EnumSet.of(Modifier.PUBLIC), Collections.<AnnotationTree>emptyList()),
-                            Collections.<TypeParameterTree>emptyList(),
-                            pkClassVariables,
-                            Collections.<ExpressionTree>emptyList(),
-                            body.toString()));
-                }
+                
 
-                // add equals and hashCode methods
-                EntityMethodGenerator methodGenerator = new EntityMethodGenerator(copy, genUtils, typeElement);
-                methods.add(methodGenerator.createHashCodeMethod(pkFieldParams));
-                methods.add(methodGenerator.createEqualsMethod(entityClassName, pkFieldParams));
-                methods.add(methodGenerator.createToStringMethod(entityFQClassName, pkFieldParams));
+                    // add equals and hashCode methods
+                    EntityMethodGenerator methodGenerator = new EntityMethodGenerator(copy, genUtils, typeElement);
+                    methods.add(methodGenerator.createHashCodeMethod(pkFieldParams));
+                    methods.add(methodGenerator.createEqualsMethod(entityClassName, pkFieldParams));
+                    methods.add(methodGenerator.createToStringMethod(entityFQClassName, pkFieldParams));
+                }
                 
                 // add the serialVersionUID field
                 fields.add(createSerialVersionUID());
