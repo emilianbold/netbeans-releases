@@ -81,7 +81,7 @@ public class DbNodeLoaderImpl implements DbNodeLoader, ChangeListener {
             NodeProvider provider = (NodeProvider)i.next();
             List<Node> nodeList = provider.getNodes();
             if (nodeList != null) {
-                nodes.addAll(provider.getNodes());
+                nodes.addAll(nodeList);
             }
             
             provider.addChangeListener(this);

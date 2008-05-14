@@ -38,30 +38,66 @@
  */
 package org.netbeans.modules.php.dbgp;
 
+import org.netbeans.api.debugger.Session;
 import org.netbeans.modules.php.project.api.PhpOptions;
 
 /**
  * @author Radek Matous
  */
-public final class DebuggerOptions {
-
-    public static int getPort() {
-        return PhpOptions.getInstance().getDebuggerPort();
+public class DebuggerOptions {
+    private static final DebuggerOptions GLOBAL_INSTANCE = new DefaultGlobal();
+    int port = -1;
+    Boolean debugForFirstPageOnly;
+    Boolean debuggerStoppedAtTheFirstLine;
+    String phpInterpreter;
+    
+    public static DebuggerOptions getGlobalInstance() {
+        return GLOBAL_INSTANCE;
+    }
+    
+    public int getPort() {                
+        return (port != -1) ? port :  getGlobalInstance().getPort();
+    }
+    
+    
+    public boolean isDebugForFirstPageOnly() {
+        return (debugForFirstPageOnly != null) ? debugForFirstPageOnly : 
+            getGlobalInstance().isDebugForFirstPageOnly();
     }
 
-    public static boolean isDebugForFirstPageOnly() {
-        return false;
+    public boolean isDebuggerStoppedAtTheFirstLine() {
+        return (debuggerStoppedAtTheFirstLine != null) ? debuggerStoppedAtTheFirstLine :
+            getGlobalInstance().isDebuggerStoppedAtTheFirstLine();
     }
 
-    public static boolean isDebugForAllPages() {
-        return !isDebugForFirstPageOnly();
+    public String getPhpInterpreter() {
+        return (phpInterpreter != null) ? phpInterpreter :
+            getGlobalInstance().getPhpInterpreter();
     }
 
-    public static boolean isDebuggerStoppedAtTheFirstLine() {
-        return PhpOptions.getInstance().isDebuggerStoppedAtTheFirstLine();
-    }
+    private static class DefaultGlobal extends DebuggerOptions {
+        public DefaultGlobal() {
+        }
 
-    public static String getPhpInterpreter() {
-        return PhpOptions.getInstance().getPhpInterpreter();
+        @Override
+        public int getPort() {
+            return PhpOptions.getInstance().getDebuggerPort();
+        }
+
+        @Override
+        public boolean isDebugForFirstPageOnly() {
+            return false;
+        }
+
+
+        @Override
+        public boolean isDebuggerStoppedAtTheFirstLine() {
+            return PhpOptions.getInstance().isDebuggerStoppedAtTheFirstLine();
+        }
+
+        @Override
+        public String getPhpInterpreter() {
+            return PhpOptions.getInstance().getPhpInterpreter();
+        }
     }
 }

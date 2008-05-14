@@ -50,8 +50,29 @@ import org.openide.filesystems.FileObject;
  * @author Erno Mononen
  */
 public interface TestRunner {
+    
+    enum TestType {
+        /**
+         * Represents Test::Unit tests.
+         */
+        TEST_UNIT,
+        /**
+         * Represents RSpec tests.
+         */
+        RSPEC
+    
+    }
 
     TestRunner getInstance();
+    
+    /**
+     * Checks whether this test runner supports running of tests of the
+     * given <code>type</code>.
+     * 
+     * @param type the type of the tests to run.
+     * @return true if this test runner supports the given <code>type</code>.
+     */
+    boolean supports(TestType type);
     
     /**
      * Runs the given test file, i.e runs all tests

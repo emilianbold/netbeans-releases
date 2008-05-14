@@ -296,7 +296,7 @@ public class JarClassLoader extends ProxyClassLoader {
             try {
                 return readClass(path);
             } catch (IOException e) {
-                LOGGER.log(Level.FINE, null, e);
+                LOGGER.log(Level.WARNING, null, e);
             }
             return null;
         }
@@ -407,10 +407,6 @@ public class JarClassLoader extends ProxyClassLoader {
                     count += is.read(data, count, len-count);
                 }
                 return data;
-            } catch (IllegalStateException ex) {
-                // this exception occurs in org/netbeans/core/lookup/* tests
-                // without this catch statement the tests fail
-                return null;
             } finally {
                 releaseJarFile();
             }
@@ -759,7 +755,7 @@ public class JarClassLoader extends ProxyClassLoader {
 
         @Override
         public JarFile getJarFile() throws IOException {
-            return src.jar;
+            return new JarFile(src.jar.getName()); // #134424
         }
     }
 }
