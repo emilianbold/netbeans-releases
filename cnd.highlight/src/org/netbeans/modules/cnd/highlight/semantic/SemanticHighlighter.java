@@ -96,9 +96,9 @@ public class SemanticHighlighter extends HighlighterBase {
         inactiveColors = AttributesUtilities.createComposite(fcs.getTokenFontColors(COLORS_INACTIVE), cleanUp);
         macroColors = AttributesUtilities.createComposite(fcs.getTokenFontColors(COLORS_MACRO), cleanUp);
         sysMacroColors = AttributesUtilities.createComposite(fcs.getTokenFontColors(COLORS_SYSMACRO), cleanUp);
+        fieldsColors = AttributesUtilities.createComposite(fcs.getTokenFontColors(COLORS_FIELDS), cleanUp);
+        functionsColors = AttributesUtilities.createImmutable(StyleConstants.Bold, Boolean.TRUE);
         if (SemanticHighlightingOptions.SEMANTIC_ADVANCED) {
-            fieldsColors = AttributesUtilities.createComposite(fcs.getTokenFontColors(COLORS_FIELDS), cleanUp);
-            functionsColors = AttributesUtilities.createImmutable(StyleConstants.Bold, Boolean.TRUE);
         }
     }
 
