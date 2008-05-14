@@ -74,7 +74,6 @@ public class Scheduler {
         TaskScheduler       taskScheduler,
         Collection<Source>  sources
     ) {
-        System.err.println("Scheduler.schedule " + taskScheduler + ":" + sources);
         Map<Source,Collection<SchedulerTask>> sourceToTasks = tasks.get (taskScheduler);
         if (sourceToTasks == null) {
             sourceToTasks = new HashMap<Source,Collection<SchedulerTask>> ();
@@ -82,6 +81,7 @@ public class Scheduler {
         }
         Set<Source> oldSources = new HashSet<Source> (sourceToTasks.keySet ());
         for (Source source : sources) {
+            SourceAccessor.getINSTANCE ().getFlags (source).add (SourceFlags.INVALID);
             Collection<SchedulerTask> tasks = sourceToTasks.get (source);
             if (tasks == null) {
                 tasks = createTasks (source, taskScheduler);
@@ -108,9 +108,11 @@ public class Scheduler {
         String mimeType = source.getMimeType ();
         Lookup lookup = getLookup (mimeType);
         for (TaskFactory factory : lookup.lookupAll (TaskFactory.class)) {
-            for (SchedulerTask task : factory.create (source))
-                if (task.getSchedulerClass () == taskScheduler.getClass ())
-                    tasks.add (task);
+            Collection<SchedulerTask> newTasks = factory.create (source);
+            if (tasks != null)
+                for (SchedulerTask task : newTasks)
+                    if (task.getSchedulerClass () == taskScheduler.getClass ())
+                        tasks.add (task);
         }
         return tasks;
     }

@@ -78,7 +78,7 @@ public class UserTaskImpl extends MultiLanguageUserTask {
         while (it.hasNext ()) {
             Embedding embedding = it.next ();
             if (embedding.containsOffset (offset)) {
-                run (resultIterator.getResultIterator (embedding));
+                run (resultIterator.getResultIterator (embedding), source);
                 return;
             }
         }

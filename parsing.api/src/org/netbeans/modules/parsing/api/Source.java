@@ -39,19 +39,35 @@
 
 package org.netbeans.modules.parsing.api;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.nio.CharBuffer;
 import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
+import javax.swing.text.AbstractDocument;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
+import org.netbeans.modules.editor.NbEditorDocument;
+import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.parsing.impl.SourceAccessor;
 import org.netbeans.modules.parsing.impl.SourceFlags;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.Parser.Result;
+import org.openide.cookies.EditorCookie;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.text.NbDocument;
+import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
 
 
@@ -149,11 +165,8 @@ public final class Source {
     public static Source create (
         Document            document
     ) {
-        return new Source (
-            (String) document.getProperty ("mimeType"),
-            document,
-            null
-        );
+        FileObject fileObject = NbEditorUtilities.getFileObject (document);
+        return Source.create (fileObject);
     }
 
     /**
@@ -172,7 +185,15 @@ public final class Source {
      * @return              a document.
      */
     public Document getDocument () {
-        return document;
+        if (document != null)
+            return document;
+        try {
+            DataObject dataObject = DataObject.find (fileObject);
+            EditorCookie editorCookie = dataObject.getLookup().lookup (EditorCookie.class);
+            return editorCookie.getDocument ();
+        } catch (DataObjectNotFoundException ex) {
+            return null;
+        }
     }
     
     /**
@@ -185,9 +206,52 @@ public final class Source {
     }
 
     public Snapshot createSnapshot () {
-        return new Snapshot (
-            mimeType, this, mimeType, new int[][] {new int[] {0, 0}}
-        );
+        Document document = getDocument ();
+        if (document != null) {
+            try {
+                if (document instanceof AbstractDocument)
+                    ((AbstractDocument) document).readLock ();
+                String text = null;
+                try {
+                    text = document.getText (0, document.getLength ());
+                } finally {
+                    if (document instanceof AbstractDocument)
+                        ((AbstractDocument) document).readUnlock ();
+                }
+                return new Snapshot (
+                    text, this, mimeType, new int[][] {new int[] {0, 0}}
+                );
+            } catch (BadLocationException ex) {
+                Exceptions.printStackTrace (ex);
+                return new Snapshot (
+                    "", this, mimeType, new int[][] {new int[] {0, 0}}
+                );
+            }
+        }
+        FileObject fileObject = getFileObject ();
+        FileLock lock = null;
+        try {
+            lock = fileObject.lock ();
+            BufferedReader bufferedReader = new BufferedReader (new InputStreamReader (fileObject.getInputStream ()));
+            CharBuffer charBuffer = CharBuffer.allocate (4096);
+            StringBuilder sb = new StringBuilder ();
+            int i = bufferedReader.read (charBuffer);
+            while (i >= 0) {
+                sb.append (charBuffer);
+                i = bufferedReader.read (charBuffer);
+            }
+            return new Snapshot (
+                sb.toString (), this, mimeType, new int[][] {new int[] {0, 0}}
+            );
+        } catch (IOException ex) {
+            Exceptions.printStackTrace (ex);
+            return new Snapshot (
+                "", this, mimeType, new int[][] {new int[] {0, 0}}
+            );
+        } finally {
+            if (lock != null)
+                lock.releaseLock ();
+        }
     }
     
     private static class MySourceAccessor extends SourceAccessor {

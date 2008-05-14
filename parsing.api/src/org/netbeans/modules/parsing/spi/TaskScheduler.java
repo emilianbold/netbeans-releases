@@ -116,7 +116,7 @@ public abstract class TaskScheduler {
             public void run () {
                 Scheduler.schedule (TaskScheduler.this, TaskScheduler.this.sources);
             }
-        });
+        }, 1000);
     }
 }
 
