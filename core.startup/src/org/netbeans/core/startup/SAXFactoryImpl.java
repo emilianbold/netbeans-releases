@@ -41,8 +41,8 @@
 
 package org.netbeans.core.startup;
 
-import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
@@ -60,7 +60,7 @@ import org.xml.sax.SAXNotSupportedException;
 public class SAXFactoryImpl extends SAXParserFactory {
     private static Class<? extends SAXParserFactory> first;
     
-    private Map<String,Boolean> features = new HashMap<String,Boolean>();
+    private Map<String,Boolean> features = new LinkedHashMap<String,Boolean>();
     
     /** The default property name according to the JAXP spec */
     private static final String SAXParserFactory_PROP =

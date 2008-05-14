@@ -41,8 +41,8 @@
 
 package org.netbeans.core.startup;
 
-import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -57,7 +57,7 @@ import javax.xml.parsers.ParserConfigurationException;
 public class DOMFactoryImpl extends DocumentBuilderFactory {
     private static Class<? extends DocumentBuilderFactory> first;
 
-    private Map<String, Object> attributes = new HashMap<String, Object>();
+    private Map<String,Object> attributes = new LinkedHashMap<String,Object>();
     
     /** The default property name according to the JAXP spec */
     private static final String Factory_PROP =
@@ -92,7 +92,7 @@ public class DOMFactoryImpl extends DocumentBuilderFactory {
     
     public void setFeature(String name, boolean value) throws ParserConfigurationException {
         try {
-            setAttribute (name, Boolean.valueOf (value));
+            setAttribute(name, value);
         } catch (IllegalArgumentException ex) {
             ParserConfigurationException p = new ParserConfigurationException ();
             p.initCause (ex);
