@@ -28,6 +28,7 @@ import org.netbeans.modules.bpel.mapper.model.BpelMapperUtils;
 import org.netbeans.modules.soa.mappercore.Mapper;
 import org.netbeans.modules.soa.mappercore.SelectionModel;
 import org.netbeans.modules.soa.mappercore.model.Graph;
+import org.netbeans.modules.soa.mappercore.model.GraphSubset;
 import org.netbeans.modules.soa.mappercore.model.Vertex;
 import org.netbeans.modules.soa.mappercore.model.Link;
 import org.netbeans.modules.soa.mappercore.model.MapperModel;
@@ -35,6 +36,7 @@ import org.netbeans.modules.soa.mappercore.model.MapperModel;
 /**
  *
  * @author nk160297
+ * @author AlexanderPermyakov
  */
 public class DeleteGraphSelectionAction extends AbstractAction {
 
@@ -57,6 +59,12 @@ public class DeleteGraphSelectionAction extends AbstractAction {
                     BpelMapperUtils.getConnectedLinkList(vertex);
             linkSet.addAll(connectedLinkList);
         }
+        // Save in Buffer deleted GraphSubset
+        if (e.getModifiers() == ActionEvent.CTRL_MASK ||
+                e.getModifiers() == ActionEvent.SHIFT_MASK) 
+        {
+             mMapper.getCanvas().setBufferCopyPaste(selectionModel.getSelectedSubset());
+        }
         //
         // Remove the selected verteces and links
         Graph graph = selectionModel.getSelectedGraph();
@@ -66,6 +74,7 @@ public class DeleteGraphSelectionAction extends AbstractAction {
         for (Vertex vertex : vertexList) {
             graph.removeVertex(vertex);
         }
+        
         //
         // Initiate graph repaint
         MapperModel mapperModel = mMapper.getModel();

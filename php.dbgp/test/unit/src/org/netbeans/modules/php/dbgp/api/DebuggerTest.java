@@ -259,7 +259,7 @@ public class DebuggerTest extends NbTestCase {
     }
 
     private String gePHPInterpreter() {
-        String command = DebuggerOptions.getPhpInterpreter();
+        String command = DebuggerOptions.getGlobalInstance().getPhpInterpreter();
         if (command == null) {
             /*TODO: use more sophisticated code here for individual platforms
              * to find out php (such a code exists in  SystemPackageFinder.getPhpInterpreterAny());
@@ -287,7 +287,7 @@ public class DebuggerTest extends NbTestCase {
     }
 
     private ProcessBuilder startDebugging(final SessionId sessionId, File scriptFile) {
-        DebuggerFactory.getDebugger().debug(sessionId);
+        DebuggerFactory.getDebugger().debug(sessionId, DebuggerOptions.getGlobalInstance());
         String command = gePHPInterpreter();
         ProcessBuilder processBuilder = new ProcessBuilder(new String[]{command, scriptFile.getAbsolutePath()});        
         processBuilder.environment().put("XDEBUG_CONFIG", "idekey="+sessionId.getId()); //NOI18N

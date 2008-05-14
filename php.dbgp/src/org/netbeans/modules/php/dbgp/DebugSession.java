@@ -67,11 +67,12 @@ import org.openide.util.RequestProcessor;
  *
  */
 public class DebugSession implements Runnable {
-
     private static final int SLEEP_TIME = 100;
+    private DebuggerOptions options;
 
-    DebugSession() {
+    DebugSession(DebuggerOptions options) {
         init(null);
+        this.options = options;
     }
 
     /* (non-Javadoc)
@@ -296,6 +297,10 @@ public class DebugSession implements Runnable {
     private void log(IOException e) {
         Logger.getLogger(DebugSession.class.getName()).log(
                 Level.SEVERE, null, e);
+    }
+
+    public DebuggerOptions getOptions() {
+        return options;
     }
 
     /*

@@ -70,6 +70,7 @@ import org.netbeans.modules.ruby.platform.RubyExecution;
 import org.netbeans.modules.ruby.platform.execution.OutputRecognizer;
 import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.netbeans.modules.ruby.rubyproject.rake.RakeRunner;
+import org.netbeans.modules.ruby.rubyproject.spi.TestRunner;
 import org.netbeans.modules.ruby.rubyproject.ui.customizer.RubyProjectProperties;
 import org.netbeans.modules.ruby.rubyproject.ui.customizer.MainClassChooser;
 import org.netbeans.modules.ruby.rubyproject.ui.customizer.MainClassWarning;
@@ -608,23 +609,38 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
 
             RSpecSupport rspec = new RSpecSupport(project);
             if (rspec.isRSpecInstalled() && RSpecSupport.isSpecFile(file)) {
-                rspec.runRSpec(null, file, file.getName(), new RubyFileLocator(context, project), true,
-                       isDebug);
+                TestRunner rspecRunner = getTestRunner(TestRunner.TestType.RSPEC);
+                if (rspecRunner != null) {
+                    rspecRunner.runTest(file);
+                } else {
+                    rspec.runRSpec(null, file, file.getName(), new RubyFileLocator(context, project), true,
+                            isDebug);
+                }
                 return;
             }
             
-            runRubyScript(file, FileUtil.toFile(file).getAbsolutePath(),
-                    file.getNameExt(), context, isDebug, new OutputRecognizer[] { new TestNotifier(true, true) });
+            TestRunner testRunner = getTestRunner(TestRunner.TestType.TEST_UNIT);
+            if (testRunner != null) {
+                testRunner.getInstance().runTest(file);
+            } else {
+                runRubyScript(file, FileUtil.toFile(file).getAbsolutePath(),
+                        file.getNameExt(), context, isDebug, new OutputRecognizer[]{new TestNotifier(true, true)});
+            }
         }
 
         if (COMMAND_TEST.equals(command)) {
-            File pwd = FileUtil.toFile(project.getProjectDirectory());
-            RakeRunner runner = new RakeRunner(project);
-            runner.setPWD(pwd);
-            runner.setFileLocator(new RubyFileLocator(context, project));
-            runner.showWarnings(true);
-            runner.setDebug(COMMAND_DEBUG_SINGLE.equals(command));
-            runner.run("test"); // NOI18N
+            TestRunner testRunner = getTestRunner(TestRunner.TestType.TEST_UNIT);
+            if (testRunner != null) {
+                testRunner.getInstance().runAllTests(project);
+            } else {
+                File pwd = FileUtil.toFile(project.getProjectDirectory());
+                RakeRunner runner = new RakeRunner(project);
+                runner.setPWD(pwd);
+                runner.setFileLocator(new RubyFileLocator(context, project));
+                runner.showWarnings(true);
+                runner.setDebug(COMMAND_DEBUG_SINGLE.equals(command));
+                runner.run("test"); // NOI18N
+            }
             return;
         }
         
@@ -1006,5 +1022,15 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
         return (applicationArgs == null || applicationArgs.trim().length() == 0)
                 ? null : Utilities.parseParameters(applicationArgs);
     }
-    
+
+    private TestRunner getTestRunner(TestRunner.TestType testType) {
+        Collection<? extends TestRunner> testRunners = Lookup.getDefault().lookupAll(TestRunner.class);
+        for (TestRunner each : testRunners) {
+            if (each.supports(testType)) {
+                return each;
+            }
+        }
+        return null;
+    }
+
 }

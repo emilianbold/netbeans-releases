@@ -78,6 +78,19 @@ public class NameGenerator {
 		return schemaName;
 	}
 	
+        public static String generateSchemaName(SchemaComponentContainer parent, List<String> skipTheseSchemaNames) {
+		String prefix = "schema"; //NOTI18N
+		
+		for (int i = 0; i < MAX_COUNT; i++) {
+                    String name = prefix + i;
+                    if ((parent.findSchema(name) == null) && !skipTheseSchemaNames.contains(name)) {
+                        return name;
+                    }
+                }
+            
+            return null;
+	}
+        
 	public static String generateSchemaName(SchemaComponentContainer parent, String prefix) {
         for (int i = 0; i < MAX_COUNT; i++) {
             String name = prefix + i;

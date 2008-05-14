@@ -153,7 +153,9 @@ public abstract class Command {
             //TODO makes sense just in case if listing is enabled | maybe user message
             relativePath = ""; //NOI18N
         }
-        return new URL(getBaseURL(), relativePath);
+        URL retval = new URL(getBaseURL(), relativePath);
+        String arguments = getProperty(PhpProjectProperties.ARGS);
+        return (arguments != null) ? appendQuery(retval, arguments) : retval;
     }
 
     protected final URL urlForContext(Lookup context) throws MalformedURLException {
@@ -161,7 +163,9 @@ public abstract class Command {
         if (relativePath == null) {
             throw new MalformedURLException();
         }
-        return new URL(getBaseURL(), relativePath);
+        URL retval = new URL(getBaseURL(), relativePath);
+        String arguments = getProperty(PhpProjectProperties.ARGS);
+        return (arguments != null) ? appendQuery(retval, arguments) : retval;
     }
 
     //or null
@@ -188,6 +192,11 @@ public abstract class Command {
         return retval;
     }
 
+    protected boolean useInterpreter() {
+        String runAs = getPropertyEvaluator().getProperty(PhpProjectProperties.RUN_AS);
+        return PhpProjectProperties.RunAsType.SCRIPT.name().equals(runAs);
+    }
+    
     protected String getPhpInterpreter() {
         String retval = PhpOptions.getInstance().getPhpInterpreter();
         return (retval != null && retval.length() >  0) ? retval.trim() : null;

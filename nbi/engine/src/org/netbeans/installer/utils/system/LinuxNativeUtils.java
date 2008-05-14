@@ -62,15 +62,20 @@ public class LinuxNativeUtils extends UnixNativeUtils {
     
     public static final String[] FORBIDDEN_DELETING_FILES_LINUX = {};
     
-    LinuxNativeUtils() {
-        String library = System.getProperty("os.arch").equals("amd64") ?
-            LIBRARY_AMD64 : LIBRARY_I386;
+    LinuxNativeUtils() {        
+        final String arch = System.getProperty("os.arch");
+        String library = arch.equals("amd64") ?
+                LIBRARY_AMD64 : 
+            arch.equals("i386") || arch.equals("x86") ? 
+                LIBRARY_I386 : null;
         
-        loadNativeLibrary(LIBRARY_PREFIX_LINUX + library);
-        
+        if(library!=null) {
+            loadNativeLibrary(LIBRARY_PREFIX_LINUX + library);
+        }        
         initializeForbiddenFiles(FORBIDDEN_DELETING_FILES_LINUX);
     }
     
+    @Override
     public File getDefaultApplicationsLocation() {
         File usrlocal = new File("/usr/local");
         

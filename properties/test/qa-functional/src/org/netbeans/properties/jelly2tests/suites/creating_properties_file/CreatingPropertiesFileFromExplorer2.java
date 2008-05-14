@@ -54,6 +54,7 @@ import org.netbeans.jellytools.*;
 import lib.PropertiesEditorTestCase;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
+import org.netbeans.junit.NbTestSuite;
 
 
 /**
@@ -72,11 +73,19 @@ public class CreatingPropertiesFileFromExplorer2 extends PropertiesEditorTestCas
     /**
      * Constructor - Creates a new instance of CreatingPropertiesFileFromExplorer2
      */
-    public CreatingPropertiesFileFromExplorer2() {
-        super("testCreatingPropertiesFileFromExplorer2");
+    public CreatingPropertiesFileFromExplorer2(String name) {
+        super(name);
     }
     
+    public static NbTestSuite suite(){
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(new CreatingPropertiesFileFromExplorer2("testCreatingPropertiesFileFromExplorer2"));
+        return suite;
+    }
     
+    public static void main(String[] args) {
+        junit.textui.TestRunner.run(suite());
+    }
     /**
      * This method contain body of test
      * @return void
@@ -92,7 +101,7 @@ public class CreatingPropertiesFileFromExplorer2 extends PropertiesEditorTestCas
          * In explorer create new properties file. Right click on any directory and
          * select in appeared context menu New|Other|Properties File.
          */
-        Node node = new Node(new SourcePackagesNode(defaultProjectName),PACKAGE_PATH);
+        Node node = new Node(new SourcePackagesNode(DEFAULT_PROJECT_NAME),PACKAGE_PATH);
         node.select();
         node.callPopup().pushMenuNoBlock("New"+menuSeparator+"Other...",menuSeparator);
         NewFileWizardOperator newWizard = new NewFileWizardOperator();
@@ -146,7 +155,7 @@ public class CreatingPropertiesFileFromExplorer2 extends PropertiesEditorTestCas
     
     public void tearDown() {
         log("Teardown");
-        closeFiles();
+        closePropertiesFile(FILE_NAME);
     }
     
     

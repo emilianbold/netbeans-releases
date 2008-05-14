@@ -53,26 +53,32 @@ import org.openide.util.Lookup;
  */
 public class DebugSingleCommand extends DebugCommand {
     public static final String ID = ActionProvider.COMMAND_DEBUG_SINGLE;
+    private final DebugLocalCommand debugLocalCommand;
 
     public DebugSingleCommand(PhpProject project) {
         super(project);
+        debugLocalCommand = new DebugLocalCommand(project);        
     }
 
     @Override
     public void invokeAction(final Lookup context) throws IllegalArgumentException {
-        Runnable runnable = new Runnable() {
-            public void run() {
-                try {
-                    showURLForDebugContext(context);
-                } catch (MalformedURLException ex) {
-                    //TODO improve error handling
-                    Exceptions.printStackTrace(ex);
+        if (useInterpreter()) {
+            debugLocalCommand.invokeAction(context);
+        } else {
+            Runnable runnable = new Runnable() {
+                public void run() {
+                    try {
+                        showURLForDebugContext(context);
+                    } catch (MalformedURLException ex) {
+                        //TODO improve error handling
+                        Exceptions.printStackTrace(ex);
+                    }
                 }
+            };
+            XDebugStarter dbgStarter =  XDebugStarterFactory.getInstance();
+            if (dbgStarter != null) {
+                dbgStarter.start(getProject(), runnable, fileForContext(context), useInterpreter());
             }
-        };
-        XDebugStarter dbgStarter =  XDebugStarterFactory.getInstance();
-        if (dbgStarter != null) {
-            dbgStarter.start(getProject(), runnable, fileForContext(context));
         }
     }
 

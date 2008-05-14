@@ -191,7 +191,12 @@ class EditJarPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
     private void btnJavadocActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnJavadocActionPerformed
         // Let user search for the Jar file
-        FileChooser chooser = new FileChooser(helper, true);
+        FileChooser chooser;
+        if (helper.isSharableProject()) {
+            chooser = new FileChooser(helper, true);
+        } else {
+            chooser = new FileChooser(FileUtil.toFile(helper.getProjectDirectory()), null);
+        }
         FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
         chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
         chooser.setMultiSelectionEnabled(false);
@@ -220,7 +225,12 @@ class EditJarPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_btnJavadocActionPerformed
 
     private void btnSourceActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSourceActionPerformed
-        FileChooser chooser = new FileChooser(helper, true);
+        FileChooser chooser;
+        if (helper.isSharableProject()) {
+            chooser = new FileChooser(helper, true);
+        } else {
+            chooser = new FileChooser(FileUtil.toFile(helper.getProjectDirectory()), null);
+        }
         FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
         chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
         chooser.setMultiSelectionEnabled(false);

@@ -52,13 +52,14 @@ public class DebugLocalCommand  extends RunLocalCommand {
         //temporary; after narrowing deps. will be changed
         XDebugStarter dbgStarter =  XDebugStarterFactory.getInstance();
         if (dbgStarter != null) {
-            dbgStarter.start(getProject(), runnable, fileForContext(context));
+            dbgStarter.start(getProject(), runnable, 
+                    (context == null) ? fileForProject() : fileForContext(context), useInterpreter());
         }
     }
 
     @Override
     public boolean isActionEnabled(Lookup context) throws IllegalArgumentException {
-        return fileForContext(context) != null && XDebugStarterFactory.getInstance() != null;
+        return ((context == null) ? fileForProject() : fileForContext(context)) != null && XDebugStarterFactory.getInstance() != null;
     }
 
     @Override

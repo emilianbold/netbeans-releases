@@ -258,8 +258,7 @@ public class Export extends Dialog {
   }
 
   @Override
-  protected final DialogDescriptor createDescriptor()
-  {
+  protected final DialogDescriptor createDescriptor() {
     myDescriptor = new DialogDescriptor(
       createPanel(),
       i18n("LBL_Export_Title"), // NOI18N
@@ -278,8 +277,7 @@ public class Export extends Dialog {
   }
 
   @Override
-  protected final void opened()
-  {
+  protected final void opened() {
     myFileName.requestFocus();
   }
 

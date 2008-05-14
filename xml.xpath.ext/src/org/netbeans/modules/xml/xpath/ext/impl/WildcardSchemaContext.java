@@ -85,7 +85,7 @@ public class WildcardSchemaContext implements XPathSchemaContext {
                     Schema schema = sModel.getSchema();
                     FindAllChildrenSchemaVisitor visitor = 
                             new FindAllChildrenSchemaVisitor(
-                            lookForElements, lookForAttributes);
+                            lookForElements, lookForAttributes, false);
                     visitor.lookForSubcomponents(schema);
                     //
                     List<SchemaComponent> foundComps = visitor.getFound();
@@ -101,7 +101,7 @@ public class WildcardSchemaContext implements XPathSchemaContext {
                 SchemaComponent parentComp = parentCompPair.getComp();
                 FindAllChildrenSchemaVisitor visitor = 
                         new FindAllChildrenSchemaVisitor(
-                        lookForElements, lookForAttributes);
+                        lookForElements, lookForAttributes, false);
                 visitor.lookForSubcomponents(parentComp);
                 //
                 List<SchemaComponent> foundComps = visitor.getFound();

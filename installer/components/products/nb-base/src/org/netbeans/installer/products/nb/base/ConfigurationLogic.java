@@ -411,6 +411,15 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         } catch  (IOException e) {
             LogManager.log("Cannot add jdk`s id to netbeans productid file", e);
         }
+
+        try {
+            filesList.add(new File(nbCluster,"servicetag/registration.xml"));
+            filesList.add(new File(nbCluster,"servicetag"));
+        } catch (IOException e) {
+            LogManager.log(e);
+        }
+
+	
         /////////////////////////////////////////////////////////////////////////////
         progress.setPercentage(Progress.COMPLETE);
     }
