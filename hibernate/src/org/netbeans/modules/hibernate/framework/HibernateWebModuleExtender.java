@@ -85,29 +85,30 @@ public class HibernateWebModuleExtender extends WebModuleExtender {
     private final String url = "hibernate.connection.url";
     private final String userName = "hibernate.connection.username";
     private final String password = "hibernate.connection.password";
-    
-    public HibernateWebModuleExtender(boolean forNewProjectWizard, 
+
+    public HibernateWebModuleExtender(boolean forNewProjectWizard,
             WebModule webModule, ExtenderController controller) {
         configPanel = new HibernateConfigurationWizardPanel(this, controller, forNewProjectWizard);
-        if(!forNewProjectWizard) {
+        if (!forNewProjectWizard) {
             // Show the config panel for Proj. Customizer
             // Fill the panel with existing data.
             showConfigPanelForCustomizer(webModule);
         }
     }
-
     private final Set/*<ChangeListener>*/ listeners = new HashSet(1);
-    
+
     public final void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.add(l);
         }
     }
+
     public final void removeChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.remove(l);
         }
     }
+
     public final void fireChangeEvent() {
         Iterator it;
         synchronized (listeners) {
@@ -115,7 +116,7 @@ public class HibernateWebModuleExtender extends WebModuleExtender {
         }
         ChangeEvent ev = new ChangeEvent(this);
         while (it.hasNext()) {
-            ((ChangeListener)it.next()).stateChanged(ev);
+            ((ChangeListener) it.next()).stateChanged(ev);
         }
     }
 
@@ -131,7 +132,6 @@ public class HibernateWebModuleExtender extends WebModuleExtender {
 
     @Override
     public void update() {
-
     }
 
     @Override
@@ -168,28 +168,29 @@ public class HibernateWebModuleExtender extends WebModuleExtender {
     private void showConfigPanelForCustomizer(WebModule webModule) {
         Project enclosingProject = Util.getEnclosingProjectFromWebModule(webModule);
         ArrayList<FileObject> configFileObjects = HibernateUtil.getAllHibernateConfigFileObjects(enclosingProject);
-        for(FileObject configFile : configFileObjects) {
-            if(configFile.getName().equals(DEFAULT_CONFIG_FILENAME)) {
+        for (FileObject configFile : configFileObjects) {
+            if (configFile.getName().equals(DEFAULT_CONFIG_FILENAME)) {
                 try {
                     HibernateCfgDataObject hibernateDO = (HibernateCfgDataObject) DataObject.find(configFile);
                     SessionFactory sessionFactory = hibernateDO.getHibernateConfiguration().getSessionFactory();
                     configPanel.setSessionName(sessionFactory.getAttributeValue(sessionName));
                     int index = 0;
-                    for(String propValue : sessionFactory.getProperty2()) {
+                    for (String propValue : sessionFactory.getProperty2()) {
                         String propName = sessionFactory.getAttributeValue(SessionFactory.PROPERTY2, index++, "name");  //NOI18N
-                        if(dialect.contains(propName)) {
+
+                        if (dialect.contains(propName)) {
                             configPanel.setDialect(propValue);
                         }
                         if (url.contains(propName)) {
                             configPanel.setDatabaseConnection(propValue);
                         }
                     }
-                    
+
                 } catch (DataObjectNotFoundException ex) {
                     Exceptions.printStackTrace(ex);
                 }
-                
-            } 
+
+            }
             configPanel.disable();
         }
     }
@@ -212,6 +213,7 @@ public class HibernateWebModuleExtender extends WebModuleExtender {
         public void run() throws IOException {
             DataFolder targetDataFolder = DataFolder.findFolder(targetFolder);
             FileObject templateFileObject = Repository.getDefault().getDefaultFileSystem().findResource("Templates/Hibernate/Hibernate.cfg.xml");  //NOI18N
+
             DataObject templateDataObject = DataObject.find(templateFileObject);
 
 
@@ -237,11 +239,15 @@ public class HibernateWebModuleExtender extends WebModuleExtender {
                 sFactory.setAttributeValue(SessionFactory.PROPERTY2, row, "name", url);
             }
 
-            row = sFactory.addProperty2(configPanel.getUserName());
-            sFactory.setAttributeValue(SessionFactory.PROPERTY2, row, "name", userName);
+            if (configPanel.getUserName() != null && !"".equals(configPanel.getUserName())) {
+                row = sFactory.addProperty2(configPanel.getUserName());
+                sFactory.setAttributeValue(SessionFactory.PROPERTY2, row, "name", userName);
+            }
 
-            row = sFactory.addProperty2(configPanel.getPassword());
-            sFactory.setAttributeValue(SessionFactory.PROPERTY2, row, "name", password);
+            if (configPanel.getPassword() != null && !"".equals(configPanel.getPassword())) {
+                row = sFactory.addProperty2(configPanel.getPassword());
+                sFactory.setAttributeValue(SessionFactory.PROPERTY2, row, "name", password);
+            }
 
 
             HibernateCfgDataObject hdo = (HibernateCfgDataObject) newOne;
