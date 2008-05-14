@@ -42,6 +42,7 @@ package org.netbeans.modules.subversion.client.cli.commands;
 import java.io.File;
 import java.io.IOException;
 import org.netbeans.modules.subversion.client.cli.SvnCommand;
+import org.tigris.subversion.svnclientadapter.ISVNNotifyListener;
 
 /**
  *
@@ -79,7 +80,12 @@ public class PropertySetCommand extends SvnCommand {
         propValue = null;
         type = PropType.file;
     }
-            
+       
+    @Override
+    protected int getCommand() {
+        return ISVNNotifyListener.Command.PROPSET;
+    }
+    
     @Override
     public void prepareCommand(Arguments arguments) throws IOException {        
         arguments.add("propset");        

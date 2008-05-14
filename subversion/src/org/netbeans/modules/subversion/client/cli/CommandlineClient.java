@@ -107,28 +107,27 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  *
  * @author Tomas Stupka
  */
-public class CommandlineClient extends AbstractClientAdapter implements ISVNClientAdapter, ISVNNotifyListener {
-
-    private Set<ISVNNotifyListener> listeners = new HashSet<ISVNNotifyListener>(3);
-    
-    private Commandline cli = new Commandline();
+public class CommandlineClient extends AbstractClientAdapter implements ISVNClientAdapter {
+   
     private String user;
     private String psswd;
     private File configDir;
-    
-    // XXX singleton
-    private SvnWcParser wcParser = new SvnWcParser();  
-    
+    private NotificationHandler notificationHandler;
+    private SvnWcParser wcParser;
+    private Commandline cli;     
+        
+    public CommandlineClient() {
+        this.notificationHandler = new NotificationHandler();
+        wcParser = new SvnWcParser();  
+        cli = new Commandline(notificationHandler);     
+    }
+        
     public void addNotifyListener(ISVNNotifyListener l) {
-        synchronized(listeners) {
-            listeners.add(l);
-        }
+        notificationHandler.add(l);
     }
     
     public void removeNotifyListener(ISVNNotifyListener l) {
-        synchronized(listeners) {
-            listeners.remove(l);
-        }
+        notificationHandler.remove(l);
     }
 
     public void setUsername(String user) {
@@ -141,6 +140,10 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
 
     public void setConfigDirectory(File file) throws SVNClientException {
         this.configDir = file; 
+    }
+
+    public SVNNotificationHandler getNotificationHandler() {
+        return notificationHandler;
     }
     
     public void addFile(File file) throws SVNClientException {
@@ -193,7 +196,7 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
     }
 
     private void config(SvnCommand cmd) {
-        cmd.setListener(this);
+        cmd.setNotificationHandler(notificationHandler);
         cmd.setConfigDir(configDir);
         cmd.setUsername(user);
         cmd.setPassword(psswd);
@@ -361,6 +364,7 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
         return getStatus(file, descend, getAll, contactServer, false);
     }
 
+    // XXX merge with get status
     public ISVNStatus[] getStatus(File file, boolean descend, boolean getAll, boolean contactServer, boolean ignoreExternals) throws SVNClientException {
         Status[] statusValues = null;
         try {
@@ -471,70 +475,39 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
     
     public InputStream getContent(SVNUrl url, SVNRevision rev) throws SVNClientException {
         CatCommand cmd = new CatCommand(url, rev);
-        return execBinary(cmd);
+        exec(cmd);
+        return cmd.getOutput();
     }
 
     public InputStream getContent(File file, SVNRevision rev) throws SVNClientException {
         CatCommand cmd = new CatCommand(file, rev);
-        return execBinary(cmd);        
+        exec(cmd);
+        return cmd.getOutput();
     }
 
     public void propertySet(File file, String name, String value, boolean rec) throws SVNClientException {
+        ISVNStatus[] oldStatus = getStatus(file, rec, false);
         PropertySetCommand cmd = new PropertySetCommand(name, value, file, rec);
         exec(cmd);
-        // XXX this is sick. the status just isn't relevant
-        notifyChangedStatus(file, rec, cmd);
+        notifyChangedStatus(file, rec, oldStatus);
     }
 
     public void propertySet(File file, String name, File propFile, boolean rec) throws SVNClientException, IOException {
+        ISVNStatus[] oldStatus = getStatus(file, rec, false);
         PropertySetCommand cmd = new PropertySetCommand(name, propFile, file, rec);
         exec(cmd);
-        notifyChangedStatus(file, rec, cmd);
+        notifyChangedStatus(file, rec, oldStatus);
     }
 
     public void propertyDel(File file, String name, boolean rec) throws SVNClientException {
+        ISVNStatus[] oldStatus = getStatus(file, rec, false);
         PropertyDelCommand cmd = new PropertyDelCommand(file, name, rec);
         exec(cmd);
-        notifyChangedStatus(file, rec, cmd);
+        notifyChangedStatus(file, rec, oldStatus);
     }
     
     public ISVNProperty propertyGet(final File file, final String name) throws SVNClientException {
-        // XXX
-        try {
-            PropertyGetCommand cmd = new PropertyGetCommand(file, name);
-            InputStream is = execBinary(cmd);
-            int data = -1;
-            final List<Byte> byteList = new ArrayList<Byte>();
-            while ((data = is.read()) != -1) {
-                byteList.add(new Byte((byte) data));                
-            }
-            if(byteList.size() == 0) {
-                return null;
-            }
-            final byte[] bytes = new byte[byteList.size()];
-            for (int i = 0; i < byteList.size(); i++) {
-                bytes[i] = byteList.get(i);                
-            }
-            return new ISVNProperty() {
-                public String getName() {
-                    return name;
-                }
-                public String getValue() {
-                    return new String(bytes);
-                }
-                public File getFile() {
-                    return file;
-                }
-                public SVNUrl getUrl() {
-                    return null;
-                }
-                public byte[] getData() {
-                    return bytes;
-                }
-            };
-        } catch (IOException ex) {
-            throw new SVNClientException(ex);
-        }
+        return propertyGet(new PropertyGetCommand(file, name), name, null, file);
     }
 
     @Override
@@ -543,44 +516,34 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
     }
 
     public ISVNProperty propertyGet(final SVNUrl url, SVNRevision rev, SVNRevision peg, final String name) throws SVNClientException {
-        // XXX
-        try {
-            PropertyGetCommand cmd = new PropertyGetCommand(url, rev, peg, name);
-            InputStream is = execBinary(cmd);
-            int data = -1;
-            final List<Byte> byteList = new ArrayList<Byte>();
-            while ((data = is.read()) != -1) {
-                byteList.add(new Byte((byte) data));                
-            }
-            if(byteList.size() == 0) {
-                return null;
-            }
-            final byte[] bytes = new byte[byteList.size()];
-            for (int i = 0; i < byteList.size(); i++) {
-                bytes[i] = byteList.get(i);                
-            }
-            return new ISVNProperty() {
-                public String getName() {
-                    return name;
-                }
-                public String getValue() {
-                    return new String(bytes);
-                }
-                public File getFile() {
-                    return null;
-                }
-                public SVNUrl getUrl() {
-                    return url;
-                }
-                public byte[] getData() {
-                    return bytes;
-                }
-            };
-        } catch (IOException ex) {
-            throw new SVNClientException(ex);
-        }
+        return propertyGet(new PropertyGetCommand(url, rev, peg, name), name, url, null);
     }
 
+    ISVNProperty propertyGet(PropertyGetCommand cmd, final String name, final SVNUrl url, final File file) throws SVNClientException {
+        exec(cmd);
+        final byte[] bytes = cmd.getOutput();            
+        if(bytes == null || bytes.length == 0) {
+            return null;
+        }
+        return new ISVNProperty() {
+            public String getName() {
+                return name;
+            }
+            public String getValue() {
+                return new String(bytes);
+            }
+            public File getFile() {
+                return file;
+            }
+            public SVNUrl getUrl() {
+                return url;
+            }
+            public byte[] getData() {
+                return bytes;
+            }
+        };        
+    }
+    
     @Override
     public List getIgnoredPatterns(File file) throws SVNClientException {
         return super.getIgnoredPatterns(file);
@@ -616,7 +579,8 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
     public ISVNAnnotations annotate(BlameCommand blameCmd, CatCommand catCmd) throws SVNClientException {
         exec(blameCmd);
         Annotation[] annotations = blameCmd.getAnnotation();        
-        InputStream is = execBinary(catCmd);
+        exec(catCmd);
+        InputStream is = catCmd.getOutput();
         
         Annotations ret = new Annotations();
         BufferedReader r = new BufferedReader(new InputStreamReader(is)); 
@@ -695,7 +659,7 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
         RelocateCommand cmd = new RelocateCommand(from, to, path, rec);
         exec(cmd);
     }
-
+    
     // parser start
     public ISVNStatus getSingleStatus(File file) throws SVNClientException {
         try {
@@ -723,23 +687,25 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
     
     // parser end
     
-    // notify listener start
-    public void setCommand(int arg0) { /* boring */ }
-    public void logCommandLine(String arg0) { /* boring */ }
-    public void logMessage(String arg0) { /* boring */ }
-    public void logError(String arg0) { /* boring */ }
-    public void logRevision(long arg0, String arg1) { /* boring */ }
-    public void logCompleted(String arg0) { /* boring */ }
-    public void onNotify(File file, SVNNodeKind kind) {
-        ISVNNotifyListener[] la;
-        synchronized(listeners) {
-            la = listeners.toArray(new ISVNNotifyListener[listeners.size()]);
-        }
-        for (ISVNNotifyListener l : la) {
-            l.onNotify(file, kind);
-        }
-    }    
-    // notify listener end
+//    // notify listener start
+//    public void setCommand(int arg0) { /* boring */ }
+//    public void logCommandLine(String arg0) { /* boring */ }
+//    public void logMessage(String msg) { 
+//        ISVNNotifyListener[] la = getListeners();
+//        for (ISVNNotifyListener l : la) {
+//            l.logMessage(msg);
+//        }
+//    };
+//    public void logError(String arg0) { /* boring */ }
+//    public void logRevision(long arg0, String arg1) { /* boring */ }
+//    public void logCompleted(String arg0) { /* boring */ }
+//    public void onNotify(File file, SVNNodeKind kind) {
+//        ISVNNotifyListener[] la = getListeners();
+//        for (ISVNNotifyListener l : la) {
+//            l.onNotify(file, kind);
+//        }
+//    }    
+//    // notify listener end
     
     private void exec(SvnCommand cmd) throws SVNClientException {
         try {            
@@ -751,16 +717,17 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
         checkErrors(cmd);
     }
 
-    private InputStream execBinary(SvnCommand cmd) throws SVNClientException {
-        InputStream ret;
-        try {            
-            ret = cli.execBinary(cmd);
-        } catch (IOException ex) {
-            throw new SVNClientException(ex);
-        }
-        checkErrors(cmd);
-        return ret;
-    }
+//    private InputStream execBinary(SvnCommand cmd) throws SVNClientException {
+//        InputStream ret;
+//        try {           
+//            config(cmd);            
+//            ret = cli.execBinary(cmd);
+//        } catch (IOException ex) {
+//            throw new SVNClientException(ex);
+//        }
+//        checkErrors(cmd);
+//        return ret;
+//    }
     
     private void checkErrors(SvnCommand cmd) throws SVNClientException {
 
@@ -812,9 +779,7 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
     
     // unsupported start
     
-    public SVNNotificationHandler getNotificationHandler() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
+
 
     @Override
     public long[] commitAcrossWC(File[] arg0, String arg1, boolean arg2, boolean arg3, boolean arg4) throws SVNClientException {
@@ -933,13 +898,25 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    private void notifyChangedStatus(File file, boolean rec, SvnCommand cmd) throws SVNClientException {
-        ISVNStatus[] status = getStatus(file, rec, false);
-        for (ISVNStatus s : status) {
-            onNotify(cmd.getAbsoluteFile(s.getFile().getAbsolutePath()), null);
+    private void notifyChangedStatus(File file, boolean rec, ISVNStatus[] oldStatuses) throws SVNClientException {
+        Map<File, ISVNStatus> oldStatusMap = new HashMap<File, ISVNStatus>();
+        for (ISVNStatus s : oldStatuses) {
+            oldStatusMap.put(s.getFile(), s);
         }
+        ISVNStatus[] newStatuses = getStatus(file, rec, false);
+        for (ISVNStatus newStatus : newStatuses) {
+            ISVNStatus oldStatus = oldStatusMap.get(newStatus.getFile());
+            if(oldStatus.getTextStatus() != newStatus.getTextStatus() ||
+               oldStatus.getPropStatus() != newStatus.getPropStatus()) 
+            {
+                notificationHandler.notifyListenersOfChange(newStatus.getPath()); /// onNotify(cmd.getAbsoluteFile(s.getFile().getAbsolutePath()), null);   
+            }            
+       }
     }
     
     // unsupported start
-    
+
+    class NotificationHandler extends SVNNotificationHandler {
+
+    }
 }

@@ -53,6 +53,7 @@ import java.util.Map;
 import org.netbeans.modules.subversion.client.cli.SvnCommand;
 import org.netbeans.modules.subversion.client.cli.SvnCommand.Arguments;
 import org.tigris.subversion.svnclientadapter.ISVNInfo;
+import org.tigris.subversion.svnclientadapter.ISVNNotifyListener;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNNodeKind;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
@@ -102,6 +103,11 @@ public class InfoCommand extends SvnCommand {
     }
     
     @Override
+    protected int getCommand() {
+        return ISVNNotifyListener.Command.INFO;
+    }
+    
+    @Override
     public void prepareCommand(Arguments arguments) throws IOException {
         // XXX what if empty url list?
         arguments.add("info");
@@ -128,6 +134,7 @@ public class InfoCommand extends SvnCommand {
             return;
         }
         output.add(lineString);
+        super.outputText(lineString);
     }
     
     public ISVNInfo[] getInfo() throws SVNClientException {

@@ -44,6 +44,7 @@ import java.io.IOException;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.cli.Parser.Line;
 import org.netbeans.modules.subversion.client.cli.SvnCommand;
+import org.tigris.subversion.svnclientadapter.ISVNNotifyListener;
 
 /**
  *
@@ -64,6 +65,11 @@ public class CommitCommand extends SvnCommand {
         this.files = files;
     }
        
+    @Override
+    protected int getCommand() {
+        return ISVNNotifyListener.Command.COMMIT;
+    }
+    
     @Override
     public void prepareCommand(Arguments arguments) throws IOException {        
         arguments.add("commit");
@@ -86,11 +92,9 @@ public class CommitCommand extends SvnCommand {
     protected void notify(Line line) {
         if(line.getRevision() != -1) {
             if(revision != -1) {
-                try {
-                    Subversion.LOG.warning("Revision notified more times : " + revision + ", " + line.getRevision() + " for command " + getStringCommand());
-                } catch (IOException ex) {
-                    // should not happen
-                }
+                Subversion.LOG.warning(
+                        "Revision notified more times : " + revision + ", " + 
+                        line.getRevision() + " for command " + getStringCommand());                
             }
             revision = line.getRevision();            
         }

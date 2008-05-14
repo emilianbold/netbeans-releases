@@ -42,6 +42,7 @@ package org.netbeans.modules.subversion.client.cli.commands;
 import java.io.File;
 import java.io.IOException;
 import org.netbeans.modules.subversion.client.cli.SvnCommand;
+import org.tigris.subversion.svnclientadapter.ISVNNotifyListener;
 
 /**
  *
@@ -58,12 +59,23 @@ public class ResolvedCommand extends SvnCommand {
     }
        
     @Override
+    protected int getCommand() {
+        return ISVNNotifyListener.Command.RESOLVED;
+    }
+    
+    @Override
+    protected void config(File configDir, String username, String password, Arguments arguments) {
+        arguments.addConfigDir(configDir);        
+    }
+    
+    @Override
     public void prepareCommand(Arguments arguments) throws IOException {                     
         arguments.add("resolved");
         if (recursive) {
             arguments.add("-R");
         }
-        arguments.add(file);                
+        arguments.add(file);    
+        setCommandWorkingDirectory(file);        
     }
     
 }

@@ -53,7 +53,7 @@ import java.util.Map;
 import org.netbeans.modules.subversion.client.cli.SvnCommand;
 import org.netbeans.modules.subversion.client.cli.SvnCommand.Arguments;
 import org.openide.xml.XMLUtil;
-import org.tigris.subversion.svnclientadapter.ISVNDirEntry;
+import org.tigris.subversion.svnclientadapter.ISVNNotifyListener;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
 import org.tigris.subversion.svnclientadapter.SVNRevision.Number;
@@ -90,6 +90,11 @@ public class StatusCommand extends SvnCommand {
     }
     
     @Override
+    protected int getCommand() {
+        return ISVNNotifyListener.Command.STATUS;
+    }
+    
+    @Override
     public void prepareCommand(Arguments arguments) throws IOException {
 	arguments.add("status");
         arguments.add("--xml");
@@ -112,6 +117,7 @@ public class StatusCommand extends SvnCommand {
     @Override
     public void outputText(String lineString) {
         output.append(lineString);
+        super.outputText(lineString);        
     }
     
     public Status[] getStatusValues() throws SVNClientException {
