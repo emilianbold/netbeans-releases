@@ -343,7 +343,7 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
      * index of the parameter that contains it.
      */
     public static int findArgumentIndex(Node call, int astOffset, AstPath path) {
-        assert call.getType() == Token.CALL;
+        assert call.getType() == Token.CALL || call.getType() == Token.NEW;
 
         // The first child is the call expression -- the name, or property lookup etc.
         Node child = call.getFirstChild();
@@ -397,8 +397,9 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
      *      bar()   --- here we're really calling the method named foo but getCallName will
      *                   return bar
      */
+    @NonNull
     public static String getCallName(Node callNode, boolean fqn) {
-        assert callNode.getType() == Token.CALL;
+        assert callNode.getType() == Token.CALL || callNode.getType() == Token.NEW;
         
         if (!fqn) {
             Node nameNode = findCallNameNode(callNode);
@@ -422,16 +423,10 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
                     Node grandChild = child.getFirstChild();
                     if (fqn) {
                         StringBuilder sb = new StringBuilder();
-                        
-                        if (grandChild instanceof Node.StringNode) {
-                            sb.append(grandChild.getString());
-                            sb.append(".");
-                        }
-                        sb.append(grandChild.getNext().getString());
-                        assert grandChild.getNext().getNext() == null : grandChild.getNext().getNext();
+                        addName(sb, child);
                         return sb.toString();
                     } else {
-                        assert grandChild.getNext().getNext() == null : grandChild.getNext().getNext();
+                        //assert grandChild.getNext().getNext() == null : grandChild.getNext().getNext();
                         return grandChild.getNext().getString();
                     }
                 } else {
@@ -632,7 +627,8 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
                 //name = parent.getString();
             } else if (parentType == Token.SETPROP || parentType == Token.SETNAME) {
                 // this.foo = function() { }
-                if (parent.getFirstChild().getType() == Token.THIS) {
+                Node firstChild = parent.getFirstChild();
+                if (firstChild.getType() == Token.THIS) {
                     wasThis = true;
                     Node method = parent.getFirstChild().getNext();
                     if (method.getType() == Token.STRING) {
@@ -642,15 +638,43 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
                             if (clzNode.getType() == Token.FUNCTION) {
                                 // Determine function name
                                 String ancestorName = getFunctionFqn(clzNode, null);
-                                if (ancestorName != null && Character.isUpperCase(ancestorName.charAt(0))) {
-                                    return ancestorName + "." + methodName;
+                                if (ancestorName != null) {
+                                    int lastDot = ancestorName.lastIndexOf('.');
+                                    if (lastDot != -1 && Character.isUpperCase(ancestorName.charAt(lastDot+1))) {
+                                            return ancestorName + '.' + methodName;
+                                    } else if (Character.isUpperCase(ancestorName.charAt(0))) {
+                                        return ancestorName + '.' + methodName;
+                                    }
+                                }
+                            }
+                            clzNode = clzNode.getParentNode();
+                        }
+                    }
+                } else if (firstChild.getType() == Token.GETPROP &&
+                        firstChild.hasChildren() && firstChild.getFirstChild().getType() == Token.THIS) {
+                    // this.foo.bar = function() { }
+                    wasThis = true;
+                    Node method = parent.getFirstChild().getNext();
+                    if (method.getType() == Token.STRING) {
+                        String methodName = AstUtilities.getJoinedName(parent);
+                        Node clzNode = parent;
+                        while (clzNode != null) {
+                            if (clzNode.getType() == Token.FUNCTION) {
+                                // Determine function name
+                                String ancestorName = getFunctionFqn(clzNode, null);
+                                if (ancestorName != null) {
+                                    int lastDot = ancestorName.lastIndexOf('.');
+                                    if (lastDot != -1 && Character.isUpperCase(ancestorName.charAt(lastDot+1))) {
+                                            return ancestorName + '.' + methodName;
+                                    } else if (Character.isUpperCase(ancestorName.charAt(0))) {
+                                        return ancestorName + '.' + methodName;
+                                    }
                                 }
                             }
                             clzNode = clzNode.getParentNode();
                         }
                     }
                 }
-
                 // Foo.Bar.baz = function() { }
                 StringBuilder sb = new StringBuilder();
                 if (addName(sb, parent)) {
@@ -757,6 +781,9 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
                                 StringBuilder extend = new StringBuilder();
                                 if (AstUtilities.addName(extend, prev.getFirstChild())) {
                                     extendsName = extend.toString();
+                                    if (extendsName.length() == 0) {
+                                        extendsName = null;
+                                    }
                                 }
                             }
                         }
@@ -774,6 +801,9 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
                                 StringBuilder extend = new StringBuilder();
                                 if (AstUtilities.addName(extend, firstArg)) {
                                     extendsName = extend.toString();
+                                    if (extendsName.length() == 0) {
+                                        extendsName = null;
+                                    }
                                 }
                             }
                         }
@@ -789,6 +819,9 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
                                 StringBuilder extend = new StringBuilder();
                                 if (AstUtilities.addName(extend, firstArg)) {
                                     extendsName = extend.toString();
+                                    if (extendsName.length() == 0) {
+                                        extendsName = null;
+                                    }
                                 }
                             }
                         }
@@ -826,7 +859,24 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
                                     StringBuilder superName = new StringBuilder();
                                     if (AstUtilities.addName(superName, second)) {
                                         extendsName = superName.toString();
+                                        if (extendsName.length() == 0) {
+                                            extendsName = null;
+                                        }
                                     }
+                                }
+                            }
+                        }
+                    } else if (mtd.getType() == Token.STRING && "declare".equals(mtd.getString()) && // NOI18N
+                            (clz.getType() == Token.NAME && "dojo".equals(clz.getString()) || // NOI18N
+                            clz.getType() == Token.GETPROP && AstUtilities.getJoinedName(clz).endsWith("dojo"))) { // NOI18N
+                        Node first = callTarget.getNext();
+                        if (first != null) {
+                            className = AstUtilities.getJoinedName(first);
+                            Node second = first.getNext();
+                            if (second != null) {
+                                extendsName = AstUtilities.getJoinedName(second);
+                                if (extendsName.length() == 0) {
+                                    extendsName = null;
                                 }
                             }
                         }

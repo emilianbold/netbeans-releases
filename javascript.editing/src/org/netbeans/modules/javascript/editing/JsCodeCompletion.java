@@ -68,6 +68,7 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.lexer.TokenUtilities;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.gsf.api.OffsetRange;
@@ -75,6 +76,9 @@ import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.html.editor.gsf.HtmlParserResult;
 import org.netbeans.modules.javascript.editing.JsParser.Sanitize;
 import org.netbeans.modules.javascript.editing.lexer.Call;
+import org.netbeans.modules.javascript.editing.lexer.JsCommentLexer;
+import org.netbeans.modules.javascript.editing.lexer.JsCommentLexer;
+import org.netbeans.modules.javascript.editing.lexer.JsCommentTokenId;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 import org.openide.filesystems.FileObject;
@@ -1192,11 +1196,178 @@ public class JsCodeCompletion implements Completable {
         NameKind kind = request.kind;
         String fqn = request.fqn;
         JsParseResult result = request.result;
+        AstPath path = request.path;
         
         boolean includeNonFqn = true;
         
         // Add in inherited properties, if any...
-        // TODO
+        // TODO - look for properties on the object - as well as inherited properties. NOT methods!!!
+        // Also look for @cfg and @config properties. This is a bit tricky. In the case of Ext,
+        // we have these guys on the class itself, not associated with a method parameter.
+        // Shall I take this to be a set of constructor properties?
+        // In YUI it's different; many of the properties we want to inherit are NOT marked as @config,
+        // such as "animate" in the Editor. 
+        Node leaf = path.leaf();
+        int leafType = leaf.getType();
+        if (leafType == org.mozilla.javascript.Token.OBJECTLIT || leafType == org.mozilla.javascript.Token.OBJLITNAME) {
+            if (leafType == org.mozilla.javascript.Token.OBJLITNAME) {
+                leaf = leaf.getParentNode(); // leaf still won't be null, OBJLITNAME is always below an OBJECTLIT
+            }
+            // We're trying to complete object literal names. These should be properties we're
+            // expecting.
+            
+            // (1) See if we're in a constructor argument, and if so, look for configuration objects
+            // on the function and the class, and if not:
+            // (2) Assume that we're customizing the class we're surrounding so use that as the type.
+            
+            Node parent = leaf.getParentNode();
+            int parentType = parent.getType();
+            if (parentType == org.mozilla.javascript.Token.CALL ||
+                    parentType == org.mozilla.javascript.Token.NEW) {
+
+                // Compute the parameter corresponding to the beginning of the object literal
+                CompilationInfo info = request.info;
+                int astOffset = leaf.getSourceStart();
+                int lexOffset = LexUtilities.getLexerOffset(info, astOffset);
+                IndexedFunction[] methodHolder = new IndexedFunction[1];
+                int[] paramIndexHolder = new int[1];
+                int[] anchorOffsetHolder = new int[1];
+                if (computeMethodCall(info, lexOffset, astOffset,
+                        methodHolder, paramIndexHolder, anchorOffsetHolder, null)) {
+
+                    IndexedFunction method = methodHolder[0];
+                    if (method != null) {
+                        // We've established the call; now establish the parameter
+                        int idx = paramIndexHolder[0];
+                        //int anchorOffset = anchorOffsetHolder[0];
+                        
+                        // Look up the type of the parameter, if possible
+                        List<String> params = method.getParameters();
+                        int last = params.size()-1;
+                        if (idx > last) {
+                            idx = last;
+                        }
+                        
+                        if (idx >= 0) {
+                            String param = params.get(idx);
+                            int typeIdx = param.indexOf(':');
+                            if (typeIdx != -1) {
+                                String type = param.substring(typeIdx+1);
+                                fqn = type;
+                            }
+                            
+                            // See if we have @config options for this in its documentation?
+                            if ((fqn == null || "Object".equals(fqn)) && method.isDocumented()) { // NOI18N
+                                boolean foundConfig = false;
+                                List<String> comments = ElementUtilities.getComments(info, method);
+                                if (comments != null && comments.size() > 0) {
+                                    StringBuilder sb = new StringBuilder();
+                                    for (String line : comments) {
+                                        sb.append(line);
+                                        sb.append("\n"); // NOI18N
+                                    }
+                                    sb.setLength(sb.length()-1);
+                                    TokenHierarchy<?> hi = TokenHierarchy.create(sb.toString(), JsCommentTokenId.language());
+                                    TokenSequence<JsCommentTokenId> ts = hi.tokenSequence(JsCommentTokenId.language());
+                                    // Look for @config tags
+                                    while (ts != null && ts.moveNext()) {
+                                        Token<? extends JsCommentTokenId> token = ts.token();
+                                        TokenId id = token.id();
+                                        if (id == JsCommentTokenId.TAG) {
+                                            CharSequence text = token.text();
+                                            if (TokenUtilities.textEquals("@config", text) ||  // NOI18N
+                                                    TokenUtilities.textEquals("@cfg", text)) { // NOI18N
+                                                int tsidx = ts.index();
+                                                String configType = JsCommentLexer.nextType(ts);
+                                                if (configType == null) {
+                                                    ts.moveIndex(tsidx);
+                                                    ts.moveNext();
+                                                }
+                                                String configName = JsCommentLexer.nextIdent(ts);
+                                                if (configName != null) {
+                                                    // Compute the rest of the description of the config, if applicable
+                                                    int i2 = ts.index();
+                                                    StringBuilder desc = new StringBuilder();
+                                                    while (ts.moveNext()) {
+                                                        text = ts.token().text();
+                                                        if (text.length() > 0 && text.charAt(0) == '@' && ts.token().id() == JsCommentTokenId.TAG) {
+                                                            break;
+                                                        } else {
+                                                            desc.append(text);
+                                                        }
+                                                        int MAX = 40;
+                                                        if (desc.length() > MAX) {
+                                                            desc.setLength(MAX-3);
+                                                            desc.append("...");
+                                                            break;
+                                                        }
+                                                    }
+                                                    String rhs = desc.toString().trim();
+                                                    if (configType != null) {
+                                                        if (rhs.length() > 0) {
+                                                            rhs = "{" + configType + "} " + rhs;
+                                                        } else {
+                                                            rhs = configType;
+                                                        }
+                                                    }
+                                                    
+                                                    ts.moveIndex(i2);
+                                                    JsCompletionItem item = new TagItem(configName, rhs, request, ElementKind.PARAMETER);
+                                                    proposals.add(item);
+                                                    foundConfig = true;
+                                                } else {
+                                                    ts.moveIndex(tsidx);
+                                                    ts.moveNext();
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                
+                                if (foundConfig) {
+                                    return true;
+                                }
+                            }
+                        }
+                        
+                        if (method.getKind() == ElementKind.CONSTRUCTOR && (fqn == null || "Object".equals(fqn))) { // NOI18N
+                            if (!Character.isUpperCase(method.getName().charAt(0)) && method.getIn().length() > 0) {
+                                fqn = method.getIn();
+                            } else {
+                                fqn = method.getFqn();
+                            }
+                        }
+                        
+                        Set<IndexedElement> matches = index.getElements(prefix, fqn, kind, JsIndex.ALL_SCOPE, result);
+                        
+                        for (IndexedElement element : matches) {
+                            if (element.isNoDoc()) {
+                                continue;
+                            }
+                            
+                            if (element.getKind() == ElementKind.METHOD || element.getKind() == ElementKind.CONSTRUCTOR) {
+                                continue;
+                            }
+
+                            JsCompletionItem item;
+                            if (element instanceof IndexedFunction) {
+                                item = new FunctionItem((IndexedFunction)element, request);
+                            } else {
+                                item = new PlainItem(request, element);
+                            }
+                            proposals.add(item);
+
+                        }
+
+                        return true;
+                    }
+                }
+            }
+            
+            if (fqn != null) {
+                includeNonFqn = false;
+            }
+        }
         
         Set<IndexedElement> matches;
         if (fqn != null) {
@@ -1947,7 +2118,8 @@ public class JsCodeCompletion implements Completable {
                 while (it.hasNext()) {
                     Node node = it.next();
 
-                    if (node.getType() == org.mozilla.javascript.Token.CALL) {
+                    if (node.getType() == org.mozilla.javascript.Token.CALL ||
+                            node.getType() == org.mozilla.javascript.Token.NEW) {
                         call = node;
                         index = AstUtilities.findArgumentIndex(call, astOffset, path);
                         break;
@@ -2081,6 +2253,7 @@ public class JsCodeCompletion implements Completable {
                 index++;
             }
             
+            String fqn = null;
             if ((call == null) || (index == -1)) {
                 callLineStart = -1;
                 callMethod = null;
@@ -2088,6 +2261,13 @@ public class JsCodeCompletion implements Completable {
             } else if (targetMethod == null) {
                 // Look up the
                 // See if we can find the method corresponding to this call
+                fqn = JsTypeAnalyzer.getCallFqn(info, call, true);
+                if (fqn != null) {
+                    JsIndex jsIndex = JsIndex.get(info.getIndex(JsTokenId.JAVASCRIPT_MIME_TYPE));
+                    JsParseResult parseResult = AstUtilities.getParseResult(info);
+                    Set<IndexedElement> elements = jsIndex.getElementsByFqn(fqn, NameKind.EXACT_NAME, JsIndex.ALL_SCOPE, parseResult);
+                    // How do I choose one?
+                }
                 targetMethod = new JsDeclarationFinder().findMethodDeclaration(info, call, path, 
                         alternativesHolder);
                 if (targetMethod == null) {
@@ -2098,8 +2278,10 @@ public class JsCodeCompletion implements Completable {
             callLineStart = currentLineStart;
             callMethod = targetMethod;
 
+            // TODO - make dedicated result object?
             methodHolder[0] = callMethod;
             parameterIndexHolder[0] = index;
+            // TODO - store the fqn too?
 
             if (anchorOffset == -1) {
                 anchorOffset = call.getSourceStart(); // TODO - compute
