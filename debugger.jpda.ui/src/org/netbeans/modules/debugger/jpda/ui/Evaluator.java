@@ -127,6 +127,7 @@ public class Evaluator extends javax.swing.JPanel {
     private SessionListener sessionListener;
     private PropertyChangeListener csfListener;
     private JButton watchButton;
+    private JButton evaluateButton;
     
     /** Creates new form Evaluator */
     public Evaluator(JPDADebugger debugger) {
@@ -163,9 +164,12 @@ public class Evaluator extends javax.swing.JPanel {
                 WeakListeners.propertyChange(csfListener, debugger));
     }
     
-    private void setWatchButton(JButton watchButton) {
+    private void setButtons(JButton watchButton, JButton evaluateButton) {
         this.watchButton = watchButton;
-        watchButton.setEnabled(((CompletionedEditor) expressionComboBox.getEditor()).getDocument().getLength() > 0);
+        this.evaluateButton = evaluateButton;
+        boolean enabled = ((CompletionedEditor) expressionComboBox.getEditor()).getDocument().getLength() > 0;
+        watchButton.setEnabled(enabled);
+        evaluateButton.setEnabled(enabled);
     }
     
     /** This method is called from within the constructor to
@@ -269,7 +273,9 @@ public class Evaluator extends javax.swing.JPanel {
                 SwingUtilities.invokeLater(this);
             }
             public void run() {
-                watchButton.setEnabled(ce.getDocument().getLength() > 0);
+                boolean enabled = ce.getDocument().getLength() > 0;
+                watchButton.setEnabled(enabled);
+                evaluateButton.setEnabled(enabled);
             }
         }
         
@@ -404,7 +410,7 @@ public class Evaluator extends javax.swing.JPanel {
         final JButton closeBtn = new JButton();
         Mnemonics.setLocalizedText(closeBtn, closeStr);
         closeBtn.setToolTipText(NbBundle.getMessage(Evaluator.class, "Evaluator.Close.TLT"));
-        evaluatorPanel.setWatchButton(watchBtn);
+        evaluatorPanel.setButtons(watchBtn, evalBtn);
         DialogDescriptor dd = new DialogDescriptor(evaluatorPanel,
                 NbBundle.getMessage(Evaluator.class, "Evaluator.Title"),
                 false, new Object[] { evalBtn, watchBtn, closeBtn },
