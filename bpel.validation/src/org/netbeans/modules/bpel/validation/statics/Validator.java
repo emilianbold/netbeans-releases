@@ -48,6 +48,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -113,7 +114,9 @@ import org.netbeans.modules.bpel.model.api.support.ContainerIterator;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.GlobalSimpleType;
 import org.netbeans.modules.xml.schema.model.GlobalType;
+import org.netbeans.modules.xml.wsdl.model.Types;
 import org.netbeans.modules.xml.wsdl.model.Input;
+import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.Message;
 import org.netbeans.modules.xml.wsdl.model.NotificationOperation;
 import org.netbeans.modules.xml.wsdl.model.OneWayOperation;
@@ -133,17 +136,19 @@ import org.netbeans.modules.xml.wsdl.model.Operation;
 import org.netbeans.modules.xml.wsdl.model.RequestResponseOperation;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.CorrelationProperty;
 import org.netbeans.modules.xml.xam.Component;
+import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.xml.xam.Model;
+import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.netbeans.modules.xml.xam.locator.CatalogModelFactory;
+import org.netbeans.modules.xml.schema.model.Schema;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.schema.model.SchemaModelFactory;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.Activity;
 import org.netbeans.modules.xml.xam.Model.State;
-import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.bpel.model.api.support.Initiate;
 import org.netbeans.modules.bpel.model.api.NamedElement;
 import org.netbeans.modules.bpel.model.api.Empty;
@@ -162,6 +167,8 @@ import org.netbeans.modules.bpel.model.api.PortTypeReference;
 import org.netbeans.modules.bpel.validation.core.BpelValidator;
 import org.netbeans.modules.bpel.model.api.support.SimpleBpelModelVisitor;
 import org.netbeans.modules.bpel.model.api.support.SimpleBpelModelVisitorAdaptor;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
 import static org.netbeans.modules.xml.ui.UI.*;
 
 /**
@@ -171,23 +178,230 @@ import static org.netbeans.modules.xml.ui.UI.*;
 public final class Validator extends BpelValidator {
     
   @Override
-  protected final SimpleBpelModelVisitor getVisitor() { return new SimpleBpelModelVisitorAdaptor()
-  {
+  protected final SimpleBpelModelVisitor getVisitor() { return new SimpleBpelModelVisitorAdaptor() {
+
+  // # 86958 SA00014
+  private void checkDuplicate(Process process) {
+    Import [] imports = process.getImports();
+
+    if (imports == null) {
+      return;
+    }
+    List<Model> wsdls = new LinkedList<Model>();
+    List<Model> schemas = new LinkedList<Model>();
+
+    for (Import imp : imports) {
+      WSDLModel wsdl = ImportHelper.getWsdlModel(imp, false);
+
+      if (wsdl != null) {
+        wsdls.add(wsdl);
+      }
+      SchemaModel schema = ImportHelper.getSchemaModel(imp, false);
+
+      if (schema != null) {
+        schemas.add(schema);
+      }
+    }
+    for (Model wsdl : wsdls) {
+      Types types = ((WSDLModel) wsdl).getDefinitions().getTypes();
+
+      if (types == null) {
+        continue;
+      }
+      Collection<Schema> inlines = types.getSchemas();
+
+      if (inlines == null) {
+        continue;
+      }
+      for (Schema inline : inlines) {
+        schemas.add(inline.getModel());
+      }
+    }
+    checkModels(process, wsdls);
+    checkModels(process, schemas);
+  }
+
+  private void checkModels(Process process, List<Model> models) {
+//out();
+    for (int i=0; i < models.size(); i++) {
+      for (int j=i+1; j < models.size(); j++) {
+        checkDuplicate(process, models.get(i), models.get(j));
+      }
+    }
+  }
+
+  private void checkDuplicate(Process process, Model model1, Model model2) {
+    String targetNamespace1 = getTargetNamespace(model1);
+
+    if (targetNamespace1 == null) {
+      return;
+    }
+    String targetNamespace2 = getTargetNamespace(model2);
+
+    if (targetNamespace2 == null) {
+      return;
+    }
+    if ( !targetNamespace1.equals(targetNamespace2)) {
+      return;
+    }
+//out("check: ");
+//out("  " + model1);
+//out("  " + model2);
+    if (model1 instanceof WSDLModel) {
+      checkDuplicate(process, ((WSDLModel) model1).getDefinitions(), ((WSDLModel) model2).getDefinitions());
+    }
+    else if (model1 instanceof SchemaModel) {
+      checkDuplicate(process, ((SchemaModel) model1).getSchema(), ((SchemaModel) model2).getSchema());
+    }
+  }
+
+  private void checkDuplicate(Process process, Definitions definitions1, Definitions definitions2) {
+    // todo a
+  }
+
+  private void checkDuplicate(Process process, Schema schema1, Schema schema2) {
+    checkDuplicate(process, schema1.getAttributes(), schema2.getAttributes());
+    checkDuplicate(process, schema1.getAttributeGroups(), schema2.getAttributeGroups());
+    checkDuplicate(process, schema1.getGroups(), schema2.getGroups());
+    checkDuplicate(process, schema1.getNotations(), schema2.getNotations());
+
+    checkDuplicate(process, schema1.getElements(), schema2.getElements());
+    checkDuplicate(process, schema1.getSimpleTypes(), schema2.getSimpleTypes());
+    checkDuplicate(process, schema1.getComplexTypes(), schema2.getComplexTypes());
+  }
+
+  private void checkDuplicate(Process process, Collection<? extends Named> collection1, Collection<? extends Named> collection2) {
+    List<Named> list1 = list(collection1);
+    List<Named> list2 = list(collection2);
+
+    for (int i=0; i < list1.size(); i++) {
+      Named named = list1.get(i);
+
+      if (contains(named, list2)) {
+        String file1 = getFileName(named);
+
+        if (file1 == null) {
+          continue;
+        }
+        String file2 = getFileName(list2.get(0));
+
+        if (file2 == null) {
+          continue;
+        }
+        // todo a: warning for identical, error for different
+        addError("FIX_SA00014", process, named.getName(), file1, file2); // NOI18N
+      }
+    }
+  }
+
+  private String getFileName(Component component) {
+    if (component == null) {
+      return null;
+    }
+    Model model = component.getModel();
+
+    if (model == null) {
+      return null;
+    }
+    ModelSource source = model.getModelSource();
+
+    if (source == null) {
+      return null;
+    }
+    Lookup lookup = source.getLookup();
+
+    if (lookup == null) {
+      return null;
+    }
+    FileObject file = lookup.lookup(FileObject.class);
+
+    if (file == null) {
+      return null;
+    }
+    return file.getPath();
+  }
+
+  private boolean contains(Named named, List<Named> list) {
+    String name = named.getName();
+
+    if (name == null || name.length() == 0) {
+      return false;
+    }
+    for (int i=0; i < list.size(); i++) {
+      if (name.equals(list.get(i).getName())) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private List<Named> list(Collection<? extends Named> collection) {
+    List<Named> list = new ArrayList<Named>();
+
+    if (collection == null) {
+      return list;
+    }
+    Iterator<? extends Named> iterator = collection.iterator();
+
+    while (iterator.hasNext()) {
+      list.add(iterator.next());
+    }
+    return list;
+  }
+
+  private String getTargetNamespace(Import imp) {
+    String targetNamespace = getTargetNamespace(ImportHelper.getWsdlModel(imp, false));
+
+    if (targetNamespace != null) {
+      return targetNamespace;
+    }
+    return getTargetNamespace(ImportHelper.getSchemaModel(imp, false));
+  }
+
+  private String getTargetNamespace(Model model) {
+    if (model instanceof WSDLModel) {
+      return getTargetNamespace((WSDLModel) model);
+    }
+    if (model instanceof SchemaModel) {
+      return getTargetNamespace((SchemaModel) model);
+    }
+    return null;
+  }
+
+  private String getTargetNamespace(WSDLModel model) {
+    if (model == null) {
+      return null;
+    }
+    Definitions definitions = model.getDefinitions();
+
+    if (definitions == null) {
+      return null;
+    }
+    return definitions.getTargetNamespace();
+  }
+
+  private String getTargetNamespace(SchemaModel model) {
+    if (model == null) {
+      return null;
+    }
+    Schema schema = model.getSchema();
+
+    if (schema == null) {
+      return null;
+    }
+    return schema.getTargetNamespace();
+  }
 
   @Override 
   public void visit(PartnerLink p) {
-      
       // Rule: A partnerLink MUST specify the myRole or the partnerRole, or both.
       // This syntactic constraint MUST be statically enforced.
-      if((p.getMyRole() == null || p.getMyRole().equals("")) &&
-              (p.getPartnerRole() == null || p.getPartnerRole().equals(""))) 
-      {
+      if ((p.getMyRole() == null || p.getMyRole().equals("")) && (p.getPartnerRole() == null || p.getPartnerRole().equals(""))) {
           addError(FIX_PARTNER_LINK_ERROR, p);
       }
-      
       // Rule: The initializePartnerRole attribute MUST NOT be used on a partnerLink
       // that does not have a partner role; this restriction MUST be statically enforced.
-      if(p.getPartnerRole() == null || p.getPartnerRole().equals("")) {
+      if( p.getPartnerRole() == null || p.getPartnerRole().equals("")) {
           if((p.getInitializePartnerRole() != null) &&
                   (!p.getInitializePartnerRole().equals(
                   TBoolean.INVALID))) 
@@ -422,8 +636,11 @@ public final class Validator extends BpelValidator {
   }
   
   @Override
-  public void visit( Process process ) {
-      visitBaseScope( process );
+  public void visit(Process process) {
+      //
+      checkDuplicate(process);
+      //
+      visitBaseScope(process);
       
       /*
        * Rule : To be instantiated, an executable business process MUST contain at 
@@ -436,14 +653,14 @@ public final class Validator extends BpelValidator {
        * on all the activities MUST have the value of the initiate 
        * attribute be set to "join".
        */
-      checkInstantiableActivities( process );
+      checkInstantiableActivities(process);
       
       /*
        * Rule : A WS-BPEL process definition MUST NOT be accepted for 
        * processing if it defines two or more propertyAliases for the 
        * same property name and WS-BPEL variable type.
        */
-      checkPropertyAliasMultiplicity( process );
+      checkPropertyAliasMultiplicity(process);
       
       /*
        * Rule : 
@@ -456,9 +673,8 @@ public final class Validator extends BpelValidator {
        */
       String query = process.getQueryLanguage();
       String expression = process.getExpressionLanguage();
-      if ((query != null && !SUPPORTED_LANGAGE.equals(query))
-              || (expression != null && !SUPPORTED_LANGAGE.equals(expression)))
-      {
+
+      if ((query != null && !SUPPORTED_LANGAGE.equals(query)) || (expression != null && !SUPPORTED_LANGAGE.equals(expression))) {
           addError(FIX_SUPPORTED_LANGUAGE, process, SUPPORTED_LANGAGE);
       }
   }
@@ -700,7 +916,7 @@ public final class Validator extends BpelValidator {
   }
 
   @Override
-  public void visit( Import imp ) {
+  public void visit(Import imp) {
       final Model model = getImportModel(imp);
       
       /*
@@ -1003,11 +1219,9 @@ public final class Validator extends BpelValidator {
       if (Import.WSDL_IMPORT_TYPE.equals(imp.getImportType())) {
           return ImportHelper.getWsdlModel(imp , false);
       }
-      
       if (Import.SCHEMA_IMPORT_TYPE.equals(imp.getImportType())) {
           return ImportHelper.getSchemaModel(imp , false);
       }
-      
       return null;
   }
   
@@ -1594,45 +1808,7 @@ public final class Validator extends BpelValidator {
           }
       }
   }
-  
-  private String getTargetNamespace(Import imp) {
-      assert imp!= null;
-      String location = imp.getLocation();
-      if ( location == null ) {
-          return null;
-      }
-      try {
-          URI uri = new URI( location );
-          ModelSource source = CatalogModelFactory.getDefault().
-                  getCatalogModel( imp.getModel().getModelSource())
-                  .getModelSource(uri, imp.getModel().getModelSource());
-          if ( Import.WSDL_IMPORT_TYPE.equals( imp.getImportType()) ){
-              WSDLModel model = WSDLModelFactory.getDefault().getModel(
-                      source );
-              if (model == null) {
-                return null;
-              }
-              return model.getDefinitions()==null? null :
-                  model.getDefinitions().getTargetNamespace();
-          } else if (Import.SCHEMA_IMPORT_TYPE.equals( imp.getImportType()) ){
-              SchemaModel model = SchemaModelFactory.getDefault().getModel(
-                      source );
-              if (model == null) {
-                return null;
-              }
-              if (model.getState() == Model.State.VALID) {
-                  return model.getSchema()==null? null :
-                      model.getSchema().getTargetNamespace();
-              }
-          }
-      } catch( URISyntaxException e ) {
-          return null;
-      } catch (CatalogModelException e) {
-          return null;
-      }
-      return null;
-  }
-  
+
   private void checkInputOutputVariableOperation( Invoke invoke ) {
       WSDLReference<Operation> operationRef = invoke.getOperation();
       if ( operationRef == null ) {
@@ -2548,9 +2724,7 @@ public final class Validator extends BpelValidator {
   }
 
   @SuppressWarnings("unchecked")
-  private Set<ExtendableActivity> getLogicallyPreceding( 
-          ExtendableActivity activity  )
-  {
+  private Set<ExtendableActivity> getLogicallyPreceding(ExtendableActivity activity) {
       /*
        * This method collect all preceding activities for activity.
        * So resulting set will contain activities that are source 

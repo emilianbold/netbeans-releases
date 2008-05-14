@@ -1,1 +1,2 @@
 org.netbeans.modules.ruby.testrunner.TestRunnerImpl
+org.netbeans.modules.ruby.testrunner.RspecRunner

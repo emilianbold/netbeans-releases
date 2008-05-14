@@ -73,8 +73,7 @@ public final class Validator extends WsdlValidator {
   protected final WSDLVisitor getVisitor() { return new DefaultVisitor() {
   
   @Override
-  public void visit(Definitions definitions)
-  {
+  public void visit(Definitions definitions) {
 //out();
 //out("definitions: " + definitions);
     List<PropertyAlias> aliases = new ArrayList<PropertyAlias>();

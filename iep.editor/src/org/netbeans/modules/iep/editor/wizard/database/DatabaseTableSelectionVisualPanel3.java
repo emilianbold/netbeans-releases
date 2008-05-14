@@ -200,7 +200,12 @@ public final class DatabaseTableSelectionVisualPanel3 extends JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     public void setSelectedTables(List<TableInfo> tables) {
-        DBArtifactTreeModel model = new DBArtifactTreeModel(new DefaultMutableTreeNode("root"), tables);
+    	if(tables == null) {
+    		return;
+    	}
+    	
+    	updateExistColumnList(tables);
+        DBArtifactTreeModel model = new DBArtifactTreeModel(new DefaultMutableTreeNode("root"), tables, this.mExistingColumnNames);
         this.jTree1.setModel(model);
         this.jTree1.setRootVisible(false);
         TreeCellRenderer renderer = new SchemaArtifactTreeCellRenderer();
@@ -255,6 +260,33 @@ public final class DatabaseTableSelectionVisualPanel3 extends JPanel {
         return deleteRecordsCheckBox.isSelected();
     }
     
+ private void updateExistColumnList(List<TableInfo> tables) {
+    	List<ColumnInfo> validExistingColumns = new ArrayList<ColumnInfo>();
+    	
+    	Iterator<TableInfo> tIt = tables.iterator();
+    	while(tIt.hasNext()) {
+    		TableInfo table = tIt.next();
+    		List<ColumnInfo> columns = table.getColumns();
+    		if(columns != null) {
+    			Iterator<ColumnInfo> it = columns.iterator();
+    	    	while(it.hasNext()) {
+    	    		ColumnInfo column = it.next();
+    	    		if(this.mExistingColumnNames.contains(column)) {
+    	    			validExistingColumns.add(column);
+    	    		}
+    	    	}
+    		}
+    		
+    	}
+    	
+    	
+    	
+    	//keep old valid columns
+    	this.mExistingColumnNames = validExistingColumns;
+    	
+    }
+    
+ 
 private void pollingTimeUnitComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pollingTimeUnitComboBoxActionPerformed
 // TODO add your handling code here:
 }//GEN-LAST:event_pollingTimeUnitComboBoxActionPerformed

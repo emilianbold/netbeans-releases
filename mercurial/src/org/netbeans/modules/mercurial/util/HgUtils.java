@@ -350,9 +350,12 @@ public class HgUtils {
         Set<Pattern> patterns = ignorePatterns.get(key);
         if (patterns == null) {
             patterns = new HashSet<Pattern>(5);
+        }
+        if (patterns.size() == 0) {
             addIgnorePatterns(patterns, file);
             ignorePatterns.put(key, patterns);
         }
+	
         return patterns;
     }
 
@@ -376,15 +379,6 @@ public class HgUtils {
             return false;
         }
         
-        // We assume that the Project should not be ignored.
-        if(file.isDirectory()){
-            ProjectManager projectManager = ProjectManager.getDefault();
-            FileObject fileObj =  FileUtil.toFileObject(file);
-            if (fileObj != null && projectManager.isProject(fileObj)) {
-                return false;
-            }
-        }
-
         Set<Pattern> patterns = getIgnorePatterns(topFile);
         path = path.substring(topFile.getAbsolutePath().length() + 1);
 
@@ -394,11 +388,11 @@ public class HgUtils {
                 return true;
             }
         }
+
         // If a parent of the file matches a pattern ignore the file
         File parentFile = file.getParentFile();
-        while (!parentFile.equals(topFile)) {
+        if (!parentFile.equals(topFile)) {
             if (isIgnored(parentFile, false)) return true;
-            parentFile = parentFile.getParentFile();
         }
 
         if (FILENAME_HGIGNORE.equals(file.getName())) return false;

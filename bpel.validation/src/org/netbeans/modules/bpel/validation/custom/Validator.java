@@ -113,8 +113,7 @@ public final class Validator extends BpelValidator {
   }
 
   @Override
-  protected final SimpleBpelModelVisitor getVisitor() { return new SimpleBpelModelVisitorAdaptor()
-  {
+  protected final SimpleBpelModelVisitor getVisitor() { return new SimpleBpelModelVisitorAdaptor() {
 
   @Override
   public void visit(ForEach forEach)

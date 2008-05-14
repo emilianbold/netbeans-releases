@@ -71,17 +71,11 @@ public class MySQLActionProvider implements ActionProvider {
         // If we're registered, then don't provide the action
         // to register the server...
         
-        // Temporarily disable this until we track down the deadlock
-        // issues
-        /*
         if ( ServerNodeProvider.getDefault().isRegistered()){
             return emptyActions;
         } else {
             return actions;
         }
-         */
-        
-        return emptyActions;
     } 
     
 }

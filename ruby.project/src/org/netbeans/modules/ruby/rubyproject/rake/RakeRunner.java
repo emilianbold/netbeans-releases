@@ -42,6 +42,7 @@ package org.netbeans.modules.ruby.rubyproject.rake;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.ruby.platform.RubyPlatform;
@@ -51,7 +52,6 @@ import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.OutputRecognizer;
 import org.netbeans.modules.ruby.platform.execution.OutputRecognizer.RecognizedOutput;
 import org.netbeans.modules.ruby.platform.gems.GemManager;
-import org.netbeans.modules.ruby.rubyproject.RubyBaseProject;
 import org.netbeans.modules.ruby.rubyproject.RubyFileLocator;
 import org.netbeans.modules.ruby.rubyproject.SharedRubyProjectProperties;
 import org.netbeans.modules.ruby.rubyproject.TestNotifier;
@@ -69,7 +69,7 @@ import org.openide.util.Utilities;
  */
 public final class RakeRunner {
     
-    private final RubyBaseProject project;
+    private final Project project;
     private boolean showWarnings;
     private boolean debug;
     private FileObject rakeFile;
@@ -79,11 +79,11 @@ public final class RakeRunner {
     private String displayName;
     private String[] parameters;
 
-    public RakeRunner(final RubyBaseProject project) {
+    public RakeRunner(final Project project) {
         this.project = project;
     }
 
-    public static void runTask(final RubyBaseProject project, final RakeTask task, final boolean debug) {
+    public static void runTask(final Project project, final RakeTask task, final boolean debug) {
         RakeRunner runner = new RakeRunner(project);
         runner.showWarnings(true);
         runner.setDebug(debug);

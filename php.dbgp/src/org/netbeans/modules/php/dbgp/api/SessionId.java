@@ -42,6 +42,10 @@ package org.netbeans.modules.php.dbgp.api;
 
 import java.io.File;
 
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -50,8 +54,10 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.modules.php.dbgp.SessionProgress;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Exceptions;
 
 
 /**
@@ -177,6 +183,20 @@ public class SessionId {
         if ( uri == null ) {
             return null;
         }
+        try {
+            URL url = new URI(uri).toURL();
+            if ("file".equals(url.getProtocol())) { //NOI18N
+                FileObject fo = URLMapper.findFileObject(url);
+                if (fo != null) {
+                    return fo;
+                }
+            }            
+        } catch (MalformedURLException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (URISyntaxException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        
         if ( uri.equals( getFileUri() )) {
             return getDebugFile();
         }

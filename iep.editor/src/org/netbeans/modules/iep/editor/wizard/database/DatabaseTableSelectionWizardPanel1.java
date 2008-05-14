@@ -6,8 +6,11 @@ package org.netbeans.modules.iep.editor.wizard.database;
 
 import java.awt.Component;
 import java.sql.Connection;
+import java.util.Iterator;
 import java.util.List;
 import javax.swing.event.ChangeListener;
+
+import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 
@@ -85,9 +88,25 @@ public class DatabaseTableSelectionWizardPanel1 implements WizardDescriptor.Pane
 
     public void storeSettings(Object settings) {
         WizardDescriptor wiz = (WizardDescriptor) settings;
-        List<TableInfo> selectedTables = component.getSelectedTables();
-        wiz.putProperty(DatabaseTableWizardConstants.PROP_SELECTED_TABLES, selectedTables);
         Connection connection = component.getSelectedConnection();
+        List<TableInfo> selectedTables = component.getSelectedTables();
+        if(connection != null && selectedTables != null) {
+        	//now load table columns, primarykey, foreign keys.
+        	try {
+	        	Iterator<TableInfo> it = selectedTables.iterator();
+	        	while(it.hasNext()) {
+	        		TableInfo table = it.next();
+	        		table.cleanUp();
+	        		DatabaseMetaDataHelper.populateTableColumns(table, connection);
+	        		DatabaseMetaDataHelper.populatePrimaryKeys(table, connection);
+	        		DatabaseMetaDataHelper.populateForeignKeys(table, connection);
+	        	}
+        	} catch(Exception ex) {
+        		ErrorManager.getDefault().notify(ex);
+        	}
+        }
+        wiz.putProperty(DatabaseTableWizardConstants.PROP_SELECTED_TABLES, selectedTables);
+        
         wiz.putProperty(DatabaseTableWizardConstants.PROP_SELECTED_DB_CONNECTION, connection);
     }
 }

@@ -53,5 +53,5 @@ public interface XDebugStarter {
      *            on defined port (typically 9000) started.
      * @param startFile file to debug.
      */
-    void start(Project project, Runnable run, FileObject startFile);
+    void start(Project project, Runnable run, FileObject startFile, boolean closeSession);
 }

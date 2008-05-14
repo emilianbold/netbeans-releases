@@ -53,7 +53,7 @@ public class DebugLocalCommand  extends RunLocalCommand {
         XDebugStarter dbgStarter =  XDebugStarterFactory.getInstance();
         if (dbgStarter != null) {
             dbgStarter.start(getProject(), runnable, 
-                    (context == null) ? fileForProject() : fileForContext(context));
+                    (context == null) ? fileForProject() : fileForContext(context), useInterpreter());
         }
     }
 
