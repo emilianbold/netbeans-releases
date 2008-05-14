@@ -41,9 +41,12 @@
 
 package org.netbeans.modules.java.source.usages;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -139,6 +142,19 @@ public abstract class ClassIndexImpl {
                 if (changed != null) {
                     l.typesChanged(changed);
                 }
+            }
+        }
+    }
+    
+    public void classCacheUpdated(final File cacheRoot, final Collection<File> deletedClassFiles, final Collection<File> updatedClassFiles) {
+        WeakReference<ClassIndexImplListener>[] _listeners;
+        synchronized (this.listeners) {
+            _listeners = this.listeners.toArray(new WeakReference[this.listeners.size()]);
+        }
+        for (WeakReference<ClassIndexImplListener> lr : _listeners) {
+            ClassIndexImplListener l = lr.get();
+            if (l != null) {
+                l.classCacheUpdated(cacheRoot, deletedClassFiles, updatedClassFiles);
             }
         }
     }

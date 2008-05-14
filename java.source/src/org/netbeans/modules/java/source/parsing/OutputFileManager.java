@@ -79,6 +79,7 @@ public class OutputFileManager extends CachingFileManager {
     private ClassPath scp;
     private final Set<File> filteredFiles = new HashSet<File>();
     private boolean filtered;
+    private String outputRoot;
     
     /** Creates a new instance of CachingFileManager */
     public OutputFileManager(CachingArchiveProvider provider, final ClassPath outputClassPath, final ClassPath sourcePath) {
@@ -128,26 +129,31 @@ public class OutputFileManager extends CachingFileManager {
             throw new IllegalArgumentException ();
         }
         else { 
-            int index;
-            if (sibling != null) {
-                index = getActiveRoot (sibling);
+            File activeRoot = null;
+            if (outputRoot != null) {
+                activeRoot = new File(outputRoot);
+            } else {
+                int index;
+                if (sibling != null) {
+                    index = getActiveRoot (sibling);
+                }
+                else {
+                    index = getActiveRoot (FileObjects.convertPackage2Folder(className));
+                }            
+                if (index == -1) {
+                    //Deleted project
+                    throw new InvalidSourcePath ();
+                }
+                if (index < 0 && sibling != null && !(new File (sibling.toUri()).exists())) {
+                    //Deleted project
+                    throw new InvalidSourcePath ();
+                }
+                assert index >= 0 : "class: " + className +" sibling: " + sibling +" srcRoots: " + this.scp + " cacheRoots: "  + this.cp;
+                assert index < this.cp.entries().size() : "index "+ index +" class: " + className +" sibling: " + sibling +" srcRoots: " + this.scp + " cacheRoots: " + this.cp;
+                activeRoot = new File (URI.create(this.cp.entries().get(index).getURL().toExternalForm()));
             }
-            else {
-                index = getActiveRoot (FileObjects.convertPackage2Folder(className));
-            }            
-            if (index == -1) {
-                //Deleted project
-                throw new InvalidSourcePath ();
-            }
-            if (index < 0 && sibling != null && !(new File (sibling.toUri()).exists())) {
-                //Deleted project
-                throw new InvalidSourcePath ();
-            }
-            assert index >= 0 : "class: " + className +" sibling: " + sibling +" srcRoots: " + this.scp + " cacheRoots: "  + this.cp;
-            assert index < this.cp.entries().size() : "index "+ index +" class: " + className +" sibling: " + sibling +" srcRoots: " + this.scp + " cacheRoots: " + this.cp;
-            File activeRoot = new File (URI.create(this.cp.entries().get(index).getURL().toExternalForm()));
             String baseName = className.replace('.', File.separatorChar);       //NOI18N
-            String nameStr = baseName + '.' + FileObjects.SIG;
+            String nameStr = baseName + '.' + (outputRoot != null ? FileObjects.SIG : FileObjects.CLASS);
             int nameComponentIndex = nameStr.lastIndexOf(File.separatorChar);            
             if (nameComponentIndex != -1) {
                 String pathComponent = nameStr.substring(0, nameComponentIndex);
@@ -254,11 +260,23 @@ public class OutputFileManager extends CachingFileManager {
 	return -2;
     }
     
+    @Override
+    public boolean handleOption(String head, Iterator<String> tail) {
+        if ("output-root".equals(head)) { //NOI18N
+            if (!tail.hasNext())
+                throw new IllegalArgumentException();
+            outputRoot = tail.next();
+            if (outputRoot.length() <= 0)
+                outputRoot = null;
+            return true;
+        }
+        return super.handleOption(head, tail);
+    }
+    
     private static boolean debug (String message) {
         if (debug) {
             Logger.getLogger("global").log(Level.INFO, message);
         }
         return true;
-    }        
-    
+    }
 }

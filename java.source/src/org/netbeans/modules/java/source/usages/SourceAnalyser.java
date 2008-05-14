@@ -55,20 +55,17 @@ import com.sun.source.util.TreeScanner;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.code.Kinds;
 import com.sun.tools.javac.code.Symbol;
-import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.comp.TransTypes;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.util.Name;
-import com.sun.tools.javac.util.Name;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
 import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -438,29 +435,6 @@ public class SourceAnalyser {
             return null;
         }
         
-        void dump(TypeElement clazz, String className, Element enclosingElement) {
-            PrintWriter output = null;
-            if (this.rsList != null) {
-                this.rsList.add (className);
-            }
-            try {
-                JavaFileObject jfo = manager.getJavaFileForOutput(StandardLocation.CLASS_OUTPUT, className, JavaFileObject.Kind.CLASS, sibling);
-                
-                output = new PrintWriter(new OutputStreamWriter(jfo.openOutputStream(), "UTF-8"));
-                
-                SymbolDumper.dump(output, types, trans, clazz, enclosingElement);
-                
-                output.close();
-                
-            } catch (IOException e) {
-                Exceptions.printStackTrace(e);
-            } finally {
-                if (output != null) {
-                    output.close();
-                }
-            }
-        }
-        
         protected boolean shouldGenerate (final String binaryName, ClassSymbol sym) {
             if (!signatureFiles || binaryName == null) {
                 return false;
@@ -591,9 +565,6 @@ public class SourceAnalyser {
                 } finally {
                     enclosingElement = old;
                 }
-            }
-            if (!errorInDecl && shouldGenerate(className, sym)) {
-                dump(sym, className, enclosingElement);
             }
             return null;
         }
