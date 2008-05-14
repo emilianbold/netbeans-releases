@@ -42,7 +42,7 @@ made subject to such option by the copyright holder.
 -->
 <mconfig name="Ruby Debugger gui functional test config">
 
-    <testbag testattribs="stable" executor="ide" name="Ruby Debugger">
+    <testbag testattribs="unstable" executor="ide" name="Ruby Debugger">
        <testset dir="qa-functional/src">
             <patternset>
                 <include name="gui/ruby/debugger/BasicTests.class"/>
