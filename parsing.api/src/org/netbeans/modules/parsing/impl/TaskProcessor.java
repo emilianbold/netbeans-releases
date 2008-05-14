@@ -284,7 +284,7 @@ public class TaskProcessor {
                             it.remove();
                             requests.add(fr);
                             if (cr.size()==0) {
-                                it.remove();
+                                finishedRequests.remove(source);
                             }
                             break;
                         }
