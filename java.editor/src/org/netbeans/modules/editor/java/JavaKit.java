@@ -170,14 +170,6 @@ public class JavaKit extends NbEditorKit {
         return new JavaSyntax(getSourceLevel((BaseDocument)doc));
     }
 
-    public Completion createCompletion(ExtEditorUI extEditorUI) {
-        return null;
-    }
-
-    public CompletionJavaDoc createCompletionJavaDoc(ExtEditorUI extEditorUI) {
-        return null;
-    }
-
     @Override
     public Document createDefaultDocument() {
         Document doc = new JavaDocument(this.getClass());
