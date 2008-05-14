@@ -375,7 +375,7 @@ public abstract class EditorContext {
      * @param operation The operation
      */
     public MethodArgument[] getArguments(String url, Operation operation) {
-        throw new UnsupportedOperationException("This method is not implemented.");
+        throw new UnsupportedOperationException("This method is not implemented by "+this);
     }
     
     /**
@@ -384,7 +384,7 @@ public abstract class EditorContext {
      * @param methodLineNumber The line number of the method header
      */
     public MethodArgument[] getArguments(String url, int methodLineNumber) {
-        throw new UnsupportedOperationException("This method is not implemented.");
+        throw new UnsupportedOperationException("This method is not implemented by "+this);
     }
     
     /**
