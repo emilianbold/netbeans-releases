@@ -138,6 +138,7 @@ import org.netbeans.modules.xml.wsdl.model.extensions.bpel.CorrelationProperty;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.xml.xam.Model;
+import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.netbeans.modules.xml.xam.locator.CatalogModelFactory;
@@ -167,6 +168,7 @@ import org.netbeans.modules.bpel.validation.core.BpelValidator;
 import org.netbeans.modules.bpel.model.api.support.SimpleBpelModelVisitor;
 import org.netbeans.modules.bpel.model.api.support.SimpleBpelModelVisitorAdaptor;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
 import static org.netbeans.modules.xml.ui.UI.*;
 
 /**
@@ -283,7 +285,35 @@ public final class Validator extends BpelValidator {
   }
 
   private String getFileName(Component component) {
-    return component.getModel().getModelSource().getLookup().lookup(FileObject.class).getPath();
+    if (component == null) {
+      return N_A;
+    }
+    Model model = component.getModel();
+
+    if (model == null) {
+      return N_A;
+    }
+    ModelSource source = model.getModelSource();
+
+    if (source == null) {
+      return N_A;
+    }
+    Lookup lookup = source.getLookup();
+
+    if (lookup == null) {
+      return N_A;
+    }
+    FileObject file = lookup.lookup(FileObject.class);
+
+    if (file == null) {
+      return N_A;
+    }
+    String name = file.getPath();
+
+    if (name == null) {
+      return N_A;
+    }
+    return name;
   }
 
   private boolean contains(Named named, List<Named> list) {
@@ -2921,4 +2951,5 @@ public final class Validator extends BpelValidator {
   private static final String FIX_VARIABLE_TYPES = "FIX_VariableTypes";
   private static final String FIX_SUPPORTED_LANGUAGE ="FIX_SupportedLanguage";
   private static final String FIX_UNSUPPORTED_EXTENSION = "FIX_UnsupportedExtension";
+  private static final String N_A = i18n(Validator.class, "LBL_N_A"); // NOI18N
 }
