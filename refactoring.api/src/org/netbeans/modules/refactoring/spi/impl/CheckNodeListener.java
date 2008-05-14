@@ -51,6 +51,7 @@ import java.util.Collection;
 import javax.swing.Action;
 import javax.swing.JPopupMenu;
 import javax.swing.JTree;
+import javax.swing.SwingUtilities;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 import org.netbeans.modules.refactoring.api.RefactoringElement;
@@ -196,45 +197,50 @@ class CheckNodeListener implements MouseListener, KeyListener {
     public void mouseExited(MouseEvent e) {
     }
 
-    public void mousePressed(MouseEvent e) {
-        JTree tree = (JTree) e.getSource();
-        int x = e.getX();
-        int y = e.getY();
+    public void mouseReleased(MouseEvent e) {
+    }
+
+    public void mousePressed(MouseEvent event) {
+        JTree tree = (JTree) event.getSource();
+        int x = event.getX();
+        int y = event.getY();
 
         int row = tree.getRowForLocation(x, y);
         TreePath path = tree.getPathForRow(row);
 
         // if path exists and mouse is clicked exactly once
-        if (path != null) {
-            CheckNode node = (CheckNode) path.getLastPathComponent();
+        if (path == null) {
+            return;
+        }
+        CheckNode node = (CheckNode) path.getLastPathComponent();
 
+        if ( !SwingUtilities.isRightMouseButton(event)) {
+            return;
+        }
+        Object o = node.getUserObject();
 
-            if (e.isPopupTrigger()) {
-                Object o = node.getUserObject();
-                if (o instanceof TreeElement) {
-                    o = ((TreeElement) o).getUserObject();
-                    if (o instanceof RefactoringElement) {
-                        showPopup(((RefactoringElement) o).getLookup().lookupAll(Action.class), tree, x, y);
-                    }
-                }
-            }
+        if ( !(o instanceof TreeElement)) {
+            return;
+        }
+        o = ((TreeElement) o).getUserObject();
+
+        if (o instanceof RefactoringElement) {
+            showPopup(((RefactoringElement) o).getLookup().lookupAll(Action.class), tree, x, y);
         }
     }
 
     private void showPopup(Collection<? extends Action> actions, Component c, int x, int y) {
-        if (actions.isEmpty())
+        if (actions.isEmpty()) {
             return;
+        }
         JPopupMenu menu = new JPopupMenu();
+
         for (Action a:actions) {
             menu.add(a);
         }
         menu.show(c, x, y);
     }
-
     
-    public void mouseReleased(MouseEvent e) {
-    }
-
     public void keyPressed(KeyEvent e) {
         if (e.getKeyChar() == ' ') {
             JTree tree = (JTree) e.getSource();
@@ -300,4 +306,3 @@ class CheckNodeListener implements MouseListener, KeyListener {
         }
     }
 } // end CheckNodeListener
-
