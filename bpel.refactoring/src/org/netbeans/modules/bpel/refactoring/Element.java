@@ -40,6 +40,9 @@
  */
 package org.netbeans.modules.bpel.refactoring;
 
+import java.awt.event.ActionEvent;
+
+import javax.swing.AbstractAction;
 import javax.swing.Icon;
 import javax.swing.text.Position.Bias;
 
@@ -64,6 +67,7 @@ import org.netbeans.modules.xml.xam.dom.DocumentModelAccess;
 import org.netbeans.modules.xml.refactoring.XMLRefactoringTransaction;
 import org.netbeans.modules.xml.refactoring.spi.SharedUtils;
 import org.netbeans.modules.bpel.editors.api.EditorUtil;
+import static org.netbeans.modules.xml.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -76,12 +80,11 @@ final class Element extends SimpleRefactoringElementImplementation implements Tr
   }
 
   public Lookup getLookup() {
-     return Lookups.singleton(myComponent);
+    return Lookups.fixed(myComponent, new GotoSource(), new GotoDiagram());
   }
 
   public FileObject getParentFile() {
-    return (FileObject) myComponent.getModel().
-      getModelSource().getLookup().lookup(FileObject.class);
+    return (FileObject) myComponent.getModel().getModelSource().getLookup().lookup(FileObject.class);
   }
 
   public TreeElement getParent(boolean isLogical) {
@@ -111,19 +114,15 @@ final class Element extends SimpleRefactoringElementImplementation implements Tr
     if ( !(myComponent.getModel() instanceof AbstractDocumentModel)) {
       return null;
     }
-    DocumentModelAccess access =
-      ((AbstractDocumentModel) myComponent.getModel()).getAccess();
-
-    String text = access.getXmlFragmentInclusive(
-      ((DocumentComponent) myComponent).getPeer());
+    DocumentModelAccess access = ((AbstractDocumentModel) myComponent.getModel()).getAccess();
+    String text = access.getXmlFragmentInclusive(((DocumentComponent) myComponent).getPeer());
     
     int startPos = ((DocumentComponent) myComponent).findPosition();
     int endPos = startPos + text.length();
     DataObject data = null;
   
     try {
-      data = DataObject.find((FileObject) myComponent.getModel().
-        getModelSource().getLookup().lookup(FileObject.class));
+      data = DataObject.find((FileObject) myComponent.getModel().getModelSource().getLookup().lookup(FileObject.class));
     }
     catch (DataObjectNotFoundException e) {
       return null;
@@ -139,6 +138,7 @@ final class Element extends SimpleRefactoringElementImplementation implements Tr
     return new PositionBounds(start, end);
   }
        
+  @Override
   public void openInEditor() {
     EditorUtil.goToSource(myComponent);
   }
@@ -151,6 +151,7 @@ final class Element extends SimpleRefactoringElementImplementation implements Tr
     myTransaction = transaction;
   }
 
+  @Override
   protected String getNewFileContent() {
     if (myComponent.getModel() instanceof AbstractDocumentModel && myTransaction != null) {
       return myTransaction.refactorForPreview(myComponent.getModel());
@@ -159,6 +160,26 @@ final class Element extends SimpleRefactoringElementImplementation implements Tr
   }
 
   public void performChange() {}
+
+  private class GotoSource extends AbstractAction {
+    public GotoSource() {
+      super(i18n(Element.class, "LBL_Go_to_Source")); // NOI18N
+    }
+
+    public void actionPerformed(ActionEvent event) {
+      openInEditor();
+    }
+  }
+
+  private class GotoDiagram extends AbstractAction {
+    public GotoDiagram() {
+      super(i18n(Element.class, "LBL_Go_to_Diagram")); // NOI18N
+    }
+
+    public void actionPerformed(ActionEvent event) {
+      EditorUtil.goToDesign(myComponent);
+    }
+  }
 
   private Component myComponent;
   private XMLRefactoringTransaction myTransaction;
