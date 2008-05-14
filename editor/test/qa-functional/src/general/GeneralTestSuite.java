@@ -41,7 +41,7 @@
 
 package general;
 
-import org.netbeans.test.editor.EditorKitsRegistryTest;
+//import org.netbeans.test.editor.EditorKitsRegistryTest;
 import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestSuite;
 
@@ -57,7 +57,7 @@ import org.netbeans.junit.NbTestSuite;
         super("General Editing Tests");
 
         addTestSuite(GeneralTypingTest.class);
-        addTestSuite(EditorKitsRegistryTest.class);
+//        addTestSuite(EditorKitsRegistryTest.class);
     }
 
 
