@@ -461,6 +461,7 @@ public class DbSchemaEjbGenerator {
             }
             EntityClass helperData = getBean(tableName);
             helperData.usePkField(pk!= null && pk.getColumns().length == 1);
+            helperData.setIsForTable(table.isTable());
         }
         makeRelationsUnique();
     }
