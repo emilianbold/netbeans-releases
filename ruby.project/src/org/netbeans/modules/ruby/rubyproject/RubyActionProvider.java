@@ -609,12 +609,17 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
 
             RSpecSupport rspec = new RSpecSupport(project);
             if (rspec.isRSpecInstalled() && RSpecSupport.isSpecFile(file)) {
-                rspec.runRSpec(null, file, file.getName(), new RubyFileLocator(context, project), true,
-                       isDebug);
+                TestRunner rspecRunner = getTestRunner(TestRunner.TestType.RSPEC);
+                if (rspecRunner != null) {
+                    rspecRunner.runTest(file);
+                } else {
+                    rspec.runRSpec(null, file, file.getName(), new RubyFileLocator(context, project), true,
+                            isDebug);
+                }
                 return;
             }
             
-            TestRunner testRunner = Lookup.getDefault().lookup(TestRunner.class);
+            TestRunner testRunner = getTestRunner(TestRunner.TestType.TEST_UNIT);
             if (testRunner != null) {
                 testRunner.getInstance().runTest(file);
             } else {
@@ -624,7 +629,7 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
         }
 
         if (COMMAND_TEST.equals(command)) {
-            TestRunner testRunner = Lookup.getDefault().lookup(TestRunner.class);
+            TestRunner testRunner = getTestRunner(TestRunner.TestType.TEST_UNIT);
             if (testRunner != null) {
                 testRunner.getInstance().runAllTests(project);
             } else {
@@ -1017,5 +1022,15 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
         return (applicationArgs == null || applicationArgs.trim().length() == 0)
                 ? null : Utilities.parseParameters(applicationArgs);
     }
-    
+
+    private TestRunner getTestRunner(TestRunner.TestType testType) {
+        Collection<? extends TestRunner> testRunners = Lookup.getDefault().lookupAll(TestRunner.class);
+        for (TestRunner each : testRunners) {
+            if (each.supports(testType)) {
+                return each;
+            }
+        }
+        return null;
+    }
+
 }

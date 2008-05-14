@@ -42,6 +42,7 @@ package org.netbeans.modules.subversion.client.cli.commands;
 import java.io.File;
 import java.io.IOException;
 import org.netbeans.modules.subversion.client.cli.SvnCommand;
+import org.tigris.subversion.svnclientadapter.ISVNNotifyListener;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
@@ -74,6 +75,11 @@ public class MergeCommand extends SvnCommand {
     }
      
     @Override
+    protected int getCommand() {
+        return ISVNNotifyListener.Command.MERGE;
+    }
+    
+    @Override
     public void prepareCommand(Arguments arguments) throws IOException {
         arguments.add("merge");
         if (!rec) {
@@ -96,6 +102,7 @@ public class MergeCommand extends SvnCommand {
             arguments.add(endUrl, endRev);
         }
         arguments.add(file);
+        setCommandWorkingDirectory(file);        
     }
 
     @Override

@@ -42,7 +42,6 @@ package org.netbeans.modules.subversion.client.cli.commands;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.lang.annotation.Annotation;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -56,6 +55,7 @@ import org.netbeans.modules.subversion.client.cli.SvnCommand.Arguments;
 import org.openide.xml.XMLUtil;
 import org.tigris.subversion.svnclientadapter.ISVNLogMessage;
 import org.tigris.subversion.svnclientadapter.ISVNLogMessageChangePath;
+import org.tigris.subversion.svnclientadapter.ISVNNotifyListener;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNLogMessageChangePath;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
@@ -127,8 +127,14 @@ public class LogCommand extends SvnCommand {
     }
     
     @Override
+    protected int getCommand() {
+        return ISVNNotifyListener.Command.LOG;
+    }
+    
+    @Override
     public void outputText(String lineString) {
         output.append(lineString);
+        super.outputText(lineString);        
     }
     
     @Override

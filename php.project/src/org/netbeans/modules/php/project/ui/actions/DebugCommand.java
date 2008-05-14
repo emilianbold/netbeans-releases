@@ -79,7 +79,7 @@ public class DebugCommand extends Command implements Displayable {
             //temporary; after narrowing deps. will be changed
             XDebugStarter dbgStarter = XDebugStarterFactory.getInstance();
             if (dbgStarter != null) {
-                dbgStarter.start(getProject(), runnable, fileForProject());
+                dbgStarter.start(getProject(), runnable, fileForProject(), useInterpreter());
             }
         }
     }

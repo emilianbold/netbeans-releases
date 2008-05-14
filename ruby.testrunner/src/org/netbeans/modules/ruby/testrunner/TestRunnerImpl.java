@@ -125,4 +125,8 @@ public final class TestRunnerImpl implements TestRunner {
         desc.addOutputRecognizer(new TestRecognizer(Manager.getInstance(), new TestSession(locator)));
         new RubyExecution(desc, charsetName).run();
     }
+
+    public boolean supports(TestType type) {
+        return type == TestType.TEST_UNIT;
+    }
 }
