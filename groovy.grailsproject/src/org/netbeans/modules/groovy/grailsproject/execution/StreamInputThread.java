@@ -47,64 +47,54 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.openide.util.Exceptions;
-import java.util.logging.Logger;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
-/** 
+/**
  * This class is a thread used for listening a redirecting
  * standard output/error streams from external application
- * to NetBeans InputOutput. 
+ * to NetBeans InputOutput.
  *
  * @author Petr Hamernik
  */
 public class StreamInputThread extends Thread {
 
+    private static final Logger LOGGER = Logger.getLogger(StreamInputThread.class.getName());
+    
     private static final AtomicInteger COUNTER = new AtomicInteger(0);
-    
+
     /** Input stream where to read */
-    private OutputStream os;
-     
-    /** OutputWriter of NetBeans' InputOutput - where to write
-     */
-    private Reader rd;
-    
-    /** Create new stream redirector 
-     * 
-     * @param dataObject DataObject which is executed 
+    private final OutputStream os;
+
+    /** OutputWriter of NetBeans' InputOutput - where to write */
+    private final Reader rd;
+
+    /** Create new stream redirector
+     *
+     * @param dataObject DataObject which is executed
      * @param is Input stream where to read
      * @param ow OutputWriter of NetBeans' InputOutput - where to write
      */
-    
-    private  final Logger LOG = Logger.getLogger(StreamInputThread.class.getName());
-    
     public StreamInputThread(OutputStream os, Reader rd) {
         super("Stream Input Thread " + COUNTER.incrementAndGet());
         this.os = os;
         this.rd = rd;
     }
-    
+
     /** Starts this thread.
      */
     @Override
     public void run() {
         try {
-            
             BufferedReader br = new BufferedReader(rd);
             try {
                 OutputStreamWriter outw = new OutputStreamWriter(os);
                 try {
-                    int b;
-                    String line; 
-
+                    String line;
                     while ((line = br.readLine()) != null && !this.isInterrupted()) {
-
-                        // LOG.log(Level.WARNING, "Input: " + line);
-
                         outw.write(line);
                         outw.write("\n");
                         outw.flush();
-
                     }
                 } finally {
                     outw.close();
@@ -113,10 +103,7 @@ public class StreamInputThread extends Thread {
                 br.close();
             }
         } catch (IOException ioe) {
-            // if we are getting a java.io.IOException: Broken pipe
-            // this is most likely caused while shutting down the InputOutput tab.
-            // therefore we ignore this for now.
-            // Exceptions.printStackTrace(ioe);
+            LOGGER.log(Level.FINE, null, ioe);
         }
     }
 }

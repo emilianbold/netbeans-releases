@@ -45,7 +45,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileObject;
 import java.util.logging.Logger;
 import org.netbeans.api.progress.ProgressHandle;
-import java.io.BufferedReader;
 import java.util.concurrent.Callable;
 import org.netbeans.modules.groovy.grails.api.ExecutionSupport;
 import org.netbeans.modules.groovy.grails.api.GrailsRuntime;
@@ -70,7 +69,6 @@ public class NewGrailsProjectWizardIterator implements  WizardDescriptor.Instant
     private transient WizardDescriptor.Panel[] panels;
     private transient WizardDescriptor wiz;
 
-    BufferedReader procOutput = null;
     GetProjectLocationStep pls = null;
     boolean        serverRunning = false;
     boolean        serverConfigured = true;

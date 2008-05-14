@@ -62,9 +62,7 @@ import org.openide.util.Task;
 public class NewArtifactWizardIterator implements  WizardDescriptor.InstantiatingIterator<WizardDescriptor>,
                                                       WizardDescriptor.ProgressInstantiatingIterator<WizardDescriptor>{
     
-    private transient WizardDescriptor wiz;
-    
-    GetArtifactNameStep pls = null;
+     GetArtifactNameStep pls = null;
     boolean        serverRunning = false;
     boolean        serverConfigured = true;
     GrailsProject project;
@@ -161,9 +159,7 @@ public class NewArtifactWizardIterator implements  WizardDescriptor.Instantiatin
     }
 
     
-    public void initialize(WizardDescriptor wizard) {
-        this.wiz = wizard;
-        
+    public void initialize(WizardDescriptor wizard) {      
         if(!GrailsRuntime.getInstance().isConfigured()) {
             wizard.putProperty("WizardPanel_errorMessage", 
                     NbBundle.getMessage(NewArtifactWizardIterator.class, 

@@ -46,48 +46,42 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.openide.util.Exceptions;
+import java.util.logging.Level;
 import org.openide.windows.OutputWriter;
 import java.util.logging.Logger;
 
-/** 
+/**
  * This class is a thread used for listening a redirecting
  * standard output/error streams from external application
- * to NetBeans InputOutput. 
+ * to NetBeans InputOutput.
  *
  * @author Petr Hamernik
  */
 public class StreamRedirectThread extends Thread {
 
+    private static final Logger LOGGER = Logger.getLogger(StreamRedirectThread.class.getName());
+
     private static final AtomicInteger COUNTER = new AtomicInteger(0);
-    
+
     /** Input stream where to read */
-    private InputStream is;
-     
+    private final InputStream is;
+
     /** OutputWriter of NetBeans' InputOutput - where to write
      */
-    private OutputWriter ow;
-    
-    /** Create new stream redirector 
-     * 
-     * @param dataObject DataObject which is executed 
+    private final OutputWriter ow;
+
+    /** Create new stream redirector.
+     *
      * @param is Input stream where to read
      * @param ow OutputWriter of NetBeans' InputOutput - where to write
-     * 
-     * 
      */
-    private  final Logger LOG = Logger.getLogger(StreamRedirectThread.class.getName());
-    
-    
     public StreamRedirectThread(InputStream is, OutputWriter ow) {
         super("Stream Redirect Thread " + COUNTER.incrementAndGet());
-        
+
         this.is = is;
         this.ow = ow;
-        
-        
     }
-    
+
     /** Starts this thread.
      */
     @Override
@@ -97,19 +91,17 @@ public class StreamRedirectThread extends Thread {
             try {
                 int input;
                 while ((input = br.read()) != -1 && !this.isInterrupted()) {
-                    // LOG.log(Level.WARNING, "Output: " + input);
-
                     if (input == 10) {
-                        ow.print("\n");
+                        ow.print("\n"); // NOI18N
                     } else {
                         ow.write(input);
-                    }  
+                    }
                 }
             } finally {
                 br.close();
             }
         } catch (IOException ioe) {
-            //Exceptions.printStackTrace(ioe);
+            LOGGER.log(Level.FINE, null, ioe);
         } finally {
             ow.close();
         }

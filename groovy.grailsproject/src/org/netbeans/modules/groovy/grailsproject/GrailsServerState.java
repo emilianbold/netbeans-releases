@@ -48,7 +48,7 @@ public class GrailsServerState {
         this.project = prj;
     }
 
-    public boolean isRunning() {
+    public synchronized boolean isRunning() {
         return process != null;
     }
 
