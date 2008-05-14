@@ -153,9 +153,9 @@ final class PropertyPanel extends JPanel {
                     .add(commentLabel))
                 .addPreferredGap(RELATED)
                 .add(layout.createParallelGroup(LEADING)
-                    .add(commentText, DEFAULT_SIZE, PREFERRED_SIZE, Short.MAX_VALUE)
-                    .add(valueText, DEFAULT_SIZE, PREFERRED_SIZE, Short.MAX_VALUE)
                     .add(keyText, DEFAULT_SIZE, PREFERRED_SIZE, Short.MAX_VALUE))
+                    .add(valueText, DEFAULT_SIZE, PREFERRED_SIZE, Short.MAX_VALUE)
+                    .add(commentText, DEFAULT_SIZE, PREFERRED_SIZE, Short.MAX_VALUE)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
