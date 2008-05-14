@@ -37,63 +37,51 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.subversion.client.cli.commands;
+package org.netbeans.modules.subversion.client.cli;
 
 import java.io.File;
 import java.io.IOException;
-import org.netbeans.modules.subversion.client.cli.SvnCommand;
-import org.tigris.subversion.svnclientadapter.ISVNNotifyListener;
+import org.netbeans.modules.subversion.Subversion;
+import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
+import org.tigris.subversion.svnclientadapter.ISVNStatus;
+import org.tigris.subversion.svnclientadapter.SVNClientException;
+import org.tigris.subversion.svnclientadapter.SVNStatusKind;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  *
- * @author Tomas Stupka
+ * @author tomas
  */
-public class MkdirCommand extends SvnCommand {
+public class ParsedStatusTest extends AbstractCLITest {
+    
+    // XXX terst remote change
+    
+    private enum StatusCall {
+        filearray,
+        file
+    }
+    
+    public ParsedStatusTest(String testName) throws Exception {
+        super(testName);
+    }
 
-    private enum MkdirType {
-        url,
-        file,
-    }
+    // XXX check with javahl
+    public void testGetStatusWrongAmount() throws Exception {                                
+        File folder = createFolder("folder");        
+        File folder1 = createFolder(folder, "folder1");        
+        File folder2 = createFolder(folder, "folder2");        
+        File file1 = createFolder(folder2, "file1");        
         
-    private final String message;
-    private final SVNUrl url;
-    private final File file;
-    private final MkdirType type;
-    
-    public MkdirCommand(SVNUrl url, String message) {
-        this.message = message;
-        this.url = url;
-        file = null;
-        type = MkdirType.url;
+        add(folder);
+        add(folder1);
+        add(folder2);
+        add(file1);
+        commit(getWC());
+                
+        ISVNStatus[] s1 = getNbClient().getStatus(folder, true, false);        
+        
+        assertEquals(4, s1.length);                        
     }
     
-    public MkdirCommand(File file) {
-        this.file = file;
-        message = null;        
-        url = null;
-        type = MkdirType.file;
-    }
-       
-    @Override
-    protected int getCommand() {
-        return ISVNNotifyListener.Command.MKDIR;
-    }
-    
-    @Override
-    public void prepareCommand(Arguments arguments) throws IOException {                     
-        arguments.add("mkdir");        
-        switch(type) {
-            case url:
-                arguments.addMessage(message);	        
-                arguments.add(url);
-                break;
-            case file:
-                arguments.add(file);
-                break;
-            default:
-                throw new IllegalStateException("Illegal mkdirtype: " + type);          
-        }        
-    }
     
 }

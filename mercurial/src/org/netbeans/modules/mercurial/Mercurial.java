@@ -57,6 +57,7 @@ import org.netbeans.modules.mercurial.util.HgCommand;
 import org.openide.util.NbBundle;
 import javax.swing.JOptionPane;
 import java.util.prefs.Preferences;
+import org.netbeans.modules.mercurial.config.HgConfigFiles;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.Utilities;
@@ -122,12 +123,24 @@ public class Mercurial {
     
     
     private void init() {
+        loadIniParserClassesWorkaround();
         checkedVersion = false;
         setDefaultPath();
         fileStatusCache = new FileStatusCache();
         mercurialAnnotator = new MercurialAnnotator();
         mercurialInterceptor = new MercurialInterceptor();
         checkVersion(); // Does the Hg check but postpones querying user until menu is activated
+    }
+    
+    private void loadIniParserClassesWorkaround() {
+        ClassLoader cl = Thread.currentThread().getContextClassLoader();
+        Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
+        try {
+            // triggers ini4j initialization in call to loadSystemAndGlobalFile()
+            HgConfigFiles.getSysInstance();   
+        } finally {
+            Thread.currentThread().setContextClassLoader(cl);
+        }
     }
 
     private void setDefaultPath() {

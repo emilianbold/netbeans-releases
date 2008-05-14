@@ -48,6 +48,7 @@ import org.tigris.subversion.svnclientadapter.SVNRevision;
  *
  * @author tomas
  */
+// XXX add referenceclient
 public class CatTest extends AbstractCLITest {
     
     public CatTest(String testName) throws Exception {

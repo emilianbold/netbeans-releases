@@ -55,6 +55,8 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  */
 public class PropertyTest extends AbstractCLITest {
     
+    // XXX test ignored patterns
+    
     public PropertyTest(String testName) throws Exception {
         super(testName);
     }
