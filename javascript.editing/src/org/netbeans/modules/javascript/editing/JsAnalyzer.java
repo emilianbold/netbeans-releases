@@ -794,6 +794,10 @@ public class JsAnalyzer implements StructureScanner {
                 return false;
             }
 
+            if (isLeaf() != d.isLeaf()) {
+                return false;
+            }
+
             return true;
         }
 

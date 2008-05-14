@@ -92,7 +92,7 @@ public class ElementUtilities {
      *   better be an IndexedElement.
      */
     public static List<String> getComments(CompilationInfo info, Element element) {
-        assert info != null || element instanceof IndexedFunction;
+        assert info != null || element instanceof IndexedElement;
         
         if (element == null) {
             return null;

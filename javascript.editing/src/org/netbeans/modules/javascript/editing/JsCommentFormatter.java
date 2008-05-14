@@ -104,9 +104,9 @@ public class JsCommentFormatter {
         } else if (!haveJsTag) {
             formattedComment = true;
         }
-        sb.deleteCharAt(sb.length() - 1);
+        sb.setLength(sb.length()-1);
         TokenHierarchy<?> hi = TokenHierarchy.create(sb.toString(), JsCommentTokenId.language());
-        this.ts = (TokenSequence<JsCommentTokenId>) hi.tokenSequence();
+        this.ts = hi.tokenSequence(JsCommentTokenId.language());
         
         process();
     }

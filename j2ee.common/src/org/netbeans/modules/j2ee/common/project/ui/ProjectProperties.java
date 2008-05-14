@@ -238,7 +238,8 @@ public final class ProjectProperties {
                     List wmLibs = cs.itemsList(projectProps.getProperty(property),  null);
                     set.addAll(wmLibs);
                 }
-                ProjectProperties.storeLibrariesLocations(helper, set.iterator(), projectProps);
+                EditableProperties privateProps = helper.getProperties (AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+                ProjectProperties.storeLibrariesLocations(helper, set.iterator(), helper.isSharableProject() ? projectProps : privateProps);
                 if (refreshLibraryTotals) {
                     // see issue #129316 for more details
                     for (int i = 0; i < properties.length; i++) {
@@ -246,6 +247,7 @@ public final class ProjectProperties {
                     }
                 }
                 helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProps);
+                helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProps);
                 try {
                     ProjectManager.getDefault().saveProject(project);
                 } catch (IOException e) {

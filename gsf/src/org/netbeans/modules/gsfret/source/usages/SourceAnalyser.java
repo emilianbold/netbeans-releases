@@ -42,6 +42,7 @@
 package org.netbeans.modules.gsfret.source.usages;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -87,7 +88,7 @@ public class SourceAnalyser implements IndexDocumentFactory {
         return this.index.isValid(true);
     }
 
-    public void analyse(Language language, final Iterable<ParserResult/*? extends CompilationUnitTree*/> data, ParserTaskImpl jt, /*JavaFileManager manager, */ParserFile sibling) throws IOException {
+    public void analyse(Language language, final Iterable<ParserResult> data) throws IOException {
         // I should stash some shit into this.references here such that I can try storing them later, for example
         // all the class names I can find. This would be a good place to look for the desired language...
         // Of course, I can have multiple, so I have to index these by the language type, right? Otherwise
@@ -98,6 +99,11 @@ public class SourceAnalyser implements IndexDocumentFactory {
             for (ParserResult result : data) {
                 String fileUrl = indexer.getPersistentUrl(result.getFile().getFile());
                 List<IndexDocument> documents = indexer.index(result, this);
+                // Null means delete this document from the index which is different than
+                // a document with no indexable information
+                if (documents == null) {
+                    documents = Collections.emptyList();
+                }
                 index.store(fileUrl, documents);
             }
         }
@@ -106,6 +112,11 @@ public class SourceAnalyser implements IndexDocumentFactory {
     void analyseUnitAndStore (Indexer indexer, ParserResult result) throws IOException {
         String fileUrl = indexer.getPersistentUrl(result.getFile().getFile());
         List<IndexDocument> documents = indexer.index(result, this);
+        if (documents == null) {
+            // Null means delete this document from the index which is different than
+            // a document with no indexable information
+            documents = Collections.emptyList();
+        }
         index.store(fileUrl, documents);
     }
     
@@ -137,5 +148,17 @@ public class SourceAnalyser implements IndexDocumentFactory {
     @Override
     public String toString() {
         return "SourceAnalyzer(" + this.index.toString().substring(this.index.toString().indexOf("@")+1) + ")";
+    }
+    
+    boolean hasData() {
+        try {
+            return !index.isValid(false);
+        } catch (IOException ioe) {
+            return true;
+        }
+    }
+
+    void batchStore(List<IndexBatchEntry> list, boolean create) throws IOException {
+        index.batchStore(list, create);
     }
 }
