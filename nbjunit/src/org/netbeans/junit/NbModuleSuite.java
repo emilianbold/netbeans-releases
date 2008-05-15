@@ -469,7 +469,7 @@ public class NbModuleSuite {
 
         
         static void preparePatches(String path, Properties prop) {
-            Pattern tests = Pattern.compile(".*" + File.separator + "([^" + File.separator + "]+)" + File.separator + "tests.jar");
+            Pattern tests = Pattern.compile(".*\\" + File.separator + "([^\\" + File.separator + "]+)\\" + File.separator + "tests\\.jar");
             for (String jar : path.split(File.pathSeparator)) {
                 Matcher m = tests.matcher(jar);
                 if (m.matches()) {
