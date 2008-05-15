@@ -127,58 +127,14 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
             textFields[i].setText(getValue(propertyNames[i]));
         }
     }
-        
-    String composeHint() {
-        String baseURL = urlTextField.getText();
-        String indexFile = indexFileTextField.getText();
-        String args = argsTextField.getText();
-        URL retval = null;
-
-        try {
-            if (baseURL != null && baseURL.trim().length() > 0) {
-                retval = new URL(baseURL);
-            }
-            if (retval != null && indexFile != null && indexFile.trim().length() > 0) {
-                retval = new URL(retval, indexFile);
-            }
-            if (retval != null && args != null && args.trim().length() > 0) {
-                retval = new URI(retval.getProtocol(), retval.getUserInfo(), retval.getHost(), retval.getPort(), retval.getPath(), args, retval.getRef()).toURL(); //NOI18N
-
-            }
-        } catch (MalformedURLException ex) {
-            String err = NbBundle.getMessage(RunAsLocalWeb.class, "MSG_InvalidUrl");
-            getCategory().setErrorMessage(err);
-            getCategory().setValid(false);            
-        } catch (URISyntaxException ex) {
-            String err = NbBundle.getMessage(RunAsLocalWeb.class, "MSG_InvalidUrl");
-            getCategory().setErrorMessage(err);
-            getCategory().setValid(false);            
-        }
-        return (retval != null) ? retval.toExternalForm() : "";//NOI18N
-
-    }
 
     protected void validateFields() {
         String url = urlTextField.getText();
         String indexFile = indexFileTextField.getText();
 
-        String err = null;
-        if (!Utils.isValidUrl(url)) {
-            err = NbBundle.getMessage(RunAsLocalWeb.class, "MSG_InvalidUrl");
-        } else if (!url.endsWith("/")) { // NOI18N
-
-            err = NbBundle.getMessage(RunAsLocalWeb.class, "MSG_UrlNotTrailingSlash");
-        } else if (!Utils.isValidFileName(indexFile)) {
-            err = NbBundle.getMessage(RunAsLocalWeb.class, "MSG_IllegalIndexName");
-        }
-        //TODO: no validation for arguments        
-        if (err != null) {
-            getCategory().setErrorMessage(err);
-            getCategory().setValid(false);
-        } else {
-            getCategory().setErrorMessage(null);
-            getCategory().setValid(true);
-        }
+        String err = validateWebFields(url, indexFile);
+        getCategory().setErrorMessage(err);
+        getCategory().setValid(err == null);
     }
 
     private class FieldUpdater extends TextFieldUpdater {
@@ -194,7 +150,7 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
         @Override
         protected void processUpdate() {
             super.processUpdate();
-            hintLabel.setText(composeHint());
+            hintLabel.setText(composeUrlHint(urlTextField.getText(), indexFileTextField.getText(), argsTextField.getText()));
         }
     }
 

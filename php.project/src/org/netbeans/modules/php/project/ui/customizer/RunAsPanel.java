@@ -40,6 +40,10 @@ package org.netbeans.modules.php.project.ui.customizer;
 
 import java.awt.CardLayout;
 import java.awt.Font;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import javax.swing.DefaultComboBoxModel;
@@ -51,9 +55,12 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.customizer.ConfigManager.Configuration;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAsType;
+import org.netbeans.modules.php.project.ui.customizer.RunAsPanel.InsidePanel;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
+import org.openide.util.NbBundle;
 
 /**
  * @author Radek Matous
@@ -66,7 +73,7 @@ public final class RunAsPanel extends JPanel {
     private LinkedHashMap<String, InsidePanel> allInsidePanels;
     private ComboModel comboBoxModel = new ComboModel();
 
-    public RunAsPanel(ConfigManager manager, final Category category) {
+    public RunAsPanel(ConfigManager manager, final PhpProjectProperties properties, final Category category) {
         allInsidePanels = new LinkedHashMap<String, InsidePanel>();
         InsidePanel[] cards = new InsidePanel[] {
             new RunAsLocalWeb(manager, category),
@@ -204,6 +211,45 @@ public final class RunAsPanel extends JPanel {
 
         protected final Category getCategory() {
             return category;
+        }
+
+        // return error message or null
+        protected static String validateWebFields(String url, String indexFile) {
+            String err = null;
+            if (!Utils.isValidUrl(url)) {
+                err = NbBundle.getMessage(RunAsPanel.class, "MSG_InvalidUrl");
+            } else if (!url.endsWith("/")) { // NOI18N
+                err = NbBundle.getMessage(RunAsPanel.class, "MSG_UrlNotTrailingSlash");
+            } else if (!Utils.isValidFileName(indexFile)) {
+                err = NbBundle.getMessage(RunAsPanel.class, "MSG_IllegalIndexName");
+            }
+            //XXX validation for arguments?
+            return err;
+        }
+
+        protected String composeUrlHint(String baseURL, String indexFile, String args) {
+            URL retval = null;
+            try {
+                if (baseURL != null && baseURL.trim().length() > 0) {
+                    retval = new URL(baseURL);
+                }
+                if (retval != null && indexFile != null && indexFile.trim().length() > 0) {
+                    retval = new URL(retval, indexFile);
+                }
+                if (retval != null && args != null && args.trim().length() > 0) {
+                    retval = new URI(retval.getProtocol(), retval.getUserInfo(), retval.getHost(), retval.getPort(),
+                            retval.getPath(), args, retval.getRef()).toURL();
+                }
+            } catch (MalformedURLException ex) {
+                String err = NbBundle.getMessage(RunAsLocalWeb.class, "MSG_InvalidUrl");
+                category.setErrorMessage(err);
+                category.setValid(false);
+            } catch (URISyntaxException ex) {
+                String err = NbBundle.getMessage(RunAsLocalWeb.class, "MSG_InvalidUrl");
+                category.setErrorMessage(err);
+                category.setValid(false);
+            }
+            return (retval != null) ? retval.toExternalForm() : ""; // NOI18N
         }
 
         protected abstract class TextFieldUpdater implements DocumentListener {
