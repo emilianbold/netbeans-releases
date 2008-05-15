@@ -58,34 +58,20 @@ public class NbInstallerTest9 extends SetupHid {
         super(name);
     }
     
-    protected @Override void setUp() throws Exception {
-        super.setUp();
-        clearWorkDir();
-        File workdir = getWorkDir();
-        for (String jarname : new String[] {
-            "little-manifest.jar",
-            "medium-manifest.jar",
-            "big-manifest.jar",
-        }) {
-            copy(new File(jars, jarname), new File(workdir, jarname));
-        }
-    }
-    
     /** Test #26786/#28755: manifest caching can be buggy.
      */
     public void testManifestCaching() throws Exception {
-        File workdir = getWorkDir();
-        System.setProperty("netbeans.user", workdir.getAbsolutePath());
+        System.setProperty("netbeans.user", getWorkDirPath());
         ModuleInstaller inst = new org.netbeans.core.startup.NbInstaller(new FakeEvents());
-        File littleJar = new File(workdir, "little-manifest.jar");
+        File littleJar = new File(jars, "little-manifest.jar");
         //inst.loadManifest(littleJar).write(System.out);
         assertEquals(getManifest(littleJar), inst.loadManifest(littleJar));
-        File mediumJar = new File(workdir, "medium-manifest.jar");
+        File mediumJar = new File(jars, "medium-manifest.jar");
         assertEquals(getManifest(mediumJar), inst.loadManifest(mediumJar));
-        File bigJar = new File(workdir, "big-manifest.jar");
+        File bigJar = new File(jars, "big-manifest.jar");
         assertEquals(getManifest(bigJar), inst.loadManifest(bigJar));
         Stamps.getModulesJARs().shutdown();
-        File allManifestsDat = new File(new File(new File(workdir, "var"), "cache"), "all-manifest.dat");
+        File allManifestsDat = new File(new File(new File(getWorkDir(), "var"), "cache"), "all-manifest.dat");
         assertTrue("File " + allManifestsDat + " exists", allManifestsDat.isFile());
         // Create a new NbInstaller, since otherwise it turns off caching...
         inst = new org.netbeans.core.startup.NbInstaller(new FakeEvents());
