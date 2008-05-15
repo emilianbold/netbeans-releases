@@ -41,13 +41,9 @@
 
 package org.netbeans.modules.java.source;
 
-import com.sun.tools.javac.api.ClassNamesForFileOraculum;
 import com.sun.tools.javac.api.JavacTaskImpl;
-import java.io.IOException;
 import java.util.Collection;
 import javax.swing.text.JTextComponent;
-import javax.tools.DiagnosticListener;
-import javax.tools.JavaFileObject;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
@@ -85,12 +81,10 @@ public abstract class JavaSourceAccessor {
     private static volatile JavaSourceAccessor INSTANCE;
         
     public void runSpecialTask (final CancellableTask<CompilationInfo> task, final JavaSource.Priority priority) {
-        INSTANCE.runSpecialTaskImpl (task, priority);
+        //todo:
     }
-    
-    protected abstract void runSpecialTaskImpl (CancellableTask<CompilationInfo> task, JavaSource.Priority priority);
         
-        /**
+    /**
      * Returns the JavacTaskImpl associated with given {@link CompilationInfo},
      * when it's not available it's created.
      * Expert: May violate confinement
@@ -122,11 +116,15 @@ public abstract class JavaSourceAccessor {
     /**
      * Expert: Locks java compiler. Private API for indentation engine only!
      */
-    public abstract void lockJavaCompiler ();
+    public void lockJavaCompiler () {
+        //todo:
+    }
     
     /**
      * Expert: Unlocks java compiler. Private API for indentation engine only!
      */
-    public abstract void unlockJavaCompiler ();
+    public void unlockJavaCompiler () {
+        //todo:
+    }
         
 }

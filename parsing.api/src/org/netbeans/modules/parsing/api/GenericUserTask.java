@@ -31,7 +31,7 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
-     * 
+ * 
  * Contributor(s):
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
@@ -39,28 +39,14 @@
 
 package org.netbeans.modules.parsing.api;
 
-import org.netbeans.modules.parsing.spi.ParseException;
-import org.netbeans.modules.parsing.spi.Parser;
-
-
 /**
- * Task that process result of parsing of one block of code written 
- * in one specific language. 
  *
- * @author Jan Jancura
+ * @author Tomas Zezula
  */
-public abstract class UserTask<T extends Parser.Result> extends Task {
-
+public abstract class GenericUserTask {
     /**
-     * Called when parser is finished.
-     * 
-     * @param result        A result of parsing.
-     * @param source        A source that was parsed.
+     * Called under source infrastrucure lock.
      * @throws Exception rethrown by the infrastructure as a {@link ParseException}.
      */
-    public abstract void run (T result, Source source) throws Exception;
+    public abstract void run () throws Exception;
 }
-
-
-
-

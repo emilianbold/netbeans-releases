@@ -43,6 +43,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.parsing.impl.UserTaskImpl;
+import org.netbeans.modules.parsing.spi.ParseException;
 
 
 /**
@@ -73,12 +74,13 @@ public final class ParserManager {
      * @param source        A source that should be parsed.
      * @param userTask      A task that will be started when parsing is done.
      * @param offset        A offset that identifies some block of code.
+     * @throws ParseException encapsulating the user exception
      */
     public static void parse (
         Source              source, 
         UserTask            userTask,
         int                 offset
-    ) {
+    ) throws ParseException {
         parse (
             Collections.<Source>singletonList (source),
             new UserTaskImpl (source, userTask, offset)
@@ -100,12 +102,13 @@ public final class ParserManager {
      * 
      * @param sources       A list of sources that should be parsed.
      * @param userTask      A task that will be started when parsing is done.
+     * @throws ParseException encapsulating the user exception
      */
     public static void parse (
         Collection<Source>  sources, 
         MultiLanguageUserTask 
                             userTask
-    ) {
+    ) throws ParseException {
         //org.netbeans.modules.parsing.impl.ParserManagerImpl.parseUserTask (sources, userTask);
     }
 
@@ -113,10 +116,11 @@ public final class ParserManager {
      * Runs given task in parser thread.
      * 
      * @param run
+     * @throws ParseException encapsulating the user exception
      */
     public static void run (
-        Runnable            runnable
-    ) {
+        GenericUserTask     userTask
+    ) throws ParseException {
     }
 }
 

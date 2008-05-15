@@ -69,11 +69,11 @@ public class UserTaskImpl extends MultiLanguageUserTask {
     }
     
     @Override
-    public void run (ResultIterator resultIterator) {
+    public void run (ResultIterator resultIterator) throws Exception {
         run (resultIterator, source);
     }
     
-    private void run (ResultIterator resultIterator, Source source) {
+    private void run (ResultIterator resultIterator, Source source) throws Exception {
         Iterator<Embedding> it = resultIterator.getEmbeddedSources ();
         while (it.hasNext ()) {
             Embedding embedding = it.next ();

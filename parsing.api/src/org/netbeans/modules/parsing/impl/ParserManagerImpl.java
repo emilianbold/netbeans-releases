@@ -73,7 +73,7 @@ public class ParserManagerImpl {
             Lookup lookup = getLookup (mimeType);
             ParserFactory parserFactory = lookup.lookup (ParserFactory.class);
             assert parserFactory != null : "No Parser Factory registerred for: " + mimeType;   //NOI18N
-            parser = parserFactory.createParser (Collections.singleton (source));
+            parser = parserFactory.createParser (Collections.singleton (source.createSnapshot()));
             assert parser != null : "Factory: " + parserFactory.getClass ().getName ()+" returned null parser for: " + source;   //NOI18N
         }
         synchronized (source) {

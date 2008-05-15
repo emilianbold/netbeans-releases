@@ -41,10 +41,8 @@
 
 package org.netbeans.api.java.source;
 
-import com.sun.source.tree.MethodTree;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.code.Symbol.CompletionFailure;
-import com.sun.tools.javac.util.Log;
 import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
@@ -74,12 +72,13 @@ import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementa
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaSourceProvider;
 import org.netbeans.modules.java.source.parsing.CompilationInfoImpl;
 import org.netbeans.modules.java.source.parsing.JavacParser;
-import org.netbeans.modules.java.source.usages.Pair;
 import org.netbeans.modules.parsing.api.Embedding;
+import org.netbeans.modules.parsing.api.GenericUserTask;
 import org.netbeans.modules.parsing.api.MultiLanguageUserTask;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.cookies.EditorCookie;
@@ -360,6 +359,7 @@ public final class JavaSource {
         assert info != null;
         assert classFileObject != null;
         assert root != null;
+        this.files = Collections.<FileObject>singletonList(classFileObject);
         this.sources = Collections.<Source>singletonList(Source.create(classFileObject));
         this.classpathInfo =  info;
     }
@@ -388,26 +388,43 @@ public final class JavaSource {
             throw new IllegalArgumentException ("Task cannot be null");     //NOI18N
         }
         if (sources.isEmpty()) {
-            ParserManager.run(new Runnable() {
-                public void run() {
-                    if (cachedCi == null) {
-                        assert cachedCi != null;
-                        cachedCi = new CompilationInfoImpl(classpathInfo);
+            try {
+                ParserManager.run(new GenericUserTask() {
+                    public void run() throws Exception {
+                        if (cachedCi == null) {
+                            assert cachedCi != null;
+                            cachedCi = new CompilationInfoImpl(classpathInfo);
+                        }
+                        final CompilationController cc = new CompilationController(cachedCi);
+                        try {
+                            task.run(cc);
+                        } finally {
+                            cc.invalidate();
+                        }
                     }
-                    final CompilationController cc = new CompilationController(cachedCi);
-                    try {
-                        task.run(cc);
-                    } finally {
-                        cc.invalidate();
-                    }
+                });
+            } catch (final ParseException pe) {
+                final Throwable rootCase = pe.getCause();
+                if (rootCase instanceof CompletionFailure) {
+                    IOException ioe = new IOException ();
+                    ioe.initCause(rootCase);
+                    throw ioe;
                 }
-            });
+                else if (rootCase instanceof RuntimeException) {
+                    throw (RuntimeException) rootCase;
+                }
+                else {
+                    IOException ioe = new IOException ();
+                    ioe.initCause(rootCase);
+                    throw ioe;
+                }
+            }
         }
         else {
             try {
-                    MultiLanguageUserTask _task = new MultiLanguageUserTask() {
+                    final MultiLanguageUserTask _task = new MultiLanguageUserTask() {
                         @Override
-                        public void run(ResultIterator resultIterator) {
+                        public void run(ResultIterator resultIterator) throws Exception {
                             final Source source = resultIterator.getSource();
                             if (JavacParser.MIME_TYPE.equals(source.getMimeType())) {
                                 Parser.Result result = resultIterator.getParserResult();
@@ -448,19 +465,22 @@ public final class JavaSource {
                         
                     };
                     ParserManager.parse(sources, _task);
-                } catch (CompletionFailure e) {
-                    IOException ioe = new IOException ();
-                    ioe.initCause(e);
-                    throw ioe;
-                }
-                catch (RuntimeException e) {
-                    throw e;
-                }
-                catch (Exception e) {
-                    IOException ioe = new IOException ();
-                    ioe.initCause(e);
-                    throw ioe;
-                }
+                } catch (final ParseException pe) {
+                    final Throwable rootCase = pe.getCause();
+                    if (rootCase instanceof CompletionFailure) {                        
+                        IOException ioe = new IOException ();
+                        ioe.initCause(rootCase);
+                        throw ioe;
+                    }
+                    else if (rootCase instanceof RuntimeException) {
+                        throw (RuntimeException) rootCase;
+                    }
+                    else {
+                        IOException ioe = new IOException ();
+                        ioe.initCause(rootCase);
+                        throw ioe;
+                    }                                        
+                }                
         }
     }
 
@@ -515,7 +535,7 @@ public final class JavaSource {
             try {
                 final MultiLanguageUserTask _task = new MultiLanguageUserTask() {
                     @Override
-                    public void run(ResultIterator resultIterator) {
+                    public void run(ResultIterator resultIterator) throws Exception {
                         final Source source = resultIterator.getSource();
                         if (JavacParser.MIME_TYPE.equals(source.getMimeType())) {
                             Parser.Result parserResult = resultIterator.getParserResult();
@@ -530,23 +550,27 @@ public final class JavaSource {
                     }
                 };                
                 ParserManager.parse(sources, _task);                                        
-            } catch (CompletionFailure e) {
-                IOException ioe = new IOException ();
-                ioe.initCause(e);
-                throw ioe;
-            }
-            catch (RuntimeException e) {
-                throw e;
-            }
-            catch (Exception e) {
-                IOException ioe = new IOException ();
-                ioe.initCause(e);
-                throw ioe;
+            } catch (final ParseException pe) {
+                final Throwable rootCase = pe.getCause();
+                if (rootCase instanceof CompletionFailure) {
+                    IOException ioe = new IOException ();
+                    ioe.initCause(rootCase);
+                    throw ioe;
+                }
+                else if (rootCase instanceof RuntimeException) {
+                    throw (RuntimeException) rootCase;
+                }
+                else {
+                    IOException ioe = new IOException ();
+                    ioe.initCause(rootCase);
+                    throw ioe;
+                }                
             }
             if (sources.size() == 1) {
                 Logger.getLogger("TIMER").log(Level.FINE, "Modification Task",  //NOI18N
                     new Object[] {sources.iterator().next().getFileObject(), System.currentTimeMillis() - start});
             }
+            return result;
         }        
     }
 
@@ -645,15 +669,9 @@ public final class JavaSource {
         }
         
     } */
-    
+        
     private static class JavaSourceAccessorImpl extends JavaSourceAccessor {
-        
-        private StackTraceElement[] javacLockedStackTrace;
-        
-        protected @Override void runSpecialTaskImpl (CancellableTask<CompilationInfo> task, Priority priority) {
-            handleAddRequest(new Request (task, null, null, priority, false));
-        }                
-                        
+                                                
         @Override
         public JavacTaskImpl getJavacTask (final CompilationInfo compilationInfo) {
             assert compilationInfo != null;
@@ -662,28 +680,9 @@ public final class JavaSource {
                 
         @Override
         public void revalidate(JavaSource js) {
-            js.revalidate();
+            //todo: fixme by hanz factories js.revalidate();
         }
-                
-        @Override
-        public void lockJavaCompiler () {            
-            javacLock.lock();
-            try {
-                this.javacLockedStackTrace = Thread.currentThread().getStackTrace();
-            } catch (RuntimeException e) {
-                //Not important, thrown by logging code
-            }
-        }
-        
-        @Override
-        public void unlockJavaCompiler () {
-            try {
-                this.javacLockedStackTrace = null;
-            } finally {
-                javacLock.unlock();
-            }
-        }
-        
+                                               
         public JavaSource create(ClasspathInfo cpInfo, PositionConverter binding, Collection<? extends FileObject> files) throws IllegalArgumentException {
             return JavaSource.create(cpInfo, binding, files);
         }

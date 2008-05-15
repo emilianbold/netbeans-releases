@@ -59,8 +59,9 @@ public abstract class MultiLanguageUserTask<T extends Parser.Result> {
      * 
      * @param resultIterator
      *                      A {@link ResultIterator} instance.
+     * @throws Exception rethrown by the infrastructure as a {@link ParseException}.
      */
-    public abstract void run (ResultIterator<T> resultIterator);
+    public abstract void run (ResultIterator<T> resultIterator) throws Exception;
 }
 
 
