@@ -308,6 +308,21 @@ public abstract class AbstractCLITest extends AbstractSvnTest {
         }
     }
     
+    protected void assertInputStreams(InputStream isref, InputStream is) throws FileNotFoundException, IOException {        
+        if(isref == null || is == null) {
+            assertNull(isref);
+            assertNull(is);
+        }
+        int iref = -1;
+        int i = -1;
+        while( (iref = isref.read()) > -1 ) {
+            i = is.read(); 
+            assertEquals(iref, i);
+        }
+        i = is.read();
+        assertEquals(iref, i);
+    }
+    
     protected void assertProperty(File file, String prop, String val) throws Exception {
         ISVNClientAdapter c = getReferenceClient();
         ISVNProperty p = c.propertyGet(file, prop);

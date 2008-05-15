@@ -49,6 +49,8 @@ import org.netbeans.junit.NbTestCase;
  */
 public class CLITest extends NbTestCase {
 
+    // XXX test cancel
+    
     public CLITest(String arg0) {
         super(arg0);
     }
@@ -57,6 +59,7 @@ public class CLITest extends NbTestCase {
         TestSuite suite = new TestSuite();
         
         suite.addTestSuite(AddTest.class);                
+        suite.addTestSuite(AvailabilityTest.class);                
         suite.addTestSuite(BlameTest.class);                
         suite.addTestSuite(CatTest.class);                
         suite.addTestSuite(CheckoutTest.class);                
@@ -70,6 +73,7 @@ public class CLITest extends NbTestCase {
         suite.addTestSuite(MergeTest.class);                        
         suite.addTestSuite(MkdirTest.class);                        
         suite.addTestSuite(MoveTest.class);                         
+        suite.addTestSuite(ParsedStatusTest.class);                                        
         suite.addTestSuite(PropertyTest.class);                                        
         suite.addTestSuite(RelocateTest.class);                                        
         suite.addTestSuite(RemoveTest.class);                                        
