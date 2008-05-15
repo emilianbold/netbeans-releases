@@ -494,7 +494,7 @@ final class ResourceWizardPanel extends JPanel {
                 }
 
                 sourceData = new SourceData(sourceData.getResource(), support);
-                sourceMap.put(source, sourceData);              //PENDING - concurrent modification?
+                entry.setValue(sourceData);
                 
                 cp = ClassPath.getClassPath(source.getPrimaryFile(), ClassPath.SOURCE );
                 progressPanel.setMainText(
