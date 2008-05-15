@@ -51,6 +51,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.BeanInfo;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -66,8 +67,6 @@ import javax.swing.JTextArea;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.FileOwnerQuery;
 
 import org.netbeans.modules.i18n.FactoryRegistry;
 import org.netbeans.modules.i18n.HardCodedString;
@@ -123,7 +122,7 @@ final class ResourceWizardPanel extends JPanel {
 
     
     /** Getter for <code>resources</code> property. */
-    public Map getSourceMap() {
+    public Map<DataObject,SourceData> getSourceMap() {
         return sourceMap;
     }
     
@@ -248,8 +247,9 @@ final class ResourceWizardPanel extends JPanel {
     private void addButtonActionPerformed(ActionEvent evt) {
         DataObject resource = selectResource();
         
-        if(resource == null)
+        if (resource == null) {
             return;
+        }
 
         int[] selectedRows = resourcesTable.getSelectedRows();
 
@@ -268,8 +268,9 @@ final class ResourceWizardPanel extends JPanel {
     private void addAllButtonActionPerformed(ActionEvent evt) {
         DataObject resource = selectResource();
         
-        if(resource == null)
+        if (resource == null) {
             return;
+        }
 
         // Feed data.
         for (int i = 0; i < resourcesTable.getRowCount(); i++) {
@@ -513,7 +514,7 @@ final class ResourceWizardPanel extends JPanel {
 
                 if (foundStrings == null) {
                     // Set empty map.
-                    sourceData.setStringMap(new HashMap(0));
+                    sourceData.setStringMap(Collections.<HardCodedString,I18nString>emptyMap());
                     continue;
                 }
 
