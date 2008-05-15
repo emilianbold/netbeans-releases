@@ -42,12 +42,6 @@ made subject to such option by the copyright holder.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
-    <folder name="Actions">
-        <folder name="Window">
-            <file name="org-netbeans-modules-hibernate-hqleditor-ui-HQLEditorAction.instance"/>
-            <file name="org-netbeans-modules-hibernate-hqleditor-ui-HQLEditorOutputAction.instance"/> 
-        </folder>
-    </folder>
     <folder name="Loaders">
         <folder name="text">
             <folder name="x-hibernate-cfg+xml">
@@ -65,51 +59,58 @@ made subject to such option by the copyright holder.
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="400"/>
                     </file>
-                    <file name="org-openide-actions-CutAction.instance">
+                    <file name="org-netbeans-modules-hibernate-hqleditor-ui-HQLEditorAction.instance">
                         <attr name="position" intvalue="500"/>
-                    </file>
-                    <file name="org-openide-actions-CopyAction.instance">
-                        <attr name="position" intvalue="600"/>
-                    </file>
-                    <file name="org-openide-actions-PasteAction.instance">
-                        <attr name="position" intvalue="700"/>
                     </file>
                     <file name="sep-2.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="600"/>
+                    </file>
+                    <file name="org-openide-actions-CutAction.instance">
+                        <attr name="position" intvalue="700"/>
+                    </file>
+                    <file name="org-openide-actions-CopyAction.instance">
                         <attr name="position" intvalue="800"/>
                     </file>
-                    <file name="org-openide-actions-DeleteAction.instance">
+                    <file name="org-openide-actions-PasteAction.instance">
                         <attr name="position" intvalue="900"/>
-                    </file>
-                    <file name="org-openide-actions-RenameAction.instance">
-                        <attr name="position" intvalue="1000"/>
                     </file>
                     <file name="sep-3.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="1200"/>
+                        <attr name="position" intvalue="1000"/>
                     </file>
-                    <file name="org-openide-actions-SaveAsTemplateAction.instance">
-                        <attr name="position" intvalue="1300"/>
+                    <file name="org-openide-actions-DeleteAction.instance">
+                        <attr name="position" intvalue="1100"/>
+                    </file>
+                    <file name="org-openide-actions-RenameAction.instance">
+                        <attr name="position" intvalue="1200"/>
                     </file>
                     <file name="sep-4.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1300"/>
+                    </file>
+                    <file name="org-openide-actions-SaveAsTemplateAction.instance">
                         <attr name="position" intvalue="1400"/>
-                    </file>
-                    <file name="org-netbeans-modules-xml-tools-actions-CheckAction.instance">
-                        <attr name="position" intvalue="1500"/>
-                    </file>
-                    <file name="org-netbeans-modules-xml-tools-actions-ValidateAction.instance">
-                        <attr name="position" intvalue="1600"/>
                     </file>
                     <file name="sep-5.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1500"/>
+                    </file>
+                    <file name="org-netbeans-modules-xml-tools-actions-CheckAction.instance">
+                        <attr name="position" intvalue="1600"/>
+                    </file>
+                    <file name="org-netbeans-modules-xml-tools-actions-ValidateAction.instance">
                         <attr name="position" intvalue="1700"/>
+                    </file>
+                    <file name="sep-6.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1800"/>
                     </file> 
                     <file name="org-openide-actions-ToolsAction.instance">
-                        <attr name="position" intvalue="1800"/>
+                        <attr name="position" intvalue="1900"/>
                     </file>
                     <file name="org-openide-actions-PropertiesAction.instance">
-                        <attr name="position" intvalue="1900"/>
+                        <attr name="position" intvalue="2000"/>
                     </file>
                 </folder>
             </folder>
@@ -229,16 +230,6 @@ made subject to such option by the copyright holder.
                     </file>
                 </folder>
             </folder>
-        </folder>
-    </folder>
-    <folder name="Menu">
-        <folder name="Window">
-            <file name="HQLEditorAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-hibernate-hqleditor-ui-HQLEditorAction.instance"/>
-            </file>
-            <file name="HQLEditorOutputAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-hibernate-hqleditor-ui-HQLEditorOutputAction.instance"/>
-            </file> 
         </folder>
     </folder>
     <folder name="Services">

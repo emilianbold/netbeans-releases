@@ -58,6 +58,6 @@ public class HQLEditorAction extends AbstractAction {
     }
 
     public void actionPerformed(ActionEvent evt) {
-        HQLEditorController.getDefault().init();
+        new HQLEditorController().init();
     }
 }

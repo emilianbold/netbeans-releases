@@ -38,15 +38,7 @@
  */
 package org.netbeans.modules.hibernate.hqleditor;
 
-import org.netbeans.core.spi.multiview.MultiViewDescription;
-import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.netbeans.modules.hibernate.hqleditor.ui.HQLEditorTopComponent;
-import org.netbeans.modules.hibernate.hqleditor.ui.error.ErrorMultiViewDescription;
-import org.netbeans.modules.hibernate.hqleditor.ui.result.ResultMultiViewDescription;
-import org.netbeans.modules.hibernate.hqleditor.ui.sql.SQLMultiViewDescription;
-import org.openide.windows.Mode;
-import org.openide.windows.TopComponent;
-import org.openide.windows.WindowManager;
 
 /**
  * HQL Editor controller.
@@ -55,38 +47,11 @@ import org.openide.windows.WindowManager;
  */
 public class HQLEditorController {
 
-    private static HQLEditorController instance;
-
-    public static synchronized HQLEditorController getDefault() {
-        if (instance == null) {
-            instance = new HQLEditorController();
-        }
-        return instance;
-    }
-
     public void init() {
         HQLEditorTopComponent editorTopComponent = HQLEditorTopComponent.findInstance();
         editorTopComponent.open();
         editorTopComponent.requestActive();
 
         editorTopComponent.fillHibernateConfigurations();
-        
-        MultiViewDescription[] mvDescriptions = new MultiViewDescription[]{
-            new ResultMultiViewDescription(),
-            new SQLMultiViewDescription(),
-            new ErrorMultiViewDescription()
-        };
-        TopComponent mvTopComponent = MultiViewFactory.createMultiView(
-                mvDescriptions, mvDescriptions[0]);
-
-        mvTopComponent.setDisplayName("HQLEditor-Output");
-
-        Mode m = WindowManager.getDefault().findMode("output"); //NOI18N
-
-        if (m != null) {
-            m.dockInto(mvTopComponent);
-        }
-        mvTopComponent.open();
-        
     }
 }

@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.hibernate.hqleditor.ui;
 
+import java.awt.CardLayout;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -54,7 +55,6 @@ import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import org.openide.util.Utilities;
-import org.openide.windows.TopComponentGroup;
 
 /**
  * HQL editor top component.
@@ -77,6 +77,8 @@ public final class HQLEditorTopComponent extends TopComponent {
         setName(NbBundle.getMessage(HQLEditorTopComponent.class, "CTL_HQLEditorTopComponent"));
         setToolTipText(NbBundle.getMessage(HQLEditorTopComponent.class, "HINT_HQLEditorTopComponent"));
         setIcon(Utilities.loadImage(ICON_PATH, true));
+        
+        sqlToggleButton.setSelected(true);
     }
 
     public void fillHibernateConfigurations() {
@@ -91,16 +93,18 @@ public final class HQLEditorTopComponent extends TopComponent {
         }
         
         if(configDataNodes.size() != 0) {
-            
+            System.out.println("configdatante.size() " + configDataNodes.size());
         } else {
             // NO selection of cfg file found.
             Project mainProject = OpenProjects.getDefault().getMainProject();
             if(mainProject == null) {
                 // No main project selected..
+                System.out.println("NO main porject is selected");  
                 return;
             }
             HibernateEnvironment env = mainProject.getLookup().lookup(HibernateEnvironment.class);
             if(env == null) {
+                System.out.println("HiberEnv is not found in main project.");
                 return;
             }
             ArrayList<HibernateConfiguration> configurations = env.getAllHibernateConfigurationsFromProject();
@@ -125,9 +129,21 @@ public final class HQLEditorTopComponent extends TopComponent {
         hibernateConfigurationComboBox = new javax.swing.JComboBox();
         toolbarSeparator = new javax.swing.JToolBar.Separator();
         runHQLButton = new javax.swing.JButton();
+        toolbarSeparator1 = new javax.swing.JToolBar.Separator();
+        splitPane = new javax.swing.JSplitPane();
         jScrollPane1 = new javax.swing.JScrollPane();
         hqlEditor = new javax.swing.JEditorPane();
+        containerPanel = new javax.swing.JPanel();
+        toolBar2 = new javax.swing.JToolBar();
+        resultToggleButton = new javax.swing.JToggleButton();
+        sqlToggleButton = new javax.swing.JToggleButton();
+        executionPanel = new javax.swing.JPanel();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        sqlEditorPane = new javax.swing.JEditorPane();
+        jScrollPane3 = new javax.swing.JScrollPane();
+        resultsTable = new javax.swing.JTable();
 
+        toolBar.setFloatable(false);
         toolBar.setRollover(true);
 
         toolBar.add(hibernateConfigurationComboBox);
@@ -140,33 +156,128 @@ public final class HQLEditorTopComponent extends TopComponent {
         runHQLButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         toolBar.add(runHQLButton);
 
+        toolbarSeparator1.setSeparatorSize(new java.awt.Dimension(300, 10));
+        toolBar.add(toolbarSeparator1);
+
+        splitPane.setDividerLocation(180);
+        splitPane.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
+
         hqlEditor.setContentType("text/x-hql");
         jScrollPane1.setViewportView(hqlEditor);
+
+        splitPane.setTopComponent(jScrollPane1);
+
+        toolBar2.setFloatable(false);
+        toolBar2.setRollover(true);
+
+        org.openide.awt.Mnemonics.setLocalizedText(resultToggleButton, org.openide.util.NbBundle.getMessage(HQLEditorTopComponent.class, "HQLEditorTopComponent.resultToggleButton.text")); // NOI18N
+        resultToggleButton.setFocusable(false);
+        resultToggleButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        resultToggleButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        resultToggleButton.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                resultToggleButtonItemStateChanged(evt);
+            }
+        });
+        toolBar2.add(resultToggleButton);
+
+        org.openide.awt.Mnemonics.setLocalizedText(sqlToggleButton, org.openide.util.NbBundle.getMessage(HQLEditorTopComponent.class, "HQLEditorTopComponent.sqlToggleButton.text")); // NOI18N
+        sqlToggleButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        sqlToggleButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        sqlToggleButton.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                sqlToggleButtonItemStateChanged(evt);
+            }
+        });
+        toolBar2.add(sqlToggleButton);
+
+        executionPanel.setLayout(new java.awt.CardLayout());
+
+        jScrollPane2.setViewportView(sqlEditorPane);
+
+        executionPanel.add(jScrollPane2, "card2");
+
+        resultsTable.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
+            },
+            new String [] {
+                "Title 1", "Title 2", "Title 3", "Title 4"
+            }
+        ));
+        jScrollPane3.setViewportView(resultsTable);
+
+        executionPanel.add(jScrollPane3, "card3");
+
+        org.jdesktop.layout.GroupLayout containerPanelLayout = new org.jdesktop.layout.GroupLayout(containerPanel);
+        containerPanel.setLayout(containerPanelLayout);
+        containerPanelLayout.setHorizontalGroup(
+            containerPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(toolBar2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 605, Short.MAX_VALUE)
+            .add(executionPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 605, Short.MAX_VALUE)
+        );
+        containerPanelLayout.setVerticalGroup(
+            containerPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(containerPanelLayout.createSequentialGroup()
+                .add(toolBar2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(executionPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 431, Short.MAX_VALUE))
+        );
+
+        splitPane.setRightComponent(containerPanel);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(toolBar, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 526, Short.MAX_VALUE)
-            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 526, Short.MAX_VALUE)
+            .add(toolBar, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 607, Short.MAX_VALUE)
+            .add(splitPane)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(toolBar, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 25, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 377, Short.MAX_VALUE))
+                .add(splitPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 508, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
+private void resultToggleButtonItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_resultToggleButtonItemStateChanged
+    if(resultToggleButton.isSelected()) {
+        ((CardLayout)(executionPanel.getLayout())).last(executionPanel);
+        sqlToggleButton.setSelected(false);
+    }
+}//GEN-LAST:event_resultToggleButtonItemStateChanged
+
+private void sqlToggleButtonItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_sqlToggleButtonItemStateChanged
+    if(sqlToggleButton.isSelected()) {
+        ((CardLayout)(executionPanel.getLayout())).first(executionPanel);
+        resultToggleButton.setSelected(false);
+    }
+}//GEN-LAST:event_sqlToggleButtonItemStateChanged
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JPanel containerPanel;
+    private javax.swing.JPanel executionPanel;
     private javax.swing.JComboBox hibernateConfigurationComboBox;
     private javax.swing.JEditorPane hqlEditor;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JScrollPane jScrollPane3;
+    private javax.swing.JToggleButton resultToggleButton;
+    private javax.swing.JTable resultsTable;
     private javax.swing.JButton runHQLButton;
+    private javax.swing.JSplitPane splitPane;
+    private javax.swing.JEditorPane sqlEditorPane;
+    private javax.swing.JToggleButton sqlToggleButton;
     private javax.swing.JToolBar toolBar;
+    private javax.swing.JToolBar toolBar2;
     private javax.swing.JToolBar.Separator toolbarSeparator;
+    private javax.swing.JToolBar.Separator toolbarSeparator1;
     // End of variables declaration//GEN-END:variables
     /**
      * Gets default instance. Do not use directly: reserved for *.settings files only,
@@ -202,24 +313,6 @@ public final class HQLEditorTopComponent extends TopComponent {
     @Override
     public int getPersistenceType() {
         return TopComponent.PERSISTENCE_ALWAYS;
-    }
-
-    @Override
-    public void componentOpened() {
-        TopComponentGroup hqlEditorTCGroup = WindowManager.getDefault().findTopComponentGroup("HQLEditorGroup"); //NOI18N
-        if(hqlEditorTCGroup != null) {
-            hqlEditorTCGroup.open();
-        }
-    }
-
-    @Override
-    public void componentClosed() {
-        TopComponentGroup hqlEditorTCGroup = WindowManager.getDefault().findTopComponentGroup("HQLEditorGroup"); //NOI18N
-        if(hqlEditorTCGroup != null) {
-            hqlEditorTCGroup.close();
-        }
-//        TopComponent mvTopComponent = WindowManager.getDefault().findTopComponent("HQLEditor-Output");
-//        mvTopComponent.close();
     }
 
     /** replaces this in object stream */
