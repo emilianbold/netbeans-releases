@@ -61,6 +61,7 @@ public class CLITest extends NbTestCase {
         suite.addTestSuite(AddTest.class);                
         suite.addTestSuite(AvailabilityTest.class);                
         suite.addTestSuite(BlameTest.class);                
+        suite.addTestSuite(CancelTest.class);                
         suite.addTestSuite(CatTest.class);                
         suite.addTestSuite(CheckoutTest.class);                
         suite.addTestSuite(CommitTest.class);                
