@@ -98,17 +98,7 @@ public abstract class JavaSourceAccessor {
      * @return {@link JavacTaskImpl} never returns null
      */
     public abstract JavacTaskImpl getJavacTask (CompilationInfo compilationInfo);
-    
-    /**
-     * Returns a cached compilation info when available or null
-     * Expert: Violates confinement
-     * @param js {@link JavaSource} which {@CompilationInfo} should be returned
-     * @param phase to which the compilation info should be moved
-     * Can be called only from the dispatch thread!
-     * @return {@link CompilationInfo} or null
-     */
-    public abstract CompilationInfo getCurrentCompilationInfo (JavaSource js, JavaSource.Phase phase) throws IOException;
-    
+       
     public abstract void revalidate(JavaSource js); 
     
     public abstract JavaSource create(final ClasspathInfo cpInfo, final PositionConverter binding, final Collection<? extends FileObject> files) throws IllegalArgumentException;
@@ -128,13 +118,7 @@ public abstract class JavaSourceAccessor {
      * @return the api wrapper
      */
     public abstract CompilationController createCompilationController (CompilationInfoImpl impl);
-    
-    /**
-     * Returns true when the caller is a {@link JavaSource} worker thread
-     * @return boolean
-     */
-    public abstract boolean isDispatchThread ();
-    
+        
     /**
      * Expert: Locks java compiler. Private API for indentation engine only!
      */
@@ -144,10 +128,5 @@ public abstract class JavaSourceAccessor {
      * Expert: Unlocks java compiler. Private API for indentation engine only!
      */
     public abstract void unlockJavaCompiler ();
-    
-    /**
-     * For check confinement.
-     * @return
-     */
-    public abstract boolean isJavaCompilerLocked();
+        
 }

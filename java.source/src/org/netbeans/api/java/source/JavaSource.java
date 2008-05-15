@@ -42,16 +42,13 @@
 package org.netbeans.api.java.source;
 
 import com.sun.source.tree.MethodTree;
-import com.sun.tools.javac.api.ClassNamesForFileOraculum;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.code.Symbol.CompletionFailure;
 import com.sun.tools.javac.util.Log;
 import java.io.IOException;
-import java.io.InterruptedIOException;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -70,10 +67,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import javax.tools.DiagnosticListener;
-import javax.tools.JavaFileObject;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.source.ModificationResult.Difference;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
@@ -81,15 +75,12 @@ import org.netbeans.modules.java.preprocessorbridge.spi.JavaSourceProvider;
 import org.netbeans.modules.java.source.parsing.CompilationInfoImpl;
 import org.netbeans.modules.java.source.parsing.JavacParser;
 import org.netbeans.modules.java.source.usages.Pair;
-import org.netbeans.modules.java.source.usages.RepositoryUpdater;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.MultiLanguageUserTask;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
-import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.Parser;
-import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -167,7 +158,9 @@ public final class JavaSource {
     }
     
     //Source files being processed, may be empty
-    private final Collection<Source> sources;    
+    private final Collection<Source> sources;
+    //Files being processed, may be empty
+    private final Collection<FileObject> files;
     //Cached parser for case when JavaSource was constructed without sources => special case no parsing API support
     private CompilationInfoImpl cachedCi;
     //Classpath info when explicitely given, may be null
@@ -340,6 +333,7 @@ public final class JavaSource {
     private JavaSource (ClasspathInfo cpInfo, PositionConverter binding, Collection<? extends FileObject> files) throws IOException {        
         boolean multipleSources = files.size() > 1;
         final List<Source> sources = new LinkedList<Source>();
+        final List<FileObject> fl = new LinkedList<FileObject>();
         for (Iterator<? extends FileObject> it = files.iterator(); it.hasNext();) {
             FileObject file = it.next();
             Logger.getLogger("TIMER").log(Level.FINE, "JavaSource",
@@ -353,9 +347,11 @@ public final class JavaSource {
                 }
             }
             else {
+                fl.add (file);
                 sources.add(Source.create(file));
             }
         }
+        this.files = Collections.unmodifiableList(fl);
         this.sources = Collections.unmodifiableList(sources);
         this.classpathInfo = cpInfo;        
     }
@@ -506,141 +502,52 @@ public final class JavaSource {
      * @see Task for information about implementation requirements
      * @param task The task which.
      */    
-    public ModificationResult runModificationTask(Task<WorkingCopy> task) throws IOException {        
+    public ModificationResult runModificationTask(final Task<WorkingCopy> task) throws IOException {        
         if (task == null) {
             throw new IllegalArgumentException ("Task cannot be null");     //NOI18N
-        }
-                        
-        ModificationResult result = new ModificationResult(this);
-        if (this.files.size()<=1) {
-            long start = System.currentTimeMillis();            
-            final JavaSource.Request request = currentRequest.getTaskToCancel();
-            try {
-                if (request != null) {
-                    request.task.cancel();
-                }            
-                this.javacLock.lock();                                
-                try {
-                    CompilationInfoImpl currentInfo = null;
-                    boolean jsInvalid;
-                    Pair<DocPositionRegion,MethodTree> changedMethod;
-                    synchronized (this) {
-                        jsInvalid = this.currentInfo == null ||  (this.flags & INVALID) != 0;
-                        currentInfo = this.currentInfo;
-                        changedMethod = currentInfo == null ? null : currentInfo.getChangedTree();
-                    }
-                    if (jsInvalid) {
-                        boolean needsFullReparse = true;
-                        if (changedMethod != null && currentInfo != null) {
-                            needsFullReparse = !reparseMethod(currentInfo,
-                                    changedMethod.second,
-                                    changedMethod.first.getText());
-                        }
-                        if (needsFullReparse) {
-                            currentInfo = createCurrentInfo(this, binding, null);
-                        }
-                        synchronized (this) {
-                            if (this.currentInfo == null || (this.flags & INVALID) != 0) {
-                                this.currentInfo = currentInfo;
-                                this.flags&=~INVALID;
-                            }
-                            else {
-                                currentInfo = this.currentInfo;
-                            }
-                        }
-                    }
-                    assert currentInfo != null;                    
-                    WorkingCopy copy = new WorkingCopy (currentInfo);
-                    task.run (copy);
-                    List<Difference> diffs = copy.getChanges();
-                    if (diffs != null && diffs.size() > 0)
-                        result.diffs.put(currentInfo.getFileObject(), diffs);
-                }
-                catch (CompletionFailure e) {
-                    IOException ioe = new IOException ();
-                    ioe.initCause(e);
-                    throw ioe;
-                }
-                catch (RuntimeException e) {
-                    throw e;
-                }
-                catch (Exception e) {
-                    IOException ioe = new IOException ();
-                    ioe.initCause(e);
-                    throw ioe;
-                } finally {
-                    this.javacLock.unlock();
-                }
-            } finally {
-                currentRequest.cancelCompleted (request);
-            }
-            Logger.getLogger("TIMER").log(Level.FINE, "Modification Task",
-                    new Object[] {currentInfo.getFileObject(), System.currentTimeMillis() - start});
-        }
+        }        
+        if (sources.isEmpty()) {
+            throw new IllegalStateException ("Cannot run modification task without  file.");    //NOI18N
+        }        
         else {
-            final JavaSource.Request request = currentRequest.getTaskToCancel();
+            final ModificationResult result = new ModificationResult(this);
+            long start = System.currentTimeMillis();
             try {
-                if (request != null) {
-                    request.task.cancel();
-                }
-                this.javacLock.lock();
-                try {
-                    JavacTaskImpl jt = null;
-                    FileObject activeFile = null;
-                    Iterator<FileObject> files = this.files.iterator();
-                    while (files.hasNext() || activeFile != null) {
-                        boolean restarted;
-                        if (activeFile == null) {
-                            activeFile = files.next();
-                            restarted = false;
-                        }
-                        else {
-                            restarted = true;
-                        }
-                        CompilationInfoImpl ci = createCurrentInfo(this, new PositionConverter(activeFile, null), jt);
-                        WorkingCopy copy = new WorkingCopy(ci);
-                        task.run(copy);
-                        if (!ci.needsRestart) {
-                            jt = ci.getJavacTask();
-                            Log.instance(jt.getContext()).nerrors = 0;
-                            List<Difference> diffs = copy.getChanges();
-                            if (diffs != null && diffs.size() > 0)
-                                result.diffs.put(ci.getFileObject(), diffs);
-                            activeFile = null;
-                        }
-                        else {
-                            jt = null;
-                            ci = null;
-                            System.gc();
-                            if (restarted) {
-                                throw new InsufficientMemoryException (activeFile);
+                final MultiLanguageUserTask _task = new MultiLanguageUserTask() {
+                    @Override
+                    public void run(ResultIterator resultIterator) {
+                        final Source source = resultIterator.getSource();
+                        if (JavacParser.MIME_TYPE.equals(source.getMimeType())) {
+                            Parser.Result parserResult = resultIterator.getParserResult();
+                            assert parserResult instanceof CompilationController;
+                            final WorkingCopy copy = new WorkingCopy (((CompilationController)parserResult).impl);;
+                            task.run (copy);
+                            final List<Difference> diffs = copy.getChanges();
+                            if (diffs != null && diffs.size() > 0) {
+                                result.diffs.put(copy.getFileObject(), diffs);
                             }
                         }
                     }
-                }
-                catch (CompletionFailure e) {
-                    IOException ioe = new IOException ();
-                    ioe.initCause(e);
-                    throw ioe;
-                }
-                catch (RuntimeException e) {
-                    throw e;
-                }
-                catch (Exception e) {
-                    IOException ioe = new IOException ();
-                    ioe.initCause(e);
-                    throw ioe;
-                } finally {
-                    this.javacLock.unlock();
-                }
-            } finally {
-                currentRequest.cancelCompleted(request);
+                };                
+                ParserManager.parse(sources, _task);                                        
+            } catch (CompletionFailure e) {
+                IOException ioe = new IOException ();
+                ioe.initCause(e);
+                throw ioe;
+            }
+            catch (RuntimeException e) {
+                throw e;
+            }
+            catch (Exception e) {
+                IOException ioe = new IOException ();
+                ioe.initCause(e);
+                throw ioe;
+            }
+            if (sources.size() == 1) {
+                Logger.getLogger("TIMER").log(Level.FINE, "Modification Task",  //NOI18N
+                    new Object[] {sources.iterator().next().getFileObject(), System.currentTimeMillis() - start});
             }
         }        
-        synchronized (this) {
-            this.flags|=INVALID;
-        }
-        return result;
     }
 
 
@@ -752,34 +659,12 @@ public final class JavaSource {
             assert compilationInfo != null;
             return compilationInfo.impl.getJavacTask();
         }
-        
-        @Override
-        public CompilationInfo getCurrentCompilationInfo (final JavaSource js, final Phase phase) throws IOException {
-            assert js != null;
-            assert isDispatchThread();
-            CompilationInfoImpl info = null;
-            synchronized (js) {                     
-                if ((js.flags & INVALID)==0) {
-                    info = js.currentInfo;
-                }
-            }
-            if (info == null) {
-                return null;
-            }
-            Phase currentPhase = moveToPhase(phase, info, true);                
-            return currentPhase.compareTo(phase)<0 ? null : new CompilationInfo(info);
-        }
-
+                
         @Override
         public void revalidate(JavaSource js) {
             js.revalidate();
         }
-        
-        @Override
-        public boolean isDispatchThread () {
-            return factory.isDispatchThread(Thread.currentThread());
-        }
-        
+                
         @Override
         public void lockJavaCompiler () {            
             javacLock.lock();
@@ -799,11 +684,6 @@ public final class JavaSource {
             }
         }
         
-        @Override
-        public boolean isJavaCompilerLocked() {
-            return javacLock.isLocked();
-        }
-
         public JavaSource create(ClasspathInfo cpInfo, PositionConverter binding, Collection<? extends FileObject> files) throws IllegalArgumentException {
             return JavaSource.create(cpInfo, binding, files);
         }
@@ -839,18 +719,19 @@ public final class JavaSource {
             if (this.sync.getCount() == 0) {
                 return false;
             }
-            synchronized (todo) {
-                boolean _canceled = canceled.getAndSet(true);
-                if (!_canceled) {
-                    for (Iterator<DeferredTask> it = todo.iterator(); it.hasNext();) {
-                        DeferredTask task = it.next();
-                        if (task.task == this.task) {
-                            it.remove();
-                            return true;
-                        }
-                    }
-                }
-            }            
+//Todo: fixme when parsing API provides support for run when scan finished            
+//            synchronized (todo) {
+//                boolean _canceled = canceled.getAndSet(true);
+//                if (!_canceled) {
+//                    for (Iterator<DeferredTask> it = todo.iterator(); it.hasNext();) {
+//                        DeferredTask task = it.next();
+//                        if (task.task == this.task) {
+//                            it.remove();
+//                            return true;
+//                        }
+//                    }
+//                }
+//            }            
             return false;
         }
 
@@ -893,7 +774,5 @@ public final class JavaSource {
             this.shared = shared;
             this.sync = sync;
         }
-    }
-                            
-
+    }                            
 }

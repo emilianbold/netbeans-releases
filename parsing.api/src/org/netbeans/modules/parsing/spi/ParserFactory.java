@@ -62,7 +62,7 @@ public abstract class ParserFactory {
      * @param snapshots     A snapshots.
      * @return              A new instance of parser.
      */
-    public abstract Parser createParser (Collection<Source> source);
+    public abstract Parser createParser (Collection<Snapshot> source);
 }
 
 
