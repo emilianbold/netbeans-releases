@@ -38,35 +38,31 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.highlight.semantic;
 
 import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
-import org.netbeans.modules.cnd.highlight.semantic.SemanticHighlighter;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 
 /**
  *
  * @author Sergey Grinev
  */
-public class MacroUsagesTest extends SemanticHighlightingTestBase {
+public class TypedefTest extends SemanticHighlightingTestBase {
 
-    public MacroUsagesTest(String testName) {
+    public TypedefTest(String testName) {
         super(testName);
     }
 
-    public void testMacroUsages() throws Exception {
-        String source = "macros.cc"; // NOI18N
-        performTest(source, source + ".dat", source + ".err"); // NOI18N
+    public void testClassFieldsInItsMethodsBody() throws Exception {
+        String source = "welcome.cc"; // NOI18N
+        performTest(source, source + ".dat", null); // NOI18N
     }
-
-    public void testMacroUsagesWithKeywords() throws Exception {
-        String source = "keyword.cc"; // NOI18N
-        performTest(source, source + ".dat", source + ".err"); // NOI18N
-    }
-
+    
     protected List<? extends CsmOffsetable> getBlocks(FileImpl testFile,int offset) {
-        return ModelUtils.getMacroBlocks(testFile);
+        List<? extends CsmOffsetable> list = ModelUtils.getTypedefBlocks(testFile);
+        assert list != null && list.size() > 0;
+        return list;
     }
+
 }
