@@ -55,8 +55,7 @@ import org.netbeans.Module;
 import org.netbeans.ModuleManager;
 import org.netbeans.core.startup.Main;
 import org.netbeans.core.startup.MainLookup;
-import org.netbeans.core.startup.ModuleManagerTest;
-import org.netbeans.junit.NbTestCase;
+import org.netbeans.core.startup.SetupHid;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -73,13 +72,12 @@ import org.openide.util.lookup.InstanceContent;
  *
  * @author Jaroslav Tulach
  */
-public class SystemFileSystemTest extends NbTestCase 
+public class SystemFileSystemTest extends SetupHid
 implements InstanceContent.Convertor<FileSystem,FileSystem>, FileChangeListener {
     FileSystem fs;
     FileSystem fs1 = FileUtil.createMemoryFileSystem();
     FileSystem fs2 = FileUtil.createMemoryFileSystem();
     private List<FileEvent> events;
-    private File jars;
     
     public SystemFileSystemTest(String testName) {
         super(testName);
@@ -87,6 +85,7 @@ implements InstanceContent.Convertor<FileSystem,FileSystem>, FileChangeListener 
     
     @Override
     protected void setUp() throws Exception {
+        super.setUp();
         fs = Repository.getDefault().getDefaultFileSystem();
         Lookup.getDefault().lookup(ModuleInfo.class);
         
@@ -96,12 +95,11 @@ implements InstanceContent.Convertor<FileSystem,FileSystem>, FileChangeListener 
         events = new LinkedList<FileEvent>();
         
         fs.addFileChangeListener(this);
-        jars = new File(ModuleManagerTest.class.getResource("jars").getFile());
-        clearWorkDir();
     }
     
     @Override
     protected void tearDown() throws Exception {
+        super.tearDown();
         MainLookup.unregister(fs1, this);
         MainLookup.unregister(fs2, this);
     }

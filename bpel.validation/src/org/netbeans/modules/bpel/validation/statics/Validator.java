@@ -48,6 +48,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -135,7 +136,9 @@ import org.netbeans.modules.xml.wsdl.model.Operation;
 import org.netbeans.modules.xml.wsdl.model.RequestResponseOperation;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.CorrelationProperty;
 import org.netbeans.modules.xml.xam.Component;
+import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.xml.xam.Model;
+import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.netbeans.modules.xml.xam.locator.CatalogModelFactory;
@@ -146,7 +149,6 @@ import org.netbeans.modules.xml.schema.model.SchemaModelFactory;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.Activity;
 import org.netbeans.modules.xml.xam.Model.State;
-import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.bpel.model.api.support.Initiate;
 import org.netbeans.modules.bpel.model.api.NamedElement;
 import org.netbeans.modules.bpel.model.api.Empty;
@@ -165,6 +167,8 @@ import org.netbeans.modules.bpel.model.api.PortTypeReference;
 import org.netbeans.modules.bpel.validation.core.BpelValidator;
 import org.netbeans.modules.bpel.model.api.support.SimpleBpelModelVisitor;
 import org.netbeans.modules.bpel.model.api.support.SimpleBpelModelVisitorAdaptor;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
 import static org.netbeans.modules.xml.ui.UI.*;
 
 /**
@@ -213,20 +217,20 @@ public final class Validator extends BpelValidator {
         schemas.add(inline.getModel());
       }
     }
-    checkModels(wsdls);
-    checkModels(schemas);
+    checkModels(process, wsdls);
+    checkModels(process, schemas);
   }
 
-  private void checkModels(List<Model> models) {
+  private void checkModels(Process process, List<Model> models) {
 //out();
     for (int i=0; i < models.size(); i++) {
       for (int j=i+1; j < models.size(); j++) {
-        checkDuplicate(models.get(i), models.get(j));
+        checkDuplicate(process, models.get(i), models.get(j));
       }
     }
   }
 
-  private void checkDuplicate(Model model1, Model model2) {
+  private void checkDuplicate(Process process, Model model1, Model model2) {
     String targetNamespace1 = getTargetNamespace(model1);
 
     if (targetNamespace1 == null) {
@@ -243,6 +247,106 @@ public final class Validator extends BpelValidator {
 //out("check: ");
 //out("  " + model1);
 //out("  " + model2);
+    if (model1 instanceof WSDLModel) {
+      checkDuplicate(process, ((WSDLModel) model1).getDefinitions(), ((WSDLModel) model2).getDefinitions());
+    }
+    else if (model1 instanceof SchemaModel) {
+      checkDuplicate(process, ((SchemaModel) model1).getSchema(), ((SchemaModel) model2).getSchema());
+    }
+  }
+
+  private void checkDuplicate(Process process, Definitions definitions1, Definitions definitions2) {
+    // todo a
+  }
+
+  private void checkDuplicate(Process process, Schema schema1, Schema schema2) {
+    checkDuplicate(process, schema1.getAttributes(), schema2.getAttributes());
+    checkDuplicate(process, schema1.getAttributeGroups(), schema2.getAttributeGroups());
+    checkDuplicate(process, schema1.getGroups(), schema2.getGroups());
+    checkDuplicate(process, schema1.getNotations(), schema2.getNotations());
+
+    checkDuplicate(process, schema1.getElements(), schema2.getElements());
+    checkDuplicate(process, schema1.getSimpleTypes(), schema2.getSimpleTypes());
+    checkDuplicate(process, schema1.getComplexTypes(), schema2.getComplexTypes());
+  }
+
+  private void checkDuplicate(Process process, Collection<? extends Named> collection1, Collection<? extends Named> collection2) {
+    List<Named> list1 = list(collection1);
+    List<Named> list2 = list(collection2);
+
+    for (int i=0; i < list1.size(); i++) {
+      Named named = list1.get(i);
+
+      if (contains(named, list2)) {
+        String file1 = getFileName(named);
+
+        if (file1 == null) {
+          continue;
+        }
+        String file2 = getFileName(list2.get(0));
+
+        if (file2 == null) {
+          continue;
+        }
+        // todo a: warning for identical, error for different
+        addError("FIX_SA00014", process, named.getName(), file1, file2); // NOI18N
+      }
+    }
+  }
+
+  private String getFileName(Component component) {
+    if (component == null) {
+      return null;
+    }
+    Model model = component.getModel();
+
+    if (model == null) {
+      return null;
+    }
+    ModelSource source = model.getModelSource();
+
+    if (source == null) {
+      return null;
+    }
+    Lookup lookup = source.getLookup();
+
+    if (lookup == null) {
+      return null;
+    }
+    FileObject file = lookup.lookup(FileObject.class);
+
+    if (file == null) {
+      return null;
+    }
+    return file.getPath();
+  }
+
+  private boolean contains(Named named, List<Named> list) {
+    String name = named.getName();
+
+    if (name == null || name.length() == 0) {
+      return false;
+    }
+    for (int i=0; i < list.size(); i++) {
+      if (name.equals(list.get(i).getName())) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private List<Named> list(Collection<? extends Named> collection) {
+    List<Named> list = new ArrayList<Named>();
+
+    if (collection == null) {
+      return list;
+    }
+    Iterator<? extends Named> iterator = collection.iterator();
+
+    while (iterator.hasNext()) {
+      list.add(iterator.next());
+    }
+    return list;
   }
 
   private String getTargetNamespace(Import imp) {
@@ -292,15 +396,12 @@ public final class Validator extends BpelValidator {
   public void visit(PartnerLink p) {
       // Rule: A partnerLink MUST specify the myRole or the partnerRole, or both.
       // This syntactic constraint MUST be statically enforced.
-      if((p.getMyRole() == null || p.getMyRole().equals("")) &&
-              (p.getPartnerRole() == null || p.getPartnerRole().equals(""))) 
-      {
+      if ((p.getMyRole() == null || p.getMyRole().equals("")) && (p.getPartnerRole() == null || p.getPartnerRole().equals(""))) {
           addError(FIX_PARTNER_LINK_ERROR, p);
       }
-      
       // Rule: The initializePartnerRole attribute MUST NOT be used on a partnerLink
       // that does not have a partner role; this restriction MUST be statically enforced.
-      if(p.getPartnerRole() == null || p.getPartnerRole().equals("")) {
+      if( p.getPartnerRole() == null || p.getPartnerRole().equals("")) {
           if((p.getInitializePartnerRole() != null) &&
                   (!p.getInitializePartnerRole().equals(
                   TBoolean.INVALID))) 
@@ -2623,9 +2724,7 @@ public final class Validator extends BpelValidator {
   }
 
   @SuppressWarnings("unchecked")
-  private Set<ExtendableActivity> getLogicallyPreceding( 
-          ExtendableActivity activity  )
-  {
+  private Set<ExtendableActivity> getLogicallyPreceding(ExtendableActivity activity) {
       /*
        * This method collect all preceding activities for activity.
        * So resulting set will contain activities that are source 

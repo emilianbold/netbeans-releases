@@ -111,6 +111,10 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
     public static final String COMMAND_AUTOTEST = "autotest"; // NOI18N
 
     /**
+     * Command for running RSpec tests on this project (if installed)
+     */
+    public static final String COMMAND_RSPEC = "rspec"; //NOI18N
+    /**
      * Standard command for running the IRB console on a project
      */
     public static final String COMMAND_IRB_CONSOLE = "irb-console"; // NOI18N
@@ -128,6 +132,7 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
         COMMAND_DEBUG,
         COMMAND_DEBUG_SINGLE,
         COMMAND_TEST,
+        COMMAND_RSPEC,
         COMMAND_TEST_SINGLE,
         COMMAND_DEBUG_TEST_SINGLE,
         COMMAND_DELETE,
@@ -642,6 +647,22 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
                 runner.run("test"); // NOI18N
             }
             return;
+        }
+        
+        if (COMMAND_RSPEC.equals(command)) {
+            TestRunner testRunner = getTestRunner(TestRunner.TestType.RSPEC);
+            if (testRunner != null) {
+                testRunner.getInstance().runAllTests(project);
+            } else {
+                File pwd = FileUtil.toFile(project.getProjectDirectory());
+                RakeRunner runner = new RakeRunner(project);
+                runner.setPWD(pwd);
+                runner.setFileLocator(new RubyFileLocator(context, project));
+                runner.showWarnings(true);
+                runner.run("spec"); // NOI18N
+            }
+            return;
+            
         }
         
         if (COMMAND_IRB_CONSOLE.equals(command)) {

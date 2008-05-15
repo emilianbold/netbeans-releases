@@ -54,6 +54,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.modules.subversion.AbstractSvnTest;
+import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.util.FileUtils;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.ISVNDirEntry;
@@ -163,20 +164,23 @@ public abstract class AbstractCLITest extends AbstractSvnTest {
         Set<File> notifiedFiles = fileNotifyListener.getFiles();
         
         if(files.length != notifiedFiles.size()) {
+            String prefix = getWC().getAbsolutePath();
             StringBuffer sb = new StringBuffer();
             sb.append("Expected files: \n");
             for (File file : files) {
                 sb.append("\t");
-                sb.append(file.getAbsolutePath());
+                sb.append(file.getAbsolutePath().substring(prefix.length() + 1));
                 sb.append("\n");
             }
             sb.append("Notified files: \n");
             for (File file : notifiedFiles) {
                 sb.append("\t");
-                sb.append(file.getAbsolutePath());
+                sb.append(file.getAbsolutePath().substring(prefix.length() + 1));
                 sb.append("\n");
             }    
-            fail(sb.toString());
+            String l = sb.toString();
+            Subversion.LOG.warning("assertNotifiedFiles: \n" + l);
+            fail(l);
         }
         for (File f : files) {
             if(!notifiedFiles.contains(f)) fail("missing notification for file " + f);   
