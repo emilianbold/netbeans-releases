@@ -148,6 +148,19 @@ public class SemanticEntitiesProvider {
 
             }
         });
+        
+        // typedefs
+        list.add(new AbstractSemanticEntity() {
+
+            public String getName() {
+                return "typedefs"; // NOI18N
+
+            }
+
+            public List<? extends CsmOffsetable> getBlocks(CsmFile csmFile) {
+                return ModelUtils.getTypedefBlocks(csmFile);
+            }
+        });
     }
 
     // public name for special handling
