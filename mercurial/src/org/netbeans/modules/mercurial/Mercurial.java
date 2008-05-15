@@ -117,6 +117,7 @@ public class Mercurial {
     private String version;
     private String runVersion;
     private boolean checkedVersion;
+    private boolean gotVersion;
 
     private Mercurial() {
     }
@@ -124,7 +125,6 @@ public class Mercurial {
     
     private void init() {
         loadIniParserClassesWorkaround();
-        checkedVersion = false;
         setDefaultPath();
         fileStatusCache = new FileStatusCache();
         mercurialAnnotator = new MercurialAnnotator();
@@ -168,27 +168,41 @@ public class Mercurial {
         }
     }
 
-    private void checkVersion() {
-        version = HgCommand.getHgVersion();
-        LOG.log(Level.FINE, "version: {0}", version); // NOI18N
-        if (version != null) {
-            goodVersion = version.startsWith(MERCURIAL_SUPPORTED_VERSION_093) ||
-                          version.startsWith(MERCURIAL_SUPPORTED_VERSION_094) ||
-                          version.startsWith(MERCURIAL_SUPPORTED_VERSION_095) ||
-                          version.startsWith(MERCURIAL_SUPPORTED_VERSION_100);
-            if (!goodVersion){
-                Preferences prefs = HgModuleConfig.getDefault().getPreferences();
-                runVersion = prefs.get(HgModuleConfig.PROP_RUN_VERSION, null);
-                if (runVersion != null && runVersion.equals(version)) {
-                    goodVersion = true;
+    public void checkVersion() {
+        checkedVersion = false;
+        runVersion = null;
+        gotVersion = false;
+        RequestProcessor rp = getRequestProcessor();
+        Runnable doCheck = new Runnable() {
+            public void run() {
+                version = HgCommand.getHgVersion();
+                LOG.log(Level.FINE, "version: {0}", version); // NOI18N
+                if (version != null) {
+                    goodVersion = version.startsWith(MERCURIAL_SUPPORTED_VERSION_093) ||
+                                  version.startsWith(MERCURIAL_SUPPORTED_VERSION_094) ||
+                                  version.startsWith(MERCURIAL_SUPPORTED_VERSION_095) ||
+                                  version.startsWith(MERCURIAL_SUPPORTED_VERSION_100);
+                    if (!goodVersion){
+                        Preferences prefs = HgModuleConfig.getDefault().getPreferences();
+                        runVersion = prefs.get(HgModuleConfig.PROP_RUN_VERSION, null);
+                        if (runVersion != null && runVersion.equals(version)) {
+                            goodVersion = true;
+                        }
+                   }
+                } else {
+                    goodVersion = false;
                 }
-           }
-        } else {
-            goodVersion = false;
-        }
+                gotVersion = true;
+            }
+        };
+        rp.post(doCheck);
     }
     
     public void checkVersionNotify() {  
+        if (!gotVersion) {
+            LOG.log(Level.FINE, "Call to hg version not finished"); // NOI18N
+            return;
+        }
         if (version != null && !goodVersion) {
              if (runVersion == null || !runVersion.equals(version)) {
                 Preferences prefs = HgModuleConfig.getDefault().getPreferences();
