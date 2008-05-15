@@ -222,17 +222,10 @@ introduced by support for multiple source roots. -jglick
                 <condition property="do.compile.jsps">
                     <istrue value="${{compile.jsps}}"/>
                 </condition>
-                <condition property="enable.jsdebugger">
-                    <and>
-                        <isset property="debug.client.available"/>
-                        <istrue value="${{debug.client.available}}"/>
-                    </and>
-                </condition>
                 <condition property="do.debug.server">
                     <or>
                         <not><isset property="debug.server"/></not>
                         <istrue value="${{debug.server}}"/>
-                        <not><isset property="enable.jsdebugger"/></not>
                         <and>
                             <not><istrue value="${{debug.server}}"/></not>
                             <not><istrue value="${{debug.client}}"/></not>
@@ -240,10 +233,7 @@ introduced by support for multiple source roots. -jglick
                     </or>
                 </condition>
                 <condition property="do.debug.client">
-                    <and>
-                        <istrue value="${{debug.client}}"/>
-                        <isset property="enable.jsdebugger"/>
-                    </and>
+                    <istrue value="${{debug.client}}"/>
                 </condition>
                 <condition property="do.display.browser">
                     <istrue value="${{display.browser}}"/>
@@ -492,7 +482,7 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                 </macrodef>
             </target>
             
-            <target name="-init-macrodef-nbjsdebug" if="enable.jsdebugger">
+            <target name="-init-macrodef-nbjsdebug">
                 <macrodef>
                     <xsl:attribute name="name">nbjsdebugstart</xsl:attribute>
                     <xsl:attribute name="uri">http://www.netbeans.org/ns/web-project/1</xsl:attribute>
