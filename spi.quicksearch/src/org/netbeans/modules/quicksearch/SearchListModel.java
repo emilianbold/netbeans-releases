@@ -37,50 +37,45 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.jumpto.quicksearch;
+package org.netbeans.modules.quicksearch;
 
-import org.netbeans.spi.jumpto.quicksearch.SearchResultGroup;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import org.netbeans.spi.jumpto.quicksearch.SearchProvider;
-import org.openide.util.Lookup;
-
+import java.util.Iterator;
+import javax.swing.AbstractListModel;
+import org.netbeans.spi.quicksearch.SearchResult;
+import org.netbeans.spi.quicksearch.SearchResultGroup;
 /**
- * Command Evaluator. It evaluates commands from toolbar and creates results
+ * ListModel for SearchGroupResults 
  * @author Jan Becicka
  */
-public class CommandEvaluator {
-    
-    /**
-     * command pattern is:
-     * "command arguments"
-     */
-    private static Pattern COMMAND_PATTERN = Pattern.compile("(\\w+)(\\s+)(.+)");
-    
-    /**
-     * if command is in form "command arguments" then only providers registered 
-     * for given command are called. Otherwise all providers are called.
-     * @param command
-     * @return 
-     */
-    public static Iterable<? extends SearchResultGroup> evaluate(String command) {
-        
-         List<SearchResultGroup> l = new ArrayList<SearchResultGroup>();
-        Matcher m = COMMAND_PATTERN.matcher(command);
-        boolean isCommand = m.matches();
-        for (SearchProvider provider : Lookup.getDefault().lookupAll(SearchProvider.class)) {
-            if (isCommand) {
-                if (provider.getCommandPrefix().equalsIgnoreCase(m.group(1))) {
-                    l.add(provider.evaluate(m.group(3)));
-                }
-            } else {
-                l.add(provider.evaluate(command));
-            }
-        }
+class SearchListModel extends AbstractListModel {
 
-        return l;
+    private static final int MAX_RESULTS = 5;
+    private Iterable<? extends SearchResultGroup> results;
+    private ArrayList ar = new ArrayList();
+
+    public SearchListModel(String text) {
+        super();
+        results = CommandEvaluator.evaluate(text);
+        for (SearchResultGroup cr : results) {
+            Iterator<? extends SearchResult> it = cr.getItems().iterator();
+            for (int i = 0; i < Math.min(cr.getSize(), MAX_RESULTS); i++) {
+                ar.add(it.next());
+            }
+            ar.add(null);
+        }
     }
 
+    public int getSize() {
+        int size = 0;
+        for (SearchResultGroup cr : results) {
+            size += Math.min(MAX_RESULTS, cr.getSize());
+            size++;
+        }
+        return size;
+    }
+
+    public Object getElementAt(int arg0) {
+        return ar.get(arg0);
+    }
 }

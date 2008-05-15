@@ -42,9 +42,9 @@ package org.netbeans.modules.jumpto.quicksearch;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import org.netbeans.spi.jumpto.quicksearch.SearchProvider;
-import org.netbeans.spi.jumpto.quicksearch.SearchResult;
-import org.netbeans.spi.jumpto.quicksearch.SearchResultGroup;
+import org.netbeans.spi.quicksearch.SearchProvider;
+import org.netbeans.spi.quicksearch.SearchResult;
+import org.netbeans.spi.quicksearch.SearchResultGroup;
 import org.netbeans.spi.jumpto.type.TypeDescriptor;
 
 /**

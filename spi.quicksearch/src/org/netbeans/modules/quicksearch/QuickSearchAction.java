@@ -36,46 +36,45 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.quicksearch;
 
-package org.netbeans.modules.jumpto.quicksearch;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
+import org.openide.util.actions.CallableSystemAction;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import javax.swing.AbstractListModel;
-import org.netbeans.spi.jumpto.quicksearch.SearchResult;
-import org.netbeans.spi.jumpto.quicksearch.SearchResultGroup;
 /**
- * ListModel for SearchGroupResults 
- * @author Jan Becicka
+ * QuickSearch Action provides toolbar presenter
+ * @author  Jan Becicka
  */
-class SearchListModel extends AbstractListModel {
+public final class QuickSearchAction extends CallableSystemAction {
 
-    private static final int MAX_RESULTS = 5;
-    private Iterable<? extends SearchResultGroup> results;
-    private ArrayList ar = new ArrayList();
-
-    public SearchListModel(String text) {
-        super();
-        results = CommandEvaluator.evaluate(text);
-        for (SearchResultGroup cr : results) {
-            Iterator<? extends SearchResult> it = cr.getItems().iterator();
-            for (int i = 0; i < Math.min(cr.getSize(), MAX_RESULTS); i++) {
-                ar.add(it.next());
-            }
-            ar.add(null);
-        }
+   QuickSearchComboBar retValue = new QuickSearchComboBar();
+   
+   public void performAction() {
+       retValue.requestFocus();
     }
 
-    public int getSize() {
-        int size = 0;
-        for (SearchResultGroup cr : results) {
-            size += Math.min(MAX_RESULTS, cr.getSize());
-            size++;
-        }
-        return size;
+    public String getName() {
+        return NbBundle.getMessage(QuickSearchAction.class, "CTL_QuickSearchAction");
     }
 
-    public Object getElementAt(int arg0) {
-        return ar.get(arg0);
+    @Override
+    protected String iconResource() {
+        return "org/netbeans/modules/jumpto/resources/edit_parameters.png";
     }
+
+    public HelpCtx getHelpCtx() {
+        return HelpCtx.DEFAULT_HELP;
+    }
+
+    @Override
+    protected boolean asynchronous() {
+        return false;
+    }
+
+    @Override
+    public java.awt.Component getToolbarPresenter() {
+        return retValue;
+    }
+    
 }

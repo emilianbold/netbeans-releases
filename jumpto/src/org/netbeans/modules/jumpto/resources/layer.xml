@@ -46,16 +46,6 @@ Contributor(s): Andrei Badea, Leon Chiver
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
 
-    <folder name="Toolbars">
-        <file name="Debugging.xml" url="Debugging.xml"/>
-        <folder name="QuickSearch">
-            <file name="org-netbeans-modules-jumto-quicksearch-QuickSearchAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-jumpto-quicksearch-QuickSearchAction.instance"/>
-                <attr name="position" intvalue="250"/>
-            </file>
-            </folder>
-        <file name="Standard.xml" url="Standard.xml"/>
-    </folder>
     <!-- Install the action -->
     <folder name="Actions">
         <folder name="Edit">
@@ -63,7 +53,6 @@ Contributor(s): Andrei Badea, Leon Chiver
             <file name="org-netbeans-modules-jumpto-type-GoToType.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.jumpto.type.GoToTypeAction"/>
             </file>            
-            <file name="org-netbeans-modules-jumpto-quicksearch-QuickSearchAction.instance"/>
         </folder>
         <folder name="Tools">
             <file name="org-netbeans-modules-jumpto-file-FileSearchAction.instance"/>
@@ -101,11 +90,6 @@ Contributor(s): Andrei Badea, Leon Chiver
         </folder>
     </folder>
     -->
-    <folder name="Shortcuts">
-        <file name="A-Q.shadow">
-            <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-jumpto-quicksearch-QuickSearchAction.instance"/>
-        </file>
-    </folder>
     
     
     <!-- folder name="Editors">

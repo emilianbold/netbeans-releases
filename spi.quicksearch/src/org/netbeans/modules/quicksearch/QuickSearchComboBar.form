@@ -62,7 +62,7 @@
           <Connection component="command" name="background" type="property"/>
         </Property>
         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-          <Image iconType="3" name="/org/netbeans/modules/jumpto/resources/find.png"/>
+          <Image iconType="3" name="/org/netbeans/modules/quicksearch/resources/find.png"/>
         </Property>
         <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
           <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">

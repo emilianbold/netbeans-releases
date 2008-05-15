@@ -37,29 +37,32 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.spi.jumpto.quicksearch;
+package org.netbeans.spi.quicksearch;
 
 /**
  *
  * @author  Jan Becicka
  */
+public interface SearchResultGroup {
 
-public interface SearchResult {
     /**
-     * Implement what happens on Enter
+     * Get the value of item
+     *
+     * @return the value of item
      */
-    public void invoke();
+    public Iterable<? extends SearchResult> getItems();
+
+    /**
+     * Get the value of Category
+     *
+     * @return the value of Category
+     */
+    public String getCategory();
     
     /**
-     * Display name of result.
-     * String is maybe not enough. What about icon?
+     * Not sure if this method should be here
      * @return
      */
-    public String getDisplayName();
-    
-    /**
-     * Which group is this result member of 
-     * @return
-     */
-    public SearchResultGroup getResultGroup();
+    int getSize();
+
 }

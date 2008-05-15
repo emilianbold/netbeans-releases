@@ -36,45 +36,51 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.jumpto.quicksearch;
 
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.actions.CallableSystemAction;
+package org.netbeans.modules.quicksearch;
+
+import org.netbeans.spi.quicksearch.SearchResultGroup;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import org.netbeans.spi.quicksearch.SearchProvider;
+import org.openide.util.Lookup;
 
 /**
- * QuickSearch Action provides toolbar presenter
- * @author  Jan Becicka
+ * Command Evaluator. It evaluates commands from toolbar and creates results
+ * @author Jan Becicka
  */
-public final class QuickSearchAction extends CallableSystemAction {
-
-   QuickSearchComboBar retValue = new QuickSearchComboBar();
-   
-   public void performAction() {
-       retValue.requestFocus();
-    }
-
-    public String getName() {
-        return NbBundle.getMessage(QuickSearchAction.class, "CTL_QuickSearchAction");
-    }
-
-    @Override
-    protected String iconResource() {
-        return "org/netbeans/modules/jumpto/resources/edit_parameters.png";
-    }
-
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
-    }
-
-    @Override
-    protected boolean asynchronous() {
-        return false;
-    }
-
-    @Override
-    public java.awt.Component getToolbarPresenter() {
-        return retValue;
-    }
+public class CommandEvaluator {
     
+    /**
+     * command pattern is:
+     * "command arguments"
+     */
+    private static Pattern COMMAND_PATTERN = Pattern.compile("(\\w+)(\\s+)(.+)");
+    
+    /**
+     * if command is in form "command arguments" then only providers registered 
+     * for given command are called. Otherwise all providers are called.
+     * @param command
+     * @return 
+     */
+    public static Iterable<? extends SearchResultGroup> evaluate(String command) {
+        
+         List<SearchResultGroup> l = new ArrayList<SearchResultGroup>();
+        Matcher m = COMMAND_PATTERN.matcher(command);
+        boolean isCommand = m.matches();
+        for (SearchProvider provider : Lookup.getDefault().lookupAll(SearchProvider.class)) {
+            if (isCommand) {
+                if (provider.getCommandPrefix().equalsIgnoreCase(m.group(1))) {
+                    l.add(provider.evaluate(m.group(3)));
+                }
+            } else {
+                l.add(provider.evaluate(command));
+            }
+        }
+
+        return l;
+    }
+
 }

@@ -38,9 +38,9 @@
  */
 
 
-package org.netbeans.modules.jumpto.quicksearch;
+package org.netbeans.modules.quicksearch;
 
-import org.netbeans.spi.jumpto.quicksearch.SearchResult;
+import org.netbeans.spi.quicksearch.SearchResult;
 
 /**
  * Component representing drop down for quick search

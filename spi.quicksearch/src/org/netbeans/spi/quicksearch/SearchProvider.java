@@ -38,7 +38,8 @@
  */
 
 
-package org.netbeans.spi.jumpto.quicksearch;
+package org.netbeans.spi.quicksearch;
+
 
 /**
  * Search Provider.

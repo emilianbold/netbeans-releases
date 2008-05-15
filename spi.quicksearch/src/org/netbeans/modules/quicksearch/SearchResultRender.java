@@ -36,7 +36,7 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.jumpto.quicksearch;
+package org.netbeans.modules.quicksearch;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -49,7 +49,7 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.ListCellRenderer;
 import javax.swing.border.EmptyBorder;
-import org.netbeans.spi.jumpto.quicksearch.SearchResult;
+import org.netbeans.spi.quicksearch.SearchResult;
 
 /**
  * ListCellRenderer for SearchResults

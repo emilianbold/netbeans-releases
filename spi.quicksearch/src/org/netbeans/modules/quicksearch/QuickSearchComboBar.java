@@ -37,7 +37,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.jumpto.quicksearch;
+package org.netbeans.modules.quicksearch;
 
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -131,7 +131,7 @@ public class QuickSearchComboBar extends javax.swing.JPanel {
         });
 
         jLabel2.setBackground(command.getBackground());
-        jLabel2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/jumpto/resources/find.png"))); // NOI18N
+        jLabel2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/quicksearch/resources/find.png"))); // NOI18N
         jLabel2.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         jLabel2.setName("jLabel2"); // NOI18N
         jLabel2.setOpaque(true);

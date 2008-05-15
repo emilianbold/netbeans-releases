@@ -49,9 +49,9 @@ import java.util.Set;
 import javax.swing.Action;
 import org.netbeans.core.options.keymap.api.ShortcutAction;
 import org.netbeans.core.options.keymap.spi.KeymapManager;
-import org.netbeans.spi.jumpto.quicksearch.SearchProvider;
-import org.netbeans.spi.jumpto.quicksearch.SearchResult;
-import org.netbeans.spi.jumpto.quicksearch.SearchResultGroup;
+import org.netbeans.spi.quicksearch.SearchProvider;
+import org.netbeans.spi.quicksearch.SearchResult;
+import org.netbeans.spi.quicksearch.SearchResultGroup;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
