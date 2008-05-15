@@ -44,6 +44,7 @@ import java.io.IOException;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.cli.Parser.Line;
 import org.netbeans.modules.subversion.client.cli.SvnCommand;
+import org.tigris.subversion.svnclientadapter.ISVNNotifyListener;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
 
 /**
@@ -66,6 +67,11 @@ public class UpdateCommand extends SvnCommand {
     }
        
     @Override
+    protected int getCommand() {
+        return ISVNNotifyListener.Command.UPDATE;
+    }
+    
+    @Override
     public void prepareCommand(Arguments arguments) throws IOException {                     
         arguments.add("update");
         if (!recursive) {
@@ -78,8 +84,9 @@ public class UpdateCommand extends SvnCommand {
             arguments.add("--ignore-externals");
         }
         for (File file : files) {
-        arguments.add(file);                       
+            arguments.add(file);                       
         }        
+        setCommandWorkingDirectory(files[0]);        
     }
     
     // XXX merge with commit
@@ -91,11 +98,9 @@ public class UpdateCommand extends SvnCommand {
     protected void notify(Line line) {
         if(line.getRevision() != -1) {
             if(revision != -1) {
-                try {
-                    Subversion.LOG.warning("Revision notified more times : " + revision + ", " + line.getRevision() + " for command " + getStringCommand());
-                } catch (IOException ex) {
-                    // should not happen
-                }
+                Subversion.LOG.warning(
+                        "Revision notified more times : " + revision + ", " + 
+                        line.getRevision() + " for command " + getStringCommand());
             }
             revision = line.getRevision();            
         }

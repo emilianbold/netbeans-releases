@@ -138,6 +138,7 @@ import org.netbeans.modules.xml.wsdl.model.extensions.bpel.CorrelationProperty;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.xml.xam.Model;
+import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.netbeans.modules.xml.xam.locator.CatalogModelFactory;
@@ -167,6 +168,7 @@ import org.netbeans.modules.bpel.validation.core.BpelValidator;
 import org.netbeans.modules.bpel.model.api.support.SimpleBpelModelVisitor;
 import org.netbeans.modules.bpel.model.api.support.SimpleBpelModelVisitorAdaptor;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
 import static org.netbeans.modules.xml.ui.UI.*;
 
 /**
@@ -276,14 +278,47 @@ public final class Validator extends BpelValidator {
       Named named = list1.get(i);
 
       if (contains(named, list2)) {
+        String file1 = getFileName(named);
+
+        if (file1 == null) {
+          continue;
+        }
+        String file2 = getFileName(list2.get(0));
+
+        if (file2 == null) {
+          continue;
+        }
         // todo a: warning for identical, error for different
-        addError("FIX_SA00014", process, named.getName(), getFileName(named), getFileName(list2.get(0))); // NOI18N
+        addError("FIX_SA00014", process, named.getName(), file1, file2); // NOI18N
       }
     }
   }
 
   private String getFileName(Component component) {
-    return component.getModel().getModelSource().getLookup().lookup(FileObject.class).getPath();
+    if (component == null) {
+      return null;
+    }
+    Model model = component.getModel();
+
+    if (model == null) {
+      return null;
+    }
+    ModelSource source = model.getModelSource();
+
+    if (source == null) {
+      return null;
+    }
+    Lookup lookup = source.getLookup();
+
+    if (lookup == null) {
+      return null;
+    }
+    FileObject file = lookup.lookup(FileObject.class);
+
+    if (file == null) {
+      return null;
+    }
+    return file.getPath();
   }
 
   private boolean contains(Named named, List<Named> list) {

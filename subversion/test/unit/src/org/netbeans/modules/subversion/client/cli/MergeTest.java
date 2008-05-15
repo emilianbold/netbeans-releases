@@ -71,23 +71,28 @@ public class MergeTest extends AbstractCLITest {
         c.merge(getFileUrl(file), r2, getFileUrl(file), r1, file, false, false);
         assertTrue(file.exists());
         assertEquals("1", read(file));
+        assertNotifiedFiles(new File[] {file});        
     }
     
     public void testMergeFolderNonRec() throws Exception {                                        
+        // init wc
         File folder = createFolder("folder");
         add(folder);
         commit(folder);
         assertInfo(folder, getFileUrl(folder));
         
+        // init copy from wc
         File foldercopy = new File(getWC(), "foldercopy");
-        
+                
         ISVNClientAdapter c = getNbClient();
         c.copy(getFileUrl(folder), getFileUrl(foldercopy), "copy", SVNRevision.HEAD);
+        // switch to copy
         c.switchToUrl(folder, getFileUrl(foldercopy), SVNRevision.HEAD, true);
 
         assertCopy(getFileUrl(foldercopy));
         assertInfo(folder, getFileUrl(foldercopy));
         
+        // add new files to copy
         File folder1 = createFolder(folder, "folder1");
         File file = createFile(folder, "file");
         File file1 = createFile(folder1, "file");
@@ -97,6 +102,7 @@ public class MergeTest extends AbstractCLITest {
         commit(folder);
         assertTrue(file.exists());
         
+        // switch back to wc
         c.switchToUrl(folder, getFileUrl(folder), SVNRevision.HEAD, true);
         assertCopy(getFileUrl(folder));
         assertInfo(folder, getFileUrl(folder));        
@@ -104,12 +110,14 @@ public class MergeTest extends AbstractCLITest {
         assertFalse(file1.exists());
         assertFalse(folder1.exists());
         
+        // merge wc with copy
         ISVNLogMessage[] log = getCompleteLog(getFileUrl(folder));
         c.merge(getFileUrl(foldercopy), log[0].getRevision(), getFileUrl(foldercopy), SVNRevision.HEAD, folder, false, false);
         assertTrue(file.exists());
         assertFalse(file1.exists());
         assertFalse(folder1.exists());
-        // XXX notify
+        
+        assertNotifiedFiles(new File[] {file});        
     }
     
     public void testMergeFolderFrom2Urls() throws Exception {                                        
@@ -156,7 +164,7 @@ public class MergeTest extends AbstractCLITest {
         c.merge(getFileUrl(foldercopy1), log[0].getRevision(), getFileUrl(foldercopy2), SVNRevision.HEAD, folder, true, true);
         assertTrue(file1.exists());
         assertTrue(file2.exists());
-        // XXX notify
+        assertNotifiedFiles(new File[] {file1, file2});        
     }
     
     public void testFolderMergeRec() throws Exception {                                        
@@ -195,7 +203,7 @@ public class MergeTest extends AbstractCLITest {
         assertTrue(file.exists());
         assertTrue(file1.exists());
         assertTrue(folder1.exists());
-        // XXX notify
+        assertNotifiedFiles(new File[] {file, file1, folder1});        
     }
     
 }
