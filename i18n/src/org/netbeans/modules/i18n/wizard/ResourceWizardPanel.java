@@ -43,10 +43,10 @@
 package org.netbeans.modules.i18n.wizard;
 
 
+import java.awt.CardLayout;
 import java.awt.Component;
 import java.awt.Container;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.BeanInfo;
@@ -58,7 +58,6 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -78,11 +77,13 @@ import org.netbeans.modules.i18n.I18nUtil;
 import org.netbeans.modules.i18n.ResourceHolder;
 import org.netbeans.modules.i18n.SelectorUtils;
 
+import org.openide.WizardValidationException;
 import org.openide.loaders.DataObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.filesystems.FileObject;
 import org.openide.ErrorManager;
+import org.openide.WizardDescriptor.AsynchronousValidatingPanel;
 import org.openide.awt.Mnemonics;
 
 
@@ -128,8 +129,8 @@ final class ResourceWizardPanel extends JPanel {
     
     /** Setter for <code>resources</code> property. */
     public void setSourceMap(Map<DataObject,SourceData> sourceMap) {
-        this.sourceMap.clear();
-        this.sourceMap.putAll(sourceMap);
+            this.sourceMap.clear();
+            this.sourceMap.putAll(sourceMap);
         
         tableModel.fireTableDataChanged();
        
@@ -371,7 +372,11 @@ final class ResourceWizardPanel extends JPanel {
     /** <code>WizardDescriptor.Panel</code> used for <code>ResourceChooserPanel</code>. 
      * @see I18nWizardDescriptorPanel
      * @see org.openide.WizardDescriptor.Panel */
-    public static class Panel extends I18nWizardDescriptor.Panel implements I18nWizardDescriptor.ProgressMonitor {
+    public static class Panel extends I18nWizardDescriptor.Panel
+            implements AsynchronousValidatingPanel<I18nWizardDescriptor.Settings> {
+
+        private static final String CARD_GUI = "gui";                   //NOI18N
+        private static final String CARD_PROGRESS = "progress";         //NOI18N
 
         /** Cached component. */
         private transient ResourceWizardPanel resourcePanel;
@@ -379,6 +384,8 @@ final class ResourceWizardPanel extends JPanel {
         /** Indicates whether this panel is used in i18n test wizard or not. */
         private final boolean testWizard;
 
+        /** */
+        private volatile ProgressWizardPanel progressPanel;
 
         /** Constructs Panel for i18n wizard. */
         public Panel() {
@@ -394,7 +401,7 @@ final class ResourceWizardPanel extends JPanel {
         /** Gets component to display. Implements superclass abstract method. 
          * @return this instance */
         protected Component createComponent() {
-            JPanel panel = new JPanel();
+            JPanel panel = new JPanel(new CardLayout());
 
             // Accessibility
             panel.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(ResourceWizardPanel.class).getString("ACS_ResourceWizardPanel"));                 
@@ -406,13 +413,8 @@ final class ResourceWizardPanel extends JPanel {
             panel.setName(NbBundle.getMessage(ResourceWizardPanel.class, msgKey));
             panel.setPreferredSize(I18nWizardDescriptor.PREFERRED_DIMENSION);
             
-            panel.setLayout(new GridBagLayout());
-            GridBagConstraints constraints = new GridBagConstraints();
-            constraints.weightx = 1.0;
-            constraints.weighty = 1.0;
-            constraints.fill = GridBagConstraints.BOTH;
-            panel.add(getUI(), constraints);            
-            
+            panel.add(getUI(), CARD_GUI);
+
             return panel;
         }
 
@@ -427,6 +429,9 @@ final class ResourceWizardPanel extends JPanel {
         public void readSettings(I18nWizardDescriptor.Settings settings) {
 	    super.readSettings(settings);
             getUI().setSourceMap(getMap());
+
+            Container container = (Container) getComponent();
+            ((CardLayout) container.getLayout()).show(container, CARD_GUI);
         }
 
         /** Stores settings at the end of panel show. Overrides superclass abstract method. */
@@ -438,18 +443,23 @@ final class ResourceWizardPanel extends JPanel {
             getMap().putAll(getUI().getSourceMap());
         }
         
-        /** Searches hard coded strings in sources and puts found hard coded string - i18n string pairs
-         * into settings. Implements <code>ProgressMonitor</code> interface. */
-        public void doLongTimeChanges() {
-            // Replace panel.
-            ProgressWizardPanel progressPanel = new ProgressWizardPanel(false);
-            
+        /** */
+        public void prepareValidation() {
+            assert EventQueue.isDispatchThread();
+            if (progressPanel == null) {
+                progressPanel = new ProgressWizardPanel(false);
+            }
+
             showProgressPanel(progressPanel);
-            
+
             progressPanel.setMainText(NbBundle.getMessage(ResourceWizardPanel.class,
                                                           "TXT_Loading"));//NOI18N
             progressPanel.setMainProgress(0);
-            
+        }
+
+        public void validate() throws WizardValidationException {
+            assert !EventQueue.isDispatchThread();
+
             // Do search.
             Map<DataObject,SourceData> sourceMap = getUI().getSourceMap();
             Iterator<Map.Entry<DataObject,SourceData>> sourceIterator
@@ -524,31 +534,12 @@ final class ResourceWizardPanel extends JPanel {
                 sourceData.setStringMap(map);
             } // End of outer for.
         }
-        
+
         /** Helper method. Places progress panel for monitoring search. */
         private void showProgressPanel(ProgressWizardPanel progressPanel) {
-            ((Container)getComponent()).remove(getUI());
-            GridBagConstraints constraints = new GridBagConstraints();
-            constraints.weightx = 1.0;
-            constraints.weighty = 1.0;
-            constraints.fill = GridBagConstraints.BOTH;
-            ((Container)getComponent()).add(progressPanel, constraints);
-            ((JComponent)getComponent()).revalidate();
-            getComponent().repaint();
-        }
-        
-        /** Resets panel back after monitoring search. Implements <code>ProgressMonitor</code> interface. */
-        public void reset() {
             Container container = (Container) getComponent();
-            
-            if (!container.isAncestorOf(getUI())) {
-                container.removeAll();
-                GridBagConstraints constraints = new GridBagConstraints();
-                constraints.weightx = 1.0;
-                constraints.weighty = 1.0;
-                constraints.fill = GridBagConstraints.BOTH;
-                container.add(getUI(), constraints);
-            }
+            container.add(progressPanel, CARD_PROGRESS);
+            ((CardLayout) container.getLayout()).show(container, CARD_PROGRESS);
         }
         
         /** Gets help. Implements superclass abstract method. */
