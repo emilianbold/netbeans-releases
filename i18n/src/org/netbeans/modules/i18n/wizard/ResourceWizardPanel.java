@@ -407,7 +407,7 @@ final class ResourceWizardPanel extends JPanel {
             // Accessibility
             panel.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(ResourceWizardPanel.class).getString("ACS_ResourceWizardPanel"));                 
             
-            panel.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(1)); // NOI18N
+            panel.putClientProperty("WizardPanel_contentSelectedIndex", Integer.valueOf(1)); // NOI18N
 
             String msgKey = testWizard ? "TXT_SelectTestResource"       //NOI18N
                                        : "TXT_SelectResource";          //NOI18N
