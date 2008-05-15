@@ -144,6 +144,7 @@ public class AnnotationsTest extends BasicOpenFileTest {
 
     private void runTest(String fileName, int annotationsCount) throws Exception {
         EditorOperator eOp = openFile(fileName);
+        Thread.sleep(1000);//wait editor inicialization
         Object[] anns = eOp.getAnnotations();
         assertEquals(annotationsCount, anns.length);
         for (Object object : anns) {
