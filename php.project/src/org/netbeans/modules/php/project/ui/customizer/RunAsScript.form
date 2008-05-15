@@ -27,13 +27,20 @@
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="argsTextField" alignment="1" pref="222" max="32767" attributes="3"/>
-                  <Component id="indexFileTextField" alignment="1" pref="222" max="32767" attributes="3"/>
-                  <Component id="runAsCombo" alignment="1" pref="222" max="32767" attributes="3"/>
-                  <Component id="interpreterTextField" alignment="1" pref="222" max="32767" attributes="3"/>
-                  <Component id="hintLabel" alignment="0" pref="222" max="32767" attributes="0"/>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Component id="hintLabel" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                  </Group>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="argsTextField" alignment="1" pref="222" max="32767" attributes="3"/>
+                          <Component id="indexFileTextField" alignment="1" pref="222" max="32767" attributes="3"/>
+                          <Component id="runAsCombo" alignment="1" pref="222" max="32767" attributes="3"/>
+                          <Component id="interpreterTextField" alignment="1" pref="222" max="32767" attributes="3"/>
+                      </Group>
+                      <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
+                  </Group>
               </Group>
-              <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -118,17 +125,10 @@
     </Component>
     <Component class="javax.swing.JTextField" name="indexFileTextField">
     </Component>
-    <Component class="javax.swing.JTextArea" name="hintLabel">
+    <Component class="javax.swing.JLabel" name="hintLabel">
       <Properties>
-        <Property name="editable" type="boolean" value="false"/>
-        <Property name="lineWrap" type="boolean" value="true"/>
-        <Property name="rows" type="int" value="2"/>
-        <Property name="wrapStyleWord" type="boolean" value="true"/>
-        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
-          <Border info="null"/>
-        </Property>
+        <Property name="text" type="java.lang.String" value="dummy" noResource="true"/>
         <Property name="enabled" type="boolean" value="false"/>
-        <Property name="opaque" type="boolean" value="false"/>
       </Properties>
     </Component>
   </SubComponents>

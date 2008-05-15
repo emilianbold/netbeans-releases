@@ -41,7 +41,6 @@ package org.netbeans.modules.php.project.ui.customizer;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
-import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.php.project.api.PhpOptions;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAsType;
@@ -120,7 +119,10 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
     protected void validateFields() {}
 
     String composeHint() {
-        return interpreterTextField.getText() + " " + argsTextField.getText(); // NOI18N
+        String php = interpreterTextField.getText();
+        String script = "./" + indexFileTextField.getText(); // NOI18N
+        String args = argsTextField.getText();
+        return php + " " + script + " " + args; // NOI18N
     }
 
     private class FieldUpdater extends TextFieldUpdater {
@@ -157,7 +159,7 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
         runAsCombo = new javax.swing.JComboBox();
         indexFileLabel = new javax.swing.JLabel();
         indexFileTextField = new javax.swing.JTextField();
-        hintLabel = new javax.swing.JTextArea();
+        hintLabel = new javax.swing.JLabel();
 
         interpreterLabel.setLabelFor(interpreterTextField);
         org.openide.awt.Mnemonics.setLocalizedText(interpreterLabel, org.openide.util.NbBundle.getMessage(RunAsScript.class, "LBL_PhpInterpreter")); // NOI18N
@@ -173,13 +175,8 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
         indexFileLabel.setLabelFor(indexFileTextField);
         org.openide.awt.Mnemonics.setLocalizedText(indexFileLabel, org.openide.util.NbBundle.getMessage(RunAsScript.class, "LBL_IndexFile")); // NOI18N
 
-        hintLabel.setEditable(false);
-        hintLabel.setLineWrap(true);
-        hintLabel.setRows(2);
-        hintLabel.setWrapStyleWord(true);
-        hintLabel.setBorder(null);
+        org.openide.awt.Mnemonics.setLocalizedText(hintLabel, "dummy"); // NOI18N
         hintLabel.setEnabled(false);
-        hintLabel.setOpaque(false);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -195,12 +192,16 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
                     .add(argsLabel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, argsTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 222, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, indexFileTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 222, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, runAsCombo, 0, 222, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, interpreterTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 222, Short.MAX_VALUE)
-                    .add(hintLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 222, Short.MAX_VALUE))
-                .add(0, 0, 0))
+                    .add(layout.createSequentialGroup()
+                        .add(hintLabel)
+                        .addContainerGap())
+                    .add(layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, argsTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 222, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, indexFileTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 222, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, runAsCombo, 0, 222, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, interpreterTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 222, Short.MAX_VALUE))
+                        .add(0, 0, 0))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -221,14 +222,14 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
                     .add(argsTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 19, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(argsLabel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(hintLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(hintLabel)
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel argsLabel;
     private javax.swing.JTextField argsTextField;
-    private javax.swing.JTextArea hintLabel;
+    private javax.swing.JLabel hintLabel;
     private javax.swing.JLabel indexFileLabel;
     private javax.swing.JTextField indexFileTextField;
     private javax.swing.JLabel interpreterLabel;
