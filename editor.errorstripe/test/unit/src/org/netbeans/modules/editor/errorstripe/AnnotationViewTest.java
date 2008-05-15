@@ -49,7 +49,6 @@ import java.util.List;
 import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 import javax.swing.JScrollPane;
-import junit.framework.*;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.Utilities;
@@ -57,7 +56,6 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.editor.errorstripe.caret.CaretMarkProviderCreator;
 import org.netbeans.modules.editor.errorstripe.privatespi.Mark;
 import org.netbeans.spi.editor.errorstripe.UpToDateStatus;
-import org.netbeans.modules.editor.options.BaseOptions;
 import org.netbeans.modules.editor.plain.PlainKit;
 import org.netbeans.modules.editor.errorstripe.privatespi.Status;
 
@@ -71,13 +69,11 @@ public class AnnotationViewTest extends NbTestCase {
         super(testName);
     }
     
-    protected void setUp() throws Exception {
+    protected @Override void setUp() throws Exception {
         UnitUtilities.prepareTest(new String[] {"/org/netbeans/modules/editor/resources/annotations-test-layer.xml",
                                                 "/org/netbeans/modules/editor/plain/resources/layer.xml",
                                                 "/org/netbeans/modules/editor/errorstripe/test-layer.xml"},
                                   new Object[0]);
-        BaseKit.getKit(PlainKit.class);
-        BaseOptions.findObject(BaseOptions.class, true);
         
         CaretMarkProviderCreator.switchOff = true;
     }
@@ -267,7 +263,7 @@ public class AnnotationViewTest extends NbTestCase {
         assertNotNull(new AnnotationViewFactory().createSideBar(editor));
     }
 
-    protected boolean runInEQ() {
+    protected @Override boolean runInEQ() {
         return true;
     }
     
