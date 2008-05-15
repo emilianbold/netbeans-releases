@@ -28,10 +28,8 @@
 package org.netbeans.modules.languages.dataobject;
 
 import java.io.IOException;
-import org.netbeans.editor.Settings;
 import org.netbeans.modules.languages.features.Index;
 import org.openide.modules.ModuleInstall;
-import org.openide.windows.WindowManager;
 
 /**
  *
@@ -39,15 +37,6 @@ import org.openide.windows.WindowManager;
  */
 public class Install extends ModuleInstall {
 
-    public @Override void restored () {
-        super.restored ();
-        Settings.addInitializer(LanguagesEditorKit.INITIALIZER);
-        WindowManager.getDefault ().invokeWhenUIReady (new Runnable() {
-            public void run () {
-            }
-        });
-    }   
-    
     public @Override boolean closing () {
         final boolean ret = super.closing ();
         try {
@@ -57,18 +46,5 @@ public class Install extends ModuleInstall {
         }
         return ret;
     }
-
-    public @Override void close() {
-        super.close();
-        Settings.removeInitializer(LanguagesEditorKit.INITIALIZER.getName());
-        Settings.reset();
-    }
-
-    public @Override void uninstalled() {
-        super.uninstalled();
-        Settings.removeInitializer(LanguagesEditorKit.INITIALIZER.getName());
-        Settings.reset();
-    }
-    
     
 }
