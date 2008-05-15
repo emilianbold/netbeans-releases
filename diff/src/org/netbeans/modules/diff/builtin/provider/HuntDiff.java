@@ -45,6 +45,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
+import java.util.regex.MatchResult;
+
 import org.netbeans.api.diff.Difference;
 
 /**
@@ -55,6 +59,9 @@ import org.netbeans.api.diff.Difference;
  */
 class HuntDiff {
 
+    private static final Pattern twoOrMoreSpaces = Pattern.compile("\\S  +\\S");
+    private static final Pattern whitespaceExceptSpace = Pattern.compile("\\S[\t\n\f\r]\\S");
+    
     private HuntDiff() {
     }
 
@@ -87,6 +94,22 @@ class HuntDiff {
             }
             for (int i = 0 ; i < lines2.length; i++) {
                 tmpLines2[i] = lines2[i].toUpperCase();
+            }
+            lines1 = tmpLines1;
+            lines2 = tmpLines2;
+        }
+        if (options.ignoreInnerWhitespace) {
+            String [] tmpLines1 = new String[lines1.length];
+            String [] tmpLines2 = new String[lines2.length];
+            for (int i = 0 ; i < lines1.length; i++) {
+                
+                Matcher mm = whitespaceExceptSpace.matcher(lines1[i]);
+                tmpLines1[i] = whitespaceExceptSpace.matcher(lines1[i]).replaceAll(" ");
+                tmpLines1[i] = twoOrMoreSpaces.matcher(tmpLines1[i]).replaceAll(" ");
+            }
+            for (int i = 0 ; i < lines2.length; i++) {
+                tmpLines2[i] = whitespaceExceptSpace.matcher(lines2[i]).replaceAll(" ");
+                tmpLines2[i] = twoOrMoreSpaces.matcher(tmpLines2[i]).replaceAll(" ");
             }
             lines1 = tmpLines1;
             lines2 = tmpLines2;
