@@ -141,6 +141,15 @@ made subject to such option by the copyright holder.
     <entry category="deprecated" javaType="java.lang.Boolean" name="input-methods-enabled" xml:space="preserve">
         <value><![CDATA[true]]></value>
     </entry>
+    <entry category="private" javaType="java.lang.Boolean" name="javadoc-auto-popup" xml:space="preserve">
+        <value><![CDATA[true]]></value>
+    </entry>
+    <entry category="private" javaType="java.lang.Integer" name="javadoc-auto-popup-delay" xml:space="preserve">
+        <value><![CDATA[200]]></value>
+    </entry>
+    <entry category="private" javaType="java.awt.Dimension" name="javadoc-preferred-size" xml:space="preserve">
+        <value><![CDATA[500,300]]></value>
+    </entry>
     <entry category="deprecated" javaType="java.lang.Integer" name="line-batch-size" xml:space="preserve">
         <value><![CDATA[2]]></value>
     </entry>
