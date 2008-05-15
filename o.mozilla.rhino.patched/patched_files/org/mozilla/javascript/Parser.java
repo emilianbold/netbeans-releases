@@ -1154,6 +1154,10 @@ return null;
                 tt = peekToken();
                 if (tt == Token.SEMI) {
                     init = nf.createLeaf(Token.EMPTY);
+                    // <netbeans>
+                    int pos = getStartOffset();
+                    init.setSourceBounds(pos, pos);
+                    // </netbeans>
                 } else {
                     if (tt == Token.VAR) {
                         // set init to a var list or initial
@@ -1180,8 +1184,11 @@ return null;
                     decompiler.addToken(Token.SEMI);
                     if (peekToken() == Token.SEMI) {
                         // no loop condition
-// TODO - position?                        
                         cond = nf.createLeaf(Token.EMPTY);
+                        // <netbeans>
+                        int pos = getStartOffset();
+                        cond.setSourceBounds(pos, pos);
+                        // </netbeans>
                     } else {
                         cond = expr(false);
                     }
@@ -1190,7 +1197,10 @@ return null;
                     decompiler.addToken(Token.SEMI);
                     if (peekToken() == Token.RP) {
                         incr = nf.createLeaf(Token.EMPTY);
-    // TODO Position?
+                        // <netbeans>
+                        int pos = getStartOffset();
+                        incr.setSourceBounds(pos, pos);
+                        // </netbeans>
                     } else {
                         incr = expr(false);
                     }
@@ -1277,6 +1287,12 @@ return null;
 //                        nf.createCatch(varName, catchCond,
 //                                       statements(),
 //                                       ts.getLineno()));
+                    if (catchCond == null) {
+                        // Avoid having an uninitialized EMPTY block created
+                        // by the node factory without positions
+                        catchCond = new Node(Token.EMPTY);
+                        catchCond.setSourceBounds(varEnd, varEnd);
+                    }
                     Node catchNode = nf.createCatch(varName, catchCond,
                                        statements(),
                                        ts.getLineno());
@@ -1499,6 +1515,10 @@ return null;
           case Token.SEMI:
             consumeToken();
             pn = nf.createLeaf(Token.EMPTY);
+            // <netbeans>
+            int pos = getStartOffset();
+            pn.setSourceBounds(pos, pos);
+            // </netbeans>
             return pn;
 
           case Token.FUNCTION: {
@@ -1740,7 +1760,7 @@ return null;
         }
 
         // <netbeans>
-        pn.setSourceBounds(startOffset, getEndOffset());
+        pn.setSourceBounds(startOffset, Math.max(getEndOffset(), pn.getSourceEnd()));
         // </netbeans>
         
         return pn;
@@ -2245,7 +2265,7 @@ return null;
             case Token.XML: {
                 xml = ts.getString();
                  // <netbeans>
-                int endOffset = ts.getBufferOffset()-ts.seenSpaces();
+                int endOffset = ts.getBufferOffset();
                 startOffset = endOffset-xml.length();
                 // </netbeans>
                decompiler.addName(xml);
@@ -2288,7 +2308,7 @@ return null;
                 xml = ts.getString();
                 decompiler.addName(xml);
                 // <netbeans>
-                int endOffset = ts.getBufferOffset()-ts.seenSpaces();
+                int endOffset = ts.getBufferOffset();
                 startOffset = endOffset-xml.length();
                 // </netbeans>
                 if (pn == null) {
@@ -2366,8 +2386,17 @@ return null;
             consumeToken();
             decompiler.addToken(Token.NEW);
 
+            // <netbeans>
+            // include beginning of "new"
+            startOffset = getStartOffset();
+            // </netbeans>
+
             /* Make a NEW node to append to. */
             pn = nf.createCallOrNew(Token.NEW, memberExpr(false));
+
+            // <netbeans>
+            pn.setSourceBounds(startOffset, pn.getSourceEnd());
+            // </netbeans>
 
             if (matchToken(Token.LP)) {
                 decompiler.addToken(Token.LP);

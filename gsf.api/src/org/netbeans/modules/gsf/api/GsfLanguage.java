@@ -88,6 +88,7 @@ public interface GsfLanguage {
      * Return a set of file object folders for core libraries for this language that should be added
      * to the indexing and querying paths.
      */
+    @NonNull
     Collection<FileObject> getCoreLibraries();
 
     /**

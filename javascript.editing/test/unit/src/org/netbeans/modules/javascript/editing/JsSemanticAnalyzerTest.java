@@ -39,12 +39,7 @@
 
 package org.netbeans.modules.javascript.editing;
 
-import java.util.HashMap;
-import java.util.Map;
-import javax.swing.text.Document;
-import org.netbeans.modules.gsf.api.ColoringAttributes;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.gsf.api.SemanticAnalyzer;
 
 /**
  *
@@ -54,69 +49,11 @@ public class JsSemanticAnalyzerTest extends JsTestBase {
     
     public JsSemanticAnalyzerTest(String testName) {
         super(testName);
-    }            
-
-
-    private String annotate(Document doc, Map<OffsetRange, ColoringAttributes> highlights) throws Exception {
-        StringBuilder sb = new StringBuilder();
-        String text = doc.getText(0, doc.getLength());
-        Map<Integer, OffsetRange> starts = new HashMap<Integer, OffsetRange>(100);
-        Map<Integer, OffsetRange> ends = new HashMap<Integer, OffsetRange>(100);
-        for (OffsetRange range : highlights.keySet()) {
-            starts.put(range.getStart(), range);
-            ends.put(range.getEnd(), range);
-        }
-
-        for (int i = 0; i < text.length(); i++) {
-            if (starts.containsKey(i)) {
-                sb.append("|>");
-                OffsetRange range = starts.get(i);
-                ColoringAttributes ca = highlights.get(range);
-                if (ca != null) {
-                    sb.append(ca.name());
-                    sb.append(':');
-                }
-            }
-            if (ends.containsKey(i)) {
-                sb.append("<|");
-            }
-            sb.append(text.charAt(i));
-        }
-
-        return sb.toString();
-    }
-
-    private void checkSemantic(String relFilePath) throws Exception {
-        checkSemantic(relFilePath, null);
-    }
+    }           
     
-    private void checkSemantic(String relFilePath, String caretLine) throws Exception {
-        JsSemanticAnalyzer analyzer = new JsSemanticAnalyzer();
-        CompilationInfo info = getInfo(relFilePath);
-        
-        String text = info.getText();
-        assertNotNull(text);
-
-        int caretOffset = -1;
-        if (caretLine != null) {
-            int caretDelta = caretLine.indexOf("^");
-            assertTrue(caretDelta != -1);
-            caretLine = caretLine.substring(0, caretDelta) + caretLine.substring(caretDelta + 1);
-            int lineOffset = text.indexOf(caretLine);
-            assertTrue(lineOffset != -1);
-
-            caretOffset = lineOffset + caretDelta;
-            ((TestCompilationInfo)info).setCaretOffset(caretOffset);
-        }
-
-        assertNotNull(AstUtilities.getParseResult(info));
-        
-        analyzer.run(info);
-        Map<OffsetRange, ColoringAttributes> highlights = analyzer.getHighlights();
-
-        String annotatedSource = annotate(info.getDocument(), highlights);
-
-        assertDescriptionMatches(relFilePath, annotatedSource, false, ".semantic");
+    @Override
+    protected SemanticAnalyzer getSemanticAnalyzer() {
+        return new JsSemanticAnalyzer();
     }
 
     public void testSemantic1() throws Exception {
@@ -151,6 +88,10 @@ public class JsSemanticAnalyzerTest extends JsTestBase {
         checkSemantic("testfiles/semantic8.js", "new^");
     }
 
+    public void testSemanticE4x() throws Exception {
+        checkSemantic("testfiles/e4x.js", "order^");
+    }
+
     public void testSemanticE4x2() throws Exception {
         checkSemantic("testfiles/e4x2.js", "order^");
     }
@@ -159,11 +100,11 @@ public class JsSemanticAnalyzerTest extends JsTestBase {
         checkSemantic("testfiles/tryblocks.js");
     }
 
-//    public void testSemanticPrototype() throws Exception {
-//        checkSemantic("testfiles/prototype.js");
-//    }
-//
-//    public void testSemanticPrototypeNew() throws Exception {
-//        checkSemantic("testfiles/prototype-new.js");
-//    }
+    public void testSemanticPrototype() throws Exception {
+        checkSemantic("testfiles/prototype.js");
+    }
+
+    public void testSemanticPrototypeNew() throws Exception {
+        checkSemantic("testfiles/prototype-new.js");
+    }
 }

@@ -43,6 +43,7 @@ package org.netbeans.modules.gsf.api;
 
 import java.io.IOException;
 import java.util.Set;
+import org.netbeans.modules.gsf.api.annotations.NonNull;
 
 /**
  * This class represents an index that is provided by the IDE to a language
@@ -116,9 +117,9 @@ public abstract class Index {
      *   symmetry, as long as it's convenient to use.
      */
     public interface SearchResult {
-        String getPersistentUrl();
-        String getValue(String key);
-        String[] getValues(String key);
+        @NonNull String getPersistentUrl();
+        @NonNull String getValue(@NonNull String key);
+        @NonNull String[] getValues(@NonNull String key);
         
         // FOR INDEX BROWSER (development/debugging aid) only
         Object getIndex(); // GSF Index
@@ -130,6 +131,11 @@ public abstract class Index {
     }
     
     
-    public abstract void search(final String key, final String name, final NameKind kind, 
-            final Set<SearchScope> scope, Set<SearchResult> result, final Set<String> includeKeys) throws IOException;
+    public abstract void search(
+            @NonNull final String key, 
+            @NonNull final String name, 
+            @NonNull final NameKind kind, 
+            @NonNull final Set<SearchScope> scope, 
+            @NonNull Set<SearchResult> result, 
+            @NonNull final Set<String> includeKeys) throws IOException;
 }

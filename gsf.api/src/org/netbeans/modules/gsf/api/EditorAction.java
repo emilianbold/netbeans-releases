@@ -44,6 +44,8 @@ package org.netbeans.modules.gsf.api;
 import java.awt.event.ActionEvent;
 import javax.swing.Action;
 import javax.swing.text.JTextComponent;
+import org.netbeans.modules.gsf.api.annotations.CheckForNull;
+import org.netbeans.modules.gsf.api.annotations.NonNull;
 
 /**
  * Interface for actions that should be added into the set of
@@ -57,7 +59,7 @@ import javax.swing.text.JTextComponent;
 public interface EditorAction extends Action {
     /** Action was invoked from an editor */
     // TODO - must add "applies to" here!!
-    void actionPerformed(ActionEvent evt, final JTextComponent target);
-    String getActionName();
-    Class getShortDescriptionBundleClass();
+    void actionPerformed(@CheckForNull ActionEvent evt, @NonNull final JTextComponent target);
+    @NonNull String getActionName();
+    @NonNull Class getShortDescriptionBundleClass();
 }

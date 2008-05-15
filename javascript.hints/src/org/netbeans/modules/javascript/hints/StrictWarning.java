@@ -173,6 +173,9 @@ public class StrictWarning implements ErrorRule {
 
             OffsetRange astRange = AstUtilities.getRange(node);
             range = LexUtilities.getLexerOffsets(info, astRange);
+            if (range.getLength() == 0) {
+                range = new OffsetRange(range.getStart(), Math.min(doc.getLength(), range.getStart()+1));
+            }
         } else {
             int errorOffset = lexOffset;
             try {

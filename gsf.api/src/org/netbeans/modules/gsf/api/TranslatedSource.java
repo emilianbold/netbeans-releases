@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.gsf.api;
 
+import org.netbeans.modules.gsf.api.annotations.NonNull;
+
 /**
  * An embedding model constructs a TranslatedSource which
  * provides translated source code and offsets.
@@ -46,8 +48,8 @@ package org.netbeans.modules.gsf.api;
  * @author Tor Norbye
  */
 public interface TranslatedSource {
-    EmbeddingModel getModel();
-    String getSource();
+    @NonNull EmbeddingModel getModel();
+    @NonNull String getSource();
     int getAstOffset(int lexicalOffset);
     int getLexicalOffset(int astOffset);
     /** The start of the translation section in the source document. Usually 0. */

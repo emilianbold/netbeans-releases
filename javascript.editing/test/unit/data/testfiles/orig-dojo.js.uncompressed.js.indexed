@@ -22,6 +22,7 @@ Indexed:
   base : _check;dojo.Deferred;_check;|PRIVATE|FUNCTION|;;0;;;void;
   base : _connect;dojo;_connect;|DOCUMENTED|PRIVATE|FUNCTION|;obj,event,context,method,dontFix;0;18c5e;;Array;
   base : _connect;dojo;_connect;|DOCUMENTED|PRIVATE|FUNCTION|;obj,event,context,method;0;ef3b;;Array;
+  base : _cycle;dojo._Animation;_cycle;|PRIVATE|FUNCTION|;;0;;;;
   base : _defaulteasing;dojo;_defaultEasing;|PRIVATE|FUNCTION|;n;0;;;;
   base : _delegate;dojo;_delegate;|DOCUMENTED|PRIVATE|FUNCTION|;obj,props;0;aa5f;;;
   base : _destroyelement;dojo;_destroyElement;|PRIVATE|FUNCTION|;node;0;;;void;
@@ -66,12 +67,15 @@ Indexed:
   base : _modulesloaded;dojo;_modulesLoaded;|PRIVATE|FUNCTION|;;0;;;void;
   base : _nextid;dojo.Deferred;_nextId;|DOCUMENTED|PRIVATE|PROPERTY|;;0;11da8;;;
   base : _normalizeeventname;dojo._event_listener;_normalizeEventName;|PRIVATE|FUNCTION|;name;0;;;;
+  base : _percent;dojo._Animation;_percent;|DOCUMENTED|PRIVATE|PROPERTY|;;0;35852;;Number;
+  base : _play;dojo._Animation;_play;|PRIVATE|FUNCTION|;gotoStart;0;;;;
   base : _resback;dojo.Deferred;_resback;|PRIVATE|FUNCTION|;res;0;;;void;
   base : _set;dojo.Color;_set;|PRIVATE|FUNCTION|;r,g,b,a;0;;;void;
   base : _setbox;dojo;_setBox;|DOCUMENTED|PRIVATE|FUNCTION|;node,l,t,w,h,u;0;20e8d;;void;
   base : _setcontentsize;dojo;_setContentSize;|PRIVATE|FUNCTION|;node,widthPx,heightPx,computedStyle;0;;;void;
   base : _setkeychar;dojo._event_listener;_setKeyChar;|PRIVATE|FUNCTION|;evt;0;;;void;
   base : _setmarginbox;dojo;_setMarginBox;|PRIVATE|FUNCTION|;node,leftPx,topPx,widthPx,heightPx,computedStyle;0;;;void;
+  base : _startrepeatcount;dojo._Animation;_startRepeatCount;|PRIVATE|PROPERTY|;;0;;;Number;
   base : _starttimer;dojo._Animation;_startTimer;|PRIVATE|FUNCTION|;;0;;;void;
   base : _stoptimer;dojo._Animation;_stopTimer;|PRIVATE|FUNCTION|;;0;;;void;
   base : _synthesizeevent;del;_synthesizeEvent;|PRIVATE|FUNCTION|;evt,props;0;;;;
@@ -124,6 +128,7 @@ Indexed:
   base : connect;dojo.NodeList;connect;|FUNCTION|;methodName,objOrFunc,funcName;0;;;;
   base : connect;dojo;connect;|DOCUMENTED|FUNCTION|;obj,event,context,method,dontFix;0;e090;;;
   base : connectpublisher;dojo;connectPublisher;|FUNCTION|;topic,obj,event;0;;;;
+  base : constructor;dojo._Animation;constructor;|DOCUMENTED|FUNCTION|;args;0;35491;;void;
   base : contentbox;dojo;contentBox;|FUNCTION|;node,box;0;;;;
   base : coords;dojo.NodeList;coords;|DOCUMENTED|FUNCTION|;;0;25c34;;;
   base : coords;dojo;coords;|DOCUMENTED|FUNCTION|;node,includeScroll;0;2393a;;;
@@ -135,6 +140,7 @@ Indexed:
   base : disconnect;dojo;disconnect;|FUNCTION|;handle;0;;;void;
   base : down;identifierMap;Down;|PROPERTY|;;0;;;dk.DOWN_ARROW;
   base : down_arrow;dojo.keys;DOWN_ARROW;|PROPERTY|;;0;;;Number;
+  base : duration;dojo._Animation;duration;|DOCUMENTED|PROPERTY|;;0;355d3;;Number;
   base : empty;pseudos;empty;|FUNCTION|;name,condition;0;;;Function;
   base : end;dojo.keys;END;|PROPERTY|;;0;;;Number;
   base : enter;dojo.keys;ENTER;|PROPERTY|;;0;;;Number;
@@ -163,6 +169,7 @@ Indexed:
   base : fadeout;dojo;fadeOut;|FUNCTION|;args;0;;;;
   base : ff;;ff;|FUNCTION|;;0;;;Boolean;
   base : filter;dojo.NodeList;filter;|FUNCTION|;simpleQuery;0;;;;
+  base : fire;dojo._Animation;fire;|FUNCTION|;evt,args;0;;;;
   base : first-child;pseudos;first-child;|FUNCTION|;name,condition;0;;;Function;
   base : fixevent;dojo;fixEvent;|DOCUMENTED|FUNCTION|;evt,sender;0;18942;;;
   base : flag;dojo.version;flag;|DOCUMENTED|PROPERTY|;;0;a61;;String;
@@ -183,6 +190,7 @@ Indexed:
   base : getstyle;;getStyle;|FUNCTION|;node,p;0;;;;
   base : getvalue;;getValue;|FUNCTION|;n;0;;;;
   base : getvalue;PropLine;getValue;|FUNCTION|;r;0;;;;
+  base : gotopercent;dojo._Animation;gotoPercent;|FUNCTION|;percent,andPlay;0;;;;
   base : gray;dojo.Color.named;gray;|PROPERTY|;;0;;;Array;
   base : green;dojo.Color.named;green;|PROPERTY|;;0;;;Array;
   base : h;_nilExtents;h;|PROPERTY|;;0;;;Number;
@@ -255,10 +263,12 @@ Indexed:
   base : pageup;identifierMap;PageUp;|PROPERTY|;;0;;;dk.PAGE_UP;
   base : partial;dojo;partial;|FUNCTION|;method;0;;;;
   base : patch;dojo.version;patch;|DOCUMENTED|PROPERTY|;;0;a61;;Number;
+  base : pause;dojo._Animation;pause;|FUNCTION|;;0;;;;
   base : pause;dojo.keys;PAUSE;|PROPERTY|;;0;;;Number;
   base : place;dojo.NodeList;place;|DOCUMENTED|FUNCTION|;queryOrNode,position;0;263a5;;;
   base : place;dojo;place;|FUNCTION|;node,refNode,position;0;;;;
   base : platformrequire;dojo;platformRequire;|DOCUMENTED|FUNCTION|;modMap;0;4f0e;;void;
+  base : play;dojo._Animation;play;|FUNCTION|;delay,gotoStart;0;;;;
   base : preventbackbuttonfix;_config;preventBackButtonFix;|PROPERTY|;;0;;;Boolean;
   base : preventdefault;faux;preventDefault;|DOCUMENTED|FUNCTION|;;0;1b2f1;;void;
   base : propline;;PropLine;|CONSTRUCTOR|;properties;0;;;PropLine;
@@ -271,6 +281,7 @@ Indexed:
   base : query;dojo.NodeList;query;|DOCUMENTED|FUNCTION|;queryStr;0;27133;;;
   base : querytoobject;dojo;queryToObject;|FUNCTION|;str;0;;;;
   base : r;dojo.Color;r;|PROPERTY|;;0;;;Number;
+  base : rate;dojo._Animation;rate;|DOCUMENTED|PROPERTY|;;0;357b7;;Number;
   base : rawxhrpost;dojo;rawXhrPost;|FUNCTION|;args;0;;;;
   base : rawxhrput;dojo;rawXhrPut;|FUNCTION|;args;0;;;;
   base : red;dojo.Color.named;red;|PROPERTY|;;0;;;Array;
@@ -280,6 +291,7 @@ Indexed:
   base : remove;dojo._listener;remove;|DOCUMENTED|FUNCTION|;source,method,handle;0;df34;;void;
   base : removeclass;dojo.NodeList;removeClass;|FUNCTION|;className;0;;;;
   base : removeclass;dojo;removeClass;|FUNCTION|;node,classStr;0;;;void;
+  base : repeat;dojo._Animation;repeat;|DOCUMENTED|PROPERTY|;;0;35768;;Number;
   base : require;dojo;require;|FUNCTION|;moduleName,omitModuleCheck;0;;;;
   base : requireif;dojo;requireIf;|FUNCTION|;condition,resourceName;0;;;void;
   base : requirelocalization;dojo;requireLocalization;|FUNCTION|;moduleName,bundleName,locale,availableFlatLocales;0;;;void;
@@ -305,6 +317,8 @@ Indexed:
   base : some;dojo.NodeList;some;|FUNCTION|;callback,thisObject;0;;;;
   base : space;dojo.keys;SPACE;|PROPERTY|;;0;;;Number;
   base : splice;dojo.NodeList;splice;|FUNCTION|;;0;;;;
+  base : status;dojo._Animation;status;|FUNCTION|;;0;;;;
+  base : stop;dojo._Animation;stop;|FUNCTION|;gotoEnd;0;;;;
   base : stopevent;dojo;stopEvent;|DOCUMENTED|FUNCTION|;evt;0;1b1d2;;void;
   base : stopevent;dojo;stopEvent;|FUNCTION|;evt;0;;;void;
   base : stoppropagation;faux;stopPropagation;|FUNCTION|;;0;;;void;
@@ -397,8 +411,22 @@ Indexed:
   fqn : d.query;;d.query;|DOCUMENTED|FUNCTION|;query,root;0;2ec3c;;;
   fqn : del._synthesizeevent;;del._synthesizeEvent;|PRIVATE|FUNCTION|;evt,props;0;;;;
   fqn : dojo._abs;;dojo._abs;|PRIVATE|FUNCTION|;node,includeScroll;0;;;;
+  fqn : dojo._animation._cycle;;dojo._Animation._cycle;|PRIVATE|FUNCTION|;;0;;;;
+  fqn : dojo._animation._percent;;dojo._Animation._percent;|DOCUMENTED|PRIVATE|PROPERTY|;;0;35852;;Number;
+  fqn : dojo._animation._play;;dojo._Animation._play;|PRIVATE|FUNCTION|;gotoStart;0;;;;
+  fqn : dojo._animation._startrepeatcount;;dojo._Animation._startRepeatCount;|PRIVATE|PROPERTY|;;0;;;Number;
   fqn : dojo._animation._starttimer;;dojo._Animation._startTimer;|PRIVATE|FUNCTION|;;0;;;void;
   fqn : dojo._animation._stoptimer;;dojo._Animation._stopTimer;|PRIVATE|FUNCTION|;;0;;;void;
+  fqn : dojo._animation.constructor;;dojo._Animation.constructor;|DOCUMENTED|FUNCTION|;args;0;35491;;void;
+  fqn : dojo._animation.duration;;dojo._Animation.duration;|DOCUMENTED|PROPERTY|;;0;355d3;;Number;
+  fqn : dojo._animation.fire;;dojo._Animation.fire;|FUNCTION|;evt,args;0;;;;
+  fqn : dojo._animation.gotopercent;;dojo._Animation.gotoPercent;|FUNCTION|;percent,andPlay;0;;;;
+  fqn : dojo._animation.pause;;dojo._Animation.pause;|FUNCTION|;;0;;;;
+  fqn : dojo._animation.play;;dojo._Animation.play;|FUNCTION|;delay,gotoStart;0;;;;
+  fqn : dojo._animation.rate;;dojo._Animation.rate;|DOCUMENTED|PROPERTY|;;0;357b7;;Number;
+  fqn : dojo._animation.repeat;;dojo._Animation.repeat;|DOCUMENTED|PROPERTY|;;0;35768;;Number;
+  fqn : dojo._animation.status;;dojo._Animation.status;|FUNCTION|;;0;;;;
+  fqn : dojo._animation.stop;;dojo._Animation.stop;|FUNCTION|;gotoEnd;0;;;;
   fqn : dojo._callloaded;;dojo._callLoaded;|PRIVATE|FUNCTION|;;0;;;void;
   fqn : dojo._connect;;dojo._connect;|DOCUMENTED|PRIVATE|FUNCTION|;obj,event,context,method,dontFix;0;18c5e;;Array;
   fqn : dojo._connect;;dojo._connect;|DOCUMENTED|PRIVATE|FUNCTION|;obj,event,context,method;0;ef3b;;Array;

@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.gsf.api;
 
+import org.netbeans.modules.gsf.api.annotations.CheckForNull;
+import org.netbeans.modules.gsf.api.annotations.NonNull;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -55,18 +57,21 @@ public interface Error  {
     /**
      * Provide a short user-visible (and therefore localized) description of this error
      */
+    @NonNull
     String getDisplayName();
 
     /**
      * Provide a full sentence description of this item, suitable for display in a tooltip
      * for example
      */
+    @CheckForNull
     String getDescription();
 
     /**
      * Return a unique id/key for this error, such as "compiler.err.abstract.cant.be.instantiated".
      * This key is used for error hints providers.
      */
+    @CheckForNull
     String getKey();
     
     ///** 
@@ -82,6 +87,7 @@ public interface Error  {
     /**
      * Get the file object associated with this error, if any
      */
+    @CheckForNull
     FileObject getFile();
 
     /**
@@ -103,6 +109,7 @@ public interface Error  {
     /**
      *  Get the severity of this error
      */
+    @NonNull
     Severity getSeverity();
     
     /**
@@ -110,5 +117,6 @@ public interface Error  {
      * provide the specific unknown symbol name for an unknown symbol error,
      * etc.
      */
+    @CheckForNull
     Object[] getParameters();
 }
