@@ -57,7 +57,7 @@ ${COMMENTICON}        setIcon(Utilities.loadImage(ICON_PATH, true));
     /**
      * Gets default instance. Do not use directly: reserved for *.settings files only,
      * i.e. deserialization routines; otherwise you could get a non-deserialized instance.
-     * To obtain the singleton instance, use {@link findInstance}.
+     * To obtain the singleton instance, use {@link #findInstance}.
      */
     public static synchronized ${TEMPLATENAME}TopComponent getDefault() {
         if (instance == null) {

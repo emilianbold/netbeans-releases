@@ -292,5 +292,28 @@ public class TableInfo implements Comparable {
         
         return result;
     }
+    
+    
+    @Override
+    public boolean equals(Object other) {
+    	boolean result = true;
+    	if(!(other instanceof TableInfo)) {
+    		result = false;
+    	}
+    	
+    	TableInfo otherTable = (TableInfo) other;
+    	
+    	result &= this.getQualifiedName().equals(otherTable.getQualifiedName()); 
+    	return result;
+    }
+    
+    
+    
+    @Override
+    public int hashCode() {
+    	int hashCode = getQualifiedName().hashCode();
+    	return hashCode;
+    	
+    }
 }
 

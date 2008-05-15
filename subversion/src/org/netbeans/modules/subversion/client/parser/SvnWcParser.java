@@ -79,20 +79,21 @@ public class SvnWcParser {
     }
 
     private List<ISVNStatus> getStatus(File path, boolean descend) throws LocalSubversionException {
-        List<ISVNStatus> ret = new ArrayList<ISVNStatus>(20);
-                        
+        List<ISVNStatus> ret = new ArrayList<ISVNStatus>(20);                        
+        ret.add(getSingleStatus(path));
+        
         File[] children = path.listFiles();
         if(children != null && children.length > 0) {        
             for (int i = 0; i < children.length; i++) {
-                if(!SvnUtils.isPartOfSubversionMetadata(children[i]) && !SvnUtils.isAdministrative(path)) {
-                    ret.add(getSingleStatus(children[i]));            
+                if(!SvnUtils.isPartOfSubversionMetadata(children[i]) && !SvnUtils.isAdministrative(path)) {                                       
                     if(descend && children[i].isDirectory()) {                
                         ret.addAll(getStatus(children[i], descend));                
-                    }                    
+                    } else {
+                        ret.add(getSingleStatus(children[i]));  // 
+                    }                   
                 }
             }        
-        }
-        ret.add(getSingleStatus(path));
+        }        
         return ret;
     }    
 

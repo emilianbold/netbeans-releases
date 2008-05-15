@@ -46,42 +46,61 @@ import org.netbeans.api.db.explorer.DatabaseException;
 import org.openide.nodes.Node.Cookie;
 
 /**
- *
+ * An interface to a database server
  * @author David
  */
 public interface DatabaseServer extends Cookie {
 
     /**
      * Connect to the server.  If we already have a connection, close
-     * it and open a new one
+     * it and open a new one.  NOTE this is synchronous and should not be
+     * called on the AWT thread.
      */
     public void reconnect() throws DatabaseException;
 
     /**
-     * Connect to the MySQL server on a task thread, showing a progress bar
-     * and displaying a dialog if an error occurred
-     *
-     * @param instance the server instance to connect with
+     * Reconnect to the MySQL server asynchronously, can be called on the
+     * AWT thread.  If an error occurs, the error is quietly logged but no
+     * dialog is displayed.
      */
     public void reconnectAsync();
 
     /**
      * Connect to the server asynchronously, with the option not to display
      * a dialog but just write to the log if an error occurs
-     * @param instance the instance to connect to
      * @param quiet true if you don't want this to happen without any dialogs
+     * @param async true if you want to run this asychronously
      * being displayed in case of error or to get more information.
      */
-    public void reconnectAsync(final boolean quiet);
+    public void reconnect(final boolean quiet, boolean async);
 
-    public void createDatabase(String dbname) throws DatabaseException;
+    /**
+     * Create a database on the server.  This runs <b>asynchronously</b>
+     * 
+     * @param dbname the name of the database to create
+     */
+    public void createDatabase(String dbname);
 
+    /**
+     * Disconnect from the database.  This runs <b>asynchronously</b>
+     */
     public void disconnect();
 
-    void dropDatabase(String dbname) throws DatabaseException;
-
+    /**
+     * Drop an existing database from the server.  This runs <b>asynchronously</b>
+     * 
+     * @param dbname the name of the database to drop.
+     */
+    void dropDatabase(String dbname);
+    
+    /**
+     * Get the argument string for running the admin tool
+     */
     public String getAdminArgs();
 
+    /**
+     * Get the path for the admin tool (could be a URL if the tool is web-based)
+     */
     public String getAdminPath();
 
     /**
@@ -120,33 +139,31 @@ public interface DatabaseServer extends Cookie {
     public String getUser();
 
     /**
-     * Get the list of users defined for this server
+     * Get the list of users defined for this server.  This runs
+     * <b>synchronously</b> so may cause some delay.
      *
      * @return the list of users
-     *
-     * @throws org.netbeans.api.db.explorer.DatabaseException
-     * if some problem occurred
      */
     public List<DatabaseUser> getUsers() throws DatabaseException;
 
     /**
-     * Grant full rights to the database to the specified user
+     * Grant full rights to the database to the specified user.  This runs 
+     * <b>asynchronously</b>
      *
      * @param dbname the database whose rights we are granting
      * @param grantUser the name of the user to grant the rights to
-     *
-     * @throws org.netbeans.api.db.explorer.DatabaseException
-     * if some error occurs
      */
-    public void grantFullDatabaseRights(String dbname, DatabaseUser grantUser) throws DatabaseException;
-
-    public boolean isAdminCommandsConfirmed();
+    public void grantFullDatabaseRights(String dbname, DatabaseUser grantUser);
 
     public boolean isConnected();
 
     public boolean isSavePassword();
 
-    public void refreshDatabaseList() throws DatabaseException;
+    /**
+     * Refresh the list of databases for the server.  This runs
+     * <b>asynchronously</b> 
+     */
+    public void refreshDatabaseList();
 
     public void setAdminArgs(String args);
 
@@ -202,8 +219,17 @@ public interface DatabaseServer extends Cookie {
      */
     void start() throws DatabaseException;
 
+    /** 
+     * Run the stop command.  Display stdout and stderr to an output window.
+     * This also disconnects the database server.
+     * 
+     * @throws org.netbeans.api.db.explorer.DatabaseException
+     */
     void stop() throws DatabaseException;
 
+    /**
+     * Return true if the database exists, false otherwise.  This is run 
+     * against the cached list of database so may not be completely accurate.
+     */
     boolean databaseExists(String dbname) throws DatabaseException;
-
 }

@@ -44,18 +44,6 @@ made subject to such option by the copyright holder.
 <project name="Unit tests" basedir="." default="all">
     <import file="../../nbbuild/templates/xtest-unit.xml"/>
 
-    <!-- ========= -->
-    <!-- Compilers -->
-    <!-- ========= -->
-
-    <target name="unit-compiler" depends="init,init-cp">
-        <ant dir="unit/src/org/netbeans/core/projects"/>
-        <ant dir="unit/src/org/netbeans/core/lookup/data"/>
-        <buildTests srcdir="unit/src" compileexcludes="**/jars/**,**/data/**">
-            <classpath refid="test.unit.compile.cp"/>
-        </buildTests>
-    </target>
-
     <!-- ================ -->
     <!-- Global Executors -->
     <!-- ================ -->

@@ -79,7 +79,7 @@ public class ModuleInstaller extends ModuleInstall {
         }
           
         // Commenting out until we can track down the deadlock issues.
-        //WindowManager.getDefault().invokeWhenUIReady(new RegisterMySQL());
+        WindowManager.getDefault().invokeWhenUIReady(new RegisterMySQL());
     }
 
     private static final class RegisterMySQL implements Runnable {

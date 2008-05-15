@@ -105,8 +105,8 @@ public class CustomComponentWizardIterator implements
     public static final String FINAL_STEP   = "LBL_FinalStep";                   // NOI18N
 
     // properties
-    public static final String PROJECT_DIR  = "projdir";                         // NOI18N
-    public static final String PROJECT_NAME = "projname";                        // NOI18N
+    public static final String PROJECT_DIR  = "projDir";                         // NOI18N
+    public static final String PROJECT_NAME = "projName";                        // NOI18N
     public static final String LAYER_PATH   = "layer";                           // NOI18N
     public static final String BUNDLE_PATH  = "bundle";                          // NOI18N
     public static final String JAVA_LIB_ACCEPTED

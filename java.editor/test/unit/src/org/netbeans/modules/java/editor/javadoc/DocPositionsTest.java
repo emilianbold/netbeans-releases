@@ -192,6 +192,33 @@ public class DocPositionsTest extends JavadocTestSupport {
         assertEquals(logPositions(code, offset, offsetEnd, tags[0], tag), tags[0], tag);
     }
     
+    public void testGetTag_131826_2() throws Exception {
+        String code = 
+                "/**\n" +
+                " ** @author\n" +
+                " */\n" +
+                "class C {\n" +
+                "}\n";
+        
+        prepareTest(code);
+        
+        String what = "@author";
+        int offset = code.indexOf(what);
+        Doc javadoc = JavadocCompletionUtils.findJavadoc(info, doc, offset);
+        assertNotNull(insertPointer(code, offset), javadoc);
+        TokenSequence<JavadocTokenId> jdts = JavadocCompletionUtils.findJavadocTokenSequence(info, offset);
+        assertTrue(jdts.moveNext());
+        
+        DocPositions positions = DocPositions.get(info, javadoc, jdts);
+        assertNotNull(positions);
+        Tag[] tags = javadoc.tags();
+        
+        // @author
+        Tag tag = positions.getTag(offset);
+        int offsetEnd = offset + what.length();
+        assertEquals(logPositions(code, offset, offsetEnd, tags[0], tag), tags[0], tag);
+    }
+    
     public void testGetTagIn1LineJavadoc() throws Exception {
         String code = 
                 "package p;\n" +

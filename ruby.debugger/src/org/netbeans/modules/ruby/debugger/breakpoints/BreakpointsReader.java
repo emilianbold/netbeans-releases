@@ -59,6 +59,7 @@ public final class BreakpointsReader implements Properties.Reader {
     
     private static final String PROPERTY_URL = "url"; // NOI18N
     private static final String PROPERTY_LINE_NUMBER = "lineNumber"; // NOI18N
+    private static final String PROPERTY_CONDITION = "condition"; // NOI18N
     
     public String [] getSupportedClassNames() {
         return new String[] {
@@ -74,7 +75,8 @@ public final class BreakpointsReader implements Properties.Reader {
         if (line == null) {
             return null;
         }
-        return RubyBreakpointManager.createBreakpoint(line);
+        String condition = props.getString(PROPERTY_CONDITION, null);
+        return RubyBreakpointManager.createBreakpoint(line, condition);
     }
     
     public void write(final Object object, final Properties props) {
@@ -83,6 +85,7 @@ public final class BreakpointsReader implements Properties.Reader {
         try {
             props.setString(PROPERTY_URL, fo.getURL().toString());
             props.setInt(PROPERTY_LINE_NUMBER, bp.getLine().getLineNumber());
+            props.setString(PROPERTY_CONDITION, bp.getCondition());
         } catch (FileStateInvalidException ex) {
             Exceptions.printStackTrace(ex);
         }

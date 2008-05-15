@@ -197,6 +197,13 @@ made subject to such option by the copyright holder.
                         <code-name-base>org.netbeans.modules.masterfs</code-name-base>
                     </test-dependency>
                 </test-type>
+                <test-type>
+                    <name>qa-functional</name>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.test.xml.schema.lib</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                </test-type>
             </test-dependencies>
             <public-packages>
                 <package>org.netbeans.modules.xml.schema.completion.spi</package>

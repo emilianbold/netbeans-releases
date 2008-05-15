@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://www.netbeans.org/ns/project/1">
+    <type>org.netbeans.modules.apisupport.project</type>
+    <configuration>
+        <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
+            <code-name-base>org.netbeans.modules.web.client.javascript.debugger.kit</code-name-base>
+            <module-dependencies>               
+                <dependency>
+                    <code-name-base>org.netbeans.modules.web.client.javascript.debugger.js.api</code-name-base>
+                    <run-dependency>
+                        <specification-version>0.6</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.web.client.javascript.debugger.api</code-name-base>
+                    <run-dependency>
+                        <specification-version>0.6</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.web.client.javascript.debugger.firefox.extension</code-name-base>
+                    <run-dependency>
+                        <specification-version>0.6</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.web.client.javascript.debugger.firefox</code-name-base>
+                    <run-dependency>
+                        <specification-version>0.6</specification-version>
+                    </run-dependency>
+                </dependency>
+		<dependency>
+                    <code-name-base>org.netbeans.modules.web.client.javascript.debugger.ant</code-name-base>
+                    <run-dependency>
+                        <specification-version>0.6</specification-version>
+                    </run-dependency>
+                </dependency>
+            </module-dependencies>
+            <public-packages/>
+        </data>
+    </configuration>
+</project>

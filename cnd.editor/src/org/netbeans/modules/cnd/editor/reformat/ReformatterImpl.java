@@ -1012,11 +1012,13 @@ public class ReformatterImpl {
                         if (paren == 0){
                             constructor = ts.index();
                         }
+                        break;
                     case SEMICOLON:
                         if (comma == 0) {
                             return;
                         }
                         comma--;
+                        break;
                     case COMMA:
                         if (paren == 1){
                             comma++;
@@ -1158,7 +1160,10 @@ public class ReformatterImpl {
     private void indentRbrace(StackEntry entry, Token<CppTokenId> previous,
                               Token<CppTokenId> current, StackEntry statementEntry) {
         
-        int indent = continuationIndent(entry.getSelfIndent());
+        int indent = 0;
+        if (entry != null) {
+            indent = continuationIndent(entry.getSelfIndent());
+        }
         Token<CppTokenId> prevImportant = ts.lookPreviousImportant();
         boolean emptyBody = false;
         boolean done = false;
@@ -1181,7 +1186,7 @@ public class ReformatterImpl {
                 }
                 if (diff.replace != null) {
                     if (!done) {
-                        if (entry.isLikeToArrayInitialization() &&
+                        if (entry != null && entry.isLikeToArrayInitialization() &&
                             !(ts.isFirstLineToken() || diff.replace.hasNewLine())) {
                             if (codeStyle.spaceWithinBraces()) {
                                 diff.replace.replaceSpaces(1);
@@ -1205,7 +1210,7 @@ public class ReformatterImpl {
                         } else if (diff.after.hasNewLine() || ts.isFirstLineToken()) {
                             diff.after.replaceSpaces(indent); // NOI18N
                         } else {
-                            if (!entry.isLikeToArrayInitialization()) {
+                            if (entry != null && !entry.isLikeToArrayInitialization()) {
                                 ts.addBeforeCurrent(1, indent);
                             } else {
                                 spaceBefore(previous, codeStyle.spaceWithinBraces());
@@ -1225,7 +1230,7 @@ public class ReformatterImpl {
                         if (braces.parenDepth <= 0) {
                             ts.replacePrevious(previous, 1, indent);
                         } else {
-                            if (entry.isLikeToArrayInitialization()) {
+                            if (entry != null && entry.isLikeToArrayInitialization()) {
                                 spaceBefore(previous, codeStyle.spaceWithinBraces());
                             }
                         }
@@ -1237,7 +1242,7 @@ public class ReformatterImpl {
                 } else {
                     if (emptyBody) {
                         ts.addBeforeCurrent(0, 1);
-                    } else if (!entry.isLikeToArrayInitialization()) {
+                    } else if (entry != null && !entry.isLikeToArrayInitialization()) {
                         ts.addBeforeCurrent(1, indent);
                     } else {
                         spaceBefore(previous, codeStyle.spaceWithinBraces());
@@ -1245,7 +1250,7 @@ public class ReformatterImpl {
                 }
             }
         }
-        boolean isClassDeclaration = entry.getImportantKind() != null &&
+        boolean isClassDeclaration = entry != null && entry.getImportantKind() != null &&
                                     (entry.getImportantKind() == CLASS ||
                                      entry.getImportantKind() == STRUCT ||
                                      entry.getImportantKind() == UNION ||
