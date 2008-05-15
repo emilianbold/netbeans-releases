@@ -440,7 +440,9 @@ public class JsModel {
                 if (start < text.length() && text.startsWith("<!--", start)) {
                     int lineEnd = text.indexOf('\n', start);
                     if (lineEnd != -1) {
-                        text = text.substring(lineEnd+1);
+                        lineEnd++; //skip the \n
+                        sourceStart += lineEnd;
+                        text = text.substring(lineEnd);
                     }
                 }
 
@@ -757,7 +759,7 @@ public class JsModel {
         return null;
     }
 
-    private class JsAnalyzerState {
+    static class JsAnalyzerState {
         boolean in_javascript = false;
         boolean in_inlined_javascript = false;
         boolean opening_quotation_stripped = false;

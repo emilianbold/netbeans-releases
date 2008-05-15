@@ -83,6 +83,8 @@ import org.netbeans.modules.gsf.api.TranslatedSource;
  */
 public class JsParser implements Parser {
     private final PositionManager positions = createPositionManager();
+    /** For unit tests such that they can make sure we didn't have a parser abort */
+    static RuntimeException runtimeException;
 
     /**
      * Creates a new instance of JsParser
@@ -449,7 +451,7 @@ public class JsParser implements Parser {
                                                 int line, String lineSource,
                                                 int lineOffset) {
                     if (!ignoreErrors) {
-                        notifyError(context, message, sourceName, line, lineSource, lineOffset, sanitizing, Severity.WARNING, "", null);
+                        notifyError(context, message, sourceName, line, lineSource, lineOffset, sanitizing, Severity.ERROR, "", null);
                     }
                     return null;
                 }
@@ -512,11 +514,12 @@ public class JsParser implements Parser {
             }
         } catch (IllegalStateException ise) {
             // See issue #128983 for a way to get the compiler to assert for example
+            runtimeException = ise;
         } catch (RuntimeException re) {
             //notifyError(context, message, sourceName, line, lineSource, lineOffset, sanitizing, Severity.WARNING, "", null);
             // XXX TODO - record this somehow
-        }
-            
+            runtimeException = re;
+        }            
         if (root != null) {
             setParentRefs(root, null);
             context.sanitized = sanitizing;

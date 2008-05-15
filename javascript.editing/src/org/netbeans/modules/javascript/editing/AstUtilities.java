@@ -40,11 +40,10 @@
 package org.netbeans.modules.javascript.editing;
 
 import java.io.IOException;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
 import org.mozilla.javascript.Node;
 import org.mozilla.javascript.FunctionNode;
 import org.mozilla.javascript.Node.LabelledNode;
@@ -52,26 +51,32 @@ import org.mozilla.javascript.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.gsf.api.Parser;
 import org.netbeans.modules.gsf.api.ParserFile;
 import org.netbeans.modules.gsf.api.ParserResult;
-import org.netbeans.modules.gsf.api.SourceFileReader;
+import org.netbeans.modules.gsf.api.SourceModel;
 import org.netbeans.modules.gsf.api.TranslatedSource;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.gsf.api.CancellableTask;
 import org.netbeans.modules.gsf.api.ElementKind;
+import org.netbeans.modules.gsf.api.SourceModelFactory;
 import org.netbeans.modules.gsf.api.annotations.NonNull;
 import org.netbeans.modules.javascript.editing.lexer.JsCommentTokenId;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
-import org.netbeans.modules.gsf.spi.DefaultParseListener;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
 /**
  *
  * @author Tor Norbye
  */
-public class AstUtilities {
+public final class AstUtilities {
+
+    private AstUtilities() {
+        // This is a utility class
+    }
+
     public static final String DOT_PROTOTYPE = ".prototype"; // NOI18N
 
     public static int getAstOffset(CompilationInfo info, int lexOffset) {
@@ -106,13 +111,34 @@ public class AstUtilities {
         return lexicalRange;
     }
 
+    /** SLOW - used from tests only right now */
+    public static boolean isGlobalVar(CompilationInfo info, Node node) {
+        if (!isNameNode(node)) {
+            return false;
+        }
+        String name = node.getString();
+        JsParseResult rpr = AstUtilities.getParseResult(info);
+        if (rpr == null) {
+            return false;
+        }
+        VariableVisitor v = rpr.getVariableVisitor();
+        Map<String,List<Node>> localVars = v.getLocalVars(node);
+
+        List<Node> nodes = localVars.get(name);
+        if (nodes == null) {
+            return true;
+        } else {
+            return nodes.contains(node);
+        }
+    }
+    
     /** 
      * Return the comment sequence (if any) for the comment prior to the given offset.
      */
     public static TokenSequence<? extends JsCommentTokenId> getCommentFor(CompilationInfo info, BaseDocument doc, Node node) {
         int astOffset = node.getSourceStart();
         int lexOffset = LexUtilities.getLexerOffset(info, astOffset);
-        if (lexOffset == -1) {
+        if (lexOffset == -1 || lexOffset > doc.getLength()) {
             return null;
         }
         
@@ -186,46 +212,42 @@ public class AstUtilities {
         return result.getRootNode();
     }
 
-    public static Node getForeignNode(final IndexedElement o, Node[] foreignRootRet) {
+    public static Node getForeignNode(final IndexedElement o, CompilationInfo[] compilationInfoRet) {
         ParserFile file = o.getFile();
 
         if (file == null) {
             return null;
         }
+        
+        FileObject fo = file.getFileObject();
+        if (fo == null) {
+            return null;
+        }
 
-        List<ParserFile> files = Collections.singletonList(file);
-        SourceFileReader reader =
-            new SourceFileReader() {
-                public CharSequence read(ParserFile file)
-                    throws IOException {
-                    Document doc = o.getDocument();
-
-                    if (doc == null) {
-                        return "";
-                    }
-
-                    try {
-                        return doc.getText(0, doc.getLength());
-                    } catch (BadLocationException ble) {
-                        IOException ioe = new IOException();
-                        ioe.initCause(ble);
-                        throw ioe;
-                    }
+        SourceModel model = SourceModelFactory.getInstance().getModel(fo);
+        if (model == null) {
+            return null;
+        }
+        final CompilationInfo[] infoHolder = new CompilationInfo[1];
+        try {
+            model.runUserActionTask(new CancellableTask<CompilationInfo>() {
+                public void cancel() {
                 }
 
-                public int getCaretOffset(ParserFile fileObject) {
-                    return -1;
+                public void run(CompilationInfo info) throws Exception {
+                    infoHolder[0] = info;
                 }
-            };
+            }, true);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+            return null;
+        }
 
-        DefaultParseListener listener = new DefaultParseListener();
-
-        // TODO - embedding model?
-TranslatedSource translatedSource = null; // TODO - determine this here?                
-        Parser.Job job = new Parser.Job(files, listener, reader, translatedSource);
-        new JsParser().parseFiles(job);
-
-        ParserResult result = listener.getParserResult();
+        CompilationInfo info = infoHolder[0];
+        if (compilationInfoRet != null) {
+            compilationInfoRet[0] = info;
+        }
+        ParserResult result = AstUtilities.getParseResult(info);
 
         if (result == null) {
             return null;
@@ -235,8 +257,6 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
 
         if (root == null) {
             return null;
-        } else if (foreignRootRet != null) {
-            foreignRootRet[0] = root;
         }
 
         String signature = o.getSignature();
@@ -278,7 +298,7 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
                 BaseDocument doc = (BaseDocument) info.getDocument();
                 int astOffset = node.getSourceStart();
                 int lexOffset = LexUtilities.getLexerOffset(info, astOffset);
-                if (lexOffset != -1) {
+                if (lexOffset != -1 && doc != null) {
                     int rowStart = Utilities.getRowStart(doc, lexOffset);
                     int rowEnd = Utilities.getRowEnd(doc, rowStart);
                     String line = doc.getText(rowStart, rowEnd-rowStart);
@@ -351,6 +371,10 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
             return 0;
         }
         child = child.getNext();
+        
+        if (child == null || astOffset < child.getSourceStart()) {
+            return -1;
+        }
 
         int index = 0;
         while (child != null) {

@@ -1,0 +1,3 @@
+Results for somefunction({}, {f:1}, {}); with queryType=COMPLETION and nameKind=PREFIX
+PARAMETER  foo                                        <i>Configuration foo for parameter def</i>
+CALL       somefunction(... , def, ...)               configcalls.js

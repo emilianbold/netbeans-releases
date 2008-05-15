@@ -60,6 +60,7 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.gsf.api.annotations.CheckForNull;
 import org.netbeans.modules.javascript.editing.NbUtilities;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -101,6 +102,7 @@ public class LexUtilities {
         INDENT_WORDS.add(JsTokenId.WHILE);
     }
 
+    @CheckForNull
     public static BaseDocument getDocument(CompilationInfo info, boolean forceOpen) {
         try {
             if (info == null) {
@@ -112,6 +114,10 @@ public class LexUtilities {
             }
             
             return doc;
+        } catch (ClassCastException ex) {
+            // TESTS! If data object for GSF isn't found it will be a FilterDocument
+            // rather than a BaseDocument
+            return NbUtilities.getBaseDocument(info.getFileObject(), true);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
             return null;

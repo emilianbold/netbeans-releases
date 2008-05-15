@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.javascript.hints;
 
-import org.netbeans.modules.javascript.hints.infrastructure.RulesManager;
 import org.netbeans.modules.javascript.hints.spi.HintSeverity;
 
 /**
@@ -66,11 +65,22 @@ public class StrictWarningTest extends HintTestBase {
         }
     }
     
+    //Uncomment to generate all the golden files over again
+    //@Override
+    //protected boolean failOnMissingGoldenFile() {
+    //    return false;
+    //}
+    
     public void testReservedKeyword() throws Exception {
         goldenfileSuffix = "";
         findHints(this, new StrictWarning(StrictWarning.RESERVED_KEYWORD), "testfiles/reserved.js", null);
     }
 
+    public void testNoFunctionSideEffects() throws Exception {
+        goldenfileSuffix = "";
+        findHints(this, new StrictWarning(StrictWarning.NO_SIDE_EFFECTS), "testfiles/functions-sideeffects.js", null);
+    }
+    
     public void testTrailingComma() throws Exception {
         goldenfileSuffix = "";
         findHints(this, new StrictWarning(StrictWarning.TRAILING_COMMA), "testfiles/trailingcomma.js", null);

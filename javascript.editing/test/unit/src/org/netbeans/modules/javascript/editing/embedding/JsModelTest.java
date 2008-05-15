@@ -56,6 +56,7 @@ import org.netbeans.modules.gsf.api.Error;
 import org.netbeans.modules.gsf.api.Severity;
 import org.netbeans.modules.javascript.editing.AstUtilities;
 import org.netbeans.modules.javascript.editing.JsTestBase;
+import org.netbeans.modules.javascript.editing.embedding.JsModel.JsAnalyzerState;
 import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -100,7 +101,7 @@ public class JsModelTest extends JsTestBase {
         StringBuilder buffer = new StringBuilder();
         if (mimeType.equals(HTMLKit.HTML_MIME_TYPE)) {
             doc.putProperty("mimeType", HTMLKit.HTML_MIME_TYPE);
-            model.extractJavaScriptFromHtml(ts, buffer, false);
+            model.extractJavaScriptFromHtml(ts, buffer, new JsAnalyzerState());
         } else if (mimeType.equals(RhtmlTokenId.MIME_TYPE)) {
             doc.putProperty("mimeType", RhtmlTokenId.MIME_TYPE);
             model.extractJavaScriptFromRhtml(ts, buffer);

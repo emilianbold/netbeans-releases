@@ -193,7 +193,7 @@ public class JsIndex {
         return classes;
     }
     
-    private String getExtends(String className, Set<Index.SearchScope> scope) {
+    public String getExtends(String className, Set<Index.SearchScope> scope) {
         final Set<SearchResult> result = new HashSet<SearchResult>();
         search(JsIndexer.FIELD_EXTEND, className.toLowerCase(), NameKind.CASE_INSENSITIVE_PREFIX, result, scope, TERMS_EXTEND);
         String target = className.toLowerCase()+";";
@@ -318,7 +318,7 @@ public class JsIndex {
                                 (signature.charAt(lcname.length()) != ';'))) {
                             continue;
                         }
-                    }
+                    } // TODO - check camel case here too!
 
                     // XXX THIS DOES NOT WORK WHEN THERE ARE IDENTICAL SIGNATURES!!!
                     assert map != null;

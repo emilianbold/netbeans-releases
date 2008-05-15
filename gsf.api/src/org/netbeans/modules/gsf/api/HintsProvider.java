@@ -28,6 +28,7 @@
 package org.netbeans.modules.gsf.api;
 
 import java.util.List;
+import org.netbeans.modules.gsf.api.annotations.NonNull;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 
 /**
@@ -40,26 +41,26 @@ public interface HintsProvider {
     /**
      * Compute hints applicable to the given compilation info and add to the given result list.
      */
-    void computeHints(CompilationInfo info, List<ErrorDescription> hints);
+    void computeHints(@NonNull CompilationInfo info, @NonNull List<ErrorDescription> hints);
     
     /**
      * Compute any suggestions applicable to the given caret offset, and add to
      * the given suggestion list.
      */
-    void computeSuggestions(CompilationInfo info, List<ErrorDescription> suggestions, int caretOffset);
+    void computeSuggestions(@NonNull CompilationInfo info, @NonNull List<ErrorDescription> suggestions, int caretOffset);
 
     /**
      * Compute any suggestions applicable to the given caret offset, and add to
      * the given suggestion list.
      */
-    void computeSelectionHints(CompilationInfo info, List<ErrorDescription> suggestions, int start, int end);
+    void computeSelectionHints(@NonNull CompilationInfo info, @NonNull List<ErrorDescription> suggestions, int start, int end);
     
     /** 
      * Process the errors for the given compilation info, and add errors and
      * warning descriptions into the provided hint list. Return any errors
      * that were not added as error descriptions (e.g. had no applicable error rule)
      */
-    List<Error> computeErrors(CompilationInfo info, List<ErrorDescription> hints);
+    List<Error> computeErrors(@NonNull CompilationInfo info, @NonNull List<ErrorDescription> hints);
 
     /**
      * Cancel in-progress processing of hints.

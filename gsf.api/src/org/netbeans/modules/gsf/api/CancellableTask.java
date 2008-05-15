@@ -56,6 +56,6 @@ public interface CancellableTask<P> {
     /** Implement the functionality here.
      *@param parameter Parameter depending on the context or null.
      */
-    public void run( P parameter ) throws Exception;
+    public void run(P parameter) throws Exception;
 
 }
