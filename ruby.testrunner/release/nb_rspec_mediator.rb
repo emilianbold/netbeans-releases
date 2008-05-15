@@ -51,9 +51,11 @@ class NbRspecMediator < Spec::Runner::ExampleGroupRunner
     prepare
     success = true
     example_groups.each do |example_group|
+      start_time = Time.now
       puts "%SUITE_STARTING% #{example_group.description}"
       success = success & example_group.run
-      puts "%SUITE_FINISHED% #{example_group.description}"
+      elapsed_time = Time.now - start_time
+      puts "%SUITE_FINISHED% #{example_group.description} time=#{elapsed_time}"
     end
     return success
   ensure
@@ -71,25 +73,34 @@ end
 class Reporter < Spec::Runner::Reporter
 
   def example_started(example)
+    start_timer
     puts "%TEST_STARTED% #{example.description}"
     super
   end
       
   def failure(example, error)
-    puts "%TEST_FAILED% #{example.description}"
+    puts "%TEST_FAILED% #{example.description} time=#{elapsed_time}"
     super
   end
   alias_method :example_failed, :failure
 
   private
   def example_passed(example)
-    puts "%TEST_FINISHED% #{example.description}"
+    puts "%TEST_FINISHED% #{example.description} time=#{elapsed_time}"
     super
   end
       
   def example_pending(example_group, example, message="Not Yet Implemented")
     puts "%TEST_PENDING% #{example.description}"
     super
+  end
+  
+  def start_timer
+    @start_time = Time.now
+  end
+  
+  def elapsed_time
+    Time.now - @start_time
   end
 
 end
