@@ -115,7 +115,7 @@ public class InvocationExceptionTranslated extends ApplicationException {
                         getMessageMethod,
                         new Value [0]
                     );
-                localizedMessage = sr.value();
+                localizedMessage = sr == null ? "" : sr.value(); // NOI18N
             } catch (InvalidExpressionException ex) {
                 Exceptions.printStackTrace(ex);
                 localizedMessage = "";
