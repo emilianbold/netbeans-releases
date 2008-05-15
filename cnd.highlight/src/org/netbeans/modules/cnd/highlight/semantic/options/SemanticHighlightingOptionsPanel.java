@@ -58,8 +58,8 @@ public class SemanticHighlightingOptionsPanel extends javax.swing.JPanel impleme
         cbKeepMarks.addActionListener(this);
         setName("TAB_SemanticHighlightingTab"); // NOI18N (used as a pattern...)
         if (!SemanticHighlightingOptions.SEMANTIC_ADVANCED) {
-            cbClassFields.setVisible(false);
-            cbFunctionNames.setVisible(false);
+//            cbClassFields.setVisible(false);
+//            cbFunctionNames.setVisible(false);
         }
         if( "Windows".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
             setOpaque( false );

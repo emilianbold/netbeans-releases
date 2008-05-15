@@ -180,37 +180,34 @@ public class SessionId {
     }
 
     public FileObject getFileObjectByRemote( String uri ){
-        if ( uri == null ) {
-            return null;
-        }
-        try {
-            URL url = new URI(uri).toURL();
-            if ("file".equals(url.getProtocol())) { //NOI18N
-                FileObject fo = URLMapper.findFileObject(url);
-                if (fo != null) {
-                    return fo;
+        FileObject retval = null;
+        if (uri != null) {
+            if (uri.equals(getFileUri())) {
+                retval = getDebugFile();
+            } else if (myRemoteBase != null && myLocalBase != null && uri.startsWith(myRemoteBase)) {
+                String relativePath = uri.substring(myRemoteBase.length());
+                relativePath = relativePath.replace(myRemoteSeparator, File.separator);
+                retval = myLocalBase.getFileObject(relativePath);
+            }
+        }   
+        if (retval == null) {
+            try {
+                URL url = new URI(uri).toURL();
+                if ("file".equals(url.getProtocol())) { //NOI18N
+                    FileObject fo = URLMapper.findFileObject(url);
+                    if (fo != null) {
+                        return fo;
+                    }
                 }
+            } catch (MalformedURLException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (URISyntaxException ex) {
+                Exceptions.printStackTrace(ex);
             }            
-        } catch (MalformedURLException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (URISyntaxException ex) {
-            Exceptions.printStackTrace(ex);
         }
-        
-        if ( uri.equals( getFileUri() )) {
-            return getDebugFile();
-        }
-        if ( myRemoteBase == null || myLocalBase == null) {
-            return null;
-        }
-        if ( !uri.startsWith( myRemoteBase) ) {
-            return null;
-        }	
-        String relativePath = uri.substring( myRemoteBase.length() );
-        relativePath = relativePath.replace( myRemoteSeparator, File.separator );
-        return myLocalBase.getFileObject(relativePath);
+        return retval;
     }
-    
+        
     private String getFileUri() {
         return myFileUri;
     }

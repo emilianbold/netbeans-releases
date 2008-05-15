@@ -63,7 +63,11 @@ public final class RubyBreakpointManager {
     private RubyBreakpointManager() {};
 
     static RubyBreakpoint createBreakpoint(final Line line) {
-        RubyBreakpoint breakpoint = new RubyBreakpoint(line);
+        return createBreakpoint(line, null);
+    }
+    
+    static RubyBreakpoint createBreakpoint(final Line line, final String condition) {
+        RubyBreakpoint breakpoint = new RubyBreakpoint(line, condition);
         BreakpointLineUpdater blu = new BreakpointLineUpdater(breakpoint);
         try {
             blu.attach();

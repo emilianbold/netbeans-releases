@@ -472,6 +472,29 @@ public class EditorContextBridge {
                 return cp2.getOperations(url, lineNumber, bytecodeProvider);                
             }
         }
+
+        @Override
+        public MethodArgument[] getArguments(String url, Operation operation) {
+            MethodArgument[] args;
+            try {
+                args = cp1.getArguments(url, operation);
+            } catch (UnsupportedOperationException uoex) {
+                args = cp2.getArguments(url, operation);
+            }
+            return args;
+        }
+
+        @Override
+        public MethodArgument[] getArguments(String url, int methodLineNumber) {
+            MethodArgument[] args;
+            try {
+                args = cp1.getArguments(url, methodLineNumber);
+            } catch (UnsupportedOperationException uoex) {
+                args = cp2.getArguments(url, methodLineNumber);
+            }
+            return args;
+        }
+        
         
         
     }
