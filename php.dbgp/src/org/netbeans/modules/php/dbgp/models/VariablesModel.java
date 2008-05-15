@@ -32,9 +32,9 @@ import javax.swing.JToolTip;
 
 import org.netbeans.modules.php.dbgp.DebugSession;
 import org.netbeans.modules.php.dbgp.StartActionProviderImpl;
-import org.netbeans.modules.php.dbgp.api.ModelNode;
-import org.netbeans.modules.php.dbgp.api.SessionId;
-import org.netbeans.modules.php.dbgp.api.UnsufficientValueException;
+import org.netbeans.modules.php.dbgp.ModelNode;
+import org.netbeans.modules.php.dbgp.SessionId;
+import org.netbeans.modules.php.dbgp.UnsufficientValueException;
 import org.netbeans.modules.php.dbgp.models.nodes.AbstractModelNode;
 import org.netbeans.modules.php.dbgp.models.nodes.VariableNode;
 import org.netbeans.modules.php.dbgp.packets.Property;

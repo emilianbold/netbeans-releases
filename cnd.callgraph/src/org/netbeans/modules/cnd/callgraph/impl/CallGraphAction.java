@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,26 +38,28 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.php.dbgp.api;
 
+package org.netbeans.modules.cnd.callgraph.impl;
 
+import java.awt.event.ActionEvent;
+import javax.swing.AbstractAction;
+import org.openide.util.NbBundle;
+import org.openide.windows.TopComponent;
 
 /**
- * <pre>
- * This is "action" that should be supported by debugger engine.
- * Result of this action should be some  preparation work of this engine.
- * This work could be empty actually.
- * ( In case of DBGP debugger we need to start server socket listening
- * for incoming connections handling ).
- * 
- * This interface exists because of absence notification from debugger manager 
- * about ActionsManager.ACTION_START event. So ActionsProvider never gets 
- * notification via doAction() with ActionsManager.ACTION_START in argument.    
- * </pre>  
- * @author ads
  *
+ * @author Alexander Simon
  */
-public interface StartActionProvider {
+public class CallGraphAction extends AbstractAction {
 
-    void start(  );
+    public CallGraphAction() {
+        super(NbBundle.getMessage(CallGraphAction.class, "CTL_CallGraphAction")); // NOI18N
+//        putValue(SMALL_ICON, new ImageIcon(Utilities.loadImage(CallGraphTopComponent.ICON_PATH, true)));
+    }
+
+    public void actionPerformed(ActionEvent evt) {
+        TopComponent win = CallGraphTopComponent.findInstance();
+        win.open();
+        win.requestActive();
+    }
 }

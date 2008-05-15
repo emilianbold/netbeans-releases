@@ -21,8 +21,8 @@ package org.netbeans.modules.php.dbgp.models.nodes;
 import java.util.Collection;
 import java.util.List;
 
-import org.netbeans.modules.php.dbgp.api.ModelNode;
-import org.netbeans.modules.php.dbgp.api.UnsufficientValueException;
+import org.netbeans.modules.php.dbgp.ModelNode;
+import org.netbeans.modules.php.dbgp.UnsufficientValueException;
 import org.netbeans.modules.php.dbgp.models.VariablesModel;
 import org.netbeans.modules.php.dbgp.packets.Property;
 import org.netbeans.modules.php.dbgp.packets.PropertyCommand;

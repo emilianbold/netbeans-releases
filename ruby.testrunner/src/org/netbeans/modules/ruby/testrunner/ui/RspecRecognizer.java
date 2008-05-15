@@ -69,7 +69,6 @@ public class RspecRecognizer extends OutputRecognizer {
         result.add(new SuiteFinishedHandler());
         result.add(new TestStartedHandler());
         result.add(new TestFailedHandler());
-        result.add(new TestErrorHandler());
         result.add(new TestFinishedHandler());
         return result;
     }
@@ -122,39 +121,19 @@ public class RspecRecognizer extends OutputRecognizer {
     static class TestFailedHandler extends TestHandler {
 
         public TestFailedHandler() {
-            super(".*%TEST_FAILED%\\s(.*)");
+            super(".*%TEST_FAILED%\\s(.*)\\stime=(\\d+\\.\\d+)");
         }
 
         @Override
         void updateUI( Manager manager, TestSession session) {
             Report.Testcase testcase = new Report.Testcase();
-//            testcase.timeMillis = toMillis(matcher.group(1));
-            testcase.className = "luokan nimi";
+            testcase.timeMillis = toMillis(matcher.group(2));
+            testcase.className = matcher.group(1);
             testcase.name = matcher.group(1);
             testcase.trouble = new Report.Trouble(false);
 //            testcase.trouble.stackTrace = new String[]{matcher.group(4)};
             session.addTestCase(testcase);
 //            manager.displayOutput(session, matcher.group(4), false);
-        }
-    }
-
-    static class TestErrorHandler extends TestHandler {
-
-        public TestErrorHandler() {
-            super(".*%TEST_ERROR%\\stime=(\\d+\\.\\d+)\\sError:[.[^\\w]]*(\\w+)\\((\\w+)\\)(.*)");
-        }
-
-        @Override
-        void updateUI( Manager manager, TestSession session) {
-            Report.Testcase testcase = new Report.Testcase();
-            testcase.timeMillis = toMillis(matcher.group(1));
-            testcase.className = matcher.group(3);
-            testcase.name = matcher.group(2);
-            testcase.trouble = new Report.Trouble(true);
-            testcase.trouble.stackTrace = new String[]{matcher.group(4)};
-            session.addTestCase(testcase);
-            manager.displayOutput(session, matcher.group(4), true);
-
         }
     }
 
@@ -172,13 +151,13 @@ public class RspecRecognizer extends OutputRecognizer {
     static class TestFinishedHandler extends TestHandler {
 
         public TestFinishedHandler() {
-            super(".*%TEST_FINISHED%\\s(.*)");
+            super(".*%TEST_FINISHED%\\s(.*)\\stime=(\\d+\\.\\d+)");
         }
 
         @Override
         void updateUI( Manager manager, TestSession session) {
             Report.Testcase testcase = new Report.Testcase();
-//            testcase.timeMillis = toMillis(matcher.group(1));
+            testcase.timeMillis = toMillis(matcher.group(2));
             testcase.className = session.getSuiteName();
             testcase.name = matcher.group(1);
             session.addTestCase(testcase);
@@ -188,16 +167,14 @@ public class RspecRecognizer extends OutputRecognizer {
     static class SuiteFinishedHandler extends TestHandler {
 
         public SuiteFinishedHandler() {
-            super(".*%SUITE_FINISHED%\\s(\\w+)");
+            super(".*%SUITE_FINISHED%\\s(\\w+)\\stime=(\\d+\\.\\d+)");
         }
 
         @Override
         void updateUI( Manager manager, TestSession session) {
             String timeInSeconds = matcher.group(1);
-//            Double elapsedTimeMillis = Double.parseDouble(timeInSeconds) * 1000;
             Report result = session.getReport();
-//            result.elapsedTimeMillis = elapsedTimeMillis.intValue();
-            result.elapsedTimeMillis = 999;
+            result.elapsedTimeMillis = toMillis(matcher.group(2));
             manager.displayReport(session, result);
         }
     }
