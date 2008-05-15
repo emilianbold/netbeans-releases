@@ -38,17 +38,15 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.php.dbgp.api;
+package org.netbeans.modules.php.dbgp;
 
-import org.openide.util.Lookup;
-
+import org.netbeans.modules.php.dbgp.DebuggerOptions;
 
 /**
- * @author ads
+ * @author Radek Matous
  *
  */
-public class DebuggerFactory {
-    public static Debugger getDebugger() {
-        return Lookup.getDefault().lookup( Debugger.class );
-    }
+//keeps php.rt compilable (after deleteing php.rt should be deleted)
+public interface Debugger {
+    public void debug( SessionId id, DebuggerOptions options );
 }

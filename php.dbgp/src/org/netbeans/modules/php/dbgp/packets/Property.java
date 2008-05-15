@@ -46,7 +46,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.netbeans.modules.php.dbgp.api.UnsufficientValueException;
+import org.netbeans.modules.php.dbgp.UnsufficientValueException;
 import org.w3c.dom.Node;
 
 import sun.misc.BASE64Decoder;
