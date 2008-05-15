@@ -42,9 +42,12 @@ package org.netbeans.modules.subversion.client.cli;
 
 import java.util.logging.Logger;
 import java.io.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
 import org.netbeans.modules.subversion.SvnModuleConfig;
-import org.netbeans.modules.subversion.util.FileUtils;
-import org.openide.util.Exceptions;
 
 /**
  * Encapsulates svn shell process. 
@@ -62,12 +65,12 @@ class Commandline {
     /**
      * Creates a new cleartool shell process.
      */
-    public Commandline() {        
+    Commandline() {
         executable = SvnModuleConfig.getDefault().getExecutableBinaryPath();
         if(executable == null || executable.trim().equals("")) {
             executable = "svn";
         }                        
-    }        
+    }
 
     /**
      * Forcibly closes the cleartool console, just like using Ctrl-C.
@@ -93,102 +96,77 @@ class Commandline {
         Logger.getLogger(Commandline.class.getName()).fine("cli: Process destroyed");
     }
     
-    // XXX set env vars
     public void exec(SvnCommand command) throws IOException {        
 
-        command.prepareCommand();
+        command.prepareCommand();        
+        
         String cmd = executable + " " + command.getStringCommand();
         Logger.getLogger(Commandline.class.getName()).fine("cli: Executing \"" + cmd + "\"");
         
         Logger.getLogger(Commandline.class.getName()).fine("cli: Creating process...");        
+        command.commandStarted();
+        
         try {
-            cli = Runtime.getRuntime().exec(command.getCliArguments(executable));
-            cli.waitFor();
+            cli = Runtime.getRuntime().exec(command.getCliArguments(executable), getEnvVar());
             ctOutput = new BufferedReader(new InputStreamReader(cli.getInputStream()));
             ctError = new BufferedReader(new InputStreamReader(cli.getErrorStream()));
-        } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
-            // XXX log and set invalid
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-            // XXX log and set invalid
+            Logger.getLogger(Commandline.class.getName()).log(Level.WARNING, null, ex);
+            throw ex;
         }
         Logger.getLogger(Commandline.class.getName()).fine("cli: process created");
-                
-        command.commandStarted();
 
         try {
-            // XXX need pumper
-            while (isStreamReady(ctOutput)) {                
-                String line = ctOutput.readLine();
-                Logger.getLogger(Commandline.class.getName()).fine("cli: OUTPUT \"" + line + "\"");
-                command.outputText(line);
+            String line = null;                
+            if(command.hasBinaryOutput()) {
+                ByteArrayOutputStream b = new ByteArrayOutputStream();
+                int i = -1;
+                while((i = ctOutput.read()) != -1) {
+                    b.write(i);
+                }
+                command.output(b.toByteArray());
+            } else {                    
+                while ((line = ctOutput.readLine()) != null) {                                        
+                    Logger.getLogger(Commandline.class.getName()).fine("cli: OUTPUT \"" + line + "\"");
+                    command.outputText(line);
+                }    
             }
-            while (isStreamReady(ctError)) {                
-                String line = ctError.readLine();
+            while ((line = ctError.readLine()) != null) {                                    
                 Logger.getLogger(Commandline.class.getName()).fine("cli: ERROR \"" + line + "\"");
                 command.errorText(line);
             }
-        } finally {
-            command.commandFinished();
-        }        
-    }
-    
-    // return byte[]
-    public InputStream execBinary(SvnCommand command) throws IOException {        
 
-        command.prepareCommand();
-        String cmd = executable + " " + command.getStringCommand();
-        Logger.getLogger(Commandline.class.getName()).fine("cli: Executing \"" + cmd + "\"");
-        
-        Logger.getLogger(Commandline.class.getName()).fine("cli: Creating process...");        
-        InputStream ret = null;        
-        try {        
             try {
-                cli = Runtime.getRuntime().exec(command.getCliArguments(executable));
                 cli.waitFor();
-                ctOutput = new BufferedReader(new InputStreamReader(cli.getInputStream()));
-                ctError = new BufferedReader(new InputStreamReader(cli.getErrorStream()));
             } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
-                // XXX log and set invalid
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-                // XXX log and set invalid
+                Logger.getLogger(Commandline.class.getName()).log(Level.WARNING, null, ex);
+                throw new IOException(ex.getMessage());
             }
-            Logger.getLogger(Commandline.class.getName()).fine("cli: process created");
 
-            command.commandStarted();
-            
-
-            // XXX need pumper
-            // XXX merge with void exec()
-            File tmp = File.createTempFile("svn-cat", null);
-            FileUtils.copyStreamToFile(cli.getInputStream(), tmp);
-            ret = new FileInputStream(tmp);
-            
-            while (isStreamReady(ctError)) {                
-                String line = ctError.readLine();
-                Logger.getLogger(Commandline.class.getName()).fine("cli: ERROR \"" + line + "\"");
-                command.errorText(line);
-            }
         } finally {
             command.commandFinished();
-            if(ctOutput != null) ctOutput.close();
-            if(ctError  != null) ctError.close();
         }        
-        return ret;
-    }
+    }    
 
-    private boolean isStreamReady(BufferedReader reader) throws IOException {
-        if(reader == null) return false;
-        if(reader.ready()) return true;
-        Thread.yield();
-        return reader.ready();
-    }
-
-    private void readAll(BufferedReader in) throws IOException {
-        while (in.ready()) in.read();
-    }
+    private String[] getEnvVar() {
+        Map vars = System.getenv();            
+        List ret = new ArrayList(vars.keySet().size());           
+        for (Iterator it = vars.keySet().iterator(); it.hasNext();) {
+            String key = (String) it.next();                
+            if(key.equals("LC_ALL")) {
+                ret.add("LC_ALL=");
+            } else if(key.equals("LC_MESSAGES")) {
+                ret.add("LC_MESSAGES=C");
+            } else if(key.equals("LC_TIME")) {
+                ret.add("LC_TIME=C");
+            } else {
+                ret.add(key + "=" + vars.get(key));                        
+            }		                
+        }                       
+        if(!vars.containsKey("LC_ALL"))      ret.add("LC_ALL=");
+        if(!vars.containsKey("LC_MESSAGES")) ret.add("LC_MESSAGES=C");
+        if(!vars.containsKey("LC_TIME"))     ret.add("LC_TIME=C");            
+        return (String[]) ret.toArray(new String[ret.size()]);
+    }	    
     
 }

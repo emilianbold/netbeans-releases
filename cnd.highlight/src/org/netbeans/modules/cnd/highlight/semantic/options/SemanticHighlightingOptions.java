@@ -106,7 +106,7 @@ public class SemanticHighlightingOptions {
     // prototype options
     
     public static boolean getEnableClassFields() {
-        return SEMANTIC_ADVANCED && getOption(ENABLE_CLASS_FIELDS, true);
+        return /*SEMANTIC_ADVANCED &&*/ getOption(ENABLE_CLASS_FIELDS, true);
     }
 
     public static void setEnableClassFields(boolean value) {
@@ -114,7 +114,7 @@ public class SemanticHighlightingOptions {
     }
 
     public static boolean getEnableFunctionNames() {
-        return SEMANTIC_ADVANCED && getOption(ENABLE_FUNCTION_NAMES, true);
+        return /*SEMANTIC_ADVANCED &&*/ getOption(ENABLE_FUNCTION_NAMES, true);
     }
 
     public static void setEnableFunctionNames(boolean value) {
