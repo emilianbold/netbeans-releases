@@ -60,7 +60,8 @@ import org.openide.util.NbBundle;
  */
 public class CustomizerRun extends javax.swing.JPanel {
     private static final long serialVersionUID = -5493589817914071L;
-    private ConfigComboBoxModel comboModel;
+    private final PhpProjectProperties properties;
+    private final ConfigComboBoxModel comboModel;
 
     private ConfigManager manager;
     private Category category;
@@ -68,10 +69,11 @@ public class CustomizerRun extends javax.swing.JPanel {
     /** Creates new form SwitchConfigPanel */
     public CustomizerRun(PhpProjectProperties properties, final Category category) {
         this.manager = new ConfigManager(properties);
+        this.properties = properties;
         this.category = category;
         initComponents();
         comboModel = new ConfigComboBoxModel();
-        configCombo.setModel(comboModel);                        
+        configCombo.setModel(comboModel);
     }
 
     @Override
@@ -160,8 +162,8 @@ public class CustomizerRun extends javax.swing.JPanel {
         configCombo = new javax.swing.JComboBox();
         configNew = new javax.swing.JButton();
         configDel = new javax.swing.JButton();
-        jSeparator1 = new javax.swing.JSeparator();
-        jPanel1 = new org.netbeans.modules.php.project.ui.customizer.RunAsPanel(manager, category);
+        separator = new javax.swing.JSeparator();
+        runPanel = new RunAsPanel(manager, properties, category);
 
         configLabel.setLabelFor(configCombo);
         org.openide.awt.Mnemonics.setLocalizedText(configLabel, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_Configuration")); // NOI18N
@@ -187,7 +189,7 @@ public class CustomizerRun extends javax.swing.JPanel {
             }
         });
 
-        jPanel1.setLayout(new java.awt.CardLayout());
+        runPanel.setLayout(new java.awt.CardLayout());
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -195,8 +197,8 @@ public class CustomizerRun extends javax.swing.JPanel {
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, runPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, separator, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(configLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 90, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -216,53 +218,55 @@ public class CustomizerRun extends javax.swing.JPanel {
                     .add(configNew)
                     .add(configDel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(separator, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 183, Short.MAX_VALUE))
+                .add(runPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 197, Short.MAX_VALUE)
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
-private void configComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configComboActionPerformed
-    String config = (String) configCombo.getSelectedItem();
-    manager.markAsCurrentConfiguration(config == null || config.length() == 0 ? null : config);
-    selectCurrentItem();
-}//GEN-LAST:event_configComboActionPerformed
+    private void configComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configComboActionPerformed
+        String config = (String) configCombo.getSelectedItem();
+        manager.markAsCurrentConfiguration(config == null || config.length() == 0 ? null : config);
+        selectCurrentItem();
+    }//GEN-LAST:event_configComboActionPerformed
 
-private void configNewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configNewActionPerformed
-    NotifyDescriptor.InputLine d = new NotifyDescriptor.InputLine(
-            NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.input.prompt"),
-            NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.input.title"));
+    private void configNewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configNewActionPerformed
+        NotifyDescriptor.InputLine d = new NotifyDescriptor.InputLine(
+                NbBundle.getMessage(CustomizerRun.class, "LBL_ConfigurationName"),
+                NbBundle.getMessage(CustomizerRun.class, "LBL_CreateNewConfiguration"));
 
-    if (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.OK_OPTION) {
-        String name = d.getInputText();
+        if (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.OK_OPTION) {
+            String name = d.getInputText();
         String config = name.replaceAll("[^a-zA-Z0-9_.-]", "_"); // NOI18N
 
-        if (manager.exists(config)) {
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                    NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.input.duplicate", config),
-                    NotifyDescriptor.WARNING_MESSAGE));
-            return;
+            if (manager.exists(config)) {
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                        NbBundle.getMessage(CustomizerRun.class, "MSG_ConfigurationExists", config),
+                        NotifyDescriptor.WARNING_MESSAGE));
+                return;
+            }
+            Configuration cfg = manager.createNew(config, name);
+            comboModel.addElement(config);
+            manager.markAsCurrentConfiguration(config);        
+            selectCurrentItem();
         }
-        Configuration cfg = manager.createNew(config, name);
-        comboModel.addElement(name);
-        manager.markAsCurrentConfiguration(config);        
-        selectCurrentItem();
-    }
-}//GEN-LAST:event_configNewActionPerformed
+    }//GEN-LAST:event_configNewActionPerformed
 
-private void configDelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configDelActionPerformed
-    String config = (String) configCombo.getSelectedItem();
-    assert config != null;
-    comboModel.removeElement(config);    
-    configurationFor(config).delete();
-    selectCurrentItem();
-}//GEN-LAST:event_configDelActionPerformed
+    private void configDelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configDelActionPerformed
+        String config = (String) configCombo.getSelectedItem();
+        assert config != null;
+        comboModel.removeElement(config);    
+        configurationFor(config).delete();
+        selectCurrentItem();
+    }//GEN-LAST:event_configDelActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox configCombo;
     private javax.swing.JButton configDel;
     private javax.swing.JLabel configLabel;
     private javax.swing.JButton configNew;
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JPanel runPanel;
+    private javax.swing.JSeparator separator;
     // End of variables declaration//GEN-END:variables
 }

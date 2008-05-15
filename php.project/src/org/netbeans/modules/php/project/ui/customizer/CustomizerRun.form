@@ -17,8 +17,8 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="1" attributes="0">
               <Group type="103" groupAlignment="1" attributes="0">
-                  <Component id="jSeparator1" alignment="0" pref="400" max="32767" attributes="0"/>
-                  <Component id="jPanel1" alignment="0" pref="400" max="32767" attributes="0"/>
+                  <Component id="runPanel" alignment="0" pref="400" max="32767" attributes="0"/>
+                  <Component id="separator" alignment="0" pref="400" max="32767" attributes="0"/>
                   <Group type="102" alignment="1" attributes="0">
                       <Component id="configLabel" min="-2" pref="90" max="-2" attributes="1"/>
                       <EmptySpace max="-2" attributes="0"/>
@@ -42,10 +42,11 @@
                   <Component id="configNew" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="configDel" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace type="unrelated" max="-2" attributes="0"/>
-              <Component id="jSeparator1" min="-2" pref="2" max="-2" attributes="0"/>
-              <EmptySpace type="unrelated" max="-2" attributes="0"/>
-              <Component id="jPanel1" pref="183" max="32767" attributes="0"/>
+              <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
+              <Component id="separator" min="-2" pref="2" max="-2" attributes="0"/>
+              <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
+              <Component id="runPanel" pref="197" max="32767" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -100,11 +101,11 @@
         <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
       </AuxValues>
     </Component>
-    <Component class="javax.swing.JSeparator" name="jSeparator1">
+    <Component class="javax.swing.JSeparator" name="separator">
     </Component>
-    <Container class="javax.swing.JPanel" name="jPanel1">
+    <Container class="javax.swing.JPanel" name="runPanel">
       <AuxValues>
-        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new org.netbeans.modules.php.project.ui.customizer.RunAsPanel(manager, category)"/>
+        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new RunAsPanel(manager, properties, category)"/>
       </AuxValues>
 
       <Layout class="org.netbeans.modules.form.compat2.layouts.DesignCardLayout"/>

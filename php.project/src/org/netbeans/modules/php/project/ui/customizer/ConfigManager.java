@@ -67,7 +67,7 @@ public class ConfigManager {
         tmp.add(PROP_DISPLAY_NAME);
         this.propertyNames = tmp.toArray(new String[tmp.size()]);
     }
-    
+
     public void addChangeListener(ChangeListener listener) {
         changeSupport.addChangeListener(listener);
     }
@@ -128,23 +128,17 @@ public class ConfigManager {
 
     public class Configuration {
         private String name;
-        private boolean def;
 
         private Configuration() {
             this(null);
         }
 
         private Configuration(String name) {
-            this(name, name == null);
-        }
-
-        private Configuration(String name, boolean def) {
             if (name != null && name.trim().length() == 0) {
                 name = null;
             }
-            assert configs.keySet().contains(name) : name;
+            assert configs.keySet().contains(name) : "Unknown configuration: " + name;
             this.name = name;
-            this.def = def;
         }
 
         public String getName() {
@@ -158,7 +152,7 @@ public class ConfigManager {
         }
         
         public boolean isDefault() {
-            return def;
+            return name == null;
         }
         
         public void delete() {
