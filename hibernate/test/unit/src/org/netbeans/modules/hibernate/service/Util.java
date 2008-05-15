@@ -247,7 +247,7 @@ public class Util {
         ArrayList<FileObject> files = new ArrayList<FileObject>();
         Sources projectSources = ProjectUtils.getSources(project);
         SourceGroup[] javaSourceGroup = projectSources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_RESOURCES);
-        if (projectSources == null) {
+        if (javaSourceGroup == null || javaSourceGroup.length == 0) {
             javaSourceGroup = projectSources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         }
         for (SourceGroup sourceGroup : javaSourceGroup) {

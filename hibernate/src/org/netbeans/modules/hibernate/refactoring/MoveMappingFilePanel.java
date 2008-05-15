@@ -309,7 +309,7 @@ private void updateReferencesCheckBoxItemStateChanged(java.awt.event.ItemEvent e
     private void updateRoots() {
         Sources sources = ProjectUtils.getSources(project);
         groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_RESOURCES);
-        if (groups == null) {
+        if (groups == null || groups.length == 0) {
             groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         }
 
