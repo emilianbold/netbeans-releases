@@ -149,6 +149,7 @@ class Commandline {
             }
             
         } finally {
+            Subversion.LOG.fine("cli: process finnished");            
             command.commandFinished();
         }        
     }    
