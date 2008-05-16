@@ -3,8 +3,9 @@
  * and open the template in the editor.
  */
 
-package org.netbeans.modules.iep.editor.wizard.database;
+package org.netbeans.modules.iep.editor.wizard.database.tableInput;
 
+import org.netbeans.modules.iep.editor.wizard.database.*;
 import java.awt.BorderLayout;
 import java.util.List;
 import javax.swing.JPanel;
@@ -13,7 +14,7 @@ import org.openide.util.NbBundle;
 
 public final class DatabaseTableSelectionVisualPanel2 extends JPanel {
 
-    private PollingTableDatabaseTableColumnSelectionPanel mDBTableColumnSelectionPanel;
+    private ExternalTableDatabaseTableColumnSelectionPanel mDBTableColumnSelectionPanel;
     
     
     /** Creates new form DatabaseTableSelectionVisualPanel2 */
@@ -30,7 +31,7 @@ public final class DatabaseTableSelectionVisualPanel2 extends JPanel {
     
     private void init() {
         this.setLayout(new BorderLayout());
-        mDBTableColumnSelectionPanel = new PollingTableDatabaseTableColumnSelectionPanel();
+        mDBTableColumnSelectionPanel = new ExternalTableDatabaseTableColumnSelectionPanel();
         this.add(mDBTableColumnSelectionPanel, BorderLayout.CENTER);
         
         
@@ -40,18 +41,14 @@ public final class DatabaseTableSelectionVisualPanel2 extends JPanel {
         mDBTableColumnSelectionPanel.setSelectedTables(tables);
     }
     
-    public void setJoinCondition(String joinCondition) {
-    	mDBTableColumnSelectionPanel.setJoinCondition(joinCondition);
-    }
-    
-    public String getJoinCondition() {
-    	return mDBTableColumnSelectionPanel.getJoinCondition();
-    }
     
     public List<ColumnInfo> getSelectedColumns() {
     	return mDBTableColumnSelectionPanel.getSelectedColumns();
     }
     
+    public String getJNDIName() {
+        return mDBTableColumnSelectionPanel.getJNDIName();
+    }
     
     /** This method is called from within the constructor to
      * initialize the form.
