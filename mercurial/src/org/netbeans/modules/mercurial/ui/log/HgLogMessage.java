@@ -87,36 +87,41 @@ public class HgLogMessage {
         this.apaths = new ArrayList<HgLogMessageChangedPath>();
         this.dpaths = new ArrayList<HgLogMessageChangedPath>();
         this.cpaths = new ArrayList<HgLogMessageChangedPath>();
-        
-        if( fa != null && !fa.equals("")){
+        List<String> apathsStrings = new ArrayList<String>();
+        List<String> dpathsStrings = new ArrayList<String>();
+        List<String> cpathsStrings = new ArrayList<String>();
+        if (fa != null && !fa.equals("")) {
             splits = fa.split(" ");
-            for(String s: splits){
-                this.apaths.add(new HgLogMessageChangedPath(s, HgAddStatus));                
+            for (String s : splits) {
+                this.apaths.add(new HgLogMessageChangedPath(s, HgAddStatus));
+                apathsStrings.add(s);
                 logCopied(s);
             }
-        }    
-        if( fm != null && !fm.equals("")){
+        }
+        if (fd != null && !fd.equals("")) {
+            splits = fd.split(" ");
+            for (String s : splits) {
+                this.dpaths.add(new HgLogMessageChangedPath(s, HgDelStatus));
+                dpathsStrings.add(s);
+                logCopied(s);
+            }
+        }
+        if (fc != null && !fc.equals("")) {
+            splits = fc.split(" ");
+            for (String s : splits) {
+                this.cpaths.add(new HgLogMessageChangedPath(s, HgCopyStatus));
+                cpathsStrings.add(s);
+                logCopied(s);
+            }
+        }
+        if (fm != null && !fm.equals("")) {
             splits = fm.split(" ");
-            for(String s: splits){
-                //#132984: range of issues with upgrade to Hg 1.0, incorrectly reporting files as added and modified in same changeset
-                if(!this.apaths.contains(s)){
-                    this.mpaths.add(new HgLogMessageChangedPath(s, HgModStatus));             
+            for (String s : splits) {
+                //#132743, incorrectly reporting files as added/modified, deleted/modified in same changeset
+                if (!apathsStrings.contains(s) && !dpathsStrings.contains(s) && !cpathsStrings.contains(s)) {
+                    this.mpaths.add(new HgLogMessageChangedPath(s, HgModStatus));
                     logCopied(s);
                 }
-            }
-        }
-        if( fd != null && !fd.equals("")){
-            splits = fd.split(" ");
-            for(String s: splits){
-                this.dpaths.add(new HgLogMessageChangedPath(s, HgDelStatus));                
-                logCopied(s);
-            }
-        }
-        if( fc != null && !fc.equals("")){
-            splits = fc.split(" ");
-            for(String s: splits){
-                this.cpaths.add(new HgLogMessageChangedPath(s, HgCopyStatus));                
-                logCopied(s);
             }
         }
     }
