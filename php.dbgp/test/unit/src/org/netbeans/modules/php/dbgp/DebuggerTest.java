@@ -36,29 +36,27 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.dbgp.api;
+package org.netbeans.modules.php.dbgp;
 
-import org.netbeans.modules.php.dbgp.SessionId;
-import org.netbeans.modules.php.dbgp.DebuggerFactory;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.concurrent.Semaphore;
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.php.dbgp.ConversionUtils;
-import org.netbeans.modules.php.dbgp.DebugSession;
-import org.netbeans.modules.php.dbgp.DebuggerOptions;
 import org.netbeans.modules.php.dbgp.breakpoints.LineBreakpoint;
 import org.netbeans.modules.php.dbgp.breakpoints.Utils;
 import org.netbeans.modules.php.dbgp.packets.RunCommand;
+import org.netbeans.modules.php.project.spi.XDebugStarter;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.text.Line;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
@@ -98,8 +96,9 @@ public class DebuggerTest extends NbTestCase {
         final TestWrapper testWrapper = new TestWrapper(getTestForSuspendState(sessionId));
         addBreakpoint(scriptFo, 7, testWrapper, new RunContinuation(sessionId));
         ProcessBuilder processBuilder = startDebugging(sessionId, scriptFile);
-        Process process = processBuilder.start();
-        process.waitFor();        
+        Process process = processBuilder.start();        
+        sessionId.waitServerFile(true);
+        process.waitFor();                
         testWrapper.assertTested();//sometimes, randomly fails 
     }
 
@@ -289,10 +288,27 @@ public class DebuggerTest extends NbTestCase {
     }
 
     private ProcessBuilder startDebugging(final SessionId sessionId, File scriptFile) {
-        DebuggerFactory.getDebugger().debug(sessionId, DebuggerOptions.getGlobalInstance());
-        String command = gePHPInterpreter();
-        ProcessBuilder processBuilder = new ProcessBuilder(new String[]{command, scriptFile.getAbsolutePath()});        
-        processBuilder.environment().put("XDEBUG_CONFIG", "idekey="+sessionId.getId()); //NOI18N
+        DebuggerOptions dOptions = new DebuggerOptions();
+        dOptions.debugForFirstPageOnly = true;
+        ProcessBuilder processBuilder = null;
+        Semaphore semaphore = getDebugger().debug(sessionId, DebuggerOptions.getGlobalInstance());
+        try {
+            semaphore.acquire();
+            String command = gePHPInterpreter();
+            processBuilder = new ProcessBuilder(new String[]{command, scriptFile.getAbsolutePath()});
+            processBuilder.directory(scriptFile.getParentFile());
+            processBuilder.environment().put("XDEBUG_CONFIG", "idekey=" + sessionId.getId()); //NOI18N
+
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        } finally {
+            semaphore.release();
+        }
         return processBuilder;
+    }
+    
+    private DebuggerImpl getDebugger() {
+        DebuggerImpl retval = (DebuggerImpl) Lookup.getDefault().lookup(XDebugStarter.class);
+        return retval;
     }
 }

@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,18 +38,46 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.php.dbgp;
 
-import org.netbeans.modules.php.dbgp.Debugger;
-import org.openide.util.Lookup;
+package org.netbeans.modules.masterfs.filebasedfs;
 
+import junit.framework.Test;
+import org.netbeans.junit.NbTestSuite;
+import org.openide.filesystems.FileObjectTestHid;
+import org.openide.filesystems.FileSystemTestHid;
+import org.openide.filesystems.FileUtilTestHidden;
+import org.openide.filesystems.TestBaseHid;
+import org.openide.filesystems.URLMapperTestHidden;
+import org.openide.filesystems.test.StatFiles;
 
 /**
- * @author ads
- *
+ * Count read/write/delete file access and print results.
  */
-public class DebuggerFactory {
-    public static Debugger getDebugger() {
-        return Lookup.getDefault().lookup( Debugger.class );
+public class FileBasedFileSystemTestStat extends FileBasedFileSystemTest {
+    
+    public FileBasedFileSystemTestStat(Test test) {
+        super(test);
+    }
+    
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        TestBaseHid.accessMonitor = new StatFiles();
+    }
+    
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+        TestBaseHid.accessMonitor.getResults().dump();
+    }
+    
+    public static Test suite() {
+        NbTestSuite suite = new NbTestSuite();        
+        suite.addTestSuite(FileSystemTestHid.class);
+        suite.addTestSuite(FileObjectTestHid.class);
+        suite.addTestSuite(URLMapperTestHidden.class);
+        suite.addTestSuite(FileUtilTestHidden.class);                
+        suite.addTestSuite(BaseFileObjectTestHid.class);                
+        return new FileBasedFileSystemTestStat(suite);
     }
 }

@@ -38,15 +38,36 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.php.dbgp;
 
-import org.netbeans.modules.php.dbgp.DebuggerOptions;
+package org.netbeans.modules.css.editor.test;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 
 /**
- * @author Radek Matous
  *
+ * @author Marek Fukala
  */
-//keeps php.rt compilable (after deleteing php.rt should be deleted)
-public interface Debugger {
-    public void debug( SessionId id, DebuggerOptions options );
+public class Utils {
+
+    public static String readFileContentToString(File file) throws IOException {
+        StringBuffer buff = new StringBuffer();
+
+        BufferedReader rdr = new BufferedReader(new FileReader(file));
+
+        String line;
+
+        try{
+            while ((line = rdr.readLine()) != null){
+                buff.append(line + "\n");
+            }
+        } finally{
+            rdr.close();
+        }
+        
+        return buff.toString();
+    }
+    
 }

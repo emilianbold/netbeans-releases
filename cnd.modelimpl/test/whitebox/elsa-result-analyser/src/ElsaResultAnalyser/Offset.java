@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,26 +38,57 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.php.dbgp;
 
-
+package ElsaResultAnalyser;
 
 /**
- * <pre>
- * This is "action" that should be supported by debugger engine.
- * Result of this action should be some  preparation work of this engine.
- * This work could be empty actually.
- * ( In case of DBGP debugger we need to start server socket listening
- * for incoming connections handling ).
- * 
- * This interface exists because of absence notification from debugger manager 
- * about ActionsManager.ACTION_START event. So ActionsProvider never gets 
- * notification via doAction() with ActionsManager.ACTION_START in argument.    
- * </pre>  
- * @author ads
  *
+ * @author nk220367
  */
-public interface StartActionProvider {
+public class Offset {
 
-    void start(  );
+    public String file;
+    public int line;
+    public int row;
+    
+    public int elsaLine;
+
+    public Offset(String loc, int elsaLine) {
+        
+        this.elsaLine = elsaLine;
+        
+        file = "";
+        int i = 0;
+        if(loc.charAt(i) != '/') {
+            i = loc.indexOf(", at");
+        }
+        if(i < 0) {
+            i = 0;
+        }
+        for (; i < loc.length() && loc.charAt(i) != '/'; i++) {
+        }
+        for (; i < loc.length() && loc.charAt(i)!= ':'; i++) {
+            file += loc.charAt(i);
+        }
+        i++;
+        line = 0;
+        for (; i < loc.length() && Character.isDigit(loc.charAt(i)); i++) {
+            line *= 10;
+            line += loc.charAt(i) - '0';
+        }
+        i++;
+        row = 0;
+        for (; i < loc.length() && Character.isDigit(loc.charAt(i)); i++) {
+            row *= 10;
+            row += loc.charAt(i) - '0';
+        }
+    }
+    
+    @Override
+    public boolean equals(Object obj) {
+        Offset o = (Offset) obj;
+        return (file.equals(o.file) &&
+                line == o.line &&
+                row == o.row);
+    }
 }
