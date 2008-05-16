@@ -73,6 +73,7 @@ public class ActionsInfraHid implements ContextGlobalProvider {
     static {
         try {
             amResult = Utilities.actionsGlobalContext().lookupResult(ActionMap.class);
+            // XXX clean this up: use MockServices
             Assert.assertEquals(Collections.singleton(EMPTY_MAP), new HashSet(amResult.allInstances()));
         } catch (Throwable t) {
             t.printStackTrace();
@@ -110,6 +111,7 @@ public class ActionsInfraHid implements ContextGlobalProvider {
     }
     
     // Stolen from RequestProcessorTest.
+    // XXX use NbTestCase.assertGC instead
     public static void doGC() {
         doGC(10);
     }
