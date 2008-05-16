@@ -75,8 +75,8 @@ public class TcgComponentNode extends AbstractNode implements SharedConstants {
     }
     
     public TcgComponentNode(OperatorComponent component, 
-    						IEPModel model, 
-    						TcgComponentNodeView view) {
+                            IEPModel model, 
+                            TcgComponentNodeView view) {
         super(Children.LEAF);
         this.mComponent = component;
     }
@@ -87,17 +87,17 @@ public class TcgComponentNode extends AbstractNode implements SharedConstants {
     
     public String getDisplayName() {
         //ritreturn mHelper.getDisplayName();
-    	return mComponent.getDisplayName();
+        return mComponent.getDisplayName();
     }
     
     public String getTypeDisplayName() {
         //ritreturn mHelper.getTypeDisplayName();
-    	return TcgPsI18n.getDisplayName(mComponent.getComponentType());
+        return TcgPsI18n.getDisplayName(mComponent.getComponentType());
     }
     
     public String getShortDescription() {
         //ritreturn TcgPsI18n.getToolTip(mComponent);
-    	return TcgPsI18n.getToolTip(mComponent.getComponentType());
+        return TcgPsI18n.getToolTip(mComponent.getComponentType());
     }
     
     public TcgComponent getDoc() {
@@ -111,7 +111,7 @@ public class TcgComponentNode extends AbstractNode implements SharedConstants {
   
     
     public IEPModel getModel() {
-    	return this.mModel;
+        return this.mModel;
     }
     
     public TcgComponentNodeView getView() {
@@ -132,7 +132,7 @@ public class TcgComponentNode extends AbstractNode implements SharedConstants {
 //            List<org.netbeans.modules.iep.model.Property> propList = mComp.getProperties();
 //            Sheet.Set ss = null;
 //            for (int i = 0, I = propList.size(); i < I; i++) {
-//            	org.netbeans.modules.iep.model.Property prop = (org.netbeans.modules.iep.model.Property)propList.get(i);
+//                org.netbeans.modules.iep.model.Property prop = (org.netbeans.modules.iep.model.Property)propList.get(i);
 //                TcgPropertyType pt = prop.getPropertyType();
 //                if (!pt.isReadable()) {
 //                    continue;
@@ -151,13 +151,13 @@ public class TcgComponentNode extends AbstractNode implements SharedConstants {
 //                
 //            }
             
-        	Sheet.Set ss = null;
-        	Sheet.Set firstSheet = null;
-        	TcgComponentType componentType = mComponent.getComponentType();
+            Sheet.Set ss = null;
+            Sheet.Set firstSheet = null;
+            TcgComponentType componentType = mComponent.getComponentType();
             List properties = componentType.getPropertyTypeList();
-			Iterator it = properties.iterator();
-			while(it.hasNext()) {
-				TcgPropertyType pt = (TcgPropertyType) it.next();
+            Iterator it = properties.iterator();
+            while(it.hasNext()) {
+                TcgPropertyType pt = (TcgPropertyType) it.next();
               if (!pt.isReadable()) {
                   continue;
               }
@@ -172,29 +172,29 @@ public class TcgComponentNode extends AbstractNode implements SharedConstants {
                   ss.setExpert(true);
                   
                   if(firstSheet == null) {
-                	  firstSheet = ss;
+                      firstSheet = ss;
                   }
               }
               Node.Property property = NodePropertyFactory.getInstance().getProperty(pt, mComponent);
               if(property != null) {
-            	  ss.put(property);
+                  ss.put(property);
               }
               //ss.put(TcgComponentNodeProperty.newInstance(prop, mComp, mComp.getModel()));
               
-				
-			}
-			
-			//add documentation to first sheet;
-			if(firstSheet != null) {
-				DocumentationProperty docProp = new DocumentationProperty(String.class, mComponent);
-				firstSheet.put(docProp);
-			}
-			
-			
+                
+            }
+            
+            //add documentation to first sheet;
+            if(firstSheet != null) {
+                DocumentationProperty docProp = new DocumentationProperty(String.class, mComponent);
+                firstSheet.put(docProp);
+            }
+            
+            
             // if component defines property categoryOrder, add categories mentioned 
             // first, then add the cagegories not mentioned in the order added to ssTable
             if (componentType.getPropertyType(CATEGORY_ORDER_KEY) != null) {
-            	List catList = (List) componentType.getPropertyType(CATEGORY_ORDER_KEY).getDefaultValue();
+                List catList = (List) componentType.getPropertyType(CATEGORY_ORDER_KEY).getDefaultValue();
                 
                 for (int i = 0, I = catList.size(); i < I; i++) {
                     String key = (String)catList.get(i);

@@ -164,6 +164,10 @@ public interface Validator {
             return description;
         }
         
+        public void setDescription(String description) {
+            this.description = description;
+        }
+
         /**
          * Line position of advice/warning/error.
          * @return Line number on which this ResultItem was reported on.

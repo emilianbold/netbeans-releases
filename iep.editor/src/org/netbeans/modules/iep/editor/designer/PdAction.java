@@ -36,17 +36,17 @@ public abstract class PdAction extends AbstractAction {
     private PlanCanvas mPlanCanvas;
     
     public PdAction(String name, 
-    				String shortDescription,
-    				PlanCanvas canvas) {
+                    String shortDescription,
+                    PlanCanvas canvas) {
         super(name);
         putValue(SHORT_DESCRIPTION, shortDescription);
         this.mPlanCanvas = canvas;
     }
 
     public PdAction(String name, 
-    				String shortDescription, 
-    				Icon icon,
-    				PlanCanvas canvas) {
+                    String shortDescription, 
+                    Icon icon,
+                    PlanCanvas canvas) {
         super(name, icon);
         putValue(SHORT_DESCRIPTION, shortDescription);
         this.mPlanCanvas = canvas;

@@ -6,20 +6,20 @@ import org.netbeans.modules.iep.model.lib.TcgComponentType;
 
 public class ModelObjectWrapper {
 
-	private OperatorComponent mComponent;
-	
-	private TcgComponentType mComponentType;
-	
-	public ModelObjectWrapper(OperatorComponent component, TcgComponentType componentType) {
-		this.mComponent = component;
-		this.mComponentType = componentType;
-	}
-	
-	public OperatorComponent getComponent() {
-		return this.mComponent;
-	}
-	
-	public TcgComponentType getComponentType() {
-		return this.mComponentType;
-	}
+    private OperatorComponent mComponent;
+    
+    private TcgComponentType mComponentType;
+    
+    public ModelObjectWrapper(OperatorComponent component, TcgComponentType componentType) {
+        this.mComponent = component;
+        this.mComponentType = componentType;
+    }
+    
+    public OperatorComponent getComponent() {
+        return this.mComponent;
+    }
+    
+    public TcgComponentType getComponentType() {
+        return this.mComponentType;
+    }
 }

@@ -53,8 +53,10 @@ public class VerticalGradient {
         int y2 = y0 + height;
         
         Rectangle clip = g.getClipBounds();
-        if (Math.max(x0, clip.x) >= Math.min(x2, clip.x + clip.width)) return;
-        if (Math.max(y0, clip.y) >= Math.min(y2, clip.y + clip.height)) return;
+        if (clip != null) {   // I have case when clip is equal null. In case ToolTip.
+            if (Math.max(x0, clip.x) >= Math.min(x2, clip.x + clip.width)) return;
+            if (Math.max(y0, clip.y) >= Math.min(y2, clip.y + clip.height)) return;
+        }
         
         if (image == null) {
             image = c.createImage(1, 512);
