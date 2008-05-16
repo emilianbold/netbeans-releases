@@ -467,16 +467,23 @@ final class ResourceWizardPanel extends JPanel {
                     = sourceMap.entrySet().iterator();
 
             // For each source perform the task.
+            final String prefixLoading
+                    = NbBundle.getMessage(ResourceWizardPanel.class,
+                                          "TXT_Loading")                //NOI18N
+                      + ' ';
+            final String prefixSearchingIn
+                    = NbBundle.getMessage(ResourceWizardPanel.class,
+                                          "TXT_SearchingIn")            //NOI18N
+                      + ' ';
+
             for (int i = 0; sourceIterator.hasNext(); i++) {
                 Map.Entry<DataObject,SourceData> entry = sourceIterator.next();
                 DataObject source = entry.getKey();
+                FileObject fileObj = source.getPrimaryFile();
+                String fileName = ClassPath.getClassPath(fileObj, ClassPath.SOURCE)
+                                  .getResourceName(fileObj, '.', false);
 
-                ClassPath cp = ClassPath.getClassPath(source.getPrimaryFile(), ClassPath.SOURCE);
-                progressPanel.setMainText(
-                        NbBundle.getMessage(ResourceWizardPanel.class, "TXT_Loading")//NOI18N
-                        + " "                                           //NOI18N
-                        + cp.getResourceName(source.getPrimaryFile(), '.', false ));
-
+                progressPanel.setMainText(prefixLoading + fileName);
 
                 // retrieve existing sourcedata -- will provide the resource for the new instance
                 SourceData sourceData = entry.getValue();
@@ -496,11 +503,7 @@ final class ResourceWizardPanel extends JPanel {
                 sourceData = new SourceData(sourceData.getResource(), support);
                 entry.setValue(sourceData);
                 
-                cp = ClassPath.getClassPath(source.getPrimaryFile(), ClassPath.SOURCE );
-                progressPanel.setMainText(
-                        NbBundle.getMessage(ResourceWizardPanel.class, "TXT_SearchingIn")//NOI18N
-                        + " "
-                        + cp.getResourceName(source.getPrimaryFile(), '.', false));
+                progressPanel.setMainText(prefixSearchingIn + fileName);
                 
                 HardCodedString[] foundStrings;
                 
