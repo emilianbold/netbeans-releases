@@ -48,17 +48,17 @@ function main() {
 		return
 	fi
 
-	text="rebuild.cluster.name=nb.cluster.cnd"
+	cnd_cluster="rebuild.cluster.name=nb.cluster.cnd"
 
-	fgrep "${text}" ${ubp}
+	fgrep "${cnd_cluster}" ${ubp}
 	rc=$?
 	if [ ! ${rc} == 0 ]; then
-		echo "The file ${ubp} does not contain \"${text}\""
+		echo "The file ${ubp} does not contain \"${cnd_cluster}\""
 		return
 	fi
 
 
-	ant -f ../nbbuild/build.xml rebuild-cluster
+	ant -f ../nbbuild/build.xml -D${cnd_cluster} rebuild-cluster
 }
 
 main $@

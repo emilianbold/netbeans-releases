@@ -83,7 +83,9 @@ public final class Controller implements ComponentListener {
   }
 
   public void detach() {
-    myModel.removeComponentListener(this);
+    if (myModel != null) {
+      myModel.removeComponentListener(this);
+    }
   }
 
   public void addListener(Listener listener) {

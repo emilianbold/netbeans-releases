@@ -91,7 +91,7 @@ class TcgPropertyTypeImpl
         mMultiple = multiple;
         mRequired = required;
         mDefaultValue = mType.parse(defaultValue);
-    	mDefaultValueAsString = defaultValue;
+        mDefaultValueAsString = defaultValue;
         mScript = script;
         mCategory = category;
         mIsTransient = isTransient;
@@ -130,7 +130,7 @@ class TcgPropertyTypeImpl
         mRequired = required;
         mDefaultValue = defaultValue;
         if(mDefaultValue != null) {
-        	mDefaultValueAsString = mType.format(mDefaultValue);
+            mDefaultValueAsString = mType.format(mDefaultValue);
         }
         mScript = script;
         mCategory = category;

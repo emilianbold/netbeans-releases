@@ -40,6 +40,7 @@
 package org.netbeans.modules.cnd.api.model.xref;
 
 import java.util.EnumSet;
+import java.util.Set;
 
 /**
  *
@@ -52,8 +53,8 @@ public enum CsmReferenceKind {
     AFTER_DEREFERENCE_USAGE,
     UNKNOWN;
 
-    public static final EnumSet<CsmReferenceKind> ANY_USAGE;
-    public static final EnumSet<CsmReferenceKind> ALL;
+    public static final Set<CsmReferenceKind> ANY_USAGE;
+    public static final Set<CsmReferenceKind> ALL;
     static {
         ANY_USAGE = EnumSet.range(DIRECT_USAGE, AFTER_DEREFERENCE_USAGE);
         ALL = EnumSet.range(DEFINITION, AFTER_DEREFERENCE_USAGE);
