@@ -60,6 +60,7 @@ public final class EditorPreferencesDefaults {
     
     // not in SettingsDefaults not ExtSettingsDefaults
     public static final boolean defaultToolbarVisible = true;
+    public static final boolean defaultPopupMenuEnabled = true;
     
     // -----------------------------------------------------------------------
     // --- from SettingsDefaults

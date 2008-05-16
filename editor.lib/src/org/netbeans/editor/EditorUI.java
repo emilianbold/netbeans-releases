@@ -45,6 +45,8 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.HashMap;
@@ -97,7 +99,7 @@ import org.openide.util.WeakListeners;
 * @author Miloslav Metelka
 * @version 1.00
 */
-public class EditorUI implements ChangeListener, PropertyChangeListener {
+public class EditorUI implements ChangeListener, PropertyChangeListener, MouseListener {
 
     private static final Logger LOG = Logger.getLogger(EditorUI.class.getName());
     
@@ -370,6 +372,7 @@ public class EditorUI implements ChangeListener, PropertyChangeListener {
             // listen on component
             component.addPropertyChangeListener(this);
             component.addFocusListener(focusL);
+            component.addMouseListener(this);
 
             // listen on caret
             Caret caret = component.getCaret();
@@ -421,6 +424,7 @@ public class EditorUI implements ChangeListener, PropertyChangeListener {
                 // stop listening on component
                 component.removePropertyChangeListener(this);
                 component.removeFocusListener(focusL);
+                component.removeMouseListener(this);
             }
 
             BaseDocument doc = getDocument();
@@ -1572,6 +1576,10 @@ public class EditorUI implements ChangeListener, PropertyChangeListener {
                     lineNumberVisible = false;
             }
 
+            if (settingName == null || SimpleValueNames.POPUP_MENU_ENABLED.equals(settingName)) {
+                popupMenuEnabled = prefs.getBoolean(SimpleValueNames.POPUP_MENU_ENABLED, EditorPreferencesDefaults.defaultPopupMenuEnabled);
+            }
+            
             BaseDocument doc = getDocument();
             if (doc != null) {
 
@@ -1638,6 +1646,34 @@ public class EditorUI implements ChangeListener, PropertyChangeListener {
         }
     }
 
+    private void showPopupMenuForPopupTrigger(MouseEvent evt) {
+        if (component != null && evt.isPopupTrigger() && popupMenuEnabled) {
+            showPopupMenu(evt.getX(), evt.getY());
+        }
+    }
+    
+    // -----------------------------------------------------------------------
+    // MouseListener implementation
+    // -----------------------------------------------------------------------
+    
+    public void mouseClicked(MouseEvent evt) {
+    }
+
+    public void mousePressed(MouseEvent evt) {
+        getWordMatch().clear();
+        showPopupMenuForPopupTrigger(evt);
+    }
+    
+    public void mouseReleased(MouseEvent evt) {
+        showPopupMenuForPopupTrigger(evt); // On Win the popup trigger is on mouse release
+    }
+
+    public void mouseEntered(MouseEvent evt) {
+    }
+
+    public void mouseExited(MouseEvent evt) {
+    }
+    
     // -----------------------------------------------------------------------
     // Popup menus and tooltip support (moved here from ExtEditorUI)
     // -----------------------------------------------------------------------

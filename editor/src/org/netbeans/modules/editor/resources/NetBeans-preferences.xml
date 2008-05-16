@@ -174,6 +174,9 @@ made subject to such option by the copyright holder.
     <entry category="private" javaType="java.lang.Boolean" name="pair-characters-completion" xml:space="preserve">
         <value><![CDATA[true]]></value>
     </entry>
+    <entry category="private" javaType="java.lang.Boolean" name="popup-menu-enabled" xml:space="preserve">
+        <value><![CDATA[true]]></value>
+    </entry>
     <entry category="deprecated" javaType="java.lang.Boolean" name="print-line-number-visible" xml:space="preserve">
         <value><![CDATA[true]]></value>
     </entry>
