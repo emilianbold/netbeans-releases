@@ -40,9 +40,6 @@ package org.netbeans.modules.ruby.testrunner.ui;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import org.netbeans.modules.ruby.platform.execution.OutputRecognizer;
 
 /**
  * An output recognizer for parsing output of the test/unit runner script, 
@@ -50,20 +47,10 @@ import org.netbeans.modules.ruby.platform.execution.OutputRecognizer;
  *
  * @author Erno Mononen
  */
-public class RspecRecognizer extends OutputRecognizer {
+public class RspecHandlerFactory {
 
-    private final Manager manager;
-    private final TestSession session;
-    private final List<TestHandler> handlers;
-
-    public RspecRecognizer(Manager manager, TestSession session) {
-        this.manager = manager;
-        this.session = session;
-        this.handlers = initHandlers();
-    }
-
-    private List<TestHandler> initHandlers() {
-        List<TestHandler> result = new ArrayList<TestHandler>();
+    public static  List<TestRecognizerHandler> getHandlers() {
+        List<TestRecognizerHandler> result = new ArrayList<TestRecognizerHandler>();
         result.add(new SuiteStartingHandler());
         result.add(new SuiteStartedHandler());
         result.add(new SuiteFinishedHandler());
@@ -73,52 +60,7 @@ public class RspecRecognizer extends OutputRecognizer {
         return result;
     }
 
-    @Override
-    public void start() {
-        manager.testStarted(session);
-    }
-
-    @Override
-    public RecognizedOutput processLine(String line) {
-
-        for (TestHandler handler : handlers) {
-            if (handler.match(line).matches()) {
-                handler.updateUI(manager, session);
-                return null;
-            }
-        }
-
-        return null;
-    }
-
-    @Override
-    public void finish() {
-        manager.sessionFinished(session);
-    }
-
-    private static int toMillis(String timeInSeconds) {
-        Double elapsedTimeMillis = Double.parseDouble(timeInSeconds) * 1000;
-        return elapsedTimeMillis.intValue();
-    }
-
-    static abstract class TestHandler {
-
-        protected final Pattern pattern;
-        protected Matcher matcher;
-
-        public TestHandler(String regex) {
-            this.pattern = Pattern.compile(regex);
-        }
-
-        final Matcher match(String line) {
-            this.matcher = pattern.matcher(line);
-            return matcher;
-        }
-
-        abstract void updateUI(Manager manager, TestSession session);
-    }
-
-    static class TestFailedHandler extends TestHandler {
+    static class TestFailedHandler extends TestRecognizerHandler {
 
         public TestFailedHandler() {
             super(".*%TEST_FAILED%\\s(.*)\\stime=(\\d+\\.\\d+)");
@@ -137,7 +79,7 @@ public class RspecRecognizer extends OutputRecognizer {
         }
     }
 
-    static class TestStartedHandler extends TestHandler {
+    static class TestStartedHandler extends TestRecognizerHandler {
 
         public TestStartedHandler() {
             super(".*%TEST_STARTED%\\s(.*)");
@@ -148,7 +90,7 @@ public class RspecRecognizer extends OutputRecognizer {
         }
     }
 
-    static class TestFinishedHandler extends TestHandler {
+    static class TestFinishedHandler extends TestRecognizerHandler {
 
         public TestFinishedHandler() {
             super(".*%TEST_FINISHED%\\s(.*)\\stime=(\\d+\\.\\d+)");
@@ -164,7 +106,7 @@ public class RspecRecognizer extends OutputRecognizer {
         }
     }
 
-    static class SuiteFinishedHandler extends TestHandler {
+    static class SuiteFinishedHandler extends TestRecognizerHandler {
 
         public SuiteFinishedHandler() {
             super(".*%SUITE_FINISHED%\\s(\\w+)\\stime=(\\d+\\.\\d+)");
@@ -179,7 +121,7 @@ public class RspecRecognizer extends OutputRecognizer {
         }
     }
 
-    static class SuiteStartedHandler extends TestHandler {
+    static class SuiteStartedHandler extends TestRecognizerHandler {
 
         public SuiteStartedHandler() {
             super(".*%SUITE_STARTED%\\s.*");
@@ -190,7 +132,7 @@ public class RspecRecognizer extends OutputRecognizer {
         }
     }
 
-    static class SuiteStartingHandler extends TestHandler {
+    static class SuiteStartingHandler extends TestRecognizerHandler {
 
         public SuiteStartingHandler() {
             super(".*%SUITE_STARTING%\\s(\\w+)");
