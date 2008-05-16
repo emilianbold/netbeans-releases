@@ -49,7 +49,9 @@
         </folder>
         <folder name="Modes">
             <folder name="output">
-                <file name="CallGraphTopComponent.wstcref" url="CallGraphTopComponentWstcref.xml"/>
+                <file name="CallGraphTopComponent.wstcref" url="CallGraphTopComponentWstcref.xml">
+                    <attr name="position" intvalue="2800"/>
+                </file>
             </folder>
         </folder>
     </folder>

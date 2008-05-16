@@ -77,7 +77,7 @@ public class PdModel extends JGoDocument implements GuiConstants{
     }
     
     public PdModel(IEPModel model)  {
-    	this.mModel = model;
+        this.mModel = model;
     }
     
    
@@ -141,13 +141,13 @@ public class PdModel extends JGoDocument implements GuiConstants{
    
     
     public void newModelLink(JGoPort from, JGoPort to) {
-    	LinkComponent linkComp = mModel.getFactory().createLink(mModel);
-    	String linkName  = NameGenerator.generateLinkName(mModel.getPlanComponent().getLinkComponentContainer());
-    	linkComp.setName(linkName);
-    	linkComp.setTitle(linkName);
-    	
-    	
-    	JGoObject fromObj = from.getParentNode();
+        LinkComponent linkComp = mModel.getFactory().createLink(mModel);
+        String linkName  = NameGenerator.generateLinkName(mModel.getPlanComponent().getLinkComponentContainer());
+        linkComp.setName(linkName);
+        linkComp.setTitle(linkName);
+        
+        
+        JGoObject fromObj = from.getParentNode();
         JGoObject toObj = to.getParentNode();
         if (!(fromObj instanceof EntityNode) || !(toObj instanceof EntityNode)) {
             return;
@@ -159,7 +159,7 @@ public class PdModel extends JGoDocument implements GuiConstants{
         OperatorComponent toComp = (OperatorComponent) toNode.getModelComponent();
         
         if(fromComp == null || toComp == null) {
-        	return;
+            return;
         }
         
         PlanComponent planComp = mModel.getPlanComponent();
@@ -170,8 +170,8 @@ public class PdModel extends JGoDocument implements GuiConstants{
         linkContainer.addLinkComponent(linkComp);
         mModel.endTransaction();
         /*
-    	Link ll = new Link(linkComp, from, to);
-    	ll.initialize();
+        Link ll = new Link(linkComp, from, to);
+        ll.initialize();
         ll.setOrthogonal(isOrthogonalFlows());
         addObjectAtTail(ll);
         
@@ -184,7 +184,7 @@ public class PdModel extends JGoDocument implements GuiConstants{
     }
     
     public void createLink(JGoPort from, JGoPort to, LinkComponent component) {
-    	Link ll = new Link(component, from, to);
+        Link ll = new Link(component, from, to);
         ll.initialize();
         ll.setOrthogonal(isOrthogonalFlows());
         addObjectAtTail(ll);
@@ -324,11 +324,11 @@ public class PdModel extends JGoDocument implements GuiConstants{
      * @return the copy environment with the results
      */
     public JGoCopyEnvironment islandCopyFromCollection(JGoObjectSimpleCollection coll, 
-    												   Point offset) {
-    	mModel.startTransaction();
-    	OperatorComponentContainer opContainer = mModel.getPlanComponent().getOperatorComponentContainer();
-    	LinkComponentContainer lcContainer = mModel.getPlanComponent().getLinkComponentContainer();
-    	
+                                                       Point offset) {
+        mModel.startTransaction();
+        OperatorComponentContainer opContainer = mModel.getPlanComponent().getOperatorComponentContainer();
+        LinkComponentContainer lcContainer = mModel.getPlanComponent().getLinkComponentContainer();
+        
         JGoCopyEnvironment map = createDefaultCopyEnvironment();
         List nodeList = new ArrayList();
         List linkList = new ArrayList();
@@ -377,14 +377,14 @@ public class PdModel extends JGoDocument implements GuiConstants{
     }
     
     private void positionNewObj(OperatorComponent newOperator, 
-    							JGoObject oldObj, 
-    							Point offset) {
+                                JGoObject oldObj, 
+                                Point offset) {
         
-    	Point location = oldObj.getLocation();
-    	
-    	Point newLocation = new Point(location.x + offset.x, + location.y + offset.y);
-    	newOperator.setX(newLocation.x);
-    	newOperator.setY(newLocation.y);
+        Point location = oldObj.getLocation();
+        
+        Point newLocation = new Point(location.x + offset.x, + location.y + offset.y);
+        newOperator.setX(newLocation.x);
+        newOperator.setY(newLocation.y);
     }
     
     private void positionNewObj(JGoObject newObj, JGoObject oldObj, Point offset) {
@@ -412,11 +412,11 @@ public class PdModel extends JGoDocument implements GuiConstants{
     }
     
     public boolean isReloading() {
-    	return this.mIsReloading;
+        return this.mIsReloading;
     }
     
     public void setIsReloading(boolean isReloading) {
-    	this.mIsReloading = isReloading;
+        this.mIsReloading = isReloading;
     }
 }
 

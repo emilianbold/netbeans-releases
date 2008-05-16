@@ -730,7 +730,7 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
       EditorOperator eoXsdCodeDef = new EditorOperator( LOAN_SCHEMA_FILE_NAME_ORIGINAL );
       String sSelectedText = eoXsdCodeDef.getText( eoXsdCodeDef.getLineNumber( ) );
       if( -1 == sSelectedText.indexOf( sIdealCode ) )
-        fail( "StateType did not selected with Go To Definition option: \"" + sSelectedText + "\"" );
+        fail( "Correct type did not selected with Go To Definition option: \"" + sSelectedText + "\", Ideal: \"" + sIdealCode + "\"" );
 
       // Close definition
       eoXsdCodeDef.close( );
@@ -788,6 +788,7 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
 
     protected void GotoSchemaDesign(
         JListOperator opListOriginal,
+        String sFile,
         String sName
       )
     {
@@ -796,6 +797,26 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
       opListOriginal.clickForPopup( pt.x, pt.y );
       JPopupMenuOperator popup = new JPopupMenuOperator( );
       popup.pushMenu( "Go To|Design" );
+
+      // Get DV
+      TopComponentOperator top = new TopComponentOperator( sFile );
+
+      // Press F2
+      top.pushKey( KeyEvent.VK_F2 );
+      try { Thread.sleep( 500 ); } catch( InterruptedException ex ) { }
+
+      // Get text area
+      JTextComponentOperator jtText = new JTextComponentOperator( MainWindowOperator.getDefault( ), 0 );
+
+      // Get text from
+      String sText = jtText.getText( );
+      if( !sName.equals( sText ) )
+      {
+        fail( "Required: " + sName + "; found: " + sText );
+      }
+
+      // Escape
+      top.pushKey( KeyEvent.VK_ESCAPE );
     }
 
     protected void GotoSourceSchema(
@@ -1173,6 +1194,150 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
       return;
     }
 
+    protected void GotoDesignSource(
+        String sFile,
+        String sName,
+        String sRequiredText
+      )
+    {
+      // Get DV
+      TopComponentOperator top = new TopComponentOperator( sFile );
+
+      // Press F2
+      top.pushKey( KeyEvent.VK_F2 );
+      try { Thread.sleep( 500 ); } catch( InterruptedException ex ) { }
+
+      // Get text area
+      JTextComponentOperator jtText = new JTextComponentOperator(
+          MainWindowOperator.getDefault(),
+          0
+        );
+
+      int ptx = jtText.getX( );
+      int pty = jtText.getY( );
+
+      int topx = top.getX( );
+      int topy = top.getY( );
+
+      int wx = MainWindowOperator.getDefault().getX( );
+      int wy = MainWindowOperator.getDefault().getY( );
+
+      Rectangle r = jtText.modelToView( 0 );
+
+      System.out.println( "Text:" );
+      System.out.println( "xy " + ptx + " / " + pty );
+      System.out.println( "mv " + r.x + " / " + r.y );
+      System.out.println( "Top:" );
+      System.out.println( "xy " + topx + " / " + topy );
+      System.out.println( "Main:" );
+      System.out.println( "xy " + wx + " / " + wy );
+
+
+      // Escape
+      //jtText.pushKey( KeyEvent.VK_ENTER );
+      //top.pushKey( KeyEvent.VK_ENTER );
+      //MainWindowOperator.getDefault().pushKey( KeyEvent.VK_ENTER );
+      //try { Thread.sleep( 500 ); } catch( InterruptedException ex ) { }
+
+      MainWindowOperator.getDefault().clickMouse( ptx + 10, pty + 25 );
+      MainWindowOperator.getDefault().clickForPopup( ptx + 10, pty + 25 );
+      JPopupMenuOperator op = new JPopupMenuOperator( );
+
+      op.pushMenu( "Go To|Source" );
+
+      // Check selected code line
+      EditorOperator eoXsdCode = new EditorOperator( PURCHASE_SCHEMA_FILE_NAME );
+      String sSelectedText = eoXsdCode.getText( eoXsdCode.getLineNumber( ) );
+
+      if( -1 == sSelectedText.indexOf( sRequiredText ) )
+        fail( "Go To Source feature selected wrong line of code. Selected: \"" + sSelectedText + "\"\nRequired: " + sRequiredText );
+    }
+
+    protected void GotoSourceDesign( String sName )
+    {
+      EditorOperator eoXsdCode = new EditorOperator( PURCHASE_SCHEMA_FILE_NAME );
+
+      ClickForTextPopup( eoXsdCode );
+      JPopupMenuOperator popup = new JPopupMenuOperator( );
+      popup.pushMenu( "Go To|Design" );
+
+      // Get DV
+      TopComponentOperator top = new TopComponentOperator( PURCHASE_SCHEMA_FILE_NAME );
+
+      // Press F2
+      top.pushKey( KeyEvent.VK_F2 );
+      try { Thread.sleep( 500 ); } catch( InterruptedException ex ) { }
+
+      // Get text area
+      JTextComponentOperator jtText = new JTextComponentOperator( MainWindowOperator.getDefault( ), 0 );
+
+      // Get text from
+      String sText = jtText.getText( );
+      if( !sName.equals( sText ) )
+      {
+        fail( "Required: " + sName + "; found: " + sText );
+      }
+
+      // Escape
+      top.pushKey( KeyEvent.VK_ESCAPE );
+    }
+
+    protected void GotoDesignSchema( String sName )
+    {
+      // Get DV
+      TopComponentOperator top = new TopComponentOperator( PURCHASE_SCHEMA_FILE_NAME );
+
+      // Press F2
+      top.pushKey( KeyEvent.VK_F2 );
+      try { Thread.sleep( 500 ); } catch( InterruptedException ex ) { }
+
+      // Get text area
+      JTextComponentOperator jtText = new JTextComponentOperator(
+          MainWindowOperator.getDefault(),
+          0
+        );
+
+      int ptx = jtText.getX( );
+      int pty = jtText.getY( );
+
+      int topx = top.getX( );
+      int topy = top.getY( );
+
+      int wx = MainWindowOperator.getDefault().getX( );
+      int wy = MainWindowOperator.getDefault().getY( );
+
+      Rectangle r = jtText.modelToView( 0 );
+
+      System.out.println( "Text:" );
+      System.out.println( "xy " + ptx + " / " + pty );
+      System.out.println( "mv " + r.x + " / " + r.y );
+      System.out.println( "Top:" );
+      System.out.println( "xy " + topx + " / " + topy );
+      System.out.println( "Main:" );
+      System.out.println( "xy " + wx + " / " + wy );
+
+
+      // Escape
+      //jtText.pushKey( KeyEvent.VK_ENTER );
+      //top.pushKey( KeyEvent.VK_ENTER );
+      //MainWindowOperator.getDefault().pushKey( KeyEvent.VK_ENTER );
+      //try { Thread.sleep( 500 ); } catch( InterruptedException ex ) { }
+
+      MainWindowOperator.getDefault().clickMouse( ptx + 10, pty + 25 );
+      MainWindowOperator.getDefault().clickForPopup( ptx + 10, pty + 25 );
+      JPopupMenuOperator op = new JPopupMenuOperator( );
+
+      op.pushMenu( "Go To|Schema" );
+
+      // Check selected schema item
+      SchemaMultiView opMultiView = new SchemaMultiView( PURCHASE_SCHEMA_FILE_NAME );
+      JListOperator opList = opMultiView.getColumnListOperator( 1 );
+      if( null == opList )
+        fail( "Incorrect (no) selection after Go To Schema option." );
+      if( !opList.getSelectedValue( ).toString( ).startsWith( sName ) )
+        fail( sName + " did not selected with Go To Schema option." );
+    }
+
     public void ExploreComplexInternal(
         String sSection,
         String sName,
@@ -1195,29 +1360,24 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
       CheckSchemaViewDefinition( opList, sName, sType );
 
       // Go to : Schema -> Design
-      GotoSchemaDesign( opList, sName );
-
       // Check selected element
+      GotoSchemaDesign( opList, PURCHASE_SCHEMA_FILE_NAME, sName );
 
       // Go to : Design -> Source
-      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("View|Editors|Source");
+      GotoDesignSource(
+          PURCHASE_SCHEMA_FILE_NAME,
+          sName,
+          sIncode
+        );
 
       // Check selected code line
-
-      // Go to : source -> definition
-      // Check definition view
-      // Check definition selection
-      // Close definition
-      /*
       CheckSourceViewDefinition(
-          "<xs:complexType name=\"" + sName + "\">"
+          "<xs:complexType name=\"" + sType + "\">"
         );
-      */
 
       // Go to : Source -> Schema
       // Check selected element
-      //GotoSourceSchema( COMPLEX_NAMES[ 0 ] );
-      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("View|Editors|Schema");
+      GotoSourceSchema( sName );
 
       // Go to : Schema -> Source
       // Check selected element
@@ -1228,12 +1388,12 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
         );
 
       // Go to : Source -> Design
-      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("View|Editors|Design");
-
-      // Check selected element
+      GotoSourceDesign( sName );
+      //new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("View|Editors|Design");
 
       // Go to : Design -> Schema
-      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("View|Editors|Schema");
+      GotoDesignSchema( sName );
+      //new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("View|Editors|Schema");
     }
 
     public void RenameSampleSchemaInternal( String sModule, String sPath )
@@ -1405,33 +1565,6 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
 
     protected void DeployCompositeApplicationInternal( String sName )
     {
-      // TEMP : start GF first
-      /*
-      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("Window|Services");
-      TopComponentOperator top = new TopComponentOperator( "Services" );
-      JTreeOperator jt = new JTreeOperator( top, 0 );
-      Node node = new Node( jt, "Servers|GlassFish" );
-      node.select( );
-      try { Thread.sleep( 5000 ); } catch( InterruptedException ex ) { }
-      node.performPopupActionNoBlock( "Start" );
-      OutputOperator ogf = new OutputOperator( );
-      OutputTabOperator otgf = ogf.getOutputTab( "GlassFish" );
-      for( int i = 0; i < 8; i++ )
-      {
-        try
-        {
-          otgf.waitText( "Application server startup complete." );
-          i = 8;
-        }
-        catch( JemmyException ex )
-        {
-          System.out.println( "**** GF IN PROGRESS ****" );
-        }
-      }
-      */
-      ////////////////////////////////////////////////////////////////////
-      
-
       // Access to projects page
       ProjectsTabOperator pto = new ProjectsTabOperator( );
 
@@ -1470,7 +1603,10 @@ public class AcceptanceTestCaseXMLCPR extends JellyTestCase {
         {
           OutputOperator out = new OutputOperator( );
           if( -1 != out.getText( ).indexOf( "BUILD FAILED" ) )
-            throw ex;
+          {
+            fail( "BUILD FAILED: " + out.getText( ) );
+            //throw ex;
+          }
           System.out.println( "**** DEPLOY IN PROGRESS ****" );
         }
       }

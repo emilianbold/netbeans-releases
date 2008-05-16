@@ -53,7 +53,7 @@ public class HighlightingTestsFailed extends BaseTestSuite {
 
     public HighlightingTestsFailed() {
         super("Highlighting tests failed"); // NOI18N
-        addTestSuite(ClassFieldsTest.Failed.class);
+        //addTestSuite(ClassFieldsTest.Failed.class);
     }
 
     public static Test suite() {
