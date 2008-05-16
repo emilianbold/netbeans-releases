@@ -235,7 +235,8 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
         assert isFindUsages() : "must be find usages mode";
         CsmReferenceRepository xRef = CsmReferenceRepository.getDefault();
         Collection<RefactoringElementImplementation> elements = new LinkedHashSet<RefactoringElementImplementation>(1024);
-        Set<CsmReferenceKind> kinds = isFindOverridingMethods() ? CsmReferenceKind.ALL : CsmReferenceKind.ANY_USAGE;
+        //Set<CsmReferenceKind> kinds = isFindOverridingMethods() ? CsmReferenceKind.ALL : CsmReferenceKind.ANY_USAGE;
+        Set<CsmReferenceKind> kinds = CsmReferenceKind.ALL;
         CsmObject[] objs = csmObjects.toArray(new CsmObject[csmObjects.size()]);
         for (CsmFile file : files) {
             if (cancelRequest) {
