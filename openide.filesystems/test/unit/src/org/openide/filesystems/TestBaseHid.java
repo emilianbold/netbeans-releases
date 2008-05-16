@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -43,6 +43,7 @@ package org.openide.filesystems;
 import java.net.URL;
 import java.net.URLStreamHandlerFactory;
 import java.util.*;
+import org.openide.filesystems.test.StatFiles;
 
 /**
  *
@@ -83,7 +84,11 @@ public abstract class TestBaseHid extends MultiThreadedTestCaseHid {
     /** array of filesystems that can be used for tests. All filesystems should
      * satisfy requirements for resources @see getResources () */
     protected FileSystem  allTestedFS[];
+    private static SecurityManager defaultSecurityManager;
+    /** If not null, file accesses are counted through custom SecurityManager. */
+    public static StatFiles accessMonitor;
     
+    @Override
     protected void setUp() throws Exception {                
         System.setProperty("workdir", getWorkDirPath());
         defListener = createFileChangeListener ();
@@ -94,9 +99,22 @@ public abstract class TestBaseHid extends MultiThreadedTestCaseHid {
         resourcePrefix = FileSystemFactoryHid.getResourcePrefix(this.getName(),this, resources);
         allTestedFS = FileSystemFactoryHid.createFileSystem(getName(),resources,this);        
         if (allTestedFS != null) testedFS = allTestedFS[0];
+        // If not null, file accesses are counted through custom SecurityManager.
+        if(accessMonitor != null) {
+            if(defaultSecurityManager == null) {
+                defaultSecurityManager = System.getSecurityManager();
+            }
+            System.setSecurityManager(accessMonitor);
+        }
     }
-
+    
+    @Override
     protected void tearDown() throws Exception {
+        // restore SecurityManager if previously changed
+        if(accessMonitor != null) {
+            System.setSecurityManager(defaultSecurityManager);
+        }
+        
         if (testedFS instanceof JarFileSystem) {
             testedFS.removeNotify();    
         }

@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,37 +38,48 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.mercurial.ui.log;
 
-import org.netbeans.modules.mercurial.Mercurial;
-import org.netbeans.modules.mercurial.util.HgUtils;
-import org.netbeans.modules.versioning.spi.VCSContext;
-import org.netbeans.modules.mercurial.ui.actions.ContextAction;
-import javax.swing.*;
-import java.awt.event.ActionEvent;
-import org.openide.util.NbBundle;
+package org.netbeans.modules.subversion;
+
+import junit.framework.Test;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.modules.masterfs.filebasedfs.BaseFileObjectTestHid;
+import org.openide.filesystems.FileObjectTestHid;
+import org.openide.filesystems.FileSystemTestHid;
+import org.openide.filesystems.FileUtilTestHidden;
+import org.openide.filesystems.TestBaseHid;
+import org.openide.filesystems.URLMapperTestHidden;
+import org.openide.filesystems.test.StatFiles;
+
 
 /**
- * Log action for mercurial: 
- * hg log - show revision history of entire repository or files
- * 
- * @author John Rice
+ * Count read/write/delete file access and print results.
  */
-public class IncomingAction extends ContextAction {
-    
-    private final VCSContext context;
-    
-    public IncomingAction(String name, VCSContext context) {
-        this.context = context;
-        putValue(Action.NAME, name);
+public class SvnFileSystemTestStat extends SvnFileSystemTest {
+
+    public SvnFileSystemTestStat(Test test) {
+        super(test);
     }
     
-    public void performAction(ActionEvent e) {
-        SearchHistoryAction.openIncoming(context,
-                NbBundle.getMessage(IncomingAction.class, "MSG_Incoming_TabTitle", org.netbeans.modules.versioning.util.Utils.getContextDisplayName(context)));
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        TestBaseHid.accessMonitor = new StatFiles();
     }
-        
-    public boolean isEnabled() {
-        return HgUtils.getRootFile(context) != null;
-    } 
-}    
+
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+        TestBaseHid.accessMonitor.getResults().dump();
+    }
+    
+    public static Test suite() {
+        NbTestSuite suite = new NbTestSuite();        
+        suite.addTestSuite(FileSystemTestHid.class);
+        suite.addTestSuite(FileObjectTestHid.class);
+        suite.addTestSuite(URLMapperTestHidden.class);
+        suite.addTestSuite(FileUtilTestHidden.class);                
+        suite.addTestSuite(BaseFileObjectTestHid.class);            
+        return new SvnFileSystemTestStat(suite);
+    }
+}
