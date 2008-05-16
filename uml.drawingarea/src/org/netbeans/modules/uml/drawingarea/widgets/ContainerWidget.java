@@ -347,28 +347,39 @@ public class ContainerWidget extends Widget
         return changed;
     }
     
+    protected boolean allowed(IElement... elements)
+    {
+        return true;
+    }
+    
     public class ContainerAcceptProvider extends SceneAcceptProvider
     {
         public ContainerAcceptProvider()
         {
             super(null);
         }
-
+        
         @Override
-        public ConnectorState isAcceptable(Widget widget, Point point, Transferable transferable)
+        protected boolean elementsAllowed(IElement... elements)
         {
-            ConnectorState retVal = super.isAcceptable(widget, point, transferable);
-            
-            if(retVal != ConnectorState.ACCEPT)
-            {
-                if(isWidgetMove(transferable) == true)
-                {
-                    retVal = ConnectorState.ACCEPT;
-                }
-            }
-            
-            return retVal;
+            return allowed(elements);
         }
+
+//        @Override
+//        public ConnectorState isAcceptable(Widget widget, Point point, Transferable transferable)
+//        {
+//            ConnectorState retVal = super.isAcceptable(widget, point, transferable);
+//            
+//            if(retVal != ConnectorState.ACCEPT)
+//            {
+//                if(isWidgetMove(transferable) == true)
+//                {
+//                    retVal = ConnectorState.ACCEPT;
+//                }
+//            }
+//            
+//            return retVal;
+//        }
 
         
         @Override
@@ -433,7 +444,7 @@ public class ContainerWidget extends Widget
                 
                 if(ns != null) 
                 {
-                    ns.addOwnedElement(element);
+//                    ns.addOwnedElement(element);
                    
                     // An activiy node that is contained in an activity group still
                     // has  Activity as its name space; hence adding 
