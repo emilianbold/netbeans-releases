@@ -50,21 +50,27 @@ class NbRspecMediator < Spec::Runner::ExampleGroupRunner
   def run
     prepare
     success = true
+    overall_start_time = Time.now
     example_groups.each do |example_group|
-      start_time = Time.now
+      example_group_start_time = Time.now
       puts "%SUITE_STARTING% #{example_group.description}"
       success = success & example_group.run
-      elapsed_time = Time.now - start_time
+      elapsed_time = Time.now - example_group_start_time
       puts "%SUITE_FINISHED% #{example_group.description} time=#{elapsed_time}"
     end
+    @duration = Time.now - overall_start_time
     return success
   ensure
+    reporter.duration = @duration
     finish
   end
 
   protected
   def reporter
-    Reporter.new(@options)
+    if @reporter.nil?
+      @reporter = Reporter.new(@options)
+    end
+    @reporter
   end
 
 end
@@ -72,6 +78,11 @@ end
 # TODO: probably would be better to use a formatter instead
 class Reporter < Spec::Runner::Reporter
 
+  attr_accessor :duration
+  def duration
+    @duration
+  end
+  
   def example_started(example)
     start_timer
     puts "%TEST_STARTED% #{example.description}"
