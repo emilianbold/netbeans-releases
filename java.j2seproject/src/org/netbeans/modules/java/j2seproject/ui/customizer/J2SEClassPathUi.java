@@ -432,7 +432,12 @@ public class J2SEClassPathUi {
             
             if ( source == addJar ) { 
                 // Let user search for the Jar file
-                FileChooser chooser = new FileChooser(project.getAntProjectHelper(), true);
+                FileChooser chooser;
+                if (project.getAntProjectHelper().isSharableProject()) {
+                    chooser = new FileChooser(project.getAntProjectHelper(), true);
+                } else {
+                    chooser = new FileChooser(FileUtil.toFile(project.getProjectDirectory()), null);
+                }
                 FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
                 chooser.setFileSelectionMode( JFileChooser.FILES_AND_DIRECTORIES );
                 chooser.setMultiSelectionEnabled( true );

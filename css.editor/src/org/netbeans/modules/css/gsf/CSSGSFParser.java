@@ -38,10 +38,10 @@
  */
 package org.netbeans.modules.css.gsf;
 
+import org.netbeans.modules.css.parser.CssParserResultHolder;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.List;
-import javax.swing.SwingUtilities;
 import org.netbeans.modules.css.editor.Css;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.ElementHandle;
@@ -52,35 +52,15 @@ import org.netbeans.modules.gsf.api.Parser;
 import org.netbeans.modules.gsf.api.ParserFile;
 import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.gsf.api.PositionManager;
-import org.netbeans.modules.gsf.api.Severity;
-import org.netbeans.modules.css.parser.ASCII_CharStream;
-import org.netbeans.modules.css.parser.CSSParser;
-import org.netbeans.modules.css.parser.ParseException;
+import org.netbeans.modules.css.parser.CssParserAccess;
 import org.netbeans.modules.css.parser.SimpleNode;
-import org.netbeans.modules.css.parser.Token;
-import org.netbeans.modules.css.parser.TokenMgrError;
 import org.netbeans.modules.gsf.api.TranslatedSource;
-import org.netbeans.modules.gsf.spi.DefaultError;
 
 /**
  *
- * @author marek
+ * @author Marek Fukala
  */
 public class CSSGSFParser implements Parser, PositionManager {
-
-    private static final String PREFIX = "GENERATED_";
-    
-    private static final String ERROR_MESSAGE_PREFIX = "Unexpected symbol(s) found: ";
-    
-    private static CSSParser PARSER;
-
-    private static synchronized CSSParser parser() {
-        if (PARSER == null) {
-            PARSER = new CSSParser();
-        }
-        return PARSER;
-
-    }
 
     private static String asString(CharSequence sequence) {
         if (sequence instanceof String) {
@@ -90,7 +70,6 @@ public class CSSGSFParser implements Parser, PositionManager {
         }
     }
 
-//    public void parseFiles(List<ParserFile> files, ParseListener listener, SourceFileReader reader) {
     public void parseFiles(Job job) {
         List<ParserFile> files = job.files;
 
@@ -101,71 +80,34 @@ public class CSSGSFParser implements Parser, PositionManager {
             CSSParserResult result = null;
 
             try {
-                CharSequence buffer = job.reader.read(file);
-                String source = asString(buffer);
-                int caretOffset = job.reader.getCaretOffset(file);
+                CssParserAccess.CssParserResult css_result = null;
+                
+                //test if the translated source is up-to-date and if so 
+                //use cached parser result created during sanitization of the source
+                if (job.translatedSource instanceof CssParserResultHolder) {
+                    css_result = ((CssParserResultHolder) job.translatedSource).result();
+                }
+                
+                if(css_result == null) {
+                    CharSequence buffer = job.reader.read(file);
+                    String source = asString(buffer);
 
-                //delete last results - shared instance
-                //TODO fix this in the parser
-                parser().errors().clear();
+                    CssParserAccess parserAccess = CssParserAccess.getDefault();
+                    css_result = parserAccess.parse(new StringReader(source));
+                }
 
-                parser().ReInit(new ASCII_CharStream(new StringReader(source)));
+                result = new CSSParserResult(this, file, css_result.root());
 
-                SimpleNode node = parser().styleSheet();
-
-                result = new CSSParserResult(this, file, node);
-
-                for (ParseException pe : (List<ParseException>) parser().errors()) {
-                    Token lastSuccessToken = pe.currentToken;
-                    Token errorToken = lastSuccessToken.next;
-                    int from = errorToken.offset;
-                    int to = from + errorToken.image.length();
-
-                    if(!(containsGeneratedCode(lastSuccessToken.image)
-                            || containsGeneratedCode(errorToken.image))) {
-                        String errorMessage = buildErrorMessage(pe);
-                        Error error =
-                                new DefaultError(errorMessage, errorMessage, null, file.getFileObject(),
-                                from, from, Severity.ERROR);
-
-                        job.listener.error(error);
-                    }
-                    
+                for (Error error : css_result.errors(file)) {
+                    job.listener.error(error);
                 }
 
                 //do some semantic checking of the parse tree
-                List<Error> semanticErrors = new CssAnalyser(result).checkForErrors(node);
+                List<Error> semanticErrors = new CssAnalyser(result).checkForErrors(css_result.root());
                 for (Error err : semanticErrors) {
                     job.listener.error(err);
                 }
 
-//                Context context = new Context(file, listener, source, caretOffset);
-//                result = parseBuffer(context, Sanitize.NONE);
-            } catch (ParseException ex) {
-                Token lastSuccessToken = ex.currentToken;
-                Token errorToken = lastSuccessToken.next;
-                int from = errorToken.offset;
-                int to = from + errorToken.image.length();
-
-                if(!(containsGeneratedCode(lastSuccessToken.image)
-                            || containsGeneratedCode(errorToken.image))) {
-                    String errorMessage = buildErrorMessage(ex);
-                    Error error =
-                            new DefaultError(errorMessage, errorMessage, null, file.getFileObject(),
-                            from, from, Severity.ERROR);
-                    job.listener.error(error);
-                }
-                
-                result = new CSSParserResult(this, file, null);
-            } catch (TokenMgrError tme) {
-                //a bad things happened during the lexical analysis -> report lexical analysis error
-                Error error =
-                        new DefaultError(tme.getMessage(), tme.getLocalizedMessage(), null, file.getFileObject(),
-                        0, 0, Severity.ERROR);
-                
-                result = new CSSParserResult(this, file, null);
-                
-                job.listener.error(error);
             } catch (IOException ioe) {
                 job.listener.exception(ioe);
             }
@@ -175,37 +117,6 @@ public class CSSGSFParser implements Parser, PositionManager {
         }
     }
 
-    
-    private String buildErrorMessage(ParseException pe) {
-        StringBuilder buff = new StringBuilder();
-        buff.append(ERROR_MESSAGE_PREFIX);
-        
-        int maxSize = 0;
-        for (int i = 0; i < pe.expectedTokenSequences.length; i++) {
-          if (maxSize < pe.expectedTokenSequences[i].length) {
-            maxSize = pe.expectedTokenSequences[i].length;
-          }
-        }
-        
-        Token tok = pe.currentToken.next;
-        buff.append('"');
-        for (int i = 0; i < maxSize; i++) {
-          buff.append(tok.image);
-          if(i < maxSize - 1) {
-              buff.append(',');
-              buff.append(' ');
-          }
-          tok = tok.next; 
-        }
-        buff.append('"');
-        
-        return buff.toString();
-    }
-    
-    private boolean containsGeneratedCode(String text) {
-        return text.contains(PREFIX);
-    }
-    
     public PositionManager getPositionManager() {
         return this;
     }
@@ -214,8 +125,8 @@ public class CSSGSFParser implements Parser, PositionManager {
         if (object instanceof CssElementHandle) {
             ParserResult presult = info.getEmbeddedResults(Css.CSS_MIME_TYPE).iterator().next();
             final TranslatedSource source = presult.getTranslatedSource();
-            SimpleNode node = ((CssElementHandle) object).node();
-            return new OffsetRange(AstUtils.documentPosition(node.startOffset(), source), AstUtils.documentPosition(node.endOffset(), source));
+            CssElementHandle handle = (CssElementHandle) object;
+            return new OffsetRange(AstUtils.documentPosition(handle.elementAstStartOffset(), source), AstUtils.documentPosition(handle.elementAstEndOffset(), source));
         } else {
             throw new IllegalArgumentException((("Foreign element: " + object + " of type " +
                     object) != null) ? object.getClass().getName() : "null"); //NOI18N

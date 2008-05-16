@@ -190,17 +190,17 @@ public class IEPAttributeConfigurationPanel extends javax.swing.JPanel {
     private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
         // TODO add your handling code here:
         //mTableModel.addNewRow();
-    	mExistingArtificatNames.clear();
+        mExistingArtificatNames.clear();
         //go through available attr and add for preselection
-    	//only the once which user has not modified in table
-    	
+        //only the once which user has not modified in table
+        
         List<PlaceholderSchemaAttribute> attrList =  this.mTableModel.getAttributeList();
         Iterator<PlaceholderSchemaAttribute> it = attrList.iterator();
         while(it.hasNext()) {
             PlaceholderSchemaAttribute attr = it.next();
             AXIComponent comp = attr.getAXIComponent();
             if(comp != null) {
-            	mExistingArtificatNames.add(comp);
+                mExistingArtificatNames.add(comp);
             }
         }
         
@@ -383,19 +383,19 @@ public class IEPAttributeConfigurationPanel extends javax.swing.JPanel {
             int[] rows = mAttributeTable.getSelectedRows();
             
             if(rows.length != 0) {
-	            //if the first row is first row then moveup should be disabled
-	            if(rows[0] == 0) {
-	                moveUpButton.setEnabled(false);
-	            } else {
-	                moveUpButton.setEnabled(true);
-	            }
-	            
-	            //if the last row is last row then move down should be disabled
-	            if(rows[rows.length -1] == mAttributeTable.getRowCount() -1) {
-	                moveDownButton.setEnabled(false);
-	            } else {
-	                moveDownButton.setEnabled(true);
-	            }
+                //if the first row is first row then moveup should be disabled
+                if(rows[0] == 0) {
+                    moveUpButton.setEnabled(false);
+                } else {
+                    moveUpButton.setEnabled(true);
+                }
+                
+                //if the last row is last row then move down should be disabled
+                if(rows[rows.length -1] == mAttributeTable.getRowCount() -1) {
+                    moveDownButton.setEnabled(false);
+                } else {
+                    moveDownButton.setEnabled(true);
+                }
             }
             
 //            if(rowCount > 1) {

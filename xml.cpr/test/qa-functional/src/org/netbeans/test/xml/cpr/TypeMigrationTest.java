@@ -341,6 +341,13 @@ public class TypeMigrationTest extends AcceptanceTestCaseXMLCPR
       }
     }
 
+    // Show all existing top components
+    top = new TopComponentOperator( "SynchronousSample.bpel" );
+    JTreeOperator jts = new JTreeOperator( top, 0 );
+    Node nSource = new Node( jts, "Variables|inputVar|inputType|paramA" );
+    nSource.select( );
+    //JTreeOperator jtd = new JTreeOperator( top, 1 );
+
     // Create link
 
     // Save all

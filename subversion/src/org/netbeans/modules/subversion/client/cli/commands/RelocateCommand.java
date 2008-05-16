@@ -42,6 +42,7 @@ package org.netbeans.modules.subversion.client.cli.commands;
 import java.io.File;
 import java.io.IOException;
 import org.netbeans.modules.subversion.client.cli.SvnCommand;
+import org.tigris.subversion.svnclientadapter.ISVNNotifyListener;
 
 /**
  *
@@ -62,6 +63,11 @@ public class RelocateCommand extends SvnCommand {
     }
        
     @Override
+    protected int getCommand() {
+        return ISVNNotifyListener.Command.RELOCATE;
+    }
+    
+    @Override
     public void prepareCommand(Arguments arguments) throws IOException {                     
         arguments.add("switch");
         arguments.add("--relocate");
@@ -70,7 +76,8 @@ public class RelocateCommand extends SvnCommand {
         }            
         arguments.add(from);
         arguments.add(to);
-        arguments.add(path);           
+        arguments.add(path);    
+        setCommandWorkingDirectory(new File(path));                
     }
     
 }

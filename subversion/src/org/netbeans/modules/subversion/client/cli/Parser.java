@@ -115,7 +115,7 @@ public class Parser {
     }    
     
     private LinePattern[] patterns = {
-        new LinePattern("([CGU ])([CGU ])   (.+)",                               2, -1),        // XXX ([CGU ])([CGU ])   (.+)
+        new LinePattern("([CGU ])([CGU ])   (.+)",                               2, -1),
         new LinePattern("D    ([^ ].+)",                                         0, -1),
         new LinePattern("A    ([^ ].+)",                                         0, -1),
         new LinePattern("A  \\(bin\\)  ([^ ].+)",                                0, -1),

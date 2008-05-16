@@ -52,6 +52,7 @@ import org.tigris.subversion.svnclientadapter.SVNRevision.Number;
  *
  * @author tomas
  */
+// XXX add referenceclient
 public class BlameTest extends AbstractCLITest {
     
     public BlameTest(String testName) throws Exception {

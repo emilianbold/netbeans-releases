@@ -96,14 +96,7 @@ class DatabaseNode extends AbstractNode implements Comparable {
         DatabaseServer server = model.getServer();
         String dbname = model.getDbName();
 
-        try {                
-            server.dropDatabase(dbname);
-        } catch ( DatabaseException dbe ) {
-            String msg = Utils.getMessage(
-                    "MSG_ErrorDeletingDatabase", model.getDbName());
-            Utils.displayError(msg, dbe);
-        }
-
+        server.dropDatabase(dbname);
     }
     
     @Override

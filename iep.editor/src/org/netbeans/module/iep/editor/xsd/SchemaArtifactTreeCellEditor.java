@@ -70,7 +70,7 @@ public class SchemaArtifactTreeCellEditor extends AbstractCellEditor implements 
     
     @Override
     public boolean shouldSelectCell(EventObject anEvent) { 
-	return true; 
+    return true; 
     }
 
     @Override

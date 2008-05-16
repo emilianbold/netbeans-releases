@@ -253,6 +253,10 @@ class DndSupport implements /*XXX*/FacesModel.JsfSupport {
                 // XXX #99457 There needs to be more fine grained decision.
                 try {
                     java.util.List list = (java.util.List) t.getTransferData(importFlavor);
+                    // XXX #135094 Possible NPE.
+                    if (list == null) {
+                        return DROP_DENIED;
+                    }
                     for (Object element : list) {
                         if (element instanceof File) {
                             File file = (File)element;

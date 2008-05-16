@@ -5,25 +5,25 @@ import org.netbeans.modules.iep.model.OperatorType;
 
 public class OperatorLinkValidator {
 
-	public static boolean validateLink(OperatorComponent from, OperatorComponent to) {
-		
-		//same operator both from and to
-		if(from.equals(to)) {
-			return false;
-		}
-		
-		//if from is table
-		if (from.getOutputType().equals(OperatorType.OPERATOR_TABLE)) {
-			Integer maxTableInputAllowed = (Integer) to.getComponentType().getPropertyType(OperatorComponent.PROP_NON_PERSIST_STATIC_INPUT_MAX_COUNT_KEY).getDefaultValue();
+    public static boolean validateLink(OperatorComponent from, OperatorComponent to) {
+        
+        //same operator both from and to
+        if(from.equals(to)) {
+            return false;
+        }
+        
+        //if from is table
+        if (from.getOutputType().equals(OperatorType.OPERATOR_TABLE)) {
+            Integer maxTableInputAllowed = (Integer) to.getComponentType().getPropertyType(OperatorComponent.PROP_NON_PERSIST_STATIC_INPUT_MAX_COUNT_KEY).getDefaultValue();
             
-			if (to.getStaticInputTableList().size() >= maxTableInputAllowed) {
+            if (to.getStaticInputTableList().size() >= maxTableInputAllowed) {
                 return false;
             }
         } else {
-        	//from is operator which is not table
-        	
+            //from is operator which is not table
+            
             // Check input count
-        	Integer maxInputAllowed = (Integer) to.getComponentType().getPropertyType(OperatorComponent.PROP_NON_PERSIST_INPUT_MAX_COUNT_KEY).getDefaultValue();
+            Integer maxInputAllowed = (Integer) to.getComponentType().getPropertyType(OperatorComponent.PROP_NON_PERSIST_INPUT_MAX_COUNT_KEY).getDefaultValue();
             if (to.getInputOperatorList().size() >= maxInputAllowed.intValue()) {
                 return false;
             }
@@ -33,7 +33,7 @@ public class OperatorLinkValidator {
                 return false;
             }
         }
-		
-		return true;
-	}
+        
+        return true;
+    }
 }

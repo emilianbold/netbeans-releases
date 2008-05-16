@@ -186,6 +186,8 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
             proxy = RubyDebuggerFactory.startClassicDebugger(debugDesc,
                     PATH_TO_CLASSIC_DEBUG_DIR, interpreter, timeout);
         } else { // ruby-debug
+            String version = platform.getGemManager().getLatestVersion("ruby-debug-ide"); // NOI18N
+            debugDesc.setRubyDebugIDEVersion(version);
             Util.LOGGER.fine("Running fast debugger...");
             File rDebugF = new File(Util.findRDebugExecutable(platform));
             proxy = RubyDebuggerFactory.startRubyDebug(debugDesc,

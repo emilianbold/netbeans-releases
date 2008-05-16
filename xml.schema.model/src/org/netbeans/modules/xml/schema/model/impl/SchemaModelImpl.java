@@ -147,6 +147,7 @@ public class SchemaModelImpl extends AbstractDocumentModel<SchemaComponent> impl
         }
         
         T found = null;
+        boolean continueResolution = false;
         String targetNamespace = getSchema().getTargetNamespace();
         if ( targetNamespace != null && targetNamespace.equals(namespace) ||
             targetNamespace == null && namespace == null ||
@@ -154,7 +155,17 @@ public class SchemaModelImpl extends AbstractDocumentModel<SchemaComponent> impl
             found = findByNameAndType(localName, type);
         }
         
-        if (found == null && ! (refToMe instanceof Import)) {
+        if (found == null && !(refToMe instanceof Import))
+            continueResolution = true;
+        
+        if(refToMe instanceof Import) {
+            SchemaModelImpl sm = resolve(refToMe);
+            Collection<Include> includes = sm.getSchema().getIncludes();
+            if(includes != null && includes.size() != 0)
+                continueResolution = true;
+        }
+        
+        if (continueResolution) {
             checked.add(this);
             
             Collection<SchemaModelReference> modelRefs = getSchemaModelReferences();
@@ -192,6 +203,9 @@ public class SchemaModelImpl extends AbstractDocumentModel<SchemaComponent> impl
         refs.addAll(getSchema().getRedefines());
         refs.addAll(getSchema().getIncludes());
         refs.addAll(getSchema().getImports());
+//        for(Imports i: getSchema().Imports()) {
+//            
+//        }
         return refs;
     }
             
