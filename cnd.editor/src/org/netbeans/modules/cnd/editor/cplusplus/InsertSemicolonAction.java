@@ -78,12 +78,9 @@ public final class InsertSemicolonAction extends BaseAction {
                 formatter.indentLock();
                 try {
                     int eoloffset = Utilities.getRowEnd(target, dotpos);
-                    doc.insertString(eoloffset, "" + what, null); //NOI18N
+                    String insertString = "" + what;
+                    doc.insertString(eoloffset, insertString, null); //NOI18N
                     if (withNewline) {
-                        //This is code from the editor module, but it is
-                        //a pretty strange way to do this:
-                        doc.insertString(dotpos, "-", null); //NOI18N
-                        doc.remove(dotpos, 1);
                         int eolDot = Utilities.getRowEnd(target, caret.getDot());
                         int newDotPos = formatter.indentNewLine(doc, eolDot);
                         caret.setDot(newDotPos);
