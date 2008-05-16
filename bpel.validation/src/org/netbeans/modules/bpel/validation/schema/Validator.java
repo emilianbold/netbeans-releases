@@ -41,6 +41,7 @@
 package org.netbeans.modules.bpel.validation.schema;
 
 import java.io.InputStream;
+import java.util.Iterator;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.validation.Schema;
@@ -76,7 +77,30 @@ public final class Validator extends XsdBasedValidator {
     ValidationResult result = Validator.super.validate((BpelModel) model, validation, validationType);
     endTime("Validator " + getName() + "    "); // NOI18N
 
+    Iterator<ResultItem> items = result.getValidationResult().iterator();
+
+    while (items.hasNext()) {
+      ResultItem item = items.next();
+      item.setDescription(fixDescription(item.getDescription()));
+    }
     return result;
+  }
+
+  private String fixDescription(String description) {
+    if ( !description.startsWith("cvc-complex-type")) { // NOI18N
+      return description;
+    }
+    int k = description.indexOf(": "); // NOI18N
+
+    if (k != -1) {
+      description = description.substring(k + 2);
+    }
+    description = replace(description, "'{", ""); // NOI18N
+    description = replace(description, "}'", ""); // NOI18N
+    description = replace(description, "\"http://docs.oasis-open.org/wsbpel/2.0/process/executable\":", ""); // NOI18N
+    description = replace(description, "WC[##other:\"http://docs.oasis-open.org/wsbpel/2.0/process/executable\"], ", ""); // NOI18N
+    
+    return description;
   }
 
   public String getName() {
@@ -92,7 +116,7 @@ public final class Validator extends XsdBasedValidator {
 
       if (process != null) {
           String ns = process.getNamespaceUri();
-          // we have BPEL 1.1 process file, validate against his schema.
+          // we have BPEL 1.1 process file, validate against his schema
           if (BpelEntity.BUSINESS_PROCESS_1_1_NS_URI.equals(ns)) {
               return getBpel11Schema();
           }
@@ -101,28 +125,22 @@ public final class Validator extends XsdBasedValidator {
   }
 
   private Schema getBpel20Schema() {
-      if (compiledBPELSchema == null) {
-          compiledBPELSchema = getCompiledSchema(
-                  new InputStream[] { Validator.class.getResourceAsStream(BPEL_XSD_URL) },
-                  new BPELEntityResolver());
+      if (ourBPEL20Schema == null) {
+          ourBPEL20Schema = getCompiledSchema(new InputStream[] { Validator.class.getResourceAsStream(BPEL_XSD_URL)}, new BPELEntityResolver());
       }
-      return compiledBPELSchema;
+      return ourBPEL20Schema;
   }
   
   private Schema getBpel11Schema() {
-      if (BPEL_1_1_SCHEMA == null) {
-          BPEL_1_1_SCHEMA = getCompiledSchema(
-                  new InputStream[] { Validator.class.getResourceAsStream(BPEL_1_1_XSD_URL) },
-                  new BPELEntityResolver());
+      if (ourBPEL11Schema == null) {
+          ourBPEL11Schema = getCompiledSchema(new InputStream[] { Validator.class.getResourceAsStream(BPEL_1_1_XSD_URL)}, new BPELEntityResolver());
       }
-      return BPEL_1_1_SCHEMA;
+      return ourBPEL11Schema;
   }
 
   private class BPELEntityResolver implements LSResourceResolver {
 
-      public BPELEntityResolver() {}
-
-      public LSInput resolveResource( String type, String namespaceURI, String publicId, String systemId, String baseURI) {
+      public LSInput resolveResource(String type, String namespaceURI, String publicId, String systemId, String baseURI) {
           InputStream inputStream = null;
 
           if (systemId.equals(XML_XSD_SYSTEMID)) {
@@ -134,7 +152,7 @@ public final class Validator extends XsdBasedValidator {
           else if (systemId.equals(Trace.LOGGING_NAMESPACE_URI)) {
               inputStream = Validator.class.getResourceAsStream(TRACE_2_0_XSD_URL);
           }
-          if ( inputStream!= null ) {
+          if (inputStream != null) {
               DOMImplementation domImpl = null;
               try {
                   domImpl = DocumentBuilderFactory.newInstance().newDocumentBuilder().getDOMImplementation();
@@ -151,16 +169,16 @@ public final class Validator extends XsdBasedValidator {
       }
   }
 
+  private static Schema ourBPEL11Schema; 
+  private static Schema ourBPEL20Schema; 
+
   private static final String BPEL_XSD_URL = "/" + ResourcePackageMarker.getPackage() + "/" + ResourcePackageMarker.WS_BPEL_SCHEMA;
-  private static final String BPEL_1_1_XSD_URL = "/" + ResourcePackageMarker.getPackage() + "/" + ResourcePackageMarker.WS_BPEL_1_1_SCHEMA; 
+  private static final String BPEL_1_1_XSD_URL = "/" + ResourcePackageMarker.getPackage() + "/" + ResourcePackageMarker.WS_BPEL_1_1_SCHEMA;
   private static final String XML_XSD_URL = "/" + ResourcePackageMarker.getPackage() + "/" + ResourcePackageMarker.XSD_SCHEMA;
-  private static final String TRACE_2_0_XSD_URL = "/" + ResourcePackageMarker.getPackage() + "/" + ResourcePackageMarker.TRACE_SCHEMA; 
+  private static final String TRACE_2_0_XSD_URL = "/" + ResourcePackageMarker.getPackage() + "/" + ResourcePackageMarker.TRACE_SCHEMA;
   private static final String JAXP_SCHEMA_SOURCE = "http://java.sun.com/xml/jaxp/properties/schemaSource"; // NOI18N
   private static final String JAXP_SCHEMA_LANGUAGE = "http://java.sun.com/xml/jaxp/properties/schemaLanguage"; // NOI18N
   private static final String XML_WSDL_URL = "nbres:/org/netbeans/modules/xml/wsdl/validator/resources/wsdl-2004-08-24.xsd"; // NOI18N
   private static final String XML_XSD_SYSTEMID = "http://www.w3.org/2001/xml.xsd"; // NOI18N
   private static final String XML_WSDL_SYSTEMID = "http://schemas.xmlsoap.org/wsdl/"; // NOI18N
-  
-  private static Schema compiledBPELSchema;
-  private static Schema BPEL_1_1_SCHEMA; 
 }
