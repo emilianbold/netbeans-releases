@@ -95,7 +95,8 @@ public abstract class CsmReferenceResolver {
         if (c != null) {
             JEditorPane[] panes = CsmUtilities.getOpenedPanesInEQ(c);
             if (panes != null && panes.length>0) {
-                int offset = panes[0].getCaret().getDot();
+                //System.err.printf("caret: %d, %d, %d\n",panes[0].getCaretPosition(), panes[0].getSelectionStart(), panes[0].getSelectionEnd());                
+                int offset = panes[0].getSelectionStart();
                 CsmFile file = CsmUtilities.getCsmFile(activatedNode,false);
                 if (file != null){
                     return findReference(file, offset);
