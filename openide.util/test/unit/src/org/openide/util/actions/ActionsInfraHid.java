@@ -52,32 +52,30 @@ import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
+import org.openide.util.test.MockLookup;
 
 /** Utilities for actions tests.
  * @author Jesse Glick
  */
-public class ActionsInfraHid implements ContextGlobalProvider {
+public class ActionsInfraHid {
     
-    public ActionsInfraHid() {}
+    private ActionsInfraHid() {}
 
     private static final ActionMap EMPTY_MAP = new ActionMap();
     private static ActionMap[] currentMaps = new ActionMap[] { EMPTY_MAP };
 
     private static final AMLookup amLookup = new AMLookup();
     
-    public Lookup createGlobalContext() {
-        return amLookup;
-    }
+    private static Lookup.Result<ActionMap> amResult;
 
-    private static Lookup.Result amResult;
-    static {
-        try {
-            amResult = Utilities.actionsGlobalContext().lookupResult(ActionMap.class);
-            // XXX clean this up: use MockServices
-            Assert.assertEquals(Collections.singleton(EMPTY_MAP), new HashSet(amResult.allInstances()));
-        } catch (Throwable t) {
-            t.printStackTrace();
-        }
+    public static void install() {
+        MockLookup.setInstances(new ContextGlobalProvider() {
+            public Lookup createGlobalContext() {
+                return amLookup;
+            }
+        });
+        amResult = Utilities.actionsGlobalContext().lookupResult(ActionMap.class);
+        Assert.assertEquals(Collections.singleton(EMPTY_MAP), new HashSet<ActionMap>(amResult.allInstances()));
     }
 
     public static void setActionMap(ActionMap newMap) {

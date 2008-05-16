@@ -53,27 +53,25 @@ import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
+import org.openide.util.test.MockLookup;
 
 /** Utilities for actions tests.
  * @author Jesse Glick
  */
-public class ActionsInfraHid implements ContextGlobalProvider {
+public class NodeActionsInfraHid {
     
     private static Node[] currentNodes = null;
     private static final NodeLookup nodeLookup = new NodeLookup();
+    private static Lookup.Result<Node> nodeResult;
     
-    public Lookup createGlobalContext() {
-        return nodeLookup;
-    }
-
-    private static Lookup.Result nodeResult;
-    static {
-        try {
-            nodeResult = Utilities.actionsGlobalContext().lookupResult(Node.class);
-            Assert.assertEquals(Collections.emptySet(), new HashSet(nodeResult.allInstances()));
-        } catch (Throwable t) {
-            t.printStackTrace();
-        }
+    public static void install() {
+        MockLookup.setInstances(new ContextGlobalProvider() {
+            public Lookup createGlobalContext() {
+                return nodeLookup;
+            }
+        });
+        nodeResult = Utilities.actionsGlobalContext().lookupResult(Node.class);
+        Assert.assertEquals(Collections.emptySet(), new HashSet<Node>(nodeResult.allInstances()));
     }
 
     public static void setCurrentNodes(Node[] nue) {
