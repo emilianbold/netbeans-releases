@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.bpel.validation.statics;
 
+import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -56,6 +57,9 @@ import java.util.Set;
 import java.util.Map.Entry;
 import javax.xml.namespace.QName;
 
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Lookup;
 import org.netbeans.modules.bpel.model.api.BaseScope;
 import org.netbeans.modules.bpel.model.api.BpelContainer;
 import org.netbeans.modules.bpel.model.api.BpelModel;
@@ -167,8 +171,8 @@ import org.netbeans.modules.bpel.model.api.PortTypeReference;
 import org.netbeans.modules.bpel.validation.core.BpelValidator;
 import org.netbeans.modules.bpel.model.api.support.SimpleBpelModelVisitor;
 import org.netbeans.modules.bpel.model.api.support.SimpleBpelModelVisitorAdaptor;
-import org.openide.filesystems.FileObject;
-import org.openide.util.Lookup;
+import org.netbeans.modules.soa.validation.util.LineUtil;
+import org.netbeans.modules.soa.ui.SoaUtil;
 import static org.netbeans.modules.xml.ui.UI.*;
 
 /**
@@ -190,15 +194,23 @@ public final class Validator extends BpelValidator {
     List<Model> wsdls = new LinkedList<Model>();
     List<Model> schemas = new LinkedList<Model>();
 
+//out();
     for (Import imp : imports) {
+//out("see: " + imp.getLocation());
       WSDLModel wsdl = ImportHelper.getWsdlModel(imp, false);
 
-      if (wsdl != null) {
+      if (wsdl != null && !wsdls.contains(wsdl)) {
         wsdls.add(wsdl);
       }
       SchemaModel schema = ImportHelper.getSchemaModel(imp, false);
 
-      if (schema != null) {
+      if (schema == null) {
+        continue;
+      }
+      if (schemas.contains(schema)) {
+        addWarning("FIX_Duplicate_Imports", imp); // NOI18N
+      }
+      else {
         schemas.add(schema);
       }
     }
@@ -231,12 +243,15 @@ public final class Validator extends BpelValidator {
   }
 
   private void checkDuplicate(Process process, Model model1, Model model2) {
+//out("check: ");
     String targetNamespace1 = getTargetNamespace(model1);
+//out("  tns1: " + targetNamespace1);
 
     if (targetNamespace1 == null) {
       return;
     }
     String targetNamespace2 = getTargetNamespace(model2);
+//out("  tns2: " + targetNamespace1);
 
     if (targetNamespace2 == null) {
       return;
@@ -279,46 +294,17 @@ public final class Validator extends BpelValidator {
 
       if (contains(named, list2)) {
         String file1 = getFileName(named);
-
-        if (file1 == null) {
-          continue;
-        }
         String file2 = getFileName(list2.get(0));
 
-        if (file2 == null) {
-          continue;
-        }
         // todo a: warning for identical, error for different
-        addError("FIX_SA00014", process, named.getName(), file1, file2); // NOI18N
+        if (file1 == null || file2 == null) {
+          addError("FIX_SA00014", process, named.getName()); // NOI18N
+        }
+        else {
+          addError("FIX_SA00014_File", process, named.getName(), file1, file2); // NOI18N
+        }
       }
     }
-  }
-
-  private String getFileName(Component component) {
-    if (component == null) {
-      return null;
-    }
-    Model model = component.getModel();
-
-    if (model == null) {
-      return null;
-    }
-    ModelSource source = model.getModelSource();
-
-    if (source == null) {
-      return null;
-    }
-    Lookup lookup = source.getLookup();
-
-    if (lookup == null) {
-      return null;
-    }
-    FileObject file = lookup.lookup(FileObject.class);
-
-    if (file == null) {
-      return null;
-    }
-    return file.getPath();
   }
 
   private boolean contains(Named named, List<Named> list) {
@@ -333,6 +319,18 @@ public final class Validator extends BpelValidator {
       }
     }
     return false;
+  }
+
+  private String getFileName(Component component) {
+    if (component == null) {
+      return null;
+    }
+    FileObject file = SoaUtil.getFileObjectByModel(component.getModel());
+
+    if (file == null) {
+      return null;
+    }
+    return LineUtil.getLocation(FileUtil.toFile(file), component);
   }
 
   private List<Named> list(Collection<? extends Named> collection) {
