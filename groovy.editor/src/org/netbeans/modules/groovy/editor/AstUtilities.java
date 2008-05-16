@@ -423,7 +423,17 @@ public class AstUtilities {
             } else if (current instanceof DeclarationExpression) {
                 DeclarationExpression declarationExpression = (DeclarationExpression) current;
                 if (name.equals(declarationExpression.getVariableExpression().getName())) {
-                    return it.next();
+                    // ok, the variable i'm searching for (name) gets declared here
+                    // if it's not a field it's scope is the next method up the path:
+                    
+                    while (it.hasNext()){
+                        current = it.next();
+                        if(current instanceof MethodNode){
+                            return current;
+                        }
+                    }
+                    
+                    
                 }
             } else {
                 // visit is not implemented for everybody and then it throws exception
