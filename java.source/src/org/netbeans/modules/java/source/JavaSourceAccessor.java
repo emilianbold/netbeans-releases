@@ -44,13 +44,19 @@ package org.netbeans.modules.java.source;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import java.util.Collection;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.PositionConverter;
 import org.netbeans.modules.java.source.parsing.CompilationInfoImpl;
+import org.netbeans.modules.parsing.api.GenericUserTask;
+import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.impl.Utilities;
+import org.netbeans.modules.parsing.spi.Parser.Result;
+import org.netbeans.modules.parsing.spi.ParserResultTask;
+import org.netbeans.modules.parsing.spi.TaskScheduler;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -80,9 +86,69 @@ public abstract class JavaSourceAccessor {
     
     private static volatile JavaSourceAccessor INSTANCE;
         
-    public void runSpecialTask (final CancellableTask<CompilationInfo> task, final JavaSource.Priority priority) {
-        //todo:
+    public void runSpecialTask (final GenericUserTask task, final JavaSource.Priority priority) {
+        int tmp;
+        if (priority == JavaSource.Priority.MAX) {
+            tmp = 0;
+        }
+        else if (priority == JavaSource.Priority.MIN) {
+            tmp = Integer.MAX_VALUE;
+        }
+        else {
+            tmp = priority.ordinal() * 100;
+        }
+        final int tp = tmp;
+        final ParserResultTask wrapper = new ParserResultTask() {            
+            @Override
+            public void run(Result _null, Snapshot _null2) {
+                try {
+                    task.run();
+                } catch (Exception e) {
+                    Exceptions.printStackTrace(e);
+                }
+            }
+
+            @Override
+            public int getPriority() {
+                return tp;
+            }
+
+            @Override
+            public Class<? extends TaskScheduler> getSchedulerClass() {
+                return null;
+            }
+
+            @Override
+            public void cancel() {
+            }
+        };
+        Utilities.scheduleSpecialTask(wrapper);
     }
+    
+    
+    public void revalidate(final JavaSource js) {
+        final Collection<Source> sources = getSources(js);
+        assert sources != null;
+        if (sources.size() == 1) {
+            Utilities.revalidate(sources.iterator().next());
+        }
+    }
+    
+    /**
+     * Expert: Locks java compiler. Private API for indentation engine only!
+     */
+    public void lockJavaCompiler () {
+        Utilities.acquireParserLock();
+    }
+    
+    /**
+     * Expert: Unlocks java compiler. Private API for indentation engine only!
+     */
+    public void unlockJavaCompiler () {
+        Utilities.releaseParserLock();
+    }
+    
+    public abstract Collection<Source> getSources(final JavaSource js);              
         
     /**
      * Returns the JavacTaskImpl associated with given {@link CompilationInfo},
@@ -92,9 +158,7 @@ public abstract class JavaSourceAccessor {
      * @return {@link JavacTaskImpl} never returns null
      */
     public abstract JavacTaskImpl getJavacTask (CompilationInfo compilationInfo);
-       
-    public abstract void revalidate(JavaSource js); 
-    
+           
     public abstract JavaSource create(final ClasspathInfo cpInfo, final PositionConverter binding, final Collection<? extends FileObject> files) throws IllegalArgumentException;
     
     public abstract PositionConverter create(final FileObject fo, int offset, int length, final JTextComponent component);
@@ -111,20 +175,5 @@ public abstract class JavaSourceAccessor {
      * @param impl the spi
      * @return the api wrapper
      */
-    public abstract CompilationController createCompilationController (CompilationInfoImpl impl);
-        
-    /**
-     * Expert: Locks java compiler. Private API for indentation engine only!
-     */
-    public void lockJavaCompiler () {
-        //todo:
-    }
-    
-    /**
-     * Expert: Unlocks java compiler. Private API for indentation engine only!
-     */
-    public void unlockJavaCompiler () {
-        //todo:
-    }
-        
+    public abstract CompilationController createCompilationController (CompilationInfoImpl impl);                    
 }

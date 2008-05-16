@@ -65,6 +65,16 @@ import org.openide.util.RequestProcessor.Task;
  */
 public abstract class TaskScheduler {
     
+    /**
+     * Default reparse delay
+     */
+    public static final int DEFAULT_REPARSE_DELAY = 500;
+    
+    /**
+     * May be changed by unit test
+     */
+    int reparseDelay = DEFAULT_REPARSE_DELAY;
+    
     private Collection<Source> sources;
     
     /**
@@ -116,7 +126,7 @@ public abstract class TaskScheduler {
             public void run () {
                 Scheduler.schedule (TaskScheduler.this, TaskScheduler.this.sources);
             }
-        }, 1000);
+        }, reparseDelay);
     }
 }
 

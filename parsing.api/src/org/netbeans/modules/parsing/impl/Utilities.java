@@ -39,57 +39,40 @@
 
 package org.netbeans.modules.parsing.impl;
 
-import java.util.Set;
 import org.netbeans.modules.parsing.api.Source;
-import org.netbeans.modules.parsing.spi.Parser;
-import org.openide.util.Exceptions;
+import org.netbeans.modules.parsing.spi.SchedulerTask;
 
 /**
- *
+ * Temporary helpe functions needed by the java.source
  * @author Tomas Zezula
  */
-public abstract class SourceAccessor {
+public class Utilities {
     
-    public static synchronized SourceAccessor getINSTANCE () {
-        if (INSTANCE == null) {
-            try {
-                Class.forName("org.netbeans.modules.parsing.api.Source", true, SourceAccessor.class.getClassLoader());   //NOI18N            
-                assert INSTANCE != null;
-            } catch (ClassNotFoundException e) {
-                Exceptions.printStackTrace(e);
-            }
-        }
-        return INSTANCE;
+    private Utilities () {}
+    
+    /**
+     * Temporary method until editor API (formating) will be fixed
+     */
+    public static void acquireParserLock () {
+        TaskProcessor.acquireParserLock();
     }
     
-    public static void setINSTANCE (SourceAccessor instance) {
-        assert instance != null;
-        INSTANCE = instance;
+    /**
+     * Temporary method until editor API (formating) will be fixed
+     */
+    public static void releaseParserLock () {
+        TaskProcessor.releaseParserLock();
     }
     
-    private static volatile SourceAccessor INSTANCE;
+    /**
+     * Temporary may be replaced by scheduler, hepefully.
+     */
+    public static void scheduleSpecialTask (final SchedulerTask task) {
+        TaskProcessor.scheduleSpecialTask(task);
+    }
+    
+    public static void revalidate (final Source source) {
+        //todo: How?
+    }
 
-    /**
-     * Returns flags of given {@link Source}
-     * @param source
-     * @return
-     */
-    public abstract Set<SourceFlags> getFlags (Source source);
-                       
-    /**
-     * Returns cached {@link Parser} when available
-     * @param source for which the parser should be obtained
-     * @return the {@link Parser} or null
-     */
-    public abstract Parser getParser (Source source);
-    
-    /**
-     * Sets a cached {@link Parser}.
-     * Used only by ParserManagerImpl
-     * @param source for which the parser should be set
-     * @param the parser
-     * @throws IllegalStateException when the given source is already associated
-     * with a parser.
-     */
-    public abstract void setParser (Source source, Parser parser) throws IllegalStateException;
 }

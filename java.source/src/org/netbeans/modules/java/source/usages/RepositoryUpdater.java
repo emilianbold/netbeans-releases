@@ -139,6 +139,7 @@ import org.netbeans.modules.java.source.tasklist.TasklistSettings;
 import org.netbeans.modules.java.source.util.LowMemoryEvent;
 import org.netbeans.modules.java.source.util.LowMemoryListener;
 import org.netbeans.modules.java.source.util.LowMemoryNotifier;
+import org.netbeans.modules.parsing.api.GenericUserTask;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
@@ -1229,7 +1230,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         
     }
     
-    private final class CompileWorker implements CancellableTask<CompilationInfo> {
+    private final class CompileWorker extends GenericUserTask {
                 
         /**
          * Used as a identity for resetDirty, which should reset currentWork only
@@ -1266,7 +1267,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             this.canceled.set(true);
         }
         
-        public void run (final CompilationInfo nullInfo) throws IOException {
+        public void run () throws IOException {
             try {
             ClassIndexManager.getDefault().writeLock (new ClassIndexManager.ExceptionAction<Void> () {
                 

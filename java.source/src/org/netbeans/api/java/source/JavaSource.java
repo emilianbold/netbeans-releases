@@ -43,6 +43,7 @@ package org.netbeans.api.java.source;
 
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.code.Symbol.CompletionFailure;
+import com.sun.tools.javac.util.Log;
 import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
@@ -430,6 +431,8 @@ public final class JavaSource {
                                 Parser.Result result = resultIterator.getParserResult();
                                 assert result instanceof CompilationController;
                                 task.run ((CompilationController)result);
+                                final JavacTaskImpl jt = ((CompilationController)result).impl.getJavacTask();
+                                Log.instance(jt.getContext()).nerrors = 0;
                             }
                             else {
                                 Parser.Result result = findEmbeddedJava (resultIterator);
@@ -439,6 +442,8 @@ public final class JavaSource {
                                 }
                                 assert result instanceof CompilationController;
                                 task.run ((CompilationController)result);
+                                final JavacTaskImpl jt = ((CompilationController)result).impl.getJavacTask();
+                                Log.instance(jt.getContext()).nerrors = 0;
                             }
                         }
                         
@@ -533,6 +538,7 @@ public final class JavaSource {
             final ModificationResult result = new ModificationResult(this);
             long start = System.currentTimeMillis();
             try {
+                
                 final MultiLanguageUserTask _task = new MultiLanguageUserTask() {
                     @Override
                     public void run(ResultIterator resultIterator) throws Exception {
@@ -540,8 +546,10 @@ public final class JavaSource {
                         if (JavacParser.MIME_TYPE.equals(source.getMimeType())) {
                             Parser.Result parserResult = resultIterator.getParserResult();
                             assert parserResult instanceof CompilationController;
-                            final WorkingCopy copy = new WorkingCopy (((CompilationController)parserResult).impl);;
+                            final WorkingCopy copy = new WorkingCopy (((CompilationController)parserResult).impl);
                             task.run (copy);
+                            final JavacTaskImpl jt = copy.impl.getJavacTask();
+                            Log.instance(jt.getContext()).nerrors = 0;
                             final List<Difference> diffs = copy.getChanges();
                             if (diffs != null && diffs.size() > 0) {
                                 result.diffs.put(copy.getFileObject(), diffs);
@@ -569,7 +577,7 @@ public final class JavaSource {
             if (sources.size() == 1) {
                 Logger.getLogger("TIMER").log(Level.FINE, "Modification Task",  //NOI18N
                     new Object[] {sources.iterator().next().getFileObject(), System.currentTimeMillis() - start});
-            }
+            }            
             return result;
         }        
     }
@@ -677,12 +685,7 @@ public final class JavaSource {
             assert compilationInfo != null;
             return compilationInfo.impl.getJavacTask();
         }
-                
-        @Override
-        public void revalidate(JavaSource js) {
-            //todo: fixme by hanz factories js.revalidate();
-        }
-                                               
+                                                                       
         public JavaSource create(ClasspathInfo cpInfo, PositionConverter binding, Collection<? extends FileObject> files) throws IllegalArgumentException {
             return JavaSource.create(cpInfo, binding, files);
         }
@@ -697,6 +700,11 @@ public final class JavaSource {
         
         public CompilationController createCompilationController (final CompilationInfoImpl impl) {
             return new CompilationController(impl);
+        }
+
+        @Override
+        public Collection<Source> getSources(JavaSource js) {
+            return js.sources;
         }
     }
     

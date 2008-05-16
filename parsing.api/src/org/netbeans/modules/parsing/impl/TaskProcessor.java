@@ -309,6 +309,20 @@ public class TaskProcessor {
         }
     }
     
+    static void acquireParserLock () {
+        parserLock.lock();
+    }
+    
+    static void releaseParserLock () {
+        parserLock.unlock();
+    }
+    
+    static void scheduleSpecialTask (final SchedulerTask task) {
+        assert task != null;
+        final Request rq = new Request(task, null, false);
+        handleAddRequest(rq);
+    }
+    
     
     //Private methods
     private static void handleAddRequest (final Request nr) {
