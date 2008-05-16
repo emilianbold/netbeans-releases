@@ -178,6 +178,7 @@
             </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.web.client.javascript.debugger.ant</friend>
+                <friend>org.netbeans.modules.ruby.railsprojects</friend>
                 <package>org.netbeans.modules.web.client.javascript.debugger.api</package>
             </friend-packages>
         </data>

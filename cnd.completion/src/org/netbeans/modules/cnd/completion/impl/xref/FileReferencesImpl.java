@@ -41,8 +41,8 @@
 package org.netbeans.modules.cnd.completion.impl.xref;
 
 import java.util.ArrayList;
-import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
@@ -84,7 +84,7 @@ public class FileReferencesImpl extends CsmFileReferences  {
         accept(csmScope, visitor, CsmReferenceKind.ALL);
     }
     
-    public void accept(CsmScope csmScope, Visitor visitor, EnumSet<CsmReferenceKind> kinds) {
+    public void accept(CsmScope csmScope, Visitor visitor, Set<CsmReferenceKind> kinds) {
         if (!CsmKindUtilities.isOffsetable(csmScope) && !CsmKindUtilities.isFile(csmScope)){
             return;
         }
@@ -114,7 +114,7 @@ public class FileReferencesImpl extends CsmFileReferences  {
     }
     
     private List<CsmReference> getIdentifierReferences(CsmFile csmFile, BaseDocument doc, int start, int end,
-                                                        EnumSet<CsmReferenceKind> kinds) {
+                                                        Set<CsmReferenceKind> kinds) {
         List<CsmReference> out = new ArrayList<CsmReference>();
         boolean needAfterDereferenceUsages = kinds.contains(CsmReferenceKind.AFTER_DEREFERENCE_USAGE);
         List<Token> tokens = TokenUtilities.getTokens(doc, start, end);
