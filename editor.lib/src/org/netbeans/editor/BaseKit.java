@@ -931,7 +931,7 @@ public class BaseKit extends DefaultEditorKit {
         
         @SuppressWarnings("unchecked")
         List<? extends Action> customActions = (List<? extends Action>) SettingsConversions.callFactory(
-                prefs, mimePath, "custom-action-list", null); //NOI18N
+                prefs, mimePath, EditorPreferencesKeys.CUSTOM_ACTION_LIST, null); //NOI18N
         
         return customActions == null ? null : customActions.toArray(new Action[customActions.size()]);
     }
