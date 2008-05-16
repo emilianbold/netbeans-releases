@@ -48,14 +48,8 @@ import java.beans.PropertyChangeListener;
 import java.io.CharConversionException;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.ResourceBundle;
-import java.util.Set;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JSeparator;
@@ -67,8 +61,6 @@ import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.j2seproject.J2SEProjectUtil;
@@ -88,10 +80,6 @@ import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 import org.openide.ErrorManager;
 import org.openide.actions.FindAction;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.FileStatusEvent;
-import org.openide.filesystems.FileStatusListener;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
 import org.openide.nodes.AbstractNode;
@@ -251,23 +239,11 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
     
     /** Filter node containin additional features for the J2SE physical
      */
-    private final class J2SELogicalViewRootNode extends AbstractNode implements Runnable, FileStatusListener, ChangeListener, PropertyChangeListener {
+    private final class J2SELogicalViewRootNode extends AbstractNode {
         
         private Action brokenLinksAction;
         private boolean broken;         //Represents a state where project has a broken reference repairable by broken reference support
         private boolean illegalState;   //Represents a state where project is not in legal state, eg invalid source/target level
-        
-        // icon badging >>>
-        private Set<FileObject> files;
-        private Map<FileSystem,FileStatusListener> fileSystemListeners;
-        private RequestProcessor.Task task;
-        private final Object privateLock = new Object();
-        private boolean iconChange;
-        private boolean nameChange;
-        private ChangeListener sourcesListener;
-        private Map<SourceGroup,PropertyChangeListener> groupsListeners;
-        //private Project project;
-        // icon badging <<<
         
         public J2SELogicalViewRootNode() {
             super(NodeFactorySupport.createCompositeChildren(project, "Projects/org-netbeans-modules-java-j2seproject/Nodes"), 
@@ -281,73 +257,12 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
                 illegalState = true;
             }
             brokenLinksAction = new BrokenLinksAction();
-            setProjectFiles(project);
         }
 
         @Override
         public String getShortDescription() {
             String prjDirDispName = FileUtil.getFileDisplayName(project.getProjectDirectory());
             return NbBundle.getMessage(J2SELogicalViewProvider.class, "HINT_project_root_node", prjDirDispName);
-        }
-        
-        protected final void setProjectFiles(Project project) {
-            Sources sources = ProjectUtils.getSources(project);  // returns singleton
-            if (sourcesListener == null) {
-                sourcesListener = WeakListeners.change(this, sources);
-                sources.addChangeListener(sourcesListener);
-            }
-            setGroups(Arrays.asList(sources.getSourceGroups(Sources.TYPE_GENERIC)));
-        }
-        
-        
-        private final void setGroups(Collection<SourceGroup> groups) {
-            if (groupsListeners != null) {
-                for (Map.Entry<SourceGroup,PropertyChangeListener> e : groupsListeners.entrySet()) {
-                    e.getKey().removePropertyChangeListener(e.getValue());
-                }
-            }
-            groupsListeners = new HashMap<SourceGroup,PropertyChangeListener>();
-            Set<FileObject> roots = new HashSet<FileObject>();
-            for (SourceGroup group : groups) {
-                PropertyChangeListener pcl = WeakListeners.propertyChange(this, group);
-                groupsListeners.put(group, pcl);
-                group.addPropertyChangeListener(pcl);
-                FileObject fo = group.getRootFolder();
-                roots.add(fo);
-            }
-            setFiles(roots);
-        }
-        
-        protected final void setFiles(Set<FileObject> files) {
-            if (fileSystemListeners != null) {
-                for (Map.Entry<FileSystem,FileStatusListener> e : fileSystemListeners.entrySet()) {
-                    e.getKey().removeFileStatusListener(e.getValue());
-                }
-            }
-            
-            fileSystemListeners = new HashMap<FileSystem,FileStatusListener>();
-            this.files = files;
-            if (files == null) {
-                return;
-            }
-            
-            Set<FileSystem> hookedFileSystems = new HashSet<FileSystem>();
-            for (FileObject fo : files) {
-                try {
-                    FileSystem fs = fo.getFileSystem();
-                    if (hookedFileSystems.contains(fs)) {
-                        continue;
-                    }
-                    hookedFileSystems.add(fs);
-                    FileStatusListener fsl = FileUtil.weakFileStatusListener(this, fs);
-                    fs.addFileStatusListener(fsl);
-                    fileSystemListeners.put(fs, fsl);
-                } catch (FileStateInvalidException e) {
-                    ErrorManager err = ErrorManager.getDefault();
-                    err.annotate(e, ErrorManager.UNKNOWN, "Cannot get " + fo + " filesystem, ignoring...", null, null, null); // NO18N
-                    err.notify(ErrorManager.INFORMATIONAL, e);
-                }
-            }
         }
         
         @Override
@@ -364,95 +279,14 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
         
         @Override
         public Image getIcon(int type) {
-            Image img = getMyIcon(type);
-            
-            if (files != null && !files.isEmpty()) {
-                try {
-                    FileObject fo = files.iterator().next();
-                    img = fo.getFileSystem().getStatus().annotateIcon(img, type, files);
-                } catch (FileStateInvalidException e) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-                }
-            }
-            
-            return img;
-        }
-        
-        private Image getMyIcon(int type) {
             Image original = super.getIcon(type);
             return broken || illegalState ? Utilities.mergeImages(original, brokenProjectBadge, 8, 0) : original;
         }
         
         @Override
         public Image getOpenedIcon(int type) {
-            Image img = getMyOpenedIcon(type);
-            
-            if (files != null && !files.isEmpty()) {
-                try {
-                    FileObject fo = files.iterator().next();
-                    img = fo.getFileSystem().getStatus().annotateIcon(img, type, files);
-                } catch (FileStateInvalidException e) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-                }
-            }
-            
-            return img;
-        }
-        
-        private Image getMyOpenedIcon(int type) {
             Image original = super.getOpenedIcon(type);
             return broken || illegalState ? Utilities.mergeImages(original, brokenProjectBadge, 8, 0) : original;
-        }
-        
-        public void run() {
-            boolean fireIcon;
-            boolean fireName;
-            synchronized (privateLock) {
-                fireIcon = iconChange;
-                fireName = nameChange;
-                iconChange = false;
-                nameChange = false;
-            }
-            if (fireIcon) {
-                fireIconChange();
-                fireOpenedIconChange();
-            }
-            if (fireName) {
-                fireDisplayNameChange(null, null);
-            }
-        }
-        
-        public void annotationChanged(FileStatusEvent event) {
-            if (task == null) {
-                task = RequestProcessor.getDefault().create(this);
-            }
-            
-            synchronized (privateLock) {
-                if ((iconChange == false && event.isIconChange()) || (nameChange == false && event.isNameChange())) {
-                    for (FileObject fo : files) {
-                        if (event.hasChanged(fo)) {
-                            iconChange |= event.isIconChange();
-                            nameChange |= event.isNameChange();
-                        }
-                    }
-                }
-            }
-            
-            task.schedule(50); // batch by 50 ms
-        }
-        
-        // sources change
-        public void stateChanged(ChangeEvent e) {
-            RP.post(new Runnable () {
-                public void run() {
-                    setProjectFiles(project);
-                }
-            });            
-        }
-        
-        // group change
-        public void propertyChange(PropertyChangeEvent evt) {
-            setProjectFiles(project);
         }
         
         @Override
