@@ -147,15 +147,19 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         UploadFiles uploadFiles = null;
         String remoteUpload = getValue(PhpProjectProperties.REMOTE_UPLOAD);
         if (remoteUpload == null) {
-            uploadFiles = UploadFiles.ON_RUN;
+            uploadFiles = getDefaultUploadFiles();
         } else {
             try {
                 uploadFiles = UploadFiles.valueOf(remoteUpload);
             } catch (IllegalArgumentException iae) {
-                uploadFiles = UploadFiles.ON_RUN;
+                uploadFiles = getDefaultUploadFiles();
             }
         }
         uploadFilesComboBox.setSelectedItem(uploadFiles);
+    }
+
+    private UploadFiles getDefaultUploadFiles() {
+        return UploadFiles.ON_RUN;
     }
 
     @Override
