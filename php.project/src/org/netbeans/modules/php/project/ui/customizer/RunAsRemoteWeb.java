@@ -93,7 +93,7 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         };
         assert labels.length == textFields.length && labels.length == propertyNames.length;
 
-        for (PhpProjectProperties.UploadFiles uploadFiles : PhpProjectProperties.UploadFiles.values()) {
+        for (UploadFiles uploadFiles : UploadFiles.values()) {
             uploadFilesComboBox.addItem(uploadFiles);
         }
         uploadFilesComboBox.setRenderer(new RemoteUploadRenderer());
@@ -170,23 +170,6 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         String err = validateWebFields(url, indexFile);
         getCategory().setErrorMessage(err);
         getCategory().setValid(err == null);
-    }
-
-    private class FieldUpdater extends TextFieldUpdater {
-
-        public FieldUpdater(String propName, JLabel label, JTextField field) {
-            super(propName, label, field);
-        }
-
-        final String getDefaultValue() {
-            return RunAsRemoteWeb.this.getDefaultValue(getPropName());
-        }
-
-        @Override
-        protected void processUpdate() {
-            super.processUpdate();
-            urlHintLabel.setText(composeUrlHint(urlTextField.getText(), indexFileTextField.getText(), argsTextField.getText()));
-        }
     }
 
     /** This method is called from within the constructor to
@@ -338,6 +321,23 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
     private javax.swing.JLabel urlLabel;
     private javax.swing.JTextField urlTextField;
     // End of variables declaration//GEN-END:variables
+
+    private class FieldUpdater extends TextFieldUpdater {
+
+        public FieldUpdater(String propName, JLabel label, JTextField field) {
+            super(propName, label, field);
+        }
+
+        final String getDefaultValue() {
+            return RunAsRemoteWeb.this.getDefaultValue(getPropName());
+        }
+
+        @Override
+        protected void processUpdate() {
+            super.processUpdate();
+            urlHintLabel.setText(composeUrlHint(urlTextField.getText(), indexFileTextField.getText(), argsTextField.getText()));
+        }
+    }
 
     interface ComboBoxVisitor {
         String visit(final JComboBox comboBox);
