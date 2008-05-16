@@ -54,6 +54,7 @@ import javax.swing.SwingUtilities;
 import org.netbeans.api.visual.widget.ConnectionWidget;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.eventframework.EventBlocker;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.BaseElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
@@ -912,7 +913,7 @@ public class SequenceDiagramGenerator implements ISequenceDiagramGenerator
                 int msgBeforeLN=-1,msgAfterLN=Integer.MAX_VALUE;
                 for(IMessage msg:mapMessages.keySet())
                 {
-                    if(msg.getLineNumber()>msgBeforeLN && msg.getLineNumber()<=cf_line)//if it's on the sameline most likely message create smth used in cf
+                    if(msg.getLineNumber()<=cf_line && (msg.getLineNumber()>msgBeforeLN || (msg.getLineNumber()==msgBeforeLN && msg.getKind()==BaseElement.MK_RESULT)))//if it's on the sameline most likely message create smth used in cf
                     {
                         msgBeforeLN=msg.getLineNumber();
                         msgBefore=msg;
