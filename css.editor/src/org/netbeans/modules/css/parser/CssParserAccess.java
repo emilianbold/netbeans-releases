@@ -41,7 +41,6 @@ package org.netbeans.modules.css.parser;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Logger;
 import org.netbeans.modules.gsf.api.Error;
 import org.netbeans.modules.gsf.api.ParserFile;
 import org.netbeans.modules.gsf.api.Severity;
