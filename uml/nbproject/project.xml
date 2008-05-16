@@ -78,7 +78,7 @@ made subject to such option by the copyright holder.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>2.11</specification-version>
+                        <specification-version>2.14</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -356,7 +356,7 @@ made subject to such option by the copyright holder.
                 <package>org.netbeans.modules.uml.ui.swing.treetable</package>
                 <package>org.netbeans.modules.uml.ui.test.utilities.reports</package>
                 <package>org.netbeans.modules.uml.util</package>
-            </friend-packages>            
+            </friend-packages>
         </data>
     </configuration>
 </project>

@@ -241,6 +241,7 @@ public class Widget implements Accessible {
         children.add(child);
         child.parentWidget = this;
         setChildConstraint (child, constraint);
+        child.updateResources(this, true);
         child.revalidate();
         revalidate ();
         scene.dispatchNotifyAdded (child);
@@ -266,6 +267,7 @@ public class Widget implements Accessible {
         children.add (index, child);
         child.parentWidget = this;
         setChildConstraint (child, constraint);
+        child.updateResources(this, true);
         child.revalidate ();
         revalidate ();
         if (accessibleContext != null  &&  accessibleContext instanceof WidgetAccessibleContext)
@@ -282,6 +284,7 @@ public class Widget implements Accessible {
         setChildConstraint (child, null);
         child.parentWidget = null;
         children.remove (child);
+        child.updateResources(this, false);
         child.revalidate ();
         revalidate ();
         if (accessibleContext != null  &&  accessibleContext instanceof WidgetAccessibleContext)
