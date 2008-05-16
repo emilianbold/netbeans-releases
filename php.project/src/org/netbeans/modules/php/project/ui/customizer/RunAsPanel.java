@@ -308,7 +308,7 @@ public final class RunAsPanel extends JPanel {
                 if (current != null) {
                     current.loadFields();
                     current.validateFields();
-                    current.putValue(PhpProjectProperties.RUN_AS, current.getRunAsType().name());
+                    current.putValue(current.currentCfg(), PhpProjectProperties.RUN_AS, current.getRunAsType().name());
                     current.markAsModified(current.getRunAsLabel(), PhpProjectProperties.RUN_AS, current.getRunAsType().name());
                 }
             }
