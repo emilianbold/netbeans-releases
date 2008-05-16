@@ -26,52 +26,52 @@ import org.netbeans.modules.xml.xam.dom.Attribute;
  * 
  */
 public enum IEPAttribute implements Attribute {
-	EXPRESSION_LANGUAGE("expressionLanguage"), 
-	TYPE("type"),
-	LOCATION("location"),
-	NAMESPACE("namespace"),
-	PARTNER_LINK_TYPE("partnerLinkType"),
-	OPERATION("operation"),
-	ROLE("role"),
-	PARTNERLINK("partnerLink"),
-	NAME("name"),
-	TARGET_NAME_SPACE("targetNamespace")
-	;
+    EXPRESSION_LANGUAGE("expressionLanguage"), 
+    TYPE("type"),
+    LOCATION("location"),
+    NAMESPACE("namespace"),
+    PARTNER_LINK_TYPE("partnerLinkType"),
+    OPERATION("operation"),
+    ROLE("role"),
+    PARTNERLINK("partnerLink"),
+    NAME("name"),
+    TARGET_NAME_SPACE("targetNamespace")
+    ;
 
-	private String name;
+    private String name;
 
-	private Class type;
+    private Class type;
 
-	private Class subtype;
+    private Class subtype;
 
-	/** Creates a new instance of WSDLAttribute */
-	IEPAttribute(String name) {
-		this(name, String.class);
-	}
+    /** Creates a new instance of WSDLAttribute */
+    IEPAttribute(String name) {
+        this(name, String.class);
+    }
 
-	IEPAttribute(String name, Class type) {
-		this(name, type, null);
-	}
+    IEPAttribute(String name, Class type) {
+        this(name, type, null);
+    }
 
-	IEPAttribute(String name, Class type, Class subtype) {
-		this.name = name;
-		this.type = type;
-		this.subtype = subtype;
-	}
+    IEPAttribute(String name, Class type, Class subtype) {
+        this.name = name;
+        this.type = type;
+        this.subtype = subtype;
+    }
 
-	public String toString() {
-		return name;
-	}
+    public String toString() {
+        return name;
+    }
 
-	public Class getType() {
-		return type;
-	}
+    public Class getType() {
+        return type;
+    }
 
-	public String getName() {
-		return name;
-	}
+    public String getName() {
+        return name;
+    }
 
-	public Class getMemberType() {
-		return subtype;
-	}
+    public Class getMemberType() {
+        return subtype;
+    }
 }
