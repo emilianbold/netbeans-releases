@@ -179,7 +179,6 @@
     <target name="do-xml">
         <subant target="${action}" inheritAll="false">
             <buildpath location="${home}/print"/>
-            <buildpath location="${home}/xml.xam"/> <!-- todo r -->
             <buildpath location="${home}/xml.search"/>
             <buildpath location="${home}/xml.xpath.ext"/>
             <buildpath location="${home}/xml.wsdl.extensions"/>
