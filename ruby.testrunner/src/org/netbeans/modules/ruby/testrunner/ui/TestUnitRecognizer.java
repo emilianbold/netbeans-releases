@@ -43,6 +43,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.modules.ruby.platform.execution.OutputRecognizer;
+import org.netbeans.modules.ruby.platform.execution.OutputRecognizer.FilteredOutput;
 
 /**
  * An output recognizer for parsing output of the test/unit runner script, 
@@ -71,6 +72,8 @@ public class TestUnitRecognizer extends OutputRecognizer {
         result.add(new TestFailedHandler());
         result.add(new TestErrorHandler());
         result.add(new TestFinishedHandler());
+        result.add(new TestMiscHandler());
+        result.add(new SuiteMiscHandler());
         return result;
     }
 
@@ -85,10 +88,11 @@ public class TestUnitRecognizer extends OutputRecognizer {
         for (TestHandler handler : handlers) {
             if (handler.match(line).matches()) {
                 handler.updateUI(manager, session);
-                return null;
+                return new FilteredOutput(handler.getLinesToPrint());
             }
         }
 
+        manager.displayOutput(session, line, false);
         return null;
     }
 
@@ -117,6 +121,10 @@ public class TestUnitRecognizer extends OutputRecognizer {
         }
 
         abstract void updateUI(Manager manager, TestSession session);
+        
+        String[] getLinesToPrint() {
+            return new String[0];
+        }
     }
 
     static class TestFailedHandler extends TestHandler {
@@ -136,6 +144,13 @@ public class TestUnitRecognizer extends OutputRecognizer {
             session.addTestCase(testcase);
             manager.displayOutput(session, matcher.group(4), false);
         }
+
+        @Override
+        String[] getLinesToPrint() {
+            return new String[]{matcher.group(4)};
+        }
+        
+        
     }
 
     static class TestErrorHandler extends TestHandler {
@@ -154,8 +169,14 @@ public class TestUnitRecognizer extends OutputRecognizer {
             testcase.trouble.stackTrace = new String[]{matcher.group(4)};
             session.addTestCase(testcase);
             manager.displayOutput(session, matcher.group(4), true);
-
         }
+
+        @Override
+        String[] getLinesToPrint() {
+            return new String[]{matcher.group(4)};
+        }
+        
+        
     }
 
     static class TestStartedHandler extends TestHandler {
@@ -182,6 +203,21 @@ public class TestUnitRecognizer extends OutputRecognizer {
             testcase.className = matcher.group(3);
             testcase.name = matcher.group(2);
             session.addTestCase(testcase);
+        }
+    }
+
+    /**
+     * Captures the rest of %TEST_* patterns that are not handled
+     * otherwise (yet). 
+     */
+    static class TestMiscHandler extends TestHandler {
+
+        public TestMiscHandler() {
+            super("%TEST_.*");
+        }
+
+        @Override
+        void updateUI( Manager manager, TestSession session) {
         }
     }
 
@@ -225,4 +261,19 @@ public class TestUnitRecognizer extends OutputRecognizer {
             manager.displaySuiteRunning(session, suiteName);
         }
     }
+    /**
+     * Captures the rest of %SUITE_* patterns that are not handled
+     * otherwise (yet). 
+     */
+    static class SuiteMiscHandler extends TestHandler {
+
+        public SuiteMiscHandler() {
+            super("%SUITE_.*");
+        }
+
+        @Override
+        void updateUI( Manager manager, TestSession session) {
+        }
+    }
+
 }
