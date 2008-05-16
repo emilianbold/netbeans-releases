@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
+ * 
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,36 +31,54 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.visual.router;
 
-import org.netbeans.api.visual.anchor.Anchor;
-import org.netbeans.api.visual.widget.ConnectionWidget;
-import org.netbeans.api.visual.router.Router;
+package org.netbeans.api.visual.export;
 
-import java.awt.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.awt.Polygon;
+import org.netbeans.api.visual.widget.Widget;
 
 /**
- * @author David Kaspar
+ * The purpose of this class is to provide a framework for holding a Widget  
+ * and the Polygon that encompasses it. Can be used for creating HTML image
+ * maps. For the ConnectionWidgets, a Polygon is created that follows the contour
+ * of the connection with a pixel buffer equal to the defined margin.
+ * @author krichard
  */
-public class DirectRouter implements Router {
+public final class WidgetPolygonalCoordinates {
 
-    public DirectRouter () {
+    private final Widget widget ;
+    private final Polygon polygon ;
+
+    /**
+     * Creates an instance of a WidgetPolygonalCoordinates object.
+     * @param widget The Widget (may be a ConnectionWidget) being encompassed
+     * by the polygon.
+     * @param polygon The Polygon surrounding the respective Widget.
+     */
+    public WidgetPolygonalCoordinates (Widget widget, Polygon polygon) {
+        this.widget = widget ;
+        this.polygon = polygon ;
+    }
+    
+    /**
+     * Returns the Widget stored in this class. 
+     * @return the Widget stored in this class.
+     */
+    public Widget getWidget() {
+        return widget;
     }
 
-    public List<Point> routeConnection (ConnectionWidget widget) {
-        ArrayList<Point> list = new ArrayList<Point> ();
-
-        Anchor sourceAnchor = widget.getSourceAnchor ();
-        Anchor targetAnchor = widget.getTargetAnchor ();
-        if (sourceAnchor != null  &&  targetAnchor != null) {
-            list.add (sourceAnchor.compute(widget.getSourceAnchorEntry ()).getAnchorSceneLocation());
-            list.add (targetAnchor.compute(widget.getTargetAnchorEntry ()).getAnchorSceneLocation());
-        }
-
-        return list;
+    /**
+     * Returns the Polygon stored in this class. 
+     * @return the Polygon stored in this class.
+     */
+    public Polygon getPolygon() {
+        return polygon;
     }
-
+    
 }

@@ -38,35 +38,20 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.visual.router;
-
-import org.netbeans.api.visual.anchor.Anchor;
-import org.netbeans.api.visual.widget.ConnectionWidget;
-import org.netbeans.api.visual.router.Router;
-
-import java.awt.*;
-import java.util.ArrayList;
-import java.util.List;
+package org.netbeans.modules.visual.graph.layout.orthogonalsupport;
 
 /**
- * @author David Kaspar
+ *
+ * @author krichard
  */
-public class DirectRouter implements Router {
+public class Logger {
 
-    public DirectRouter () {
-    }
+    private static int logLevel = 111; // all on -1, some on 0
 
-    public List<Point> routeConnection (ConnectionWidget widget) {
-        ArrayList<Point> list = new ArrayList<Point> ();
 
-        Anchor sourceAnchor = widget.getSourceAnchor ();
-        Anchor targetAnchor = widget.getTargetAnchor ();
-        if (sourceAnchor != null  &&  targetAnchor != null) {
-            list.add (sourceAnchor.compute(widget.getSourceAnchorEntry ()).getAnchorSceneLocation());
-            list.add (targetAnchor.compute(widget.getTargetAnchorEntry ()).getAnchorSceneLocation());
+    public static void log(int level, Object s) {
+        if (level > logLevel) {
+            System.out.println(s.toString());
         }
-
-        return list;
     }
-
 }

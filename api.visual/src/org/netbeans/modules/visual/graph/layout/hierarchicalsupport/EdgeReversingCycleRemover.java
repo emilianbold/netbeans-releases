@@ -38,35 +38,23 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.visual.router;
+package org.netbeans.modules.visual.graph.layout.hierarchicalsupport;
 
-import org.netbeans.api.visual.anchor.Anchor;
-import org.netbeans.api.visual.widget.ConnectionWidget;
-import org.netbeans.api.visual.router.Router;
 
-import java.awt.*;
-import java.util.ArrayList;
-import java.util.List;
-
-/**
- * @author David Kaspar
- */
-public class DirectRouter implements Router {
-
-    public DirectRouter () {
+public class EdgeReversingCycleRemover {
+    
+    /**
+     * Creates a new instance of EdgeReversingCycleRemover 
+     */
+    public EdgeReversingCycleRemover() {
     }
-
-    public List<Point> routeConnection (ConnectionWidget widget) {
-        ArrayList<Point> list = new ArrayList<Point> ();
-
-        Anchor sourceAnchor = widget.getSourceAnchor ();
-        Anchor targetAnchor = widget.getTargetAnchor ();
-        if (sourceAnchor != null  &&  targetAnchor != null) {
-            list.add (sourceAnchor.compute(widget.getSourceAnchorEntry ()).getAnchorSceneLocation());
-            list.add (targetAnchor.compute(widget.getTargetAnchorEntry ()).getAnchorSceneLocation());
-        }
-
-        return list;
+    
+    /**
+     * 
+     * @param graph
+     * @return
+     */
+    public DirectedGraph removeCycles(DirectedGraph graph) {
+        return graph;
     }
-
 }

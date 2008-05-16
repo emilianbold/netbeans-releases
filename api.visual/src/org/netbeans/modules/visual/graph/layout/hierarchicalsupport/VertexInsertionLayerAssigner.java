@@ -38,35 +38,66 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.visual.router;
+package org.netbeans.modules.visual.graph.layout.hierarchicalsupport;
 
-import org.netbeans.api.visual.anchor.Anchor;
-import org.netbeans.api.visual.widget.ConnectionWidget;
-import org.netbeans.api.visual.router.Router;
-
-import java.awt.*;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import org.netbeans.modules.visual.graph.layout.hierarchicalsupport.DirectedGraph.DummyVertex;
+import org.netbeans.modules.visual.graph.layout.hierarchicalsupport.DirectedGraph.Edge;
+import org.netbeans.modules.visual.graph.layout.hierarchicalsupport.DirectedGraph.Vertex;
 
 /**
- * @author David Kaspar
+ *
+ * @author ptliu
  */
-public class DirectRouter implements Router {
-
-    public DirectRouter () {
+public class VertexInsertionLayerAssigner {
+    
+    /**
+     * Creates a new instance of VertexInsertionLayerAssigner 
+     */
+    public VertexInsertionLayerAssigner() {
     }
+    
+    /**
+     *
+     *
+     */
+    public LayeredGraph assignLayers(DirectedGraph graph) {
+        LayeredGraph layeredGraph = LayeredGraph.createGraph(graph);
+        
+        insertDummyVertices(layeredGraph);
+        
+        return layeredGraph;
+    }
+    
 
-    public List<Point> routeConnection (ConnectionWidget widget) {
-        ArrayList<Point> list = new ArrayList<Point> ();
-
-        Anchor sourceAnchor = widget.getSourceAnchor ();
-        Anchor targetAnchor = widget.getTargetAnchor ();
-        if (sourceAnchor != null  &&  targetAnchor != null) {
-            list.add (sourceAnchor.compute(widget.getSourceAnchorEntry ()).getAnchorSceneLocation());
-            list.add (targetAnchor.compute(widget.getTargetAnchorEntry ()).getAnchorSceneLocation());
+    /**
+     *
+     *
+     */
+    private void insertDummyVertices(LayeredGraph graph) {
+        DirectedGraph originalGraph = graph.getOriginalGraph();
+        List<List<Vertex>> layers = graph.getLayers();
+        
+        for (int i = 0; i < layers.size(); i++) {
+            List<Vertex> layer = layers.get(i);
+            
+            for (Vertex v : layer) {
+                int layerIndex = v.getNumber();
+                
+                // work around concurrent modification exception
+                Collection<Edge> edges = new ArrayList<Edge>(v.getOutgoingEdges());
+                for (Edge e : edges) {
+                    Vertex nv = e.getTarget();
+                    int nvLayerIndex = nv.getNumber();
+                    
+                    if (nvLayerIndex > layerIndex+1) {
+                        Vertex dummyVertex = originalGraph.insertDummyVertex(e, DummyVertex.Type.BEND);
+                        graph.assignLayer(dummyVertex,  layerIndex+1);
+                    }
+                }
+            }
         }
-
-        return list;
-    }
-
+    }   
 }

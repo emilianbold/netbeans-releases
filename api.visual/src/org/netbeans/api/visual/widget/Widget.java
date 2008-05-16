@@ -40,6 +40,8 @@
  */
 package org.netbeans.api.visual.widget;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.border.Border;
 import org.netbeans.api.visual.border.BorderFactory;
@@ -120,6 +122,15 @@ public class Widget implements Accessible {
     private Rectangle preferredBounds;
     private boolean checkClipping;
     private boolean enabled;
+    
+    private String foregroundProperty = null;
+    private String backgroundProperty = null;
+    private String fontProperties = null;
+    
+    private PropertyChangeListener foregroundListener = null;
+    private PropertyChangeListener backgroundListener = null;
+    private PropertyChangeListener fontListener = null;
+    
 
     private ObjectState state = ObjectState.createNormal ();
 
@@ -136,7 +147,13 @@ public class Widget implements Accessible {
 
     private boolean requiresFullJustification;
     private boolean requiresPartJustification;
-
+    
+    /** 
+     * The resource table is created lazily.  A resource is only created when 
+     * a property is set by using using resources.  
+     */
+    private ResourceTable resoruceTable = null;
+    
     /**
      * Creates a new widget which will be used in a specified scene.
      * @param scene the scene where the widget is going to be used
@@ -532,9 +549,65 @@ public class Widget implements Accessible {
      */
     public final void setBackground (Paint background) {
         this.background = background;
+                
+        // Since we have a new color set manually, we no longer want to update
+        // when the property changes.
+        if(backgroundListener != null)
+        {
+            getResourceTable().removePropertyChangeListener(backgroundProperty, 
+                                                            backgroundListener);
+            backgroundListener = null;
+        }
+        
         repaint ();
     }
+    
+    /**
+     * Sets the widget background color to be based on a resource property.
+     * @param foreground the foreground property name
+     */
+    public final void setBackgroundFromResource (String property) {
+        
+        ResourceTable table = getResourceTable();
+        String oldPropertyName = backgroundProperty;
+        backgroundProperty = property;
+        
+        if(table != null)
+        {
+            if((oldPropertyName != null) && (oldPropertyName.length() > 0))
+            {
+                // Maybe the property name has changed.  Therefore, remove the old 
+                // listener.
+                table.removePropertyChangeListener(oldPropertyName, backgroundListener);
+            }
+            
+            Object value = table.getProperty(property);
+            if(value instanceof Paint)
+            {   
+                background = (Paint)value;
+            }
+            
+            backgroundListener = new PropertyChangeListener() {
 
+                public void propertyChange(PropertyChangeEvent event)
+                {
+                    if(event.getNewValue() instanceof Paint)
+                    {   
+                        background = (Paint)event.getNewValue();
+                        notifyBackgroundChanged(background);
+                    }
+                }
+            };
+            table.addPropertyChangeListener(property, backgroundListener);
+        }
+        repaint ();
+    }
+    
+    protected void notifyBackgroundChanged(Paint paint)
+    {
+        
+    }
+    
     /**
      * Returns the widget foreground color.
      * @return the foreground color
@@ -549,15 +622,82 @@ public class Widget implements Accessible {
      */
     public final void setForeground (Color foreground) {
         this.foreground = foreground;
+                
+        // Since we have a new color set manually, we no longer want to update
+        // when the property changes.
+        if(foregroundListener != null)
+        {
+            getResourceTable().removePropertyChangeListener(foregroundProperty, 
+                                                            foregroundListener);
+            foregroundListener = null;
+        }
         repaint ();
     }
+    
+    /**
+     * Sets the widget foreground color to be based on a resource property.
+     * @param foreground the foreground property name
+     */
+    public final void setForegroundFromResource (String property) {
+        
+        String oldPropertyName = foregroundProperty;
+        
+        foregroundProperty = property;
+        
+        ResourceTable table = getResourceTable();
+        if(table != null)
+        {
+            if((oldPropertyName != null) && (oldPropertyName.length() > 0))
+            {
+                // Maybe the property name has changed.  Therefore, remove the old 
+                // listener.
+                table.removePropertyChangeListener(oldPropertyName, foregroundListener);
+            }
 
+            Object value = table.getProperty(property);
+            if(value instanceof Color)
+            {
+                this.foreground = (Color)value;
+            }
+            
+            if(foregroundListener == null)
+            {
+                foregroundListener = new PropertyChangeListener() {
+
+                    public void propertyChange(PropertyChangeEvent event)
+                    {
+                        if(event.getNewValue() instanceof Color)
+                        {   
+                            foreground = (Color)event.getNewValue();
+                            notifyForegroundChanged(foreground);
+                        }
+                    }
+                };
+            }
+            table.addPropertyChangeListener(property, foregroundListener);
+        }
+        repaint ();
+    }
+    
+    protected void notifyForegroundChanged(Color newColor)
+    {
+        
+    }
+    
     /**
      * Returns the font assigned to the widget. If not set yet, then it returns the font of its parent widget.
      * @return the font
      */
     public final Font getFont () {
-        return font != null ? font : parentWidget.getFont ();
+                
+        Font retVal = font;
+        
+        if((font == null) && (parentWidget != null))
+        {
+            retVal = parentWidget.getFont ();
+        }
+        
+        return retVal;
     }
 
     /**
@@ -566,9 +706,194 @@ public class Widget implements Accessible {
      */
     public final void setFont (Font font) {
         this.font = font;
+                
+        // Since we have a new color set manually, we no longer want to update
+        // when the property changes.
+        if(fontListener != null)
+        {
+            getResourceTable().removePropertyChangeListener(fontProperties, 
+                                                            fontListener);
+            fontListener = null;
+        }
+        
+        // Notify others about the change.
+        notifyFontChanged(font);
+        
         revalidate ();
     }
+    /**
+     * Sets the widget background color to be based on a resource property.
+     * @param foreground the foreground property name
+     */
+    public final void setFontFromResource (String property) 
+    {
+        String oldPropertyName = fontProperties;
+        fontProperties = property;
+            
+        ResourceTable table = getResourceTable();
+        if(table != null)
+        {
+            if((oldPropertyName != null) && (oldPropertyName.length() > 0))
+            {
+                // Maybe the property name has changed.  Therefore, remove the old 
+                // listener.
+                table.removePropertyChangeListener(oldPropertyName, fontListener);
+            }
+            
+            Object value = table.getProperty(property);
+            if(value instanceof Font)
+            {
+                this.font = (Font)value;
+            }
+            
+            fontListener = new PropertyChangeListener() {
 
+                public void propertyChange(PropertyChangeEvent event)
+                {
+                    Object newValue = event.getNewValue();
+                    if(newValue instanceof Font)
+                    {
+                        if(parentWidget != null)
+                        {
+                            font = (Font)newValue;
+                            notifyFontChanged(font);
+                        }
+                    }
+                }
+            };
+            
+            table.addPropertyChangeListener(property, fontListener);
+        }
+        repaint ();
+    }
+    
+    protected final void updateResources(Widget parent, boolean added)
+    {
+        if(added == true)
+        {
+            ResourceTable table = connectResourceTable();
+            if(table != null)
+            {
+                if((foregroundProperty != null) && (foregroundProperty.length() > 0))
+                {
+                    setForegroundFromResource(foregroundProperty);
+                }
+
+                if((fontProperties != null) && (fontProperties.length() > 0))
+                {   
+                    setFontFromResource(fontProperties);
+                }
+
+                if((backgroundProperty != null) && (backgroundProperty.length() > 0))
+                {
+                    setBackgroundFromResource(backgroundProperty);
+                }
+            }
+        }
+        else
+        {
+            ResourceTable table = resoruceTable;
+            if(table == null)
+            {
+                table = parent.getResourceTable();
+            }
+            
+            if(table != null)
+            {
+                if(foregroundListener != null)
+                {
+                    table.removePropertyChangeListener(foregroundListener);
+                }
+
+                if(fontListener != null)
+                {
+                    table.removePropertyChangeListener(fontListener);
+                }
+
+                if(backgroundListener != null)
+                {
+                    table.removePropertyChangeListener(backgroundListener);
+                }
+            }
+            
+            disconnectResourceTable();
+        }
+        
+        // Now notify the children to also update, because the parent structure
+        // has changed.
+        for(Widget child : getChildren())
+        {
+            child.updateResources(parent, added);
+        }
+        
+        revalidate ();
+    }
+    
+//    protected final void intializeFontProperty()
+//    {
+//        if(parentWidget != null)
+//        {
+//            Font retVal = getFont();
+//
+//            ResourceTable table = getResourceTable();
+//
+//            if((fontProperties != null) && (table != null))
+//            {
+//                String pattern = "inherited {0,choice," + Font.PLAIN + "#plain" +
+//                                  "|" + Font.BOLD + "#bold" + 
+//                                  "|" + Font.ITALIC + "#italic" +
+//                                  "|" + (Font.BOLD | Font.ITALIC) + "#bolditalic} {1,number,integer}";
+//                MessageFormat format = new MessageFormat(pattern);
+//
+//
+//                for(String property : fontProperties)
+//                {
+//                    Object value = table.getProperty(property);
+//                    if(value instanceof Font)
+//                    {
+//                        retVal = (Font)value;
+//                    }
+//                    else if (value instanceof String)
+//                    {
+//                        String strValue = (String) value;
+//                        if((strValue.startsWith("inherited") == true) && (retVal != null))
+//                        {
+//                            retVal = parentWidget.getFont();
+//                            
+//                            try
+//                            {
+//                                Object[] params = format.parse((String) strValue);
+//                                if((params != null) && (params.length == 2))
+//                                {
+//                                    Double style = (Double)params[0];
+//                                    Long size = (Long)params[1];
+//                                    retVal = retVal.deriveFont(style.intValue(), retVal.getSize() + size.floatValue());
+//                                }
+//                            }
+//                            catch (ParseException ex)
+//                            {
+//                                Exceptions.printStackTrace(ex);
+//                            }
+//                        }
+//                        else
+//                        {
+//                            retVal = Font.decode(strValue);
+//                        }
+//                    }
+//
+//                }
+//                
+//                font = retVal;
+//            }
+//        }
+//        
+//    }
+    
+    protected void notifyFontChanged(Font font)
+    {
+        
+    }
+    
     /**
      * Returns the border of the widget.
      * @return the border
@@ -1223,7 +1548,53 @@ public class Widget implements Accessible {
     public final boolean equals (Object object) {
         return this == object;
     }
+    
+    /**
+     * Retreives the widgets resource table.  If the widgets resource table is 
+     * not set then the widgets parent resource table it retrieved.
+     * 
+     * @return The resource table.
+     */
+    public ResourceTable getResourceTable() {
+        
+        ResourceTable retVal = resoruceTable;
+        
+        if((retVal == null) && (getParentWidget() != null))
+        {
+            retVal = getParentWidget().getResourceTable();
+        }
+        
+        return retVal;
+    }
 
+    private ResourceTable connectResourceTable()
+    {
+        if((resoruceTable != null) && (getParentWidget() != null))
+        {
+            ResourceTable parentTable = getParentWidget().getResourceTable();
+            resoruceTable.setParentTable(parentTable);
+        }
+        
+        return getResourceTable();
+    }
+    
+    private void disconnectResourceTable()
+    {
+        if(resoruceTable != null)
+        {
+            resoruceTable.removeParent();
+        }
+    }
+    
+    /**
+     * Sets the resource table.
+     * 
+     * @param table The widgets resource table.
+     */
+    public void setResourceTable(ResourceTable table) {
+        resoruceTable = table;
+    }
+    
     /**
      * The dependency listener which is used for notifying dependent widgets, anchor, ...
      * that the widget (or one of its parent widget) location or bounds are going to or were changed.

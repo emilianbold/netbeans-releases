@@ -38,35 +38,119 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.visual.router;
+package org.netbeans.modules.visual.graph.layout.orthogonalsupport;
 
-import org.netbeans.api.visual.anchor.Anchor;
-import org.netbeans.api.visual.widget.ConnectionWidget;
-import org.netbeans.api.visual.router.Router;
-
-import java.awt.*;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
+import org.netbeans.modules.visual.graph.layout.orthogonalsupport.Face.Dart;
 
 /**
- * @author David Kaspar
+ *
+ * @author ptliu
  */
-public class DirectRouter implements Router {
+public class EmbeddedPlanarGraph {
 
-    public DirectRouter () {
+    private MGraph originalGraph;
+    private ArrayList<Face> faces;
+
+    /**
+     * 
+     * @param graph
+     * @return
+     */
+    public static EmbeddedPlanarGraph createGraph(MGraph graph) {
+        return new EmbeddedPlanarGraph(graph);
     }
 
-    public List<Point> routeConnection (ConnectionWidget widget) {
-        ArrayList<Point> list = new ArrayList<Point> ();
+    /**
+     * 
+     * @param graph
+     */
+    private EmbeddedPlanarGraph(MGraph graph) {
+        this.originalGraph = graph;
+        faces = new ArrayList<Face>();
+    }
 
-        Anchor sourceAnchor = widget.getSourceAnchor ();
-        Anchor targetAnchor = widget.getTargetAnchor ();
-        if (sourceAnchor != null  &&  targetAnchor != null) {
-            list.add (sourceAnchor.compute(widget.getSourceAnchorEntry ()).getAnchorSceneLocation());
-            list.add (targetAnchor.compute(widget.getTargetAnchorEntry ()).getAnchorSceneLocation());
+    /**
+     * 
+     * @return
+     */
+    public MGraph getOriginalGraph() {
+        return originalGraph;
+    }
+
+    /**
+     * 
+     * @return
+     */
+    public ArrayList<Face> getFaces() {
+        return faces;
+    }
+
+    /**
+     * 
+     * @param newFace
+     */
+    public void addFace(Face newFace) {
+        if (!faces.contains(newFace)) {
+            faces.add(newFace);
+        }
+    }
+
+    /**
+     * 
+     * @param newFaces
+     */
+    public void addFaces(Collection<Face> newFaces) {
+        faces.addAll(newFaces);
+    }
+
+    /**
+     * 
+     * @param faceToRemove
+     */
+    public void removeFace(Face faceToRemove) {
+        faces.remove(faceToRemove);
+    }
+
+    /**
+     * 
+     * @param facesToRemove
+     */
+    public void removeFaces(Collection<Face> facesToRemove) {
+        faces.removeAll(facesToRemove);
+    }
+
+    /**
+     * 
+     * @param face
+     * @param dart
+     * @return
+     */
+    public Face getOppositeFace(Face face, Dart dart) {
+        for (Face f : faces) {
+            if (f != face) {
+                if (f.containsEdge(dart.getEdge())) {
+                    return f;
+                }
+            }
         }
 
-        return list;
+        return null;
     }
 
+    /**
+     * 
+     * @return
+     */
+    public Face getOuterFace() {
+        for (Face face : faces) {
+            if (face.isOuterFace()) {
+                return face;
+            }
+        }
+
+        return null;
+    }
 }
+

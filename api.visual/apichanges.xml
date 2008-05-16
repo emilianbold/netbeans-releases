@@ -573,6 +573,115 @@ made subject to such option by the copyright holder.
             <class package="org.netbeans.api.visual.widget" name="ConnectionWidget" link="yes"/>
             <issue number="113573"/>
         </change>
+                <change>
+            <api name="general"/>
+            <summary>Add scene export feature.</summary>
+            <version major="2" minor="10"/>
+            <date day="26" month="2" year="2008"/>
+            <author login="krichards"/>
+            <compatibility addition="yes"/>
+            <description>
+                Added a convenience class, SceneExporter, to allow users to export a Scene to any of a defined set of formats. This 
+                export class would also contain functionality to return to polygonal points for each widget that is a child of the 
+                layers on the scene.
+            </description>
+            <package name="org.netbeans.api.visual.export" link="yes"/>
+            <issue number="128387"/>
+        </change>
+        <change>
+            <api name="general"/>
+            <summary>Add scene printing feature.</summary>
+            <version major="2" minor="10"/>
+            <date day="26" month="2" year="2008"/>
+            <author login="krichards"/>
+            <compatibility addition="yes"/>
+            <description>
+                Added a convenience class (within a separate 
+                package) to allow users to print a Scene according to standard constraints.
+            </description>
+            <package name="org.netbeans.api.visual.print" link="yes"/>
+            <issue number="128388"/>
+        </change>
+        <change>
+            <api name="general"/>
+            <summary>GraphLayoutFactory.createOrthogonalGraphLayout added</summary>
+            <version major="2" minor="12"/>
+            <date day="12" month="3" year="2008"/>
+            <author login="krichard"/>
+            <compatibility addition="yes"/>
+            <description>
+                OrthogonalGraphLayout added.
+            </description>
+            <class package="org.netbeans.api.visual.graph.layout" name="GraphLayoutFactory" link="yes"/>
+            <issue number="129948"/>
+        </change>
+        <change>
+            <api name="general"/>
+            <summary>GraphLayoutFactory.createHierarchicalGraphLayout added</summary>
+            <version major="2" minor="12"/>
+            <date day="12" month="3" year="2008"/>
+            <author login="krichard"/>
+            <compatibility addition="yes"/>
+            <description>
+                HierarchicalGraphLayout added.
+            </description>
+            <class package="org.netbeans.api.visual.graph.layout" name="GraphLayoutFactory" link="yes"/>
+            <issue number="129948"/>
+        </change>
+        <change>
+            <api name="general"/>
+            <summary>New Connection Widget Layout Constraints Introduced</summary>
+            <version major="2" minor="13"/>
+            <date day="22" month="4" year="2008"/>
+            <author login="tspiva"/>
+            <compatibility addition="yes"/>
+            <description>
+                ConnectionWidgetLayout constraints specify where a child component should be 
+                placed in releationship to the connection widget.  However simply stating left, 
+                right is not enough when nodes can be moved.  The new constraints specify which
+                connection end instead of left, right top, and bottom.
+            </description>
+            <class package="org.netbeans.api.visual.layout" name="LayoutFactory" link="yes"/>
+            <issue number="128348"/>
+        </change>
+        <change>
+            <api name="general"/>
+            <summary>New Attachable AnchorShape.</summary>
+            <version major="2" minor="13"/>
+            <date day="22" month="4" year="2008"/>
+            <author login="tspiva"/>
+            <compatibility addition="yes"/>
+            <description>
+                The new anchor shape can wrap an existing anchor shape and provide
+                a new cut distance.  One example of when an attachable anchor 
+                shape would be used is when a label on a connection widget is
+                to be placed between the anchor shape, and the related widget.
+            </description>
+            <class package="org.netbeans.api.visual.anchor" name="AnchorShapeFactory" link="yes"/>
+            <class package="org.netbeans.api.visual.anchor" name="AnchorShapeLocationResolver" link="yes"/>
+            <issue number="128348"/>
+        </change>
+        <change>
+            <api name="general"/>
+            <summary>New Resource Table.</summary>
+            <version major="2" minor="14"/>
+            <date day="29" month="4" year="2008"/>
+            <author login="tspiva"/>
+            <compatibility addition="yes"/>
+            <description>
+                The resource table will allow for a central location for
+                properties like font, color and paint objects. The resource 
+                table will help enforce an applications look and feel. When a 
+                property is updated in the resource table, all interested
+                widgets will be notified of the change. The notification allows 
+                widgets to update when a resource property changes.
+            </description>
+            <class package="org.netbeans.api.visual.widget" name="ResourceTable" link="yes"/>
+            <class package="org.netbeans.api.visual.widget" name="Widget" link="yes"/>
+            <class package="org.netbeans.api.visual.border" name="BorderFactory" link="yes"/>
+            <class package="org.netbeans.api.visual.border" name="Scene" link="yes"/>
+            <issue number="128348"/>
+        </change>
     </changes>
 
     <htmlcontents>
