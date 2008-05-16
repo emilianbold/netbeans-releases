@@ -148,6 +148,8 @@ public class LeftTree extends JTree implements
         iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_CONTEXT_MENU, 0), "show-popupMenu");
         aMap.put("show-popupMenu", new ShowPopupMenuAction());
         
+        ViewTooltips.register(this);
+        
         getAccessibleContext().setAccessibleName(NbBundle
                 .getMessage(LeftTree.class, "ACSN_LeftTree")); // NOI18N
         getAccessibleContext().setAccessibleDescription(NbBundle

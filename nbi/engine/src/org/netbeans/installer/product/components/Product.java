@@ -652,7 +652,10 @@ public final class Product extends RegistryNode implements StatusInterface {
         } catch (IllegalAccessException e) {
             throw new InitializationException(ResourceUtils.getString(Product.class,
                     ERROR_CANNOT_LOAD_LOGIC_KEY, getDisplayName()), e);
-        }
+        } catch (NoClassDefFoundError e) {
+            throw new InitializationException(ResourceUtils.getString(Product.class,
+                    ERROR_CANNOT_LOAD_LOGIC_KEY, getDisplayName()), e);
+        } 
     }
     
     // installation data ////////////////////////////////////////////////////////////
