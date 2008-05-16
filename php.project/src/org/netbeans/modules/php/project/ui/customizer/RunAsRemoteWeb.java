@@ -105,8 +105,8 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         }
         // XXX remote connection
         // remote upload
-        ComboBoxVisitor remoteUploadVisitor = new ComboBoxVisitor() {
-            public String visit(JComboBox comboBox) {
+        ComboBoxSelectedItemConvertor remoteUploadConvertor = new ComboBoxSelectedItemConvertor() {
+            public String convert(JComboBox comboBox) {
                 UploadFiles uploadFiles = (UploadFiles) comboBox.getSelectedItem();
                 assert uploadFiles != null;
                 uploadFilesHintLabel.setText(uploadFiles.getDescription());
@@ -114,7 +114,7 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
             }
         };
         uploadFilesComboBox.addActionListener(new ComboBoxUpdater(PhpProjectProperties.REMOTE_UPLOAD, uploadFilesLabel, uploadFilesComboBox,
-                remoteUploadVisitor));
+                remoteUploadConvertor));
     }
 
     @Override
@@ -339,25 +339,25 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         }
     }
 
-    interface ComboBoxVisitor {
-        String visit(final JComboBox comboBox);
+    interface ComboBoxSelectedItemConvertor {
+        String convert(final JComboBox comboBox);
     }
 
     private class ComboBoxUpdater implements ActionListener {
         private final JLabel label;
         private final JComboBox field;
         private final String propName;
-        private final ComboBoxVisitor comboBoxVisitor;
+        private final ComboBoxSelectedItemConvertor comboBoxConvertor;
 
-        public ComboBoxUpdater(String propName, JLabel label, JComboBox field, ComboBoxVisitor comboBoxVisitor) {
+        public ComboBoxUpdater(String propName, JLabel label, JComboBox field, ComboBoxSelectedItemConvertor comboBoxConvertor) {
             this.propName = propName;
             this.label = label;
             this.field = field;
-            this.comboBoxVisitor = comboBoxVisitor;
+            this.comboBoxConvertor = comboBoxConvertor;
         }
 
         public void actionPerformed(ActionEvent e) {
-            String value = comboBoxVisitor.visit(field);
+            String value = comboBoxConvertor.convert(field);
             RunAsRemoteWeb.this.putValue(propName, value);
             RunAsRemoteWeb.this.markAsModified(label, propName, value);
             validateFields();
