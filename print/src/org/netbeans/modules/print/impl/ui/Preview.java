@@ -79,7 +79,7 @@ import org.netbeans.modules.print.spi.PrintPage;
 import org.netbeans.modules.print.spi.PrintProvider;
 import org.netbeans.modules.print.impl.util.Option;
 import org.netbeans.modules.print.impl.util.Percent;
-import static org.netbeans.modules.print.impl.util.UI.*;
+import static org.netbeans.modules.print.impl.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -136,16 +136,18 @@ public final class Preview extends Dialog implements Percent.Listener {
 
     // navigate
     c.anchor = GridBagConstraints.WEST;
+    c.insets = new Insets(0, 0, 0, TINY_INSET);
     p.add(createNavigatePanel(), c);
 
     // scale
     c.weightx = 1.0;
     c.weighty = 0.0;
+    c.insets = new Insets(0, 0, 0, 0);
     p.add(createScalePanel(), c);
 
     // toggle
     c.anchor = GridBagConstraints.EAST;
-    c.insets = new Insets(TINY_INSET, MEDIUM_INSET, TINY_INSET, MEDIUM_INSET);
+    c.insets = new Insets(TINY_INSET, MEDIUM_INSET, TINY_INSET, 0/*MEDIUM_INSET*/);
     myToggle = createToggleButton(
       new ButtonAction(icon(Option.class, "toggle"), i18n("TLT_Toggle")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
@@ -177,8 +179,7 @@ public final class Preview extends Dialog implements Percent.Listener {
   }
 
   @Override
-  protected void updated()
-  {
+  protected void updated() {
 //out("Update content");
     createPapers();
     toggle();
@@ -222,7 +223,7 @@ public final class Preview extends Dialog implements Percent.Listener {
 
     // text field
     myGoto = new JTextField();
-    int width = (int)Math.round(myPrevious.getPreferredSize().width/PREVIEW_FACTOR);
+    int width = (int) Math.round(myPrevious.getPreferredSize().width * GOTO_FACTOR);
     int height = myPrevious.getPreferredSize().height;
     myGoto.setPreferredSize(new Dimension(width, height));
     myGoto.setMinimumSize(new Dimension(width, height));
@@ -693,8 +694,7 @@ public final class Preview extends Dialog implements Percent.Listener {
   }
       
   @Override
-  protected DialogDescriptor createDescriptor()
-  {
+  protected DialogDescriptor createDescriptor() {
     Object [] rightButtons = getRightButtons();
     Object [] leftButtons = getLeftButtons();
 
@@ -715,15 +715,13 @@ public final class Preview extends Dialog implements Percent.Listener {
   }
 
   @Override
-  protected void opened()
-  {
+  protected void opened() {
 //out("Opened");
     myScrollPane.requestFocus();
   }
 
   @Override
-  protected void resized()
-  {
+  protected void resized() {
     if (myScale.isCustomValue()) {
       showCustom(false);
     }
@@ -894,13 +892,14 @@ public final class Preview extends Dialog implements Percent.Listener {
 
   private static final int GAP_SIZE = 20;
   private static final int SCROLL_INCREMENT = 40;
+  private static final double GOTO_FACTOR = 1.05;
   private static final double PREVIEW_FACTOR = 0.75;
   private static final int [] PERCENTS = new int [] { 25, 50, 75, 100, 200, 400 };
 
-  private static final String INCREASE = "increase"; // NOI18N
-  private static final String DECREASE = "decrease"; // NOI18N
   private static final String LAST = "last"; // NOI18N
   private static final String FIRST = "first"; // NOI18N
+  private static final String INCREASE = "increase"; // NOI18N
+  private static final String DECREASE = "decrease"; // NOI18N
   
   private final String [] CUSTOMS = new String [] {
     i18n("LBL_Fit_to_Width"), // NOI18N

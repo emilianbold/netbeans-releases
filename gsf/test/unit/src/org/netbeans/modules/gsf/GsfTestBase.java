@@ -339,6 +339,10 @@ public abstract class GsfTestBase extends NbTestCase {
         File inputFile = new File(getDataSourceDir(), relFilePath);
         return inputFile;
     }
+    
+    protected boolean failOnMissingGoldenFile() {
+        return true;
+    }
 
     protected void assertDescriptionMatches(String relFilePath,
             String description, boolean includeTestName, String ext) throws Exception {
@@ -359,7 +363,10 @@ public abstract class GsfTestBase extends NbTestCase {
             finally{
                 fw.close();
             }
-            NbTestCase.fail("Created generated golden file " + goldenFile + "\nPlease re-run the test.");
+            if (failOnMissingGoldenFile()) {
+                NbTestCase.fail("Created generated golden file " + goldenFile + "\nPlease re-run the test.");
+            }
+            return;
         }
 
         String expected = readFile(goldenFile);
@@ -874,7 +881,7 @@ public abstract class GsfTestBase extends NbTestCase {
                     }
                 }
             }
-            fail("Selection range " + selected + " is not in the range");
+            fail("Selection range " + selected + " is not in the range; ranges=" + ranges);
         } else {
             assert ranges.size() > 0;
             OffsetRange was = ranges.get(0);
@@ -1669,7 +1676,9 @@ public abstract class GsfTestBase extends NbTestCase {
         return null;
     }
 
-    protected String describe(String caretLine, NameKind kind, QueryType type, List<CompletionProposal> proposals, boolean includeModifiers) {
+    protected String describe(String caretLine, NameKind kind, QueryType type, List<CompletionProposal> proposals, 
+            boolean includeModifiers, boolean[] deprecatedHolder) {
+        assert deprecatedHolder != null && deprecatedHolder.length == 1;
         StringBuilder sb = new StringBuilder();
         sb.append("Results for " + caretLine + " with queryType=" + type + " and nameKind=" + kind);
         sb.append("\n");
@@ -1718,6 +1727,10 @@ public abstract class GsfTestBase extends NbTestCase {
                 sb.append("------------------------------------\n");
                 isSmart = false;
             }
+
+            deprecatedHolder[0] = false;
+            proposal.getLhsHtml(); // Side effect to deprecatedHolder used
+            boolean strike = includeModifiers && deprecatedHolder[0];
             
             String n = proposal.getKind().toString();
             int MAX_KIND = 10;
@@ -1730,19 +1743,23 @@ public abstract class GsfTestBase extends NbTestCase {
                 }
             }
             
-            if (proposal.getModifiers().size() > 0) {
-                List<String> modifiers = new ArrayList<String>();
-                for (Modifier mod : proposal.getModifiers()) {
-                    modifiers.add(mod.name());
-                }
-                Collections.sort(modifiers);
-                sb.append(modifiers);
-            }
+//            if (proposal.getModifiers().size() > 0) {
+//                List<String> modifiers = new ArrayList<String>();
+//                for (Modifier mod : proposal.getModifiers()) {
+//                    modifiers.add(mod.name());
+//                }
+//                Collections.sort(modifiers);
+//                sb.append(modifiers);
+//            }
 
             sb.append(" ");
             
             n = proposal.getLhsHtml();
             int MAX_LHS = 30;
+            if (strike) {
+                MAX_LHS -= 6; // Account for the --- --- strikethroughs
+                sb.append("---");
+            }
             if (n.length() > MAX_LHS) {
                 sb.append(n.substring(0, MAX_LHS));
             } else {
@@ -1752,6 +1769,10 @@ public abstract class GsfTestBase extends NbTestCase {
                 }
             }
 
+            if (strike) {
+                sb.append("---");
+            }
+            
             sb.append("  ");
 
             if (proposal.getModifiers().isEmpty()) {
@@ -1781,6 +1802,8 @@ public abstract class GsfTestBase extends NbTestCase {
     }
     
     public void checkCompletion(String file, String caretLine, boolean includeModifiers) throws Exception {
+        initializeClassPaths();
+
         // TODO call TestCompilationInfo.setCaretOffset!        
         QueryType type = QueryType.COMPLETION;
         boolean caseSensitive = true;
@@ -1807,6 +1830,7 @@ public abstract class GsfTestBase extends NbTestCase {
         
         Completable cc = getCodeCompleter();
         assertNotNull("getSemanticAnalyzer must be implemented", cc);
+        final boolean deprecatedHolder[] = new boolean[1];
         
         HtmlFormatter formatter = new HtmlFormatter() {
             private StringBuilder sb = new StringBuilder();
@@ -1848,6 +1872,7 @@ public abstract class GsfTestBase extends NbTestCase {
 
             @Override
             public void deprecated(boolean start) {
+                deprecatedHolder[0] = true;
             }
 
             @Override
@@ -1884,15 +1909,19 @@ public abstract class GsfTestBase extends NbTestCase {
         js.testUpdateIndex();
         List<CompletionProposal> proposals = cc.complete(ci, caretOffset, prefix, kind, type, caseSensitive, formatter);
         
-        String described = describe(caretLine, kind, type, proposals, includeModifiers);
+        String described = describe(caretLine, kind, type, proposals, includeModifiers, deprecatedHolder);
         assertDescriptionMatches(file, described, true, ".completion");
     }
     
     protected void checkCall(GsfTestCompilationInfo info, int caretOffset, String param, boolean expectSuccess) {
     }
-    
+
+    protected void initializeClassPaths() {
+    }
     
     public void checkComputeMethodCall(String file, String caretLine, String fqn, String param, boolean expectSuccess) throws Exception {
+        initializeClassPaths();
+        
         QueryType type = QueryType.COMPLETION;
         //boolean caseSensitive = true;
 

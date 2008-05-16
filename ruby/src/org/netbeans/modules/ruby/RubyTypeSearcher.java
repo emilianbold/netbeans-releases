@@ -259,7 +259,7 @@ public class RubyTypeSearcher implements TypeSearcher {
                 if (p != null) {
                     RubyPlatform platform = RubyPlatform.platformFor(p);
                     if (platform != null) {
-                        String lib = platform.getLib();
+                        String lib = platform.getLibDir();
                         if (lib != null && f.getPath().startsWith(lib)) {
                             projectName = "Ruby Library";
                             isLibrary = true;

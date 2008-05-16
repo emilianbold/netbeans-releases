@@ -106,7 +106,13 @@ public final class Utils {
             return;
         }
 
-        String projectLocation = new File(newLocation, newSubfolderName).getAbsolutePath();
+        File file = null;
+        if (newSubfolderName == null) {
+            file = new File(newLocation);
+        } else {
+            file = new File(newLocation, newSubfolderName);
+        }
+        String projectLocation = file.getAbsolutePath();
         for (int i = 0; i < localServerComboBoxModel.getSize(); i++) {
             LocalServer element = (LocalServer) localServerComboBoxModel.getElementAt(i);
             if (projectLocation.equals(element.getSrcRoot())) {
@@ -204,24 +210,51 @@ public final class Utils {
     }
 
     /**
+     * Check whether the provided File has a valid file name. File is not
+     * {@link FileUtil#normalizeFile(java.io.File) normalized}, caller should do it if needed.
+     * @param file File to check.
+     * @return <code>true</true> if the provided File has valid file name.
+     * @see #isValidFileName(java.lang.String)
+     */
+    public static boolean isValidFileName(File file) {
+        assert file != null;
+        // #132520
+        if (file.isAbsolute() && file.getParentFile() == null) {
+            return true;
+        }
+        return isValidFileName(file.getName());
+    }
+
+    /**
      * Validate the path and get the error message or <code>null</code> if it's all right.
      * @param projectPath the path to validate
      * @param type the type for error messages, currently "Project", "Sources" and "Folder".
      *             Add other to Bundle.properties file if more types are needed.
      * @param allowNonEmpty <code>true</code> if the folder can exist and can be non empty.
+     * @param allowInRoot  <code>true</code> if the folder can exist and can be a root directory "/"
+     *                     (this parameter is taken into account only for *NIX OS).
      * @return localized error message in case of error, <code>null</code> otherwise.
      */
-    public static String validateProjectDirectory(String projectPath, String type, boolean allowNonEmpty) {
+    public static String validateProjectDirectory(String projectPath, String type, boolean allowNonEmpty,
+            boolean allowInRoot) {
         assert projectPath != null;
         assert type != null;
 
-        // not allow to create project on unix root folder, see #82339
-        File cfl = Utils.getCanonicalFile(new File(projectPath));
-        if (Utilities.isUnix() && cfl != null && cfl.getParentFile().getParent() == null) {
-            return NbBundle.getMessage(Utils.class, "MSG_" + type + "InRootNotSupported");
+        File project = new File(projectPath);
+        // #131753
+        if (!project.isAbsolute()) {
+            return NbBundle.getMessage(Utils.class, "MSG_" + type + "NotAbsolute");
         }
 
-        final File destFolder = new File(projectPath).getAbsoluteFile();
+        // not allow to create project on unix root folder, see #82339
+        if (!allowInRoot && Utilities.isUnix()) {
+            File cfl = Utils.getCanonicalFile(project);
+            if (cfl != null && (cfl.getParentFile() == null || cfl.getParentFile().getParent() == null)) {
+                return NbBundle.getMessage(Utils.class, "MSG_" + type + "InRootNotSupported");
+            }
+        }
+
+        final File destFolder = project.getAbsoluteFile();
         if (Utils.getCanonicalFile(destFolder) == null) {
             return NbBundle.getMessage(Utils.class, "MSG_Illegal" + type + "Location");
         }
@@ -244,6 +277,30 @@ public final class Utils {
                 // Folder exists and is not empty
                 return NbBundle.getMessage(Utils.class, "MSG_" + type + "FolderExists");
             }
+        }
+        return null;
+    }
+
+    /**
+     * Validate that the project sources directory and directory for copying files are "independent". It means
+     * that the sources isn't underneath the target directory and vice versa. Both paths have to be normalized.
+     * @param sources project sources.
+     * @param copyTarget directory for copying files.
+     * @return <code>true</code> if the directories are "independent".
+     */
+    public static String validateSourcesAndCopyTarget(String sources, String copyTarget) {
+        assert sources != null;
+        assert copyTarget != null;
+        // handle "/myDir" and "/myDirectory"
+        if (!sources.endsWith(File.separator)) {
+            sources = sources + File.separator;
+        }
+        if (!copyTarget.endsWith(File.separator)) {
+            copyTarget = copyTarget + File.separator;
+        }
+        if (sources.startsWith(copyTarget)
+                || copyTarget.startsWith(sources)) {
+            return NbBundle.getMessage(Utils.class, "MSG_SourcesEqualCopyTarget");
         }
         return null;
     }
@@ -310,7 +367,7 @@ public final class Utils {
 
     private static class UnknownCharset extends Charset {
 
-        UnknownCharset (String name) {
+        UnknownCharset(String name) {
             super(name, new String[0]);
         }
 

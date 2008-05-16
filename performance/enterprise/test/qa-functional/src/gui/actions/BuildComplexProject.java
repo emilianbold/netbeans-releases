@@ -42,13 +42,15 @@
 package gui.actions;
 
 import org.netbeans.jellytools.MainWindowOperator;
-import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.BuildProjectAction;
 import org.netbeans.jellytools.actions.CleanProjectAction;
 import org.netbeans.jellytools.nodes.Node;
 
+import org.netbeans.jemmy.JemmyProperties;
+import org.netbeans.jemmy.Timeouts;
 import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.performance.test.guitracker.ActionTracker;
 
 
 /**
@@ -67,7 +69,8 @@ public class BuildComplexProject extends org.netbeans.performance.test.utilities
     public BuildComplexProject(String testName) {
         super(testName);
         expectedTime = 10000;
-        WAIT_AFTER_OPEN=10000;
+        WAIT_AFTER_OPEN = 10000;
+        MY_END_EVENT = ActionTracker.TRACK_OPEN_AFTER_TRACE_MESSAGE;
     }
     
     /**
@@ -78,7 +81,8 @@ public class BuildComplexProject extends org.netbeans.performance.test.utilities
     public BuildComplexProject(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         expectedTime = 10000;
-        WAIT_AFTER_OPEN=10000;
+        WAIT_AFTER_OPEN = 10000;
+        MY_END_EVENT = ActionTracker.TRACK_OPEN_AFTER_TRACE_MESSAGE;
     }
 
     @Override
@@ -98,8 +102,10 @@ public class BuildComplexProject extends org.netbeans.performance.test.utilities
     public ComponentOperator open(){
         projectNode = new ProjectsTabOperator().getProjectRootNode(project_name);
         new BuildProjectAction().performPopup(projectNode);
-        
-        MainWindowOperator.getDefault().waitStatusText("Finished building"); // NOI18N
+        Timeouts temp = JemmyProperties.getProperties().getTimeouts().cloneThis();
+        JemmyProperties.getProperties().getTimeouts().setTimeout("Waiter.WaitingTime", expectedTime * 5);
+        MainWindowOperator.getDefault().waitStatusText("Finished building build.xml (jbi-build)"); // NOI18N
+        JemmyProperties.setCurrentTimeouts(temp);
         return null;
     }
     

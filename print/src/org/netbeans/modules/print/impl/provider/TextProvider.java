@@ -58,7 +58,7 @@ import org.openide.text.AttributedCharacters;
 import org.netbeans.editor.BaseDocument;
 
 import org.netbeans.modules.print.impl.util.Option;
-import static org.netbeans.modules.print.impl.util.UI.*;
+import static org.netbeans.modules.print.impl.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -72,8 +72,7 @@ public final class TextProvider extends ComponentProvider {
   }
 
   @Override
-  protected JComponent getComponent()
-  {
+  protected JComponent getComponent() {
     if (Option.getDefault().isAsEditor()) {
       JEditorPane[] panes = myEditor.getOpenedPanes();
 
@@ -117,10 +116,8 @@ public final class TextProvider extends ComponentProvider {
       Document.TitleProperty)).replace('\\', '/'); // NOI18N
   }
 
-  // --------------------------------------
-  private static final class PrintContainer
-    implements org.netbeans.editor.PrintContainer
-  {
+  // --------------------------------------------------------------------------------------
+  private static final class PrintContainer implements org.netbeans.editor.PrintContainer {
     PrintContainer() {
       myCharacters = new AttributedCharacters();
       myCharactersList = new ArrayList<AttributedCharacters>();

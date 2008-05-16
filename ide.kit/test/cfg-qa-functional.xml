@@ -46,6 +46,8 @@ made subject to such option by the copyright holder.
     <!-- Validation suite for whole IDE before commit-->
     <testbag testattribs="commit or stable" executor="ide" name="IDE commit validation" timeout="900000">
         <testproperty name="xtest.ide.blacklist" value="blacklist.txt"/>
+<!--        <testproperty name="xtest.ide.whitelist" value="whitelist.txt"/>
+        <testproperty name="xtest.ide.generate.whitelist" value="false"/>-->
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="org/netbeans/test/ide/IDECommitValidation.class"/>
@@ -100,6 +102,28 @@ made subject to such option by the copyright holder.
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="org/netbeans/test/ide/IDEValidation.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+    
+    <!-- Validation suite for Permanent UI specifications -->
+    <testbag testattribs="permui" executor="ide" name="Permanent UI">
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="org/netbeans/test/permanentUI/MainMenuTest.class"/>
+                <include name="org/netbeans/test/permanentUI/NewProjectTest.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+
+    <!-- Whitelist generation routine -->    
+    <testbag testattribs="generate-whitelist" executor="ide" name="Whitelist generation" timeout="900000">
+        <testproperty name="xtest.ide.blacklist" value="blacklist.txt"/>
+        <testproperty name="xtest.ide.whitelist" value="whitelist.txt"/>
+        <testproperty name="xtest.ide.generate.whitelist" value="true"/>
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="org/netbeans/test/ide/IDECommitValidation.class/testBlacklistedClassesHandler"/>
             </patternset>
         </testset>
     </testbag>

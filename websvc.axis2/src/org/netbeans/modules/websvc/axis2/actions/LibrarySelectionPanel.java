@@ -105,7 +105,7 @@ public class LibrarySelectionPanel extends javax.swing.JPanel {
                     }
                     if (!found) {
                         try {
-                            selectedLibraries.add(new URL("file:"+ref.getNameAttr()));
+                            selectedLibraries.add(new URL("file:"+ref.getNameAttr())); // NOI18N
                         } catch (MalformedURLException ex) {
                             
                         }
@@ -188,7 +188,6 @@ public class LibrarySelectionPanel extends javax.swing.JPanel {
         });
 
         org.openide.awt.Mnemonics.setLocalizedText(buttonRemoveAll, org.openide.util.NbBundle.getMessage(LibrarySelectionPanel.class, "LBL_RemoveAll")); // NOI18N
-        buttonRemoveAll.setActionCommand("null");
         buttonRemoveAll.setEnabled(false);
         buttonRemoveAll.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -274,12 +273,8 @@ public class LibrarySelectionPanel extends javax.swing.JPanel {
                     .addContainerGap()))
         );
 
-        labelAvailableLibraries.getAccessibleContext().setAccessibleName("null");
-        labelAvailableLibraries.getAccessibleContext().setAccessibleDescription("null");
-        panelButtons.getAccessibleContext().setAccessibleName("null");
-        panelButtons.getAccessibleContext().setAccessibleDescription("null");
-        labelSelectedLibraries.getAccessibleContext().setAccessibleName("null");
-        labelSelectedLibraries.getAccessibleContext().setAccessibleDescription("null");
+        labelAvailableLibraries.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(LibrarySelectionPanel.class, "DESC_AvailableEntityClasses")); // NOI18N
+        labelSelectedLibraries.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(LibrarySelectionPanel.class, "DESC_SelectedEntityClasses")); // NOI18N
 
         jTabbedPane1.addTab(org.openide.util.NbBundle.getMessage(LibrarySelectionPanel.class, "LBL_Libraries"), jPanel1); // NOI18N
 

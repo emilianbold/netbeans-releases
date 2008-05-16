@@ -48,10 +48,13 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.DefaultListModel;
+import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
 import org.netbeans.modules.j2ee.common.project.ui.ClassPathUiSupport;
 import org.netbeans.modules.j2ee.common.project.ui.EditMediator;
@@ -85,7 +88,10 @@ public final class CustomizerLibraries extends JPanel implements HelpCtx.Provide
                                jButtonMoveDown.getModel(),
                                jButtonEdit.getModel(),
                                uiProperties.SHARED_LIBRARIES_MODEL,
-                               null );
+                               null,
+                               new String[]{EjbProjectConstants.ARTIFACT_TYPE_J2EE_MODULE_IN_EAR_ARCHIVE, JavaProjectConstants.ARTIFACT_TYPE_JAR, JavaProjectConstants.ARTIFACT_TYPE_FOLDER},
+                               EditMediator.JAR_ZIP_FILTER, JFileChooser.FILES_AND_DIRECTORIES
+                               );
         librariesLocation.setDocument(uiProperties.SHARED_LIBRARIES_MODEL);
         testBroken();
         uiProperties.DEBUG_CLASSPATH_MODEL.addListDataListener( this );
@@ -297,6 +303,7 @@ public final class CustomizerLibraries extends JPanel implements HelpCtx.Provide
             List<String> libs = new ArrayList<String>();
             List<String> jars = new ArrayList<String>();
             collectLibs(uiProperties.DEBUG_CLASSPATH_MODEL, libs, jars);
+            collectLibs(uiProperties.EAR_CONTENT_ADDITIONAL_MODEL.getDefaultListModel(), libs, jars);
             boolean result = SharableLibrariesUtils.showMakeSharableWizard(uiProperties.getProject().getAntProjectHelper(), uiProperties.getProject().getReferenceHelper(), libs, jars);
             if (result) {
                 isSharable = true;

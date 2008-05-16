@@ -323,6 +323,9 @@ public class BaseKit extends DefaultEditorKit {
     private static DeleteCharAction deletePrevCharActionDef = new DeleteCharAction(deletePrevCharAction, false);
     private static DeleteCharAction deleteNextCharActionDef = new DeleteCharAction(deleteNextCharAction, true);
     private static ActionFactory.RemoveSelectionAction removeSelectionActionDef = new ActionFactory.RemoveSelectionAction();
+    private static final Action insertTabActionDef = new InsertTabAction();
+    private static final Action removeTabActionDef = new ActionFactory.RemoveTabAction();
+    private static final Action insertBreakActionDef = new InsertBreakAction();
 
     private static ActionFactory.UndoAction undoActionDef = new ActionFactory.UndoAction();
     private static ActionFactory.RedoAction redoActionDef = new ActionFactory.RedoAction();
@@ -670,8 +673,7 @@ public class BaseKit extends DefaultEditorKit {
         c.enableInputMethods(enableIM);
         executeInstallActions(c);
         
-        c.putClientProperty("hyperlink-operation", // NOI18N
-                org.netbeans.lib.editor.hyperlink.HyperlinkOperation.create(c, getContentType()));
+        org.netbeans.lib.editor.hyperlink.HyperlinkOperation.ensureRegistered(c, getContentType());
 
         // Mark that the editor's multi keymap adheres to context API in status displayer
         c.putClientProperty("context-api-aware", Boolean.TRUE); // NOI18N
@@ -740,9 +742,9 @@ public class BaseKit extends DefaultEditorKit {
         return new Action[] {
                    new DefaultKeyTypedAction(),
                    new InsertContentAction(),
-                   new InsertBreakAction(),
+                   insertBreakActionDef,
 		   new SplitLineAction(),
-                   new InsertTabAction(),
+                   insertTabActionDef,
                    deletePrevCharActionDef,
                    deleteNextCharActionDef,
                    new ReadOnlyAction(),
@@ -786,7 +788,7 @@ public class BaseKit extends DefaultEditorKit {
                    new SelectLineAction(),
                    new SelectAllAction(),
                    new RemoveTrailingSpacesAction(),
-                   new ActionFactory.RemoveTabAction(),
+                   removeTabActionDef,
                    //new ActionFactory.RemoveWordAction(), #47709
                    new ActionFactory.RemoveWordPreviousAction(),
                    new ActionFactory.RemoveWordNextAction(),

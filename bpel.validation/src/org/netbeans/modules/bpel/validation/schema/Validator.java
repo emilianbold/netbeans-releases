@@ -59,14 +59,18 @@ import org.netbeans.modules.xml.xam.spi.Validation;
 import org.netbeans.modules.xml.xam.spi.ValidationResult;
 import org.netbeans.modules.xml.xam.spi.XsdBasedValidator;
 import org.netbeans.modules.xml.xam.spi.Validation.ValidationType;
-import static org.netbeans.modules.soa.ui.util.UI.*;
+import static org.netbeans.modules.xml.ui.UI.*;
 
+/**
+ * @author Vladimir Yaroslavskiy
+ * @version 2007.05.05
+ */
 public final class Validator extends XsdBasedValidator {
 
   @Override
-  public ValidationResult validate(Model model, final Validation validation, final Validation.ValidationType validationType) {
+  public ValidationResult validate(Model model, Validation validation, Validation.ValidationType validationType) {
     if ( !(model instanceof BpelModel)) {
-        return null;
+      return null;
     }
     startTime();
     ValidationResult result = Validator.super.validate((BpelModel) model, validation, validationType);

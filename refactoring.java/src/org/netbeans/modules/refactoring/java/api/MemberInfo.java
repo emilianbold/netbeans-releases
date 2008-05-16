@@ -44,7 +44,6 @@ import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.util.Collections;
 import java.util.Set;
-import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
@@ -54,14 +53,12 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.TypeMirrorHandle;
-import org.netbeans.api.java.source.TypeMirrorHandle;
-import org.netbeans.api.java.source.UiUtils;
-import org.netbeans.api.java.source.UiUtils.PrintPart;
+import org.netbeans.api.java.source.ui.ElementHeaders;
+import org.netbeans.api.java.source.ui.ElementIcons;
 
 /**
  * Wrapper class for ElementHandles, TreePathHandles and TypeMirrorHandles.
  * It contains referemce to appropriste handle + name and icon
- * @param H 
  * @author Jan Becicka
  */
 public final class MemberInfo<H> {
@@ -127,51 +124,54 @@ public final class MemberInfo<H> {
     }
 
     public static <T extends TypeMirror> MemberInfo<TypeMirrorHandle<T>> create(T el, Tree t, CompilationInfo c) {
-        MemberInfo<TypeMirrorHandle<T>> mi = new MemberInfo<TypeMirrorHandle<T>>(TypeMirrorHandle.create(el), t.toString(), "implements " + t.toString(), UiUtils.getElementIcon(ElementKind.INTERFACE, null)); // NOI18N
+        MemberInfo<TypeMirrorHandle<T>> mi = new MemberInfo<TypeMirrorHandle<T>>(TypeMirrorHandle.create(el), t.toString(), "implements " + t.toString(), ElementIcons.getElementIcon(ElementKind.INTERFACE, null)); // NOI18N
         mi.group = Group.IMPLEMENTS;
         return mi;
     }
 
     public static <T extends Element> MemberInfo<ElementHandle<T>> create(T el, CompilationInfo c) {
-        String format = PrintPart.NAME;
+        String format = ElementHeaders.NAME;
         Group g = Group.TYPE;
         if (el.getKind() == ElementKind.FIELD) {
-            format += " : " + PrintPart.TYPE; // NOI18N
+            format += " : " + ElementHeaders.TYPE; // NOI18N
             g=Group.FIELD;
         } else if (el.getKind() == ElementKind.METHOD) {
-            format += PrintPart.PARAMETERS + " : " + PrintPart.TYPE; // NOI18N
+            format += ElementHeaders.PARAMETERS + " : " + ElementHeaders.TYPE; // NOI18N
+            g=Group.METHOD;
+        } else if (el.getKind() == ElementKind.CONSTRUCTOR) {
+            format += ElementHeaders.PARAMETERS;
             g=Group.METHOD;
         } 
 
-        MemberInfo<ElementHandle<T>> mi = new MemberInfo<ElementHandle<T>>(ElementHandle.create(el), el.getSimpleName().toString(), UiUtils.getHeader(el, c, format), UiUtils.getDeclarationIcon(el));
+        MemberInfo<ElementHandle<T>> mi = new MemberInfo<ElementHandle<T>>(ElementHandle.create(el), el.getSimpleName().toString(), ElementHeaders.getHeader(el, c, format), ElementIcons.getElementIcon(el.getKind(), el.getModifiers()));
         mi.modifiers = el.getModifiers();
         mi.group = g;
         return mi;
     }
 
     public static <T extends Element> MemberInfo<ElementHandle<T>> create(T el, CompilationInfo c, Group group) {
-        MemberInfo<ElementHandle<T>> mi = new MemberInfo<ElementHandle<T>>(ElementHandle.create(el), el.getSimpleName().toString(), UiUtils.getHeader(el, c, UiUtils.PrintPart.NAME), UiUtils.getDeclarationIcon(el));
+        MemberInfo<ElementHandle<T>> mi = new MemberInfo<ElementHandle<T>>(ElementHandle.create(el), el.getSimpleName().toString(), ElementHeaders.getHeader(el, c, ElementHeaders.NAME), ElementIcons.getElementIcon(el.getKind(), el.getModifiers()));
         mi.group = group;
         mi.modifiers = el.getModifiers();
         return mi;
     }
 
     public static MemberInfo<TreePathHandle> create(TreePath tpath, CompilationInfo c) {
-        String format = PrintPart.NAME;
+        String format = ElementHeaders.NAME;
         Group g = null;
         Element el = c.getTrees().getElement(tpath);
         if (el.getKind() == ElementKind.FIELD) {
-            format += " : " + PrintPart.TYPE; // NOI18N
+            format += " : " + ElementHeaders.TYPE; // NOI18N
             g=Group.FIELD;
         } else if (el.getKind() == ElementKind.METHOD) {
-            format += PrintPart.PARAMETERS + " : " + PrintPart.TYPE; // NOI18N
+            format += ElementHeaders.PARAMETERS + " : " + ElementHeaders.TYPE; // NOI18N
             g=Group.METHOD;
         } else if (el.getKind().isInterface()) {
             g=Group.IMPLEMENTS;
             format = "implements " + format; // NOI18N
         }
 
-        MemberInfo<TreePathHandle> mi = new MemberInfo<TreePathHandle>(TreePathHandle.create(tpath, c), el.getSimpleName().toString(), UiUtils.getHeader(el, c, format), UiUtils.getDeclarationIcon(el));
+        MemberInfo<TreePathHandle> mi = new MemberInfo<TreePathHandle>(TreePathHandle.create(tpath, c), el.getSimpleName().toString(), ElementHeaders.getHeader(el, c, format), ElementIcons.getElementIcon(el.getKind(), el.getModifiers()));
         mi.modifiers = el.getModifiers();
         mi.group = g;
         return mi;

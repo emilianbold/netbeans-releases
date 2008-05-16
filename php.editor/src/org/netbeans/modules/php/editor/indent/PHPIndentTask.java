@@ -64,6 +64,8 @@ public class PHPIndentTask implements IndentTask {
         
         BaseDocument doc = (BaseDocument)context.document();
         doc.atomicLock();
+        // a workaround for issue #131929
+        doc.putProperty("HTML_FORMATTER_ACTS_ON_TOP_LEVEL", Boolean.TRUE); //NOI18N
         
         try {
             if (context.isIndent()) {

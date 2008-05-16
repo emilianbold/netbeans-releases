@@ -208,11 +208,6 @@ public final class AppClientProvider extends J2eeModuleProvider
     }
     
     @Override
-    public boolean useDefaultServer() {
-        return true;
-    }
-    
-    @Override
     public String getServerID() {
         return helper.getStandardPropertyEvaluator().getProperty(AppClientProjectProperties.J2EE_SERVER_TYPE);
     }

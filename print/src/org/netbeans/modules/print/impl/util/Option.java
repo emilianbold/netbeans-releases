@@ -54,7 +54,7 @@ import java.util.StringTokenizer;
 
 import java.util.prefs.Preferences;
 import org.openide.util.NbPreferences;
-import static org.netbeans.modules.print.impl.util.UI.*;
+import static org.netbeans.modules.print.impl.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -104,10 +104,7 @@ public final class Option {
       if (get(PAPER_WIDTH, null) != null && get(PAPER_HEIGHT, null) != null) {
         paper.setSize(get(PAPER_WIDTH, INCH), get(PAPER_HEIGHT, INCH));
       }
-      if (
-        get(AREA_X, null) != null && get(AREA_Y, null) != null && 
-        get(AREA_WIDTH, null) != null && get(AREA_HEIGHT, null) != null)
-      {
+      if (get(AREA_X, null) != null && get(AREA_Y, null) != null && get(AREA_WIDTH, null) != null && get(AREA_HEIGHT, null) != null) {
         paper.setImageableArea(
           get(AREA_X, INCH),
           get(AREA_Y, INCH),
@@ -511,7 +508,7 @@ public final class Option {
   private static final String HEADER_RIGHT_TEXT = EMPTY;
 
   private static final String FOOTER_LEFT_TEXT = getPageOfCount(
-    getRowColumn(Macro.ROW.getName(),Macro.COLUMN.getName()),Macro.COUNT.getName());
+    getRowColumn(Macro.ROW.getName(), Macro.COLUMN.getName()), Macro.COUNT.getName());
   private static final String FOOTER_CENTER_TEXT = EMPTY;
   private static final String FOOTER_RIGHT_TEXT = Macro.MODIFIED_DATE.getName() +
     "  " + Macro.MODIFIED_TIME.getName(); // NOI18N

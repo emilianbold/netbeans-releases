@@ -64,7 +64,7 @@ public class WsFromJavaGUIPanel0 extends javax.swing.JPanel implements ItemListe
     public WsFromJavaGUIPanel0(WsFromJavaPanel0 wizardPanel) {
         this.wizardPanel = wizardPanel;
         initComponents();
-        setName("Service Type Selection");
+        setName("Service Type Selection"); // NOI18N
         jRadioButton1.addItemListener(this);
         jRadioButton2.addItemListener(this);
         jTextField1.getDocument().addDocumentListener(new DocumentListener() {
@@ -136,7 +136,7 @@ public class WsFromJavaGUIPanel0 extends javax.swing.JPanel implements ItemListe
                         .add(21, 21, 21)
                         .add(jLabel1)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jTextField1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 408, Short.MAX_VALUE)
+                        .add(jTextField1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 263, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(jButton1)
                         .addContainerGap())
@@ -148,7 +148,7 @@ public class WsFromJavaGUIPanel0 extends javax.swing.JPanel implements ItemListe
                                 .add(21, 21, 21)
                                 .add(jLabel2))
                             .add(jCheckBox1))
-                        .addContainerGap(157, Short.MAX_VALUE))))
+                        .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -166,7 +166,7 @@ public class WsFromJavaGUIPanel0 extends javax.swing.JPanel implements ItemListe
                 .add(jCheckBox1)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jLabel2)
-                .addContainerGap(158, Short.MAX_VALUE))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         jRadioButton1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WsFromJavaGUIPanel0.class, "WsFromJavaGUIPanel0.jRadioButton1.AccessibleContext.accessibleDescription")); // NOI18N
@@ -180,7 +180,8 @@ public class WsFromJavaGUIPanel0 extends javax.swing.JPanel implements ItemListe
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         SelectClassPanel panel = new SelectClassPanel(wizardPanel.getProject());
-        DialogDescriptor dd = new DialogDescriptor(panel, "Select class");
+        DialogDescriptor dd = new DialogDescriptor(panel, 
+                org.openide.util.NbBundle.getMessage(WsFromJavaGUIPanel0.class, "TTL_SelectClass"));
         DialogDisplayer.getDefault().notify(dd);
         if (dd.getValue() == DialogDescriptor.OK_OPTION) {
             Node[] nodes = panel.getSelectedNodes();

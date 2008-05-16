@@ -98,6 +98,7 @@ public abstract class DiagramView extends JPanel implements Autoscroll {
         paintContent(g, getDesignView().getCorrectedZoom(), false);
        // System.out.println("Paint (" + (System.currentTimeMillis() - start) + " ms):" + this );
     }
+    
 
      @Override
     public void print(Graphics g) {
@@ -169,6 +170,8 @@ public abstract class DiagramView extends JPanel implements Autoscroll {
             }
         }
     }
+    
+    
 
     public FPoint convertScreenToDiagram(Point point) {
         return convertScreenToDiagram(point, designView.getCorrectedZoom());
@@ -427,14 +430,22 @@ public abstract class DiagramView extends JPanel implements Autoscroll {
     public FPoint convertScreenToDiagram(Point point, double zoom) {
         double x = ((point.x - offsetX) / zoom) + LayoutManager.HMARGIN;
         double y = ((point.y - offsetY) / zoom) + LayoutManager.VMARGIN;
-
+        
+        if (designView.getPrintMode()) {
+            x = ((point.x - getWidth() / 2) / zoom) + LayoutManager.HMARGIN;
+            y = ((point.y) / zoom) + LayoutManager.VMARGIN;
+        }
         return new FPoint(x, y);
     }
 
     public Point convertDiagramToScreen(FPoint point, double zoom) {
         double x = (point.x - LayoutManager.HMARGIN) * zoom + offsetX;
         double y = (point.y - LayoutManager.VMARGIN) * zoom + offsetY;
-
+        
+        if (designView.getPrintMode()) {
+            x = (point.x - LayoutManager.HMARGIN) * zoom + getWidth() / 2;
+            y = (point.y - LayoutManager.VMARGIN) * zoom;
+        }
         return new Point((int) Math.round(x), (int) Math.round(y));
     }
 

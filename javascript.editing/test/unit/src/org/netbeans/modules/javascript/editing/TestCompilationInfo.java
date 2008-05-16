@@ -63,7 +63,7 @@ TranslatedSource translatedSource = null; // TODO
             JsParser.Context context = new JsParser.Context(file, listener, text, caretOffset, translatedSource);
             JsParser parser = new JsParser();
             JsParser.runtimeException = null;
-            ParserResult parserResult = ((JsParser)parser).parseBuffer(context, JsParser.Sanitize.NONE);
+            ParserResult parserResult = parser.parseBuffer(context, JsParser.Sanitize.NONE);
             JsTestBase.assertNull(JsParser.runtimeException != null ? JsParser.runtimeException.toString() : "", JsParser.runtimeException);
             for (Error error : listener.getErrors()) {
                 parserResult.addError(error);

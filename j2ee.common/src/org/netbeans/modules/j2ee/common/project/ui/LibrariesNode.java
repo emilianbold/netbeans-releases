@@ -94,7 +94,6 @@ import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
 import org.netbeans.modules.j2ee.common.project.ui.AntArtifactChooser.ArtifactItem;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
-import org.netbeans.spi.java.project.classpath.ProjectClassPathModifierImplementation;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -616,13 +615,17 @@ public final class LibrariesNode extends AbstractNode {
         }
 
         private void addArtifacts (AntArtifactChooser.ArtifactItem[] artifactItems) {
-            for (int i=0; i<artifactItems.length;i++) {
-                try {
-                    ProjectClassPathModifier.addAntArtifacts(new AntArtifact[]{artifactItems[i].getArtifact()}, 
-                            new URI[]{artifactItems[i].getArtifactURI()}, projectSourcesArtifact, ClassPath.COMPILE);
-                } catch (IOException ioe) {
-                    Exceptions.printStackTrace(ioe);
-                }
+            AntArtifact[] artifacts = new AntArtifact[artifactItems.length];
+            URI[] artifactURIs = new URI[artifactItems.length];
+            for (int i = 0; i < artifactItems.length; i++) {
+                artifacts[i] = artifactItems[i].getArtifact();
+                artifactURIs[i] = artifactItems[i].getArtifactURI();
+            }
+            try {
+                ProjectClassPathModifier.addAntArtifacts(artifacts, artifactURIs,
+                        projectSourcesArtifact, ClassPath.COMPILE);
+            } catch (IOException ioe) {
+                Exceptions.printStackTrace(ioe);
             }
         }
     }
@@ -650,13 +653,11 @@ public final class LibrariesNode extends AbstractNode {
         }
 
         private void addLibraries (Library[] libraries) {
-            for (int i=0; i<libraries.length;i++) {
-                try {
-                    ProjectClassPathModifier.addLibraries(new Library[]{libraries[i]}, 
-                            projectSourcesArtifact, ClassPath.COMPILE);
-                } catch (IOException ioe) {
-                    Exceptions.printStackTrace(ioe);
-                }
+            try {
+                ProjectClassPathModifier.addLibraries(libraries,
+                        projectSourcesArtifact, ClassPath.COMPILE);
+            } catch (IOException ioe) {
+                Exceptions.printStackTrace(ioe);
             }
         }
         
@@ -674,8 +675,12 @@ public final class LibrariesNode extends AbstractNode {
         }
 
         public void actionPerformed(ActionEvent e) {
-            org.netbeans.api.project.ant.FileChooser chooser = 
-                    new org.netbeans.api.project.ant.FileChooser(helper, true);
+            org.netbeans.api.project.ant.FileChooser chooser;
+            if (helper.isSharableProject()) {
+                chooser = new org.netbeans.api.project.ant.FileChooser(helper, true);
+            } else {
+                chooser = new org.netbeans.api.project.ant.FileChooser(FileUtil.toFile(helper.getProjectDirectory()), null);
+            }
             FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
             chooser.setFileSelectionMode( JFileChooser.FILES_AND_DIRECTORIES );
             chooser.setMultiSelectionEnabled( true );

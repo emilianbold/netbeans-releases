@@ -389,6 +389,12 @@ public class JsParser implements Parser {
         }
 
         int offset = context.parser.getTokenStream().getBufferOffset();
+        
+        if ("msg.unexpected.eof".equals(key) && offset > 0) { // NOI18N
+            // The offset should be within the source, not at the EOF - in embedded files this
+            // would cause me to not be able to compute the position for example
+            offset--;
+        }
 
 //        if (offset != getOffset(context, line, lineOffset)) {
 //            assert offset == getOffset(context, line, lineOffset) : " offset=" + offset + " and computed offset=" + getOffset(context,line,lineOffset) + " and line/lineOffset = " + line + "/" + lineOffset;

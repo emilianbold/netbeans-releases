@@ -167,20 +167,21 @@
     <target name="build" depends="build-tiny,build-dev"/>
     <target name="clean" depends="clean-tiny,clean-dev"/>
 
-    <target name="build-tiny" depends="build-print,build-libs,build-compapp,build-soa,build-bpel,build-xslt"/>
-    <target name="clean-tiny" depends="build-print,clean-libs,clean-compapp,clean-soa,clean-bpel,clean-xslt"/>
+    <target name="build-tiny" depends="build-xml,build-libs,build-compapp,build-soa,build-bpel,build-xslt"/>
+    <target name="clean-tiny" depends="build-xml,clean-libs,clean-compapp,clean-soa,clean-bpel,clean-xslt"/>
 
     <target name="build-dev" depends="build-etl,build-iep,build-sql,build-wsdlextensions"/>
     <target name="clean-dev" depends="clean-etl,clean-iep,clean-sql,clean-wsdlextensions"/>
 
-    <!-- print -->
-    <target name="build-print"><antcall target="do-print"><param name="action" value="netbeans"/></antcall></target>
-    <target name="clean-print"><antcall target="do-print"><param name="action" value="clean"/></antcall></target>
-    <target name="do-print">
+    <!-- xml -->
+    <target name="build-xml"><antcall target="do-xml"><param name="action" value="netbeans"/></antcall></target>
+    <target name="clean-xml"><antcall target="do-xml"><param name="action" value="clean"/></antcall></target>
+    <target name="do-xml">
         <subant target="${action}" inheritAll="false">
             <buildpath location="${home}/print"/>
-            <buildpath location="${home}/xml.xpath.ext"/> <!-- todo r -->
-            <buildpath location="${home}/xml.wsdl.extensions"/> <!-- todo r -->
+            <buildpath location="${home}/xml.search"/>
+            <buildpath location="${home}/xml.xpath.ext"/>
+            <buildpath location="${home}/xml.wsdl.extensions"/>
         </subant>
     </target>
 
@@ -218,6 +219,7 @@
     <target name="do-soa">
         <subant target="${action}" inheritAll="false">
             <buildpath location="${home}/soa.ui/build.xml"/>
+            <buildpath location="${home}/soa.validation/build.xml"/>
             <buildpath location="${home}/soa.mappercore/build.xml"/>
             <buildpath location="${home}/soa.mapper/build.xml"/>
             <buildpath location="${home}/soa.reportgenerator/build.xml"/>
@@ -239,7 +241,6 @@
             <buildpath location="${home}/bpel.debugger/build.xml"/>
             <buildpath location="${home}/bpel.debugger.ui/build.xml"/>
             <buildpath location="${home}/bpel.mapper/build.xml"/>
-            <buildpath location="${home}/bpel.search/build.xml"/>
             <buildpath location="${home}/bpel.editors/build.xml"/>
             <buildpath location="${home}/bpel.refactoring/build.xml"/>
             <buildpath location="${home}/bpel.samples/build.xml"/>
@@ -302,6 +303,7 @@
             <buildpath location="${home}/xslt.tmap/build.xml"/>
             <buildpath location="${home}/xslt.project/build.xml"/>
             <buildpath location="${home}/xslt.core/build.xml"/>
+            <buildpath location="${home}/xslt.validation/build.xml"/>
             <buildpath location="${home}/xslt.help/build.xml"/>
         </subant>
     </target>

@@ -279,7 +279,7 @@ public class SvnUtils {
      * @return false if the file should receive the STATUS_NOTVERSIONED_NOTMANAGED status, true otherwise
      */ 
     public static boolean isManaged(File file) {
-        return VersioningSupport.getOwner(file) instanceof SubversionVCS && !SvnUtils.isPartOfSubversionMetadata(file);
+        return VersioningSupport.getOwner(file) instanceof SubversionVCS && !isPartOfSubversionMetadata(file);
     }
     
     /**
@@ -345,7 +345,7 @@ public class SvnUtils {
             file = file.getParentFile();
             
         }
-        if(repositoryURL == null & fileIsManaged) {
+        if(repositoryURL == null && fileIsManaged) {
             // The file is managed but we haven't found the repository URL in it's metadata - 
             // this looks like the WC was created with a client < 1.3.0. I wouldn't mind for myself and
             // get the URL from the server, it's just that it could be quite a performance killer.
@@ -354,75 +354,6 @@ public class SvnUtils {
             throw new SVNClientException(NbBundle.getMessage(SvnUtils.class, "MSG_too_old_WC"));
         }                
         return repositoryPath;
-    }
-    
-    /**
-     * Compute relative path to repository root.
-     * For not yet versioned files guess the URL
-     * from parent context.
-     *
-     * <p>I/O intensive avoid calling it frnm AWT.
-     *
-     * @return the repository url or null for unknown
-     * XXX we need this until we get a local implementation for client.getInfoFromWorkingCopy(file);
-     */
-    public static String getRelativePath(SVNUrl repositoryURL, File file) throws SVNClientException {
-        String repositoryPath = null;
-        
-        SvnClient client;
-        try {
-            client = Subversion.getInstance().getClient(false);
-        } catch (SVNClientException ex) {                 
-            SvnClientExceptionHandler.notifyException(ex, false, false);            
-            return null;
-        }
-        
-        List<String> path = new ArrayList<String>();
-        boolean fileIsManaged = false;
-        while (isManaged(file)) {
-            fileIsManaged = true;
-            
-            ISVNStatus status = null;
-            try {                
-                status = client.getSingleStatus(file);
-            } catch (SVNClientException ex) {
-                if (SvnClientExceptionHandler.isUnversionedResource(ex.getMessage()) == false) {                    
-                    SvnClientExceptionHandler.notifyException(ex, false, false);
-                }
-            }
-            
-            if (status != null && status.getUrl() != null) {
-                SVNUrl fileURL = status.getUrl();
-                
-                if (fileURL != null && repositoryURL !=  null) {
-                    fileURL = decode(fileURL);
-                    String fileLink = fileURL.toString();
-                    String repositoryLink = repositoryURL.toString();
-                    repositoryPath = fileLink.substring(repositoryLink.length());
-                    
-                    Iterator it = path.iterator();
-                    StringBuffer sb = new StringBuffer();
-                    while (it.hasNext()) {
-                        String segment = (String) it.next();
-                        sb.append("/"); // NOI18N
-                        sb.append(segment);
-                    }
-                    repositoryPath += sb.toString();
-                    break;
-                }
-            }
-            
-            path.add(0, file.getName());
-            file = file.getParentFile();
-            
-        }
-        if(repositoryURL == null & fileIsManaged) {
-            // The file is managed but we haven't found the repository URL in it's metadata - 
-            // this looks like the WC was created with a client < 1.3.0. I wouldn't mind for myself and
-            // get the URL from the server, it's just that it could be quite a performance killer.
-            throw new SVNClientException(NbBundle.getMessage(SvnUtils.class, "MSG_too_old_WC"));
-        }                   
-        return repositoryPath.startsWith("/") ? repositoryPath.substring(1) : repositoryPath;
     }
     
     /**
@@ -456,7 +387,7 @@ public class SvnUtils {
                 }
             }
             
-            if (info != null && info.getUrl() != null) {
+            if (info != null) {
                 repositoryURL = decode(info.getRepository());
                 if (repositoryURL != null) {
                     break;
@@ -466,7 +397,7 @@ public class SvnUtils {
             file = file.getParentFile();
             
         }
-        if(repositoryURL == null & fileIsManaged) {
+        if(repositoryURL == null && fileIsManaged) {
             // The file is managed but we haven't found the repository URL in it's metadata - 
             // this looks like the WC was created with a client < 1.3.0. I wouldn't mind for myself and
             // get the URL from the server, it's just that it could be quite a performance killer.
@@ -537,7 +468,7 @@ public class SvnUtils {
             file = file.getParentFile();
             
         }
-        if(fileURL == null & fileIsManaged) {
+        if(fileURL == null && fileIsManaged) {
             // The file is managed but we haven't found the URL in it's metadata - 
             // this looks like the WC was created with a client < 1.3.0. I wouldn't mind for myself and
             // get the URL from the server, it's just that it could be quite a performance killer.

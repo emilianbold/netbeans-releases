@@ -60,12 +60,14 @@ public class CopyFilesVisual extends JPanel {
     public CopyFilesVisual(WebFolderNameProvider webFolderNameProvider, LocalServer... defaultLocalServers) {
         initComponents();
 
-        localServerController = new LocalServerController(copyFilesComboBox, copyFilesButton, webFolderNameProvider,
+        localServerController = LocalServerController.create(copyFilesComboBox, copyFilesButton, webFolderNameProvider,
                 NbBundle.getMessage(CopyFilesVisual.class, "LBL_SelectFolderLocation"), defaultLocalServers);
+        // set default, disabled state
+        localServerController.setEnabled(false);
 
         copyFilesCheckBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                localServerController.setState(copyFilesCheckBox.isSelected());
+                copyFilesCheckBoxChanged();
                 changeSupport.fireChange();
             }
         });
@@ -74,6 +76,12 @@ public class CopyFilesVisual extends JPanel {
                 changeSupport.fireChange();
             }
         });
+    }
+
+    void copyFilesCheckBoxChanged() {
+        boolean selected = copyFilesCheckBox.isSelected();
+        localServerLabel.setEnabled(selected);
+        localServerController.setEnabled(selected);
     }
 
     public void addChangeListener(ChangeListener listener) {
@@ -90,7 +98,7 @@ public class CopyFilesVisual extends JPanel {
 
     public void setCopyFiles(boolean copyFiles) {
         copyFilesCheckBox.setSelected(copyFiles);
-        localServerController.setState(copyFiles);
+        copyFilesCheckBoxChanged();
     }
 
     public LocalServer getLocalServer() {
@@ -131,10 +139,13 @@ public class CopyFilesVisual extends JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(copyFilesCheckBox, org.openide.util.NbBundle.getMessage(CopyFilesVisual.class, "LBL_CopyFiles")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(localServerLabel, org.openide.util.NbBundle.getMessage(CopyFilesVisual.class, "LBL_CopyFileToFolder")); // NOI18N
+        localServerLabel.setEnabled(false);
 
         copyFilesComboBox.setEditable(true);
+        copyFilesComboBox.setEnabled(false);
 
         org.openide.awt.Mnemonics.setLocalizedText(copyFilesButton, org.openide.util.NbBundle.getMessage(CopyFilesVisual.class, "LBL_Browse")); // NOI18N
+        copyFilesButton.setEnabled(false);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -142,9 +153,10 @@ public class CopyFilesVisual extends JPanel {
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(copyFilesCheckBox)
             .add(layout.createSequentialGroup()
+                .addContainerGap()
                 .add(localServerLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(copyFilesComboBox, 0, 180, Short.MAX_VALUE)
+                .add(copyFilesComboBox, 0, 168, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(copyFilesButton))
         );
@@ -154,9 +166,9 @@ public class CopyFilesVisual extends JPanel {
                 .add(copyFilesCheckBox)
                 .add(9, 9, 9)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(localServerLabel)
                     .add(copyFilesButton)
-                    .add(copyFilesComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                    .add(copyFilesComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(localServerLabel)))
         );
     }// </editor-fold>//GEN-END:initComponents
 

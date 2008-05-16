@@ -44,7 +44,7 @@ import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.php.dbgp.api.SessionId;
+import org.netbeans.modules.php.dbgp.SessionId;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
 
@@ -80,7 +80,7 @@ public final class SessionProgress implements Cancellable {
     
     private SessionProgress(Session session) {
 	this.session = session;
-	String displayName = session.getName();
+	String displayName = NbBundle.getMessage(SessionProgress.class, "LBL_Progress_Connecting", session.getName());
 	h = ProgressHandleFactory.createHandle(displayName, this);	
     }
 
@@ -103,6 +103,7 @@ public final class SessionProgress implements Cancellable {
 
     public void notifyConnectionFinished() {
         String displayName = NbBundle.getMessage(SessionProgress.class, "LBL_Progress_Suspend");
+        h.setDisplayName(session.getName());
         h.suspend(displayName);
     }
     

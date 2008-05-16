@@ -62,7 +62,7 @@ import org.netbeans.modules.xml.wsdl.model.Message;
 import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.CorrelationProperty;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PropertyAlias;
-import static org.netbeans.modules.soa.ui.util.UI.*;
+import static org.netbeans.modules.xml.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -153,13 +153,10 @@ final class Deleter extends Plugin {
     return null;
   }
 
-  public void doRefactoring(List<RefactoringElementImplementation> elements)
-    throws IOException
-  {
+  public void doRefactoring(List<RefactoringElementImplementation> elements) throws IOException {
 //out();
 //out("DO: " + myRequest.getRefactoringSource());
-    Referenceable referenceable =
-      myRequest.getRefactoringSource().lookup(Referenceable.class);
+    Referenceable referenceable = myRequest.getRefactoringSource().lookup(Referenceable.class);
 
     if ( !(referenceable instanceof Component)) {
       return;

@@ -234,29 +234,22 @@ public class ProjectBridge {
     public Folder getRoot(){
         Folder folder = makeConfigurationDescriptor.getLogicalFolders();
         Vector sources = folder.getFolders();
-        List<Folder> roots = new ArrayList<Folder>();
         for (Object o : sources){
             Folder sub = (Folder)o;
             if (sub.isProjectFiles()) {
                 if (MakeConfigurationDescriptor.SOURCE_FILES_FOLDER.equals(sub.getName())) {
-                    Vector v = sub.getFolders();
-                    for (Object e : v){
-                        Folder s = (Folder)e;
-                        if (s.isProjectFiles()) {
-                            roots.add(s);
-                        }
-                    }
+                    return sub;
                 }
             }
-        }
-        if (roots.size()>0){
-            return roots.get(0);
         }
         return folder;
     }
     
-    public Set getResult(){
+    public void save(){
         makeConfigurationDescriptor.save();
+    }
+    
+    public Set getResult(){
         if (SwingUtilities.isEventDispatchThread()) {
             makeConfigurationDescriptor.checkForChangedItems(project, null, null);
         } else {

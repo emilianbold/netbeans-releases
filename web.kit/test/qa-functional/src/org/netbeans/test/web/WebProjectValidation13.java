@@ -137,6 +137,7 @@ public class WebProjectValidation13 extends WebProjectValidation {
         nameStep.txtProjectLocation().typeText(PROJECT_LOCATION);
         nameStep.next();
         NewWebProjectServerSettingsStepOperator serverStep = new NewWebProjectServerSettingsStepOperator();
+        serverStep.selectServer("Tomcat");
         serverStep.selectJavaEEVersion(org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.j2ee.common.project.ui.Bundle", "J2EESpecLevel_13"));
         serverStep.next();
         NewWebProjectSourcesStepOperator frameworkStep =  new NewWebProjectSourcesStepOperator();

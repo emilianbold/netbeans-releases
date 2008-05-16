@@ -105,39 +105,39 @@ public class PartitionPanel extends JPanel implements SharedConstants {
             
             java.util.List partitionKey = (List) partionKeyProp.getPropertyType().getType().parse(partionKeyPropStringVal);
             if(!schemaId.trim().equals("")) {
-            	SchemaComponentContainer scContainer = mModel.getPlanComponent().getSchemaComponentContainer();
-            	
+                SchemaComponentContainer scContainer = mModel.getPlanComponent().getSchemaComponentContainer();
+                
                 SchemaComponent schema = scContainer.findSchema(schemaId);
                 if(schema != null) {
-                	
-                	List<SchemaAttribute> attrs = schema.getSchemaAttributes();
-                	Iterator<SchemaAttribute> it = attrs.iterator();
-                	
-                	while(it.hasNext()) {
-                		Vector r = new Vector();
-                    	
-                		SchemaAttribute sa = it.next();
-                		String attributeName = sa.getAttributeName();
-                		String attributeType = sa.getAttributeType();
-                		String attributeSize = sa.getAttributeSize();
-                		String attributeScale = sa.getAttributeScale();
-                		String attributeComment = sa.getAttributeComment();
-                		 
+                    
+                    List<SchemaAttribute> attrs = schema.getSchemaAttributes();
+                    Iterator<SchemaAttribute> it = attrs.iterator();
+                    
+                    while(it.hasNext()) {
+                        Vector r = new Vector();
+                        
+                        SchemaAttribute sa = it.next();
+                        String attributeName = sa.getAttributeName();
+                        String attributeType = sa.getAttributeType();
+                        String attributeSize = sa.getAttributeSize();
+                        String attributeScale = sa.getAttributeScale();
+                        String attributeComment = sa.getAttributeComment();
                          
-                		if (partitionKey.contains(attributeName)) {
+                         
+                        if (partitionKey.contains(attributeName)) {
                             r.add(Boolean.TRUE);
                         } else {
                             r.add(Boolean.FALSE);
                         }
-                		
-                		r.add(attributeName);
-                		r.add(attributeType);
-                		r.add(attributeSize);
-                		r.add(attributeScale);
-                		r.add(attributeComment);
-                		
-                		data.add(r);
-                	}
+                        
+                        r.add(attributeName);
+                        r.add(attributeType);
+                        r.add(attributeSize);
+                        r.add(attributeScale);
+                        r.add(attributeComment);
+                        
+                        data.add(r);
+                    }
                 }
             } 
         } catch(Exception e) {
@@ -221,9 +221,9 @@ public class PartitionPanel extends JPanel implements SharedConstants {
             Property partionKeyProp = mComponent.getProperty(ATTRIBUTE_LIST_KEY);
             String oldValue = partionKeyProp.getValue();
             if (!sb.toString().equals(oldValue)) {
-            	mComponent.getModel().startTransaction();
-            	partionKeyProp.setValue(sb.toString());
-            	mComponent.getModel().endTransaction();
+                mComponent.getModel().startTransaction();
+                partionKeyProp.setValue(sb.toString());
+                mComponent.getModel().endTransaction();
             }
             
         } catch (Exception e) {

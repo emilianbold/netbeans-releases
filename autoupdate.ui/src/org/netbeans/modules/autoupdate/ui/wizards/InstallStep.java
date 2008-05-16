@@ -104,7 +104,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
     private boolean indeterminateProgress = false;
     private int processedUnits = 0;
     private int totalUnits = 0;
-    private static  final Logger log = Logger.getLogger ("org.netbeans.modules.autoupdate.ui.wizards.InstallPanel");
+    private static  final Logger log = Logger.getLogger (InstallStep.class.getName ());
     private final List<ChangeListener> listeners = new ArrayList<ChangeListener> ();
     
     private static final String TEXT_PROPERTY = "text";
@@ -121,11 +121,15 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
     private static final String HEAD_INSTALL_DONE = "InstallStep_Header_InstallDone_Head";
     private static final String CONTENT_INSTALL_DONE = "InstallStep_Header_InstallDone_Content";
     
+    private static final String HEAD_INSTALL_UNSUCCESSFUL = "InstallStep_Header_InstallUnsuccessful_Head";
+    private static final String CONTENT_INSTALL_UNSUCCESSFUL = "InstallStep_Header_InstallUnsuccessful_Content";
+    
     private static final String HEAD_RESTART = "InstallStep_Header_Restart_Head";
     private static final String CONTENT_RESTART = "InstallStep_Header_Restart_Content";
     
     private boolean wasStored = false;
     private boolean runInBg = false;
+    private OperationException installException;
     
     /** Creates a new instance of OperationDescriptionStep */
     public InstallStep (InstallUnitWizardModel model) {
@@ -461,6 +465,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
     }
     
     private Restarter handleInstall (Installer i) {
+        installException = null;
         component.setHeadAndContent (getBundle (HEAD_INSTALL), getBundle (CONTENT_INSTALL));
         InstallSupport support = model.getInstallSupport();
         assert support != null : "OperationSupport cannot be null because OperationContainer " +
@@ -504,12 +509,19 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
         panel.waitAndSetProgressComponents (mainLabel, progressComponent, detailLabel);
         Restarter r = null;
         
+        boolean success = false;
         try {
             r = support.doInstall (i, handle);
+            success = true;
         } catch (OperationException ex) {
             log.log (Level.INFO, ex.getMessage (), ex);
+            panel.waitAndSetProgressComponents (mainLabel, progressComponent, new JLabel (
+                    getBundle ("InstallStep_Unsuccessful", ex.getLocalizedMessage ())));
+            installException = ex;
         }
-        panel.waitAndSetProgressComponents (mainLabel, progressComponent, new JLabel (getBundle ("InstallStep_Done")));
+        if (success) {
+            panel.waitAndSetProgressComponents (mainLabel, progressComponent, new JLabel (getBundle ("InstallStep_Done")));
+        }
         if (spareHandle != null && spareHandleStarted) {
             spareHandle.finish ();
         }
@@ -517,9 +529,16 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
     }
     
     private void presentInstallDone () {
-        component.setHeadAndContent (getBundle (HEAD_INSTALL_DONE), getBundle (CONTENT_INSTALL_DONE));
         model.modifyOptionsForDoClose (wd);
-        panel.setBody (getBundle ("InstallStep_InstallDone_Text"), InstallUnitWizardModel.getVisibleUpdateElements (model.getAllUpdateElements (), false, model.getOperation ()));
+        if (installException == null) {
+            component.setHeadAndContent (getBundle (HEAD_INSTALL_DONE), getBundle (CONTENT_INSTALL_DONE));
+            panel.setBody (getBundle ("InstallStep_InstallDone_Text"),
+                    InstallUnitWizardModel.getVisibleUpdateElements (model.getAllUpdateElements (), false, model.getOperation ()));
+        } else {
+            component.setHeadAndContent (getBundle (HEAD_INSTALL_UNSUCCESSFUL), getBundle (CONTENT_INSTALL_UNSUCCESSFUL));
+            panel.setBody (getBundle ("InstallStep_InstallUnsuccessful_Text", installException.getLocalizedMessage ()),
+                    InstallUnitWizardModel.getVisibleUpdateElements (model.getAllUpdateElements (), false, model.getOperation ()));
+        }
         panel.hideRunInBackground ();
     }
     

@@ -58,7 +58,6 @@ import org.netbeans.modules.cnd.discovery.api.ItemProperties.LanguageKind;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
 
 /**
@@ -101,29 +100,6 @@ public class ModelSource implements SourceFileProperties {
             }
         }
         return itemPath;
-    }
-    
-    /**
-     * Path is include path like:
-     * .
-     * ../
-     * include
-     * Returns path in unix style
-     */
-    public static String convertRelativePathToAbsolute(SourceFileProperties source, String path){
-        if ( !( path.startsWith("/") || (path.length()>1 && path.charAt(1)==':') ) ) { // NOI18N
-            if (path.equals(".")) { // NOI18N
-                path = source.getCompilePath();
-            } else {
-                path = source.getCompilePath()+File.separator+path;
-            }
-            File file = new File(path);
-            path = FileUtil.normalizeFile(file).getAbsolutePath();
-        }
-        if (Utilities.isWindows()) {
-            path = path.replace('\\', '/');
-        }
-        return path;
     }
     
     private static final String PATTERN = "/../"; // NOI18N

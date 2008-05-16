@@ -60,6 +60,22 @@ made subject to such option by the copyright holder.
       </testset>
     </testbag>
 
+    <testbag testattribs="" executor="ide" name="Design View">
+      <testset dir="qa-functional/src">
+        <patternset>
+          <include name="org/netbeans/test/xml/schema/DVTestCase.class"/>
+        </patternset>
+      </testset>
+    </testbag>
+
+    <testbag testattribs="generation" executor="ide" name="Design View">
+      <testset dir="qa-functional/src">
+        <patternset>
+          <include name="org/netbeans/test/xml/schema/generation/XMLGeneration_0001.class"/>
+        </patternset>
+      </testset>
+    </testbag>
+
     <compiler name="qa-functional-compiler" antfile="build-qa-functional.xml" target="qa-functional-compiler" default="true"/>
     <executor name="ide" antfile="build-qa-functional.xml" target="runidetest" default="true"/>
 </mconfig>

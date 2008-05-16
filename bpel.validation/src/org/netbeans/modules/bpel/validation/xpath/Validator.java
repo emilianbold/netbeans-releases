@@ -40,6 +40,22 @@
  */
 package org.netbeans.modules.bpel.validation.xpath;
 
+import java.util.Set;
+
+import org.netbeans.modules.xml.xam.Component;
+import org.netbeans.modules.xml.xam.Named;
+import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
+import org.netbeans.modules.xml.schema.model.SchemaComponent;
+import org.netbeans.modules.xml.schema.model.GlobalElement;
+import org.netbeans.modules.xml.schema.model.GlobalType;
+import org.netbeans.modules.xml.wsdl.model.Message;
+import org.netbeans.modules.xml.wsdl.model.Part;
+import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
+import org.netbeans.modules.xml.wsdl.model.extensions.bpel.validation.ValidationUtil;
+
+import org.netbeans.modules.soa.validation.util.Duration;
+import org.netbeans.modules.soa.validation.util.DurationUtil;
+
 import org.netbeans.modules.bpel.model.api.BooleanExpr;
 import org.netbeans.modules.bpel.model.api.Branches;
 import org.netbeans.modules.bpel.model.api.Condition;
@@ -57,26 +73,17 @@ import org.netbeans.modules.bpel.model.api.To;
 import org.netbeans.modules.bpel.model.api.PartnerLink;
 import org.netbeans.modules.bpel.model.api.VariableDeclaration;
 import org.netbeans.modules.bpel.model.api.VariableReference;
-import org.netbeans.modules.bpel.model.api.references.BpelReference;
-import org.netbeans.modules.bpel.model.api.support.Utils;
-import org.netbeans.modules.xml.xam.Component;
-import org.netbeans.modules.xml.xam.Named;
-import org.netbeans.modules.xml.schema.model.SchemaComponent;
-import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
 import org.netbeans.modules.bpel.model.api.PartReference;
 import org.netbeans.modules.bpel.model.api.support.PathValidationContext;
+import org.netbeans.modules.bpel.model.api.support.Utils;
+import org.netbeans.modules.bpel.model.api.support.ValidationVisitor;
+import org.netbeans.modules.bpel.model.api.references.BpelReference;
 import org.netbeans.modules.bpel.model.api.references.SchemaReference;
 import org.netbeans.modules.bpel.model.api.references.WSDLReference;
-import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
-import org.netbeans.modules.xml.schema.model.GlobalElement;
-import org.netbeans.modules.xml.schema.model.GlobalType;
-import org.netbeans.modules.xml.wsdl.model.Message;
-import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.bpel.validation.core.BpelValidator;
-import org.netbeans.modules.bpel.model.api.support.ValidationVisitor;
-import org.netbeans.modules.xml.wsdl.model.extensions.bpel.validation.ValidationUtil;
-import org.netbeans.modules.soa.ui.util.Duration;
-import org.netbeans.modules.soa.ui.util.DurationUtil;
+import org.netbeans.modules.bpel.model.api.support.SimpleBpelModelVisitor;
+import org.netbeans.modules.bpel.model.api.support.SimpleBpelModelVisitorAdaptor;
+import static org.netbeans.modules.xml.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -84,9 +91,15 @@ import org.netbeans.modules.soa.ui.util.DurationUtil;
  */
 public final class Validator extends BpelValidator implements ValidationVisitor {
 
+  public Set<ResultItem> getResultItems() {
+    return getValidationResult();
+  }
+
   @Override
-  public void visit(Copy copy)
-  {
+  protected final SimpleBpelModelVisitor getVisitor() { return new SimpleBpelModelVisitorAdaptor() {
+
+  @Override
+  public void visit(Copy copy) {
 //out();
 //out("Assign: " + ((Named) copy.getParent()).getName());
     Component fromType = getTypeOfElement(getType(copy.getFrom()));
@@ -98,9 +111,9 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
       return;
     }
     String fromName = ((Named) fromType).getName();
-//out("  form name: " + fromName);
+//out("  from name: " + fromName);
     String toName = ((Named) toType).getName();
-//out("    to name: " + fromName);
+//out("    to name: " + toName);
 
     if (fromName == null || toName == null) {
       return;
@@ -111,6 +124,9 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
     if (fromName.equals("anyType") || toName.equals("anyType")) { // NOI18N
       return;
     }
+//out("  from based: " + ValidationUtil.getBasedSimpleType(fromType));
+//out("    to based: " + ValidationUtil.getBasedSimpleType(toType));
+
     if (ValidationUtil.getBasedSimpleType(fromType) != ValidationUtil.getBasedSimpleType(toType)) {
       addWarning("FIX_TYPE_IN_COPY", copy, getTypeName(fromType), getTypeName(toType)); // NOI18N
     }
@@ -162,10 +178,13 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
   }
 
   private Component getType(From from) {
+//out();
+//out("get type: " + from);
     if (from == null) {
       return null;
     }
     Component variableType = getVariableType(from);
+//out("  var: " + variableType);
 
     if (variableType != null) {
       Component partType = getPartType(from);
@@ -177,6 +196,7 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
         return partType;
       }
     }
+//out("  see xpath: " + checkXPath(from));
     return checkXPath(from);
   }
 
@@ -283,7 +303,7 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
   
   @Override
   public void visit(BooleanExpr bool) {
-      checkXPath(bool);
+    checkXPath(bool);
   }
 
   @Override
@@ -326,6 +346,9 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
     try {
       Duration duration = DurationUtil.parseDuration(value, true);
 
+      if (duration == null) {
+        return;
+      }
       if (duration.hasMinus() || isZero(duration)) {
         addError("FIX_Negative_RepeatEvery", repeatEvery); // NOI18N
       }
@@ -355,7 +378,7 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
   }
 
   private SchemaComponent checkXPath(ContentElement element) {
-    return Utils.checkXPathExpression(element, new PathValidationContext(this, this, element));
+    return Utils.checkXPathExpression(element, new PathValidationContext(Validator.this, Validator.this, element));
   }
 
   // # 117689
@@ -369,12 +392,5 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
       addError("FIX_Duration", duration, e.getMessage()); // NOI18N
     }
   }
-  
-  private static void out() {
-    System.out.println();
-  }
 
-  private void out(Object object) {
-    System.out.println("*** " + object); // NOI18N
-  }
-}
+};}}

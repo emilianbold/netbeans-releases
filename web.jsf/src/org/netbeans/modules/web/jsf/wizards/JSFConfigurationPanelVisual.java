@@ -75,7 +75,8 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
     private JSFConfigurationPanel panel;
     private boolean customizer;
     
-    private ArrayList <LibraryItem> jsfLibraries;
+    private final List<LibraryItem> jsfLibraries = new ArrayList<LibraryItem>();
+    private boolean libsInitialized;
     private boolean webModule25Version;
     private String serverInstanceID;
     
@@ -86,27 +87,42 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
         this.customizer = customizer;
         
         initComponents();
-        initLibraries();
-
+        
         tURLPattern.getDocument().addDocumentListener(this);
         cbPackageJars.setVisible(false);
-        if (customizer){
+
+    }
+
+    @Override
+    public void addNotify() {
+        super.addNotify();
+        initLibraries();
+
+        if (customizer) {
             enableComponents(false);
         } else {
             updateLibrary();
         }
     }
-    
-    private void initLibraries(){
+
+    private void initLibraries() {
+        if (libsInitialized) {
+            return;
+        }
+
         Vector <String> items = new Vector <String>();
-        jsfLibraries = new ArrayList <LibraryItem>();
+        jsfLibraries.clear();
         List<URL> content;
-        for (Library library : LibraryManager.getDefault().getLibraries()){
-            content = library.getContent("classpath");
+        for (Library library : LibraryManager.getDefault().getLibraries()) {
+            if (!"j2se".equals(library.getType())) { // NOI18N
+                continue;
+            }
+
+            content = library.getContent("classpath"); //NOI18N
             try {
-                if (Util.containsClass(content, JSFUtils.FACES_EXCEPTION)) {    //NOI18N
+                if (Util.containsClass(content, JSFUtils.FACES_EXCEPTION)) {
                     items.add(library.getDisplayName());
-                    boolean isJSF12 = Util.containsClass(content, JSFUtils.JSF_1_2__API_SPECIFIC_CLASS);  //NOI18N
+                    boolean isJSF12 = Util.containsClass(content, JSFUtils.JSF_1_2__API_SPECIFIC_CLASS);
                     if (isJSF12) {
                         jsfLibraries.add(new LibraryItem(library, JSFVersion.JSF_1_2));
                     } else {
@@ -117,9 +133,9 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
                 Exceptions.printStackTrace(exception);
             }
         }
-        
+
         cbLibraries.setModel(new DefaultComboBoxModel(items));
-        if (items.size() == 0){
+        if (items.size() == 0) {
             rbRegisteredLibrary.setEnabled(false);
             cbLibraries.setEnabled(false);
             rbNewLibrary.setSelected(true);
@@ -129,6 +145,8 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
             rbRegisteredLibrary.setSelected(true);
             cbLibraries.setEnabled(true);
         }
+
+        libsInitialized = true;
         repaint();
     }
 

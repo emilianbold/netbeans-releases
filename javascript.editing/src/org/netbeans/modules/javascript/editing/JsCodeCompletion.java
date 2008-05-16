@@ -68,6 +68,7 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.lexer.TokenUtilities;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.gsf.api.OffsetRange;
@@ -75,6 +76,8 @@ import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.html.editor.gsf.HtmlParserResult;
 import org.netbeans.modules.javascript.editing.JsParser.Sanitize;
 import org.netbeans.modules.javascript.editing.lexer.Call;
+import org.netbeans.modules.javascript.editing.lexer.JsCommentLexer;
+import org.netbeans.modules.javascript.editing.lexer.JsCommentTokenId;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 import org.openide.filesystems.FileObject;
@@ -113,6 +116,7 @@ import org.openide.util.NbBundle;
  *  @todo Display more information in parameter tooltips, such as type hints (perhaps do smart
  *    filtering Java-style?), and explanations for each parameter
  *  @todo Need preindexing support for unit tests - and separate files
+ * @todo Insert semicolon too when you insert methods, in custom templates (unless you're in a call), a var block, etc.
  * 
  * @author Tor Norbye
  */
@@ -472,6 +476,18 @@ public class JsCodeCompletion implements Completable {
                 request.node = closest;
             }
 
+            // If we're in a call, add in some info and help for the code completion call
+            if (completeParameters(proposals, request)) {
+                return proposals;
+            }
+            
+            // Don't do empty-completion for parameters
+            // Can't do this yet... requires canFilter() improvement in GSF such that
+            // I don't just filter this empty result on the next iteration
+            //if (inCall && proposals.size() > 0 && prefix.length() == 0) {
+            //    return proposals;
+            //}
+            
             if (root == null) {
                 completeKeywords(proposals, request);
                 return proposals;
@@ -579,8 +595,10 @@ public class JsCodeCompletion implements Completable {
 //                proposals.add(item);
 //            }
 //        }
+        
+        String[] keywords = request.inCall ? JsUtils.CALL_KEYWORDS : JsUtils.JAVASCRIPT_KEYWORDS;
 
-        for (String keyword : JsUtils.JAVASCRIPT_KEYWORDS) {
+        for (String keyword : keywords) {
             if (startsWith(keyword, prefix)) {
                 KeywordItem item = new KeywordItem(keyword, null, request);
 
@@ -588,11 +606,13 @@ public class JsCodeCompletion implements Completable {
             }
         }
 
-        for (String keyword : JsUtils.JAVASCRIPT_RESERVED_WORDS) {
-            if (startsWith(keyword, prefix)) {
-                KeywordItem item = new KeywordItem(keyword, null, request);
+        if (!request.inCall) {
+            for (String keyword : JsUtils.JAVASCRIPT_RESERVED_WORDS) {
+                if (startsWith(keyword, prefix)) {
+                    KeywordItem item = new KeywordItem(keyword, null, request);
 
-                proposals.add(item);
+                    proposals.add(item);
+                }
             }
         }
     }
@@ -783,7 +803,7 @@ public class JsCodeCompletion implements Completable {
                                         word = word.substring(1);
                                     }
                                     //KeywordItem item = new KeywordItem(word, desc, request);
-                                    TagItem item = new TagItem(word, desc, request, ElementKind.RULE);
+                                    GenericItem item = new GenericItem(word, desc, request, ElementKind.RULE);
                                     proposals.add(item);
                                 }
                             }
@@ -839,7 +859,7 @@ public class JsCodeCompletion implements Completable {
             String filename = request.fileObject.getNameExt();
             for (String tag : classes) {
                 if (startsWith(tag, prefix)) {
-                    TagItem item = new TagItem(tag, filename, request, ElementKind.TAG);
+                    GenericItem item = new GenericItem(tag, filename, request, ElementKind.TAG);
                     proposals.add(item);
                 }
             }
@@ -869,7 +889,7 @@ public class JsCodeCompletion implements Completable {
             
             for (String tag : tagNames) {
                 if (startsWith(tag, prefix)) {
-                    TagItem item = new TagItem(tag, filename, request, ElementKind.TAG);
+                    GenericItem item = new GenericItem(tag, filename, request, ElementKind.TAG);
                     proposals.add(item);
                 }
             }
@@ -891,7 +911,7 @@ public class JsCodeCompletion implements Completable {
                 }
 
                 if (startsWith(elementId, prefix)) {
-                    TagItem item = new TagItem(elementId, filename, request, ElementKind.TAG);
+                    GenericItem item = new GenericItem(elementId, filename, request, ElementKind.TAG);
                     proposals.add(item);
                 }
             }
@@ -1193,10 +1213,7 @@ public class JsCodeCompletion implements Completable {
         String fqn = request.fqn;
         JsParseResult result = request.result;
         
-        boolean includeNonFqn = true;
-        
-        // Add in inherited properties, if any...
-        // TODO
+        boolean includeNonFqn = !request.inCall;
         
         Set<IndexedElement> matches;
         if (fqn != null) {
@@ -1559,8 +1576,6 @@ public class JsCodeCompletion implements Completable {
                             continue;
                         }
 
-                        
-
 //                        // For def completion, skip local methods, only include superclass and included
 //                        if ((fqn != null) && fqn.equals(method.getClz())) {
 //                            continue;
@@ -1581,20 +1596,6 @@ public class JsCodeCompletion implements Completable {
                     }
 
                     return true;
-//                } else if (token.id() == JsTokenId.IDENTIFIER && "include".equals(token.text().toString())) {
-//                    // Module completion
-//                    Set<IndexedClass> classes = index.getClasses(prefix, kind, false, true, false);
-//                    for (IndexedClass clz : classes) {
-//                        if (clz.isNoDoc()) {
-//                            continue;
-//                        }
-//                        
-//                        ClassItem item = new ClassItem(clz, anchor, request);
-//                        item.setSmart(true);
-//                        proposals.add(item);
-//                    }     
-//                    
-//                    return true;
                 }
             }
         }
@@ -1602,6 +1603,258 @@ public class JsCodeCompletion implements Completable {
         return false;
     }
 
+    private boolean completeParameters(List<CompletionProposal> proposals, CompletionRequest request) {
+        IndexedFunction[] methodHolder = new IndexedFunction[1];
+        @SuppressWarnings("unchecked")
+        Set<IndexedFunction>[] alternatesHolder = new Set[1];
+        int[] paramIndexHolder = new int[1];
+        int[] anchorOffsetHolder = new int[1];
+        CompilationInfo info = request.info;
+        int lexOffset = request.lexOffset;
+        int astOffset = request.astOffset;
+
+        if (!computeMethodCall(info, lexOffset, astOffset,
+                methodHolder, paramIndexHolder, anchorOffsetHolder, alternatesHolder)) {
+            request.inCall = false;
+
+            return false;
+        }
+
+        request.inCall = true;
+
+        IndexedFunction targetMethod = methodHolder[0];
+        int index = paramIndexHolder[0];
+        
+        CallItem callItem = new CallItem(targetMethod, index, request);
+        proposals.add(callItem);
+        // Also show other documented, not nodoc'ed items (except for those
+        // with identical signatures, such as overrides of the same method)
+        if (alternatesHolder[0] != null) {
+            Set<String> signatures = new HashSet<String>();
+            signatures.add(targetMethod.getSignature().substring(targetMethod.getSignature().indexOf('#')+1));
+            for (IndexedFunction m : alternatesHolder[0]) {
+                if (m != targetMethod && m.isDocumented() && !m.isNoDoc()) {
+                    String sig = m.getSignature().substring(m.getSignature().indexOf('#')+1);
+                    if (!signatures.contains(sig)) {
+                        CallItem item = new CallItem(m, index, request);
+                        proposals.add(item);
+                        signatures.add(sig);
+                    }
+                }
+            }
+        }
+        
+        List<String> params = targetMethod.getParameters();
+        if (params == null || params.size() == 0) {
+            return false;
+        }
+
+        if  (params.size() <= index) {
+            // Just use the last parameter in these cases
+            // See for example the TableDefinition.binary dynamic method where
+            // you can add a number of parameter names and the options parameter
+            // is always the last one
+            index = params.size()-1;
+        }
+
+        // Add in inherited properties, if any...
+        // Look for properties on the object - as well as inherited properties. NOT methods!!!
+        // Also look for @cfg and @config properties. This is a bit tricky. In the case of Ext,
+        // we have these guys on the class itself, not associated with a method parameter.
+        // Shall I take this to be a set of constructor properties?
+        // In YUI it's different; many of the properties we want to inherit are NOT marked as @config,
+        // such as "animate" in the Editor. 
+        String fqn = null;
+        AstPath path = request.path;
+        Node leaf = path.leaf();
+        int leafType = leaf.getType();
+        if (leafType == org.mozilla.javascript.Token.OBJECTLIT || leafType == org.mozilla.javascript.Token.OBJLITNAME) {
+            if (leafType == org.mozilla.javascript.Token.OBJLITNAME) {
+                leaf = leaf.getParentNode(); // leaf still won't be null, OBJLITNAME is always below an OBJECTLIT
+            }
+            // We're trying to complete object literal names. These should be properties we're
+            // expecting.
+            
+            // (1) See if we're in a constructor argument, and if so, look for configuration objects
+            // on the function and the class, and if not:
+            // (2) Assume that we're customizing the class we're surrounding so use that as the type.
+            
+            Node parent = leaf.getParentNode();
+            int parentType = parent.getType();
+            if (parentType == org.mozilla.javascript.Token.CALL ||
+                    parentType == org.mozilla.javascript.Token.NEW) {
+
+                int last = params.size()-1;
+                if (index > last) {
+                    index = last;
+                }
+
+                if (index >= 0) {
+                    String param = params.get(index);
+                    int typeIdx = param.indexOf(':');
+                    if (typeIdx != -1) {
+                        String type = param.substring(typeIdx+1);
+                        param = param.substring(0, typeIdx);
+                        fqn = type;
+                    }
+
+                    // See if we have @config options for this in its documentation?
+                    if ((fqn == null || "Object".equals(fqn)) && targetMethod.isDocumented()) { // NOI18N
+                        String prefix = request.prefix;
+                        boolean foundConfig = false;
+                        List<String> comments = ElementUtilities.getComments(info, targetMethod);
+                        if (comments != null && comments.size() > 0) {
+                            StringBuilder sb = new StringBuilder();
+                            for (String line : comments) {
+                                sb.append(line);
+                                sb.append("\n"); // NOI18N
+                            }
+                            sb.setLength(sb.length()-1);
+                            TokenHierarchy<?> hi = TokenHierarchy.create(sb.toString(), JsCommentTokenId.language());
+                            TokenSequence<JsCommentTokenId> ts = hi.tokenSequence(JsCommentTokenId.language());
+                            String currentParameter = null;
+                            // Look for @config tags
+                            while (ts != null && ts.moveNext()) {
+                                Token<? extends JsCommentTokenId> token = ts.token();
+                                TokenId id = token.id();
+                                if (id == JsCommentTokenId.TAG) {
+                                    CharSequence text = token.text();
+                                    if (TokenUtilities.textEquals("@param", text) ||  // NOI18N
+                                            TokenUtilities.textEquals("@argument", text)) { // NOI18N
+                                        int tsidx = ts.index();
+                                        String paramType = JsCommentLexer.nextType(ts);
+                                        if (paramType == null) {
+                                            ts.moveIndex(tsidx);
+                                            ts.moveNext();
+                                        }
+                                        String paramName = JsCommentLexer.nextIdent(ts);
+                                        if (paramName != null) {
+                                            currentParameter = paramName;
+                                        } else {
+                                            ts.moveIndex(tsidx);
+                                            ts.moveNext();
+                                        }
+                                    } else if (TokenUtilities.textEquals("@config", text) ||  // NOI18N
+                                            TokenUtilities.textEquals("@cfg", text)) { // NOI18N
+                                        int tsidx = ts.index();
+                                        String configType = JsCommentLexer.nextType(ts);
+                                        if (configType == null) {
+                                            ts.moveIndex(tsidx);
+                                            ts.moveNext();
+                                        }
+                                        String configName = JsCommentLexer.nextIdent(ts);
+                                        if (configName != null && (currentParameter == null || currentParameter.equals(param))) {
+                                            // Compute the rest of the description of the config, if applicable
+                                            int i2 = ts.index();
+                                            //StringBuilder longDesc = new StringBuilder();
+                                            StringBuilder shortDesc = new StringBuilder();
+                                            boolean truncated = false;
+                                            while (ts.moveNext()) {
+                                                text = ts.token().text();
+                                                if (text.length() > 0 && text.charAt(0) == '@' && ts.token().id() == JsCommentTokenId.TAG) {
+                                                    break;
+                                                } else {
+                                                    if (!truncated) {
+                                                        shortDesc.append(text);
+                                                        int MAX = 40;
+                                                        if (shortDesc.length() > MAX) {
+                                                            shortDesc.setLength(MAX-3);
+                                                            shortDesc.append("...");
+                                                            truncated = true;
+                                                            break;
+                                                        }
+                                                    }
+                                                    //longDesc.append(text);
+                                                }
+                                            }
+                                            String rhs = shortDesc.toString().trim();
+                                            if (configType != null) {
+                                                if (rhs.length() > 0) {
+                                                    rhs = "{" + configType + "} " + rhs;
+                                                } else {
+                                                    rhs = configType;
+                                                }
+                                            }
+
+                                            ts.moveIndex(i2);
+                                            if (startsWith(configName, prefix)) {
+                                                GenericItem item = new GenericItem(configName, rhs, request, ElementKind.PARAMETER);
+                                                item.element = targetMethod;
+                                                //String desc = longDesc.toString().trim();
+                                                //if (desc.length() > 0) {
+                                                //    item.setLongDescription(desc);
+                                                //}
+                                                proposals.add(item);
+                                                foundConfig = true;
+                                            }
+                                        } else {
+                                            ts.moveIndex(tsidx);
+                                            ts.moveNext();
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        
+                        if (foundConfig) {
+                            return true;
+                        }
+                    }
+                }
+
+                if (targetMethod.getKind() == ElementKind.CONSTRUCTOR && (fqn == null || "Object".equals(fqn))) { // NOI18N
+                    if (!Character.isUpperCase(targetMethod.getName().charAt(0)) && targetMethod.getIn().length() > 0) {
+                        fqn = targetMethod.getIn();
+                    } else {
+                        fqn = targetMethod.getFqn();
+                    }
+                }
+
+                String prefix = request.prefix;
+                NameKind kind = request.kind;
+                JsParseResult result = request.result;
+                Set<IndexedElement> matches = request.index.getElements(prefix, fqn, kind, JsIndex.ALL_SCOPE, result);
+                boolean found = false;
+
+                for (IndexedElement element : matches) {
+                    if (element.isNoDoc()) {
+                        continue;
+                    }
+
+                    if (element.getKind() == ElementKind.METHOD || element.getKind() == ElementKind.CONSTRUCTOR) {
+                        continue;
+                    }
+                    
+                    // Skip constants
+                    String name = element.getName();
+                    if (Character.isUpperCase(name.charAt(0))) {
+                        continue;
+                    }
+                    
+                    // Skip private fields
+                    // (Not sure about this)
+                    if (element.isPrivate()) {
+                        continue;
+                    }
+
+                    JsCompletionItem item;
+                    if (element instanceof IndexedFunction) {
+                        item = new FunctionItem((IndexedFunction)element, request);
+                    } else {
+                        item = new PlainItem(request, element);
+                    }
+                    found = true;
+                    proposals.add(item);
+                }
+                
+                if (found) {
+                    return true;
+                }
+            }
+        }
+        
+        return false;
+    }
     
     public QueryType getAutoQuery(JTextComponent component, String typedText) {
         char c = typedText.charAt(0);
@@ -1704,9 +1957,7 @@ public class JsCodeCompletion implements Completable {
             return null;
         }
         
-        if (element instanceof KeywordElement) {
-            return null; //getKeywordHelp(((KeywordElement)element).getName());
-        } else if (element instanceof CommentElement) {
+        if (element instanceof CommentElement) {
             // Text is packaged as the name
             String comment = element.getName();
             String[] comments = comment.split("\n");
@@ -1730,6 +1981,8 @@ public class JsCodeCompletion implements Completable {
             }
             String html = sb.toString();
             return html;
+        } else if (element instanceof KeywordElement) {
+            return null; //getKeywordHelp(((KeywordElement)element).getName());
         } else if (element instanceof IndexedElement) {
             IndexedElement ie = (IndexedElement)element;
             if (!ie.isDocumented()) {
@@ -1947,7 +2200,8 @@ public class JsCodeCompletion implements Completable {
                 while (it.hasNext()) {
                     Node node = it.next();
 
-                    if (node.getType() == org.mozilla.javascript.Token.CALL) {
+                    if (node.getType() == org.mozilla.javascript.Token.CALL ||
+                            node.getType() == org.mozilla.javascript.Token.NEW) {
                         call = node;
                         index = AstUtilities.findArgumentIndex(call, astOffset, path);
                         break;
@@ -2081,6 +2335,7 @@ public class JsCodeCompletion implements Completable {
                 index++;
             }
             
+//            String fqn = null;
             if ((call == null) || (index == -1)) {
                 callLineStart = -1;
                 callMethod = null;
@@ -2088,6 +2343,13 @@ public class JsCodeCompletion implements Completable {
             } else if (targetMethod == null) {
                 // Look up the
                 // See if we can find the method corresponding to this call
+//                fqn = JsTypeAnalyzer.getCallFqn(info, call, true);
+//                if (fqn != null) {
+//                    JsIndex jsIndex = JsIndex.get(info.getIndex(JsTokenId.JAVASCRIPT_MIME_TYPE));
+//                    JsParseResult parseResult = AstUtilities.getParseResult(info);
+//                    Set<IndexedElement> elements = jsIndex.getElementsByFqn(fqn, NameKind.EXACT_NAME, JsIndex.ALL_SCOPE, parseResult);
+//                    // How do I choose one?
+//                }
                 targetMethod = new JsDeclarationFinder().findMethodDeclaration(info, call, path, 
                         alternativesHolder);
                 if (targetMethod == null) {
@@ -2098,8 +2360,10 @@ public class JsCodeCompletion implements Completable {
             callLineStart = currentLineStart;
             callMethod = targetMethod;
 
+            // TODO - make dedicated result object?
             methodHolder[0] = callMethod;
             parameterIndexHolder[0] = index;
+            // TODO - store the fqn too?
 
             if (anchorOffset == -1) {
                 anchorOffset = call.getSourceStart(); // TODO - compute
@@ -2134,6 +2398,7 @@ public class JsCodeCompletion implements Completable {
         private FileObject fileObject;
         private HtmlFormatter formatter;
         private Call call;
+        private boolean inCall;
         private String fqn;
     }
 
@@ -2193,10 +2458,17 @@ public class JsCodeCompletion implements Completable {
             if (emphasize) {
                 formatter.emphasis(true);
             }
-            boolean strike = indexedElement != null && indexedElement.isDeprecated();
+            
+            boolean strike = false;
+            if (indexedElement != null) {
+                if (indexedElement.isDeprecated() || !SupportedBrowsers.getInstance().isSupported(indexedElement.getCompatibility())) {
+                    strike = true;
+                }
+            }
             if (strike) {
                 formatter.deprecated(true);
             }
+            
             formatter.name(kind, true);
             formatter.appendText(getName());
             formatter.name(kind, false);
@@ -2295,7 +2567,8 @@ public class JsCodeCompletion implements Completable {
     }
 
     private class FunctionItem extends JsCompletionItem {
-        private IndexedFunction function;
+        protected IndexedFunction function;
+        
         FunctionItem(IndexedFunction element, CompletionRequest request) {
             super(request, element);
             this.function = element;
@@ -2504,16 +2777,21 @@ public class JsCodeCompletion implements Completable {
         }
     }
 
-    private class TagItem extends JsCompletionItem {
+    private class GenericItem extends JsCompletionItem {
         private final String tag;
         private final String description;
+        private String longDescription;
         private final ElementKind kind;
 
-        TagItem(String keyword, String description, CompletionRequest request, ElementKind kind) {
+        GenericItem(String keyword, String description, CompletionRequest request, ElementKind kind) {
             super(null, request);
             this.tag = keyword;
             this.description = description;
             this.kind = kind;
+        }
+        
+        void setLongDescription(String longDescription) {
+            this.longDescription = longDescription;
         }
 
         @Override
@@ -2546,9 +2824,9 @@ public class JsCodeCompletion implements Completable {
                 HtmlFormatter formatter = request.formatter;
                 formatter.reset();
                 //formatter.appendText(description);
-                formatter.appendHtml("<i>");
+                formatter.appendHtml("<i>"); // NOI18N
                 formatter.appendHtml(description);
-                formatter.appendHtml("</i>");
+                formatter.appendHtml("</i>"); // NOI18N
 
                 return formatter.getText();
             } else {
@@ -2563,8 +2841,16 @@ public class JsCodeCompletion implements Completable {
         
         @Override
         public ElementHandle getElement() {
-            // For completion documentation
-            return new KeywordElement(tag);
+            if (element == null) {
+                if (longDescription != null && longDescription.length() > 0) {
+                    element = new CommentElement(longDescription);
+                } else {
+                    // For completion documentation
+                    element = new KeywordElement(tag);
+                }
+            }
+            
+            return element;
         }
 
         @Override
@@ -2572,7 +2858,8 @@ public class JsCodeCompletion implements Completable {
             return true;
         }
     }
-    
+
+    // Todo, make the kind flexible and move it up to the spi
     private class PlainItem extends JsCompletionItem {
         PlainItem(Element element, CompletionRequest request) {
             super(element, request);
@@ -2588,5 +2875,72 @@ public class JsCodeCompletion implements Completable {
             return new ElementHandle.UrlHandle(link);
         }
         return null;
+    }
+    
+    private class CallItem extends FunctionItem {   
+        private int index;
+
+        CallItem(IndexedFunction method, int parameterIndex, CompletionRequest request) {
+            super(method, request);
+            this.index = parameterIndex;
+        }
+
+        @Override
+        public ElementKind getKind() {
+            return ElementKind.CALL;
+        }
+
+        @Override
+        public String getInsertPrefix() {
+            return "";
+        }
+
+        @Override
+        public String getLhsHtml() {
+            ElementKind kind = getKind();
+            HtmlFormatter formatter = request.formatter;
+            formatter.reset();
+            formatter.name(kind, true);
+            formatter.appendText(getName());
+
+            List<String> parameters = function.getParameters();
+
+            if ((parameters != null) && (parameters.size() > 0)) {
+                formatter.appendHtml("("); // NOI18N
+
+                if (index > 0 && index < parameters.size()) {
+                    formatter.appendText("... , ");
+                }
+                
+                formatter.active(true);
+                formatter.appendText(parameters.get(Math.min(parameters.size()-1, index)));
+                formatter.active(false);
+                
+                if (index < parameters.size()-1) {
+                    formatter.appendText(", ...");
+                }
+
+                formatter.appendHtml(")"); // NOI18N
+            }
+            
+            formatter.name(kind, false);
+
+            return formatter.getText();
+        }
+
+        @Override
+        public boolean isSmart() {
+            return true;
+        }
+
+        @Override
+        public List<String> getInsertParams() {
+            return null;
+        }
+        
+        @Override
+        public String getCustomInsertTemplate() {
+            return null;
+        }
     }
 }

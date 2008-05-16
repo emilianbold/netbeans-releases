@@ -72,7 +72,7 @@ made subject to such option by the copyright holder.
    	Options Dialog module contains implementation of Options Dialog and simple SPI. This SPI allows 
    	installation of custom options panels / categories to Options Dialog.
         This module contains implementation of Miscellaneous Panel ans Miscellaneous Panel SPI too.
-	<api name="OptionsDialogSPI" group="java" type="export" category="devel" url="@org-netbeans-modules-options-api@/org/netbeans/spi/options/OptionsCategory.html"/>
+	<api name="OptionsDialogSPI" group="java" type="export" category="official" url="@org-netbeans-modules-options-api@/org/netbeans/spi/options/OptionsCategory.html"/>
    	
   </p>
  </answer>
@@ -276,7 +276,7 @@ made subject to such option by the copyright holder.
   <defaultanswer generate='none' /> <!-- as it has broken link -->
   
   <ul>
-    <li><api type='import' group='java' category='devel' name='Progress' url='../org-netbeans-api-progress/overview-summary.html' >
+    <li><api type='import' group='java' category='official' name='Progress' url='../org-netbeans-api-progress/overview-summary.html' >
     The module is needed for compilation. 
     
     The module is used during runtime. 
@@ -309,7 +309,7 @@ made subject to such option by the copyright holder.
    </api>
    </li>            
 
-   <li><api type='import' group='java' category='private' name='org.openide.awt' url='../org-openide-awt/overview-summary.html' >
+   <li><api type='import' group='java' category='official' name='org.openide.awt' url='../org-openide-awt/overview-summary.html' >
    The module is needed for compilation. 
    
    The module is used during runtime. 

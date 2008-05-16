@@ -49,12 +49,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.net.JarURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLConnection;
 import java.net.URLStreamHandler;
-import java.net.URLStreamHandlerFactory;
 import java.security.CodeSource;
 import java.security.PermissionCollection;
 import java.security.Policy;
@@ -111,24 +110,7 @@ public class JarClassLoader extends ProxyClassLoader {
     }
     
     static {
-        ResURLStreamHandlerFactory fact = new ResURLStreamHandlerFactory();
-        try {
-            java.net.URL.setURLStreamHandlerFactory(fact);
-        } catch (Error e) {
-            try {
-                for (Field f : URL.class.getDeclaredFields()) {
-                    if (f.getType() == URLStreamHandlerFactory.class) {
-                        f.setAccessible(true);
-                        fact.del = (URLStreamHandlerFactory)f.get(null);
-                        f.set(null, null);
-                        break;
-                    }
-                }
-                URL.setURLStreamHandlerFactory(fact);
-            } catch (Throwable t) {
-                throw new InternalError(); // can't really continue
-            }
-        }
+        ProxyURLStreamHandlerFactory.register();
     }
     
     private static final Logger LOGGER = Logger.getLogger(JarClassLoader.class.getName());
@@ -314,7 +296,7 @@ public class JarClassLoader extends ProxyClassLoader {
             try {
                 return readClass(path);
             } catch (IOException e) {
-                LOGGER.log(Level.FINE, null, e);
+                LOGGER.log(Level.WARNING, null, e);
             }
             return null;
         }
@@ -343,6 +325,12 @@ public class JarClassLoader extends ProxyClassLoader {
             sources.put(f.toURI().toString(), src);
             return src;
         }
+
+        @Override
+        public String toString() {
+            return url.toString();
+        }
+
     }
 
     static class JarSource extends Source {
@@ -356,7 +344,7 @@ public class JarClassLoader extends ProxyClassLoader {
         
         JarSource(File file) throws IOException {
             super(file.toURL());
-            resPrefix = ResURLStreamHandler.RES_PROTO +":" + file.toURI() + "!/"; // NOI18N;
+            resPrefix = "jar:" + file.toURI() + "!/"; // NOI18N;
             this.file = file;
         }
 
@@ -419,10 +407,6 @@ public class JarClassLoader extends ProxyClassLoader {
                     count += is.read(data, count, len-count);
                 }
                 return data;
-            } catch (IllegalStateException ex) {
-                // this exception occurs in org/netbeans/core/lookup/* tests
-                // without this catch statement the tests fail
-                return null;
             } finally {
                 releaseJarFile();
             }
@@ -538,7 +522,7 @@ public class JarClassLoader extends ProxyClassLoader {
         }
 
         // JarFile pool tracking
-        private static Set<JarSource> sources = new HashSet<JarSource>();
+        private static final Set<JarSource> sources = new HashSet<JarSource>();
         private static int LIMIT = Integer.getInteger("org.netbeans.JarClassLoader.limit_fd", 300);
 
         static void opened(JarSource source, String forWhat) {
@@ -665,28 +649,16 @@ public class JarClassLoader extends ProxyClassLoader {
         return known;
     }
     
-    private static class ResURLStreamHandlerFactory implements URLStreamHandlerFactory {
-        URLStreamHandlerFactory del;
-        /**
-         * Creates URLStreamHandler for nbinst protocol
-         * @param protocol
-         * @return NbinstURLStreamHandler if the protocol is nbinst otherwise null
-         */
-        public URLStreamHandler createURLStreamHandler(String protocol) {
-            if (ResURLStreamHandler.RES_PROTO.equals(protocol)) {
-                return new ResURLStreamHandler ();
-            }
-            return del != null ? del.createURLStreamHandler(protocol): null;
-        }
-    }
-    
     /**
      * URLStreamHandler for res protocol
      */
-    private static class ResURLStreamHandler extends URLStreamHandler {
-        public static final String RES_PROTO = "nbjcl";
+    static class ResURLStreamHandler extends URLStreamHandler {
 
-        ResURLStreamHandler() {}
+        private final URLStreamHandler originalJarHandler;
+
+        ResURLStreamHandler(URLStreamHandler originalJarHandler) {
+            this.originalJarHandler = originalJarHandler;
+        }
 
         /**
          * Creates URLConnection for URL with res protocol.
@@ -694,132 +666,42 @@ public class JarClassLoader extends ProxyClassLoader {
          * @return URLConnection
          * @throws IOException
          */
-        protected URLConnection openConnection(URL u) throws IOException {
+        protected JarURLConnection openConnection(URL u) throws IOException {
             String url = u.getFile();//toExternalForm();
             int bang = url.indexOf("!/");
+            if (bang == -1) {
+                throw new IOException("Malformed JAR-protocol URL: " + u);
+            }
             String jar = url.substring(0, bang);
             String _name = url.substring(bang+2);
             Source _src = Source.sources.get(jar);
             if (_src == null) {
-                String replace = u.toExternalForm().replaceAll("nbjcl:", "jar:");
-                
-                if (archive.isActive()) {
-                    LOGGER.log(Level.WARNING, "Cannot find {0} in current sources", jar);
-                    if (LOGGER.isLoggable(Level.FINER)) {
-                        LOGGER.log(Level.FINER, dumpSources(Source.sources, jar));
-                    }
-                    LOGGER.log(Level.WARNING, "Trying {0} instead", replace);
-                    LOGGER.log(Level.WARNING, "Disabling class cache");
-                    archive.stopServing();
+                try {
+                    Method m = URLStreamHandler.class.getDeclaredMethod("openConnection", URL.class);
+                    m.setAccessible(true);
+                    return (JarURLConnection) m.invoke(originalJarHandler, u);
+                } catch (Exception e) {
+                    throw (IOException) new IOException(e.toString()).initCause(e);
                 }
-                return new URL(replace).openConnection();
             }
             return new ResURLConnection (u, _src, _name);
         }
 
-        protected @Override void parseURL(URL url, String spec, 
-                                int start, int limit) {
-            String file = null;
-            String ref = null;
-            // first figure out if there is an anchor
-            int refPos = spec.indexOf('#', limit);
-            boolean refOnly = refPos == start;
-            if (refPos > -1) {
-                ref = spec.substring(refPos + 1, spec.length());
-                if (refOnly) {
-                    file = url.getFile();
-                }
-            }
-            // then figure out if the spec is 
-            // 1. absolute (res:)
-            // 2. relative (i.e. url + foo/bar/baz.ext)
-            // 3. anchor-only (i.e. url + #foo), which we already did (refOnly)
-            boolean absoluteSpec = false;
-            if (spec.length() >= RES_PROTO.length()+1) {
-                absoluteSpec = spec.substring(0, RES_PROTO.length()+1).equalsIgnoreCase(RES_PROTO+":");
-            }
-            spec = spec.substring(start, limit);
-
-            if (absoluteSpec) {
-                file = parseAbsoluteSpec(spec);
-            } else if (!refOnly) {
-                file = parseContextSpec(url, spec);
-
-                // Canonize the result after the bangslash
-                int bangSlash = file.lastIndexOf("!/") + 1;
-                String toBangSlash = file.substring(0, bangSlash);
-                String afterBangSlash = file.substring(bangSlash);
-                sun.net.www.ParseUtil canonizer = new sun.net.www.ParseUtil(); // XXX
-                afterBangSlash = canonizer.canonizeString(afterBangSlash);
-                file = toBangSlash + afterBangSlash;
-            }
-            setURLOK(url, file, ref);	
-        }
-
-        private static String dumpSources(Map<String, Source> sources, String jar) {
-            StringBuilder sb = new StringBuilder();
-            sb.append("Searching for ").append(jar).append("\nwhile available:\n");
-            for (Map.Entry<String, Source> entry : sources.entrySet()) {
-                sb.append(entry.getKey()).append('\n');
-            }
-            
-            return sb.toString();
-        }
-        
-        @SuppressWarnings("deprecation")
-        private void setURLOK(URL url, String file, String ref) {
-            super.setURL(url, RES_PROTO, "", -1, file, ref);	
-        }
-
-        private String parseAbsoluteSpec(String spec) {
-            URL url = null;
-            int index = -1;
-            // check for !/
-            if ((index = spec.lastIndexOf("!/") + 1) == -1) {
-                throw new NullPointerException("no !/ in spec");
-            }
-            // test the inner URL
-            try {
-                String innerSpec = spec.substring(0, index - 1);
-                url = new URL(innerSpec);
-            } catch (MalformedURLException e) {
-                throw new NullPointerException("invalid url: " + 
-                                               spec + " (" + e + ")");
-            }
-            return spec;
-        }
-
-        private String parseContextSpec(URL url, String spec) {
-            String ctxFile = url.getFile();
-            // if the spec begins with /, chop up the jar back !/
+        @Override
+        protected void parseURL(URL u, String spec, int start, int limit) {
             if (spec.startsWith("/")) {
-                int bangSlash = ctxFile.lastIndexOf("!/");
-                if (bangSlash == -1) {
-                    throw new NullPointerException("malformed " +
-                                                   "context url:" +
-                                                   url + 
-                                                   ": no !/");
-                }
-                ctxFile = ctxFile.substring(0, bangSlash+1);
+                setURL(u, "jar", null, 0, null, null, u.getFile().replaceFirst("!/.+$", "!" + spec), u.getQuery(), u.getRef()); // NOI18N
+            } else {
+                super.parseURL(u, spec, start, limit);
             }
-            if (!ctxFile.endsWith("/") && (!spec.startsWith("/"))){
-                // chop up the last component
-                int lastSlash = ctxFile.lastIndexOf('/');
-                if (lastSlash == -1) {
-                    throw new NullPointerException("malformed " +
-                                                   "context url:" +
-                                                   url);
-                }
-                ctxFile = ctxFile.substring(0, lastSlash + 1);
-            }
-            return (ctxFile + spec);
         }
+
     }
 
     /** URLConnection for URL with res protocol.
      *
      */
-    private static class ResURLConnection extends URLConnection {
+    private static class ResURLConnection extends JarURLConnection {
         private JarSource src;
         private String name;
         private byte[] data;
@@ -830,7 +712,7 @@ public class JarClassLoader extends ProxyClassLoader {
          * @param url the parameter for which the connection should be
          * created
          */
-        private ResURLConnection(URL url, Source src, String name) {
+        private ResURLConnection(URL url, Source src, String name) throws MalformedURLException {
             super(url);
             this.src = (JarSource)src;
             this.name = name;
@@ -869,6 +751,11 @@ public class JarClassLoader extends ProxyClassLoader {
             this.connect();
             if (iStream == null) iStream = new ByteArrayInputStream(data);
             return iStream;
+        }
+
+        @Override
+        public JarFile getJarFile() throws IOException {
+            return new JarFile(src.jar.getName()); // #134424
         }
     }
 }

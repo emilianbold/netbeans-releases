@@ -206,21 +206,15 @@ public class Axis2LookupProvider implements LookupProvider {
                 }
             }
             private void updateAxisProperties(String axisHome, String axisDeploy) throws IOException {
-                System.out.println("updating properties");
                 EditableProperties ep = AxisUtils.getEditableProperties(prj, AntProjectHelper.PRIVATE_PROPERTIES_PATH);
                 boolean needToStore = false;
                 if (ep != null) {
-//                    String oldAxisHome = ep.getProperty("axis2.home");
-//                    if (axisHome != null && !axisHome.equals(oldAxisHome)) {
-//                        ep.setProperty("axis2.home",axisHome); //NOI18N
-//                        needToStore = true;
-//                    }
-                    String oldAxisDeploy = ep.getProperty("axis2.deploy.war");
-                    if (oldAxisDeploy == null) oldAxisDeploy = ep.getProperty("axis2.deploy.dir");
+                    String oldAxisDeploy = ep.getProperty("axis2.deploy.war"); //NOI18N
+                    if (oldAxisDeploy == null) oldAxisDeploy = ep.getProperty("axis2.deploy.dir"); //NOI18N
                     if (axisDeploy != null && !axisDeploy.equals(oldAxisDeploy)) {
                         if (axisDeploy.endsWith(".war")) { //NOI18N
                             ep.setProperty("axis2.deploy.war",axisDeploy); //NOI18N
-                            ep.remove("axis2.deploy.dir");
+                            ep.remove("axis2.deploy.dir"); // NOI18N
                         } else {
                             ep.setProperty("axis2.deploy.dir",axisDeploy); //NOI18N
                             ep.remove("axis2.deploy.war"); //NOI18N                       
@@ -246,7 +240,7 @@ public class Axis2LookupProvider implements LookupProvider {
     private FileObject getServicesFileObject(Project prj) {
         FileObject servicesFolder = AxisUtils.getServicesFolder(prj.getProjectDirectory(), false);
         if (servicesFolder != null) {
-            return servicesFolder.getFileObject("services","xml");
+            return servicesFolder.getFileObject("services","xml"); // NOI18N
         } else {
             return null;
         }
@@ -295,7 +289,7 @@ public class Axis2LookupProvider implements LookupProvider {
     private static final class AxisRecommendedTemplates implements RecommendedTemplates {
 
         public String[] getRecommendedTypes() {
-            return new String[]{"axis"};
+            return new String[]{"axis"}; // NOI18N
         }
         
     }

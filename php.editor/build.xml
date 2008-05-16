@@ -7,16 +7,18 @@
     
     <!--<taskdef name="jflex"
         classname="JFlex.anttask.JFlexTask"  
-        classpath="/space/jflex/lib/JFlex.jar" />
-        -->
+        classpath="/space/jflex/lib/JFlex.jar" />-->
+        
     <!--<target name="gen-lexer" >
         <jflex file="tools/Php5ColoringScanner.flex" 
-        destdir="src"/>
+        destdir="src" 
+        skel="tools/skeleton.netbeans"/>
     </target>-->
     
     <!--<target name="gen-astscanner" >
         <jflex file="tools/ASTPHP5Scanner.flex" 
-        destdir="src"/>
+        destdir="src"
+        skel="tools/skeletonParser.netbeans"/>
     </target>-->
         
     <!--<target name="gen-docscanner" >

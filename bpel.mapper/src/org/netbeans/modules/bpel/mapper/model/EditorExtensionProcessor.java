@@ -87,6 +87,11 @@ public class EditorExtensionProcessor {
         }
     }
     
+    public void registerCasts(BpelEntityCasts castList) {
+        registerCasts(castList.getFromCasts());
+        registerCasts(castList.getToCasts());
+    }
+    
     public boolean registerCasts(List<Cast> castList) {
         boolean anyRegistered = false;
         //
@@ -198,5 +203,11 @@ public class EditorExtensionProcessor {
         public List<Cast> getToCasts() {
             return mToCasts;
         }
+        
+        @Override
+        public String toString() {
+            return "From: " + mFromCasts + " To: " + mToCasts;
+        }
+        
     }
 }

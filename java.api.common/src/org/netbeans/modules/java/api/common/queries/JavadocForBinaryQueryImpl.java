@@ -65,13 +65,16 @@ class JavadocForBinaryQueryImpl implements JavadocForBinaryQueryImplementation {
 
     private final AntProjectHelper helper;
     private final PropertyEvaluator evaluator;
+    private final String[] binaryProperties;
 
-    public JavadocForBinaryQueryImpl(AntProjectHelper helper, PropertyEvaluator evaluator) {
+    public JavadocForBinaryQueryImpl(AntProjectHelper helper, PropertyEvaluator evaluator, String[] binaryProperties) {
         assert helper != null;
         assert evaluator != null;
+        assert binaryProperties != null && binaryProperties.length > 0;
 
         this.helper = helper;
         this.evaluator = evaluator;
+        this.binaryProperties = binaryProperties;
     }
 
     public JavadocForBinaryQuery.Result findJavadoc(final URL binaryRoot) {
@@ -142,8 +145,10 @@ class JavadocForBinaryQueryImpl implements JavadocForBinaryQueryImplementation {
                 }
             }
         }
-        if (isRootOwner(binaryRoot, "build.classes.dir") || isRootOwner(binaryRoot, "dist.jar")) { //NOI18N
-            return new Result();
+        for (String property : binaryProperties) {
+            if (isRootOwner(binaryRoot, property)) {
+                return new Result();
+            }
         }
         return null;
     }

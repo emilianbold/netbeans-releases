@@ -4508,4 +4508,30 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                 "}\n"
                 );
     }
+
+    // IZ#130509:NPE on formatting unbalanced braces
+    // Correct test case when macro will be taken into account
+    public void testIZ135015() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "#define FOR(n) for (int i = 0; i < n; i++) {\n" +
+                "\n" +
+                "int g() {\n" +
+                "    FOR(2)\n" +
+                "        foo();\n" +
+                "    }\n" +
+                "}\n"
+                );
+        reformat();
+        assertDocumentText("IZ#130509:NPE on formatting unbalanced braces",
+                "#define FOR(n) for (int i = 0; i < n; i++) {\n" +
+                "\n" +
+                "int g()\n" +
+                "{\n" +
+                "    FOR(2)\n" +
+                "    foo();\n" +
+                "}\n" +
+                "}\n"
+                );
+    }
 }

@@ -55,12 +55,15 @@ import org.openide.filesystems.FileObject;
  */
 public class CssElementHandle implements ElementHandle {
 
-    private SimpleNode node;
+    private String selectorListText;
+    private int elementAstStartOffset, elementAstEndOffset;
     private CompilationInfo ci;
     
-    CssElementHandle(SimpleNode node, CompilationInfo ci) {
-        this.node = node;
+    CssElementHandle(SimpleNode ruleNode, SimpleNode selectorListNode, CompilationInfo ci) {
         this.ci = ci;
+        this.selectorListText = selectorListNode.image();
+        this.elementAstStartOffset = ruleNode.startOffset();
+        this.elementAstEndOffset = ruleNode.endOffset();
     }
     
     public FileObject getFileObject() {
@@ -72,7 +75,7 @@ public class CssElementHandle implements ElementHandle {
     }
 
     public String getName() {
-        return node.image();
+        return selectorListText;
     }
 
     //XXX what's that????
@@ -93,8 +96,12 @@ public class CssElementHandle implements ElementHandle {
         return false;
     }
 
-    public SimpleNode node() {
-        return node;
+    public int elementAstStartOffset() {
+        return elementAstStartOffset;
+    }
+    
+    public int elementAstEndOffset() {
+        return elementAstEndOffset;
     }
     
     public CompilationInfo compilationInfo() {

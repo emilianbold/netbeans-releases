@@ -1,20 +1,42 @@
 /*
- * The contents of this file are subject to the terms of the Common Development
- * and Distribution License (the License). You may not use this file except in
- * compliance with the License.
- * 
- * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
- * or http://www.netbeans.org/cddl.txt.
- * 
- * When distributing Covered Code, include this CDDL Header Notice in each file
- * and include the License file at http://www.netbeans.org/cddl.txt.
- * If applicable, add the following below the CDDL Header, with the fields
- * enclosed by brackets [] replaced by your own identifying information:
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License. When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
+ * Contributor(s):
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
  */
 package org.netbeans.modules.xslt.core;
 
@@ -26,9 +48,15 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.StyledDocument;
+
+import org.netbeans.api.xml.cookies.CookieObserver;
+import org.netbeans.api.xml.cookies.ValidateXMLCookie;
+import org.netbeans.modules.soa.validation.core.Controller;
+import org.netbeans.modules.soa.validation.util.LineUtil;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.xml.cookies.CookieObserver;
 import org.netbeans.core.api.multiview.MultiViewHandler;
+import org.netbeans.core.api.multiview.MultiViewPerspective;
 import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.core.spi.multiview.CloseOperationHandler;
 import org.netbeans.core.spi.multiview.CloseOperationState;
@@ -58,6 +86,7 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.MultiDataObject;
+import org.openide.text.Line;
 import org.openide.text.CloneableEditor;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.CloneableEditorSupport.Pane;
@@ -71,16 +100,12 @@ import org.openide.windows.WindowManager;
 import org.netbeans.modules.soa.ui.UndoRedoManagerProvider;
 import org.openide.cookies.SaveCookie;
 import org.openide.util.UserCancelException;
-import org.netbeans.modules.xml.xam.ComponentEvent;
-import org.netbeans.modules.xml.xam.ComponentListener;
-import static org.netbeans.modules.soa.ui.util.UI.*;
 
 /**
  * @author Vitaly Bychkov
- * @version 1.0
  */
 public class XSLTDataEditorSupport extends DataEditorSupport implements
-        OpenCookie, EditCookie, EditorCookie.Observable, ShowCookie, UndoRedoManagerProvider {
+    OpenCookie, EditCookie, EditorCookie.Observable, ShowCookie, ValidateXMLCookie, UndoRedoManagerProvider {
     
     public XSLTDataEditorSupport(XSLTDataObject dObj) {
         super(dObj, new XSLTEnv(dObj));
@@ -167,9 +192,9 @@ public class XSLTDataEditorSupport extends DataEditorSupport implements
                     }
                 }
 
-//TODO a                
                 // Set annotation or select element in the multiview.
-//                MultiViewPerspective mvp = mvh.getSelectedPerspective();
+                MultiViewPerspective mvp = mvh.getSelectedPerspective();
+//TODO a                
 //                if (mvp.preferredID().equals("xslt-designer")) {
 //                    List<TopComponent> list = getAssociatedTopComponents();
 //                    for (TopComponent topComponent : list) {
@@ -204,27 +229,18 @@ public class XSLTDataEditorSupport extends DataEditorSupport implements
 //                            selectElement.select(XSLTComponent);
 //                        }
 //                    }
-//                } else if (mvp.preferredID().equals(
-//                        XSLTSourceMultiViewElementDesc.PREFERED_ID)) {
-//                        
-//                    // Get the line number.
-//                    int lineNum;
-//                    if(resultItem.getComponents() != null) {
-//                        lineNum = getLineNumber((XSLTComponent)resultItem.getComponents());
-//                    } else {
-//                        lineNum = resultItem.getLineNumber() - 1;
-//                    }
-//                    if (lineNum < 1) {
-//                        return;
-//                    }
-//                    Line l = lc.getLineSet().getCurrent(lineNum);
-//                    l.show(Line.SHOW_GOTO);
-//                    annotation.show(l, resultItem.getDescription());
-//                    
-//                }
+//                } else 
+                if (mvp.preferredID().equals(
+                        XSLTSourceMultiViewElementDesc.PREFERED_ID)) 
+                {
+                    Line line = LineUtil.getLine(resultItem);
+
+                    if (line != null) {
+                      line.show(Line.SHOW_GOTO);
+                    }
+                }
             }
         });
-        
     }
     
     /**
@@ -276,11 +292,15 @@ public class XSLTDataEditorSupport extends DataEditorSupport implements
     }
     
     @Override
-    public void open() {
-out();
-out("OPEN");
-out();
-      super.open();
+    public void initializeCloneableEditor(CloneableEditor editor) {
+        super.initializeCloneableEditor(editor);
+
+        EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                updateTitles();
+            }
+        });
+        getValidationController().attach();
     }
 
     @Override
@@ -298,21 +318,26 @@ out();
 
             if (model != null) {
                 model.removeUndoableEditListener(undo);
-                model.removeComponentListener(myComponentListener);
             }
             // Must unset the model when no longer listening to it.
             undo.setModel(null);
+
         }
         super.notifyClosed();
         getUndoManager().discardAllEdits();
-
-        // all editors are closed so we don't need to keep this task.
         prepareTask = null;
+        getValidationController().detach();
     }
     
-    /*
-     * Update presence of SaveCookie on first keystroke.
-     */
+    public boolean validateXML(CookieObserver cookieObserver) {
+      getValidationController().runValidation();
+      return true;
+    }
+
+    private Controller getValidationController() {
+      return (Controller) getEnv().getXsltDataObject().getLookup().lookup(Controller.class);
+    }
+
     @Override
     protected boolean notifyModified() {
         boolean notify = super.notifyModified();
@@ -489,21 +514,7 @@ out();
         }
     }
 
-    public void initializeCloneableEditor(CloneableEditor editor) {
-        super.initializeCloneableEditor(editor);
-        // Force the title to update so the * left over from when the
-        // modified data object was discarded is removed from the title.
-//        if (!getEnv().getXsltDataObject().isModified()) {
-            // Update later to avoid an infinite loop.
-            EventQueue.invokeLater(new Runnable() {
-                public void run() {
-                    updateTitles();
-                }
-            });
-//        }
-    }
-    
-   @Override
+    @Override
     public Task prepareDocument()
     {
         Task task = super.prepareDocument();
@@ -617,18 +628,8 @@ out();
     public void addUndoManagerToModel( QuietUndoManager undo ) {
         XslModel model = getXslModel();
         if (model != null) {
-            // Ensure the listener is not added twice.
             removeUndoManagerFromModel();
             model.addUndoableEditListener(undo);
-//out();
-//out("!!!!! add comp listener");
-//out();
-            // vlv
-            model.addComponentListener(myComponentListener);
-            /* Ensure the model is sync'd when undo/redo is invoked,
-             * otherwise the edits are added to the queue and eventually
-             * cause exceptions.
-             */
             undo.setModel(model);
 
         }
@@ -769,21 +770,5 @@ out();
         private XSLTDataObject myDataObject;
     }
 
-    // --------------------------------------------------------------------
-    private static class MyComponentListener implements ComponentListener {
-      public void valueChanged(ComponentEvent event) {
-//out("CHANGED");
-      }
-      
-      public void childrenAdded(ComponentEvent event) {
-//out("ADDED");
-      }
-      
-      public void childrenDeleted(ComponentEvent event) {
-//out("DELETED");
-      }
-    }
-
     private transient Task prepareTask;
-    private ComponentListener myComponentListener = new MyComponentListener();
 }

@@ -50,7 +50,7 @@ import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 
-import static org.netbeans.modules.print.impl.util.UI.*;
+import static org.netbeans.modules.print.impl.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -82,8 +82,7 @@ final class ComponentPanel extends JPanel {
   }
 
   @Override
-  public void print(Graphics g)
-  {
+  public void print(Graphics g) {
     for (JComponent component : myComponents) {
       component.print(g);
 //    g.setColor(java.awt.Color.green);
@@ -93,14 +92,12 @@ final class ComponentPanel extends JPanel {
   }
 
   @Override
-  public int getWidth()
-  {
+  public int getWidth() {
     return myWidth;
   }
 
   @Override
-  public int getHeight()
-  {
+  public int getHeight() {
     return myHeight;
   }
 

@@ -50,7 +50,7 @@ import java.util.Map;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.php.project.PhpProject;
-import org.netbeans.modules.php.project.classpath.ClassPathSupport;
+import org.netbeans.modules.php.project.classpath.IncludePathSupport;
 import org.netbeans.spi.project.ui.CustomizerProvider;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.Lookup;
@@ -65,7 +65,7 @@ public class CustomizerProviderImpl implements CustomizerProvider {
 
     public static final String CUSTOMIZER_FOLDER_PATH = "Projects/org-netbeans-modules-php-project/Customizer"; //NO18N
 
-    private static final Map<Project, Dialog> project2Dialog = new HashMap<Project, Dialog>();
+    private static final Map<Project, Dialog> PROJECT_2_DIALOG = new HashMap<Project, Dialog>();
     private final PhpProject project;
 
     public CustomizerProviderImpl(PhpProject project) {
@@ -77,52 +77,52 @@ public class CustomizerProviderImpl implements CustomizerProvider {
     }
 
     public void showCustomizer(String preselectedCategory) {
-        Dialog dialog = project2Dialog.get(project);
+        Dialog dialog = PROJECT_2_DIALOG.get(project);
         if (dialog != null) {
             dialog.setVisible(true);
             return;
         }
-        ClassPathSupport classPathSupport = new ClassPathSupport(project.getEvaluator(), project.getRefHelper(),
+        IncludePathSupport includePathSupport = new IncludePathSupport(project.getEvaluator(), project.getRefHelper(),
                 project.getHelper());
-        PhpProjectProperties uiProperties = new PhpProjectProperties(project, classPathSupport);
+        PhpProjectProperties uiProperties = new PhpProjectProperties(project, includePathSupport);
         Lookup context = Lookups.fixed(project, uiProperties);
 
-        OptionListener listener = new OptionListener(project, uiProperties);
+        OptionListener optionListener = new OptionListener(project);
+        StoreListener storeListener = new StoreListener(uiProperties);
         dialog = ProjectCustomizer.createCustomizerDialog(CUSTOMIZER_FOLDER_PATH, context, preselectedCategory,
-                listener, null);
-        dialog.addWindowListener(listener);
+                optionListener, storeListener, null);
+        dialog.addWindowListener(optionListener);
         dialog.setTitle(MessageFormat.format(
                 NbBundle.getMessage(CustomizerProviderImpl.class, "LBL_Customizer_Title"),
                 ProjectUtils.getInformation(project).getDisplayName()));
 
-        project2Dialog.put(project, dialog);
+        PROJECT_2_DIALOG.put(project, dialog);
         dialog.setVisible(true);
     }
 
-    /** Listens to the actions on the Customizer's option buttons */
-    private static class OptionListener extends WindowAdapter implements ActionListener {
-
-        private final Project project;
+    private class StoreListener implements ActionListener {
         private final PhpProjectProperties uiProperties;
 
-        OptionListener(Project project, PhpProjectProperties uiProperties) {
-            this.project = project;
+        StoreListener(PhpProjectProperties uiProperties) {
             this.uiProperties = uiProperties;
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            uiProperties.save();
+        }
+    }
+
+    private static class OptionListener extends WindowAdapter implements ActionListener {
+        private final Project project;
+
+        OptionListener(Project project) {
+            this.project = project;
         }
 
         // Listening to OK button ----------------------------------------------
         public void actionPerformed( ActionEvent e ) {
-            // Store the properties into project
-
-//#95952 some users experience this assertion on a fairly random set of changes in
-// the customizer, that leads me to assume that a project can be already marked
-// as modified before the project customizer is shown.
-//            assert !ProjectManager.getDefault().isModified(project) :
-//                "Some of the customizer panels has written the changed data before OK Button was pressed. Please file it as bug."; //NOI18N
-            uiProperties.save();
-
             // Close & dispose the the dialog
-            Dialog dialog = project2Dialog.get(project);
+            Dialog dialog = PROJECT_2_DIALOG.get(project);
             if (dialog != null) {
                 dialog.setVisible(false);
                 dialog.dispose();
@@ -132,14 +132,14 @@ public class CustomizerProviderImpl implements CustomizerProvider {
         // Listening to window events ------------------------------------------
         @Override
         public void windowClosed(WindowEvent e) {
-            project2Dialog.remove(project);
+            PROJECT_2_DIALOG.remove(project);
         }
 
         @Override
         public void windowClosing(WindowEvent e) {
             //Dispose the dialog otherwsie the {@link WindowAdapter#windowClosed}
             //may not be called
-            Dialog dialog = project2Dialog.get(project);
+            Dialog dialog = PROJECT_2_DIALOG.get(project);
             if (dialog != null) {
                 dialog.setVisible(false);
                 dialog.dispose();

@@ -80,6 +80,7 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jemmy.operators.*;
 import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
+import org.netbeans.test.xml.schema.lib.SchemaMultiView;
 
 /**
  *
@@ -94,11 +95,11 @@ public class AcceptanceTestCaseXSD extends AcceptanceTestCase {
         "ExploreJAXBBinding",
         "ChangeJAXBOptions",
         "DeleteJAXBBinding",
-        "OpenSchemaFile", // <--
-        "RefreshSchemaFile", // <--
-        "RegenerateJavaCode", // <--
-        "CodeCompletion1", // <--
-        "CodeCompletion2", // <--
+        "OpenSchemaFile",
+        "RefreshSchemaFile",
+        "RegenerateJavaCode",
+        "CodeCompletion1",
+        "CodeCompletion2",
         "RunTheProject"
     };
 
@@ -342,6 +343,20 @@ public class AcceptanceTestCaseXSD extends AcceptanceTestCase {
         endTest( );
     }
 
+    protected boolean CheckSchemaView( String sView )
+    {
+      for( int i = 0; i < 2; i++ )
+      {
+        JMenuBarOperator bar = new JMenuBarOperator( MainWindowOperator.getDefault( ) );
+        JMenuItemOperator menu = bar.showMenuItem("View|Editors|" + sView );
+        boolean bres = menu.isSelected( );
+        bar.closeSubmenus( );
+        if( bres )
+          return true;
+      }
+      return false;
+    }
+
     public void OpenSchemaFile( )
     {
         startTest( );
@@ -355,32 +370,218 @@ public class AcceptanceTestCaseXSD extends AcceptanceTestCase {
         bindingNode.select( );
         bindingNode.performPopupActionNoBlock( "Open" );
         
-        EditorOperator eoXMLCode = new EditorOperator( JAXB_PACKAGE_NAME + ".xsd" );
-        // TODO : check schema view is in use
-
-        eoXMLCode.close( );
+        // TODO : expected fail
+        // if( !CheckSchemaView( "Schema" ) )
+          // fail( "Wrong schema view used, required \"Schema\"." );
 
         endTest( );
+    }
+
+    protected void AddItInternal(
+        int iColumn,
+        String sItName,
+        String sMenuToAdd,
+        String sRadioName,
+        String sTypePath,
+        String sAddedName
+      )
+    {
+      // Swicth to Schema view
+      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("View|Editors|Schema");
+
+      // Select first column, Attributes
+      SchemaMultiView opMultiView = new SchemaMultiView( JAXB_PACKAGE_NAME + ".xsd" );
+      opMultiView.switchToSchema( );
+      opMultiView.switchToSchemaColumns( );
+      JListOperator opList = opMultiView.getColumnListOperator( iColumn );
+      opList.selectItem( sItName );
+
+      // Right click on Reference Schemas
+      int iIndex = opList.findItemIndex( sItName );
+      Point pt = opList.getClickPoint( iIndex );
+      opList.clickForPopup( pt.x, pt.y );
+
+      // Click Add Attribute...
+      JPopupMenuOperator popup = new JPopupMenuOperator( );
+      popup.pushMenuNoBlock( sMenuToAdd + "..." );
+
+      // Get dialog
+      JDialogOperator jadd = new JDialogOperator( sMenuToAdd.replace( "|", " " ) );
+
+      // Set unique name
+      JTextFieldOperator txt = new JTextFieldOperator( jadd, 0 );
+      txt.setText( sAddedName );
+
+      // Use existing definition
+      if( null != sRadioName )
+      {
+        JRadioButtonOperator jex = new JRadioButtonOperator( jadd, sRadioName );
+        jex.setSelected( true );
+      }
+
+      // Get tree
+      if( null != sTypePath )
+      {
+        JTreeOperator jtree = new JTreeOperator( jadd, 0 );
+        TreePath path = jtree.findPath( sTypePath );
+      
+        jtree.selectPath( path );
+        jtree.clickOnPath( path );
+      }
+
+      // Close
+      JButtonOperator jOK = new JButtonOperator( jadd, "OK" ); // TODO : OK
+      jOK.push( );
+      jadd.waitClosed( );
+
+      // Check attribute was added successfully
+      opList = opMultiView.getColumnListOperator( iColumn + 1 );
+      iIndex = opList.findItemIndex( sAddedName );
+      if( -1 == iIndex )
+        fail( "It was not added." );
+
+    }
+
+    protected void WaitSaveAll( )
+    {
+      for( int i = 0; i < 2; i++ )
+      {
+        JMenuBarOperator bar = new JMenuBarOperator( MainWindowOperator.getDefault( ) );
+        JMenuItemOperator menu = bar.showMenuItem("File|Save All" );
+        boolean bres = menu.isEnabled( );
+        bar.closeSubmenus( );
+        if( bres )
+          return;
+      }
+      return;
     }
 
     public void RefreshSchemaFile( )
     {
-        startTest( );
+      startTest( );
 
-        // TODO : Add elements using design.
-        // TODO : Invoke Refresh and check elements disappeared.
+      // TODO : Add elements using design.
+      // TEMPORARY : Using Schema view
+      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("View|Editors|Schema");
+      AddItInternal(
+          0,
+          "Elements",
+          "Add Element",
+          "Use Existing Type",
+          "Built-in Types|string",
+          "NewElementForRefresh"
+        );
 
-        endTest( );
+      // Save All
+      WaitSaveAll( );
+      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("File|Save All");
+
+      // Invoke Refresh
+      ProjectsTabOperator pto = ProjectsTabOperator.invoke( );
+
+      ProjectRootNode prn = pto.getProjectRootNode( TEST_JAVA_APP_NAME );
+      prn.select( );
+
+      Node bindingNode = new Node( prn, "JAXB Binding|" + JAXB_BINDING_NAME + "|" + JAXB_PACKAGE_NAME + ".xsd" );
+      bindingNode.select( );
+      bindingNode.performPopupAction( "Refresh" );
+
+      // TODO : check result
+      // TEMPORARY : Using Schema view
+      try { Thread.sleep( 1000 ); } catch( InterruptedException ex ) { }
+      SchemaMultiView opMultiView = new SchemaMultiView( JAXB_PACKAGE_NAME + ".xsd" );
+      JListOperator opList = opMultiView.getColumnListOperator( 0 );
+      opList.selectItem( "Elements" );
+      opList = opMultiView.getColumnListOperator( 1 );
+      int iIndex = opList.findItemIndex( "NewElementForRefresh" );
+      if( -1 != iIndex )
+      {
+        fail( "Element still presents after schema Refresh." );
+      }
+
+      // Back to schema?
+      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("View|Editors|Schema");
+
+      endTest( );
     }
 
     public void RegenerateJavaCode( )
     {
-        startTest( );
+      startTest( );
 
-        // TODO : Add elements using design.
-        // TODO : Invoke Regenerate and check there is new classes.
+      // TODO : Add elements using Design view.
+      // TEMPORARY : Using Schema view
+      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("View|Editors|Schema");
+      AddItInternal(
+          0,
+          "Complex Types",
+          "Add Complex Type",
+          null,
+          null,
+          "NewComplexTypeForRegeneration"
+        );
 
-        endTest( );
+      AddItInternal(
+          2,
+          "sequence",
+          "Add|Element",
+          "Use Existing Type",
+          "Built-in Types|date",
+          "SubElementDate"
+        );
+
+      //new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("View|Editors|Design");
+
+      // Invoke Refresh
+      ProjectsTabOperator pto = ProjectsTabOperator.invoke( );
+
+      ProjectRootNode prn = pto.getProjectRootNode( TEST_JAVA_APP_NAME );
+      prn.select( );
+
+      Node bindingNode = new Node( prn, "JAXB Binding" );
+      bindingNode.select( );
+
+      // Wait till JAXB really deleted
+      MainWindowOperator.StatusTextTracer stt = MainWindowOperator.getDefault( ).getStatusTextTracer( );
+      stt.start( );
+
+      bindingNode.performPopupAction( "Regenerate Java Code" );
+
+      stt.waitText( "Finished building " + TEST_JAVA_APP_NAME + " (jaxb-code-generation)." );
+      stt.stop( );
+
+      // TODO : check result
+      // Access to files page
+      FilesTabOperator fto = FilesTabOperator.invoke( );
+
+      Node projectNode = fto.getProjectNode( TEST_JAVA_APP_NAME );
+      projectNode.select( );
+
+      String[] asFilesToCheck =
+      {
+        "build|classes|" + JAXB_PACKAGE_NAME + "|NewComplexTypeForRegeneration.class",
+        "build|generated|addons|jaxb|" + JAXB_PACKAGE_NAME + "|NewComplexTypeForRegeneration.java",
+        "build|generated|jaxbCache|" + JAXB_BINDING_NAME + "|" + JAXB_PACKAGE_NAME + "|NewComplexTypeForRegeneration.java",
+      };
+
+      projectNode.setComparator( new CFulltextStringComparator( ) );
+      for( int i = 0; i < asFilesToCheck.length; i++ )
+      {
+        Node node = new Node(
+            projectNode,
+            asFilesToCheck[ i ]
+          );
+        if( null == node )
+        {
+          fail( "Unable to explore files node named: " + asFilesToCheck[ i ] );
+        }
+      }
+
+      // Close schema
+      EditorOperator eoXMLCode = new EditorOperator( JAXB_PACKAGE_NAME + ".xsd" );
+      eoXMLCode.close( );
+
+      endTest( );
     }
 
     public void CodeCompletion1( )

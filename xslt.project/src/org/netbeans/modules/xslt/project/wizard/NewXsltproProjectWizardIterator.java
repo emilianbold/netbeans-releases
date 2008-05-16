@@ -22,17 +22,21 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.compapp.projects.base.ui.wizards.NewIcanproProjectWizardIterator;
 import org.netbeans.modules.xslt.project.XsltproProjectGenerator;
 import org.netbeans.modules.xslt.tmap.util.Util;
+import org.openide.WizardDescriptor.Panel;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
-import static org.netbeans.modules.xslt.project.XsltproConstants.*;
 import org.openide.util.NbBundle;
-import org.netbeans.modules.soa.ui.SoaUiUtil;
+import org.netbeans.modules.soa.ui.SoaUtil;
+import org.openide.WizardDescriptor;
 import org.openide.loaders.DataObject;
 
 /**
@@ -43,9 +47,26 @@ import org.openide.loaders.DataObject;
 public class NewXsltproProjectWizardIterator extends NewIcanproProjectWizardIterator {
 
     private static final long serialVersionUID = 1L;
+    public static final String TRANSFORMMAP_NS_PREFIX = "http://enterprise.netbeans.org/transformmap/"; // NOI18N
+    public static final String TMAP_NS_PROPERTY = "transformmap_target_ns_prop"; // NOI18N
+    private static final Logger LOGGER = Logger.getLogger(NewXsltproProjectWizardIterator.class.getName());
+    private transient WizardDescriptor wiz;
 
     public NewXsltproProjectWizardIterator() {
         super();
+    }
+
+    @Override
+    public void initialize(WizardDescriptor wiz) {
+        super.initialize(wiz);
+        this.wiz = wiz;
+    }
+
+    @Override
+    protected Panel[] createPanels() {
+        return new WizardDescriptor.Panel[] {
+            new PanelConfigureProject(getDefaultName(), getDefaultTitle()),
+        };
     }
 
     @Override
@@ -92,7 +113,21 @@ public class NewXsltproProjectWizardIterator extends NewIcanproProjectWizardIter
                     .findResource("org-netbeans-xsltpro/transformmap.xml"), //NOI18N
                     srcFo, "transformmap"); //NOI18N
 
-            SoaUiUtil.fixEncoding(DataObject.find(tMapFo), srcFo);
+            // TODO m
+            String projectNamespace = (String)wiz.getProperty(TMAP_NS_PROPERTY);
+            if (projectNamespace == null) {
+                LOGGER.log(Level.INFO,NbBundle.getMessage(NewXsltproProjectWizardIterator.class, "MSG_TMapNsPropertyNull", TMAP_NS_PROPERTY));
+                projectNamespace = TRANSFORMMAP_NS_PREFIX+ProjectUtils.getInformation(p).getName(); // NOI18N
+            }
+            Util.initialiseNamespace(tMapFo, projectNamespace);
+            
+            SoaUtil.fixEncoding(DataObject.find(tMapFo), srcFo);
         }
+    }
+    
+    @Override
+    public void uninitialize(WizardDescriptor wiz) {
+        wiz.putProperty(TMAP_NS_PROPERTY, null);
+        super.uninitialize(wiz);
     }
 }

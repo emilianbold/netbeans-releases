@@ -9,7 +9,7 @@
 
 package org.netbeans.modules.jmx.mbeanwizard;
 
-import org.netbeans.modules.jmx.WizardConstants;
+import org.netbeans.modules.jmx.common.WizardConstants;
 
 /**
  *

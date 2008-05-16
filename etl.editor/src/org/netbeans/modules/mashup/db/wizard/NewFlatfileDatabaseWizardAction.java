@@ -89,7 +89,7 @@ public final class NewFlatfileDatabaseWizardAction extends CallableSystemAction 
     }
 
     public String getName() {
-        return nbBundle1.substring(15);
+        return nbBundle6.substring(15);
     }
 
     @Override
@@ -131,6 +131,7 @@ public final class NewFlatfileDatabaseWizardAction extends CallableSystemAction 
             location = ETLEditorSupport.PRJ_PATH + "\\nbproject\\private\\databases";
         } else {
             location = getDefaultWorkingFolder();
+			name = name + "_" + System.currentTimeMillis();
         }       
         MashupTableWizardIterator.IS_PROJECT_CALL = false;
         boolean status = false;

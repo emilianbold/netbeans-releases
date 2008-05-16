@@ -130,7 +130,7 @@ function write_components() {
 			document.write('    <th class="onhover_change left_border"></th>');
 			document.write('    <th class="onhover_change beige left_border"></th>');
 			document.write('    <th class="onhover_change left_border"></th>');
-			document.write('    <th class="onhover_change beige left_border"></th>');
+			document.write('    <th class="onhover_change beige left_border right_border"></th>');
 			document.write('</tr>');
         }
 
@@ -160,8 +160,7 @@ function write_components() {
 			document.write('    <td class="onhover_change left_border" id="product_' + index + '_ruby"></td>');
 			document.write('    <td class="onhover_change beige left_border" id="product_' + index + '_cnd"></td>');
 			document.write('    <td class="onhover_change left_border" id="product_' + index + '_php"></td>');
-			document.write('    <td class="onhover_change beige left_border" id="product_' + index + '_full"></td>');
-			
+			document.write('    <td class="onhover_change beige left_border right_border" id="product_' + index + '_full"></td>');
 			document.write('</tr>');
         }
     }
@@ -170,10 +169,10 @@ function write_components() {
 function write_table_header() {
     document.write('<tr class="no_hover">');    
     document.write('<td class="no_border no_padding"></td>');    
-    document.write('<td class="no_border no_padding" colspan="6">');    
+    document.write('<td class="no_border no_padding" colspan="7">');    
     document.write('<table class="components_table">');
     document.write('<tr class="no_hover">');
-    document.write('	<td class="no_hover header" colspan="6">' + NETBEANS_DOWNLOAD_BUNDLES_MSG + '</td>');
+    document.write('	<td class="no_hover header" colspan="7">' + NETBEANS_DOWNLOAD_BUNDLES_MSG + '</td>');
     document.write('</tr></table>');
     document.write('</td>');
     document.write('</tr>');

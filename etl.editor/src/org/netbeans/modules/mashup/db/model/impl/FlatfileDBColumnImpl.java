@@ -309,7 +309,7 @@ public class FlatfileDBColumnImpl extends AbstractDBColumn implements FlatfileDB
             }
         }
 
-        if (defaultValue != null) {
+        if (!StringUtil.isNullString(defaultValue)) {
             buffer.append(" DEFAULT ");
             switch (sqlTypeCode) {
                 case java.sql.Types.VARCHAR:
@@ -319,9 +319,7 @@ public class FlatfileDBColumnImpl extends AbstractDBColumn implements FlatfileDB
                     buffer.append("'").append(defaultValue).append("'");
                     break;
                 default:
-                    if (!StringUtil.isNullString(defaultValue)) {
-                        buffer.append(defaultValue);
-                    }
+                    buffer.append(defaultValue);
                     break;
             }
         }

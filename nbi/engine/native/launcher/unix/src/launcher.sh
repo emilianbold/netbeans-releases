@@ -102,10 +102,14 @@ MSG_ARG_CPA="nlu.arg.cpa"
 MSG_ARG_CPP="nlu.arg.cpp"
 MSG_ARG_DISABLE_FREE_SPACE_CHECK="nlu.arg.disable.space.check"
 MSG_ARG_LOCALE="nlu.arg.locale"
+MSG_ARG_SILENT="nlu.arg.silent"
 MSG_ARG_HELP="nlu.arg.help"
 MSG_USAGE="nlu.msg.usage"
 
-entryPoint() {		
+isSymlink=
+
+entryPoint() {
+        initSymlinkArgument        
 	CURRENT_DIRECTORY=`pwd`
 	LAUNCHER_NAME=`echo $0`
 	parseCommandLineArguments "$@"
@@ -133,6 +137,15 @@ entryPoint() {
 	else 
 	    exitProgram $ERROR_OK
 	fi
+}
+
+initSymlinkArgument() {
+        testSymlinkErr=`test -L / > /dev/null`
+        if [ -z "$testSymlinkErr" ] ; then
+            isSymlink=-L
+        else
+            isSymlink=-h
+        fi
 }
 
 debugLauncherArguments() {
@@ -404,7 +417,12 @@ getLauncherLocation() {
 }
 
 getLauncherSize() {
-	ls -l "$LAUNCHER_FULL_PATH" | awk ' { print $5 }' 2>/dev/null
+	lsOutput=`ls -l --block-size=1 "$LAUNCHER_FULL_PATH" 2>/dev/null`
+	if [ $? -ne 0 ] ; then
+	    #default block size
+	    lsOutput=`ls -l "$LAUNCHER_FULL_PATH" 2>/dev/null`
+	fi
+	echo "$lsOutput" | awk ' { print $5 }' 2>/dev/null
 }
 
 verifyIntegrity() {
@@ -434,7 +452,8 @@ showHelp() {
 	msg7=`message "$MSG_ARG_CPP $ARG_CLASSPATHP"`
 	msg8=`message "$MSG_ARG_DISABLE_FREE_SPACE_CHECK $ARG_NOSPACECHECK"`
         msg9=`message "$MSG_ARG_LOCALE $ARG_LOCALE"`
-	msg10=`message "$MSG_ARG_HELP $ARG_HELP"`
+        msg10=`message "$MSG_ARG_SILENT $ARG_SILENT"`
+	msg11=`message "$MSG_ARG_HELP $ARG_HELP"`
 	out "$msg0"
 	out "$msg1"
 	out "$msg2"
@@ -446,6 +465,7 @@ showHelp() {
 	out "$msg8"
 	out "$msg9"
 	out "$msg10"
+	out "$msg11"
 	exitProgram $ERROR_OK
 }
 
@@ -559,7 +579,7 @@ setTestJVMClasspath() {
 	if [ -d "$TEST_JVM_PATH" ] ; then
 		TEST_JVM_CLASSPATH="$TEST_JVM_PATH"
 		debug "... testJVM path is a directory"
-	elif [ -L "$TEST_JVM_PATH" ] && [ $notClassFile -eq 1 ] ; then
+	elif [ $isSymlink "$TEST_JVM_PATH" ] && [ $notClassFile -eq 1 ] ; then
 		TEST_JVM_CLASSPATH="$TEST_JVM_PATH"
 		debug "... testJVM path is a link but not a .class file"
 	else
@@ -718,7 +738,7 @@ processJarsClasspath() {
 	while [ $jarsCounter -lt $JARS_NUMBER ] ; do
 		resolvedFile=`resolveResourcePath "JAR_$jarsCounter"`
 		debug "... adding jar to classpath : $resolvedFile"
-		if [ ! -f "$resolvedFile" ] && [ ! -d "$resolvedFile" ] && [ ! -L "$resolvedFile" ] ; then
+		if [ ! -f "$resolvedFile" ] && [ ! -d "$resolvedFile" ] && [ ! $isSymlink "$resolvedFile" ] ; then
 				message "$MSG_ERROP_MISSING_RESOURCE" "$resolvedFile"
 				exitProgram $ERROR_MISSING_RESOURCES
 		else
@@ -884,7 +904,7 @@ searchJavaSystemPaths() {
 				debug "... next item is $nextItem"				
 				nextItem=`removeEndSlashes "$nextItem"`
 				if [ -n "$nextItem" ] ; then
-					if [ -d "$nextItem" ] || [ -L "$nextItem" ] ; then
+					if [ -d "$nextItem" ] || [ $isSymlink "$nextItem" ] ; then
 	               				debug "... checking item : $nextItem"
 						verifyJVM "$nextItem"
 					fi
@@ -914,7 +934,7 @@ searchJavaUserDefined() {
 }
 searchJava() {
 	message "$MSG_JVM_SEARCH"
-        if [ ! -f "$TEST_JVM_CLASSPATH" ] && [ ! -L "$TEST_JVM_CLASSPATH" ] && [ ! -d "$TEST_JVM_CLASSPATH" ]; then
+        if [ ! -f "$TEST_JVM_CLASSPATH" ] && [ ! $isSymlink "$TEST_JVM_CLASSPATH" ] && [ ! -d "$TEST_JVM_CLASSPATH" ]; then
                 debug "Cannot find file for testing JVM at $TEST_JVM_CLASSPATH"
 		message "$MSG_ERROR_JVM_NOT_FOUND" "$ARG_JAVAHOME"
                 exitProgram $ERROR_TEST_JVM_FILE
@@ -961,7 +981,7 @@ normalizePath() {
 
 resolveSymlink() {  
     pathArg="$1"	
-    while [ -L "$pathArg" ] ; do
+    while [ $isSymlink "$pathArg" ] ; do
         ls=`ls -ld "$pathArg"`
         link=`expr "$ls" : '^.*-> \(.*\)$' 2>/dev/null`
     
@@ -1014,10 +1034,10 @@ checkJavaHierarchy() {
 	tryJava="$1"
 	javaHierarchy=0
 	if [ -n "$tryJava" ] ; then
-		if [ -d "$tryJava" ] || [ -L "$tryJava" ] ; then # existing directory or a symlink        			
+		if [ -d "$tryJava" ] || [ $isSymlink "$tryJava" ] ; then # existing directory or a isSymlink        			
 			javaLib="$tryJava"/"lib"
 	        
-			if [ -d "$javaLib" ] || [ -L "$javaLib" ] ; then
+			if [ -d "$javaLib" ] || [ $isSymlink "$javaLib" ] ; then
 				javaLibDtjar="$javaLib"/"dt.jar"
 				if [ -f "$javaLibDtjar" ] || [ -f "$javaLibDtjar" ] ; then
 					#definitely JDK as the JRE doesn`t have dt.jar
@@ -1027,7 +1047,7 @@ checkJavaHierarchy() {
 					javaLibJce="$javaLib"/"jce.jar"
 					javaLibCharsets="$javaLib"/"charsets.jar"					
 					javaLibRt="$javaLib"/"rt.jar"
-					if [ -f "$javaLibJce" ] || [ -L "$javaLibJce" ] || [ -f "$javaLibCharsets" ] || [ -L "$javaLibCharsets" ] || [ -f "$javaLibRt" ] || [ -L "$javaLibRt" ] ; then
+					if [ -f "$javaLibJce" ] || [ $isSymlink "$javaLibJce" ] || [ -f "$javaLibCharsets" ] || [ $isSymlink "$javaLibCharsets" ] || [ -f "$javaLibRt" ] || [ $isSymlink "$javaLibRt" ] ; then
 						javaHierarchy=1
 					fi
 					

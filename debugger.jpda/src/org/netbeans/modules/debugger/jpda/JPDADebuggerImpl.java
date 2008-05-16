@@ -846,7 +846,8 @@ public class JPDADebuggerImpl extends JPDADebugger {
                         reference,
                         method,
                         tr,
-                        Arrays.asList (arguments)
+                        Arrays.asList (arguments),
+                        this
                     );
             } catch (InvalidExpressionException ieex) {
                 if (ieex.getTargetException() instanceof UnsupportedOperationException) {

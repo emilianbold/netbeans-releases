@@ -1136,9 +1136,8 @@ public class Reformatter implements ReformatTask {
                 newline();
             indent = halfIndent;
             if (node instanceof FakeBlock) {
-                blankLines(0);
+                appendToDiff("\n" + getIndent() + "}"); //NOI18N
                 col = indent + 1;
-                appendToDiff("}"); //NOI18N
                 lastBlankLines = -1;
                 lastBlankLinesTokenIndex = -1;
                 lastBlankLinesDiff = null;
@@ -1212,11 +1211,11 @@ public class Reformatter implements ReformatTask {
                     int index = tokens.index();
                     int c = col;
                     Diff d = diffs.isEmpty() ? null : diffs.getFirst();
-                    accept(IDENTIFIER);
+                    accept(IDENTIFIER, THIS, SUPER);
                     if (wrapStyle != CodeStyle.WrapStyle.WRAP_NEVER && col > rightMargin && c > indent && (wrapDepth == 0 || c <= rightMargin)) {
                         rollback(index, c, d);
                         newline();
-                        accept(IDENTIFIER);
+                        accept(IDENTIFIER, THIS, SUPER);
                     }
                 }
             } else {
@@ -2473,7 +2472,7 @@ public class Reformatter implements ReformatTask {
                                     diffs.addFirst(new Diff(offset + lastIdx, offset + idx + 1, null));
                                 lastIdx = idx + 1;
                             }
-                            if (lastIdx == 0 && count < 0) {
+                            if (lastIdx == 0 && count < 0 && after != 1) {
                                 count = count == ANY_COUNT ? 1 : 0;
                             }
                             String indent = after == 3 ? SPACE : getNewlines(count) + getIndent();
@@ -2493,8 +2492,6 @@ public class Reformatter implements ReformatTask {
                         break;
                     case LINE_COMMENT:
                         if (lastToken != null) {
-                            if (count >= 0 && tokens.index() > 1 && after != 1)
-                                count++;
                             int offset = tokens.offset() - lastToken.length();
                             String text = lastToken.text().toString();
                             int idx = 0;
@@ -2543,7 +2540,7 @@ public class Reformatter implements ReformatTask {
                                     diffs.addFirst(new Diff(offset + lastIdx, offset + idx + 1, null));
                                 lastIdx = idx + 1;
                             }
-                            if (lastIdx == 0 && count < 0) {
+                            if (lastIdx == 0 && count < 0 && after != 1) {
                                 count = count == ANY_COUNT ? 1 : 0;
                             }
                             String indent = after == 3 ? SPACE : getNewlines(count) + getIndent();

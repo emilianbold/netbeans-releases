@@ -179,10 +179,10 @@ public interface TooltipManager {
         } else {
             stringFrom = stringFrom == null 
                     ? BpelNode.EMPTY_STRING 
-                    : org.netbeans.modules.bpel.editors.api.utils.Util.getCorrectedHtmlRenderedString(stringFrom);
+                    : org.netbeans.modules.bpel.editors.api.EditorUtil.getCorrectedHtmlRenderedString(stringFrom);
             stringTo = stringTo == null 
                     ? BpelNode.EMPTY_STRING 
-                    : org.netbeans.modules.bpel.editors.api.utils.Util.getCorrectedHtmlRenderedString(stringTo);
+                    : org.netbeans.modules.bpel.editors.api.EditorUtil.getCorrectedHtmlRenderedString(stringTo);
         }
         
         
@@ -348,5 +348,4 @@ public interface TooltipManager {
             return attributesTooltip.toString();
         }
     }
-    
 }

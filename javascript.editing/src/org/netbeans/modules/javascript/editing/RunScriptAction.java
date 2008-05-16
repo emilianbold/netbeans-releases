@@ -85,7 +85,7 @@ import org.openide.windows.OutputListener;
  */
 public class RunScriptAction extends AbstractAction implements EditorAction {
     
-    Boolean enabled;
+    private Boolean enabledAction;
     
     public RunScriptAction() {
         super(NbBundle.getMessage(RunScriptAction.class, "js-run-action"));
@@ -106,18 +106,18 @@ public class RunScriptAction extends AbstractAction implements EditorAction {
 
     @Override
     public boolean isEnabled() {
-        if (enabled == null) {
+        if (enabledAction == null) {
             try {
                 ClassLoader cl = RunScriptAction.class.getClassLoader ();
                 Class managerClass = cl.loadClass ("javax.script.ScriptEngineManager");
 
-                enabled = Boolean.valueOf(managerClass != null);
+                enabledAction = Boolean.valueOf(managerClass != null);
             } catch (ClassNotFoundException ex) {
-                enabled = Boolean.FALSE;
+                enabledAction = Boolean.FALSE;
             }
         }
 
-        return enabled.booleanValue();
+        return enabledAction.booleanValue();
     }
 
     public void actionPerformed(ActionEvent ev) {
@@ -152,12 +152,13 @@ public class RunScriptAction extends AbstractAction implements EditorAction {
                     String name = dob.getPrimaryFile ().getNameExt ();
                     fo = dob.getPrimaryFile();
                     SaveCookie saveCookie = dob.getLookup ().lookup (SaveCookie.class);
-                    if (saveCookie != null)
+                    if (saveCookie != null) {
                         try {
-                            saveCookie.save ();
+                            saveCookie.save();
                         } catch (IOException ex) {
-                            ErrorManager.getDefault ().notify (ex);
+                            ErrorManager.getDefault().notify(ex);
                         }
+                    }
 
         //            ScriptContext context = engine.getContext ();
                     Class engineClass = cl.loadClass ("javax.script.ScriptEngine");
@@ -186,19 +187,21 @@ public class RunScriptAction extends AbstractAction implements EditorAction {
                     Method eval = engineClass.getMethod ("eval", new Class[] {String.class});
                     Object o = eval.invoke (engine, new Object[] {doc.getText (0, doc.getLength ())});
 
-                    if (o != null)
-                        DialogDisplayer.getDefault ().notify (new NotifyDescriptor.Message ("Result: " + o));
+                    if (o != null) {
+                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message("Result: " + o));
+                    }
 
                 } catch (InvocationTargetException ex) {
                     try {
                         Class scriptExceptionClass = cl.loadClass("javax.script.ScriptException");
                         if (ex.getCause () != null && 
                             scriptExceptionClass.isAssignableFrom (ex.getCause ().getClass ())
-                        )
+                        ) {
                             if (io != null) {
-                                String msg = ex.getCause ().getMessage ();
+                                String msg = ex.getCause().getMessage();
                                 int line = 0;
-                                if (msg.startsWith("sun.org.mozilla")) { //NOI18N
+                                if (msg.startsWith("sun.org.mozilla")) {
+                                    //NOI18N
                                     msg = msg.substring(msg.indexOf(':') + 1);
                                     msg = msg.substring(0, msg.lastIndexOf('(')).trim() + " " + msg.substring(msg.lastIndexOf(')') + 1).trim();
                                     try {
@@ -208,9 +211,10 @@ public class RunScriptAction extends AbstractAction implements EditorAction {
                                     }
                                 }
                                 io.getOut().println(msg, new OutputProcessor(fo, line));
+                            } else {
+                                ErrorManager.getDefault().notify(ex);
                             }
-                        else
-                            ErrorManager.getDefault ().notify (ex);
+                        }
                     } catch (Exception ex2) {
                         ErrorManager.getDefault ().notify (ex2);
                     }

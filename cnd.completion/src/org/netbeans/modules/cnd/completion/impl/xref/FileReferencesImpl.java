@@ -89,25 +89,33 @@ public class FileReferencesImpl extends CsmFileReferences  {
             return;
         }
         CsmFile csmFile = null;
-        int start=0;
-        int end = Integer.MAX_VALUE;
+
+        int start, end;
+
         if (CsmKindUtilities.isFile(csmScope)){
             csmFile = (CsmFile) csmScope;
         } else {
             csmFile = ((CsmOffsetable)csmScope).getContainingFile();
+        }
+        
+        BaseDocument doc = ReferencesSupport.getDocument(csmFile);
+        assert doc != null;
+        if (CsmKindUtilities.isFile(csmScope)) {
+            start = 0;
+            end = doc.getLength() - 1;
+        } else {
             start = ((CsmOffsetable)csmScope).getStartOffset();
             end = ((CsmOffsetable)csmScope).getEndOffset();
         }
-        for (CsmReference ref : getIdentifierReferences(csmFile,start,end, kinds)) {
+
+        for (CsmReference ref : getIdentifierReferences(csmFile, doc, start,end, kinds)) {
             visitor.visit(ref);
         }        
     }
     
-    private List<CsmReference> getIdentifierReferences(CsmFile csmFile, int start, int end,
+    private List<CsmReference> getIdentifierReferences(CsmFile csmFile, BaseDocument doc, int start, int end,
                                                         EnumSet<CsmReferenceKind> kinds) {
         List<CsmReference> out = new ArrayList<CsmReference>();
-        BaseDocument doc = ReferencesSupport.getDocument(csmFile);
-        assert doc != null;
         boolean needAfterDereferenceUsages = kinds.contains(CsmReferenceKind.AFTER_DEREFERENCE_USAGE);
         List<Token> tokens = TokenUtilities.getTokens(doc, start, end);
         Token lastToken = null;

@@ -1,23 +1,46 @@
 /*
- * The contents of this file are subject to the terms of the Common Development
- * and Distribution License (the License). You may not use this file except in
- * compliance with the License.
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
- * or http://www.netbeans.org/cddl.txt.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  *
- * When distributing Covered Code, include this CDDL Header Notice in each file
- * and include the License file at http://www.netbeans.org/cddl.txt.
- * If applicable, add the following below the CDDL Header, with the fields
- * enclosed by brackets [] replaced by your own identifying information:
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License. When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
  */
 package org.netbeans.modules.bpel.design;
 
+import java.awt.Rectangle;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Point;
@@ -25,7 +48,6 @@ import java.awt.Point;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.dnd.DropTarget;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.util.logging.Level;
@@ -50,7 +72,7 @@ import org.netbeans.modules.bpel.design.decoration.providers.ToolbarDecorationPr
 import org.netbeans.modules.bpel.design.model.patterns.ProcessPattern;
 import org.netbeans.modules.bpel.design.model.patterns.SequencePattern;
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
-import org.netbeans.modules.bpel.editors.api.utils.Util;
+import org.netbeans.modules.bpel.editors.api.EditorUtil;
 import org.netbeans.modules.bpel.editors.multiview.DesignerMultiViewElement;
 import org.netbeans.modules.bpel.design.DiagramView;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
@@ -72,7 +94,7 @@ import org.openide.util.Lookup;
 
 import org.openide.nodes.Node;
 import org.netbeans.modules.bpel.core.helper.api.BusinessProcessHelper;
-import org.netbeans.modules.bpel.core.util.BPELValidationController;
+import org.netbeans.modules.soa.validation.core.Controller;
 import org.netbeans.modules.bpel.design.decoration.Decoration;
 import org.netbeans.modules.bpel.design.decoration.DecorationProviderFactory;
 import org.netbeans.modules.bpel.design.decoration.components.GlassPane;
@@ -93,9 +115,13 @@ import org.netbeans.modules.bpel.design.actions.GoToLoggingAction;
 import org.netbeans.modules.bpel.design.actions.GoToMapperAction;
 import org.netbeans.modules.bpel.design.actions.GoToSourceAction;
 import org.netbeans.modules.bpel.design.actions.RenameAction;
+import org.netbeans.modules.bpel.design.actions.ScrollToOperationAction;
 import org.netbeans.modules.bpel.design.actions.ShowContextMenuAction;
 import org.netbeans.modules.bpel.design.actions.TabToNextComponentAction;
+import org.netbeans.modules.bpel.design.geometry.FBounds;
 import org.netbeans.modules.bpel.design.model.PartnerRole;
+import org.netbeans.modules.bpel.design.model.connections.MessageConnection;
+import org.netbeans.modules.bpel.design.model.elements.VisualElement;
 import org.netbeans.modules.bpel.nodes.actions.GoToAction;
 import org.netbeans.modules.bpel.nodes.actions.ShowBpelMapperAction;
 import org.netbeans.modules.bpel.properties.NodeUtils;
@@ -338,22 +364,17 @@ public class DesignView extends JPanel implements
         selectionBridge.release();
     }
 
-    public BPELValidationController getValidationController() {
-        return getLookup().lookup(BPELValidationController.class);
+    public Controller getValidationController() {
+        return getLookup().lookup(Controller.class);
     }
 
     public EntitySelectionModel getSelectionModel() {
         return selectionModel;
     }
 
-
-
-
     public FlowlinkTool getFlowLinkTool() {
         return flowLinkTool;
     }
-
-
 
     public DecorationManager getDecorationManager() {
         return decorationManager;
@@ -396,8 +417,7 @@ public class DesignView extends JPanel implements
             return null;
         }
 
-        NodeType nodeType = Util.getBasicNodeType(pattern
-                .getOMReference());
+        NodeType nodeType = EditorUtil.getBasicNodeType(pattern.getOMReference());
 
         NodeFactory factory = getNodeFactory();
 
@@ -465,6 +485,8 @@ public class DesignView extends JPanel implements
         im1.put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0), "rename-something"); // NOI18N
         im1.put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0), "delete-something"); // NOI18N
         im1.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "cancel-something"); // NOI18N
+        im2.put(KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyEvent.ALT_DOWN_MASK 
+                + KeyEvent.SHIFT_DOWN_MASK), "scroll-to-operation"); // NOI18N
 
         KeyStroke gotoSourceKey = GoToAction.getKeyStroke(org.netbeans.modules.bpel.nodes.actions.GoToSourceAction.class);
         KeyStroke gotoMapperKey = GoToAction.getKeyStroke(ShowBpelMapperAction.class);
@@ -547,6 +569,7 @@ public class DesignView extends JPanel implements
         am.put("show_context_menu", new ShowContextMenuAction(this)); // NOI18N
         am.put("go_next_hierarchy_component", new TabToNextComponentAction(this, true)); // NOI18N
         am.put("go_previous_hierarchy_component", new TabToNextComponentAction(this, false)); // NOI18N
+        am.put("scroll-to-operation", new ScrollToOperationAction(this)); // NOI18N
 //
 //        am.put("go_nearest_right_component", new GoRightNearestComponentAction()); // NOI18N
 //        am.put("go_nearest_left_component", new GoLeftNearestComponentAction()); // NOI18N
@@ -716,7 +739,6 @@ public class DesignView extends JPanel implements
     public double getCorrectedZoom() {
         return zoomManager.getScale() * DiagramFontUtil.getZoomCorrection();
     }
-
 
     public Pattern getRootPattern() {
         return diagramModel.getRootPattern();
@@ -901,7 +923,54 @@ public class DesignView extends JPanel implements
         consumersView.scrollPatternToView(pattern);
         processView.scrollPatternToView(pattern);
         providersView.scrollPatternToView(pattern);
+    }
+    
+    
+    public void scrollToOperation(MessageConnection messageConnection) {
+        VisualElement sourceElement = messageConnection.getSource();
+        VisualElement targetElement = messageConnection.getTarget();
 
+        Pattern sourcePattern = sourceElement.getPattern();
+
+        DiagramView centerView = getProcessView();
+
+        VisualElement centerElement;
+        VisualElement sideElement;
+
+        if (sourcePattern.getView() == centerView) {
+            centerElement = sourceElement;
+            sideElement = targetElement;
+        } else {
+            centerElement = targetElement;
+            sideElement = sourceElement;
+        }
+
+        DiagramView sideView = sideElement.getPattern().getView();
+
+        FBounds centerBounds = centerElement.getBounds();
+        Point centerPoint1 = centerView.convertDiagramToScreen(
+                centerBounds.getTopLeft());
+        Point centerPoint2 = centerView.convertDiagramToScreen(
+                centerBounds.getBottomRight());
+
+        FBounds sideBounds = sideElement.getBounds();
+        Point sidePoint1 = centerView.convertDiagramToScreen(
+                sideBounds.getTopLeft());
+        Point sidePoint2 = centerView.convertDiagramToScreen(
+                sideBounds.getBottomRight());
+
+        Rectangle centerVisibleRect = centerView.getVisibleRect();
+        Rectangle sideVisibleRect = sideView.getVisibleRect();
+
+        int centerOffset = (centerPoint2.y + centerPoint1.y) / 2 
+                - centerVisibleRect.y;
+
+        int sideOffset = (sidePoint1.y + sidePoint2.y) / 2 
+                - sideVisibleRect.y;
+
+        sideVisibleRect.y += sideOffset - centerOffset;
+
+        sideView.scrollRectToVisible(sideVisibleRect);
     }
 
     /**
@@ -1018,5 +1087,4 @@ public class DesignView extends JPanel implements
     public DnDHandler getDndHandler() {
         return dndHandler;
     }
-
 }

@@ -49,7 +49,7 @@ import javax.swing.InputMap;
 import javax.swing.JComboBox;
 import javax.swing.KeyStroke;
 import javax.swing.text.JTextComponent;
-import static org.netbeans.modules.print.impl.util.UI.*;
+import static org.netbeans.modules.print.impl.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -79,14 +79,7 @@ public final class Percent extends JComboBox implements ActionListener {
     void invalidValue(String value);
   }
 
-  public Percent(
-    Listener listener,
-    double initValue,
-    int [] values,
-    final int defaultCustomIndex,
-    String [] customs,
-    String toolTip)
-  {
+  public Percent(Listener listener, double initValue, int [] values, final int defaultCustomIndex, String [] customs, String toolTip) {
 //out("<New> Percent: " + initValue);
     for (int value : values) {
       addItem(value + PERCENT);

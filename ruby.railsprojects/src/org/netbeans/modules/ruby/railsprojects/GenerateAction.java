@@ -195,7 +195,7 @@ public final class GenerateAction extends NodeAction implements EditorAction {
 
                 final FileObject dir = project.getProjectDirectory();
                 final File pwd = FileUtil.toFile(project.getProjectDirectory());
-                final String script = "script" + File.separator + "generate"; // NOI18N
+                final String script = "script" + File.separator + panel.getScript(); // NOI18N
                 List<String> argvList = new ArrayList<String>();
                 argvList.add(type);
 

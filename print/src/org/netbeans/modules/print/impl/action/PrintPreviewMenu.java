@@ -61,7 +61,7 @@ import org.netbeans.modules.print.impl.provider.ComponentProvider;
 import org.netbeans.modules.print.impl.provider.TextProvider;
 import org.netbeans.modules.print.impl.ui.Preview;
 import org.netbeans.modules.print.impl.util.Option;
-import static org.netbeans.modules.print.impl.util.UI.*;
+import static org.netbeans.modules.print.impl.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -125,7 +125,7 @@ public class PrintPreviewMenu extends IconAction {
   }
 
   private PrintProvider getComponentProvider() {
-    TopComponent top = getActivateTopComponent();
+    TopComponent top = getActiveTopComponent();
 
     if (top == null) {
       return null;
@@ -200,11 +200,7 @@ public class PrintPreviewMenu extends IconAction {
   }
 
   private void getPrintable(Container container, List<JComponent> printable) {
-    if (
-      container.isShowing() &&
-      container instanceof JComponent &&
-      ((JComponent) container).getClientProperty(Printable.class) != null)
-    {
+    if (container.isShowing() && container instanceof JComponent && ((JComponent) container).getClientProperty(Printable.class) != null) {
 //out("see: " + container.getClass().getName());
       printable.add((JComponent) container);
     }
@@ -287,8 +283,7 @@ public class PrintPreviewMenu extends IconAction {
   }
 
   @Override
-  public boolean isEnabled()
-  {
+  public boolean isEnabled() {
     if (super.isEnabled()) {
       return true;
     }

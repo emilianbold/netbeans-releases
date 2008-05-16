@@ -27,32 +27,26 @@
  */
 package org.netbeans.modules.php.project;
 
-import org.netbeans.modules.php.project.options.*;
-import org.netbeans.modules.php.project.ui.actions.SystemPackageFinder;
+import org.netbeans.modules.php.project.environment.PhpEnvironment;
+import org.netbeans.modules.php.project.ui.options.PhpOptions;
 import org.openide.modules.ModuleInstall;
 
 /**
- *
- * @author avk
+ * @author avk, Tomas Mysik
  */
 public class PhpModuleInstaller extends ModuleInstall {
+    private static final long serialVersionUID = 3447246352491016636L;
 
     @Override
     public void restored() {
-        super.restored();
-
         setPhpInterpreter();
     }
 
     private void setPhpInterpreter() {
-        CommandLinePreferences properties 
-                = CommandLinePreferences.getInstance();
-        if (properties.getPhpInterpreter() == null) {
-            
-            String interpreter = SystemPackageFinder.getPhpInterpreterAny();
-            
+        if (PhpOptions.getInstance().getPhpInterpreter() == null) {
+            String interpreter = PhpEnvironment.get().getAnyPhpInterpreter();
             if (interpreter != null) {
-                properties.setPhpInterpreter(interpreter);
+                PhpOptions.getInstance().setPhpInterpreter(interpreter);
             }
         }
     }

@@ -3543,6 +3543,9 @@ public class JavaCompletionProvider implements CompletionProvider {
                     case WHILE_LOOP:
                         WhileLoopTree wl = (WhileLoopTree)tree;
                         return wl.getCondition() == lastTree ? Collections.<TypeMirror>singleton(controller.getTypes().getPrimitiveType(TypeKind.BOOLEAN)) : null;
+                    case DO_WHILE_LOOP:
+                        DoWhileLoopTree dwl = (DoWhileLoopTree)tree;
+                        return dwl.getCondition() == lastTree ? Collections.<TypeMirror>singleton(controller.getTypes().getPrimitiveType(TypeKind.BOOLEAN)) : null;
                     case FOR_LOOP:
                         ForLoopTree fl = (ForLoopTree)tree;
                         Tree cond = fl.getCondition();
@@ -3621,6 +3624,13 @@ public class JavaCompletionProvider implements CompletionProvider {
                             int j = 0;
                             for (Tree t : argTypes)
                                 args[j++] = controller.getTrees().getTypeMirror(new TreePath(path, t));
+                            TypeMirror[] targs = null;
+                            if (!mi.getTypeArguments().isEmpty()) {
+                                targs = new TypeMirror[mi.getTypeArguments().size()];
+                                j = 0;
+                                for (Tree t : mi.getTypeArguments())
+                                    targs[j++] = controller.getTrees().getTypeMirror(new TreePath(path, t));
+                            }
                             Tree mid = mi.getMethodSelect();
                             path = new TreePath(path, mid);
                             switch (mid.getKind()) {
@@ -3642,7 +3652,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                                                 return e.getKind() == METHOD && (!isStatic || e.getModifiers().contains(STATIC)) && tu.isAccessible(scope, e, isSuperCall && enclType != null ? enclType : t);
                                             }
                                         };
-                                        return getMatchingArgumentTypes(tm, controller.getElementUtilities().getMembers(tm, acceptor), name, args, controller.getTypes());
+                                        return getMatchingArgumentTypes(tm, controller.getElementUtilities().getMembers(tm, acceptor), name, args, targs, controller.getTypes(), controller.getTypeUtilities());
                                     }
                                     return null;
                                 }
@@ -3659,17 +3669,17 @@ public class JavaCompletionProvider implements CompletionProvider {
                                             }
                                         };
                                         TypeMirror superclass = enclClass.getSuperclass();
-                                        return getMatchingArgumentTypes(superclass, controller.getElementUtilities().getMembers(superclass, acceptor), INIT, args, controller.getTypes());
+                                        return getMatchingArgumentTypes(superclass, controller.getElementUtilities().getMembers(superclass, acceptor), INIT, args, targs, controller.getTypes(), controller.getTypeUtilities());
                                     }
                                     ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
                                         public boolean accept(Element e, TypeMirror t) {
                                             return e.getKind() == METHOD && (!isStatic || e.getModifiers().contains(STATIC)) && tu.isAccessible(scope, e, t);
                                         }
                                     };
-                                    return getMatchingArgumentTypes(enclClass != null ? enclClass.asType() : null, controller.getElementUtilities().getLocalMembersAndVars(scope, acceptor), THIS_KEYWORD.equals(name) ? INIT : name, args, controller.getTypes());
+                                    return getMatchingArgumentTypes(enclClass != null ? enclClass.asType() : null, controller.getElementUtilities().getLocalMembersAndVars(scope, acceptor), THIS_KEYWORD.equals(name) ? INIT : name, args, targs, controller.getTypes(), controller.getTypeUtilities());
+                                    }
                                 }
                             }
-                        }
                         return null;
                     case NEW_CLASS:
                         NewClassTree nc = (NewClassTree)tree;
@@ -3684,6 +3694,13 @@ public class JavaCompletionProvider implements CompletionProvider {
                             int j = 0;
                             for (Tree t : argTypes)
                                 args[j++] = controller.getTrees().getTypeMirror(new TreePath(path, t));
+                            TypeMirror[] targs = null;
+                            if (!nc.getTypeArguments().isEmpty()) {
+                                targs = new TypeMirror[nc.getTypeArguments().size()];
+                                j = 0;
+                                for (Tree t : nc.getTypeArguments())
+                                    targs[j++] = controller.getTrees().getTypeMirror(new TreePath(path, t));
+                            }
                             Tree mid = nc.getIdentifier();
                             path = new TreePath(path, mid);
                             final TypeMirror tm = controller.getTrees().getTypeMirror(path);
@@ -3697,7 +3714,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                                         return e.getKind() == CONSTRUCTOR && (tu.isAccessible(scope, e, t) || isAnonymous && e.getModifiers().contains(PROTECTED));
                                     }
                                 };
-                                return getMatchingArgumentTypes(tm, controller.getElementUtilities().getMembers(tm, acceptor), INIT, args, controller.getTypes());
+                                return getMatchingArgumentTypes(tm, controller.getElementUtilities().getMembers(tm, acceptor), INIT, args, targs, controller.getTypes(), controller.getTypeUtilities());
                             }
                             return null;
                         }
@@ -4046,7 +4063,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             return ret.isEmpty() ? null : ret;
         }
         
-        private Set<TypeMirror> getMatchingArgumentTypes(TypeMirror type, Iterable<? extends Element> elements, String name, TypeMirror[] argTypes, Types types) {
+        private Set<TypeMirror> getMatchingArgumentTypes(TypeMirror type, Iterable<? extends Element> elements, String name, TypeMirror[] argTypes, TypeMirror[] typeArgTypes, Types types, TypeUtilities tu) {
             Set<TypeMirror> ret = new HashSet<TypeMirror>();
             for (Element e : elements) {
                 if ((e.getKind() == CONSTRUCTOR || e.getKind() == METHOD) && name.contentEquals(e.getSimpleName())) {
@@ -4054,8 +4071,11 @@ public class JavaCompletionProvider implements CompletionProvider {
                     Collection<? extends VariableElement> params = ((ExecutableElement)e).getParameters();
                     if (params.size() <= argTypes.length)
                         continue;
-                    for (TypeMirror param : ((ExecutableType)asMemberOf(e, type, types)).getParameterTypes()) {
+                    ExecutableType meth = (ExecutableType)asMemberOf(e, type, types);
+                    for (TypeMirror param : meth.getParameterTypes()) {
                         if (i == argTypes.length) {
+                            if (typeArgTypes != null && param.getKind() == TypeKind.DECLARED && typeArgTypes.length == meth.getTypeVariables().size())
+                                param = tu.substitute(param, meth.getTypeVariables(), Arrays.asList(typeArgTypes));
                             ret.add(param);
                             break;
                         }

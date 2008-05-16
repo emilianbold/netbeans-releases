@@ -644,7 +644,7 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
             // covered entirely by subcomponents.
             // OTOH mouse release should cancel the multiselection - if no
             // dragging happened.
-            hitMetaComp = selectedComponentAt(e.getPoint(), 0, false);
+            hitMetaComp = selectedComponentAt(e.getPoint(), 0, true);
             if (hitMetaComp != null) {
                 return hitMetaComp;
             }

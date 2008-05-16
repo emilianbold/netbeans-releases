@@ -52,7 +52,7 @@ import java.util.List;
 import javax.swing.JComponent;
 
 import org.netbeans.modules.print.impl.util.Option;
-import static org.netbeans.modules.print.impl.util.UI.*;
+import static org.netbeans.modules.print.impl.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -309,20 +309,17 @@ final class ComponentDocument extends JComponent {
   }
 
   @Override
-  public int getWidth()
-  {
+  public int getWidth() {
     return myWidth;
   }
 
   @Override
-  public int getHeight()
-  {
+  public int getHeight() {
     return myHeight;
   }
  
   @Override
-  protected void paintComponent(Graphics graphics)
-  {
+  protected void paintComponent(Graphics graphics) {
     Graphics2D g = Option.getDefault().getGraphics(graphics);
 
     g.setColor(myBackgroundColor);

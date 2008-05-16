@@ -93,7 +93,7 @@ import org.openide.util.NbBundle;
  */
 public class CompositorPanel extends ElementsContainerPanel{
     private static final long serialVersionUID = 7526472295622776147L;
-    
+    private Font compositorLabelFont;
     CompositorType compositorType;
     ExpandCollapseButton expandButton;
     
@@ -193,6 +193,9 @@ public class CompositorPanel extends ElementsContainerPanel{
         compositorTypePanelLayout = new SpringLayout();
         compositorTypePanel.setLayout(compositorTypePanelLayout);
         compositorTypeLabel = new InplaceEditableLabel(getCompositorTypeString());
+        Font font = compositorTypeLabel.getFont();
+        font = font.deriveFont((font.getStyle() | java.awt.Font.PLAIN), font.getSize()+2);
+        compositorTypeLabel.setFont(font);
         compositorTypeLabel.setForeground(InstanceDesignConstants.COMPOSITOR_TYPE_LABEL_COLOR);
         
         if(getAXIParent().isReadOnly()){
@@ -658,18 +661,23 @@ public class CompositorPanel extends ElementsContainerPanel{
                         //set the tag name color to orange
                         compositorTypeLabel.setForeground(
                                 InstanceDesignConstants.COMPOSITOR_TYPE_LABEL_SELECTED_COLOR);
-                        Font font = compositorTypeLabel.getFont();
-                        font = new Font(font.getName(), Font.BOLD, font.getSize());
-                        compositorTypeLabel.setFont(font);
+                        if(compositorLabelFont == null) {
+                            Font font = compositorTypeLabel.getFont();
+                            //font = new Font(font.getName(), Font.BOLD, font.getSize());
+                            compositorLabelFont = font.deriveFont((font.getStyle() | java.awt.Font.PLAIN), font.getSize());
+                            compositorTypeLabel.setFont(compositorLabelFont);
+                        }
                         drawBoldString(true);
                         setBorder(new LineBorder(InstanceDesignConstants.XP_ORANGE, BORDER_THICKNESS, true));
                     }else{
                         //set the tage name color to normal color
                         compositorTypeLabel.setForeground(
                                 InstanceDesignConstants.COMPOSITOR_TYPE_LABEL_COLOR);
-                        Font font = compositorTypeLabel.getFont();
-                        font = new Font(font.getName(), Font.PLAIN, font.getSize());
-                        compositorTypeLabel.setFont(font);
+                        if(compositorLabelFont == null) {
+                            Font font = compositorTypeLabel.getFont();
+                            font = new Font(font.getName(), Font.PLAIN, font.getSize());
+                            compositorTypeLabel.setFont(font);
+                        }
                         drawBoldString(false);
                         setBorder(emptyBorder);
                     }

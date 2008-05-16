@@ -49,8 +49,8 @@ public class MoveTool extends AbstractMapperDnDTool {
         this.graphSubSet = graphSubSet;
          Point delta;
          if (graphSubSet.getGraph() != null && graphSubSet.getVertexCount() > 0) {
-                int dx = graphSubSet.getVertex(0).getX();
-                int dy = graphSubSet.getVertex(0).getY();
+                int dx = graphSubSet.getMinYVertex().getX();
+                int dy = graphSubSet.getMinYVertex().getY();
                 dx = getCanvas().toCanvas(dx * getCanvas().getStep());
                 MapperNode node = getCanvas().getNodeAt(location.y);
                 dy = node.yToView(dy * getCanvas().getStep());
@@ -174,7 +174,8 @@ public class MoveTool extends AbstractMapperDnDTool {
             if (graphSubSet != null && graphSubSet.getVertexCount() > 0 &&
                     !selectionModel.isSelected(treePath, graphSubSet.getVertex(0)))
             {
-                selectionModel.setSelected(treePath, graphSubSet.getVertex(0));
+                //selectionModel.setSelected(treePath, graphSubSet.getVertex(0));
+                selectionModel.setSelected(treePath, graphSubSet);
             }
          }
 

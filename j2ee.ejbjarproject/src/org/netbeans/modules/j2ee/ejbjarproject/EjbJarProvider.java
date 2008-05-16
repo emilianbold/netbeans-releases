@@ -214,11 +214,6 @@ public final class EjbJarProvider extends J2eeModuleProvider
     }
     
     @Override
-    public boolean useDefaultServer() {
-        return false;
-    }
-    
-    @Override
     public String getServerID() {
         return helper.getStandardPropertyEvaluator().getProperty(EjbJarProjectProperties.J2EE_SERVER_TYPE);
     }

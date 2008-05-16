@@ -57,22 +57,22 @@ public class WsFromWsdlGUIPanel0 extends javax.swing.JPanel {
     private File lastWsdl;
     
     /** Creates new form WsFromJavaGUIPanel1 */
-    public WsFromWsdlGUIPanel0(WsFromWsdlPanel0 wizardPanel) {
+    public WsFromWsdlGUIPanel0(final WsFromWsdlPanel0 wizardPanel) {
         this.wizardPanel = wizardPanel;
         initComponents();
-        setName("WSDL Selection");
+        setName("WSDL Selection"); //NOI18N
         tfWsdlUrl.getDocument().addDocumentListener(new DocumentListener() {
 
             public void insertUpdate(DocumentEvent e) {
-                WsFromWsdlGUIPanel0.this.wizardPanel.fireChange();
+                wizardPanel.fireChange();
             }
 
             public void removeUpdate(DocumentEvent e) {
-                WsFromWsdlGUIPanel0.this.wizardPanel.fireChange();
+                wizardPanel.fireChange();
             }
 
             public void changedUpdate(DocumentEvent e) {
-                WsFromWsdlGUIPanel0.this.wizardPanel.fireChange();
+                wizardPanel.fireChange();
             }
         });
     }
@@ -109,7 +109,7 @@ public class WsFromWsdlGUIPanel0 extends javax.swing.JPanel {
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(tfWsdlUrl, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 534, Short.MAX_VALUE)
+                        .add(tfWsdlUrl, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 366, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(browseButton))
                     .add(jLabel1))
@@ -124,7 +124,7 @@ public class WsFromWsdlGUIPanel0 extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(browseButton)
                     .add(tfWsdlUrl, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(254, Short.MAX_VALUE))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         tfWsdlUrl.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WsFromWsdlGUIPanel0.class, "WsFromWsdlGUIPanel0.tfWsdlUrl.AccessibleContext.accessibleDescription")); // NOI18N
@@ -147,7 +147,7 @@ private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
 
             @Override
             public String getDescription() {
-                return "WSDL file";
+                return org.openide.util.NbBundle.getMessage(WsFromWsdlGUIPanel0.class,"DESC_FileFilter");
             }
             
         };

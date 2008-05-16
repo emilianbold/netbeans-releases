@@ -40,292 +40,374 @@
  */
 package org.netbeans.modules.php.project.ui.customizer;
 
+import org.netbeans.modules.php.project.ui.IncludePathUiSupport;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.ListCellRenderer;
-import javax.swing.table.DefaultTableModel;
-import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.php.project.PhpProject;
-import org.netbeans.modules.php.project.ResourceMarker;
-import org.netbeans.modules.php.project.Utils;
-import org.netbeans.modules.php.project.classpath.ClassPathSupport;
-import org.netbeans.modules.php.rt.spi.providers.Host;
-import org.netbeans.modules.php.rt.spi.providers.ProjectConfigProvider;
-import org.netbeans.modules.php.rt.spi.providers.WebServerProvider;
-import org.netbeans.modules.php.rt.utils.PhpProjectSharedConstants;
+import org.netbeans.modules.php.project.classpath.IncludePathSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
+import org.openide.util.MutexException;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
-
 /**
- * @author ads
- *
+ * @author Tomas Mysik, Radek Matous
  */
 public class PhpProjectProperties {
 
-    public static final String STATUS_USE_NO_HOST = "use_no_host";
-    public static final String STATUS_ABSENT_HOST = "absent_host";
-
-    public static final String SRC_              = "src.";               // NOI18N
-
-    public static final String _DIR              = "dir";                // NOI18N
-
-    public static final String SRC                = SRC_ + _DIR;
-
-    public static final String SRC_DIR            = "${" + SRC + "}";     // NOI18N
-
-    public static final String TMP_FILE_POSTFIX   = "~";     // NOI18N
-
-    public static final String PROVIDER_ID  = "provider.id";        // NOI18N
-
-    public static final String VERSION      = "version";            // NOI18N
-
-    public static final String COMMAND_PATH = "command.path";       // NOI18N
-
-    public static final String NAME        
-            = PhpProjectSharedConstants.PHP_PROJECT_NAME; // NOI18N
-
+    public static final String SRC_DIR = "src.dir"; // NOI18N
+    public static final String COMMAND_PATH = "command.path"; // NOI18N
     public static final String SOURCE_ENCODING = "source.encoding"; // NOI18N
-
-    public static final String SOURCE_LBL  = "LBL_Node_Sources";   // NOI18N
-
-    public static final String SOURCES_TYPE_PHP 
-            = PhpProjectSharedConstants.SOURCES_TYPE_PHP;
-
     public static final String COPY_SRC_FILES = "copy.src.files"; // NOI18N
     public static final String COPY_SRC_TARGET = "copy.src.target"; // NOI18N
     public static final String URL = "url"; // NOI18N
+    public static final String INDEX_FILE = "index.file"; // NOI18N
     public static final String INCLUDE_PATH = "include.path"; // NOI18N
-    // XXX will be replaced with global ide include path
-    public static final String GLOBAL_INCLUDE_PATH = "global.include.path"; // NOI18N
+    public static final String GLOBAL_INCLUDE_PATH = "php.global.include.path"; // NOI18N
+    public static final String ARGS = "script.arguments";
+    public static final String RUN_AS = "run.as";
+    public static final String[] CFG_PROPS = new String[]{
+        URL,
+        INDEX_FILE,
+        ARGS,
+        RUN_AS
+    };
 
-    public static final Icon PROJECT_ICON = 
-        new ImageIcon(Utilities.loadImage( 
-                ResourceMarker.getLocation()+ResourceMarker.PROJECT_ICON ));
-
-    private final ClassPathSupport classPathSupport;
+    public static enum RunAsType {
+        LOCAL,
+        SCRIPT,
+        REMOTE
+    }
+    // CustomizerRun
+    Map<String/*|null*/, Map<String, String/*|null*/>/*|null*/> RUN_CONFIGS;
+    String activeConfig;
+    private final PhpProject project;
+    private final IncludePathSupport includePathSupport;
     
-    public final DefaultListModel INCLUDE_PATH_MODEL;
-    public final ListCellRenderer INCLUDE_PATH_LIST_RENDERER;
+    // all these fields don't have to be volatile - this ensures request processor
+    // CustomizerSources
+    private String srcDir;
+    private String copySrcFiles;
+    private String copySrcTarget;
+    private String url;
+    private String indexFile;
+    private String encoding;
 
-    private static final Logger LOGGER = Logger.getLogger(PhpProjectProperties.class.getName());
-    
-    public PhpProjectProperties(PhpProject project, ClassPathSupport classPathSupport) {
+    // CustomizerPhpIncludePath
+    private DefaultListModel includePathListModel = null;
+    private ListCellRenderer includePathListRenderer = null;
+
+    public PhpProjectProperties(PhpProject project, IncludePathSupport includePathSupport) {
         assert project != null;
-        assert classPathSupport != null;
+        assert includePathSupport != null;
 
-        myProject = project;
-        this.classPathSupport = classPathSupport;
-        // XXX
-        load();
+        this.project = project;
+        this.includePathSupport = includePathSupport;
+        this.RUN_CONFIGS = readRunConfigs();
+        this.activeConfig = project.getEvaluator().getProperty("config");        
+    }
 
-        INCLUDE_PATH_MODEL = ClassPathUiSupport.createListModel(classPathSupport.itemsIterator(myProperties.getProperty(INCLUDE_PATH)));
-        INCLUDE_PATH_LIST_RENDERER = new ClassPathUiSupport.ClassPathListCellRenderer(project.getEvaluator(), project.getProjectDirectory());
+    public String getCopySrcFiles() {
+        if (copySrcFiles == null) {
+            copySrcFiles = project.getEvaluator().getProperty(COPY_SRC_FILES);
+        }
+        return copySrcFiles;
+    }
+
+    public void setCopySrcFiles(String copySrcFiles) {
+        this.copySrcFiles = copySrcFiles;
+    }
+
+    public String getCopySrcTarget() {
+        if (copySrcTarget == null) {
+            copySrcTarget = project.getEvaluator().getProperty(COPY_SRC_TARGET);
+        }
+        return copySrcTarget;
+    }
+
+    public void setCopySrcTarget(String copySrcTarget) {
+        this.copySrcTarget = copySrcTarget;
+    }
+
+    public String getEncoding() {
+        if (encoding == null) {
+            encoding = project.getEvaluator().getProperty(SOURCE_ENCODING);
+        }
+        return encoding;
+    }
+
+    public void setEncoding(String encoding) {
+        this.encoding = encoding;
+    }
+
+    public String getSrcDir() {
+        if (srcDir == null) {
+            srcDir = project.getEvaluator().getProperty(SRC_DIR);
+        }
+        return srcDir;
+    }
+
+    public void setSrcDir(String srcDir) {
+        this.srcDir = srcDir;
+    }
+
+    public String getUrl() {
+        if (url == null) {
+            url = project.getEvaluator().getProperty(URL);
+        }
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
+    public String getIndexFile() {
+        if (indexFile == null) {
+            indexFile = project.getEvaluator().getProperty(INDEX_FILE);
+        }
+        return indexFile;
+    }
+
+    public void setIndexFile(String indexFile) {
+        this.indexFile = indexFile;
+    }
+
+    public DefaultListModel getIncludePathListModel() {
+        if (includePathListModel == null) {
+            EditableProperties properties = project.getHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+            includePathListModel = IncludePathUiSupport.createListModel(includePathSupport.itemsIterator(
+                    properties.getProperty(INCLUDE_PATH)));
+        }
+        return includePathListModel;
+    }
+
+    public ListCellRenderer getIncludePathListRenderer() {
+        if (includePathListRenderer == null) {
+            includePathListRenderer = new IncludePathUiSupport.ClassPathListCellRenderer(project.getEvaluator(),
+                project.getProjectDirectory());
+        }
+        return includePathListRenderer;
     }
 
     public void save() {
-        ProjectManager.mutex().writeAccess(new Mutex.Action<Object>() {
-
-            public Host run() {
-                AntProjectHelper helper = getAntProjectHelper(getProject());
-                
-                // encode include path
-                String[] includePath = classPathSupport.encodeToStrings(
-                        ClassPathUiSupport.getIterator(INCLUDE_PATH_MODEL));
-                
-                EditableProperties properties = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-
-                /*
-                 * Set source roots.
-                 */
-                configureSources(properties);
-                /*
-                 * Set Encoding
-                 */
-                configureEncoding(properties);
-                /*
-                 * Save provider and host properties
-                 */
-                configureProvider(properties);
-                /*
-                 * Set Commang line
-                 */
-                configureCommandLine(properties);
-                
-                /*
-                 * Set version.
-                 */
-                //properties.setProperty( PhpProject.VERSION,  myProperties.getProperty( PhpProject.VERSION) );
-                
-                properties.setProperty(URL, myProperties.getProperty(URL));
-                
-                properties.setProperty(INCLUDE_PATH, includePath);
-                
-                helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, properties);
-
-                properties = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-                helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, properties);
-
-                /* delegate server specific configuration to provider */
-                configureHost(helper);
-
-                try {
-                    ProjectManager.getDefault().saveProject(getProject());
-                    // check whether src directory exists - if not, create it (can happen using customizer)
-                    String src = getProject().getEvaluator().getProperty(SRC);
-                    File srcDir = PropertyUtils.resolveFile(FileUtil.toFile(getProject().getProjectDirectory()), src);
-                    if (!srcDir.exists()) {
-                        FileUtil.createFolder(srcDir);
-                    }
-                } catch (IOException ex) {
-                    LOGGER.log(Level.WARNING, null, ex);
+        try {
+            // store properties
+            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                public Void run() throws IOException {
+                    saveProperties();
+                    return null;
                 }
+            });
+            ProjectManager.getDefault().saveProject(project);
+        } catch (MutexException e) {
+            Exceptions.printStackTrace((IOException) e.getException());
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
 
-                return null;
+    private void saveProperties() throws IOException {
+        AntProjectHelper helper = project.getHelper();
+
+        // encode include path
+        String[] includePath = null;
+        if (includePathListModel != null) {
+            includePath = includePathSupport.encodeToStrings(IncludePathUiSupport.getIterator(includePathListModel));
+        }
+
+        // get properties
+        EditableProperties projectProperties = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        EditableProperties privateProperties = helper.getProperties( AntProjectHelper.PRIVATE_PROPERTIES_PATH );                
+
+        // sources
+        if (srcDir != null) {
+            projectProperties.setProperty(SRC_DIR, srcDir);
+        }
+        if (copySrcFiles != null) {
+            projectProperties.setProperty(COPY_SRC_FILES, copySrcFiles);
+        }
+        if (copySrcTarget != null) {
+            projectProperties.setProperty(COPY_SRC_TARGET, copySrcTarget);
+        }
+        if (encoding != null) {
+            projectProperties.setProperty(SOURCE_ENCODING, encoding);
+        }
+
+        // php include path
+        if (includePath != null) {
+            projectProperties.setProperty(INCLUDE_PATH, includePath);
+        }
+
+        // store properties
+        helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties);
+
+        // encoding
+        if (encoding != null) {
+            try {
+                FileEncodingQuery.setDefaultEncoding(Charset.forName(encoding));
+            } catch (UnsupportedCharsetException e) {
+                //When the encoding is not supported by JVM do not set it as default
             }
+        }
 
-            private void configureCommandLine(EditableProperties properties) {
-                if (myProperties.containsKey(COMMAND_PATH)) {
-                    String cmd = myProperties.getProperty(COMMAND_PATH);
-                    properties.setProperty(COMMAND_PATH, cmd);
-                } else {
-                    properties.remove(COMMAND_PATH);
-                }
+        // check whether src directory exists - if not, create it (can happen using customizer)
+        FileObject srcDirectory = null;
+        File srcFolder = helper.resolveFile(srcDir);
+        if (srcDir != null) {
+            if (!srcFolder.exists()) {
+                srcDirectory = FileUtil.createFolder(srcFolder);
             }
-            
-            private void configureProvider(EditableProperties properties) {
-                if (myProperties.containsKey(STATUS_USE_NO_HOST)) {
-                    properties.remove(PROVIDER_ID);
-                    properties.remove(WebServerProvider.HOST_ID);
-                    return;
-                }
+        }
 
+        // UI log
+        if (srcDirectory == null) {
+            srcDirectory = FileUtil.toFileObject(srcFolder);
+        }
+        logUI(helper.getProjectDirectory(), srcDirectory, Boolean.valueOf(getCopySrcFiles()));
+        storeRunConfigs(RUN_CONFIGS, projectProperties, privateProperties);
+        EditableProperties ep = helper.getProperties("nbproject/private/config.properties");//NOI18N
+        if (activeConfig == null) {
+            ep.remove("config");//NOI18N
+        } else {
+            ep.setProperty("config", activeConfig);//NOI18N
+        }
+        helper.putProperties("nbproject/private/config.properties", ep);//NOI18N
+        helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties);
+        helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties);
+    }
 
-                String hostId = myProperties.getProperty(WebServerProvider.HOST_ID);
-                if (hostId != null) {
-                    Host host = Utils.findHostById(hostId);
-                    // project's host is not removed
-                    if (host != null) {
-                        WebServerProvider provider = host.getProvider();
-                        String provider_id = provider.getClass().getCanonicalName();
-                        properties.setProperty(PROVIDER_ID, provider_id);
-                        properties.setProperty(WebServerProvider.HOST_ID, host.getId());
-                    }
-                } else {
-                    /* else is command line or there are no configured hosts
-                     * TODO separate this.
-                     * Now (hostId == null) means that we shouldn't overwrite values stored in properties  
-                     */
-                }
-            }
-
-            private void configureHost(AntProjectHelper helper) {
-                if (myProperties.containsKey(STATUS_USE_NO_HOST)) {
-                    return;
-                }
-
-                String hostId = myProperties.getProperty(WebServerProvider.HOST_ID);
-                WebServerProvider provider = Utils.getProvider(getProject());
-
-                if (hostId != null && provider != null) {
-                    //Host host = provider.findHost(hostId);
-                    ProjectConfigProvider confProvider = provider.getProjectConfigProvider();
-                    confProvider.customizeProject(helper, myProperties);
-                }
-            }
-
-            // TODO now it processes only one source root dir
-            private void configureSources(EditableProperties properties) {
-
-                properties.setProperty(SRC, myProperties.getProperty(SRC));
-
-            }
-
-            private void configureEncoding(EditableProperties properties) {
-                
-                properties.setProperty(SOURCE_ENCODING, 
-                        myProperties.getProperty(SOURCE_ENCODING));
-
-                // Ugh - this looks like global clobbering!
-                String value = properties.get(SOURCE_ENCODING);
-                if (value != null) {
-                    try {
-                        FileEncodingQuery.setDefaultEncoding(Charset.forName(value));
-                    } catch (UnsupportedCharsetException e) {
-                        //When the encoding is not supported by JVM do not set it as default
-                    }
-                }
-            }
+    // http://wiki.netbeans.org/UILoggingInPHP
+    private void logUI(FileObject projectDir, FileObject sourceDir, Boolean copyFiles) {
+        LogRecord logRecord = new LogRecord(Level.INFO, "UI_PHP_PROJECT_CUSTOMIZED"); //NOI18N
+        logRecord.setLoggerName(PhpProject.UI_LOGGER_NAME);
+        logRecord.setResourceBundle(NbBundle.getBundle(PhpProjectProperties.class));
+        logRecord.setParameters(new Object[] {
+            FileUtil.isParentOf(projectDir, sourceDir),
+            copyFiles != null && copyFiles
         });
-                AntProjectHelper helper = getAntProjectHelper(getProject());
-
-        helper. getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-        
+        Logger.getLogger(PhpProject.UI_LOGGER_NAME).log(logRecord);
     }
 
     public PhpProject getProject() {
-        return myProject;
+        return project;
     }
+    
+    
+    /**
+     * A mess.
+     */
+    Map<String/*|null*/, Map<String, String>> readRunConfigs() {
+        Map<String, Map<String, String>> m = new TreeMap<String, Map<String, String>>(new Comparator<String>() {
 
-    // XXX remove this method
-    private EditableProperties load() {
-        ProjectManager.mutex().readAccess(new Mutex.Action<Object>() {
-
-            public Host run() {
-                myProperties = getAntProjectHelper(getProject()).getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-
-                return null;
+            public int compare(String s1, String s2) {
+                return s1 != null ? (s2 != null ? s1.compareTo(s2) : 1) : (s2 != null ? -1 : 0);
             }
         });
-        return myProperties;
+        Map<String, String> def = new TreeMap<String, String>();
+        for (String prop : CFG_PROPS) {
+            String v = getProject().getHelper().getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH).getProperty(prop);
+            if (v == null) {
+                v = getProject().getHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).getProperty(prop);
+            }
+            if (v != null) {
+                def.put(prop, v);
+            }
+        }
+        m.put(null, def);
+        FileObject configs = project.getProjectDirectory().getFileObject("nbproject/configs");
+        if (configs != null) {
+            for (FileObject kid : configs.getChildren()) {
+                if (!kid.hasExt("properties")) {
+                    continue;
+                }
+                m.put(kid.getName(), new TreeMap<String, String>(getProject().getHelper().getProperties(FileUtil.getRelativePath(project.getProjectDirectory(), kid))));
+            }
+        }
+        configs = project.getProjectDirectory().getFileObject("nbproject/private/configs");
+        if (configs != null) {
+            for (FileObject kid : configs.getChildren()) {
+                if (!kid.hasExt("properties")) {
+                    continue;
+                }
+                Map<String, String> c = m.get(kid.getName());
+                if (c == null) {
+                    continue;
+                }
+                c.putAll(new HashMap<String, String>(getProject().getHelper().getProperties(FileUtil.getRelativePath(project.getProjectDirectory(), kid))));
+            }
+        }
+        //System.err.println("readRunConfigs: " + m);
+        return m;
     }
-
-    public String getProperty(String key) {
-        return getProperties().getProperty(key);
-    }
-
-    public void setProperty(String key, String value) {
-        getProperties().setProperty(key, value);
-    }
-
-    public String remove(String key) {
-        return getProperties().remove(key);
-    }
-
-    public boolean containsKey(String key) {
-        return getProperties().containsKey(key);
-    }
-
 
     /**
-     * use load() before to load properties
-     * @return EditableProperties object. null if properties were not loaded using load()
+     * A royal mess.
      */
-    public EditableProperties getProperties() {
-        return myProperties;
+    void storeRunConfigs(Map<String/*|null*/, Map<String, String/*|null*/>/*|null*/> configs,
+            EditableProperties projectProperties, EditableProperties privateProperties) throws IOException {
+        //System.err.println("storeRunConfigs: " + configs);
+        Map<String, String> def = configs.get(null);
+        for (String prop : CFG_PROPS) {
+            String v = def.get(prop);
+            EditableProperties ep = projectProperties;
+            if (!Utilities.compareObjects(v, ep.getProperty(prop))) {
+                if (v != null && v.length() > 0) {
+                    ep.setProperty(prop, v);
+                } else {
+                    ep.remove(prop);
+                }
+            }
+        }
+        for (Map.Entry<String, Map<String, String>> entry : configs.entrySet()) {
+            String config = entry.getKey();
+            if (config == null) {
+                continue;
+            }
+            String sharedPath = "nbproject/configs/" + config + ".properties"; // NOI18N
+
+            String privatePath = "nbproject/private/configs/" + config + ".properties"; // NOI18N
+
+            Map<String, String> c = entry.getValue();
+            if (c == null) {
+                getProject().getHelper().putProperties(sharedPath, null);
+                getProject().getHelper().putProperties(privatePath, null);
+                continue;
+            }
+            for (Map.Entry<String, String> entry2 : c.entrySet()) {
+                String prop = entry2.getKey();
+                String v = entry2.getValue();
+                String path = (prop.equals(ARGS)) ? privatePath : sharedPath;
+                EditableProperties ep = getProject().getHelper().getProperties(path);
+                if (!Utilities.compareObjects(v, ep.getProperty(prop))) {
+                    if (v != null && (v.length() > 0 || (def.get(prop) != null && def.get(prop).length() > 0))) {
+                        ep.setProperty(prop, v);
+                    } else {
+                        ep.remove(prop);
+                    }
+                    getProject().getHelper().putProperties(path, ep);
+                }
+            }
+            // Make sure the definition file is always created, even if it is empty.
+            getProject().getHelper().putProperties(sharedPath, getProject().getHelper().getProperties(sharedPath));
+        }
     }
-
-    private AntProjectHelper getAntProjectHelper(Project project) {
-        return project.getLookup().lookup(AntProjectHelper.class);
-    }
-
-    EditableProperties myProperties;
-
-    private PhpProject myProject;
-
-    // CustomizerSources
-    DefaultTableModel SOURCE_ROOTS_MODEL;
 }

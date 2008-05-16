@@ -80,43 +80,45 @@ public class RhtmlFormattingTest extends RhtmlTestBase {
         return true;
     }
 
-    public void format(String source, String reformatted, IndentPrefs preferences) throws Exception {
-        // Must run in AWT thread (BaseKit.install() checks for that)
-        String BEGIN = "%<%"; // NOI18N
-        int startPos = source.indexOf(BEGIN);
-        if (startPos != -1) {
-            source = source.substring(0, startPos) + source.substring(startPos+BEGIN.length());
-        } else {
-            startPos = 0;
-        }
-        
-        String END = "%>%"; // NOI18N
-        int endPos = source.indexOf(END);
-        if (endPos != -1) {
-            source = source.substring(0, endPos) + source.substring(endPos+END.length());
-        }
+//    @Override
+//    public void format(String source, String reformatted, IndentPrefs preferences) throws Exception {
+//        // Must run in AWT thread (BaseKit.install() checks for that)
+//        String BEGIN = "%<%"; // NOI18N
+//        int startPos = source.indexOf(BEGIN);
+//        if (startPos != -1) {
+//            source = source.substring(0, startPos) + source.substring(startPos+BEGIN.length());
+//        } else {
+//            startPos = 0;
+//        }
+//        
+//        String END = "%>%"; // NOI18N
+//        int endPos = source.indexOf(END);
+//        if (endPos != -1) {
+//            source = source.substring(0, endPos) + source.substring(endPos+END.length());
+//        }
+//
+//        BaseDocument doc = getDocument(source);
+//
+//        if (endPos == -1) {
+//            endPos = doc.getLength();
+//        }
+//        
+//        String formatted = format(doc, startPos, endPos, preferences);
+//        assertEquals(reformatted, formatted);
+//    }
+//    
+//    public void reformatFileContents(String file) throws Exception {
+//        FileObject fo = getTestFile(file);
+//        assertNotNull(fo);
+//        BaseDocument doc = getDocument(fo);
+//        assertNotNull(doc);
+//
+//        IndentPrefs preferences = new IndentPrefs(2,2);
+//        String formatted = format(doc, 0, doc.getLength(), preferences);
+//        assertDescriptionMatches(file, formatted, false, ".formatted");
+//    }
+//    
 
-        BaseDocument doc = getDocument(source);
-
-        if (endPos == -1) {
-            endPos = doc.getLength();
-        }
-        
-        String formatted = format(doc, startPos, endPos, preferences);
-        assertEquals(reformatted, formatted);
-    }
-    
-    public void reformatFileContents(String file) throws Exception {
-        FileObject fo = getTestFile(file);
-        assertNotNull(fo);
-        BaseDocument doc = getDocument(fo);
-        assertNotNull(doc);
-
-        IndentPrefs preferences = new IndentPrefs(2,2);
-        String formatted = format(doc, 0, doc.getLength(), preferences);
-        assertDescriptionMatches(file, formatted, false, ".formatted");
-    }
-    
     public void testDummy() throws Exception {
     }
     

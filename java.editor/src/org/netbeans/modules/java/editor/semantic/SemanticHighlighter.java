@@ -457,14 +457,20 @@ public class SemanticHighlighter implements CancellableTask<CompilationInfo> {
             }
             
             scan(tree.getVariable(), EnumSet.of(UseTypes.WRITE));
-            scan(tree.getExpression(), null);
+            scan(tree.getExpression(), EnumSet.of(UseTypes.READ));
             
             return null;
         }
 
         @Override
         public Void visitCompoundAssignment(CompoundAssignmentTree tree, EnumSet<UseTypes> d) {
-            handlePossibleIdentifier(new TreePath(getCurrentPath(), tree.getVariable()), EnumSet.of(UseTypes.WRITE));
+            Set<UseTypes> useTypes = EnumSet.of(UseTypes.WRITE);
+            
+            if (d != null) {
+                useTypes.addAll(d);
+            }
+            
+            handlePossibleIdentifier(new TreePath(getCurrentPath(), tree.getVariable()), useTypes);
             
             Tree expr = tree.getExpression();
             
@@ -474,7 +480,7 @@ public class SemanticHighlighter implements CancellableTask<CompilationInfo> {
             }
             
             scan(tree.getVariable(), EnumSet.of(UseTypes.WRITE));
-            scan(tree.getExpression(), null);
+            scan(tree.getExpression(), EnumSet.of(UseTypes.READ));
             
             return null;
         }
@@ -485,7 +491,7 @@ public class SemanticHighlighter implements CancellableTask<CompilationInfo> {
                 handlePossibleIdentifier(new TreePath(getCurrentPath(), tree.getExpression()), EnumSet.of(UseTypes.READ));
             }
             
-            super.visitReturn(tree, null);
+            super.visitReturn(tree, EnumSet.of(UseTypes.READ));
             return null;
         }
         
@@ -808,7 +814,7 @@ public class SemanticHighlighter implements CancellableTask<CompilationInfo> {
                 }
             }
             
-            scan(tree.getArguments(), null);
+            scan(tree.getArguments(), EnumSet.of(UseTypes.READ));
             
 //            super.visitMethodInvocation(tree, null);
             return null;
@@ -933,7 +939,7 @@ public class SemanticHighlighter implements CancellableTask<CompilationInfo> {
                 handlePossibleIdentifier(new TreePath(getCurrentPath(), expr), EnumSet.of(UseTypes.READ));
             }
             
-            super.visitParenthesized(tree, null);
+            super.visitParenthesized(tree, d);
             return null;
         }
 
@@ -1094,7 +1100,7 @@ public class SemanticHighlighter implements CancellableTask<CompilationInfo> {
             
             tl.moveNext();
             
-            scan(tree.getInitializer(), null);
+            scan(tree.getInitializer(), EnumSet.of(UseTypes.READ));
             
             return null;
         }
@@ -1147,8 +1153,22 @@ public class SemanticHighlighter implements CancellableTask<CompilationInfo> {
 
         @Override
         public Void visitParameterizedType(ParameterizedTypeTree tree, EnumSet<UseTypes> d) {
-            if (getCurrentPath().getParentPath().getLeaf().getKind() != Kind.NEW_CLASS &&
-                    getCurrentPath().getParentPath().getParentPath().getLeaf().getKind() != Kind.NEW_CLASS) {
+            boolean alreadyHandled = false;
+            
+            if (getCurrentPath().getParentPath().getLeaf().getKind() == Kind.NEW_CLASS) {
+                NewClassTree nct = (NewClassTree) getCurrentPath().getParentPath().getLeaf();
+                
+                alreadyHandled = nct.getTypeArguments().contains(tree) || nct.getIdentifier() == tree;
+            }
+            
+            if (getCurrentPath().getParentPath().getParentPath().getLeaf().getKind() == Kind.NEW_CLASS) {
+                NewClassTree nct = (NewClassTree) getCurrentPath().getParentPath().getParentPath().getLeaf();
+                Tree leafToTest = getCurrentPath().getParentPath().getLeaf();
+
+                alreadyHandled = nct.getTypeArguments().contains(leafToTest) || nct.getIdentifier() == leafToTest;
+            }
+            
+            if (!alreadyHandled) {
                 //NewClass has already been handled as part of visitNewClass:
                 TreePath tp = new TreePath(getCurrentPath(), tree.getType());
                 handlePossibleIdentifier(tp, EnumSet.of(UseTypes.CLASS_USE));
@@ -1183,7 +1203,7 @@ public class SemanticHighlighter implements CancellableTask<CompilationInfo> {
                 handlePossibleIdentifier(tp, EnumSet.of(UseTypes.READ));
             }
             
-            super.visitBinary(tree, null);
+            super.visitBinary(tree, EnumSet.of(UseTypes.READ));
             return null;
         }
 
@@ -1298,7 +1318,7 @@ public class SemanticHighlighter implements CancellableTask<CompilationInfo> {
             if (tree.getDetail() != null && tree.getDetail().getKind() == Kind.IDENTIFIER)
                 handlePossibleIdentifier(new TreePath(getCurrentPath(), tree.getDetail()), EnumSet.of(UseTypes.READ));
             
-            return super.visitAssert(tree, null);
+            return super.visitAssert(tree, EnumSet.of(UseTypes.READ));
         }
         
         @Override

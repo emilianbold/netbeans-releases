@@ -103,6 +103,7 @@ import org.netbeans.modules.bpel.model.xam.BpelTypes;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.modules.xml.schema.model.ReferenceableSchemaComponent;
 import org.netbeans.modules.xml.schema.model.SchemaModelFactory;
+import org.netbeans.modules.xml.schema.model.GlobalSimpleType;
 import org.netbeans.modules.xml.wsdl.model.PortType;
 import org.netbeans.modules.xml.wsdl.model.ReferenceableWSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
@@ -127,6 +128,8 @@ import org.netbeans.modules.xml.xpath.ext.XPathModelHelper;
 import org.netbeans.modules.xml.xpath.ext.XPathException;
 import org.netbeans.modules.xml.xpath.ext.XPathExpression;
 import org.netbeans.modules.xml.xpath.ext.XPathModel;
+import org.netbeans.modules.xml.xpath.ext.XPathNumericLiteral;
+import org.netbeans.modules.xml.xpath.ext.XPathStringLiteral;
 import org.netbeans.modules.bpel.model.api.ExpressionLanguageSpec;
 import org.netbeans.modules.bpel.model.api.Import;
 import org.netbeans.modules.bpel.model.api.ContentElement;
@@ -139,6 +142,7 @@ import org.netbeans.modules.xml.xam.spi.Validator;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.xml.xpath.ext.spi.validation.XPathValidationContext;
 import org.netbeans.modules.xml.xam.Model.State;
+import org.netbeans.modules.soa.ui.SoaUtil;
 
 public final class Utils {
 
@@ -259,7 +263,17 @@ public final class Utils {
     private static SchemaComponent checkSingleExpr(XPathModel model, String exprText) {
         try {
             XPathExpression xpath = model.parseExpression(exprText);
+//out();
+//out("EXP: " + xpath.getClass().getName());
+//out();
             model.resolveExtReferences(true);
+
+            if (xpath instanceof XPathNumericLiteral) {
+              return getIntType();
+            }
+            if (xpath instanceof XPathStringLiteral) {
+              return getStringType();
+            }
             return model.getLastSchemaComponent();
         } 
         catch (XPathException e) {
@@ -267,11 +281,34 @@ public final class Utils {
         }
     }
 
+    private static GlobalSimpleType getIntType() {
+      return getType("int"); // NOI18N
+    }
+
+    private static GlobalSimpleType getStringType() {
+      return getType("string"); // NOI18N
+    }
+
+    private static GlobalSimpleType getType(String name) {
+      Collection<GlobalSimpleType> types = getSimpleTypes();
+
+      for (GlobalSimpleType type : types) {
+        if (type.getName().equals(name)) {
+          return type;
+        }
+      }
+      return null;
+    }
+
+    private static Collection<GlobalSimpleType> getSimpleTypes() {
+      return SchemaModelFactory.getDefault().getPrimitiveTypesModel().getSchema().getSimpleTypes();
+    }
+    
     private static void out() {
       System.out.println();
     }
 
-    private void out(Object object) {
+    private static void out(Object object) {
       System.out.println("*** " + object); // NOI18N
     }
 
@@ -592,17 +629,18 @@ public final class Utils {
         else {
             roleRef = partnerLink.getMyRole();
         }
-        if ( roleRef == null ){
+        if (roleRef == null) {
             return null;
         }
         Role role = roleRef.get();
-        if ( role == null ){
+
+        if (role == null) {
             return null; 
         }
         return role.getPortType();
     }
     
-    public static boolean equals( QName name1 , QName name2 ) {
+    public static boolean equals(QName name1, QName name2) {
         if ( name1 == null ) {
             return name2 == null;
         }
@@ -677,23 +715,8 @@ public final class Utils {
         }
     }
 
-    public static FileObject getFileObjectByModel(Model model) {
-        if (model != null){
-
-            ModelSource src = model.getModelSource();
-            if (src != null){
-
-                Lookup lookup = src.getLookup();
-                if (lookup != null){
-                    return lookup.lookup(FileObject.class);
-                }
-            }
-        }
-        return null;
-    }
-
     public static Project safeGetProject(BpelModel bpelModel) {
-        FileObject fo = getFileObjectByModel(bpelModel);
+        FileObject fo = SoaUtil.getFileObjectByModel(bpelModel);
         if (fo != null && fo.isValid()) {
             return FileOwnerQuery.getOwner(fo);
         } else {
@@ -713,7 +736,6 @@ public final class Utils {
         //
         return sModel;
     }
-    
     
     private static ActivityBuilder getActivityBuilder( String tagName ){
         return ActivityCreatorHolder.ACTIVITY_BUILDERS.get( tagName );

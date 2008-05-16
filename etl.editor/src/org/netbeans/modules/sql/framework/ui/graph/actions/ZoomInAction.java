@@ -72,7 +72,7 @@ public class ZoomInAction extends GraphAction {
         //action tooltip
         String nbBundle1 = mLoc.t("BUND321: Zoom In");
         this.putValue(Action.SHORT_DESCRIPTION, nbBundle1.substring(15));
-
+        // Acceleratot Shift-Q
     }
 
     public void actionPerformed(ActionEvent e) {

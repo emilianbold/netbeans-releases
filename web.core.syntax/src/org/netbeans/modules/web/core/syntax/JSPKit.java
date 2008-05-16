@@ -73,7 +73,6 @@ import org.openide.util.Exceptions;
 import org.openide.util.WeakListeners;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
-import org.netbeans.editor.ext.java.JavaDrawLayerFactory;
 import org.netbeans.editor.ext.html.HTMLSyntax;
 import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.web.core.syntax.spi.JSPColoringData;
@@ -88,7 +87,6 @@ import org.netbeans.editor.ext.html.parser.SyntaxParser;
 import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.modules.web.core.syntax.formatting.JSPLexerFormatter;
 import org.netbeans.spi.lexer.MutableTextInput;
-import org.openide.util.RequestProcessor;
 
 /**
  * Editor kit implementation for JSP content type
@@ -288,8 +286,6 @@ public class JSPKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
     }
 
     protected void initDocument(BaseDocument doc) {
-        doc.addLayer(new JavaDrawLayerFactory.JavaLayer(),
-                JavaDrawLayerFactory.JAVA_LAYER_VISIBILITY);
         doc.addLayer(new ELDrawLayerFactory.ELLayer(),
                 ELDrawLayerFactory.EL_LAYER_VISIBILITY);
         
@@ -586,7 +582,7 @@ public class JSPKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
                 if (javaTokenSequence != null){
                     JavaKit jkit = (JavaKit)getKit(JavaKit.class);
                     if (jkit!=null){
-                        Action action = jkit.getActionByName(DefaultEditorKit.deletePrevCharAction);
+                        Action action = jkit.getActionByName(nextChar ? DefaultEditorKit.deleteNextCharAction : DefaultEditorKit.deletePrevCharAction);
                         if (action != null && action instanceof JavaKit.JavaDeleteCharAction){
                             ((JavaKit.JavaDeleteCharAction)action).actionPerformed(e, target);
                             return;

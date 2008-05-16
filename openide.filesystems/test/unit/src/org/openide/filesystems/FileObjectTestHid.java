@@ -407,6 +407,9 @@ public class FileObjectTestHid extends TestBaseHid {
     }
 
     private void testWriteReadExclusion(final boolean deadlockInWrite) throws Exception {
+        if (Boolean.getBoolean("ignore.random.failures")) {
+            return;
+        }
         checkSetUp();
         FileObject fold = getTestFolder1(root);
         final FileObject fo1 = getTestFile1(fold);
@@ -1020,6 +1023,22 @@ public class FileObjectTestHid extends TestBaseHid {
         assertEquals("right mime type", "ahoj", actualMT);
     }
 
+    /* XXX CountingSecurityManager not accessible from here; consider moving to org.openide.util.test from bootstrap & startup:
+    public void testGetMIMETypeWithResolverAskingForGetSize() {
+        checkSetUp();
+        FileObject fo = getTestFile1(root);
+        MockServices.setServices(MR.class);
+        
+        CountingSecurityManager.initialize(root.getPath());
+        MR.checkSize = 100;
+        String actualMT = fo.getMIMEType();
+        assertNotNull("queried", MR.tested);
+        assertEquals("right mime type", "ahoj", actualMT);
+        assertEquals("100 checks", 0, MR.checkSize);
+        CountingSecurityManager.assertCounts("Just minimal # of accesses", 3);
+    }
+     */
+
     public void DISABLEDtestGetMIMETypeWithResolverWhileOpenOutputStream() throws Exception {
         checkSetUp();
         FileObject fo = getTestFile1(root);
@@ -1038,6 +1057,7 @@ public class FileObjectTestHid extends TestBaseHid {
     }
     
     public static final class MR extends MIMEResolver {
+        static int checkSize;
         static FileObject tested;
         
         public String findMIMEType(FileObject fo) {
@@ -1053,6 +1073,17 @@ public class FileObjectTestHid extends TestBaseHid {
             is.read(arr);
             is.close();
             tested = fo;
+            
+            long prev = -1;
+            while (checkSize > 0) {
+                checkSize--;
+                long next = fo.getSize();
+                if (prev != -1) {
+                    assertEquals("Size is the same", prev, next);
+                }
+                prev = next;
+            }
+            
             return "ahoj";
         }
     }

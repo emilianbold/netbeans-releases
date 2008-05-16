@@ -44,7 +44,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.actions.CallableSystemAction;
 
 import org.netbeans.modules.print.impl.util.Option;
-import static org.netbeans.modules.print.impl.util.UI.*;
+import static org.netbeans.modules.print.impl.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -53,26 +53,22 @@ import static org.netbeans.modules.print.impl.util.UI.*;
 public final class PageSetupAction extends CallableSystemAction {
 
   @Override
-  public synchronized void performAction()
-  {
+  public synchronized void performAction() {
     Option.getDefault().showPageSetup();
   }
 
   @Override
-  protected boolean asynchronous()
-  {
+  protected boolean asynchronous() {
     return false;
   }
 
   @Override
-  public String getName()
-  {
+  public String getName() {
     return i18n(PageSetupAction.class, "LBL_PageSetup_Action"); // NOI18N
   }
   
   @Override
-  public HelpCtx getHelpCtx()
-  {
+  public HelpCtx getHelpCtx() {
     return HelpCtx.DEFAULT_HELP;
   }
 }

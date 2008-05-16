@@ -32,9 +32,9 @@ import javax.swing.JToolTip;
 
 import org.netbeans.modules.php.dbgp.DebugSession;
 import org.netbeans.modules.php.dbgp.StartActionProviderImpl;
-import org.netbeans.modules.php.dbgp.api.ModelNode;
-import org.netbeans.modules.php.dbgp.api.SessionId;
-import org.netbeans.modules.php.dbgp.api.UnsufficientValueException;
+import org.netbeans.modules.php.dbgp.ModelNode;
+import org.netbeans.modules.php.dbgp.SessionId;
+import org.netbeans.modules.php.dbgp.UnsufficientValueException;
 import org.netbeans.modules.php.dbgp.models.nodes.AbstractModelNode;
 import org.netbeans.modules.php.dbgp.models.nodes.VariableNode;
 import org.netbeans.modules.php.dbgp.packets.Property;
@@ -300,7 +300,6 @@ public class VariablesModel extends ViewModelSupport
         try {
             if (myNodes.size() == 0) {
                 myNodes.add(node);
-                fireTreeChanged();
             }
             else {
                 boolean found = false;
@@ -315,9 +314,9 @@ public class VariablesModel extends ViewModelSupport
                 }
                 if (!found) {
                     myNodes.add(node);
-                    fireTreeChanged(new ModelEvent.NodeChanged(this, ROOT));
                 }
             }
+            fireTreeChanged();
         }
         finally {
             myWritelock.unlock();

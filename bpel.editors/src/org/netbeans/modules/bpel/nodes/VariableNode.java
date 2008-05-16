@@ -30,7 +30,7 @@ import org.netbeans.modules.bpel.model.api.references.WSDLReference;
 import org.netbeans.modules.bpel.properties.Constants;
 import org.netbeans.modules.bpel.editors.api.Constants.VariableStereotype;
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
-import org.netbeans.modules.bpel.editors.api.utils.Util;
+import org.netbeans.modules.bpel.editors.api.EditorUtil;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.ElementReference;
 import org.netbeans.modules.bpel.model.api.MessageTypeReference;
@@ -49,7 +49,7 @@ import org.netbeans.modules.bpel.properties.editors.controls.filter.VariableType
 import org.netbeans.modules.bpel.editors.api.nodes.actions.ActionType;
 import org.netbeans.modules.bpel.nodes.actions.DeleteVariableAction;
 import org.netbeans.modules.bpel.properties.PropertyType;
-import org.netbeans.modules.soa.ui.SoaUiUtil;
+import org.netbeans.modules.soa.ui.SoaUtil;
 import org.netbeans.modules.soa.ui.form.CustomNodeEditor;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.GlobalType;
@@ -75,7 +75,7 @@ public class VariableNode extends BpelNode<VariableDeclaration>
     }
     
     public static QName getVariableQNameType(VariableDeclaration variable) {
-        VariableStereotype variableStereotype = Util.getVariableStereotype(variable);
+        VariableStereotype variableStereotype = EditorUtil.getVariableStereotype(variable);
         //
         switch (variableStereotype) {
             case PRIMITIVE_TYPE:
@@ -138,14 +138,14 @@ public class VariableNode extends BpelNode<VariableDeclaration>
             if (typeFilter.isTypeAllowed(this)) {
                 result = getName();
             } else {
-                result = SoaUiUtil.getGrayString(getName());
+                result = SoaUtil.getGrayString(getName());
             }
         } else {
             Reference varType = getVariableType();
             if (varType == null) {
                 result = getName();
             } else {
-                result = SoaUiUtil.getGrayString(
+                result = SoaUtil.getGrayString(
                         getName(),
                         " " + getVariableType().getRefString()); // NOI18N
             }
@@ -189,12 +189,12 @@ public class VariableNode extends BpelNode<VariableDeclaration>
     }
     
     public VariableStereotype getVariableStereotype() {
-        return Util.getVariableStereotype(getReference());
+        return EditorUtil.getVariableStereotype(getReference());
     }
     
     public Reference getVariableType() {
         VariableDeclaration variable = getReference();
-        return variable == null ? null : Util.getVariableType(variable);
+        return variable == null ? null : EditorUtil.getVariableType(variable);
     }
     
     public QName getVariableQNameType() {
@@ -265,7 +265,7 @@ public class VariableNode extends BpelNode<VariableDeclaration>
         
         public VariableStereotype getVariableStereotype() {
             if (myVar != null) {
-                return Util.getVariableStereotype(myVar);
+                return EditorUtil.getVariableStereotype(myVar);
             } else {
                 return null;
             }
@@ -273,7 +273,7 @@ public class VariableNode extends BpelNode<VariableDeclaration>
         
         public Object getVariableType() {
             if (myVar != null) {
-                return Util.getVariableType(myVar);
+                return EditorUtil.getVariableType(myVar);
             } else {
                 return null;
             }

@@ -783,15 +783,15 @@ final class Central implements ControllerHandler {
         WindowManagerImpl.getInstance().notifyTopComponentOpened(tc);
     }
     
-    public void addModeClosedTopComponent(ModeImpl mode, TopComponent tc) {
+    public boolean addModeClosedTopComponent(ModeImpl mode, TopComponent tc) {
         boolean opened = getModeOpenedTopComponents(mode).contains(tc);
         
         if(opened && !tc.canClose()) {
-            return;
+            return false;
         }
         
         if(containsModeTopComponent(mode,tc) && !opened) {
-            return;
+            return false;
         }
         
         // Validate the TopComponent was removed from other modes.
@@ -835,6 +835,7 @@ final class Central implements ControllerHandler {
         if(opened) {
             WindowManagerImpl.getInstance().notifyTopComponentClosed(tc);
         }
+        return true;
     }
 
     // XXX Could be called only during load phase of window system.
@@ -902,15 +903,15 @@ final class Central implements ControllerHandler {
     }
     
     /** Removed top component from model and requests view (if needed). */
-    public void removeModeTopComponent(ModeImpl mode, TopComponent tc) {
+    public boolean removeModeTopComponent(ModeImpl mode, TopComponent tc) {
         if(!containsModeTopComponent(mode, tc)) {
-            return;
+            return false;
         }
         
         boolean viewChange = getModeOpenedTopComponents(mode).contains(tc);
         
         if(viewChange && !tc.canClose()) {
-            return;
+            return false;
         }
         
         TopComponent recentTc = null;
@@ -977,6 +978,7 @@ final class Central implements ControllerHandler {
             WindowManagerImpl.notifyRegistryTopComponentActivated(
                 null);
         }
+        return true;
     }
     
     /**
@@ -1920,17 +1922,19 @@ final class Central implements ControllerHandler {
             //an editor document is being closed so let's find the most recent editor to select
             recentTc = getRecentTopComponent( mode, tc );
         }
+        boolean wasTcClosed = false;
         if (PersistenceHandler.isTopComponentPersistentWhenClosed(tc)) {
-            addModeClosedTopComponent(mode, tc);
+            wasTcClosed = addModeClosedTopComponent(mode, tc);
         } else {
             if (Boolean.TRUE.equals(tc.getClientProperty(Constants.KEEP_NON_PERSISTENT_TC_IN_MODEL_WHEN_CLOSED))) {
-                addModeClosedTopComponent(mode, tc);
+                wasTcClosed = addModeClosedTopComponent(mode, tc);
             } else {
-                removeModeTopComponent(mode, tc);
+                wasTcClosed = removeModeTopComponent(mode, tc);
             }
         }
-        if( null != recentTc )
+        if ((recentTc != null) && wasTcClosed) {
             recentTc.requestActive();
+        }
     }
     
     public void userClosedMode(ModeImpl mode) {

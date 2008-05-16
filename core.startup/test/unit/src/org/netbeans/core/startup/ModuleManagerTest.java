@@ -1786,7 +1786,6 @@ public class ModuleManagerTest extends SetupHid {
         FakeEvents ev = new FakeEvents();
         ModuleManager mgr = new ModuleManager(installer, ev);
 
-        clearWorkDir();
         File jar = new File(getWorkDir(), "copy-of-simple-module.jar");
         copy(new File(jars, "simple-module.jar"), jar);
 

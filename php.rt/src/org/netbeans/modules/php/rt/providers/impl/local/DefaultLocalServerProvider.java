@@ -40,6 +40,8 @@
  */
 package org.netbeans.modules.php.rt.providers.impl.local;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.php.rt.providers.impl.AbstractProvider;
 import org.netbeans.modules.php.rt.spi.providers.Command;
@@ -68,37 +70,48 @@ public class DefaultLocalServerProvider extends AbstractProvider<LocalHostImpl> 
     private static final String PHP_CONFIG_FILE = "phpConfig";                // NOI18N     
 
 
-    public DefaultLocalServerProvider(String domain, String baseDir, String port, String docRoot) {
+    public DefaultLocalServerProvider(String domain, String baseDir, String port, String docRoot, String indexFile) {
         myCommandProvider = new LocalCommandProvider(this) {
 
+	    @Override
+	    public Command[] getAllSupportedCommands(Project project) {
+		ArrayList<Command> commands = new ArrayList<Command>();
+		commands.addAll(Arrays.asList(getProjectCommands(project)));
+		commands.addAll(Arrays.asList(getObjectCommands(project)));
+		return commands.toArray(new Command[0]);
+	    }	    
+	    
             @Override
             public Command[] getAdditionalCommands(Project project) {
                 if (isInvokedForProject() || isInvokedForSrcRoot()) {
-                    return getProjectCommands(project);
+                    return getAdditionalProjectCommands(project);
                 } else {
-                    return getObjectCommands(project);
+                    return getAdditionalObjectCommands(project);
                 }
             }
 
-            private Command[] getProjectCommands(Project project) {
+            private Command[] getAdditionalProjectCommands(Project project) {
                 return new Command[]{
                             new UploadFilesCommandImpl(project, DefaultLocalServerProvider.this),
                             new DownloadFilesCommandImpl(project, DefaultLocalServerProvider.this),
                         };
             }
 
-            private Command[] getObjectCommands(Project project) {
+            private Command[] getAdditionalObjectCommands(Project project) {
                 return new Command[]{
                             new UploadFilesCommandImpl(project, DefaultLocalServerProvider.this),
                             new DownloadFilesCommandImpl(project, DefaultLocalServerProvider.this),
                         };
             }
         };
-        LocalHostImpl impl = new LocalHostImpl("defaultHost", domain, null, baseDir, this);//NOI18N
+        LocalHostImpl impl = new LocalHostImpl("defaultHost", domain, port, baseDir, this);//NOI18N
 
         impl.setProperty(LocalHostImpl.DOCUMENT_PATH, docRoot);
         impl.setProperty(LocalHostImpl.WEB_CONFIG_FILE, "");
         impl.setProperty(LocalHostImpl.PHP_CONFIG_FILE, "");
+        if (indexFile != null && indexFile.trim().length() > 0) {
+            impl.setProperty(LocalHostImpl.INDEX_FILE, indexFile);
+        }
         doGetHosts().add(impl);
     }
 

@@ -49,19 +49,32 @@ import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
 public interface RubyDebuggerImplementation {
 
     /**
+     * Sets descriptor describing the process to be debugged.
+     *
+     * @param descriptor description of the process to be debugged
+     */
+    void describeProcess(final ExecutionDescriptor descriptor);
+
+    /**
+     * Returns whether the implementation is able to debug described process.
+     * e.g. if there is or not a support for currently used platform.
+     * 
+     * @return whether the implementation is able to debug described process.
+     */
+    boolean canDebug();
+
+    /**
      * Starts debugging of the given script.
      * 
-     * @param descriptor description of the process to be debugged
      * @return debugger {@link java.lang.Process process}. Might be
      *         <tt>null</tt> if debugging cannot be started for some reason.
      *         E.g. interpreter cannot be obtained from preferences.
      */
-    Process debug(final ExecutionDescriptor descriptor);
-    
+    Process debug();
+
     /**
      * Action which shall be performed when a debugger is <em>forced</em> to
      * stop, like pressing output window's <em>stop button</em>.
      */
-    public Runnable getFinishAction();
-    
+    Runnable getFinishAction();
 }

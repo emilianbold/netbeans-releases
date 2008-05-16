@@ -47,6 +47,7 @@ import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.xml.xam.Reference;
 import org.netbeans.modules.xml.xpath.ext.schema.GetNameVisitor;
 import org.openide.util.NbBundle;
+import org.netbeans.modules.soa.ui.SoaUtil;
 
 /**
  * The utility class containing auxiliary methods to work with WSDL
@@ -161,7 +162,7 @@ public final class ResolverUtility {
         if (bpelModel == null) {
             return null;
         }
-        FileObject bpelFo = Util.getFileObjectByModel(bpelModel);
+        FileObject bpelFo = SoaUtil.getFileObjectByModel(bpelModel);
         if (bpelFo == null) {
             return null;
         }

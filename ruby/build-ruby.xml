@@ -146,23 +146,20 @@ made subject to such option by the copyright holder.
         </subant>
     </target>
     
-    <target name="runtests" depends="build">
+    <target name="runtests" depends="build,runtests-nobuild"/>
+
+    <target name="runtests-nobuild">
         <!-- Builds tests first -->
-        <subant buildpath="railsprojects:platform:editing:rhtml:projects" 
+        <subant buildpath="ruby:ruby.rhtml:ruby.platform:ruby.project:ruby.railsprojects"
             target="test-build"
             inheritall="false"
             inheritrefs="false"/>
-        <!-- Builds hints/extrahints -->
-            <ant dir="hints/extrahints"
-            target="netbeans"
-            inheritall="false"
-            inheritrefs="false"/>
         <!-- Runs tests-->
-        <subant buildpath="platform/test:editing/test:rhtml/test:projects/test:railsprojects/test:hints/test:hints/extrahints/test"
-            target="runtests"
+        <subant buildpath="ruby/test:ruby.rhtml/test:ruby.platform/test:ruby.project/test:ruby.railsprojects/test"
+            target="all"
             inheritall="false"
             inheritrefs="false">
-            <property name="xtest.results" value="${nbroot}/ruby/rubyide/build/results"/>
+            <property name="xtest.results" value="${nbroot}/ruby/build/test/results"/>
         </subant>
     </target>
     

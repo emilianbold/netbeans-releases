@@ -55,7 +55,7 @@ import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PartnerLinkType;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PropertyAlias;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Query;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
-import static org.netbeans.modules.soa.ui.util.UI.*;
+import static org.netbeans.modules.xml.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -69,8 +69,7 @@ final class WsdlVisitor extends ChildVisitor {
   }
 
   @Override
-  public void visit(ExtensibilityElement element) 
-  {
+  public void visit(ExtensibilityElement element) {
     checkUsages(element);
 
     if (element instanceof CorrelationProperty) {

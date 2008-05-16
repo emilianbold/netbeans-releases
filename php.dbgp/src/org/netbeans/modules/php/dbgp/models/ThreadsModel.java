@@ -50,9 +50,10 @@ import javax.swing.Action;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.php.dbgp.ConversionUtils;
 import org.netbeans.modules.php.dbgp.DebugSession;
 import org.netbeans.modules.php.dbgp.StartActionProviderImpl;
-import org.netbeans.modules.php.dbgp.api.SessionId;
+import org.netbeans.modules.php.dbgp.SessionId;
 import org.netbeans.modules.php.dbgp.packets.StatusCommand;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.ui.Constants;
@@ -134,17 +135,18 @@ public class ThreadsModel extends ViewModelSupport
             if ( id == null ){
                 return new Object[0];
             }
-            Collection<DebugSession> collection = 
-                StartActionProviderImpl.getInstance().getSessions(id);
-            if ( from >= collection.size() ){
+            DebugSession debugSession = ConversionUtils.toDebugSession(id);
+            int size = (debugSession != null) ? 1 : 0;
+            
+            if ( from >= size ){
                 return new Object[0];
             }
-            int end = Math.min( to, collection.size());
-            if ( from == 0 && to == collection.size() ){
-                return collection.toArray( new Object[ collection.size() ]);
+            int end = Math.min( to, size);
+            if ( from == 0 && to == size ){
+                return debugSession != null ? new Object[] {debugSession} : new Object[ 0 ];
             }
-            ArrayList<DebugSession> list = new ArrayList<DebugSession>( 
-                    collection );
+            ArrayList<DebugSession> list = new ArrayList<DebugSession>();
+            if (debugSession != null) {list.add(debugSession);}
             List<DebugSession> result = list.subList( from , end );
             return result.toArray( new Object[ result.size() ] );
         }

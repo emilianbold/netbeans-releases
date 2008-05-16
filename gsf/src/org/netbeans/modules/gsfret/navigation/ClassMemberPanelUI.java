@@ -42,6 +42,8 @@ package org.netbeans.modules.gsfret.navigation;
 
 import java.awt.BorderLayout;
 import java.awt.Rectangle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.KeyStroke;
 import java.awt.Toolkit;
@@ -136,6 +138,10 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
                     mimeType.equals("text/x-jsp") || // NOI18N
                     mimeType.equals("application/x-httpd-eruby")) { // NOI18N
                 includeFilters = false;
+                
+                //issue #132883 workaround
+                filters.disableFiltering = true;
+                
                 // Perhaps I don't have to create the filterspanel etc. above
                 // in this case, but it's right before 6.1 high resistance and
                 // I'm afraid code relies on the above stuff being non-null
@@ -201,7 +207,12 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
             //System.out.println("UPDATE ======" + description.fileObject.getName() );
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
+                    long startTime = System.currentTimeMillis();
                     rootNode.updateRecursively( description );
+                    long endTime = System.currentTimeMillis();
+                    Logger.getLogger("TIMER").log(Level.FINE, "Navigator Merge",
+                            new Object[] {fileObject, endTime - startTime});
+                    
                 }
             } );            
         } 
@@ -211,12 +222,16 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
             SwingUtilities.invokeLater(new Runnable() {
 
                 public void run() {
+                    long startTime = System.currentTimeMillis();
                     elementView.setRootVisible(false);        
                     manager.setRootContext(new ElementNode( description, ClassMemberPanelUI.this, fileObject ) );
                     boolean scrollOnExpand = elementView.getScrollOnExpand();
                     elementView.setScrollOnExpand( false );
                     elementView.expandAll();
                     elementView.setScrollOnExpand( scrollOnExpand );
+                    long endTime = System.currentTimeMillis();
+                    Logger.getLogger("TIMER").log(Level.FINE, "Navigator Initialization",
+                            new Object[] {fileObject, endTime - startTime});
                 }
             } );
             

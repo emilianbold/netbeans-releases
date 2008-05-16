@@ -43,7 +43,7 @@ made subject to such option by the copyright holder.
 <project xmlns="http://www.netbeans.org/ns/project/1">
     <type>org.netbeans.modules.apisupport.project</type>
     <configuration>
-        <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
+        <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
             <code-name-base>org.netbeans.modules.editor.lib2</code-name-base>
             <module-dependencies>
                 <dependency>
@@ -143,6 +143,7 @@ made subject to such option by the copyright holder.
             </test-dependencies>
             <public-packages>
                 <package>org.netbeans.api.editor</package>
+                <package>org.netbeans.spi.editor.codegen</package>
                 <package>org.netbeans.spi.editor.highlighting</package>
                 <package>org.netbeans.spi.editor.highlighting.support</package>
             </public-packages>

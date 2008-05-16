@@ -48,6 +48,7 @@ import org.netbeans.modules.gsf.api.SemanticAnalyzer;
 import org.netbeans.modules.gsf.api.TranslatedSource;
 import org.netbeans.modules.css.editor.Css;
 import org.netbeans.modules.css.parser.CSSParserTreeConstants;
+import org.netbeans.modules.css.parser.CssParserAccess;
 import org.netbeans.modules.css.parser.NodeVisitor;
 import org.netbeans.modules.css.parser.SimpleNode;
 
@@ -69,7 +70,8 @@ public class CSSSemanticAnalyzer implements SemanticAnalyzer {
     }
 
     public void run(CompilationInfo ci) throws Exception {
-
+        cancelled = false;
+        
         if (cancelled) {
             return;
         }
@@ -106,6 +108,10 @@ public class CSSSemanticAnalyzer implements SemanticAnalyzer {
                     if (!range.isEmpty()) { //filter virtual nodes
 
                         String propertyName = node.image().trim();
+                        if(CssParserAccess.containsGeneratedCode(propertyName)) {
+                            return;
+                        }
+                        
                         if (CssAnalyser.isVendorSpecificProperty(propertyName)) {
                             //special highlight for vend. spec. properties
                             highlights.put(range, ColoringAttributes.PARAMETER_USE);

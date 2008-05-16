@@ -39,9 +39,6 @@
 package org.netbeans.modules.spring.beans.completion.completors;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -55,11 +52,11 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.modules.spring.beans.completion.CompletionContext;
 import org.netbeans.modules.spring.beans.completion.Completor;
+import org.netbeans.modules.spring.beans.completion.QueryProgress;
 import org.netbeans.modules.spring.beans.completion.SpringXMLConfigCompletionItem;
-import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils;
-import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils.Public;
-import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils.Static;
-import org.openide.util.Exceptions;
+import org.netbeans.modules.spring.java.JavaUtils;
+import org.netbeans.modules.spring.java.Public;
+import org.netbeans.modules.spring.java.Static;
 
 /**
  *
@@ -68,100 +65,92 @@ import org.openide.util.Exceptions;
 public abstract class JavaMethodCompletor extends Completor {
 
     @Override
-    public List<SpringXMLConfigCompletionItem> doCompletion(final CompletionContext context) {
-        final List<SpringXMLConfigCompletionItem> results = new ArrayList<SpringXMLConfigCompletionItem>();
-        try {
-            final String classBinaryName = getTypeName(context);
-            final Public publicFlag = getPublicFlag(context);
-            final Static staticFlag = getStaticFlag(context);
-            final int argCount = getArgCount(context);
+    protected void computeCompletionItems(final CompletionContext context, QueryProgress progress) throws IOException {
+        final String classBinaryName = getTypeName(context);
+        final Public publicFlag = getPublicFlag(context);
+        final Static staticFlag = getStaticFlag(context);
+        final int argCount = getArgCount(context);
 
-            if (classBinaryName == null || classBinaryName.equals("")) { // NOI18N
-                return Collections.emptyList();
-            }
-
-            final JavaSource javaSource = SpringXMLConfigEditorUtils.getJavaSource(context.getFileObject());
-            if (javaSource == null) {
-                return Collections.emptyList();
-            }
-
-            javaSource.runUserActionTask(new Task<CompilationController>() {
-
-                public void run(CompilationController controller) throws Exception {
-                    controller.toPhase(Phase.ELEMENTS_RESOLVED);
-                    TypeElement classElem = SpringXMLConfigEditorUtils.findClassElementByBinaryName(classBinaryName, controller);
-                    if (classElem == null) {
-                        return;
-                    }
-
-                    ElementUtilities eu = controller.getElementUtilities();
-                    ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
-
-                        public boolean accept(Element e, TypeMirror type) {
-                            // XXX : display methods of java.lang.Object? 
-                            // Displaying them adds unnecessary clutter in the completion window
-                            if (e.getKind() == ElementKind.METHOD) {
-                                TypeElement te = (TypeElement) e.getEnclosingElement();
-                                if (te.getQualifiedName().contentEquals("java.lang.Object")) { // NOI18N
-                                    return false;
-                                }
-
-                                // match name
-                                if (!e.getSimpleName().toString().startsWith(context.getTypedPrefix())) {
-                                    return false;
-                                }
-
-                                ExecutableElement method = (ExecutableElement) e;
-                                // match argument count
-                                if (argCount != -1 && method.getParameters().size() != argCount) {
-                                    return false;
-                                }
-
-                                // match static
-                                if (staticFlag != Static.DONT_CARE) {
-                                    boolean isStatic = method.getModifiers().contains(Modifier.STATIC);
-                                    if ((isStatic && staticFlag == Static.NO) || (!isStatic && staticFlag == Static.YES)) {
-                                        return false;
-                                    }
-                                }
-
-                                // match public
-                                if (publicFlag != Public.DONT_CARE) {
-                                    boolean isPublic = method.getModifiers().contains(Modifier.PUBLIC);
-                                    if ((isPublic && publicFlag == Public.NO) || (!isPublic && publicFlag == Public.YES)) {
-                                        return false;
-                                    }
-                                }
-
-                                return true;
-                            }
-
-                            return false;
-                        }
-                    };
-
-                    int substitutionOffset = context.getCurrentToken().getOffset() + 1;
-                    Iterable<? extends Element> methods = eu.getMembers(classElem.asType(), acceptor);
-
-                    methods = filter(methods);
-
-                    for (Element e : methods) {
-                        SpringXMLConfigCompletionItem item = SpringXMLConfigCompletionItem.createMethodItem(
-                                substitutionOffset, (ExecutableElement) e, e.getEnclosingElement() != classElem,
-                                controller.getElements().isDeprecated(e));
-                        results.add(item);
-                    }
-
-                    setAnchorOffset(substitutionOffset);
-
-                }
-            }, false);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+        if (classBinaryName == null || classBinaryName.equals("")) {
+            return;
         }
 
-        return results;
+        final JavaSource javaSource = JavaUtils.getJavaSource(context.getFileObject());
+        if (javaSource == null) {
+            return;
+        }
 
+        javaSource.runUserActionTask(new Task<CompilationController>() {
+
+            public void run(CompilationController controller) throws Exception {
+                controller.toPhase(Phase.ELEMENTS_RESOLVED);
+                TypeElement classElem = JavaUtils.findClassElementByBinaryName(classBinaryName, controller);
+                if (classElem == null) {
+                    return;
+                }
+
+                ElementUtilities eu = controller.getElementUtilities();
+                ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
+
+                    public boolean accept(Element e, TypeMirror type) {
+                        // XXX : display methods of java.lang.Object? 
+                        // Displaying them adds unnecessary clutter in the completion window
+                        if (e.getKind() == ElementKind.METHOD) {
+                            TypeElement te = (TypeElement) e.getEnclosingElement();
+                            if (te.getQualifiedName().contentEquals("java.lang.Object")) { // NOI18N
+                                return false;
+                            }
+
+                            // match name
+                            if (!e.getSimpleName().toString().startsWith(context.getTypedPrefix())) {
+                                return false;
+                            }
+
+                            ExecutableElement method = (ExecutableElement) e;
+                            // match argument count
+                            if (argCount != -1 && method.getParameters().size() != argCount) {
+                                return false;
+                            }
+
+                            // match static
+                            if (staticFlag != Static.DONT_CARE) {
+                                boolean isStatic = method.getModifiers().contains(Modifier.STATIC);
+                                if ((isStatic && staticFlag == Static.NO) || (!isStatic && staticFlag == Static.YES)) {
+                                    return false;
+                                }
+                            }
+
+                            // match public
+                            if (publicFlag != Public.DONT_CARE) {
+                                boolean isPublic = method.getModifiers().contains(Modifier.PUBLIC);
+                                if ((isPublic && publicFlag == Public.NO) || (!isPublic && publicFlag == Public.YES)) {
+                                    return false;
+                                }
+                            }
+
+                            return true;
+                        }
+
+                        return false;
+                    }
+                };
+
+                int substitutionOffset = context.getCurrentToken().getOffset() + 1;
+                Iterable<? extends Element> methods = eu.getMembers(classElem.asType(), acceptor);
+
+                methods = filter(methods);
+
+                for (Element e : methods) {
+                    SpringXMLConfigCompletionItem item = SpringXMLConfigCompletionItem.createMethodItem(
+                            substitutionOffset, (ExecutableElement) e, e.getEnclosingElement() != classElem,
+                            controller.getElements().isDeprecated(e));
+                    addItem(item);
+                }
+
+                setAnchorOffset(substitutionOffset);
+
+            }
+        }, false);
     }
 
     /**

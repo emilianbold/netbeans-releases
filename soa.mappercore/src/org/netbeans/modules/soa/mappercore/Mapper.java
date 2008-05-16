@@ -152,6 +152,8 @@ public class Mapper extends JPanel {
             }
         });
         
+        setSelected();  //[Issue 125764]
+        
         InputMap iMap = getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
         ActionMap aMap = getActionMap();
         
@@ -1164,6 +1166,15 @@ public class Mapper extends JPanel {
             }
         }
         return 0;
+    }
+
+    private void setSelected() {
+        MapperNode root = getRoot();
+
+        if (root != null && root.getChildCount() == 1 &&
+                root.getChild(0).getChildCount() < 1) {
+            getSelectionModel().setSelected(root.getChild(0).getTreePath());
+        }
     }
 
     private class TreeModelListenerImpl implements TreeModelListener {

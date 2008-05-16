@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -44,6 +44,8 @@ package org.netbeans.modules.ruby.railsprojects;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.FileEncodingQuery;
@@ -53,11 +55,11 @@ import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.NbUtilities;
 import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.platform.RubyExecution;
-import org.netbeans.modules.ruby.rubyproject.RakeTargetsAction;
 import org.netbeans.modules.ruby.platform.execution.DirectoryFileLocator;
 import org.netbeans.modules.ruby.platform.execution.ExecutionService;
 import org.netbeans.modules.ruby.platform.execution.RegexpOutputRecognizer;
 import org.netbeans.modules.ruby.railsprojects.database.RailsDatabaseConfiguration;
+import org.netbeans.modules.ruby.rubyproject.rake.RakeSupport;
 import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectHelper;
 import org.netbeans.modules.ruby.spi.project.support.rake.EditableProperties;
 import org.netbeans.modules.ruby.spi.project.support.rake.ProjectGenerator;
@@ -105,21 +107,28 @@ public class RailsProjectGenerator {
             String displayName = NbBundle.getMessage(RailsProjectGenerator.class, "GenerateRails");
 
             String railsDbArg = railsDb.railsGenerationParam() == null ? null : "--database=" + railsDb.railsGenerationParam();
+            String railsVersionArg = data.getRailsVersion() == null ? null : "_" + data.getRailsVersion() + "_";
             File pwd = data.getDir().getParentFile();
+            List<String> argList = new ArrayList<String>();
+            if (railsVersionArg != null) {
+                argList.add(railsVersionArg);
+            }
+            if (runThroughRuby) {
+                argList.add(data.getName());
+            }
+            if (railsDbArg != null) {
+                argList.add(railsDbArg);
+            }
+            String[] args = argList.toArray(new String[argList.size()]);
             if (runThroughRuby) {
                 desc = new ExecutionDescriptor(platform, displayName, pwd, rails);
-                if (railsDbArg != null) {
-                    desc.additionalArgs(data.getName(), railsDbArg);
-                } else {
-                    desc.additionalArgs(data.getName());
-                }
+                desc.additionalArgs(args);
             } else {
                 desc = new ExecutionDescriptor(platform, displayName, pwd, data.getName());
-                if (railsDbArg != null) {
-                    desc.additionalArgs(railsDbArg);
-                }
+                desc.additionalArgs(args);
                 desc.cmd(railsF);
             }
+            
             desc.fileLocator(new DirectoryFileLocator(dirFO));
             desc.addOutputRecognizer(RAILS_GENERATOR);
             ExecutionService service = null;
@@ -135,7 +144,7 @@ public class RailsProjectGenerator {
             task.waitFinished();
             
             // Precreate a spec directory if it doesn't exist such that my source root will work
-            if (platform.getGemManager().getVersion("rspec") != null) { // NOI18N
+            if (platform.getGemManager().getLatestVersion("rspec") != null) { // NOI18N
                 File spec = new File(data.getDir(), "spec"); // NOI18N
                 if (!spec.exists()) {
                     spec.mkdirs();
@@ -167,8 +176,8 @@ public class RailsProjectGenerator {
             }
         }
 
-        // Run Rake -T silently to determine the available targets and write into private area
-        RakeTargetsAction.refreshTargets(p);
+        // Run Rake -T silently to determine the available tasks and write into private area
+        RakeSupport.refreshTasks(p);
         
         return h;
     }
