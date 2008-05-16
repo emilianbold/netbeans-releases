@@ -54,16 +54,16 @@ public class SchemaArtifactTreeModel extends DefaultTreeModel {
         populateTree();
         
         Runnable r = new Runnable() {
-        	public void run() {
-        		Iterator<AbstractSchemaArtifactNode> it = mNodesToBeExpanded.iterator();
+            public void run() {
+                Iterator<AbstractSchemaArtifactNode> it = mNodesToBeExpanded.iterator();
                 
                 while(it.hasNext()) {
-                	AbstractSchemaArtifactNode node = it.next();
-                	TreePath path = new TreePath(node.getPath());
-                	mTree.expandPath(path);
+                    AbstractSchemaArtifactNode node = it.next();
+                    TreePath path = new TreePath(node.getPath());
+                    mTree.expandPath(path);
                 }
-        		
-        	}
+                
+            }
         };
         
         
