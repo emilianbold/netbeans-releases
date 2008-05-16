@@ -17,6 +17,7 @@
 package org.netbeans.modules.etl.ui.view.graph.actions;
 
 import com.sun.sql.framework.exception.DBSQLException;
+import org.netbeans.modules.etl.ui.ETLDataObject;
 import org.netbeans.modules.sql.framework.model.SQLDBTable;
 import org.netbeans.modules.sql.framework.model.SourceTable;
 import org.netbeans.modules.sql.framework.model.TargetTable;
@@ -35,6 +36,7 @@ import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
 import org.netbeans.modules.etl.ui.DataObjectProvider;
 import org.netbeans.modules.sql.framework.model.SQLJoinView;
+import org.netbeans.modules.sql.framework.ui.graph.impl.TableArea;
 import org.openide.util.Exceptions;
 import org.netbeans.modules.sql.framework.ui.view.graph.MetaTableModel;
 import org.netbeans.modules.sql.framework.ui.view.graph.SQLTableArea;
@@ -45,6 +47,7 @@ import org.netbeans.modules.sql.framework.ui.view.graph.SQLSourceTableArea;
 import org.netbeans.modules.sql.framework.ui.view.graph.SQLTargetTableArea;
 import org.netbeans.modules.sql.framework.ui.graph.actions.GraphAction;
 import org.netbeans.modules.sql.framework.ui.view.BasicTopView;
+import org.netbeans.modules.sql.framework.ui.view.graph.SQLBasicTableArea;
 import org.netbeans.modules.sql.framework.ui.view.join.JoinViewGraphNode;
 import org.openide.windows.WindowManager;
 
@@ -58,6 +61,7 @@ public class RefreshMetadataAction extends GraphAction {
     private static transient final Logger mLogger = Logger.getLogger(RefreshMetadataAction.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     public String nbBundle1 = mLoc.t("BUND024: Refresh Metadata");
+    private ETLDataObject dObj;
     public RefreshMetadataAction() {
         //action name
         
