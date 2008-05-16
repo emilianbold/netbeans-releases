@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.web.project.ui.customizer;
+package org.netbeans.modules.ruby.railsprojects.ui.customizer;
 
 import javax.swing.JPanel;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
@@ -54,7 +54,7 @@ public class CustomizerDebug extends JPanel {
     private final ProjectCustomizer.Category category;
     
     /** Creates new form CustomizerDebug */
-    public CustomizerDebug(ProjectCustomizer.Category category, WebProjectProperties uiProps) {
+    public CustomizerDebug(ProjectCustomizer.Category category, RailsProjectProperties uiProps) {
         this.category = category;
         
         initComponents();
@@ -104,11 +104,11 @@ public class CustomizerDebug extends JPanel {
                 .add(debugServerJCheckBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 30, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(debugClientJCheckBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 30, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(430, 430, 430))
+                .add(450, 450, 450))
         );
 
-        debugServerJCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerDebug.class, "ACS_CustomizeDebug_ServerDebug_A11YDesc")); // NOI18N
-        debugClientJCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerDebug.class, "ACS_CustomizeDebug_ClientDebug_A11YDesc")); // NOI18N
+        debugServerJCheckBox.getAccessibleContext().setAccessibleDescription("null");
+        debugClientJCheckBox.getAccessibleContext().setAccessibleDescription("null");
     }// </editor-fold>//GEN-END:initComponents
 
 private void debugServerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_debugServerActionPerformed
@@ -123,9 +123,9 @@ private void debugClientActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
  
     private void validateCheckBoxes() {
         if (!debugClientJCheckBox.isSelected() && !debugServerJCheckBox.isSelected()) {
-            category.setErrorMessage(NbBundle.getMessage(CustomizerDebug.class, "LBL_CustomzieDebug_NoDebug_Error"));
+            category.setErrorMessage(NbBundle.getMessage(CustomizerDebug.class, "LBL_CustomizeDebug_NoDebug_Error")); // NOI18N
             category.setValid(false);
-        }else {
+        } else {
             category.setErrorMessage(null);
             category.setValid(true);
         }
