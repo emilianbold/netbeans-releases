@@ -39,6 +39,7 @@
 package org.netbeans.modules.php.project.ui.customizer;
 
 import java.awt.CardLayout;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -107,6 +108,9 @@ public final class RunAsPanel extends JPanel {
 
     private void selectInsidePanel(String name) {
         CardLayout cl = (CardLayout) (getLayout());
+        InsidePanel current = allInsidePanels.get(name);
+        Dimension preferredSize = current.getPreferredSize();
+        setPreferredSize(preferredSize);
         cl.show(this, name);
     }
 
