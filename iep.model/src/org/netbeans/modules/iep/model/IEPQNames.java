@@ -37,38 +37,38 @@ import javax.xml.namespace.QName;
  * 
  */
 public enum IEPQNames {
-		COMPONENT(createIEPQName("component")), 
-		PROPERTY(createIEPQName("property")), 
+        COMPONENT(createIEPQName("component")), 
+        PROPERTY(createIEPQName("property")), 
                 IMPORT(createIEPQName("import")), 
-		DOCUMENTATION(createIEPQName("documentation"));
+        DOCUMENTATION(createIEPQName("documentation"));
 
-	public static final String IEP_NS_URI = "http://jbi.com.sun/iep";
+    public static final String IEP_NS_URI = "http://jbi.com.sun/iep";
 
-	public static final String IEP_PREFIX = "iep";
+    public static final String IEP_PREFIX = "iep";
 
-	public static QName createIEPQName(String localName) {
-		return new QName(IEP_NS_URI, localName, IEP_PREFIX);
-	}
+    public static QName createIEPQName(String localName) {
+        return new QName(IEP_NS_URI, localName, IEP_PREFIX);
+    }
 
-	IEPQNames(QName name) {
-		qName = name;
-	}
+    IEPQNames(QName name) {
+        qName = name;
+    }
 
-	public QName getQName() {
-		return qName;
-	}
+    public QName getQName() {
+        return qName;
+    }
 
-	private static Set<QName> qnames = null;
+    private static Set<QName> qnames = null;
 
-	public static Set<QName> getQNames() {
-		if (qnames == null) {
-			qnames = new HashSet<QName>();
-			for (IEPQNames wq : values()) {
-				qnames.add(wq.getQName());
-			}
-		}
-		return qnames;
-	}
+    public static Set<QName> getQNames() {
+        if (qnames == null) {
+            qnames = new HashSet<QName>();
+            for (IEPQNames wq : values()) {
+                qnames.add(wq.getQName());
+            }
+        }
+        return qnames;
+    }
 
-	private final QName qName;
+    private final QName qName;
 }

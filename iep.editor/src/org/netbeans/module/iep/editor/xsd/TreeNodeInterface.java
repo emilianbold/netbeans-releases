@@ -4,5 +4,5 @@ import javax.swing.Icon;
 
 public interface TreeNodeInterface {
 
-	public Icon getIcon();
+    public Icon getIcon();
 }

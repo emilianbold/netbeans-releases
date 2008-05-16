@@ -60,6 +60,21 @@ class DbSchemaEntityMember extends EntityMember {
      * Original mapping to sql type
      */
     private SQLType sqlType;
+    
+    /**
+     * The length (only applies to character types).
+     */
+    private Integer length;
+    
+    /**
+     * The precision (only applies to numeric types).
+     */
+    private Integer precision;
+    
+    /**
+     * The precision (only applies to numeric types).
+     */
+    private Integer scale;
 
     /**
      * Column Element providing metadata
@@ -72,6 +87,9 @@ class DbSchemaEntityMember extends EntityMember {
         setMemberName(makeFieldName(element.getName().getName()));
 	isPrimaryKey = false;
         setMemberType(sqlType.getMemberType(element));
+        if (element.isCharacterType()) {
+            length = element.getLength();
+        }
     }
 
     public boolean isNullable() {
@@ -139,5 +157,19 @@ class DbSchemaEntityMember extends EntityMember {
     public boolean isLobType() {
         return SQLTypeUtil.isLob(getColumnElement().getType());
     }
+
+    public Integer getLength() {
+        return length;
+    }
+
+    public Integer getPrecision() {
+        return precision;
+    }
+
+    public Integer getScale() {
+        return scale;
+    }
+    
+    
     
 }

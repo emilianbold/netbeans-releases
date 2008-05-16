@@ -38,6 +38,8 @@
  */
 package org.netbeans.modules.php.dbgp.api;
 
+import org.netbeans.modules.php.dbgp.SessionId;
+import org.netbeans.modules.php.dbgp.DebuggerFactory;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;

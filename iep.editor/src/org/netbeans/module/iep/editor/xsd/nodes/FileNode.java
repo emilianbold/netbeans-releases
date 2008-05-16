@@ -99,7 +99,7 @@ public class FileNode extends AbstractSchemaArtifactNode {
     }
     
     public List<AbstractSchemaArtifactNode> getNodesToBeExpanded() {
-    	return this.mNodesToBeExpanded;
+        return this.mNodesToBeExpanded;
     }
 }
 

@@ -89,65 +89,65 @@ public class TableOutputSchemaPanel extends JPanel implements SharedConstants {
         };
         Vector data = new Vector();
         try {
-        	SchemaComponent outputSchema = mComponent.getOutputSchemaId();
-        	if(outputSchema != null) {
-        		List<SchemaAttribute> attrs = outputSchema.getSchemaAttributes();
-        		Iterator<SchemaAttribute> attrIt = attrs.iterator();
-        		//ritjava.util.List fromColumnList = mComponent.getProperty(FROM_COLUMN_LIST_KEY).getListValue();
+            SchemaComponent outputSchema = mComponent.getOutputSchemaId();
+            if(outputSchema != null) {
+                List<SchemaAttribute> attrs = outputSchema.getSchemaAttributes();
+                Iterator<SchemaAttribute> attrIt = attrs.iterator();
+                //ritjava.util.List fromColumnList = mComponent.getProperty(FROM_COLUMN_LIST_KEY).getListValue();
                 
-            	while(attrIt.hasNext()) {
-            		Vector r = new Vector();
-            		
-            		SchemaAttribute sa = attrIt.next();
-            		
-            		String attributeName = sa.getAttributeName();
-            		String attributeType = sa.getAttributeType();
-            		String attributeSize = sa.getAttributeSize();
-            		String attributeScale = sa.getAttributeScale();
-            		String attributeComment = sa.getAttributeComment();
-            		 
+                while(attrIt.hasNext()) {
+                    Vector r = new Vector();
+                    
+                    SchemaAttribute sa = attrIt.next();
+                    
+                    String attributeName = sa.getAttributeName();
+                    String attributeType = sa.getAttributeType();
+                    String attributeSize = sa.getAttributeSize();
+                    String attributeScale = sa.getAttributeScale();
+                    String attributeComment = sa.getAttributeComment();
+                     
                     if(attributeName != null) {
-                    	r.add(attributeName);
+                        r.add(attributeName);
                      } else {
-                    	r.add("");
+                        r.add("");
                      }
 
                     if(attributeType != null) {
-                   	    r.add(attributeType);
+                           r.add(attributeType);
                     } else {
-                   	    r.add("");
+                           r.add("");
                     }
                      
                     if(attributeSize != null) {
-                   	    r.add(attributeSize);
+                           r.add(attributeSize);
                     } else {
-                   	    r.add("");
+                           r.add("");
                     }
                      
                     if(attributeScale != null) {
-                   	    r.add(attributeScale);
+                           r.add(attributeScale);
                     } else {
-                   	    r.add("");
+                           r.add("");
                     }
                      
                     if(attributeComment != null) {
-                   	  	 r.add(attributeComment);
+                              r.add(attributeComment);
                      } else {
-                    	 r.add("");
+                         r.add("");
                      }
-            		
+                    
                      data.add(r);
-            	}
-            	
-            	Vector r = new Vector();
+                }
+                
+                Vector r = new Vector();
                 r.add(COL_SEQID);
                 r.add(SQL_TYPE_BIGINT);
                 r.add("");
                 r.add("");
                 r.add("");
                 data.add(r);
-        	}
-        	
+            }
+            
 //            String schemaId = mComponent.getProperty(OUTPUT_SCHEMA_ID_KEY).getStringValue();
 //            if(!schemaId.trim().equals("")) {
 //                Schema schema = mPlan.getSchema(schemaId);

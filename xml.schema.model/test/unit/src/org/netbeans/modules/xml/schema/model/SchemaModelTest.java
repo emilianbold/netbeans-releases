@@ -212,5 +212,39 @@ public class SchemaModelTest extends TestCase {
     public void testFakeSchema() throws Exception {
         SchemaModel sm = Util.loadSchemaModel(TEST_FAKE_XSD);
         assert(sm.getState() == State.NOT_WELL_FORMED);
-}
+    }
+    
+    /**
+     * A imports B, B includes C. An element in A uses a complex type
+     * defined in C. See http://www.netbeans.org/issues/show_bug.cgi?id=134861.
+     */
+    public void testRecursiveResolve1() throws Exception {
+        SchemaModel sm = Util.loadSchemaModel("resources/A.xsd");        
+        assert(sm.getState() == State.VALID);
+        GlobalElement ge = (GlobalElement)sm.getSchema().getChildren().get(1);
+        assert("A1".equals(ge.getName()));
+        NamedComponentReference ncr = ge.getType();
+        String name = ncr.getQName().getNamespaceURI() + ":" + ncr.getQName().getLocalPart();
+        assert("http://xml.netbeans.org/schema/B:C1".equals(name));
+        //this is when it'll try to resolve
+        GlobalComplexType gct = (GlobalComplexType)ncr.get();
+        assert(gct != null);
+    }
+    
+    /**
+     * A imports B, B includes C. An element in A uses a complex type
+     * defined in C. See http://www.netbeans.org/issues/show_bug.cgi?id=134861.
+     */
+    public void testRecursiveResolve2() throws Exception {
+        SchemaModel sm = Util.loadSchemaModel("resources/A.xsd");
+        assert(sm.getState() == State.VALID);
+        GlobalElement ge = (GlobalElement)sm.getSchema().getChildren().get(2);
+        assert("A2".equals(ge.getName()));
+        NamedComponentReference ncr = ge.getType();
+        String name = ncr.getQName().getNamespaceURI() + ":" + ncr.getQName().getLocalPart();
+        assert("http://xml.netbeans.org/schema/B:D1".equals(name));
+        //this is when it'll try to resolve
+        GlobalComplexType gct = (GlobalComplexType)ncr.get();
+        assert(gct != null);
+    }
 }

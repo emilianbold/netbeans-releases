@@ -17,22 +17,22 @@ public interface Component extends IEPComponent {
         
         static final String DOCUMENTATION_CHILD = "documentation";
         
-	static final String NAME_PROPERTY = "name";
+    static final String NAME_PROPERTY = "name";
 
-	static final String TITLE_PROPERTY = "title";
+    static final String TITLE_PROPERTY = "title";
 
-	static final String TYPE_PROPERTY = "type";
-	
+    static final String TYPE_PROPERTY = "type";
+    
         static final Attribute ATTR_NAME = new StringAttribute(NAME_PROPERTY);
         
         static final Attribute ATTR_TITLE = new StringAttribute(TITLE_PROPERTY);
         
         static final Attribute ATTR_TYPE = new StringAttribute(TYPE_PROPERTY);
         
-	String getName();
+    String getName();
         
-	void setName(String name);
-	
+    void setName(String name);
+    
     String getTitle();
     
     void setTitle(String title);
