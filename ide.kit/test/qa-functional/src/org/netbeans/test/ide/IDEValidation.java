@@ -114,12 +114,10 @@ import org.netbeans.jemmy.operators.WindowOperator;
 import org.netbeans.jemmy.util.PNGEncoder;
 
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.ide.ProjectSupport;
 import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
-import org.netbeans.xtest.plugin.ide.BlacklistedClassesHandler;
 
 /**
  * Overall validation suite for IDE.
@@ -229,7 +227,7 @@ public class IDEValidation extends JellyTestCase {
         // wait project appear in projects view
         new ProjectsTabOperator().getProjectRootNode(SAMPLE_PROJECT_NAME);
         // wait classpath scanning finished
-        ProjectSupport.waitScanFinished();
+        WatchProjects.waitScanFinished();
     }
     
     /** Test new file wizard. 
@@ -791,7 +789,7 @@ public class IDEValidation extends JellyTestCase {
         eo.insert(defaultMethod, insertLine+3, 1);
         eo.save();
         // need to wait until new methods are parsed
-        ProjectSupport.waitScanFinished();
+        WatchProjects.waitScanFinished();
 
         // "Tools"
         String toolsItem = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Tools"); // NOI18N
@@ -1409,7 +1407,7 @@ public class IDEValidation extends JellyTestCase {
     }
 
     public void testBlacklistedClassesHandler() throws Exception {
-        BlacklistedClassesHandler bcHandler = BlacklistedClassesHandler.getBlacklistedClassesHandler();
+        BlacklistedClassesHandler bcHandler = BlacklistedClassesHandlerSingleton.getBlacklistedClassesHandler();
         assertNotNull("BlacklistedClassesHandler should be available", bcHandler);
         if (bcHandler.isGeneratingWhitelist()) {
             bcHandler.saveWhiteList(getLog("whitelist.txt"));
@@ -1417,7 +1415,7 @@ public class IDEValidation extends JellyTestCase {
         try {
             assertTrue(bcHandler.listViolations(), bcHandler.noViolations());
         } finally {
-            bcHandler.remove();
+            bcHandler.unregister();
         }        
     }
     

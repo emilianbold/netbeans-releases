@@ -60,10 +60,13 @@ public class ShorterPathsTest extends NbTestCase {
     public ShorterPathsTest(java.lang.String testName) {
         super(testName);
     }
-    
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        clearWorkDir();
     }
+    
     public void testShorterPaths () throws Exception {
       // create test
       File wd = getWorkDir(); 
@@ -107,16 +110,5 @@ public class ShorterPathsTest extends NbTestCase {
       
       // test dist 
     }    
-    public static Test suite() {
-        TestSuite suite = new NbTestSuite(ShorterPathsTest.class);
-        return suite;
-    }
-    
-    // Add test methods here, they have to start with 'test' name.
-    // for example:
-    // public void testHello() {}
-
-    
-    
     
 }

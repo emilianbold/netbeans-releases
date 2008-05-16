@@ -80,8 +80,10 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jemmy.operators.*;
 import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
-import org.netbeans.test.xml.schema.lib.SchemaMultiView;
 import java.util.List;
+import javax.swing.SwingUtilities;
+import junit.framework.AssertionFailedError;
+import org.netbeans.api.java.source.ui.ScanDialog;
 
 /**
  *
@@ -206,7 +208,7 @@ public class XMLCodeCompletion extends JellyTestCase {
         opNewProjectNameLocationStep.txtProjectName( ).setText( sName );
         opNewProjectWizard.finish( );
 
-        org.netbeans.junit.ide.ProjectSupport.waitScanFinished( );
+        waitScanFinished( );
     }
 
     public void CreateJavaPackageInternal( String sProject )
@@ -504,5 +506,33 @@ public class XMLCodeCompletion extends JellyTestCase {
       opxml.insert( "<xsd:any/>" );
 
       opxml.close( true );
+    }
+    private static void waitScanFinished() {
+        try {
+            class Wait implements Runnable {
+
+                boolean initialized;
+                boolean ok;
+
+                public void run() {
+                    if (initialized) {
+                        ok = true;
+                        return;
+                    }
+                    initialized = true;
+                    boolean canceled = ScanDialog.runWhenScanFinished(this, "tests");
+                    assertFalse("Dialog really finished", canceled);
+                    assertTrue("Runnable run", ok);
+                }
+            }
+            Wait wait = new Wait();
+            if (SwingUtilities.isEventDispatchThread()) {
+                wait.run();
+            } else {
+                SwingUtilities.invokeAndWait(wait);
+            }
+        } catch (Exception ex) {
+            throw (AssertionFailedError)new AssertionFailedError().initCause(ex);
+        }
     }
 }
