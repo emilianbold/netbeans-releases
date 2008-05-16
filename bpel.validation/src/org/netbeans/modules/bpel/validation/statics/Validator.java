@@ -293,35 +293,67 @@ public final class Validator extends BpelValidator {
     List<Named> list2 = list(collection2);
 
     for (int i=0; i < list1.size(); i++) {
-      Named named = list1.get(i);
+      checkDuplicate(process, list1.get(i), list2);
+    }
+  }
 
-      if (contains(named, list2)) {
-        String file1 = getFileName(named);
-        String file2 = getFileName(list2.get(0));
+  private void checkDuplicate(Process process, Named named1, List<Named> list) {
+    String name1 = named1.getName();
 
-        // todo a: warning for identical, error for different
+    if (name1 == null || name1.length() == 0) {
+      return;
+    }
+    String file1 = getFileName(named1);
+    
+    for (int i=0; i < list.size(); i++) {
+      Named named2 = list.get(i);
+
+      if ( !(name1.equals(named2.getName()))) {
+        continue;
+      }
+      String file2 = getFileName(named2);
+
+      if (getPresentation(named1).equals(getPresentation(named2))) {
         if (file1 == null || file2 == null) {
-          addError("FIX_SA00014", process, named.getName()); // NOI18N
+          addWarning("FIX_SA00014_Identical", process, named1.getName()); // NOI18N
         }
         else {
-          addError("FIX_SA00014_File", process, named.getName(), file1, file2); // NOI18N
+          addWarning("FIX_SA00014_Identical_File", process, named1.getName(), file1, file2); // NOI18N
+        }
+      }
+      else {
+        if (file1 == null || file2 == null) {
+          addError("FIX_SA00014_Different", process, named1.getName()); // NOI18N
+        }
+        else {
+          addError("FIX_SA00014_Different_File", process, named1.getName(), file1, file2); // NOI18N
         }
       }
     }
   }
 
-  private boolean contains(Named named, List<Named> list) {
-    String name = named.getName();
+  private String getPresentation(Component component) {
+    StringBuffer buffer = new StringBuffer(getName(component));
+    buffer.append("("); // NOI18N
+    
+    List children = component.getChildren();
 
-    if (name == null || name.length() == 0) {
-      return false;
-    }
-    for (int i=0; i < list.size(); i++) {
-      if (name.equals(list.get(i).getName())) {
-        return true;
+    for (Object child : children) {
+      if ( !(child instanceof Component)) {
+        continue;
       }
+      buffer.append(getPresentation((Component) child));
     }
-    return false;
+    buffer.append(")"); // NOI18N
+
+    return buffer.toString();
+  }
+
+  private String getName(Component component) {
+    if ( !(component instanceof Named)) {
+      return "[]"; // NOI18N
+    }
+    return ((Named) component).getName();
   }
 
   private String getFileName(Component component) {

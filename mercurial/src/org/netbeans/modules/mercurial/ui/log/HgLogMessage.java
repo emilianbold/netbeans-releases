@@ -1,4 +1,4 @@
-/*
+ /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
@@ -45,9 +45,12 @@ import java.util.Date;
 import java.util.List;
 import org.netbeans.modules.mercurial.FileInformation;
 import org.netbeans.modules.mercurial.FileStatus;
+import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.OutputLogger;
+import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.util.HgUtils;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -69,17 +72,35 @@ public class HgLogMessage {
     private Date date;
     private String id;
     private String timeZoneOffset;
-    
+
+    private String parentOneRev;
+    private String parentTwoRev;
+    private boolean bMerged;
+    private String rootURL;
+    private OutputLogger logger;
+
     public HgLogMessage(String changeset){
     }
     
-    public HgLogMessage( String rev, String auth, String desc, String date, String id, 
-            String fm, String fa, String fd, String fc){
+    public HgLogMessage(String rootURL, String rev, String auth, String desc, String date, String id, 
+            String parents, String fm, String fa, String fd, String fc){
         String splits[];
 
+        String parentSplits[];
+        this.rootURL = rootURL;
         this.rev = rev;
         this.author = auth;
         this.desc = desc;
+        parentSplits = parents != null? parents.split(" "): null;
+        if((parentSplits != null) && (parentSplits.length == 2)){
+            String ps1[] = parentSplits[0].split(":"); // NOI18N
+            this.parentOneRev = ps1 != null && ps1.length >=1? ps1[0]: null;
+            String ps2[] = parentSplits[1].split(":"); // NOI18N
+            this.parentTwoRev = ps2 != null && ps2.length >=1? ps2[0]: null;
+        }
+        this.bMerged = this.parentOneRev != null && this.parentTwoRev != null &&
+                !this.parentOneRev.equals("-1") && !this.parentTwoRev.equals("-1")? true: false;
+        
         splits = date.split(" ");
         this.date = new Date(Long.parseLong(splits[0]) * 1000); // UTC in miliseconds       
         this.id = id;
@@ -169,6 +190,31 @@ public class HgLogMessage {
     public String getCSetShortID() {
         return id;
     }
+
+    public  String getAncestor() {
+        if(bMerged){
+            try{
+                return HgCommand.getCommonAncestor(rootURL, parentOneRev, parentTwoRev, getLogger());
+            } catch (HgException ex) {
+                return null;
+            }
+        }
+        int revInt = -1;
+        try{
+            revInt = Integer.parseInt(rev);
+        }catch(NumberFormatException ex){
+        }
+        revInt = revInt > -1? revInt -1: -1;
+        return Integer.toString(revInt);
+    }
+    
+    private OutputLogger getLogger() {
+        if (logger == null) {
+            logger = Mercurial.getInstance().getLogger(rootURL);
+        }
+        return logger;
+    }
+
     public String getMessage() {
         return desc;
     }
