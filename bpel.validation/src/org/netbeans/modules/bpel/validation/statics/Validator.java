@@ -271,7 +271,10 @@ public final class Validator extends BpelValidator {
   }
 
   private void checkDuplicate(Process process, Definitions definitions1, Definitions definitions2) {
-    // todo a
+    checkDuplicate(process, definitions1.getMessages(), definitions2.getMessages());
+    checkDuplicate(process, definitions1.getPortTypes(), definitions2.getPortTypes());
+    checkDuplicate(process, definitions1.getBindings(), definitions2.getBindings());
+    checkDuplicate(process, definitions1.getServices(), definitions2.getServices());
   }
 
   private void checkDuplicate(Process process, Schema schema1, Schema schema2) {
