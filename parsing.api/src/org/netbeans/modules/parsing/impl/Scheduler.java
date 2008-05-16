@@ -43,6 +43,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -70,6 +71,25 @@ public class Scheduler {
     
     private static Map<TaskScheduler,Map<Source,Collection<SchedulerTask>>> tasks = new HashMap<TaskScheduler, Map<Source, Collection<SchedulerTask>>> (); 
     
+    
+    static Collection<? extends TaskScheduler> getTaskScheduledsForSource (final Source source) {        
+        final Collection<TaskScheduler> result = new LinkedList<TaskScheduler>();
+        synchronized (tasks) {
+            for (final TaskScheduler schedulter : taskSchedulers) {
+                final Map<Source,?> value = tasks.get(schedulter);
+                if (value != null && value.keySet().contains(source)) {
+                    result.add(schedulter);
+                }
+            }
+        }
+        return result;
+    }
+    
+    //tzezula: Live fast, die young.
+    //Shouldn't the tasks be guarded? 
+    //Shouldn't the access to flags be guarded too?
+    //How the lock ordering is defined?
+    //Shouldn't it reset {@link SourceFlags.CHANGE+EXPECTED}?
     public static void schedule (
         TaskScheduler       taskScheduler,
         Collection<Source>  sources

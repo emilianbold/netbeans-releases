@@ -118,6 +118,10 @@ public abstract class TaskScheduler {
      * 
      * @param sources       A collection of {@link Source}s.
      */
+    //tzezula:
+    //Actually it doesn't do a sliding window but it's rather a delay by rearseDelay.
+    //Shouldn't be protected?
+    //Default RQ should never be used!
     public final void scheduleTasks (Collection<Source> sources) {
         if (task != null)
             task.cancel ();

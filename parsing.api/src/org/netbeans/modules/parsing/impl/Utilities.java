@@ -39,8 +39,11 @@
 
 package org.netbeans.modules.parsing.impl;
 
+import java.util.Collection;
+import java.util.Collections;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
+import org.netbeans.modules.parsing.spi.TaskScheduler;
 
 /**
  * Temporary helpe functions needed by the java.source
@@ -72,7 +75,12 @@ public class Utilities {
     }
     
     public static void revalidate (final Source source) {
-        //todo: How?
+        assert source != null;
+        final Collection<? extends TaskScheduler> schedulers = Scheduler.getTaskScheduledsForSource(source);
+        final Collection<Source> sources = Collections.<Source>singleton(source);
+        for (TaskScheduler scheduler : schedulers) {
+            scheduler.scheduleTasks(sources);
+        }
     }
 
 }
