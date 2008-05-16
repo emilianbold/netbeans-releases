@@ -1272,10 +1272,19 @@ public class SequenceDiagramEngine extends DiagramEngine implements SQDDiagramEn
                     {
                         nxtPE=getScene().getEdgeTarget(edgePE);
                     }
+                    Widget ll1=getScene().findWidget(curPE);
+                    Widget ll2=null;
                     if(nxtPE!=curPE)//not to self
                     {
-                        Widget ll1=getScene().findWidget(curPE);
-                        Widget ll2=getScene().findWidget(nxtPE);
+                        ll2=getScene().findWidget(nxtPE);
+                    }
+                    else
+                    {
+                        if(i<(lifelines.size()-1))ll2=lifelines.get(i+1);
+                        nxtPE=(IPresentationElement) getScene().findObject(ll2);
+                    }
+                    if(ll1!=ll2 && ll2!=null)
+                    {
                         int curSpace=ll2.getPreferredLocation().x-ll1.getPreferredLocation().x;
                         int setSpace=curSpace;
                         if(ll2 instanceof LifelineWidget && curSpace>0)//nxt right to cur
@@ -1289,9 +1298,9 @@ public class SequenceDiagramEngine extends DiagramEngine implements SQDDiagramEn
                                 {
                                     if(lW.isVisible())
                                     {
-                                        if((lW.getBounds().width+30)>setSpace)
+                                        if((lW.getBounds().width+50)>setSpace)
                                         {
-                                            setSpace=lW.getBounds().width+30;
+                                            setSpace=lW.getBounds().width+50;
                                         }
                                     }
                                 }

@@ -88,6 +88,7 @@ import org.netbeans.modules.uml.drawingarea.view.Customizable;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.netbeans.modules.uml.drawingarea.widgets.CombinedFragment;
 import org.netbeans.modules.uml.drawingarea.widgets.ContainerWidget;
+import org.netbeans.modules.uml.drawingarea.LabelManager;
 
 /**
  *
@@ -601,6 +602,23 @@ public class CombinedFragmentWidget extends ContainerNode implements PropertyCha
                         targetBoxBounds.width+=10;
                         opRectngle.add(targetBoxBounds);
                     }
+                    else if(msgW.getTargetAnchor().getRelatedWidget().getParentWidget()==msgW.getSourceAnchor().getRelatedWidget().getParentWidget().getParentWidget() || msgW.getTargetAnchor().getRelatedWidget().getParentWidget().getParentWidget()==msgW.getSourceAnchor().getRelatedWidget().getParentWidget())
+                    {
+                        //message to self, need to add some space right
+                        p1.x+=40;//may be good to add space to width of lifeline
+                        p2.x+=40;
+                        opRectngle.add(p2);
+                        opRectngle.add(p1);
+                    }
+                    LabelManager lm=msgW.getLookup().lookup(LabelManager.class);
+                    Collection<Widget> labelsW=lm.getLabelMap().values();
+                    for(Widget lW:labelsW)
+                    {
+                        if(lW.isVisible())
+                        {
+                            opRectngle.add(lW.convertLocalToScene(lW.getBounds()));
+                        }
+                     }
                 }
             }
             // Search for all the combined fragments, including grandchildren, etc.
