@@ -40,8 +40,13 @@
  */
 package org.netbeans.modules.bpel.validation.variable;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
 
+import org.netbeans.modules.bpel.model.api.Assign;
+import org.netbeans.modules.bpel.model.api.Copy;
 import org.netbeans.modules.bpel.model.api.OnEvent;
 import org.netbeans.modules.bpel.model.api.OnMessage;
 import org.netbeans.modules.bpel.model.api.OperationReference;
@@ -80,8 +85,27 @@ public final class Validator extends BpelValidator {
   protected final SimpleBpelModelVisitor getVisitor() { return new SimpleBpelModelVisitorAdaptor() {
 
   @Override
-  public void visit(OnMessage onMessage)
-  {
+  public void visit(Assign assign) {
+    List<Copy> copies = list(assign.getChildren(Copy.class));
+// todo start here
+  }
+
+  private List<Copy> list(Collection<Copy> collection) {
+    List<Copy> list = new ArrayList<Copy>();
+
+    if (collection == null) {
+      return list;
+    }
+    Iterator<Copy> iterator = collection.iterator();
+
+    while (iterator.hasNext()) {
+      list.add(iterator.next());
+    }
+    return list;
+  }
+
+  @Override
+  public void visit(OnMessage onMessage) {
     checkVariable(onMessage, onMessage, true);
   }
 
