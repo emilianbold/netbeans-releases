@@ -825,9 +825,19 @@ public class HgCommand {
         return list;
     }
     
-    private static List<HgLogMessage> processLogMessages(String rootURL, List<String> list, final List<HgLogMessage> messages) {
+    private static List<HgLogMessage> processLogMessages(String rootURL, List<File> files, List<String> list, final List<HgLogMessage> messages) {
         String rev, author, desc, date, id, parents, fm, fa, fd, fc;
+        List<String> filesShortPaths = new ArrayList<String>();
+        
         if (list != null && !list.isEmpty()) {
+            if(files != null){
+                for(File f: files){
+                    String shortPath = f.getAbsolutePath();
+                    if(shortPath.startsWith(rootURL) && shortPath.length() > rootURL.length()) {
+                        filesShortPaths.add(shortPath.substring(rootURL.length()+1));
+                    }
+                }
+            }
             rev = author = desc = date = id = parents = fm = fa = fd = fc = null;
             boolean bEnd = false;
             for (String s : list) {
@@ -858,7 +868,7 @@ public class HgCommand {
                 }
 
                 if (rev != null & bEnd) {
-                    messages.add(new HgLogMessage(rootURL, rev, author, desc, date, id, parents, fm, fa, fd, fc));
+                    messages.add(new HgLogMessage(rootURL, filesShortPaths, rev, author, desc, date, id, parents, fm, fa, fd, fc));
                     rev = author = desc = date = id = parents = fm = fa = fd = fc = null;
                     bEnd = false;
                 }
@@ -875,7 +885,7 @@ public class HgCommand {
 
             List<String> list = new LinkedList<String>();
             list = HgCommand.doIncomingForSearch(root, toRevision, bShowMerges, logger);
-            processLogMessages(rootUrl, list, messages);
+            processLogMessages(rootUrl, null, list, messages);
 
         } catch (HgException ex) {
             NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
@@ -895,7 +905,7 @@ public class HgCommand {
 
             List<String> list = new LinkedList<String>();
             list = HgCommand.doOutForSearch(root, toRevision, bShowMerges, logger);
-            processLogMessages(rootUrl, list, messages);
+            processLogMessages(rootUrl, null, list, messages);
 
         } catch (HgException ex) {
             NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
@@ -950,10 +960,11 @@ public class HgCommand {
             }
 
             List<String> list = new LinkedList<String>();
+            List<File> filesList = files != null ? new ArrayList<File>(files) : null;
             list = HgCommand.doLogForHistory(root, 
-                    files != null ? new ArrayList<File>(files) : null,
-                    fromRevision, toRevision, headRev, bShowMerges, bGetFileInfo, limit, logger);
-            processLogMessages(rootUrl, list, messages);
+                    filesList,
+                    fromRevision, toRevision, headRev, bShowMerges, bGetFileInfo, limit, logger);            
+            processLogMessages(rootUrl, filesList, list, messages);
         } catch (HgException ex) {
             NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
             DialogDisplayer.getDefault().notifyLater(e);
