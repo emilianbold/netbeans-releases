@@ -710,8 +710,9 @@ public class FormI18nSupport extends JavaI18nSupport {
                                 // is type of VALUE
                                 string = connectionValue.getValue();
 
-                            if(indexOfNonI18nString(string, hardString, validProp.getSkip()) != -1)
-                                found = true;
+                                if (indexOfNonI18nString(string, hardString, validProp.getSkip()) != -1) {
+                                    found = true;
+                                }
                             } else if (connectionValue.getType() == RADConnectionDesignValue.TYPE_CODE) {
                                 // is type of TYPE_CODE
                                 string = connectionValue.getCode();
