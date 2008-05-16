@@ -40,7 +40,7 @@
  */
 package org.netbeans.modules.php.dbgp;
 
-import org.netbeans.modules.php.dbgp.Debugger;
+import org.netbeans.modules.php.project.spi.XDebugStarter;
 import org.openide.util.Lookup;
 
 
@@ -50,6 +50,7 @@ import org.openide.util.Lookup;
  */
 public class DebuggerFactory {
     public static Debugger getDebugger() {
-        return Lookup.getDefault().lookup( Debugger.class );
+        DebuggerImpl retval = (DebuggerImpl) Lookup.getDefault().lookup(XDebugStarter.class);
+        return retval;
     }
 }
