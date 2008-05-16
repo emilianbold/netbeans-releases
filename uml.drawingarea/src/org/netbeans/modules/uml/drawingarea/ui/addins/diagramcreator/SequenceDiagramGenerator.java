@@ -912,7 +912,7 @@ public class SequenceDiagramGenerator implements ISequenceDiagramGenerator
                 int msgBeforeLN=-1,msgAfterLN=Integer.MAX_VALUE;
                 for(IMessage msg:mapMessages.keySet())
                 {
-                    if(msg.getLineNumber()>msgBeforeLN && msg.getLineNumber()<cf_line)
+                    if(msg.getLineNumber()>msgBeforeLN && msg.getLineNumber()<=cf_line)//if it's on the sameline most likely message create smth used in cf
                     {
                         msgBeforeLN=msg.getLineNumber();
                         msgBefore=msg;
