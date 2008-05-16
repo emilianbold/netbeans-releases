@@ -43,12 +43,16 @@ import java.awt.Color;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Collections;
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.ResizeControlPointResolver;
 import org.netbeans.api.visual.action.ResizeProvider;
 import org.netbeans.api.visual.action.ResizeStrategy;
+import org.netbeans.api.visual.action.SelectProvider;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.graph.GraphScene;
@@ -59,16 +63,12 @@ import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.SeparatorWidget;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.IRegion;
-import org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.IStateVertex;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
-import org.netbeans.modules.uml.core.support.umlutils.ETArrayList;
-import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.diagrams.UMLRelationshipDiscovery;
 import org.netbeans.modules.uml.diagrams.nodes.UMLNameWidget;
 import org.netbeans.modules.uml.drawingarea.ModelElementChangedKind;
 import org.netbeans.modules.uml.drawingarea.actions.DiagramPopupMenuProvider;
-import org.netbeans.modules.uml.drawingarea.actions.WidgetAcceptAction;
 import org.netbeans.modules.uml.drawingarea.util.Util;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.netbeans.modules.uml.drawingarea.view.DesignerTools;
@@ -83,7 +83,6 @@ public class RegionWidget extends Widget implements PropertyChangeListener
 
     private Scene scene;
     private IRegion region;
-    private boolean init = false;
     private Widget stateContainerWidget;
     private CompositeStateWidget compositeStateWidget;
     private CompartmentSeparatorWidget separatorWidget;
@@ -94,6 +93,9 @@ public class RegionWidget extends Widget implements PropertyChangeListener
 
     private int BORDER_THICKNESS = 1;
     private ResizeStrategy RESIZE_STRATEGY;
+    private static SelectProvider provider = new RegionSelectProvider();
+    private static RegionWidgetSelectAction regionSelectAction = new RegionWidgetSelectAction(provider, true);
+    
     
     public RegionWidget(Scene scene, IRegion region, CompositeStateWidget compositeStateWidget)
     {
@@ -108,7 +110,8 @@ public class RegionWidget extends Widget implements PropertyChangeListener
         DiagramPopupMenuProvider menuProvider = new DiagramPopupMenuProvider();
         WidgetAction.Chain selectTool = createActions(DesignerTools.SELECT);
         selectTool.addAction(ActionFactory.createResizeAction(RESIZE_STRATEGY, new RegionResizeControlPointResolver(), RESIZE_PROVIDER));               
-        selectTool.addAction(((ObjectScene) scene).createSelectAction());
+        
+        selectTool.addAction(regionSelectAction);
         selectTool.addAction(ActionFactory.createPopupMenuAction(menuProvider));
         
     }
@@ -124,19 +127,7 @@ public class RegionWidget extends Widget implements PropertyChangeListener
         nameWidget.initialize(region);
 
         layer.addChild(nameWidget, 0);
-
-        stateContainerWidget = new Widget(scene);
-
-        stateContainerWidget.setForeground(null);
-        stateContainerWidget.setBackground(null);
-        stateContainerWidget.createActions(DesignerTools.PALETTE).addAction(new WidgetAcceptAction(new RegionAcceptProvider()));
-        WidgetAction.Chain selectionActions = stateContainerWidget.createActions(DesignerTools.SELECT);
-        
-        if (scene instanceof DesignerScene)
-        {    
-            selectionActions.addAction(((DesignerScene)scene).createRectangularSelectAction());
-        }
-        selectionActions.addAction(new WidgetAcceptAction(new RegionAcceptProvider()));
+        stateContainerWidget = new RegionContainerWidget(scene);
         
         layer.addChild(stateContainerWidget, 1);
 
@@ -154,7 +145,7 @@ public class RegionWidget extends Widget implements PropertyChangeListener
         addChild(separatorWidget, 0);
 
         
-//        initContainedElements();
+        initContainedElements();
 
         RESIZE_STRATEGY = new ResizeStrategy()
         {
@@ -223,6 +214,11 @@ public class RegionWidget extends Widget implements PropertyChangeListener
         {
             nameWidget.propertyChange(evt);
         } 
+        else if (evt.getPropertyName().equals(ModelElementChangedKind.DELETE.toString()) ||
+                 evt.getPropertyName().equals(ModelElementChangedKind.PRE_DELETE.toString()))
+        {
+            compositeStateWidget.removeRegion(this);
+        }
     }
 
     private class RegionResizeControlPointResolver implements ResizeControlPointResolver
@@ -293,21 +289,6 @@ public class RegionWidget extends Widget implements PropertyChangeListener
         return clientArea;
     }
     
-    protected void notifyAdded()
-    {
-        if (!init)
-        {
-            initContainedElements();
-            init = true;
-        }
-                  
-    }
-    
-    protected void notifyRemoved () 
-    {
-        compositeStateWidget.removeRegion(this);
-    }
-    
 
     protected void notifyStateChanged(ObjectState previousState, ObjectState state)
     {
@@ -355,5 +336,125 @@ public class RegionWidget extends Widget implements PropertyChangeListener
 
         UMLRelationshipDiscovery relationshipD = new UMLRelationshipDiscovery((GraphScene) scene);
         relationshipD.discoverCommonRelations(region.getElements());
+    }
+    
+    
+    // todo: need to find a better way to address region selection and move behavior
+    private static class RegionWidgetSelectAction extends WidgetAction.LockedAdapter {
+
+    private boolean aiming = false;
+    private Widget aimedWidget = null;
+    private boolean invertSelection;
+    private SelectProvider provider;
+    private boolean trapRightClick = false ;
+
+    public RegionWidgetSelectAction (SelectProvider provider, boolean trapRightClick) {
+        this.provider = provider ;
+        this.trapRightClick = trapRightClick ;
+    }
+    
+    public RegionWidgetSelectAction (SelectProvider provider) {
+        this.provider = provider;
+    }
+
+    protected boolean isLocked () {
+        return aiming;
+    }
+
+    public State mousePressed(Widget widget, WidgetMouseEvent event) {
+        
+        if (isLocked()) {
+            return State.createLocked(widget, this);
+        }
+        
+        Point localLocation = event.getPoint();
+        
+        if (event.getButton() == MouseEvent.BUTTON1 || event.getButton() == MouseEvent.BUTTON2) {
+            invertSelection = (event.getModifiersEx() & MouseEvent.CTRL_DOWN_MASK) != 0;
+            
+            if (!invertSelection && widget.getState().isSelected())
+                return State.REJECTED;
+                
+            if (provider.isSelectionAllowed(widget, localLocation, invertSelection)) {
+                aiming = provider.isAimingAllowed(widget, localLocation, invertSelection);
+                if (aiming) {
+                    updateState(widget, localLocation);
+                    return State.createLocked(widget, this);
+                } else {
+                    provider.select(widget, localLocation, invertSelection);
+                    return State.CHAIN_ONLY;
+                }
+            }
+        } else if (trapRightClick && event.getButton() == MouseEvent.BUTTON3) {
+            provider.select(widget, localLocation, invertSelection);
+            return State.CHAIN_ONLY;
+        }
+        
+        return State.REJECTED;
+    }
+
+    public State mouseReleased (Widget widget, WidgetMouseEvent event) {
+        if (aiming) {
+            Point point = event.getPoint ();
+            updateState (widget, point);
+            if (aimedWidget != null)
+                provider.select (widget, point, invertSelection);
+            updateState (null, null);
+            aiming = false;
+            return State.CONSUMED;
+        }
+        return super.mouseReleased (widget, event);
+    }
+
+    private void updateState (Widget widget, Point localLocation) {
+        if (widget != null  &&  ! widget.isHitAt (localLocation))
+            widget = null;
+        if (widget == aimedWidget)
+            return;
+        if (aimedWidget != null)
+            aimedWidget.setState (aimedWidget.getState ().deriveWidgetAimed (false));
+        aimedWidget = widget;
+        if (aimedWidget != null)
+            aimedWidget.setState (aimedWidget.getState ().deriveWidgetAimed (true));
+    }
+
+    public State keyTyped (Widget widget, WidgetKeyEvent event) {
+        if (! aiming  &&  event.getKeyChar () == KeyEvent.VK_SPACE) {
+            provider.select (widget, null, (event.getModifiersEx () & MouseEvent.CTRL_DOWN_MASK) != 0);
+            return State.CONSUMED;
+        }
+        return State.REJECTED;
+    }
+    }
+    
+    private static class RegionSelectProvider implements SelectProvider {
+
+        public boolean isAimingAllowed (Widget widget, Point localLocation, boolean invertSelection) {
+            return false;
+        }
+
+        public boolean isSelectionAllowed (Widget widget, Point localLocation, boolean invertSelection) {
+            return true;
+        }
+
+        public void select (Widget widget, Point localLocation, boolean invertSelection) {
+            ObjectScene objectScene = null;
+            
+            Scene scene = widget.getScene();
+            if (scene instanceof ObjectScene)
+                objectScene = (ObjectScene)scene;
+            
+            if (objectScene == null)
+                return;
+            Object object = objectScene.findObject (widget);
+
+            objectScene.setFocusedObject (object);
+            if (object != null) {
+                if (! invertSelection  &&  objectScene.getSelectedObjects ().contains (object))
+                    return;
+                objectScene.userSelectionSuggested (Collections.singleton (object), invertSelection);
+            } else
+                objectScene.userSelectionSuggested (Collections.emptySet (), invertSelection);
+        }
     }
 }

@@ -53,6 +53,7 @@ import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.IRegion;
 import org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.State;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.TypedFactoryRetriever;
 import org.netbeans.modules.uml.diagrams.border.UMLRoundedBorder;
 import org.netbeans.modules.uml.diagrams.nodes.UMLNameWidget;
 import org.netbeans.modules.uml.diagrams.nodes.UMLNodeBackgroundWidget;
@@ -149,7 +150,13 @@ public class CompositeStateWidget extends Widget
     
     public void removeRegion(RegionWidget widget)
     {
-        regionWidgets.remove(widget);     
+        regionWidgets.remove(widget);  
+        if (regionWidgets.isEmpty())
+        {
+            IRegion region = new TypedFactoryRetriever<IRegion>().createType("Region");
+            state.addContent(region);
+            addRegion(region);
+        }
         updateConstraint();
     }
     
