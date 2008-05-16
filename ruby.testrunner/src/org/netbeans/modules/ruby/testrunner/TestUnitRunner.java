@@ -63,11 +63,11 @@ import org.openide.modules.InstalledFileLocator;
  *
  * @author Erno Mononen
  */
-public final class TestRunnerImpl implements TestRunner {
+public final class TestUnitRunner implements TestRunner {
 
-    private static final Logger LOGGER = Logger.getLogger(TestRunnerImpl.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(TestUnitRunner.class.getName());
     private static final String MEDIATOR_SCRIPT = "nb_test_mediator.rb";
-    private static final TestRunner INSTANCE = new TestRunnerImpl();
+    private static final TestRunner INSTANCE = new TestUnitRunner();
 
     public TestRunner getInstance() {
         return INSTANCE;
