@@ -38,10 +38,18 @@
  */
 package org.netbeans.modules.php.project.ui.customizer;
 
+import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import javax.swing.JComboBox;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JTextField;
+import javax.swing.ListCellRenderer;
+import javax.swing.event.DocumentListener;
+import javax.swing.plaf.UIResource;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAsType;
+import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.UploadFiles;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.util.NbBundle;
 
@@ -51,7 +59,7 @@ import org.openide.util.NbBundle;
 public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
     private static final long serialVersionUID = -559348988746891271L;
     private final JLabel[] labels;
-    private final JComponent[] components;
+    private final JTextField[] textFields;
     private final String[] propertyNames;
     private String displayName;
 
@@ -61,32 +69,52 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
 
     public RunAsRemoteWeb(ConfigManager manager, Category category, String displayName) {
         super(manager, category);
-        initComponents();
         this.displayName = displayName;
+
+        initComponents();
+
         labels = new JLabel[] {
             urlLabel,
             indexFileLabel,
-            argsLabel
+            argsLabel,
+            uploadDirectoryLabel,
         };
-        components = new JComponent[] {
+        textFields = new JTextField[] {
             urlTextField,
             indexFileTextField,
-            argsTextField
+            argsTextField,
+            uploadDirectoryTextField,
         };
         propertyNames = new String[] {
             PhpProjectProperties.URL,
             PhpProjectProperties.INDEX_FILE,
-            PhpProjectProperties.ARGS
-
-
-
+            PhpProjectProperties.ARGS,
+            PhpProjectProperties.REMOTE_DIRECTORY,
         };
-        assert labels.length == components.length && labels.length == propertyNames.length;
-        // listeners
-        for (int i = 0; i < components.length; i++) {
-            /*DocumentListener dl = new FieldUpdater(propertyNames[i], labels[i], textFields[i]);
-            textFields[i].getDocument().addDocumentListener(dl);*/
+        assert labels.length == textFields.length && labels.length == propertyNames.length;
+
+        for (PhpProjectProperties.UploadFiles uploadFiles : PhpProjectProperties.UploadFiles.values()) {
+            uploadFilesComboBox.addItem(uploadFiles);
         }
+        uploadFilesComboBox.setRenderer(new RemoteUploadRenderer());
+
+        // listeners
+        for (int i = 0; i < textFields.length; i++) {
+            DocumentListener dl = new FieldUpdater(propertyNames[i], labels[i], textFields[i]);
+            textFields[i].getDocument().addDocumentListener(dl);
+        }
+        // XXX remote connection
+        // remote upload
+        ComboBoxVisitor remoteUploadVisitor = new ComboBoxVisitor() {
+            public String visit(JComboBox comboBox) {
+                UploadFiles uploadFiles = (UploadFiles) comboBox.getSelectedItem();
+                assert uploadFiles != null;
+                uploadFilesHintLabel.setText(uploadFiles.getDescription());
+                return uploadFiles.name();
+            }
+        };
+        uploadFilesComboBox.addActionListener(new ComboBoxUpdater(PhpProjectProperties.REMOTE_UPLOAD, uploadFilesLabel, uploadFilesComboBox,
+                remoteUploadVisitor));
     }
 
     @Override
@@ -111,12 +139,50 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
 
     @Override
     protected void loadFields() {
-        // XXX
+        for (int i = 0; i < textFields.length; i++) {
+            textFields[i].setText(getValue(propertyNames[i]));
+        }
+        // XXX remote connection
+        // remote upload
+        UploadFiles uploadFiles = null;
+        String remoteUpload = getValue(PhpProjectProperties.REMOTE_UPLOAD);
+        if (remoteUpload == null) {
+            uploadFiles = UploadFiles.ON_RUN;
+        } else {
+            try {
+                uploadFiles = UploadFiles.valueOf(remoteUpload);
+            } catch (IllegalArgumentException iae) {
+                uploadFiles = UploadFiles.ON_RUN;
+            }
+        }
+        uploadFilesComboBox.setSelectedItem(uploadFiles);
     }
 
     @Override
     protected void validateFields() {
-        // XXX
+        String url = urlTextField.getText();
+        String indexFile = indexFileTextField.getText();
+
+        String err = validateWebFields(url, indexFile);
+        getCategory().setErrorMessage(err);
+        getCategory().setValid(err == null);
+    }
+
+    private class FieldUpdater extends TextFieldUpdater {
+
+        public FieldUpdater(String propName, JLabel label, JTextField field) {
+            super(propName, label, field);
+        }
+
+        final String getDefaultValue() {
+            return RunAsRemoteWeb.this.getDefaultValue(getPropName());
+        }
+
+        @Override
+        protected void processUpdate() {
+            super.processUpdate();
+            urlHintLabel.setText(composeUrlHint(urlTextField.getText(), indexFileTextField.getText(), argsTextField.getText()));
+        }
     }
 
     /** This method is called from within the constructor to
@@ -137,9 +203,9 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         argsLabel = new javax.swing.JLabel();
         argsTextField = new javax.swing.JTextField();
         urlHintLabel = new javax.swing.JTextArea();
-        ftpConnectionLabel = new javax.swing.JLabel();
-        ftpConnectionComboBox = new javax.swing.JComboBox();
-        manageFtpConnectionButton = new javax.swing.JButton();
+        remoteConnectionLabel = new javax.swing.JLabel();
+        remoteConnectionComboBox = new javax.swing.JComboBox();
+        manageRemoteConnectionButton = new javax.swing.JButton();
         uploadDirectoryLabel = new javax.swing.JLabel();
         uploadDirectoryTextField = new javax.swing.JTextField();
         uploadFilesLabel = new javax.swing.JLabel();
@@ -166,10 +232,10 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         urlHintLabel.setEnabled(false);
         urlHintLabel.setOpaque(false);
 
-        ftpConnectionLabel.setLabelFor(ftpConnectionComboBox);
-        org.openide.awt.Mnemonics.setLocalizedText(ftpConnectionLabel, org.openide.util.NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_FtpConnection")); // NOI18N
+        remoteConnectionLabel.setLabelFor(remoteConnectionComboBox);
+        org.openide.awt.Mnemonics.setLocalizedText(remoteConnectionLabel, org.openide.util.NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_FtpConnection")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(manageFtpConnectionButton, org.openide.util.NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_Manage")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(manageRemoteConnectionButton, org.openide.util.NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_Manage")); // NOI18N
 
         uploadDirectoryLabel.setLabelFor(uploadDirectoryTextField);
         org.openide.awt.Mnemonics.setLocalizedText(uploadDirectoryLabel, org.openide.util.NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_UploadDirectory")); // NOI18N
@@ -186,7 +252,7 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(ftpConnectionLabel)
+                    .add(remoteConnectionLabel)
                     .add(uploadDirectoryLabel)
                     .add(uploadFilesLabel)
                     .add(urlLabel)
@@ -201,9 +267,9 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
                     .add(urlHintLabel)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, uploadFilesHintLabel)
                     .add(layout.createSequentialGroup()
-                        .add(ftpConnectionComboBox, 0, 121, Short.MAX_VALUE)
+                        .add(remoteConnectionComboBox, 0, 121, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(manageFtpConnectionButton))
+                        .add(manageRemoteConnectionButton))
                     .add(org.jdesktop.layout.GroupLayout.LEADING, uploadDirectoryTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 222, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, uploadFilesComboBox, 0, 222, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, runAsComboBox, 0, 222, Short.MAX_VALUE))
@@ -231,9 +297,9 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
                 .add(urlHintLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(ftpConnectionLabel)
-                    .add(manageFtpConnectionButton)
-                    .add(ftpConnectionComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(remoteConnectionLabel)
+                    .add(manageRemoteConnectionButton)
+                    .add(remoteConnectionComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(uploadDirectoryLabel)
@@ -244,7 +310,7 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
                     .add(uploadFilesComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(uploadFilesHintLabel)
-                .addContainerGap(27, Short.MAX_VALUE))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -252,11 +318,11 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel argsLabel;
     private javax.swing.JTextField argsTextField;
-    private javax.swing.JComboBox ftpConnectionComboBox;
-    private javax.swing.JLabel ftpConnectionLabel;
     private javax.swing.JLabel indexFileLabel;
     private javax.swing.JTextField indexFileTextField;
-    private javax.swing.JButton manageFtpConnectionButton;
+    private javax.swing.JButton manageRemoteConnectionButton;
+    private javax.swing.JComboBox remoteConnectionComboBox;
+    private javax.swing.JLabel remoteConnectionLabel;
     private javax.swing.JComboBox runAsComboBox;
     private javax.swing.JLabel runAsLabel;
     private javax.swing.JLabel uploadDirectoryLabel;
@@ -269,4 +335,57 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
     private javax.swing.JTextField urlTextField;
     // End of variables declaration//GEN-END:variables
 
+    interface ComboBoxVisitor {
+        String visit(final JComboBox comboBox);
+    }
+
+    private class ComboBoxUpdater implements ActionListener {
+        private final JLabel label;
+        private final JComboBox field;
+        private final String propName;
+        private final ComboBoxVisitor comboBoxVisitor;
+
+        public ComboBoxUpdater(String propName, JLabel label, JComboBox field, ComboBoxVisitor comboBoxVisitor) {
+            this.propName = propName;
+            this.label = label;
+            this.field = field;
+            this.comboBoxVisitor = comboBoxVisitor;
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            String value = comboBoxVisitor.visit(field);
+            RunAsRemoteWeb.this.putValue(propName, value);
+            RunAsRemoteWeb.this.markAsModified(label, propName, value);
+            validateFields();
+        }
+    }
+
+    private static class RemoteUploadRenderer extends JLabel implements ListCellRenderer, UIResource {
+        private static final long serialVersionUID = 86192358777523629L;
+
+        public RemoteUploadRenderer() {
+            setOpaque(true);
+        }
+
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            assert value instanceof UploadFiles;
+            setName("ComboBox.listRenderer"); // NOI18N
+            setText(((UploadFiles) value).getLabel());
+            setIcon(null);
+            if (isSelected) {
+                setBackground(list.getSelectionBackground());
+                setForeground(list.getSelectionForeground());
+            } else {
+                setBackground(list.getBackground());
+                setForeground(list.getForeground());
+            }
+            return this;
+        }
+
+        @Override
+        public String getName() {
+            String name = super.getName();
+            return name == null ? "ComboBox.renderer" : name; // NOI18N
+        }
+    }
 }

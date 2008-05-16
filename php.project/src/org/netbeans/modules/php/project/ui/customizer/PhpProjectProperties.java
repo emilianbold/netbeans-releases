@@ -84,17 +84,46 @@ public class PhpProjectProperties {
     public static final String GLOBAL_INCLUDE_PATH = "php.global.include.path"; // NOI18N
     public static final String ARGS = "script.arguments"; // NOI18N
     public static final String RUN_AS = "run.as"; // NOI18N
+    public static final String REMOTE_CONNECTION = "remote.connection"; // NOI18N
+    public static final String REMOTE_DIRECTORY = "remote.directory"; // NOI18N
+    public static final String REMOTE_UPLOAD = "remote.upload"; // NOI18N
+
     public static final String[] CFG_PROPS = new String[] {
         URL,
         INDEX_FILE,
         ARGS,
-        RUN_AS
+        RUN_AS,
+        REMOTE_CONNECTION,
+        REMOTE_DIRECTORY,
+        REMOTE_UPLOAD
     };
 
     public static enum RunAsType {
         LOCAL,
         SCRIPT,
         REMOTE
+    }
+
+    public static enum UploadFiles {
+        MANUALLY ("LBL_UploadFilesManually", "TXT_UploadFilesManually"), // NOI18N
+        ON_RUN ("LBL_UploadFilesOnRun", "TXT_UploadFilesOnRun"), // NOI18N
+        ON_SAVE ("LBL_UploadFilesOnSave", "TXT_UploadFilesOnSave"); // NOI18N
+
+        private final String label;
+        private final String description;
+
+        UploadFiles(String labelKey, String descriptionKey) {
+            label = NbBundle.getMessage(PhpProjectProperties.class, labelKey);
+            description = NbBundle.getMessage(PhpProjectProperties.class, descriptionKey);
+        }
+
+        public String getLabel() {
+            return label;
+        }
+
+        public String getDescription() {
+          return description;
+        }
     }
 
     static final String CONFIG_PRIVATE_PROPERTIES_PATH = "nbproject/private/config.properties"; // NOI18N

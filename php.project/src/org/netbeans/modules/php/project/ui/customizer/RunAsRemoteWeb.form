@@ -17,7 +17,7 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="ftpConnectionLabel" min="-2" max="-2" attributes="0"/>
+                  <Component id="remoteConnectionLabel" min="-2" max="-2" attributes="0"/>
                   <Component id="uploadDirectoryLabel" min="-2" max="-2" attributes="0"/>
                   <Component id="uploadFilesLabel" min="-2" max="-2" attributes="0"/>
                   <Component id="urlLabel" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -33,9 +33,9 @@
                   <Component id="urlHintLabel" alignment="1" max="32767" attributes="1"/>
                   <Component id="uploadFilesHintLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Group type="102" alignment="1" attributes="0">
-                      <Component id="ftpConnectionComboBox" pref="121" max="32767" attributes="0"/>
+                      <Component id="remoteConnectionComboBox" pref="121" max="32767" attributes="0"/>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
-                      <Component id="manageFtpConnectionButton" min="-2" max="-2" attributes="0"/>
+                      <Component id="manageRemoteConnectionButton" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <Component id="uploadDirectoryTextField" alignment="0" pref="222" max="32767" attributes="0"/>
                   <Component id="uploadFilesComboBox" alignment="0" pref="222" max="32767" attributes="0"/>
@@ -71,9 +71,9 @@
               <Component id="urlHintLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="ftpConnectionLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="manageFtpConnectionButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="ftpConnectionComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="remoteConnectionLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="manageRemoteConnectionButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="remoteConnectionComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
@@ -87,7 +87,7 @@
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="uploadFilesHintLabel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="27" max="32767" attributes="0"/>
+              <EmptySpace max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -162,19 +162,19 @@
         <Property name="opaque" type="boolean" value="false"/>
       </Properties>
     </Component>
-    <Component class="javax.swing.JLabel" name="ftpConnectionLabel">
+    <Component class="javax.swing.JLabel" name="remoteConnectionLabel">
       <Properties>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="ftpConnectionComboBox"/>
+          <ComponentRef name="remoteConnectionComboBox"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/php/project/ui/customizer/Bundle.properties" key="LBL_FtpConnection" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
-    <Component class="javax.swing.JComboBox" name="ftpConnectionComboBox">
+    <Component class="javax.swing.JComboBox" name="remoteConnectionComboBox">
     </Component>
-    <Component class="javax.swing.JButton" name="manageFtpConnectionButton">
+    <Component class="javax.swing.JButton" name="manageRemoteConnectionButton">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/php/project/ui/customizer/Bundle.properties" key="LBL_Manage" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
