@@ -161,9 +161,9 @@ public class DrawingAreaOperator extends ComponentOperator implements Actionable
             }
             umlWidgetOperator= new UMLWidgetOperator(widget);
             Rectangle rect =  umlWidgetOperator.getRectangle(); 
-            Utils.log("Before inflate" + rect.toString());
+            Utils.log("Before inflate: " + rect.toString());
             //rect = umlWidgetOperator.inflateRect(span+10);
-            Utils.log("After inflate" + rect.toString());
+            Utils.log("After inflate:  " + rect.toString());
             elementBounds.add(rect);
 
         }

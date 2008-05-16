@@ -84,7 +84,7 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.PresentationEleme
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
-import org.netbeans.modules.uml.drawingarea.persistance.PersistanceUtil;
+import org.netbeans.modules.uml.drawingarea.persistence.PersistenceUtil;
 import org.netbeans.modules.uml.drawingarea.view.UMLEdgeWidget;
 import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
 import org.netbeans.test.umllib.actions.Actionable;
@@ -438,11 +438,10 @@ public class DiagramElementOperator extends Operator implements Actionable {
      */
     public String getElementType() {  
          Class clazz = getGraphObject().getClass();
-         String elementType= PersistanceUtil.getModelElement(getGraphObject()).getElementType().toString();
+         String elementType= PersistenceUtil.getModelElement(getGraphObject()).getElementType().toString();
          Utils.log("DiagramElementOperator:getElementType(): element = "+ clazz.toString() + " elementType= "+ elementType);
          return elementType;
-         //return getPresentationElement().getElementType();
-        
+       //  return getPresentationElement().getElementType();   
     }
 
     /**
@@ -1321,7 +1320,7 @@ public class DiagramElementOperator extends Operator implements Actionable {
                 JTextFieldOperator textFieldOperator = ec.getTextFieldOperator();
                 textFieldOperator.clearText();
                 textFieldOperator.enterText(newName);
-                DiagramOperator.getDrawingArea().clickMouse();
+               // DiagramOperator.getDrawingArea().clickMouse();
                 new EventTool().waitNoEvent(500);
             } catch (Exception ex) {
                 ex.printStackTrace();

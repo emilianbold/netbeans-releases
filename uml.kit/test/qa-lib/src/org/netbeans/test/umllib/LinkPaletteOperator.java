@@ -180,17 +180,21 @@ public class LinkPaletteOperator extends ContainerOperator {
     public static void setLinkIndex() {  
         map = new HashMap();
         
-        //Create class diagram linek button mapping
-        map.put(LinkTypes.IMPLEMENTATION, new Integer(0));
+        //Create class diagram link button mapping
+        map.put(LinkTypes.GENERALIZATION, new Integer(0));
+        map.put(LinkTypes.IMPLEMENTATION, new Integer(1));
         map.put(LinkTypes.COMMENT_LINK, new Integer(3));
-        map.put(LinkTypes.GENERALIZATION, new Integer(4));
+        
+        //Index of Association Combo array button
         map.put(LinkTypes.ASSOCIATION, new Integer(0));
-        map.put(LinkTypes.COMPOSITION, new Integer(0));
-        map.put(LinkTypes.NAVIGABLE_COMPOSITION, new Integer(2));
+        map.put(LinkTypes.AGGREGATION, new Integer(1));
+        map.put(LinkTypes.COMPOSITION, new Integer(2));  
         map.put(LinkTypes.NAVIGABLE_ASSOCIATION, new Integer(3));
         map.put(LinkTypes.NAVIGABLE_AGGREGATION, new Integer(4));
         map.put(LinkTypes.NAVIGABLE_COMPOSITION, new Integer(5));
         map.put(LinkTypes.ASSOCIATION_CLASS, new Integer(6));
+        
+        // Index of dependence combo array button
         map.put(LinkTypes.DEPENDENCY, new Integer(0));
         map.put(LinkTypes.REALIZE, new Integer(1));
         map.put(LinkTypes.USAGE, new Integer(2));

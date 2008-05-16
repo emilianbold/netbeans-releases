@@ -158,6 +158,7 @@ public class OperationContainerOperator extends ValueOperator {
         System.out.println("***  old      = " + defaultElement);
         System.out.println("***  text     = \"" + operationElement.getText() + "\"");
         System.out.println("***  old text = \"" + defaultElement.getText() + "\"");
+        Utils.log("*** Menu =" +LabelsAndTitles.POPUP_ADD_OPERATION );
         operationCompartment.getPopup().pushMenu(LabelsAndTitles.POPUP_ADD_OPERATION);
         
         // Enter Edit control mode
@@ -211,7 +212,7 @@ public class OperationContainerOperator extends ValueOperator {
         }
         
         pressEnter(textFieldOperator);
-        DiagramOperator.getDrawingArea().clickMouse();
+       // DiagramOperator.getDrawingArea().clickMouse();
         try {
             Thread.sleep(1000);
         } catch (Exception ex) {

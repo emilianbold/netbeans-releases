@@ -356,6 +356,7 @@ public class DiagramOperator extends TopComponentOperator {
         int old = getAllDiagramElements().size();  
         //paletter().selectToolByType(elementType);
         paletter().selectToolByType(elementType);
+        Utils.log("put element at " + x + "," +y);
         getDrawingArea().clickMouse(x, y, 1);
         //Drag and drop an elment to drawing area
             JemmyProperties.setCurrentDispatchingModel(JemmyProperties.ROBOT_MODEL_MASK);
@@ -363,7 +364,7 @@ public class DiagramOperator extends TopComponentOperator {
 
         //check if any element was added
         
-        try{Thread.sleep(2000);}catch(Exception ex){}
+        try{Thread.sleep(1000);}catch(Exception ex){}
         for(int i=0;i<50 && getAllDiagramElements().size()==old;i++)
         {
             try{Thread.sleep(100);}catch(Exception ex){}
@@ -373,7 +374,7 @@ public class DiagramOperator extends TopComponentOperator {
         //TODO: Toolbar is not fully implemented 
         // toolbar().selectDefault();
          
-            Utils.log("put element at " + x + "," +y);
+       
          
         try{Thread.sleep(3000);}catch(Exception ex){}
         if (name!=null){
@@ -475,11 +476,11 @@ public class DiagramOperator extends TopComponentOperator {
           Point elementClickPoint = toElement.getCenterPoint();
           Utils.log("element click point = "+ elementClickPoint.x + ", "+ elementClickPoint.y);
           JemmyProperties.setCurrentDispatchingModel(JemmyProperties.ROBOT_MODEL_MASK);
-          linkButton.clickMouse();
+          //linkButton.clickMouse();
           //TODO: Wait for Trey's option to not hide context palette.
-           //DNDDriver dndDriver = new DNDDriver();
-//          dndDriver.dnd(linkButton, buttonClickPoint, getDrawingArea(), elementClickPoint,
-//          InputEvent.BUTTON1_MASK, 0);
+          DNDDriver dndDriver = new DNDDriver();
+          dndDriver.dnd(linkButton, buttonClickPoint, getDrawingArea(), elementClickPoint,
+          InputEvent.BUTTON1_MASK, 0);
       }
     
     /**

@@ -7,6 +7,7 @@ package org.netbeans.test.umllib;
 
 import java.awt.Point;
 
+import java.awt.Toolkit;
 import org.netbeans.jemmy.Timeout;
 
 import org.netbeans.jemmy.drivers.input.MouseRobotDriver;
@@ -31,12 +32,19 @@ public class DNDDriver {
     }
     
     public void dnd(ComponentOperator source, Point from, ComponentOperator target, Point to, int button, int modifiers) {
+        Point theDelta = new Point(
+                target.getLocationOnScreen().x - source.getLocationOnScreen().x,
+                target.getLocationOnScreen().y - source.getLocationOnScreen().y);
         mDriver.moveMouse(source, from.x, from.y);
         try{Thread.sleep(2000);}catch(Exception ex){}
         mDriver.pressMouse(source, from.x, from.y, button, modifiers);
         beforeDragSleep.sleep();
+        /*
         mDriver.moveMouse(source, from.x, from.y);
         mDriver.moveMouse(source, from.x + 1, from.y + 1);
+         */
+        mDriver.moveMouse(target, - theDelta.x, - theDelta.y);
+        mDriver.moveMouse(target, - theDelta.x + 1, - theDelta.y + 1);
         mDriver.moveMouse(target, to.x + 1, to.y + 1);
         mDriver.moveMouse(target, to.x, to.y);
         afterDragSleep.sleep();

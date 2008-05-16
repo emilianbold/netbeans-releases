@@ -137,8 +137,9 @@ public class AttributeContainerOperator extends ValueOperator {
         System.out.println("***  defaultElement      = " + defaultElement);
         System.out.println("***  text     = \"" + attributeElement.getText() + "\"");
         System.out.println("***  defaultElement text = \"" + defaultElement.getText() + "\"");
-        attributeCompartment.getPopup().pushMenu(LabelsAndTitles.POPUP_ADD_ATTRIBUTE);
         Utils.log("looking for menu: "+ LabelsAndTitles.POPUP_ADD_ATTRIBUTE);
+        attributeCompartment.getPopup().pushMenu(LabelsAndTitles.POPUP_ADD_ATTRIBUTE);
+        
         
         // Enter Edit control mode
         Widget source=attributeCompartment.getSource();

@@ -302,11 +302,13 @@ public class CompartmentOperator implements Actionable {
      */
     public JPopupMenuOperator getPopup() {
         //workarround for Issue 79519
-        if(System.getProperty("os.name").toLowerCase().indexOf("windows")==-1)
-        {
-            clickOnCenter();
-            try{Thread.sleep(100);}catch(Exception ex){}
-        }
+//        System.out.println("os.name="+ System.getProperty("os.name"));
+//        if(System.getProperty("os.name").toLowerCase().indexOf("windows")==-1)
+//        {
+//            clickOnCenter();
+//            try{Thread.sleep(100);}catch(Exception ex){}
+//        }
+        clickOnCenter();
         clickForPopup();
         
         JPopupMenuOperator ret=new JPopupMenuOperator(JPopupMenuOperator.waitJPopupMenu((java.awt.Container)(MainWindowOperator.getDefault().getSource()),new JPopupByPointChooser(getCenterPoint(),drawingArea.getSource(),0)));
