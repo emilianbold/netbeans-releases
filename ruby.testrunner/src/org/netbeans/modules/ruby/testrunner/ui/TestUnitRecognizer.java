@@ -50,13 +50,13 @@ import org.netbeans.modules.ruby.platform.execution.OutputRecognizer;
  *
  * @author Erno Mononen
  */
-public class TestRecognizer extends OutputRecognizer {
+public class TestUnitRecognizer extends OutputRecognizer {
 
     private final Manager manager;
     private final TestSession session;
     private final List<TestHandler> handlers;
 
-    public TestRecognizer(Manager manager, TestSession session) {
+    public TestUnitRecognizer(Manager manager, TestSession session) {
         this.manager = manager;
         this.session = session;
         this.handlers = initHandlers();
