@@ -75,4 +75,23 @@ public final class RubyBreakpointTest extends TestBase {
         assertEquals("one Ruby breakpoint for vegetable.rb", 1, RubyBreakpointManager.getBreakpoints(vegetableFO).length);
     }
     
+    public void testSetCondition() throws Exception {
+        if (tryToSwitchToRDebugIDE()) {
+            String[] testContent = {
+                "1.upto(10) do |i|",
+                "  sleep 0.01",
+                "  sleep 0.01",
+                "end"
+            };
+            File testF = createScript(testContent);
+            FileObject testFO = FileUtil.toFileObject(testF);
+            RubyBreakpoint bp = addBreakpoint(testFO, 2);
+            bp.setCondition("i>7");
+            Process p = startDebugging(testF);
+            doContinue(); // i == 8
+            doContinue(); // i == 9
+            doContinue(); // i == 10
+            p.waitFor();
+        }
+    }
 }

@@ -34,8 +34,11 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.Arrays;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.php.project.ui.options.PhpOptions;
 import org.openide.awt.HtmlBrowser;
 import org.openide.cookies.EditorCookie;
@@ -71,8 +74,15 @@ public class RunLocalCommand extends Command implements Displayable {
         Charset encoding = FileEncodingQuery.getDefaultEncoding();
         encoding = FileEncodingQuery.getEncoding(scriptFo);
 
-        //prepare & start external process
-        ProcessBuilder processBuilder = new ProcessBuilder(new String[]{command, scriptFile.getAbsolutePath()});
+        //prepare & start external process                        
+        ArrayList<String> commandList = new ArrayList<String>();//NOI18N
+        commandList.addAll(Arrays.asList(new String[]{command, scriptFile.getAbsolutePath()}));
+        String argProperty = getProperty(PhpProjectProperties.ARGS);        
+        if (argProperty != null && argProperty.length() > 0) {
+            commandList.addAll(Arrays.asList(argProperty.split(" ")));//NOI18N
+        }        
+        ProcessBuilder processBuilder = new ProcessBuilder(commandList);
+        processBuilder.directory(scriptFile.getParentFile());
         initProcessBuilder(processBuilder);
         try {
             Process process = processBuilder.start();

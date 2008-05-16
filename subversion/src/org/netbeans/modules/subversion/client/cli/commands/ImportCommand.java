@@ -42,6 +42,7 @@ package org.netbeans.modules.subversion.client.cli.commands;
 import java.io.File;
 import java.io.IOException;
 import org.netbeans.modules.subversion.client.cli.SvnCommand;
+import org.tigris.subversion.svnclientadapter.ISVNNotifyListener;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
@@ -63,6 +64,11 @@ public class ImportCommand extends SvnCommand {
     }
        
     @Override
+    protected int getCommand() {
+        return ISVNNotifyListener.Command.IMPORT;
+    }
+    
+    @Override
     public void prepareCommand(Arguments arguments) throws IOException {                     
         arguments.add("import");
         arguments.add(file);
@@ -71,7 +77,6 @@ public class ImportCommand extends SvnCommand {
             arguments.add("-N");
         }
         arguments.addMessage(message);	        
-
         setCommandWorkingDirectory(file);
     }
 

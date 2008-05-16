@@ -67,6 +67,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.rubyproject.AutoTestSupport;
+import org.netbeans.modules.ruby.rubyproject.RSpecSupport;
 import org.netbeans.modules.ruby.rubyproject.RubyProject;
 import org.netbeans.modules.ruby.rubyproject.UpdateHelper;
 import org.netbeans.modules.ruby.rubyproject.rake.RakeRunnerAction;
@@ -264,6 +265,7 @@ public class RubyLogicalViewProvider implements LogicalViewProvider {
         private boolean nameChange;
         private ChangeListener sourcesListener;
         private Map<SourceGroup, PropertyChangeListener> groupsListeners;
+        private final RSpecSupport rspecSupport;
         
         public RubyLogicalViewRootNode() {
             super(NodeFactorySupport.createCompositeChildren(project, "Projects/org-netbeans-modules-ruby-rubyproject/Nodes"), 
@@ -278,6 +280,7 @@ public class RubyLogicalViewProvider implements LogicalViewProvider {
             }
             //brokenLinksAction = new BrokenLinksAction();
             setProjectFiles(project);
+            this.rspecSupport = new RSpecSupport(project);
         }
 
         public @Override String getShortDescription() {
@@ -512,6 +515,9 @@ public class RubyLogicalViewProvider implements LogicalViewProvider {
             actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_TEST, bundle.getString("LBL_TestAction_Name"), null)); // NOI18N
             if (AutoTestSupport.isInstalled(project)) {
                 actions.add(ProjectSensitiveActions.projectCommandAction(RubyActionProvider.COMMAND_AUTOTEST, bundle.getString("LBL_AutoTest"), null)); // NOI18N
+            }
+            if (rspecSupport.isRSpecInstalled()) {
+                actions.add(ProjectSensitiveActions.projectCommandAction(RubyActionProvider.COMMAND_RSPEC, bundle.getString("LBL_RSpec"), null)); // NOI18N
             }
             actions.add(CommonProjectActions.setProjectConfigurationAction());
             actions.add(null);
