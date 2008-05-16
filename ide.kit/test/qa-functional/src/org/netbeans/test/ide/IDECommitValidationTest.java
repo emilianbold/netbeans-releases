@@ -45,6 +45,7 @@ import java.io.File;
 import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.junit.NbTestCase;
 
 /**
  * Overall sanity check suite for IDE before commit.<br>
@@ -54,11 +55,12 @@ import org.netbeans.junit.NbModuleSuite;
  */
 public class IDECommitValidationTest extends JellyTestCase {
 
-    private static boolean initBlacklistedClassesHandler() {
-        String configFN = System.getProperty("nbjunit.datadir")
+    private static boolean initBlacklistedClassesHandler() {        
+        String configFN = new IDECommitValidationTest("Dummy").getDataDir()
                 + File.separator + "BlacklistedClassesHandlerConfig.xml";
         BlacklistedClassesHandler bcHandler = BlacklistedClassesHandlerSingleton.getInstance();
         
+        System.out.println("BlacklistedClassesHandler will be initialized with " + configFN);
         if (bcHandler.initSingleton(configFN)) {
             bcHandler.register();
             System.out.println("BlacklistedClassesHandler handler added");

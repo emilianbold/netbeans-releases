@@ -324,7 +324,6 @@ made subject to such option by the copyright holder.
                 <property name="build.test.@{test.type}.classes.dir" location="${build.test.@{test.type}.dir}/classes"/>
                 <property name="build.test.@{test.type}.results.dir" location="${build.test.@{test.type}.dir}/results"/>
                 <property name="build.test.@{test.type}.work.dir" location="${build.test.@{test.type}.dir}/work"/>
-                <property name="build.test.@{test.type}.data.dir" location="${build.test.@{test.type}.dir}/data"/>
                 <property name="extra.test.libs.dir" location="${test.dist.dir}/extralibs"/> 
                 <!-- if project.xml doesn't contain test dependencies -->
                 <property name="test.@{test.type}.folder" location="build/test/@{test.type}/dist"/>
@@ -363,10 +362,6 @@ made subject to such option by the copyright holder.
                     <propertyset>
                         <propertyref name="build.test.@{test.type}.work.dir"/>
                         <mapper type="glob" from="build.test.@{test.type}.work.dir" to="nbjunit.workdir"/>
-                    </propertyset>
-                    <propertyset>
-                        <propertyref name="build.test.@{test.type}.data.dir"/>
-                        <mapper type="glob" from="build.test.@{test.type}.data.dir" to="nbjunit.datadir"/>
                     </propertyset>
                 </propertyset>
                 <condition property="exists.test.@{test.type}.src.dir">
