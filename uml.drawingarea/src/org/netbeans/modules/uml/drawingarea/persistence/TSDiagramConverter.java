@@ -419,11 +419,12 @@ public class TSDiagramConverter
         {            
             IPresentationElement presEl = (IPresentationElement) nodeInfo.getProperty(PRESENTATIONELEMENT);
             DiagramEngine engine = scene.getEngine();
-            Widget widget = engine.addWidget(presEl, nodeInfo.getPosition());
+            Widget widget = null;
+            if(presEl!=null)widget=engine.addWidget(presEl, nodeInfo.getPosition());
             postProcessNode(widget,presEl);
             //add this PE to the presLIst
             widgetsList.add(widget);
-            if (widget instanceof UMLNodeWidget)
+            if (widget!=null && widget instanceof UMLNodeWidget)
                 ((UMLNodeWidget) widget).load(nodeInfo);
         }
 
@@ -433,30 +434,34 @@ public class TSDiagramConverter
         }
     }
 
-    private void createNodesPresentationElements()
+    private boolean createNodesPresentationElements()
     {
         Collection<NodeInfo> ninfos = presIdNodeInfoMap.values();
+        boolean good=true;
         for (NodeInfo ninfo : ninfos)
         {
-            createPE(ninfo);
+            good=good&&createPE(ninfo);
         }        
+        return good;
     }
     
-    private void createPE(NodeInfo nodeInfo)
+    private boolean createPE(NodeInfo nodeInfo)
     {
+        boolean good=true;
         try
         {            
              IPresentationElement presEl = createPresentationElement(
              nodeInfo.getMEID(), nodeInfo.getPEID());
+             good=presEl!=null;
              mapEngineToView(presEl,nodeInfo);
              nodeInfo.setProperty(PRESENTATIONELEMENT, presEl);
              presEltList.add(presEl);
-       }
-
+        }
         catch (Exception e)
         {
             e.printStackTrace();
         }
+        return good;
     }
 
     private Widget addEdgeToScene(EdgeInfo edgeReader)
@@ -468,8 +473,11 @@ public class TSDiagramConverter
         //
         String sourceId=dataConnIdMap.get(edgeReader.getPEID()).getParamOne();
         String targetId=dataConnIdMap.get(edgeReader.getPEID()).getParamTwo();
-        edgeReader.setSourcePE(findNode(sourceId));
-        edgeReader.setTargetPE(findNode(targetId));
+        IPresentationElement sourcePE=findNode(sourceId);
+        IPresentationElement targetPE=findNode(targetId);
+        if(sourcePE==null || targetPE==null)return null;//target or source is missed from model
+        edgeReader.setSourcePE(sourcePE);
+        edgeReader.setTargetPE(targetPE);
         //
         processSemanricPresentation(edgeReader);
         //
@@ -514,9 +522,15 @@ public class TSDiagramConverter
         Collections.sort(einfos,new Comparator<EdgeInfo>()
         {
             public int compare(EdgeInfo o1, EdgeInfo o2) {
-                NodeInfo sourceInfo1=presIdNodeInfoMap.get(o1.getSourcePE().getXMIID());
+                //first check special null cases
+                IPresentationElement sourcePE1=o1.getSourcePE();
+                IPresentationElement sourcePE2=o2.getSourcePE();
+                if(sourcePE1==null && sourcePE2==null)return 0;
+                else if(sourcePE1==null)return -1;
+                else if(sourcePE2==null)return 1;
+                NodeInfo sourceInfo1=presIdNodeInfoMap.get(sourcePE1.getXMIID());
                 ConnectorData sourceConnector1=(ConnectorData) o1.getProperty("SOURCECONNECTOR");
-                NodeInfo sourceInfo2=presIdNodeInfoMap.get(o2.getSourcePE().getXMIID());
+                NodeInfo sourceInfo2=presIdNodeInfoMap.get(sourcePE2.getXMIID());
                 ConnectorData sourceConnector2=(ConnectorData) o2.getProperty("SOURCECONNECTOR");
                 int y1=0,y2=0;
                 if(o1.getSourcePE().getFirstSubject() instanceof Lifeline)
@@ -553,6 +567,7 @@ public class TSDiagramConverter
         {
             EdgeInfo edgeInfo=einfos.get(index1);
             IElement elt = (IElement) edgeInfo.getProperty(ELEMENT);
+            if(elt==null)continue;//skip absent model element
             Message message=(Message) elt;
             if(message.getKind()==Message.MK_RESULT)
             {
@@ -561,8 +576,11 @@ public class TSDiagramConverter
             }
             IPresentationElement pE = Util.createNodePresentationElement();
     //            pE.setXMIID(PEID);
-            Widget sourceWidget = scene.findWidget(edgeInfo.getSourcePE());
-            Widget targetWidget = scene.findWidget(edgeInfo.getTargetPE());
+            IPresentationElement sourcePE=edgeInfo.getSourcePE();
+            IPresentationElement targetPE=edgeInfo.getTargetPE();
+            if(sourcePE==null || targetPE==null)continue;//skip if source or target is missed
+            Widget sourceWidget = scene.findWidget(sourcePE);
+            Widget targetWidget = scene.findWidget(targetPE);
             NodeInfo sourceInfo=presIdNodeInfoMap.get(edgeInfo.getSourcePE().getXMIID());
             NodeInfo targetInfo=presIdNodeInfoMap.get(edgeInfo.getTargetPE().getXMIID());
             pE.addSubject(elt);
@@ -1073,6 +1091,7 @@ public class TSDiagramConverter
         String meid, String peid)
     {
         IElement element = getElement(project, meid);
+        if(element==null)return null;
         IPresentationElement presEl = Util.createNodePresentationElement();
         presEl.setXMIID(peid);
         presEl.addSubject(element);

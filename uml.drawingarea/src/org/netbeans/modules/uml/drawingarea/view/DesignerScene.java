@@ -517,6 +517,7 @@ public class DesignerScene extends GraphScene<IPresentationElement, IPresentatio
         if (backgroundWidget == null)
             return;
         backgroundWidget.removeFromParent();
+        backgroundWidget = null;
         validate();
     }
 }

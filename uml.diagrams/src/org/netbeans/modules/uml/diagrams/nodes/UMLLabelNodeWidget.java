@@ -92,21 +92,17 @@ public abstract class UMLLabelNodeWidget extends UMLNodeWidget implements LabelN
         super.propertyChange(event);
     }
 
-//    public void remove()
-//    {
-//        if (labelWidget != null)
-//            labelWidget.removeFromParent();
-//        super.remove();
-//    }
-
     
     @Override
     protected void notifyAdded () 
     {
-        if (labelWidget == null)
-        {         
+        // this is invoked when this widget or its parent gets added, only need to
+        // process the case when this widget is changed, same for notifyRemoved to 
+        // avoid concurrent modification to children list
+        if (labelWidget == null || getParentWidget() == labelWidget.getParentWidget())
+        {
             return;
-        }        
+        }
         labelWidget.removeFromParent();
         int index = getParentWidget().getChildren().indexOf(this);
         getParentWidget().addChild(index + 1, labelWidget);
@@ -115,8 +111,10 @@ public abstract class UMLLabelNodeWidget extends UMLNodeWidget implements LabelN
     @Override
     protected void notifyRemoved()
     {
-        if (labelWidget != null)
+        if (labelWidget != null && getParentWidget() == null)
+        {           
             labelWidget.removeFromParent();
+        }
     }
     
     private String loc(String key)

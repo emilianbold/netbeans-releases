@@ -203,8 +203,9 @@ public class UMLDiagramTopComponent extends TopComponent
     private DeleteActionPerformer deleteActionPerformer = new DeleteActionPerformer();
     private ClipboardListener clipboardListener;
     private ExplorerManager explorerManager;
-   
+    private SceneAcceptProvider provider;
 
+   
     private UMLDiagramTopComponent()
     {
         initComponents();
@@ -1050,8 +1051,16 @@ public class UMLDiagramTopComponent extends TopComponent
         }
         Clipboard clipboard = CopyPasteSupport.getClipboard();
         Transferable trans = clipboard.getContents(this);
-        SceneAcceptProvider provider = new SceneAcceptProvider(scene.getDiagram().getNamespace());
-        pasteActionPerformer.setEnabled(provider.isAcceptable(w, new Point(0, 0), trans).equals(ConnectorState.ACCEPT));     
+        pasteActionPerformer.setEnabled(getSceneAcceptProvider().isAcceptable(w, new Point(0, 0), trans).equals(ConnectorState.ACCEPT));     
+    }
+    
+    private SceneAcceptProvider getSceneAcceptProvider()
+    {
+        if (provider == null)
+        {
+            provider = new SceneAcceptProvider(scene.getDiagram().getNamespace());
+        }
+        return provider;
     }
     
     private void clearClipBoard()
@@ -1221,6 +1230,18 @@ public class UMLDiagramTopComponent extends TopComponent
                             {
                                 parentWidget.removeChild(changedWidget);
                                 curPresentation.removeSubject(curPresentation.getFirstSubject());
+                            }
+                            // why not send change event to changed widget to handle further task?
+                            // see use case for deleting state region
+                            PropertyChangeEvent event = new PropertyChangeEvent(elementToNotify,
+                                    changeType.toString(),
+                                    oldValue,
+                                    newValue);
+                            if (changedWidget instanceof PropertyChangeListener)
+                            {
+                                PropertyChangeListener listener = (PropertyChangeListener) changedWidget;
+                                listener.propertyChange(event);
+                                getDiagramDO().setDirty(true, getScene());
                             }
                         }
                     }

@@ -50,14 +50,14 @@ import java.util.HashSet;
 import java.util.List;
 import org.netbeans.api.visual.action.AcceptProvider;
 import org.netbeans.api.visual.action.ConnectorState;
+import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.api.visual.widget.ConnectionWidget;
-import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.IStateMachine;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.IRelationProxy;
 import org.netbeans.modules.uml.core.support.umlutils.ETArrayList;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.drawingarea.LabelManager;
@@ -66,6 +66,7 @@ import org.netbeans.modules.uml.drawingarea.dataobject.PaletteItem;
 import org.netbeans.modules.uml.drawingarea.engines.DiagramEngine;
 import org.netbeans.modules.uml.drawingarea.util.Util;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
+import org.netbeans.modules.uml.drawingarea.view.MoveWidgetTransferable;
 import org.netbeans.modules.uml.drawingarea.view.UMLEdgeWidget;
 import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
 import org.netbeans.modules.uml.drawingarea.view.WidgetViewManager;
@@ -84,7 +85,12 @@ public class SceneAcceptProvider implements AcceptProvider
 
     public SceneAcceptProvider(INamespace space)
     {
-        sceneNamespace = space;
+        if (space instanceof IStateMachine)
+        {
+            sceneNamespace = ((IStateMachine)space).getFirstRegion();
+        }
+        else
+            sceneNamespace = space;
     }
 
     public ConnectorState isAcceptable(Widget widget, Point point, Transferable transferable)
@@ -131,7 +137,41 @@ public class SceneAcceptProvider implements AcceptProvider
                     if (transferData.getModelElements().size() == 0 &&
                             transferData.getPresentationElements().size() == 0)
                         return ConnectorState.REJECT;
+                    else
+                    {
+                        IElement[] elements = new IElement[transferData.getModelElements().size()];
+                        if (!elementsAllowed(transferData.getModelElements().toArray(elements)))
+                            return ConnectorState.REJECT;
+                        for (IPresentationElement pe: transferData.getPresentationElements())
+                        {
+                            if (!elementsAllowed(new IElement[]{pe.getFirstSubject()}))
+                                return ConnectorState.REJECT;
+                        }
+                    }
                 } catch (UnsupportedFlavorException ex)
+                {
+                    Exceptions.printStackTrace(ex);
+                } catch (IOException ex)
+                {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+            else if (transferable.isDataFlavorSupported(MoveWidgetTransferable.FLAVOR))
+            {
+                try
+                {
+                    MoveWidgetTransferable tran = (MoveWidgetTransferable) transferable.getTransferData(MoveWidgetTransferable.FLAVOR);
+                    Widget transferWidget = tran.getWidget();
+                    if (transferWidget == null)
+                    {
+                        return ConnectorState.REJECT;
+                    }
+                    Object obj = ((ObjectScene) widget.getScene()).findObject(transferWidget);
+                    if (!(obj instanceof IPresentationElement) || !elementsAllowed(new IElement[]{((IPresentationElement) obj).getFirstSubject()}))
+                    {
+                        return ConnectorState.REJECT;
+                    }
+                } catch  (UnsupportedFlavorException ex)
                 {
                     Exceptions.printStackTrace(ex);
                 } catch (IOException ex)
@@ -360,6 +400,35 @@ public class SceneAcceptProvider implements AcceptProvider
                 discoverRleationships = true;
             }
             
+            else if (transferable.isDataFlavorSupported(MoveWidgetTransferable.FLAVOR))
+            {
+                try
+                {
+                    MoveWidgetTransferable tran = (MoveWidgetTransferable) transferable.getTransferData(MoveWidgetTransferable.FLAVOR);
+                    Widget transferWidget = tran.getWidget();
+                    INamespace ns = getNamespace();
+
+                    IPresentationElement pe = (IPresentationElement) ((DesignerScene) engine.getScene()).findObject(transferWidget);
+                    IElement element = pe.getFirstSubject();
+                    if (!ns.equals(element.getOwner()))
+                    {
+                        if (element instanceof INamedElement)
+                        {
+                            ns.addOwnedElement((INamedElement) element);
+                        }
+                    }
+                    transferWidget.removeFromParent();
+                    engine.getScene().getMainLayer().addChild(transferWidget);
+                    transferWidget.setPreferredLocation(point);
+                } catch (UnsupportedFlavorException ex)
+                {
+                    Exceptions.printStackTrace(ex);
+                } catch (IOException ex)
+                {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+            
             if(discoverRleationships == true)
             {
                 createConnection(engine.getScene(), presentations);
@@ -395,7 +464,11 @@ public class SceneAcceptProvider implements AcceptProvider
         }
     }
 
-    
+    // todo: should be overriden by each individual diagram scene 
+    protected boolean elementsAllowed(IElement... element)
+    {
+        return true;
+    }
     
     private void createConnection(DesignerScene scene, ArrayList<IPresentationElement> presentations)
     {
