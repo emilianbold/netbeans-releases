@@ -487,7 +487,14 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 //add @Id() only if not in an embeddable PK class
                 if (isPKMember && !needsPKClass) {
                     annotations.add(genUtils.createAnnotation("javax.persistence.Id")); // NOI18N
-                }
+                } 
+                
+                // Add @Basic(optional=false) for not nullable columns
+                //if (!isPKMember && !m.isNullable()) {
+                //    List<ExpressionTree> basicAnnArguments = new ArrayList();
+                //    basicAnnArguments.add(genUtils.createAnnotationArgument("optional", false)); //NOI18N
+                //    annotations.add(genUtils.createAnnotation("javax.persistence.Basic", basicAnnArguments)); //NOI18N
+                //}
 
                 boolean isLobType = m.isLobType();
                 if (isLobType) {
@@ -876,6 +883,13 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                     relationAnn = "OneToMany"; //NOI18N
                 } else {
                     relationAnn = "OneToOne";  //NOI18N
+                }
+                
+                if (!role.isToMany()) { // meaning ManyToOne and OneToOne
+                    // Add optional=false if the relationship is not optional/non-nullable
+                    if(!role.isOptional()) {
+                        annArguments.add(genUtils.createAnnotationArgument("optional", false)); // NOI18N
+                    }
                 }
                 annotations.add(genUtils.createAnnotation("javax.persistence." + relationAnn, annArguments)); // NOI18N
 
