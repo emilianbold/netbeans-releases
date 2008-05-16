@@ -79,7 +79,7 @@ class Reporter < Spec::Runner::Reporter
   end
       
   def failure(example, error)
-    puts "%TEST_FAILED% #{example.description} time=#{elapsed_time}"
+    puts "%TEST_FAILED% #{example.description} time=#{elapsed_time} #{error}"
     super
   end
   alias_method :example_failed, :failure

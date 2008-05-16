@@ -40,6 +40,8 @@ package org.netbeans.modules.ruby.testrunner.ui;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.ruby.platform.execution.OutputRecognizer.FilteredOutput;
+import org.netbeans.modules.ruby.platform.execution.OutputRecognizer.RecognizedOutput;
 
 /**
  * An output recognizer for parsing output of the test/unit runner script, 
@@ -63,7 +65,7 @@ public class RspecHandlerFactory {
     static class TestFailedHandler extends TestRecognizerHandler {
 
         public TestFailedHandler() {
-            super(".*%TEST_FAILED%\\s(.*)\\stime=(\\d+\\.\\d+)");
+            super(".*%TEST_FAILED%\\s(.*)\\stime=(\\d+\\.\\d+)\\s(.*)");
         }
 
         @Override
@@ -73,10 +75,16 @@ public class RspecHandlerFactory {
             testcase.className = matcher.group(1);
             testcase.name = matcher.group(1);
             testcase.trouble = new Report.Trouble(false);
-//            testcase.trouble.stackTrace = new String[]{matcher.group(4)};
+            testcase.trouble.stackTrace = new String[]{matcher.group(3)};
             session.addTestCase(testcase);
-//            manager.displayOutput(session, matcher.group(4), false);
+            manager.displayOutput(session, matcher.group(3), false);
         }
+
+        @Override
+        RecognizedOutput getRecognizedOutput() {
+            return new FilteredOutput(matcher.group(3));
+        }
+        
     }
 
     static class TestStartedHandler extends TestRecognizerHandler {
