@@ -41,12 +41,12 @@
 package org.netbeans.modules.uml.diagrams.edges;
 
 import java.awt.Color;
-import org.netbeans.api.visual.anchor.AnchorShape;
+import org.netbeans.api.visual.anchor.PointShape;
 import org.netbeans.api.visual.widget.Scene;
 
 /**
  *
- * @author thuy
+ * @author Thuy
  */
 public class ActivityEdgeConnector extends AbstractUMLConnectionWidget
 {
@@ -54,7 +54,9 @@ public class ActivityEdgeConnector extends AbstractUMLConnectionWidget
     {
         super(scene);
         setForeground(Color.BLACK);
-        setSourceAnchorShape(AnchorShape.NONE);
+        //setSourceAnchorShape(AnchorShape.NONE);
+        setControlPointShape(PointShape.SQUARE_FILLED_BIG);
+        setEndPointShape(PointShape.SQUARE_FILLED_BIG);
         setTargetAnchorShape(ARROW_END);
     }
    
