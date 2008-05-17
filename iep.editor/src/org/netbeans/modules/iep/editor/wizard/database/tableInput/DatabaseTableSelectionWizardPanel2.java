@@ -2,7 +2,8 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.netbeans.modules.iep.editor.wizard.database;
+package org.netbeans.modules.iep.editor.wizard.database.tableInput;
+
 
 import java.awt.Component;
 import java.sql.Connection;
@@ -10,6 +11,9 @@ import java.util.Iterator;
 import java.util.List;
 import javax.swing.event.ChangeListener;
 
+import org.netbeans.modules.iep.editor.wizard.database.ColumnInfo;
+import org.netbeans.modules.iep.editor.wizard.database.DatabaseTableWizardConstants;
+import org.netbeans.modules.iep.editor.wizard.database.TableInfo;
 import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
@@ -94,27 +98,20 @@ public class DatabaseTableSelectionWizardPanel2 implements WizardDescriptor.Pane
     // by the user.
     public void readSettings(Object settings) {
         WizardDescriptor wiz = (WizardDescriptor) settings;
-        
         Connection connection = (Connection) wiz.getProperty(DatabaseTableWizardConstants.PROP_SELECTED_DB_CONNECTION);
         List<TableInfo> selectedTables = (List<TableInfo>) wiz.getProperty(DatabaseTableWizardConstants.PROP_SELECTED_TABLES);
         if(connection != null && selectedTables != null) {
         	component.setSelectedTables(selectedTables);
-        	String joinCondition = DatabaseMetaDataHelper.findJoinCondition(selectedTables);
-        	if(joinCondition != null && !joinCondition.equals("")) {
-        		component.setJoinCondition(joinCondition);
-        	}
         }
-        
-        
     }
 
     public void storeSettings(Object settings) {
     	WizardDescriptor wiz = (WizardDescriptor) settings;
     	List<ColumnInfo> selectedColumns = component.getSelectedColumns();
-    	
+     String jndiName = component.getJNDIName();
+         
     	wiz.putProperty(DatabaseTableWizardConstants.PROP_SELECTED_COLUMNS, selectedColumns);
-        String joinCondition = component.getJoinCondition();
-        wiz.putProperty(DatabaseTableWizardConstants.PROP_JOIN_CONDITION, joinCondition);
+        wiz.putProperty(DatabaseTableWizardConstants.PROP_JNDI_NAME, jndiName);
     }
 }
 
