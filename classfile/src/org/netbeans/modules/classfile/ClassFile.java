@@ -450,11 +450,11 @@ public class ClassFile {
 		try {
 		    int classIndex = in.readUnsignedShort();
 		    int natIndex = in.readUnsignedShort();
-		    CPEntry entry = constantPool.get(classIndex);
-		    if (entry.getTag() == ConstantPool.CONSTANT_Class)
+		    CPEntry classInfo = constantPool.get(classIndex);
+		    if (classInfo.getTag() == ConstantPool.CONSTANT_Class)
 			enclosingMethod = 
 			    new EnclosingMethod(constantPool, 
-						(CPClassInfo)entry, 
+						(CPClassInfo)classInfo, 
 						natIndex);
 		    else
 			; // JDK 1.5 beta1 bug
@@ -561,7 +561,6 @@ public class ClassFile {
         }
     }
 
-    @Override
     public String toString() {
         StringBuffer sb = new StringBuffer();
         sb.append("ClassFile: "); //NOI18N

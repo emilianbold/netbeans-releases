@@ -64,7 +64,6 @@ public final class NestedElementValue extends ElementValue {
 	return value;
     }
 
-    @Override
     public String toString() {
 	return "nested value=" + value;
     }

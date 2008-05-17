@@ -67,7 +67,6 @@ public final class CPClassInfo extends CPName {
 	return ConstantPool.CONSTANT_Class;
     }
 
-    @Override
     public String toString() {
 	return getClassName().toString();
     }

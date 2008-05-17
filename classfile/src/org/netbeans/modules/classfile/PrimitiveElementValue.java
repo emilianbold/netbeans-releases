@@ -65,7 +65,6 @@ public final class PrimitiveElementValue extends ElementValue {
 	return value;
     }
 
-    @Override
     public String toString() {
 	return "const=" + value.getValue();
     }

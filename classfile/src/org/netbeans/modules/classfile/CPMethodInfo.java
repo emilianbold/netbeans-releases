@@ -107,7 +107,6 @@ public class CPMethodInfo extends CPFieldMethodInfo {
         return sb.toString();
     }
 
-    @Override
     public int getTag() {
 	return ConstantPool.CONSTANT_MethodRef;
     }

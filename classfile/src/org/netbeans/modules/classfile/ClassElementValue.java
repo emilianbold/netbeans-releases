@@ -65,7 +65,6 @@ public final class ClassElementValue extends ElementValue {
 	return ClassName.getClassName(name);
     }
 
-    @Override
     public String toString() {
 	return "class=" + name;
     }

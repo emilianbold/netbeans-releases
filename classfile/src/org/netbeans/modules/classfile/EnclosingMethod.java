@@ -103,7 +103,6 @@ public final class EnclosingMethod {
 	return methodInfo;
     }
 
-    @Override
     public String toString() {
 	String methodString = methodInfo != null 
 	    ? methodInfo.toString() : "<no method>";

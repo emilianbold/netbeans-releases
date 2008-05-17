@@ -63,7 +63,6 @@ public final class CPLongInfo extends CPEntry {
     /* The VM doesn't allow the next constant pool slot to be used
      * for longs and doubles.
      */
-    @Override
     boolean usesTwoSlots() {
 	return true;
     }
@@ -72,7 +71,6 @@ public final class CPLongInfo extends CPEntry {
 	return ConstantPool.CONSTANT_Long;
     }
     
-    @Override
     public String toString() {
         return getClass().getName() + ": value=" + value; //NOI18N
     }

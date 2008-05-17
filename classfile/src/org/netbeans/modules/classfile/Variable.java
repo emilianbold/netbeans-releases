@@ -140,7 +140,6 @@ public final class Variable extends Field {
 	return (access & Access.ENUM) == Access.ENUM;
     }
             
-    @Override
     public String toString() {
         StringBuffer sb = new StringBuffer(super.toString());
         if (isConstant()) {

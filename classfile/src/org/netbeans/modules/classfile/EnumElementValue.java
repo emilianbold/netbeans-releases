@@ -80,7 +80,6 @@ public final class EnumElementValue extends ElementValue {
 	return enumName;
     }
 
-    @Override
     public String toString() {
 	return enumType + "." + enumName;
     }

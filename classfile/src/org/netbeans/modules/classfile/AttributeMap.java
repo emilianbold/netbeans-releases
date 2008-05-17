@@ -64,7 +64,7 @@ import java.util.*;
  */
 public final class AttributeMap {
 
-    Map<String,byte[]> map;
+    Map map;
 
     /**
      * Load zero or more attributes from a class, field or method.
@@ -103,7 +103,7 @@ public final class AttributeMap {
     }
 
     DataInputStream getStream(String name) {
-	byte[] attr = map.get(name);
+	byte[] attr = (byte[])map.get(name);
 	return attr != null ? 
 	    new DataInputStream(new ByteArrayInputStream(attr)) : null;	    
     }
@@ -116,7 +116,7 @@ public final class AttributeMap {
      * is returned.
      */
     byte[] get(String name) {
-	return map.get(name);
+	return (byte[])map.get(name);
     }
 
     /**

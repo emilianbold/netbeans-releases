@@ -58,7 +58,7 @@ import java.util.*;
  */
 public class Closure {
     String thisClass;
-    Set<String> closure;
+    Set closure;
 
     Closure(String spec) {
         thisClass = spec;
@@ -68,9 +68,9 @@ public class Closure {
       throws IOException {
         if (closure != null)
             return;
-        closure = new HashSet<String>();
-        Set<String> visited = new HashSet<String>();
-        Stack<ClassName> stk = new Stack<ClassName>();
+        closure = new HashSet();
+        Set visited = new HashSet();
+        Stack stk = new Stack();
         ClassName thisCN = ClassName.getClassName(thisClass.replace('.', '/'));
         stk.push(thisCN);
         visited.add(thisCN.getExternalName());

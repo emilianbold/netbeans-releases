@@ -79,7 +79,6 @@ abstract class CPName extends CPEntry {
         return name;
     }
     
-    @Override
     public Object getValue() {
         return getName();
     }
@@ -89,7 +88,6 @@ abstract class CPName extends CPEntry {
         name = null;
     }
 
-    @Override
     public String toString() {
 	return getClass().getName() + ": name=" + 
 	    (index == INVALID_INDEX ? "<unresolved>" :  //NOI18N
