@@ -204,8 +204,9 @@ made subject to such option by the copyright holder.
         </folder>
         <folder name="Modes">
             <folder name="debugger">
-                <attr name="position" intvalue="3000"/>
-                <file name="HttpMonitorTopComponent.wstcref" url="../http/ui/HttpMonitorTopComponentWstcref.xml"/>
+                <file name="HttpMonitorTopComponent.wstcref" url="../http/ui/HttpMonitorTopComponentWstcref.xml">
+                    <attr name="position" intvalue="3000"/>
+                </file>
             </folder>
         </folder>
     </folder>
