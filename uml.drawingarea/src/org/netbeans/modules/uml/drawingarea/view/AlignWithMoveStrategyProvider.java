@@ -300,8 +300,12 @@ public class AlignWithMoveStrategyProvider extends AlignWithSupport implements M
     private void finishedOverScene(MovingWidgetDetails details, Scene scene)
     {
         Widget widget = details.getWidget();
-        interactionLayer.removeChild(widget);
-        mainLayer.addChild(widget);
+        List <Widget>  children = interactionLayer.getChildren();
+        if (children != null && children.contains(widget))
+        {
+            interactionLayer.removeChild(widget);
+            mainLayer.addChild(widget);
+        }
 
         Lookup lookup = scene.getLookup();
         if (lookup != null)
@@ -334,12 +338,14 @@ public class AlignWithMoveStrategyProvider extends AlignWithSupport implements M
                         INamespace space = diagram.getNamespace();
 
                         if (element instanceof IActivityNode)
-                        {   // Remove an activity node from an activity group
-                            IActivityNode activyElem = (IActivityNode) element;
-                            ETList<IActivityGroup> groups = activyElem.getGroups();
+                        {   
+                            IActivityNode activityElem = (IActivityNode) element;
+                            ETList<IActivityGroup> groups = activityElem.getGroups();
+                            // Remove an activity node from its container nodes, i.e., activity groups
                             for (IActivityGroup aGroup : groups)
                             {
-                                activyElem.removeGroup(aGroup);
+                                aGroup.removeNodeContent(activityElem);
+                                activityElem.removeGroup(aGroup);
                             }
                             space.addOwnedElement(element);
                         }
