@@ -115,6 +115,12 @@ public class PersistenceUtil {
         return anchors.get(anchor);
     }
 
+    public static boolean isAnchorListEmpty() {
+        if (anchors.size() <= 0)
+            return true;
+        else
+            return false;
+    }
     public static void clearAnchorMap() {
         anchors.clear();
     }

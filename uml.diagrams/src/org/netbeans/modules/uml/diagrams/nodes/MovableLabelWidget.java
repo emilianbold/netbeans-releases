@@ -62,6 +62,8 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IValueSpecification;
 import org.netbeans.modules.uml.drawingarea.engines.DiagramEngine;
+import org.netbeans.modules.uml.drawingarea.persistence.NodeWriter;
+import org.netbeans.modules.uml.drawingarea.persistence.PersistenceUtil;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.netbeans.modules.uml.drawingarea.view.DesignerTools;
 
@@ -255,6 +257,15 @@ public class MovableLabelWidget extends EditableCompartmentWidget implements Wid
         
         return retVal;
     }
+
+    @Override
+    public void save(NodeWriter nodeWriter)
+    {
+       nodeWriter.setTypeInfo("MovableLabel");
+       super.save(nodeWriter);
+    }
+    
+    
 
     private class LabelMoveSupport implements MoveStrategy, MoveProvider
     {
