@@ -55,7 +55,8 @@ import org.netbeans.modules.ruby.rubyproject.rake.RakeSupport;
 import org.netbeans.modules.ruby.rubyproject.rake.RakeTask;
 import org.netbeans.modules.ruby.rubyproject.spi.TestRunner;
 import org.netbeans.modules.ruby.testrunner.ui.Manager;
-import org.netbeans.modules.ruby.testrunner.ui.RspecRecognizer;
+import org.netbeans.modules.ruby.testrunner.ui.RspecHandlerFactory;
+import org.netbeans.modules.ruby.testrunner.ui.TestRecognizer;
 import org.netbeans.modules.ruby.testrunner.ui.TestSession;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -127,7 +128,11 @@ public class RspecRunner implements TestRunner {
         desc.allowInput();
         desc.fileLocator(locator);
         desc.addStandardRecognizers();
-        desc.addOutputRecognizer(new RspecRecognizer(Manager.getInstance(), new TestSession(locator)));
+        
+        TestRecognizer recognizer = new TestRecognizer(Manager.getInstance(), 
+                new TestSession(locator), 
+                RspecHandlerFactory.getHandlers());
+        desc.addOutputRecognizer(recognizer);
         desc.cmd(getSpec(platform));
         new RubyExecution(desc, charsetName).run();
     }
