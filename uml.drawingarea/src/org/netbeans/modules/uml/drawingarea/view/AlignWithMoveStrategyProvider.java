@@ -61,13 +61,10 @@ import java.util.ArrayList;
 import org.netbeans.api.visual.graph.GraphScene;
 import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.api.visual.widget.Scene;
-import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivityGroup;
-import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivityNode;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram;
-import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.drawingarea.UMLDiagramTopComponent;
 import org.netbeans.modules.uml.drawingarea.palette.context.ContextPaletteManager;
 import org.netbeans.modules.uml.drawingarea.widgets.ContainerWidget;
@@ -336,28 +333,12 @@ public class AlignWithMoveStrategyProvider extends AlignWithSupport implements M
                     if (diagram != null)
                     {
                         INamespace space = diagram.getNamespace();
+                        INamespace curSpace = element.getOwningPackage();
 
-                        if (element instanceof IActivityNode)
-                        {   
-                            IActivityNode activityElem = (IActivityNode) element;
-                            ETList<IActivityGroup> groups = activityElem.getGroups();
-                            // Remove an activity node from its container nodes, i.e., activity groups
-                            for (IActivityGroup aGroup : groups)
-                            {
-                                aGroup.removeNodeContent(activityElem);
-                                activityElem.removeGroup(aGroup);
-                            }
-                            space.addOwnedElement(element);
-                        }
-                        else
+                        if (space.equals(curSpace) == false)
                         {
-                            INamespace curSpace = element.getOwningPackage();
-
-                            if (space.equals(curSpace) == false)
-                            {
-                                curSpace.removeOwnedElement(element);
-                                space.addOwnedElement(element);
-                            }
+                            curSpace.removeOwnedElement(element);
+                            space.addOwnedElement(element);
                         }
                     }
                 }
