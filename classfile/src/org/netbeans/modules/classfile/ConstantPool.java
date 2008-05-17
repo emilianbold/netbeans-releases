@@ -128,7 +128,7 @@ public final class ConstantPool {
      *
      * @param type   the constant pool type to return.
      */
-    public final Collection getAllConstants(Class classType) {        
+    public final Collection<CPEntry> getAllConstants(Class classType) {        
         return Collections.unmodifiableCollection(
 		   getAllConstantsImpl(classType));
     }
@@ -153,7 +153,7 @@ public final class ConstantPool {
      * as all class references cannot be reliably determined from just
      * the constant pool structure.
      */
-    public final Set getAllClassNames() {
+    public final Set<ClassName> getAllClassNames() {
         Set<ClassName> set = new HashSet<ClassName>();
 
         // include all class name constants

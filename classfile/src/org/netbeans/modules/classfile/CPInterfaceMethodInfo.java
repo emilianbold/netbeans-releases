@@ -58,6 +58,7 @@ public final class CPInterfaceMethodInfo extends CPMethodInfo {
         super(pool, iClass, iNameAndType);
     }
 
+    @Override
     public final int getTag() {
 	return ConstantPool.CONSTANT_InterfaceMethodRef;
     }
