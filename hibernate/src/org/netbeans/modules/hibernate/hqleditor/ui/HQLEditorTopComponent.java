@@ -193,6 +193,7 @@ public final class HQLEditorTopComponent extends TopComponent {
 
         executionPanel.setLayout(new java.awt.CardLayout());
 
+        sqlEditorPane.setEditable(false);
         jScrollPane2.setViewportView(sqlEditorPane);
 
         executionPanel.add(jScrollPane2, "card2");
@@ -224,7 +225,7 @@ public final class HQLEditorTopComponent extends TopComponent {
             .add(containerPanelLayout.createSequentialGroup()
                 .add(toolBar2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(executionPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 431, Short.MAX_VALUE))
+                .add(executionPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 293, Short.MAX_VALUE))
         );
 
         splitPane.setRightComponent(containerPanel);

@@ -58,15 +58,15 @@ SKIP:whitespace
 # code folding
 FOLD:Block
 
-COLOR:keyword: {
-    foreground_color:"blue";
-    font_type:"bold";
-}
+#COLOR:keyword: {
+#    foreground_color:"blue";
+#    font_type:"bold";
+#}
 
-COLOR:operator : {
-    foreground_color:"green";
-    font_type:"bold";
-}
+#COLOR:operator : {
+#    foreground_color:"green";
+#    font_type:"bold";
+#}
 
 # navigator support
 #NAVIGATOR:WhileStatement: {
@@ -88,11 +88,11 @@ INDENT "(:)"
 
 
 # code completion
-#COMPLETION:keyword, operator, identifier, whitespace: {
-#    text1:"while";
-#    text2:"if";
-#    text3:"else";
-#}
+COMPLETION:keyword, operator, identifier, whitespace: {
+    text1:"select";
+    text2:"from";
+    text3:"where";
+}
 
 
 

@@ -46,6 +46,7 @@ import java.util.ArrayList;
 
 import java.util.Enumeration;
 
+import java.util.logging.Logger;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.DatabaseException;
@@ -332,6 +333,16 @@ public class HibernateUtil {
                 password = getDbConnectionDetails(configuration, "connection.password"); //NOI18N
             }
 
+            // Try to get the pre-existing connection, if there's one already setup.
+            DatabaseConnection[] dbConnections = ConnectionManager.getDefault().getConnections();
+            for(DatabaseConnection dbConn : dbConnections) {
+                if(dbConn.getDatabaseURL().equals(driverURL) &&
+                        dbConn.getUser().equals(username) &&
+                        dbConn.getPassword().equals(password)) {
+                    Logger.getLogger(HibernateUtil.class.getName()).info("Found pre-existing database connection.");
+                    return checkAndConnect(dbConn);
+                }
+            }
             JDBCDriver[] drivers = JDBCDriverManager.getDefault().getDrivers(driverClassName);
             //TODO check the driver here... it might not be loaded and driver[0] might result in AIOOB exception
             // The following is an annoying work around till #129633 is fixed.
@@ -341,23 +352,31 @@ public class HibernateUtil {
             }
             final DatabaseConnection dbConnection = DatabaseConnection.create(drivers[0], driverURL, username, null, password, true);
             ConnectionManager.getDefault().addConnection(dbConnection);
-            if(dbConnection.getJDBCConnection() == null ) {
-                return Mutex.EVENT.readAccess(new Mutex.Action<DatabaseConnection>() {
-
-                    public DatabaseConnection run() {
-                        ConnectionManager.getDefault().showConnectionDialog(dbConnection);
-                        return dbConnection;
-                    }
-                });
-                
-            }
-            return dbConnection;
+           
+            return checkAndConnect(dbConnection);
         } catch (DatabaseException ex) {
             Exceptions.printStackTrace(ex);
             throw ex;
         }
     }
      
+    private static DatabaseConnection checkAndConnect(final DatabaseConnection dbConnection) {
+        if (dbConnection.getJDBCConnection() == null) {
+            Logger.getLogger(HibernateUtil.class.getName()).info("Database Connection not established, connecting..");
+            return Mutex.EVENT.readAccess(new Mutex.Action<DatabaseConnection>() {
+
+                public DatabaseConnection run() {
+                    ConnectionManager.getDefault().showConnectionDialog(dbConnection);
+                    return dbConnection;
+                }
+            });
+
+        } else {
+            Logger.getLogger(HibernateUtil.class.getName()).info("Database Connection is pre-established. Returning the conneciton.");
+            return dbConnection;
+        }
+    }
+    
     public static String getRelativeSourcePath(FileObject file, FileObject sourceRoot) {
         String relativePath = "";
         try{
