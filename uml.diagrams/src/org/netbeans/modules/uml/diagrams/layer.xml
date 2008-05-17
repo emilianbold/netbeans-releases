@@ -498,17 +498,13 @@ made subject to such option by the copyright holder.
                     </file>                
                 </folder>
             </folder>
-            <!-- <folder name="x-activitypartition-element">
+             <folder name="x-activitypartition-element">
                 <folder name="Popup">
-                    <file name="org.netbeans.modules.uml.diagrams.actions.activity.AddPartitionColumnAction.instance">
-                        <attr name="position" intvalue="320"/>
+                    <file name="org.netbeans.modules.uml.diagrams.actions.activity.PartitionActions.instance">
+                        <attr name="position" intvalue="592"/>
                     </file>                  
-                    <file name="org.netbeans.modules.uml.diagrams.actions.activity.AddPartitionRowAction.instance">
-                        <attr name="position" intvalue="340"/>
-                    </file>       
                 </folder>
             </folder>
-            -->     
             <folder name="x-initialnode-element">
                 <folder name="Popup">
                     <file name="SeparatorBeforeShowName.instance">
@@ -1792,7 +1788,7 @@ made subject to such option by the copyright holder.
                     <file name="org-netbeans-modules-uml-diagrams-nodes-activity-SignalNodeWidget.instance"/>
                 </folder>
                 <folder name="ActivityPartition">
-                    <file name="org-netbeans-modules-uml-diagrams-nodes-activity-PartitionWidget.instance"/>
+                    <file name="org-netbeans-modules-uml-diagrams-nodes-activity-ActivityPartitionWidget.instance"/>
                 </folder>
                 <folder name="DataStoreNode">
                     <file name="org-netbeans-modules-uml-diagrams-nodes-activity-DataStoreWidget.instance"/>
