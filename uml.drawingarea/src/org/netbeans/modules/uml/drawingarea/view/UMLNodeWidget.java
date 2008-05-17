@@ -97,6 +97,7 @@ public abstract class UMLNodeWidget extends Widget
         
     protected enum ButtonLocation {Left, op, Right, Bottom};
     public enum RESIZEMODE{PREFERREDBOUNDS,PREFERREDSIZE,MINIMUMSIZE};
+    private static final String RESIZEMODEPROPERTY = "ResizeMode";
     
     private RESIZEMODE lastResMode;
     private Widget childLayer = null;
@@ -369,6 +370,7 @@ public abstract class UMLNodeWidget extends Widget
     }
       
     public void save(NodeWriter nodeWriter) {
+        nodeWriter.getProperties().put(RESIZEMODEPROPERTY, getResizeMode().toString());
         setNodeWriterValues(nodeWriter, this);
         nodeWriter.beginGraphNodeWithModelBridge();
         nodeWriter.beginContained();
@@ -464,8 +466,29 @@ public abstract class UMLNodeWidget extends Widget
         //get all the properties
         Hashtable<String, String> props = nodeReader.getProperties();
         //
+        String resizeMode=props.get(RESIZEMODEPROPERTY);
+         if(resizeMode!=null && resizeMode.length()>0)
+         {
+            RESIZEMODE mode=RESIZEMODE.valueOf(resizeMode);
+            setResizeMode(mode);
+         }
+        //
         if(nodeReader.getPosition()!=null)setPreferredLocation(nodeReader.getPosition());
-        if(nodeReader.getSize()!=null)setMinimumSize(nodeReader.getSize());
+        if(nodeReader.getSize()!=null)
+        {
+            switch(getResizeMode())
+            {
+                case PREFERREDSIZE:
+                setPreferredSize(nodeReader.getSize());
+                break;
+                case PREFERREDBOUNDS:
+                setPreferredBounds(new Rectangle(new Point(0,0),nodeReader.getSize()));
+                break;
+                case MINIMUMSIZE:
+                setMinimumSize(nodeReader.getSize());
+                break;
+            }
+        }
         //get the view name
         String viewName = nodeReader.getViewName();
         //Now try to see if this is a Switchable widget.. if yes, set the correct view
