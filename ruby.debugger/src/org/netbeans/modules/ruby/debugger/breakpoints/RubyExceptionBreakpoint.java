@@ -41,52 +41,18 @@
 
 package org.netbeans.modules.ruby.debugger.breakpoints;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.io.IOException;
-import org.openide.cookies.LineCookie;
-import org.openide.loaders.DataObject;
-import org.openide.text.Line;
-import org.openide.util.Exceptions;
+import org.rubyforge.debugcommons.model.IRubyExceptionBreakpoint;
 
-/** Simplified, heavily based on Java Debugger code. */
-final class BreakpointLineUpdater implements PropertyChangeListener {
+public final class RubyExceptionBreakpoint extends RubyBreakpoint implements IRubyExceptionBreakpoint {
+    
+    private String exceptionClass;
 
-    private final RubyLineBreakpoint breakpoint;
-    private DataObject dataObject;
-    private Line line;
-
-    public BreakpointLineUpdater(RubyLineBreakpoint breakpoint) {
-        this.breakpoint = breakpoint;
-        try {
-            this.dataObject = DataObject.find(breakpoint.getFileObject());
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+    public RubyExceptionBreakpoint(final String exceptionClass) {
+        this.exceptionClass = exceptionClass;
     }
 
-    public synchronized void attach() throws IOException {
-        breakpoint.addPropertyChangeListener(this);
-        try {
-            LineCookie lc = dataObject.getCookie(LineCookie.class);
-            this.line = lc.getLineSet().getCurrent(breakpoint.getLineNumber() - 1);
-            line.addPropertyChangeListener(this);
-        } catch (IndexOutOfBoundsException ioobex) {
-            // ignore document changes for BP with bad line number
-        }
+    public String getException() {
+        return exceptionClass;
     }
 
-    public synchronized void detach() {
-        breakpoint.removePropertyChangeListener(this);
-        if (line != null) {
-            line.removePropertyChangeListener(this);
-        }
-    }
-
-    public synchronized void propertyChange(PropertyChangeEvent evt) {
-        if (Line.PROP_LINE_NUMBER.equals(evt.getPropertyName()) && line == evt.getSource()) {
-            breakpoint.notifyUpdated();
-            return;
-        }
-    }
 }

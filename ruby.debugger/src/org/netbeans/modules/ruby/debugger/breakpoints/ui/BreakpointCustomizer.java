@@ -45,7 +45,7 @@ import java.beans.Customizer;
 import java.io.File;
 import javax.swing.JPanel;
 import org.netbeans.modules.ruby.debugger.EditorUtil;
-import org.netbeans.modules.ruby.debugger.breakpoints.RubyBreakpoint;
+import org.netbeans.modules.ruby.debugger.breakpoints.RubyLineBreakpoint;
 import org.netbeans.modules.ruby.platform.Util;
 import org.netbeans.spi.debugger.ui.Controller;
 import org.openide.DialogDescriptor;
@@ -55,13 +55,13 @@ import org.openide.util.NbBundle;
 
 public final class BreakpointCustomizer extends JPanel implements Customizer, Controller {
 
-    private RubyBreakpoint bp;
+    private RubyLineBreakpoint bp;
     
     public BreakpointCustomizer() {
         initComponents();
     }
 
-    public static void customize(RubyBreakpoint bp) {
+    public static void customize(RubyLineBreakpoint bp) {
         BreakpointCustomizer customizer = new BreakpointCustomizer();
         customizer.setObject(bp);
         DialogDescriptor descriptor = new DialogDescriptor(customizer,
@@ -74,10 +74,10 @@ public final class BreakpointCustomizer extends JPanel implements Customizer, Co
     }
 
     public void setObject(Object bean) {
-        if (!(bean instanceof RubyBreakpoint)) {
+        if (!(bean instanceof RubyLineBreakpoint)) {
             throw new IllegalArgumentException(bean.toString());
         }
-        this.bp = (RubyBreakpoint) bean;
+        this.bp = (RubyLineBreakpoint) bean;
         fileValue.setText(bp.getFilePath());
         lineValue.setText("" + bp.getLineNumber());
         String condition = bp.getCondition();

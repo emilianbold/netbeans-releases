@@ -41,52 +41,61 @@
 
 package org.netbeans.modules.ruby.debugger.breakpoints;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.io.IOException;
-import org.openide.cookies.LineCookie;
-import org.openide.loaders.DataObject;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.text.Line;
-import org.openide.util.Exceptions;
+import org.rubyforge.debugcommons.model.IRubyLineBreakpoint;
 
-/** Simplified, heavily based on Java Debugger code. */
-final class BreakpointLineUpdater implements PropertyChangeListener {
+public final class RubyLineBreakpoint extends RubyBreakpoint implements IRubyLineBreakpoint {
+    
+    static final String PROP_UPDATED = "updated"; // NOI18N
 
-    private final RubyLineBreakpoint breakpoint;
-    private DataObject dataObject;
     private Line line;
+    private String condition;
 
-    public BreakpointLineUpdater(RubyLineBreakpoint breakpoint) {
-        this.breakpoint = breakpoint;
-        try {
-            this.dataObject = DataObject.find(breakpoint.getFileObject());
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+    RubyLineBreakpoint(final Line line) {
+        this(line, null);
     }
 
-    public synchronized void attach() throws IOException {
-        breakpoint.addPropertyChangeListener(this);
-        try {
-            LineCookie lc = dataObject.getCookie(LineCookie.class);
-            this.line = lc.getLineSet().getCurrent(breakpoint.getLineNumber() - 1);
-            line.addPropertyChangeListener(this);
-        } catch (IndexOutOfBoundsException ioobex) {
-            // ignore document changes for BP with bad line number
-        }
+    RubyLineBreakpoint(final Line line, final String condition) {
+        this.line = line;
+        this.condition = condition;
     }
 
-    public synchronized void detach() {
-        breakpoint.removePropertyChangeListener(this);
-        if (line != null) {
-            line.removePropertyChangeListener(this);
-        }
+    public Line getLine() {
+        return line;
     }
 
-    public synchronized void propertyChange(PropertyChangeEvent evt) {
-        if (Line.PROP_LINE_NUMBER.equals(evt.getPropertyName()) && line == evt.getSource()) {
-            breakpoint.notifyUpdated();
-            return;
-        }
+    public void setLine(Line line) {
+        this.line = line;
+        fireUpdated();
     }
+
+    public void setCondition(final String condition) {
+        this.condition = condition;
+        updateBreakpoint();
+        fireUpdated();
+    }
+
+    public String getCondition() {
+        return condition;
+    }
+    
+    public FileObject getFileObject() {
+        return getLine().getLookup().lookup(FileObject.class);
+    }
+
+    public String getFilePath() {
+        return FileUtil.toFile(getFileObject()).getAbsolutePath();
+    }
+
+    public int getLineNumber() {
+        // Note that Line.getLineNumber() starts at zero
+        return getLine().getLineNumber() + 1;
+    }
+
+    public @Override String toString() {
+        return getFilePath() + ':' + getLineNumber();
+    }
+
 }

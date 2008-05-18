@@ -38,55 +38,28 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.ruby.debugger.breakpoints.ui;
 
-package org.netbeans.modules.ruby.debugger.breakpoints;
+import javax.swing.JComponent;
+import org.netbeans.spi.debugger.ui.BreakpointType;
+import org.openide.util.NbBundle;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.io.IOException;
-import org.openide.cookies.LineCookie;
-import org.openide.loaders.DataObject;
-import org.openide.text.Line;
-import org.openide.util.Exceptions;
+public final class ExceptionBreakpointType extends BreakpointType {
 
-/** Simplified, heavily based on Java Debugger code. */
-final class BreakpointLineUpdater implements PropertyChangeListener {
-
-    private final RubyLineBreakpoint breakpoint;
-    private DataObject dataObject;
-    private Line line;
-
-    public BreakpointLineUpdater(RubyLineBreakpoint breakpoint) {
-        this.breakpoint = breakpoint;
-        try {
-            this.dataObject = DataObject.find(breakpoint.getFileObject());
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+    public String getCategoryDisplayName() {
+        return NbBundle.getMessage(ExceptionBreakpointType.class, "ExceptionBreakpointType.displayName");
     }
 
-    public synchronized void attach() throws IOException {
-        breakpoint.addPropertyChangeListener(this);
-        try {
-            LineCookie lc = dataObject.getCookie(LineCookie.class);
-            this.line = lc.getLineSet().getCurrent(breakpoint.getLineNumber() - 1);
-            line.addPropertyChangeListener(this);
-        } catch (IndexOutOfBoundsException ioobex) {
-            // ignore document changes for BP with bad line number
-        }
+    public JComponent getCustomizer() {
+        return new ExceptionBreakpointPanel();
     }
 
-    public synchronized void detach() {
-        breakpoint.removePropertyChangeListener(this);
-        if (line != null) {
-            line.removePropertyChangeListener(this);
-        }
+    public String getTypeDisplayName() {
+        return NbBundle.getMessage(ExceptionBreakpointType.class, "ExceptionBreakpointType.typeDisplayName");
     }
 
-    public synchronized void propertyChange(PropertyChangeEvent evt) {
-        if (Line.PROP_LINE_NUMBER.equals(evt.getPropertyName()) && line == evt.getSource()) {
-            breakpoint.notifyUpdated();
-            return;
-        }
+    public boolean isDefault() {
+        return false;
     }
 }
+
