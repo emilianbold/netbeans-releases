@@ -116,31 +116,30 @@ public final class ClassName implements Comparable, Comparator, Serializable {
 	    return null;
 
         ClassName cn = getCacheEntry(classType);
-	if (cn == null)
-	    synchronized (cache) {
-		cn = getCacheEntry(classType);
-		if (cn == null) {
-		    // check for valid class type
-		    int i = classType.indexOf('L');
-		    String _type;
-		    char lastChar = classType.charAt(classType.length()-1);
-		    if (i != -1 && lastChar == ';') {
-                        // remove 'L' and ';' from type
-			_type = classType.substring(i+1, classType.length()-1);
-                        if (i > 0)
-                            // add array prefix
-                            _type = classType.substring(0, i) + _type;
-			cn = getCacheEntry(_type);
-			if (cn != null)
-			    return cn;
-		    } else {
-			_type = classType;
-		    }
+        synchronized (cache) {
+            cn = getCacheEntry(classType);
+            if (cn == null) {
+                // check for valid class type
+                int i = classType.indexOf('L');
+                String _type;
+                char lastChar = classType.charAt(classType.length()-1);
+                if (i != -1 && lastChar == ';') {
+                    // remove 'L' and ';' from type
+                    _type = classType.substring(i+1, classType.length()-1);
+                    if (i > 0)
+                        // add array prefix
+                        _type = classType.substring(0, i) + _type;
+                    cn = getCacheEntry(_type);
+                    if (cn != null)
+                        return cn;
+                } else {
+                    _type = classType;
+                }
 
-		    cn = new ClassName(_type);
-		    cache.put(_type, new WeakReference<ClassName>(cn));
-		}
-	    }
+                cn = new ClassName(_type);
+                cache.put(_type, new WeakReference<ClassName>(cn));
+            }
+        }
 	return cn;
     }
 
@@ -263,6 +262,7 @@ public final class ClassName implements Comparable, Comparator, Serializable {
             simpleName = extName.substring(i + 1);
     }
 
+    @Override
     public boolean equals(Object obj) {
         if (this == obj)
 	    return true;
@@ -307,10 +307,12 @@ public final class ClassName implements Comparable, Comparator, Serializable {
         return ((ClassName)o1).compareTo(o2);
     }
 
+    @Override
     public int hashCode() {
         return type.hashCode();
     }
 
+    @Override
     public String toString() {
         return getExternalName();
     }
