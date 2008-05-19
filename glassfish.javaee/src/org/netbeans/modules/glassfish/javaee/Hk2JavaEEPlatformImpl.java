@@ -114,6 +114,9 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
         if("defaultPersistenceProviderJavaEE5".equals(toolName)) {  //NOI18N
             return true;
         }
+        if("eclipseLinkPersistenceProviderIsDefault".equals(toolName)) {
+            return true;
+        }        
 
         // WEB SERVICES SUPPORT
         if (true) { // - check for existence of webservices libraries
