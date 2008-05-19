@@ -39,25 +39,46 @@
 package org.netbeans.modules.hibernate.hqleditor.ui;
 
 import java.awt.event.ActionEvent;
-import javax.swing.AbstractAction;
-import javax.swing.ImageIcon;
 import org.netbeans.modules.hibernate.hqleditor.HQLEditorController;
+import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
+import org.openide.util.actions.NodeAction;
 
 /**
  * Action which shows HQLEditor component.
  * 
  * @author Vadiraj Deshpande (Vadiraj.Deshpande@Sun.COM)
  */
-public class HQLEditorAction extends AbstractAction {
+public class HQLEditorAction extends NodeAction {
 
     public HQLEditorAction() {
-        super(NbBundle.getMessage(HQLEditorAction.class, "CTL_HQLEditorAction"));
-        putValue(SMALL_ICON, new ImageIcon(Utilities.loadImage(HQLEditorTopComponent.ICON_PATH, true)));
+        super();
+    //    super(NbBundle.getMessage(HQLEditorAction.class, "CTL_HQLEditorAction"));
+    //    putValue(SMALL_ICON, new ImageIcon(Utilities.loadImage(HQLEditorTopComponent.ICON_PATH, true)));
     }
 
-    public void actionPerformed(ActionEvent evt) {
-        new HQLEditorController().init();
+    @Override
+    protected void performAction(final Node[] activatedNodes) {
+      Mutex.EVENT.readAccess(new Mutex.Action() {
+            public Object run() {
+                new HQLEditorController().init(activatedNodes);
+                return new Object();
+            }
+       });
+    }
+
+    @Override
+    protected boolean enable(Node[] activatedNodes) {
+        return true;
+    }
+    
+    public HelpCtx getHelpCtx() {
+        return HelpCtx.DEFAULT_HELP;
+    }
+    
+    public String getName() {
+        return NbBundle.getMessage(HQLEditorAction.class, "CTL_HQLEditorAction");
     }
 }

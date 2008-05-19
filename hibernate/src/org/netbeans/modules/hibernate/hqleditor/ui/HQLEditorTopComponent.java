@@ -36,24 +36,22 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.hibernate.hqleditor.ui;
 
 import java.awt.CardLayout;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.logging.Logger;
 import javax.swing.DefaultComboBoxModel;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.hibernate.cfg.model.HibernateConfiguration;
-import org.netbeans.modules.hibernate.loaders.cfg.HibernateCfgDataNode;
+import org.netbeans.modules.hibernate.loaders.cfg.HibernateCfgDataObject;
 import org.netbeans.modules.hibernate.service.HibernateEnvironment;
-import org.openide.util.Lookup;
+import org.openide.loaders.DataObject;
+import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
-import org.openide.windows.WindowManager;
 import org.openide.util.Utilities;
 
 /**
@@ -63,60 +61,51 @@ import org.openide.util.Utilities;
  */
 public final class HQLEditorTopComponent extends TopComponent {
 
-    private static HQLEditorTopComponent instance;
     /** path to the icon used by the component and its open action */
-    static final String ICON_PATH = "org/netbeans/modules/hibernate/hqleditor/ui/resources/runsql.png";
+    static final String ICON_PATH = "org/netbeans/modules/hibernate/hqleditor/ui/resources/runsql.png"; //NOI18N
 
-    
+    private Logger logger = Logger.getLogger(HQLEditorTopComponent.class.getName());
     private HashMap<String, HibernateConfiguration> hibernateConfigMap = new HashMap<String, HibernateConfiguration>();
-   
-    private static final String PREFERRED_ID = "HQLEditorTopComponent";
+    private static int count = 0;
 
-    private HQLEditorTopComponent() {
+    private static String getNextWindowTitle() {
+        return NbBundle.getMessage(HQLEditorTopComponent.class, "CTL_HQLEditorTopComponent") + (++count);
+    }
+
+    public HQLEditorTopComponent() {
         initComponents();
-        setName(NbBundle.getMessage(HQLEditorTopComponent.class, "CTL_HQLEditorTopComponent"));
+        setName(getNextWindowTitle());
         setToolTipText(NbBundle.getMessage(HQLEditorTopComponent.class, "HINT_HQLEditorTopComponent"));
         setIcon(Utilities.loadImage(ICON_PATH, true));
-        
+
         sqlToggleButton.setSelected(true);
     }
 
-    public void fillHibernateConfigurations() {
-        // Lookup the global selection to see of any cfg or hbm file is selected.
-        Lookup.Template lookupTemplate = new Lookup.Template(HibernateCfgDataNode.class);
-        Lookup.Result res = Utilities.actionsGlobalContext().lookup (lookupTemplate);
-        ArrayList<HibernateCfgDataNode> configDataNodes = new ArrayList<HibernateCfgDataNode>();
-        for(Object o : res.allItems()) {
-            if(o instanceof HibernateCfgDataNode) {
-                configDataNodes.add((HibernateCfgDataNode)o);
-            }
-        }
-        
-        if(configDataNodes.size() != 0) {
-            System.out.println("configdatante.size() " + configDataNodes.size());
-        } else {
-            // NO selection of cfg file found.
-            Project mainProject = OpenProjects.getDefault().getMainProject();
-            if(mainProject == null) {
-                // No main project selected..
-                System.out.println("NO main porject is selected");  
-                return;
-            }
-            HibernateEnvironment env = mainProject.getLookup().lookup(HibernateEnvironment.class);
-            if(env == null) {
-                System.out.println("HiberEnv is not found in main project.");
+    public void fillHibernateConfigurations(Node[] activatedNodes) {
+        Node node = activatedNodes[0];
+        DataObject dO = node.getCookie(DataObject.class);
+        if (dO instanceof HibernateCfgDataObject) {
+
+            Project enclosingProject = FileOwnerQuery.getOwner(dO.getPrimaryFile());
+            HibernateEnvironment env = enclosingProject.getLookup().lookup(HibernateEnvironment.class);
+            if (env == null) {
+                logger.warning("HiberEnv is not found in enclosing project.");
                 return;
             }
             ArrayList<HibernateConfiguration> configurations = env.getAllHibernateConfigurationsFromProject();
-            for(HibernateConfiguration hibernateConfiguration : configurations) {
-                hibernateConfigMap.put(hibernateConfiguration.getSessionFactory().getAttributeValue("name"),  //NOI18N
+            for (HibernateConfiguration hibernateConfiguration : configurations) {
+                hibernateConfigMap.put(hibernateConfiguration.getSessionFactory().getAttributeValue("name"), //NOI18N
                         hibernateConfiguration);
             }
             hibernateConfigurationComboBox.setModel(new DefaultComboBoxModel(hibernateConfigMap.keySet().toArray()));
+            HibernateConfiguration config = ((HibernateCfgDataObject) dO).getHibernateConfiguration();
+            hibernateConfigurationComboBox.setSelectedItem(config.getSessionFactory().getAttributeValue("name"));
+        } else {
+            //TODO Don't know whether this case will actually arise..
         }
-        
+
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -126,6 +115,7 @@ public final class HQLEditorTopComponent extends TopComponent {
     private void initComponents() {
 
         toolBar = new javax.swing.JToolBar();
+        sessionLabel = new javax.swing.JLabel();
         hibernateConfigurationComboBox = new javax.swing.JComboBox();
         toolbarSeparator = new javax.swing.JToolBar.Separator();
         runHQLButton = new javax.swing.JButton();
@@ -146,6 +136,9 @@ public final class HQLEditorTopComponent extends TopComponent {
         toolBar.setFloatable(false);
         toolBar.setRollover(true);
 
+        org.openide.awt.Mnemonics.setLocalizedText(sessionLabel, org.openide.util.NbBundle.getMessage(HQLEditorTopComponent.class, "HQLEditorTopComponent.sessionLabel.text")); // NOI18N
+        toolBar.add(sessionLabel);
+
         toolBar.add(hibernateConfigurationComboBox);
         toolBar.add(toolbarSeparator);
 
@@ -159,7 +152,9 @@ public final class HQLEditorTopComponent extends TopComponent {
         toolbarSeparator1.setSeparatorSize(new java.awt.Dimension(300, 10));
         toolBar.add(toolbarSeparator1);
 
+        splitPane.setBorder(null);
         splitPane.setDividerLocation(180);
+        splitPane.setDividerSize(7);
         splitPane.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
 
         hqlEditor.setContentType("text/x-hql");
@@ -217,15 +212,15 @@ public final class HQLEditorTopComponent extends TopComponent {
         containerPanel.setLayout(containerPanelLayout);
         containerPanelLayout.setHorizontalGroup(
             containerPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(toolBar2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 605, Short.MAX_VALUE)
-            .add(executionPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 605, Short.MAX_VALUE)
+            .add(toolBar2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 607, Short.MAX_VALUE)
+            .add(executionPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         containerPanelLayout.setVerticalGroup(
             containerPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(containerPanelLayout.createSequentialGroup()
                 .add(toolBar2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(executionPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 293, Short.MAX_VALUE))
+                .add(executionPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 292, Short.MAX_VALUE))
         );
 
         splitPane.setRightComponent(containerPanel);
@@ -247,20 +242,18 @@ public final class HQLEditorTopComponent extends TopComponent {
     }// </editor-fold>//GEN-END:initComponents
 
 private void resultToggleButtonItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_resultToggleButtonItemStateChanged
-    if(resultToggleButton.isSelected()) {
-        ((CardLayout)(executionPanel.getLayout())).last(executionPanel);
+    if (resultToggleButton.isSelected()) {
+        ((CardLayout) (executionPanel.getLayout())).last(executionPanel);
         sqlToggleButton.setSelected(false);
     }
 }//GEN-LAST:event_resultToggleButtonItemStateChanged
 
 private void sqlToggleButtonItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_sqlToggleButtonItemStateChanged
-    if(sqlToggleButton.isSelected()) {
-        ((CardLayout)(executionPanel.getLayout())).first(executionPanel);
+    if (sqlToggleButton.isSelected()) {
+        ((CardLayout) (executionPanel.getLayout())).first(executionPanel);
         resultToggleButton.setSelected(false);
     }
 }//GEN-LAST:event_sqlToggleButtonItemStateChanged
-
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel containerPanel;
     private javax.swing.JPanel executionPanel;
@@ -272,6 +265,7 @@ private void sqlToggleButtonItemStateChanged(java.awt.event.ItemEvent evt) {//GE
     private javax.swing.JToggleButton resultToggleButton;
     private javax.swing.JTable resultsTable;
     private javax.swing.JButton runHQLButton;
+    private javax.swing.JLabel sessionLabel;
     private javax.swing.JSplitPane splitPane;
     private javax.swing.JEditorPane sqlEditorPane;
     private javax.swing.JToggleButton sqlToggleButton;
@@ -280,59 +274,14 @@ private void sqlToggleButtonItemStateChanged(java.awt.event.ItemEvent evt) {//GE
     private javax.swing.JToolBar.Separator toolbarSeparator;
     private javax.swing.JToolBar.Separator toolbarSeparator1;
     // End of variables declaration//GEN-END:variables
-    /**
-     * Gets default instance. Do not use directly: reserved for *.settings files only,
-     * i.e. deserialization routines; otherwise you could get a non-deserialized instance.
-     * To obtain the singleton instance, use {@link findInstance}.
-     */
-    public static synchronized HQLEditorTopComponent getDefault() {
-        if (instance == null) {
-            instance = new HQLEditorTopComponent();
-        }
-        return instance;
-    }
-
-    /**
-     * Obtain the HQLEditorTopComponent instance. Never call {@link #getDefault} directly!
-     */
-    public static synchronized HQLEditorTopComponent findInstance() {
-        TopComponent win = WindowManager.getDefault().findTopComponent(PREFERRED_ID);
-        if (win == null) {
-            Logger.getLogger(HQLEditorTopComponent.class.getName()).warning(
-                    "Cannot find " + PREFERRED_ID + " component. It will not be located properly in the window system.");
-            return getDefault();
-        }
-        if (win instanceof HQLEditorTopComponent) {
-            return (HQLEditorTopComponent) win;
-        }
-        Logger.getLogger(HQLEditorTopComponent.class.getName()).warning(
-                "There seem to be multiple components with the '" + PREFERRED_ID +
-                "' ID. That is a potential source of errors and unexpected behavior.");
-        return getDefault();
-    }
 
     @Override
     public int getPersistenceType() {
-        return TopComponent.PERSISTENCE_ALWAYS;
-    }
-
-    /** replaces this in object stream */
-    @Override
-    public Object writeReplace() {
-        return new ResolvableHelper();
+        return TopComponent.PERSISTENCE_NEVER;
     }
 
     @Override
-    protected String preferredID() {
-        return PREFERRED_ID;
-    }
-
-    final static class ResolvableHelper implements Serializable {
-
-        private static final long serialVersionUID = 1L;
-
-        public Object readResolve() {
-            return HQLEditorTopComponent.getDefault();
-        }
+    protected void componentClosed() {
+        --count;
     }
 }

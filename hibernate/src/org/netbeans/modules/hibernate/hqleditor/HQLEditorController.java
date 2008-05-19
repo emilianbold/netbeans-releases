@@ -39,6 +39,7 @@
 package org.netbeans.modules.hibernate.hqleditor;
 
 import org.netbeans.modules.hibernate.hqleditor.ui.HQLEditorTopComponent;
+import org.openide.nodes.Node;
 
 /**
  * HQL Editor controller.
@@ -47,11 +48,11 @@ import org.netbeans.modules.hibernate.hqleditor.ui.HQLEditorTopComponent;
  */
 public class HQLEditorController {
 
-    public void init() {
-        HQLEditorTopComponent editorTopComponent = HQLEditorTopComponent.findInstance();
+    public void init(Node[] activatedNodes) {
+        HQLEditorTopComponent editorTopComponent = new HQLEditorTopComponent();
         editorTopComponent.open();
         editorTopComponent.requestActive();
 
-        editorTopComponent.fillHibernateConfigurations();
+        editorTopComponent.fillHibernateConfigurations(activatedNodes);
     }
 }
