@@ -43,9 +43,12 @@ package org.netbeans.modules.ide.kit;
  *
  * @author Jaroslav Tulach
  */
-final class PackagePrivate {
+public final class PackagePrivate {
     public static int version() {
         return 1;
+    }
+
+    static void uncallable() {
     }
 }
 

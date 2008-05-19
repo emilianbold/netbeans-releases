@@ -54,11 +54,25 @@ public final class PackagePrivateTest extends NbTestCase {
     }
     
     public static Test suite() {
-        return NbModuleSuite.create(NbModuleSuite.createConfiguration(PackagePrivateTest.class).gui(false));
+        return NbModuleSuite.create(
+            NbModuleSuite.createConfiguration(PackagePrivateTest.class)
+            .gui(false)
+            .clusters(".*")
+        );
     }
     
     public void testCheckversion() {
         assertEquals(1, PackagePrivate.version());
+    }
+    
+    public void testCannotCallPackagePrivateNow() {
+        try {
+            PackagePrivate.uncallable();
+        } catch (IllegalAccessError ex) {
+            // oK
+            return;
+        }
+        fail("Calling package private methods is not possible now");
     }
 }
 
