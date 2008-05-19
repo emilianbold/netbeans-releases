@@ -45,6 +45,8 @@ import java.awt.Rectangle;
 import javax.swing.JComponent;
 import org.netbeans.api.visual.action.RectangularSelectProvider;
 import org.netbeans.api.visual.model.ObjectScene;
+import org.netbeans.modules.uml.drawingarea.SQDDiagramTopComponent;
+import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 
 /**
  *
@@ -95,6 +97,15 @@ public class MarqueeZoomSelectProvider implements RectangularSelectProvider
         } else
         {
             scene.setZoomFactor(scale * scene.getZoomFactor());
+        }
+        if(scene instanceof DesignerScene)
+        {
+            DesignerScene ds=(DesignerScene) scene;
+            if(ds.getTopComponent() instanceof SQDDiagramTopComponent)
+            {
+                SQDDiagramTopComponent tc=(SQDDiagramTopComponent) ds.getTopComponent();
+                tc.getTrackBar().onPostScrollZoom();
+            }
         }
         scene.validate();
     }

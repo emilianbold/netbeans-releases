@@ -116,12 +116,16 @@ public class ExpressionWidget extends FeatureWidget implements PropertyChangeLis
         updateUI();
     }
 
+    public MovableLabelWidget getLable() {
+        return label;
+    }
+
     void hideLabel() {
         if(label!=null)label.setVisible(false);
     }
 
     boolean isLabelVisible() {
-        return label.isVisible();
+        return label!=null && label.isVisible();
     }
     
     void setLabel(String expression) {

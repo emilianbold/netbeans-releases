@@ -61,13 +61,10 @@ import java.util.ArrayList;
 import org.netbeans.api.visual.graph.GraphScene;
 import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.api.visual.widget.Scene;
-import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivityGroup;
-import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivityNode;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram;
-import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.drawingarea.UMLDiagramTopComponent;
 import org.netbeans.modules.uml.drawingarea.palette.context.ContextPaletteManager;
 import org.netbeans.modules.uml.drawingarea.widgets.ContainerWidget;
@@ -300,8 +297,12 @@ public class AlignWithMoveStrategyProvider extends AlignWithSupport implements M
     private void finishedOverScene(MovingWidgetDetails details, Scene scene)
     {
         Widget widget = details.getWidget();
-        interactionLayer.removeChild(widget);
-        mainLayer.addChild(widget);
+        List <Widget>  children = interactionLayer.getChildren();
+        if (children != null && children.contains(widget))
+        {
+            interactionLayer.removeChild(widget);
+            mainLayer.addChild(widget);
+        }
 
         Lookup lookup = scene.getLookup();
         if (lookup != null)
@@ -332,26 +333,12 @@ public class AlignWithMoveStrategyProvider extends AlignWithSupport implements M
                     if (diagram != null)
                     {
                         INamespace space = diagram.getNamespace();
+                        INamespace curSpace = element.getOwningPackage();
 
-                        if (element instanceof IActivityNode)
-                        {   // Remove an activity node from an activity group
-                            IActivityNode activyElem = (IActivityNode) element;
-                            ETList<IActivityGroup> groups = activyElem.getGroups();
-                            for (IActivityGroup aGroup : groups)
-                            {
-                                activyElem.removeGroup(aGroup);
-                            }
-                            space.addOwnedElement(element);
-                        }
-                        else
+                        if (space.equals(curSpace) == false)
                         {
-                            INamespace curSpace = element.getOwningPackage();
-
-                            if (space.equals(curSpace) == false)
-                            {
-                                curSpace.removeOwnedElement(element);
-                                space.addOwnedElement(element);
-                            }
+                            curSpace.removeOwnedElement(element);
+                            space.addOwnedElement(element);
                         }
                     }
                 }

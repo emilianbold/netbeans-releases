@@ -61,6 +61,7 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.metamodel.dynamics.IInteractionOperand;
 import org.netbeans.modules.uml.diagrams.nodes.LabeledWidget;
+import org.netbeans.modules.uml.diagrams.nodes.MovableLabelWidget;
 import org.netbeans.modules.uml.drawingarea.persistence.NodeWriter;
 import org.netbeans.modules.uml.drawingarea.persistence.PersistenceUtil;
 import org.netbeans.modules.uml.drawingarea.persistence.api.DiagramNodeReader;
@@ -189,6 +190,11 @@ public class InteractionOperandWidget extends Widget implements DiagramNodeWrite
         default:
             return false;
         }
+    }
+    
+    public MovableLabelWidget getLabel()
+    {
+        return constraint.getLabel();
     }
     
     public void show(TYPE type) {

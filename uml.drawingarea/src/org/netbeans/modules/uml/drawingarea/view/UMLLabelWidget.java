@@ -44,17 +44,19 @@ import java.awt.Color;
 import java.awt.Paint;
 import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Scene;
+import org.netbeans.modules.uml.drawingarea.persistence.NodeWriter;
 import org.netbeans.modules.uml.drawingarea.persistence.api.DiagramEdgeReader;
 import org.netbeans.modules.uml.drawingarea.persistence.api.DiagramEdgeWriter;
 import org.netbeans.modules.uml.drawingarea.persistence.data.EdgeInfo;
 import org.netbeans.modules.uml.drawingarea.persistence.EdgeWriter;
 import org.netbeans.modules.uml.drawingarea.persistence.PersistenceUtil;
+import org.netbeans.modules.uml.drawingarea.persistence.api.DiagramNodeWriter;
 
 /**
  *
  * @author jyothi
  */
-public class UMLLabelWidget extends LabelWidget implements DiagramEdgeWriter, DiagramEdgeReader, UMLWidget, Customizable {
+public class UMLLabelWidget extends LabelWidget implements DiagramEdgeWriter, DiagramEdgeReader, DiagramNodeWriter, UMLWidget, Customizable {
 
     private String id = getClass().getName();
     private String displayName;
@@ -132,5 +134,14 @@ public class UMLLabelWidget extends LabelWidget implements DiagramEdgeWriter, Di
     public void setCustomizableResourceTypes(ResourceType[] resTypes)
     {
         customizableResTypes = resTypes;
+    }
+
+    public void save(NodeWriter nodeWriter)
+    {
+        nodeWriter = PersistenceUtil.populateNodeWriter(nodeWriter, this);
+        nodeWriter.setHasPositionSize(true);        
+        PersistenceUtil.populateProperties(nodeWriter, this);
+        nodeWriter.beginGraphNode();
+        nodeWriter.endGraphNode();
     }
 }

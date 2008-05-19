@@ -53,6 +53,8 @@ import org.netbeans.api.visual.action.ConnectorState;
 import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.api.visual.widget.ConnectionWidget;
 import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivityGroup;
+import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivityNode;
 import org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.IStateMachine;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
@@ -410,13 +412,29 @@ public class SceneAcceptProvider implements AcceptProvider
 
                     IPresentationElement pe = (IPresentationElement) ((DesignerScene) engine.getScene()).findObject(transferWidget);
                     IElement element = pe.getFirstSubject();
-                    if (!ns.equals(element.getOwner()))
+                    if (ns!=null && !ns.equals(element.getOwner()))
                     {
                         if (element instanceof INamedElement)
                         {
                             ns.addOwnedElement((INamedElement) element);
                         }
                     }
+                    else 
+                    {
+                         if (element instanceof IActivityNode)
+                        {   
+                            IActivityNode activityElem = (IActivityNode) element;
+                            ETList<IActivityGroup> groups = activityElem.getGroups();
+                            // Remove an activity node from its container nodes, i.e., activity groups
+                            for (IActivityGroup aGroup : groups)
+                            {
+                                aGroup.removeNodeContent(activityElem);
+                                activityElem.removeGroup(aGroup);
+                            }
+                            ns.addOwnedElement(activityElem);
+                        }
+                    }
+                    
                     transferWidget.removeFromParent();
                     engine.getScene().getMainLayer().addChild(transferWidget);
                     transferWidget.setPreferredLocation(point);

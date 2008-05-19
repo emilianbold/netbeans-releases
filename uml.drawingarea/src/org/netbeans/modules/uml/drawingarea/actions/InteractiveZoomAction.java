@@ -45,6 +45,8 @@ import java.awt.event.MouseEvent;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.modules.uml.drawingarea.SQDDiagramTopComponent;
+import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 
 /**
  *
@@ -97,7 +99,15 @@ public class InteractiveZoomAction extends WidgetAction.Adapter
             zoom /= zoomMultiplier;
         }
         scene.setZoomFactor(zoom);
-        
+        if(scene instanceof DesignerScene)
+        {
+            DesignerScene ds=(DesignerScene) scene;
+            if(ds.getTopComponent() instanceof SQDDiagramTopComponent)
+            {
+                SQDDiagramTopComponent tc=(SQDDiagramTopComponent) ds.getTopComponent();
+                tc.getTrackBar().onPostScrollZoom();
+            }
+        }
         return State.CONSUMED;
     }
 }

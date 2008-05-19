@@ -61,6 +61,7 @@ import javax.swing.event.EventListenerList;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.modules.uml.resources.images.ImageUtil;
 import org.openide.util.NbBundle;
+import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 
 /**
  * Manages the zoom level for a particular Scene instance.
@@ -291,6 +292,15 @@ public class ZoomManager implements Scene.SceneListener
         // locations, such that 0.5 is 50%, 1.0 is 100%, and 2.0 is 200%.
         double factor = ((double) percent) / 100.0d;
         scene.setZoomFactor(factor);
+        if(scene instanceof DesignerScene)
+        {
+            DesignerScene ds=(DesignerScene) scene;
+            if(ds.getTopComponent() instanceof SQDDiagramTopComponent)
+            {
+                SQDDiagramTopComponent tc=(SQDDiagramTopComponent) ds.getTopComponent();
+                tc.getTrackBar().onPostScrollZoom();
+            }
+        }
         // Setting the zoom factor alone is not enough, must force
         // validation and repainting of the scene for it to work.
         scene.validate();

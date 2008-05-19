@@ -92,6 +92,7 @@ import org.netbeans.modules.uml.core.metamodel.dynamics.IMessage;
 import org.netbeans.modules.uml.core.metamodel.dynamics.Lifeline;
 import org.netbeans.modules.uml.core.metamodel.dynamics.Message;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IClassifier;
+import org.netbeans.modules.uml.core.metamodel.structure.IComment;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.core.support.umlutils.ElementLocator;
 import org.netbeans.modules.uml.core.support.umlutils.IElementLocator;
@@ -316,9 +317,19 @@ public class SequenceDiagramEngine extends DiagramEngine implements SQDDiagramEn
 
     public boolean isDropPossible(INamedElement node) {
         String type0=node.getExpandedElementType();
-        if(type0.equals("Lifeline") || type0.equals("Comment"))
+        if(node instanceof ILifeline || node instanceof IComment)
         {
             //accept as is (TBD may be need to check if exists in "current" interaction
+            return true;
+        }
+        else if(node instanceof ICombinedFragment)
+        {
+            if(node.getPresentationElements().size()==0)return true;//only once drop should be possible
+            //but it may be dropped to another diagram
+            for(IPresentationElement pe:node.getPresentationElements())
+            {
+                if(getScene().findWidget(pe)!=null)return false;
+            }
             return true;
         }
         else

@@ -44,6 +44,7 @@ import java.beans.PropertyChangeListener;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.modules.uml.core.metamodel.dynamics.IInteractionConstraint;
 import org.netbeans.modules.uml.diagrams.nodes.FeatureWidget;
+import org.netbeans.modules.uml.diagrams.nodes.MovableLabelWidget;
 import org.netbeans.modules.uml.drawingarea.persistence.NodeWriter;
 
 /**
@@ -82,6 +83,10 @@ public class InteractionOperandConstraintWidget extends FeatureWidget implements
 
     public void propertyChange(PropertyChangeEvent evt) {
         updateUI();
+    }
+
+    public MovableLabelWidget getLabel() {
+        return expression.getLable();
     }
 
     void hideLabel() {
