@@ -49,7 +49,6 @@ import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.util.NbBundle;
 
 /**
- *
  * @author  Radek Matous
  */
 public class RunAsScript extends RunAsPanel.InsidePanel {
@@ -120,18 +119,11 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
     protected void validateFields() {
         String indexFile = indexFileTextField.getText();
         String err = null;
-        
         if (!Utils.isValidFileName(indexFile)) {
-            err = NbBundle.getMessage(RunAsLocalWeb.class, "MSG_IllegalIndexName");
+            err = NbBundle.getMessage(RunAsScript.class, "MSG_IllegalIndexName");
         }
-        //TODO: no validation for arguments        
-        if (err != null) {
-            getCategory().setErrorMessage(err);
-            getCategory().setValid(false);
-        } else {
-            getCategory().setErrorMessage(null);
-            getCategory().setValid(true);
-        }
+        getCategory().setErrorMessage(err);
+        getCategory().setValid(err == null);
     }
 
     String composeHint() {
