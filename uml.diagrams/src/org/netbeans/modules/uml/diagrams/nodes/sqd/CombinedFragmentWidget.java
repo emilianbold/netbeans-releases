@@ -84,6 +84,7 @@ import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.core.support.umlutils.ElementLocator;
 import org.netbeans.modules.uml.core.support.umlutils.IElementLocator;
 import org.netbeans.modules.uml.diagrams.nodes.LabeledWidget;
+import org.netbeans.modules.uml.diagrams.nodes.MovableLabelWidget;
 import org.netbeans.modules.uml.drawingarea.view.Customizable;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.netbeans.modules.uml.drawingarea.widgets.CombinedFragment;
@@ -419,9 +420,16 @@ public class CombinedFragmentWidget extends ContainerNode implements PropertyCha
             InteractionOperandWidget opW = operands.get(op);
             if(opW.getLocation().y>0)
             {
+                MovableLabelWidget labelWidget=opW.getLabel();
+                DesignerScene scene=(DesignerScene) getScene();
+                IPresentationElement lblPE=(IPresentationElement) scene.findObject(labelWidget);
+                if(lblPE!=null)opW.getOperand().getGuard().getSpecification().removePresentationElement(lblPE);
+                if(labelWidget!=null)labelWidget.removeFromParent();
+                IPresentationElement ioPE=(IPresentationElement) scene.findObject(opW);
                 operandsContainer.removeChild(opW);
+                if(ioPE!=null)opW.getOperand().removePresentationElement(ioPE);
                 operands.remove(op);
-                getScene().validate();
+                scene.validate();
                 return true;
             }
         }
@@ -780,5 +788,36 @@ public class CombinedFragmentWidget extends ContainerNode implements PropertyCha
     public void setCombinedFragmentAfter(ICombinedFragment cf, Widget cfW) {
         this.cfAfter=cf;
         this.cfAfterW=(CombinedFragmentWidget) cfW;
+    }
+    @Override
+    protected void notifyAdded () 
+    {
+        // this is invoked when this widget or its parent gets added, only need to
+        // process the case when this widget is changed, same for notifyRemoved to 
+        // avoid concurrent modification to children list
+        for(InteractionOperandWidget ioW:operands.values())
+        {
+            MovableLabelWidget labelWidget=ioW.getLabel();
+            if (labelWidget == null || getParentWidget() == labelWidget.getParentWidget())
+            {
+                return;
+            }
+            labelWidget.removeFromParent();
+            int index = getParentWidget().getChildren().indexOf(this);
+            getParentWidget().addChild(index + 1, labelWidget);
+        }
+    }
+    
+    @Override
+    protected void notifyRemoved()
+    {
+         for(InteractionOperandWidget ioW:operands.values())
+        {
+            MovableLabelWidget labelWidget=ioW.getLabel();
+            if (labelWidget != null && getParentWidget() == null)
+            {           
+                labelWidget.removeFromParent();
+            }
+         }
     }
 }
