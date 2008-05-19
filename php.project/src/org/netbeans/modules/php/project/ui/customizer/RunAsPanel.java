@@ -89,13 +89,15 @@ public final class RunAsPanel extends JPanel {
     @Override
     public void addNotify() {
         super.addNotify();
-        Collection<InsidePanel> insidePanels = allInsidePanels.values();
-        initComboModel(insidePanels);
-        for (InsidePanel insidePanel : insidePanels) {
-            final JComboBox comboBox = insidePanel.getRunAsCombo();
-            comboBox.setModel(comboBoxModel);
+        if (!comboBoxModel.isInitialized) {
+            Collection<InsidePanel> insidePanels = allInsidePanels.values();
+            initComboModel(insidePanels);
+            for (InsidePanel insidePanel : insidePanels) {
+                final JComboBox comboBox = insidePanel.getRunAsCombo();
+                comboBox.setModel(comboBoxModel);
+            }
+            comboBoxModel.setAsInitialized();
         }
-        comboBoxModel.setAsInitialized();
     }
 
     private void initComboModel(Collection<InsidePanel> insidePanels) {
