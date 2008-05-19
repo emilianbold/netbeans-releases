@@ -48,6 +48,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -59,6 +61,7 @@ import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.actions.OpenAction;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
@@ -79,10 +82,22 @@ import org.openide.util.lookup.Lookups;
 public class Nodes {
     
     public static Node constructSemiLogicalView(Map<FileObject, List<ErrorDescription>> errors, List<FixDescription> fixesOut) {
-        Set<Project> projects = new HashSet<Project>();
+        Map<Project, Map<FileObject, List<ErrorDescription>>> projects = new HashMap<Project, Map<FileObject, List<ErrorDescription>>>();
         
         for (FileObject file : errors.keySet()) {
-            projects.add(FileOwnerQuery.getOwner(file));
+            Project project = FileOwnerQuery.getOwner(file);
+            
+            if (project == null) {
+                Logger.getLogger(Nodes.class.getName()).log(Level.WARNING, "Cannot find project for: {0}", FileUtil.getFileDisplayName(file));
+            }
+            
+            Map<FileObject, List<ErrorDescription>> projectErrors = projects.get(project);
+            
+            if (projectErrors == null) {
+                projects.put(project, projectErrors = new HashMap<FileObject, List<ErrorDescription>>());
+            }
+            
+            projectErrors.put(file, errors.get(file));
         }
         
         projects.remove(null);
@@ -90,8 +105,8 @@ public class Nodes {
         List<Node> nodes = new LinkedList<Node>();
         Map<ErrorDescription, List<FixDescription>> errors2Fixes = new HashMap<ErrorDescription, List<FixDescription>>();
         
-        for (Project p : projects) {
-            nodes.add(constructSemiLogicalView(p, errors, errors2Fixes));
+        for (Project p : projects.keySet()) {
+            nodes.add(constructSemiLogicalView(p, projects.get(p), errors2Fixes));
         }
         
         for (List<FixDescription> descs : errors2Fixes.values()) {
