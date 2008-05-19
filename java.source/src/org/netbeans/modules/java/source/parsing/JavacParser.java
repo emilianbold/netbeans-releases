@@ -191,6 +191,7 @@ public class JavacParser extends Parser {
     private CompilationInfoImpl ciImpl;
     //State of the parser
     private boolean initialized;
+    private boolean invalid;
     
     JavacParser (final Collection<Snapshot> snapshots) {
         boolean isSingleFile = snapshots.size() == 1;
@@ -230,6 +231,10 @@ public class JavacParser extends Parser {
             initialized = true;
         }
     }
+    
+    public void invalidate () {
+        this.invalid = true;
+    }
         
     @Override
     public void parse(final Snapshot snapshot, final Task task) throws ParseException {
@@ -245,6 +250,10 @@ public class JavacParser extends Parser {
     @Override
     public CompilationInfo getResult (final Task task) throws ParseException {
         assert ciImpl != null;
+        if (invalid) {
+            //todo:
+            invalid = false;
+        }
         final boolean isParserResultTask = task instanceof JavaParserResultTask;
         final boolean isUserTask = task instanceof UserTask;
         CompilationInfo result = null;

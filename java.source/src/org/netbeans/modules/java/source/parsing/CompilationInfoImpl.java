@@ -62,10 +62,8 @@ import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.modules.java.source.JavaFileFilterQuery;
-import org.netbeans.modules.java.source.parsing.SourceFileObject;
 import org.netbeans.modules.java.source.usages.Pair;
 import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.parsing.api.Source;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -215,6 +213,15 @@ public final class CompilationInfoImpl {
 	return this.cpInfo;
     }
     
+    /**
+     * Returns {@link JavacParser} which created this {@link CompilationInfoImpl}
+     * or null when the {@link CompilationInfoImpl} was created for no files.
+     * @return {@link JavacParser} or null
+     */
+    public JavacParser getParser () {
+        return this.parser;
+    }
+    
     
     /**
      * Returns the {@link FileObject} represented by this {@link CompilationInfo}.
@@ -328,7 +335,7 @@ public final class CompilationInfoImpl {
      */
     public synchronized JavacTaskImpl getJavacTask() {	
         if (javacTask == null) {
-            javacTask = parser.createJavacTask(this.file, this.root, this.cpInfo,
+            javacTask = JavacParser.createJavacTask(this.file, this.root, this.cpInfo,
                     this.parser, new DiagnosticListenerImpl(this.jfo), null);
         }
 	return javacTask;

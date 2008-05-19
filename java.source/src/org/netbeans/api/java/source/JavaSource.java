@@ -538,7 +538,7 @@ public final class JavaSource {
             final ModificationResult result = new ModificationResult(this);
             long start = System.currentTimeMillis();
             try {
-                
+                final JavacParser[] theParser = new JavacParser[1];
                 final MultiLanguageUserTask _task = new MultiLanguageUserTask() {
                     @Override
                     public void run(ResultIterator resultIterator) throws Exception {
@@ -550,6 +550,7 @@ public final class JavaSource {
                             task.run (copy);
                             final JavacTaskImpl jt = copy.impl.getJavacTask();
                             Log.instance(jt.getContext()).nerrors = 0;
+                            theParser[0] = copy.impl.getParser();
                             final List<Difference> diffs = copy.getChanges();
                             if (diffs != null && diffs.size() > 0) {
                                 result.diffs.put(copy.getFileObject(), diffs);
@@ -557,7 +558,10 @@ public final class JavaSource {
                         }
                     }
                 };                
-                ParserManager.parse(sources, _task);                                        
+                ParserManager.parse(sources, _task);
+                if (theParser[0] != null) {
+                    theParser[0].invalidate();
+                }
             } catch (final ParseException pe) {
                 final Throwable rootCase = pe.getCause();
                 if (rootCase instanceof CompletionFailure) {
