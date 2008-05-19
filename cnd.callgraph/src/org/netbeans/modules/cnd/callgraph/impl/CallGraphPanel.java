@@ -77,7 +77,8 @@ import org.openide.util.actions.Presenter;
  * @author Alexander Simon
  */
 public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, HelpCtx.Provider  {
-    private static final boolean SHOW_GRAPH = false;
+    private static final boolean SHOW_GRAPH = Boolean.getBoolean("cnd.callgraph.showgraph");
+
     private ExplorerManager explorerManager = new ExplorerManager();
     private AbstractNode root;
     private Action[] actions;
