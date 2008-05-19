@@ -228,6 +228,7 @@ public class ContainerWidget extends Widget
         // Second see if any nodes need to be added to the container.
         for (Object nodeData : scene.getNodes())
         {
+            if(!(((IPresentationElement)nodeData).getFirstSubject() instanceof INamedElement ))continue;
             Widget node = scene.findWidget(nodeData);
             if (node != null)
             {
@@ -312,6 +313,7 @@ public class ContainerWidget extends Widget
                 child.setPreferredLocation(newParent.convertSceneToLocal(sceneBounds.getLocation()));
 
                 Object nodeData = scene.findObject(child);
+                if(!(((IPresentationElement)nodeData).getFirstSubject() instanceof INamedElement ))continue;
                 INamedElement element = (INamedElement) ((IPresentationElement)nodeData).getFirstSubject();
 
                 if(namespace!=null)
