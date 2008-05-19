@@ -657,6 +657,13 @@ public class FormI18nSupport extends JavaI18nSupport {
             if (lastFoundProp != null) {
                 validProp = lastFoundProp;
                 it = formProperties.tailSet(lastFoundProp).iterator();
+                /*
+                 * In the first cycle of the following do-while loop, value
+                 * of 'lastFoundProp' will be used, not the one from
+                 * the iterator. So make sure the property following
+                 * 'lastFoundProp' is used in the next cycle:
+                 */
+                it.next();
             } else {
                 it = formProperties.iterator();
             }
