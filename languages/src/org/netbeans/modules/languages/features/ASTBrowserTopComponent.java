@@ -20,6 +20,7 @@
 package org.netbeans.modules.languages.features;
 
 import java.util.Collections;
+import org.netbeans.modules.parsing.api.MultiLanguageUserTask;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.openide.ErrorManager;
@@ -32,6 +33,7 @@ import org.netbeans.api.languages.ParserResult;
 import org.netbeans.api.languages.ASTItem;
 import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.ASTPath;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.parsing.api.ParserManager;
 
@@ -63,7 +65,6 @@ import javax.swing.JEditorPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.parsing.api.MultiLanguageUserTask;
 
 
 /**
@@ -239,15 +240,19 @@ final class ASTBrowserTopComponent extends TopComponent {
                 Document document = editorCookie.getDocument ();
                 Source source = Source.create (document);
                 if (document == null || !(document instanceof NbEditorDocument)) return;
-                ParserManager.parse (Collections.singleton (source), new MultiLanguageUserTask<ParserResult> () {
+                try {
+                    ParserManager.parse (Collections.singleton (source), new MultiLanguageUserTask () {
 
-                    @Override
-                    public void run (ResultIterator<ParserResult> resultIterator) {
-                        rootNode = resultIterator.getParserResult ().getRootNode ();
-                        DefaultTreeModel model = new DefaultTreeModel (new TNode (null, rootNode));
-                        tree.setModel (model);
-                    }
-                });
+                        @Override
+                        public void run (ResultIterator resultIterator) throws ParseException {
+                            rootNode = ((ParserResult) resultIterator.getParserResult ()).getRootNode ();
+                            DefaultTreeModel model = new DefaultTreeModel (new TNode (null, rootNode));
+                            tree.setModel (model);
+                        }
+                    });
+                } catch (ParseException ex) {
+                    ex.printStackTrace ();
+                }
             }
         });
     }

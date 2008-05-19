@@ -129,7 +129,7 @@ public class Scheduler {
         Lookup lookup = getLookup (mimeType);
         for (TaskFactory factory : lookup.lookupAll (TaskFactory.class)) {
             Collection<SchedulerTask> newTasks = factory.create (source);
-            if (tasks != null)
+            if (newTasks != null)
                 for (SchedulerTask task : newTasks)
                     if (task.getSchedulerClass () == taskScheduler.getClass ())
                         tasks.add (task);

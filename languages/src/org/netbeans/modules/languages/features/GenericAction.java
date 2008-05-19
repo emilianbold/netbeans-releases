@@ -52,6 +52,7 @@ import org.netbeans.modules.parsing.api.MultiLanguageUserTask;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.spi.ParseException;
 
 
 /**
@@ -94,12 +95,16 @@ public class GenericAction extends BaseAction {
     
     public void actionPerformed(ActionEvent e, final JTextComponent comp) {
         Source source = Source.create (comp.getDocument ());
-        ParserManager.parse (Collections.<Source>singleton (source), new MultiLanguageUserTask<ParserResult> () {
-            @Override
-            public void run (ResultIterator<ParserResult> resultIterator) {
-                getPerformer().getValue (new Object[] {resultIterator.getParserResult ().getRootNode (), comp});
-            }
-        });
+        try {
+            ParserManager.parse (Collections.<Source>singleton (source), new MultiLanguageUserTask () {
+                @Override
+                public void run (ResultIterator resultIterator) throws ParseException {
+                    getPerformer().getValue (new Object[] {((ParserResult) resultIterator.getParserResult ()).getRootNode (), comp});
+                }
+            });
+        } catch (ParseException ex) {
+            ex.printStackTrace ();
+        }
     }
     
     public boolean isEnabled() {

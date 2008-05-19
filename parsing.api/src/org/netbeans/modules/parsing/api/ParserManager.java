@@ -41,7 +41,8 @@ package org.netbeans.modules.parsing.api;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
+
+import org.netbeans.modules.parsing.impl.TaskProcessor;
 import org.netbeans.modules.parsing.impl.UserTaskImpl;
 import org.netbeans.modules.parsing.spi.ParseException;
 
@@ -105,13 +106,26 @@ public final class ParserManager {
      * @throws ParseException encapsulating the user exception
      */
     public static void parse (
-        Collection<Source>  sources, 
-        MultiLanguageUserTask 
+        final Collection<Source>  
+                            sources, 
+        final MultiLanguageUserTask 
                             userTask
     ) throws ParseException {
-        //org.netbeans.modules.parsing.impl.ParserManagerImpl.parseUserTask (sources, userTask);
+        TaskProcessor.runUserTask (new GenericUserTask () {
+            public void run () {
+                for (Source source : sources) {
+                    Snapshot snapshot = source.createSnapshot ();
+                    ResultIterator resultIterator = new ResultIterator (snapshot, userTask);
+                    try {
+                        userTask.run (resultIterator);
+                    } catch (Exception ex) {
+                        //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                    }
+                }
+            }
+        });
     }
-
+    
     /**
      * Runs given task in parser thread.
      * 
@@ -121,6 +135,7 @@ public final class ParserManager {
     public static void run (
         GenericUserTask     userTask
     ) throws ParseException {
+        TaskProcessor.runUserTask (userTask);
     }
 }
 

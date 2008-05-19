@@ -51,7 +51,7 @@ import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.parsing.api.MultiLanguageUserTask;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
-import org.netbeans.modules.parsing.api.Task;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.refactoring.spi.ui.ActionsImplementationProvider;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.netbeans.modules.refactoring.spi.ui.UI;
@@ -87,29 +87,33 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
         final NbEditorDocument doc = (NbEditorDocument )textComp.getDocument ();
         final String selectedText = textComp.getSelectedText ();
         Source source = Source.create (doc);
-        ParserManager.parse (Collections.<Source>singleton (source), new MultiLanguageUserTask<ParserResult> () {
-            @Override
-            public void run (ResultIterator<ParserResult> resultIterator) {
-                ParserResult parserResult = resultIterator.getParserResult ();
-                int position = 0;
-                if (selectedText != null) {
-                    position = textComp.getSelectionStart();
-                    for (int x = 0; x < selectedText.length(); x++) {
-                        if (Character.isWhitespace (selectedText.charAt (x))) {
-                            position++;
-                        } else {
-                            break;
+        try {
+            ParserManager.parse (Collections.<Source>singleton (source), new MultiLanguageUserTask () {
+                @Override
+                public void run (ResultIterator resultIterator) throws ParseException {
+                    ParserResult parserResult = (ParserResult) resultIterator.getParserResult ();
+                    int position = 0;
+                    if (selectedText != null) {
+                        position = textComp.getSelectionStart();
+                        for (int x = 0; x < selectedText.length(); x++) {
+                            if (Character.isWhitespace (selectedText.charAt (x))) {
+                                position++;
+                            } else {
+                                break;
+                            }
                         }
+                    } else {
+                        position = textComp.getCaretPosition ();
                     }
-                } else {
-                    position = textComp.getCaretPosition ();
+                    TopComponent activetc = TopComponent.getRegistry ().getActivated ();
+                    ASTNode node = parserResult.getRootNode ();
+                    RefactoringUI ui = new WhereUsedQueryUI (node.findPath (position), fobj, doc);
+                    UI.openRefactoringUI(ui, activetc);
                 }
-                TopComponent activetc = TopComponent.getRegistry ().getActivated ();
-                ASTNode node = parserResult.getRootNode ();
-                RefactoringUI ui = new WhereUsedQueryUI (node.findPath (position), fobj, doc);
-                UI.openRefactoringUI(ui, activetc);
-            }
-        });
+            });
+        } catch (ParseException ex) {
+            ex.printStackTrace ();
+        }
     }
     
     public void doRename(Lookup lookup) {
@@ -119,29 +123,33 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
         final NbEditorDocument doc = (NbEditorDocument )textComp.getDocument ();
         final String selectedText = textComp.getSelectedText ();
         Source source = Source.create (doc);
-        ParserManager.parse (Collections.<Source>singleton (source), new MultiLanguageUserTask<ParserResult> () {
-            @Override
-            public void run (ResultIterator<ParserResult> resultIterator) {
-                ParserResult parserResult = resultIterator.getParserResult ();
-                int position = 0;
-                if (selectedText != null) {
-                    position = textComp.getSelectionStart();
-                    for (int x = 0; x < selectedText.length(); x++) {
-                        if (Character.isWhitespace (selectedText.charAt (x))) {
-                            position++;
-                        } else {
-                            break;
+        try {
+            ParserManager.parse (Collections.<Source>singleton (source), new MultiLanguageUserTask () {
+                @Override
+                public void run (ResultIterator resultIterator) throws ParseException {
+                    ParserResult parserResult = (ParserResult) resultIterator.getParserResult ();
+                    int position = 0;
+                    if (selectedText != null) {
+                        position = textComp.getSelectionStart();
+                        for (int x = 0; x < selectedText.length(); x++) {
+                            if (Character.isWhitespace (selectedText.charAt (x))) {
+                                position++;
+                            } else {
+                                break;
+                            }
                         }
+                    } else {
+                        position = textComp.getCaretPosition ();
                     }
-                } else {
-                    position = textComp.getCaretPosition ();
+                    TopComponent activetc = TopComponent.getRegistry ().getActivated ();
+                    ASTNode node = parserResult.getRootNode ();
+                    RefactoringUI ui = new RenameRefactoringUI (parserResult, node.findPath (position), fobj, doc);
+                    UI.openRefactoringUI(ui, activetc);
                 }
-                TopComponent activetc = TopComponent.getRegistry ().getActivated ();
-                ASTNode node = parserResult.getRootNode ();
-                RefactoringUI ui = new RenameRefactoringUI (parserResult, node.findPath (position), fobj, doc);
-                UI.openRefactoringUI(ui, activetc);
-            }
-        });
+            });
+        } catch (ParseException ex) {
+            ex.printStackTrace ();
+        }
     }
     
     private static FileObject getFileObject(Lookup lookup) {

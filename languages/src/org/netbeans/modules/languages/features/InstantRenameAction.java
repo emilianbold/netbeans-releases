@@ -77,6 +77,7 @@ import org.netbeans.modules.parsing.api.MultiLanguageUserTask;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.openide.util.RequestProcessor;
 
 
@@ -97,26 +98,30 @@ public class InstantRenameAction extends BaseAction {
         if (renameImplementation != null) return;
         final int offset = editor.getCaretPosition ();
         Source source = Source.create (editor.getDocument ());
-        ParserManager.parse (Collections.<Source>singleton (source), new MultiLanguageUserTask<ParserResult> () {
-            @Override
-            public void run (ResultIterator<ParserResult> resultIterator) {
-                try {
-                    ParserResult parserResult = resultIterator.getParserResult ();
-                    ASTNode node = parserResult.getRootNode ();
-                    DatabaseContext root = parserResult.getSemanticStructure ();
-                    if (root == null) return;
-                    DatabaseItem databaseItem = root.getDatabaseItem (offset);
-                    if (databaseItem == null)
-                        databaseItem = root.getDatabaseItem (offset - 1);
-                    if (databaseItem == null) {
-                        return;
+        try {
+            ParserManager.parse (Collections.<Source>singleton (source), new MultiLanguageUserTask () {
+                @Override
+                public void run (ResultIterator resultIterator) throws ParseException {
+                    try {
+                        ParserResult parserResult = (ParserResult) resultIterator.getParserResult ();
+                        ASTNode node = parserResult.getRootNode ();
+                        DatabaseContext root = parserResult.getSemanticStructure ();
+                        if (root == null) return;
+                        DatabaseItem databaseItem = root.getDatabaseItem (offset);
+                        if (databaseItem == null)
+                            databaseItem = root.getDatabaseItem (offset - 1);
+                        if (databaseItem == null) {
+                            return;
+                        }
+                        renameImplementation = new RenameImplementation (databaseItem, editor, node);
+                    } catch (BadLocationException ex) {
+                        ex.printStackTrace ();
                     }
-                    renameImplementation = new RenameImplementation (databaseItem, editor, node);
-                } catch (BadLocationException ex) {
-                    ex.printStackTrace ();
                 }
-            }
-        });
+            });
+        } catch (ParseException ex) {
+            ex.printStackTrace ();
+        }
     }
     
     private class RenameImplementation implements KeyListener, DocumentListener {

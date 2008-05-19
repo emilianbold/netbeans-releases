@@ -39,8 +39,19 @@
 
 package org.netbeans.modules.parsing.api;
 
+import java.util.Collections;
 import java.util.Iterator;
+
+import org.netbeans.modules.parsing.impl.SourceAccessor;
+import org.netbeans.modules.parsing.spi.EmbeddingProvider;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.parsing.spi.Parser.Result;
+import org.netbeans.modules.parsing.spi.SchedulerTask;
+import org.netbeans.modules.parsing.spi.TaskFactory;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 
 
 /**
@@ -52,9 +63,20 @@ import org.netbeans.modules.parsing.spi.Parser;
  * 
  * @author Jan Jancura
  */
-public final class ResultIterator<T extends Parser.Result> {
+public final class ResultIterator {
     
-    private ResultIterator () {}
+    private Snapshot        snapshot;
+    private MultiLanguageUserTask
+                            task;
+
+    ResultIterator (
+        Snapshot            snapshot,
+        MultiLanguageUserTask
+                            task
+    ) {
+        this.snapshot = snapshot;
+        this.task = task;
+    }
     
     public Source getSource () {
         return null;
@@ -65,8 +87,20 @@ public final class ResultIterator<T extends Parser.Result> {
      * 
      * @return              parse {@link Result} for current source.
      */
-    public T getParserResult () {
-        return null;
+    public Result getParserResult () throws ParseException {
+        String mimeType = snapshot.getMimeType ();
+        Parser parser = null;
+        if (mimeType.equals (snapshot.getSource ().getMimeType ()))
+            parser = SourceAccessor.getINSTANCE ().getParser (snapshot.getSource ());
+        if (parser == null) {
+            Lookup lookup = new ProxyLookup (
+                Lookups.forPath ("Editors/text/base"),
+                Lookups.forPath ("Editors" + mimeType)
+            );
+            parser = lookup.lookup (Parser.class);
+        }
+        parser.parse (snapshot, task);
+        return parser.getResult (task);
     }
     
     /**
@@ -74,8 +108,31 @@ public final class ResultIterator<T extends Parser.Result> {
      * 
      * @return              {@link Iterator} of all embeddings.
      */
-    public Iterator<Embedding> getEmbeddedSources () {
-        return null;
+    public Iterable<Embedding> getEmbeddedSources () {
+        return new Iterable<Embedding> () {
+            public Iterator<Embedding> iterator () {
+                return new CompoundIterator<SchedulerTask,Embedding> (
+                    new CompoundIterator<TaskFactory,SchedulerTask> (
+                            (Iterator<TaskFactory>) new ProxyLookup (
+                                Lookups.forPath ("Editors/text/base"),
+                                Lookups.forPath ("Editors" + snapshot.getMimeType ())
+                            ).lookupAll (TaskFactory.class).iterator ()
+                        ) {
+                            @Override
+                            protected Iterator<SchedulerTask> getIterator (TaskFactory factory) {
+                                return factory.create (snapshot.getSource ()).iterator ();
+                            }
+                        }                
+                ) {
+                    @Override
+                    protected Iterator<Embedding> getIterator (SchedulerTask schedulerTask) {
+                        if (schedulerTask instanceof EmbeddingProvider)
+                            return ((EmbeddingProvider) schedulerTask).getEmbeddings (snapshot).iterator ();
+                        return Collections.EMPTY_LIST.iterator ();
+                    }
+                };
+            }
+        };
     }
     
     /**
@@ -85,6 +142,42 @@ public final class ResultIterator<T extends Parser.Result> {
      * @return              {@link ResultIterator} for one {@link Embedding}.
      */
     public ResultIterator getResultIterator (Embedding embedding) {
-        return null;
+        return new ResultIterator (embedding.getSnapshot (), task);
+    }
+    
+    private static abstract class CompoundIterator<A,B> implements Iterator<B> {
+
+        private Iterator<A> iteratorA;
+        private Iterator<B> iteratorB;
+
+        public CompoundIterator (Iterator<A> iteratorA) {
+            this.iteratorA = iteratorA;
+        }
+        
+        protected abstract Iterator<B> getIterator (A a);
+        
+        public boolean hasNext () {
+            if (iteratorB == null) {
+                if (!iteratorA.hasNext ()) return false;
+                iteratorB = getIterator (iteratorA.next ());
+            }
+            while (!iteratorB.hasNext ()) {
+                if (!iteratorA.hasNext ()) return false;
+                iteratorB = getIterator (iteratorA.next ());
+            }
+            return true;
+        }
+
+        public B next () {
+            if (iteratorB == null) {
+                if (!iteratorA.hasNext ()) return null;
+                iteratorB = getIterator (iteratorA.next ());
+            }
+            return iteratorB.next ();
+        }
+
+        public void remove() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
     }
 }

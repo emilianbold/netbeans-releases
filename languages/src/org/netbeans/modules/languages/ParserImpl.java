@@ -313,8 +313,8 @@ public class ParserImpl extends Parser {
     public static class AParserFactory extends ParserFactory {
 
         @Override
-        public Parser createParser (Collection<Source> sources) {
-            String mimeType = sources.iterator ().next ().getMimeType ();
+        public Parser createParser (Collection<Snapshot> snapshots) {
+            String mimeType = snapshots.iterator ().next ().getMimeType ();
             if (!LanguagesManager.getDefault ().isSupported (mimeType)) return null;
             return new ParserImpl ();
         }

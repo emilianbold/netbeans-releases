@@ -61,6 +61,7 @@ import org.netbeans.modules.parsing.api.MultiLanguageUserTask;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.openide.util.RequestProcessor;
 
 
@@ -90,13 +91,17 @@ public class MarkOccurrencesSupport implements CaretListener {
         parsingTask = RequestProcessor.getDefault ().post (new Runnable () {
             public void run () {
                 Source source = Source.create (editor.getDocument ());
-                ParserManager.parse (Collections.<Source>singleton (source), new MultiLanguageUserTask<ParserResult> () {
-                    @Override
-                    public void run (ResultIterator<ParserResult> resultIterator) {
-                        ParserResult parserResult = resultIterator.getParserResult ();
-                        refresh (e.getDot (), parserResult);
-                    }
-                });
+                try {
+                    ParserManager.parse (Collections.<Source>singleton (source), new MultiLanguageUserTask () {
+                        @Override
+                        public void run (ResultIterator resultIterator) throws ParseException {
+                            ParserResult parserResult = (ParserResult) resultIterator.getParserResult ();
+                            refresh (e.getDot (), parserResult);
+                        }
+                    });
+                } catch (ParseException ex) {
+                    ex.printStackTrace ();
+                }
             }
         }, 1000);
     }

@@ -64,6 +64,7 @@ import org.netbeans.modules.parsing.api.MultiLanguageUserTask;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
 import org.openide.text.Annotation;
@@ -114,35 +115,39 @@ public class ToolTipAnnotation extends Annotation {
                 document.readUnlock ();
             }
             Source source = Source.create (document);
-            ParserManager.parse (Collections.<Source>singleton (source), new MultiLanguageUserTask<ParserResult> () {
-                @Override
-                public void run (ResultIterator<ParserResult> resultIterator) {
-                    ParserResult parserResult = resultIterator.getParserResult ();
-                    ASTNode ast = parserResult.getRootNode ();
-                    ASTPath path = ast.findPath (offset);
-                    if (path == null) return;
-                    int i, k = path.size ();
-                    for (i = 0; i < k; i++) {
-                        ASTPath p = path.subPath (i);
-                        Feature tooltip = language.getFeatureList ().getFeature (TOOLTIP, p);
-                        if (tooltip == null) continue;
-                        String s = c ((String) tooltip.getValue (SyntaxContext.create (document, p)));
-//                        firePropertyChange (s, path, path)
-                        //!return s;
-                    }
-                    Iterator<SyntaxError> it = parserResult.getSyntaxErrors ().iterator ();
-                    while (it.hasNext ()) {
-                        SyntaxError syntaxError = it.next ();
-                        ASTItem item = syntaxError.getItem ();
-                        if (item.getOffset () == ast.getEndOffset ())
-                            item = ast.findPath (item.getOffset () - 1).getLeaf ();
-                        if (item.getOffset () > offset) break;
-                        if (item.getEndOffset () > offset) {
-                            //!return syntaxError.getMessage ();
+            try {
+                ParserManager.parse (Collections.<Source>singleton (source), new MultiLanguageUserTask () {
+                    @Override
+                    public void run (ResultIterator resultIterator) throws ParseException {
+                        ParserResult parserResult = (ParserResult) resultIterator.getParserResult ();
+                        ASTNode ast = parserResult.getRootNode ();
+                        ASTPath path = ast.findPath (offset);
+                        if (path == null) return;
+                        int i, k = path.size ();
+                        for (i = 0; i < k; i++) {
+                            ASTPath p = path.subPath (i);
+                            Feature tooltip = language.getFeatureList ().getFeature (TOOLTIP, p);
+                            if (tooltip == null) continue;
+                            String s = c ((String) tooltip.getValue (SyntaxContext.create (document, p)));
+    //                        firePropertyChange (s, path, path)
+                            //!return s;
+                        }
+                        Iterator<SyntaxError> it = parserResult.getSyntaxErrors ().iterator ();
+                        while (it.hasNext ()) {
+                            SyntaxError syntaxError = it.next ();
+                            ASTItem item = syntaxError.getItem ();
+                            if (item.getOffset () == ast.getEndOffset ())
+                                item = ast.findPath (item.getOffset () - 1).getLeaf ();
+                            if (item.getOffset () > offset) break;
+                            if (item.getEndOffset () > offset) {
+                                //!return syntaxError.getMessage ();
+                            }
                         }
                     }
-                }
-            });
+                });
+            } catch (ParseException ex) {
+                ex.printStackTrace ();
+            }
         } catch (LanguageDefinitionNotFoundException ex) {
         }
         return null;

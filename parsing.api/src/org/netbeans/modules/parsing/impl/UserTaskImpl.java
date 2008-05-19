@@ -39,12 +39,13 @@
 
 package org.netbeans.modules.parsing.impl;
 
-import java.util.Iterator;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.MultiLanguageUserTask;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
+
 
 /**
  * This {@link MultiLanguageUserTask} implementation implements 
@@ -74,9 +75,7 @@ public class UserTaskImpl extends MultiLanguageUserTask {
     }
     
     private void run (ResultIterator resultIterator, Source source) throws Exception {
-        Iterator<Embedding> it = resultIterator.getEmbeddedSources ();
-        while (it.hasNext ()) {
-            Embedding embedding = it.next ();
+        for (Embedding embedding : resultIterator.getEmbeddedSources ()) {
             if (embedding.containsOffset (offset)) {
                 run (resultIterator.getResultIterator (embedding), source);
                 return;

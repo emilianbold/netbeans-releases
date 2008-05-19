@@ -64,6 +64,7 @@ import org.netbeans.modules.parsing.api.MultiLanguageUserTask;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.openide.ErrorManager;
 
 
@@ -80,30 +81,35 @@ public class FormatAction extends BaseAction {
     public void actionPerformed (ActionEvent e, JTextComponent component) {
             final NbEditorDocument doc = (NbEditorDocument) component.getDocument ();
             Source source = Source.create (doc);
-            ParserManager.parse (Collections.<Source>singleton (source), new MultiLanguageUserTask<ParserResult> () {
-                @Override
-                public void run (ResultIterator<ParserResult> resultIterator) {
-                    try {
-                        StringBuilder sb = new StringBuilder ();
-                        Map<String,String> indents = new HashMap<String,String> ();
-                        indents.put ("i", ""); // NOI18N
-                        indents.put ("ii", "    "); // NOI18N
-                        indent (
-                            resultIterator.getParserResult ().getRootNode (),
-                            new ArrayList<ASTItem> (),
-                            sb,
-                            indents,
-                            null,
-                            false,
-                            doc
-                        );
-                        doc.remove (0, doc.getLength ());
-                        doc.insertString (0, sb.toString (), null);
-                    } catch (BadLocationException ex) {
-                        ErrorManager.getDefault ().notify (ex);
+            try {
+                ParserManager.parse (Collections.<Source>singleton (source), new MultiLanguageUserTask () {
+                    @Override
+                    public void run (ResultIterator resultIterator) throws ParseException {
+                        try {
+                            StringBuilder sb = new StringBuilder ();
+                            Map<String,String> indents = new HashMap<String,String> ();
+                            indents.put ("i", ""); // NOI18N
+                            indents.put ("ii", "    "); // NOI18N
+                            indent (
+                                ((ParserResult) resultIterator.getParserResult ()).getRootNode (),
+                                new ArrayList<ASTItem> (),
+                                sb,
+                                indents,
+                                null,
+                                false,
+                                doc
+                            );
+                            doc.remove (0, doc.getLength ());
+                            doc.insertString (0, sb.toString (), null);
+                        } catch (BadLocationException ex) {
+                            ErrorManager.getDefault ().notify (ex);
+                        }
                     }
-                }
-            });
+                });
+            } catch (ParseException ex) {
+                ex.printStackTrace ();
+            }
+                
     }
     
     // uncomment to disable the action for languages without grammar definition

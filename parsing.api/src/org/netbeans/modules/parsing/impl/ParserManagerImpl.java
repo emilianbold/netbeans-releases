@@ -62,7 +62,7 @@ public class ParserManagerImpl {
      * be returned
      * @return a parser
      */
-    static Parser getParser (final Source source) {
+    public static Parser getParser (final Source source) {
         assert source != null;
         Parser parser;
         synchronized (source) {

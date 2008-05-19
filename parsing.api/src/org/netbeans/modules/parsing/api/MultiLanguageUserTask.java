@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.parsing.api;
 
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 
 
@@ -52,7 +53,7 @@ import org.netbeans.modules.parsing.spi.Parser;
  *
  * @author Jan Jancura
  */
-public abstract class MultiLanguageUserTask<T extends Parser.Result> {
+public abstract class MultiLanguageUserTask extends Task {
 
     /**
      * MultiLanguageUserTask implementation.
@@ -61,7 +62,7 @@ public abstract class MultiLanguageUserTask<T extends Parser.Result> {
      *                      A {@link ResultIterator} instance.
      * @throws Exception rethrown by the infrastructure as a {@link ParseException}.
      */
-    public abstract void run (ResultIterator<T> resultIterator) throws Exception;
+    public abstract void run (ResultIterator resultIterator) throws Exception;
 }
 
 

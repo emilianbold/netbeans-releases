@@ -66,9 +66,11 @@ import java.util.regex.PatternSyntaxException;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.Document;
 import org.netbeans.modules.parsing.api.Embedding;
+import org.netbeans.modules.parsing.api.GenericUserTask;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.EmbeddingProvider;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
@@ -147,7 +149,7 @@ public class TaskProcessor {
         includedTasks = _includedTasks;
     }
         
-    public static void runUserTask (final UserTask userTask, final Source source, final boolean shared) throws IOException {
+    public static void runUserTask (final UserTask userTask, final Source source, final boolean shared) throws ParseException {
         Parameters.notNull("userTask", userTask);
         Parameters.notNull("source", source);
         assert parserLock.isHeldByCurrentThread() || !holdsDocumentWriteLock(
@@ -221,7 +223,28 @@ public class TaskProcessor {
                     assert !shouldClean || (shouldClean && didClean);
                 }
             } catch (final Exception e) {
-                final IOException ioe = new IOException ();
+                final ParseException ioe = new ParseException ();
+                ioe.initCause(e);
+                throw ioe;
+            } finally {                    
+                parserLock.unlock();
+            }
+        } finally {
+            currentRequest.cancelCompleted (request);
+        }        
+    }
+        
+    public static void runUserTask (GenericUserTask runnable) throws ParseException {
+        final Request request = currentRequest.getTaskToCancel();
+        try {
+            if (request != null) {
+                request.task.cancel();
+            }            
+            parserLock.lock();
+            try {
+                runnable.run ();
+            } catch (final Exception e) {
+                final ParseException ioe = new ParseException ();
                 ioe.initCause(e);
                 throw ioe;
             } finally {                    

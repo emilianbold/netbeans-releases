@@ -73,10 +73,11 @@ import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.languages.Language;
 import org.netbeans.modules.languages.LanguagesManager;
-import org.netbeans.modules.parsing.api.MultiLanguageUserTask;
 import org.netbeans.modules.parsing.api.ParserManager;
-import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionProvider;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
@@ -269,7 +270,7 @@ public class CompletionProviderImpl implements CompletionProvider {
                 if (!tokenSequence.isEmpty()) {
                     compute (tokenSequence, offset, resultSet, doc, language);
                 }
-                finishSet = addParserTags (resultSet, language);
+                finishSet = addParserTags (resultSet, language, offset);
             } catch (LanguageDefinitionNotFoundException ex) {
                 // do nothing
             } finally {
@@ -345,20 +346,20 @@ public class CompletionProviderImpl implements CompletionProvider {
             }
         }
 
-        private boolean addParserTags (final Result resultSet, final Language language) {
+        private boolean addParserTags (final Result resultSet, final Language language, int offset) {
             Source source = Source.create (doc);
-            ParserManager.parse (Collections.<Source>singleton(source), new MultiLanguageUserTask () {
-                public void parsed (ParserResult parserResult, Source source) {
-                    if (resultSet.isFinished ()) return;
-                    addParserTags (parserResult, resultSet, language);
-                    resultSet.finish ();
-                }
-
-                @Override
-                public void run(ResultIterator resultIterator) {
-                    throw new UnsupportedOperationException("Not supported yet.");
-                }
-            });
+            try {
+                ParserManager.parse (source, new UserTask () {
+                    @Override
+                    public void run(Parser.Result result, Source source) {
+                        if (resultSet.isFinished ()) return;
+                        addParserTags ((ParserResult) result, resultSet, language);
+                        resultSet.finish ();
+                    }
+                }, offset);
+            } catch (ParseException ex) {
+                ex.printStackTrace ();
+            }
             return false;
         }
         
