@@ -53,7 +53,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.EventObject;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.HashSet;
@@ -430,10 +429,11 @@ final class HardStringWizardPanel extends JPanel {
                 case COLUMN_INDEX_HARDSTRING: return;
                 case COLUMN_INDEX_CUSTOM:
                     I18nString otherValue = (I18nString) getValueAt(rowIndex, COLUMN_INDEX_KEY);
-                    if (!((I18nString) value).getKey().equals("")) 
+                    if (!((I18nString) value).getKey().equals("")) {
                         setValueAt(Boolean.TRUE, rowIndex, COLUMN_INDEX_CHECK);
-                    else 
+                    } else {
                         setValueAt(Boolean.FALSE, rowIndex, COLUMN_INDEX_CHECK);
+                    }
                     break;
                 case COLUMN_INDEX_CHECK : 
                     if (value instanceof Boolean) {
@@ -644,11 +644,7 @@ final class HardStringWizardPanel extends JPanel {
             
             panel.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(HardStringWizardPanel.class).getString("ACS_HardStringWizardPanel"));            
             
-            Integer index;
-            
-            index = new Integer(3);
-            
-            panel.putClientProperty("WizardPanel_contentSelectedIndex", index); // NOI18N
+            panel.putClientProperty("WizardPanel_contentSelectedIndex", Integer.valueOf(3)); // NOI18N
             panel.setName(NbBundle.getBundle(HardStringWizardPanel.class).getString("TXT_ModifyStrings"));
             panel.setPreferredSize(I18nWizardDescriptor.PREFERRED_DIMENSION);        
 

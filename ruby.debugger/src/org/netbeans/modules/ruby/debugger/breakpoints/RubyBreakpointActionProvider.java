@@ -84,7 +84,7 @@ public final class RubyBreakpointActionProvider extends ActionsProviderSupport
             try {
                 Line line = EditorUtil.getCurrentLine();
                 if (line != null) {
-                    RubyBreakpointManager.addBreakpoint(line);
+                    RubyBreakpointManager.addLineBreakpoint(line);
                 }
             } catch (RubyDebuggerException e) {
                 Util.LOGGER.log(Level.WARNING, "Unable to add breakpoint.", e);

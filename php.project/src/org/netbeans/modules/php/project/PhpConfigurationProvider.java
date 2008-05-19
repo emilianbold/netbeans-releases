@@ -118,7 +118,7 @@ public final class PhpConfigurationProvider implements ProjectConfigurationProvi
         }
     }
     private static final Config DEFAULT = new Config(null,
-            NbBundle.getMessage(PhpConfigurationProvider.class, "PhpConfigurationProvider.default.label"));
+            NbBundle.getMessage(PhpConfigurationProvider.class, "LBL_DefaultConfiguration"));
     private final PhpProject project;
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     private final FileChangeListener fcl = new FileChangeAdapter() {
