@@ -517,14 +517,19 @@ public class ExtendedTokenSequence {
                     res[0] = ts.index();
                 } else if (ts.token().id() == BLOCK_COMMENT ||
                            ts.token().id() == DOXYGEN_COMMENT){
-                    if (hasDoc) {
-                        // second block comment?
+                    if (isFirstLineToken()) {
+                        if (hasDoc) {
+                            // second block comment?
+                            res[2] = 1;
+                            return res;
+                        }
+                        res[0] = -1;
+                        res[1] = -1;
+                        hasDoc = true;
+                    } else {
                         res[2] = 1;
                         return res;
                     }
-                    res[0] = -1;
-                    res[1] = -1;
-                    hasDoc = true;
                 } else if (ts.token().id() == PREPROCESSOR_DIRECTIVE){
                     if (res[0] == -1) {
                         res[0] = ts.index()+1;

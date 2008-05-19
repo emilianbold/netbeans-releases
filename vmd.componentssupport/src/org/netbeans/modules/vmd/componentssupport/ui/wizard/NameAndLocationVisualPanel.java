@@ -72,9 +72,6 @@ final class NameAndLocationVisualPanel extends JPanel {
     private static final String MSG_LIB_EXISTS 
                                               = "MSG_LibraryExists";             // NOI18N 
     
-    public  static final String VALID         = "valid";                         // NOI18N
-    
-            
     /** Creates new NameAndLocationPanel */
     NameAndLocationVisualPanel(LibNameAndLocationPanel panel) {
         myPanel = panel;

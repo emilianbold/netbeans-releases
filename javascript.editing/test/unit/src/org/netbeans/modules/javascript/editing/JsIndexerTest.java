@@ -380,4 +380,8 @@ public class JsIndexerTest extends JsTestBase {
     public void testWebui() throws Exception {
         checkIndexer("testfiles/bubble.js");
     }
+
+    public void testXHR() throws Exception {
+        checkIndexer("testfiles/stub_dom_XMLHttpRequest.js");
+    }
 }
