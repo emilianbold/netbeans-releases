@@ -79,6 +79,7 @@
         <file name="transformmap.xml" url="EmptyTMap.template"/>
         <!--file name="transformmap.xml" url="TMapTemplate.xml"/-->
         <file name="genPortmap.xsl" url="genPortmap.xsl"/>
+        <file name="transformmap.xsd" url="transformmap.xsd"/>
     </folder>
     <!--folder name="Templates">
         <folder name="Other">
