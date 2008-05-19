@@ -226,21 +226,21 @@ public class JavacParser extends Parser {
         this.cpInfoListener = new ClasspathInfoListener ();
     }
     
-    private void init (final Snapshot snapshot, final Task task) {
+    private void init (final Snapshot snapshot, final Task task, final boolean singleSource) {
         if (!initialized) {
             final Source source = snapshot.getSource();
             final FileObject file = source.getFileObject();
             assert file != null;
             this.file = file;
-            cpInfo = ClasspathInfo.create(file);
-            if (isSingleSource) {
-                cpInfo.addChangeListener(WeakListeners.change(cpInfoListener, cpInfo));
-            }
+            cpInfo = ClasspathInfo.create(file);            
             final ClassPath cp = cpInfo.getClassPath(PathKind.SOURCE);
             assert cp != null;
             this.root = cp.findOwnerRoot(file);
-            assert root != null;
-            initialized = true;
+            assert root != null : "Cannot find file: "+FileUtil.getFileDisplayName(file)+" on source path: " + cp;  //NOI18N
+            if (singleSource) {
+                cpInfo.addChangeListener(WeakListeners.change(cpInfoListener, cpInfo));
+                initialized = true;
+            }
         }
     }
     
@@ -251,9 +251,16 @@ public class JavacParser extends Parser {
     @Override
     public void parse(final Snapshot snapshot, final Task task) throws ParseException {
         assert task != null;
-        try {
-            init (snapshot, task);
-            ciImpl = createCurrentInfo (this, file, root,snapshot, null);
+        try {            
+            if (isSingleSource) {
+                init (snapshot, task, true);
+                ciImpl = createCurrentInfo (this, file, root,snapshot, null);
+            } 
+            else {
+                init (snapshot, task, false);
+                ciImpl = createCurrentInfo(this, file, root, snapshot,
+                        ciImpl == null ? null : ciImpl.getJavacTask());
+            }
             cachedSnapShot = snapshot;
         } catch (IOException ioe) {
             throw new ParseException ("JavacParser failure", ioe);            //NOI18N
