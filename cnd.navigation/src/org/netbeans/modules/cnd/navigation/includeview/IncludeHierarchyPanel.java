@@ -43,6 +43,10 @@ package org.netbeans.modules.cnd.navigation.includeview;
 
 import java.awt.event.ActionEvent;
 import java.beans.PropertyVetoException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
@@ -353,22 +357,88 @@ public class IncludeHierarchyPanel extends JPanel implements ExplorerManager.Pro
 
     private synchronized void update(final CsmFile csmFile) {
         if (csmFile != null){
+            final Node[] oldSelection = getExplorerManager().getSelectedNodes();
             final Children children = root.getChildren();
             if (!Children.MUTEX.isReadAccess()){
                 Children.MUTEX.writeAccess(new Runnable(){
                     public void run() {
                         children.remove(children.getNodes());
-                        IncludedModel model = HierarchyFactory.getInstance().buildIncludeHierarchyModel(csmFile, actions, whoIncludes, plain, recursive);
+                        final IncludedModel model = HierarchyFactory.getInstance().buildIncludeHierarchyModel(csmFile, actions, whoIncludes, plain, recursive);
                         model.setCloseWindowAction(close);
                         final Node node = new IncludeNode(csmFile, model, null);
                         children.add(new Node[]{node});
-                        try {
-                            getExplorerManager().setSelectedNodes(new Node[]{node});
-                        } catch (PropertyVetoException ex) {
-                        }
                         SwingUtilities.invokeLater(new Runnable() {
                             public void run() {
                                 ((BeanTreeView) hierarchyPane).expandNode(node);
+                                Node selected = findSelection();
+                                try {
+                                    getExplorerManager().setSelectedNodes(new Node[]{selected});
+                                } catch (PropertyVetoException ex) {
+                                }
+                            }
+
+                            private Node findSelection() {
+                                if (oldSelection != null && oldSelection.length == 1 &&
+                                   (oldSelection[0] instanceof IncludeNode)) {
+                                    CsmFile what = (CsmFile) ((IncludeNode)oldSelection[0]).getCsmObject();
+                                    for (Node n : node.getChildren().getNodes()) {
+                                        if (n instanceof IncludeNode) {
+                                            CsmFile f2 = (CsmFile) ((IncludeNode)n).getCsmObject();
+                                            if (what != null && f2 != null) {
+                                                if (what.getAbsolutePath().equals(f2.getAbsolutePath())) {
+                                                    return n;
+                                                }
+                                            }
+                                        }
+                                    }
+                                    return findInModel(what);
+                                }
+                                return node;
+                            }
+                            
+                            private Node findInModel(CsmFile what){
+                                List<CsmFile> path = new ArrayList<CsmFile>();
+                                Set<CsmFile> antiLoop = new HashSet<CsmFile>();
+                                Node n = node;
+                                if (findInModel(csmFile, what, path, 25, antiLoop)){
+                                    for(int i = path.size()-1; i >= 0; i--){
+                                        CsmFile f1 = path.get(i);
+                                        ((BeanTreeView) hierarchyPane).expandNode(n);
+                                        for (Node c : n.getChildren().getNodes()){
+                                            CsmFile f2 = (CsmFile) ((IncludeNode)c).getCsmObject();
+                                            if (f1 != null && f2 != null) {
+                                                if (f1.getAbsolutePath().equals(f2.getAbsolutePath())) {
+                                                    n = c;
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                return n;
+                            }
+                            
+                            private boolean findInModel(CsmFile root, CsmFile what, List<CsmFile> path, int level, Set<CsmFile> antiLoop){
+                                if (level < 0 || antiLoop.contains(root)) {
+                                    return false;
+                                }
+                                antiLoop.add(root);
+                                Set<CsmFile> set = model.getModel().get(root);
+                                if (set != null){
+                                    for(CsmFile f : set){
+                                        if (f.getAbsolutePath().equals(what.getAbsolutePath())){
+                                            path.add(f);
+                                            return true;
+                                        }
+                                    }
+                                    for(CsmFile f : set){
+                                        if (findInModel(f, what, path, level - 1, antiLoop)){
+                                            path.add(f);
+                                            return true;
+                                        }
+                                    }
+                                }
+                                return false;
                             }
                         });
                     }

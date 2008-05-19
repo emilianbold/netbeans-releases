@@ -82,12 +82,12 @@ public class CssParserAccess {
         } catch (TokenMgrError tme) {
             parseExceptions.add(new ParseException(tme.getMessage()));
         }
-
+        
         return new CssParserResult(root, parseExceptions);
 
     }
 
-    private static boolean containsGeneratedCode(String text) {
+    public static boolean containsGeneratedCode(String text) {
         return text.contains(PREFIX);
     }
 

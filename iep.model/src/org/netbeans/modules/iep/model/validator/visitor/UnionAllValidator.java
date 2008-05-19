@@ -14,40 +14,40 @@ import org.openide.util.NbBundle;
 
 public class UnionAllValidator implements OperatorValidator {
 
-	private static Logger mLogger = Logger.getLogger(UnionAllValidator.class.getName());
-	
-	private List<ResultItem> mResultItems = new ArrayList<ResultItem>();
-	
-	private Validator mValidator;
-	
-	public UnionAllValidator(Validator validator) {
-		mValidator = validator;
-	}
-	
-	public List<ResultItem> validate(OperatorComponent component) {
-		List<OperatorComponent> inputs = component.getInputOperatorList();
-		SchemaComponent outputSchemaA = null;
-		
-		if(inputs.size() > 1) {
-			OperatorComponent input1 = inputs.get(0);
-			outputSchemaA = input1.getOutputSchemaId();
-		}
-		
-		for(int i = 1, I = inputs.size(); i < I; i++) {
-			OperatorComponent input = inputs.get(i);
-			SchemaComponent outputSchemaB = input.getOutputSchemaId();
-			if(!ensureSchemasAreSame(outputSchemaA, outputSchemaB)) {
-				String message = NbBundle.getMessage(UnionAllValidator.class, "ValidateForSimilarSchema.input_schemas_are_not_same");
-				ResultItem item = new ResultItem(mValidator, Validator.ResultType.ERROR, component, message);
-				mResultItems.add(item);
+    private static Logger mLogger = Logger.getLogger(UnionAllValidator.class.getName());
+    
+    private List<ResultItem> mResultItems = new ArrayList<ResultItem>();
+    
+    private Validator mValidator;
+    
+    public UnionAllValidator(Validator validator) {
+        mValidator = validator;
+    }
+    
+    public List<ResultItem> validate(OperatorComponent component) {
+        List<OperatorComponent> inputs = component.getInputOperatorList();
+        SchemaComponent outputSchemaA = null;
+        
+        if(inputs.size() > 1) {
+            OperatorComponent input1 = inputs.get(0);
+            outputSchemaA = input1.getOutputSchemaId();
+        }
+        
+        for(int i = 1, I = inputs.size(); i < I; i++) {
+            OperatorComponent input = inputs.get(i);
+            SchemaComponent outputSchemaB = input.getOutputSchemaId();
+            if(!ensureSchemasAreSame(outputSchemaA, outputSchemaB)) {
+                String message = NbBundle.getMessage(UnionAllValidator.class, "ValidateForSimilarSchema.input_schemas_are_not_same");
+                ResultItem item = new ResultItem(mValidator, Validator.ResultType.ERROR, component, message);
+                mResultItems.add(item);
             }
         }
-		
-		return mResultItems;
-		
-	}
-	
-	private boolean ensureSchemasAreSame(SchemaComponent schemaA, SchemaComponent schemaB)  {
+        
+        return mResultItems;
+        
+    }
+    
+    private boolean ensureSchemasAreSame(SchemaComponent schemaA, SchemaComponent schemaB)  {
         int cntA = schemaA.getSchemaAttributes().size();// these are columns.
         int cntB = schemaB.getSchemaAttributes().size();
         boolean isSame = true;

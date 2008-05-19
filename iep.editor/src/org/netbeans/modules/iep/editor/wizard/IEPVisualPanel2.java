@@ -27,7 +27,7 @@ public final class IEPVisualPanel2 extends JPanel {
             
     @Override
     public String getName() {
-    	return NbBundle.getMessage(IEPVisualPanel1.class, "IEPVisualPanel2_title");
+        return NbBundle.getMessage(IEPVisualPanel1.class, "IEPVisualPanel2_title");
     }
 
     /** This method is called from within the constructor to

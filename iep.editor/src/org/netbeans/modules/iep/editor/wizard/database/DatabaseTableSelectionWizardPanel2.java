@@ -22,6 +22,15 @@ public class DatabaseTableSelectionWizardPanel2 implements WizardDescriptor.Pane
      */
     private DatabaseTableSelectionVisualPanel2 component;
 
+    private boolean mAddWhereClausePanel = true;
+    
+    public DatabaseTableSelectionWizardPanel2() {
+    }
+    
+    public DatabaseTableSelectionWizardPanel2(boolean addWhereClausePanel) {
+        this.mAddWhereClausePanel = addWhereClausePanel;
+    }
+    
     // Get the visual component for the panel. In this template, the component
     // is kept separate. This can be more efficient: if the wizard is created
     // but never displayed, or not all panels are displayed, it is better to
@@ -89,25 +98,10 @@ public class DatabaseTableSelectionWizardPanel2 implements WizardDescriptor.Pane
         Connection connection = (Connection) wiz.getProperty(DatabaseTableWizardConstants.PROP_SELECTED_DB_CONNECTION);
         List<TableInfo> selectedTables = (List<TableInfo>) wiz.getProperty(DatabaseTableWizardConstants.PROP_SELECTED_TABLES);
         if(connection != null && selectedTables != null) {
-        	//now load table columns, primarykey, foreign keys.
-        	try {
-        	Iterator<TableInfo> it = selectedTables.iterator();
-        	while(it.hasNext()) {
-        		TableInfo table = it.next();
-        		table.cleanUp();
-        		DatabaseMetaDataHelper.populateTableColumns(table, connection);
-        		DatabaseMetaDataHelper.populatePrimaryKeys(table, connection);
-        		DatabaseMetaDataHelper.populateForeignKeys(table, connection);
-        	}
-        	
         	component.setSelectedTables(selectedTables);
         	String joinCondition = DatabaseMetaDataHelper.findJoinCondition(selectedTables);
         	if(joinCondition != null && !joinCondition.equals("")) {
         		component.setJoinCondition(joinCondition);
-        	}
-        	
-        	} catch(Exception ex) {
-        		ErrorManager.getDefault().notify(ex);
         	}
         }
         

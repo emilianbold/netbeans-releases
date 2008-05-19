@@ -67,6 +67,6 @@ public class MacroUsagesTest extends SemanticHighlightingTestBase {
     }
 
     protected List<? extends CsmOffsetable> getBlocks(FileImpl testFile,int offset) {
-        return SemanticHighlighter.getMacroBlocks(testFile);
+        return ModelUtils.getMacroBlocks(testFile);
     }
 }

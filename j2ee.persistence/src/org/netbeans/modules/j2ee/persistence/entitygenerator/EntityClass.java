@@ -64,6 +64,8 @@ public class EntityClass {
     private String pkFieldName;
     private CMPMappingModel mappingModel;
     
+    private boolean forTable = true;  // false means forView
+    
     public EntityClass(String tableName, FileObject rootFolder, String packageName, String className) {
         this.tableName = tableName;
         this.rootFolder = rootFolder;
@@ -73,6 +75,14 @@ public class EntityClass {
         roles = Collections.<RelationshipRole>emptyList();
         fields = new ArrayList<EntityMember>();
         mappingModel = new CMPMappingModel();
+    }
+    
+    public boolean isForTable() {
+        return this.forTable;
+    }
+    
+    public void setIsForTable( boolean forTable) {
+        this.forTable = forTable;
     }
     
     public void addRole(RelationshipRole role) {

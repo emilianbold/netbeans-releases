@@ -49,21 +49,9 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  * @author tomas
  */
 public class RelocateTest extends AbstractCLITest {
-    private SVNUrl repo2Url;
     
     public RelocateTest(String testName) throws Exception {
         super(testName);
-    }
-
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        String repopath = System.getProperty("work.dir") + "/repo2";
-        File repo2Dir = new File(repopath);
-        if(!repo2Dir.exists()) {
-            FileUtils.copyDirFiles(getRepoDir(), repo2Dir);    
-        }        
-        repo2Url = new SVNUrl("file://" + repopath);
     }
     
     public void testRelocateFile() throws Exception {                                        
@@ -74,9 +62,9 @@ public class RelocateTest extends AbstractCLITest {
         assertInfo(file, getFileUrl(file));
         
         ISVNClientAdapter c = getNbClient();
-        c.relocate(getRepoUrl().toString(), repo2Url.toString(), file.getAbsolutePath(), false);
+        c.relocate(getRepoUrl().toString(), getRepo2Url().toString(), file.getAbsolutePath(), false);
 
-        assertInfo(file, repo2Url.appendPath(getName()).appendPath(getWC().getName()).appendPath(file.getName()));        
+        assertInfo(file, getRepo2Url().appendPath(getName()).appendPath(getWC().getName()).appendPath(file.getName()));        
         
         //assertNotifiedFiles(file); // XXX no notif fromthe cli        
     }
@@ -99,12 +87,12 @@ public class RelocateTest extends AbstractCLITest {
         assertInfo(file1, getFileUrl(folder).appendPath(folder1.getName()).appendPath(file1.getName()));
         
         ISVNClientAdapter c = getNbClient();
-        c.relocate(getRepoUrl().toString(), repo2Url.toString(), folder.getAbsolutePath(), true);
+        c.relocate(getRepoUrl().toString(), getRepo2Url().toString(), folder.getAbsolutePath(), true);
 
-        assertInfo(folder, repo2Url.appendPath(getName()).appendPath(getWC().getName()).appendPath(folder.getName()));        
-        assertInfo(file, repo2Url.appendPath(getName()).appendPath(getWC().getName()).appendPath(folder.getName()).appendPath(file.getName()));        
-        assertInfo(folder1, repo2Url.appendPath(getName()).appendPath(getWC().getName()).appendPath(folder.getName()).appendPath(folder1.getName()));        
-        assertInfo(file1, repo2Url.appendPath(getName()).appendPath(getWC().getName()).appendPath(folder.getName()).appendPath(folder1.getName()).appendPath(file1.getName()));        
+        assertInfo(folder, getRepo2Url().appendPath(getName()).appendPath(getWC().getName()).appendPath(folder.getName()));        
+        assertInfo(file, getRepo2Url().appendPath(getName()).appendPath(getWC().getName()).appendPath(folder.getName()).appendPath(file.getName()));        
+        assertInfo(folder1, getRepo2Url().appendPath(getName()).appendPath(getWC().getName()).appendPath(folder.getName()).appendPath(folder1.getName()));        
+        assertInfo(file1, getRepo2Url().appendPath(getName()).appendPath(getWC().getName()).appendPath(folder.getName()).appendPath(folder1.getName()).appendPath(file1.getName()));        
     }
     
     public void testRelocateFolderNonRec() throws Exception {                                        
@@ -130,10 +118,10 @@ public class RelocateTest extends AbstractCLITest {
         assertInfo(file1,file1Url);
         
         ISVNClientAdapter c = getNbClient();
-        c.relocate(getRepoUrl().toString(), repo2Url.toString(), folder.getAbsolutePath(), false);
+        c.relocate(getRepoUrl().toString(), getRepo2Url().toString(), folder.getAbsolutePath(), false);
 
-        SVNUrl folderNewUrl = repo2Url.appendPath(getName()).appendPath(getWC().getName()).appendPath(folder.getName());
-        SVNUrl fileNewUrl = repo2Url.appendPath(getName()).appendPath(getWC().getName()).appendPath(folder.getName()).appendPath(file.getName());
+        SVNUrl folderNewUrl = getRepo2Url().appendPath(getName()).appendPath(getWC().getName()).appendPath(folder.getName());
+        SVNUrl fileNewUrl = getRepo2Url().appendPath(getName()).appendPath(getWC().getName()).appendPath(folder.getName()).appendPath(file.getName());
         
         assertInfo(folder, folderNewUrl);        
         assertInfo(file, fileNewUrl);        

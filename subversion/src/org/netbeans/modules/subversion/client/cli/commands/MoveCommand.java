@@ -42,6 +42,7 @@ package org.netbeans.modules.subversion.client.cli.commands;
 import java.io.File;
 import java.io.IOException;
 import org.netbeans.modules.subversion.client.cli.SvnCommand;
+import org.tigris.subversion.svnclientadapter.ISVNNotifyListener;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
@@ -94,6 +95,11 @@ public class MoveCommand extends SvnCommand {
     }
     
     @Override
+    protected int getCommand() {
+        return ISVNNotifyListener.Command.MOVE;
+    }
+    
+    @Override
     public void prepareCommand(Arguments arguments) throws IOException {        
         arguments.add("move");        
         switch(type) {
@@ -101,7 +107,8 @@ public class MoveCommand extends SvnCommand {
                 arguments.add(fromUrl);
                 arguments.add(toUrl);        
                 arguments.add(rev);                        
-                arguments.addMessage(msg);        
+                arguments.addMessage(msg);  
+                setCommandWorkingDirectory(new File("."));                
                 break;
             case file2file:                     
                 arguments.add(fromFile);        
@@ -109,6 +116,7 @@ public class MoveCommand extends SvnCommand {
                 if(force) {
                     arguments.add("--force");                    
                 }
+                setCommandWorkingDirectory(new File[] {fromFile, toFile});                
                 break;
             default :    
                 throw new IllegalStateException("Illegal copytype: " + type);                             

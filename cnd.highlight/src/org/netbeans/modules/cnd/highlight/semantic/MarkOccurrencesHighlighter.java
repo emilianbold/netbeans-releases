@@ -123,7 +123,7 @@ public class MarkOccurrencesHighlighter extends HighlighterBase {
     private boolean valid = true;
     // PhaseRunner
     public void run(Phase phase) {
-        if (!SemanticHighlightingOptions.getEnableMarkOccurences()) {
+        if (!SemanticHighlightingOptions.instance().getEnableMarkOccurences()) {
             clean();
             valid = false;
             return;
@@ -158,7 +158,7 @@ public class MarkOccurrencesHighlighter extends HighlighterBase {
             
             Collection<CsmReference> out = getOccurences(file, lastPosition);
             if (out.isEmpty()) {
-                if (!SemanticHighlightingOptions.getKeepMarks()) {
+                if (!SemanticHighlightingOptions.instance().getKeepMarks()) {
                     clean();
                 }
             } else {

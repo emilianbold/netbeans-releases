@@ -15,7 +15,7 @@ public class IEPValidateXMLCookie extends ValidateXMLCookieImpl {
     }
 
     @Override
-	protected Model getModel() {
-    	return dataObject.getPlanEditorSupport().getModel();
+    protected Model getModel() {
+        return dataObject.getPlanEditorSupport().getModel();
     }
 }

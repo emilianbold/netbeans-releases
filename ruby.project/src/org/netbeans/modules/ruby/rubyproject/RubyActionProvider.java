@@ -111,6 +111,10 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
     public static final String COMMAND_AUTOTEST = "autotest"; // NOI18N
 
     /**
+     * Command for running RSpec tests on this project (if installed)
+     */
+    public static final String COMMAND_RSPEC = "rspec"; //NOI18N
+    /**
      * Standard command for running the IRB console on a project
      */
     public static final String COMMAND_IRB_CONSOLE = "irb-console"; // NOI18N
@@ -128,6 +132,7 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
         COMMAND_DEBUG,
         COMMAND_DEBUG_SINGLE,
         COMMAND_TEST,
+        COMMAND_RSPEC,
         COMMAND_TEST_SINGLE,
         COMMAND_DEBUG_TEST_SINGLE,
         COMMAND_DELETE,
@@ -609,12 +614,17 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
 
             RSpecSupport rspec = new RSpecSupport(project);
             if (rspec.isRSpecInstalled() && RSpecSupport.isSpecFile(file)) {
-                rspec.runRSpec(null, file, file.getName(), new RubyFileLocator(context, project), true,
-                       isDebug);
+                TestRunner rspecRunner = getTestRunner(TestRunner.TestType.RSPEC);
+                if (rspecRunner != null) {
+                    rspecRunner.runTest(file);
+                } else {
+                    rspec.runRSpec(null, file, file.getName(), new RubyFileLocator(context, project), true,
+                            isDebug);
+                }
                 return;
             }
             
-            TestRunner testRunner = Lookup.getDefault().lookup(TestRunner.class);
+            TestRunner testRunner = getTestRunner(TestRunner.TestType.TEST_UNIT);
             if (testRunner != null) {
                 testRunner.getInstance().runTest(file);
             } else {
@@ -624,7 +634,7 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
         }
 
         if (COMMAND_TEST.equals(command)) {
-            TestRunner testRunner = Lookup.getDefault().lookup(TestRunner.class);
+            TestRunner testRunner = getTestRunner(TestRunner.TestType.TEST_UNIT);
             if (testRunner != null) {
                 testRunner.getInstance().runAllTests(project);
             } else {
@@ -637,6 +647,22 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
                 runner.run("test"); // NOI18N
             }
             return;
+        }
+        
+        if (COMMAND_RSPEC.equals(command)) {
+            TestRunner testRunner = getTestRunner(TestRunner.TestType.RSPEC);
+            if (testRunner != null) {
+                testRunner.getInstance().runAllTests(project);
+            } else {
+                File pwd = FileUtil.toFile(project.getProjectDirectory());
+                RakeRunner runner = new RakeRunner(project);
+                runner.setPWD(pwd);
+                runner.setFileLocator(new RubyFileLocator(context, project));
+                runner.showWarnings(true);
+                runner.run("spec"); // NOI18N
+            }
+            return;
+            
         }
         
         if (COMMAND_IRB_CONSOLE.equals(command)) {
@@ -1017,5 +1043,15 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
         return (applicationArgs == null || applicationArgs.trim().length() == 0)
                 ? null : Utilities.parseParameters(applicationArgs);
     }
-    
+
+    private TestRunner getTestRunner(TestRunner.TestType testType) {
+        Collection<? extends TestRunner> testRunners = Lookup.getDefault().lookupAll(TestRunner.class);
+        for (TestRunner each : testRunners) {
+            if (each.supports(testType)) {
+                return each;
+            }
+        }
+        return null;
+    }
+
 }

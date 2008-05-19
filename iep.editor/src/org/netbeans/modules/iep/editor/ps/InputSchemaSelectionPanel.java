@@ -108,9 +108,9 @@ public class InputSchemaSelectionPanel extends JPanel implements SharedConstants
             List<SchemaAttribute> attrs = outputSchema.getSchemaAttributes();
             Iterator<SchemaAttribute> attrsIt = attrs.iterator();
             while(attrsIt.hasNext()) {
-            	SchemaAttribute sa = attrsIt.next();
-            	mAttributeList.add(sa);
-            	String attributeName = sa.getName();
+                SchemaAttribute sa = attrsIt.next();
+                mAttributeList.add(sa);
+                String attributeName = sa.getName();
                 JCheckBox cb = new JCheckBox(attributeName);
                 mCheckBoxList.add(cb);
                 if (fromColumnList.contains(attributeName)) {
