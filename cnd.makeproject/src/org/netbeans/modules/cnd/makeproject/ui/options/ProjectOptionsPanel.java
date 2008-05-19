@@ -96,6 +96,9 @@ public class ProjectOptionsPanel extends JPanel {
         if( "Windows".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
             setOpaque( false );
         }
+        else {
+            filePathTxt.setBackground(getBackground());
+        }
     }
     
     public void update() {
