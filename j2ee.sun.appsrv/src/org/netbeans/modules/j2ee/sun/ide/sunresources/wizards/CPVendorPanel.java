@@ -123,17 +123,17 @@ public class CPVendorPanel extends ResourceWizardPanel implements ChangeListener
         if (existingConnComboBox.getItemCount() == 0) {
             existingConnComboBox.insertItemAt(bundle.getString("NoConnection"), 0); //NOI18N
             newCofigRadioButton.setSelected(true);
+            newCofigRadioButton.setEnabled(true);
+            nameComboBox.setEnabled(true);
+            existingConnComboBox.setEnabled(false);
         } else {
             existingConnComboBox.insertItemAt(bundle.getString("SelectFromTheList"), 0); //NOI18N
             existingConnRadioButton.setSelected(true);
+            existingConnRadioButton.setEnabled(true);
+            existingConnComboBox.setEnabled(true);
+            nameComboBox.setEnabled(false);
             setExistingConnData();
         }
-        
-        //String vendorName = "other"; //NOI18N
-        existingConnRadioButton.setEnabled(true);
-        existingConnComboBox.setEnabled(true);
-        newCofigRadioButton.setEnabled(true);
-        nameComboBox.setEnabled(true);
         
         Field vendorField = FieldHelper.getField(this.generalGroup, __DatabaseVendor);
         vendors = FieldHelper.getTags(vendorField);
