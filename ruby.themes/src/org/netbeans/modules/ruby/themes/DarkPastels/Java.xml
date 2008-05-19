@@ -26,7 +26,7 @@ your own identifying information:
 Contributor(s):
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 
 If you wish your version of this file to be governed by only the CDDL
@@ -42,21 +42,52 @@ made subject to such option by the copyright holder.
 -->
 <!DOCTYPE fontscolors PUBLIC "-//NetBeans//DTD Editor Fonts and Colors settings 1.1//EN" "http://www.netbeans.org/dtds/EditorFontsColors-1_1.dtd">
 <fontscolors>
-    <fontcolor default="keyword" name="js_keyword"/>
-    <fontcolor default="separator" name="js_separator"/>
-    <fontcolor default="identifier" name="js_identifier"/>
-    <fontcolor default="comment" name="js_line_comment"/>
-    <fontcolor default="error" name="error"/>
-    <fontcolor default="number" name="js_number"/>
-    <fontcolor foreColor="ffffff99" name="js_regularExpression">
+    <fontcolor bgColor="ffaea3ec" name="mark-occurrences"/>
+    <fontcolor default="whitespace" name="whitespace"/>
+    <fontcolor default="keyword" name="literal"/>
+    <fontcolor default="char" name="character"/>
+    <fontcolor default="comment" name="comment"/>
+    <fontcolor name="mod-interface"/>
+    <fontcolor name="mod-public"/>
+    <fontcolor name="mod-method">
         <font style="bold"/>
     </fontcolor>
-    <fontcolor default="whitespace" name="js_whitespace"/>
-    <fontcolor default="comment" name="js_comment"/>
-    <fontcolor default="string" name="s_p">
+    <fontcolor foreColor="ff098618" name="mod-field">
         <font style="bold"/>
     </fontcolor>
-    <fontcolor name="js_operator"/>
-    <fontcolor default="string" name="js_string"/>
-    <fontcolor default="string" name="s_string"/>
+    <fontcolor name="mod-constructor">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor default="keyword" name="keyword-directive"/>
+    <fontcolor default="keyword" name="keyword"/>
+    <fontcolor default="string" name="string"/>
+    <fontcolor name="mod-protected"/>
+    <fontcolor name="mod-enum"/>
+    <fontcolor default="separator" name="separator"/>
+    <fontcolor name="mod-local-variable"/>
+    <fontcolor name="mod-private"/>
+    <fontcolor default="default" foreColor="blue" name="html-tag"/>
+    <fontcolor name="mod-annotation-type"/>
+    <fontcolor name="mod-deprecated" strikeThrough="darkGray"/>
+    <fontcolor default="number" name="number"/>
+    <fontcolor default="comment" foreColor="ff0000cc" name="javadoc-tag">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor default="string" name="string-escape">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor name="mod-class"/>
+    <fontcolor foreColor="ffa06001" name="mod-parameter"/>
+    <fontcolor foreColor="gray" name="mod-unused"/>
+    <fontcolor name="mod-package-private"/>
+    <fontcolor default="operator" name="operator"/>
+    <fontcolor name="mod-static">
+        <font style="italic"/>
+    </fontcolor>
+    <fontcolor default="error" name="errors"/>
+    <fontcolor default="string" name="string-escape-invalid">
+        <font style="italic"/>
+    </fontcolor>
+    <fontcolor default="identifier" name="identifier"/>
+    <fontcolor name="mod-abstract"/>
 </fontscolors>

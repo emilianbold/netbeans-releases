@@ -41,7 +41,6 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 <!DOCTYPE fontscolors PUBLIC "-//NetBeans//DTD Editor Fonts and Colors settings 1.1//EN" "http://www.netbeans.org/dtds/EditorFontsColors-1_1.dtd">
-
 <fontscolors>
     <fontcolor name="whitespace"/>
     <fontcolor default="string" name="markup-attribute-value"/>
@@ -58,10 +57,10 @@ made subject to such option by the copyright holder.
     <fontcolor foreColor="ff0099ff" name="keyword"/>
     <fontcolor foreColor="ff8aa6c1" name="char"/>
     <fontcolor foreColor="ff99ff99" name="string"/>
-    <fontcolor default="identifier" name="field"/>
+    <fontcolor name="separator"/>
     <fontcolor name="identifier"/>
+    <fontcolor default="identifier" name="field"/>
     <fontcolor default="field" name="markup-attribute"/>
     <fontcolor default="identifier" name="method"/>
     <fontcolor foreColor="ff99ff00" name="number"/>
-    
 </fontscolors>

@@ -42,17 +42,50 @@ made subject to such option by the copyright holder.
 -->
 <!DOCTYPE fontscolors PUBLIC "-//NetBeans//DTD Editor Fonts and Colors settings 1.1//EN" "http://www.netbeans.org/dtds/EditorFontsColors-1_1.dtd">
 <fontscolors>
-    <fontcolor default="whitespace" name="css_whitespace"/>
-    <fontcolor name="css_hash"/>
-    <fontcolor default="identifier" foreColor="ffffcc33" name="css_selector">
+    <fontcolor default="identifier" foreColor="ff6699ff" name="argument"/>
+    <fontcolor default="whitespace" name="ws"/>
+    <fontcolor bgColor="ffeceba3" name="mark-occurrences"/>
+    <fontcolor default="char" foreColor="ffffcc66" name="character"/>
+    <fontcolor name="mod-interface"/>
+    <fontcolor name="mod-public"/>
+    <fontcolor default="field" name="mod-field"/>
+    <fontcolor name="mod-constructor">
         <font style="bold"/>
     </fontcolor>
-    <fontcolor default="operator" name="css_operator"/>
-    <fontcolor name="css_url"/>
-    <fontcolor default="number" name="css_number"/>
-    <fontcolor default="string" name="css_string"/>
-    <fontcolor default="comment" name="css_comment"/>
-    <fontcolor default="identifier" name="css_identifier"/>
-    <fontcolor default="keyword" foreColor="ff33ccff" name="css_key"/>
-    <fontcolor default="error" name="error"/>
+    <fontcolor name="mod-method">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor default="default" foreColor="ffbf9221" name="sgml-declaration"/>
+    <fontcolor name="mod-protected"/>
+    <fontcolor foreColor="ff9933cc" name="mod-regexp"/>
+    <fontcolor name="mod-enum"/>
+    <fontcolor default="comment" name="js-comment-tag">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor name="mod-local-variable"/>
+    <fontcolor name="mod-private"/>
+    <fontcolor default="comment" foreColor="gray" name="sgml-comment"/>
+    <fontcolor default="comment" name="html-tag">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor name="mod-annotation-type"/>
+    <fontcolor name="mod-deprecated" strikeThrough="darkGray"/>
+    <fontcolor default="default" foreColor="ffccffcc" name="value"/>
+    <fontcolor name="mod-class"/>
+    <fontcolor name="mod-unused" waveUnderlined="ff999999"/>
+    <fontcolor foreColor="ffa06001" name="mod-parameter"/>
+    <fontcolor name="mod-package-private"/>
+    <fontcolor default="operator" foreColor="ff66ccff" name="operator"/>
+    <fontcolor default="comment" name="right-curly"/>
+    <fontcolor bgColor="red" default="error" foreColor="white" name="error"/>
+    <fontcolor name="mod-static">
+        <font style="italic"/>
+    </fontcolor>
+    <fontcolor default="comment" foreColor="gray" name="block-comment"/>
+    <fontcolor default="default" name="text"/>
+    <fontcolor default="default" foreColor="ff99ccff" name="tag"/>
+    <fontcolor default="default" name="css-embedded"/>
+    <fontcolor default="comment" name="left-curly"/>
+    <fontcolor name="mod-abstract"/>
+    <fontcolor default="default" name="javascript-embedded"/>
 </fontscolors>

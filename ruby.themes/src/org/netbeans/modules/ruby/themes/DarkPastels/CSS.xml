@@ -26,7 +26,7 @@ your own identifying information:
 Contributor(s):
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 
 If you wish your version of this file to be governed by only the CDDL
@@ -41,54 +41,41 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 <!DOCTYPE fontscolors PUBLIC "-//NetBeans//DTD Editor Fonts and Colors settings 1.1//EN" "http://www.netbeans.org/dtds/EditorFontsColors-1_1.dtd">
-
 <fontscolors>
-    <fontcolor bgColor="ffaea3ec" name="mark-occurrences"/>
-    <fontcolor default="whitespace" name="whitespace"/>
-    <fontcolor default="keyword" name="literal"/>
-    <fontcolor default="char" name="character"/>
-    <fontcolor default="comment" name="comment"/>
-    <fontcolor name="mod-interface"/>
-    <fontcolor name="mod-public"/>
-    <fontcolor default="keyword" name="keyword-directive"/>
-    <fontcolor name="mod-constructor">
-        <font style="bold"/>
-    </fontcolor>
-    <fontcolor foreColor="ff098618" name="mod-field">
-        <font style="bold"/>
-    </fontcolor>
-    <fontcolor name="mod-method">
+    <fontcolor default="whitespace" name="css_whitespace"/>
+    <fontcolor name="css_hash"/>
+    <fontcolor bgColor="ffeceba3" name="mark-occurrences"/>
+    <fontcolor default="comment" name="css_comment"/>
+    <fontcolor default="comment" name="whitespace_comment"/>
+    <fontcolor foreColor="ffff9900" name="mod-method">
         <font style="bold"/>
     </fontcolor>
     <fontcolor default="keyword" name="keyword"/>
     <fontcolor default="string" name="string"/>
-    <fontcolor name="mod-protected"/>
-    <fontcolor name="mod-enum"/>
+    <fontcolor foreColor="ff9999ff" name="mod-parameter-use">
+        <font style="italic"/>
+    </fontcolor>
     <fontcolor default="separator" name="separator"/>
-    <fontcolor name="mod-local-variable"/>
-    <fontcolor name="mod-private"/>
-    <fontcolor default="default" foreColor="blue" name="html-tag"/>
-    <fontcolor name="mod-annotation-type"/>
-    <fontcolor name="mod-deprecated" strikeThrough="darkGray"/>
+    <fontcolor default="keyword" name="css_keyword"/>
+    <fontcolor default="string" name="url"/>
+    <fontcolor default="string" name="rgb"/>
     <fontcolor default="number" name="number"/>
-    <fontcolor default="comment" foreColor="ff0000cc" name="javadoc-tag">
+    <fontcolor default="separator" name="brace"/>
+    <fontcolor default="identifier" foreColor="ffffcc33" name="css_selector">
         <font style="bold"/>
     </fontcolor>
-    <fontcolor default="string" name="string-escape">
-        <font style="bold"/>
-    </fontcolor>
-    <fontcolor name="mod-class"/>
-    <fontcolor foreColor="gray" name="mod-unused"/>
-    <fontcolor foreColor="ffa06001" name="mod-parameter"/>
-    <fontcolor name="mod-package-private"/>
+    <fontcolor foreColor="ff99ccff" name="mod-parameter"/>
+    <fontcolor default="default" name="default"/>
+    <fontcolor default="identifier" name="css_identifier"/>
     <fontcolor default="operator" name="operator"/>
-    <fontcolor name="mod-static">
-        <font style="italic"/>
-    </fontcolor>
-    <fontcolor default="error" name="errors"/>
-    <fontcolor default="string" name="string-escape-invalid">
-        <font style="italic"/>
-    </fontcolor>
+    <fontcolor default="error" name="error"/>
+    <fontcolor default="keyword" foreColor="ff3399ff" name="css_key"/>
+    <fontcolor default="number" name="hash"/>
+    <fontcolor default="number" name="escaped_css_number"/>
+    <fontcolor default="error" name="unknown"/>
+    <fontcolor default="operator" name="css_operator"/>
+    <fontcolor default="number" name="css_number"/>
+    <fontcolor name="css_url"/>
+    <fontcolor default="string" name="css_string"/>
     <fontcolor default="identifier" name="identifier"/>
-    <fontcolor name="mod-abstract"/>
 </fontscolors>
