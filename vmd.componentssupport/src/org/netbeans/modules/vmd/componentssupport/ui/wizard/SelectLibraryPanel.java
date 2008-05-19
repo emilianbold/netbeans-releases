@@ -79,7 +79,7 @@ class SelectLibraryPanel implements Panel, ValidatingPanel {
         myListeners.remove( listener );
     }
 
-    public void setValid(boolean nueValid) {
+    protected void setValid(boolean nueValid) {
         if (nueValid != myValid) {
             myValid = nueValid;
             fireChange();

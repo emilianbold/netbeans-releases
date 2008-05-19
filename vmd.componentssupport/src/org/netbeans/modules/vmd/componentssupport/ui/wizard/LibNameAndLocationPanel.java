@@ -91,11 +91,10 @@ class LibNameAndLocationPanel implements Panel, FinishablePanel,
      * @see org.openide.WizardDescriptor.Panel#isValid()
      */
     public boolean isValid() {
-        // TODO Auto-generated method stub
         return myValid;
     }
 
-    public void setValid(boolean nueValid) {
+    protected void setValid(boolean nueValid) {
         if (nueValid != myValid) {
             myValid = nueValid;
             fireChange();
