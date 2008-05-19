@@ -311,7 +311,7 @@ public class HibernateUtil {
         return ""; //NOI18N
     }
 
-    private static DatabaseConnection getDBConnection(HibernateConfiguration configuration)
+    public static DatabaseConnection getDBConnection(HibernateConfiguration configuration)
         throws DatabaseException {
         try {
 

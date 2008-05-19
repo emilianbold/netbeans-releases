@@ -48,15 +48,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
-
-import org.netbeans.api.db.explorer.support.DatabaseExplorerUIs;
+import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.modules.dbschema.SchemaElement;
 import org.netbeans.api.project.Project;
 import org.openide.DialogDisplayer;
@@ -75,7 +74,7 @@ import org.netbeans.modules.hibernate.wizards.support.TableUISupport;
 import org.netbeans.modules.hibernate.wizards.support.DBSchemaManager;
 import org.netbeans.modules.hibernate.wizards.support.DBSchemaTableProvider;
 import org.netbeans.modules.hibernate.wizards.support.EmptyTableProvider;
-import org.netbeans.modules.hibernate.wizards.support.TableSource;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -86,7 +85,7 @@ public class HibernateRevengDatabaseTablesPanel extends javax.swing.JPanel {
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private final DBSchemaManager dbschemaManager = new DBSchemaManager();
-    private DatabaseConnection dbconn;    
+    private DatabaseConnection dbconn;
     private boolean sourceSchemaUpdateEnabled;
     private Project project;
     org.netbeans.modules.hibernate.service.HibernateEnvironment env;
@@ -111,7 +110,7 @@ public class HibernateRevengDatabaseTablesPanel extends javax.swing.JPanel {
 
     public void initialize(Project project) {
         this.project = project;
-        fillConfiguration();       
+        fillConfiguration();
 
         sourceSchemaUpdateEnabled = true;
         SwingUtilities.invokeLater(new Runnable() {
@@ -123,10 +122,9 @@ public class HibernateRevengDatabaseTablesPanel extends javax.swing.JPanel {
     }
 
     private void fillConfiguration() {
-//        env = project.getLookup().lookup(org.netbeans.modules.hibernate.service.HibernateEnvironment.class);
-//        String[] configFiles = getConfigFilesFromProject(project);
-//        this.cmbDatabaseConn.setModel(new DefaultComboBoxModel(configFiles));
-        DatabaseExplorerUIs.connect(cmbDatabaseConn, ConnectionManager.getDefault());
+        env = project.getLookup().lookup(org.netbeans.modules.hibernate.service.HibernateEnvironment.class);
+        String[] configFiles = getConfigFilesFromProject(project);
+        this.cmbDatabaseConn.setModel(new DefaultComboBoxModel(configFiles));
     }
 
     // Gets the list of Config files from HibernateEnvironment.
@@ -146,7 +144,7 @@ public class HibernateRevengDatabaseTablesPanel extends javax.swing.JPanel {
 
     // This method updates the AvailableList with a set of tables 
     // based on the configuration file selection.
-    private void fillDatabaseTables() {        
+    private void fillDatabaseTables() {
         if (!sourceSchemaUpdateEnabled) {
             return;
         }
@@ -154,24 +152,19 @@ public class HibernateRevengDatabaseTablesPanel extends javax.swing.JPanel {
         TableProvider tableProvider = null;
         sourceSchemaElement = null;
         dbconn = null;
-        Object item = cmbDatabaseConn.getSelectedItem();        
+        Object item = cmbDatabaseConn.getSelectedItem();
 
-//        HibernateConfiguration hibConf = null;
-//        try {
-//            hibConf = ((HibernateCfgDataObject) DataObject.find(configFileObjects.get(cmbDatabaseConn.getSelectedIndex()))).getHibernateConfiguration();
-//        } catch (DataObjectNotFoundException ex) {
-//            Exceptions.printStackTrace(ex);
-//        }
-        //databaseTables = env.getAllDatabaseTables(hibConf);
-        
-
-        dbconn = (DatabaseConnection) cmbDatabaseConn.getSelectedItem();// HibernateUtil.getDBConnection(hibConf);
-
-        
+        HibernateConfiguration hibConf = null;
         try {
+            hibConf = ((HibernateCfgDataObject) DataObject.find(configFileObjects.get(cmbDatabaseConn.getSelectedIndex()))).getHibernateConfiguration();
+            dbconn = HibernateUtil.getDBConnection(hibConf);
             if (dbconn != null) {
-                sourceSchemaElement = dbschemaManager.getSchemaElement(dbconn);                
+                sourceSchemaElement = dbschemaManager.getSchemaElement(dbconn);
             }
+        } catch (DataObjectNotFoundException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (DatabaseException e) {
+            Exceptions.printStackTrace(e);
         } catch (SQLException e) {
             notify("Error");
         }
@@ -179,14 +172,14 @@ public class HibernateRevengDatabaseTablesPanel extends javax.swing.JPanel {
         if (sourceSchemaElement != null) {
             tableProvider = new DBSchemaTableProvider(sourceSchemaElement);
         } else {
-            tableProvider = new EmptyTableProvider();            
+            tableProvider = new EmptyTableProvider();
         }
 
         tableClosure = new TableClosure(tableProvider);
-        tableClosure.setClosureEnabled(tableClosureCheckBox.isSelected());        
+        tableClosure.setClosureEnabled(tableClosureCheckBox.isSelected());
 
         TableUISupport.connectAvailable(availableTablesList, tableClosure);
-        TableUISupport.connectSelected(selectedTablesList, tableClosure);       
+        TableUISupport.connectSelected(selectedTablesList, tableClosure);
 
         updateButtons();
         changeSupport.fireChange();
@@ -220,6 +213,13 @@ public class HibernateRevengDatabaseTablesPanel extends javax.swing.JPanel {
         }
     }
     
+    public FileObject getConfigurationFile() {
+        if (cmbDatabaseConn.getSelectedIndex() != -1) {
+            return configFileObjects.get(cmbDatabaseConn.getSelectedIndex());
+        }
+        return null;
+    }
+
     public TableClosure getTableClosure() {
         return tableClosure;
     }
