@@ -182,9 +182,6 @@ public class HgCommand {
 
     private static final String HG_RENAME_CMD = "rename"; // NOI18N
     private static final String HG_RENAME_AFTER_CMD = "-A"; // NOI18N
-    private static final String HG_PATH_DEFAULT_CMD = "paths"; // NOI18N
-    private static final String HG_PATH_DEFAULT_OPT = "default"; // NOI18N
-    private static final String HG_PATH_DEFAULT_PUSH_OPT = "default-push"; // NOI18N
  
     
     // TODO: replace this hack 
@@ -825,9 +822,19 @@ public class HgCommand {
         return list;
     }
     
-    private static List<HgLogMessage> processLogMessages(String rootURL, List<String> list, final List<HgLogMessage> messages) {
+    private static List<HgLogMessage> processLogMessages(String rootURL, List<File> files, List<String> list, final List<HgLogMessage> messages) {
         String rev, author, desc, date, id, parents, fm, fa, fd, fc;
+        List<String> filesShortPaths = new ArrayList<String>();
+        
         if (list != null && !list.isEmpty()) {
+            if(files != null){
+                for(File f: files){
+                    String shortPath = f.getAbsolutePath();
+                    if(shortPath.startsWith(rootURL) && shortPath.length() > rootURL.length()) {
+                        filesShortPaths.add(shortPath.substring(rootURL.length()+1));
+                    }
+                }
+            }
             rev = author = desc = date = id = parents = fm = fa = fd = fc = null;
             boolean bEnd = false;
             for (String s : list) {
@@ -858,7 +865,7 @@ public class HgCommand {
                 }
 
                 if (rev != null & bEnd) {
-                    messages.add(new HgLogMessage(rootURL, rev, author, desc, date, id, parents, fm, fa, fd, fc));
+                    messages.add(new HgLogMessage(rootURL, filesShortPaths, rev, author, desc, date, id, parents, fm, fa, fd, fc));
                     rev = author = desc = date = id = parents = fm = fa = fd = fc = null;
                     bEnd = false;
                 }
@@ -875,7 +882,7 @@ public class HgCommand {
 
             List<String> list = new LinkedList<String>();
             list = HgCommand.doIncomingForSearch(root, toRevision, bShowMerges, logger);
-            processLogMessages(rootUrl, list, messages);
+            processLogMessages(rootUrl, null, list, messages);
 
         } catch (HgException ex) {
             NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
@@ -895,7 +902,7 @@ public class HgCommand {
 
             List<String> list = new LinkedList<String>();
             list = HgCommand.doOutForSearch(root, toRevision, bShowMerges, logger);
-            processLogMessages(rootUrl, list, messages);
+            processLogMessages(rootUrl, null, list, messages);
 
         } catch (HgException ex) {
             NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
@@ -950,10 +957,11 @@ public class HgCommand {
             }
 
             List<String> list = new LinkedList<String>();
+            List<File> filesList = files != null ? new ArrayList<File>(files) : null;
             list = HgCommand.doLogForHistory(root, 
-                    files != null ? new ArrayList<File>(files) : null,
-                    fromRevision, toRevision, headRev, bShowMerges, bGetFileInfo, limit, logger);
-            processLogMessages(rootUrl, list, messages);
+                    filesList,
+                    fromRevision, toRevision, headRev, bShowMerges, bGetFileInfo, limit, logger);            
+            processLogMessages(rootUrl, filesList, list, messages);
         } catch (HgException ex) {
             NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
             DialogDisplayer.getDefault().notifyLater(e);
@@ -2056,53 +2064,6 @@ public class HgCommand {
     public static List<String> getRevisions(File repository, int limit) {
         if (repository == null) return null;
         return getRevisionsForFile(repository, null, limit);
-    }
-    
-    /**
-     * Get the pull default for the specified repository, i.e. the default
-     * destination for hg pull commmands.
-     *
-     * @param File repository of the mercurial repository's root directory
-     * @return String for pull default
-     */
-    public static String getPullDefault(File repository) {
-        return getPathDefault(repository, HG_PATH_DEFAULT_OPT);
-    }
-
-    /**
-     * Get the push default for the specified repository, i.e. the default
-     * destination for hg push commmands.
-     *
-     * @param File repository of the mercurial repository's root directory
-     * @return String for push default
-     */
-    public static String getPushDefault(File repository) {
-        return getPathDefault(repository, HG_PATH_DEFAULT_PUSH_OPT);
-    }
-
-    private static String getPathDefault(File repository, String type) {
-        if (repository == null) return null;
-        List<String> command = new ArrayList<String>();
-
-        command.add(getHgCommand());
-        command.add(HG_PATH_DEFAULT_CMD);
-        command.add(HG_OPT_REPOSITORY);
-        command.add(repository.getAbsolutePath());
-        command.add(type);
-
-        String res = null;
-        
-        List<String> list = new LinkedList<String>();
-        try {
-            list = exec(command);
-        } catch (HgException ex) {
-            // Ignore Exception
-        }
-        if( !list.isEmpty()
-                    && (!isErrorNotFound(list.get(0)))) {
-            res = list.get(0);
-        }
-        return res;
     }
     
     /**

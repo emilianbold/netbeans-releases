@@ -196,7 +196,7 @@ public class PullAction extends ContextAction {
     }
 
     static void getDefaultAndPerformPull(VCSContext ctx, File root, OutputLogger logger) {
-        final String pullPath = HgCommand.getPullDefault(root);
+        final String pullPath = HgRepositoryContextCache.getPullDefault(ctx);
         // If the repository has no default pull path then inform user
         if(pullPath == null) {
             logger.outputInRed( NbBundle.getMessage(PullAction.class,"MSG_PULL_TITLE")); // NOI18N

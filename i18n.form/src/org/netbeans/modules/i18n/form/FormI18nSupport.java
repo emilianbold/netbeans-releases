@@ -73,6 +73,7 @@ import org.netbeans.modules.i18n.HardCodedString;
 import org.netbeans.modules.i18n.I18nString;
 import org.netbeans.modules.i18n.I18nSupport;
 import org.netbeans.modules.i18n.InfoPanel;
+import org.netbeans.modules.i18n.java.JavaI18nFinder;
 import org.netbeans.modules.i18n.java.JavaI18nString;
 import org.netbeans.modules.i18n.java.JavaI18nSupport;
 
@@ -656,6 +657,13 @@ public class FormI18nSupport extends JavaI18nSupport {
             if (lastFoundProp != null) {
                 validProp = lastFoundProp;
                 it = formProperties.tailSet(lastFoundProp).iterator();
+                /*
+                 * In the first cycle of the following do-while loop, value
+                 * of 'lastFoundProp' will be used, not the one from
+                 * the iterator. So make sure the property following
+                 * 'lastFoundProp' is used in the next cycle:
+                 */
+                it.next();
             } else {
                 it = formProperties.iterator();
             }
@@ -709,8 +717,9 @@ public class FormI18nSupport extends JavaI18nSupport {
                                 // is type of VALUE
                                 string = connectionValue.getValue();
 
-                            if(indexOfNonI18nString(string, hardString, validProp.getSkip()) != -1)
-                                found = true;
+                                if (indexOfNonI18nString(string, hardString, validProp.getSkip()) != -1) {
+                                    found = true;
+                                }
                             } else if (connectionValue.getType() == RADConnectionDesignValue.TYPE_CODE) {
                                 // is type of TYPE_CODE
                                 string = connectionValue.getCode();
