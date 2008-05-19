@@ -412,7 +412,7 @@ public class SceneAcceptProvider implements AcceptProvider
 
                     IPresentationElement pe = (IPresentationElement) ((DesignerScene) engine.getScene()).findObject(transferWidget);
                     IElement element = pe.getFirstSubject();
-                    if (!ns.equals(element.getOwner()))
+                    if (ns!=null && !ns.equals(element.getOwner()))
                     {
                         if (element instanceof INamedElement)
                         {
