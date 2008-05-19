@@ -186,11 +186,33 @@ public class ConfigManager {
         }
     }
 
-    // XXX javadoc
+    /**
+     * Configuration provider for {@link ConfigManager configuration manager}.
+     */
     public interface ConfigProvider {
+
+        /**
+         * Get all names of the properties which can be defined in each configuration.
+         * @return an array of property names.
+         */
         String[] getConfigProperties();
+
+        /**
+         * Get all the configurations the configuration manager should operate with.
+         * @return all the configurations.
+         */
         Map<String/*|null*/, Map<String, String/*|null*/>/*|null*/> getConfigs();
+
+        /**
+         * Get the currently active configuration name.
+         * @return the currently active configuration name.
+         */
         String getActiveConfig();
+
+        /**
+         * Set the currently active configuration name.
+         * @param configName the currently active configuration name.
+         */
         void setActiveConfig(String configName);
     }
 }
