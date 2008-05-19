@@ -40,7 +40,7 @@ package org.netbeans.spi.java.project.support;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.lang.reflect.Field;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -50,14 +50,13 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
+import org.netbeans.spi.java.classpath.FilteringPathResourceImplementation;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.project.LookupMerger;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
-import org.openide.util.WeakListeners;
 
 /**
  * Lookup Merger implementation for ClassPathProvider
@@ -115,14 +114,14 @@ final class ClassPathProviderMerger implements LookupMerger<ClassPathProvider> {
         }
     }
     
-    /** ProxyClassPathImplementation provides read only proxy for ClassPathImplementations.
+    /** ProxyClassPathImplementation provides read only proxy for PathResourceImplementations based on original ClassPath items.
      *  The order of the resources is given by the order of its delegates.
      *  The proxy is designed to be used as a union of class paths.
      *  E.g. to be able to easily iterate or listen on all design resources = sources + compile resources
      */
-    public class ProxyClassPathImplementation implements ClassPathImplementation {
+    class ProxyClassPathImplementation implements ClassPathImplementation {
 
-        private ClassPathImplementation[] classPaths;
+        private PathResourceImplementation[] classPaths;
         private List<PathResourceImplementation> resourcesCache;
         private ArrayList<PropertyChangeListener> listeners;
         private LookupListener lookupList;
@@ -151,7 +150,7 @@ final class ClassPathProviderMerger implements LookupMerger<ClassPathProvider> {
         }
         
         private void checkProviders() {
-            List<ClassPathImplementation> impls = new ArrayList<ClassPathImplementation>();
+            List<PathResourceImplementation> impls = new ArrayList<PathResourceImplementation>();
             ClassPath mainResult = mainProvider.findClassPath(file, type);
             if (mainResult != null) {
                 impls.add(getClassPathImplementation(mainResult));
@@ -165,17 +164,17 @@ final class ClassPathProviderMerger implements LookupMerger<ClassPathProvider> {
             }
             synchronized (this) {
                 if (classPaths != null) {
-                    for (ClassPathImplementation old : classPaths) {
+                    for (PathResourceImplementation old : classPaths) {
                         old.removePropertyChangeListener(classPathsListener);
                     }
                 }
-                for (ClassPathImplementation cpImpl : impls) {
+                for (PathResourceImplementation cpImpl : impls) {
                     if (cpImpl == null) {
                         continue;
                     }
                     cpImpl.addPropertyChangeListener(classPathsListener);
                 }
-                this.classPaths = impls.toArray(new ClassPathImplementation[impls.size()]);
+                this.classPaths = impls.toArray(new PathResourceImplementation[impls.size()]);
             }
             PropertyChangeEvent ev = new PropertyChangeEvent(this, ClassPathImplementation.PROP_RESOURCES, null, null);
             firePropertyChange(ev);
@@ -189,10 +188,8 @@ final class ClassPathProviderMerger implements LookupMerger<ClassPathProvider> {
             }
 
             ArrayList<PathResourceImplementation> result = new ArrayList<PathResourceImplementation>(classPaths.length * 10);
-            for (ClassPathImplementation cpImpl : classPaths) {
-                List<? extends PathResourceImplementation> subPath = cpImpl.getResources();
-                assert subPath != null : "ClassPathImplementation.getResources() returned null. ClassPathImplementation.class: " + cpImpl.getClass().toString() + " ClassPathImplementation: " + cpImpl.toString();
-                result.addAll(subPath);
+            for (PathResourceImplementation cpImpl : classPaths) {
+                result.add(cpImpl);
             }
 
             synchronized (this) {
@@ -221,7 +218,7 @@ final class ClassPathProviderMerger implements LookupMerger<ClassPathProvider> {
         public String toString() {
             StringBuilder builder = new StringBuilder("[");   //NOI18N
 
-            for (ClassPathImplementation cpImpl : this.classPaths) {
+            for (PathResourceImplementation cpImpl : this.classPaths) {
                 builder.append(cpImpl.toString());
                 builder.append(", ");   //NOI18N
 
@@ -254,31 +251,47 @@ final class ClassPathProviderMerger implements LookupMerger<ClassPathProvider> {
         }
     }
     
-    static Field implField;
-    static {
-        try {
-            implField = ClassPath.class.getDeclaredField("impl");
-            implField.setAccessible(true);
-        } catch (Exception x) {
-            Exceptions.printStackTrace(x);
-        }
+    static FilteringPathResourceImplementation getClassPathImplementation(ClassPath path) {
+        return new ProxyFilteringCPI(path);
     }
-    /**
-     * sort of hack. JavaSupport APIs are meant to stay project free (thus the LookupMerger cannot be placed there).
-     * But the Java project Support module has no access to the ClassPathAccessor.DEFAULT instance
-     *  to be able to get the ClassPathImplementation out of the ClassPath instance. 
-     * (as the ProxyClassPathImplemntation in Java Support API module does).
-     */
-    static ClassPathImplementation getClassPathImplementation(ClassPath path) {
-        assert implField != null : "ClassPath.impl field is gone.";
-        Object toRet = null;
-        try {
-            toRet = implField.get(path);
-        } catch (IllegalArgumentException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (IllegalAccessException ex) {
-            Exceptions.printStackTrace(ex);
+    
+    private static class ProxyFilteringCPI implements FilteringPathResourceImplementation {
+        private ClassPath classpath;
+
+        private ProxyFilteringCPI(ClassPath path) {
+            this.classpath = path;
         }
-        return (ClassPathImplementation)toRet;
+
+        
+        public boolean includes(URL root, String resource) {
+            for (ClassPath.Entry ent : classpath.entries()) {
+                if (ent.getURL().equals(root)) {
+                    return ent.includes(resource);
+                }
+            }
+            return false;
+        }
+
+        public URL[] getRoots() {
+            ArrayList<URL> urls = new ArrayList<URL>();
+            for (ClassPath.Entry ent : classpath.entries()) {
+                urls.add(ent.getURL());
+            }
+            return urls.toArray(new URL[urls.size()]);
+        }
+
+        public ClassPathImplementation getContent() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+            classpath.addPropertyChangeListener(listener);
+        }
+
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
+            classpath.removePropertyChangeListener(listener);
+        }
+        
     }
+            
 }

@@ -143,21 +143,6 @@ public class ClassPathProviderMergerTest extends NbTestCase {
 
     }
     
-    public void testReflection() throws Exception {
-        ProviderImpl defaultCP = new ProviderImpl();
-        URL url = createURLReference("org/netbeans/modules/java/project/");
-        defaultCP.paths.put(ClassPath.COMPILE, ClassPathSupport.createClassPath(url));
-        ClassPathProviderMerger instance = new ClassPathProviderMerger(defaultCP);
-        assertNotNull(instance.implField);
-        
-        InstanceContent ic = new InstanceContent();
-        Lookup lookup = new AbstractLookup(ic);
-        ClassPathProvider prov = instance.merge(lookup);
-        ClassPath cp = prov.findClassPath(null, ClassPath.COMPILE);
-        assertNotNull(ClassPathProviderMerger.getClassPathImplementation(cp));
-        
-    }
-    
     
     private static URL createURLReference(String path) {
         URL url = ClassPathProviderMergerTest.class.getClassLoader().getResource(path);
