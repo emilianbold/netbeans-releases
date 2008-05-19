@@ -80,10 +80,8 @@ final class BasicConfVisualPanel extends JPanel {
     private static final long serialVersionUID = -7699370587627049750L;
     
     public  static final String VALID         = "valid";                    // NOI18N
-    public  static final String ERROR_MESSAGE = "WizardPanel_errorMessage"; // NOI18N
+
     static final String EXAMPLE_BASE_NAME     = "org.yourorghere.";         // NOI18N
-    private static final String BUNDLE_PROPERTIES 
-                                              = "/Bundle.properties";       // NOI18N
     
     public BasicConfVisualPanel( ) {
         initComponents();
@@ -95,6 +93,7 @@ final class BasicConfVisualPanel extends JPanel {
         };
         myLayerListener = new DocumentAdapter() {
             public void insertUpdate(DocumentEvent e) {
+                isLayerUpdated = true;
                 checkLayer();
             }
         };
@@ -191,8 +190,14 @@ final class BasicConfVisualPanel extends JPanel {
             // update layer and bundle from the cnb
             String slashName = dotName.replace('.', '/');
             if (!isBundleUpdated) {
-                bundleValue.setText(slashName + BUNDLE_PROPERTIES); // NOI18N
+                bundleValue.setText(
+                        slashName + "/" + CustomComponentWizardIterator.BUNDLE_PROPERTIES); // NOI18N
                 isBundleUpdated = false;
+            }
+            if (!isLayerUpdated) {
+                layerValue.setText(
+                        slashName + "/" + CustomComponentWizardIterator.LAYER_XML); // NOI18N
+                isLayerUpdated = false;
             }
         }
     }
@@ -257,12 +262,16 @@ final class BasicConfVisualPanel extends JPanel {
         String projectName = (String)mySettings.getProperty( 
                 CustomComponentWizardIterator.PROJECT_NAME);
         if ( codeBaseName == null ){
-            String dotName = EXAMPLE_BASE_NAME + projectName;
-            codeBaseName = normalizeCNB(dotName);
+            codeBaseName = getDefaultCodeNameBase(projectName);
         }
         return codeBaseName;
     }
 
+    public static String getDefaultCodeNameBase(String projectName){
+            String dotName = EXAMPLE_BASE_NAME + projectName;
+            return normalizeCNB(dotName);
+    }
+    
     /** Stores collected data into model. */
     void storeData( WizardDescriptor descriptor ) {
         descriptor.putProperty( CustomComponentWizardIterator.CODE_BASE_NAME, 
@@ -329,7 +338,9 @@ final class BasicConfVisualPanel extends JPanel {
     }
     
     private final void setMessage(String message) {
-        mySettings.putProperty(ERROR_MESSAGE, message);
+        mySettings.putProperty(
+                CustomComponentWizardIterator.WIZARD_PANEL_ERROR_MESSAGE, 
+                message);
     }
     
     private void removeDocumentListeners() {
@@ -460,6 +471,7 @@ final class BasicConfVisualPanel extends JPanel {
     // End of variables declaration//GEN-END:variables
     
     private boolean isBundleUpdated;
+    private boolean isLayerUpdated;
     private boolean listenersAttached;
     
     private final DocumentListener myCodeBaseNameListener;

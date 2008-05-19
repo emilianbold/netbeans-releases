@@ -44,6 +44,7 @@ import java.awt.Component;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import org.openide.WizardDescriptor;
@@ -71,7 +72,7 @@ class LibNameAndLocationPanel implements Panel, FinishablePanel,
      */
     public Component getComponent() {
         if (myComponent == null) {
-            myComponent = new NameAndLocationVisualPanel( );
+            myComponent = new NameAndLocationVisualPanel( this );
             myComponent.setName(
                     NbBundle.getMessage(NewLibraryDescriptor.class, 
                             NewLibraryDescriptor.NAME_LOCATION_STEP));
@@ -91,9 +92,28 @@ class LibNameAndLocationPanel implements Panel, FinishablePanel,
      */
     public boolean isValid() {
         // TODO Auto-generated method stub
-        return false;
+        return myValid;
     }
 
+    public void setValid(boolean nueValid) {
+        if (nueValid != myValid) {
+            myValid = nueValid;
+            fireChange();
+        }
+    }
+
+    private void fireChange() {
+        ChangeListener[] listeners;
+        ChangeEvent event = new ChangeEvent(this);
+        synchronized (myListeners) {
+            listeners = myListeners.toArray(new ChangeListener[myListeners
+                    .size()]);
+        }
+        for (ChangeListener listener : listeners) {
+            listener.stateChanged(event);
+        }
+    }
+    
     /* (non-Javadoc)
      * @see org.openide.WizardDescriptor.Panel#readSettings(java.lang.Object)
      */
@@ -142,5 +162,6 @@ class LibNameAndLocationPanel implements Panel, FinishablePanel,
     private List<ChangeListener> myListeners; 
     private WizardDescriptor myWizardDescriptor;
     private NameAndLocationVisualPanel myComponent;
+    private boolean myValid = true;
 
 }
