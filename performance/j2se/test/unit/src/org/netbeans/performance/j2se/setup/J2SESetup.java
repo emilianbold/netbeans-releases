@@ -73,7 +73,8 @@ public class J2SESetup extends JellyTestCase {
         String workdir = System.getProperty("nbjunit.workdir");
 
         String projectsDir = workdir + java.io.File.separator + "tmpdir" + java.io.File.separator + "jEdit41";
-        ProjectSupport.openProject(projectsDir);
+        Object prj=ProjectSupport.openProject(projectsDir);
+        assertNotNull(prj);
         CommonUtilities.waitProjectTasksFinished();
     }
 
@@ -82,7 +83,8 @@ public class J2SESetup extends JellyTestCase {
         String workdir = System.getProperty("nbjunit.workdir");
 
         String projectsDir = workdir + java.io.File.separator + "tmpdir" + java.io.File.separator + "PerformanceTestData";
-        ProjectSupport.openProject(projectsDir);
+        Object prj=ProjectSupport.openProject(projectsDir);
+        assertNotNull(prj);
         CommonUtilities.waitProjectTasksFinished();
     }
 
@@ -91,7 +93,8 @@ public class J2SESetup extends JellyTestCase {
         String workdir = System.getProperty("nbjunit.workdir");
 
         String projectsDir = workdir + java.io.File.separator + "tmpdir" + java.io.File.separator + "PerformanceTestWebApplication";
-        ProjectSupport.openProject(projectsDir);
+        Object prj=ProjectSupport.openProject(projectsDir);
+        assertNotNull(prj);
         CommonUtilities.waitProjectTasksFinished();
     }
 
@@ -100,7 +103,8 @@ public class J2SESetup extends JellyTestCase {
         String workdir = System.getProperty("nbjunit.workdir");
 
         String projectsDir = workdir + java.io.File.separator + "tmpdir" + java.io.File.separator + "PerformanceTestFoldersData";
-        ProjectSupport.openProject(projectsDir);
+        Object prj=ProjectSupport.openProject(projectsDir);
+        assertNotNull(prj);        
         CommonUtilities.waitProjectTasksFinished();
     }
 
@@ -109,7 +113,8 @@ public class J2SESetup extends JellyTestCase {
         String workdir = System.getProperty("nbjunit.workdir");
 
         String projectsDir = workdir + java.io.File.separator + "tmpdir" + java.io.File.separator + "SystemProperties";
-        ProjectSupport.openProject(projectsDir);
+        Object prj=ProjectSupport.openProject(projectsDir);
+        assertNotNull(prj);        
         CommonUtilities.waitProjectTasksFinished();
     }
     
