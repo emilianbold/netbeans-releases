@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.php.project.ui.customizer;
 
+import org.netbeans.modules.php.project.connections.RemoteConnectionsPanel;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -51,6 +52,8 @@ import javax.swing.plaf.UIResource;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAsType;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.UploadFiles;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
 /**
@@ -61,7 +64,7 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
     private final JLabel[] labels;
     private final JTextField[] textFields;
     private final String[] propertyNames;
-    private String displayName;
+    private final String displayName;
 
     public RunAsRemoteWeb(ConfigManager manager, Category category) {
         this(manager, category, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_ConfigRemoteWeb"));
@@ -168,8 +171,21 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         String indexFile = indexFileTextField.getText();
 
         String err = validateWebFields(url, indexFile);
-        getCategory().setErrorMessage(err);
-        getCategory().setValid(err == null);
+        if (err != null) {
+            validateCategory(err);
+            return;
+        }
+
+        if (remoteConnectionComboBox.getSelectedItem() == null) {
+            validateCategory(NbBundle.getMessage(RunAsRemoteWeb.class, "MSG_NoConnectionSelected"));
+            return;
+        }
+        validateCategory(null);
+    }
+
+    private void validateCategory(String error) {
+        getCategory().setErrorMessage(error);
+        getCategory().setValid(error == null);
     }
 
     /** This method is called from within the constructor to
@@ -223,6 +239,11 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         org.openide.awt.Mnemonics.setLocalizedText(remoteConnectionLabel, org.openide.util.NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_FtpConnection")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(manageRemoteConnectionButton, org.openide.util.NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_Manage")); // NOI18N
+        manageRemoteConnectionButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                manageRemoteConnectionButtonActionPerformed(evt);
+            }
+        });
 
         uploadDirectoryLabel.setLabelFor(uploadDirectoryTextField);
         org.openide.awt.Mnemonics.setLocalizedText(uploadDirectoryLabel, org.openide.util.NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_UploadDirectory")); // NOI18N
@@ -301,6 +322,16 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    private void manageRemoteConnectionButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_manageRemoteConnectionButtonActionPerformed
+        NotifyDescriptor notifyDescriptor = new NotifyDescriptor(
+                "Not implemented yet.", // NOI18N
+                "TODO", // NOI18N
+                NotifyDescriptor.OK_CANCEL_OPTION,
+                NotifyDescriptor.INFORMATION_MESSAGE,
+                new Object[] {NotifyDescriptor.OK_OPTION},
+                NotifyDescriptor.OK_OPTION);
+        DialogDisplayer.getDefault().notify(notifyDescriptor);
+    }//GEN-LAST:event_manageRemoteConnectionButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel argsLabel;
