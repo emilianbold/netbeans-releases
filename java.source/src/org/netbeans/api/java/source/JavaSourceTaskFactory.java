@@ -242,15 +242,15 @@ public abstract class JavaSourceTaskFactory {
         };
         ACCESSOR2 = new Accessor2() {
             public void addPhaseCompletionTask(JavaSource js, CancellableTask<CompilationInfo> task, Phase phase, Priority priority) throws IOException {
-                js.addPhaseCompletionTask(task, phase, priority);
+//todo:                js.addPhaseCompletionTask(task, phase, priority);
             }
 
             public void removePhaseCompletionTask(JavaSource js, CancellableTask<CompilationInfo> task) {
-                js.removePhaseCompletionTask(task);
+//todo:                js.removePhaseCompletionTask(task);
             }
 
             public void rescheduleTask(JavaSource js, CancellableTask<CompilationInfo> task) {
-                js.rescheduleTask(task);
+//todo:                js.rescheduleTask(task);
             }
         };
     }
