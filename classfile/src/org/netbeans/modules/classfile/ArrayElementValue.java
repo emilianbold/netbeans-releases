@@ -63,6 +63,7 @@ public final class ArrayElementValue extends ElementValue {
 	return values.clone();
     }
 
+    @Override
     public String toString() {
 	StringBuffer sb = new StringBuffer("[");
 	int n = values.length;
