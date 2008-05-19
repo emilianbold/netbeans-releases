@@ -48,7 +48,7 @@ import org.openide.util.NbBundle;
 /**
  * @author Tomas Mysik
  */
-public class RemoteConnections {
+public final class RemoteConnections {
 
     public static enum ConnectionType {
         FTP ("LBL_Ftp"); // NOI18N
@@ -66,7 +66,11 @@ public class RemoteConnections {
 
     private final RemoteConnectionsPanel remoteConnectionsPanel;
 
-    public RemoteConnections() {
+    public static RemoteConnections get() {
+        return new RemoteConnections();
+    }
+
+    private RemoteConnections() {
         remoteConnectionsPanel = new RemoteConnectionsPanel();
     }
 

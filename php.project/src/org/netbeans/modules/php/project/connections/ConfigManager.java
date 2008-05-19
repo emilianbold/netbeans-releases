@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,52 +31,52 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.project.ui.customizer;
+package org.netbeans.modules.php.project.connections;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.php.project.PhpConfigurationProvider;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 
 /**
- * @author Radek Matous
+ * @author Radek Matous, Tomas Mysik
  */
 public class ConfigManager {
-    private static final String PROP_DISPLAY_NAME = "$label";//NOI18N    
+    private static final String PROP_DISPLAY_NAME = "$label"; // NOI18N
+
     private final Map<String/*|null*/, Map<String, String/*|null*/>/*|null*/> configs;
-    
-    private final PhpProjectProperties properties;
+    private final ConfigProvider configProvider;
     private final String[] propertyNames;
     private final ChangeSupport changeSupport;
 
-    public ConfigManager(PhpProjectProperties properties) {
-        this.changeSupport = new ChangeSupport(this);
-        this.properties = properties;
-        this.configs = properties.getRunConfigs();
-        ArrayList<String> tmp = new ArrayList<String>(Arrays.asList(PhpProjectProperties.CFG_PROPS));
+    public ConfigManager(ConfigProvider configProvider) {
+        this.configProvider = configProvider;
+        changeSupport = new ChangeSupport(this);
+        configs = configProvider.getConfigs();
+
+        List<String> tmp = new ArrayList<String>(Arrays.asList(configProvider.getConfigProperties()));
         tmp.add(PROP_DISPLAY_NAME);
-        this.propertyNames = tmp.toArray(new String[tmp.size()]);
+        propertyNames = tmp.toArray(new String[tmp.size()]);
     }
 
     public void addChangeListener(ChangeListener listener) {
         changeSupport.addChangeListener(listener);
     }
-    
+
     public void removeChangeListener(ChangeListener listener) {
         changeSupport.removeChangeListener(listener);
-    }    
-    
-    
+    }
+
     public synchronized boolean exists(String name) {
         return configs.keySet().contains(name) && configs.get(name) != null;
     }
@@ -86,7 +86,7 @@ public class ConfigManager {
         configs.put(name, new HashMap<String, String>());
         Configuration retval  = new Configuration(name);
         if (!name.equals(displayName)) {
-            retval.putValue( PROP_DISPLAY_NAME,displayName);
+            retval.putValue(PROP_DISPLAY_NAME, displayName);
         }
         markAsCurrentConfiguration(name);
         return retval;
@@ -97,7 +97,7 @@ public class ConfigManager {
     }
 
     public synchronized Configuration currentConfiguration() {
-        return new Configuration(properties.activeConfig);
+        return new Configuration(configProvider.getActiveConfig());
     }
 
     public Configuration defaultConfiguration() {
@@ -110,7 +110,7 @@ public class ConfigManager {
 
     public synchronized void markAsCurrentConfiguration(String currentConfig) {
         assert configs.keySet().contains(currentConfig);
-        properties.activeConfig = currentConfig;
+        configProvider.setActiveConfig(currentConfig);
         changeSupport.fireChange();
     }
 
@@ -118,16 +118,12 @@ public class ConfigManager {
         return propertyNames;
     }
 
-    private Map<String, String/*|null*/> getProperties() {
-        return getProperties(null);
-    }
-
     private Map<String, String/*|null*/> getProperties(String config) {
         return configs.get(config);
     }
 
-    public class Configuration {
-        private String name;
+    public final class Configuration {
+        private final String name;
 
         private Configuration() {
             this(null);
@@ -144,20 +140,20 @@ public class ConfigManager {
         public String getName() {
             return name;
         }
-        
+
         public String getDisplayName() {
             String retval = getValue(PROP_DISPLAY_NAME);
             retval = retval != null ? retval : getName();
-            return retval != null ? retval : NbBundle.getMessage(PhpConfigurationProvider.class, "LBL_DefaultConfiguration");
+            return retval != null ? retval : NbBundle.getMessage(ConfigManager.class, "LBL_DefaultConfiguration");
         }
-        
+
         public boolean isDefault() {
             return name == null;
         }
-        
+
         public void delete() {
-            synchronized(ConfigManager.this) {            
-                configs.put(getName(), null);                
+            synchronized (ConfigManager.this) {
+                configs.put(getName(), null);
                 //configs.remove(getName());
                 markAsCurrentConfiguration(null);
             }
@@ -168,7 +164,7 @@ public class ConfigManager {
         }
 
         public String getValue(String propertyName) {
-            assert Arrays.asList(getPropertyNames()).contains(propertyName) : propertyName;
+            assert Arrays.asList(getPropertyNames()).contains(propertyName) : "Unknown property: " + propertyName;
             //assert !isDeleted();
             synchronized (ConfigManager.this) {
                 return !isDeleted() ?  getProperties(getName()).get(propertyName) : null;
@@ -176,7 +172,7 @@ public class ConfigManager {
         }
 
         public void putValue(String propertyName, String value) {
-            assert Arrays.asList(getPropertyNames()).contains(propertyName);
+            assert Arrays.asList(getPropertyNames()).contains(propertyName) : "Unknown property: " + propertyName;
             assert !isDeleted();
             synchronized (ConfigManager.this) {
                 getProperties(getName()).put(propertyName, value);
@@ -188,5 +184,13 @@ public class ConfigManager {
                 return ConfigManager.this.getPropertyNames();
             }
         }
+    }
+
+    // XXX javadoc
+    public interface ConfigProvider {
+        String[] getConfigProperties();
+        Map<String/*|null*/, Map<String, String/*|null*/>/*|null*/> getConfigs();
+        String getActiveConfig();
+        void setActiveConfig(String configName);
     }
 }

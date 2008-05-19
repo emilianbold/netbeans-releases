@@ -38,7 +38,7 @@
  */
 package org.netbeans.modules.php.project.ui.customizer;
 
-import org.netbeans.modules.php.project.connections.RemoteConnectionsPanel;
+import org.netbeans.modules.php.project.connections.ConfigManager;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -49,11 +49,10 @@ import javax.swing.JTextField;
 import javax.swing.ListCellRenderer;
 import javax.swing.event.DocumentListener;
 import javax.swing.plaf.UIResource;
+import org.netbeans.modules.php.project.connections.RemoteConnections;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAsType;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.UploadFiles;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
 /**
@@ -323,14 +322,7 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void manageRemoteConnectionButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_manageRemoteConnectionButtonActionPerformed
-        NotifyDescriptor notifyDescriptor = new NotifyDescriptor(
-                "Not implemented yet.", // NOI18N
-                "TODO", // NOI18N
-                NotifyDescriptor.OK_CANCEL_OPTION,
-                NotifyDescriptor.INFORMATION_MESSAGE,
-                new Object[] {NotifyDescriptor.OK_OPTION},
-                NotifyDescriptor.OK_OPTION);
-        DialogDisplayer.getDefault().notify(notifyDescriptor);
+        RemoteConnections.get().open();
     }//GEN-LAST:event_manageRemoteConnectionButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

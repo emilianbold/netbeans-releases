@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.php.project.ui.customizer;
 
+import org.netbeans.modules.php.project.connections.ConfigManager;
 import org.netbeans.modules.php.project.ui.IncludePathUiSupport;
 import java.io.File;
 import java.io.IOException;
@@ -71,7 +72,7 @@ import org.openide.util.Utilities;
 /**
  * @author Tomas Mysik, Radek Matous
  */
-public class PhpProjectProperties {
+public class PhpProjectProperties implements ConfigManager.ConfigProvider {
 
     public static final String SRC_DIR = "src.dir"; // NOI18N
     public static final String COMMAND_PATH = "command.path"; // NOI18N
@@ -156,6 +157,22 @@ public class PhpProjectProperties {
         this.includePathSupport = includePathSupport;
         runConfigs = readRunConfigs();
         activeConfig = project.getEvaluator().getProperty("config"); // NOI18N
+    }
+
+    public String[] getConfigProperties() {
+        return CFG_PROPS;
+    }
+
+    public Map<String, Map<String, String>> getConfigs() {
+        return runConfigs;
+    }
+
+    public String getActiveConfig() {
+        return activeConfig;
+    }
+
+    public void setActiveConfig(String configName) {
+        activeConfig = configName;
     }
 
     public String getCopySrcFiles() {
@@ -344,10 +361,6 @@ public class PhpProjectProperties {
 
     public PhpProject getProject() {
         return project;
-    }
-
-    public Map<String, Map<String, String>> getRunConfigs() {
-        return runConfigs;
     }
 
     /**

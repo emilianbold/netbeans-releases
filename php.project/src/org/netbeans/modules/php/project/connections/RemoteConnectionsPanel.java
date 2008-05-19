@@ -49,26 +49,32 @@ import javax.swing.UIManager;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import org.netbeans.modules.php.project.connections.RemoteConnections.ConnectionType;
 import org.openide.util.ChangeSupport;
 
 /**
  * @author Tomas Mysik
  */
-public class RemoteConnectionsPanel extends JPanel {
+class RemoteConnectionsPanel extends JPanel {
     private static final long serialVersionUID = -286345875298064616L;
 
     final ChangeSupport changeSupport = new ChangeSupport(this);
 
-    public RemoteConnectionsPanel() {
+    RemoteConnectionsPanel() {
         initComponents();
         errorLabel.setText(" "); // NOI18N
 
         // init
         setEnabledLoginCredentials();
+        setEnabledRemoveButton();
         for (ConnectionType connectionType : ConnectionType.values()) {
             typeComboBox.addItem(connectionType);
         }
+
+        // initial disabled status
+        setEnabledFields(false);
 
         // listeners
         registerListeners();
@@ -82,6 +88,22 @@ public class RemoteConnectionsPanel extends JPanel {
         changeSupport.removeChangeListener(listener);
     }
 
+    public void addAddButtonActionListener(ActionListener listener) {
+        addButton.addActionListener(listener);
+    }
+
+    public void removeAddButtonActionListener(ActionListener listener) {
+        addButton.removeActionListener(listener);
+    }
+
+    public void addRemoveButtonActionListener(ActionListener listener) {
+        removeButton.addActionListener(listener);
+    }
+
+    public void removeRemoveButtonActionListener(ActionListener listener) {
+        removeButton.removeActionListener(listener);
+    }
+
     public void setError(String msg) {
         errorLabel.setText(" "); // NOI18N
         errorLabel.setForeground(UIManager.getColor("nb.errorForeground"));
@@ -92,94 +114,6 @@ public class RemoteConnectionsPanel extends JPanel {
         errorLabel.setText(" "); // NOI18N
         errorLabel.setForeground(UIManager.getColor("nb.warningForeground"));
         errorLabel.setText(msg);
-    }
-
-    public JList getConfigList() {
-        return configList;
-    }
-
-    public void setConfigList(JList configList) {
-        this.configList = configList;
-    }
-
-    public String getConnectionName() {
-        return connectionTextField.getText();
-    }
-
-    public void setConnectionName(String connectionName) {
-        connectionTextField.setText(connectionName);
-    }
-
-    public ConnectionType getTypeComboBox() {
-        return (ConnectionType) typeComboBox.getSelectedItem();
-    }
-
-    public void setTypeComboBox(ConnectionType connectionType) {
-        typeComboBox.setSelectedItem(connectionType);
-    }
-
-    public String getHostName() {
-        return hostTextField.getText();
-    }
-
-    public void setHostName(String hostName) {
-        hostTextField.setText(hostName);
-    }
-
-    public String getPort() {
-        return portTextField.getText();
-    }
-
-    public void setPort(String port) {
-        portTextField.setText(port);
-    }
-
-    public String getUserName() {
-        return userTextField.getText();
-    }
-
-    public void setUserName(String userName) {
-        userTextField.setText(userName);
-    }
-
-    public String getPassword() {
-        return new String(passwordTextField.getPassword());
-    }
-
-    public void setPassword(String password) {
-        passwordTextField.setText(password);
-    }
-
-    public boolean isRememberPassword() {
-        return rememberPasswordCheckBox.isSelected();
-    }
-
-    public void setRememberPassword(boolean rememberPassword) {
-        rememberPasswordCheckBox.setSelected(rememberPassword);
-    }
-
-    public boolean isAnonymousLogin() {
-        return anonymousCheckBox.isSelected();
-    }
-
-    public void setAnonymousLogin(boolean anonymousLogin) {
-        anonymousCheckBox.setSelected(anonymousLogin);
-    }
-
-    public String getInitialDirectory() {
-        return initialDirectoryTextField.getText();
-    }
-
-    public void setInitialDirectory(String initialDirectory) {
-        initialDirectoryTextField.setText(initialDirectory);
-    }
-
-    public String getTimeout() {
-        return timeoutTextField.getText();
-    }
-
-    public void setTimeout(String timeout) {
-        timeoutTextField.setText(timeout);
     }
 
     private void registerListeners() {
@@ -196,11 +130,25 @@ public class RemoteConnectionsPanel extends JPanel {
         initialDirectoryTextField.getDocument().addDocumentListener(documentListener);
         timeoutTextField.getDocument().addDocumentListener(documentListener);
 
+        // internals
         anonymousCheckBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 setEnabledLoginCredentials();
             }
         });
+        configList.addListSelectionListener(new ListSelectionListener() {
+            public void valueChanged(ListSelectionEvent e) {
+                setEnabledRemoveButton();
+            }
+        });
+    }
+
+    void setEnabledRemoveButton() {
+        setEnabledRemoveButton(configList.getSelectedIndex() != -1);
+    }
+
+    private void setEnabledRemoveButton(boolean enabled) {
+        removeButton.setEnabled(enabled);
     }
 
     void setEnabledLoginCredentials() {
@@ -211,6 +159,19 @@ public class RemoteConnectionsPanel extends JPanel {
         userTextField.setEnabled(enabled);
         passwordTextField.setEnabled(enabled);
         rememberPasswordCheckBox.setEnabled(enabled);
+    }
+
+    private void setEnabledFields(boolean enabled) {
+        connectionTextField.setEnabled(enabled);
+        typeComboBox.setEnabled(enabled);
+        hostTextField.setEnabled(enabled);
+        portTextField.setEnabled(enabled);
+        userTextField.setEnabled(enabled);
+        passwordTextField.setEnabled(enabled);
+        rememberPasswordCheckBox.setEnabled(enabled);
+        anonymousCheckBox.setEnabled(enabled);
+        initialDirectoryTextField.setEnabled(enabled);
+        timeoutTextField.setEnabled(enabled);
     }
 
     /** This method is called from within the constructor to
@@ -435,6 +396,94 @@ public class RemoteConnectionsPanel extends JPanel {
     private javax.swing.JLabel userLabel;
     private javax.swing.JTextField userTextField;
     // End of variables declaration//GEN-END:variables
+
+    public JList getConfigList() {
+        return configList;
+    }
+
+    public void setConfigList(JList configList) {
+        this.configList = configList;
+    }
+
+    public String getConnectionName() {
+        return connectionTextField.getText();
+    }
+
+    public void setConnectionName(String connectionName) {
+        connectionTextField.setText(connectionName);
+    }
+
+    public ConnectionType getTypeComboBox() {
+        return (ConnectionType) typeComboBox.getSelectedItem();
+    }
+
+    public void setTypeComboBox(ConnectionType connectionType) {
+        typeComboBox.setSelectedItem(connectionType);
+    }
+
+    public String getHostName() {
+        return hostTextField.getText();
+    }
+
+    public void setHostName(String hostName) {
+        hostTextField.setText(hostName);
+    }
+
+    public String getPort() {
+        return portTextField.getText();
+    }
+
+    public void setPort(String port) {
+        portTextField.setText(port);
+    }
+
+    public String getUserName() {
+        return userTextField.getText();
+    }
+
+    public void setUserName(String userName) {
+        userTextField.setText(userName);
+    }
+
+    public String getPassword() {
+        return new String(passwordTextField.getPassword());
+    }
+
+    public void setPassword(String password) {
+        passwordTextField.setText(password);
+    }
+
+    public boolean isRememberPassword() {
+        return rememberPasswordCheckBox.isSelected();
+    }
+
+    public void setRememberPassword(boolean rememberPassword) {
+        rememberPasswordCheckBox.setSelected(rememberPassword);
+    }
+
+    public boolean isAnonymousLogin() {
+        return anonymousCheckBox.isSelected();
+    }
+
+    public void setAnonymousLogin(boolean anonymousLogin) {
+        anonymousCheckBox.setSelected(anonymousLogin);
+    }
+
+    public String getInitialDirectory() {
+        return initialDirectoryTextField.getText();
+    }
+
+    public void setInitialDirectory(String initialDirectory) {
+        initialDirectoryTextField.setText(initialDirectory);
+    }
+
+    public String getTimeout() {
+        return timeoutTextField.getText();
+    }
+
+    public void setTimeout(String timeout) {
+        timeoutTextField.setText(timeout);
+    }
 
     private class DefaultDocumentListener implements DocumentListener {
         public void insertUpdate(DocumentEvent e) {
