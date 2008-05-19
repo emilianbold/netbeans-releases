@@ -69,10 +69,10 @@ made subject to such option by the copyright holder.
     </testbag>
 
 
-    <testbag testattribs="test" name="Test tesbag - this testbag should be used only for testing purpose! Do not use it!">
+    <testbag testattribs="editing, test" name="Test tesbag - this testbag should be used only for testing purpose! Do not use it!">
         <testset dir="qa-functional/src">
             <patternset>
-		 <include name="org/netbeans/properties/jelly2tests/suites/editing_properties_file/EditNewFileInPropertyEditorAddProperty1.class"/>
+		 <include name="org/netbeans/properties/jelly2tests/suites/properties_editing/SimpleAndAdvanceEditor.class"/>
             </patternset>
         </testset>
     </testbag>
