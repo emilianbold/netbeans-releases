@@ -79,11 +79,12 @@ final class BasicConfVisualPanel extends JPanel {
 
     private static final long serialVersionUID = -7699370587627049750L;
     
-    public  static final String VALID         = "valid";                    // NOI18N
-
     static final String EXAMPLE_BASE_NAME     = "org.yourorghere.";         // NOI18N
     
-    public BasicConfVisualPanel( ) {
+    // TODO should perform all checks together on any change. current code (copied)
+    // allows incorrect behavior in some cases.
+    public BasicConfVisualPanel( BasicModuleConfWizardPanel panel) {
+        myPanel = panel;
         initComponents();
         initAccessibility();
         myCodeBaseNameListener = new DocumentAdapter() {
@@ -207,10 +208,7 @@ final class BasicConfVisualPanel extends JPanel {
     }
     
     private void checkLayer() {
-        String layerPath = getLayerValue();
-        if (layerPath != null) {
-            checkEntry(layerPath, LAYER, XML); // NOI18N
-        }
+        checkEntry(getLayerValue(), LAYER, XML); // NOI18N
     }
     
     /** Used for Layer and Bundle entries. */
@@ -293,12 +291,7 @@ final class BasicConfVisualPanel extends JPanel {
     }
     
     private String getLayerValue() {
-        String v = layerValue.getText().trim();
-        if (v.length() == 0) {
-            return null;
-        } else {
-            return v;
-        }
+        return layerValue.getText().trim();
     }
     
     protected final void setError(String message) {
@@ -329,7 +322,7 @@ final class BasicConfVisualPanel extends JPanel {
     }
     
     private final void setValid(boolean valid) {
-        firePropertyChange(VALID, null, valid); // NOI18N
+        myPanel.setValid(valid);
     }
     
     private void markValid() {
@@ -479,5 +472,6 @@ final class BasicConfVisualPanel extends JPanel {
     private final DocumentListener myBundleListener;
     
     private WizardDescriptor mySettings;
+    private BasicModuleConfWizardPanel myPanel;
     
 }
