@@ -123,6 +123,7 @@ public final class InnerClass {
         return access;
     }
 
+    @Override
     public String toString() {
         StringBuffer sb = new StringBuffer();
         sb.append("innerclass=");

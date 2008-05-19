@@ -52,7 +52,8 @@ import org.netbeans.modules.ruby.platform.execution.FileLocator;
 import org.netbeans.modules.ruby.rubyproject.spi.TestRunner;
 import org.netbeans.modules.ruby.testrunner.ui.TestSession;
 import org.netbeans.modules.ruby.testrunner.ui.Manager;
-import org.netbeans.modules.ruby.testrunner.ui.TestUnitRecognizer;
+import org.netbeans.modules.ruby.testrunner.ui.TestRecognizer;
+import org.netbeans.modules.ruby.testrunner.ui.TestUnitHandlerFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
@@ -121,7 +122,10 @@ public final class TestUnitRunner implements TestRunner {
         desc.allowInput();
         desc.fileLocator(locator);
         desc.addStandardRecognizers();
-        desc.addOutputRecognizer(new TestUnitRecognizer(Manager.getInstance(), new TestSession(locator)));
+        TestRecognizer recognizer = new TestRecognizer(Manager.getInstance(), 
+                new TestSession(locator), 
+                TestUnitHandlerFactory.getHandlers());
+        desc.addOutputRecognizer(recognizer);
         new RubyExecution(desc, charsetName).run();
     }
 

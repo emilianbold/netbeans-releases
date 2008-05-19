@@ -81,8 +81,28 @@ public class HgLogMessage {
 
     public HgLogMessage(String changeset){
     }
-    
-    public HgLogMessage(String rootURL, String rev, String auth, String desc, String date, String id, 
+    private void updatePaths(List<HgLogMessageChangedPath> paths, List<String> pathsStrings, String path, 
+            List<String> filesShortPaths, char HgStatus) {
+        if (filesShortPaths.isEmpty()) {
+            paths.add(new HgLogMessageChangedPath(path, HgStatus));
+            if(pathsStrings != null){
+                pathsStrings.add(path);
+            }
+            logCopied(path);
+        } else {
+            for (String fileSP : filesShortPaths) {
+                if (path.equals(fileSP) || path.startsWith(fileSP)) {
+                    paths.add(new HgLogMessageChangedPath(path, HgStatus));
+                    if(pathsStrings != null){
+                        pathsStrings.add(path);
+                    }
+                    logCopied(path);
+                    break;
+                }
+            }
+        }
+    }
+    public HgLogMessage(String rootURL, List<String> filesShortPaths, String rev, String auth, String desc, String date, String id, 
             String parents, String fm, String fa, String fd, String fc){
         String splits[];
 
@@ -114,25 +134,19 @@ public class HgLogMessage {
         if (fa != null && !fa.equals("")) {
             splits = fa.split(" ");
             for (String s : splits) {
-                this.apaths.add(new HgLogMessageChangedPath(s, HgAddStatus));
-                apathsStrings.add(s);
-                logCopied(s);
+                updatePaths(this.apaths, apathsStrings, s, filesShortPaths, HgAddStatus);
             }
         }
         if (fd != null && !fd.equals("")) {
             splits = fd.split(" ");
             for (String s : splits) {
-                this.dpaths.add(new HgLogMessageChangedPath(s, HgDelStatus));
-                dpathsStrings.add(s);
-                logCopied(s);
+                updatePaths(this.dpaths, dpathsStrings, s, filesShortPaths, HgDelStatus);
             }
         }
         if (fc != null && !fc.equals("")) {
             splits = fc.split(" ");
             for (String s : splits) {
-                this.cpaths.add(new HgLogMessageChangedPath(s, HgCopyStatus));
-                cpathsStrings.add(s);
-                logCopied(s);
+                updatePaths(this.cpaths, cpathsStrings, s, filesShortPaths, HgCopyStatus);
             }
         }
         if (fm != null && !fm.equals("")) {
@@ -140,8 +154,7 @@ public class HgLogMessage {
             for (String s : splits) {
                 //#132743, incorrectly reporting files as added/modified, deleted/modified in same changeset
                 if (!apathsStrings.contains(s) && !dpathsStrings.contains(s) && !cpathsStrings.contains(s)) {
-                    this.mpaths.add(new HgLogMessageChangedPath(s, HgModStatus));
-                    logCopied(s);
+                    updatePaths(this.mpaths, null, s, filesShortPaths, HgModStatus);
                 }
             }
         }

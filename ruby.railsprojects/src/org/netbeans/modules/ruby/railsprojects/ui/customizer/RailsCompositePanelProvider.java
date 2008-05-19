@@ -56,6 +56,7 @@ public class RailsCompositePanelProvider implements ProjectCustomizer.CompositeC
     
     private static final String BUILD = "Build"; // NOI18N
     public static final String RAILS = "Rails"; // NOI18N
+    public static final String DEBUG = "Debug"; // NOI18N
     
     private String name;
     
@@ -79,6 +80,12 @@ public class RailsCompositePanelProvider implements ProjectCustomizer.CompositeC
                     bundle.getString( "LBL_Config_Rails" ), // NOI18N
                     null,
                     (ProjectCustomizer.Category[])null);
+        } else if (DEBUG.equals(name)) {
+            toReturn = ProjectCustomizer.Category.create(
+                    DEBUG,
+                    bundle.getString( "LBL_Config_Debug" ), // NOI18N
+                    null,
+                    (ProjectCustomizer.Category[])null);            
         }
         assert toReturn != null : "No category for name:" + name;
         return toReturn;
@@ -89,6 +96,8 @@ public class RailsCompositePanelProvider implements ProjectCustomizer.CompositeC
         RailsProjectProperties uiProps = context.lookup(RailsProjectProperties.class);
         if (RAILS.equals(nm)) {
             return new CustomizerRun(uiProps);
+        } else if (DEBUG.equals(nm)) {
+            return new CustomizerDebug(category, uiProps);
         }
         return new JPanel();
 
@@ -100,5 +109,9 @@ public class RailsCompositePanelProvider implements ProjectCustomizer.CompositeC
 
     public static RailsCompositePanelProvider createRails() {
         return new RailsCompositePanelProvider(RAILS);
+    }
+    
+    public static RailsCompositePanelProvider createDebug() {
+        return new RailsCompositePanelProvider(DEBUG);
     }
 }
