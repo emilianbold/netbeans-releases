@@ -25,7 +25,7 @@
 
     <!-- testbag with all MyModule tests running in jvm mode (i.e. in standard JVM)
          use ant runtests -Dxtest.attribs=all,jvm to run this testbag  -->
-    <testbag testattribs="binarytest" executor="installer-executor" prio="1" name="install full bundle">
+    <testbag testattribs="install or all" executor="installer-executor" prio="1" name="install full bundle">
         <testset dir=".">
             <patternset>
 	        <include name="org/netbeans/test/installer/TestInstallerAll.class"/>
@@ -33,15 +33,15 @@
         </testset>
     </testbag>
     
-    <testbag testattribs="binarytests" executor="binary-tests-executor" prio="2" name="run binary test">
+    <testbag testattribs="runtests or all" executor="binary-tests-executor" prio="2" name="run binary test">
         <testset dir=".">
         </testset>
     </testbag>
 
-    <testbag testattribs="binarytest" executor="installer-executor" prio="3" name="uninstall full bundle">
+    <testbag testattribs="uninstall or all" executor="installer-executor" prio="3" name="uninstall full bundle">
         <testset dir=".">
             <patternset>
-	        <include name="org/netbeans/test/installer/TestUnstallerAll.class"/>
+	        <include name="org/netbeans/test/installer/TestUninstallerAll.class"/>
            </patternset>
         </testset>
     </testbag>
