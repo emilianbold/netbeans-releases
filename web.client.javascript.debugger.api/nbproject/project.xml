@@ -144,14 +144,14 @@
                     <name>unit</name>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.javascript.editing</code-name-base>
-                        <compile-dependency/>
                         <recursive/>
+                        <compile-dependency/>
                         <test/>
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.editor.lib</code-name-base>
-                        <compile-dependency/>
                         <recursive/>
+                        <compile-dependency/>
                         <test/>
                     </test-dependency>
                     <test-dependency>
