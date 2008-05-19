@@ -157,6 +157,9 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         if( "Windows".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
             setOpaque( false );
         }
+        else {
+            errorTextArea.setBackground(getBackground());
+        }
     }
     
     class MyCellRenderer extends DefaultListCellRenderer {
