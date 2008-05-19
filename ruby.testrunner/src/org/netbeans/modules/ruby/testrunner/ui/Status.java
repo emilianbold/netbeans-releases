@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,13 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,72 +37,29 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
- * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.ruby.testrunner.ui;
 
-import java.util.ArrayList;
-import java.util.List;
-import org.netbeans.modules.ruby.platform.execution.FileLocator;
-
 /**
- * Represents a test session, i.e. a single run of a test suite.
- *
+ * Enums for representing status of a test case or suite.
+ * 
  * @author Erno Mononen
  */
-public class TestSession {
+enum Status {
 
-    enum SessionType {
+    PASSED("00CC00"), FAILED("FF0000"), ERROR("FF0000"), PENDING("800080");
+    
+    private final String displayColor;
 
-        TEST,
-        DEBUG
-    }
-    private final List<Report.Testcase> testCases = new ArrayList<Report.Testcase>();
-    private String suiteName;
-    private final FileLocator fileLocator;
-
-    public TestSession(FileLocator fileLocator) {
-        this.fileLocator = fileLocator;
-    }
-
-    void setSuiteName(String suiteName) {
-        this.testCases.clear();
-        this.suiteName = suiteName;
-    }
-
-    void addTestCase(Report.Testcase testCase) {
-        for (Report.Testcase each : testCases) {
-            if (testCase.className.equals(each.className) 
-                    && testCase.name.equals(each.name)) {
-                return;
-            }
-        }
-        testCases.add(testCase);
-    }
-
-    Report getReport() {
-        Report report = new Report(suiteName, fileLocator);
-        for (Report.Testcase testcase : testCases) {
-            report.reportTest(testcase);
-            report.totalTests += 1;
-            if (testcase.getStatus() == Status.ERROR) {
-                report.errors += 1;
-            } else if (testcase.getStatus() == Status.FAILED) {
-                report.failures += 1;
-            } else if (testcase.getStatus() == Status.PENDING) {
-                report.pending += 1;
-            } else {
-                report.detectedPassedTests += 1;
-            }
-        }
-        return report;
-    }
-
-    String getSuiteName() {
-        return suiteName;
+    private Status(String displayColor) {
+        this.displayColor = displayColor;
     }
     
+    /**
+     * @return the html display color for this status.
+     */
+    String getHtmlDisplayColor() {
+        return displayColor;
+    }
+            
 }
