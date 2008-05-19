@@ -4561,4 +4561,30 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                 "}\n"
                 );
     }
+    
+    // IZ#131721:Comment moves on new line after reformat
+    public void testIZ131721() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "char seek_scrbuf[SEEKBUFSIZE]; /* buffer for seeking */\n" +
+                "int cf_debug; /* non-zero enables debug prints */\n" +
+                "void *\n" +
+                "cf_alloc(void *opaque, unsigned int items, unsigned int size)\n" +
+                "{\n" +
+                "    return (ptr);\n" +
+                "}\n"
+                );
+        reformat();
+        assertDocumentText("IZ#131721:Comment moves on new line after reformat",
+                "char seek_scrbuf[SEEKBUFSIZE]; /* buffer for seeking */\n" +
+                "int cf_debug; /* non-zero enables debug prints */\n" +
+                "\n" +
+                "void *\n" +
+                "cf_alloc(void *opaque, unsigned int items, unsigned int size)\n" +
+                "{\n" +
+                "    return (ptr);\n" +
+                "}\n"
+                );
+    }
+    
 }
