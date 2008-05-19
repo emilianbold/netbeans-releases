@@ -243,8 +243,6 @@ public final class MacroDialogSupport {
             DialogDisplayer.getDefault().notify(descriptor);
 //            LOG.log(Level.WARNING, null, new Throwable(message));
         }
-
-        
         
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
             if (target == null) {
@@ -362,6 +360,10 @@ public final class MacroDialogSupport {
             } finally {
                 doc.atomicUnlock();
             }
+        }
+        
+        public @Override String toString() {
+            return super.toString() + "[" + macroName;
         }
     } // End of RunMacroAction class
 }
