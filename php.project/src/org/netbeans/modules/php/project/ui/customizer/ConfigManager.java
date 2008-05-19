@@ -62,12 +62,12 @@ public class ConfigManager {
     public ConfigManager(PhpProjectProperties properties) {
         this.changeSupport = new ChangeSupport(this);
         this.properties = properties;
-        this.configs = properties.RUN_CONFIGS;
+        this.configs = properties.getRunConfigs();
         ArrayList<String> tmp = new ArrayList<String>(Arrays.asList(PhpProjectProperties.CFG_PROPS));
         tmp.add(PROP_DISPLAY_NAME);
         this.propertyNames = tmp.toArray(new String[tmp.size()]);
     }
-    
+
     public void addChangeListener(ChangeListener listener) {
         changeSupport.addChangeListener(listener);
     }
@@ -128,23 +128,17 @@ public class ConfigManager {
 
     public class Configuration {
         private String name;
-        private boolean def;
 
         private Configuration() {
             this(null);
         }
 
         private Configuration(String name) {
-            this(name, name == null);
-        }
-
-        private Configuration(String name, boolean def) {
             if (name != null && name.trim().length() == 0) {
                 name = null;
             }
-            assert configs.keySet().contains(name) : name;
+            assert configs.keySet().contains(name) : "Unknown configuration: " + name;
             this.name = name;
-            this.def = def;
         }
 
         public String getName() {
@@ -154,12 +148,11 @@ public class ConfigManager {
         public String getDisplayName() {
             String retval = getValue(PROP_DISPLAY_NAME);
             retval = retval != null ? retval : getName();
-            return retval != null ? retval : NbBundle.getMessage(PhpConfigurationProvider.class, 
-                    "PhpConfigurationProvider.default.label");//NOI18N
+            return retval != null ? retval : NbBundle.getMessage(PhpConfigurationProvider.class, "LBL_DefaultConfiguration");
         }
         
         public boolean isDefault() {
-            return def;
+            return name == null;
         }
         
         public void delete() {

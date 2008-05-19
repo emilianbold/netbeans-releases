@@ -36,7 +36,6 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.properties.jelly2tests.suites.properties_editing;
 
 import lib.PropertiesEditorTestCase;
@@ -56,49 +55,50 @@ import org.netbeans.junit.NbTestSuite;
  * @author Janie
  */
 public class AddingNewKeyAndValues extends PropertiesEditorTestCase {
-    
     //Variables of test
     public String WORKING_PACKAGE = "working";
     public String BUNDLE_NAME = "bundle";
     public ProjectsTabOperator pto;
     public ProjectRootNode prn;
     public PropertiesNode pn;
+    public TopComponentOperator tco;
 
     public AddingNewKeyAndValues(String name) {
         super(name);
     }
-    
-    public static NbTestSuite suite(){
+
+    public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(new AddingNewKeyAndValues("testCreateNewBundle"));
-        suite.addTest(new AddingNewKeyAndValues("testOpenningSimpleEditor"));
-        suite.addTest(new AddingNewKeyAndValues("testOpenningAdvanceEditor"));
+//        suite.addTest(new AddingNewKeyAndValues("testOpenningSimpleEditor"));
+//        suite.addTest(new AddingNewKeyAndValues("testOpenningAdvanceEditor"));
         suite.addTest(new AddingNewKeyAndValues("testAddNewKeyAndValue"));
         return suite;
     }
+
     public static void main(String[] args) {
-       junit.textui.TestRunner.run(suite());
-       // suite.addTestSuite(new AddingNewKeyAndValues(""));
+        junit.textui.TestRunner.run(suite());
+    // suite.addTestSuite(new AddingNewKeyAndValues(""));
     }
-    
-    public void testCreateNewBundle(){
-            
+
+    public void testCreateNewBundle() {
+
         //open default project
         openDefaultProject();
-        
+
         //Create new properties file
         NewFileWizardOperator nfwo = NewFileWizardOperator.invoke();
         nfwo.selectProject(DEFAULT_PROJECT_NAME);
         nfwo.selectCategory(WIZARD_CATEGORY_FILE);
         nfwo.selectFileType(WIZARD_FILE_TYPE);
         nfwo.next();
-        
+
         NewFileNameLocationStepOperator nfnlso = new NewFileNameLocationStepOperator();
         nfnlso.setObjectName(BUNDLE_NAME);
         JTextFieldOperator jtfo = new JTextFieldOperator(nfnlso, 2);
         jtfo.setText("src/" + WORKING_PACKAGE);
         nfnlso.finish();
-        
+
         //Check that bundle was created
         if (!existsFileInEditor(BUNDLE_NAME)) {
             fail("File " + BUNDLE_NAME + " not found in Editor window");
@@ -107,39 +107,28 @@ public class AddingNewKeyAndValues extends PropertiesEditorTestCase {
             fail("File " + BUNDLE_NAME + " not found in explorer");
         }
     }
-    
-    public void testOpenningSimpleEditor() {
-        
-        //select bundle node in Project Window and do edit action
-        selectBundle().edit();
-        
-        //Check that Advance Editor was opened
-       if (!existsFileInEditor(BUNDLE_NAME)) {
-            fail("File " + BUNDLE_NAME + " not opened in Editor window");
-        }
-    }
-    
-    public void testOpenningAdvanceEditor(){
-        
-         //select bundle node in Project Window and do open action
-        selectBundle().open();
-        
-       if (!existsFileInAdvanceEditor(BUNDLE_NAME+".properties")) {
-           fail("File " + BUNDLE_NAME + " not opened in Advance Editor window");
-       }
-    }
-    
-    public void testAddNewKeyAndValue(){
-        selectBundle().open();
-        TopComponentOperator tco = new TopComponentOperator(BUNDLE_NAME+".properties");
-        JButtonOperator jbo = new JButtonOperator(tco, "New Property...");
-        jbo.push();
-    }
 
-    public PropertiesNode selectBundle(){
-        pto = ProjectsTabOperator.invoke();
-        prn = new ProjectRootNode(new JTreeOperator(pto), DEFAULT_PROJECT_NAME);
-        pn = new PropertiesNode(prn, "Source Packages" + TREE_SEPARATOR + WORKING_PACKAGE + TREE_SEPARATOR +BUNDLE_NAME + ".properties");
-        return pn;
+    public void testAddNewKeyAndValue() throws Exception {
+        //select bundle node in project window and do open action
+        pn = getNode(DEFAULT_PROJECT_NAME, rootPackageName+TREE_SEPARATOR +WORKING_PACKAGE +TREE_SEPARATOR+ BUNDLE_NAME + ".properties");
+        pn.open();
+
+        // select advance editor
+        tco = new TopComponentOperator(BUNDLE_NAME + ".properties");
+        JButtonOperator jbo = new JButtonOperator(tco, BUTTON_NEW_PROPERTY);
+        jbo.push();
+
+        //fill new key, value and comments
+        fillNewKeyValue("key1", "value1", "testovaci");
+        
+        //Check if key and value was correctly generated in bundle
+        pn.edit();
+        
+        boolean result = checkKeysAndValues(BUNDLE_NAME, "key1", "value1", "testovaci");
+        if (result = true){
+            log("Key, Value and comments were correctly generated in " + BUNDLE_NAME + "file");
+        } else {
+            throw new Exception("Key, Value and comments were correctly generated in " + BUNDLE_NAME + "file");
+        }
     }
 }

@@ -563,7 +563,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
 
         if (al.getCommitMessage() != null) {
             recentStatusMessage = al.getCommitMessage();
-            statusBar.setText(StatusBar.CELL_MAIN, al.getAuthor() + ": " + recentStatusMessage); // NOI18N
+            statusBar.setText(StatusBar.CELL_MAIN, al.getRevision() + ":" + al.getId() + " - " + al.getAuthor() + ": " + recentStatusMessage); // NOI18N
         } else {
             clearRecentFeedback();
         };
@@ -704,7 +704,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
                 }
 
                 // always return unique string to avoid tooltip sharing on mouse move over same revisions -->
-                annotation.append("<html><!-- line=" + line++ + " -->" + al.getRevision()  + " - <b>" + escapedAuthor + "</b>"); // NOI18N
+                annotation.append("<html><!-- line=" + line++ + " -->" + al.getRevision()  + ":" + al.getId() + " - <b>" + escapedAuthor + "</b>"); // NOI18N
                 if (al.getDate() != null) {
                     annotation.append(" " + DateFormat.getDateInstance().format(al.getDate())); // NOI18N                    
                 }

@@ -53,6 +53,7 @@ import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import org.netbeans.installer.product.components.Group;
 import org.netbeans.installer.product.components.Product;
+import org.netbeans.installer.product.components.ProductConfigurationLogic;
 import org.netbeans.installer.product.dependencies.Conflict;
 import org.netbeans.installer.product.dependencies.InstallAfter;
 import org.netbeans.installer.product.dependencies.Requirement;
@@ -786,31 +787,65 @@ public class Registry implements PropertyContainer {
     
     private void validateInstallations() throws InitializationException {
         LogManager.logEntry("validating previous installations");
+        
+        final String LIST_ONE_PRODUCT_MESSAGE = "-> {0} ({1}/{2})";//NOI18N
+        final String CANNOT_GET_LOGIC_MAKE_INVISIBLE_MESSAGE =
+                            "Cannot load configuration logic for {0} ({1}/{2}), marking it as invisible";//NOI18N
+        final String INSTALLATION_VALIDATION_MESSAGE = 
+                            "Installation validation of {0} ({1}/{2}):";//NOI18N                            
+        
         for (Product product: getProducts()) {
-            if (product.getStatus() == Status.INSTALLED) {
-                final String message = product.getLogic().validateInstallation();
-                
+            if (product.getStatus() == Status.INSTALLED && product.isVisible()) {
+                ProductConfigurationLogic logic = null;
+                try {
+                    logic = product.getLogic();
+                } catch (InitializationException e) {
+                    LogManager.log(ErrorLevel.WARNING,
+                            StringUtils.format(CANNOT_GET_LOGIC_MAKE_INVISIBLE_MESSAGE,
+                            product.getDisplayName(), product.getUid(), product.getVersion()));
+
+                    LogManager.log(ErrorLevel.WARNING, e);
+                    product.setVisible(false);
+
+                    final List<Product> inavoidableDependents =
+                            getInavoidableDependents(product);
+                    if (!inavoidableDependents.isEmpty()) {
+                        LogManager.indent();
+                        LogManager.log(ErrorLevel.WARNING, 
+                                "Also make the dependent products invisible: ");//NOI18N                        
+
+                        for (Product p : inavoidableDependents) {
+                            LogManager.log(ErrorLevel.WARNING,
+                                    StringUtils.format(LIST_ONE_PRODUCT_MESSAGE,
+                                    p.getDisplayName(), p.getUid(), p.getVersion()));
+                            p.setVisible(false);
+                        }
+                        LogManager.unindent();
+                    }                    
+                    continue;
+                }
+
+                final String message = logic.validateInstallation();
+
                 if (message != null) {
                     final List<Product> inavoidableDependents =
                             getInavoidableDependents(product);
-                    LogManager.logIndent("Installation validation of " +  //NOI18N
-                            product.getDisplayName() +  //NOI18N
-                            " (" + product.getUid() + "/" +  //NOI18N
-                            product.getVersion() + "):");//NOI18N
+                    LogManager.logIndent(
+                            StringUtils.format(INSTALLATION_VALIDATION_MESSAGE,
+                            product.getDisplayName(), product.getUid(), product.getVersion()));
+                    
                     LogManager.log(message);
                     if(!inavoidableDependents.isEmpty()) {
                         LogManager.logIndent("Dependent Products: ");
                         for(Product p : inavoidableDependents) {
-                            LogManager.log("-> " +  //NOI18N
-                            p.getDisplayName() +  //NOI18N
-                            " (" + p.getUid() + "/" +  //NOI18N
-                            p.getVersion() + ")");//NOI18N
+                            LogManager.log(StringUtils.format(LIST_ONE_PRODUCT_MESSAGE,
+                            p.getDisplayName(), p.getUid(), p.getVersion()));
                         }
                         LogManager.unindent();
                     }
                     LogManager.unindent();
-                    
-                    
+
+
                     boolean result = Boolean.getBoolean(REMOVE_CORRUPTED_PRODUCTS_SILENTLY_PROPERTY) || 
                             UiUtils.showYesNoDialog(
                             ResourceUtils.getString(Registry.class,
@@ -822,7 +857,7 @@ public class Registry implements PropertyContainer {
                             product.getDisplayName(),
                             StringUtils.asString(inavoidableDependents)),
                             true);
-                    
+
                     if (result) {
                         product.setStatus(Status.NOT_INSTALLED);
                         product.getParent().removeChild(product);

@@ -102,15 +102,23 @@ public class AutomaticInternationalizationTest extends ExtJellyTestCase {
      */
     private void testAutomaticInternationalization(Boolean enabled) {
         OptionsOperator.invoke();
+        //add timeout
+        waitNoEvent(2000);
+        
         OptionsOperator options = new OptionsOperator();
         options.switchToClassicView();
+        //add timeout
+        waitNoEvent(2000);
         
         options.selectOption("Editing|GUI Builder"); // NOI18N
+        //add timeout
+        waitNoEvent(2000);
 
         Property property = new Property(options.getPropertySheet("Editing|GUI Builder"), "Automatic Resource Management"); // NOI18N
         property.setValue(String.valueOf( enabled ? "On" : "Off"));
         options.close();
-        waitAMoment();        
+        //add timeout
+        waitNoEvent(2000);        
 
         String name = createJFrameFile();        
         FormDesignerOperator designer = new FormDesignerOperator(name);
