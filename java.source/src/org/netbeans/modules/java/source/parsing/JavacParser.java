@@ -178,6 +178,8 @@ public class JavacParser extends Parser {
     private FileObject root;
     //ClassPaths used by the parser
     private ClasspathInfo cpInfo;
+    //Parser for single file
+    private final boolean isSingleSource;
     //Incremental parsing support
     private final boolean supportsReparse;
     //Incremental parsing support
@@ -188,6 +190,8 @@ public class JavacParser extends Parser {
     private final DocListener listener;
     //J2ME preprocessor support
     private final FilterListener filterListener;
+    //ClasspathInfo Listener
+    private final ChangeListener cpInfoListener;
     //Cached javac impl
     private CompilationInfoImpl ciImpl;
     //State of the parser
@@ -198,8 +202,8 @@ public class JavacParser extends Parser {
     private Snapshot cachedSnapShot;
     
     JavacParser (final Collection<Snapshot> snapshots) {
-        boolean isSingleFile = snapshots.size() == 1;
-        this.supportsReparse = isSingleFile && MIME_TYPE.equals(snapshots.iterator().next().getSource().getMimeType());
+        this.isSingleSource = snapshots.size() == 1;
+        this.supportsReparse = this.isSingleSource && MIME_TYPE.equals(snapshots.iterator().next().getSource().getMimeType());
         EditorCookie.Observable ec = null;
         JavaFileFilterImplementation filter = null;
         if (this.supportsReparse) {
@@ -219,6 +223,7 @@ public class JavacParser extends Parser {
         }
         this.filterListener = filter != null ? new FilterListener (filter) : null;
         this.listener = ec != null ? new DocListener(ec) : null;
+        this.cpInfoListener = new ClasspathInfoListener ();
     }
     
     private void init (final Snapshot snapshot, final Task task) {
@@ -228,6 +233,9 @@ public class JavacParser extends Parser {
             assert file != null;
             this.file = file;
             cpInfo = ClasspathInfo.create(file);
+            if (isSingleSource) {
+                cpInfo.addChangeListener(WeakListeners.change(cpInfoListener, cpInfo));
+            }
             final ClassPath cp = cpInfo.getClassPath(PathKind.SOURCE);
             assert cp != null;
             this.root = cp.findOwnerRoot(file);
@@ -945,6 +953,14 @@ public class JavacParser extends Parser {
         public void stateChanged(ChangeEvent event) {
             listeners.fireChange();
         }
+    }
+    
+    private final class ClasspathInfoListener implements ChangeListener {
+
+        public void stateChanged(ChangeEvent e) {
+            listeners.fireChange();
+        }
+        
     }
     
 }
