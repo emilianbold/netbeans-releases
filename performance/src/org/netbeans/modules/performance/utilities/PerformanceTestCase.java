@@ -60,10 +60,8 @@ import org.netbeans.jemmy.operators.WindowOperator;
 import org.netbeans.jemmy.util.PNGEncoder;
 
 import org.netbeans.junit.NbPerformanceTest;
-import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.modules.performance.guitracker.ActionTracker;
 import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
-import org.netbeans.modules.performance.guitracker.LoggingEventQueue;
 
 
 /**
@@ -824,14 +822,9 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
      * (just to be sure check it twice after short delay)
      */
     public void checkScanFinished() {
-       try {
-       SourceUtils.waitScanFinished();
-        waitNoEvent(1000);
-       SourceUtils.waitScanFinished();
-        } catch (InterruptedException ie)
-        {
-            System.err.println(ie);
-        } 
+
+      CommonUtilities.waitScanFinished();
+
     }
 
 
