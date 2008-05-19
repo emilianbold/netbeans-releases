@@ -60,7 +60,7 @@ public class DOMFactoryImpl extends DocumentBuilderFactory {
     private static Class getFirst() {
         try {
             String name = System.getProperty("nb.backup." + Factory_PROP); // NOI18N
-            return name == null ? null : Class.forName(name);
+            return name == null ? null : Class.forName(name, true, ClassLoader.getSystemClassLoader());
         } catch (ClassNotFoundException ex) {
             Exceptions.printStackTrace(ex);
             return null;
@@ -83,7 +83,7 @@ public class DOMFactoryImpl extends DocumentBuilderFactory {
             ClassLoader orig = Thread.currentThread().getContextClassLoader();
             // Not app class loader. only ext and bootstrap
             try {
-               Thread.currentThread().setContextClassLoader(ClassLoader.getSystemClassLoader().getParent());
+               Thread.currentThread().setContextClassLoader(ClassLoader.getSystemClassLoader());
                System.setProperty("nb.backup." + Factory_PROP, DocumentBuilderFactory.newInstance().getClass().getName()); // NOI18N
             } finally {
                Thread.currentThread().setContextClassLoader(orig);            
@@ -137,6 +137,8 @@ public class DOMFactoryImpl extends DocumentBuilderFactory {
             try {
                 DocumentBuilder builder = tryCreate((Class)it.next());
                 return builder;
+            } catch (ClassCastException e) {
+                if (!it.hasNext()) throw e;
             } catch (ParserConfigurationException e) {
                 if (!it.hasNext()) throw e;
             } catch (IllegalArgumentException e) {
