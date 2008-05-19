@@ -4534,4 +4534,31 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                 "}\n"
                 );
     }
+    
+    // IZ#135205:'Spaces Before Keywords|else' option works wrongly in some cases
+    public void testIZ135205() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "int main() {\n" +
+                "    int i = 0;\n" +
+                "    if (1) {\n" +
+                "        i = 2;\n" +
+                "    }else {\n" +
+                "        i = 3;\n" +
+                "    }\n" +
+                "}\n"
+                );
+        reformat();
+        assertDocumentText("IZ#135205:'Spaces Before Keywords|else' option works wrongly in some cases",
+                "int main()\n" +
+                "{\n" +
+                "    int i = 0;\n" +
+                "    if (1) {\n" +
+                "        i = 2;\n" +
+                "    } else {\n" +
+                "        i = 3;\n" +
+                "    }\n" +
+                "}\n"
+                );
+    }
 }

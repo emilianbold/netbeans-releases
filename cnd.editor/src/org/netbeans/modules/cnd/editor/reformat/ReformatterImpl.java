@@ -2198,8 +2198,12 @@ public class ReformatterImpl {
             first = false;
             ts.moveNext();
         }
-        if (diffToSpace != null && addSpace){
-            diffToSpace.setText(0, 1);
+        if (addSpace) {
+            if (diffToSpace != null){
+                diffToSpace.setText(0, 1);
+            } else {
+                ts.addBeforeCurrent(0,1);
+            }
         }
     }
 

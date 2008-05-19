@@ -103,7 +103,7 @@ class Reporter < Spec::Runner::Reporter
   end
       
   def example_pending(example_group, example, message="Not Yet Implemented")
-    puts "%TEST_PENDING% #{example.description}"
+    puts "%TEST_PENDING% #{example.description} time=#{elapsed_time} #{message}"
     super
   end
   

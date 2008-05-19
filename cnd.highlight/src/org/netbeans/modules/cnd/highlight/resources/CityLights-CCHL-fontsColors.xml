@@ -55,7 +55,7 @@ made subject to such option by the copyright holder.
     <fontcolor name="cc-highlighting-class-fields" foreColor="AFAF00" default="default">
         <font style="plain"/>
     </fontcolor>
-    <fontcolor name="cc-highlighting-mark-occurences" bgColor="ECEBA3" default="default">
+    <fontcolor name="cc-highlighting-mark-occurrences" bgColor="ECEBA3" default="default">
     </fontcolor>
     <fontcolor name="cc-highlighting-typedefs" foreColor="3397FF" default="default">
     </fontcolor>

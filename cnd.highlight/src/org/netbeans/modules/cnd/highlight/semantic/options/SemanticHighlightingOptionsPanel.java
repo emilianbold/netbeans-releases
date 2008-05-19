@@ -75,7 +75,7 @@ public class SemanticHighlightingOptionsPanel extends javax.swing.JPanel impleme
     private boolean isChanged = false;
 
     void applyChanges() {
-        SemanticHighlightingOptions.instance().setEnableMarkOccurences(cbMarkOccurrences.isSelected());
+        SemanticHighlightingOptions.instance().setEnableMarkOccurrences(cbMarkOccurrences.isSelected());
         SemanticHighlightingOptions.instance().setKeepMarks(cbKeepMarks.isSelected());
         SemanticHighlightingOptions.instance().setDifferSystemMacros(cbSysMacro.isSelected());
 
@@ -87,7 +87,7 @@ public class SemanticHighlightingOptionsPanel extends javax.swing.JPanel impleme
     }
 
     void update() {
-        cbMarkOccurrences.setSelected(SemanticHighlightingOptions.instance().getEnableMarkOccurences());
+        cbMarkOccurrences.setSelected(SemanticHighlightingOptions.instance().getEnableMarkOccurrences());
         cbKeepMarks.setSelected(SemanticHighlightingOptions.instance().getKeepMarks());
         cbSysMacro.setSelected(SemanticHighlightingOptions.instance().getDifferSystemMacros());
 

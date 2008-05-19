@@ -4335,7 +4335,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             }
 
             public long getEndPosition(CompilationUnitTree compilationUnitTree, Tree tree) {
-                if (endOffset >= 0 && (tree == root))
+                if (tree == root)
                     return endOffset;
                 found = false;
                 scan(root, tree);

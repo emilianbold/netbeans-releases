@@ -51,6 +51,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.BeanInfo;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -66,8 +67,6 @@ import javax.swing.JTextArea;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.FileOwnerQuery;
 
 import org.netbeans.modules.i18n.FactoryRegistry;
 import org.netbeans.modules.i18n.HardCodedString;
@@ -123,7 +122,7 @@ final class ResourceWizardPanel extends JPanel {
 
     
     /** Getter for <code>resources</code> property. */
-    public Map getSourceMap() {
+    public Map<DataObject,SourceData> getSourceMap() {
         return sourceMap;
     }
     
@@ -248,8 +247,9 @@ final class ResourceWizardPanel extends JPanel {
     private void addButtonActionPerformed(ActionEvent evt) {
         DataObject resource = selectResource();
         
-        if(resource == null)
+        if (resource == null) {
             return;
+        }
 
         int[] selectedRows = resourcesTable.getSelectedRows();
 
@@ -268,8 +268,9 @@ final class ResourceWizardPanel extends JPanel {
     private void addAllButtonActionPerformed(ActionEvent evt) {
         DataObject resource = selectResource();
         
-        if(resource == null)
+        if (resource == null) {
             return;
+        }
 
         // Feed data.
         for (int i = 0; i < resourcesTable.getRowCount(); i++) {
@@ -406,7 +407,7 @@ final class ResourceWizardPanel extends JPanel {
             // Accessibility
             panel.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(ResourceWizardPanel.class).getString("ACS_ResourceWizardPanel"));                 
             
-            panel.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(1)); // NOI18N
+            panel.putClientProperty("WizardPanel_contentSelectedIndex", Integer.valueOf(1)); // NOI18N
 
             String msgKey = testWizard ? "TXT_SelectTestResource"       //NOI18N
                                        : "TXT_SelectResource";          //NOI18N
@@ -466,16 +467,23 @@ final class ResourceWizardPanel extends JPanel {
                     = sourceMap.entrySet().iterator();
 
             // For each source perform the task.
+            final String prefixLoading
+                    = NbBundle.getMessage(ResourceWizardPanel.class,
+                                          "TXT_Loading")                //NOI18N
+                      + ' ';
+            final String prefixSearchingIn
+                    = NbBundle.getMessage(ResourceWizardPanel.class,
+                                          "TXT_SearchingIn")            //NOI18N
+                      + ' ';
+
             for (int i = 0; sourceIterator.hasNext(); i++) {
                 Map.Entry<DataObject,SourceData> entry = sourceIterator.next();
                 DataObject source = entry.getKey();
+                FileObject fileObj = source.getPrimaryFile();
+                String fileName = ClassPath.getClassPath(fileObj, ClassPath.SOURCE)
+                                  .getResourceName(fileObj, '.', false);
 
-                ClassPath cp = ClassPath.getClassPath(source.getPrimaryFile(), ClassPath.SOURCE);
-                progressPanel.setMainText(
-                        NbBundle.getMessage(ResourceWizardPanel.class, "TXT_Loading")//NOI18N
-                        + " "                                           //NOI18N
-                        + cp.getResourceName(source.getPrimaryFile(), '.', false ));
-
+                progressPanel.setMainText(prefixLoading + fileName);
 
                 // retrieve existing sourcedata -- will provide the resource for the new instance
                 SourceData sourceData = entry.getValue();
@@ -493,13 +501,9 @@ final class ResourceWizardPanel extends JPanel {
                 }
 
                 sourceData = new SourceData(sourceData.getResource(), support);
-                sourceMap.put(source, sourceData);              //PENDING - concurrent modification?
+                entry.setValue(sourceData);
                 
-                cp = ClassPath.getClassPath(source.getPrimaryFile(), ClassPath.SOURCE );
-                progressPanel.setMainText(
-                        NbBundle.getMessage(ResourceWizardPanel.class, "TXT_SearchingIn")//NOI18N
-                        + " "
-                        + cp.getResourceName(source.getPrimaryFile(), '.', false));
+                progressPanel.setMainText(prefixSearchingIn + fileName);
                 
                 HardCodedString[] foundStrings;
                 
@@ -513,7 +517,7 @@ final class ResourceWizardPanel extends JPanel {
 
                 if (foundStrings == null) {
                     // Set empty map.
-                    sourceData.setStringMap(new HashMap(0));
+                    sourceData.setStringMap(Collections.<HardCodedString,I18nString>emptyMap());
                     continue;
                 }
 
