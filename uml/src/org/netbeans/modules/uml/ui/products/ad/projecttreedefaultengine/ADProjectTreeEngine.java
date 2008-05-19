@@ -477,7 +477,7 @@ public class ADProjectTreeEngine
       else if(getTreeModel() != null)
       {
           IElement owner = elementToAdd.getOwner();
-          if( m_TreeBuilder.isExcluded(elementToAdd) == false)
+          if(owner!=null && m_TreeBuilder.isExcluded(elementToAdd) == false)//sometimes addNewlyCreatedElements is callled  in invoke later(after going out of container) when owner was removed directly before
           {
           
               ETList < ITreeItem > ownerNodes = getOwnerNodes(elementToAdd);
