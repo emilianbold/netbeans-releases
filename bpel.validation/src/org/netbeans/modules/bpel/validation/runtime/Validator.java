@@ -158,7 +158,7 @@ public final class Validator extends BpelValidator {
       value.contains("=") || // NOI18N
       value.contains("!=") // NOI18N
     ) {
-      addError("FIX_Compare_Time", condition); // NOI18N
+      addWarning("FIX_Compare_Time", condition); // NOI18N
     }
   }
 
