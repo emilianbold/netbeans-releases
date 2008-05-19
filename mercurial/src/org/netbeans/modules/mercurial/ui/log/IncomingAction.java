@@ -65,7 +65,8 @@ public class IncomingAction extends ContextAction {
     
     public void performAction(ActionEvent e) {
         SearchHistoryAction.openIncoming(context,
-                NbBundle.getMessage(IncomingAction.class, "MSG_Incoming_TabTitle", org.netbeans.modules.versioning.util.Utils.getContextDisplayName(context)));
+                NbBundle.getMessage(IncomingAction.class, "MSG_Incoming_TabTitle", 
+                HgUtils.getRootFile(context).getName()));    
     }
         
     public boolean isEnabled() {
