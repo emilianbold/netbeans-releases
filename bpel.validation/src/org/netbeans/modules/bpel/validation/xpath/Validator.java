@@ -138,7 +138,7 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
     
     if (fTypeName.equals("string") && tTypeName.equals("time")) { // NOI18N
       // # 135079
-      addError("FIX_Time_in_copy", copy); // NOI18N
+      addWarning("FIX_Time_in_copy", copy); // NOI18N
     }
     else {
       addWarning("FIX_TYPE_IN_COPY", copy, fTypeName, tTypeName); // NOI18N

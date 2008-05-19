@@ -38,33 +38,28 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
-package org.netbeans.modules.cnd.highlight;
-
-import junit.framework.Test;
-import junit.framework.TestSuite;
-import org.netbeans.modules.cnd.test.BaseTestSuite;
-import org.netbeans.modules.cnd.highlight.semantic.InactiveCodeTest;
-import org.netbeans.modules.cnd.highlight.semantic.MacroUsagesTest;
-import org.netbeans.modules.cnd.highlight.semantic.MarkOccurrencesTest;
+package org.netbeans.modules.ruby.testrunner.ui;
 
 /**
- *
-* @author Sergey Grinev
+ * Enums for representing status of a test case or suite.
+ * 
+ * @author Erno Mononen
  */
-public class HighlightingTests extends BaseTestSuite {
-    
-    public HighlightingTests() {
-        super("Code Highlighting"); // NOI18N
-        
-        addTestSuite(InactiveCodeTest.class);
-        addTestSuite(MacroUsagesTest.class);
-        addTestSuite(MarkOccurrencesTest.class);
-    }
+enum Status {
 
-    public static Test suite() {
-        TestSuite suite = new HighlightingTests();
-        return suite;
+    PASSED("00CC00"), FAILED("FF0000"), ERROR("FF0000"), PENDING("800080");
+    
+    private final String displayColor;
+
+    private Status(String displayColor) {
+        this.displayColor = displayColor;
     }
     
+    /**
+     * @return the html display color for this status.
+     */
+    String getHtmlDisplayColor() {
+        return displayColor;
+    }
+            
 }

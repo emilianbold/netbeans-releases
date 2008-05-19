@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.ruby.testrunner.ui;
 
+import java.util.HashMap;
+import java.util.Map;
 import javax.swing.Action;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -49,7 +51,7 @@ import org.openide.util.actions.SystemAction;
 
 /**
  *
- * @author Marian Petras
+ * @author Marian Petras, Erno Mononen
  */
 final class TestMethodNode extends AbstractNode {
 
@@ -106,28 +108,19 @@ final class TestMethodNode extends AbstractNode {
      */
     @Override
     public String getHtmlDisplayName() {
-        final int status = (testcase.trouble == null)
-                           ? 0
-                           : testcase.trouble.isError() ? 1 : 2;
-        String[] noTimeKeys = new String[] {
-                                      "MSG_TestMethodPassed_HTML",      //NOI18N
-                                      "MSG_TestMethodError_HTML",       //NOI18N
-                                      "MSG_TestMethodFailed_HTML"};     //NOI18N
-        String[] timeKeys = new String[] {
-                                      "MSG_TestMethodPassed_HTML_time", //NOI18N
-                                      "MSG_TestMethodError_HTML_time",  //NOI18N
-                                      "MSG_TestMethodFailed_HTML_time"};//NOI18N
-                                          
+
+        Status status = testcase.getStatus();
+
         StringBuffer buf = new StringBuffer(60);
         buf.append(testcase.name);
         buf.append("&nbsp;&nbsp;");                                     //NOI18N
         buf.append("<font color='#");                                   //NOI18N
-        buf.append(testcase.trouble != null ? "FF0000'>" : "00CC00'>"); //NOI18N
+        buf.append(status.getHtmlDisplayColor() + "'>"); //NOI18N
         buf.append(testcase.timeMillis < 0
                    ? NbBundle.getMessage(getClass(),
-                                         noTimeKeys[status])
+                                         DisplayNameMapper.getNoTimeKey(status))
                    : NbBundle.getMessage(getClass(),
-                                         timeKeys[status],
+                                         DisplayNameMapper.getTimeKey(status),
                                          new Float(testcase.timeMillis/1000f)));
         buf.append("</font>");                                          //NOI18N
         return buf.toString();
@@ -150,5 +143,38 @@ final class TestMethodNode extends AbstractNode {
     
     public SystemAction[] getActions(boolean context) {
         return new SystemAction[0];
+    }
+    
+    private static final class DisplayNameMapper {
+
+        private static final Map< Status,String> NO_TIME_KEYS = initNoTimeKeys();
+        private static final Map< Status,String> TIME_KEYS = initTimeKeys();
+
+        private static Map< Status,String> initNoTimeKeys() {
+            Map< Status,String> result = new HashMap< Status,String>(4);
+            result.put(Status.PASSED, "MSG_TestMethodPassed_HTML");
+            result.put(Status.ERROR, "MSG_TestMethodError_HTML");
+            result.put(Status.FAILED, "MSG_TestMethodFailed_HTML");
+            result.put(Status.PENDING, "MSG_TestMethodPending_HTML");
+            return result;
+        }
+
+        private static Map< Status,String> initTimeKeys() {
+            Map< Status,String> result = new HashMap< Status,String>(4);
+            result.put(Status.PASSED, "MSG_TestMethodPassed_HTML_time");
+            result.put(Status.ERROR, "MSG_TestMethodError_HTML_time");
+            result.put(Status.FAILED, "MSG_TestMethodFailed_HTML_time");
+            result.put(Status.PENDING, "MSG_TestMethodPending_HTML_time");
+            return result;
+        }
+        
+        static String getNoTimeKey(Status status) {
+            return NO_TIME_KEYS.get(status);
+        }
+
+        static String getTimeKey(Status status) {
+            return TIME_KEYS.get(status);
+        }
+
     }
 }
