@@ -141,6 +141,7 @@ import org.openide.util.WeakListeners;
  * Provede Parsing API parser build on the top of Javac (JSR 199)
  * @author Tomas Zezula
  */
+//@NotThreadSafe
 public class JavacParser extends Parser {
     //Timer logger
     private static final Logger TIME_LOGGER = Logger.getLogger("TIMER");        //NOI18N    
@@ -191,7 +192,10 @@ public class JavacParser extends Parser {
     private CompilationInfoImpl ciImpl;
     //State of the parser
     private boolean initialized;
+    //Parser is invalidated, new parser impl need to be created
     private boolean invalid;
+    //Last used snapshot
+    private Snapshot cachedSnapShot;
     
     JavacParser (final Collection<Snapshot> snapshots) {
         boolean isSingleFile = snapshots.size() == 1;
@@ -242,6 +246,7 @@ public class JavacParser extends Parser {
         try {
             init (snapshot, task);
             ciImpl = createCurrentInfo (this, file, root,snapshot, null);
+            cachedSnapShot = snapshot;
         } catch (IOException ioe) {
             throw new ParseException ("JavacParser failure", ioe);            //NOI18N
         }
@@ -250,9 +255,12 @@ public class JavacParser extends Parser {
     @Override
     public CompilationInfo getResult (final Task task) throws ParseException {
         assert ciImpl != null;
-        if (invalid) {
-            //todo:
+        //Assumes that caller is synchronized by the Parsing API lock
+        if (invalid) {                        
             invalid = false;
+            if (cachedSnapShot != null) {
+                parse (cachedSnapShot, task);
+            }
         }
         final boolean isParserResultTask = task instanceof JavaParserResultTask;
         final boolean isUserTask = task instanceof UserTask;
