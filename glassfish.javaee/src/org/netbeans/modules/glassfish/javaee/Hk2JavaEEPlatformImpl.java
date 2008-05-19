@@ -78,7 +78,21 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
     
     // Persistence provider strings
     private static final String PERSISTENCE_PROV_ECLIPSELINK = "org.eclipse.persistence.jpa.PersistenceProvider"; //NOI18N
-       
+
+    // WEB SERVICES PROPERTIES 
+    // TODO - shall be removed and usages replaced by values from j2eeserver or websvc apis after redesign
+    private static final String TOOL_WSCOMPILE = "wscompile";
+    private static final String TOOL_JSR109 = "jsr109";
+    private static final String TOOL_WSIMPORT = "wsimport";
+    private static final String TOOL_WSGEN = "wsgen";
+    private static final String TOOL_KEYSTORE = "keystore";
+    private static final String TOOL_KEYSTORECLIENT = "keystoreClient";
+    private static final String TOOL_TRUSTSTORE = "truststore";
+    private static final String TOOL_TRUSTSTORECLIENT = "truststoreClient";
+    private static final String TOOL_WSIT = "wsit";
+    private static final String TOOL_JAXWSTESTER = "jaxws-tester";
+    private static final String TOOL_APPCLIENTRUNTIME = "appClientRuntime";
+    
     /**
      * 
      * @param toolName 
@@ -97,8 +111,45 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
             return true;
         }
         
-        if("defaultPersistenceProviderJavaEE5".equals(toolName)) {
+        if("defaultPersistenceProviderJavaEE5".equals(toolName)) {  //NOI18N
             return true;
+        }
+
+        // WEB SERVICES SUPPORT
+        if (true) { // - check for existence of webservices libraries
+            if (TOOL_WSGEN.equals(toolName)) {         //NOI18N
+                return true;
+            }
+            if (TOOL_WSIMPORT.equals(toolName)) {      //NOI18N
+                return true;
+            }
+            if (TOOL_WSIT.equals(toolName)) {          //NOI18N
+                return true;
+            }
+            if (TOOL_JAXWSTESTER.equals(toolName)) {  //NOI18N
+                return true;
+            }
+            if (TOOL_WSCOMPILE.equals(toolName)) {     //NOI18N
+                return false;   // TODO - the support is there - need to find the right classpath then change to true
+            }
+            if (TOOL_JSR109.equals(toolName)) {        //NOI18N
+                return false;   //TODO - when the support becomes available, change to true
+            }
+            if (TOOL_KEYSTORE.equals(toolName)) {      //NOI18N
+                return false;   // TODO - when the support becomes available, change to true
+            }
+            if (TOOL_KEYSTORECLIENT.equals(toolName)) {//NOI18N
+                return false;   // TODO - when the support becomes available, change to true
+            }
+            if (TOOL_TRUSTSTORE.equals(toolName)) {    //NOI18N
+                return false;    // TODO  - when the support becomes available, change to true
+            }
+            if (TOOL_TRUSTSTORECLIENT.equals(toolName)) {  //NOI18N
+                return false;    // TODO  - when the support becomes available, change to true
+            }
+            if (TOOL_APPCLIENTRUNTIME.equals(toolName)) { //NOI18N
+                return false;    //TODO - when the support becomes available, change to true
+            }
         }
         
         return false;     
@@ -110,6 +161,18 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
      * @return 
      */
     public File[] getToolClasspathEntries(String toolName) {
+
+//        if (TOOL_WSGEN.equals(toolName) || TOOL_WSIMPORT.equals(toolName)) {
+//            return new File[] {
+//                new File(root, TOOLS_JAR),        //NOI18N
+//                new File(root, JSTL_JAR),         //NOI18N
+//                new File(root, JAVA_EE_JAR),      //NOI18N
+//                new File(root, APPSERV_WS_JAR),   //NOI18N
+//                new File(root, MAIL_JAR),         //NOI18N
+//                new File(root, ACTIVATION_JAR)    //NOI18N
+//            }
+//        }
+        
         return new File[0];
     }
     
