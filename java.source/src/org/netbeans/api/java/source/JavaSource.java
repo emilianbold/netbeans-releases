@@ -447,11 +447,10 @@ public final class JavaSource {
                             }
                         }
                         
-                        private Parser.Result findEmbeddedJava (final ResultIterator theMess) {
+                        private Parser.Result findEmbeddedJava (final ResultIterator theMess) throws ParseException {
                             final Collection<Embedding> todo = new LinkedList<Embedding>();
                             //BFS should perform better than DFS in this dark.
-                            for (Iterator<Embedding> it = theMess.getEmbeddedSources(); it.hasNext();) {
-                                Embedding embedding = it.next();
+                            for (Embedding embedding : theMess.getEmbeddedSources()) {
                                 if (JavacParser.MIME_TYPE.equals(embedding.getMimeType())) {
                                     return theMess.getResultIterator(embedding).getParserResult();
                                 }
