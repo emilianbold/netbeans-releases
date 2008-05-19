@@ -38,11 +38,9 @@
  */
 package org.netbeans.modules.hibernate.hqleditor.ui;
 
-import java.awt.event.ActionEvent;
 import org.netbeans.modules.hibernate.hqleditor.HQLEditorController;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
-import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
 
@@ -55,18 +53,16 @@ public class HQLEditorAction extends NodeAction {
 
     public HQLEditorAction() {
         super();
-    //    super(NbBundle.getMessage(HQLEditorAction.class, "CTL_HQLEditorAction"));
-    //    putValue(SMALL_ICON, new ImageIcon(Utilities.loadImage(HQLEditorTopComponent.ICON_PATH, true)));
+    }
+
+    @Override
+    protected boolean asynchronous() {
+        return false;
     }
 
     @Override
     protected void performAction(final Node[] activatedNodes) {
-      Mutex.EVENT.readAccess(new Mutex.Action() {
-            public Object run() {
-                new HQLEditorController().init(activatedNodes);
-                return new Object();
-            }
-       });
+        new HQLEditorController().init(activatedNodes);
     }
 
     @Override
