@@ -38,40 +38,23 @@
  */
 package org.netbeans.modules.ruby.testrunner.ui;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.netbeans.modules.ruby.platform.execution.OutputRecognizer;
 
 /**
- * An output recognizer for parsing output of the test/unit runner script, 
- * <code>nb_test_mediator.rb</code>. Updates the test result UI.
  *
  * @author Erno Mononen
  */
-public class TestRecognizer extends OutputRecognizer {
+public final class TestRecognizer extends OutputRecognizer {
 
     private final Manager manager;
     private final TestSession session;
-    private final List<TestHandler> handlers;
+    private final List<TestRecognizerHandler> handlers;
 
-    public TestRecognizer(Manager manager, TestSession session) {
+    public TestRecognizer(Manager manager, TestSession session, List<TestRecognizerHandler> handlers) {
         this.manager = manager;
         this.session = session;
-        this.handlers = initHandlers();
-    }
-
-    private List<TestHandler> initHandlers() {
-        List<TestHandler> result = new ArrayList<TestHandler>();
-        result.add(new SuiteStartingHandler());
-        result.add(new SuiteStartedHandler());
-        result.add(new SuiteFinishedHandler());
-        result.add(new TestStartedHandler());
-        result.add(new TestFailedHandler());
-        result.add(new TestErrorHandler());
-        result.add(new TestFinishedHandler());
-        return result;
+        this.handlers = handlers;
     }
 
     @Override
@@ -82,147 +65,19 @@ public class TestRecognizer extends OutputRecognizer {
     @Override
     public RecognizedOutput processLine(String line) {
 
-        for (TestHandler handler : handlers) {
+        for (TestRecognizerHandler handler : handlers) {
             if (handler.match(line).matches()) {
                 handler.updateUI(manager, session);
-                return null;
+                return handler.getRecognizedOutput();
             }
         }
 
+        manager.displayOutput(session, line, false);
         return null;
     }
 
     @Override
     public void finish() {
         manager.sessionFinished(session);
-    }
-
-    private static int toMillis(String timeInSeconds) {
-        Double elapsedTimeMillis = Double.parseDouble(timeInSeconds) * 1000;
-        return elapsedTimeMillis.intValue();
-    }
-
-    static abstract class TestHandler {
-
-        protected final Pattern pattern;
-        protected Matcher matcher;
-
-        public TestHandler(String regex) {
-            this.pattern = Pattern.compile(regex);
-        }
-
-        final Matcher match(String line) {
-            this.matcher = pattern.matcher(line);
-            return matcher;
-        }
-
-        abstract void updateUI(Manager manager, TestSession session);
-    }
-
-    static class TestFailedHandler extends TestHandler {
-
-        public TestFailedHandler() {
-            super("%TEST_FAILED%\\stime=(\\d+\\.\\d+)\\sFailure:[.[^\\w]]*(\\w+)\\((\\w+)\\)(.*)");
-        }
-
-        @Override
-        void updateUI( Manager manager, TestSession session) {
-            Report.Testcase testcase = new Report.Testcase();
-            testcase.timeMillis = toMillis(matcher.group(1));
-            testcase.className = matcher.group(3);
-            testcase.name = matcher.group(2);
-            testcase.trouble = new Report.Trouble(false);
-            testcase.trouble.stackTrace = new String[]{matcher.group(4)};
-            session.addTestCase(testcase);
-            manager.displayOutput(session, matcher.group(4), false);
-        }
-    }
-
-    static class TestErrorHandler extends TestHandler {
-
-        public TestErrorHandler() {
-            super("%TEST_ERROR%\\stime=(\\d+\\.\\d+)\\sError:[.[^\\w]]*(\\w+)\\((\\w+)\\)(.*)");
-        }
-
-        @Override
-        void updateUI( Manager manager, TestSession session) {
-            Report.Testcase testcase = new Report.Testcase();
-            testcase.timeMillis = toMillis(matcher.group(1));
-            testcase.className = matcher.group(3);
-            testcase.name = matcher.group(2);
-            testcase.trouble = new Report.Trouble(true);
-            testcase.trouble.stackTrace = new String[]{matcher.group(4)};
-            session.addTestCase(testcase);
-            manager.displayOutput(session, matcher.group(4), true);
-
-        }
-    }
-
-    static class TestStartedHandler extends TestHandler {
-
-        public TestStartedHandler() {
-            super("%TEST_STARTED%\\s([\\w]+)\\(([\\w]+)\\)");
-        }
-
-        @Override
-        void updateUI( Manager manager, TestSession session) {
-        }
-    }
-
-    static class TestFinishedHandler extends TestHandler {
-
-        public TestFinishedHandler() {
-            super("%TEST_FINISHED%\\stime=(\\d+\\.\\d+)\\s([\\w]+)\\(([\\w]+)\\)");
-        }
-
-        @Override
-        void updateUI( Manager manager, TestSession session) {
-            Report.Testcase testcase = new Report.Testcase();
-            testcase.timeMillis = toMillis(matcher.group(1));
-            testcase.className = matcher.group(3);
-            testcase.name = matcher.group(2);
-            session.addTestCase(testcase);
-        }
-    }
-
-    static class SuiteFinishedHandler extends TestHandler {
-
-        public SuiteFinishedHandler() {
-            super("%SUITE_FINISHED%\\s(\\d+\\.\\d+)");
-        }
-
-        @Override
-        void updateUI( Manager manager, TestSession session) {
-            String timeInSeconds = matcher.group(1);
-            Double elapsedTimeMillis = Double.parseDouble(timeInSeconds) * 1000;
-            Report result = session.getReport();
-            result.elapsedTimeMillis = elapsedTimeMillis.intValue();
-            manager.displayReport(session, result);
-        }
-    }
-
-    static class SuiteStartedHandler extends TestHandler {
-
-        public SuiteStartedHandler() {
-            super("%SUITE_STARTED%\\s.*");
-        }
-
-        @Override
-        void updateUI( Manager manager, TestSession session) {
-        }
-    }
-
-    static class SuiteStartingHandler extends TestHandler {
-
-        public SuiteStartingHandler() {
-            super("%SUITE_STARTING%\\s(\\w+)");
-        }
-
-        @Override
-        void updateUI( Manager manager, TestSession session) {
-            String suiteName = matcher.group(1);
-            session.setSuiteName(suiteName);
-            manager.displaySuiteRunning(session, suiteName);
-        }
     }
 }

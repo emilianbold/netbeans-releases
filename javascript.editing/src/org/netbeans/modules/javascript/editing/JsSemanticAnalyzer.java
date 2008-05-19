@@ -134,7 +134,7 @@ public class JsSemanticAnalyzer implements SemanticAnalyzer {
         AstUtilities.addNodesByType(root, new int[] { Token.REGEXP, Token.FUNCNAME, Token.OBJLITNAME }, regexps);
         for (Node node : regexps) {
             OffsetRange range = AstUtilities.getNameRange(node);
-            if(JsModel.isGeneratedIdentifier(node.getString())) {
+            if(node.isStringNode() && JsModel.isGeneratedIdentifier(node.getString())) {
                 continue;
             }
             final int type = node.getType();

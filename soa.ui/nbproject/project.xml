@@ -165,7 +165,9 @@
                 <friend>org.netbeans.modules.bpel.editors</friend>
                 <friend>org.netbeans.modules.bpel.editors.api</friend>
                 <friend>org.netbeans.modules.bpel.mapper</friend>
+                <friend>org.netbeans.modules.bpel.validation</friend>
                 <friend>org.netbeans.modules.soa.mapper</friend>
+                <friend>org.netbeans.modules.soa.validation</friend>
                 <friend>org.netbeans.modules.xslt.core</friend>
                 <friend>org.netbeans.modules.xslt.mapper</friend>
                 <friend>org.netbeans.modules.xslt.project</friend>

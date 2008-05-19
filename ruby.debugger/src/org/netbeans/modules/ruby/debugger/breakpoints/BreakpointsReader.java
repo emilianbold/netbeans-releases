@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -76,18 +76,24 @@ public final class BreakpointsReader implements Properties.Reader {
             return null;
         }
         String condition = props.getString(PROPERTY_CONDITION, null);
-        return RubyBreakpointManager.createBreakpoint(line, condition);
+        return RubyBreakpointManager.createLineBreakpoint(line, condition);
     }
     
     public void write(final Object object, final Properties props) {
-        RubyBreakpoint bp = (RubyBreakpoint) object;
-        FileObject fo = bp.getFileObject();
-        try {
-            props.setString(PROPERTY_URL, fo.getURL().toString());
-            props.setInt(PROPERTY_LINE_NUMBER, bp.getLine().getLineNumber());
-            props.setString(PROPERTY_CONDITION, bp.getCondition());
-        } catch (FileStateInvalidException ex) {
-            Exceptions.printStackTrace(ex);
+        if (object instanceof RubyLineBreakpoint) {
+            RubyLineBreakpoint bp = (RubyLineBreakpoint) object;
+            FileObject fo = bp.getFileObject();
+            try {
+                props.setString(PROPERTY_URL, fo.getURL().toString());
+                props.setInt(PROPERTY_LINE_NUMBER, bp.getLine().getLineNumber());
+                props.setString(PROPERTY_CONDITION, bp.getCondition());
+            } catch (FileStateInvalidException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        } else if (object instanceof RubyExceptionBreakpoint) {
+            // TODO throw new UnsupportedOperationException("not implemented yet");
+        } else {
+            throw new IllegalArgumentException("Unknown breakpoint type: " + object);
         }
     }
     

@@ -1769,7 +1769,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 TypeMirror tm = tIt.next();
                 this.params.add(new ParamDesc(tm.toString(), Utilities.getTypeName(tm, false, elem.isVarArgs() && !tIt.hasNext()).toString(), it.next().getSimpleName().toString()));
             }
-            this.isAbstract = elem.getEnclosingElement().getModifiers().contains(Modifier.ABSTRACT);
+            this.isAbstract = !insertName && elem.getEnclosingElement().getModifiers().contains(Modifier.ABSTRACT);
         }
         
         public int getSortPriority() {

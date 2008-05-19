@@ -41,72 +41,72 @@ import org.openide.text.Line;
  * Window - Preferences - Java - Code Generation - Code and Comments
  */
 public class ValidationAnnotation extends Annotation implements PropertyChangeListener {
-	
-	/** The error message shown on mouseover on the pmd icon */
-	private String errormessage = null;
-	
-	/** The annotations currently existing. */
-	private static List annotations = new ArrayList();
-	
-	private ValidationAnnotation() {}
-	
-	public static final ValidationAnnotation getNewInstance() {
-		ValidationAnnotation va = new ValidationAnnotation();
-		annotations.add( va );
-		return va;
-	}
-	
-	public static final void clearAll() {
-		Iterator iterator = annotations.iterator();
-		while( iterator.hasNext() ) {
-			((Annotation)iterator.next()).detach();
-		}
-		annotations.clear();
-	}
-	
-	/**
-	 * The annotation type.
-	 *
-	 * @return the string "wsdl-validation-annotation"
-	 */
-	@Override
-	public String getAnnotationType() {
-		return "org-netbeans-modules-xml-core-error"; //NOI18N
-	}
-	
-	
-	/**
-	 * Sets the current errormessage
-	 *
-	 * @param message the errormessage
-	 */
-	public void setErrorMessage( String message ) {
-		errormessage = message;
-	}
-	
-	
-	/**
-	 * A short description of this annotation
-	 *
-	 * @return the short description
-	 */
-	@Override
-	public String getShortDescription() {
-		return errormessage;
-	}
-	
-	
-	/**
-	 * Invoked when the user change the content on the line where the annotation is
-	 * attached
-	 *
-	 * @param propertyChangeEvent the event fired
-	 */
-	public void propertyChange( PropertyChangeEvent propertyChangeEvent ) {
-		Line line = ( Line )propertyChangeEvent.getSource();
-		line.removePropertyChangeListener( this );
-		detach();
-	}
-	
+    
+    /** The error message shown on mouseover on the pmd icon */
+    private String errormessage = null;
+    
+    /** The annotations currently existing. */
+    private static List annotations = new ArrayList();
+    
+    private ValidationAnnotation() {}
+    
+    public static final ValidationAnnotation getNewInstance() {
+        ValidationAnnotation va = new ValidationAnnotation();
+        annotations.add( va );
+        return va;
+    }
+    
+    public static final void clearAll() {
+        Iterator iterator = annotations.iterator();
+        while( iterator.hasNext() ) {
+            ((Annotation)iterator.next()).detach();
+        }
+        annotations.clear();
+    }
+    
+    /**
+     * The annotation type.
+     *
+     * @return the string "wsdl-validation-annotation"
+     */
+    @Override
+    public String getAnnotationType() {
+        return "org-netbeans-modules-xml-core-error"; //NOI18N
+    }
+    
+    
+    /**
+     * Sets the current errormessage
+     *
+     * @param message the errormessage
+     */
+    public void setErrorMessage( String message ) {
+        errormessage = message;
+    }
+    
+    
+    /**
+     * A short description of this annotation
+     *
+     * @return the short description
+     */
+    @Override
+    public String getShortDescription() {
+        return errormessage;
+    }
+    
+    
+    /**
+     * Invoked when the user change the content on the line where the annotation is
+     * attached
+     *
+     * @param propertyChangeEvent the event fired
+     */
+    public void propertyChange( PropertyChangeEvent propertyChangeEvent ) {
+        Line line = ( Line )propertyChangeEvent.getSource();
+        line.removePropertyChangeListener( this );
+        detach();
+    }
+    
 }
 

@@ -122,6 +122,7 @@
               <pathelement location="${{netbeans.home}}/../platform8/modules/org-netbeans-modules-masterfs.jar"/>
               <pathelement location="${{netbeans.home}}/../platform8/modules/org-netbeans-modules-queries.jar"/>
               <pathelement location="${{netbeans.home}}/../soa2/modules/org-netbeans-modules-soa-validation.jar"/>
+              <pathelement location="${{netbeans.home}}/../soa2/modules/org-netbeans-modules-soa-ui.jar"/>
               <pathelement location="${{netbeans.home}}/../soa2/modules/org-netbeans-modules-bpel-model.jar"/>
               <pathelement location="${{netbeans.home}}/../soa2/modules/org-netbeans-modules-bpel-project.jar"/>
               <pathelement location="${{netbeans.home}}/../soa2/modules/org-netbeans-modules-bpel-validation.jar"/>
