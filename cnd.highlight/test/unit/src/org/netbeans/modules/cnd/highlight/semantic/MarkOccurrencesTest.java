@@ -50,9 +50,9 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
  *
  * @author Sergey Grinev
  */
-public class MarkOccurencesTest extends SemanticHighlightingTestBase {
+public class MarkOccurrencesTest extends SemanticHighlightingTestBase {
 
-    public MarkOccurencesTest(String testName) {
+    public MarkOccurrencesTest(String testName) {
         super(testName);
     }
 
@@ -93,6 +93,6 @@ public class MarkOccurencesTest extends SemanticHighlightingTestBase {
     }
 
     protected Collection<? extends CsmOffsetable> getBlocks(FileImpl testFile,int offset) {
-        return MarkOccurrencesHighlighter.getOccurences(testFile, offset);
+        return MarkOccurrencesHighlighter.getOccurrences(testFile, offset);
     }
 }
