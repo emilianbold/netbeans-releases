@@ -16,16 +16,16 @@ import org.netbeans.modules.xml.wsdl.model.spi.GenericExtensibilityElement.Strin
 
 public class PlanComponentImpl extends ComponentImpl implements PlanComponent {
 
-	public PlanComponentImpl(IEPModel model) {
-		super(model);
-	}
+    public PlanComponentImpl(IEPModel model) {
+        super(model);
+    }
 
-	public PlanComponentImpl(IEPModel model, Element element) {
-		super(model, element);
-	}
-	
-	public IEPComponent createChild (Element childEl) {
-		IEPComponent child = null;
+    public PlanComponentImpl(IEPModel model, Element element) {
+        super(model, element);
+    }
+    
+    public IEPComponent createChild (Element childEl) {
+        IEPComponent child = null;
         
         if (childEl != null) {
             String localName = childEl.getLocalName();
@@ -33,55 +33,55 @@ public class PlanComponentImpl extends ComponentImpl implements PlanComponent {
                     localName = childEl.getTagName();
             }
             if (localName.equals(COMPONENT_CHILD)) {
-            		String name = childEl.getAttribute("name");
-            		if(name != null) {
-            			if(name.equals(ModelConstants.COMPONENT_OPERATORS)) {
-            				child = new OperatorComponentContainerImpl(getModel(), childEl);
-            			} else if(name.equals(ModelConstants.COMPONENT_LINKS)) {
-            				child = new LinkComponentContainerImpl(getModel(), childEl);
-            			} else if(name.equals(ModelConstants.COMPONENT_SCHEMAS)) {
-            				child = new SchemaComponentContainerImpl(getModel(), childEl);
-            			} else {
-            				child = super.createChild(childEl);
-            			}
-            		}
+                    String name = childEl.getAttribute("name");
+                    if(name != null) {
+                        if(name.equals(ModelConstants.COMPONENT_OPERATORS)) {
+                            child = new OperatorComponentContainerImpl(getModel(), childEl);
+                        } else if(name.equals(ModelConstants.COMPONENT_LINKS)) {
+                            child = new LinkComponentContainerImpl(getModel(), childEl);
+                        } else if(name.equals(ModelConstants.COMPONENT_SCHEMAS)) {
+                            child = new SchemaComponentContainerImpl(getModel(), childEl);
+                        } else {
+                            child = super.createChild(childEl);
+                        }
+                    }
             } else {
-            	child = super.createChild(childEl);
+                child = super.createChild(childEl);
             }
         }
         
         return child;
-	}
-	
-	 public void accept(IEPVisitor visitor) {
-    	visitor.visitPlanComponent(this);
     }
-	 
-	
-	public LinkComponentContainer getLinkComponentContainer() {
-		List<LinkComponentContainer> children = getChildren(LinkComponentContainer.class);
-		if(children.size() != 0) {
-			return children.get(0);
-		}
-		return null;
-	}
+    
+     public void accept(IEPVisitor visitor) {
+        visitor.visitPlanComponent(this);
+    }
+     
+    
+    public LinkComponentContainer getLinkComponentContainer() {
+        List<LinkComponentContainer> children = getChildren(LinkComponentContainer.class);
+        if(children.size() != 0) {
+            return children.get(0);
+        }
+        return null;
+    }
 
-	public OperatorComponentContainer getOperatorComponentContainer() {
-		List<OperatorComponentContainer> children = getChildren(OperatorComponentContainer.class);
-		if(children.size() != 0) {
-			return children.get(0);
-		}
-		return null;
-		
-	}
+    public OperatorComponentContainer getOperatorComponentContainer() {
+        List<OperatorComponentContainer> children = getChildren(OperatorComponentContainer.class);
+        if(children.size() != 0) {
+            return children.get(0);
+        }
+        return null;
+        
+    }
 
-	public SchemaComponentContainer getSchemaComponentContainer() {
-		List<SchemaComponentContainer> children = getChildren(SchemaComponentContainer.class);
-		if(children.size() != 0) {
-			return children.get(0);
-		}
-		return null;
-	}
+    public SchemaComponentContainer getSchemaComponentContainer() {
+        List<SchemaComponentContainer> children = getChildren(SchemaComponentContainer.class);
+        if(children.size() != 0) {
+            return children.get(0);
+        }
+        return null;
+    }
 
     public List<Import> getImports() {
         List<Import> children = getChildren(Import.class);
@@ -89,18 +89,18 @@ public class PlanComponentImpl extends ComponentImpl implements PlanComponent {
     }
 
     public String getTargetNamespace() {
-    	return getAttribute(ATTR_TARGETNAMESPACE);
+        return getAttribute(ATTR_TARGETNAMESPACE);
     }
     
     public void setTargetNamespace(String targetNamespace) {
-    	setAttribute(TARGETNAMESPACE_PROPERTY, ATTR_TARGETNAMESPACE, targetNamespace);
+        setAttribute(TARGETNAMESPACE_PROPERTY, ATTR_TARGETNAMESPACE, targetNamespace);
     }
     
     public void setPackageName(String packageName) {
-    	setAttribute(PACKAGENAME_PROPERTY, ATTR_PACKAGENAME, packageName);
+        setAttribute(PACKAGENAME_PROPERTY, ATTR_PACKAGENAME, packageName);
     }
     
     public String getPackageName() {
-    	return getAttribute(ATTR_PACKAGENAME);
+        return getAttribute(ATTR_PACKAGENAME);
     }
 }

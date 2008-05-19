@@ -154,7 +154,8 @@ public class SchemaModelImpl extends AbstractDocumentModel<SchemaComponent> impl
             found = findByNameAndType(localName, type);
         }
         
-        if (found == null && ! (refToMe instanceof Import)) {
+        if (found == null && (! (refToMe instanceof Import) 
+                    || ((Import)refToMe).getNamespace().equals(namespace))) {
             checked.add(this);
             
             Collection<SchemaModelReference> modelRefs = getSchemaModelReferences();

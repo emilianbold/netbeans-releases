@@ -79,7 +79,7 @@ public final class View implements LogicalViewProvider {
     }
     
     public Node createLogicalView() {
-        return new ProjectNodeWrapper(new RootNode(project));
+        return new RootNode(project);
     }
     
     public Node findPath(Node root, Object target) {

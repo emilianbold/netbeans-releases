@@ -66,17 +66,17 @@ public class IEPSchemaValidator extends XsdBasedValidator {
     }
 
     class SchemaErrorHandler implements ErrorHandler {
-    	public void error(SAXParseException exception) throws SAXException {
-    		Logger.getLogger(getClass().getName()).log(Level.SEVERE, "SchemaErrorHandler: " + exception.getMessage(), exception);
-    	}
-    	
-    	public void fatalError(SAXParseException exception) throws SAXException {
-    		Logger.getLogger(getClass().getName()).log(Level.SEVERE, "SchemaErrorHandler: " + exception.getMessage(), exception);
-    	}
-    	
-    	public void warning(SAXParseException exception) throws SAXException {
-    		
-    	}
+        public void error(SAXParseException exception) throws SAXException {
+            Logger.getLogger(getClass().getName()).log(Level.SEVERE, "SchemaErrorHandler: " + exception.getMessage(), exception);
+        }
+        
+        public void fatalError(SAXParseException exception) throws SAXException {
+            Logger.getLogger(getClass().getName()).log(Level.SEVERE, "SchemaErrorHandler: " + exception.getMessage(), exception);
+        }
+        
+        public void warning(SAXParseException exception) throws SAXException {
+            
+        }
     }
     
 

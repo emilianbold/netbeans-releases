@@ -92,7 +92,7 @@ public class AxiTreeNodeVisitor extends DeepAXITreeVisitor {
     }
     
     public List<AbstractSchemaArtifactNode> getNodesToBeExpanded() {
-    	return this.mNodesToBeExpanded;
+        return this.mNodesToBeExpanded;
     }
     
     @Override
@@ -129,7 +129,7 @@ public class AxiTreeNodeVisitor extends DeepAXITreeVisitor {
         currentNode.add(eNode);
         
         if(eNode.isSelected()) {
-        	mNodesToBeExpanded.add(eNode);
+            mNodesToBeExpanded.add(eNode);
         }
         mCurrentStack.push(eNode);
         visitChildren(element);
@@ -149,7 +149,7 @@ public class AxiTreeNodeVisitor extends DeepAXITreeVisitor {
         currentNode.add(cNode);
         
         if(cNode.isSelected()) {
-        	mNodesToBeExpanded.add(cNode);
+            mNodesToBeExpanded.add(cNode);
         }
         
         mCurrentStack.push(cNode);
@@ -169,7 +169,7 @@ public class AxiTreeNodeVisitor extends DeepAXITreeVisitor {
         currentNode.add(aNode);
         
         if(aNode.isSelected()) {
-        	mNodesToBeExpanded.add(aNode);
+            mNodesToBeExpanded.add(aNode);
         }
 //        visitChildren(attribute);
     }

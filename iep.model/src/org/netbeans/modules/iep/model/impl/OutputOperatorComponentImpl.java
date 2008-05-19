@@ -8,8 +8,8 @@ import org.netbeans.modules.iep.model.lib.TcgPropertyType;
 import org.w3c.dom.Element;
 
 public class OutputOperatorComponentImpl extends MultiWSDLComponentReferenceOperatorComponentImpl implements OutputOperatorComponent {
-	
-	public OutputOperatorComponentImpl(IEPModel model,  Element e) {
+    
+    public OutputOperatorComponentImpl(IEPModel model,  Element e) {
             super(model, e);
         }
         
@@ -18,12 +18,12 @@ public class OutputOperatorComponentImpl extends MultiWSDLComponentReferenceOper
     }
         
     public boolean isWebServiceOutput() {
-    	boolean result = false;
-    	TcgPropertyType p = getComponentType().getPropertyType(PROP_WS_OUTPUT_KEY);
-    	if(p != null) {
-    		result = (Boolean) p.getDefaultValue();
-    	}
-    	return result;
+        boolean result = false;
+        TcgPropertyType p = getComponentType().getPropertyType(PROP_WS_OUTPUT_KEY);
+        if(p != null) {
+            result = (Boolean) p.getDefaultValue();
+        }
+        return result;
     }
     
 }

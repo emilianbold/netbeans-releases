@@ -416,12 +416,12 @@ public class SoaUtil {
       if (model == null) {
         return null;
       }
-      ModelSource src = model.getModelSource();
+      ModelSource source = model.getModelSource();
 
-      if (src == null) {
+      if (source == null) {
        return null;
       }
-      Lookup lookup = src.getLookup();
+      Lookup lookup = source.getLookup();
 
       if (lookup == null) {
         return null;

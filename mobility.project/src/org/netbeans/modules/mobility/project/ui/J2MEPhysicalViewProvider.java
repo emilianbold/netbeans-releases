@@ -43,7 +43,6 @@ package org.netbeans.modules.mobility.project.ui;
 import java.io.CharConversionException;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
-import java.util.HashSet;
 import java.util.Iterator;
 import org.netbeans.api.project.*;
 import org.netbeans.api.project.libraries.LibraryManager;
@@ -67,11 +66,7 @@ import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 import org.openide.ErrorManager;
 import org.openide.actions.FindAction;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.FileStatusEvent;
-import org.openide.filesystems.FileStatusListener;
 import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
@@ -97,7 +92,6 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.ResourceBundle;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 import org.openide.xml.XMLUtil;
@@ -273,7 +267,7 @@ public class J2MEPhysicalViewProvider implements LogicalViewProvider {
     
     /** Filter node containin additional features for the J2ME physical
      */
-    final class J2MEProjectRootNode extends AbstractNode implements AntProjectListener, PropertyChangeListener, FileStatusListener, Runnable {
+    final class J2MEProjectRootNode extends AbstractNode implements AntProjectListener, PropertyChangeListener, Runnable {
         
         private Action[] actions, actionsBroken;
         
@@ -281,7 +275,6 @@ public class J2MEPhysicalViewProvider implements LogicalViewProvider {
         Image icon;
         final Task nodeUpdateTask;
         PropertyChangeListener ref1,ref3;
-        FileStatusListener ref2;
         
         public J2MEProjectRootNode() {
             super(new LogicalViewChildren(project), Lookups.singleton(project));
@@ -293,13 +286,6 @@ public class J2MEPhysicalViewProvider implements LogicalViewProvider {
             this.ref3 = WeakListeners.propertyChange(this, LibraryManager.getDefault());
             LibraryManager.getDefault().addPropertyChangeListener(ref3);
             JavaPlatformManager.getDefault().addPropertyChangeListener(ref1);
-            try {
-                FileSystem fs = helper.getProjectDirectory().getFileSystem();
-                this.ref2 = FileUtil.weakFileStatusListener(this, fs);
-                fs.addFileStatusListener(ref2);
-            } catch (FileStateInvalidException fsie) {
-                ErrorManager.getDefault().notify(fsie);
-            }
         }
      
         protected boolean testSourceRoot() {
@@ -356,17 +342,6 @@ public class J2MEPhysicalViewProvider implements LogicalViewProvider {
         public Image getIcon( final int type ) {
             if ( icon == null ) {
                 icon = createIcon();
-            }
-            final Sources src = ProjectUtils.getSources(project);
-            if (src != null) {
-                HashSet<FileObject> files = new HashSet(); 
-                for (SourceGroup sg : src.getSourceGroups(Sources.TYPE_GENERIC)) files.add(sg.getRootFolder());
-                try {
-                    final FileSystem.Status ann = helper.getProjectDirectory().getFileSystem().getStatus();
-                    return ann.annotateIcon(icon, type, files);
-                } catch (FileStateInvalidException fsie) {
-                    ErrorManager.getDefault().notify(fsie);
-                }
             }
             return icon;
         }
@@ -489,10 +464,6 @@ public class J2MEPhysicalViewProvider implements LogicalViewProvider {
             checkBroken();
         }
 
-        public void annotationChanged(FileStatusEvent ev) {
-            checkBroken();
-        }
-        
     }
     
     private class RefreshPackagesAction extends AbstractAction {

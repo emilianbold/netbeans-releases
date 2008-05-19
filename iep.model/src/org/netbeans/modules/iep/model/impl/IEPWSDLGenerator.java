@@ -56,19 +56,19 @@ public class IEPWSDLGenerator {
 //        "STRUCT",
     };
     
-	private IEPModel mModel;
-	private OperatorComponentContainer mocContainer;
-	
-	
-	public IEPWSDLGenerator(IEPModel model) {
-		this.mModel = model;
-		this.mocContainer = this.mModel.getPlanComponent().getOperatorComponentContainer();
-		
-	}
-	
-	
+    private IEPModel mModel;
+    private OperatorComponentContainer mocContainer;
     
-	public String getWSDL(String tns) throws Exception {
+    
+    public IEPWSDLGenerator(IEPModel model) {
+        this.mModel = model;
+        this.mocContainer = this.mModel.getPlanComponent().getOperatorComponentContainer();
+        
+    }
+    
+    
+    
+    public String getWSDL(String tns) throws Exception {
         List<InputOperatorComponent> inList = mModel.getInputList();
         List<OutputOperatorComponent> outList = mModel.getOutputList();
         
@@ -102,15 +102,15 @@ public class IEPWSDLGenerator {
             sb.append("            <xsd:complexType>\n");
             sb.append("                <xsd:sequence>\n");
             if (outputSchema != null) {
-            	List<SchemaAttribute> attrs =  outputSchema.getSchemaAttributes();
-            	Iterator<SchemaAttribute> it = attrs.iterator();
-            	while(it.hasNext()) {
-            		SchemaAttribute sa = it.next();
-            		String cName = sa.getAttributeName();
+                List<SchemaAttribute> attrs =  outputSchema.getSchemaAttributes();
+                Iterator<SchemaAttribute> it = attrs.iterator();
+                while(it.hasNext()) {
+                    SchemaAttribute sa = it.next();
+                    String cName = sa.getAttributeName();
                     String cType = sa.getAttributeType();
                     String xsdType = (String)SQL_2_XSD_MAP.get(cType);
                     sb.append("                    <xsd:element name=\"" + cName + "\" type=\"" + xsdType + "\"/>\n");
-            	}
+                }
                 
             }
             sb.append("                </xsd:sequence>\n");
@@ -126,15 +126,15 @@ public class IEPWSDLGenerator {
             sb.append("                            <xsd:sequence>\n");
             
             if (outputSchema != null) {
-            	List<SchemaAttribute> attrs =  outputSchema.getSchemaAttributes();
-            	Iterator<SchemaAttribute> it = attrs.iterator();
-            	while(it.hasNext()) {
-            		SchemaAttribute sa = it.next();
-            		String cName = sa.getAttributeName();
+                List<SchemaAttribute> attrs =  outputSchema.getSchemaAttributes();
+                Iterator<SchemaAttribute> it = attrs.iterator();
+                while(it.hasNext()) {
+                    SchemaAttribute sa = it.next();
+                    String cName = sa.getAttributeName();
                     String cType = sa.getAttributeType();
                     String xsdType = (String)SQL_2_XSD_MAP.get(cType);
                     sb.append("                    <xsd:element name=\"" + cName + "\" type=\"" + xsdType + "\"/>\n");
-            	}
+                }
                 
             }
             sb.append("                            </xsd:sequence>\n");
@@ -171,17 +171,17 @@ public class IEPWSDLGenerator {
             sb.append(indent + "            <xsd:complexType>\n");
             sb.append(indent + "                <xsd:sequence>\n");
             if (outputSchema != null) {
-            	
-            	List<SchemaAttribute> attrs =  outputSchema.getSchemaAttributes();
-            	Iterator<SchemaAttribute> it = attrs.iterator();
-            	while(it.hasNext()) {
-            		SchemaAttribute sa = it.next();
-            		String cName = sa.getAttributeName();
+                
+                List<SchemaAttribute> attrs =  outputSchema.getSchemaAttributes();
+                Iterator<SchemaAttribute> it = attrs.iterator();
+                while(it.hasNext()) {
+                    SchemaAttribute sa = it.next();
+                    String cName = sa.getAttributeName();
                     String cType = sa.getAttributeType();
                     String xsdType = (String)SQL_2_XSD_MAP.get(cType);
                     sb.append(indent + "                   <xsd:element name=\"" + cName + "\" type=\"" + xsdType + "\"/>\n");
                     
-            	}
+                }
                 
             }
             if (isRelation) {
@@ -332,7 +332,7 @@ public class IEPWSDLGenerator {
             sb.append("</binding>\n");
         }
         for (int i = 0, I = outList.size(); i < I; i++) {
-        	OutputOperatorComponent op = (OutputOperatorComponent)outList.get(i);
+            OutputOperatorComponent op = (OutputOperatorComponent)outList.get(i);
             String name = op.getDisplayName();
             name = NameUtil.makeJavaId(name);
             String servceName = tns + "_" + name + "_callee";
@@ -351,7 +351,7 @@ public class IEPWSDLGenerator {
             sb.append("<!-- file output binding and service -->\n");
         }
         for (int i = 0, I = outList.size(); i < I; i++) {
-        	OutputOperatorComponent op = (OutputOperatorComponent)outList.get(i);
+            OutputOperatorComponent op = (OutputOperatorComponent)outList.get(i);
             String name = op.getDisplayName();
             name = NameUtil.makeJavaId(name);
             sb.append("<binding name=\"OutputBinding_" + name + "\" type=\"defns:OutputPt_" + name + "\">\n");
@@ -369,7 +369,7 @@ public class IEPWSDLGenerator {
             sb.append("</binding>\n");
         }
         for (int i = 0, I = outList.size(); i < I; i++) {
-        	OutputOperatorComponent op = (OutputOperatorComponent)outList.get(i);
+            OutputOperatorComponent op = (OutputOperatorComponent)outList.get(i);
             String name = op.getDisplayName();
             name = NameUtil.makeJavaId(name);
             String servceName = tns + "_" + name + "_callee";

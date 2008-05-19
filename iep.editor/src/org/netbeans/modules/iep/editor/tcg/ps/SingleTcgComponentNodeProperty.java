@@ -53,7 +53,7 @@ public class SingleTcgComponentNodeProperty extends Node.Property {
     private TcgComponentNode mNode;
     
     public static SingleTcgComponentNodeProperty 
-    		newCustomPropertyEditorInstance(OperatorComponent component, IEPModel model) throws I18nException {
+            newCustomPropertyEditorInstance(OperatorComponent component, IEPModel model) throws I18nException {
         Property property = model.getFactory().createProperty(model);
         property.setName(SharedConstants.PROPERTY_EDITOR_KEY);
         
@@ -62,14 +62,14 @@ public class SingleTcgComponentNodeProperty extends Node.Property {
     }
     
     public static SingleTcgComponentNodeProperty newInstance(Property property, 
-    												   OperatorComponent component,
-    												   IEPModel model) throws I18nException {
+                                                       OperatorComponent component,
+                                                       IEPModel model) throws I18nException {
         return newPropertyInstance(property, component, model);
     }
     
     private static SingleTcgComponentNodeProperty newPropertyInstance(Property property, 
-    												   OperatorComponent component,
-    												   IEPModel model) {
+                                                       OperatorComponent component,
+                                                       IEPModel model) {
         TcgPropertyType pt = property.getPropertyType();
         TcgType type = pt.getType();
         if (type == TcgType.BOOLEAN) {
@@ -101,9 +101,9 @@ public class SingleTcgComponentNodeProperty extends Node.Property {
         {
             SingleTcgComponentNodeProperty p = null;
             if(property.getName().equals(OperatorComponent.PROP_INPUT_ID_LIST)) {
-            	p = new SingleTcgComponentNodeProperty.InputIdListSingleTcgComponentNodeProperty(property, ListModel.class, component, model);
+                p = new SingleTcgComponentNodeProperty.InputIdListSingleTcgComponentNodeProperty(property, ListModel.class, component, model);
             } else {
-            	p = new SingleTcgComponentNodeProperty(property, ListModel.class, component, model);
+                p = new SingleTcgComponentNodeProperty(property, ListModel.class, component, model);
             }
             // Disable inplace editing.
             p.setValue("canEditAsText", Boolean.FALSE);
@@ -113,9 +113,9 @@ public class SingleTcgComponentNodeProperty extends Node.Property {
     }
 
     private SingleTcgComponentNodeProperty(Property property, 
-    								 Class valueType, 
-    								 OperatorComponent component,
-    								 IEPModel model) {
+                                     Class valueType, 
+                                     OperatorComponent component,
+                                     IEPModel model) {
         super (valueType);
         mProperty = property;
         mComp = component;
@@ -160,7 +160,7 @@ public class SingleTcgComponentNodeProperty extends Node.Property {
             List list = new ArrayList();//ritmProperty.getListValue();
             String value = mProperty.getValue();
             if(value != null) {
-            	list = (List) mProperty.getPropertyType().getType().parse(value);
+                list = (List) mProperty.getPropertyType().getType().parse(value);
             }
             for (int i = 0, I = list.size(); i < I; i++) {
                 listModel.addElement(list.get(i));
@@ -212,7 +212,7 @@ public class SingleTcgComponentNodeProperty extends Node.Property {
             return;
         }
         if (val instanceof String) {
-        	mProperty.getModel().startTransaction();
+            mProperty.getModel().startTransaction();
             mProperty.setValue((String)val);
             mProperty.getModel().endTransaction();
             
@@ -255,11 +255,11 @@ public class SingleTcgComponentNodeProperty extends Node.Property {
     }
     
     public IEPModel getModel() {
-    	return this.mModel;
+        return this.mModel;
     }
     
     public OperatorComponent getModelComponent() {
-    	return this.mComp;
+        return this.mComp;
     }
     
         
@@ -268,32 +268,32 @@ public class SingleTcgComponentNodeProperty extends Node.Property {
     }
     
     public static class InputIdListSingleTcgComponentNodeProperty extends SingleTcgComponentNodeProperty {
-    	InputIdListSingleTcgComponentNodeProperty(Property property, 
-				 Class valueType, 
-				 OperatorComponent component,
-				 IEPModel model) {
-    		super(property, valueType, component, model);
-    		
-    		String displayNameKey = mPropertyType.getTitle();
-    		String descriptionKey = mPropertyType.getDescription();
-    		
-    		
-    		//if stream is allowed
-    		if(component.getInputType().equals(OperatorType.OPERATOR_STREAM)) {
-    				displayNameKey = "IEP.Model.Entity.inputIdListStream.title"; //NOTI18N
-    				descriptionKey = "IEP.Model.Entity.inputIdListStream.description"; //NOTI18N
-    		} else if(component.getInputType().equals(OperatorType.OPERATOR_RELATION)) {
-    				displayNameKey = "IEP.Model.Entity.inputIdListRelation.title"; //NOTI18N
-    				descriptionKey = "IEP.Model.Entity.inputIdListRelation.description"; //NOTI18N
-    			
-    		}
-    		
-    		setDisplayName(TcgPsI18n.getI18nString(displayNameKey));
+        InputIdListSingleTcgComponentNodeProperty(Property property, 
+                 Class valueType, 
+                 OperatorComponent component,
+                 IEPModel model) {
+            super(property, valueType, component, model);
+            
+            String displayNameKey = mPropertyType.getTitle();
+            String descriptionKey = mPropertyType.getDescription();
+            
+            
+            //if stream is allowed
+            if(component.getInputType().equals(OperatorType.OPERATOR_STREAM)) {
+                    displayNameKey = "IEP.Model.Entity.inputIdListStream.title"; //NOTI18N
+                    descriptionKey = "IEP.Model.Entity.inputIdListStream.description"; //NOTI18N
+            } else if(component.getInputType().equals(OperatorType.OPERATOR_RELATION)) {
+                    displayNameKey = "IEP.Model.Entity.inputIdListRelation.title"; //NOTI18N
+                    descriptionKey = "IEP.Model.Entity.inputIdListRelation.description"; //NOTI18N
+                
+            }
+            
+            setDisplayName(TcgPsI18n.getI18nString(displayNameKey));
             setShortDescription(TcgPsI18n.getI18nString(descriptionKey));
             
-    	}
-    	
-//    	public Object getValue () 
+        }
+        
+//        public Object getValue () 
 //        throws IllegalAccessException, IllegalArgumentException, InvocationTargetException 
 //    {
 //        
@@ -301,15 +301,15 @@ public class SingleTcgComponentNodeProperty extends Node.Property {
 //        List<OperatorComponent> inputs = mComp.getInputOperatorList();
 //        Iterator<OperatorComponent> it = inputs.iterator();
 //        while(it.hasNext()) {
-//        	OperatorComponent oc = it.next();
-//        	String displayName = oc.getDisplayName();
-//        	listModel.addElement(displayName);
+//            OperatorComponent oc = it.next();
+//            String displayName = oc.getDisplayName();
+//            listModel.addElement(displayName);
 //        }
 //        return listModel;
 //       
 //    }
 
-    	
+        
     }
 }
 

@@ -393,7 +393,8 @@ public class DbSchemaEjbGenerator {
                 roleBCmr,
                 false,
                 !oneToOne,
-                !isNullable(key));
+                !isNullable(key),
+                isNullable(key));
         roleBHelper.addRole(roleB);
         
         // role A
