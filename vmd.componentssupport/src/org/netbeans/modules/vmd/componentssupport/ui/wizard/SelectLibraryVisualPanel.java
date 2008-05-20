@@ -61,6 +61,7 @@ final class SelectLibraryVisualPanel extends JPanel {
     
     public SelectLibraryVisualPanel(SelectLibraryWizardPanel panel) {
         myPanel = panel;
+        getAccessibleContext().setAccessibleName(getMessage("ACS_SelectLibraryPanel"));
         getAccessibleContext().setAccessibleDescription(getMessage("ACS_SelectLibraryPanel"));
         putClientProperty("NewFileWizard_Title", getMessage("LBL_LibraryWizardTitle"));
         myInnerPanel = LibraryChooser.createPanel(null, new ClassLibraryFilter() );
