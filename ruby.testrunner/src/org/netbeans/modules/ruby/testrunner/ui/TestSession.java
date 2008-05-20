@@ -82,12 +82,12 @@ public class TestSession {
         for (Report.Testcase testcase : testCases) {
             report.reportTest(testcase);
             report.totalTests += 1;
-            if (testcase.trouble != null) {
-                if (testcase.trouble.isError()) {
-                    report.errors += 1;
-                } else {
-                    report.failures += 1;
-                }
+            if (testcase.getStatus() == Status.ERROR) {
+                report.errors += 1;
+            } else if (testcase.getStatus() == Status.FAILED) {
+                report.failures += 1;
+            } else if (testcase.getStatus() == Status.PENDING) {
+                report.pending += 1;
             } else {
                 report.detectedPassedTests += 1;
             }

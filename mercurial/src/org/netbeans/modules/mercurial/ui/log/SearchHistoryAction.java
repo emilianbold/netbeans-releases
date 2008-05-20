@@ -95,7 +95,7 @@ public class SearchHistoryAction extends ContextAction {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 if (context == null) return;
-                outputSearchContextTab(context, "MSG_Log_Title");
+                outputSearchContextTab(context, "MSG_Log_Title", false);
                 SearchHistoryTopComponent tc = new SearchHistoryTopComponent(context);
                 tc.setDisplayName(title);
                 tc.open();
@@ -104,7 +104,7 @@ public class SearchHistoryAction extends ContextAction {
         });
     }
 
-    private static void outputSearchContextTab(VCSContext context, String title) {
+    private static void outputSearchContextTab(VCSContext context, String title, boolean bRootOnly) {
         File root = HgUtils.getRootFile(context);
         OutputLogger logger = OutputLogger.getLogger(root.getAbsolutePath());
         logger.outputInRed(
@@ -113,12 +113,19 @@ public class SearchHistoryAction extends ContextAction {
         logger.outputInRed(
                 NbBundle.getMessage(SearchHistoryAction.class,
                 "MSG_Log_Title_Sep")); // NOI18N
-        File[] files = context.getFiles().toArray(new File[0]);
-        logger.output(
-                NbBundle.getMessage(SearchHistoryAction.class,
-                "MSG_LOG_CONTEXT_SEP")); // NOI18N
-        for (File f : files) {
-            logger.output(f.getAbsolutePath());
+        if(bRootOnly){
+            logger.output(
+                    NbBundle.getMessage(SearchHistoryAction.class,
+                    "MSG_LOG_ROOT_CONTEXT_SEP")); // NOI18N
+            logger.output(root.getAbsolutePath());
+        }else{
+            File[] files = context.getFiles().toArray(new File[0]);
+            logger.output(
+                    NbBundle.getMessage(SearchHistoryAction.class,
+                    "MSG_LOG_CONTEXT_SEP")); // NOI18N
+            for (File f : files) {
+                logger.output(f.getAbsolutePath());
+            }
         }
         logger.outputInRed(""); // NOI18N
         logger.closeLog();
@@ -137,7 +144,7 @@ public class SearchHistoryAction extends ContextAction {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 if (context == null) return;
-                outputSearchContextTab(context, "MSG_LogIncoming_Title");
+                outputSearchContextTab(context, "MSG_LogIncoming_Title", true);
                 SearchHistoryTopComponent tc = new SearchHistoryTopComponent(context);
                 tc.setDisplayName(title);
                 tc.open();
@@ -159,7 +166,7 @@ public class SearchHistoryAction extends ContextAction {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 if (context == null) return;
-                outputSearchContextTab(context, "MSG_LogOut_Title");
+                outputSearchContextTab(context, "MSG_LogOut_Title", true);
                 SearchHistoryTopComponent tc = new SearchHistoryTopComponent(context);
                 tc.setDisplayName(title);
                 tc.open();

@@ -37,6 +37,19 @@
                     <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/etl/project/ui/resources/emptyProject.html"/>
                 </file>
             </folder>
+        <folder name="CAPS">
+                <folder name="MDM">
+                    <attr name="position" intvalue="3000"/>
+                    <file name="emptyEtlpro.xml">
+                        <attr name="position" intvalue="400"/>
+                        <attr name="template" boolvalue="true"/>
+                        <attr name="templateWizardIterator" newvalue="org.netbeans.modules.etl.project.ui.wizards.NewEtlproProjectWizardIterator"/>
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.etl.project.ui.wizards.Bundle"/>
+                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/etl/project/ui/resources/etlproProjectIcon.gif"/>
+                        <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/etl/project/ui/resources/emptyProject.html"/>
+                    </file>
+                </folder>
+         </folder>
         </folder>
     </folder>
     <folder name="org-netbeans-modules-etl-project">

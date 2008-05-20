@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+
+
+The contents of this file are subject to the terms of either the GNU
+General Public License Version 2 only ("GPL") or the Common
+Development and Distribution License("CDDL") (collectively, the
+"License"). You may not use this file except in compliance with the
+License. You can obtain a copy of the License at
+http://www.netbeans.org/cddl-gplv2.html
+or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+specific language governing permissions and limitations under the
+License.  When distributing the software, include this License Header
+Notice in each file and include the License file at
+nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+particular file as subject to the "Classpath" exception as provided
+by Sun in the GPL Version 2 section of the License file that
+accompanied this code. If applicable, add the following below the
+License Header, with the fields enclosed by brackets [] replaced by
+your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+Contributor(s):
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
+
+If you wish your version of this file to be governed by only the CDDL
+or only the GPL Version 2, indicate your decision by adding
+"[Contributor] elects to include this software in this distribution
+under the [CDDL or GPL Version 2] license." If you do not indicate a
+single choice of license, a recipient has the option to distribute
+your version of this file under either the CDDL, the GPL Version 2 or
+to extend the choice of license to its licensees as provided above.
+However, if you add GPL Version 2 code and therefore, elected the GPL
+Version 2 license, then the option applies only if the new code is
+made subject to such option by the copyright holder.
+-->
+<!DOCTYPE fontscolors PUBLIC "-//NetBeans//DTD Editor Fonts and Colors settings 1.1//EN" "http://www.netbeans.org/dtds/EditorFontsColors-1_1.dtd">
+<fontscolors>
+    <fontcolor default="field" name="mod-global"/>
+    <fontcolor foreColor="ff99006b" name="TODO">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor default="keyword" name="ANY_KEYWORD"/>
+    <fontcolor name="mod-interface"/>
+    <fontcolor name="mod-public"/>
+    <fontcolor name="mod-constructor">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor default="whitespace" name="js_whitespace"/>
+    <fontcolor name="mod-enum"/>
+    <fontcolor default="error" name="ERROR"/>
+    <fontcolor default="comment" name="js-comment-tag">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor foreColor="black" name="GLOBAL_VAR">
+        <font style="italic"/>
+    </fontcolor>
+    <fontcolor name="mod-annotation-type"/>
+    <fontcolor name="mod-deprecated" strikeThrough="darkGray"/>
+    <fontcolor default="identifier" name="js_identifier"/>
+    <fontcolor foreColor="ffa06001" name="mod-parameter"/>
+    <fontcolor foreColor="black" name="CONSTANT">
+        <font style="italic"/>
+    </fontcolor>
+    <fontcolor foreColor="ff098618" name="CLASS_VAR">
+        <font style="bold+italic"/>
+    </fontcolor>
+    <fontcolor name="mod-package-private"/>
+    <fontcolor default="error" name="error"/>
+    <fontcolor default="string" name="STRING_LITERAL"/>
+    <fontcolor name="mod-static">
+        <font style="italic"/>
+    </fontcolor>
+    <fontcolor default="field" name="INSTANCE_VAR"/>
+    <fontcolor default="comment" name="DOCUMENTATION"/>
+    <fontcolor default="string" name="s_p">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor default="number" name="INT_LITERAL"/>
+    <fontcolor default="string" name="s_string"/>
+    <fontcolor bgColor="ffeceba3" name="mark-occurrences"/>
+    <fontcolor foreColor="ff2e92c7" name="TYPE_SYMBOL"/>
+    <fontcolor default="comment" name="js_line_comment"/>
+    <fontcolor default="number" name="FLOAT_LITERAL"/>
+    <fontcolor default="number" name="DOUBLE_LITERAL"/>
+    <fontcolor default="field" name="mod-field"/>
+    <fontcolor name="mod-method">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor default="number" name="js_number"/>
+    <fontcolor foreColor="ffffff99" name="js_regularExpression">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor default="comment" name="BLOCK_COMMENT"/>
+    <fontcolor foreColor="ff9933cc" name="mod-regexp"/>
+    <fontcolor name="mod-protected"/>
+    <fontcolor name="js_operator"/>
+    <fontcolor default="comment" name="LINE_COMMENT"/>
+    <fontcolor name="mod-local-variable"/>
+    <fontcolor name="mod-private"/>
+    <fontcolor default="comment" name="html-tag">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor default="whitespace" name="WHITESPACE"/>
+    <fontcolor default="keyword" name="js_keyword"/>
+    <fontcolor default="separator" name="js_separator"/>
+    <fontcolor foreColor="ff9933cc" name="REGEXP_LITERAL"/>
+    <fontcolor name="mod-class"/>
+    <fontcolor name="mod-unused" waveUnderlined="ff999999"/>
+    <fontcolor default="comment" name="right-curly"/>
+    <fontcolor default="operator" name="ANY_OPERATOR"/>
+    <fontcolor default="comment" name="js_comment"/>
+    <fontcolor default="identifier" name="IDENTIFIER"/>
+    <fontcolor default="string" name="js_string"/>
+    <fontcolor default="string" name="QUOTED_STRING_LITERAL"/>
+    <fontcolor default="comment" name="left-curly"/>
+    <fontcolor name="mod-abstract"/>
+    <fontcolor default="number" name="LONG_LITERAL"/>
+</fontscolors>

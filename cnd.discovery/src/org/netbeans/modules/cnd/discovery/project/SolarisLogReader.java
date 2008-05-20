@@ -53,6 +53,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.regex.Pattern;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
@@ -80,6 +81,7 @@ public class SolarisLogReader {
     private List<SourceFileProperties> result;
     private List<InstallLine> copyHeader;
     private Map<String,List<String>> findBase;
+    private TreeMap<String,Set<String>> libraries;
     private String buidMashinePrototype;
     private String buidMashineSources;
     
@@ -93,9 +95,10 @@ public class SolarisLogReader {
     
     private void run() {
         if (TRACE) System.out.println("LogReader is run for " + fileName); //NOI18N
-        Pattern pattern = Pattern.compile(";|\\|\\||&&"); // ;, ||, && //NOI18N
+        Pattern pattern = Pattern.compile(";|\\|\\||&&"); // NOI18N
         result = new ArrayList<SourceFileProperties>();
         copyHeader = new ArrayList<InstallLine>();
+        libraries = new TreeMap<String,Set<String>>();
         File file = new File(fileName);
         if (file.exists() && file.canRead()){
             try {
@@ -486,7 +489,16 @@ public class SolarisLogReader {
         // -DSUNDDI -DUSE_INET6 -DSOLARIS2=11 -I. -DIPFILTER_LOOKUP -DIPFILTER_LOG -c ../ipmon_l.c -o ipmon_l.o
         List<String> userIncludes = new ArrayList<String>();
         Map<String, String> userMacros = new HashMap<String, String>();
-        String what = DiscoveryUtils.gatherComlilerLine(line, isScriptOutput, userIncludes, userMacros);
+        Set<String> libs = new HashSet<String>();
+        String what = DiscoveryUtils.gatherComlilerLine(line, isScriptOutput, userIncludes, userMacros, libs);
+        if (libs.size()>0){
+            Set<String> l = libraries.get(getWorkingDir());
+            if (l == null){
+                libraries.put(getWorkingDir(), libs);
+            } else {
+                l.addAll(libs);
+            }
+        }
         if (what == null){
             return false;
         }
@@ -564,10 +576,7 @@ public class SolarisLogReader {
     }
     
     private String findFiles(String name, String wd, String relative) {
-        if (findBase == null) {
-            findBase = initSearchMap();
-        }
-        List<String> res = findBase.get(name);
+        List<String> res = getFiles(name);
         if (res != null && res.size()==1) {
             return res.get(0);
         } else if (res != null) {
@@ -584,6 +593,13 @@ public class SolarisLogReader {
         return null;
     }
         
+    private List<String> getFiles(String name){
+        if (findBase == null) {
+            findBase = initSearchMap();
+        }
+        return findBase.get(name);
+    }
+    
     private Map<String,List<String>> initSearchMap(){
         HashSet<String> set = new HashSet<String>();
         File f = new File(root);
@@ -623,7 +639,88 @@ public class SolarisLogReader {
             }
         }
     }
-        
+    
+    /*package-local*/ TreeMap<String,Set<String>> getLibraries(){
+        return libraries;
+    }
+    
+    /*package-local*/ TreeMap<String,Set<String>> readMapFile(){
+        List<String> mapfile = getFiles("mapfile-vers"); //NOI18N
+        if (mapfile != null) {
+            TreeMap<String, Set<String>> res = new TreeMap<String, Set<String>>();
+            Collections.sort(mapfile);
+            for(String name:mapfile){
+                Set<String> set = readMapFile(name+"/mapfile-vers"); //NOI18N
+                if (set != null) {
+                    res.put(name, set);
+                }
+            }
+            return res;
+        }
+        return null;
+    }
+    
+    private Set<String> readMapFile(String name){
+        File file = new File(name);
+        if (file.exists() && file.canRead()){
+            try {
+                Set<String> set = new HashSet<String>();
+                BufferedReader in = new BufferedReader(new FileReader(file));
+                //System.out.println(name);
+                boolean inBlock = false;
+                boolean inGlobal = false;
+                while(true){
+                    String line = in.readLine();
+                    if (line == null){
+                        break;
+                    }
+                    line = line.trim();
+                    if (line.startsWith("#")){ //NOI18N
+                        continue;
+                    }
+                    if (line.endsWith("{")){ //NOI18N
+                        inGlobal = false;
+                        inBlock = true;
+                        continue;
+                    }
+                    if (line.startsWith("}")){ //NOI18N
+                        inGlobal = false;
+                        inBlock = false;
+                        continue;
+                    }
+                    if (inBlock && line.endsWith("global:")){ //NOI18N
+                        inGlobal = true;
+                        continue;
+                    }
+                    if (inBlock && line.endsWith("local:")){ //NOI18N
+                        inGlobal = false;
+                        continue;
+                    }
+                    if (inBlock && inGlobal &&
+                        line.indexOf(";") > 0 &&
+                        line.indexOf("FILTER") < 0){
+                        String res = line.substring(0,line.indexOf(";"));
+                        if (res.indexOf("=")>0) {
+                            res = res.substring(0, res.indexOf("="));
+                        }
+                        if (res.indexOf(".")<0) {
+                            res = res.trim();
+                            set.add(res);
+                            //System.out.println("\t"+res);
+                        }
+                    }
+                }
+                in.close();
+                if (set.size()>0) {
+                    return set;
+                }
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        }
+        return null;
+    }
+    
     private static class CommandLineSource implements SourceFileProperties {
 
         private String compilePath;

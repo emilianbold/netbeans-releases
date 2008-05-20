@@ -102,12 +102,12 @@ public class CopyCommand extends SvnCommand {
             case url2url: 
                 arguments.add(fromUrl);
                 arguments.add(toUrl);        
-                arguments.add(rev);                
+                if(rev != null) arguments.add(rev);                
                 break;
             case url2file:     
                 arguments.add(fromUrl);
                 arguments.add(toFile);        
-                arguments.add(rev);                
+                if(rev != null) arguments.add(rev);                
                 setCommandWorkingDirectory(toFile);                
                 break;
             case file2url:                     
