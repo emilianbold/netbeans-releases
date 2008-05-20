@@ -789,11 +789,35 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
     }    
 
     private void runServer(final String path, final boolean debug) {
+        if (!debug) {
+            runServer(path, false, false);
+        } else {
+            String serverValue = project.evaluator().getProperty(RailsProjectProperties.DEBUG_SERVER);
+            String clientValue = project.evaluator().getProperty(RailsProjectProperties.DEBUG_CLIENT);
+            boolean serverDebug = getBooleanValue(serverValue, true);
+            boolean clientDebug = getBooleanValue(clientValue, false);
+            assert serverDebug || clientDebug;
+            
+            runServer(path, serverDebug, clientDebug);
+        }
+    }
+    
+    private void runServer(final String path, final boolean serverDebug, final boolean clientDebug) {
         RailsServerManager server = project.getLookup().lookup(RailsServerManager.class);
         if (server != null) {
-            server.setDebug(debug);
+            server.setDebug(serverDebug);
+            server.setClientDebug(clientDebug);
             server.showUrl(path);
         }
     }
-
+    
+    private static boolean getBooleanValue(String propValue, boolean defaultValue) {
+        if (propValue == null) {
+            return defaultValue;
+        }
+        
+        String lowercase = propValue.toLowerCase();
+        return lowercase.equals("yes") || lowercase.equals("on") || lowercase.equals("true"); // NOI18N
+    }
+    
 }

@@ -43,9 +43,9 @@ package org.netbeans.modules.ruby;
 
 import javax.swing.JTextArea;
 import javax.swing.text.Caret;
-import org.netbeans.modules.gsf.api.Completable.QueryType;
+import org.netbeans.modules.gsf.api.CodeCompletionHandler.QueryType;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.gsf.api.Completable;
+import org.netbeans.modules.gsf.api.CodeCompletionHandler;
 
 /**
  *
@@ -58,7 +58,7 @@ public class CodeCompleterTest extends RubyTestBase {
     }
 
     @Override
-    protected Completable getCodeCompleter() {
+    protected CodeCompletionHandler getCodeCompleter() {
         return new CodeCompleter();
     }
     

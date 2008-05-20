@@ -80,6 +80,7 @@ import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
 import org.netbeans.modules.j2ee.earproject.util.EarProjectUtil;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarFactory;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
+import org.netbeans.spi.java.project.support.LookupMergerSupport;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.SubprojectProvider;
@@ -226,7 +227,7 @@ public final class EarProject implements Project, AntProjectListener, ProjectPro
             new J2eeArchiveLogicalViewProvider(this, updateHelper, evaluator(), refHelper, abpt),
             new MyIconBaseProvider(),
             new CustomizerProviderImpl(this, helper, refHelper, abpt),
-            new ClassPathProviderImpl(helper, evaluator()),
+            LookupMergerSupport.createClassPathProviderMerger(new ClassPathProviderImpl(helper, evaluator())),
             new ProjectXmlSavedHookImpl(),
             UILookupMergerSupport.createProjectOpenHookMerger(new ProjectOpenedHookImpl()),
             new EarSources(helper, evaluator()),

@@ -79,8 +79,17 @@ public class SchemaModelTest extends TestCase {
     }
 
     public static Test suite() {
-        TestSuite suite = new TestSuite(SchemaModelTest.class);
-        
+        TestSuite suite = new TestSuite();
+        suite.addTest(new SchemaModelTest("testGetSchema"));
+        suite.addTest(new SchemaModelTest("testGetState"));
+        suite.addTest(new SchemaModelTest("testTypes"));
+        suite.addTest(new SchemaModelTest("testVersionChangedListener"));
+        suite.addTest(new SchemaModelTest("testFakeSchema"));
+        suite.addTest(new SchemaModelTest("testBadInclude"));
+        suite.addTest(new SchemaModelTest("testCircularInclude"));
+        suite.addTest(new SchemaModelTest("testRecursiveResolve1"));
+        suite.addTest(new SchemaModelTest("testRecursiveResolve2"));
+        suite.addTest(new SchemaModelTest("testFlushDumpThenReload"));                
         return suite;
     }
 

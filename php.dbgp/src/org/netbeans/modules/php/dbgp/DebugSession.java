@@ -54,7 +54,6 @@ import java.util.logging.Logger;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
-import org.netbeans.modules.php.dbgp.SessionId;
 import org.netbeans.modules.php.dbgp.models.AbstractIDEBridge;
 import org.netbeans.modules.php.dbgp.packets.DbgpCommand;
 import org.netbeans.modules.php.dbgp.packets.DbgpMessage;
@@ -116,7 +115,7 @@ public class DebugSession implements Runnable {
                 return;
             }
             addCommand(command);
-            getSessionThread().interrupt();
+            //getSessionThread().interrupt();
         }
     }
 

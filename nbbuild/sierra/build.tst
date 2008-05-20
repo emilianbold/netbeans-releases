@@ -213,9 +213,6 @@
         <antcall target="do-test-jbi"><param name="dir" value="PartnerLinks/TwoBPDuplicateImpl"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="PartnerLinks/TwoBPs"/></antcall>
 
-        <!-- PfizerEAP -->
-        <antcall target="do-test-jbi"><param name="dir" value="PfizerEAP/prjPfizerSupplyChainEAP_BPEL_JMS_2"/></antcall>
-
         <!-- pick -->
         <antcall target="do-test-jbi"><param name="dir" value="pick/PickBpel"/></antcall>
 

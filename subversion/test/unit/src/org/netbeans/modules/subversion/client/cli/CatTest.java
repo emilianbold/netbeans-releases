@@ -42,13 +42,13 @@ package org.netbeans.modules.subversion.client.cli;
 import java.io.File;
 import java.io.InputStream;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
+import org.tigris.subversion.svnclientadapter.ISVNInfo;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
 
 /**
  *
  * @author tomas
  */
-// XXX add referenceclient
 public class CatTest extends AbstractCLITest {
     
     public CatTest(String testName) throws Exception {
@@ -60,12 +60,12 @@ public class CatTest extends AbstractCLITest {
         write(file, 1);
         add(file);
         commit(file);
+         
+        InputStream is1 = getNbClient().getContent(file, SVNRevision.HEAD);
+        InputStream is2 = getReferenceClient().getContent(file, SVNRevision.HEAD);
         
-        ISVNClientAdapter c = getNbClient();        
-        InputStream is = c.getContent(file, SVNRevision.HEAD);
-        
-        assertContents(is, 1);
-    }               
+        assertInputStreams(is2, is1);
+    }                   
     
     public void testCatFilePrevRev() throws Exception {                                                
         File file = createFile("file");
@@ -78,9 +78,10 @@ public class CatTest extends AbstractCLITest {
         write(file, 2);        
         commit(file);
         
-        InputStream is = c.getContent(file, prevrev);
+        InputStream is1 = c.getContent(file, prevrev);
+        InputStream is2 = getReferenceClient().getContent(file, prevrev);
         
-        assertContents(is, 1);
+        assertInputStreams(is2, is1);
     }               
     
     public void testCatURL() throws Exception {                                                
@@ -90,9 +91,10 @@ public class CatTest extends AbstractCLITest {
         commit(file);
         
         ISVNClientAdapter c = getNbClient();        
-        InputStream is = c.getContent(getFileUrl(file), SVNRevision.HEAD);
+        InputStream is1 = c.getContent(getFileUrl(file), SVNRevision.HEAD);
+        InputStream is2 = getReferenceClient().getContent(getFileUrl(file), SVNRevision.HEAD);
         
-        assertContents(is, 1);
+        assertInputStreams(is2, is1);
     }               
 
     public void testCatURLPrevRev() throws Exception {                                                
@@ -106,9 +108,10 @@ public class CatTest extends AbstractCLITest {
         write(file, 2);        
         commit(file);
         
-        InputStream is = c.getContent(getFileUrl(file), prevrev);
+        InputStream is1 = c.getContent(getFileUrl(file), prevrev);
+        InputStream is2 = getReferenceClient().getContent(getFileUrl(file), prevrev);
         
-        assertContents(is, 1);
+        assertInputStreams(is2, is1);
     }               
     
 }

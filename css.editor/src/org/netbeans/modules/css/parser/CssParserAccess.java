@@ -82,7 +82,7 @@ public class CssParserAccess {
         } catch (TokenMgrError tme) {
             parseExceptions.add(new ParseException(tme.getMessage()));
         }
-
+        
         return new CssParserResult(root, parseExceptions);
 
     }
