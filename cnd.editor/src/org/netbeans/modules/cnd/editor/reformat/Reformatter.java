@@ -289,12 +289,12 @@ public class Reformatter implements ReformatTask {
 
         public static String repeatChar(int length, char c, boolean indent) {
             if (length == 0) {
-                return "";
+                return ""; //NOI18N
             } else if (length == 1) {
                 if (c == ' ') {
-                    return " ";
+                    return " "; //NOI18N
                 } else {
-                    return "\n";
+                    return "\n"; //NOI18N
                 }
             }
             StringBuilder buf = new StringBuilder(length);
