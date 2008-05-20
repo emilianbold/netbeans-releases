@@ -60,10 +60,10 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.ICreationFactory;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.IValueSpecification;
 import org.netbeans.modules.uml.drawingarea.engines.DiagramEngine;
 import org.netbeans.modules.uml.drawingarea.persistence.NodeWriter;
 import org.netbeans.modules.uml.drawingarea.persistence.PersistenceUtil;
+import org.netbeans.modules.uml.drawingarea.persistence.api.DiagramNodeWriter;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.netbeans.modules.uml.drawingarea.view.DesignerTools;
 
@@ -71,7 +71,7 @@ import org.netbeans.modules.uml.drawingarea.view.DesignerTools;
  *
  * @author Sheryl Su
  */
-public class MovableLabelWidget extends EditableCompartmentWidget implements Widget.Dependency
+public class MovableLabelWidget extends EditableCompartmentWidget implements Widget.Dependency, DiagramNodeWriter
 {
 
     private Widget nodeWidget;
@@ -258,13 +258,15 @@ public class MovableLabelWidget extends EditableCompartmentWidget implements Wid
         return retVal;
     }
 
-    @Override
     public void save(NodeWriter nodeWriter)
     {
-       nodeWriter.setTypeInfo("MovableLabel");
-       super.save(nodeWriter);
+        nodeWriter = PersistenceUtil.populateNodeWriter(nodeWriter, this);
+        nodeWriter.setTypeInfo("MovableLabel");
+        nodeWriter.setHasPositionSize(true);        
+        PersistenceUtil.populateProperties(nodeWriter, this);
+        nodeWriter.beginGraphNode();
+        nodeWriter.endGraphNode();
     }
-    
     
 
     private class LabelMoveSupport implements MoveStrategy, MoveProvider

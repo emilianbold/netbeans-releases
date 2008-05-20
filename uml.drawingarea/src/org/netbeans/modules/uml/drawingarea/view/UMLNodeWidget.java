@@ -385,8 +385,12 @@ public abstract class UMLNodeWidget extends Widget
             saveChildren(this, nodeWriter);
         }
         nodeWriter.endContained();
-//        if (!scene.findNodeEdges(getObject(), true, true).isEmpty()) {
+        //write dependencies for this node
         if(this.getDependencies().size() > 0) 
+        {
+            saveDependencies(nodeWriter);
+        }
+        if (!scene.findNodeEdges(getObject(), true, true).isEmpty()) 
         {
             saveAnchorage(nodeWriter);
         }        
@@ -410,14 +414,7 @@ public abstract class UMLNodeWidget extends Widget
     
     protected void setNodeWriterValues(NodeWriter nodeWriter, Widget widget) {
         nodeWriter = PersistenceUtil.populateNodeWriter(nodeWriter, widget);
-        nodeWriter.setHasPositionSize(true);
-        
-         //populate properties key/val
-//            HashMap<String, String> properties = nodeWriter.getProperties();
-//            properties.put("Font", this.getFont().toString());
-//            properties.put("Background", this.getBackground().toString());
-//            properties.put("Visible", "True");
-//            nodeWriter.setProperties(properties);
+        nodeWriter.setHasPositionSize(true);        
         PersistenceUtil.populateProperties(nodeWriter, widget);
     }
 
@@ -443,9 +440,9 @@ public abstract class UMLNodeWidget extends Widget
                         nodeWriter.addAnchorEdge(anchor, PersistenceUtil.getPEID(conWid));
                     }
                 } 
-                else // assuming (obj instanceof MovableLabelWidget)
+                else 
                 {       
-                    ((UMLLabelWidget)obj).save(nodeWriter);
+                    //this is already taken care by save dependencies
                 }
             }
             if (!PersistenceUtil.isAnchorListEmpty())
@@ -454,6 +451,31 @@ public abstract class UMLNodeWidget extends Widget
                 //done writing the anchoredgemap.. now time to clear it.
                 nodeWriter.clearAnchorEdgeMap();
             }
+        }        
+    }
+    
+    protected void saveDependencies(NodeWriter nodeWriter)
+    {
+        Collection depList = this.getDependencies();
+        if (depList.size() > 0)
+        {
+            nodeWriter.beginDependencies();
+            Iterator iter = depList.iterator();
+            while (iter.hasNext())
+            {
+                Object obj = iter.next();
+                if (obj instanceof Anchor)
+                {
+                    //don't do anything yet.. we'll deal with this in anchorage section..
+                }
+                else {
+                    System.out.println(" obj is " + obj);
+                    if (obj instanceof DiagramNodeWriter) {
+                        ((DiagramNodeWriter)obj).save(nodeWriter);
+                    }
+                }
+            }
+            nodeWriter.endDependencies();
         }        
     }
     
