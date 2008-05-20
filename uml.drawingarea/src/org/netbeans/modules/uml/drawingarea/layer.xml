@@ -48,6 +48,7 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-modules-uml-drawingarea-actions-InvertSelectionAction.instance"/>
             <file name="org-netbeans-modules-uml-drawingarea-actions-SelectAllSimilarAction.instance"/>
             <file name="org-netbeans-modules-uml-drawingarea-actions-SelectInModelAction.instance"/>            
+            <!--file name="org-netbeans-modules-uml-drawingarea-actions-ResizeToContentAction.instance"/-->
             <file name="org-netbeans-modules-uml-drawingarea-actions-SyncElementWithDataAction.instance"/>            
             <file name="org-netbeans-modules-uml-drawingarea-actions-CreateDiagramFromSelectedElementsAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.drawingarea.actions.CreateDiagramFromSelectedElementsAction"/>

@@ -45,6 +45,7 @@ import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.event.InputEvent;
 import java.util.ArrayList;
 import org.netbeans.api.visual.action.ResizeProvider;
 import org.netbeans.api.visual.action.ResizeProvider.ControlPoint;
@@ -66,6 +67,9 @@ public class WindowStyleResizeProvider extends ResizeStrategyProvider {
     
     private ArrayList<ResizeProvider.ControlPoint> points;
     private Point startLocation;
+    private int startingmodifiers;
+    private int finishingmodifiers;
+    private int resizingmodifiers;
     
     
     /*
@@ -206,6 +210,15 @@ public class WindowStyleResizeProvider extends ResizeStrategyProvider {
         if(widget instanceof UMLNodeWidget)
         {
             UMLNodeWidget nW=(UMLNodeWidget) widget;
+            /**if((startingmodifiers&InputEvent.SHIFT_DOWN_MASK)==InputEvent.SHIFT_DOWN_MASK)//if resizing was started with shift it force preferred size mode
+            {
+                nW.setResizeMode(UMLNodeWidget.RESIZEMODE.PREFERREDSIZE);
+            }
+            if((startingmodifiers&InputEvent.CTRL_DOWN_MASK)==InputEvent.CTRL_DOWN_MASK)//if resizing was started with shift it force minimum size mode
+            {
+                nW.setResizeMode(UMLNodeWidget.RESIZEMODE.MINIMUMSIZE);
+            }**/
+            //in all cases without shift or ctrl resize moide remains unchanged
             if(nW.getResizeMode()!=null)
             {
                 mode=nW.getResizeMode();
@@ -216,6 +229,7 @@ public class WindowStyleResizeProvider extends ResizeStrategyProvider {
             widget.setMinimumSize(new Dimension(preferredBounds.width,
                                                 preferredBounds.height));
             widget.setPreferredBounds(null);
+            widget.setPreferredSize(null);
             System.out.println("END WITh MIN SIZE MODE");
         }
         else if(mode==UMLNodeWidget.RESIZEMODE.PREFERREDSIZE)
@@ -223,6 +237,7 @@ public class WindowStyleResizeProvider extends ResizeStrategyProvider {
             widget.setPreferredSize(new Dimension(preferredBounds.width,
                                                 preferredBounds.height));
             widget.setPreferredBounds(null);
+            //mimimum size should be set to some very small value in resize started
             System.out.println("END WITh PREF SIZE MODE");
         }
         else
@@ -246,10 +261,25 @@ public class WindowStyleResizeProvider extends ResizeStrategyProvider {
             }
         }
     }
-
+    
     public Point getInitialLocation()
     {
         System.out.println("ASK POINT: "+startLocation);
         return new Point(startLocation);
+    }
+
+    Rectangle boundsSuggested(Widget widget, Rectangle originalSceneRectangle, Rectangle rectangle, ControlPoint controlPoint, int modifiers) {
+        this.resizingmodifiers=modifiers;
+        return boundsSuggested(widget, rectangle, rectangle, controlPoint);
+    }
+
+    void resizingFinished(Widget widget, int modifiers) {
+        this.finishingmodifiers=modifiers;
+        resizingFinished(widget);
+    }
+
+    void resizingStarted(Widget widget, int modifiers) {
+        this.startingmodifiers=modifiers;
+        resizingStarted(widget);
     }
 }

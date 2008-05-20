@@ -69,7 +69,6 @@ import org.netbeans.modules.uml.drawingarea.actions.WidgetContext;
 import org.netbeans.modules.uml.drawingarea.actions.WidgetContextFactory;
 import org.netbeans.modules.uml.drawingarea.palette.context.ContextPaletteModel;
 import org.netbeans.modules.uml.drawingarea.palette.context.DefaultContextPaletteModel;
-import org.netbeans.modules.uml.drawingarea.persistence.NodeWriter;
 import org.netbeans.modules.uml.drawingarea.view.DesignerTools;
 import java.util.TreeSet;
 import org.netbeans.api.visual.model.ObjectScene;
@@ -78,8 +77,6 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
 import org.netbeans.modules.uml.core.metamodel.dynamics.ICombinedFragment;
 import org.netbeans.modules.uml.core.metamodel.dynamics.IInteractionFragment;
-import org.netbeans.modules.uml.core.metamodel.dynamics.InteractionOperand;
-import org.netbeans.modules.uml.core.metamodel.dynamics.InteractionOperand;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.core.support.umlutils.ElementLocator;
 import org.netbeans.modules.uml.core.support.umlutils.IElementLocator;
@@ -103,10 +100,6 @@ public class CombinedFragmentWidget extends ContainerNode implements PropertyCha
     protected CombinedFragmentContainerWidget childContainer;
     //
     private HashMap<IInteractionOperand, InteractionOperandWidget> operands = new HashMap<IInteractionOperand, InteractionOperandWidget>();
-    //
-    private int minOperandAdditionVertivcalMargin = 50;//if't marging from nearest message and bottom of combined fragment
-    //
-    private ICombinedFragment element;
     private boolean isShowWidget;
     private IMessage messageBefore;
     private MessageWidget messageBeforeW;
@@ -181,18 +174,17 @@ public class CombinedFragmentWidget extends ContainerNode implements PropertyCha
     public void initializeNode(IPresentationElement presentation) {
         //
         ICombinedFragment src = (ICombinedFragment) presentation.getFirstSubject();
-        element = src;
         String name = ((BaseElement)src).getAttributeValue("interactionOperator");
         if (name == null || name.length() == 0) {
             name = "assert";
         }
-        String stereotype = src.getAppliedStereotypesAsString(false);//TBD need to be based on alias seting
         setOperator(name);
         //add all necessary operands
 
         for (IInteractionOperand i : src.getOperands()) {
-            i.createGuard();
+            //i.createGuard();
             InteractionOperandWidget w=addOperand(i);
+            getScene().validate();
         }
     //
 
@@ -765,7 +757,7 @@ public class CombinedFragmentWidget extends ContainerNode implements PropertyCha
     public void showLabels() {
         for(InteractionOperandWidget ioW:operands.values())
         {
-            if(ioW.getOperand().getGuard()!=null && ioW.getOperand().getGuard().getExpression()!=null && ioW.getOperand().getGuard().getExpression().length()>0)
+            if(ioW.getOperand().getGuard()!=null && ioW.getOperand().getGuard().getExpression()!=null && ioW.getOperand().getGuard().getExpression().length()>0 && !"[<expression>]".equals(ioW.getOperand().getGuard().getExpression()) && !"<expression>".equals(ioW.getOperand().getGuard().getExpression()))
             ioW.show(LabeledWidget.TYPE.BODY);
         }
     }

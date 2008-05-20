@@ -71,6 +71,7 @@ import org.netbeans.api.visual.widget.ResourceTable;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
+import org.netbeans.modules.uml.drawingarea.actions.ResizeAction;
 import org.netbeans.modules.uml.drawingarea.actions.ResizeStrategyProvider;
 import org.netbeans.modules.uml.drawingarea.actions.WindowStyleResizeProvider;
 import org.netbeans.modules.uml.drawingarea.border.ResizeBorder;
@@ -282,8 +283,8 @@ public abstract class UMLNodeWidget extends Widget
         {
             // Allow subclasses to change the resize strategy and provider.
             ResizeStrategyProvider stratProv=getResizeStrategyProvider();
-            getActions().addAction(0, ActionFactory.createResizeAction(stratProv,
-                                                                       stratProv));
+            getActions().addAction(0, ActionFactory.createResizeAction(stratProv, stratProv));
+            //getActions().addAction(0, new ResizeAction(stratProv));
             //setBorder(BorderFactory.createResizeBorder(RESIZE_SIZE));
             setBorder(new ResizeBorder(RESIZE_SIZE, Color.BLACK, getResizeControlPoints()));
             System.out.println("SELECT");
