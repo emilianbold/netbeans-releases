@@ -43,6 +43,7 @@ import java.net.URL;
 import java.util.Collection;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
+import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation2;
@@ -77,6 +78,19 @@ public final class LookupMergerSupport {
     public static LookupMerger<JavadocForBinaryQueryImplementation> createJFBLookupMerger() {
         return new JFBLookupMerger();
     }
+    
+    /**
+     * Creates a LookupMerger for ClassPathProviders, allowing multiple instances of ClassPathProviders to reside
+     * in project's lookup. The merger makes sure the classpaths are merged together. 
+     * When ClassPathProviders appear or disappear in project's lookup, the classpath is updated accordingly.
+     * @param defaultProvider the default project ClassPathProvider that will always be asked first for classpath.
+     * @return LookupMerger instance to be put in project's lookup.
+     * @since org.netbeans.modules.java.project 1.18
+     * @see LookupMerger
+     */
+    public static LookupMerger<ClassPathProvider> createClassPathProviderMerger(ClassPathProvider defaultProvider) {
+        return new ClassPathProviderMerger(defaultProvider);
+    }    
     
     private static class SFBLookupMerger implements LookupMerger<SourceForBinaryQueryImplementation> {
 

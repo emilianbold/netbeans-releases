@@ -115,14 +115,15 @@ public class InfoTest extends AbstractCLITest {
         notManaged(folder);
         notManaged(file);
     }  
-           
+  
+//    XXX fails but we use the implemenation since ever, doesn't seem to be a problem    
 //    public void testInfoUnversioned() throws Exception {                                
 //        File unversioned = createFile("unversioned");
 //        
 //        ISVNClientAdapter c = getNbClient();
 //
-//        ISVNInfo info1 = c.getInfo(new File[] {unversioned});
-//        ISVNInfo info2 = getInfo(new File[] {unversioned});
+//        ISVNInfo info1 = c.getInfo(unversioned);
+//        ISVNInfo info2 = getInfo(unversioned);
 //                        
 //        assertInfos(info1, info2);
 //    }    

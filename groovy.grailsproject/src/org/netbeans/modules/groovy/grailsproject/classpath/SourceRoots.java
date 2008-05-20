@@ -42,7 +42,6 @@ package org.netbeans.modules.groovy.grailsproject.classpath;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -89,7 +88,7 @@ public class SourceRoots {
         List<URL> urls = new ArrayList<URL>();
         try {
             for (FileObject fileObject : getRoots()) {
-                urls.add(FileUtil.toFile(fileObject).toURL());
+                urls.add(FileUtil.toFile(fileObject).toURI().toURL());
             }
         } catch (MalformedURLException murle) {
             Exceptions.printStackTrace(murle);
