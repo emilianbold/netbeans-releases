@@ -118,9 +118,11 @@ public class AlignWithMoveStrategyProvider extends AlignWithSupport implements M
             suggestedLocation.x += insets.left;
             suggestedLocation.y += insets.top;
         }
+        
         Widget parent = widget.getParentWidget();
         
-        Point point = super.locationSuggested (widget, bounds, suggestedLocation, true, true, true, true);
+        Point scenePoint = parent.convertLocalToScene(suggestedLocation);
+        Point point = super.locationSuggested (widget, bounds, scenePoint, true, true, true, true);
         if (! outerBounds) {
             point.x -= insets.left;
             point.y -= insets.top;
@@ -200,10 +202,6 @@ public class AlignWithMoveStrategyProvider extends AlignWithSupport implements M
     public Point getOriginalLocation (Widget widget) {
         
         original = widget.getPreferredLocation();
-        if(widget.getParentWidget() instanceof ContainerWidget)
-        {
-            original = widget.getParentWidget().convertLocalToScene(original);
-        }
         return original;
     }
 
