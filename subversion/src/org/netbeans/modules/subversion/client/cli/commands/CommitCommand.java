@@ -44,6 +44,8 @@ import java.io.IOException;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.cli.Parser.Line;
 import org.netbeans.modules.subversion.client.cli.SvnCommand;
+import org.tigris.subversion.svnclientadapter.ISVNNotifyListener;
+import org.tigris.subversion.svnclientadapter.SVNRevision;
 
 /**
  *
@@ -55,7 +57,7 @@ public class CommitCommand extends SvnCommand {
     private final boolean recursive;
     private final String message;
     private File[] files;
-    private long revision;
+    private long revision = SVNRevision.SVN_INVALID_REVNUM;
 
     public CommitCommand(File[] files, boolean keepLocks, boolean recursive, String message) {
         this.keepLocks = keepLocks;
@@ -64,6 +66,11 @@ public class CommitCommand extends SvnCommand {
         this.files = files;
     }
        
+    @Override
+    protected int getCommand() {
+        return ISVNNotifyListener.Command.COMMIT;
+    }
+    
     @Override
     public void prepareCommand(Arguments arguments) throws IOException {        
         arguments.add("commit");
@@ -86,37 +93,12 @@ public class CommitCommand extends SvnCommand {
     protected void notify(Line line) {
         if(line.getRevision() != -1) {
             if(revision != -1) {
-                try {
-                    Subversion.LOG.warning("Revision notified more times : " + revision + ", " + line.getRevision() + " for command " + getStringCommand());
-                } catch (IOException ex) {
-                    // should not happen
-                }
+                Subversion.LOG.warning(
+                        "Revision notified more times : " + revision + ", " + 
+                        line.getRevision() + " for command " + getStringCommand());                
             }
             revision = line.getRevision();            
         }
-    }        
-    
-    @Override
-    public void errorText(String line) {
-        super.errorText(line);
-//        XXX if ("".equals(line))
-//        return SVNRevision.SVN_INVALID_REVNUM;
-//        if (line.startsWith("svn: Attempted to lock an already-locked dir")) {
-//                for (int i = 0; i < 50; i++) {
-//                        try {
-//                                notificationHandler.setBaseDir(SVNBaseDir.getBaseDir(parents));
-//                                _cmd.checkin(paths, comment, recurse, keepLocks);
-//                                return _cmd.getRevision();
-//                        } catch (CmdLineException e1) {
-//                                try {
-//                                        Thread.sleep(100);
-//                                } catch (InterruptedException e2) {
-//                                        //do nothing if interrupted
-//                                }
-//                        }
-//                }
-//        }
-//			throw SVNClientException.wrapException(e);
-    }
+    }            
     
 }

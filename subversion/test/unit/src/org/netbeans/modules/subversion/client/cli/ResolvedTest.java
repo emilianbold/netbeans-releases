@@ -93,12 +93,11 @@ public class ResolvedTest extends AbstractCLITest {
         assertStatus(SVNStatusKind.CONFLICTED, file1);
         
         write(file1, 2);
+        clearNotifiedFiles();
         c.resolved(file1);
         
         assertStatus(SVNStatusKind.NORMAL, file1);
         
-        // assertNotifiedFiles(file1); XXX no notif fromthe cli
-    }    
-    
-    
+        assertNotifiedFiles(file1); 
+    }        
 }

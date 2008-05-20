@@ -161,7 +161,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
      * This is necessary for finding definitions/declarations 
      * since file-level static functions (i.e. c-style static functions) aren't registered in project
      */
-    private Collection<CsmUID<CsmFunction>> staticFunctionDeclarationUIDs;
+    private Collection<CsmUID<CsmFunction>> staticFunctionDeclarationUIDs = new ArrayList<CsmUID<CsmFunction>>();
     
     /** For test purposes only */
     public interface Hook {
@@ -937,9 +937,6 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
     
     private void addStaticFunctionDeclaration(FunctionImpl func) {
-        if( staticFunctionDeclarationUIDs == null ) {
-            staticFunctionDeclarationUIDs = new ArrayList<CsmUID<CsmFunction>>();
-        }
         staticFunctionDeclarationUIDs.add(func.getUID());
     }
 
@@ -949,11 +946,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
      * since file-level static functions (i.e. c-style static functions) aren't registered in project
      */
     public Collection<CsmFunction> getStaticFunctionDeclarations() {
-        if( staticFunctionDeclarationUIDs == null ) {
-            return Collections.<CsmFunction>emptyList();
-        } else {
-            return new LazyCsmCollection<CsmFunction, CsmFunction>(new ArrayList<CsmUID<CsmFunction>>(staticFunctionDeclarationUIDs), true);
-        }
+        return new LazyCsmCollection<CsmFunction, CsmFunction>(new ArrayList<CsmUID<CsmFunction>>(staticFunctionDeclarationUIDs), true);
     }
     
     public static boolean isOfFileScope(VariableImpl v) {
@@ -1156,6 +1149,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         guardState.write(output);
 	output.writeLong(lastParsed);
 	output.writeUTF(state.toString());
+        UIDObjectFactory.getDefaultFactory().writeUIDCollection(staticFunctionDeclarationUIDs, output, false);
     }
     
     public FileImpl(DataInput input) throws IOException {
@@ -1179,6 +1173,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         guardState = new GuardBlockState(input);
 	lastParsed = input.readLong();
         state = State.valueOf(input.readUTF());
+        UIDObjectFactory.getDefaultFactory().readUIDCollection(staticFunctionDeclarationUIDs, input);
     }
 
     public @Override int hashCode() {

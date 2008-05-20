@@ -47,9 +47,8 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.*;
 import java.util.ArrayList;
+import org.netbeans.modules.subversion.client.cli.CommandlineClient.NotificationHandler;
 import org.netbeans.modules.subversion.client.cli.Parser.Line;
-import org.netbeans.modules.subversion.config.SvnConfigFiles;
-import org.tigris.subversion.svnclientadapter.ISVNNotifyListener;
 import org.tigris.subversion.svnclientadapter.SVNBaseDir;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
@@ -60,15 +59,9 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  * @author Maros Sandor
  */
 public abstract class SvnCommand implements CommandNotificationListener {
-        
-    private ISVNNotifyListener listener;
-        
+               
     private final List<String> cmdError = new ArrayList<String>(10);
-
-    private File commandWorkingDirectory;
-        
-    private String stringValue;
-    
+       
     /**
      * If the command throws an execption, this is it.
      */
@@ -84,17 +77,40 @@ public abstract class SvnCommand implements CommandNotificationListener {
      */
     private boolean commandExecuted;
     private Arguments arguments;
+    private CommandlineClient.NotificationHandler notificationHandler;
+    private File configDir;
+    private String username;
+    private String password;
 
     protected SvnCommand() {
         arguments = new Arguments();        
     }
 
-    public void setListener(ISVNNotifyListener listener) {
-        this.listener = listener;
+    public void setConfigDir(File configDir) {
+        this.configDir = configDir;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    NotificationHandler getNotificationHandler() {
+        return notificationHandler;
+    }
+
+    void setNotificationHandler(NotificationHandler notificationHandler) {
+        this.notificationHandler = notificationHandler;
     }    
     
     void prepareCommand() throws IOException {
+        assert notificationHandler != null;
+        config(configDir, username, password, arguments);
         prepareCommand(arguments);
+        
     }
     
     /**
@@ -105,35 +121,53 @@ public abstract class SvnCommand implements CommandNotificationListener {
      */
     public abstract void prepareCommand(Arguments arguments) throws IOException;
 
+    protected abstract int getCommand();  
+
     public void setCommandWorkingDirectory(File... files) {
-        commandWorkingDirectory = SVNBaseDir.getBaseDir(files);
-        if(commandWorkingDirectory == null) {
-            commandWorkingDirectory = new File(".");
-        }        
+        notificationHandler.setBaseDir(SVNBaseDir.getBaseDir(files));        
+    }
+        
+    protected boolean hasBinaryOutput() {
+        return false;
+    }       
+    
+    protected boolean notifyOutput() {
+        return true;
     }
     
     public void commandStarted() {
         assert !commandExecuted : "Command re-use is not supported";
         commandExecuted = true;
+        String cmdString = toString(arguments, true).toString();
+        notificationHandler.logCommandLine(cmdString);        
     }
 
     public void outputText(String lineString) {
+        if(!notifyOutput()) {
+            return;
+        }
         Line line = Parser.getInstance().parse(lineString);
         if(line != null) {
-            if(listener != null && line.getPath() != null) {
-                File f = getAbsoluteFile(line.getPath());
-                listener.onNotify(f, null);
+            if(notificationHandler != null && line.getPath() != null) {
+                notificationHandler.notifyListenersOfChange(line.getPath());
             }
             notify(line);
+            notificationHandler.logMessage(lineString);
         }
+    }
+    
+    public void output(byte[] bytes) {
+        
     }
 
     public void errorText(String line) {
         cmdError.add(line);
         if (isErrorMessage(line)) hasFailed = true;
+        notificationHandler.logError(line);
     }
 
     public void commandFinished() {
+        notificationHandler.logCompleted("");        
     }
     
     public boolean hasFailed() {
@@ -167,12 +201,8 @@ public abstract class SvnCommand implements CommandNotificationListener {
         return true;
     }   
             
-    public String getStringCommand() throws IOException {
-        if(stringValue == null) {
-            // XXX add user, psswd
-            stringValue = toString(arguments).toString();
-        }
-        return stringValue;
+    public String getStringCommand() {         
+        return toString(arguments, false).toString();        
     }
 
     String[] getCliArguments(String executable) {
@@ -184,11 +214,13 @@ public abstract class SvnCommand implements CommandNotificationListener {
         return l.toArray(new String[l.size()]);
     }        
     
-    private static StringBuilder toString(Arguments args) {
+    private static StringBuilder toString(Arguments args, boolean scramble) {
         StringBuilder cmd = new StringBuilder(100);
-        for (String arg : args) {
-            cmd.append(arg);
+        boolean psswd = false;
+        for (String arg : args) {            
+            cmd.append(psswd && scramble ? "******" : arg);
             cmd.append(' ');
+            if(scramble) psswd = arg.equals("--password");
         }
         cmd.delete(cmd.length() - 1, cmd.length());
         return cmd;
@@ -227,21 +259,17 @@ public abstract class SvnCommand implements CommandNotificationListener {
         return targetFile.getAbsolutePath();
     }
 
-    File getAbsoluteFile(String path) {
-        File file = new File(path);
-        if(file.isAbsolute()) {
-            return file;
-        } else {
-            return new File(commandWorkingDirectory, path);   
-        }        
+    protected void config(File configDir, String username, String password, Arguments arguments) {
+        arguments.addConfigDir(configDir);
+        arguments.add("--non-interactive");
+        arguments.addCredentials(username, password);
     }
-
+        
     public final class Arguments implements Iterable<String> {
 
         private final List<String> args = new ArrayList<String>(5);
 
         public Arguments() {
-            addConfigDir();
         }
         
         public void add(String argument) {
@@ -252,6 +280,12 @@ public abstract class SvnCommand implements CommandNotificationListener {
             }
         }
 
+        public void add(File... files) {
+            for (File file : files) {
+                add(file.getAbsolutePath());    
+            }            
+        }
+        
         public void add(File argument) {
             add(argument.getAbsolutePath());
         }
@@ -308,14 +342,23 @@ public abstract class SvnCommand implements CommandNotificationListener {
             String msgFile = createTempCommandFile((message != null) ? message : "");
             add(msgFile);                               		
         }
-
-        private void addConfigDir() {
-            String configDir = SvnConfigFiles.getNBConfigPath();
+        
+        public void addConfigDir(File configDir) {            
             if (configDir != null) {
-                add("--config-dir");
-                add(configDir);
+                arguments.add("--config-dir");
+                arguments.add(configDir.getAbsolutePath());
             }
         }         
+    
+        public void addCredentials(String user, String psswd) {
+            if(user == null || user.trim().equals("")) {
+                return;
+            }            
+            add("--username");                               		
+            add(user);                               		
+            add("--password");                               		
+            add(psswd);                               		
+        }
     
         public Iterator<String> iterator() {
             return args.iterator();

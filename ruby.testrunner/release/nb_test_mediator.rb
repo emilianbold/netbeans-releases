@@ -83,7 +83,6 @@ class NbTestMediator
         end
       end
     end
-    @suites.each { |item| puts item }
   end
 
   def add_to_suites file_name

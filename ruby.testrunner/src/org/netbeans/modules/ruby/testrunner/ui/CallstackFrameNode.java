@@ -72,7 +72,7 @@ final class CallstackFrameNode extends AbstractNode {
         super(Children.LEAF);
         setDisplayName(displayName != null
                        ? displayName
-                       : "at " + frameInfo);                            //NOI18N
+                       : frameInfo);                            //NOI18N
         setIconBaseWithExtension(
                 "org/netbeans/modules/ruby/testrunner/ui/res/empty.gif");     //NOI18N
 

@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.bpel.validation.statics;
 
+import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -48,6 +49,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -55,6 +57,9 @@ import java.util.Set;
 import java.util.Map.Entry;
 import javax.xml.namespace.QName;
 
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Lookup;
 import org.netbeans.modules.bpel.model.api.BaseScope;
 import org.netbeans.modules.bpel.model.api.BpelContainer;
 import org.netbeans.modules.bpel.model.api.BpelModel;
@@ -135,7 +140,9 @@ import org.netbeans.modules.xml.wsdl.model.Operation;
 import org.netbeans.modules.xml.wsdl.model.RequestResponseOperation;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.CorrelationProperty;
 import org.netbeans.modules.xml.xam.Component;
+import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.xml.xam.Model;
+import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.netbeans.modules.xml.xam.locator.CatalogModelFactory;
@@ -146,7 +153,6 @@ import org.netbeans.modules.xml.schema.model.SchemaModelFactory;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.Activity;
 import org.netbeans.modules.xml.xam.Model.State;
-import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.bpel.model.api.support.Initiate;
 import org.netbeans.modules.bpel.model.api.NamedElement;
 import org.netbeans.modules.bpel.model.api.Empty;
@@ -165,6 +171,8 @@ import org.netbeans.modules.bpel.model.api.PortTypeReference;
 import org.netbeans.modules.bpel.validation.core.BpelValidator;
 import org.netbeans.modules.bpel.model.api.support.SimpleBpelModelVisitor;
 import org.netbeans.modules.bpel.model.api.support.SimpleBpelModelVisitorAdaptor;
+import org.netbeans.modules.soa.validation.util.LineUtil;
+import org.netbeans.modules.soa.ui.SoaUtil;
 import static org.netbeans.modules.xml.ui.UI.*;
 
 /**
@@ -186,15 +194,23 @@ public final class Validator extends BpelValidator {
     List<Model> wsdls = new LinkedList<Model>();
     List<Model> schemas = new LinkedList<Model>();
 
+//out();
     for (Import imp : imports) {
+//out("see: " + imp.getLocation());
       WSDLModel wsdl = ImportHelper.getWsdlModel(imp, false);
 
-      if (wsdl != null) {
+      if (wsdl != null && !wsdls.contains(wsdl)) {
         wsdls.add(wsdl);
       }
       SchemaModel schema = ImportHelper.getSchemaModel(imp, false);
 
-      if (schema != null) {
+      if (schema == null) {
+        continue;
+      }
+      if (schemas.contains(schema)) {
+        addWarning("FIX_Duplicate_Imports", imp); // NOI18N
+      }
+      else {
         schemas.add(schema);
       }
     }
@@ -213,26 +229,29 @@ public final class Validator extends BpelValidator {
         schemas.add(inline.getModel());
       }
     }
-    checkModels(wsdls);
-    checkModels(schemas);
+    checkModels(process, wsdls);
+    checkModels(process, schemas);
   }
 
-  private void checkModels(List<Model> models) {
+  private void checkModels(Process process, List<Model> models) {
 //out();
     for (int i=0; i < models.size(); i++) {
       for (int j=i+1; j < models.size(); j++) {
-        checkDuplicate(models.get(i), models.get(j));
+        checkDuplicate(process, models.get(i), models.get(j));
       }
     }
   }
 
-  private void checkDuplicate(Model model1, Model model2) {
+  private void checkDuplicate(Process process, Model model1, Model model2) {
+//out("check: ");
     String targetNamespace1 = getTargetNamespace(model1);
+//out("  tns1: " + targetNamespace1);
 
     if (targetNamespace1 == null) {
       return;
     }
     String targetNamespace2 = getTargetNamespace(model2);
+//out("  tns2: " + targetNamespace1);
 
     if (targetNamespace2 == null) {
       return;
@@ -243,6 +262,124 @@ public final class Validator extends BpelValidator {
 //out("check: ");
 //out("  " + model1);
 //out("  " + model2);
+    if (model1 instanceof WSDLModel) {
+      checkDuplicate(process, ((WSDLModel) model1).getDefinitions(), ((WSDLModel) model2).getDefinitions());
+    }
+    else if (model1 instanceof SchemaModel) {
+      checkDuplicate(process, ((SchemaModel) model1).getSchema(), ((SchemaModel) model2).getSchema());
+    }
+  }
+
+  private void checkDuplicate(Process process, Definitions definitions1, Definitions definitions2) {
+    checkDuplicate(process, definitions1.getMessages(), definitions2.getMessages());
+    checkDuplicate(process, definitions1.getPortTypes(), definitions2.getPortTypes());
+    checkDuplicate(process, definitions1.getBindings(), definitions2.getBindings());
+    checkDuplicate(process, definitions1.getServices(), definitions2.getServices());
+  }
+
+  private void checkDuplicate(Process process, Schema schema1, Schema schema2) {
+    checkDuplicate(process, schema1.getAttributes(), schema2.getAttributes());
+    checkDuplicate(process, schema1.getAttributeGroups(), schema2.getAttributeGroups());
+    checkDuplicate(process, schema1.getGroups(), schema2.getGroups());
+    checkDuplicate(process, schema1.getNotations(), schema2.getNotations());
+
+    checkDuplicate(process, schema1.getElements(), schema2.getElements());
+    checkDuplicate(process, schema1.getSimpleTypes(), schema2.getSimpleTypes());
+    checkDuplicate(process, schema1.getComplexTypes(), schema2.getComplexTypes());
+  }
+
+  private void checkDuplicate(Process process, Collection<? extends Named> collection1, Collection<? extends Named> collection2) {
+    List<Named> list1 = list(collection1);
+    List<Named> list2 = list(collection2);
+
+    for (int i=0; i < list1.size(); i++) {
+      checkDuplicate(process, list1.get(i), list2);
+    }
+  }
+
+  private void checkDuplicate(Process process, Named named1, List<Named> list) {
+    String name1 = named1.getName();
+
+    if (name1 == null || name1.length() == 0) {
+      return;
+    }
+    String file1 = getFileName(named1);
+    
+    for (int i=0; i < list.size(); i++) {
+      Named named2 = list.get(i);
+
+      if ( !(name1.equals(named2.getName()))) {
+        continue;
+      }
+      String file2 = getFileName(named2);
+
+      if (getPresentation(named1).equals(getPresentation(named2))) {
+        if (file1 == null || file2 == null) {
+          addWarning("FIX_SA00014_Identical", process, named1.getName()); // NOI18N
+        }
+        else {
+          addWarning("FIX_SA00014_Identical_File", process, named1.getName(), file1, file2); // NOI18N
+        }
+      }
+      else {
+        if (file1 == null || file2 == null) {
+          addError("FIX_SA00014_Different", process, named1.getName()); // NOI18N
+        }
+        else {
+          addError("FIX_SA00014_Different_File", process, named1.getName(), file1, file2); // NOI18N
+        }
+      }
+    }
+  }
+
+  private String getPresentation(Component component) {
+    StringBuffer buffer = new StringBuffer(getName(component));
+    buffer.append("("); // NOI18N
+    
+    List children = component.getChildren();
+
+    for (Object child : children) {
+      if ( !(child instanceof Component)) {
+        continue;
+      }
+      buffer.append(getPresentation((Component) child));
+    }
+    buffer.append(")"); // NOI18N
+
+    return buffer.toString();
+  }
+
+  private String getName(Component component) {
+    if ( !(component instanceof Named)) {
+      return "[]"; // NOI18N
+    }
+    return ((Named) component).getName();
+  }
+
+  private String getFileName(Component component) {
+    if (component == null) {
+      return null;
+    }
+    FileObject file = SoaUtil.getFileObjectByModel(component.getModel());
+
+    if (file == null) {
+      return null;
+    }
+    return LineUtil.getLocation(FileUtil.toFile(file), component);
+  }
+
+  private List<Named> list(Collection<? extends Named> collection) {
+    List<Named> list = new ArrayList<Named>();
+
+    if (collection == null) {
+      return list;
+    }
+    Iterator<? extends Named> iterator = collection.iterator();
+
+    while (iterator.hasNext()) {
+      list.add(iterator.next());
+    }
+    return list;
   }
 
   private String getTargetNamespace(Import imp) {
@@ -292,15 +429,12 @@ public final class Validator extends BpelValidator {
   public void visit(PartnerLink p) {
       // Rule: A partnerLink MUST specify the myRole or the partnerRole, or both.
       // This syntactic constraint MUST be statically enforced.
-      if((p.getMyRole() == null || p.getMyRole().equals("")) &&
-              (p.getPartnerRole() == null || p.getPartnerRole().equals(""))) 
-      {
+      if ((p.getMyRole() == null || p.getMyRole().equals("")) && (p.getPartnerRole() == null || p.getPartnerRole().equals(""))) {
           addError(FIX_PARTNER_LINK_ERROR, p);
       }
-      
       // Rule: The initializePartnerRole attribute MUST NOT be used on a partnerLink
       // that does not have a partner role; this restriction MUST be statically enforced.
-      if(p.getPartnerRole() == null || p.getPartnerRole().equals("")) {
+      if( p.getPartnerRole() == null || p.getPartnerRole().equals("")) {
           if((p.getInitializePartnerRole() != null) &&
                   (!p.getInitializePartnerRole().equals(
                   TBoolean.INVALID))) 
@@ -2623,9 +2757,7 @@ public final class Validator extends BpelValidator {
   }
 
   @SuppressWarnings("unchecked")
-  private Set<ExtendableActivity> getLogicallyPreceding( 
-          ExtendableActivity activity  )
-  {
+  private Set<ExtendableActivity> getLogicallyPreceding(ExtendableActivity activity) {
       /*
        * This method collect all preceding activities for activity.
        * So resulting set will contain activities that are source 

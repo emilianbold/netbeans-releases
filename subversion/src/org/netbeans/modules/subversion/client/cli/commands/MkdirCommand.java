@@ -42,6 +42,7 @@ package org.netbeans.modules.subversion.client.cli.commands;
 import java.io.File;
 import java.io.IOException;
 import org.netbeans.modules.subversion.client.cli.SvnCommand;
+import org.tigris.subversion.svnclientadapter.ISVNNotifyListener;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
@@ -74,6 +75,11 @@ public class MkdirCommand extends SvnCommand {
         type = MkdirType.file;
     }
        
+    @Override
+    protected int getCommand() {
+        return ISVNNotifyListener.Command.MKDIR;
+    }
+    
     @Override
     public void prepareCommand(Arguments arguments) throws IOException {                     
         arguments.add("mkdir");        

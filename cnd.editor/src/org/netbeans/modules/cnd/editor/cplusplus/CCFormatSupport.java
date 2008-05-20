@@ -636,7 +636,14 @@ public class CCFormatSupport extends ExtFormatSupport {
                 case CCTokenContext.ELSE_ID:
                     // Find the corresponding 'if'
                     TokenItem ifss = findIf(t);
-                    return (ifss != null) ? findStatementStart(ifss, outermost) : t;
+                    if (ifss != null) {
+                        if (!outermost) {
+                            return ifss;
+                        } else {
+                            return findStatementStart(ifss, outermost);
+                        }
+                    }
+                    return t;
 
                 case CCTokenContext.DO_ID:
                 case CCTokenContext.FOR_ID:

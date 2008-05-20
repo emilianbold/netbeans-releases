@@ -6,9 +6,9 @@ import javax.swing.ImageIcon;
 
 public interface LibraryProvider {
 
-	public InputStream getLibraryXml();
-	
-	public ImageIcon resolveIcon(String iconName);
-	
-	public Object newInstance(String className) throws ClassNotFoundException, IllegalAccessException, InstantiationException;
+    public InputStream getLibraryXml();
+    
+    public ImageIcon resolveIcon(String iconName);
+    
+    public Object newInstance(String className) throws ClassNotFoundException, IllegalAccessException, InstantiationException;
 }

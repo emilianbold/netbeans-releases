@@ -102,10 +102,14 @@ public class CSSGSFParser implements Parser, PositionManager {
                     job.listener.error(error);
                 }
 
-                //do some semantic checking of the parse tree
-                List<Error> semanticErrors = new CssAnalyser(result).checkForErrors(css_result.root());
-                for (Error err : semanticErrors) {
-                    job.listener.error(err);
+                SimpleNode root = css_result.root();
+                //test if the parsing succeeded
+                if(root != null) {
+                    //do some semantic checking of the parse tree
+                    List<Error> semanticErrors = new CssAnalyser(result).checkForErrors(root);
+                    for (Error err : semanticErrors) {
+                        job.listener.error(err);
+                    }
                 }
 
             } catch (IOException ioe) {
@@ -125,8 +129,8 @@ public class CSSGSFParser implements Parser, PositionManager {
         if (object instanceof CssElementHandle) {
             ParserResult presult = info.getEmbeddedResults(Css.CSS_MIME_TYPE).iterator().next();
             final TranslatedSource source = presult.getTranslatedSource();
-            SimpleNode node = ((CssElementHandle) object).node();
-            return new OffsetRange(AstUtils.documentPosition(node.startOffset(), source), AstUtils.documentPosition(node.endOffset(), source));
+            CssElementHandle handle = (CssElementHandle) object;
+            return new OffsetRange(AstUtils.documentPosition(handle.elementAstStartOffset(), source), AstUtils.documentPosition(handle.elementAstEndOffset(), source));
         } else {
             throw new IllegalArgumentException((("Foreign element: " + object + " of type " +
                     object) != null) ? object.getClass().getName() : "null"); //NOI18N

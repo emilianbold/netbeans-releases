@@ -39,6 +39,7 @@
 package org.netbeans.modules.ruby.testrunner;
 
 import java.util.prefs.Preferences;
+import javax.swing.JSplitPane;
 import org.openide.util.NbPreferences;
 
 /**
@@ -48,8 +49,12 @@ import org.openide.util.NbPreferences;
  */
 public final class TestRunnerSettings {
 
-    private static final String RESULTS_SPLITPANE_DIVIDER = "resultsSplitDivider"; //NOI18N
-    private static final int DEFAULT_DIVIDER_LOCATION = 300;
+    private static final String RESULTS_SPLITPANE_DIVIDER_VERTICAL = "resultsSplitDividerVertical"; //NOI18N
+    private static final String RESULTS_SPLITPANE_DIVIDER_HORIZONTAL = "resultsSplitDividerHorizontal"; //NOI18N
+    private static final String RESULTS_SPLITPANE_ORIENTATION = "resultsSplitOrientation"; //NOI18N
+    private static final int DEFAULT_DIVIDER_LOCATION_VERTICAL = 300;
+    private static final int DEFAULT_DIVIDER_LOCATION_HORIZONTAL = 120;
+    private static final int DEFAULT_DIVIDER_ORIENTATION = JSplitPane.VERTICAL_SPLIT;
 
     private static final TestRunnerSettings INSTANCE = new TestRunnerSettings();
 
@@ -64,12 +69,60 @@ public final class TestRunnerSettings {
         return NbPreferences.forModule(TestRunnerSettings.class);
     }
 
-    public int getResultsSplitPaneDivider() {        
-        return getPreferences().getInt(RESULTS_SPLITPANE_DIVIDER, DEFAULT_DIVIDER_LOCATION);
+    public DividerSettings getDividerSettings(Integer orientation) {
+        if (orientation == null) {
+            orientation = getResultsSplitPaneOrientation();
+        }
+        return new DividerSettings(orientation, getResultsSplitPaneDivider(orientation));
+    }
+    
+    public void setDividerSettings(DividerSettings settings) {
+        setResultsSplitPaneOrientation(settings.getOrientation());
+        setResultsSplitPaneDivider(settings.getLocation(), settings.getOrientation());
+    }
+    
+    private int getResultsSplitPaneDivider(int orientation) {        
+        if (JSplitPane.VERTICAL_SPLIT == orientation) {
+            return getPreferences().getInt(RESULTS_SPLITPANE_DIVIDER_VERTICAL, DEFAULT_DIVIDER_LOCATION_VERTICAL);
+        } else {
+            return getPreferences().getInt(RESULTS_SPLITPANE_DIVIDER_HORIZONTAL, DEFAULT_DIVIDER_LOCATION_HORIZONTAL);
+        }
     }
 
-    public void setResultsSplitPaneDivider(int dividerLocation) {
-        getPreferences().putInt(RESULTS_SPLITPANE_DIVIDER, dividerLocation);
+    private void setResultsSplitPaneDivider(int dividerLocation, int orientation) {
+        if (JSplitPane.VERTICAL_SPLIT == orientation) {
+            getPreferences().putInt(RESULTS_SPLITPANE_DIVIDER_VERTICAL, dividerLocation);
+        } else {
+            getPreferences().putInt(RESULTS_SPLITPANE_DIVIDER_HORIZONTAL, dividerLocation);
+        }
     }    
     
+    private int getResultsSplitPaneOrientation() {        
+        return getPreferences().getInt(RESULTS_SPLITPANE_ORIENTATION, DEFAULT_DIVIDER_ORIENTATION);
+    }
+
+    private void setResultsSplitPaneOrientation(int dividerOrientation) {
+        getPreferences().putInt(RESULTS_SPLITPANE_ORIENTATION, dividerOrientation);
+    }    
+    
+    public static final class DividerSettings {
+        
+        private final int orientation;
+        private final int location;
+
+        public DividerSettings(int orientation, int location) {
+            assert orientation == JSplitPane.HORIZONTAL_SPLIT || orientation == JSplitPane.VERTICAL_SPLIT;
+            this.orientation = orientation;
+            this.location = location;
+        }
+
+        public int getOrientation() {
+            return orientation;
+        }
+
+        public int getLocation() {
+            return location;
+        }
+        
+    }
 }

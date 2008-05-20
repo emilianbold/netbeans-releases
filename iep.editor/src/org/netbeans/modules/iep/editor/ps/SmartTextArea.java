@@ -47,11 +47,11 @@ public class SmartTextArea extends JTextArea {
     }
     
     public void addAttributeDropNotificationListener(AttributeDropNotificationListener l) {
-    	this.listenerList.add(AttributeDropNotificationListener.class, l);
+        this.listenerList.add(AttributeDropNotificationListener.class, l);
     }
     
     public void removeAttributeDropNotificationListener(AttributeDropNotificationListener l) {
-    	this.listenerList.remove(AttributeDropNotificationListener.class, l);
+        this.listenerList.remove(AttributeDropNotificationListener.class, l);
     }
     
     class MyDropTargetAdapter extends DropTargetAdapter {
@@ -88,7 +88,7 @@ public class SmartTextArea extends JTextArea {
                     
                     //if there is a handler then notify it
                     AttributeDropNotificationEvent evt = new AttributeDropNotificationEvent(ai);
-                	fireOnDropComplete(evt);
+                    fireOnDropComplete(evt);
                 
                 } else {
                     if(obj instanceof String) {
@@ -124,7 +124,7 @@ public class SmartTextArea extends JTextArea {
     }
     
     private void fireOnDropComplete(AttributeDropNotificationEvent evt) {
-    	Object[] listeners = listenerList.getListenerList();
+        Object[] listeners = listenerList.getListenerList();
         // Process the listeners last to first, notifying
         // those that are interested in this event
         for (int i = listeners.length-2; i>=0; i-=2) {

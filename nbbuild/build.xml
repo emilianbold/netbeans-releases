@@ -1667,6 +1667,10 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <ant dir="${xtest.home}/instance" target="cleantests">
         <property name="xtest.config" value="commit-validation-nb"/>
     </ant>
+    <!-- XTest is too dumb to know about the test dependency o.n.core -> core.startup: -->
+    <ant dir="../openide.util" target="test-build"/>
+    <ant dir="../openide.filesystems" target="test-build"/>
+    <ant dir="../core.startup" target="test-build"/>
     <ant dir="${xtest.home}/instance" target="runtests">
         <property name="xtest.config" value="commit-validation-nb"/>
         <property name="xtest.fail.on.failure" value="true"/>
