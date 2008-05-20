@@ -39,6 +39,7 @@
 package org.netbeans.modules.uml.diagrams.nodes.state;
 
 import java.awt.Color;
+import java.awt.GradientPaint;
 import java.awt.Graphics2D;
 import java.awt.Insets;
 import java.awt.Paint;
@@ -47,6 +48,7 @@ import java.awt.Stroke;
 import org.netbeans.api.visual.border.Border;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.modules.uml.drawingarea.view.CustomizableWidget;
+import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
 
 /**
  *
@@ -54,9 +56,8 @@ import org.netbeans.modules.uml.drawingarea.view.CustomizableWidget;
  */
 public class TabWidget extends CustomizableWidget
 {
-
-    private int arcHeight = 20;
-    private int arcWidth = 20;
+    private static final int arcHeight = 20;
+    private static final int arcWidth = 20;
 
     public TabWidget(Scene scene, String id, String name)
     {
@@ -70,7 +71,18 @@ public class TabWidget extends CustomizableWidget
     {
         Graphics2D gr = getGraphics();
         Rectangle bounds = getBounds();
-        gr.setPaint(getBackground());
+        Paint bgColor = getBackground();
+
+        if (UMLNodeWidget.useGradient())
+        {
+            Color bg = (Color) getBackground();
+            int x1, y1;
+
+            x1 = bounds.x;
+            y1 = bounds.y;
+            bgColor = new GradientPaint(x1, y1, Color.WHITE, x1, y1 + bounds.height, bg);
+        }
+        gr.setPaint(bgColor);
 
         gr.fillRect(bounds.x, bounds.y + arcHeight / 2, bounds.width, bounds.height);
         gr.fillRect(bounds.x + arcWidth / 2, bounds.y, bounds.width - arcWidth, arcHeight);
@@ -80,12 +92,10 @@ public class TabWidget extends CustomizableWidget
 
     }
 
-    private class NameTagBorder implements Border
+    private static class NameTagBorder implements Border
     {
 
         private Paint drawColor;
-        private int arcWidth = 20;
-        private int arcHeight = 20;
         private int insetWidth = 5;
         private int insetHeight = 5;
 

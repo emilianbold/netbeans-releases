@@ -154,7 +154,7 @@ public class EventsAndTransitionsAction extends NodeAction implements ContextAwa
         deleteInternal.setEnabled(hasInternalTransitions());
         JMenuItem[] items = new JMenuItem[]
         {
-            entry, exit, doActivity, incoming, outgoing, deleteInternal
+            entry, doActivity, exit, incoming, outgoing, deleteInternal
         };
         for (int i = 0; i < items.length; i++)
         {

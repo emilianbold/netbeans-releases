@@ -56,7 +56,7 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElem
 import org.netbeans.modules.uml.core.metamodel.core.foundation.TypedFactoryRetriever;
 import org.netbeans.modules.uml.diagrams.border.UMLRoundedBorder;
 import org.netbeans.modules.uml.diagrams.nodes.UMLNameWidget;
-import org.netbeans.modules.uml.diagrams.nodes.UMLNodeBackgroundWidget;
+import org.netbeans.modules.uml.diagrams.nodes.state.BackgroundWidget;
 import org.netbeans.modules.uml.drawingarea.util.Util;
 import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
 import org.netbeans.modules.uml.drawingarea.view.UMLWidget;
@@ -96,7 +96,7 @@ public class CompositeStateWidget extends Widget
 
         tabbg.addChild(nameWidget);
         tabWidget.addChild(tabbg);
-        bodyWidget = new UMLNodeBackgroundWidget(
+        bodyWidget = new BackgroundWidget(
                 scene, getWidgetID() + "." + UMLNodeWidget.DEFAULT, "Default", 15, 15);
 
         UMLRoundedBorder border = new UMLRoundedBorder(15, 15, 0, 0, null, Color.BLACK);
@@ -138,12 +138,12 @@ public class CompositeStateWidget extends Widget
             RegionWidget w = regions[i];
             bodyWidget.setChildConstraint(w, i == regions.length - 1 ? 1 : 0);
             w.showSeparator(i == regions.length - 1 ? false : true);
-//            w.getNameWidget().setVisible(true);
+            w.getNameWidget().setVisible(true);
         }
-//        if (regions.length == 1)
-//        {
-//            regions[0].getNameWidget().setVisible(false);
-//        }
+        if (regions.length == 1)
+        {
+            regions[0].getNameWidget().setVisible(false);
+        }
         scene.validate();
     }
     

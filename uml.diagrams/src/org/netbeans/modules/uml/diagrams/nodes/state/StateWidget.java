@@ -56,7 +56,6 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.diagrams.Util;
 import org.netbeans.modules.uml.diagrams.border.UMLRoundedBorder;
 import org.netbeans.modules.uml.diagrams.nodes.UMLNameWidget;
-import org.netbeans.modules.uml.diagrams.nodes.UMLNodeBackgroundWidget;
 import org.netbeans.modules.uml.diagrams.nodes.state.ProcedureWidget.DoEventWidget;
 import org.netbeans.modules.uml.diagrams.nodes.state.ProcedureWidget.EntryEventWidget;
 import org.netbeans.modules.uml.diagrams.nodes.state.ProcedureWidget.ExitEventWidget;
@@ -114,7 +113,7 @@ public class StateWidget extends UMLNodeWidget
 
     private void initStateWidget()
     {
-        stateWidget = new UMLNodeBackgroundWidget(
+        stateWidget = new BackgroundWidget(
                 scene, getWidgetID() + "." + UMLNodeWidget.DEFAULT, "Default", 15, 15);
         detailWidget = new Widget(getScene());
         detailWidget.setForeground(null);
