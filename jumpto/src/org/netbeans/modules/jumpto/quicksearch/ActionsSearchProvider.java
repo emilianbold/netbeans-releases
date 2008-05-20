@@ -90,6 +90,10 @@ public class ActionsSearchProvider implements SearchProvider {
         return r;
     }
     
+    public boolean cancel() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+    
     private static class ActionsResultGroup implements SearchResultGroup {
 
         private String command;
@@ -153,5 +157,7 @@ public class ActionsSearchProvider implements SearchProvider {
         public SearchResultGroup getResultGroup() {
             return group;
         }
-    }    
+    }
+
+
 }

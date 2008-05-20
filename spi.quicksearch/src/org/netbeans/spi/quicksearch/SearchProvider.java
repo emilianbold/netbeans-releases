@@ -40,13 +40,14 @@
 
 package org.netbeans.spi.quicksearch;
 
+import org.openide.util.Cancellable;
 
 /**
  * Search Provider.
  * Implement to provide new group of results for quick search
  * @author  Jan Becicka
  */
-public interface SearchProvider {
+public interface SearchProvider extends Cancellable {
     /**
      * prefix for this group
      * @return

@@ -67,6 +67,10 @@ public class JavaTypeSearchProvider implements SearchProvider {
         return r;
     }
     
+    public boolean cancel() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+    
     private static class GoToTypeGroup implements SearchResultGroup {
 
         private String command;
@@ -115,5 +119,6 @@ public class JavaTypeSearchProvider implements SearchProvider {
         public SearchResultGroup getResultGroup() {
             return group;
         }
-    }    
+    }
+
 }
