@@ -76,7 +76,6 @@ final class NameAndLocationVisualPanel extends JPanel {
     NameAndLocationVisualPanel(NameAndLocationWizardPanel panel) {
         myPanel = panel;
         initComponents();
-        initAccessibility();
         putClientProperty("NewFileWizard_Title",// NOI18N
                 NbBundle.getMessage(NameAndLocationVisualPanel.class,"LBL_LibraryWizardTitle")); // NOI18N
         
@@ -93,34 +92,6 @@ final class NameAndLocationVisualPanel extends JPanel {
     
     private static String getMessage(String key, Object... args) {
         return NbBundle.getMessage(NameAndLocationVisualPanel.class, key, args);
-    }
-    
-    private void initAccessibility() {
-        getAccessibleContext().setAccessibleDescription(
-                getMessage("ACS_NameIconLocationPanel")); // NOI18N
-        createdFilesValue.getAccessibleContext().setAccessibleDescription(
-                getMessage("ACS_LBL_CreatedFiles")); // NOI18N
-        modifiedFilesValue.getAccessibleContext().setAccessibleDescription(
-                getMessage("ACS_LBL_ModifiedFiles")); // NOI18N
-        libraryDisplayNameValue.getAccessibleContext().setAccessibleDescription(
-                getMessage("ACS_LBL_DisplayName")); // NOI18N
-        libraryNameValue.getAccessibleContext().setAccessibleDescription(
-                getMessage("ACS_LBL_Name")); // NOI18N
-        projectNameValue.getAccessibleContext().setAccessibleDescription(
-                getMessage("ACS_LBL_ProjectName")); // NOI18N
-        
-        getAccessibleContext().setAccessibleName(
-                getMessage("ACS_NameIconLocationPanel")); // NOI18N
-        createdFilesValue.getAccessibleContext().setAccessibleName(
-                getMessage("ACS_LBL_CreatedFiles")); // NOI18N
-        modifiedFilesValue.getAccessibleContext().setAccessibleName(
-                getMessage("ACS_LBL_ModifiedFiles")); // NOI18N
-        libraryDisplayNameValue.getAccessibleContext().setAccessibleName(
-                getMessage("ACS_LBL_DisplayName")); // NOI18N
-        libraryNameValue.getAccessibleContext().setAccessibleName(
-                getMessage("ACS_LBL_Name")); // NOI18N
-        projectNameValue.getAccessibleContext().setAccessibleName(
-                getMessage("ACS_LBL_ProjectName")); // NOI18N
     }
     
     protected void storeData(WizardDescriptor descriptor) {
@@ -427,6 +398,9 @@ final class NameAndLocationVisualPanel extends JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.insets = new java.awt.Insets(1, 0, 6, 12);
         add(libraryName, gridBagConstraints);
+        libraryName.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(NameAndLocationVisualPanel.class, "ACS_LBL_Name")); // NOI18N
+        libraryName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NameAndLocationVisualPanel.class, "ACS_LBL_Name")); // NOI18N
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
@@ -443,6 +417,9 @@ final class NameAndLocationVisualPanel extends JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         add(libraryDisplayName, gridBagConstraints);
+        libraryDisplayName.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(NameAndLocationVisualPanel.class, "ACS_LBL_DisplayName")); // NOI18N
+        libraryDisplayName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NameAndLocationVisualPanel.class, "ACS_LBL_DisplayName")); // NOI18N
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -458,6 +435,8 @@ final class NameAndLocationVisualPanel extends JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.insets = new java.awt.Insets(18, 0, 6, 12);
         add(projectName, gridBagConstraints);
+        projectName.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(NameAndLocationVisualPanel.class, "ACS_LBL_ProjectName")); // NOI18N
+        projectName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NameAndLocationVisualPanel.class, "ACS_LBL_ProjectName")); // NOI18N
 
         projectNameValue.setEditable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -476,6 +455,8 @@ final class NameAndLocationVisualPanel extends JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(36, 0, 6, 12);
         add(createdFiles, gridBagConstraints);
+        createdFiles.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(NameAndLocationVisualPanel.class, "ACS_LBL_CreatedFiles")); // NOI18N
+        createdFiles.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NameAndLocationVisualPanel.class, "ACS_LBL_CreatedFiles")); // NOI18N
 
         modifiedFiles.setLabelFor(modifiedFilesValue);
         org.openide.awt.Mnemonics.setLocalizedText(modifiedFiles, bundle.getString("LBL_ModifiedFiles")); // NOI18N
@@ -485,6 +466,8 @@ final class NameAndLocationVisualPanel extends JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         add(modifiedFiles, gridBagConstraints);
+        modifiedFiles.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(NameAndLocationVisualPanel.class, "ACS_LBL_ModifiedFiles")); // NOI18N
+        modifiedFiles.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NameAndLocationVisualPanel.class, "ACS_LBL_ModifiedFiles")); // NOI18N
 
         createdFilesValue.setBackground(javax.swing.UIManager.getDefaults().getColor("Label.background"));
         createdFilesValue.setColumns(20);
@@ -514,6 +497,9 @@ final class NameAndLocationVisualPanel extends JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         add(modifiedFilesValueS, gridBagConstraints);
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(NameAndLocationVisualPanel.class, "ACS_NameIconLocationPanel")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NameAndLocationVisualPanel.class, "ACS_NameIconLocationPanel")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
