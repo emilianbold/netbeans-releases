@@ -407,7 +407,7 @@ public final class AntBridge {
             cp[i++] = it.next().toURI().toURL();
         }
         if (AntSettings.getAntHome() != null) {
-            ClassLoader parent = ClassLoader.getSystemClassLoader();
+            ClassLoader parent = Lookup.class.getClassLoader();
             if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
                 List<URL> parentURLs;
                 if (parent instanceof URLClassLoader) {

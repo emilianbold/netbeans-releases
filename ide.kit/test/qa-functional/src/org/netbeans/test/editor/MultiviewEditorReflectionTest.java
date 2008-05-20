@@ -42,6 +42,8 @@
 package org.netbeans.test.editor;
 
 import java.lang.reflect.Method;
+import junit.framework.Test;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.openide.util.Lookup;
 import org.openide.util.SharedClassObject;
@@ -57,6 +59,14 @@ public class MultiviewEditorReflectionTest extends NbTestCase {
     public MultiviewEditorReflectionTest(String name) {
         super(name);
     }
+    
+    public static Test suite() {
+        return NbModuleSuite.create(
+            NbModuleSuite.createConfiguration(
+                MultiviewEditorReflectionTest.class
+            ).gui(false).clusters(".*").enableModules(".*")
+        );
+    }
 
     public void testReflection() throws Exception {
             final ClassLoader loader = (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class);
@@ -71,7 +81,7 @@ public class MultiviewEditorReflectionTest extends NbTestCase {
 
             Class editorBaseOption = Class.forName("org.netbeans.modules.editor.options.BaseOptions", true,
                     loader);
-            SharedClassObject option = SharedClassObject.findObject(editorBaseOption);
+            SharedClassObject option = SharedClassObject.findObject(editorBaseOption, true);
             Method is = option.getClass().getMethod("isToolbarVisible", new Class[0]);
     }
 
