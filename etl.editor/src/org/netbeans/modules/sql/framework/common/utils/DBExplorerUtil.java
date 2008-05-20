@@ -68,6 +68,7 @@ import org.axiondb.AxionException;
 import org.axiondb.Database;
 import org.axiondb.engine.Databases;
 import org.netbeans.modules.etl.ui.ETLEditorSupport;
+import org.netbeans.modules.mashup.tables.wizard.MashupTableWizardIterator;
 import org.openide.util.Exceptions;
 
 /**
@@ -209,7 +210,10 @@ public class DBExplorerUtil {
                 }
             }
         } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
+            //Exceptions.printStackTrace(ex);
+			 if(ex.getMessage().indexOf("Specified JDBC Driver not found in DB Explorer: ") != -1) {
+                mLogger.warnNoloc(ex.getMessage());
+            }
         }
         return conn;
     }
@@ -253,7 +257,11 @@ public class DBExplorerUtil {
                 }
                 dbconn = DatabaseConnection.create(drv, url, username, schema, password, true);
 
-                if (url.indexOf("InstanceDB") == -1 && url.indexOf("MonitorDB") == -1 && url.indexOf(ETLEditorSupport.PRJ_PATH) == -1) {
+				 //Fix for 6697129: No mashup database found when try to add external table Tools - MashupDatabase.
+				 //ETLEditorSupport.PRJ_PATH  is "" and url.indexOf(ETLEditorSupport.PRJ_PATH) returns 0 if no projects are 
+				 //opened in the netbeans and gives a warning no mashup db found if we try to add an external table from Tools menu.
+				 //if (url.indexOf("InstanceDB") == -1 && url.indexOf("MonitorDB") == -1 && url.indexOf(ETLEditorSupport.PRJ_PATH)) {
+                 if (url.indexOf("InstanceDB") == -1 && url.indexOf("MonitorDB") == -1 && !(MashupTableWizardIterator.IS_PROJECT_CALL)) {
                     ConnectionManager.getDefault().addConnection(dbconn);
                 }
             }
@@ -286,7 +294,7 @@ public class DBExplorerUtil {
             driver = registerAxionDriverInstance();
         } else {
             if (drivers.length == 0) {
-                throw new Exception("Specified JDBC Driver not found in DB Explorer.");
+                throw new Exception("Specified JDBC Driver not found in DB Explorer: "+ driverName);
             } else {
                 driver = drivers[0];
             }
