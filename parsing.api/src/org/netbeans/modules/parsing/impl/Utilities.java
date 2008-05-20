@@ -42,6 +42,7 @@ package org.netbeans.modules.parsing.impl;
 import java.util.Collection;
 import java.util.Collections;
 import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.netbeans.modules.parsing.spi.TaskScheduler;
 
@@ -89,5 +90,22 @@ public class Utilities {
             scheduler.scheduleTasks(sources);
         }
     }
-
+    
+    public static void addParserResultTask (final ParserResultTask<?> task, final Source source) {
+        assert task != null;
+        assert source != null;
+        TaskProcessor.addPhaseCompletionTask(task, source);
+    }
+    
+    public static void removeParserResultTask (final ParserResultTask<?> task, final Source source) {
+        assert task != null;
+        assert source != null;
+        TaskProcessor.removePhaseCompletionTask(task, source);
+    }
+    
+    public static void rescheduleTask (final ParserResultTask<?> task, final Source source) {
+        assert task != null;
+        assert source != null;
+        TaskProcessor.rescheduleTask(task, source);
+    }
 }

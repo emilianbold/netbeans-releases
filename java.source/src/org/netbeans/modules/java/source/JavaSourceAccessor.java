@@ -43,7 +43,10 @@ package org.netbeans.modules.java.source;
 
 import com.sun.tools.javac.api.JavacTaskImpl;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -66,6 +69,7 @@ import org.openide.util.Exceptions;
  */
 public abstract class JavaSourceAccessor {
 
+    private Map<CancellableTask<CompilationInfo>,ParserResultTask<?>>tasks = new HashMap<CancellableTask<CompilationInfo>,ParserResultTask<?>>();
         
     public static synchronized JavaSourceAccessor getINSTANCE () {
         if (INSTANCE == null) {
@@ -85,8 +89,9 @@ public abstract class JavaSourceAccessor {
     }
     
     private static volatile JavaSourceAccessor INSTANCE;
-        
-    public void runSpecialTask (final GenericUserTask task, final JavaSource.Priority priority) {
+    
+    private int translatePriority (final JavaSource.Priority priority) {
+        assert priority != null;
         int tmp;
         if (priority == JavaSource.Priority.MAX) {
             tmp = 0;
@@ -97,7 +102,11 @@ public abstract class JavaSourceAccessor {
         else {
             tmp = priority.ordinal() * 100;
         }
-        final int tp = tmp;
+        return tmp;
+    }
+        
+    public void runSpecialTask (final GenericUserTask task, final JavaSource.Priority priority) {        
+        final int tp = translatePriority(priority);
         final ParserResultTask wrapper = new ParserResultTask() {            
             @Override
             public void run(Result _null, Snapshot _null2) {
@@ -152,6 +161,38 @@ public abstract class JavaSourceAccessor {
         return Utilities.holdsParserLock();
     }
     
+    public void addPhaseCompletionTask (final JavaSource js,
+            final CancellableTask<CompilationInfo> task,
+            final JavaSource.Phase phase,
+            final JavaSource.Priority priority) {
+        
+        final Collection<Source> sources = getSources(js);
+        assert sources.size() == 1;
+        final int pp = translatePriority(priority);
+        assert !tasks.keySet().contains(task);
+        final ParserResultTask<?> hanz = new CancelableTaskWrapper(task, pp);
+        tasks.put(task, hanz);
+        Utilities.addParserResultTask(hanz, sources.iterator().next());
+    }
+    
+    public void removePhaseCompletionTask (final JavaSource js,
+            final CancellableTask<CompilationInfo> task) {        
+        final Collection<Source> sources = getSources(js);
+        assert sources.size() == 1;
+        final ParserResultTask<?> hanz = tasks.remove(task);
+        assert hanz != null;
+        Utilities.removeParserResultTask(hanz, sources.iterator().next());
+    }
+    
+    public void rescheduleTask (final JavaSource js,
+            final CancellableTask<CompilationInfo> task) {
+        final Collection<Source> sources = getSources(js);
+        assert sources.size() == 1;
+        final ParserResultTask<?> hanz = tasks.get(task);
+        assert hanz != null;
+        Utilities.rescheduleTask(hanz, sources.iterator().next());
+    }
+    
     public abstract Collection<Source> getSources(final JavaSource js);              
         
     /**
@@ -180,4 +221,41 @@ public abstract class JavaSourceAccessor {
      * @return the api wrapper
      */
     public abstract CompilationController createCompilationController (CompilationInfoImpl impl);                    
+    
+    private static class CancelableTaskWrapper extends ParserResultTask {
+        
+        private final int priority;
+        private final CancellableTask<CompilationInfo> task;
+        
+        public CancelableTaskWrapper (final CancellableTask<CompilationInfo> task, final int priority) {
+            assert task != null;
+            this.task = task;
+            this.priority = priority;
+        }
+
+        @Override
+        public int getPriority() {
+            return this.priority;
+        }
+
+        @Override
+        public Class<? extends TaskScheduler> getSchedulerClass() {
+            return null;
+        }
+
+        @Override
+        public void cancel() {
+            this.task.cancel();
+        }
+
+        @Override
+        public void run(Result result, Snapshot snapshot) {
+            assert result instanceof CompilationInfo;
+            try {
+                this.task.run((CompilationInfo) result);
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }        
+    }
 }
