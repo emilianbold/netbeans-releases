@@ -156,7 +156,7 @@ made subject to such option by the copyright holder.
                 </file>
 
                 <file name="completion.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.Completable"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.CodeCmpletionHandler"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.languages.php.CodeCompleter"/>
                 </file>
 

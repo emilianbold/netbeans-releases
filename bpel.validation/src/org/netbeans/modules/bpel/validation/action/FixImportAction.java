@@ -41,12 +41,23 @@
 package org.netbeans.modules.bpel.validation.action;
 
 import java.awt.event.ActionEvent;
+import java.util.List;
+import org.openide.nodes.Node;
+
+import org.netbeans.modules.xml.xam.Model;
+import org.netbeans.modules.xml.xam.spi.Validation.ValidationType;
+import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
+import org.netbeans.modules.soa.validation.core.Controller;
+
+import org.netbeans.modules.bpel.model.api.BpelModel;
+import org.netbeans.modules.bpel.model.api.Import;
+import org.netbeans.modules.bpel.model.api.Process;
 
 import static org.netbeans.modules.xml.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
- * @version 2007.12.03
+ * @version 2008.05.20
  */
 public final class FixImportAction extends IconAction {
 
@@ -59,7 +70,54 @@ public final class FixImportAction extends IconAction {
   }
 
   public void actionPerformed(ActionEvent event) {
-  // todo start here
-out("ACTION");
+    Node node = getSelectedNode();
+//out();
+//out("node: " + node);
+
+    if (node == null) {
+      return;
+    }
+    Controller controller = node.getLookup().lookup(Controller.class);
+
+    if (controller == null) {
+      return;
+    }
+//out("controller: " + controller);
+    Model model = controller.getModel();
+//out("model: " + model);
+
+    if ( !(model instanceof BpelModel)) {
+      return;
+    }
+    fixImport((BpelModel) model, controller);
+  }
+
+  private void fixImport(BpelModel model, Controller controller) {
+    Process process = model.getProcess();
+
+    if (process == null) {
+      return;
+    }
+    Import [] imports = process.getImports();
+
+    if (imports == null) {
+      return;
+    }
+//out();
+    for (int i=imports.length - 1; i >= 0; i--) {
+//out();
+//out("see: " + imports[i].getLocation());
+      model.startTransaction();
+      process.removeImport(i);
+
+      if (controller.validate(ValidationType.PARTIAL).isEmpty()) {
+        model.endTransaction();
+//out("     REMOVE");
+      }
+      else {
+        model.rollbackTransaction();
+//out("     ++");
+      }
+    }
   }
 }
