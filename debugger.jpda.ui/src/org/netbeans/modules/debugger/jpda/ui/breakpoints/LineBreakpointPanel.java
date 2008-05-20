@@ -331,7 +331,7 @@ public class LineBreakpointPanel extends JPanel implements Controller, org.openi
         }
         if (line > maxLine + 1) {
             return NbBundle.getMessage(LineBreakpointPanel.class, "MSG_TooBig_Line_Number_Spec",
-                    Integer.toString(line), Integer.toString(maxLine));
+                    Integer.toString(line), Integer.toString(maxLine + 1));
         }
         return null;
     }
