@@ -130,6 +130,10 @@ public class AnnotationsTest extends BasicOpenFileTest {
         runTest("issue127317.css");
     }
     
+    public void testIssue110333() throws Exception {
+        runTest("issue110333.css");
+    }
+
     public void testIssue127289() throws Exception {
         runTest("issue127289.html", 7);
     }
