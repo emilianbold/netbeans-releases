@@ -66,7 +66,7 @@ public class SemanticHighlightingOptionsPanel extends javax.swing.JPanel impleme
         setName("TAB_SemanticHighlightingTab"); // NOI18N (used as a pattern...)
         // background color fixup
         if ("Windows".equals(UIManager.getLookAndFeel().getID())) { //NOI18N
-
+            jPanel1.setOpaque(false);
             setOpaque(false);
         }
     }
