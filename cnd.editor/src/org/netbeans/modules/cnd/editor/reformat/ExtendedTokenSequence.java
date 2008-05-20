@@ -61,45 +61,45 @@ public class ExtendedTokenSequence {
         this.diffs = diffs;
     }
 
-    /*package local*/ Diff replacePrevious(Token<CppTokenId> previous, int newLines, int spaces){
+    /*package local*/ Diff replacePrevious(Token<CppTokenId> previous, int newLines, int spaces, boolean isIndent){
         String old = previous.text().toString();
-        if (!Diff.equals(old, newLines, spaces)){
+        if (!Diff.equals(old, newLines, spaces, isIndent)){
             return diffs.addFirst(ts.offset() - previous.length(),
-                                  ts.offset(), newLines, spaces);
+                                  ts.offset(), newLines, spaces, isIndent);
         }
         return null;
     }
 
-    /*package local*/ Diff addBeforeCurrent(int newLines, int spaces){
+    /*package local*/ Diff addBeforeCurrent(int newLines, int spaces, boolean isIndent){
         if (newLines+spaces>0) {
             return diffs.addFirst(ts.offset(),
-                                  ts.offset(), newLines, spaces);
+                                  ts.offset(), newLines, spaces, isIndent);
         }
         return null;
     }
 
-    /*package local*/ Diff replaceCurrent(Token<CppTokenId> current, int newLines, int spaces){
+    /*package local*/ Diff replaceCurrent(Token<CppTokenId> current, int newLines, int spaces, boolean isIndent){
         String old = current.text().toString();
-        if (!Diff.equals(old, newLines, spaces)){
+        if (!Diff.equals(old, newLines, spaces, isIndent)){
             return diffs.addFirst(ts.offset(),
-                                  ts.offset() + current.length(), newLines, spaces);
+                                  ts.offset() + current.length(), newLines, spaces, isIndent);
         }
         return null;
     }
 
-    /*package local*/ Diff addAfterCurrent(Token<CppTokenId> current, int newLines, int spaces){
+    /*package local*/ Diff addAfterCurrent(Token<CppTokenId> current, int newLines, int spaces, boolean isIndent){
         if (newLines+spaces>0) {
             return diffs.addFirst(ts.offset() + current.length(),
-                                  ts.offset() + current.length(), newLines, spaces);
+                                  ts.offset() + current.length(), newLines, spaces, isIndent);
         }
         return null;
     }
 
-    /*package local*/ Diff replaceNext(Token<CppTokenId> current, Token<CppTokenId> next, int newLines, int spaces){
+    /*package local*/ Diff replaceNext(Token<CppTokenId> current, Token<CppTokenId> next, int newLines, int spaces, boolean isIndent){
         String old = next.text().toString();
-        if (!Diff.equals(old, newLines, spaces)){
+        if (!Diff.equals(old, newLines, spaces, isIndent)){
             return diffs.addFirst(ts.offset()+current.length(),
-                                  ts.offset()+current.length()+next.length(), newLines, spaces);
+                                  ts.offset()+current.length()+next.length(), newLines, spaces, isIndent);
         }
         return null;
     }
