@@ -280,8 +280,8 @@ final class NewLibraryDescriptor implements WizardDescriptor.InstantiatingIterat
     
     private String[] createSteps() {
         return new String[] { 
-                NbBundle.getMessage(SelectLibraryWizardPanel.class, LIBRARY_STEP) ,
-                NbBundle.getMessage(SelectLibraryWizardPanel.class, NAME_LOCATION_STEP) 
+                NbBundle.getMessage(NewLibraryDescriptor.class, LIBRARY_STEP) ,
+                NbBundle.getMessage(NewLibraryDescriptor.class, NAME_LOCATION_STEP) 
                         };
     }
     
