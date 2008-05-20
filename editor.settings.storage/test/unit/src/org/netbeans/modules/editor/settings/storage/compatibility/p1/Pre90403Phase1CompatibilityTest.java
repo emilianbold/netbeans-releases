@@ -167,15 +167,27 @@ public class Pre90403Phase1CompatibilityTest extends NbTestCase {
     public void testKeybindings() {
         MimeTypesTracker tracker = MimeTypesTracker.get(KeyMapsStorage.ID, "Editors");
         Set<String> mimeTypes = new HashSet<String>(tracker.getMimeTypes());
-        mimeTypes.add("");
         Set<String> profiles = EditorSettings.getDefault().getKeyMapProfiles();
         
-        for(String mimeType : mimeTypes) {
-            for(String profile : profiles) {
+        for(String profile : profiles) {
+            List<MultiKeyBinding> commonKeybindings = EditorSettings.getDefault().getKeyBindingSettings(new String[0]).getKeyBindings(profile);
+            Map<String, String> commonNorm = normalize(commonKeybindings);
+
+            String commonCurrent = commonNorm.toString();
+            String commonGolden = fromFile("KB--" + profile);
+
+            assertEquals("Wrong keybindings for '', profile '" + profile + "'", commonGolden, commonCurrent);
+
+            for(String mimeType : mimeTypes) {
                 List<MultiKeyBinding> keybindings = EditorSettings.getDefault().getKeyBindingSettings(mimeType.length() == 0 ? new String[0] : new String [] { mimeType }).getKeyBindings(profile);
+
+                Map<String, String> mimeTypeNorm = new TreeMap<String, String>();
                 Map<String, String> norm = normalize(keybindings);
                 
-                String current = norm.toString();
+                mimeTypeNorm.putAll(commonNorm);
+                mimeTypeNorm.putAll(norm);
+                
+                String current = mimeTypeNorm.toString();
                 String golden = fromFile("KB-" + mimeType.replace("/", "-") + "-" + profile);
                 
                 assertEquals("Wrong keybindings for '" + mimeType + "', profile '" + profile + "'", golden, current);
