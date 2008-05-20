@@ -329,7 +329,7 @@ public class LineBreakpointPanel extends JPanel implements Controller, org.openi
         if (maxLine == 0) { // Not found
             maxLine = Integer.MAX_VALUE; // Not to bother the user when we did not find it
         }
-        if (line > maxLine) {
+        if (line > maxLine + 1) {
             return NbBundle.getMessage(LineBreakpointPanel.class, "MSG_TooBig_Line_Number_Spec",
                     Integer.toString(line), Integer.toString(maxLine));
         }
