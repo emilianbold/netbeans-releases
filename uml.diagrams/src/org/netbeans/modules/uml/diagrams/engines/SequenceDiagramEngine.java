@@ -1480,6 +1480,7 @@ public class SequenceDiagramEngine extends DiagramEngine implements SQDDiagramEn
         int minY=Integer.MAX_VALUE;
         for(LifelineWidget llW:lifelines)
         {
+            if(llW.getParentWidget()==null)continue;
             Rectangle llBnd=llW.getBounds();
             Insets llIns=llW.getBorder().getInsets();
             llBnd.x+=llIns.left;
