@@ -148,6 +148,10 @@ public abstract class JavaSourceAccessor {
         Utilities.releaseParserLock();
     }
     
+    public boolean isJavaCompilerLocked () {
+        return Utilities.holdsParserLock();
+    }
+    
     public abstract Collection<Source> getSources(final JavaSource js);              
         
     /**

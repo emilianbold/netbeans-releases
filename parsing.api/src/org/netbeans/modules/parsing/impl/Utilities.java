@@ -68,6 +68,13 @@ public class Utilities {
     }
     
     /**
+     * Temporary method until editor API (formating) will be fixed
+     */
+    public static boolean holdsParserLock () {
+        return TaskProcessor.holdsParserLock();
+    }
+    
+    /**
      * Temporary may be replaced by scheduler, hepefully.
      */
     public static void scheduleSpecialTask (final SchedulerTask task) {

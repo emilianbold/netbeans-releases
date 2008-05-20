@@ -340,6 +340,10 @@ public class TaskProcessor {
         parserLock.unlock();
     }
     
+    static boolean holdsParserLock () {
+        return parserLock.isHeldByCurrentThread();
+    }
+    
     static void scheduleSpecialTask (final SchedulerTask task) {
         assert task != null;
         final Request rq = new Request(task, null, false);

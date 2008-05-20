@@ -106,7 +106,7 @@ public class TreeLoader extends LazyTreeLoader {
     
     @Override
     public boolean loadTreeFor(final ClassSymbol clazz) {
-//todo:        assert DISABLE_CONFINEMENT_TEST || JavaSourceAccessor.getINSTANCE().isJavaCompilerLocked();
+        assert DISABLE_CONFINEMENT_TEST || JavaSourceAccessor.getINSTANCE().isJavaCompilerLocked();
         
         if (clazz != null) {
             try {
