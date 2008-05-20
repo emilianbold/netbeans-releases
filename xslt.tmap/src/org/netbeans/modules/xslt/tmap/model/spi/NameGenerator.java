@@ -60,6 +60,23 @@ public abstract class NameGenerator {
         return generator != null ? generator.getName(component) : null;
     }
     
+    private static String getCamelCase(String namePrefix) {
+        assert namePrefix != null;
+        if (namePrefix.length() <= 0) {
+            return namePrefix;
+        }
+        String lowerPart = namePrefix.substring(1);
+        lowerPart = lowerPart.toLowerCase();
+
+        char firstChar = namePrefix.charAt(0);
+        if (!Character.isUpperCase(firstChar)) {
+            firstChar = Character.toUpperCase(firstChar);
+        }
+
+        return Character.toString(firstChar) + lowerPart;
+    }
+
+
     private static class ServiceNameGenerator extends NameGenerator {
 
         @Override
@@ -67,22 +84,6 @@ public abstract class NameGenerator {
             return component instanceof Service;
         }
 
-        private String getCamelCase(String namePrefix) {
-            assert namePrefix != null;
-            if (namePrefix.length() <= 0) {
-                return namePrefix;
-            }
-            String lowerPart = namePrefix.substring(1);
-            lowerPart = lowerPart.toLowerCase();
-
-            char firstChar = namePrefix.charAt(0);
-            if (!Character.isUpperCase(firstChar)) {
-                firstChar = Character.toUpperCase(firstChar);
-            }
-            
-            return Character.toString(firstChar) + lowerPart;
-        }
-        
         @Override
         String getName( TMapComponent component, String namePrefix) {
             if (component == null || namePrefix == null || !isApplicable(component)) {
@@ -146,7 +147,8 @@ public abstract class NameGenerator {
                 return null;
             }
 
-            namePrefix = namePrefix.toLowerCase();
+//            namePrefix = namePrefix.toLowerCase();
+            namePrefix = getCamelCase(namePrefix);
 
             Invoke invoke = (Invoke) component;
             TMapModel model = invoke.getModel();
@@ -219,7 +221,8 @@ public abstract class NameGenerator {
                 return null;
             }
 
-            namePrefix = namePrefix.toLowerCase();
+//            namePrefix = namePrefix.toLowerCase();
+            namePrefix = getCamelCase(namePrefix);
 
             Transform transform = (Transform) component;
             TMapModel model = transform.getModel();
