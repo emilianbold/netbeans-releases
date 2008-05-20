@@ -48,21 +48,17 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import javax.swing.*;
 import javax.swing.JPopupMenu.Separator;
-import javax.swing.event.PopupMenuEvent;
-import javax.swing.event.PopupMenuListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.project.ui.NewFileWizard;
 import org.netbeans.modules.project.ui.NoProjectNew;
 import org.netbeans.modules.project.ui.OpenProjectList;
 import org.netbeans.modules.project.ui.ProjectUtilities;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
-import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.ErrorManager;
 import org.openide.awt.DynamicMenuContent;
@@ -131,6 +127,10 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
     }
 
     private void doPerform( Lookup context, DataObject template, boolean inProject ) {
+        if (OpenProjectList.getDefault().getOpenProjects().length == 0) {
+            // Can sometimes happen when pressing Ctrl-N, it seems.
+            return;
+        }
 
         if ( context == null ) {
             context = getLookup();
