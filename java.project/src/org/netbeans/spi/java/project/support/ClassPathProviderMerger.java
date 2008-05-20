@@ -281,7 +281,7 @@ final class ClassPathProviderMerger implements LookupMerger<ClassPathProvider> {
         }
 
         public ClassPathImplementation getContent() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            return null;
         }
 
         public void addPropertyChangeListener(PropertyChangeListener listener) {
