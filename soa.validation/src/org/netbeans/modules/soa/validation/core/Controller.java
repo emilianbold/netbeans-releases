@@ -78,6 +78,10 @@ public final class Controller implements ComponentListener {
     myAnnotations = new LinkedList<Annotation>();
   }
 
+  public Model getModel() {
+    return myModel;
+  }
+
   public void attach() {
     myModel.addComponentListener(this);
   }
@@ -165,7 +169,7 @@ public final class Controller implements ComponentListener {
     return isError;
   }
 
-  private List<ResultItem> validate(ValidationType type) {
+  public List<ResultItem> validate(ValidationType type) {
     Validation validation = new Validation();
     validation.validate(myModel, type);
     return validation.getValidationResult();
