@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,45 +31,51 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.gsf.api;
+package org.netbeans.modules.gsf.spi;
 
-import java.awt.event.ActionEvent;
-import javax.swing.Action;
-import javax.swing.text.JTextComponent;
-import org.netbeans.modules.gsf.api.annotations.CheckForNull;
-import org.netbeans.modules.gsf.api.annotations.NonNull;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.modules.gsf.api.GsfLanguage;
+import org.openide.filesystems.FileObject;
 
 /**
- * Interface for actions that should be added into the set of
- * actions managed by the editor kit (which can then be bound to
- * editor keybindings rathr than global shortcuts, etc.)
- * 
- * @todo Provide a way to set the updateMask in BaseAction?
+ * Default implementation of the LanguageConfig class
  * 
  * @author Tor Norbye
  */
-public interface EditorAction extends Action {
-    /** 
-     * Action was invoked from an editor. 
-     */
-    void actionPerformed(@CheckForNull ActionEvent evt, @NonNull final JTextComponent target);
-    /**
-     * Return true iff this action applies to the given mime type. This method is only called once,
-     * at startup, to determine which editor kits to register the action with.
-     * @param mimeType The mime type to check
-     * @return True iff this action is enabled for the given mimetype
-     */
-    boolean appliesTo(String mimeType);
-    /**
-     * Return the action name that the action will be registered as. This is the name
-     * the action will be refererred to as when registering keyboard shortcuts.
-     */
-    @NonNull String getActionName();
-    /**
-     * Return the class for the package where there should be a Bundle.properties file
-     * localizing the action (by the action name).
-     */
-    @NonNull Class getShortDescriptionBundleClass();
+public abstract class DefaultLanguageConfig implements GsfLanguage {
+    public DefaultLanguageConfig() {
+    }
+
+    public String getLineCommentPrefix() {
+        return null;
+    }
+
+    public boolean isIdentifierChar(char c) {
+        return Character.isJavaIdentifierPart(c);
+    }
+
+    public abstract Language getLexerLanguage();
+
+    public Collection<FileObject> getCoreLibraries() {
+        return Collections.emptyList();
+    }
+
+    public abstract String getDisplayName();
+
+    public String getPreferredExtension() {
+        return null;
+    }
+
+    public Map<String,String> getSourceGroupNames() {
+        return Collections.emptyMap();
+    }
 }

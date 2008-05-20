@@ -47,7 +47,7 @@ import javax.swing.text.Caret;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.gsf.api.BracketCompletion;
+import org.netbeans.modules.gsf.api.KeystrokeHandler;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -72,7 +72,7 @@ public class BracketCompleterTest extends RubyTestBase {
     }
 
     @Override
-    protected BracketCompletion getBracketCompletion() {
+    protected KeystrokeHandler getBracketCompletion() {
         return new BracketCompleter();
     }
     

@@ -46,7 +46,7 @@ import java.net.URL;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.api.editor.completion.Completion;
-import org.netbeans.modules.gsf.api.Completable;
+import org.netbeans.modules.gsf.api.CodeCompletionHandler;
 import org.netbeans.modules.gsf.api.ElementHandle;
 import org.netbeans.modules.gsf.LanguageRegistry;
 import org.netbeans.napi.gsfret.source.CompilationController;
@@ -81,7 +81,7 @@ public class GsfCompletionDoc implements CompletionDocumentation {
             }
         }
 
-        Completable completer = language.getCompletionProvider();
+        CodeCompletionHandler completer = language.getCompletionProvider();
 
         this.elementHandle = elementHandle;
 

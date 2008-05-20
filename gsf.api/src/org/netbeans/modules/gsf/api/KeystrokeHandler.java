@@ -52,11 +52,9 @@ import org.netbeans.modules.gsf.api.annotations.NonNull;
  * Interface that a plugin can implement to assist with bracket completion during
  * editing.
  *
- * @todo Rename Pair Completion? Or perhaps PairMatcher?
- *
  * @author Tor Norbye
  */
-public interface BracketCompletion {
+public interface KeystrokeHandler {
     /**
      * (Based on BracketCompletion class in NetBeans' java editor support)
      *
@@ -79,7 +77,7 @@ public interface BracketCompletion {
         throws BadLocationException;
 
     /**
-     * (Based on BracketCompletion class in NetBeans' java editor support)
+     * (Based on KeystrokeHandler class in NetBeans' java editor support)
      *
      * Hook called after a character *ch* was backspace-deleted from
      * *doc*. The function possibly removes bracket or quote pair if
