@@ -71,6 +71,7 @@ import org.netbeans.api.java.source.ModificationResult.Difference;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaSourceProvider;
+import org.netbeans.modules.java.source.parsing.ClasspathInfoTask;
 import org.netbeans.modules.java.source.parsing.CompilationInfoImpl;
 import org.netbeans.modules.java.source.parsing.JavacParser;
 import org.netbeans.modules.parsing.api.Embedding;
@@ -423,7 +424,7 @@ public final class JavaSource {
         }
         else {
             try {
-                    final MultiLanguageUserTask _task = new MultiLanguageUserTask() {
+                    final MultiLanguageUserTask _task = new ClasspathInfoTask (this.classpathInfo) {
                         @Override
                         public void run(ResultIterator resultIterator) throws Exception {
                             final Source source = resultIterator.getSource();
@@ -538,7 +539,7 @@ public final class JavaSource {
             long start = System.currentTimeMillis();
             try {
                 final JavacParser[] theParser = new JavacParser[1];
-                final MultiLanguageUserTask _task = new MultiLanguageUserTask() {
+                final MultiLanguageUserTask _task = new ClasspathInfoTask(this.classpathInfo) {
                     @Override
                     public void run(ResultIterator resultIterator) throws Exception {
                         final Source source = resultIterator.getSource();

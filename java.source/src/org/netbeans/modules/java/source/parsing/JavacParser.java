@@ -232,7 +232,14 @@ public class JavacParser extends Parser {
             final FileObject file = source.getFileObject();
             assert file != null;
             this.file = file;
-            cpInfo = ClasspathInfo.create(file);            
+            ClasspathInfo _tmpInfo;
+            if (task instanceof ClasspathInfoTask &&
+                    (_tmpInfo = ((ClasspathInfoTask)task).getClasspathInfo()) != null) {
+                cpInfo = _tmpInfo;
+            }
+            else {
+                cpInfo = ClasspathInfo.create(file);
+            }
             final ClassPath cp = cpInfo.getClassPath(PathKind.SOURCE);
             assert cp != null;
             this.root = cp.findOwnerRoot(file);
