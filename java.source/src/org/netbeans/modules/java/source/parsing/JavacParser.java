@@ -275,7 +275,7 @@ public class JavacParser extends Parser {
     }
     
     @Override
-    public CompilationInfo getResult (final Task task) throws ParseException {
+    public JavacParserResult getResult (final Task task) throws ParseException {
         assert ciImpl != null;
         //Assumes that caller is synchronized by the Parsing API lock
         if (invalid) {                        
@@ -286,7 +286,7 @@ public class JavacParser extends Parser {
         }
         final boolean isParserResultTask = task instanceof JavaParserResultTask;
         final boolean isUserTask = task instanceof UserTask;
-        CompilationInfo result = null;
+        JavacParserResult result = null;
         if (isParserResultTask) {
             final Phase requiredPhase = ((JavaParserResultTask)task).getPhase();
             Phase reachedPhase;
@@ -297,11 +297,11 @@ public class JavacParser extends Parser {
             }
             if (reachedPhase.compareTo(requiredPhase)>=0) {
                 Index.cancel.set(canceled);
-                result = JavaSourceAccessor.getINSTANCE().createCompilationInfo(ciImpl);
+                result = new JavacParserResult(JavaSourceAccessor.getINSTANCE().createCompilationInfo(ciImpl));
             }
         }
         else if (isUserTask) {
-            result = JavaSourceAccessor.getINSTANCE().createCompilationController(ciImpl);
+            result = new JavacParserResult(JavaSourceAccessor.getINSTANCE().createCompilationController(ciImpl));
         }
         else {
             LOGGER.warning("Ignoring unknown task: " + task);
@@ -314,7 +314,7 @@ public class JavacParser extends Parser {
         canceled.set(true);
     }
         
-    public void resultFinished (final Parser.Result result, boolean isCancelable) {
+    public void resultFinished (boolean isCancelable) {
         if (isCancelable) {
             Index.cancel.remove();
         }

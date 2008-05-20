@@ -61,16 +61,18 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.modules.java.source.parsing.CompilationInfoImpl;
 import org.netbeans.modules.java.source.parsing.DocPositionRegion;
 import org.netbeans.modules.java.source.parsing.FileObjects;
+import org.netbeans.modules.java.source.parsing.JavacParserResult;
 import org.netbeans.modules.java.source.usages.Pair;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Parameters;
 
 /** Asorted information about the JavaSource.
  *
  * @author Petr Hrebejk, Tomas Zezula
  */
-public class CompilationInfo extends Parser.Result {
+public class CompilationInfo {
     
     private static final boolean VERIFY_CONFINEMENT = Boolean.getBoolean(CompilationInfo.class.getName()+".vetifyConfinement"); //NOI18N
     
@@ -90,6 +92,16 @@ public class CompilationInfo extends Parser.Result {
     CompilationInfo (final CompilationInfoImpl impl)  {
         assert impl != null;
         this.impl = impl;
+    }
+    
+    public static CompilationInfo get (final Parser.Result result) {
+        Parameters.notNull("result", result);   //NOI18N
+        CompilationInfo info = null;
+        if (result instanceof JavacParserResult) {
+            final JavacParserResult javacResult = (JavacParserResult)result;            
+            info = javacResult.get(CompilationInfo.class);            
+        }
+        return info;
     }
              
     // API of the class --------------------------------------------------------
@@ -345,7 +357,7 @@ public class CompilationInfo extends Parser.Result {
     }
     
     protected void doInvalidate () {
-        this.impl.getParser().resultFinished (this, true);
+        this.impl.getParser().resultFinished (true);
     }
     
     /**

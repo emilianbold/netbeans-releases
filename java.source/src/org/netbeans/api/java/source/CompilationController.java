@@ -44,6 +44,9 @@ package org.netbeans.api.java.source;
 
 import java.io.IOException;
 import org.netbeans.modules.java.source.parsing.CompilationInfoImpl;
+import org.netbeans.modules.java.source.parsing.JavacParserResult;
+import org.netbeans.modules.parsing.spi.Parser;
+import org.openide.util.Parameters;
 
 /** Class for explicit invocation of compilation phases on a java source.
  *  The implementation delegates to the {@link CompilationInfo} to get the data,
@@ -59,6 +62,16 @@ public class CompilationController extends CompilationInfo {
     CompilationController(final CompilationInfoImpl impl) {        
         super(impl);
 
+    }
+    
+    public static CompilationController get (final Parser.Result result) {
+        Parameters.notNull("result", result);   //NOI18N
+        CompilationController info = null;
+        if (result instanceof JavacParserResult) {
+            final JavacParserResult javacResult = (JavacParserResult)result;            
+            info = javacResult.get(CompilationController.class);            
+        }
+        return info;
     }
         
     // API of the class --------------------------------------------------------
@@ -86,6 +99,6 @@ public class CompilationController extends CompilationInfo {
      */
     @Override
     protected void doInvalidate () {
-        this.impl.getParser().resultFinished (this, false);
+        this.impl.getParser().resultFinished (false);
     }
 }

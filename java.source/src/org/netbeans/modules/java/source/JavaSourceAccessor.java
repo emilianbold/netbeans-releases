@@ -250,9 +250,10 @@ public abstract class JavaSourceAccessor {
 
         @Override
         public void run(Result result, Snapshot snapshot) {
-            assert result instanceof CompilationInfo;
+            final CompilationInfo info = CompilationInfo.get(result);
+            assert info != null;
             try {
-                this.task.run((CompilationInfo) result);
+                this.task.run(info);
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
             }

@@ -430,9 +430,10 @@ public final class JavaSource {
                             final Source source = resultIterator.getSource();
                             if (JavacParser.MIME_TYPE.equals(source.getMimeType())) {
                                 Parser.Result result = resultIterator.getParserResult();
-                                assert result instanceof CompilationController;
-                                task.run ((CompilationController)result);
-                                final JavacTaskImpl jt = ((CompilationController)result).impl.getJavacTask();
+                                final CompilationController cc = CompilationController.get(result);
+                                assert cc != null;
+                                task.run (cc);
+                                final JavacTaskImpl jt = cc.impl.getJavacTask();
                                 Log.instance(jt.getContext()).nerrors = 0;
                             }
                             else {
@@ -441,9 +442,10 @@ public final class JavaSource {
                                     //No embedded java
                                     return;
                                 }
-                                assert result instanceof CompilationController;
-                                task.run ((CompilationController)result);
-                                final JavacTaskImpl jt = ((CompilationController)result).impl.getJavacTask();
+                                final CompilationController cc = CompilationController.get(result);
+                                assert cc != null;
+                                task.run (cc);
+                                final JavacTaskImpl jt = cc.impl.getJavacTask();
                                 Log.instance(jt.getContext()).nerrors = 0;
                             }
                         }
@@ -545,8 +547,9 @@ public final class JavaSource {
                         final Source source = resultIterator.getSource();
                         if (JavacParser.MIME_TYPE.equals(source.getMimeType())) {
                             Parser.Result parserResult = resultIterator.getParserResult();
-                            assert parserResult instanceof CompilationController;
-                            final WorkingCopy copy = new WorkingCopy (((CompilationController)parserResult).impl);
+                            final CompilationController cc = CompilationController.get(parserResult);
+                            assert cc != null;
+                            final WorkingCopy copy = new WorkingCopy (cc.impl);
                             task.run (copy);
                             final JavacTaskImpl jt = copy.impl.getJavacTask();
                             Log.instance(jt.getContext()).nerrors = 0;
