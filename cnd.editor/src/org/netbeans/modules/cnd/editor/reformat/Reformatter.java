@@ -60,6 +60,9 @@ public class Reformatter implements ReformatTask {
     private Context context;
     private Document doc;
     private CodeStyle codeStyle;
+    private static boolean expandTabToSpaces = true;
+    private static int tabSize = 8;
+
 
     public Reformatter(Context context) {
         this.context = context;
@@ -75,6 +78,8 @@ public class Reformatter implements ReformatTask {
         if (codeStyle == null){
             codeStyle = CodeStyle.getDefault(doc);
         }
+	expandTabToSpaces = codeStyle.expandTabToSpaces();
+        tabSize = codeStyle.getGlobalTabSize();
         if (context != null) {
             for (Context.Region region : context.indentRegions()) {
                 reformatImpl(region);
@@ -236,12 +241,14 @@ public class Reformatter implements ReformatTask {
         private int end;
         private int newLines;
         private int spaces;
+	private boolean isIndent;
 
-        Diff(int start, int end, int newLines, int spaces) {
+        Diff(int start, int end, int newLines, int spaces, boolean isIndent) {
             this.start = start;
             this.end = end;
             this.spaces = spaces;
             this.newLines = newLines;
+	    this.isIndent = isIndent;
         }
 
         public int getStartOffset() {
@@ -253,16 +260,18 @@ public class Reformatter implements ReformatTask {
         }
 
         public String getText() {
-            return repeatChar(newLines, '\n')+repeatChar(spaces, ' '); // NOI18N
+            return repeatChar(newLines, '\n', false)+repeatChar(spaces, ' ', isIndent); // NOI18N
         }
 
-        public void setText(int newLines, int spaces) {
+        public void setText(int newLines, int spaces, boolean isIndent) {
             this.newLines = newLines;
             this.spaces = spaces;
+	    this.isIndent = isIndent;
         }
         
-        public void replaceSpaces(int spaces){
+        public void replaceSpaces(int spaces, boolean isIndent){
             this.spaces = spaces;
+	    this.isIndent = isIndent;
         }
 
         public boolean hasNewLine(){
@@ -278,16 +287,31 @@ public class Reformatter implements ReformatTask {
             return "Diff<" + start + "," + end + ">: newLines="+newLines+" spaces="+spaces; //NOI18N
         }
 
-        public static String repeatChar(int length, char c){
+        public static String repeatChar(int length, char c, boolean indent) {
+            if (length == 0) {
+                return "";
+            } else if (length == 1) {
+                if (c == ' ') {
+                    return " ";
+                } else {
+                    return "\n";
+                }
+            }
             StringBuilder buf = new StringBuilder(length);
+            if (c == ' '  && indent && !Reformatter.expandTabToSpaces && Reformatter.tabSize > 1) {
+                while (length >= Reformatter.tabSize) {
+                    buf.append('\t'); //NOI18N
+                    length -= Reformatter.tabSize;
+                }
+            }
             for (int i = 0; i < length; i++) {
                 buf.append(c);
             }
             return buf.toString();
         }
 
-        public static boolean equals(String text, int newLines, int spaces){
-           String space = repeatChar(newLines, '\n')+repeatChar(spaces, ' '); // NOI18N
+        public static boolean equals(String text, int newLines, int spaces, boolean isIndent){
+           String space = repeatChar(newLines, '\n', false)+repeatChar(spaces, ' ', isIndent); // NOI18N
            return text.equals(space);
         }
     }
