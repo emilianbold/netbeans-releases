@@ -69,7 +69,6 @@ public final class Embedding {
         Source source = null;
         StringBuilder sb = new StringBuilder ();
         List<int[]> positions = new ArrayList<int[]> ();
-        List<int[]> indexes = new ArrayList<int[]> ();
         int offset = 0;
         for (Embedding embedding : embeddings) {
             Snapshot snapshot = embedding.getSnapshot ();
@@ -85,11 +84,7 @@ public final class Embedding {
             sb.append (snapshot.getText ());
             int[][] p = snapshot.positions;
             for (int i = 0; i < p.length; i++) {
-                positions.add (new int[] {p [i] [0] + offset, p [i] [1] - offset});
-            }
-            p = embedding.positions;
-            for (int i = 0; i < p.length; i++) {
-                indexes.add (p [i]);
+                positions.add (new int[] {p [i] [0] + offset, p [i] [1]});
             }
             offset +=snapshot.getText ().length ();
         }
@@ -101,23 +96,19 @@ public final class Embedding {
         );
         return new Embedding (
             snapshot, 
-            mimeType, 
-            indexes.toArray (new int [indexes.size ()] [])
+            mimeType
         );
     }
     
     private Snapshot        snapshot;
     private String          mimeType;
-    private int[][]         positions;
                 
     Embedding (
         Snapshot            snapshot,
-        String              mimeType,
-        int[][]             positions
+        String              mimeType
     ) {
         this.snapshot =     snapshot;
         this.mimeType =     mimeType;
-        this.positions =    positions;
     }
     
     /**
@@ -144,27 +135,8 @@ public final class Embedding {
      * @param offset        A offset.
      * @return              <code>true</code> if embeddid source contains given offset.
      */
-    public final boolean containsOffset (int offset) {
-	int low = 0;
-	int high = positions.length - 1;
-
-	while (low <= high) {
-	    int mid = (low + high) >> 1;
-	    //Comparable<? super T> midVal = list.get(mid);
-	    int cmp = positions [mid] [0];//midVal.compareTo(key);
-            
-            if (cmp > offset) 
-		high = mid - 1;
-            else
-            if (cmp == offset)
-                return true;
-            else
-            if (positions [mid] [1] > offset)
-                return true;
-            else
-		low = mid + 1;
-	}
-	return false;
+    public final boolean containsOriginalOffset (int originalOffset) {
+	return snapshot.getEmbeddedOffset (originalOffset) >= 0;
     }
 }
 

@@ -76,7 +76,7 @@ public class UserTaskImpl extends MultiLanguageUserTask {
     
     private void run (ResultIterator resultIterator, Source source) throws Exception {
         for (Embedding embedding : resultIterator.getEmbeddedSources ()) {
-            if (embedding.containsOffset (offset)) {
+            if (embedding.containsOriginalOffset (offset)) {
                 run (resultIterator.getResultIterator (embedding), source);
                 return;
             }
