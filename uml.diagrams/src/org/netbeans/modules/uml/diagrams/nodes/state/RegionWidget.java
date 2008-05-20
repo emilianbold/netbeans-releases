@@ -91,6 +91,7 @@ public class RegionWidget extends Widget implements PropertyChangeListener
     private BasicStroke stroke =
             new BasicStroke(STROKE_THICKNESS, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND, 1.0f, new float[]{5, 5}, 0);
 
+    private Rectangle mininumBounds;
     private int BORDER_THICKNESS = 1;
     private ResizeStrategy RESIZE_STRATEGY;
     private static SelectProvider provider = new RegionSelectProvider();
@@ -151,9 +152,8 @@ public class RegionWidget extends Widget implements PropertyChangeListener
         {
             public Rectangle boundsSuggested(Widget widget, Rectangle originalBounds, Rectangle suggestedBounds, ResizeProvider.ControlPoint controlPoint)
             {
-                Rectangle mininumBounds = calculateMinimumBounds();
-                int width = Math.max(mininumBounds.width + 1, suggestedBounds.width);
-                int height = Math.max(mininumBounds.height + 1, suggestedBounds.height);
+                int width = Math.max(mininumBounds.width + separatorWidget.calculateClientArea().width, suggestedBounds.width + 1);
+                int height = Math.max(mininumBounds.height + separatorWidget.calculateClientArea().height + 1, suggestedBounds.height);
                 
                 if (getCompositeStateWidget().isHorizontalLayout())
                 {
@@ -252,9 +252,8 @@ public class RegionWidget extends Widget implements PropertyChangeListener
         Insets insets = getBorder().getInsets();
         Rectangle clientArea = new Rectangle();
         
-        clientArea.add(calculateMinimumBounds(nameWidget));
+        clientArea.add(nameWidget.getPreferredBounds());
         clientArea.add(calculateMinimumBounds(stateContainerWidget));
-        clientArea.add(calculateMinimumBounds(separatorWidget));
         
         clientArea.x -= insets.left;
         clientArea.y -= insets.top;
@@ -305,6 +304,7 @@ public class RegionWidget extends Widget implements PropertyChangeListener
     
     private final ResizeProvider RESIZE_PROVIDER = new ResizeProvider() {
         public void resizingStarted (Widget widget) {
+            mininumBounds = calculateMinimumBounds();
         }
         public void resizingFinished (Widget widget) {
             compositeStateWidget.revalidate();
