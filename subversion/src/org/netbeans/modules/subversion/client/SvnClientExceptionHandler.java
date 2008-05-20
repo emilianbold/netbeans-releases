@@ -647,7 +647,7 @@ public class SvnClientExceptionHandler {
     
     private static boolean isNoSvnClient(String msg) {
         msg = msg.toLowerCase();
-        return msg.equals("command line client adapter is not available");
+        return msg.indexOf("command line client adapter is not available") > -1;
     }
 
     public static boolean isMissingOrLocked(String msg) {  

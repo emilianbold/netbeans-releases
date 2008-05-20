@@ -41,76 +41,62 @@ package org.netbeans.modules.subversion.client.cli.commands;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.modules.subversion.client.cli.SvnCommand;
 import org.tigris.subversion.svnclientadapter.ISVNNotifyListener;
-import org.tigris.subversion.svnclientadapter.SVNRevision;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  *
  * @author Tomas Stupka
  */
-public class MergeCommand extends SvnCommand {
-    
-    private final boolean rec;
-    private final boolean force;
-    private final boolean ignoreAncestry;
-    private final boolean dry;
-    private final SVNUrl startUrl;
-    private final SVNUrl endUrl;
-    private final SVNRevision startRev;
-    private final SVNRevision endRev;
-    private final File file;
+public class VersionCommand extends SvnCommand {
 
-    public MergeCommand(SVNUrl startUrl, SVNUrl endUrl, SVNRevision startRev, SVNRevision endRev, File file, boolean rec, boolean force, boolean ignoreAncestry, boolean dry) {
-        this.rec = rec;
-        this.force = force;
-        this.ignoreAncestry = ignoreAncestry;
-        this.dry = dry;
-        this.startUrl = startUrl;
-        this.endUrl = endUrl;
-        this.startRev = startRev;
-        this.endRev = endRev;
-        this.file = file;
-    }
-     
+    private List<String> output = new ArrayList<String>();
+    
     @Override
     protected int getCommand() {
-        return ISVNNotifyListener.Command.MERGE;
+        return ISVNNotifyListener.Command.UNDEFINED;
     }
     
     @Override
     public void prepareCommand(Arguments arguments) throws IOException {
-        arguments.add("merge");
-        if (!rec) {
-            arguments.add("-N");
-        }
-        if (force) {
-            arguments.add("--force");
-        }
-        if (dry) {
-            arguments.add("--dry-run");
-        }        	        
-        if (ignoreAncestry) {
-            arguments.add("--ignore-ancestry");
-        }
-        if (startUrl.equals(endUrl)) {
-            arguments.add(startUrl);
-            arguments.add(startRev, endRev);
-        } else {
-            arguments.add(startUrl, startRev);
-            arguments.add(endUrl, endRev);
-        }
-        arguments.add(file);
-        setCommandWorkingDirectory(file);        
+        arguments.add("--version");                
     }
 
     @Override
-    public void errorText(String line) {
-        if (line.startsWith("svn: warning:")) {
+    protected void config(File configDir, String username, String password, Arguments arguments) {
+        arguments.addConfigDir(configDir);        
+    }
+
+    @Override
+    public void outputText(String lineString) {
+        if(lineString == null || lineString.trim().equals("")) {
             return;
         }
-        super.errorText(line);
+        output.add(lineString);
+        super.outputText(lineString);
     }
     
+    public boolean isSupported() {
+        for (String string : output) {
+            if(string.indexOf("version 0.")  > -1 ||
+               string.indexOf("version 1.0") > -1 ||
+               string.indexOf("version 1.1") > -1 ||
+               string.indexOf("version 1.2") > -1) 
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    public String getOutput() {
+        StringBuffer sb = new StringBuffer();
+        for (String string : output) {
+            sb.append(string);
+            sb.append('\n');
+        }
+        return sb.toString();
+    }    
 }
