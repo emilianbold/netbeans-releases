@@ -18,6 +18,9 @@
             <attr name="position" intvalue="0"/>
             <attr name="simple" boolvalue="false"/>
             <file name="libdescriptemplate.xml" url="templates/libdescriptemplate.xml"/>
+            <file name="CustomComponentCD.java" url="templates/CustomComponentCD.template"/>
+            <file name="CustomComponentProducer.java" url="templates/CustomComponentProducer.template"/>
+            
         </folder>
     </folder>
 </filesystem>
