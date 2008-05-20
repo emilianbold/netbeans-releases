@@ -8,7 +8,7 @@
  * Open. You can then make changes to the template in the Source Editor.
  */
 
-package org.netbeans.modules.jmx.i18n;
+package org.netbeans.modules.jmx.jconsole.i18n;
 
 import java.io.File;
 import java.io.FileInputStream;
