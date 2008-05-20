@@ -186,7 +186,7 @@ final class UnitTestLibrariesNode extends AbstractNode {
                 ProjectManager.mutex().readAccess(new Mutex.ExceptionAction<Object>() {
                     public Object run() throws Exception {
                         ProjectXMLManager pxm = new ProjectXMLManager(project);
-                        List<TestModuleDependency> keys = new ArrayList<TestModuleDependency>();
+                        final List<TestModuleDependency> keys = new ArrayList<TestModuleDependency>();
                         SortedSet<TestModuleDependency> deps = new TreeSet<TestModuleDependency>(TestModuleDependency.CNB_COMPARATOR);
                         Set<TestModuleDependency> d =  pxm.getTestDependencies(
                                 project.getModuleList()).get(testType);
