@@ -64,6 +64,7 @@ public final class CPFloatInfo extends CPEntry {
 	return ConstantPool.CONSTANT_Float;
     }
 
+    @Override
     public String toString() {
         return getClass().getName() + ": value=" + value; //NOI18N
     }

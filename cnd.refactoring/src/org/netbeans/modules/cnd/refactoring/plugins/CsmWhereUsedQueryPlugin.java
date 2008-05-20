@@ -41,7 +41,6 @@
 package org.netbeans.modules.cnd.refactoring.plugins;
 
 import java.util.Collection;
-import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -236,7 +235,8 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
         assert isFindUsages() : "must be find usages mode";
         CsmReferenceRepository xRef = CsmReferenceRepository.getDefault();
         Collection<RefactoringElementImplementation> elements = new LinkedHashSet<RefactoringElementImplementation>(1024);
-        EnumSet<CsmReferenceKind> kinds = isFindOverridingMethods() ? CsmReferenceKind.ALL : CsmReferenceKind.ANY_USAGE;
+        //Set<CsmReferenceKind> kinds = isFindOverridingMethods() ? CsmReferenceKind.ALL : CsmReferenceKind.ANY_USAGE;
+        Set<CsmReferenceKind> kinds = CsmReferenceKind.ALL;
         CsmObject[] objs = csmObjects.toArray(new CsmObject[csmObjects.size()]);
         for (CsmFile file : files) {
             if (cancelRequest) {

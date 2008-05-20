@@ -1,0 +1,3 @@
+new |>MARK_OCCURRENCES:Test^Case<|().method1(1)
+class |>MARK_OCCURRENCES:TestCase<| {
+        new |>MARK_OCCURRENCES:TestCase<|()

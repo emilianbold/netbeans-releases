@@ -25,7 +25,7 @@
 
     <!-- testbag with all MyModule tests running in jvm mode (i.e. in standard JVM)
          use ant runtests -Dxtest.attribs=all,jvm to run this testbag  -->
-    <testbag testattribs="allbundlestests or cpp or alltests" executor="installer-executor" name="installer cpp bandle test">
+    <testbag testattribs="allbundlestests or cpp" executor="installer-executor" name="installer cpp bandle test">
         <testset dir=".">
             <patternset>
 	        <include name="org/netbeans/test/installer/TestInstallerAndUninstallerCPP.class"/>
@@ -33,7 +33,7 @@
         </testset>
     </testbag>
     
-    <testbag testattribs="allbundlestests or javase or alltests" executor="installer-executor" name="installer java bandle test">
+    <testbag testattribs="allbundlestests or javase" executor="installer-executor" name="installer java bandle test">
         <testset dir=".">
             <patternset>
 	        <include name="org/netbeans/test/installer/TestInstallerAndUninstallerJavaSE.class"/>
@@ -41,7 +41,7 @@
         </testset>
     </testbag>
 
-    <testbag testattribs="allbundlestests or ruby or alltests" executor="installer-executor" name="installer ruby bandle test">
+    <testbag testattribs="allbundlestests or ruby" executor="installer-executor" name="installer ruby bandle test">
         <testset dir=".">
             <patternset>
 	        <include name="org/netbeans/test/installer/TestInstallerAndUninstallerRuby.class"/>
@@ -49,7 +49,7 @@
         </testset>
     </testbag>
 
-    <testbag testattribs="allbundlestests or mobility or alltests" executor="installer-executor" name="installer javeme bandle test">
+    <testbag testattribs="allbundlestests or mobility" executor="installer-executor" name="installer javeme bandle test">
         <testset dir=".">
            <patternset>
 	        <include name="org/netbeans/test/installer/TestInstallerAndUninstallerJavaMobility.class"/>
@@ -57,7 +57,7 @@
         </testset>
     </testbag>
     
-    <testbag testattribs="allbundlestests or javaee or alltests" executor="installer-executor" name="installer javaee bundle test">
+    <testbag testattribs="allbundlestests or javaee" executor="installer-executor" name="installer javaee bundle test">
         <testset dir=".">
             <patternset>
 	        <include name="org/netbeans/test/installer/TestInstallerAndUninstallerJavaEE.class"/>
@@ -65,7 +65,7 @@
         </testset>
     </testbag>
 
-    <testbag testattribs="allbundlestests or full or alltests" executor="installer-executor" name="installer full bundle test">
+    <testbag testattribs="allbundlestests or full" executor="installer-executor" name="installer full bundle test">
         <testset dir=".">
             <patternset>
 	        <include name="org/netbeans/test/installer/TestInstallerAndUninstallerAll.class"/>

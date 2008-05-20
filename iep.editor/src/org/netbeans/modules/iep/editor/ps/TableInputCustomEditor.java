@@ -43,6 +43,7 @@ import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 
 import org.netbeans.modules.iep.editor.wizard.database.TablePollingStreamWizardHelper;
+import org.netbeans.modules.iep.editor.wizard.database.tableInput.ExternalTableWizardHelper;
 import org.netbeans.modules.iep.model.IEPModel;
 import org.netbeans.modules.iep.model.OperatorComponent;
 import org.netbeans.modules.iep.model.Property;
@@ -193,7 +194,7 @@ public class TableInputCustomEditor extends DefaultCustomEditor {
             gbc.weightx = 0.0D;
             gbc.weighty = 0.0D;
             gbc.fill = GridBagConstraints.NONE;
-            //pane.add(selectIEPProcessButton, gbc);
+            pane.add(selectIEPProcessButton, gbc);
             
             
             //second row
@@ -265,7 +266,7 @@ public class TableInputCustomEditor extends DefaultCustomEditor {
             public void actionPerformed(ActionEvent e) {
                 IEPModel model = getOperatorComponent().getModel();
                 
-                TablePollingStreamWizardHelper helper = new TablePollingStreamWizardHelper();
+                ExternalTableWizardHelper helper = new ExternalTableWizardHelper();
                 WizardDescriptor wizardDescriptor = helper.createWizardDescriptor();
                 
                 Dialog dialog = DialogDisplayer.getDefault().createDialog(wizardDescriptor);

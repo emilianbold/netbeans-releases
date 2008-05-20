@@ -14,5 +14,10 @@
                 </file>
             </folder>
         </folder>
+        <folder name="MobilityCustomComponent-files"> <!-- XXX later could be made visible (just need localized labels) -->
+            <attr name="position" intvalue="0"/>
+            <attr name="simple" boolvalue="false"/>
+            <file name="libdescriptemplate.xml" url="ui/wizard/libdescriptemplate.xml"/>
+        </folder>
     </folder>
 </filesystem>
