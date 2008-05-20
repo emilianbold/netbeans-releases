@@ -52,6 +52,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.prefs.PreferenceChangeEvent;
 import javax.swing.Action;
 import javax.swing.JEditorPane;
 import javax.swing.SwingConstants;
@@ -72,6 +73,7 @@ import java.util.Vector;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import javax.swing.KeyStroke;
 import javax.swing.text.AbstractDocument;
@@ -322,7 +324,7 @@ public class BaseKit extends DefaultEditorKit {
     private static final Map<Class, BaseKit> kits = new HashMap<Class, BaseKit>(KIT_CNT_PREALLOC);
 
     private static final Object KEYMAPS_AND_ACTIONS_LOCK = new String("BaseKit.KEYMAPS_AND_ACTIONS_LOCK"); //NOI18N
-    private static final Map<MimePath, KeymapTracker> keymapTrackers = new WeakHashMap<MimePath, KeymapTracker>(KIT_CNT_PREALLOC);
+    private static final Map<MimePath, KeybindingsAndPreferencesTracker> keymapTrackers = new WeakHashMap<MimePath, KeybindingsAndPreferencesTracker>(KIT_CNT_PREALLOC);
     private static final Map<MimePath, MultiKeymap> kitKeymaps = new WeakHashMap<MimePath, MultiKeymap>(KIT_CNT_PREALLOC);
     private static final Map<MimePath, Action[]> kitActions = new WeakHashMap<MimePath, Action[]>(KIT_CNT_PREALLOC);
     private static final Map<MimePath, Map<String, Action>> kitActionMaps = new WeakHashMap<MimePath, Map<String, Action>>(KIT_CNT_PREALLOC);
@@ -739,9 +741,9 @@ public class BaseKit extends DefaultEditorKit {
         MultiKeymap keymap;
         synchronized (KEYMAPS_AND_ACTIONS_LOCK) {
             MimePath mimePath = MimePath.get(getContentType());
-            KeymapTracker tracker = keymapTrackers.get(mimePath);
+            KeybindingsAndPreferencesTracker tracker = keymapTrackers.get(mimePath);
             if (tracker == null) {
-                tracker = new KeymapTracker(mimePath.getPath());
+                tracker = new KeybindingsAndPreferencesTracker(mimePath.getPath());
                 keymapTrackers.put(mimePath, tracker);
             }
             tracker.addComponent(c);
@@ -774,7 +776,7 @@ public class BaseKit extends DefaultEditorKit {
         c.setKeymap(null);
         synchronized (KEYMAPS_AND_ACTIONS_LOCK) {
             MimePath mimePath = MimePath.get(getContentType());
-            KeymapTracker tracker = keymapTrackers.get(mimePath);
+            KeybindingsAndPreferencesTracker tracker = keymapTrackers.get(mimePath);
             if (tracker != null) {
                 tracker.removeComponent(c);
             }
@@ -932,6 +934,16 @@ public class BaseKit extends DefaultEditorKit {
         @SuppressWarnings("unchecked")
         List<? extends Action> customActions = (List<? extends Action>) SettingsConversions.callFactory(
                 prefs, mimePath, EditorPreferencesKeys.CUSTOM_ACTION_LIST, null); //NOI18N
+        
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine(EditorPreferencesKeys.CUSTOM_ACTION_LIST + " for '" + getContentType() + "' {"); //NOI18N
+            if (customActions != null) {
+                for(Action a : customActions) {
+                    LOG.fine("    " + a); //NOI18N
+                }
+            }
+            LOG.fine("} End of " + EditorPreferencesKeys.CUSTOM_ACTION_LIST + " for '" + getContentType() + "'"); //NOI18N
+        }
         
         return customActions == null ? null : customActions.toArray(new Action[customActions.size()]);
     }
@@ -2618,25 +2630,76 @@ public class BaseKit extends DefaultEditorKit {
         }
     } // End of DefaultSyntaxTokenContext class
     
-    private class KeymapTracker implements LookupListener {
+    private class KeybindingsAndPreferencesTracker implements LookupListener, PreferenceChangeListener {
         
         private final String mimeType;
         private final Lookup.Result<KeyBindingSettings> lookupResult;
+        private final Preferences prefs;
         private final Set<JTextComponent> components = new HashSet<JTextComponent>();
         
-        public KeymapTracker(String mimeType) {
+        public KeybindingsAndPreferencesTracker(String mimeType) {
             this.mimeType = mimeType;
-            this.lookupResult = MimeLookup.getLookup(mimeType).lookupResult(KeyBindingSettings.class);
+            Lookup lookup = MimeLookup.getLookup(mimeType);
+            
+            this.lookupResult = lookup.lookupResult(KeyBindingSettings.class);
             this.lookupResult.addLookupListener(WeakListeners.create(LookupListener.class, this, this.lookupResult));
             this.lookupResult.allInstances();
+            
+            this.prefs = lookup.lookup(Preferences.class);
+            this.prefs.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, this, this.prefs));
+        }
+
+        public void addComponent(JTextComponent c) {
+            synchronized (KEYMAPS_AND_ACTIONS_LOCK) {
+                components.add(c);
+            }            
         }
         
+        public void removeComponent(JTextComponent c) {
+            synchronized (KEYMAPS_AND_ACTIONS_LOCK) {
+                components.remove(c);
+            }            
+        }
+        
+        // -------------------------------------------------------------------
+        // LookupListener implementation
+        // -------------------------------------------------------------------
+        
         public void resultChanged(LookupEvent ev) {
+            refreshShortcutsAndActions(false);
+        }
+        
+        // -------------------------------------------------------------------
+        // PreferenceChangeListener implementation
+        // -------------------------------------------------------------------
+        
+        public void preferenceChange(PreferenceChangeEvent evt) {
+            String settingName = evt == null ? null : evt.getKey();
+            if (settingName == null || EditorPreferencesKeys.CUSTOM_ACTION_LIST.equals(settingName)) {
+                refreshShortcutsAndActions(true);
+            }
+        }
+        
+        // -------------------------------------------------------------------
+        // private implementation
+        // -------------------------------------------------------------------
+        
+        private void refreshShortcutsAndActions(boolean refreshActions) {
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("BaseKit.KeymapTracker('" + mimeType + "') refreshing keymap " + (refreshActions ? "and actions" : "")); //NOI18N
+            }
+            
             MultiKeymap keymap;
             JTextComponent [] arr;
             
             synchronized (KEYMAPS_AND_ACTIONS_LOCK) {
                 MimePath mimePath = MimePath.parse(mimeType);
+
+                if (refreshActions) {
+                    // reset the action maps
+                    kitActions.remove(mimePath);
+                    kitActionMaps.remove(mimePath);
+                }
                 
                 // reset the keymap
                 kitKeymaps.remove(mimePath);
@@ -2650,16 +2713,5 @@ public class BaseKit extends DefaultEditorKit {
             }
         }
         
-        public void addComponent(JTextComponent c) {
-            synchronized (KEYMAPS_AND_ACTIONS_LOCK) {
-                components.add(c);
-            }            
-        }
-        
-        public void removeComponent(JTextComponent c) {
-            synchronized (KEYMAPS_AND_ACTIONS_LOCK) {
-                components.remove(c);
-            }            
-        }
-    } // End of KeymapTrackare class
+    } // End of KeymapTracker class
 }

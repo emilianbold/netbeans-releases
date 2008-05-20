@@ -188,6 +188,11 @@ public class Settings {
 
     private static volatile int firingEnabled = 0;
     private static final ThreadLocal<EditorPreferencesInjector> setValueInterceptor = new ThreadLocal<EditorPreferencesInjector>();
+    private static final ThreadLocal<Boolean> resetValuesEvent = new ThreadLocal<Boolean>() {
+        protected @Override Boolean initialValue() {
+            return false;
+        }
+    };
     
     /** Save repetitive creation of the empty maps using this variable.
      * [kit-class, map-of-settings] pairs
@@ -200,7 +205,12 @@ public class Settings {
             synchronized (Settings.class) {
                 kit2Maps.clear();
             }
-            fireSettingsChange(null, null, null, null);
+            resetValuesEvent.set(true);
+            try {
+                fireSettingsChange(null, null, null, null);
+            } finally {
+                resetValuesEvent.remove();
+            }
         }
     });
 
@@ -565,11 +575,11 @@ public class Settings {
                             map.remove(settingName);
                         }
                     }
+                    
+                    fireSettingsChange(kitClass, settingName, null, newValue);
                 }
             }
         }
-        
-        fireSettingsChange(kitClass, settingName, null, newValue);
     }
 
     /** Don't change the value of the setting, but fire change
@@ -1427,5 +1437,16 @@ public class Settings {
             listenerList.remove(PropertyChangeListener.class, l);
         }
         
+        public void Settings_addSettingsChangeListener(SettingsChangeListener l) {
+            listenerList.add(SettingsChangeListener.class, l);
+        }
+        
+        public void Settings_removeSettingsChangeListener(SettingsChangeListener l) {
+            listenerList.remove(SettingsChangeListener.class, l);
+        }
+
+        public boolean isResetValuesEvent() {
+            return resetValuesEvent.get();
+        }
     } // End of PackageAccessor class
 }

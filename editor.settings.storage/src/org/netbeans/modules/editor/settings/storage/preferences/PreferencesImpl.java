@@ -58,7 +58,6 @@ import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import org.netbeans.api.editor.mimelookup.MimePath;
-import org.netbeans.modules.editor.settings.storage.Utils;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettingsStorage;
 import org.netbeans.modules.editor.settings.storage.spi.TypedValue;
 import org.openide.util.RequestProcessor;
@@ -367,6 +366,7 @@ public final class PreferencesImpl extends AbstractPreferences implements Prefer
         true // initially finished
     );
 
+    private boolean noEnqueueMethodAvailable = false;
     private final ThreadLocal<String> refiringChangeKey = new ThreadLocal<String>();
     private final ThreadLocal<String> putValueJavaType = new ThreadLocal<String>();
     
@@ -375,8 +375,8 @@ public final class PreferencesImpl extends AbstractPreferences implements Prefer
     private final PropertyChangeListener storageTracker = new PropertyChangeListener() {
         public void propertyChange(PropertyChangeEvent evt) {
             if (evt == null || EditorSettingsStorage.PROP_DATA.equals(evt.getPropertyName())) {
-                Map<String, TypedValue> added = new HashMap<String, TypedValue>();
-                Map<String, TypedValue> removed = new HashMap<String, TypedValue>();
+//                Map<String, TypedValue> added = new HashMap<String, TypedValue>();
+//                Map<String, TypedValue> removed = new HashMap<String, TypedValue>();
                 
                 synchronized (lock) {
                     if (local == null) {
@@ -384,26 +384,28 @@ public final class PreferencesImpl extends AbstractPreferences implements Prefer
                         return;
                     }
                     
-                    Map<String, TypedValue> oldLocal = local;
+//                    Map<String, TypedValue> oldLocal = local;
                     
                     // re-read the data
                     local = null;
                     getLocal();
-                    
-                    // figure out what changed
-                    Utils.<String, TypedValue>diff(oldLocal, local, added, removed);
+//                    
+//                    // figure out what changed
+//                    Utils.<String, TypedValue>diff(oldLocal, local, added, removed);
                 }
                 
-                // fire the changes
-                for(String key : added.keySet()) {
-                    TypedValue value = added.get(key);
-                    firePreferenceChange(key, value.getValue());
-                }
+//                // fire the changes
+//                for(String key : added.keySet()) {
+//                    TypedValue value = added.get(key);
+//                    firePreferenceChange(key, value.getValue());
+//                }
+//                
+//                for(String key : removed.keySet()) {
+//                    TypedValue value = removed.get(key);
+//                    firePreferenceChange(key, value.getValue());
+//                }
                 
-                for(String key : removed.keySet()) {
-                    TypedValue value = removed.get(key);
-                    firePreferenceChange(key, value.getValue());
-                }
+                firePreferenceChange(null, null);
             }
         }
     };
@@ -460,13 +462,33 @@ public final class PreferencesImpl extends AbstractPreferences implements Prefer
     private void asyncInvocationOfFlushSpi() {
         flushTask.schedule(200);
     }
-    
+
+    // XXX: we probably should not extends AbstractPreferences and do it all ourselfs
+    // including the firing of events. For the events delivery we could just reuse common
+    // RequestProcessor threads.
     private void firePreferenceChange(String key, String newValue) {
-        refiringChangeKey.set(key);
-        try {
-            put(key, newValue);
-        } finally {
-            refiringChangeKey.remove();
+        if (!noEnqueueMethodAvailable) {
+            try {
+                Method enqueueMethod = AbstractPreferences.class.getDeclaredMethod("enqueuePreferenceChangeEvent", String.class, String.class); //NOI18N
+                enqueueMethod.setAccessible(true);
+                enqueueMethod.invoke(this, key, newValue);
+                return;
+            } catch (NoSuchMethodException nsme) {
+                noEnqueueMethodAvailable = true;
+            } catch (Exception e) {
+                LOG.log(Level.WARNING, null, e);
+            }
+        }
+        
+        if (key != null && newValue != null) {
+            refiringChangeKey.set(key);
+            try {
+                put(key, newValue);
+            } finally {
+                refiringChangeKey.remove();
+            }
+        } else {
+            assert false : "Can't fire preferenceChange event for null key or value, no enqueuePreferenceChangeEvent available"; //NOI18N
         }
     }
 }

@@ -45,6 +45,7 @@ import java.awt.Insets;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -58,6 +59,8 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.Settings.Initializer;
+import org.netbeans.editor.SettingsChangeEvent;
+import org.netbeans.editor.SettingsChangeListener;
 import org.netbeans.modules.editor.lib.SettingsConversions;
 import org.netbeans.modules.editor.settings.storage.spi.StorageFilter;
 import org.netbeans.modules.editor.settings.storage.spi.TypedValue;
@@ -66,12 +69,13 @@ import org.netbeans.modules.editor.settings.storage.spi.TypedValue;
  *
  * @author vita
  */
-public final class EditorPreferencesInjector extends StorageFilter<String, TypedValue> implements PropertyChangeListener {
+public final class EditorPreferencesInjector extends StorageFilter<String, TypedValue> implements PropertyChangeListener, SettingsChangeListener {
 
     public EditorPreferencesInjector() {
         super("Preferences"); //NOI18N
         // Settings uses WeakListenerList and holds all listeners by WeakReference
         OrgNbEditorAccessor.get().Settings_addPropertyChangeListener(this);
+        OrgNbEditorAccessor.get().Settings_addSettingsChangeListener(this);
     }
 
     public void capturedSetValue(Class kitClass, String settingName, Object value) {
@@ -132,6 +136,7 @@ public final class EditorPreferencesInjector extends StorageFilter<String, Typed
             currentSettingsMap.remove();
         }
         
+        Map<String, Object> complexValueSettings = new HashMap<String, Object>();
         for(Object key : map.keySet()) {
             if (!(key instanceof String)) {
                 // wrong key, this should not normally happen, but who knows what crap the initializers may supply
@@ -141,6 +146,10 @@ public final class EditorPreferencesInjector extends StorageFilter<String, Typed
             String settingName = (String) key;
             if (preferences.containsKey(settingName)) {
                 // legacy settings will never overwrite new-style settings
+                TypedValue v = preferences.get(settingName);
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.fine("Ignoring '" + settingName + "'=['" + v.getValue() + "', " + v.getJavaType() + "], because it's already defined"); //NOI18N
+                }
                 continue;
             }
 
@@ -186,23 +195,35 @@ public final class EditorPreferencesInjector extends StorageFilter<String, Typed
                 preferences.put(settingName, new TypedValue(
                         (String) value, String.class.getName()));
             } else {
-                synchronized (COMPLEX) {
-                    Map<String, Object> settings = COMPLEX.get(mimePath);
-                    if (settings == null) {
-                        settings = new HashMap<String, Object>();
-                        COMPLEX.put(mimePath, settings);
-                    }
-                    settings.put(settingName, value);
-                }
+                complexValueSettings.put(settingName, value);
                 preferences.put(settingName, new TypedValue(
                         getClass().getName() + ".getComplexSettingValue", "methodvalue")); //NOI18N
+            }
+        }
+        
+        synchronized (COMPLEX) {
+            if (COMPLEX.containsKey(mimePath) || !complexValueSettings.isEmpty()) {
+                if (complexValueSettings.isEmpty()) {
+                    COMPLEX.remove(mimePath);
+                } else {
+                    COMPLEX.put(mimePath, complexValueSettings);
+                }
             }
         }
     }
 
     @Override
     public void beforeSave(Map<String, TypedValue> map, MimePath mimePath, String profile, boolean defaults) {
-        // let's save everything we may have added
+        // filter out complex value settings that are hooked to our factory
+        for(Iterator<String> i = map.keySet().iterator(); i.hasNext(); ) {
+            String settingName = i.next();
+            TypedValue value = map.get(settingName);
+            if (value.getJavaType() != null && value.getJavaType().equals("methodvalue") && //NOI18N
+                value.getValue().equals(getClass().getName() + ".getComplexSettingValue") //NOI18N
+            ) {
+                i.remove();
+            }
+        }
     }
 
     // ------------------------------------------------------------------------
@@ -212,11 +233,26 @@ public final class EditorPreferencesInjector extends StorageFilter<String, Typed
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt == null || "initializers".equals(evt.getPropertyName())) { //NOI18N
             if (!ignoreInitializerChanges.get()) {
+                LOG.fine("Settings.Initializers changed"); //NOI18N
                 notifyChanges();
             }
         }
     }
 
+    // ------------------------------------------------------------------------
+    // SettingsChangeListener implementation
+    // ------------------------------------------------------------------------
+    
+    public void settingsChange(SettingsChangeEvent evt) {
+        if (OrgNbEditorAccessor.get().isResetValuesEvent()) {
+            // force re-read of the values when Settings.reset() is called
+            // all the other change events from Setting can be ignored, because
+            // they will be automatically refired through the backing Preferences implementation
+            LOG.fine("settingsChange(" + evt.getSettingName() + ")"); //NOI18N
+            notifyChanges();
+        }
+    }
+    
     // ------------------------------------------------------------------------
     // Complex value settings factory
     // ------------------------------------------------------------------------
@@ -241,17 +277,27 @@ public final class EditorPreferencesInjector extends StorageFilter<String, Typed
         }
         
         synchronized (COMPLEX) {
+            List listValue = null;
+            
             for (String path : paths) {
                 Map<String, Object> settings = COMPLEX.get(MimePath.parse(path));
                 if (settings != null) {
                     Object value = settings.get(settingName);
                     if (value != null) {
-                        return value;
+                        if (value instanceof List) {
+                            if (listValue == null) {
+                                listValue = new ArrayList((List) value);
+                            } else {
+                                listValue.addAll((List) value);
+                            }
+                        } else if (listValue == null) {
+                            return value;
+                        }
                     }
                }
             }
             
-            return null;
+            return listValue == null ? null : listValue;
         }
     }
     

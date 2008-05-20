@@ -290,16 +290,19 @@ public final class KeyBindingSettingsImpl extends KeyBindingSettingsFactory {
         return new Immutable(result);
     }
     
-    private static class Listener extends WeakReference<KeyBindingSettingsImpl> 
-    implements PropertyChangeListener, Runnable {
-        private KeyBindingSettingsFactory      baseKBS;
+    private static final class Listener extends WeakReference<KeyBindingSettingsImpl> implements PropertyChangeListener, Runnable {
         
-        Listener (
-            KeyBindingSettingsImpl      kb,
-            KeyBindingSettingsFactory          baseKBS
+        private final KeyBindingSettingsFactory baseKBS;
+        private final EditorSettingsStorage<Collection<KeyStroke>, MultiKeyBinding> storage;
+        
+        public Listener (
+            KeyBindingSettingsImpl kb,
+            KeyBindingSettingsFactory baseKBS
         ) {
             super(kb, Utilities.activeReferenceQueue());
             this.baseKBS = baseKBS;
+            this.storage = EditorSettingsStorage.get(KeyMapsStorage.ID);
+
             addListeners ();
         }
         
@@ -315,13 +318,17 @@ public final class KeyBindingSettingsImpl extends KeyBindingSettingsFactory {
                 EditorSettings.PROP_CURRENT_KEY_MAP_PROFILE,
                 this
             );
-            if (baseKBS != null)
-                baseKBS.addPropertyChangeListener (this);
+            storage.addPropertyChangeListener(this);
+            if (baseKBS != null) {
+                baseKBS.addPropertyChangeListener(this);
+            }
         }
         
         private void removeListeners () {
-            if (baseKBS != null)
-                baseKBS.removePropertyChangeListener (this);
+            if (baseKBS != null) {
+                baseKBS.removePropertyChangeListener(this);
+            }
+            storage.removePropertyChangeListener(this);
             EditorSettingsImpl.getInstance().removePropertyChangeListener(
                 EditorSettings.PROP_CURRENT_KEY_MAP_PROFILE,
                 this

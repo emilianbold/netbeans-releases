@@ -42,6 +42,7 @@ package org.netbeans.modules.editor.deprecated.pre61settings;
 import java.beans.PropertyChangeListener;
 import java.util.List;
 import org.netbeans.editor.Settings;
+import org.netbeans.editor.SettingsChangeListener;
 
 /**
  *
@@ -57,7 +58,7 @@ public abstract class OrgNbEditorAccessor {
     }
     
     public static synchronized OrgNbEditorAccessor get() {
-        // Trying to wake up HighlightsLayer ...
+        // Trying to wake up Settings ...
         try {
             Class clazz = Class.forName(Settings.class.getName());
         } catch (ClassNotFoundException e) {
@@ -76,5 +77,8 @@ public abstract class OrgNbEditorAccessor {
     public abstract void Settings_interceptSetValue(EditorPreferencesInjector interceptor);
     public abstract void Settings_addPropertyChangeListener(PropertyChangeListener l);
     public abstract void Settings_removePropertyChangeListener(PropertyChangeListener l);
+    public abstract void Settings_addSettingsChangeListener(SettingsChangeListener l);
+    public abstract void Settings_removeSettingsChangeListener(SettingsChangeListener l);
+    public abstract boolean isResetValuesEvent();
     
 }
