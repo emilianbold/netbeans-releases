@@ -40,6 +40,8 @@
  */
 package org.netbeans.modules.uml.drawingarea.actions;
 
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.util.Set;
 import javax.swing.Action;
 import org.netbeans.api.visual.widget.Widget;
@@ -85,10 +87,24 @@ public class ResizeToContentAction extends NodeAction
                 if(w instanceof UMLNodeWidget)
                 {
                     UMLNodeWidget nW=(UMLNodeWidget) w;
+                    //check mode first
+                    nW.setResizeMode(UMLNodeWidget.RESIZEMODE.MINIMUMSIZE);
+                    //
                     nW.setPreferredBounds(null);
                     nW.setPreferredSize(null);
-                    nW.setMinimumSize(nW.getDefaultMinimumSize());
-                    nW.setResizeMode(null);
+                    nW.setMinimumSize(null);
+                    switch(nW.getResizeMode())//get mode, it may be different from one we attempt to set
+                    {
+                        case MINIMUMSIZE:
+                            nW.setMinimumSize(nW.getDefaultMinimumSize());
+                            break;
+                        case PREFERREDBOUNDS:
+                            nW.setPreferredBounds(new Rectangle(new Point(),nW.getDefaultMinimumSize()));
+                            break;
+                        case PREFERREDSIZE:
+                            nW.setPreferredSize(nW.getPreferredSize());
+                            break;
+                    }
                 }
             }
         }
