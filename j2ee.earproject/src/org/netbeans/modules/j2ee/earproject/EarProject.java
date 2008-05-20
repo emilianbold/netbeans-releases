@@ -80,6 +80,7 @@ import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
 import org.netbeans.modules.j2ee.earproject.util.EarProjectUtil;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarFactory;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
+import org.netbeans.spi.java.project.support.LookupMergerSupport;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.SubprojectProvider;
@@ -226,7 +227,7 @@ public final class EarProject implements Project, AntProjectListener, ProjectPro
             new J2eeArchiveLogicalViewProvider(this, updateHelper, evaluator(), refHelper, abpt),
             new MyIconBaseProvider(),
             new CustomizerProviderImpl(this, helper, refHelper, abpt),
-            new ClassPathProviderImpl(helper, evaluator()),
+            LookupMergerSupport.createClassPathProviderMerger(new ClassPathProviderImpl(helper, evaluator())),
             new ProjectXmlSavedHookImpl(),
             UILookupMergerSupport.createProjectOpenHookMerger(new ProjectOpenedHookImpl()),
             new EarSources(helper, evaluator()),
@@ -509,7 +510,7 @@ public final class EarProject implements Project, AntProjectListener, ProjectPro
             EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
             ArrayList<ClassPathSupport.Item> l = new ArrayList<ClassPathSupport.Item>();
             l.addAll(cs.itemsList(props.getProperty(EarProjectProperties.JAR_CONTENT_ADDITIONAL), EarProjectProperties.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES));
-            ProjectProperties.storeLibrariesLocations(helper, l.iterator(), props);
+            ProjectProperties.storeLibrariesLocations(helper, l.iterator(), helper.isSharableProject() ? props : ep);
             
             // #129316
             ProjectProperties.removeObsoleteLibraryLocations(ep);

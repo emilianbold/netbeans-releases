@@ -318,17 +318,7 @@ public class TraceXRef extends TraceModel {
                 res = ofs1 - ofs2;
             }
             return res;
-        }   
-        
-        @Override
-        public boolean equals(Object obj) {
-            return super.equals(obj);
-        }
-
-        @Override
-        public int hashCode() {
-            return 11; // any dummy value
-        }          
+        }            
     };  
 
     private static void analyzeFile(CsmFile file, XRefResultSet bag, PrintWriter out, OutputWriter printErr) {
@@ -740,18 +730,18 @@ public class TraceXRef extends TraceModel {
             }
         }
 
-        EnumSet<IncludeLevel> nearestIncludes = EnumSet.of(XRefResultSet.IncludeLevel.THIS_FILE, XRefResultSet.IncludeLevel.PROJECT_DIRECT, XRefResultSet.IncludeLevel.LIBRARY_DIRECT);
-        EnumSet<DeclarationScope> nearestScopes = EnumSet.of(
+        Set<IncludeLevel> nearestIncludes = EnumSet.of(XRefResultSet.IncludeLevel.THIS_FILE, XRefResultSet.IncludeLevel.PROJECT_DIRECT, XRefResultSet.IncludeLevel.LIBRARY_DIRECT);
+        Set<DeclarationScope> nearestScopes = EnumSet.of(
                 XRefResultSet.DeclarationScope.FUNCTION_THIS, 
                 XRefResultSet.DeclarationScope.CLASSIFIER_THIS, 
                 XRefResultSet.DeclarationScope.CLASSIFIER_PARENT, 
                 XRefResultSet.DeclarationScope.FILE_THIS, 
                 XRefResultSet.DeclarationScope.NAMESPACE_THIS, 
                 XRefResultSet.DeclarationScope.NAMESPACE_PARENT);
-        EnumSet<DeclarationScope> nonScopes = EnumSet.noneOf(XRefResultSet.DeclarationScope.class);
-        EnumSet<IncludeLevel> nonIncludes = EnumSet.noneOf(XRefResultSet.IncludeLevel.class);
-        EnumSet<XRefResultSet.UsageStatistics> nonUsages = EnumSet.noneOf(XRefResultSet.UsageStatistics.class);
-        EnumSet<XRefResultSet.UsageStatistics> wasUsages = EnumSet.of(XRefResultSet.UsageStatistics.SECOND_USAGE, XRefResultSet.UsageStatistics.NEXT_USAGE);
+        Set<DeclarationScope> nonScopes = EnumSet.noneOf(XRefResultSet.DeclarationScope.class);
+        Set<IncludeLevel> nonIncludes = EnumSet.noneOf(XRefResultSet.IncludeLevel.class);
+        Set<XRefResultSet.UsageStatistics> nonUsages = EnumSet.noneOf(XRefResultSet.UsageStatistics.class);
+        Set<XRefResultSet.UsageStatistics> wasUsages = EnumSet.of(XRefResultSet.UsageStatistics.SECOND_USAGE, XRefResultSet.UsageStatistics.NEXT_USAGE);
         String msg = String.format(entryFmtFileInfo, scope,
                 entries.size(),
                 getDeclScopeAndIncludeLevelInfo(entries, nearestScopes, nonIncludes, nonUsages),
@@ -830,8 +820,8 @@ public class TraceXRef extends TraceModel {
     
     
     private static String getDeclScopeAndIncludeLevelInfo(Collection<ContextEntry> entries,
-            EnumSet<XRefResultSet.DeclarationScope> declScopes,
-            EnumSet<XRefResultSet.IncludeLevel> levels,EnumSet<XRefResultSet.UsageStatistics> usages) {
+            Set<XRefResultSet.DeclarationScope> declScopes,
+            Set<XRefResultSet.IncludeLevel> levels,Set<XRefResultSet.UsageStatistics> usages) {
         int num = 0;
         
         for (XRefResultSet.ContextEntry contextEntry : entries) {

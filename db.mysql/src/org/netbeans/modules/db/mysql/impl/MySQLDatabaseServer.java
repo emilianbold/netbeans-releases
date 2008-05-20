@@ -41,29 +41,31 @@
 
 package org.netbeans.modules.db.mysql.impl;
 
-import org.netbeans.modules.db.mysql.util.ExecSupport;
+import java.net.URL;
 import org.netbeans.modules.db.mysql.util.DatabaseUtils;
 import org.netbeans.modules.db.mysql.util.Utils;
-import org.netbeans.modules.db.mysql.*;
-import java.net.URL;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.api.db.explorer.ConnectionManager;
-import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.db.mysql.Database;
+import org.netbeans.modules.db.mysql.DatabaseServer;
+import org.netbeans.modules.db.mysql.DatabaseUser;
 import org.netbeans.modules.db.mysql.ui.PropertiesDialog;
+import org.netbeans.modules.db.mysql.util.ExecSupport;
 import org.openide.awt.HtmlBrowser;
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.util.Mutex;
@@ -80,14 +82,7 @@ import org.openide.util.Utilities;
  * @author David Van Couvering
  */
 public class MySQLDatabaseServer implements DatabaseServer {
-    public enum State {
-        CONNECTED, CONNECTING, DISCONNECTED
-    };
-    
-    // synchronized on this
-    private State state = State.DISCONNECTED;
-    
-        // Synchronized on this
+    // Synchronized on this
     private String displayName;
     
     // Synchronized on this
@@ -111,7 +106,8 @@ public class MySQLDatabaseServer implements DatabaseServer {
     private static final String GRANT_ALL_SQL_1 = "GRANT ALL ON "; // NOI18N
     private static final String GRANT_ALL_SQL_2 = ".* TO ?@?"; // NOI8N
     
-    final AdminConnection adminConn = new AdminConnection();
+    final LinkedBlockingQueue<Runnable> commandQueue = new LinkedBlockingQueue<Runnable>();
+    final ConnectionProcessor connProcessor = new ConnectionProcessor(commandQueue);
     final ArrayList<ChangeListener> listeners = new ArrayList<ChangeListener>();
     
     // Cache this in cases where it is not being saved to disk
@@ -121,7 +117,7 @@ public class MySQLDatabaseServer implements DatabaseServer {
     // Cache list of databases, refresh only if connection is changed
     // or an explicit refresh is requested
     // Synchronized on the instance (this)
-    HashMap<String, Database> databases = new HashMap<String, Database>();
+    private volatile HashMap<String, Database> databases = new HashMap<String, Database>();
 
     public static synchronized DatabaseServer getDefault() {
         if ( DEFAULT == null ) {
@@ -133,8 +129,10 @@ public class MySQLDatabaseServer implements DatabaseServer {
     
     private MySQLDatabaseServer() {  
         updateDisplayName();
+        RequestProcessor.getDefault().post(connProcessor);        
+        startRefreshTask();
     }
-    
+        
     private synchronized void startRefreshTask() {        
         // Start a background task that keeps the list of databases
         // up-to-date
@@ -153,20 +151,12 @@ public class MySQLDatabaseServer implements DatabaseServer {
                         }
                     } catch ( InterruptedException ie ) {
                         return;
-                    } catch ( DatabaseException dbe ) {
-                        LOGGER.log(Level.INFO, null, dbe);
                     }
                 }
             }
         });
     }
-    
-    private synchronized void stopRefreshTask() {
-        if ( refreshTask != null ) {
-            refreshTask.cancel();
-        }
-    } 
-    
+        
     public String getHost() {
         return Utils.isEmpty(OPTIONS.getHost()) ?  
             MySQLOptions.getDefaultHost() : OPTIONS.getHost();
@@ -276,7 +266,7 @@ public class MySQLDatabaseServer implements DatabaseServer {
     }
         
     public boolean isConnected() {
-        return getState().equals(State.CONNECTED);
+        return connProcessor.isConnected();
     }
 
     public synchronized String getDisplayName() {
@@ -289,12 +279,10 @@ public class MySQLDatabaseServer implements DatabaseServer {
     
     private synchronized void updateDisplayName() {
         String label;
-        if ( state == State.CONNECTED ) {
+        if ( isConnected() ) {
             label = "LBL_ServerDisplayName";
-        } else if ( state == State.DISCONNECTED ) {
-            label = "LBL_ServerNotConnectedDisplayName";
         } else {
-            label = "LBL_ServerConnectingDisplayName";
+            label = "LBL_ServerNotConnectedDisplayName";
         }
         setDisplayName(Utils.getMessage(
                 label, getHostPort(), getUser()));
@@ -322,24 +310,7 @@ public class MySQLDatabaseServer implements DatabaseServer {
     public String getURL(String databaseName) {
         return DatabaseUtils.getURL(getHost(), getPort(), databaseName);
     }
-    
-    private synchronized void setState(State state) {
-        this.state = state;
-        updateDisplayName();
-        
-        if ( state == State.CONNECTED ) {
-            startRefreshTask();
-        } else if ( state == State.DISCONNECTED ) {
-            stopRefreshTask();
-        }
-        
-        notifyChange();
-    }
-    
-    private synchronized State getState() {
-        return state;
-    }
-        
+            
     private void notifyChange() {
         ChangeEvent evt = new ChangeEvent(this);
         
@@ -348,106 +319,102 @@ public class MySQLDatabaseServer implements DatabaseServer {
         }
     }
     
-    public void refreshDatabaseList() throws DatabaseException {        
-        try {
-            synchronized(this) {
-                databases = new HashMap<String, Database>();
-                if ( isConnected() ) {        
-                    ResultSet rs = adminConn.getConnection()
-                            .prepareStatement(GET_DATABASES_SQL)
-                            .executeQuery();
-
-                    while ( rs.next() ) {
+    public void refreshDatabaseList() {
+        if ( isConnected() ) {
+            final  DatabaseServer server = this;
+            
+            commandQueue.offer(new DatabaseCommand() {
+                public void execute() throws Exception {
+                    Connection conn = connProcessor.getConnection();
+                    PreparedStatement ps = conn.prepareStatement(GET_DATABASES_SQL);
+                    ResultSet rs = ps.executeQuery();
+                    
+                    HashMap<String,Database> dblist = new HashMap<String,Database>();
+                    while (rs.next()) {
                         String dbname = rs.getString(1);
-                        databases.put(dbname, new Database(this, dbname));
+                        dblist.put(dbname, new Database(server, dbname));
                     }
+                    
+                    setDatabases(dblist);
+                    
+                    notifyChange();
                 }
-            }
-        } catch ( SQLException ex ) {
-            throw new DatabaseException(ex);
-        } finally {
-            notifyChange();
+            });
+        } else {
+            setDatabases(new HashMap<String,Database>());
         }
     }
+    
+    private synchronized void setDatabases(HashMap<String,Database> list) {
+        databases = list;
+    }
 
-    /**
-     * Get the list of databases.  NOTE that the list is retrieved from
-     * a cache to improve performance.  If you want to ensure that the
-     * list is up-to-date, call <i>refreshDatabaseList</i>
-     * 
-     * @return
-     * @see #refreshDatabaseList()
-     * @throws org.netbeans.api.db.explorer.DatabaseException
-     */
     public synchronized Collection<Database> getDatabases() 
             throws DatabaseException {
-        if ( databases == null ) {
-            refreshDatabaseList();
-        }
-        
         return databases.values();
     }
         
-    /**
-     * Connect to the server.  If we already have a connection, close
-     * it and open a new one
-     */
-    public void reconnect() throws DatabaseException {
-        disconnect();
-        try {
-            adminConn.reconnect();
-            setState(State.CONNECTED);
-        } catch ( DatabaseException dbe ) {
-            setState(State.DISCONNECTED);
-            throw dbe;
-        } finally {
-            refreshDatabaseList();
-        }
+     public void reconnect() throws DatabaseException {
+       try { 
+           reconnect(true, false); // quiet, async
+       } catch ( Throwable t ) {
+           throw new DatabaseException(t);
+       }
     }
     
     public void disconnect() {
-        adminConn.disconnect();
-        setState(State.DISCONNECTED);
-        
-        try {
-            this.refreshDatabaseList();
-        } catch ( DatabaseException dbe ) {
-            LOGGER.log(Level.FINE, null, dbe);
-        }
+        commandQueue.offer(new DatabaseCommand() {
+
+            @Override
+            public void execute() throws Exception {
+                Connection conn = connProcessor.getConnection();
+                if (conn != null) {
+                    conn.close();
+                }
+                
+                connProcessor.setConnection(null);
+                
+                updateDisplayName();
+                refreshDatabaseList();
+            }
+        });
     }
     
-    /**
-     * Connect to the MySQL server on a task thread, showing a progress bar
-     * and displaying a dialog if an error occurred
-     * 
-     * @param instance the server instance to connect with
-     */
     public void reconnectAsync() {
-         reconnectAsync(false);
+        reconnect(true, true);
     }
      
-    /**
-     * Connect to the server asynchronously, with the option not to display
-     * a dialog but just write to the log if an error occurs
-     * @param instance the instance to connect to
-     * @param quiet true if you don't want this to happen without any dialogs
-     *   being displayed in case of error or to get more information.
-     */
-    public synchronized void reconnectAsync(final boolean quiet) {        
-         final ProgressHandle progress = ProgressHandleFactory.createHandle(
-            Utils.getMessage( "MSG_ConnectingToServer"));
-         progress.start();
-         progress.switchToIndeterminate();
-         
-         RequestProcessor.getDefault().post(new Runnable() {
-             public void run() {
-                do {
-                     try { 
-                         reconnect();
+    public void reconnect(final boolean quiet, boolean async) { 
+        ArrayBlockingQueue<Runnable> queue = null;
+        
+        if ( ! async ) {
+            new ArrayBlockingQueue<Runnable>(1);
+        }
+
+        DatabaseCommand cmd = new DatabaseCommand(queue) {
+            @Override
+            public void execute() throws Exception {                
+                Connection conn = connProcessor.getConnection();
+                
+                if (conn != null && (! conn.isClosed())) {
+                    conn.close();
+                }
+                
+                connProcessor.setConnection(null);
+
+                ProgressHandle progress = ProgressHandleFactory.createHandle(
+                    Utils.getMessage("MSG_ConnectingToServer"));
+                progress.start();
+                progress.switchToIndeterminate();
+
+                for ( ; ; ) {
+                     try {
+                         conn = DatabaseUtils.connect(getURL(), getUser(), getPassword());
+                         connProcessor.setConnection(conn);
                          break;
                      } catch ( DatabaseException dbe ) {
                         String message = Utils.getMessage("MSG_UnableToConnect");
-                        
+
                         if (!quiet) {         
                             // Try again
                             boolean retry = postPropertiesDialog(message, dbe);
@@ -455,77 +422,68 @@ public class MySQLDatabaseServer implements DatabaseServer {
                                 break;
                             }                       
                         } else {
-                            LOGGER.log(Level.INFO, message);
-                            break;
+                            progress.finish();
+                            throw dbe;
                         }
-                     } catch (Throwable t) {
-                         LOGGER.log(Level.INFO, null, t);
-                         break;
-                     } finally {
                      }
-                 } while (!isConnected());
+                 }
                  progress.finish();
+                 updateDisplayName();
+                 refreshDatabaseList();
             }
-         });
+        };
         
+        commandQueue.offer(cmd);
+        
+        if (!async) {
+            // Sync up
+            try {
+                queue.take();
+
+                if (cmd.getException() != null) {
+                    throw new RuntimeException(cmd.getException());
+                }
+            } catch (InterruptedException ie) {
+                throw new RuntimeException(ie);
+            }
+        }
     }
     
     private boolean postPropertiesDialog(final String message, final DatabaseException dbe) {
-        final DatabaseServer instance = this;
+        final DatabaseServer server = this;
         Boolean retry = Mutex.EVENT.readAccess(new Mutex.Action<Boolean>() {
             public Boolean run() {
                 Utils.displayError(message, dbe);
                 
-                PropertiesDialog dlg = new PropertiesDialog(instance);
+                PropertiesDialog dlg = new PropertiesDialog(server);
                 return Boolean.valueOf(dlg.displayDialog());
             }
         });
         
         return retry;
-    }
+    }   
     
     public boolean databaseExists(String dbname)  throws DatabaseException {
-        refreshDatabaseList();
-
         return databases.containsKey(dbname);
     }
     
-    public void createDatabase(String dbname) throws DatabaseException {
-        try { 
-            adminConn.getConnection()
-                    .prepareStatement(CREATE_DATABASE_SQL + dbname)
-                    .executeUpdate();
-            
-            refreshDatabaseList();
-        } catch ( SQLException e ) {
-            throw new DatabaseException(e);
-        }
+    public void createDatabase(final String dbname) {
+        commandQueue.offer(new DatabaseCommand() {
+            public void execute() throws Exception {
+                Connection conn = connProcessor.getConnection();
+                conn.prepareStatement(CREATE_DATABASE_SQL + dbname).executeUpdate();
+            }
+        });
     }
     
-    public void dropDatabase(String dbname) throws DatabaseException {
-        try {
-            adminConn.getConnection()
-                    .prepareStatement(DROP_DATABASE_SQL + dbname)
-                    .executeUpdate();
-            
-            deleteConnections(dbname);
-        } catch ( SQLException sqle ) {
-            throw new DatabaseException(sqle);
-        } finally {
-            refreshDatabaseList();            
-        }
-        
+    public void dropDatabase(final String dbname) {
+        commandQueue.offer(new DatabaseCommand() {
+            public void execute() throws Exception {
+                Connection conn = connProcessor.getConnection();
+                conn.prepareStatement(DROP_DATABASE_SQL + dbname).executeUpdate();
+            }
+        });
     }
-    
-    private void deleteConnections(String dbname) throws DatabaseException {
-        List<DatabaseConnection> conns = 
-                DatabaseUtils.findDatabaseConnections(getURL(dbname));
-        
-        for ( DatabaseConnection conn : conns ) {
-            ConnectionManager.getDefault().removeConnection(conn);
-        }
-    }
-
     
     /**
      * Get the list of users defined for this server
@@ -536,50 +494,55 @@ public class MySQLDatabaseServer implements DatabaseServer {
      *      if some problem occurred
      */
     public List<DatabaseUser> getUsers() throws DatabaseException {
-        ArrayList<DatabaseUser> users = new ArrayList<DatabaseUser>();
-        Connection conn = adminConn.getConnection();
-        
-        if ( conn == null ) {
+        final ArrayList<DatabaseUser> users = new ArrayList<DatabaseUser>();
+        if ( ! isConnected() ) {
             return users;
         }
         
-        try {
-            ResultSet rs = conn.prepareStatement(GET_USERS_SQL).executeQuery();
+        ArrayBlockingQueue<Runnable> queue = new ArrayBlockingQueue<Runnable>(1);
+        
+        DatabaseCommand cmd = new DatabaseCommand(queue) {
+            @Override
+            public void execute() throws Exception {
+                ResultSet rs = connProcessor.getConnection().
+                        prepareStatement(GET_USERS_SQL).executeQuery();
 
-            while ( rs.next() ) {
-                String user = rs.getString(1).trim();
-                String host = rs.getString(2).trim();
-                users.add(new DatabaseUser(user, host));
+                while ( rs.next() ) {
+                    String user = rs.getString(1).trim();
+                    String host = rs.getString(2).trim();
+                    users.add(new DatabaseUser(user, host));
+                }
+                
+                rs.close();
+            }            
+        };
+        
+        commandQueue.offer(cmd);
+
+        // Synch up
+        try {
+            queue.take();
+            if (cmd.getException() != null) {
+                throw new DatabaseException(cmd.getException());
             }
-        } catch ( SQLException ex ) {
-            throw new DatabaseException(ex);
+        } catch ( InterruptedException e ) {
+            throw new DatabaseException(e);
         }
         
         return users;
     }
 
-    /**
-     * Grant full rights to the database to the specified user
-     * 
-     * @param dbname the database whose rights we are granting
-     * @param grantUser the name of the user to grant the rights to
-     * 
-     * @throws org.netbeans.api.db.explorer.DatabaseException
-     *      if some error occurs
-     */
-    public void grantFullDatabaseRights(String dbname, DatabaseUser grantUser) 
-        throws DatabaseException {
-        try {
-            PreparedStatement ps = adminConn.getConnection()
-                    .prepareStatement(GRANT_ALL_SQL_1 + dbname +
-                        GRANT_ALL_SQL_2);
-            ps.setString(1, grantUser.getUser());
-            ps.setString(2, grantUser.getHost());
-            
-            ps.executeUpdate();
-        } catch ( SQLException sqle ) {
-            throw new DatabaseException(sqle);
-        }
+    public void grantFullDatabaseRights(final String dbname, final DatabaseUser grantUser) {
+        commandQueue.offer(new DatabaseCommand() {
+            @Override
+            public void execute() throws Exception {
+                PreparedStatement ps = connProcessor.getConnection().
+                        prepareStatement(GRANT_ALL_SQL_1 + dbname + GRANT_ALL_SQL_2);
+                ps.setString(1, grantUser.getUser());
+                ps.setString(2, grantUser.getHost());
+                ps.executeUpdate();
+            }
+        });
     }
     
     /**
@@ -727,81 +690,40 @@ public class MySQLDatabaseServer implements DatabaseServer {
         listeners.remove(listener);
     }
 
-      
-    /**
-     * Provides a useful abstraction around the database connection
-     * for this server.  In particular it invalidates the connection if
-     * a connection property gets changed.
-     */
-    class AdminConnection {
-        // synchronized on the instance
-        private Connection conn;
+    static abstract class DatabaseCommand implements Runnable {
+        private Throwable throwable;
+        private final BlockingQueue<Runnable> outqueue;
         
-        private AdminConnection() {
+        public DatabaseCommand(BlockingQueue<Runnable> outqueue) {
+            this.outqueue = outqueue;
         }
         
-        Connection getConnection() throws DatabaseException {
-            synchronized(this) {
-                if ( conn != null ) {
-                    return conn;
-                }
-            }
+        public DatabaseCommand() {
+            this(null);
+        }
+
+        public void run() {
             try {
-                if ( conn == null || conn.isClosed() ) {
-                    reconnect();
-                }
-            } catch ( SQLException sqle ) {
-                throw new DatabaseException(sqle);
-            }
-            return conn;
-        }
-        
-        void disconnect() {
-            Connection connection;
-            synchronized (this) {
-                if ( conn == null ) {
-                    return;
+                this.execute(); 
+                
+            } catch ( Exception e ) {
+                if ( outqueue != null ) {
+                    this.throwable = e;
                 } else {
-                    connection = conn;
-                    conn = null;
+                    LOGGER.log(Level.WARNING, null, e);
                 }
+            } finally {
+                if (outqueue != null) {
+                    outqueue.offer(this);
+                }                
             }
-            DatabaseUtils.closeConnection(connection);
         }
-        
-        Connection connect() throws DatabaseException {
-            synchronized ( this ) {
-                if ( conn != null ) {
-                    return conn;
-                }
-            }
-            
-            // I would love to use a DatabaseConnection, but this
-            // causes deadlocks because DatabaseConnection.showDialog
-            // relys on DatabaseNodeInfo, which scans the node tree
-            // at the same time this method is being used to update
-            // the node tree (e.g. to get the list of databases).
-            //
-            // This could be solved with an API that just connects without
-            // doing any UI
-            Connection connection = DatabaseUtils.connect(getURL(), getUser(),
-                    getPassword());
-            
-            synchronized( this ) {
-                conn = connection;
-            }
-            
-            return conn;
+
+        public abstract void execute() throws Exception;
+
+        public Throwable getException() {
+            return throwable;
         }
-        
-        
-            
-        synchronized void reconnect() throws DatabaseException {
-            synchronized ( this ) {
-                conn = null;
-            }
-            
-            connect();
-        }
-    }     
+    }
+      
 }

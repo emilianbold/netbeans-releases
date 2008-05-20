@@ -90,14 +90,14 @@ public class StatusResponse extends DbgpResponse {
         {
             StopCommand stopCommand = new StopCommand( session.getTransactionId() );
             session.sendCommandLater(stopCommand);
-            session.stop();
-            if (DebuggerOptions.isDebugForFirstPageOnly()) {
+            session.stop();            
+            if (session.getOptions().isDebugForFirstPageOnly()) {
                 SessionProgress sp = SessionProgress.forSessionId(session.getSessionId()); 
                 if (sp != null) {
                     sp.cancel();
                 }
             } else {
-                StartActionProviderImpl.getInstance().start(session.getSessionId());
+                StartActionProviderImpl.getInstance().start(session);
             }
         }
     }

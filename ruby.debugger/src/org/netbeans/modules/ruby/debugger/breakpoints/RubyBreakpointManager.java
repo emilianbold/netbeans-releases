@@ -54,7 +54,7 @@ import org.openide.text.Line;
 import org.openide.util.Exceptions;
 import org.rubyforge.debugcommons.RubyDebuggerException;
 import org.rubyforge.debugcommons.RubyDebuggerProxy;
-import org.rubyforge.debugcommons.model.IRubyBreakpoint;
+import org.rubyforge.debugcommons.model.IRubyLineBreakpoint;
 
 public final class RubyBreakpointManager {
     
@@ -62,8 +62,12 @@ public final class RubyBreakpointManager {
 
     private RubyBreakpointManager() {};
 
-    static RubyBreakpoint createBreakpoint(final Line line) {
-        RubyBreakpoint breakpoint = new RubyBreakpoint(line);
+    static RubyLineBreakpoint createLineBreakpoint(final Line line) {
+        return createLineBreakpoint(line, null);
+    }
+    
+    static RubyLineBreakpoint createLineBreakpoint(final Line line, final String condition) {
+        RubyLineBreakpoint breakpoint = new RubyLineBreakpoint(line, condition);
         BreakpointLineUpdater blu = new BreakpointLineUpdater(breakpoint);
         try {
             blu.attach();
@@ -74,8 +78,22 @@ public final class RubyBreakpointManager {
         return breakpoint;
     }
     
-    public static RubyBreakpoint addBreakpoint(final Line line) throws RubyDebuggerException {
-        RubyBreakpoint breakpoint = createBreakpoint(line);
+    static RubyExceptionBreakpoint createExceptionBreakpoint(final String exception) {
+        RubyExceptionBreakpoint breakpoint = new RubyExceptionBreakpoint(exception);
+        return breakpoint;
+    }
+    
+    public static RubyLineBreakpoint addLineBreakpoint(final Line line) throws RubyDebuggerException {
+        RubyLineBreakpoint breakpoint = createLineBreakpoint(line);
+        DebuggerManager.getDebuggerManager().addBreakpoint(breakpoint);
+        for (RubyDebuggerProxy proxy : RubyDebuggerProxy.PROXIES) {
+            proxy.addBreakpoint(breakpoint);
+        }
+        return breakpoint;
+    }
+
+    public static RubyExceptionBreakpoint addExceptionBreakpoint(final String exception) throws RubyDebuggerException {
+        RubyExceptionBreakpoint breakpoint = createExceptionBreakpoint(exception);
         DebuggerManager.getDebuggerManager().addBreakpoint(breakpoint);
         for (RubyDebuggerProxy proxy : RubyDebuggerProxy.PROXIES) {
             proxy.addBreakpoint(breakpoint);
@@ -96,7 +114,7 @@ public final class RubyBreakpointManager {
     }
 
     /**
-     * Uses {@link DebuggerManager#getBreakpoints()} filtering out all non-Ruby
+     * Uses {@link DebuggerManager#getLineBreakpoints()} filtering out all non-Ruby
      * breakpoints.
      */
     public static RubyBreakpoint[] getBreakpoints() {
@@ -111,25 +129,31 @@ public final class RubyBreakpointManager {
     }
 
     /**
-     * Uses {@link DebuggerManager#getBreakpoints()} filtering out all non-Ruby
+     * Uses {@link DebuggerManager#getLineBreakpoints()} filtering out all non-Ruby
      * breakpoints. Returns only breakpoints associated with the given script.
      */
-    static IRubyBreakpoint[] getBreakpoints(final FileObject script) {
+    static IRubyLineBreakpoint[] getLineBreakpoints(final FileObject script) {
         assert script != null;
-        List<RubyBreakpoint> scriptBPs = new ArrayList<RubyBreakpoint>();
+        List<RubyLineBreakpoint> scriptBPs = new ArrayList<RubyLineBreakpoint>();
         for (RubyBreakpoint bp : getBreakpoints()) {
-            FileObject fo = bp.getFileObject();
-            if (script.equals(fo)) {
-                scriptBPs.add(bp);
+            if (bp instanceof RubyLineBreakpoint) {
+                RubyLineBreakpoint lbp = (RubyLineBreakpoint) bp;
+                FileObject fo = lbp.getFileObject();
+                if (script.equals(fo)) {
+                    scriptBPs.add(lbp);
+                }
             }
         }
-        return scriptBPs.toArray(new RubyBreakpoint[scriptBPs.size()]);
+        return scriptBPs.toArray(new RubyLineBreakpoint[scriptBPs.size()]);
     }
 
     public static boolean isBreakpointOnLine(final FileObject file, final int line) {
         for (RubyBreakpoint bp : getBreakpoints()) {
-            if (file.equals(bp.getFileObject()) && line == bp.getLineNumber()) {
-                return true;
+            if (bp instanceof RubyLineBreakpoint) {
+                RubyLineBreakpoint lbp = (RubyLineBreakpoint) bp;
+                if (file.equals(lbp.getFileObject()) && line == lbp.getLineNumber()) {
+                    return true;
+                }
             }
         }
         return false;
@@ -142,8 +166,10 @@ public final class RubyBreakpointManager {
         }
         
         for (RubyBreakpoint breakpoint : RubyBreakpointManager.getBreakpoints()) {
-            if (breakpoint.getLine().equals(line)) {
-                return breakpoint;
+            if (breakpoint instanceof RubyLineBreakpoint) {
+                if (((RubyLineBreakpoint) breakpoint).getLine().equals(line)) {
+                    return breakpoint;
+                }
             }
         }
         return null;

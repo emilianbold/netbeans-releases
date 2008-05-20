@@ -64,7 +64,7 @@ public class AnnotationsTest extends BasicOpenFileTest {
         if (firstTest){
             openProject(projectName);
             RecurrentSuiteFactory.resolveServer(projectName);
-            Thread.sleep(10000);
+            openAllWebFiles();
             firstTest = false;
         }
     }
@@ -83,7 +83,7 @@ public class AnnotationsTest extends BasicOpenFileTest {
     }
 
     public void testIssue131519() throws Exception {
-        runTest("issue121768.jsp");
+        runTest("issue131519.jsp");
     }
 
     public void testIssue131871() throws Exception {
@@ -102,6 +102,46 @@ public class AnnotationsTest extends BasicOpenFileTest {
         runTest("issue99526.html");
     }
 
+    public void testIssue130745() throws Exception {
+        runTest("issue130745.jsp");
+    }
+
+    public void testIssue133760() throws Exception {
+        runTest("issue133760.jsp");
+    }
+
+    public void testIssue133841() throws Exception {
+        runTest("issue133841.html");
+    }
+
+    public void testIssue134518() throws Exception {
+        runTest("issue134518.jsp");
+    }
+
+    public void testIssue134877() throws Exception {
+        runTest("issue134877.jsp");
+    }
+
+    public void testIssue134879() throws Exception {
+        runTest("issue134879.jspf");
+    }
+
+    public void testIssue127317() throws Exception {
+        runTest("issue127317.css");
+    }
+    
+    public void testIssue110333() throws Exception {
+        runTest("issue110333.css");
+    }
+
+    public void testIssue127289() throws Exception {
+        runTest("issue127289.html", 7);
+    }
+
+    public void testAnnotationsCSS() throws Exception {
+        runTest("annotations.css", 5);
+    }
+
     public void testMissingEndTag() throws Exception {
         runTest("missingEndTag.html", 1);
     }
@@ -114,16 +154,13 @@ public class AnnotationsTest extends BasicOpenFileTest {
         runTest("unknownCSSProperty.html", 1);
     }
 
-    public void testIssue130745() throws Exception {
-        runTest("issue130745.jsp");
-    }
-  
     private void runTest(String fileName) throws Exception {
         runTest(fileName, 0);
     }
 
     private void runTest(String fileName, int annotationsCount) throws Exception {
-        EditorOperator eOp = openFile(fileName);
+        EditorOperator eOp = getEditorOperator(fileName);
+        Thread.sleep(1000);//wait editor inicialization
         Object[] anns = eOp.getAnnotations();
         assertEquals(annotationsCount, anns.length);
         for (Object object : anns) {
@@ -140,6 +177,20 @@ public class AnnotationsTest extends BasicOpenFileTest {
         }
     }
 
+    private void openAllWebFiles() {
+        if (projectName == null) {
+            throw new IllegalStateException("YOU MUST OPEN PROJECT FIRST");
+        }
+        Node rootNode = new ProjectsTabOperator().getProjectRootNode(projectName);
+        Node webPages = new Node(rootNode, "Web Pages");
+        for (String file : webPages.getChildren()) {
+            if (!file.equals("WEB-INF")){
+                openFile(file);
+            }
+        }
+    }
+  
+
     @Override
     protected EditorOperator openFile(String fileName) {
         if (projectName == null) {
@@ -149,6 +200,10 @@ public class AnnotationsTest extends BasicOpenFileTest {
         Node node = new Node(rootNode, "Web Pages|" + fileName);
         node.select();
         node.performPopupAction("Open");
+        return getEditorOperator(fileName);
+    }
+
+    private EditorOperator getEditorOperator(String fileName) {
         EditorOperator operator = new EditorOperator(fileName);
         assertNotNull(operator.getText());
         assertTrue(operator.getText().length() > 0);

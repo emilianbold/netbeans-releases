@@ -82,20 +82,13 @@ public final class RubyPlatform {
     static final String RUBY_DEBUG_IDE_NAME = "ruby-debug-ide"; // NOI18N
     static final String RUBY_DEBUG_BASE_NAME = "ruby-debug-base"; // NOI18N
     
-    /** Required version of ruby-debug-ide gem. */
-    static final String RDEBUG_IDE_VERSION = "0.1.10"; // NOI18N
-    
-    /** Required version of ruby-debug-base gem. */
-    static final String RDEBUG_BASE_VERSION = "0.10.0"; // NOI18N
-
     private final Info info;
     
     private final String id;
     private final String interpreter;
     private File home;
     private String homeUrl;
-    private String rubylib;
-    private FileObject libFO;
+    private FileObject libDirFO;
     private GemManager gemManager;
     private FileObject stubsFO;
     private boolean indexInitialized;
@@ -239,85 +232,57 @@ public final class RubyPlatform {
         return homeUrl;
     }
 
-    /** Return the lib directory for this interprerter. */
-    public String getLib() {
-        assert !isRubinius() : "RubyPlatform#getLib must not be called for Rubinius";
-        File home = getHome();
-        if (home == null) {
+    /**
+     * Return the lib directory for this interprerter. Usually parent of {@link
+     * #getVersionLibDir()}.
+     */
+    public String getLibDir() {
+        if (isRubinius()) {
+            return getRubiniusLibDir();
+        }
+        String lib = info.getLibDir();
+        if (lib == null) {
+            LOGGER.warning("rubylibdir not found for " + interpreter + ", was: " + lib);
             return null;
         }
-        File lib = new File(home, "lib"); // NOI18N
-
-        if (lib.exists() && new File(lib, "ruby").exists()) { // NOI18N
-            try {
-                return lib.getCanonicalPath();
-            } catch (IOException ioe) {
-                Exceptions.printStackTrace(ioe);
-            }
+        File libDir = new File(lib);
+        if (!libDir.isDirectory()) {
+            LOGGER.warning("rubylibdir not found for " + interpreter + ", was: " + lib);
+            return null;
         }
-        throw new AssertionError("'lib/ruby' cannot be resolved for '" + interpreter + "' interpreter");
+        // info.getVersionLibDir() return e.g. .../lib/ruby/1.8
+        libDir = libDir.getParentFile();
+        if (libDir == null) {
+            return null;
+        }
+        libDir = libDir.getParentFile();
+        if (libDir == null) {
+            return null;
+        }
+        return libDir.getAbsolutePath();
+    }
+    
+    private String getRubiniusLibDir() {
+        File lib = new File(getHome(), "lib");
+        return lib.isDirectory() ? lib.getAbsolutePath() : null; // NOI18N
     }
 
-    public FileObject getLibFO() {
-        if (libFO == null) {
-            String lib = getLib();
-
+    /** Utility method. See {@link #getLibDir()}. */
+    public FileObject getLibDirFO() {
+        if (libDirFO == null) {
+            String lib = getLibDir();
             if (lib != null) {
-                libFO = FileUtil.toFileObject(new File(lib));
+                libDirFO = FileUtil.toFileObject(new File(lib));
             }
         }
-
-        return libFO;
+        return libDirFO;
     }
 
     /**
-     * Find the Ruby-specific library directory for the chosen Ruby. This is
-     * usually something like /foo/bar/lib/1.8/ (where Ruby was
-     * /foo/bar/bin/ruby) but it tries to work with other versions of Ruby as
-     * well (such as 1.9).
+     * Delegates to {@link Info#getLibDir()}.
      */
-    public String getLibDir() {
-        if (rubylib == null) {
-            File home = getHome();
-            assert home != null : "home not null";
-
-            if (isRubinius()) {
-                File lib = new File(home, "lib"); // NOI18N
-                return lib.exists() ? lib.getAbsolutePath() : null;
-            }
-            File lib = new File(home, "lib" + File.separator + "ruby"); // NOI18N
-
-            if (!lib.exists()) {
-                return null;
-            }
-
-            File f = new File(lib, DEFAULT_RUBY_RELEASE); // NOI18N
-
-            if (f.exists()) {
-                rubylib = f.getAbsolutePath();
-            } else {
-                // Search for a numbered directory
-                File[] children = lib.listFiles();
-
-                for (File c : children) {
-                    if (!c.isDirectory()) {
-                        continue;
-                    }
-
-                    String name = c.getName();
-
-                    if (name.matches("\\d+\\.\\d+")) { // NOI18N
-                        rubylib = c.getAbsolutePath();
-
-                        break;
-                    }
-                }
-            }
-
-            assert rubylib != null : "rubylib not null";
-        }
-
-        return rubylib;
+    public String getVersionLibDir() {
+        return info.getLibDir();
     }
 
     /** Return the site_ruby directory for the current ruby installation. Not cached. */
@@ -456,7 +421,7 @@ public final class RubyPlatform {
     }
 
     public boolean isValid() {
-        return new File(interpreter).isFile();
+        return new File(interpreter).isFile() && getLibDir() != null;
     }
 
     /**
@@ -632,21 +597,62 @@ public final class RubyPlatform {
     public String getFastDebuggerProblemsInHTML() {
         assert gemManager != null : "has gemManager when asking whether Fast Debugger is installed";
         StringBuilder errors = new StringBuilder();
-        checkAndReport(RUBY_DEBUG_IDE_NAME, RDEBUG_IDE_VERSION, errors);
-        checkAndReport(RUBY_DEBUG_BASE_NAME, RDEBUG_BASE_VERSION, errors);
+        checkAndReport(RUBY_DEBUG_IDE_NAME, getRequiredRDebugIDEVersions(), errors);
+        checkAndReport(RUBY_DEBUG_BASE_NAME, getRequiredRDebugBaseVersions(), errors);
         return errors.length() == 0 ? null : errors.toString();
     }
 
-    private void checkAndReport(final String gemName, final String gemVersion, final StringBuilder errors) {
-        if (!gemManager.isGemInstalledForPlatform(gemName, gemVersion, true)) {
-            errors.append(NbBundle.getMessage(RubyPlatform.class, "RubyPlatform.GemInVersionMissing", gemName, gemVersion));
+    /**
+     * Find out required version(s) of <i>ruby-debug-ide</i> gem for this
+     * platform sorted incrementally.
+     */
+    String[] getRequiredRDebugIDEVersions() {
+        if (isJRuby() && Util.compareVersions(info.getJVersion(), "1.1.1") >= 0) { // NOI18N
+            return new String[]{"0.1.11"}; // NOI18N
+        } else {
+            return new String[]{"0.1.10", "0.1.11"}; // NOI18N
+        }
+    }
+
+    /**
+     * Find out required version(s) of <i>ruby-debug-base</i> gem for this
+     * platform sorted incrementally.
+     */
+    String[] getRequiredRDebugBaseVersions() {
+        if (isJRuby() && Util.compareVersions(info.getJVersion(), "1.1.1") >= 0) { // NOI18N
+            return new String[]{"0.10.1"}; // NOI18N
+        } else {
+            return new String[]{"0.10.0", "0.10.1"}; // NOI18N
+        }
+    }
+
+    private void checkAndReport(final String gemName, final String[] gemVersions, final StringBuilder errors) {
+        boolean available = false;
+        for (String gemVersion : gemVersions) {
+            if (gemManager.isGemInstalledForPlatform(gemName, gemVersion, true)) {
+                available = true;
+                break;
+            }
+        }
+        if (!available) {
+            errors.append(NbBundle.getMessage(RubyPlatform.class, "RubyPlatform.GemInVersionMissing", gemName, gemVersions[gemVersions.length - 1]));
             errors.append("<br>"); // NOI18N
         }
     }
 
+    String getLatestRequiredRDebugIDEVersion() {
+        String[] versions = getRequiredRDebugIDEVersions();
+        return versions[versions.length - 1];
+    }
+    
+    String getLatestRequiredRDebugBaseVersion() {
+        String[] versions = getRequiredRDebugBaseVersions();
+        return versions[versions.length - 1];
+    }
+    
     public boolean installFastDebugger() {
         assert gemManager != null : "has gemManager when trying to install fast debugger";
-        gemManager.installGem(RUBY_DEBUG_IDE_NAME, false, false, RDEBUG_IDE_VERSION);
+        gemManager.installGem(RUBY_DEBUG_IDE_NAME, false, false, getLatestRequiredRDebugIDEVersion());
         return hasFastDebuggerInstalled();
     }
 
@@ -659,7 +665,7 @@ public final class RubyPlatform {
      */
     public FileObject getSystemRoot(FileObject file) {
         // See if the file is under the Ruby libraries
-        FileObject rubyLibFo = isRubinius() ? null : getLibFO();
+        FileObject rubyLibFo = isRubinius() ? null : getLibDirFO();
         FileObject rubyStubs = getRubyStubs();
         FileObject gemHome = gemManager != null ? gemManager.getGemHomeFO() : null;
 
@@ -798,6 +804,7 @@ public final class RubyPlatform {
         static final String RUBY_RELEASE_DATE = "ruby_release_date"; // NOI18N
         static final String RUBY_EXECUTABLE = "ruby_executable"; // NOI18N
         static final String RUBY_PLATFORM = "ruby_platform"; // NOI18N
+        static final String RUBY_LIB_DIR = "ruby_lib_dir"; // NOI18N
         static final String GEM_HOME = "gem_home"; // NOI18N
         static final String GEM_PATH = "gem_path"; // NOI18N
         static final String GEM_VERSION = "gem_version"; // NOI18N
@@ -811,6 +818,7 @@ public final class RubyPlatform {
         private String gemHome;
         private String gemPath;
         private String gemVersion;
+        private String libDir;
         
         Info(final Properties props) {
             this.kind = props.getProperty(RUBY_KIND);
@@ -819,6 +827,7 @@ public final class RubyPlatform {
             this.patchlevel = props.getProperty(RUBY_PATCHLEVEL);
             this.releaseDate = props.getProperty(RUBY_RELEASE_DATE);
             this.platform = props.getProperty(RUBY_PLATFORM);
+            this.libDir = props.getProperty(RUBY_LIB_DIR);
             setGemHome(props.getProperty(GEM_HOME));
             this.gemPath = props.getProperty(GEM_PATH);
             this.gemVersion = props.getProperty(GEM_VERSION);
@@ -840,7 +849,9 @@ public final class RubyPlatform {
                     "jruby-1.1", "org.netbeans.modules.ruby.platform", false);  // NOI18N
             // XXX handle valid case when it is not available, see #124534
             assert (jrubyHome != null && jrubyHome.isDirectory()) : "Default platform available";
-            info.gemHome = FileUtil.toFile(FileUtil.toFileObject(jrubyHome).getFileObject("/lib/ruby/gems/1.8")).getAbsolutePath(); // NOI18N
+            FileObject libDirFO = FileUtil.toFileObject(jrubyHome).getFileObject("/lib/ruby");
+            info.libDir = FileUtil.toFile(libDirFO.getFileObject("/1.8")).getAbsolutePath(); // NOI18N
+            info.gemHome = FileUtil.toFile(libDirFO.getFileObject("/gems/1.8")).getAbsolutePath(); // NOI18N
             info.gemPath = info.gemHome;
             info.gemVersion = "1.0.1 (1.0.1)"; // NOI18N
             return info;
@@ -912,6 +923,11 @@ public final class RubyPlatform {
         
         public String getVersion() {
             return version;
+        }
+
+        /** Returns content of <code>RbConfig::CONFIG['rubylibdir']</code>. */
+        public String getLibDir() {
+            return libDir;
         }
 
         public @Override String toString() {

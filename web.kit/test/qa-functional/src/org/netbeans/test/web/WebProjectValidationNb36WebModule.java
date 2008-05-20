@@ -134,6 +134,7 @@ public class WebProjectValidationNb36WebModule extends WebProjectValidation {
                 File.separator+PROJECT_NAME+"Prj");
         nameStep.next();
         NewWebProjectServerSettingsStepOperator serverStep = new NewWebProjectServerSettingsStepOperator();
+        serverStep.cboServer().selectItem(0);
         serverStep.next();
         NewWebProjectSourcesStepOperator srcStep =  new NewWebProjectSourcesStepOperator();
         srcStep.finish();

@@ -56,7 +56,7 @@ import javax.swing.text.JTextComponent;
 import org.mozilla.javascript.Node;
 import org.netbeans.editor.ext.html.parser.SyntaxElement;
 import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.Completable;
+import org.netbeans.modules.gsf.api.CodeCompletionHandler;
 import org.netbeans.modules.gsf.api.CompletionProposal;
 import org.netbeans.modules.gsf.api.ElementHandle;
 import org.netbeans.modules.gsf.api.ElementKind;
@@ -71,8 +71,11 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.lexer.TokenUtilities;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.gsf.api.CodeCompletionContext;
+import org.netbeans.modules.gsf.api.CodeCompletionResult;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.gsf.api.ParserResult;
+import org.netbeans.modules.gsf.spi.DefaultCompletionResult;
 import org.netbeans.modules.html.editor.gsf.HtmlParserResult;
 import org.netbeans.modules.javascript.editing.JsParser.Sanitize;
 import org.netbeans.modules.javascript.editing.lexer.Call;
@@ -120,7 +123,7 @@ import org.openide.util.NbBundle;
  * 
  * @author Tor Norbye
  */
-public class JsCodeCompletion implements Completable {
+public class JsCodeCompletion implements CodeCompletionHandler {
     private static ImageIcon keywordIcon;
     private boolean caseSensitive;
     private static final String[] REGEXP_WORDS =
@@ -378,8 +381,15 @@ public class JsCodeCompletion implements Completable {
         
     }
 
-    public List<CompletionProposal> complete(CompilationInfo info, int lexOffset, String prefix,
-            NameKind kind, QueryType queryType, boolean caseSensitive, HtmlFormatter formatter) {
+    public CodeCompletionResult complete(CodeCompletionContext context) {
+        CompilationInfo info = context.getInfo();
+        int lexOffset = context.getCaretOffset();
+        String prefix = context.getPrefix();
+        NameKind kind = context.getNameKind();
+        QueryType queryType = context.getQueryType();
+        this.caseSensitive = context.isCaseSensitive();
+        HtmlFormatter formatter = context.getFormatter();
+        
         // Temporary: case insensitive matches don't work very well for JavaScript
         if (kind == NameKind.CASE_INSENSITIVE_PREFIX) {
             kind = NameKind.PREFIX;
@@ -388,7 +398,6 @@ public class JsCodeCompletion implements Completable {
         if (prefix == null) {
             prefix = "";
         }
-        this.caseSensitive = caseSensitive;
 
         final Document document;
         try {
@@ -403,7 +412,8 @@ public class JsCodeCompletion implements Completable {
         final BaseDocument doc = (BaseDocument)document;
 
         List<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
-
+        DefaultCompletionResult completionResult = new DefaultCompletionResult(proposals, false);
+        
         JsParseResult parseResult = AstUtilities.getParseResult(info);
         doc.readLock(); // Read-lock due to Token hierarchy use
         try {
@@ -420,6 +430,7 @@ public class JsCodeCompletion implements Completable {
             // and I don't want to pass dozens of parameters from method to method; just pass
             // a request context with supporting info needed by the various completion helpers i
             CompletionRequest request = new CompletionRequest();
+            request.completionResult = completionResult;
             request.result = parseResult;
             request.formatter = formatter;
             request.lexOffset = lexOffset;
@@ -437,26 +448,26 @@ public class JsCodeCompletion implements Completable {
 
             Token<? extends TokenId> token = LexUtilities.getToken(doc, lexOffset);
             if (token == null) {
-                return proposals;
+                return completionResult;
             }
             
             TokenId id = token.id();
             if (id == JsTokenId.LINE_COMMENT) {
                 // TODO - Complete symbols in comments?
-                return proposals;
+                return completionResult;
             } else if (id == JsTokenId.BLOCK_COMMENT) {
                 try {
                     completeComments(proposals, request);
                 } catch (BadLocationException ex) {
                     Exceptions.printStackTrace(ex);
                 }
-                return proposals;
+                return completionResult;
             } else if (id == JsTokenId.STRING_LITERAL || id == JsTokenId.STRING_END) {
                 completeStrings(proposals, request);
-                return proposals;
+                return completionResult;
             } else if (id == JsTokenId.REGEXP_LITERAL || id == JsTokenId.REGEXP_END) {
                 completeRegexps(proposals, request);
-                return proposals;
+                return completionResult;
             }
             
             if (root != null) {
@@ -478,7 +489,7 @@ public class JsCodeCompletion implements Completable {
 
             // If we're in a call, add in some info and help for the code completion call
             if (completeParameters(proposals, request)) {
-                return proposals;
+                return completionResult;
             }
             
             // Don't do empty-completion for parameters
@@ -490,17 +501,17 @@ public class JsCodeCompletion implements Completable {
             
             if (root == null) {
                 completeKeywords(proposals, request);
-                return proposals;
+                return completionResult;
             }
 
             // Try to complete "new" RHS
             if (completeNew(proposals, request)) {
-               return proposals;
+                return completionResult;
             }
 
             if (call.getLhs() != null || request.call.getPrevCallParenPos() != -1) {
                 completeObjectMethod(proposals, request);
-                return proposals;
+                return completionResult;
             }
 
             completeKeywords(proposals, request);
@@ -508,18 +519,18 @@ public class JsCodeCompletion implements Completable {
             addLocals(proposals, request);
             
             if (completeObjectMethod(proposals, request)) {
-                return proposals;
+                return completionResult;
             }
 
             // Try to complete methods
             if (completeFunctions(proposals, request)) {
-               return proposals;
+                return completionResult;
             }
         } finally {
             doc.readUnlock();
         }
         
-        return proposals;
+        return completionResult;
     }
 
     private void addLocals(List<CompletionProposal> proposals, CompletionRequest request) {
@@ -2381,6 +2392,7 @@ public class JsCodeCompletion implements Completable {
     }
     
     private static class CompletionRequest {
+        private DefaultCompletionResult completionResult;
         private TokenHierarchy<Document> th;
         private CompilationInfo info;
         private AstPath path;

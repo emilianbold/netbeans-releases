@@ -43,6 +43,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.util.List;
 import java.util.logging.Level;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.subversion.util.SvnUtils;
@@ -50,6 +51,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
+import org.netbeans.modules.subversion.util.FileUtils;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.ISVNDirEntry;
 import org.tigris.subversion.svnclientadapter.ISVNInfo;
@@ -73,17 +75,19 @@ public abstract class AbstractSvnTest extends NbTestCase {
     private SVNUrl repoUrl;
     private File wc;
     private File repoDir;
+    private String repoPath;
+    private SVNUrl repo2Url;
         
     public AbstractSvnTest(String testName) throws MalformedURLException, SVNClientException {
         super(testName);
         workDir = new File(System.getProperty("work.dir")); 
         FileUtil.refreshFor(workDir);          
         repoDir = new File(System.getProperty("work.dir") + "/repo");
-        String repopath = repoDir.getAbsolutePath();
-        if(repopath.startsWith("/")) {
-            repopath = repopath.substring(1, repopath.length());
+        repoPath = repoDir.getAbsolutePath();
+        if(repoPath.startsWith("/")) {
+            repoPath = repoPath.substring(1, repoPath.length());
         }
-        repoUrl = new SVNUrl("file:///" + repopath);
+        
         wc = new File(workDir, getName() + "_wc");        
         CmdLineClientAdapterFactory.setup13(null);                                         
     }   
@@ -91,6 +95,8 @@ public abstract class AbstractSvnTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {          
         super.setUp();      
+        
+        repoUrl = new SVNUrl(getRepoURLProtocol() + repoPath);
         
         System.setProperty("netbeans.user", System.getProperty("work.dir") + "/cache");
         cache = Subversion.getInstance().getStatusCache();
@@ -103,7 +109,16 @@ public abstract class AbstractSvnTest extends NbTestCase {
         if(importOnSetup()) svnimportWC();                   
     }
     
-    protected abstract boolean importOnSetup(); 
+    protected boolean importOnSetup() {
+        if(getName().startsWith("testCheckout")) {
+            return false;
+        } 
+        return true;
+    }
+
+    protected String getRepoURLProtocol() {
+        return "file:///";
+    }
     
     @Override
     protected void tearDown() throws Exception {
@@ -116,14 +131,27 @@ public abstract class AbstractSvnTest extends NbTestCase {
         return Level.FINE;
     }
         
-    protected void commit(File folder) throws SVNClientException {
+    protected void commit(File folder, String msg) throws SVNClientException {
         add(folder);
         try {
-            getClient().commit(new File[]{ folder }, "commit", true);
+            getClient().commit(new File[]{ folder }, msg, true);
         } catch (SVNClientException e) {
-            fail("commit was supposed to work");
+            if(e.getMessage().toLowerCase().indexOf("out of date") > -1) {
+                try {
+                    getClient().update(folder, SVNRevision.HEAD, true);
+                    getClient().commit(new File[]{ folder }, msg, true);
+                } catch (SVNClientException e1) {
+                    fail("commit was supposed to work " + e1.getMessage());   
+                }
+            } else {
+                fail("commit was supposed to work " + e.getMessage());   
+            }            
         }    
         //assertStatus(SVNStatusKind.NORMAL, folder);
+    }
+    
+    protected void commit(File folder) throws SVNClientException {
+        commit(folder, "commit");
     }
     
     protected void remove(File file) throws SVNClientException {        
@@ -133,11 +161,32 @@ public abstract class AbstractSvnTest extends NbTestCase {
     protected void copy(SVNUrl urlFrom, SVNUrl urlTo) throws SVNClientException {        
         getClient().copy(urlFrom, urlTo, "copy", SVNRevision.HEAD);
     }
-
+    
+    protected void ignore(File file) throws SVNClientException {        
+        File parent =  file.getParentFile();
+        List patterns = getClient().getIgnoredPatterns(parent);
+        String path = file.getName();
+        if(!patterns.contains(path)) {            
+            patterns.add(path);
+        }
+        getClient().setIgnoredPatterns(parent, patterns);
+        assertStatus(SVNStatusKind.IGNORED, file);
+    }
+    
     protected void add(File file) throws SVNClientException {
-        ISVNStatus status = getSVNStatus(file);
+        ISVNStatus status = getSVNStatus(file);        
         if(status.getTextStatus().equals(SVNStatusKind.UNVERSIONED)) {
-            getClient().addFile(file);
+            try {
+                getClient().addFile(file);
+            } catch (SVNClientException e) {
+                if(e.getMessage().indexOf("is not a working copy") > -1 && 
+                   containsParent(e.getMessage(), file.getParentFile())) 
+                {
+                    // ignore
+                } else {
+                    throw e;
+                }
+            }
         }
         if(file.isFile()) {
             return; 
@@ -151,6 +200,22 @@ public abstract class AbstractSvnTest extends NbTestCase {
             }            
         }
     }
+   
+    protected void mkdir(SVNUrl url) throws SVNClientException {
+        getClient().mkdir(url, "mkdir");
+    }
+   
+    protected void setProperty(File file, String propName, String value) throws SVNClientException {
+        getClient().propertySet(file, propName, value, false);
+    }    
+    
+    protected void update(File file) throws SVNClientException {
+        update(file, SVNRevision.HEAD);
+    }
+    
+    protected void update(File file, SVNRevision rev) throws SVNClientException {
+        getClient().update(file, rev, true);
+    }    
     
     protected void cleanUpRepo() throws SVNClientException {
         ISVNClientAdapter client = getClient();
@@ -210,6 +275,16 @@ public abstract class AbstractSvnTest extends NbTestCase {
     protected ISVNStatus getSVNStatus(File file) throws SVNClientException {
         return getClient().getSingleStatus(file);        
     }
+
+    private boolean containsParent(String message, File parent) {
+        while(parent != null) {
+            if(message.indexOf(parent.getAbsolutePath()) > -1) {
+                return true;
+            }
+            parent = parent.getParentFile();
+        }
+        return false;
+    }
     
     private ISVNClientAdapter getClient() {
         return SVNClientAdapterFactory.createSVNClient(CmdLineClientAdapterFactory.COMMANDLINE_CLIENT);
@@ -247,10 +322,16 @@ public abstract class AbstractSvnTest extends NbTestCase {
     protected void initRepo(File repoDir) throws MalformedURLException, IOException, InterruptedException, SVNClientException {        
         if(!repoDir.exists()) {
             repoDir.mkdirs();            
-            String[] cmd = {"svnadmin", "create", repoDir.getAbsolutePath()};
+            String[] cmd = new String[] {"svnadmin", "create", repoDir.getAbsolutePath()};
             Process p = Runtime.getRuntime().exec(cmd);
-            p.waitFor();   
+            p.waitFor();               
         } 
+        String repopath = System.getProperty("work.dir") + "/repo2";
+        File repo2Dir = new File(repopath);
+        if(!repo2Dir.exists()) {
+            FileUtils.copyDirFiles(getRepoDir(), repo2Dir);    
+        }        
+        repo2Url = new SVNUrl("file://" + repopath);        
     }      
     
     protected void svnimportWC() throws SVNClientException {
@@ -321,7 +402,11 @@ public abstract class AbstractSvnTest extends NbTestCase {
     protected ISVNInfo getInfo(File file) throws SVNClientException {
         return getClient().getInfo(file);
     }
-
+    
+    protected void copy(File file, File copy) throws SVNClientException {
+        getClient().copy(file, copy);
+    }
+    
     protected ISVNDirEntry[] list(SVNUrl url) throws SVNClientException {
         return getClient().getList(url, SVNRevision.HEAD, false);
     }
@@ -357,6 +442,10 @@ public abstract class AbstractSvnTest extends NbTestCase {
         return repoUrl;
     }
     
+    protected SVNUrl getRepo2Url() {
+        return repo2Url;
+    }
+    
     protected File getRepoDir() {
         return repoDir;
     }
@@ -367,6 +456,10 @@ public abstract class AbstractSvnTest extends NbTestCase {
 
     protected SVNUrl getTestUrl() {
         return repoUrl.appendPath(getName());
+    }
+    
+    protected SVNUrl getFileUrl(File file) {
+        return getTestUrl().appendPath(getWC().getName()).appendPath(file.getName());
     }
     
 }

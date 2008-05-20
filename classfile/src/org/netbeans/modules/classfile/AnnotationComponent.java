@@ -87,6 +87,7 @@ public class AnnotationComponent {
 	return value;
     }
 
+    @Override
     public String toString() {
 	return "name=" + name + ", value=" + value;
     }

@@ -49,7 +49,6 @@ import org.openide.filesystems.FileObject;
 
 /**
  * @author ads
- *
  */
 public final class Utils {
 

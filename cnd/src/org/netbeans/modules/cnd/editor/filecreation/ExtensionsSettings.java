@@ -63,13 +63,13 @@ public class ExtensionsSettings {
         String extensions = preferences.get(EXTENSIONS_LIST_PREFIX + name, null); //NOI18N
         if (extensions == null) {
             savedExtensionsList =  (CndExtensionList)che.getDefaultExtensionList();
+            String dext = che.getDefaultDefaultExtension();
+            assert savedExtensionsList.isRegistered(dext);
+            setDefaultExtension( dext, false );
         } else {
             savedExtensionsList = new CndExtensionList(extensions.split(DELIMITER));
         }
         assert savedExtensionsList.extensions().hasMoreElements();
-        String dext = che.getDefaultDefaultExtension();
-        assert savedExtensionsList.isRegistered(dext);
-        setDefaultExtension( dext, false );
 
     }
     
@@ -113,7 +113,9 @@ public class ExtensionsSettings {
     
     private void setDefaultExtension(String value, boolean addIfMissed) {
         if (addIfMissed && !isKnownExtension(value)) {
-            getExtensionList().addExtension(value);
+            CndExtensionList el = getExtensionList();
+            el.addExtension(value);
+            setExtensionList(el);
         }
         preferences.put(DEFAULT_EXTENSION_PREFIX + name, value);
     }

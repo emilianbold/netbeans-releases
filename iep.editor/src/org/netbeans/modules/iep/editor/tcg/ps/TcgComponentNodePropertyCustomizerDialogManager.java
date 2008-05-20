@@ -116,7 +116,7 @@ public class TcgComponentNodePropertyCustomizerDialogManager {
         
         String helpID = prop.getModelComponent().getHelpID();
 //        if(helpID == null) {
-//        	helpID = "iep_work_iepops"; //NO I18N
+//            helpID = "iep_work_iepops"; //NO I18N
 //        }
         
         descriptor.setHelpCtx(new HelpCtx(helpID));

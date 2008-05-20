@@ -54,20 +54,18 @@ import org.openide.filesystems.FileObject;
  * copied from ruby project
  * @author Tomas Zezula
  */
-public class PhpProjectEncodingQueryImpl extends FileEncodingQueryImplementation 
-        implements PropertyChangeListener {
-    
-    
+public class PhpProjectEncodingQueryImpl extends FileEncodingQueryImplementation implements PropertyChangeListener {
+
     private final PropertyEvaluator eval;
     private Charset cache;
-    
+
     /** Creates a new instance of J2SEProjectEncodingQueryImpl */
     public PhpProjectEncodingQueryImpl(final PropertyEvaluator eval) {
         assert eval != null;
         this.eval = eval;
         this.eval.addPropertyChangeListener(this);
     }
-    
+
     public Charset getEncoding(FileObject file) {
         assert file != null;
         synchronized (this) {
@@ -90,8 +88,8 @@ public class PhpProjectEncodingQueryImpl extends FileEncodingQueryImplementation
             return cache;
         }
     }
-   
-    public void propertyChange(PropertyChangeEvent event) {        
+
+    public void propertyChange(PropertyChangeEvent event) {
         String propName = event.getPropertyName();
         if (propName == null || propName.equals(PhpProjectProperties.SOURCE_ENCODING)) {
             synchronized (this) {
@@ -99,5 +97,4 @@ public class PhpProjectEncodingQueryImpl extends FileEncodingQueryImplementation
             }
         }
     }
-    
 }

@@ -59,11 +59,12 @@ final class SelectLibraryVisualPanel extends JPanel {
 
     private static final long serialVersionUID = -3903508171781536427L;
     
-    public SelectLibraryVisualPanel() {
+    public SelectLibraryVisualPanel(SelectLibraryPanel panel) {
+        myPanel = panel;
         getAccessibleContext().setAccessibleDescription(getMessage("ACS_SelectLibraryPanel"));
         putClientProperty("NewFileWizard_Title", getMessage("LBL_LibraryWizardTitle"));
-        myPanel = LibraryChooser.createPanel(null, null);
-        myPanel.addPropertyChangeListener(new PropertyChangeListener() {
+        myInnerPanel = LibraryChooser.createPanel(null, new ClassLibraryFilter() );
+        myInnerPanel.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 if (LibraryChooser.Panel.PROP_SELECTED_LIBRARIES.equals(evt.getPropertyName())) {
                     checkValidity();
@@ -71,25 +72,37 @@ final class SelectLibraryVisualPanel extends JPanel {
             }
         });
         setLayout(new BorderLayout());
-        add(myPanel.getVisualComponent(), BorderLayout.CENTER);
+        add(myInnerPanel.getVisualComponent(), BorderLayout.CENTER);
     }
     
-    private void checkValidity() {
-        mySettings.putProperty(BasicConfVisualPanel.ERROR_MESSAGE,null);
+    private void checkValidity() { 
+        mySettings.putProperty(
+                CustomComponentWizardIterator.WIZARD_PANEL_ERROR_MESSAGE, null);
         if (getSelectedLibrary() != null) {
-            firePropertyChange(BasicConfVisualPanel.VALID, null, true );
+            setValid(true);
         } else {
-            firePropertyChange(BasicConfVisualPanel.VALID, null, false );
+            setValid(false);
         }
     }
     
+    private final void setValid(boolean valid) {
+        myPanel.setValid(valid);
+    }
+
     private Library getSelectedLibrary() {
-        Set<Library> selection = myPanel.getSelectedLibraries();
+        Set<Library> selection = myInnerPanel.getSelectedLibraries();
         return selection.size() == 1 ? selection.iterator().next() : null;
     }
     
     void storeData() {
-        //data.setLibrary(getSelectedLibrary());
+        Library oldLib = (Library) mySettings.getProperty(NewLibraryDescriptor.LIBRARY);
+        Library newLib = getSelectedLibrary();
+        mySettings.putProperty( NewLibraryDescriptor.LIBRARY , newLib);
+        // clean library info if library was changed
+        if (!newLib.equals(oldLib)){
+            mySettings.putProperty(NewLibraryDescriptor.LIB_NAME,  null );
+            mySettings.putProperty(NewLibraryDescriptor.DISPLAY_NAME, null );
+        }
     }
     
     void readData( WizardDescriptor settings ) {
@@ -109,7 +122,19 @@ final class SelectLibraryVisualPanel extends JPanel {
         return NbBundle.getMessage(SelectLibraryVisualPanel.class, key);
     }
     
+    private class ClassLibraryFilter implements LibraryChooser.Filter{
+
+        public boolean accept(Library library) {
+            if (NewLibraryDescriptor.LIBRARY_TYPE_J2SE.equals(library.getType())) {
+                return true;
+            }
+            return false;
+        }
+        
+    }
+    
     private WizardDescriptor mySettings;
-    private final LibraryChooser.Panel myPanel;
+    private final LibraryChooser.Panel myInnerPanel;
+    private SelectLibraryPanel myPanel;
     
 }

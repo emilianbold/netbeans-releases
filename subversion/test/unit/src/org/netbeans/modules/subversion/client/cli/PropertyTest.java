@@ -44,7 +44,6 @@ import java.util.HashMap;
 import java.util.Map;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.ISVNProperty;
-import org.tigris.subversion.svnclientadapter.ISVNStatus;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNStatusKind;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
@@ -54,6 +53,8 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  * @author tomas
  */
 public class PropertyTest extends AbstractCLITest {
+    
+    // XXX test ignored patterns
     
     public PropertyTest(String testName) throws Exception {
         super(testName);

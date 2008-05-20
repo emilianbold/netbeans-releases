@@ -9,8 +9,8 @@ import org.w3c.dom.Element;
 
 public class DocumentationImpl extends IEPComponentBase implements Documentation {
 
-	public DocumentationImpl(IEPModel model,  Element e) {
-    	super(model, e);
+    public DocumentationImpl(IEPModel model,  Element e) {
+        super(model, e);
     }
 
     public DocumentationImpl(IEPModel model) {
@@ -27,11 +27,11 @@ public class DocumentationImpl extends IEPComponentBase implements Documentation
     }
 
     public void setTextContent(String content) {
-    	super.setText(TEXT_CONTENT_PROPERTY, content);
-    	
+        super.setText(TEXT_CONTENT_PROPERTY, content);
+        
     }
     
     public String getTextContent() {
-    	return super.getText();
+        return super.getText();
     }
 }

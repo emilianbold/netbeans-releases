@@ -44,19 +44,145 @@ package org.netbeans.modules.vmd.componentssupport.ui.wizard;
 
 import java.awt.Dialog;
 
+import java.util.Iterator;
+import java.util.List;
+import java.util.Vector;
+import javax.swing.AbstractListModel;
+import javax.swing.DefaultListModel;
+import javax.swing.JPanel;
+
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
-import org.openide.WizardDescriptor.Iterator;
 
 /**
  *
- * @author  den
+ * @author  ads
  */
-public class JavaMELibsVisualPanel extends javax.swing.JPanel {
+public class JavaMELibsVisualPanel extends JPanel {
 
+    private static final String CONTENT_NUMBERED  = "WizardPanel_contentNumbered";  // NOI18N
+    private static final String CONTENT_DISPLAYED = "WizardPanel_contentDisplayed"; // NOI18N
+    private static final String AUTO_WIZARD_STYLE = "WizardPanel_autoWizardStyle";  // NOI18N
+    
     /** Creates new form JavaMELibsVisualPanel */
     public JavaMELibsVisualPanel() {
         initComponents();
+        
+        myLibDescList.setModel( new LibraryListModel() );
+    }
+
+    void readData( WizardDescriptor settings ) {
+        myWizardDescriptor = settings;
+        List<String> libNames = (List<String>)myWizardDescriptor.getProperty( 
+                CustomComponentWizardIterator.LIB_NAMES);
+        List<String> libDisplayNames = (List<String>)myWizardDescriptor.getProperty( 
+                CustomComponentWizardIterator.LIB_DISPLAY_NAMES);
+        
+        LibraryListModel model = (LibraryListModel)myLibDescList.getModel();
+        model.updateModel(libNames, libDisplayNames);
+    }
+
+    
+    private class LibraryListModel extends AbstractListModel{
+
+        private Vector delegate = new Vector();
+
+        public void updateModel(List<String> libNames,  List<String> libDisplayNames){
+            // clean
+            removeAllElements();
+            // fil with new elements
+            if (libNames == null || libDisplayNames == null ){
+                return;
+            }
+            assert libNames.size() == libDisplayNames.size() 
+                    : "libraries data is not consistent";
+            
+            Iterator<String> itN = libNames.iterator();
+            Iterator<String> itDN = libDisplayNames.iterator();
+            while (itN.hasNext()){
+                String name = itN.next();
+                String displayName = itDN.next();
+                addElement(displayName + " [ " + name + " ]"); // NOI18N 
+            }
+            
+        }
+                
+        /**
+         * Adds the specified component to the end of this list. 
+         *
+         * @param   obj   the component to be added
+         * @see Vector#addElement(Object)
+         */
+        public void addElement(Object obj) {
+            int index = delegate.size();
+            delegate.addElement(obj);
+            fireIntervalAdded(this, index, index);
+        }
+
+        /**
+         * Removes all components from this list and sets its size to zero.
+         * <blockquote>
+         * <b>Note:</b> Although this method is not deprecated, the preferred
+         *    method to use is <code>clear</code>, which implements the 
+         *    <code>List</code> interface defined in the 1.2 Collections framework.
+         * </blockquote>
+         *
+         * @see #clear()
+         * @see Vector#removeAllElements()
+         */
+        public void removeAllElements() {
+            int index1 = delegate.size() - 1;
+            delegate.removeAllElements();
+            if (index1 >= 0) {
+                fireIntervalRemoved(this, 0, index1);
+            }
+        }
+
+        /**
+         * Removes the element at the specified position in this list.
+         * Returns the element that was removed from the list.
+         * <p>
+         * Throws an <code>ArrayIndexOutOfBoundsException</code>
+         * if the index is out of range
+         * (<code>index &lt; 0 || index &gt;= size()</code>).
+         *
+         * @param index the index of the element to removed
+         */
+        public Object remove(int index) {
+            Object rv = delegate.elementAt(index);
+            delegate.removeElementAt(index);
+            fireIntervalRemoved(this, index, index);
+            return rv;
+        }
+
+        public int getSize() {
+            return delegate.size();
+        }
+
+        public Object getElementAt(int index) {
+            return delegate.elementAt(index);
+        }
+
+
+    }
+            
+    void storeData( WizardDescriptor settings ) {
+        /*
+         * nothing to save. 
+         * UI on this step just shows list of libraries stored as the following 
+         * properties by NewLibraryDescriptor.instantiate():
+         * (List<Library>)settings.getProperty( 
+         *        CustomComponentWizardIterator.LIBRARIES);
+         * (List<String>)settings.getProperty( 
+         *        CustomComponentWizardIterator.LIB_NAMES);
+         * (List<String>)settings.getProperty( 
+         *        CustomComponentWizardIterator.LIB_DISPLAY_NAMES);
+         * 
+         * Libraries are configured if all of the folowing is true
+         * - all three lists are not null
+         * - all three lists are not empty
+         * - all thre lists have the same size
+         */
     }
 
     /** This method is called from within the constructor to
@@ -75,20 +201,25 @@ public class JavaMELibsVisualPanel extends javax.swing.JPanel {
         myRemoveButton = new javax.swing.JButton();
 
         myDescLabel.setLabelFor(myLibDescList);
-        myDescLabel.setText(org.openide.util.NbBundle.getMessage(JavaMELibsVisualPanel.class, "LBL_AddedLibDescriptors")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(myDescLabel, org.openide.util.NbBundle.getMessage(JavaMELibsVisualPanel.class, "LBL_AddedLibDescriptors")); // NOI18N
 
         jScrollPane1.setViewportView(myLibDescList);
         myLibDescList.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JavaMELibsVisualPanel.class, "ACSN_DescriptorsList")); // NOI18N
         myLibDescList.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JavaMELibsVisualPanel.class, "ACSD_DescriptorsList")); // NOI18N
 
-        myAddButton.setText(org.openide.util.NbBundle.getMessage(JavaMELibsVisualPanel.class, "BTN_AddLibDesc")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(myAddButton, org.openide.util.NbBundle.getMessage(JavaMELibsVisualPanel.class, "BTN_AddLibDesc")); // NOI18N
         myAddButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addPressed(evt);
             }
         });
 
-        myRemoveButton.setText(org.openide.util.NbBundle.getMessage(JavaMELibsVisualPanel.class, "BTN_LibRemove")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(myRemoveButton, org.openide.util.NbBundle.getMessage(JavaMELibsVisualPanel.class, "BTN_LibRemove")); // NOI18N
+        myRemoveButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                removePressed(evt);
+            }
+        });
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -98,8 +229,8 @@ public class JavaMELibsVisualPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 310, Short.MAX_VALUE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 306, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
                             .add(myAddButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .add(myRemoveButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
@@ -117,8 +248,8 @@ public class JavaMELibsVisualPanel extends javax.swing.JPanel {
                         .add(myAddButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(myRemoveButton))
-                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(139, Short.MAX_VALUE))
+                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 260, Short.MAX_VALUE))
+                .addContainerGap())
         );
 
         myDescLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JavaMELibsVisualPanel.class, "ACSN_DescLabel")); // NOI18N
@@ -130,14 +261,29 @@ public class JavaMELibsVisualPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
 private void addPressed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addPressed
-    Iterator iterator = new NewLibraryDescriptor();
-    WizardDescriptor desc = new WizardDescriptor( iterator );
-    desc.putProperty( "WizardPanel_autoWizardStyle", true );
-    desc.putProperty( "WizardPanel_contentDisplayed", true );
-    desc.putProperty( "WizardPanel_contentNumbered", true );
-    Dialog dialog = DialogDisplayer.getDefault().createDialog( desc );
+    WizardDescriptor.Iterator iterator = new NewLibraryDescriptor( myWizardDescriptor );
+    myInnerDescriptor = new WizardDescriptor( iterator );
+    myInnerDescriptor.putProperty( AUTO_WIZARD_STYLE, true );
+    myInnerDescriptor.putProperty( CONTENT_DISPLAYED, true );
+    myInnerDescriptor.putProperty( CONTENT_NUMBERED, true );
+    Dialog dialog = DialogDisplayer.getDefault().createDialog( myInnerDescriptor );
     dialog.setVisible( true );
+    readData(myWizardDescriptor);
 }//GEN-LAST:event_addPressed
+
+private void removePressed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removePressed
+    int index = myLibDescList.getSelectedIndex();
+    // remove in UI
+    ((LibraryListModel)myLibDescList.getModel()).remove(index);
+    // remove from WizardDescriptor
+    List<String> libNames = (List<String>)myWizardDescriptor.getProperty( 
+                CustomComponentWizardIterator.LIB_NAMES);
+    List<String> libDisplayNames = (List<String>)myWizardDescriptor.getProperty( 
+                CustomComponentWizardIterator.LIB_DISPLAY_NAMES);
+    libNames.remove(index);
+    libDisplayNames.remove(index);
+    
+}//GEN-LAST:event_removePressed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -147,5 +293,8 @@ private void addPressed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addPr
     private javax.swing.JList myLibDescList;
     private javax.swing.JButton myRemoveButton;
     // End of variables declaration//GEN-END:variables
+
+    private WizardDescriptor myWizardDescriptor;
+    private WizardDescriptor myInnerDescriptor;
 
 }

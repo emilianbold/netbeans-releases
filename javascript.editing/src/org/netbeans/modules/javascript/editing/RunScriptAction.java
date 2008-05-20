@@ -64,6 +64,7 @@ import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
 
+import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
@@ -307,5 +308,9 @@ public class RunScriptAction extends AbstractAction implements EditorAction {
 
             return false;
         }
+    }
+
+    public boolean appliesTo(String mimeType) {
+        return mimeType.equals(JsTokenId.JAVASCRIPT_MIME_TYPE);
     }
 }

@@ -179,7 +179,6 @@
     <target name="do-xml">
         <subant target="${action}" inheritAll="false">
             <buildpath location="${home}/print"/>
-            <buildpath location="${home}/xml.kit"/>
             <buildpath location="${home}/xml.search"/>
             <buildpath location="${home}/xml.xpath.ext"/>
             <buildpath location="${home}/xml.wsdl.extensions"/>
@@ -219,9 +218,8 @@
     <target name="clean-soa"><antcall target="do-soa"><param name="action" value="clean"/></antcall></target>
     <target name="do-soa">
         <subant target="${action}" inheritAll="false">
-            <buildpath location="${home}/soa.kit/build.xml"/>
-            <buildpath location="${home}/soa.validation/build.xml"/>
             <buildpath location="${home}/soa.ui/build.xml"/>
+            <buildpath location="${home}/soa.validation/build.xml"/>
             <buildpath location="${home}/soa.mappercore/build.xml"/>
             <buildpath location="${home}/soa.mapper/build.xml"/>
             <buildpath location="${home}/soa.reportgenerator/build.xml"/>
@@ -233,7 +231,6 @@
     <target name="clean-bpel"><antcall target="do-bpel"><param name="action" value="clean"/></antcall></target>
     <target name="do-bpel">
         <subant target="${action}" inheritAll="false">
-            <buildpath location="${home}/bpel.kit/build.xml"/>
             <buildpath location="${home}/bpel.help/build.xml"/>
             <buildpath location="${home}/bpel.model/build.xml"/>
             <buildpath location="${home}/bpel.editors.api/build.xml"/>

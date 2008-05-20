@@ -42,6 +42,7 @@ package org.netbeans.modules.subversion.client.cli.commands;
 import java.io.File;
 import java.io.IOException;
 import org.netbeans.modules.subversion.client.cli.SvnCommand;
+import org.tigris.subversion.svnclientadapter.ISVNNotifyListener;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
@@ -90,22 +91,29 @@ public class CopyCommand extends SvnCommand {
     }
     
     @Override
+    protected int getCommand() {
+        return ISVNNotifyListener.Command.COPY;
+    }
+    
+    @Override
     public void prepareCommand(Arguments arguments) throws IOException {        
         arguments.add("copy");        
         switch(type) {
             case url2url: 
                 arguments.add(fromUrl);
                 arguments.add(toUrl);        
-                arguments.add(rev);                
+                if(rev != null) arguments.add(rev);                
                 break;
             case url2file:     
                 arguments.add(fromUrl);
                 arguments.add(toFile);        
-                arguments.add(rev);                
+                if(rev != null) arguments.add(rev);                
+                setCommandWorkingDirectory(toFile);                
                 break;
             case file2url:                     
                 arguments.add(fromFile);        
                 arguments.add(toUrl);
+                setCommandWorkingDirectory(fromFile);                
                 break;
             default :    
                 throw new IllegalStateException("Illegal copytype: " + type);                             

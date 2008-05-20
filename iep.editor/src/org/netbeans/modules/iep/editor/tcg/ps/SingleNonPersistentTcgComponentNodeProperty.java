@@ -53,25 +53,25 @@ public class SingleNonPersistentTcgComponentNodeProperty extends Node.Property {
     
     
     public static SingleNonPersistentTcgComponentNodeProperty newInstance(TcgPropertyType propertyType, 
-    												   OperatorComponent component,
-    												   IEPModel model) throws I18nException {
+                                                       OperatorComponent component,
+                                                       IEPModel model) throws I18nException {
         return newPropertyInstance(propertyType, component, model);
     }
     
     private static SingleNonPersistentTcgComponentNodeProperty newPropertyInstance(TcgPropertyType propertyType, 
-    												   OperatorComponent component,
-    												   IEPModel model) {
+                                                       OperatorComponent component,
+                                                       IEPModel model) {
         TcgPropertyType pt = propertyType;
         TcgType type = pt.getType();
         if (type == TcgType.BOOLEAN) {
             return new SingleNonPersistentTcgComponentNodeProperty(propertyType, Boolean.class, component, model);
         }
         if (type == TcgType.INTEGER) {
-        	//inputMaxCount
-        	if(propertyType.getName().equals(OperatorComponent.PROP_NON_PERSIST_INPUT_MAX_COUNT_KEY)) {
-        		return new InputMaxCountSingleNonPersistentTcgComponentNodeProperty(propertyType, Integer.class, component, model);
-        	}
-        	//staticInputMaxCount
+            //inputMaxCount
+            if(propertyType.getName().equals(OperatorComponent.PROP_NON_PERSIST_INPUT_MAX_COUNT_KEY)) {
+                return new InputMaxCountSingleNonPersistentTcgComponentNodeProperty(propertyType, Integer.class, component, model);
+            }
+            //staticInputMaxCount
             return new SingleNonPersistentTcgComponentNodeProperty(propertyType, Integer.class, component, model);
         }
         if (type == TcgType.LONG) {
@@ -104,9 +104,9 @@ public class SingleNonPersistentTcgComponentNodeProperty extends Node.Property {
     }
 
     private SingleNonPersistentTcgComponentNodeProperty(TcgPropertyType propertyType, 
-    								 Class valueType, 
-    								 OperatorComponent component,
-    								 IEPModel model) {
+                                     Class valueType, 
+                                     OperatorComponent component,
+                                     IEPModel model) {
         super (valueType);
         mComp = component;
         mPropertyType = propertyType;
@@ -196,7 +196,7 @@ public class SingleNonPersistentTcgComponentNodeProperty extends Node.Property {
         
         editorName = "org.netbeans.modules.iep.editor.tcg.ps.NonPersistentPropertyNoEditEditor";
         try {
-        	ComponentPropertyEditorConfig editor = (ComponentPropertyEditorConfig)Class.forName(editorName).newInstance();
+            ComponentPropertyEditorConfig editor = (ComponentPropertyEditorConfig)Class.forName(editorName).newInstance();
             editor.setPropertyType(this.mPropertyType);
             editor.setOperatorComponent(this.mComp);
             return editor;
@@ -213,11 +213,11 @@ public class SingleNonPersistentTcgComponentNodeProperty extends Node.Property {
     }
     
     public IEPModel getModel() {
-    	return this.mModel;
+        return this.mModel;
     }
     
     public OperatorComponent getModelComponent() {
-    	return this.mComp;
+        return this.mComp;
     }
     
         
@@ -226,55 +226,55 @@ public class SingleNonPersistentTcgComponentNodeProperty extends Node.Property {
     }
     
     public static class InputMaxCountSingleNonPersistentTcgComponentNodeProperty extends SingleNonPersistentTcgComponentNodeProperty {
-    	
-    	InputMaxCountSingleNonPersistentTcgComponentNodeProperty(TcgPropertyType propertyType, 
-				 Class valueType, 
-				 OperatorComponent component,
-				 IEPModel model) {
-    		super(propertyType, valueType, component, model);
-    		
-    		String displayNameKey = mPropertyType.getTitle();
-    		String descriptionKey = mPropertyType.getDescription();
-    		
-//    		if stream is allowed
-    		if(component.getInputType().equals(OperatorType.OPERATOR_STREAM)) {
-    				displayNameKey = "IEP.Model.Entity.inputMaxCountStream.title"; //NOTI18N
-    				descriptionKey = "IEP.Model.Entity.inputMaxCountStream.description"; //NOTI18N
-    		} else if(component.getInputType().equals(OperatorType.OPERATOR_RELATION)) {
-    				displayNameKey = "IEP.Model.Entity.inputMaxCountRelation.title"; //NOTI18N
-    				descriptionKey = "IEP.Model.Entity.inputMaxCountRelation.description"; //NOTI18N
-    			
-    		}
-    		
-    		setDisplayName(TcgPsI18n.getI18nString(displayNameKey));
+        
+        InputMaxCountSingleNonPersistentTcgComponentNodeProperty(TcgPropertyType propertyType, 
+                 Class valueType, 
+                 OperatorComponent component,
+                 IEPModel model) {
+            super(propertyType, valueType, component, model);
+            
+            String displayNameKey = mPropertyType.getTitle();
+            String descriptionKey = mPropertyType.getDescription();
+            
+//            if stream is allowed
+            if(component.getInputType().equals(OperatorType.OPERATOR_STREAM)) {
+                    displayNameKey = "IEP.Model.Entity.inputMaxCountStream.title"; //NOTI18N
+                    descriptionKey = "IEP.Model.Entity.inputMaxCountStream.description"; //NOTI18N
+            } else if(component.getInputType().equals(OperatorType.OPERATOR_RELATION)) {
+                    displayNameKey = "IEP.Model.Entity.inputMaxCountRelation.title"; //NOTI18N
+                    descriptionKey = "IEP.Model.Entity.inputMaxCountRelation.description"; //NOTI18N
+                
+            }
+            
+            setDisplayName(TcgPsI18n.getI18nString(displayNameKey));
             setShortDescription(TcgPsI18n.getI18nString(descriptionKey));
-    	}
+        }
     }
     
     public static class StaticInputMaxCountSingleNonPersistentTcgComponentNodeProperty extends SingleNonPersistentTcgComponentNodeProperty {
-    	
-    	StaticInputMaxCountSingleNonPersistentTcgComponentNodeProperty(TcgPropertyType propertyType, 
-				 Class valueType, 
-				 OperatorComponent component,
-				 IEPModel model) {
-    		super(propertyType, valueType, component, model);
-    		
-    		String displayNameKey = mPropertyType.getTitle();
-    		String descriptionKey = mPropertyType.getDescription();
-    		
-//    		if stream is allowed
-    		if(component.getInputType().equals(OperatorType.OPERATOR_STREAM)) {
-    				displayNameKey = "IEP.Model.Entity.inputMaxCountStream.title"; //NOTI18N
-    				descriptionKey = "IEP.Model.Entity.inputMaxCountStream.description"; //NOTI18N
-    		} else if(component.getInputType().equals(OperatorType.OPERATOR_RELATION)) {
-    				displayNameKey = "IEP.Model.Entity.inputMaxCountRelation.title"; //NOTI18N
-    				descriptionKey = "IEP.Model.Entity.inputMaxCountRelation.description"; //NOTI18N
-    			
-    		}
-    		
-    		setDisplayName(TcgPsI18n.getI18nString(displayNameKey));
+        
+        StaticInputMaxCountSingleNonPersistentTcgComponentNodeProperty(TcgPropertyType propertyType, 
+                 Class valueType, 
+                 OperatorComponent component,
+                 IEPModel model) {
+            super(propertyType, valueType, component, model);
+            
+            String displayNameKey = mPropertyType.getTitle();
+            String descriptionKey = mPropertyType.getDescription();
+            
+//            if stream is allowed
+            if(component.getInputType().equals(OperatorType.OPERATOR_STREAM)) {
+                    displayNameKey = "IEP.Model.Entity.inputMaxCountStream.title"; //NOTI18N
+                    descriptionKey = "IEP.Model.Entity.inputMaxCountStream.description"; //NOTI18N
+            } else if(component.getInputType().equals(OperatorType.OPERATOR_RELATION)) {
+                    displayNameKey = "IEP.Model.Entity.inputMaxCountRelation.title"; //NOTI18N
+                    descriptionKey = "IEP.Model.Entity.inputMaxCountRelation.description"; //NOTI18N
+                
+            }
+            
+            setDisplayName(TcgPsI18n.getI18nString(displayNameKey));
             setShortDescription(TcgPsI18n.getI18nString(descriptionKey));
-    	}
+        }
     }
     
     

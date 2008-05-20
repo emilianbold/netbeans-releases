@@ -78,12 +78,18 @@ public final class Controller implements ComponentListener {
     myAnnotations = new LinkedList<Annotation>();
   }
 
+  public Model getModel() {
+    return myModel;
+  }
+
   public void attach() {
     myModel.addComponentListener(this);
   }
 
   public void detach() {
-    myModel.removeComponentListener(this);
+    if (myModel != null) {
+      myModel.removeComponentListener(this);
+    }
   }
 
   public void addListener(Listener listener) {
@@ -163,7 +169,7 @@ public final class Controller implements ComponentListener {
     return isError;
   }
 
-  private List<ResultItem> validate(ValidationType type) {
+  public List<ResultItem> validate(ValidationType type) {
     Validation validation = new Validation();
     validation.validate(myModel, type);
     return validation.getValidationResult();
@@ -212,17 +218,16 @@ public final class Controller implements ComponentListener {
   private void cancelValidation() {
     myTimer.cancel();
     myTimer = new Timer();
-//  Validation.stop(); todo a
+    Validation.stop();
   }
 
   private void notifyListeners(List<ResultItem> items) {
-    myResult = new LinkedList<ResultItem>();
-
-    synchronized (items) {
-      for (ResultItem item : items) {
-        myResult.add(item);
-      }
+    if (items == null) {
+      return;
     }
+    myResult = items;
+    log("+++: Notify listeners"); // NOI18N
+
     synchronized (myListeners) {
       for (Listener listener : myListeners.keySet()) {
         if (listener != null) {

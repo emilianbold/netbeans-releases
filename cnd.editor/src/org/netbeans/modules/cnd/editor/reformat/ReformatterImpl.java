@@ -309,7 +309,7 @@ public class ReformatterImpl {
                         if (isLabel) {
                             spaceBefore(previous, false);
                             if(!ts.isLastLineToken()){
-                                ts.addAfterCurrent(current, 1, getIndent());
+                                ts.addAfterCurrent(current, 1, getIndent(), true);
                             }
                             braces.setStatementContinuation(BracesStack.StatementContinuation.STOP);
                             break;
@@ -322,7 +322,7 @@ public class ReformatterImpl {
                             spaceBefore(previous, false);
                             if(!ts.isLastLineToken()){
                                 // TODO use flase?
-                                ts.addAfterCurrent(current, 1, getIndent());
+                                ts.addAfterCurrent(current, 1, getIndent(), true);
                             }
                             break;
                         }
@@ -784,7 +784,7 @@ public class ReformatterImpl {
         // TODO some styles allow short statement in line
         // For example: case 1: i++; break;
         if (!ts.isLastLineToken()) {
-            ts.addAfterCurrent(current, 1, getIndent());
+            ts.addAfterCurrent(current, 1, getIndent(), true);
             return true;
         }
         return false;
@@ -946,7 +946,7 @@ public class ReformatterImpl {
         if (count > 1) {
             ts.moveNext();
             while (ts.moveNext() && ts.index() <= lastNL) {
-                ts.replaceCurrent(ts.token(), 0, 0);
+                ts.replaceCurrent(ts.token(), 0, 0, false);
             }
         }
     }
@@ -958,23 +958,23 @@ public class ReformatterImpl {
             if (diff != null) {
                 boolean done = false;
                 if (diff.after != null) {
-                    diff.after.replaceSpaces(getParentIndent());
+                    diff.after.replaceSpaces(getParentIndent(), true);
                     done = true;
                 }
                 if (diff.replace != null && previous.id() == WHITESPACE) {
                     if (!done) {
-                        diff.replace.replaceSpaces(getParentIndent());
+                        diff.replace.replaceSpaces(getParentIndent(), true);
                         done = true;
                     } else {
-                        diff.replace.replaceSpaces(0);
+                        diff.replace.replaceSpaces(0, false);
                     }
                 }
                 if (diff.before != null && previous.id() == WHITESPACE){
                     if (!done) {
-                        diff.before.replaceSpaces(getParentIndent());
+                        diff.before.replaceSpaces(getParentIndent(), true);
                         done = true;
                     } else {
-                        diff.before.replaceSpaces(0);
+                        diff.before.replaceSpaces(0, false);
                     }
                 }
                 if (done) {
@@ -984,12 +984,12 @@ public class ReformatterImpl {
             if (previous.id() == WHITESPACE) {
                 Token<CppTokenId> p2 = ts.lookPrevious(2);
                 if (p2 != null && p2.id()== NEW_LINE) {
-                    ts.replacePrevious(previous, 0, getParentIndent());
+                    ts.replacePrevious(previous, 0, getParentIndent(), true);
                 } else {
-                    ts.replacePrevious(previous, 0, 0);
+                    ts.replacePrevious(previous, 0, 0, false);
                 }
             } else if (previous.id() == NEW_LINE || previous.id() == PREPROCESSOR_DIRECTIVE) {
-                ts.addBeforeCurrent(0, getParentIndent());
+                ts.addBeforeCurrent(0, getParentIndent(), true);
             }
         } else if (previous != null) {
             makeSpaceBefore(codeStyle.spaceBeforeElse());
@@ -1012,11 +1012,13 @@ public class ReformatterImpl {
                         if (paren == 0){
                             constructor = ts.index();
                         }
+                        break;
                     case SEMICOLON:
                         if (comma == 0) {
                             return;
                         }
                         comma--;
+                        break;
                     case COMMA:
                         if (paren == 1){
                             comma++;
@@ -1136,19 +1138,19 @@ public class ReformatterImpl {
         }
         if (doFormat()) {
             if (!ts.isFirstLineToken()) {
-                ts.addBeforeCurrent(1, 0);
+                ts.addBeforeCurrent(1, 0, true);
             } else {
                 DiffResult diff = diffs.getDiffs(ts, -1);
                 if (diff == null) {
                     if (previous != null && previous.id() == WHITESPACE) {
-                        ts.replacePrevious(previous, 0, indent);
+                        ts.replacePrevious(previous, 0, indent, true);
                     }
                 } else {
                     if (diff.after != null) {
-                        diff.after.replaceSpaces(indent);
+                        diff.after.replaceSpaces(indent, true);
                     }
                     if (diff.replace != null) {
-                        diff.replace.replaceSpaces(indent);
+                        diff.replace.replaceSpaces(indent, true);
                     }
                 }
             }
@@ -1158,7 +1160,10 @@ public class ReformatterImpl {
     private void indentRbrace(StackEntry entry, Token<CppTokenId> previous,
                               Token<CppTokenId> current, StackEntry statementEntry) {
         
-        int indent = continuationIndent(entry.getSelfIndent());
+        int indent = 0;
+        if (entry != null) {
+            indent = continuationIndent(entry.getSelfIndent());
+        }
         Token<CppTokenId> prevImportant = ts.lookPreviousImportant();
         boolean emptyBody = false;
         boolean done = false;
@@ -1176,37 +1181,37 @@ public class ReformatterImpl {
             DiffResult diff = diffs.getDiffs(ts, -1);
             if (diff != null) {
                 if (diff.before != null && previous.id() == WHITESPACE) {
-                    diff.before.replaceSpaces(indent); // NOI18N
+                    diff.before.replaceSpaces(indent, true); // NOI18N
                     done = true;
                 }
                 if (diff.replace != null) {
                     if (!done) {
-                        if (entry.isLikeToArrayInitialization() &&
+                        if (entry != null && entry.isLikeToArrayInitialization() &&
                             !(ts.isFirstLineToken() || diff.replace.hasNewLine())) {
                             if (codeStyle.spaceWithinBraces()) {
-                                diff.replace.replaceSpaces(1);
+                                diff.replace.replaceSpaces(1, false);
                             } else {
-                                diff.replace.replaceSpaces(0);
+                                diff.replace.replaceSpaces(0, false);
                             }
                         } else if (emptyBody) {
-                            diff.replace.setText(0, 1);
+                            diff.replace.setText(0, 1, false);
                         } else {
-                            diff.replace.replaceSpaces(indent);
+                            diff.replace.replaceSpaces(indent, true);
                         }
                     } else {
-                        diff.replace.replaceSpaces(0); // NOI18N
+                        diff.replace.replaceSpaces(0, false); // NOI18N
                     }
                     done = true;
                 }
                 if (diff.after != null) {
                     if (!done) {
                         if (emptyBody) {
-                            diff.after.setText(0, 1);
+                            diff.after.setText(0, 1, false);
                         } else if (diff.after.hasNewLine() || ts.isFirstLineToken()) {
-                            diff.after.replaceSpaces(indent); // NOI18N
+                            diff.after.replaceSpaces(indent, true); // NOI18N
                         } else {
-                            if (!entry.isLikeToArrayInitialization()) {
-                                ts.addBeforeCurrent(1, indent);
+                            if (entry != null && !entry.isLikeToArrayInitialization()) {
+                                ts.addBeforeCurrent(1, indent, true);
                             } else {
                                 spaceBefore(previous, codeStyle.spaceWithinBraces());
                             }
@@ -1218,14 +1223,14 @@ public class ReformatterImpl {
             if (!done) {
                 if (previous.id() == WHITESPACE) {
                     if (emptyBody) {
-                        ts.replacePrevious(previous, 0, 1);
+                        ts.replacePrevious(previous, 0, 1, false);
                     } else if (ts.isFirstLineToken()) {
-                        ts.replacePrevious(previous, 0, indent);
+                        ts.replacePrevious(previous, 0, indent, true);
                     } else {
                         if (braces.parenDepth <= 0) {
-                            ts.replacePrevious(previous, 1, indent);
+                            ts.replacePrevious(previous, 1, indent, true);
                         } else {
-                            if (entry.isLikeToArrayInitialization()) {
+                            if (entry != null && entry.isLikeToArrayInitialization()) {
                                 spaceBefore(previous, codeStyle.spaceWithinBraces());
                             }
                         }
@@ -1233,19 +1238,19 @@ public class ReformatterImpl {
                 } else if (previous.id() == NEW_LINE ||
                            previous.id() == PREPROCESSOR_DIRECTIVE ||
                            previous.id() == ESCAPED_WHITESPACE) {
-                    ts.addBeforeCurrent(0, indent);
+                    ts.addBeforeCurrent(0, indent, true);
                 } else {
                     if (emptyBody) {
-                        ts.addBeforeCurrent(0, 1);
-                    } else if (!entry.isLikeToArrayInitialization()) {
-                        ts.addBeforeCurrent(1, indent);
+                        ts.addBeforeCurrent(0, 1,false);
+                    } else if (entry != null && !entry.isLikeToArrayInitialization()) {
+                        ts.addBeforeCurrent(1, indent, true);
                     } else {
                         spaceBefore(previous, codeStyle.spaceWithinBraces());
                     }
                 }
             }
         }
-        boolean isClassDeclaration = entry.getImportantKind() != null &&
+        boolean isClassDeclaration = entry != null && entry.getImportantKind() != null &&
                                     (entry.getImportantKind() == CLASS ||
                                      entry.getImportantKind() == STRUCT ||
                                      entry.getImportantKind() == UNION ||
@@ -1254,7 +1259,7 @@ public class ReformatterImpl {
         Token<CppTokenId> next = ts.lookNext();
         if (isClassDeclaration) {
             if (next != null && !(next.id() == WHITESPACE || next.id() == NEW_LINE)) {
-                ts.addAfterCurrent(current, 0, 1);
+                ts.addAfterCurrent(current, 0, 1, false);
             }
             return;
         }
@@ -1269,12 +1274,12 @@ public class ReformatterImpl {
                             if (ts.isLastLineToken()) {
                                 Token<CppTokenId> n2 = ts.lookNext(2);
                                 if (n2 == null || n2.id() != PREPROCESSOR_DIRECTIVE) {
-                                    ts.replaceNext(current, next, 0, 0);
+                                    ts.replaceNext(current, next, 0, 0, false);
                                 }
                             }
                         } else {
                             if (!ts.isLastLineToken()) {
-                                ts.addAfterCurrent(current, 1, top.getSelfIndent());
+                                ts.addAfterCurrent(current, 1, top.getSelfIndent(), true);
                             }
                         }
                         return;
@@ -1289,12 +1294,12 @@ public class ReformatterImpl {
                             if (ts.isLastLineToken()) {
                                 Token<CppTokenId> n2 = ts.lookNext(2);
                                 if (n2 == null || n2.id() != PREPROCESSOR_DIRECTIVE) {
-                                    ts.replaceNext(current, next, 0, 0);
+                                    ts.replaceNext(current, next, 0, 0, false);
                                 }
                             }
                         } else {
                             if (!ts.isLastLineToken()) {
-                                ts.addAfterCurrent(current, 1, statementEntry.getSelfIndent());
+                                ts.addAfterCurrent(current, 1, statementEntry.getSelfIndent(), true);
                             }
                         }
                         return;
@@ -1307,12 +1312,12 @@ public class ReformatterImpl {
                         if (ts.isLastLineToken()) {
                             Token<CppTokenId> n2 = ts.lookNext(2);
                             if (n2 == null || n2.id() != PREPROCESSOR_DIRECTIVE) {
-                                ts.replaceNext(current, next, 0, 0);
+                                ts.replaceNext(current, next, 0, 0, false);
                             }
                         }
                     } else {
                         if (!ts.isLastLineToken()) {
-                            ts.addAfterCurrent(current, 1, indent);
+                            ts.addAfterCurrent(current, 1, indent, true);
                         }
                     }
                     return;
@@ -1321,7 +1326,7 @@ public class ReformatterImpl {
         }
         next = ts.lookNextLineImportant();
         if (next != null && !(next.id() == RPAREN || next.id() == COMMA || next.id() == SEMICOLON || next.id() == NEW_LINE)) {
-            ts.addAfterCurrent(current, 1, indent);
+            ts.addAfterCurrent(current, 1, indent, true);
         }
     }
 
@@ -1331,18 +1336,18 @@ public class ReformatterImpl {
             DiffResult diff = diffs.getDiffs(ts, -1);
             if (diff != null) {
                 if (diff.after != null) {
-                    diff.after.replaceSpaces(0); // NOI18N
+                    diff.after.replaceSpaces(0, false); // NOI18N
                     if (diff.replace != null){
-                        diff.replace.replaceSpaces(0); // NOI18N
+                        diff.replace.replaceSpaces(0, false); // NOI18N
                     }
                     done = true;
                 } else if (diff.replace != null) {
-                    diff.replace.replaceSpaces(0); // NOI18N
+                    diff.replace.replaceSpaces(0, false); // NOI18N
                     done = true;
                 }
             }
             if (!done && previous.id() == WHITESPACE) {
-                ts.replacePrevious(previous, 0, 0);
+                ts.replacePrevious(previous, 0, 0, false);
             }
         }
         Token<CppTokenId> next = ts.lookNext();
@@ -1398,10 +1403,10 @@ public class ReformatterImpl {
                 space = getIndent();
             }
             if (next.id() == WHITESPACE) {
-                ts.replaceNext(current, next, 0, space);
+                ts.replaceNext(current, next, 0, space, true);
             } else {
                 if (space > 0) {
-                    ts.addAfterCurrent(current, 0, space);
+                    ts.addAfterCurrent(current, 0, space, true);
                 }
             }
         }
@@ -1455,9 +1460,9 @@ public class ReformatterImpl {
             space = getIndent();
         }
         if (current.id() == WHITESPACE) {
-            ts.replaceCurrent(current, 0, space);
+            ts.replaceCurrent(current, 0, space, true);
         } else {
-            ts.addBeforeCurrent(0, space);
+            ts.addBeforeCurrent(0, space, true);
         }
     }
 
@@ -1509,13 +1514,13 @@ public class ReformatterImpl {
     private void addCommentIndent(int start, int end, char c, int requiredIndent, int originalIndent, int currentIndent) {
         if (start >= 0 && end >= start) {
             if (c == '*') { // NOI18N
-                diffs.addFirst(ts.offset() + start + 1, ts.offset() + end + 1, 0, 1 + requiredIndent);
+                diffs.addFirst(ts.offset() + start + 1, ts.offset() + end + 1, 0, 1 + requiredIndent, true);
             } else {
                 int indent = requiredIndent + currentIndent - originalIndent;
                 if (indent < 0) {
                     indent = requiredIndent;
                 }
-                diffs.addFirst(ts.offset() + start + 1, ts.offset() + end + 1, 0, indent); 
+                diffs.addFirst(ts.offset() + start + 1, ts.offset() + end + 1, 0, indent, true); 
             }
         }
     }
@@ -1528,7 +1533,7 @@ public class ReformatterImpl {
                     return;
                 }
                 if (diff.before != null){
-                    ts.replaceCurrent(current, 0, 0);
+                    ts.replaceCurrent(current, 0, 0, false);
                     return;
                 }
             }
@@ -1544,9 +1549,9 @@ public class ReformatterImpl {
             return;
         }
         if (previous == null) {
-            ts.replaceCurrent(current, 0, 0);
+            ts.replaceCurrent(current, 0, 0, false);
         } else {
-            ts.replaceCurrent(current, 0, 1);
+            ts.replaceCurrent(current, 0, 1, false);
         }
     }
 
@@ -1568,10 +1573,10 @@ public class ReformatterImpl {
         if (newLineAfter>0){
             if (ts.isLastLineToken()) {
                 if (newLineAfter>1) {
-                    ts.addAfterCurrent(current, newLineAfter-1, 0);
+                    ts.addAfterCurrent(current, newLineAfter-1, 0, true);
                 }
             } else {
-                ts.addAfterCurrent(current, newLineAfter, getIndent());
+                ts.addAfterCurrent(current, newLineAfter, getIndent(), true);
             }
         }
     }
@@ -1586,7 +1591,7 @@ public class ReformatterImpl {
                 }
                 ts.moveIndex(start);
                 ts.moveNext();
-                ts.addBeforeCurrent(lines, 0); // NOI18N
+                ts.addBeforeCurrent(lines, 0, true); // NOI18N
             } else {
                 if (segment[0] == 0) {
                     return;
@@ -1603,7 +1608,7 @@ public class ReformatterImpl {
                     DiffResult diff = diffs.getDiffs(ts, 0);
                     if (diff != null) {
                         if (diff.replace != null) {
-                            diff.replace.setText(0,0); // NOI18N
+                            diff.replace.setText(0, 0, false); // NOI18N
 
                             if (toReplace == null) {
                                 toReplace = diff.replace;
@@ -1615,13 +1620,13 @@ public class ReformatterImpl {
                             //    ts.getNewLinesBeforeDeclaration(start);
                             //}
                             if (toReplace == null) {
-                                toReplace = ts.replaceCurrent(ts.token(), 0, 0);
+                                toReplace = ts.replaceCurrent(ts.token(), 0, 0, false);
                             } else {
-                                ts.replaceCurrent(ts.token(), 0, 0);
+                                ts.replaceCurrent(ts.token(), 0, 0, false);
                             }
                         }
                         if (diff.before != null) {
-                            diff.before.setText(0, 0); // NOI18N
+                            diff.before.setText(0, 0, false); // NOI18N
 
                             if (toReplace == null) {
                                 toReplace = diff.replace;
@@ -1634,22 +1639,22 @@ public class ReformatterImpl {
                         //    ts.getNewLinesBeforeDeclaration(start);
                         //}
                         if (toReplace == null) {
-                            toReplace = ts.replaceCurrent(ts.token(), 0, 0);
+                            toReplace = ts.replaceCurrent(ts.token(), 0, 0, false);
                         } else {
-                            ts.replaceCurrent(ts.token(), 0, 0);
+                            ts.replaceCurrent(ts.token(), 0, 0, false);
                         }
                     }
                 }
                 if (toReplace != null) {
-                    toReplace.setText(lines+segment[2], indent);
+                    toReplace.setText(lines+segment[2], indent, true);
                 } else {
                     ts.moveIndex(segment[0]);
                     ts.moveNext();
                     if (ts.token().id() == WHITESPACE ||
                         ts.token().id() == NEW_LINE) {
-                        ts.replaceCurrent(ts.token(), lines+segment[2], indent);
+                        ts.replaceCurrent(ts.token(), lines+segment[2], indent, true);
                     } else {
-                        ts.addBeforeCurrent(lines+segment[2], indent);
+                        ts.addBeforeCurrent(lines+segment[2], indent, true);
                     }
                 }
             }
@@ -1677,41 +1682,41 @@ public class ReformatterImpl {
                 if (previous.id() == WHITESPACE) {
                     if (diff != null) {
                         if (diff.after != null) {
-                            diff.after.setText(1, spaces);
+                            diff.after.setText(1, spaces, true);
                             if (diff.replace != null) {
-                                diff.replace.setText(0, 0);
+                                diff.replace.setText(0, 0, false);
                             }
                             return;
                         } else if (diff.replace != null) {
-                            diff.replace.setText(1, spaces);
+                            diff.replace.setText(1, spaces, true);
                             return;
                         }
                     }
-                    ts.replacePrevious(previous, 1, spaces);
+                    ts.replacePrevious(previous, 1, spaces, true);
                     return;
                 } else {
                     if (diff != null) {
                         if (diff.after != null) {
-                            diff.after.setText(1, spaces);
+                            diff.after.setText(1, spaces, true);
                             return;
                         }
                     }
                 }
             }
-            ts.addBeforeCurrent(1, spaces);
+            ts.addBeforeCurrent(1, spaces, true);
         } else {
             DiffResult diff = diffs.getDiffs(ts, -1);
             if (diff != null) {
                 if (diff.after != null) {
-                    diff.after.replaceSpaces(spaces);
+                    diff.after.replaceSpaces(spaces, true);
                     if (diff.replace != null){
-                        diff.replace.replaceSpaces(0);
+                        diff.replace.replaceSpaces(0, false);
                     }
                     return;
                 } else if (diff.replace != null) {
-                    diff.replace.replaceSpaces(spaces);
+                    diff.replace.replaceSpaces(spaces, true);
                     if (diff.before != null) {
-                        diff.before.replaceSpaces(0);
+                        diff.before.replaceSpaces(0, false);
                     }
                     return;
                 }
@@ -1719,9 +1724,9 @@ public class ReformatterImpl {
             Token<CppTokenId> previous = ts.lookPrevious();
             if (previous != null) {
                 if (previous.id() == WHITESPACE) {
-                    ts.replacePrevious(previous, 0, spaces);
+                    ts.replacePrevious(previous, 0, spaces, true);
                 } else if (previous.id() == NEW_LINE) {
-                    ts.addBeforeCurrent(0, spaces);
+                    ts.addBeforeCurrent(0, spaces, true);
                 }
             }
         }
@@ -1733,37 +1738,37 @@ public class ReformatterImpl {
                 DiffResult diff = diffs.getDiffs(ts, -1);
                 if (diff != null) {
                     if (diff.after != null && !diff.after.hasNewLine()) {
-                        diff.after.replaceSpaces(1);
+                        diff.after.replaceSpaces(1, false);
                         if (diff.replace != null && !diff.replace.hasNewLine()){
-                            diff.replace.replaceSpaces(0);
+                            diff.replace.replaceSpaces(0, false);
                         }
                         return;
                     } else if (diff.replace != null && !diff.replace.hasNewLine()) {
-                        diff.replace.replaceSpaces(1);
+                        diff.replace.replaceSpaces(1, false);
                         return;
                     }
                 }
                 if (!(previous.id() == WHITESPACE ||
                       previous.id() == NEW_LINE ||
                       previous.id() == PREPROCESSOR_DIRECTIVE)) {
-                    ts.addBeforeCurrent(0, 1);
+                    ts.addBeforeCurrent(0, 1, false);
                 }
             } else if (canRemoveSpaceBefore(previous)){
                 DiffResult diff = diffs.getDiffs(ts, -1);
                 if (diff != null) {
                     if (diff.after != null && !diff.after.hasNewLine()) {
-                        diff.after.replaceSpaces(0);
+                        diff.after.replaceSpaces(0, false);
                         if (diff.replace != null && !diff.replace.hasNewLine()){
-                            diff.replace.replaceSpaces(0);
+                            diff.replace.replaceSpaces(0, false);
                         }
                         return;
                     } else if (diff.replace != null && !diff.replace.hasNewLine()) {
-                        diff.replace.replaceSpaces(0);
+                        diff.replace.replaceSpaces(0, false);
                         return;
                     }
                 }
                 if (previous.id() == WHITESPACE) {
-                    ts.replacePrevious(previous, 0, 0);
+                    ts.replacePrevious(previous, 0, 0, false);
                 }
             }
         }
@@ -1845,7 +1850,7 @@ public class ReformatterImpl {
             if (add) {
                 if (!(next.id() == WHITESPACE ||
                       next.id() == NEW_LINE)) {
-                    ts.addAfterCurrent(current, 0, 1);
+                    ts.addAfterCurrent(current, 0, 1, false);
                 }
             } else if (canRemoveSpaceAfter(current)){
                 if (next.id() == WHITESPACE) {
@@ -1854,7 +1859,7 @@ public class ReformatterImpl {
                         SEPARATOR_CATEGORY.equals(current.id().primaryCategory()) ||
                         !OPERATOR_CATEGORY.equals(n2.id().primaryCategory()) ||
                         (KEYWORD_CATEGORY.equals(current.id().primaryCategory()) && n2.id() == LT)){
-                        ts.replaceNext(current, next, 0, 0);
+                        ts.replaceNext(current, next, 0, 0, false);
                     }
                 }
             }
@@ -1868,12 +1873,12 @@ public class ReformatterImpl {
                 Token<CppTokenId> p = ts.lookNext(2);
                 if (p!=null && p.id()==before) {
                     if (!add) {
-                        ts.replaceNext(current, next, 0, 0); // NOI18N
+                        ts.replaceNext(current, next, 0, 0, false); // NOI18N
                     }
                 }
             } else if (next.id() == before) {
                 if (add) {
-                    ts.addAfterCurrent(current, 0, 1);
+                    ts.addAfterCurrent(current, 0, 1, false);
                 }
             }
         }
@@ -2169,9 +2174,9 @@ public class ReformatterImpl {
                         if (diffToSpace == null) {
                             diffToSpace = diff.replace;
                         }
-                        diff.replace.setText(0, 0);
+                        diff.replace.setText(0, 0, false);
                     } else {
-                        Diff added = diffs.addFirst(ts.offset(), ts.offset()+ts.token().length(), 0, 0);
+                        Diff added = diffs.addFirst(ts.offset(), ts.offset()+ts.token().length(), 0, 0, false);
                         if (diffToSpace == null) {
                             diffToSpace = added;
                         }
@@ -2181,11 +2186,11 @@ public class ReformatterImpl {
                     if (diffToSpace == null) {
                         diffToSpace = diff.after;
                     }
-                    diff.after.setText(0, 0);
+                    diff.after.setText(0, 0, false);
                 }
             }
             if (!first && diff == null) {
-                Diff added = diffs.addFirst(ts.offset(), ts.offset() + ts.token().length(), 0, 0);
+                Diff added = diffs.addFirst(ts.offset(), ts.offset() + ts.token().length(), 0, 0, false);
                 if (diffToSpace == null) {
                     diffToSpace = added;
                 }
@@ -2193,8 +2198,12 @@ public class ReformatterImpl {
             first = false;
             ts.moveNext();
         }
-        if (diffToSpace != null && addSpace){
-            diffToSpace.setText(0, 1);
+        if (addSpace) {
+            if (diffToSpace != null){
+                diffToSpace.setText(0, 1, false);
+            } else {
+                ts.addBeforeCurrent(0, 1, false);
+            }
         }
     }
 

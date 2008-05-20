@@ -7,20 +7,20 @@ import org.netbeans.modules.xml.wsdl.model.spi.GenericExtensibilityElement.Strin
 
 public interface PlanComponent extends Component {
 
-	static final String TARGETNAMESPACE_PROPERTY = "targetNamespace";
-	
-	static final Attribute ATTR_TARGETNAMESPACE = new StringAttribute(TARGETNAMESPACE_PROPERTY);
-	
-	static final String PACKAGENAME_PROPERTY = "packageName";
-	
-	static final Attribute ATTR_PACKAGENAME = new StringAttribute(PACKAGENAME_PROPERTY);
-	
-	OperatorComponentContainer getOperatorComponentContainer();
-	
-	LinkComponentContainer getLinkComponentContainer();
-	
-	SchemaComponentContainer getSchemaComponentContainer();
-	
+    static final String TARGETNAMESPACE_PROPERTY = "targetNamespace";
+    
+    static final Attribute ATTR_TARGETNAMESPACE = new StringAttribute(TARGETNAMESPACE_PROPERTY);
+    
+    static final String PACKAGENAME_PROPERTY = "packageName";
+    
+    static final Attribute ATTR_PACKAGENAME = new StringAttribute(PACKAGENAME_PROPERTY);
+    
+    OperatorComponentContainer getOperatorComponentContainer();
+    
+    LinkComponentContainer getLinkComponentContainer();
+    
+    SchemaComponentContainer getSchemaComponentContainer();
+    
     List<Import> getImports();
         
 //    String getTargetNamespace();

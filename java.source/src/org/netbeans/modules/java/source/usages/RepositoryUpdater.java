@@ -1783,7 +1783,10 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         
         private void parseFiles(URL root, final File classCache, boolean isInitialCompilation,
                 Iterable<? extends File> children, Iterable<? extends File> virtualChildren,
-                boolean clean, ProgressHandle handle, JavaFileFilterImplementation filter, Map<String,List<File>> resources, Set<File> compiledFiles, Set<File> toRecompile, Map<URI, List<String>> misplacedSource2FQNs) throws IOException {
+                boolean clean, ProgressHandle handle, JavaFileFilterImplementation filter,
+                Map<String,List<File>> resources, Set<File> compiledFiles, Set<File> toRecompile,
+                Map<URI, List<String>> misplacedSource2FQNs, boolean allowCancel) throws IOException {
+            assert !allowCancel || compiledFiles != null;
             LOGGER.fine("parseFiles: " + root);            
             final FileObject rootFo = URLMapper.findFileObject(root);
             if (rootFo == null) {
@@ -2061,7 +2064,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                     handle.setDisplayName(message);
                 }
                 errorBadgesToRefresh.addAll(batchCompile(toCompile, rootFo, cpInfo, sa, dirtyCrossFiles,
-                        compiledFiles, compiledFiles != null ? canceled : null, added,
+                        compiledFiles, allowCancel ? canceled : null, added,
                         isInitialCompilation ? RepositoryUpdater.this.closed:null, toRecompile, misplacedSource2FQNs));
             }
             Set<ElementHandle<TypeElement>> _at = null;
@@ -2159,7 +2162,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 Set<File> compiledFiles = new HashSet<File>();
                 parseFiles(root, classCache, isInitialCompilation,
                         children.getJavaFiles(), children.getVirtualJavaFiles(),
-                        clean, handle, filter, resources, compiledFiles, null, misplacedSource2FQNs);
+                        clean, handle, filter, resources, compiledFiles, null, misplacedSource2FQNs, false);
                 
                 if (!misplacedSource2FQNs.isEmpty()) {
                     if (LOGGER.isLoggable(Level.FINE)) {
@@ -2173,7 +2176,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                     
                     parseFiles(root, classCache, isInitialCompilation,
                             compiledFiles, children.getVirtualJavaFiles(),
-                            true, handle, filter, resources, null, null, misplacedSource2FQNs);
+                            true, handle, filter, resources, null, null, misplacedSource2FQNs, false);
                 }
             } catch (OutputFileManager.InvalidSourcePath e) {
                 //Deleted project, ignore
@@ -2439,17 +2442,18 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             CachingArchiveProvider.getDefault().clearArchive(root);                       
             File cacheFolder = Index.getClassFolder(root);
             FileObjects.deleteRecursively(cacheFolder);
-            final BinaryAnalyser ba = ClassIndexManager.getDefault().createUsagesQuery(root, false).getBinaryAnalyser();            
-            //todo: may also need interruption.
-            try {
-                BinaryAnalyser.Result finished = ba.start(root, handle, new AtomicBoolean(false), new AtomicBoolean(false));
-                while (finished == BinaryAnalyser.Result.CANCELED) {
-                    finished = ba.resume();
+            final BinaryAnalyser ba = ClassIndexManager.getDefault().createUsagesQuery(root, false).getBinaryAnalyser(); 
+            if (ba != null) {   //ba == null => IDE is exiting, indexing will be done on IDE restart
+                //todo: may also need interruption.
+                try {
+                    BinaryAnalyser.Result finished = ba.start(root, handle, new AtomicBoolean(false), new AtomicBoolean(false));
+                    while (finished == BinaryAnalyser.Result.CANCELED) {
+                        finished = ba.resume();
+                    }
+                } finally {
+                    ba.finish();
                 }
-            } finally {
-                ba.finish();
             }
-            
         }                
         
         private void recompile() throws IOException {
@@ -2530,7 +2534,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             }
         }
         
-        private Map<URL, Collection<File>> compileFileFromRoots(Map<URL, Collection<File>> toRecompile, boolean cancellable,  Map<URL, Collection<File>> depsToRecompile) throws IOException {
+        private Map<URL, Collection<File>> compileFileFromRoots(Map<URL, Collection<File>> toRecompile, final boolean cancellable,  Map<URL, Collection<File>> depsToRecompile) throws IOException {
             List<URL> handledRoots = new LinkedList<URL>();
             
             ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(RepositoryUpdater.class,"MSG_RefreshingWorkspace"));
@@ -2580,7 +2584,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         }
                         parseFiles(root, cacheRoot, false,
                                 files, virtualFiles,
-                                true, handle, filter, resources, compiledFiles, thisDepsToRecompile, misplacedSource2FQNs);
+                                true, handle, filter, resources, compiledFiles, thisDepsToRecompile, misplacedSource2FQNs, cancellable);
 
                         if (!misplacedSource2FQNs.isEmpty()) {
                             if (LOGGER.isLoggable(Level.FINE)) {
@@ -2593,7 +2597,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                             
                             parseFiles(root, cacheRoot, false,
                                     files, virtualFiles,
-                                    true, handle, filter, resources, compiledFiles, thisDepsToRecompile, misplacedSource2FQNs);
+                                    true, handle, filter, resources, compiledFiles, thisDepsToRecompile, misplacedSource2FQNs, cancellable);
                         }
                         
                         if (thisDepsToRecompile != null && !thisDepsToRecompile.isEmpty()) {

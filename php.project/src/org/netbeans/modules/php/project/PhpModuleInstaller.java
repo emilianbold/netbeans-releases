@@ -27,8 +27,8 @@
  */
 package org.netbeans.modules.php.project;
 
-import org.netbeans.modules.php.project.api.PhpOptions;
 import org.netbeans.modules.php.project.environment.PhpEnvironment;
+import org.netbeans.modules.php.project.ui.options.PhpOptions;
 import org.openide.modules.ModuleInstall;
 
 /**

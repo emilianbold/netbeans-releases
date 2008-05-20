@@ -45,6 +45,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -63,6 +65,7 @@ import org.netbeans.modules.gsf.api.StructureScanner;
 import org.netbeans.modules.gsf.api.TranslatedSource;
 import org.netbeans.modules.css.editor.Css;
 import org.netbeans.modules.css.parser.CSSParserTreeConstants;
+import org.netbeans.modules.css.parser.CssParserAccess;
 import org.netbeans.modules.css.parser.NodeVisitor;
 import org.netbeans.modules.css.parser.SimpleNode;
 import org.openide.util.Exceptions;
@@ -97,12 +100,22 @@ public class CSSStructureScanner implements StructureScanner {
 
             public void visit(SimpleNode node) {
                 if (node.kind() == CSSParserTreeConstants.JJTSELECTORLIST) {
-
-                    //do not create structure items for virtual selectors
-                    int so = AstUtils.documentPosition(node.startOffset(), source);
-                    int eo = AstUtils.documentPosition(node.endOffset(), source);
+                    //get parent - style rule
+                    SimpleNode ruleNode = (SimpleNode)node.jjtGetParent();
+                    
+                    assert ruleNode.kind() == CSSParserTreeConstants.JJTSTYLERULE;
+                    
+                    
+                    int so = AstUtils.documentPosition(ruleNode.startOffset(), source);
+                    int eo = AstUtils.documentPosition(ruleNode.endOffset(), source);
                     if (eo != so) {
-                        items.add(new CSSStructureItem(new CssElementHandle(node, info), source));
+                        //we need to get the text directly from the document otherwise
+                        //the GENERATED_xxx items may appear in the navigator
+                        int documentSO = AstUtils.documentPosition(node.startOffset(), source);
+                        int documentEO = AstUtils.documentPosition(node.endOffset(), source);
+                        String nodeName = info.getText().substring(documentSO, documentEO);
+
+                        items.add(new CssRuleStructureItem(nodeName, new CssElementHandle(ruleNode, node, info), source));
                     }
                 }
             }
@@ -156,20 +169,21 @@ public class CSSStructureScanner implements StructureScanner {
         return Collections.emptyMap();
         
     }
-
-    private static final class CSSStructureItem implements StructureItem {
+    
+    private static class CssRuleStructureItem implements StructureItem {
 
         private TranslatedSource source;
         private CssElementHandle handle;
         private String name;
 
-        private CSSStructureItem(CssElementHandle handle, TranslatedSource source) {
+        private CssRuleStructureItem(String name, CssElementHandle handle, TranslatedSource source) {
             this.handle = handle;
             this.source = source;
+            this.name = name;
         }
 
         public String getName() {
-            return handle.getName();
+            return name;
         }
 
         public String getSortText() {
@@ -202,11 +216,11 @@ public class CSSStructureScanner implements StructureScanner {
         }
 
         public long getPosition() {
-            return AstUtils.documentPosition(handle.node().startOffset(), source);
+            return AstUtils.documentPosition(handle.elementAstStartOffset(), source);
         }
 
         public long getEndPosition() {
-            return AstUtils.documentPosition(handle.node().endOffset(), source);
+            return AstUtils.documentPosition(handle.elementAstEndOffset(), source);
         }
 
         public ImageIcon getCustomIcon() {

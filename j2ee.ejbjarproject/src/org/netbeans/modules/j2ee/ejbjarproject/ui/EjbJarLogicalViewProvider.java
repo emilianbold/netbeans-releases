@@ -47,18 +47,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.CharConversionException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.ResourceBundle;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -87,8 +77,6 @@ import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
@@ -106,10 +94,6 @@ import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.netbeans.spi.project.ui.support.NodeFactorySupport;
-import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.FileStatusEvent;
-import org.openide.filesystems.FileStatusListener;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -241,22 +225,11 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider {
 
     /** Filter node containin additional features for the J2SE physical
      */
-    private final class WebLogicalViewRootNode extends AbstractNode implements Runnable, FileStatusListener, ChangeListener, PropertyChangeListener {
+    private final class WebLogicalViewRootNode extends AbstractNode {
 
         private Action brokenLinksAction;
         private BrokenServerAction brokenServerAction;
         private boolean broken;
-        
-        // icon badging >>>
-        private Set files;
-        private Map fileSystemListeners;
-        private RequestProcessor.Task task;
-        private final Object privateLock = new Object();
-        private boolean iconChange;
-        private boolean nameChange;
-        private ChangeListener sourcesListener;
-        private Map groupsListeners;
-        // icon badging <<<
         
         public WebLogicalViewRootNode() {
             super(NodeFactorySupport.createCompositeChildren(project, "Projects/org-netbeans-modules-j2ee-ejbjarproject/Nodes"), // NOI18N
@@ -272,115 +245,6 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider {
                            project.getLookup().lookup(J2eeModuleProvider.class);
             moduleProvider.addInstanceListener((InstanceListener)WeakListeners.create(
                         InstanceListener.class, brokenServerAction, moduleProvider));
-            setProjectFiles(project);
-        }
-        
-        protected final void setProjectFiles(Project project) {
-            Sources sources = ProjectUtils.getSources(project);  // returns singleton
-            if (sourcesListener == null) {                
-                sourcesListener = WeakListeners.change(this, sources);
-                sources.addChangeListener(sourcesListener);                                
-            }
-            setGroups(Arrays.asList(sources.getSourceGroups(Sources.TYPE_GENERIC)));
-        }
-
-
-        private final void setGroups(Collection groups) {
-            if (groupsListeners != null) {
-                Iterator it = groupsListeners.keySet().iterator();
-                while (it.hasNext()) {
-                    SourceGroup group = (SourceGroup) it.next();
-                    PropertyChangeListener pcl = (PropertyChangeListener) groupsListeners.get(group);
-                    group.removePropertyChangeListener(pcl);
-                }
-            }
-            groupsListeners = new HashMap();
-            Set roots = new HashSet();
-            Iterator it = groups.iterator();
-            while (it.hasNext()) {
-                SourceGroup group = (SourceGroup) it.next();
-                PropertyChangeListener pcl = WeakListeners.propertyChange(this, group);
-                groupsListeners.put(group, pcl);
-                group.addPropertyChangeListener(pcl);
-                FileObject fo = group.getRootFolder();
-                if (project.getProjectDirectory().equals(fo)) {
-                    // add rather children of project's root folder than the
-                    // folder itself (cf. #78994)
-                    Enumeration en = project.getProjectDirectory().getChildren(false);
-                    while (en.hasMoreElements()) {
-                        FileObject child = (FileObject) en.nextElement();
-                        if (FileOwnerQuery.getOwner(child) == project) {
-                            roots.add(child);
-                        }
-                    }
-                } else {
-                    roots.add(fo);
-                }
-            }
-            setFiles(roots);
-        }
-
-        protected final void setFiles(Set files) {
-            if (fileSystemListeners != null) {
-                Iterator it = fileSystemListeners.keySet().iterator();
-                while (it.hasNext()) {
-                    FileSystem fs = (FileSystem) it.next();
-                    FileStatusListener fsl = (FileStatusListener) fileSystemListeners.get(fs);
-                    fs.removeFileStatusListener(fsl);
-                }
-            }
-                        
-            fileSystemListeners = new HashMap();
-            this.files = files;
-            if (files == null) return;
-
-            Iterator it = files.iterator();
-            Set hookedFileSystems = new HashSet();
-            while (it.hasNext()) {
-                FileObject fo = (FileObject) it.next();
-                try {
-                    FileSystem fs = fo.getFileSystem();
-                    if (hookedFileSystems.contains(fs)) {
-                        continue;
-                    }
-                    hookedFileSystems.add(fs);
-                    FileStatusListener fsl = FileUtil.weakFileStatusListener(this, fs);
-                    fs.addFileStatusListener(fsl);
-                    fileSystemListeners.put(fs, fsl);
-                } catch (FileStateInvalidException e) {
-                    Exceptions.printStackTrace(Exceptions.attachLocalizedMessage(e, "Can not get " + fo + " filesystem, ignoring...")); // NO18N
-                }
-            }
-        }
-        
-        public java.awt.Image getIcon (int type) {
-            java.awt.Image img = getMyIcon (type);
-
-            if (files != null && files.iterator().hasNext()) {
-                try {
-                    FileObject fo = (FileObject) files.iterator().next();
-                    img = fo.getFileSystem ().getStatus ().annotateIcon (img, type, files);
-                } catch (FileStateInvalidException e) {
-                    Logger.getLogger("global").log(Level.INFO, null, e);
-                }
-            }
-
-            return img;
-        }
-
-        public java.awt.Image getOpenedIcon (int type) {
-            java.awt.Image img = getMyOpenedIcon(type);
-
-            if (files != null && files.iterator().hasNext()) {
-                try {
-                    FileObject fo = (FileObject) files.iterator().next();
-                    img = fo.getFileSystem ().getStatus ().annotateIcon (img, type, files);
-                } catch (FileStateInvalidException e) {
-                    Logger.getLogger("global").log(Level.INFO, null, e);
-                }
-            }
-
-            return img;
         }
         
         @Override
@@ -389,63 +253,14 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider {
             return NbBundle.getMessage(EjbJarLogicalViewProvider.class, "HINT_project_root_node", prjDirDispName); // NO18N
         }
 
-        public void run() {
-            boolean fireIcon;
-            boolean fireName;
-            synchronized (privateLock) {
-                fireIcon = iconChange;
-                fireName = nameChange;
-                iconChange = false;
-                nameChange = false;
-            }
-            if (fireIcon) {
-                fireIconChange();
-                fireOpenedIconChange();
-            }
-            if (fireName) {
-                fireDisplayNameChange(null, null);
-            }
-        }
-
-        public void annotationChanged(FileStatusEvent event) {
-            if (task == null) {
-                task = RequestProcessor.getDefault().create(this);
-            }
-
-            synchronized (privateLock) {
-                if ((iconChange == false && event.isIconChange())  || (nameChange == false && event.isNameChange())) {
-                    Iterator it = files.iterator();
-                    while (it.hasNext()) {
-                        FileObject fo = (FileObject) it.next();
-                        if (event.hasChanged(fo)) {
-                            iconChange |= event.isIconChange();
-                            nameChange |= event.isNameChange();
-                        }
-                    }
-                }
-            }
-
-            task.schedule(50);  // batch by 50 ms
-         }
- 
-        // sources change
-        public void stateChanged(ChangeEvent e) {
-            setProjectFiles(project);
-        }
-
-        // group change
-        public void propertyChange(PropertyChangeEvent evt) {
-            setProjectFiles(project);
-        }
-        
-        public Image getMyIcon(int type) {
+        public Image getIcon(int type) {
             Image original = super.getIcon( type );                
             return broken || brokenServerAction.isEnabled() 
                     ? Utilities.mergeImages(original, ProjectProperties.ICON_BROKEN_BADGE.getImage(), 8, 0) 
                     : original;
         }
 
-        public Image getMyOpenedIcon(int type) {
+        public Image getOpenedIcon(int type) {
             Image original = super.getOpenedIcon(type);                
             return broken || brokenServerAction.isEnabled() 
                     ? Utilities.mergeImages(original, ProjectProperties.ICON_BROKEN_BADGE.getImage(), 8, 0) 

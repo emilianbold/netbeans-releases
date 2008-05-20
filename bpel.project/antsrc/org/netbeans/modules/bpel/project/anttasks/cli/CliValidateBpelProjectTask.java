@@ -49,11 +49,6 @@ import org.apache.tools.ant.types.Reference;
 import org.netbeans.modules.bpel.project.anttasks.util.Util;
 import org.netbeans.modules.soa.validation.util.LineUtil;
 
-/**
- * Ant task wrapper invokes Validate BPEL Model
- * 
- * @author Sreenivasan Genipudi
- */
 public class CliValidateBpelProjectTask extends Task {
     
     private String mSourceDirectory = null;
@@ -115,33 +110,33 @@ public class CliValidateBpelProjectTask extends Task {
             
             Class antTaskClass = Class.forName("org.netbeans.modules.bpel.project.anttasks.cli.CliValidateBpelProjectDelegate", true, mClassLoader);
             Thread.currentThread().setContextClassLoader(mClassLoader);
-            Object validateBPELObj = antTaskClass.newInstance();
+            Object validateObj = antTaskClass.newInstance();
             
             Method driver = antTaskClass.getMethod("setBuildDirectory", new Class[] {String.class});
             Object[] param = new Object[] {this.mBuildDirectory};
-            driver.invoke(validateBPELObj, param);
+            driver.invoke(validateObj, param);
 
             driver = antTaskClass.getMethod("setSourceDirectory", new Class[] {String.class});
             param = new Object[] {this.mSourceDirectory};
-            driver.invoke(validateBPELObj, param);
+            driver.invoke(validateObj, param);
 
             driver = antTaskClass.getMethod("setAllowBuildWithError", new Class[] {String.class});
             param = new Object[] {"" + this.mAllowBuildWithError};
-            driver.invoke(validateBPELObj, param);
+            driver.invoke(validateObj, param);
 
             driver = antTaskClass.getMethod("setProjectClassPath", new Class[] {String.class});
             param = new Object[] {this.mProjectClassPath};
-            driver.invoke(validateBPELObj, param);
+            driver.invoke(validateObj, param);
 
             driver = antTaskClass.getMethod("setBuildDependentProjectDir", new Class[] {String.class});
             param = new Object[] {this.mBuildDependentProjectFilesDirectory};
-            driver.invoke(validateBPELObj, param);
+            driver.invoke(validateObj, param);
 
             driver = antTaskClass.getMethod("execute", (Class[]) null);
-            driver.invoke(validateBPELObj, (Object[]) null);
+            driver.invoke(validateObj, (Object[]) null);
 
             driver = antTaskClass.getMethod("isFoundErrors", (Class[]) null);
-            isErrors = (Boolean) driver.invoke(validateBPELObj, (Object[]) null);
+            isErrors = (Boolean) driver.invoke(validateObj, (Object[]) null);
         } catch (Throwable e) {
             e.printStackTrace();
             throw new BuildException("Exception occured.", e);

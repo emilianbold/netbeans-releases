@@ -90,79 +90,102 @@ public class ColumnInfo {
     }
     
     public String toString() {
-    	StringBuffer str = new StringBuffer();
-    	if(mColumnName != null) {
-    		str.append(mColumnName);
-    		
-    		if(mTable != null) {
-	    		PrimaryKeyInfo pk = mTable.findPrimaryKey(this);
-	    		ForeignKeyInfo fk = mTable.findForeignKey(this);
-	    		boolean isColumnPK = false;
-	    		boolean isColumnFK = false;
-	    		if(pk != null && this.equals(pk.getColumn())) {
-    				str.append("   [PK");
-    				isColumnPK = true;
-	    		}
-	    		
-	    		
-	    		if(fk != null && this.equals(fk.getForeignKeyColumn())) {
-	    			isColumnFK = true;
-	    			if(isColumnPK) {
-	    				str.append("  FK]");
-	    			} else {
-	    				str.append("   [FK]");
-	    			}
-	    		} 
-	    		
-	    		if(isColumnPK && !isColumnFK) {
-	    			str.append("]");
-	    		}
-    		}
+        StringBuffer str = new StringBuffer();
+        if(mColumnName != null) {
+            str.append(mColumnName);
+            
+            if(mTable != null) {
+                PrimaryKeyInfo pk = mTable.findPrimaryKey(this);
+                ForeignKeyInfo fk = mTable.findForeignKey(this);
+                boolean isColumnPK = false;
+                boolean isColumnFK = false;
+                if(pk != null && this.equals(pk.getColumn())) {
+                    str.append("   [PK");
+                    isColumnPK = true;
+                }
+                
+                
+                if(fk != null && this.equals(fk.getForeignKeyColumn())) {
+                    isColumnFK = true;
+                    if(isColumnPK) {
+                        str.append("  FK]");
+                    } else {
+                        str.append("   [FK]");
+                    }
+                } 
+                
+                if(isColumnPK && !isColumnFK) {
+                    str.append("]");
+                }
+            }
 
-    	}
-    	return str.toString();
+        }
+        return str.toString();
     }
     
     public String getQualifiedName() {
-    	StringBuffer str = new StringBuffer();
-    	if(mColumnName != null) {
-    		boolean hasCatalog = false;
-    		boolean hasSchema = false;
-    		if(mTable != null) {
-    			String catalogName = mTable.getCatalogName();
-    			String schemaName = mTable.getSchemaName();
-    			String tableName = mTable.getTableName();
-    			if(catalogName != null && !catalogName.equals("")) {
-    				str.append("\"");
-    				str.append(catalogName);
-    				str.append("\"");
-    				hasCatalog = true;
-    			}
-    			
-    			if(schemaName != null && !schemaName.equals("")) {
-    				if(hasCatalog) {
-    					str.append(".");
-    				}
-    				str.append("\"");
-    				str.append(schemaName);
-    				str.append("\"");
-    				hasSchema = true;
-    			}
-    			
-    			if(tableName != null && !tableName.equals("")) {
-    				if(hasSchema) {
-    					str.append(".");
-    				}
-    				str.append("\"");
-    				str.append(tableName);
-    				str.append("\"");
-    				str.append(".");
-    			}
-    		}
-    		str.append("\"");
-    		str.append(mColumnName);
-    		str.append("\"");
-    	}
-    	return str.toString();
+        StringBuffer str = new StringBuffer();
+        if(mColumnName != null) {
+            boolean hasCatalog = false;
+            boolean hasSchema = false;
+            if(mTable != null) {
+                String catalogName = mTable.getCatalogName();
+                String schemaName = mTable.getSchemaName();
+                String tableName = mTable.getTableName();
+                if(catalogName != null && !catalogName.equals("")) {
+                    str.append("\"");
+                    str.append(catalogName);
+                    str.append("\"");
+                    hasCatalog = true;
+                }
+                
+                if(schemaName != null && !schemaName.equals("")) {
+                    if(hasCatalog) {
+                        str.append(".");
+                    }
+                    str.append("\"");
+                    str.append(schemaName);
+                    str.append("\"");
+                    hasSchema = true;
+                }
+                
+                if(tableName != null && !tableName.equals("")) {
+                    if(hasSchema) {
+                        str.append(".");
+                    }
+                    str.append("\"");
+                    str.append(tableName);
+                    str.append("\"");
+                    str.append(".");
+                }
+            }
+            str.append("\"");
+            str.append(mColumnName);
+            str.append("\"");
+        }
+        return str.toString();
+    }
+    
+    
+    @Override
+    public boolean equals(Object other) {
+        boolean result = true;
+        if(!(other instanceof ColumnInfo)) {
+            result = false;
+        }
+        
+        ColumnInfo otherColumn = (ColumnInfo) other;
+        
+        result &= this.getQualifiedName().equals(otherColumn.getQualifiedName()); 
+        return result;
+    }
+    
+    
+    
+    @Override
+    public int hashCode() {
+        int hashCode = getQualifiedName().hashCode();
+        return hashCode;
+        
     }
 }

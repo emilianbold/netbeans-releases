@@ -40,8 +40,6 @@
  */
 package org.netbeans.modules.bpel.documentation;
 
-import java.util.HashMap;
-import java.util.Map;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.ExtensibleElements;
 import org.netbeans.modules.bpel.model.api.support.UniqueId;
@@ -51,7 +49,6 @@ import org.netbeans.modules.bpel.design.decoration.ComponentsDescriptor;
 import org.netbeans.modules.bpel.design.decoration.Decoration;
 import org.netbeans.modules.bpel.design.decoration.DecorationProvider;
 import org.netbeans.modules.bpel.design.decoration.DecorationProviderFactory;
-import org.netbeans.modules.bpel.design.decoration.Descriptor;
 import org.netbeans.modules.bpel.design.selection.DiagramSelectionListener;
 import static org.netbeans.modules.xml.ui.UI.*;
 
@@ -84,6 +81,10 @@ public final class DocumentationDecorator extends DecorationProvider
   public Decoration getDecoration(BpelEntity entity) {
     String documentation = getDocumentation(entity);
     UniqueId id = entity.getUID();
+
+    if (id == null) {
+      return null;
+    }
 //out();
 //out("entity: " + entity);
 //out(" docum: " + documentation);
@@ -136,7 +137,12 @@ public final class DocumentationDecorator extends DecorationProvider
     if ( !(entity instanceof ExtensibleElements)) {
       return null;
     }
-    return ((ExtensibleElements) entity).getDocumentation();
+    String documentation = ((ExtensibleElements) entity).getDocumentation();
+
+    if (documentation != null) {
+      documentation = documentation.trim();
+    }
+    return documentation;
   }
 
   private UniqueId mySelectedID;

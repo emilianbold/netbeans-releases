@@ -71,7 +71,7 @@ public class TcgLibraryLoader {
             List<LibraryProvider> providers = LibraryProviderFactory.getDefault().getAlLibraryProvider();
             
             for (int i = 0; i < providers.size(); i++) {
-            	LibraryProvider provider = providers.get(i);
+                LibraryProvider provider = providers.get(i);
                 loadComponentTypeLibrary(provider, libRoot, topLevelItemMap);
             }
 
@@ -104,7 +104,7 @@ public class TcgLibraryLoader {
      * @exception ParseXmlException Description of the Exception
      */
     private static void loadComponentTypeLibrary(
-    	LibraryProvider provider,
+        LibraryProvider provider,
         TcgComponentTypeGroup libRoot, Map topLevelItemMap)
         throws ParseXmlException {
         //mLog.debug("loadComponentTypeLibrary libraryPath: " + libraryPath);
@@ -116,8 +116,8 @@ public class TcgLibraryLoader {
                 loadComponentTypeGroup(provider, root, "/", topLevelItemMap);
 
             if (ctg == null) {
-            	String message = NbBundle.getMessage(TcgLibraryLoader.class, "TcgModelManager.BAD_COMPONENT_ERROR", new Object[] {provider});
-            	
+                String message = NbBundle.getMessage(TcgLibraryLoader.class, "TcgModelManager.BAD_COMPONENT_ERROR", new Object[] {provider});
+                
                 throw new ParseXmlException(message);
             }
             libRoot.addComponentTypeGroup(ctg);
@@ -141,7 +141,7 @@ public class TcgLibraryLoader {
      * @return the component_type_group and its sub-tree
      */
     private static TcgComponentTypeGroup loadComponentTypeGroup(
-        LibraryProvider provider,	
+        LibraryProvider provider,    
         Element root, 
         String componentTypePath, Map topLevelItemMap)
         throws ParseXmlException {
@@ -153,7 +153,7 @@ public class TcgLibraryLoader {
         if ((name == null) || (title == null)
             || name.equals("") || title.equals("")
             || (icon == null)) {
-        	String message = NbBundle.getMessage(TcgLibraryLoader.class, "TcgLibraryLoader.ATTRIBUTES_NOT_FOUND", new Object[] {root});
+            String message = NbBundle.getMessage(TcgLibraryLoader.class, "TcgLibraryLoader.ATTRIBUTES_NOT_FOUND", new Object[] {root});
             throw new ParseXmlException(message);
         }
 
@@ -193,7 +193,7 @@ public class TcgLibraryLoader {
      *        definitions, and top-level component_type definitions
      */
     private static void registerTopLevelPropertyGroup(
-    	LibraryProvider provider,	
+        LibraryProvider provider,    
         Element root,
         String topLevelPath, Map topLevelItemMap) {
         NamedNodeMap attrs = root.getAttributes();
@@ -303,11 +303,11 @@ public class TcgLibraryLoader {
         try {
             InputStream is = provider.getLibraryXml();
             if(is != null) {
-	            doc = DOMUtil.createDocument(
-	                true, new InputSource(is));
+                doc = DOMUtil.createDocument(
+                    true, new InputSource(is));
             }
         } catch (Exception e) {
-        	String message = NbBundle.getMessage(TcgLibraryLoader.class, "TcgLibraryLoader.XML_LOAD_ERROR", new Object[] {provider} );
+            String message = NbBundle.getMessage(TcgLibraryLoader.class, "TcgLibraryLoader.XML_LOAD_ERROR", new Object[] {provider} );
             throw new ParseXmlException(message, e);
         }
         return doc;
@@ -781,10 +781,10 @@ public class TcgLibraryLoader {
         public LibraryProvider mProvider;
         
         public TopLevelItem(String pkg, 
-        					String name,
-        					LibraryProvider provider,
-        					Element element, 
-        					String type) {
+                            String name,
+                            LibraryProvider provider,
+                            Element element, 
+                            String type) {
             mPkg = pkg;
             mName = name;
             this.mProvider = provider;
@@ -798,7 +798,7 @@ public class TcgLibraryLoader {
         }
         
         public LibraryProvider getLibraryProvider() {
-        	return this.mProvider;
+            return this.mProvider;
         }
     }
 }

@@ -56,8 +56,6 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
@@ -90,12 +88,6 @@ public final class GemManager {
     
     /** Directory inside the GEM_HOME directory. */
     private static final String SPECIFICATIONS = "specifications"; // NOI18N
-    
-    /**
-     * Regexp for matching version number in gem packages:  name-x.y.z (we need
-     * to pull out x,y,z such that we can do numeric comparisons on them)
-     */
-    private static final Pattern VERSION_PATTERN = Pattern.compile("(\\d+)\\.(\\d+)\\.(\\d+)(-\\S+)?"); // NOI18N
     
     private static final boolean SKIP_INDEX_LIBS = System.getProperty("ruby.index.nolibs") != null; // NOI18N
     private static final boolean SKIP_INDEX_GEMS = System.getProperty("ruby.index.nogems") != null; // NOI18N
@@ -297,49 +289,6 @@ public final class GemManager {
         resetLocal();
     }
     
-    /** Return > 0 if version1 is greater than version 2, 0 if equal and -1 otherwise */
-    public static int compareGemVersions(String version1, String version2) {
-        if (version1.equals(version2)) {
-            return 0;
-        }
-
-        Matcher matcher1 = VERSION_PATTERN.matcher(version1);
-
-        if (matcher1.matches()) {
-            int major1 = Integer.parseInt(matcher1.group(1));
-            int minor1 = Integer.parseInt(matcher1.group(2));
-            int micro1 = Integer.parseInt(matcher1.group(3));
-
-            Matcher matcher2 = VERSION_PATTERN.matcher(version2);
-
-            if (matcher2.matches()) {
-                int major2 = Integer.parseInt(matcher2.group(1));
-                int minor2 = Integer.parseInt(matcher2.group(2));
-                int micro2 = Integer.parseInt(matcher2.group(3));
-
-                if (major1 != major2) {
-                    return major1 - major2;
-                }
-
-                if (minor1 != minor2) {
-                    return minor1 - minor2;
-                }
-
-                if (micro1 != micro2) {
-                    return micro1 - micro2;
-                }
-            } else {
-                // TODO uh oh
-                //assert false : "no version match on " + version2;
-            }
-        } else {
-            // TODO assert false : "no version match on " + version1;
-        }
-
-        // Just do silly alphabetical comparison
-        return version1.compareTo(version2);
-    }
-
     /**
      * Checks whether a gem with the given name is installed in the gem
      * repository used by the currently set Ruby interpreter.
@@ -408,7 +357,7 @@ public final class GemManager {
     private boolean isRightVersion(final String currVersion, final String version, final boolean exact) {
         boolean isInstalled = false;
         if (currVersion != null) {
-            int result = GemManager.compareGemVersions(version, currVersion);
+            int result = Util.compareVersions(version, currVersion);
             isInstalled = exact ? result == 0 : result <= 0;
         }
         return isInstalled;
@@ -1020,7 +969,7 @@ public final class GemManager {
             // Install standard libraries
             // lib/ruby/1.8/ 
             if (!SKIP_INDEX_LIBS) {
-                String rubyLibDir = platform.getLibDir();
+                String rubyLibDir = platform.getVersionLibDir();
                 if (rubyLibDir != null) {
                     File libs = new File(rubyLibDir);
                     assert libs.exists() && libs.isDirectory();

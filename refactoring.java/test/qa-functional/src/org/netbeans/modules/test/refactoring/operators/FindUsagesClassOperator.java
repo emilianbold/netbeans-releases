@@ -56,6 +56,7 @@ public class FindUsagesClassOperator extends ParametersPanelOperator {
         super(java.util.ResourceBundle.getBundle("org.netbeans.modules.refactoring.spi.impl.Bundle").getString("LBL_FindUsagesDialog"));
     }
     private JButtonOperator find;
+    private JButtonOperator cancel;
     private JLabelOperator label;
     private JCheckBoxOperator searchInComments;
     private JRadioButtonOperator findUsages;
@@ -72,6 +73,13 @@ public class FindUsagesClassOperator extends ParametersPanelOperator {
             find = new JButtonOperator(this, "Find");
         }
         return find;
+    }
+    
+    public JButtonOperator getCancel() {
+        if (cancel == null) {
+            cancel = new JButtonOperator(this, "Cancel");
+        }
+        return cancel;
     }
 
     public JLabelOperator getLabel() {

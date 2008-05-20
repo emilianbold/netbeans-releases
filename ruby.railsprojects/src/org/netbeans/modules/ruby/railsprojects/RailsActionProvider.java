@@ -74,6 +74,7 @@ import org.netbeans.modules.ruby.rubyproject.TestNotifier;
 import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.OutputRecognizer;
 import org.netbeans.modules.ruby.rubyproject.UpdateHelper;
+import org.netbeans.modules.ruby.rubyproject.rake.RakeRunner;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.openide.ErrorManager;
@@ -233,16 +234,13 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
             runServer("", debugCommand);
             return;
         } else if (COMMAND_TEST.equals(command)) {
-            if (!RubyPlatform.hasValidRake(project, true)) {
-                return;
-            }
-            // Save all files first
-            LifecycleManager.getDefault().saveAll();
-            RakeSupport rake = new RakeSupport(project);
-            rake.setTest(true);
             File pwd = FileUtil.toFile(project.getProjectDirectory());
-            String displayName = NbBundle.getMessage(RailsActionProvider.class, "Tests");
-            rake.runRake(pwd, null, displayName, new RailsFileLocator(context, project), true, false, "test"); // NOI18N
+            RakeRunner runner = new RakeRunner(project);
+            runner.setPWD(pwd);
+            runner.setFileLocator(new RailsFileLocator(context, project));
+            runner.showWarnings(true);
+            runner.setDebug(COMMAND_DEBUG_SINGLE.equals(command));
+            runner.run("test"); // NOI18N
             return;
         } else if (COMMAND_TEST_SINGLE.equals(command) || COMMAND_DEBUG_TEST_SINGLE.equals(command)) {
             if (!RubyPlatform.platformFor(project).isValidRuby(true)) {
@@ -297,8 +295,12 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
             if (RakeSupport.isRakeFile(file)) {
                 // Save all files first - this rake file could be accessing other files
                 LifecycleManager.getDefault().saveAll();
-                RakeSupport rake = new RakeSupport(project);
-                rake.runRake(null, file, file.getName(), new RailsFileLocator(context, project), true, debugSingleCommand);
+                RakeRunner runner = new RakeRunner(project);
+                runner.setRakeFile(file);
+                runner.setFileLocator(new RailsFileLocator(context, project));
+                runner.showWarnings(true);
+                runner.setDebug(COMMAND_DEBUG_SINGLE.equals(command));
+                runner.run();
                 return;
             }
             
@@ -315,8 +317,12 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
             if (isMigrationFile(file)) {
                 String name = file.getName();
                 String version = Integer.toString(Integer.parseInt(name.substring(0, 3)));
-                RakeSupport rake = new RakeSupport(project);
-                rake.runRake(FileUtil.toFile(project.getProjectDirectory()), null, file.getName(), new RailsFileLocator(context, project), true, debugSingleCommand, "db:migrate", "VERSION=" + version); // NOI18N
+                RakeRunner runner = new RakeRunner(project);
+                runner.setPWD(FileUtil.toFile(project.getProjectDirectory()));
+                runner.setFileLocator(new RailsFileLocator(context, project));
+                runner.showWarnings(true);
+                runner.setParameters("VERSION=" + version); // NOI18N
+                runner.run("db:migrate"); // NOI18N
                 return;
             }
             
@@ -783,11 +789,35 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
     }    
 
     private void runServer(final String path, final boolean debug) {
+        if (!debug) {
+            runServer(path, false, false);
+        } else {
+            String serverValue = project.evaluator().getProperty(RailsProjectProperties.DEBUG_SERVER);
+            String clientValue = project.evaluator().getProperty(RailsProjectProperties.DEBUG_CLIENT);
+            boolean serverDebug = getBooleanValue(serverValue, true);
+            boolean clientDebug = getBooleanValue(clientValue, false);
+            assert serverDebug || clientDebug;
+            
+            runServer(path, serverDebug, clientDebug);
+        }
+    }
+    
+    private void runServer(final String path, final boolean serverDebug, final boolean clientDebug) {
         RailsServerManager server = project.getLookup().lookup(RailsServerManager.class);
         if (server != null) {
-            server.setDebug(debug);
+            server.setDebug(serverDebug);
+            server.setClientDebug(clientDebug);
             server.showUrl(path);
         }
     }
-
+    
+    private static boolean getBooleanValue(String propValue, boolean defaultValue) {
+        if (propValue == null) {
+            return defaultValue;
+        }
+        
+        String lowercase = propValue.toLowerCase();
+        return lowercase.equals("yes") || lowercase.equals("on") || lowercase.equals("true"); // NOI18N
+    }
+    
 }

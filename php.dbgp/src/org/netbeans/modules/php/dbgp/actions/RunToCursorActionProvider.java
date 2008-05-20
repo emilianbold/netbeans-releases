@@ -23,7 +23,7 @@ import java.util.Set;
 
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.modules.php.dbgp.DebugSession;
-import org.netbeans.modules.php.dbgp.api.SessionId;
+import org.netbeans.modules.php.dbgp.SessionId;
 import org.netbeans.modules.php.dbgp.breakpoints.Utils;
 import org.netbeans.modules.php.dbgp.packets.BrkpntCommandBuilder;
 import org.netbeans.modules.php.dbgp.packets.BrkpntSetCommand;

@@ -10,6 +10,8 @@ import java.sql.Connection;
 import java.util.List;
 import javax.swing.JPanel;
 
+import org.openide.util.NbBundle;
+
 public final class DatabaseTableSelectionVisualPanel1 extends JPanel {
 
     private DatabaseTableSelectionPanel mDBTableSelectionPanel;
@@ -22,7 +24,7 @@ public final class DatabaseTableSelectionVisualPanel1 extends JPanel {
 
     @Override
     public String getName() {
-        return "Step #1";
+        return NbBundle.getMessage(DatabaseTableSelectionVisualPanel1.class, "DatabaseTableSelectionVisualPanel1_SELECT_TABLES");
     }
 
     private void init() {

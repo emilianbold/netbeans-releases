@@ -22,6 +22,7 @@ import java.awt.Image;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import javax.management.relation.Role;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -48,9 +49,13 @@ import org.netbeans.modules.bpel.model.api.Variable;
 import org.netbeans.modules.bpel.mapper.tree.images.NodeIcons;
 import org.netbeans.modules.bpel.mapper.tree.spi.MapperTcContext;
 import org.netbeans.modules.bpel.mapper.tree.spi.RestartableIterator;
+import org.netbeans.modules.bpel.model.api.PartnerLink;
+import org.netbeans.modules.bpel.model.api.PartnerLinkContainer;
 import org.netbeans.modules.bpel.model.api.VariableDeclaration;
 import org.netbeans.modules.bpel.model.api.VariableDeclarationScope;
 import org.netbeans.modules.soa.mappercore.Mapper;
+import org.netbeans.modules.xml.schema.model.AnyAttribute;
+import org.netbeans.modules.xml.schema.model.AnyElement;
 import org.netbeans.modules.xml.schema.model.Attribute;
 import org.netbeans.modules.xml.schema.model.Attribute.Use;
 import org.netbeans.modules.xml.schema.model.Element;
@@ -71,14 +76,21 @@ import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext;
 import org.netbeans.modules.xml.xpath.ext.XPathSchemaContextHolder;
 import org.netbeans.modules.xml.xpath.ext.XPathUtils;
 import org.openide.util.NbBundle;
-
+import org.netbeans.modules.bpel.model.api.support.Roles;
 /**
  * The implementation of the TreeItemInfoProvider for the variables' tree.
  * 
  * @author nk160297
+ * @author AlexanderPermyakov
  */
 public class VariableTreeInfoProvider implements TreeItemInfoProvider {
-
+    
+    public static final String ANY_ELEMENT = 
+            NbBundle.getMessage(VariableTreeInfoProvider.class, "ANY_ELEMENT"); // NOI18N
+    
+    public static final String ANY_ATTRIBUTE = 
+            NbBundle.getMessage(VariableTreeInfoProvider.class, "ANY_ATTRIBUTE"); // NOI18N
+    
     private static VariableTreeInfoProvider singleton = new VariableTreeInfoProvider();
     
     public static VariableTreeInfoProvider getInstance() {
@@ -191,6 +203,14 @@ public class VariableTreeInfoProvider implements TreeItemInfoProvider {
             return "(" + gType + ")" + getDisplayName(castableObject);
         }
         //
+        if (treeItem instanceof AnyElement) {
+            return ANY_ELEMENT;
+        }
+        //
+        if (treeItem instanceof AnyAttribute) {
+            return ANY_ATTRIBUTE;
+        }
+        //
         return null;
     }
 
@@ -287,6 +307,43 @@ public class VariableTreeInfoProvider implements TreeItemInfoProvider {
             if (treeItem instanceof GlobalType) {
                 return NodeIcons.UNKNOWN_IMAGE;
             } 
+            //
+            if (treeItem instanceof AnyElement) {
+                AnyElement anyElement = (AnyElement)treeItem;
+                boolean isOptional = anyElement.getMinOccursEffective() < 1;
+                String maxOccoursStr = anyElement.getMaxOccursEffective();
+                //
+                boolean isRepeating = false;
+                //
+                if (maxOccoursStr != null) {
+                    try {
+                        int maxOccoursInt = Integer.parseInt(maxOccoursStr);
+                        isRepeating = maxOccoursInt > 1;  
+                    } catch (NumberFormatException ex) {
+                        // Do Nothing
+                        isRepeating = true;
+        } 
+                }
+        //
+                if (isOptional) {
+                    if (isRepeating) {
+                        return NodeIcons.ELEMENT_OPTIONAL_REPEATING.getIcon();
+                    } else {
+                        return NodeIcons.ELEMENT_OPTIONAL.getIcon();
+                    }
+                } else {
+                    if (isRepeating) {
+                        return NodeIcons.ELEMENT_REPEATING.getIcon();
+                    } else {
+                        return NodeIcons.ELEMENT.getIcon();
+                    }
+                }
+            }
+            //
+            if (treeItem instanceof AnyAttribute) {
+                // The Any Attribute doesn't have multiplisity parameters
+                return NodeIcons.ATTRIBUTE.getIcon();
+            }
         } 
         //
         if (treeItem instanceof Part) {
@@ -436,62 +493,151 @@ public class VariableTreeInfoProvider implements TreeItemInfoProvider {
         result.add(action);
     }
 
+    public String getToolTipText(RestartableIterator<Object> dataObjectPathItr) {
+        Object treeItem = dataObjectPathItr.next();
+
+        if (treeItem instanceof PartnerLinkContainer) {
+            String type = ((PartnerLinkContainer) treeItem).getBpelModel().
+                    getProcess().getName();
+            return getColorTooltip("Partner Links", type, null);
+        }
+
+        if (treeItem instanceof PartnerLink) {
+            PartnerLink pLink = (PartnerLink) treeItem;
+            String result;
+            result = "<html> <body> Partner Link ";
+            if (pLink.getName() != null) {
+                result = result + "<b><font color =#7C0000>" + pLink.getName() + 
+                        "</font></b>";
+            }
+            if (pLink.getDocumentation() != null) {
+                result = result + "<hr>" + pLink.getDocumentation();
+            }
+            if (pLink.getMyRole() != null) {
+                result = result + "<hr><p><b><font color =#000099> myRole= </font></b>" 
+                        + pLink.getMyRole().getRefString() + "</p>";
+            }
+            if (pLink.getPartnerRole() != null) {
+                result = result + "<b><font color =#000099> partnerRole= </font></b>" +
+                        pLink.getPartnerRole().getRefString();
+            }
+            result = result + " </body>";
+            return result;
+        }
+
+        if (treeItem instanceof Roles) {
+            Object parent = dataObjectPathItr.next();
+            String value = null;
+            String nameSpace = null;
+            
+            if (parent instanceof PartnerLink) {
+                PartnerLink pLink = (PartnerLink) parent;
+                if (Roles.MY_ROLE.equals(treeItem)) {
+                    value = pLink.getMyRole().getRefString();
+                    nameSpace = pLink.getMyRole().getEffectiveNamespace();
+                }
+                if (Roles.PARTNER_ROLE.equals(treeItem)) {
+                    value = pLink.getPartnerRole().getRefString();
+                    nameSpace = pLink.getMyRole().getEffectiveNamespace();
+                }
+            }
+            String result;
+            result ="<html><body><b><font color =#000099>" + 
+                    ((Roles) treeItem).toString() + " = </font></b>";
+            if (value != null) {
+                result = result + value;
+            }
+            if (nameSpace != null && nameSpace.length() > 0) {
+                result = result + "<hr> NameSpace= " +nameSpace;
+            }
+            result = result + "</body>";
+            
+            return result;
+        }
+
+        return getToolTipText(treeItem);
+    }
     
-    public String getToolTipText(Object treeItem) {
+    private String getToolTipText(Object treeItem) {
+        String name = getDisplayName(treeItem);
+        String nameSpase = null;
+        if (treeItem instanceof SchemaComponent) {
+            nameSpase = ((SchemaComponent) treeItem).getModel().
+                    getEffectiveNamespace((SchemaComponent) treeItem);
+        }
+
+        String type = null;
+
         if (treeItem instanceof GlobalElement) {
             if (((GlobalElement) treeItem).getType() != null) {
-                return ((GlobalElement) treeItem).getType().getRefString();
+                type = ((GlobalElement) treeItem).getType().getRefString();
+                return getColorTooltip(name, type, nameSpase);
             }
         }
-        
+
         if (treeItem instanceof Part) {
-            if (((Part) treeItem).getType() != null ) {
-                return ((Part) treeItem).getType().getRefString() ;
+            if (((Part) treeItem).getType() != null) {
+                return getColorTooltip(name, ((Part) treeItem).getType().
+                        getRefString(), nameSpase);
             }
             if (((Part) treeItem).getElement() != null) {
-                return ((Part) treeItem).getElement().getRefString() ;
+                return getColorTooltip(name, ((Part) treeItem).
+                        getElement().getRefString(), nameSpase);
             }
         }
+
         if (treeItem instanceof LocalElement) {
-            if (((LocalElement)treeItem).getType() != null)
-            {
-                return ((LocalElement)treeItem).getType().getRefString();
+            if (((LocalElement) treeItem).getType() != null) {
+                return getColorTooltip(name, ((LocalElement) treeItem).
+                        getType().getRefString(), nameSpase);
             }
         }
-        
+
         if (treeItem instanceof LocalAttribute) {
             if (((LocalAttribute) treeItem).getType() != null) {
-                return ((LocalAttribute) treeItem).getType().getRefString();
+                return getColorTooltip(name, ((LocalAttribute) treeItem).
+                        getType().getRefString(), nameSpase);
             }
         }
-        
+
         if (treeItem instanceof GlobalAttribute) {
-            
-            if (((GlobalAttribute)treeItem).getType() != null) {
-                return ((GlobalAttribute)treeItem).getType().getRefString();
+            if (((GlobalAttribute) treeItem).getType() != null) {
+                return getColorTooltip(name, ((GlobalAttribute) treeItem).
+                        getType().getRefString(), nameSpase);
             }
         }
-        
+
         if (treeItem instanceof GlobalType) {
-            return ((GlobalType)treeItem).getName();
+            return getColorTooltip(name, ((GlobalType) treeItem).getName(), nameSpase);
         }
-        
+
         if (treeItem instanceof Variable) {
             if (((Variable) treeItem).getMessageType() != null) {
-                return ((Variable) treeItem).getMessageType().getRefString();
+                return getColorTooltip(name, ((Variable) treeItem).
+                        getMessageType().getRefString(), nameSpase);
             }
             if (((Variable) treeItem).getType() != null) {
-                return ((Variable) treeItem).getType().getRefString();
+                return getColorTooltip(name, ((Variable) treeItem).
+                        getType().getRefString(), nameSpase);
             }
             if (((Variable) treeItem).getElementType() != null) {
-                return ((Variable) treeItem).getElementType().getName();
+                return getColorTooltip(name, ((Variable) treeItem).
+                        getElementType().getName(), nameSpase);
             }
-        }    
-        
+        }
+
+        if (treeItem instanceof AnyElement || treeItem instanceof AnyAttribute) {
+            return getColorTooltip(name, "ANY_TYPE", nameSpase);
+        }
+
+        if (treeItem instanceof Process) {
+            return getColorTooltip(name, ((Process) treeItem).getName(), null);
+        }
+
         if (treeItem instanceof AbstractTypeCast) {
-            Object castableObject = ((AbstractTypeCast)treeItem).getCastedObject();
+            Object castableObject = ((AbstractTypeCast) treeItem).getCastedObject();
             String baseTooltip = getToolTipText(castableObject);
-            GlobalType gType = ((AbstractTypeCast)treeItem).getCastTo();
+            GlobalType gType = ((AbstractTypeCast) treeItem).getCastTo();
             String castedToLbl = NbBundle.getMessage(
                     VariableTreeInfoProvider.class, "CASTED_TO"); // NOI18N
             return baseTooltip + " " + castedToLbl + " " + gType.getName();
@@ -499,6 +645,28 @@ public class VariableTreeInfoProvider implements TreeItemInfoProvider {
         //
         String notNamedTypeLbl = NbBundle.getMessage(
                 VariableTreeInfoProvider.class, "NOT_NAMED_TYPE"); // NOI18N
-        return notNamedTypeLbl;
+
+        return new String("<html><body>" + name +
+                "<b><font color=#7C0000>" + " " + notNamedTypeLbl +
+                "</font></b> <hr> Localy define type, this type does not have name" +
+                "</body>");
+    }
+    
+    private String getColorTooltip(String name, String type, String nameSpace) {
+        String result;
+        result = "<html><body>";
+        if (name != null) {
+            result = result + name;
+        }
+
+        if (type != null) {
+            result = result + "<b><font color=#7C0000>" + " " + type + "</font></b>";
+        }
+        if (nameSpace != null) {
+            result = result + "<hr>" + "Namespace: " + nameSpace;
+        }
+        result = result + "</body>";
+
+        return result;
     }
 }

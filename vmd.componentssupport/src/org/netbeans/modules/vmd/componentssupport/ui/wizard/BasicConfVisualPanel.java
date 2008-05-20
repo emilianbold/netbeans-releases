@@ -79,13 +79,12 @@ final class BasicConfVisualPanel extends JPanel {
 
     private static final long serialVersionUID = -7699370587627049750L;
     
-    public  static final String VALID         = "valid";                    // NOI18N
-    public  static final String ERROR_MESSAGE = "WizardPanel_errorMessage"; // NOI18N
     static final String EXAMPLE_BASE_NAME     = "org.yourorghere.";         // NOI18N
-    private static final String BUNDLE_PROPERTIES 
-                                              = "/Bundle.properties";       // NOI18N
     
-    public BasicConfVisualPanel( ) {
+    // TODO should perform all checks together on any change. current code (copied)
+    // allows incorrect behavior in some cases.
+    public BasicConfVisualPanel( BasicModuleConfWizardPanel panel) {
+        myPanel = panel;
         initComponents();
         initAccessibility();
         myCodeBaseNameListener = new DocumentAdapter() {
@@ -95,6 +94,7 @@ final class BasicConfVisualPanel extends JPanel {
         };
         myLayerListener = new DocumentAdapter() {
             public void insertUpdate(DocumentEvent e) {
+                isLayerUpdated = true;
                 checkLayer();
             }
         };
@@ -191,8 +191,14 @@ final class BasicConfVisualPanel extends JPanel {
             // update layer and bundle from the cnb
             String slashName = dotName.replace('.', '/');
             if (!isBundleUpdated) {
-                bundleValue.setText(slashName + BUNDLE_PROPERTIES); // NOI18N
+                bundleValue.setText(
+                        slashName + "/" + CustomComponentWizardIterator.BUNDLE_PROPERTIES); // NOI18N
                 isBundleUpdated = false;
+            }
+            if (!isLayerUpdated) {
+                layerValue.setText(
+                        slashName + "/" + CustomComponentWizardIterator.LAYER_XML); // NOI18N
+                isLayerUpdated = false;
             }
         }
     }
@@ -202,10 +208,7 @@ final class BasicConfVisualPanel extends JPanel {
     }
     
     private void checkLayer() {
-        String layerPath = getLayerValue();
-        if (layerPath != null) {
-            checkEntry(layerPath, LAYER, XML); // NOI18N
-        }
+        checkEntry(getLayerValue(), LAYER, XML); // NOI18N
     }
     
     /** Used for Layer and Bundle entries. */
@@ -257,12 +260,16 @@ final class BasicConfVisualPanel extends JPanel {
         String projectName = (String)mySettings.getProperty( 
                 CustomComponentWizardIterator.PROJECT_NAME);
         if ( codeBaseName == null ){
-            String dotName = EXAMPLE_BASE_NAME + projectName;
-            codeBaseName = normalizeCNB(dotName);
+            codeBaseName = getDefaultCodeNameBase(projectName);
         }
         return codeBaseName;
     }
 
+    public static String getDefaultCodeNameBase(String projectName){
+            String dotName = EXAMPLE_BASE_NAME + projectName;
+            return normalizeCNB(dotName);
+    }
+    
     /** Stores collected data into model. */
     void storeData( WizardDescriptor descriptor ) {
         descriptor.putProperty( CustomComponentWizardIterator.CODE_BASE_NAME, 
@@ -284,12 +291,7 @@ final class BasicConfVisualPanel extends JPanel {
     }
     
     private String getLayerValue() {
-        String v = layerValue.getText().trim();
-        if (v.length() == 0) {
-            return null;
-        } else {
-            return v;
-        }
+        return layerValue.getText().trim();
     }
     
     protected final void setError(String message) {
@@ -320,7 +322,7 @@ final class BasicConfVisualPanel extends JPanel {
     }
     
     private final void setValid(boolean valid) {
-        firePropertyChange(VALID, null, valid); // NOI18N
+        myPanel.setValid(valid);
     }
     
     private void markValid() {
@@ -329,7 +331,9 @@ final class BasicConfVisualPanel extends JPanel {
     }
     
     private final void setMessage(String message) {
-        mySettings.putProperty(ERROR_MESSAGE, message);
+        mySettings.putProperty(
+                CustomComponentWizardIterator.WIZARD_PANEL_ERROR_MESSAGE, 
+                message);
     }
     
     private void removeDocumentListeners() {
@@ -459,12 +463,8 @@ final class BasicConfVisualPanel extends JPanel {
     private javax.swing.JTextField layerValue;
     // End of variables declaration//GEN-END:variables
     
-    abstract static class DocumentAdapter implements DocumentListener {
-        public void removeUpdate(DocumentEvent e) { insertUpdate(null); }
-        public void changedUpdate(DocumentEvent e) { insertUpdate(null); }
-    }
-    
     private boolean isBundleUpdated;
+    private boolean isLayerUpdated;
     private boolean listenersAttached;
     
     private final DocumentListener myCodeBaseNameListener;
@@ -472,5 +472,6 @@ final class BasicConfVisualPanel extends JPanel {
     private final DocumentListener myBundleListener;
     
     private WizardDescriptor mySettings;
+    private BasicModuleConfWizardPanel myPanel;
     
 }

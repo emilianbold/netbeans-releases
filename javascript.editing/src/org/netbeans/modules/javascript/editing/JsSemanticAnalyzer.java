@@ -49,6 +49,7 @@ import org.netbeans.modules.gsf.api.ColoringAttributes;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.gsf.api.SemanticAnalyzer;
+import org.netbeans.modules.javascript.editing.embedding.JsModel;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 
 /**
@@ -113,6 +114,10 @@ public class JsSemanticAnalyzer implements SemanticAnalyzer {
         boolean checkRange = sanitizedRange != OffsetRange.NONE && sanitizedRange.getLength() == 1;
         for (Node node : globalVars) {
             String s = node.getString();
+            //filter out generated code
+            if(JsModel.isGeneratedIdentifier(s)) {
+                continue;
+            }
             OffsetRange range = AstUtilities.getNameRange(node);
             if (checkRange && range.getEnd() == sanitizedRange.getStart()) {
                 continue;
@@ -129,6 +134,9 @@ public class JsSemanticAnalyzer implements SemanticAnalyzer {
         AstUtilities.addNodesByType(root, new int[] { Token.REGEXP, Token.FUNCNAME, Token.OBJLITNAME }, regexps);
         for (Node node : regexps) {
             OffsetRange range = AstUtilities.getNameRange(node);
+            if(node.isStringNode() && JsModel.isGeneratedIdentifier(node.getString())) {
+                continue;
+            }
             final int type = node.getType();
             if (type == Token.REGEXP) {
                 highlights.put(range, ColoringAttributes.REGEXP);

@@ -67,10 +67,10 @@ public final class ConstantPoolReader extends FilterInputStream implements DataI
     }
 
     public void readFully(byte[] b, int off, int len) throws IOException {
-	InputStream in = this.in;
+	InputStream input = in;
 	int n = 0;
 	while (n < len) {
-	    int count = in.read(b, off + n, len - n);
+	    int count = input.read(b, off + n, len - n);
 	    if (count < 0)
 		throw new EOFException();
 	    n += count;
@@ -78,11 +78,11 @@ public final class ConstantPoolReader extends FilterInputStream implements DataI
     }
 
     public int skipBytes(int n) throws IOException {
-	InputStream in = this.in;
+	InputStream input = in;
 	int total = 0;
 	int cur = 0;
 
-	while ((total<n) && ((cur = (int) in.skip(n-total)) > 0)) {
+	while ((total<n) && ((cur = (int) input.skip(n-total)) > 0)) {
 	    total += cur;
 	}
 
@@ -111,18 +111,18 @@ public final class ConstantPoolReader extends FilterInputStream implements DataI
     }
 
     public short readShort() throws IOException {
-	InputStream in = this.in;
-	int ch1 = in.read();
-	int ch2 = in.read();
+	InputStream input = in;
+	int ch1 = input.read();
+	int ch2 = input.read();
 	if ((ch1 | ch2) < 0)
 	     throw new EOFException();
 	return (short)((ch1 << 8) + ch2);
     }
 
     public int readUnsignedShort() throws IOException {
-	InputStream in = this.in;
-	int ch1 = in.read();
-	int ch2 = in.read();
+	InputStream input = in;
+	int ch1 = input.read();
+	int ch2 = input.read();
 	if ((ch1 | ch2) < 0)
 	     throw new EOFException();
 	return (ch1 << 8) + ch2;
@@ -133,11 +133,11 @@ public final class ConstantPoolReader extends FilterInputStream implements DataI
     }
 
     public int readInt() throws IOException {
-	InputStream in = this.in;
-	int ch1 = in.read();
-	int ch2 = in.read();
-	int ch3 = in.read();
-	int ch4 = in.read();
+	InputStream input = in;
+	int ch1 = input.read();
+	int ch2 = input.read();
+	int ch3 = input.read();
+	int ch4 = input.read();
 	if ((ch1 | ch2 | ch3 | ch4) < 0)
 	     throw new EOFException();
 	return ((ch1 << 24) + (ch2 << 16) + (ch3 << 8) + ch4);

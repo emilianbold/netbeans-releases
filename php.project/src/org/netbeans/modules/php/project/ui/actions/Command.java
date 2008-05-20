@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,9 +31,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.project.ui.actions;
@@ -55,9 +55,9 @@ import java.text.MessageFormat;
 import org.netbeans.modules.php.project.PhpActionProvider;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.Utils;
-import org.netbeans.modules.php.project.api.PhpOptions;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
+import org.netbeans.modules.php.project.ui.options.PhpOptions;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileObject;
@@ -67,7 +67,6 @@ import org.openide.windows.InputOutput;
 import org.openide.windows.OutputWriter;
 
 /**
- *
  * @author Radek Matous
  */
 public abstract class Command {
@@ -84,15 +83,15 @@ public abstract class Command {
     public abstract void invokeAction(Lookup context) throws IllegalArgumentException;
 
     public abstract boolean isActionEnabled(Lookup context) throws IllegalArgumentException;
-    
+
     public boolean asyncCallRequired() {
         return true;
     }
-    
+
     public boolean saveRequired() {
         return true;
     }
-    
+
     public final PhpProject getProject() {
         return project;
     }
@@ -105,15 +104,15 @@ public abstract class Command {
     protected final void showURLForProjectFile() throws MalformedURLException {
         HtmlBrowser.URLDisplayer.getDefault().showURL(urlForProjectFile());
     }
-    
+
     protected final void showURLForDebugProjectFile() throws MalformedURLException {
         HtmlBrowser.URLDisplayer.getDefault().showURL(urlForDebugProjectFile());
     }
-    
+
     protected final void showURLForDebugContext(Lookup context) throws MalformedURLException {
         HtmlBrowser.URLDisplayer.getDefault().showURL(urlForDebugContext(context));
     }
-        
+
     protected final String getProperty(String propertyName) {
         return getPropertyEvaluator().getProperty(propertyName);
     }
@@ -129,42 +128,46 @@ public abstract class Command {
     protected final URL appendQuery(URL originalURL, String queryWithoutQMark) throws MalformedURLException {
         URI retval;
         try {
-            retval = new URI(originalURL.getProtocol(), originalURL.getUserInfo(), 
-                    originalURL.getHost(), originalURL.getPort(), originalURL.getPath(), 
-                    queryWithoutQMark, originalURL.getRef());//NOI18N
+            retval = new URI(originalURL.getProtocol(), originalURL.getUserInfo(),
+                    originalURL.getHost(), originalURL.getPort(), originalURL.getPath(),
+                    queryWithoutQMark, originalURL.getRef());
             return retval.toURL();
         } catch (URISyntaxException ex) {
             MalformedURLException mex = new MalformedURLException(ex.getLocalizedMessage());
             mex.initCause(ex);
             throw mex;
-        }        
+        }
     }
-    
+
     protected final URL urlForDebugProjectFile() throws MalformedURLException {
-        return appendQuery(urlForProjectFile(), "XDEBUG_SESSION_START="+PhpSourcePath.DEBUG_SESSION);//NOI18N
+        return appendQuery(urlForProjectFile(), "XDEBUG_SESSION_START=" + PhpSourcePath.DEBUG_SESSION); //NOI18N
     }
 
     protected final URL urlForDebugContext(Lookup context) throws MalformedURLException {
-        return appendQuery(urlForContext(context), "XDEBUG_SESSION_START="+PhpSourcePath.DEBUG_SESSION);//NOI18N
+        return appendQuery(urlForContext(context), "XDEBUG_SESSION_START=" + PhpSourcePath.DEBUG_SESSION); //NOI18N
     }
-    
+
     protected final URL urlForProjectFile() throws MalformedURLException {
         String relativePath = relativePathForProject();
         if (relativePath == null) {
-            //TODO: makes sense just in case if listing is enabled | maybe user message 
-            relativePath = "";//NOI18N
+            //TODO makes sense just in case if listing is enabled | maybe user message
+            relativePath = ""; //NOI18N
         }
-        return new URL(getBaseURL(), relativePath);        
+        URL retval = new URL(getBaseURL(), relativePath);
+        String arguments = getProperty(PhpProjectProperties.ARGS);
+        return (arguments != null) ? appendQuery(retval, arguments) : retval;
     }
-    
+
     protected final URL urlForContext(Lookup context) throws MalformedURLException {
         String relativePath = relativePathForConext(context);
         if (relativePath == null) {
             throw new MalformedURLException();
         }
-        return new URL(getBaseURL(), relativePath);
+        URL retval = new URL(getBaseURL(), relativePath);
+        String arguments = getProperty(PhpProjectProperties.ARGS);
+        return (arguments != null) ? appendQuery(retval, arguments) : retval;
     }
-    
+
     //or null
     protected final String relativePathForConext(Lookup context) {
         return getCommandUtils().getRelativeSrcPath(fileForContext(context));
@@ -182,16 +185,23 @@ public abstract class Command {
         FileObject[] srcRoots = Utils.getSourceObjects(getProject());
         for (FileObject fileObject : srcRoots) {
             retval = fileObject.getFileObject(nameOfIndexFile);
-            if (retval != null) break;
+            if (retval != null) {
+                break;
+            }
         }
         return retval;
+    }
+
+    protected boolean useInterpreter() {
+        String runAs = getPropertyEvaluator().getProperty(PhpProjectProperties.RUN_AS);
+        return PhpProjectProperties.RunAsType.SCRIPT.name().equals(runAs);
     }
     
     protected String getPhpInterpreter() {
         String retval = PhpOptions.getInstance().getPhpInterpreter();
         return (retval != null && retval.length() >  0) ? retval.trim() : null;
     }
-    
+
     //or null
     protected final FileObject fileForContext(Lookup context) {
         CommandUtils utils = getCommandUtils();
@@ -208,19 +218,19 @@ public abstract class Command {
         return provider.getCommand(commandName);
     }
 
-    
-    private final CommandUtils getCommandUtils() {
+
+    private CommandUtils getCommandUtils() {
         CommandUtils utils = new CommandUtils(getProject());
         return utils;
     }
-    
+
     private static OutputWriter getOutputWriter(String outTabTitle) {
         InputOutput io = IOProvider.getDefault().getIO(outTabTitle, false);
         io.select();
         OutputWriter writer = io.getOut();
         return writer;
     }
-    
+
     protected final BufferedReader reader(InputStream is, Charset encoding) {
         return new BufferedReader(new InputStreamReader(is, encoding));
     }
@@ -230,17 +240,18 @@ public abstract class Command {
         BufferedWriter outputWriter = new BufferedWriter(getOutputWriter(outputTitle));
         return outputWriter;
     }
-    
+
     protected final String getOutputTabTitle(File scriptFile) {
-        assert this instanceof Displayable;        
-        return MessageFormat.format("{0} - {1}", ((Displayable)this).getDisplayName(), scriptFile.getName());
+        assert this instanceof Displayable;
+        return MessageFormat.format("{0} - {1}", ((Displayable) this).getDisplayName(), scriptFile.getName());
     }
-    
+
     protected final BufferedWriter writer(OutputStream os, Charset encoding) {
         return new BufferedWriter(new OutputStreamWriter(os, encoding));
     }
 
-    protected final void rewriteAndClose(BufferedReader reader, BufferedWriter writer, Command.StringConvertor convertor) throws IOException {
+    protected final void rewriteAndClose(BufferedReader reader, BufferedWriter writer,
+            Command.StringConvertor convertor) throws IOException {
         String line;
         try {
             while ((line = reader.readLine()) != null) {
@@ -258,8 +269,8 @@ public abstract class Command {
     public interface StringConvertor {
         String convert(String text);
     }
-        
-    private final PropertyEvaluator getPropertyEvaluator() {
+
+    private PropertyEvaluator getPropertyEvaluator() {
         return getProject().getEvaluator();
     }
 }

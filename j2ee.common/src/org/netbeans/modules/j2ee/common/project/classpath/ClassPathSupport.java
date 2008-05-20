@@ -313,9 +313,11 @@ public final class ClassPathSupport {
     }
     
     public void updateJarReference(Item item) {
+        assert item.getType() == Item.TYPE_JAR;
+        RelativePath rp = (RelativePath)item.object;
         String eval = evaluator.evaluate( item.getReference() );
 
-        item.object = eval;
+        item.object = new RelativePath(eval, rp.getBase());
 
         //TODO these should be encapsulated in the Item class 
         // but that means we need to pass evaluator and antProjectHelper there.
@@ -567,10 +569,6 @@ public final class ClassPathSupport {
             }
         }
         
-        public Object getObject() {
-            return object;
-        }
-
         public boolean canDelete() {
             return getType() != TYPE_CLASSPATH;
         }

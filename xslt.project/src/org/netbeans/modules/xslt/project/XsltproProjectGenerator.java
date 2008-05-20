@@ -259,7 +259,7 @@ public class XsltproProjectGenerator {
                 NbBundle.getMessage(XsltproProjectGenerator.class, "TXT_Service_Unit_Description")); // NOI18N
         
         // todo r
-        ep.setProperty("jbi.se.type", "sun-bpel-engine"); // NOI18N
+        ep.setProperty("jbi.se.type", "sun-xslt-engine"); // NOI18N
         ep.setProperty("jbi.service-unit.description", 
                 NbBundle.getMessage(XsltproProjectGenerator.class, "TXT_Service_Unit_Description")); // NOI18N
 
