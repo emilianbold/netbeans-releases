@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.uml.diagrams.nodes.state;
 
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Paint;
 import java.awt.Rectangle;
@@ -81,7 +82,9 @@ public class JoinForkStateWidget extends CustomizableWidget
 //            bgColor = new GradientPaint(x1, y1, Color.WHITE, x2, y2, bg);
 //        }
         gr.setPaint(bgColor);
-
+        
         gr.fillRect(bounds.x, bounds.y, bounds.width, bounds.height);
+        gr.setPaint(Color.BLACK);
+        gr.drawRect(bounds.x, bounds.y, bounds.width, bounds.height);
     }   
 }

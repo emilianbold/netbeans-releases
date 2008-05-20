@@ -80,6 +80,7 @@ import org.netbeans.modules.uml.drawingarea.persistence.data.NodeInfo;
 import org.netbeans.modules.uml.drawingarea.persistence.NodeWriter;
 import org.netbeans.modules.uml.drawingarea.persistence.PersistenceUtil;
 import org.netbeans.modules.uml.drawingarea.view.SwitchableWidget.SwitchableViewManger;
+import org.netbeans.modules.uml.util.DummyCorePreference;
 import org.openide.util.Lookup;
 import org.openide.util.NbPreferences;
 import org.openide.util.lookup.AbstractLookup;
@@ -109,7 +110,7 @@ public abstract class UMLNodeWidget extends Widget
     GraphScene scene;
     public static Preferences prefs = NbPreferences.forModule(ResourceValue.class);
     public static String DEFAULT="default";
-    protected boolean useGradient = prefs.getBoolean("useGradient", true);
+    protected boolean useGradient = NbPreferences.forModule(DummyCorePreference.class).getBoolean("UML_Gradient_Background", true);
     private ResourceTable localResourceTable = null;
     
     public UMLNodeWidget(Scene scene)
@@ -777,7 +778,7 @@ public abstract class UMLNodeWidget extends Widget
     
     public static boolean useGradient()
     {
-        return prefs.getBoolean("useGradient", true);
+        return NbPreferences.forModule(DummyCorePreference.class).getBoolean("UML_Gradient_Background", true);
     }
     
     /**

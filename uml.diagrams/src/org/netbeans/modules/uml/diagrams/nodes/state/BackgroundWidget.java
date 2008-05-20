@@ -36,19 +36,23 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.uml.diagrams.nodes;
+package org.netbeans.modules.uml.diagrams.nodes.state;
 
+import java.awt.Color;
+import java.awt.GradientPaint;
 import java.awt.Graphics2D;
+import java.awt.Paint;
 import java.awt.Rectangle;
 import java.awt.geom.RoundRectangle2D;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.modules.uml.drawingarea.view.CustomizableWidget;
+import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
 
 /**
  *
  * @author Sheryl Su
  */
-public class UMLNodeBackgroundWidget extends CustomizableWidget
+public class BackgroundWidget extends CustomizableWidget
 {
 
     private boolean rounded = false;
@@ -57,12 +61,12 @@ public class UMLNodeBackgroundWidget extends CustomizableWidget
     private int insetWidth;
     private int insetHeight;
 
-    public UMLNodeBackgroundWidget(Scene scene, String id, String name, int arcWidth, int arcHeight)
+    public BackgroundWidget(Scene scene, String id, String name, int arcWidth, int arcHeight)
     {
         this(scene, id, name, arcWidth, arcHeight, 0, 0);
     }
 
-    public UMLNodeBackgroundWidget(Scene scene, String id, String name, int arcWidth,
+    public BackgroundWidget(Scene scene, String id, String name, int arcWidth,
             int arcHeight, int insetWidth, int insetHeight)
     {
         super(scene, id, name);
@@ -81,7 +85,18 @@ public class UMLNodeBackgroundWidget extends CustomizableWidget
         {
             Graphics2D gr = getGraphics();
             Rectangle bounds = getBounds();
-            gr.setPaint(getBackground());
+            Paint bgColor = getBackground();
+            
+            if (UMLNodeWidget.useGradient())
+            {
+                Color bg = (Color) getBackground();
+                int x1, y1;
+
+                x1 = bounds.x;
+                y1 = bounds.y;          
+                bgColor = new GradientPaint(x1, y1, Color.WHITE, x1, y1 + bounds.height, bg);
+            }
+            gr.setPaint(bgColor);
             gr.fill(new RoundRectangle2D.Float(bounds.x, bounds.y, bounds.width, bounds.height, arcWidth, arcHeight));
 
         } else
