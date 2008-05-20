@@ -73,9 +73,10 @@ public abstract class TaskScheduler {
     /**
      * May be changed by unit test
      */
-    int reparseDelay = DEFAULT_REPARSE_DELAY;
+    int                     reparseDelay = DEFAULT_REPARSE_DELAY;
     
-    private Collection<Source> sources;
+    private Collection<Source> 
+                            sources;
     
     /**
      * This implementations of {@link TaskScheduler} reschedules all tasks when:
@@ -85,7 +86,8 @@ public abstract class TaskScheduler {
      * <li>cusor position is changed</li>
      * </ol>
      */
-    public static final Class<? extends TaskScheduler> CURSOR_SENSITIVE_TASK_SCHEDULER = CursorSensitiveTaskScheduller.class;
+    public static final Class<? extends TaskScheduler> 
+                            CURSOR_SENSITIVE_TASK_SCHEDULER = CursorSensitiveTaskScheduller.class;
     
     /**
      * This implementations of {@link TaskScheduler} reschedules all tasks when:
@@ -94,13 +96,15 @@ public abstract class TaskScheduler {
      * <li>text in the current document is changed</li>
      * </ol>
      */
-    public static final Class<? extends TaskScheduler> EDITOR_SENSITIVE_TASK_SCHEDULER = CurrentDocumentTaskScheduller.class;
+    public static final Class<? extends TaskScheduler> 
+                            EDITOR_SENSITIVE_TASK_SCHEDULER = CurrentDocumentTaskScheduller.class;
     
     /**
      * This implementations of {@link TaskScheduler} reschedules all tasks when
      * nodes selected in editor are changed.
      */
-    public static final Class<? extends TaskScheduler> SELECTED_NODES_SENSITIVE_TASK_SCHEDULER = SelectedNodesTaskScheduller.class;
+    public static final Class<? extends TaskScheduler> 
+                            SELECTED_NODES_SENSITIVE_TASK_SCHEDULER = SelectedNodesTaskScheduller.class;
 
     /**
      * Reschedule all tasks registered for <code>this</code> TaskScheduler (see
@@ -110,7 +114,9 @@ public abstract class TaskScheduler {
         scheduleTasks (sources);
     }
 
-    private Task task;
+    private RequestProcessor 
+                            requestProcessor;
+    private Task            task;
     
     /**
      * Reschedule all tasks registered for <code>this</code> TaskScheduler (see
@@ -118,19 +124,22 @@ public abstract class TaskScheduler {
      * 
      * @param sources       A collection of {@link Source}s.
      */
-    //tzezula:
-    //Actually it doesn't do a sliding window but it's rather a delay by rearseDelay.
-    //Shouldn't be protected?
-    //Default RQ should never be used!
-    public final void scheduleTasks (Collection<Source> sources) {
+    public final synchronized void scheduleTasks (
+        Collection<Source>  sources
+    ) {
         if (task != null)
             task.cancel ();
         this.sources = sources;
-        task = RequestProcessor.getDefault ().post (new Runnable () {
-            public void run () {
-                Scheduler.schedule (TaskScheduler.this, TaskScheduler.this.sources);
-            }
-        }, reparseDelay);
+        if (task == null) {
+            if (requestProcessor == null)
+                requestProcessor = new RequestProcessor ();
+            task = requestProcessor.create (new Runnable () {
+                public void run () {
+                    Scheduler.schedule (TaskScheduler.this, TaskScheduler.this.sources);
+                }
+            });
+        }
+        task.schedule (reparseDelay);
     }
 }
 
