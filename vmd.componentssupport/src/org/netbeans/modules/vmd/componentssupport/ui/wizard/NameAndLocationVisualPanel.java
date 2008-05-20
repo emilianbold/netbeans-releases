@@ -73,7 +73,7 @@ final class NameAndLocationVisualPanel extends JPanel {
                                               = "MSG_LibraryExists";             // NOI18N 
     
     /** Creates new NameAndLocationPanel */
-    NameAndLocationVisualPanel(LibNameAndLocationPanel panel) {
+    NameAndLocationVisualPanel(NameAndLocationWizardPanel panel) {
         myPanel = panel;
         initComponents();
         initAccessibility();
@@ -532,6 +532,6 @@ final class NameAndLocationVisualPanel extends JPanel {
     // End of variables declaration//GEN-END:variables
     
     private WizardDescriptor mySettings;
-    private LibNameAndLocationPanel myPanel;
+    private NameAndLocationWizardPanel myPanel;
     
 }

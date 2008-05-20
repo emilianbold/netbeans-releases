@@ -255,8 +255,8 @@ final class NewLibraryDescriptor implements WizardDescriptor.InstantiatingIterat
     
     WizardDescriptor.Panel[] createPanels() {
         return new WizardDescriptor.Panel[] { 
-              new SelectLibraryPanel(), 
-              new LibNameAndLocationPanel()
+              new SelectLibraryWizardPanel(), 
+              new NameAndLocationWizardPanel()
         };
     }
 
@@ -273,15 +273,15 @@ final class NewLibraryDescriptor implements WizardDescriptor.InstantiatingIterat
         String projectName = (String)myMainWizard.getProperty( 
                 CustomComponentWizardIterator.PROJECT_NAME);
         if ( codeNameBase == null ){
-            codeNameBase = BasicConfVisualPanel.getDefaultCodeNameBase(projectName);
+            codeNameBase = BasicModuleConfVisualPanel.getDefaultCodeNameBase(projectName);
         }
         return codeNameBase;
     }
     
     private String[] createSteps() {
         return new String[] { 
-                NbBundle.getMessage(SelectLibraryPanel.class, LIBRARY_STEP) ,
-                NbBundle.getMessage(SelectLibraryPanel.class, NAME_LOCATION_STEP) 
+                NbBundle.getMessage(SelectLibraryWizardPanel.class, LIBRARY_STEP) ,
+                NbBundle.getMessage(SelectLibraryWizardPanel.class, NAME_LOCATION_STEP) 
                         };
     }
     

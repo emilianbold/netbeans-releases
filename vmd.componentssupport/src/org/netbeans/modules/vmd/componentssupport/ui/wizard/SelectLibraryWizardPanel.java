@@ -48,10 +48,9 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import org.openide.WizardDescriptor;
-import org.openide.WizardValidationException;
-import org.openide.WizardDescriptor.FinishablePanel;
 import org.openide.WizardDescriptor.Panel;
 import org.openide.WizardDescriptor.ValidatingPanel;
+import org.openide.WizardValidationException;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -60,38 +59,24 @@ import org.openide.util.NbBundle;
  * @author ads
  *
  */
-class LibNameAndLocationPanel implements Panel, FinishablePanel,
-        ValidatingPanel
-{
-    LibNameAndLocationPanel() {
-        myListeners = new CopyOnWriteArrayList<ChangeListener>();   
-    }
-    
-    /* (non-Javadoc)
-     * @see org.openide.WizardDescriptor.Panel#getComponent()
-     */
-    public Component getComponent() {
-        if (myComponent == null) {
-            myComponent = new NameAndLocationVisualPanel( this );
-            myComponent.setName(
-                    NbBundle.getMessage(NewLibraryDescriptor.class, 
-                            NewLibraryDescriptor.NAME_LOCATION_STEP));
-        }
-        return myComponent;    
+class SelectLibraryWizardPanel implements Panel, ValidatingPanel {
+        
+    public SelectLibraryWizardPanel() {
+        myListeners = new CopyOnWriteArrayList<ChangeListener>();    
     }
 
     /* (non-Javadoc)
-     * @see org.openide.WizardDescriptor.Panel#getHelp()
+     * @see org.openide.WizardDescriptor.Panel#addChangeListener(javax.swing.event.ChangeListener)
      */
-    public HelpCtx getHelp() {
-        return new HelpCtx( LibNameAndLocationPanel.class);
+    public void addChangeListener( ChangeListener listener ) {
+        myListeners.add( listener );
     }
 
     /* (non-Javadoc)
-     * @see org.openide.WizardDescriptor.Panel#isValid()
+     * @see org.openide.WizardDescriptor.Panel#removeChangeListener(javax.swing.event.ChangeListener)
      */
-    public boolean isValid() {
-        return myValid;
+    public void removeChangeListener( ChangeListener listener ) {
+        myListeners.remove( listener );
     }
 
     protected void setValid(boolean nueValid) {
@@ -114,40 +99,46 @@ class LibNameAndLocationPanel implements Panel, FinishablePanel,
     }
     
     /* (non-Javadoc)
-     * @see org.openide.WizardDescriptor.Panel#readSettings(java.lang.Object)
+     * @see org.openide.WizardDescriptor.Panel#getComponent()
      */
-    public void readSettings( Object settings ) {
-        WizardDescriptor descriptor = (WizardDescriptor)settings;
-        myComponent.readData( descriptor );
+    public Component getComponent() {
+        if (myComponent == null) {
+            myComponent = new SelectLibraryVisualPanel( this );
+            myComponent.setName(
+                    NbBundle.getMessage(NewLibraryDescriptor.class, 
+                            NewLibraryDescriptor.LIBRARY_STEP));
+        }
+        return myComponent;
     }
 
     /* (non-Javadoc)
-     * @see org.openide.WizardDescriptor.Panel#removeChangeListener(javax.swing.event.ChangeListener)
+     * @see org.openide.WizardDescriptor.Panel#getHelp()
      */
-    public void removeChangeListener( ChangeListener listener ) {
-        myListeners.remove( listener );
+    public HelpCtx getHelp() {
+        return new HelpCtx(SelectLibraryWizardPanel.class);
     }
-    
+
     /* (non-Javadoc)
-     * @see org.openide.WizardDescriptor.Panel#addChangeListener(javax.swing.event.ChangeListener)
+     * @see org.openide.WizardDescriptor.Panel#isValid()
      */
-    public void addChangeListener( ChangeListener listener ) {
-        myListeners.add( listener );
+    public boolean isValid() {
+        // TODO this is not updated correctly
+        return myValid;
+    }
+
+    /* (non-Javadoc)
+     * @see org.openide.WizardDescriptor.Panel#readSettings(java.lang.Object)
+     */
+    public void readSettings( Object settings ) {
+        WizardDescriptor desc = (WizardDescriptor) settings;
+        myComponent.readData( desc );
     }
 
     /* (non-Javadoc)
      * @see org.openide.WizardDescriptor.Panel#storeSettings(java.lang.Object)
      */
     public void storeSettings( Object settings ) {
-        WizardDescriptor descriptor = (WizardDescriptor)settings;
-        myComponent.storeData( descriptor );
-    }
-
-    /* (non-Javadoc)
-     * @see org.openide.WizardDescriptor.FinishablePanel#isFinishPanel()
-     */
-    public boolean isFinishPanel() {
-        return true;
+        myComponent.storeData();
     }
 
     /* (non-Javadoc)
@@ -160,7 +151,7 @@ class LibNameAndLocationPanel implements Panel, FinishablePanel,
     
     private List<ChangeListener> myListeners; 
     private WizardDescriptor myWizardDescriptor;
-    private NameAndLocationVisualPanel myComponent;
+    private SelectLibraryVisualPanel myComponent;
     private boolean myValid = true;
 
 }

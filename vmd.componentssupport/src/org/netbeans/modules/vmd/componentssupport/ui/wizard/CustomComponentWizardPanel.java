@@ -59,14 +59,14 @@ public class CustomComponentWizardPanel implements WizardDescriptor.Panel,
 {
 
     private WizardDescriptor wizardDescriptor;
-    private CustomComponentPanelVisual component;
+    private CustomComponentVisualPanel component;
 
     public CustomComponentWizardPanel() {
     }
 
     public Component getComponent() {
         if (component == null) {
-            component = new CustomComponentPanelVisual(this);
+            component = new CustomComponentVisualPanel(this);
             component.setName(
                     NbBundle.getMessage(CustomComponentWizardPanel.class, 
                     CustomComponentWizardIterator.STEP_BASIC_PARAMS));

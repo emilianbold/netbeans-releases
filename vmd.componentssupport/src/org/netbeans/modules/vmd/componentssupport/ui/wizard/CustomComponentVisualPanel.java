@@ -54,7 +54,7 @@ import org.openide.WizardValidationException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
-class CustomComponentPanelVisual extends JPanel implements DocumentListener {
+class CustomComponentVisualPanel extends JPanel implements DocumentListener {
 
     public static final String PROP_PROJECT_NAME = "projectName";
     public static final String BROWSE = "BROWSE";
@@ -70,7 +70,7 @@ class CustomComponentPanelVisual extends JPanel implements DocumentListener {
 
     private CustomComponentWizardPanel panel;
 
-    public CustomComponentPanelVisual(CustomComponentWizardPanel panel) {
+    public CustomComponentVisualPanel(CustomComponentWizardPanel panel) {
         initComponents();
         this.panel = panel;
         // Register listener on the textFields to make the automatic updates
@@ -131,8 +131,8 @@ class CustomComponentPanelVisual extends JPanel implements DocumentListener {
     boolean valid(WizardDescriptor wizardDescriptor) {
 
         if (projectNameTextField.getText().length() == 0) {
-            String message = NbBundle.getMessage(CustomComponentPanelVisual.class,
-                    MSG_ILLEGAL_FOLDER_NAME );
+            String message = NbBundle.getMessage(CustomComponentVisualPanel.class,
+                    MSG_ILLEGAL_FOLDER_NAME  );
             wizardDescriptor.putProperty(
                     CustomComponentWizardIterator.WIZARD_PANEL_ERROR_MESSAGE, message);
             return false; // Display name not specified
@@ -141,8 +141,8 @@ class CustomComponentPanelVisual extends JPanel implements DocumentListener {
         File f = FileUtil.normalizeFile(
                 new File(projectLocationTextField.getText()).getAbsoluteFile());
         if (!f.isDirectory()) {
-            String message = NbBundle.getMessage(CustomComponentPanelVisual.class,
-                    MSG_IS_NOT_DIRECTORY );
+            String message = NbBundle.getMessage(CustomComponentVisualPanel.class,
+                    MSG_IS_NOT_DIRECTORY  );
             wizardDescriptor.putProperty(
                     CustomComponentWizardIterator.WIZARD_PANEL_ERROR_MESSAGE, message);
             return false;
@@ -155,16 +155,16 @@ class CustomComponentPanelVisual extends JPanel implements DocumentListener {
             projLoc = projLoc.getParentFile();
         }
         if (projLoc == null || !projLoc.canWrite()) {
-            String message = NbBundle.getMessage(CustomComponentPanelVisual.class,
-                    MSG_CANT_CREATE_FOLDER );
+            String message = NbBundle.getMessage(CustomComponentVisualPanel.class,
+                    MSG_CANT_CREATE_FOLDER  );
             wizardDescriptor.putProperty(
                     CustomComponentWizardIterator.WIZARD_PANEL_ERROR_MESSAGE, message);
             return false;
         }
 
         if (FileUtil.toFileObject(projLoc) == null) {
-            String message = NbBundle.getMessage(CustomComponentPanelVisual.class,
-                    MSG_ILLEGAL_FOLDER_PATH );
+            String message = NbBundle.getMessage(CustomComponentVisualPanel.class,
+                    MSG_ILLEGAL_FOLDER_PATH  );
             wizardDescriptor.putProperty(
                     CustomComponentWizardIterator.WIZARD_PANEL_ERROR_MESSAGE, message);
             return false;
@@ -173,8 +173,8 @@ class CustomComponentPanelVisual extends JPanel implements DocumentListener {
         File[] kids = destFolder.listFiles();
         if (destFolder.exists() && kids != null && kids.length > 0) {
             // Folder exists and is not empty
-            String message = NbBundle.getMessage(CustomComponentPanelVisual.class,
-                    MSG_FOLDER_EXISTS );
+            String message = NbBundle.getMessage(CustomComponentVisualPanel.class,
+                    MSG_FOLDER_EXISTS  );
             wizardDescriptor.putProperty(
                     CustomComponentWizardIterator.WIZARD_PANEL_ERROR_MESSAGE, message);
             return false;
@@ -247,12 +247,12 @@ class CustomComponentPanelVisual extends JPanel implements DocumentListener {
         createdFolderTextField = new javax.swing.JTextField();
 
         projectNameLabel.setLabelFor(projectNameTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(projectNameLabel, org.openide.util.NbBundle.getMessage(CustomComponentPanelVisual.class, "LBL_ProjectName")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(projectNameLabel, org.openide.util.NbBundle.getMessage(CustomComponentVisualPanel.class, "LBL_ProjectName")); // NOI18N
 
         projectLocationLabel.setLabelFor(projectLocationTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(projectLocationLabel, org.openide.util.NbBundle.getMessage(CustomComponentPanelVisual.class, "LBL_ProjectLocation")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(projectLocationLabel, org.openide.util.NbBundle.getMessage(CustomComponentVisualPanel.class, "LBL_ProjectLocation")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(CustomComponentPanelVisual.class, "LBL_Browse_Button")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(CustomComponentVisualPanel.class, "LBL_Browse_Button")); // NOI18N
         browseButton.setActionCommand(BROWSE);
         browseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -261,7 +261,7 @@ class CustomComponentPanelVisual extends JPanel implements DocumentListener {
         });
 
         createdFolderLabel.setLabelFor(createdFolderTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(createdFolderLabel, org.openide.util.NbBundle.getMessage(CustomComponentPanelVisual.class, "LBL_ProjectFolder")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(createdFolderLabel, org.openide.util.NbBundle.getMessage(CustomComponentVisualPanel.class, "LBL_ProjectFolder")); // NOI18N
 
         createdFolderTextField.setEditable(false);
 
@@ -303,14 +303,14 @@ class CustomComponentPanelVisual extends JPanel implements DocumentListener {
                 .addContainerGap(213, Short.MAX_VALUE))
         );
 
-        projectNameLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomComponentPanelVisual.class, "ACSN_ProjectName")); // NOI18N
-        projectNameLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomComponentPanelVisual.class, "ACSD_ProjectName")); // NOI18N
-        projectLocationLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomComponentPanelVisual.class, "ACSN_ProjectLocation")); // NOI18N
-        projectLocationLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomComponentPanelVisual.class, "ACSD_ProjectLocation")); // NOI18N
-        browseButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomComponentPanelVisual.class, "ACSN_Browse_Button")); // NOI18N
-        browseButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomComponentPanelVisual.class, "ACSN_Browse_Button")); // NOI18N
-        createdFolderLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomComponentPanelVisual.class, "ACSN_ProjectFolder")); // NOI18N
-        createdFolderLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomComponentPanelVisual.class, "ACSD_ProjectFolder")); // NOI18N
+        projectNameLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomComponentVisualPanel.class, "ACSN_ProjectName")); // NOI18N
+        projectNameLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomComponentVisualPanel.class, "ACSD_ProjectName")); // NOI18N
+        projectLocationLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomComponentVisualPanel.class, "ACSN_ProjectLocation")); // NOI18N
+        projectLocationLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomComponentVisualPanel.class, "ACSD_ProjectLocation")); // NOI18N
+        browseButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomComponentVisualPanel.class, "ACSN_Browse_Button")); // NOI18N
+        browseButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomComponentVisualPanel.class, "ACSN_Browse_Button")); // NOI18N
+        createdFolderLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomComponentVisualPanel.class, "ACSN_ProjectFolder")); // NOI18N
+        createdFolderLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomComponentVisualPanel.class, "ACSD_ProjectFolder")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
@@ -356,8 +356,8 @@ class CustomComponentPanelVisual extends JPanel implements DocumentListener {
     }
 
     private String validFreeProjectName(File parentFolder, int index) {
-        String name = NbBundle.getMessage(CustomComponentPanelVisual.class,
-                    TXT_DEFAULT_PROJECT_NAME, new Object[] {index} );
+        String name = NbBundle.getMessage(CustomComponentVisualPanel.class,
+                    TXT_DEFAULT_PROJECT_NAME, new Object[] {index}  );
         File file = new File(parentFolder, name);
         if (file.exists()) {
             return null;
