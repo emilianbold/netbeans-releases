@@ -39,6 +39,7 @@
 package org.netbeans.modules.uml.diagrams.nodes;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.ArrayList;
@@ -295,6 +296,13 @@ public abstract class ContainerNode extends UMLNodeWidget implements org.netbean
             }
         }
         
+    }
+
+    @Override
+    public Dimension getDefaultMinimumSize() {
+        //TBD later it may calculate actual content, but first realization same as in 6.1, reszie to content do nothing
+        Dimension size=getBounds().getSize();
+        return size;
     }
     
     ///////////////////////////////////////////////////////////////////////////
