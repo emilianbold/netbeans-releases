@@ -87,7 +87,7 @@ public class ResizeToContentAction extends NodeAction
                     UMLNodeWidget nW=(UMLNodeWidget) w;
                     nW.setPreferredBounds(null);
                     nW.setPreferredSize(null);
-                    nW.setMinimumSize(nW.getResizingMinimumSize());
+                    nW.setMinimumSize(nW.getDefaultMinimumSize());
                     nW.setResizeMode(null);
                 }
             }

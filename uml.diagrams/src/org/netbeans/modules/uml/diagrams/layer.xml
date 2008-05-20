@@ -98,9 +98,9 @@ made subject to such option by the copyright holder.
                         <attr name="position" intvalue="400"/>
                         <file name="org.netbeans.modules.uml.diagrams.actions.ShowViewAction.instance"/>
                     </folder>
-                    <!--file name="org-netbeans-modules-uml-drawingarea-actions-ResizeToContentAction.instance">
+                    <file name="org-netbeans-modules-uml-drawingarea-actions-ResizeToContentAction.instance">
                         <attr name="position" intvalue="580"/>
-                    </file-->
+                    </file>
                     <file name="org-netbeans-modules-uml-drawingarea-actions-SyncElementWithDataAction.instance">
                         <attr name="position" intvalue="590"/>
                     </file>

@@ -57,7 +57,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.prefs.Preferences;
-import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.ResizeProvider;
 import org.netbeans.api.visual.anchor.Anchor;
 import org.netbeans.api.visual.border.Border;
@@ -141,6 +140,7 @@ public abstract class UMLNodeWidget extends Widget
         decoratorLayer.setLayout(LayoutFactory.createAbsoluteLayout());
         addChild(decoratorLayer);
         
+        setCheckClipping(true);
         
         localResourceTable = new ResourceTable(scene.getResourceTable());
         ResourceValue.initResources(getResourcePath(), childLayer);
@@ -283,8 +283,8 @@ public abstract class UMLNodeWidget extends Widget
         {
             // Allow subclasses to change the resize strategy and provider.
             ResizeStrategyProvider stratProv=getResizeStrategyProvider();
-            getActions().addAction(0, ActionFactory.createResizeAction(stratProv, stratProv));
-            //getActions().addAction(0, new ResizeAction(stratProv));
+            //getActions().addAction(0, ActionFactory.createResizeAction(stratProv, stratProv));
+            getActions().addAction(0, new ResizeAction(stratProv));
             //setBorder(BorderFactory.createResizeBorder(RESIZE_SIZE));
             setBorder(new ResizeBorder(RESIZE_SIZE, Color.BLACK, getResizeControlPoints()));
             System.out.println("SELECT");
@@ -781,13 +781,22 @@ public abstract class UMLNodeWidget extends Widget
     }
     
     /**
-     * instead of Widget::getMinimumSize this is dinamic value used in resizing
+     * instead of Widget::getMinimumSize this is dynamic value used in resizing
      * more used for window like resizing, when content is relative to left-top corner
      * @return size below which resize is not allowed
      */
     public Dimension getResizingMinimumSize()
     {
         return new Dimension(1,1);
+    }
+    /**
+     * instead of Widget::getMinimumSize this is dinamic value used in resize to content action and most im[portant
+     * for elements without any content or for multiline elements without inner limitations
+     * @return miminum size to set in resize to content action, by default the same as in resizing minimum size
+     */
+    public Dimension getDefaultMinimumSize()
+    {
+        return getResizingMinimumSize();
     }
     
     /**
