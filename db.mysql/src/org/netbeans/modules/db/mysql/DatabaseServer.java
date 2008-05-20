@@ -140,8 +140,6 @@ public interface DatabaseServer extends Cookie {
      */
     public void grantFullDatabaseRights(String dbname, DatabaseUser grantUser) throws DatabaseException;
 
-    public boolean isAdminCommandsConfirmed();
-
     public boolean isConnected();
 
     public boolean isSavePassword();
@@ -149,8 +147,6 @@ public interface DatabaseServer extends Cookie {
     public void refreshDatabaseList() throws DatabaseException;
 
     public void setAdminArgs(String args);
-
-    public void setAdminCommandsConfirmed(boolean confirmed);
 
     public void setAdminPath(String path);
 

@@ -177,7 +177,12 @@ public class MySQLDatabaseServer implements DatabaseServer {
     }
  
     public String getPort() {
-        return OPTIONS.getPort();
+        String port = OPTIONS.getPort();
+        if (Utils.isEmpty(port)) {
+            return MySQLOptions.getDefaultPort();
+        } else {
+            return port;
+        }
     }
 
     public void setPort(String port) {
@@ -185,7 +190,12 @@ public class MySQLDatabaseServer implements DatabaseServer {
     }
 
     public String getUser() {
-        return OPTIONS.getAdminUser();
+        String user = OPTIONS.getAdminUser();
+        if (Utils.isEmpty(user)) {
+            return MySQLOptions.getDefaultAdminUser();
+        } else {
+            return user;
+        }
     }
 
     public void setUser(String adminUser) {
@@ -264,15 +274,7 @@ public class MySQLDatabaseServer implements DatabaseServer {
     public void setAdminArgs(String args) {
         OPTIONS.setAdminArgs(args);
     }
-    
-    public boolean isAdminCommandsConfirmed() {
-        return OPTIONS.isAdminCommandsConfirmed();
-    }
-    
-    public void setAdminCommandsConfirmed(boolean confirmed) {
-        OPTIONS.setAdminCommandsConfirmed(confirmed);
-    }
-    
+        
     public boolean isConnected() {
         return getState().equals(State.CONNECTED);
     }

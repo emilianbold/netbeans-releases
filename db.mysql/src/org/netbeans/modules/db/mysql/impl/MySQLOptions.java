@@ -77,7 +77,6 @@ public class MySQLOptions {
     static final String PROP_ADMIN_ARGS = "admin-args"; // NOI18N
     static final String PROP_START_ARGS = "start-args"; // NOI18N
     static final String PROP_STOP_ARGS = "stop-args"; // NOI18N
-    static final String PROP_COMMANDS_CONFIRMED = "commands-confirmed"; // NOI18N
     
     // These options are not currently visible in the properties dialog, but
     // can be set by users through direct editing of the preferences file
@@ -329,14 +328,6 @@ public class MySQLOptions {
     
     public void setAdminArgs(String args) {
         putProperty(PROP_ADMIN_ARGS, args);
-    }
-    
-    public boolean isAdminCommandsConfirmed() {
-        return getBooleanProperty(PROP_COMMANDS_CONFIRMED);
-    }
-    
-    public void setAdminCommandsConfirmed(boolean confirmed) {
-        putProperty(PROP_COMMANDS_CONFIRMED, confirmed);
     }
 
     public String getConnectTimeout() {
