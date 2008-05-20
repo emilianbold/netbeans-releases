@@ -97,4 +97,5 @@ public class XMIConstants {
     public static final String UML_GRAPHEDGE_WAYPOINTS = "UML:GraphEdge.waypoints";
     public static final String UML_GRAPHEDGE_ANCHORS = "UML:GraphEdge.anchor";
             
+    public static final String UML_GRAPHELEMENT_DEPENDENCIES = "UML:GraphElement.dependencies";
 }

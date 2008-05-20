@@ -262,4 +262,13 @@ public class Writer {
     public void setSize(Dimension size) {
         this.size = size;
     }
+    
+    public void beginDependencies()
+    {
+        XMIWriter.writeBeginElement(bw, XMIConstants.UML_GRAPHELEMENT_DEPENDENCIES); //
+    }
+    public void endDependencies()
+    {
+        XMIWriter.writeEndElement(bw, XMIConstants.UML_GRAPHELEMENT_DEPENDENCIES);
+    }
 }
