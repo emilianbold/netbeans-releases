@@ -58,6 +58,7 @@ public class RspecHandlerFactory {
         result.add(new SuiteFinishedHandler());
         result.add(new TestStartedHandler());
         result.add(new TestFailedHandler());
+        result.add(new TestPendingHandler());
         result.add(new TestFinishedHandler());
         return result;
     }
@@ -110,6 +111,25 @@ public class RspecHandlerFactory {
             testcase.timeMillis = toMillis(matcher.group(2));
             testcase.className = session.getSuiteName();
             testcase.name = matcher.group(1);
+            session.addTestCase(testcase);
+        }
+    }
+
+    static class TestPendingHandler extends TestRecognizerHandler {
+
+        public TestPendingHandler() {
+            super(".*%TEST_PENDING%\\s(.*)\\stime=(\\d+\\.\\d+)\\s(.*)");
+        }
+
+        @Override
+        void updateUI( Manager manager, TestSession session) {
+            Report.Testcase testcase = new Report.Testcase();
+            testcase.timeMillis = toMillis(matcher.group(2));
+            testcase.className = session.getSuiteName();
+            testcase.name = matcher.group(1);
+            testcase.trouble = new Report.Trouble(false);
+            testcase.trouble.stackTrace = new String[]{matcher.group(3)};
+            testcase.setStatus(Status.PENDING);
             session.addTestCase(testcase);
         }
     }

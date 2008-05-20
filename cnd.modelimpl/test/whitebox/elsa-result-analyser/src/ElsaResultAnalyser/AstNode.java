@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package ElsaResultAnalyser;
 
 import ElsaResultAnalyser.Declaration.TYPE;
@@ -104,7 +103,7 @@ public class AstNode {
             }
         }
         if (reportError) {
-            System.out.println(name + " " + value + " was not found in " + this.name);
+            System.out.println(name + " " + value + " was not found in " + this.name + " " + this.line);
             System.out.println("variants:");
             for (AstNode astNode : children) {
                 System.out.println("    " + astNode.name + " " + astNode.value);
@@ -197,6 +196,8 @@ public class AstNode {
                     for (AstNode decllistItem : decllist.children) {
                         AstNode var1 = decllistItem.findChild("var");
 
+                        AstNode firstDecl = decllistItem.findChild("decl");
+                        
                         if (decllistItem.findChild("context", "DC_MR_DECL", false) != null) {
                             continue;
                         }
@@ -208,7 +209,7 @@ public class AstNode {
                             continue;
                         }
 
-                        addVariableByDName(table, decllistItem, var1);
+                        addVariableByDName(table, decllistItem, var1, firstDecl.findChild("loc"));
                     }
                     return;
                 }
@@ -217,6 +218,8 @@ public class AstNode {
                     for (AstNode decllistItem : decllist.children) {
                         AstNode var1 = decllistItem.findChild("var");
 
+                        AstNode firstDecl = decllistItem.findChild("decl");
+                        
                         decllistItem = skipDDeclsToDNameorDFunc(decllistItem);
 
                         if (decllistItem.findChild("decl", "D_func", false) != null ||
@@ -229,12 +232,12 @@ public class AstNode {
                         }
 
                         AstNode decl = decllistItem.findChild("decl", "D_bitfield", false);
-                        if (decl != null) {
+                        if (decl != null && firstDecl != null) {
                             AstNode name1 = decl.findChild("name", "PQ_name");
                             if (name1 != null) {
                                 AstNode name2 = name1.findChild("name");
                                 AstNode nameLoc = name1.findChild("loc");
-                                AstNode loc = decl.findChild("loc");
+                                AstNode loc = firstDecl.findChild("loc");
                                 if (loc != null && nameLoc != null && name2 != null) {
                                     Declaration var = new Declaration(name2.value, nameLoc.value, loc.value, TYPE.VARIABLE, name2.line);
 
@@ -248,7 +251,7 @@ public class AstNode {
                             continue;
                         }
 
-                        addVariableByDName(table, decllistItem, var1);
+                        addVariableByDName(table, decllistItem, var1, firstDecl.findChild("loc"));
                     }
                 }
             }
@@ -256,13 +259,14 @@ public class AstNode {
 
         if (name != null && name.equals("params")) {
             for (AstNode param : children) {
-                AstNode decl = param.findChild("decl", "Declarator");
+                AstNode decl = param.findChild("decl", "Declarator", false);
                 if (decl != null) {
                     AstNode var1 = decl.findChild("var");
+                    AstNode firstDecl = decl.findChild("decl");
 
                     decl = skipDDeclsToDNameorDFunc(decl);
 
-                    addVariableByDName(table, decl, var1);
+                    addVariableByDName(table, decl, var1, firstDecl.findChild("loc"));
                 }
             }
         }
@@ -352,6 +356,7 @@ public class AstNode {
                                     AstNode decllist = d.findChild("decllist");
                                     if (decllist != null && dflags2 != null) {
                                         for (AstNode decllistItem : decllist.children) {
+                                            AstNode firstDecl = decllistItem.findChild("decl");
 
                                             AstNode decllistItem2 = skipDDeclsToDNameorDFunc(decllistItem);
 
@@ -383,17 +388,19 @@ public class AstNode {
                                                 if (name1 != null) {
                                                     AstNode name2 = name1.findChild("name");
                                                     AstNode nameLoc = name1.findChild("loc");
-                                                    AstNode loc2 = decl2.findChild("loc");
+                                                    AstNode loc2 = firstDecl.findChild("loc");
                                                     AstNode var = decllistItem.findChild("var");
                                                     if (loc2 != null && nameLoc != null && name2 != null && var != null && loc != null && loc.value != null) {
 
-                                                        Declaration fun = new Declaration(name2.value, nameLoc.value, loc2.value, TYPE.VARIABLE, name2.line);
+                                                        Declaration nvar = new Declaration(name2.value, nameLoc.value, loc2.value, TYPE.VARIABLE, name2.line);
 
                                                         Declaration def = table.findVariableDefinition(new Offset(loc.value, loc.line), var.value);
                                                         if (def != null) {
-                                                            def.declarations.add(fun);
+                                                            table.addVariableDeclaration(def, nvar);
+                                                        //def.declarations.add(nvar);
                                                         } else {
-                                                            table.aloneVariableDeclarations.add(fun);
+                                                            table.addAloneVariableDeclaration(nvar);
+                                                        //table.aloneVariableDeclarations.add(nvar);
                                                         }
 
                                                         continue;
@@ -432,6 +439,8 @@ public class AstNode {
             AstNode decllist = findChild("decllist");
             if (dflags2 != null && decllist != null && dflags2.value != null && dflags2.value.contains("extern")) {
                 for (AstNode decllistItem : decllist.children) {
+                    AstNode firstDecl = decllistItem.findChild("decl");
+                    
                     AstNode decllistItem2 = skipDDeclsToDNameorDFunc(decllistItem);
 
                     if (decllistItem2.findChild("decl", "D_func", false) != null ||
@@ -461,7 +470,7 @@ public class AstNode {
                         if (name1 != null) {
                             AstNode name2 = name1.findChild("name");
                             AstNode nameLoc = name1.findChild("loc");
-                            AstNode loc2 = decl2.findChild("loc");
+                            AstNode loc2 = firstDecl.findChild("loc");
                             AstNode var = decllistItem.findChild("var");
                             if (loc2 != null && nameLoc != null && name2 != null && var != null) {
                                 /*if (decl.fullName.equals(var.value)) {
@@ -475,9 +484,11 @@ public class AstNode {
 
                                 Declaration def = table.findVariableDefinition(var.value);
                                 if (def != null) {
-                                    def.declarations.add(nvar);
+                                    table.addVariableDeclaration(def, nvar);
+                                //def.declarations.add(nvar);
                                 } else {
-                                    table.aloneVariableDeclarations.add(nvar);
+                                    table.addAloneVariableDeclaration(nvar);
+                                //table.aloneVariableDeclarations.add(nvar);
                                 }
                             }
                         }
@@ -686,7 +697,8 @@ public class AstNode {
 //                    }
                     Declaration d = table.findVariable(new Offset(varLoc.value, varLoc.line), name2.value);
                     if (d != null) {
-                        d.usages.add(new Offset(nameLoc.value, name2.line));
+                        table.addVariableUsage(d, new Offset(nameLoc.value, name2.line));
+                    //d.usages.add(new Offset(nameLoc.value, name2.line));
                     }
                 }
             }
@@ -716,7 +728,8 @@ public class AstNode {
 //                    }
                     Declaration d = table.findVariable(new Offset(fieldLoc.value, fieldLoc.line), name1.value);
                     if (d != null) {
-                        d.usages.add(new Offset(nameLoc.value, name1.line));
+                        table.addVariableUsage(d, new Offset(nameLoc.value, name1.line));
+                    //d.usages.add(new Offset(nameLoc.value, name1.line));
                     }
 
                 }
@@ -735,7 +748,8 @@ public class AstNode {
 //                    }
                     Declaration d = table.findVariable(new Offset(fieldLoc.value, fieldLoc.line), name1.value);
                     if (d != null) {
-                        d.usages.add(new Offset(nameLoc.value, name1.line));
+                        table.addVariableUsage(d, new Offset(nameLoc.value, name1.line));
+                    //d.usages.add(new Offset(nameLoc.value, name1.line));
                     }
 
                 }
@@ -829,11 +843,12 @@ public class AstNode {
             AstNode nameAndParams = findChild("nameAndParams");
             if (nameAndParams != null) {
                 AstNode var = nameAndParams.findChild("var");
+                AstNode firstDecl = nameAndParams.findChild("decl");
 
                 nameAndParams =
                         skipDDeclsToDNameorDFunc(nameAndParams);
 
-                addFunctionByDName(table, nameAndParams, var);
+                addFunctionByDName(table, nameAndParams, var, firstDecl.findChild("loc"));
             }
 
         }
@@ -916,6 +931,7 @@ public class AstNode {
                                         AstNode decllist = d.findChild("decllist");
                                         if (decllist != null) {
                                             for (AstNode decllistItem : decllist.children) {
+                                                AstNode firstDecl = decllistItem.findChild("decl");
 
                                                 AstNode decllistItem2 = skipDDeclsToDNameorDFunc(decllistItem);
 
@@ -940,7 +956,7 @@ public class AstNode {
                                                         if (name1 != null) {
                                                             AstNode name2 = name1.findChild("name");
                                                             AstNode nameLoc = name1.findChild("loc");
-                                                            AstNode loc2 = decl2.findChild("loc");
+                                                            AstNode loc2 = firstDecl.findChild("loc");
                                                             AstNode var = decllistItem.findChild("var");
                                                             if (loc2 != null && nameLoc != null && name2 != null && var != null) {
 //                                                                    if (decl.fullName.equals(var.value)) {
@@ -950,9 +966,11 @@ public class AstNode {
                                                                 Declaration fun = new Declaration(name2.value, nameLoc.value, loc2.value, TYPE.FUNCTION, name2.line);
                                                                 Declaration def = table.findFunctionDefinition(new Offset(loc.value, loc.line), var.value);
                                                                 if (def != null) {
-                                                                    def.declarations.add(fun);
+                                                                    table.addFunctionDeclaration(def, fun);
+                                                                //def.declarations.add(fun);
                                                                 } else {
-                                                                    table.aloneFunctionDeclarations.add(fun);
+                                                                    table.addAloneFunctionDeclaration(fun);
+                                                                //table.aloneFunctionDeclarations.add(fun);
                                                                 }
 
 
@@ -968,7 +986,7 @@ public class AstNode {
                                                         if (name1 != null) {
                                                             AstNode name2 = name1.findChild("name");
                                                             AstNode nameLoc = name1.findChild("loc");
-                                                            AstNode loc2 = decl2.findChild("loc");
+                                                            AstNode loc2 = firstDecl.findChild("loc");
                                                             AstNode var = decllistItem.findChild("var");
                                                             if (loc2 != null && nameLoc != null && name2 != null && var != null) {
 //                                                            if (decl.fullName.equals(var.value)) {
@@ -978,9 +996,11 @@ public class AstNode {
                                                                 Declaration fun = new Declaration(name2.value, nameLoc.value, loc2.value, TYPE.FUNCTION, name2.line);
                                                                 Declaration def = table.findFunctionDefinition(new Offset(loc.value, loc.line), var.value);
                                                                 if (def != null) {
-                                                                    def.declarations.add(fun);
+                                                                    table.addFunctionDeclaration(def, fun);
+                                                                //def.declarations.add(fun);
                                                                 } else {
-                                                                    table.aloneFunctionDeclarations.add(fun);
+                                                                    table.addAloneFunctionDeclaration(fun);
+                                                                //table.aloneFunctionDeclarations.add(fun);
                                                                 }
 
 
@@ -996,7 +1016,7 @@ public class AstNode {
                                                         if (name1 != null) {
                                                             AstNode name2 = name1.findChild("fakeName");
                                                             AstNode nameLoc = name1.findChild("loc");
-                                                            AstNode loc2 = decl2.findChild("loc");
+                                                            AstNode loc2 = firstDecl.findChild("loc");
                                                             AstNode var = decllistItem.findChild("var");
                                                             if (loc2 != null && nameLoc != null && name2 != null && var != null) {
 //                                                            if (decl.fullName.equals(var.value)) {
@@ -1006,9 +1026,11 @@ public class AstNode {
                                                                 Declaration fun = new Declaration(name2.value, nameLoc.value, loc2.value, TYPE.FUNCTION, name2.line);
                                                                 Declaration def = table.findFunctionDefinition(new Offset(loc.value, loc.line), var.value);
                                                                 if (def != null) {
-                                                                    def.declarations.add(fun);
+                                                                    table.addFunctionDeclaration(def, fun);
+                                                                //def.declarations.add(fun);
                                                                 } else {
-                                                                    table.aloneFunctionDeclarations.add(fun);
+                                                                    table.addAloneFunctionDeclaration(fun);
+                                                                //table.aloneFunctionDeclarations.add(fun);
                                                                 }
 
 
@@ -1030,6 +1052,7 @@ public class AstNode {
                                             AstNode decllist = d.findChild("decllist");
                                             if (decllist != null) {
                                                 for (AstNode decllistItem : decllist.children) {
+                                                    AstNode firstDecl = decllistItem.findChild("decl");
 
                                                     AstNode decllistItem2 = skipDDeclsToDNameorDFunc(decllistItem);
 
@@ -1054,7 +1077,7 @@ public class AstNode {
                                                             if (name1 != null) {
                                                                 AstNode name2 = name1.findChild("name");
                                                                 AstNode nameLoc = name1.findChild("loc");
-                                                                AstNode loc2 = decl2.findChild("loc");
+                                                                AstNode loc2 = firstDecl.findChild("loc");
                                                                 AstNode var = decllistItem.findChild("var");
                                                                 if (loc2 != null && nameLoc != null && name2 != null && var != null) {
 //                                                                if (decl.fullName.equals(var.value)) {
@@ -1064,9 +1087,11 @@ public class AstNode {
                                                                     Declaration fun = new Declaration(name2.value, nameLoc.value, loc2.value, TYPE.FUNCTION, name2.line);
                                                                     Declaration def = table.findFunctionDefinition(new Offset(loc.value, loc.line), var.value);
                                                                     if (def != null) {
-                                                                        def.declarations.add(fun);
+                                                                        table.addFunctionDeclaration(def, fun);
+                                                                    //def.declarations.add(fun);
                                                                     } else {
-                                                                        table.aloneFunctionDeclarations.add(fun);
+                                                                        table.addAloneFunctionDeclaration(fun);
+                                                                    //table.aloneFunctionDeclarations.add(fun);
                                                                     }
 
 
@@ -1082,7 +1107,7 @@ public class AstNode {
                                                             if (name1 != null) {
                                                                 AstNode name2 = name1.findChild("name");
                                                                 AstNode nameLoc = name1.findChild("loc");
-                                                                AstNode loc2 = decl2.findChild("loc");
+                                                                AstNode loc2 = firstDecl.findChild("loc");
                                                                 AstNode var = decllistItem.findChild("var");
                                                                 if (loc2 != null && nameLoc != null && name2 != null && var != null) {
 //                                                                if (decl.fullName.equals(var.value)) {
@@ -1093,9 +1118,11 @@ public class AstNode {
                                                                     Declaration fun = new Declaration(name2.value, nameLoc.value, loc2.value, TYPE.FUNCTION, name2.line);
                                                                     Declaration def = table.findFunctionDefinition(new Offset(loc.value, loc.line), var.value);
                                                                     if (def != null) {
-                                                                        def.declarations.add(fun);
+                                                                        table.addFunctionDeclaration(def, fun);
+                                                                    //def.declarations.add(fun);
                                                                     } else {
-                                                                        table.aloneFunctionDeclarations.add(fun);
+                                                                        table.addAloneFunctionDeclaration(fun);
+                                                                    //table.aloneFunctionDeclarations.add(fun);
                                                                     }
 
                                                                 }
@@ -1110,7 +1137,7 @@ public class AstNode {
                                                             if (name1 != null) {
                                                                 AstNode name2 = name1.findChild("fakeName");
                                                                 AstNode nameLoc = name1.findChild("loc");
-                                                                AstNode loc2 = decl2.findChild("loc");
+                                                                AstNode loc2 = firstDecl.findChild("loc");
                                                                 AstNode var = decllistItem.findChild("var");
                                                                 if (loc2 != null && nameLoc != null && name2 != null && var != null) {
 //                                                                if (decl.fullName.equals(var.value)) {
@@ -1120,9 +1147,11 @@ public class AstNode {
                                                                     Declaration fun = new Declaration(name2.value, nameLoc.value, loc2.value, TYPE.FUNCTION, name2.line);
                                                                     Declaration def = table.findFunctionDefinition(new Offset(loc.value, loc.line), var.value);
                                                                     if (def != null) {
-                                                                        def.declarations.add(fun);
+                                                                        table.addFunctionDeclaration(def, fun);
+                                                                    //def.declarations.add(fun);
                                                                     } else {
-                                                                        table.aloneFunctionDeclarations.add(fun);
+                                                                        table.addAloneFunctionDeclaration(fun);
+                                                                    //table.aloneFunctionDeclarations.add(fun);
                                                                     }
 
 
@@ -1169,6 +1198,8 @@ public class AstNode {
                 AstNode decllist = findChild("decllist");
                 if (decllist != null) {
                     for (AstNode decllistItem : decllist.children) {
+                        AstNode firstDecl = decllistItem.findChild("decl");
+                        
                         AstNode decllistItem2 = skipDDeclsToDNameorDFunc(decllistItem);
 
                         AstNode decl2 = decllistItem2.findChild("decl", "D_func", false);
@@ -1193,7 +1224,7 @@ public class AstNode {
                                 if (name1 != null) {
                                     AstNode name2 = name1.findChild("name");
                                     AstNode nameLoc = name1.findChild("loc");
-                                    AstNode loc2 = decl2.findChild("loc");
+                                    AstNode loc2 = firstDecl.findChild("loc");
                                     AstNode var = decllistItem.findChild("var");
                                     if (loc2 != null && nameLoc != null && name2 != null && var != null) {
 //                                    if (decl.fullName.equals(var.value)) {
@@ -1203,9 +1234,11 @@ public class AstNode {
                                         Declaration fun = new Declaration(name2.value, nameLoc.value, loc2.value, TYPE.FUNCTION, name2.line);
                                         Declaration def = table.findFunctionDefinition(var.value);
                                         if (def != null) {
-                                            def.declarations.add(fun);
+                                            table.addFunctionDeclaration(def, fun);
+                                        //def.declarations.add(fun);
                                         } else {
-                                            table.aloneFunctionDeclarations.add(fun);
+                                            table.addAloneFunctionDeclaration(fun);
+                                        //table.aloneFunctionDeclarations.add(fun);
                                         }
 
 
@@ -1221,7 +1254,7 @@ public class AstNode {
                                 if (name1 != null) {
                                     AstNode name2 = name1.findChild("name");
                                     AstNode nameLoc = name1.findChild("loc");
-                                    AstNode loc2 = decl2.findChild("loc");
+                                    AstNode loc2 = firstDecl.findChild("loc");
                                     AstNode var = decllistItem.findChild("var");
                                     if (loc2 != null && nameLoc != null && name2 != null && var != null) {
 //                                        if (decl.fullName.equals(var.value)) {
@@ -1231,9 +1264,11 @@ public class AstNode {
                                         Declaration fun = new Declaration(name2.value, nameLoc.value, loc2.value, TYPE.FUNCTION, name2.line);
                                         Declaration def = table.findFunctionDefinition(var.value);
                                         if (def != null) {
-                                            def.declarations.add(fun);
+                                            table.addFunctionDeclaration(def, fun);
+                                        //def.declarations.add(fun);
                                         } else {
-                                            table.aloneFunctionDeclarations.add(fun);
+                                            table.addAloneFunctionDeclaration(fun);
+                                        //table.aloneFunctionDeclarations.add(fun);
                                         }
 
                                     }
@@ -1248,7 +1283,7 @@ public class AstNode {
                                 if (name1 != null) {
                                     AstNode name2 = name1.findChild("fakeName");
                                     AstNode nameLoc = name1.findChild("loc");
-                                    AstNode loc2 = decl2.findChild("loc");
+                                    AstNode loc2 = firstDecl.findChild("loc");
                                     AstNode var = decllistItem.findChild("var");
                                     if (loc2 != null && nameLoc != null && name2 != null && var != null) {
 //                                        if (decl.fullName.equals(var.value)) {
@@ -1258,9 +1293,11 @@ public class AstNode {
                                         Declaration fun = new Declaration(name2.value, nameLoc.value, loc2.value, TYPE.FUNCTION, name2.line);
                                         Declaration def = table.findFunctionDefinition(var.value);
                                         if (def != null) {
-                                            def.declarations.add(fun);
+                                            table.addFunctionDeclaration(def, fun);
+                                        //def.declarations.add(fun);
                                         } else {
-                                            table.aloneFunctionDeclarations.add(fun);
+                                            table.addAloneFunctionDeclaration(fun);
+                                        //table.aloneFunctionDeclarations.add(fun);
                                         }
 
                                     }
@@ -1335,7 +1372,8 @@ public class AstNode {
 //                        }
                         Declaration d = table.findFunction(new Offset(fieldLoc.value, fieldLoc.line), name1.value);
                         if (d != null) {
-                            d.usages.add(new Offset(nameLoc.value, name1.line));
+                            table.addFunctionUsage(d, new Offset(nameLoc.value, name1.line));
+                        //d.usages.add(new Offset(nameLoc.value, name1.line));
                         }
 
                     }
@@ -1360,13 +1398,15 @@ public class AstNode {
                                         if (loc != null) {
 //                                            decl.usages.add(findOperatorOffset(decl.name, new Offset(loc.value, loc.line)));
 
-                                            d.usages.add(findOperatorOffset(d.name, new Offset(loc.value, loc.line)));
+                                            table.addFunctionUsage(d, findOperatorOffset(d.name, new Offset(loc.value, loc.line)));
+                                        //d.usages.add(findOperatorOffset(d.name, new Offset(loc.value, loc.line)));
                                         }
 
                                     }
                                 }
                             } else {
-                                d.usages.add(offset);
+                                table.addFunctionUsage(d, offset);
+                            //d.usages.add(offset);
                             }
                         }
                     }
@@ -1389,7 +1429,8 @@ public class AstNode {
 //                            }
                             Declaration d = table.findFunction(new Offset(varLoc.value, varLoc.line), name2.value);
                             if (d != null) {
-                                d.usages.add(new Offset(nameLoc.value, name2.line));
+                                table.addFunctionUsage(d, new Offset(nameLoc.value, name2.line));
+                            //d.usages.add(new Offset(nameLoc.value, name2.line));
                             }
 
                         }
@@ -1407,7 +1448,8 @@ public class AstNode {
 //                        }
                         Declaration d = table.findFunction(new Offset(varLoc.value, varLoc.line), name2.value);
                         if (d != null) {
-                            d.usages.add(new Offset(nameLoc.value, name2.line));
+                            table.addFunctionUsage(d, new Offset(nameLoc.value, name2.line));
+                        //d.usages.add(new Offset(nameLoc.value, name2.line));
                         }
 
                     }
@@ -1447,7 +1489,7 @@ public class AstNode {
         return parentPos;
     }
 
-    public void addVariableByDName(TokenTable table, AstNode node, AstNode var1) {
+    public void addVariableByDName(TokenTable table, AstNode node, AstNode var1, AstNode loc) {
         AstNode decl = node.findChild("decl", "D_name", false);
         if (decl == null) {
             decl = node.findChild("base", "D_name");
@@ -1463,7 +1505,7 @@ public class AstNode {
 
             AstNode qualifierVar = decl.findChild("qualifierVar");
             if (name1 != null) {
-                AstNode loc = decl.findChild("loc");
+                //AstNode loc = decl.findChild("loc");
                 AstNode nameLoc = name1.findChild("loc");
                 AstNode name2 = name1.findChild("name");
                 if (loc != null && nameLoc != null && name2 != null) {
@@ -1483,7 +1525,7 @@ public class AstNode {
         }
     }
 
-    public void addFunctionByDName(TokenTable table, AstNode node, AstNode var) {
+    public void addFunctionByDName(TokenTable table, AstNode node, AstNode var, AstNode loc) {
         AstNode decl = node.findChild("decl", "D_func", false);
         if (decl == null) {
             decl = node.findChild("base", "D_func");
@@ -1504,7 +1546,7 @@ public class AstNode {
                 }
 
                 if (rest != null) {
-                    AstNode loc = decl.findChild("loc");
+                    //AstNode loc = decl.findChild("loc");
                     AstNode nameLoc = rest.findChild("loc");
                     AstNode name2 = rest.findChild("name");
                     if (loc != null && nameLoc != null && name2 != null) {
@@ -1529,7 +1571,7 @@ public class AstNode {
                 }
 
                 if (rest != null) {
-                    AstNode loc = decl.findChild("loc");
+                    //AstNode loc = decl.findChild("loc");
                     AstNode nameLoc = rest.findChild("loc");
                     AstNode name2 = rest.findChild("name");
                     if (loc != null && nameLoc != null && name2 != null) {
@@ -1554,7 +1596,7 @@ public class AstNode {
                 }
 
                 if (rest != null) {
-                    AstNode loc = decl.findChild("loc");
+                    //AstNode loc = decl.findChild("loc");
                     AstNode nameLoc = rest.findChild("loc");
                     AstNode name2 = rest.findChild("fakeName");
                     if (loc != null && nameLoc != null && name2 != null) {
@@ -1619,32 +1661,26 @@ public class AstNode {
                 decl.findChild("decl", "D_pointer", false) != null ||
                 decl.findChild("decl", "D_ptrToMember", false) != null ||
                 decl.findChild("decl", "D_grouping", false) != null) {
-
             AstNode newdecl = decl.findChild("decl", "D_reference", false);
             if (newdecl != null) {
                 decl = newdecl;
             }
-
             newdecl = decl.findChild("decl", "D_array", false);
             if (newdecl != null) {
                 decl = newdecl;
             }
-
             newdecl = decl.findChild("decl", "D_pointer", false);
             if (newdecl != null) {
                 decl = newdecl;
             }
-
             newdecl = decl.findChild("decl", "D_grouping", false);
             if (newdecl != null) {
                 decl = newdecl;
             }
-
             newdecl = decl.findChild("decl", "D_ptrToMember", false);
             if (newdecl != null) {
                 decl = newdecl;
             }
-
         }
 
         while (decl.findChild("base", "D_reference", false) != null ||
@@ -1659,52 +1695,31 @@ public class AstNode {
                 continue;
 
             }
-
-
-
-
             newdecl = decl.findChild("base", "D_array", false);
             if (newdecl != null) {
                 decl = newdecl;
                 continue;
 
             }
-
-
-
-
             newdecl = decl.findChild("base", "D_pointer", false);
             if (newdecl != null) {
                 decl = newdecl;
                 continue;
 
             }
-
-
-
-
             newdecl = decl.findChild("base", "D_grouping", false);
             if (newdecl != null) {
                 decl = newdecl;
                 continue;
 
             }
-
-
-
-
             newdecl = decl.findChild("base", "D_ptrToMember", false);
             if (newdecl != null) {
                 decl = newdecl;
                 continue;
 
             }
-
-
-
-
         }
-
         return decl;
     }
 
@@ -1715,12 +1730,12 @@ public class AstNode {
         }
 
         AstNode loc = findChild("loc");
-        AstNode name = findChild("name");
+        AstNode name1 = findChild("name");
 
-        if (name != null && loc != null && !name.value.startsWith("PQ_")) {
-            Offset offset = new Offset(loc.value, name.line);
+        if (name1 != null && loc != null && !name1.value.startsWith("PQ_")) {
+            Offset offset = new Offset(loc.value, name1.line);
             if (offset.line != 0) {
-                table.verifyDeclaration(name.value, offset, name.line);
+                table.verifyDeclaration(name1.value, offset, name1.line);
             }
         }
     }

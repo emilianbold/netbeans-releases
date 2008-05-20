@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -49,6 +49,7 @@ import javax.swing.text.StyledDocument;
 
 import org.netbeans.modules.i18n.HardCodedString;
 import org.netbeans.modules.i18n.I18nSupport;
+import org.netbeans.modules.i18n.java.JavaI18nFinder;
 import org.netbeans.modules.i18n.java.JavaI18nSupport;
 
 import org.openide.loaders.DataObject;

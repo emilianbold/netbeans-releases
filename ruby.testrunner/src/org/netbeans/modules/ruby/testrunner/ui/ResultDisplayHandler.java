@@ -52,7 +52,7 @@ import javax.swing.JSplitPane;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.ruby.testrunner.TestRunnerSettings;
 import org.openide.ErrorManager;
-
+import org.netbeans.modules.ruby.testrunner.TestRunnerSettings.DividerSettings;
 /**
  *
  * @author Marian Petras. Erno Mononen
@@ -67,8 +67,10 @@ final class ResultDisplayHandler {
     /** */
     private ResultPanelOutput outputListener;
     /** */
-    private Component displayComp;
-
+    private JSplitPane displayComp;
+    private Component left;
+    private Component right;
+    
     /** Creates a new instance of ResultDisplayHandler */
     ResultDisplayHandler() {
     }
@@ -82,27 +84,38 @@ final class ResultDisplayHandler {
         return displayComp;
     }
 
+    Component refreshDisplayComponent(int orientation) {
+        int location = TestRunnerSettings.getDefault().getDividerSettings(orientation).getLocation();
+        return createDisplayComp(left, right, orientation, location);
+    }
+    
     /**
      */
-    private Component createDisplayComp() {
-        Component left = new StatisticsPanel(this);
-        Component right = new ResultPanelOutput(this);
-        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, left, right) {
-        final TestRunnerSettings settings = TestRunnerSettings.getDefault();
+    private JSplitPane createDisplayComp() {
+        left = new StatisticsPanel(this);
+        right = new ResultPanelOutput(this);
+        DividerSettings dividerSettings = TestRunnerSettings.getDefault().getDividerSettings(null);
+        return createDisplayComp(left, right, dividerSettings.getOrientation(), dividerSettings.getLocation());
+    }
+
+    private JSplitPane createDisplayComp(Component left, Component right, int orientation, final int location) {
+        
+        JSplitPane splitPane = new JSplitPane(orientation, left, right) {
             @Override
             public void addNotify() {
                 super.addNotify();
                 SwingUtilities.invokeLater(new Runnable() {
 
                     public void run() {
-                        setDividerLocation(settings.getResultsSplitPaneDivider());
+                        setDividerLocation(location);
                     }
                 });
             }
 
             @Override
             public void removeNotify() {
-                settings.setResultsSplitPaneDivider(getDividerLocation());
+                DividerSettings newSettings = new DividerSettings(getOrientation(), getDividerLocation());
+                TestRunnerSettings.getDefault().setDividerSettings(newSettings);
                 super.removeNotify();
             }
         };

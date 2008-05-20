@@ -47,9 +47,13 @@ import java.util.List;
 
 import org.netbeans.modules.bpel.model.api.Assign;
 import org.netbeans.modules.bpel.model.api.Copy;
+import org.netbeans.modules.bpel.model.api.To;
+import org.netbeans.modules.bpel.model.api.From;
+import org.netbeans.modules.bpel.model.api.ContentElement;
 import org.netbeans.modules.bpel.model.api.OnEvent;
 import org.netbeans.modules.bpel.model.api.OnMessage;
 import org.netbeans.modules.bpel.model.api.OperationReference;
+import org.netbeans.modules.bpel.model.api.PartReference;
 import org.netbeans.modules.bpel.model.api.PartnerLink;
 import org.netbeans.modules.bpel.model.api.PartnerLinkReference;
 import org.netbeans.modules.bpel.model.api.Receive;
@@ -88,7 +92,136 @@ public final class Validator extends BpelValidator {
   @Override
   public void visit(Assign assign) {
     List<Copy> copies = list(assign.getChildren(Copy.class));
-// todo start here
+
+    for (int i=0; i < copies.size(); i++) {
+      for (int j=i+1; j < copies.size(); j++) {
+        checkCopies(copies.get(i), copies.get(j));
+      }
+    }
+  }
+
+  private void checkCopies(Copy copy1, Copy copy2) {
+//out();
+//out("see: " + copy1 + " "  + copy2);
+    if (checkTo(copy1.getTo(), copy2.getTo()) && checkFrom(copy1.getFrom(), copy2.getFrom())) {
+      addError("FIX_duplicate_copies", copy1); // NOI18N
+      addError("FIX_duplicate_copies", copy2); // NOI18N
+    }
+  }
+
+  private boolean checkTo(To to1, To to2) {
+    if (checkContent(to1, to2)) {
+      return true;
+    }
+    if (checkVariable(to1, to1, to2, to2)) {
+      return true;
+    }
+    if (checkPartnerLink(to1, to2)) {
+      return true;
+    }
+    return false;
+  }
+
+  private boolean checkPartnerLink(PartnerLinkReference partnerLinkReference1, PartnerLinkReference partnerLinkReference2) {
+    // 1
+    BpelReference<PartnerLink> partRef1 = partnerLinkReference1.getPartnerLink();
+
+    if (partRef1 == null) {
+      return false;
+    }
+    PartnerLink partnerLink1 = partRef1.get();
+
+    if (partnerLink1 == null) {
+      return false;
+    }
+    // 2
+    BpelReference<PartnerLink> partRef2 = partnerLinkReference2.getPartnerLink();
+
+    if (partRef2 == null) {
+      return false;
+    }
+    PartnerLink partnerLink2 = partRef2.get();
+
+    if (partnerLink2 == null) {
+      return false;
+    }
+    return partnerLink1.equals(partnerLink2);
+  }
+
+  private boolean checkVariable(VariableReference variableReference1, PartReference partReference1, VariableReference variableReference2, PartReference partReference2) {
+    // 1
+    BpelReference<VariableDeclaration> varRef1 = variableReference1.getVariable();
+
+    if (varRef1 == null) {
+      return false;
+    }
+    VariableDeclaration variable1 = varRef1.get();
+
+    if (variable1 == null) {
+      return false;
+    }
+    WSDLReference<Part> partRef1 = partReference1.getPart();
+
+    if (partRef1 == null) {
+      return false;
+    }
+    Part part1 = partRef1.get();
+
+    if (part1 == null) {
+      return false;
+    }
+    // 2
+    BpelReference<VariableDeclaration> varRef2 = variableReference2.getVariable();
+
+    if (varRef2 == null) {
+      return false;
+    }
+    VariableDeclaration variable2 = varRef2.get();
+
+    if (variable2 == null) {
+      return false;
+    }
+    WSDLReference<Part> partRef2 = partReference2.getPart();
+
+    if (partRef2 == null) {
+      return false;
+    }
+    Part part2 = partRef2.get();
+
+    if (part2 == null) {
+      return false;
+    }
+    return variable1.equals(variable2) && part1.equals(part2);
+  }
+
+  private boolean checkContent(ContentElement content1, ContentElement content2) {
+    String value1 = content1.getContent();
+
+    if (value1 == null || value1.length() == 0) {
+      return false;
+    }
+    String value2 = content2.getContent();
+
+    if (value2 == null || value2.length() == 0) {
+      return false;
+    }
+//out();
+//out("value1: " + value1);
+//out("value2: " + value2);
+    return value1.equals(value2);
+  }
+
+  private boolean checkFrom(From from1, From from2) {
+    if (checkContent(from1, from2)) {
+      return true;
+    }
+    if (checkVariable(from1, from1, from2, from2)) {
+      return true;
+    }
+    if (checkPartnerLink(from1, from2)) {
+      return true;
+    }
+    return false;
   }
 
   private List<Copy> list(Collection<Copy> collection) {
@@ -121,11 +254,7 @@ public final class Validator extends BpelValidator {
   }
 
   // # 116242
-  private void checkVariable(
-    VariableReference variableReference,
-    OperationReference operationReference,
-    boolean isInput)
-  {
+  private void checkVariable(VariableReference variableReference, OperationReference operationReference, boolean isInput) {
     BpelReference<VariableDeclaration> ref2 = variableReference.getVariable();
     
     if (ref2 != null && ref2.get() != null) {
