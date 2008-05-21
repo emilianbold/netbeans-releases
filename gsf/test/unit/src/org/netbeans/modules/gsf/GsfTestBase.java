@@ -75,11 +75,13 @@ import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.editor.Utilities;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.lexer.LanguageManager;
-import org.netbeans.modules.gsf.api.BracketCompletion;
+import org.netbeans.modules.gsf.api.CodeCompletionContext;
+import org.netbeans.modules.gsf.api.KeystrokeHandler;
 import org.netbeans.modules.gsf.api.ColoringAttributes;
 import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.Completable;
-import org.netbeans.modules.gsf.api.Completable.QueryType;
+import org.netbeans.modules.gsf.api.CodeCompletionHandler;
+import org.netbeans.modules.gsf.api.CodeCompletionHandler.QueryType;
+import org.netbeans.modules.gsf.api.CodeCompletionResult;
 import org.netbeans.modules.gsf.api.CompletionProposal;
 import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.gsf.api.Formatter;
@@ -89,7 +91,6 @@ import org.netbeans.modules.gsf.api.IndexDocument;
 import org.netbeans.modules.gsf.api.IndexDocumentFactory;
 import org.netbeans.modules.gsf.api.Indexer;
 import org.netbeans.modules.gsf.api.InstantRenamer;
-import org.netbeans.modules.gsf.api.Modifier;
 import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.modules.gsf.api.OccurrencesFinder;
 import org.netbeans.modules.gsf.api.OffsetRange;
@@ -563,14 +564,14 @@ public abstract class GsfTestBase extends NbTestCase {
     ////////////////////////////////////////////////////////////////////////////
     // Bracket completion tests
     ////////////////////////////////////////////////////////////////////////////
-    protected BracketCompletion getBracketCompletion() {
+    protected KeystrokeHandler getBracketCompletion() {
         return null;
     }
 
     // Also requires getFormatter(IndentPref) defined below under the formatting tests
     
     protected void assertMatches(String original) throws BadLocationException {
-        BracketCompletion bc = getBracketCompletion();
+        KeystrokeHandler bc = getBracketCompletion();
         assertNotNull("getBracketCompletion() must be implemented!", bc);
         int caretPos = original.indexOf('^');
         
@@ -601,7 +602,7 @@ public abstract class GsfTestBase extends NbTestCase {
     }
     
     protected void insertBreak(String original, String expected) throws BadLocationException {
-        BracketCompletion bc = getBracketCompletion();
+        KeystrokeHandler bc = getBracketCompletion();
         assertNotNull("getBracketCompletion() must be implemented!", bc);
         
         int insertOffset = original.indexOf('^');
@@ -674,7 +675,7 @@ public abstract class GsfTestBase extends NbTestCase {
     }
 
     protected void insertChar(String original, char insertText, String expected, String selection, boolean codeTemplateMode) throws BadLocationException {
-        BracketCompletion bc = getBracketCompletion();
+        KeystrokeHandler bc = getBracketCompletion();
         assertNotNull("getBracketCompletion() must be implemented!", bc);
         
         int insertOffset = original.indexOf('^');
@@ -731,7 +732,7 @@ public abstract class GsfTestBase extends NbTestCase {
     }
 
     protected void deleteChar(String original, String expected) throws BadLocationException {
-        BracketCompletion bc = getBracketCompletion();
+        KeystrokeHandler bc = getBracketCompletion();
         assertNotNull("getBracketCompletion() must be implemented!", bc);
 
         int afterRemoveOffset = original.indexOf('^');
@@ -766,7 +767,7 @@ public abstract class GsfTestBase extends NbTestCase {
     }
     
     protected void deleteWord(String original, String expected) throws BadLocationException {
-        BracketCompletion bc = getBracketCompletion();
+        KeystrokeHandler bc = getBracketCompletion();
         assertNotNull("getBracketCompletion() must be implemented!", bc);
 
         int afterRemoveOffset = original.indexOf('^');
@@ -805,7 +806,7 @@ public abstract class GsfTestBase extends NbTestCase {
     }
 
     protected void assertLogicalRange(String source, boolean up, String expected) throws Exception {
-        BracketCompletion completer = getBracketCompletion();
+        KeystrokeHandler completer = getBracketCompletion();
         assertNotNull("getBracketCompletion() must be implemented!", completer);
 
         String BEGIN = "%<%"; // NOI18N
@@ -1672,7 +1673,7 @@ public abstract class GsfTestBase extends NbTestCase {
     ////////////////////////////////////////////////////////////////////////////
     // Code Completion Tests
     ////////////////////////////////////////////////////////////////////////////
-    protected Completable getCodeCompleter() {
+    protected CodeCompletionHandler getCodeCompleter() {
         return null;
     }
 
@@ -1805,11 +1806,11 @@ public abstract class GsfTestBase extends NbTestCase {
         initializeClassPaths();
 
         // TODO call TestCompilationInfo.setCaretOffset!        
-        QueryType type = QueryType.COMPLETION;
-        boolean caseSensitive = true;
-        NameKind kind = caseSensitive ? NameKind.PREFIX : NameKind.CASE_INSENSITIVE_PREFIX;
+        final QueryType type = QueryType.COMPLETION;
+        final boolean caseSensitive = true;
+        final NameKind kind = caseSensitive ? NameKind.PREFIX : NameKind.CASE_INSENSITIVE_PREFIX;
 
-        GsfTestCompilationInfo ci = getInfo(file);
+        final GsfTestCompilationInfo ci = getInfo(file);
         String text = ci.getText();
         assertNotNull(text);
 
@@ -1828,11 +1829,11 @@ public abstract class GsfTestBase extends NbTestCase {
         ParserResult pr = ci.getEmbeddedResult(ci.getPreferredMimeType(), 0);
         assertNotNull(pr);
         
-        Completable cc = getCodeCompleter();
+        CodeCompletionHandler cc = getCodeCompleter();
         assertNotNull("getSemanticAnalyzer must be implemented", cc);
         final boolean deprecatedHolder[] = new boolean[1];
         
-        HtmlFormatter formatter = new HtmlFormatter() {
+        final HtmlFormatter formatter = new HtmlFormatter() {
             private StringBuilder sb = new StringBuilder();
             
             @Override
@@ -1907,7 +1908,49 @@ public abstract class GsfTestBase extends NbTestCase {
         //ci.getIndex();
         //index.setDirty(js);
         js.testUpdateIndex();
-        List<CompletionProposal> proposals = cc.complete(ci, caretOffset, prefix, kind, type, caseSensitive, formatter);
+        
+        final int finalCaretOffset = caretOffset;
+        final String finalPrefix = prefix;
+        CodeCompletionContext context = new CodeCompletionContext() {
+
+            @Override
+            public int getCaretOffset() {
+                return finalCaretOffset;
+            }
+
+            @Override
+            public CompilationInfo getInfo() {
+                return ci;
+            }
+
+            @Override
+            public String getPrefix() {
+                return finalPrefix;
+            }
+
+            @Override
+            public NameKind getNameKind() {
+                return kind;
+            }
+
+            @Override
+            public QueryType getQueryType() {
+                return type;
+            }
+
+            @Override
+            public boolean isCaseSensitive() {
+                return caseSensitive;
+            }
+
+            @Override
+            public HtmlFormatter getFormatter() {
+                return formatter;
+            }
+        };
+        
+        CodeCompletionResult completionResult = cc.complete(context);
+        List<CompletionProposal> proposals = completionResult.getItems();
         
         String described = describe(caretLine, kind, type, proposals, includeModifiers, deprecatedHolder);
         assertDescriptionMatches(file, described, true, ".completion");
@@ -1944,7 +1987,7 @@ public abstract class GsfTestBase extends NbTestCase {
         ParserResult pr = ci.getEmbeddedResult(ci.getPreferredMimeType(), 0);
         assertNotNull(pr);
         
-        Completable cc = getCodeCompleter();
+        CodeCompletionHandler cc = getCodeCompleter();
         assertNotNull("getSemanticAnalyzer must be implemented", cc);
 
         boolean upToOffset = type == QueryType.COMPLETION;
@@ -1984,7 +2027,7 @@ public abstract class GsfTestBase extends NbTestCase {
         BaseDocument doc = (BaseDocument)info.getDocument();
         StringBuilder sb = new StringBuilder();
 
-        Completable completer = getCodeCompleter();
+        CodeCompletionHandler completer = getCodeCompleter();
         assertNotNull("getSemanticAnalyzer must be implemented", completer);
 
         int index = 0;

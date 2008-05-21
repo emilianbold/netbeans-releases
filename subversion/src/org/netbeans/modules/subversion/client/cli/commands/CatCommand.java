@@ -88,6 +88,11 @@ public class CatCommand extends SvnCommand {
     @Override
     protected boolean hasBinaryOutput() {
         return true;
+    }
+
+    @Override
+    protected boolean notifyOutput() {
+        return false;
     }    
     
     @Override

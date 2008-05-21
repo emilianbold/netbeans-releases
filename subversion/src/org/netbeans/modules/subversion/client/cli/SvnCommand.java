@@ -120,15 +120,20 @@ public abstract class SvnCommand implements CommandNotificationListener {
      * @throws ClearcaseException
      */
     public abstract void prepareCommand(Arguments arguments) throws IOException;
-   
+
+    protected abstract int getCommand();  
+
     public void setCommandWorkingDirectory(File... files) {
         notificationHandler.setBaseDir(SVNBaseDir.getBaseDir(files));        
     }
-
-    protected abstract int getCommand();       
+        
     protected boolean hasBinaryOutput() {
         return false;
     }       
+    
+    protected boolean notifyOutput() {
+        return true;
+    }
     
     public void commandStarted() {
         assert !commandExecuted : "Command re-use is not supported";
@@ -137,8 +142,10 @@ public abstract class SvnCommand implements CommandNotificationListener {
         notificationHandler.logCommandLine(cmdString);        
     }
 
-    // XXX don't do this for every command
     public void outputText(String lineString) {
+        if(!notifyOutput()) {
+            return;
+        }
         Line line = Parser.getInstance().parse(lineString);
         if(line != null) {
             if(notificationHandler != null && line.getPath() != null) {

@@ -48,6 +48,7 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.HashMap;
 import javax.swing.JPanel;
+import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
@@ -71,6 +72,10 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
     public ParserSettingsPanel() {
         setName("TAB_CodeAssistanceTab"); // NOI18N
         initComponents();
+        
+        if( "Windows".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
+            setOpaque( false );
+        }
 
         //infoTextArea.setBackground(collectionPanel.getBackground());
         //setPreferredSize(new java.awt.Dimension(600, 700));
@@ -179,6 +184,8 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
         tabPanel = new javax.swing.JPanel();
         tabbedPane = new javax.swing.JTabbedPane();
 
+        collectionPanel.setOpaque(false);
+
         compilerCollectionLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/options/Bundle").getString("COMPILER_COLLECTION_MN").charAt(0));
         compilerCollectionLabel.setLabelFor(compilerCollectionComboBox);
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/options/Bundle"); // NOI18N
@@ -191,7 +198,7 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
             .add(collectionPanelLayout.createSequentialGroup()
                 .add(compilerCollectionLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(compilerCollectionComboBox, 0, 246, Short.MAX_VALUE)
+                .add(compilerCollectionComboBox, 0, 310, Short.MAX_VALUE)
                 .addContainerGap())
         );
         collectionPanelLayout.setVerticalGroup(
@@ -200,6 +207,10 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
                 .add(compilerCollectionLabel)
                 .add(compilerCollectionComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
+
+        scrollPane.setOpaque(false);
+
+        tabPanel.setOpaque(false);
 
         org.jdesktop.layout.GroupLayout tabPanelLayout = new org.jdesktop.layout.GroupLayout(tabPanel);
         tabPanel.setLayout(tabPanelLayout);
@@ -232,7 +243,7 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(collectionPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(265, Short.MAX_VALUE))
+                .addContainerGap(272, Short.MAX_VALUE))
             .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                 .add(layout.createSequentialGroup()
                     .add(36, 36, 36)

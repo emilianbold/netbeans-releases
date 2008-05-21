@@ -66,6 +66,7 @@ import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.netbeans.modules.groovy.editor.actions.FixImportsHelper.ImportCandidate;
+import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
 import org.netbeans.modules.groovy.editor.parser.GroovyParser;
 import org.netbeans.modules.gsf.api.Parser;
 import org.netbeans.modules.gsf.api.ParserFile;
@@ -284,5 +285,9 @@ public class FixImportsAction extends AbstractAction implements EditorAction, Ru
 
     public Class getShortDescriptionBundleClass() {
         return FixImportsAction.class;
+    }
+    
+    public boolean appliesTo(String mimeType) {
+        return GroovyTokenId.GROOVY_MIME_TYPE.equals(mimeType);
     }
 }

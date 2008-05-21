@@ -59,8 +59,8 @@ import org.codehaus.groovy.ast.ASTNode;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.Completable;
-import org.netbeans.modules.gsf.api.Completable.QueryType;
+import org.netbeans.modules.gsf.api.CodeCompletionHandler;
+import org.netbeans.modules.gsf.api.CodeCompletionHandler.QueryType;
 import org.netbeans.modules.gsf.api.CompletionProposal;
 import org.netbeans.modules.gsf.api.ElementHandle;
 import org.netbeans.modules.gsf.api.ElementKind;
@@ -84,9 +84,12 @@ import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.modules.groovy.editor.elements.AstMethodElement;
 import org.netbeans.modules.groovy.editor.elements.GroovyElement;
 import org.netbeans.modules.groovy.support.api.GroovySettings;
+import org.netbeans.modules.gsf.api.CodeCompletionContext;
+import org.netbeans.modules.gsf.api.CodeCompletionResult;
+import org.netbeans.modules.gsf.spi.DefaultCompletionResult;
 import org.openide.util.Utilities;
 
-public class CodeCompleter implements Completable {
+public class CodeCompleter implements CodeCompletionHandler {
  
     private static ImageIcon keywordIcon;
     private boolean caseSensitive;
@@ -267,8 +270,14 @@ public class CodeCompleter implements Completable {
     }
     
 
-    public List<CompletionProposal> complete(CompilationInfo info, int lexOffset, String prefix, NameKind kind, QueryType queryType, boolean caseSensitive, HtmlFormatter formatter) {
-        this.caseSensitive = caseSensitive;
+    public CodeCompletionResult complete(CodeCompletionContext context) {
+        CompilationInfo info = context.getInfo();
+        int lexOffset = context.getCaretOffset();
+        String prefix = context.getPrefix();
+        NameKind kind = context.getNameKind();
+        QueryType queryType = context.getQueryType();
+        this.caseSensitive = context.isCaseSensitive();
+        HtmlFormatter formatter = context.getFormatter();
 
         final int astOffset = AstUtilities.getAstOffset(info, lexOffset);
         
@@ -289,7 +298,7 @@ public class CodeCompleter implements Completable {
             document = info.getDocument();
         } catch (Exception e) {
             Exceptions.printStackTrace(e);
-            return null;
+            return CodeCompletionResult.NONE;
         }
 
         // TODO - move to LexUtilities now that this applies to the lexing offset?
@@ -325,10 +334,10 @@ public class CodeCompleter implements Completable {
             // http://www.netbeans.org/issues/show_bug.cgi?id=126500
             // completeKeywords(proposals, request, showSymbols);
             
-            // complte methods
+            // complete methods
             completeMethods(proposals, request);
             
-            return proposals;
+            return new DefaultCompletionResult(proposals, false);
         } finally {
             doc.readUnlock();
         }
