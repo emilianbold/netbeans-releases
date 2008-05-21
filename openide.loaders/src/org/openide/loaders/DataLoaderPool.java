@@ -286,13 +286,19 @@ implements java.io.Serializable {
         return Collections.enumeration(all);
     }
     
-    final Enumeration<DataLoader> allLoaders(final FileObject fo) {
+    final Enumeration<DataLoader> allLoaders(FileObject fo) {
         class MimeEnum implements Enumeration<DataLoader> {
+            final String mime;
+
+            public MimeEnum(String mime) {
+                this.mime = mime;
+            }
+            
             Enumeration<? extends DataLoader> delegate;
             
             private Enumeration<? extends DataLoader> delegate() {
                 if (delegate == null) {
-                    String path = "Loaders/" + fo.getMIMEType() + "/Factories"; // NOI18N
+                    String path = "Loaders/" + mime + "/Factories"; // NOI18N
                     delegate = Collections.enumeration(Lookups.forPath(path).lookupAll(DataLoader.class));
                 }
                 return delegate;
@@ -306,7 +312,12 @@ implements java.io.Serializable {
                 return delegate().nextElement();
             }
         }
-        Enumeration<DataLoader> mimeLoaders = new MimeEnum();
+        String mime = fo.getMIMEType();
+        Enumeration<DataLoader> mimeLoaders = new MimeEnum(mime);
+        if (mime.startsWith("text/") && mime.endsWith("+xml")) { // NOI18N
+            mimeLoaders = Enumerations.concat(mimeLoaders, new MimeEnum("text/xml")); // NOI18N
+        }
+        mimeLoaders = Enumerations.concat(mimeLoaders, new MimeEnum("content/unknown")); // NOI18N
         try {
             if (!fo.getFileSystem().isDefault()) {
                 return Enumerations.concat(mimeLoaders, allLoaders());

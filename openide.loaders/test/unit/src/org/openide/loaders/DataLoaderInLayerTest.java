@@ -61,10 +61,14 @@ public class DataLoaderInLayerTest extends NbTestCase {
     protected void setUp() throws IOException {
         clearWorkDir();
         FileUtil.setMIMEType("simple", "text/plain");
+        FileUtil.setMIMEType("ant", "text/ant+xml");
     }
     
     private static void addRemoveLoader(DataLoader l, boolean add) throws IOException {
-        String res = "Loaders/text/plain/Factories/" + l.getClass().getSimpleName().replace('.', '-') + ".instance";
+        addRemoveLoader("text/plain", l, add);
+    }
+    private static void addRemoveLoader(String mime, DataLoader l, boolean add) throws IOException {
+        String res = "Loaders/" + mime + "/Factories/" + l.getClass().getSimpleName().replace('.', '-') + ".instance";
         FileObject root = Repository.getDefault().getDefaultFileSystem().getRoot();
         if (add) {
             FileObject fo = FileUtil.createData(root, res);
@@ -139,8 +143,90 @@ public class DataLoaderInLayerTest extends NbTestCase {
         }
         TestUtilHid.destroyLocalFileSystem(getName());
     }
+
+    public void testAntAsAntSimpleLoader() throws Exception {
+        DataLoader l1 = DataLoader.getLoader(SimpleUniFileLoader.class);
+        DataLoader l2 = DataLoader.getLoader(AntUniFileLoader.class);
+        DataLoader l3 = DataLoader.getLoader(XMLUniFileLoader.class);
+        addRemoveLoader(l1, true);
+        addRemoveLoader("text/ant+xml", l2, true);
+        addRemoveLoader("text/xml", l3, true);
+        try {
+            FileSystem lfs = TestUtilHid.createLocalFileSystem(getWorkDir (), new String[] {
+                "folder/file.ant",
+            });
+            FileObject fo = lfs.findResource("folder/file.ant");
+            assertNotNull(fo);
+            DataObject dob = DataObject.find(fo);
+            assertEquals(l2, dob.getLoader());
+        } finally {
+        addRemoveLoader(l1, false);
+        addRemoveLoader("text/ant+xml", l2, false);
+        addRemoveLoader("text/xml", l3, false);
+        }
+        TestUtilHid.destroyLocalFileSystem(getName());
+    }
+    public void testAntWithoutAntSimpleLoader() throws Exception {
+        DataLoader l1 = DataLoader.getLoader(SimpleUniFileLoader.class);
+        //DataLoader l2 = DataLoader.getLoader(AntUniFileLoader.class);
+        DataLoader l3 = DataLoader.getLoader(XMLUniFileLoader.class);
+        addRemoveLoader(l1, true);
+        //addRemoveLoader("text/ant+xml", l2, true);
+        addRemoveLoader("text/xml", l3, true);
+        try {
+            FileSystem lfs = TestUtilHid.createLocalFileSystem(getWorkDir (), new String[] {
+                "folder/file.ant",
+            });
+            FileObject fo = lfs.findResource("folder/file.ant");
+            assertNotNull(fo);
+            DataObject dob = DataObject.find(fo);
+            assertEquals(l3, dob.getLoader());
+        } finally {
+        addRemoveLoader(l1, false);
+        //addRemoveLoader("text/ant+xml", l2, false);
+        addRemoveLoader("text/xml", l3, false);
+        }
+        TestUtilHid.destroyLocalFileSystem(getName());
+    }
+
+    public void testAntAsUnknownSimpleLoader() throws Exception {
+        DataLoader l1 = DataLoader.getLoader(SimpleUniFileLoader.class);
+        //DataLoader l2 = DataLoader.getLoader(AntUniFileLoader.class);
+        DataLoader l3 = DataLoader.getLoader(XMLUniFileLoader.class);
+        addRemoveLoader(l1, true);
+        //addRemoveLoader("text/ant+xml", l2, true);
+        addRemoveLoader("content/unknown", l3, true);
+        try {
+            FileSystem lfs = TestUtilHid.createLocalFileSystem(getWorkDir (), new String[] {
+                "folder/file.ant",
+            });
+            FileObject fo = lfs.findResource("folder/file.ant");
+            assertNotNull(fo);
+            DataObject dob = DataObject.find(fo);
+            assertEquals(l3, dob.getLoader());
+        } finally {
+        addRemoveLoader(l1, false);
+        //addRemoveLoader("text/ant+xml", l2, false);
+        addRemoveLoader("content/unknown", l3, false);
+        }
+        TestUtilHid.destroyLocalFileSystem(getName());
+    }
     
-    public static final class SimpleUniFileLoader extends UniFileLoader {
+    public static final class XMLUniFileLoader extends SimpleUniFileLoader {
+        @Override
+        protected void initialize() {
+            getExtensions().addMimeType("text/xml");
+            getExtensions().addMimeType("text/ant+xml");
+        }
+    }
+    public static final class AntUniFileLoader extends SimpleUniFileLoader {
+        @Override
+        protected void initialize() {
+            getExtensions().addMimeType("text/xml");
+            getExtensions().addMimeType("text/ant+xml");
+        }
+    }
+    public static class SimpleUniFileLoader extends UniFileLoader {
         public SimpleUniFileLoader() {
             super(SimpleDataObject.class.getName());
         }
