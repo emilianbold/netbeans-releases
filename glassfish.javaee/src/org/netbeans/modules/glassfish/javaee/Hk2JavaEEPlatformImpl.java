@@ -52,11 +52,14 @@ import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 
-/**
+    
+    /**
  *
  * @author Ludo
  */
@@ -65,7 +68,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
     private Hk2PluginProperties properties;
     private Hk2DeploymentManager dm;
     private LibraryImplementation[] libraries;
-    
+
     /**
      * 
      * @param dm 
@@ -80,7 +83,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
     private static final String PERSISTENCE_PROV_ECLIPSELINK = "org.eclipse.persistence.jpa.PersistenceProvider"; //NOI18N
 
     // WEB SERVICES PROPERTIES 
-    // TODO - shall be removed and usages replaced by values from j2eeserver or websvc apis after redesign
+    // TODO - shall be removed and usages replaced by values from j2eeserver or websvc apis after api redesign
     private static final String TOOL_WSCOMPILE = "wscompile";
     private static final String TOOL_JSR109 = "jsr109";
     private static final String TOOL_WSIMPORT = "wsimport";
@@ -92,6 +95,8 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
     private static final String TOOL_WSIT = "wsit";
     private static final String TOOL_JAXWSTESTER = "jaxws-tester";
     private static final String TOOL_APPCLIENTRUNTIME = "appClientRuntime";
+    private static final String KEYSTORE_LOCATION = "config/keystore.jks";
+    private static final String TRUSTSTORE_LOCATION = "config/cacerts.jks";    
     
     /**
      * 
@@ -118,8 +123,17 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
             return true;
         }        
 
+        File wsLib = null;
+        File jsr109lib = null;
+        
+        File gfRoot = new File(properties.getGlassfishRoot());
+        if ((gfRoot != null) && (gfRoot.exists())) {
+            wsLib = new File(gfRoot, "/modules/webservices-rt.jar");
+            jsr109lib = new File(gfRoot, "/modules/jsr10-impl.jar");
+        }
+
         // WEB SERVICES SUPPORT
-        if (true) { // - check for existence of webservices libraries
+        if ((wsLib != null) && (wsLib.exists())) {      // existence of webservice libraries
             if (TOOL_WSGEN.equals(toolName)) {         //NOI18N
                 return true;
             }
@@ -132,23 +146,26 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
             if (TOOL_JAXWSTESTER.equals(toolName)) {  //NOI18N
                 return true;
             }
-            if (TOOL_WSCOMPILE.equals(toolName)) {     //NOI18N
-                return false;   // TODO - the support is there - need to find the right classpath then change to true
-            }
             if (TOOL_JSR109.equals(toolName)) {        //NOI18N
-                return false;   //TODO - when the support becomes available, change to true
+                if ((jsr109lib != null) && (jsr109lib.exists())) {
+                    return true;
+                }
+                return false;
             }
             if (TOOL_KEYSTORE.equals(toolName)) {      //NOI18N
-                return false;   // TODO - when the support becomes available, change to true
+                return true;
             }
             if (TOOL_KEYSTORECLIENT.equals(toolName)) {//NOI18N
-                return false;   // TODO - when the support becomes available, change to true
+                return true;
             }
             if (TOOL_TRUSTSTORE.equals(toolName)) {    //NOI18N
-                return false;    // TODO  - when the support becomes available, change to true
+                return true;
             }
             if (TOOL_TRUSTSTORECLIENT.equals(toolName)) {  //NOI18N
-                return false;    // TODO  - when the support becomes available, change to true
+                return true;
+            }
+            if (TOOL_WSCOMPILE.equals(toolName)) {     //NOI18N
+                return false;   // TODO - the support is there - need to find the right classpath then change to true
             }
             if (TOOL_APPCLIENTRUNTIME.equals(toolName)) { //NOI18N
                 return false;    //TODO - when the support becomes available, change to true
@@ -159,27 +176,64 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
     }
     
     /**
+     * With maven, the naming of jars and their versions is different with extensions like '1.2-SNAPSHOT'.
+     * This method tries to locate jar which name starts with a specific string
+     * 
+     * You may call the method like this:
+     * <br>
+     * <code>locate('webservices-rt')</code> <br>
+     * <code>locate('webservices-rt-1.2')</code> - if you care about the specific version
+     * @return File - jar file which name starts with specified string
+     */
+    private File locate(String fileName) {
+        FileObject gfRoot = FileUtil.toFileObject(new File(properties.getGlassfishRoot() + "/modules"));
+        FileObject[] jars = gfRoot.getChildren();
+        for (FileObject f : jars) {
+            if (f.getName().startsWith(fileName)) {
+                return FileUtil.toFile(f);
+            }
+        }
+        return null;
+    }
+    
+    /**
      * 
      * @param toolName 
      * @return 
      */
     public File[] getToolClasspathEntries(String toolName) {
 
-//        if (TOOL_WSGEN.equals(toolName) || TOOL_WSIMPORT.equals(toolName)) {
-//            return new File[] {
-//                new File(root, TOOLS_JAR),        //NOI18N
-//                new File(root, JSTL_JAR),         //NOI18N
-//                new File(root, JAVA_EE_JAR),      //NOI18N
-//                new File(root, APPSERV_WS_JAR),   //NOI18N
-//                new File(root, MAIL_JAR),         //NOI18N
-//                new File(root, ACTIVATION_JAR)    //NOI18N
-//            }
-//        }
+        if (TOOL_WSGEN.equals(toolName) || TOOL_WSIMPORT.equals(toolName)) {
+            return new File[] {
+                locate("activation"),           //NOI18N
+                locate("webservices-api"),      //NOI18N
+                locate("webservices-rt"),       //NOI18N
+                locate("webservices-tools"),    //NOI18N
+                locate("jsr109-impl")
+            };
+        }
+
+        File domainDir = null;
+        File gfRoot = new File(properties.getGlassfishRoot());
+        if ((gfRoot != null) && (gfRoot.exists())) {
+            domainDir = new File(gfRoot, "/domains/domain1"); // TODO - find domain correctly
+        }
+        
+        if (TOOL_KEYSTORE.equals(toolName) || TOOL_KEYSTORECLIENT.equals(toolName)) {
+            return new File[] {
+                new File(domainDir, KEYSTORE_LOCATION)  //NOI18N
+            };
+        }
+                
+        if (TOOL_TRUSTSTORE.equals(toolName) || TOOL_TRUSTSTORECLIENT.equals(toolName)) {
+            return new File[] {
+                new File(domainDir, TRUSTSTORE_LOCATION)  //NOI18N
+            };
+        }
         
         return new File[0];
     }
-    
-    /**
+/**
      * 
      * @return 
      */
