@@ -23,21 +23,21 @@
                     <code-name-base>org.netbeans.modules.gsf</code-name-base>
                     <run-dependency>
                         <release-version>2</release-version>
-                        <specification-version>0.72.2</specification-version>
+                        <specification-version>0.72.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.gsf.api</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.1.2</specification-version>
+                        <specification-version>1.1.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.gsfpath.api</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>0.33.1</specification-version>
+                        <specification-version>0.33</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
