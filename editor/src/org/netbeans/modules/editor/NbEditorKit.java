@@ -162,7 +162,7 @@ public class NbEditorKit extends ExtKit implements Callable {
     /**
      * Do any locking necessary prior evaluation of tooltip annotations.
      * <br>
-     * This method will always be followed by {@link #toolTipAnnotationsUnlock()}
+     * This method will always be followed by {@link #toolTipAnnotationsUnlock(Document)}
      * by using <code>try ... finally</code>.
      * <br>
      * This method is called prior read locking of the document.
@@ -171,7 +171,7 @@ public class NbEditorKit extends ExtKit implements Callable {
     }
 
     /**
-     * Release any locking requested previously by {@link #toolTipAnnotationsLock()}.
+     * Release any locking requested previously by {@link #toolTipAnnotationsLock(Document)}.
      * <br>
      * This method is called after read unlocking of the document.
      */
@@ -202,7 +202,7 @@ public class NbEditorKit extends ExtKit implements Callable {
         return TextAction.augmentList(super.createActions(), nbEditorActions);
     }
 
-
+        
     protected void addSystemActionMapping(String editorActionName, Class systemActionClass) {
         Action a = getActionByName(editorActionName);
         if (a != null) {

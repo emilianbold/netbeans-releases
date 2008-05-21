@@ -890,43 +890,49 @@ No.
         </li>
 
         <li>
-            Popup menu items (actions) can be registered under <i>.../Popup</i> subfolder.
-            <br/>
+            <p>
+            Popup menu items (actions) can be registered in the <code>Popup</code> subfolder.
             Both system actions and editor's actions can be added to the popup.
-            <br/>
-            The actions can be ordered using a standard sorting mechanism.
+            The actions can be ordered using a standard filesystem ordering attributes.
+            </p>
+            
             <pre>
-&lt;folder name="Popup"&gt;
-    &lt;file name="org-openide-actions-CutAction.instance"/&gt;
-    &lt;attr name="org-openide-actions-CutAction.instance/org-openide-actions-CopyAction.instance" boolvalue="true"/&gt;
-    &lt;file name="org-openide-actions-CopyAction.instance"/&gt;
+&lt;folder name="Editors/Popup"&gt;
+    &lt;file name="org-openide-actions-CutAction.instance"&gt;
+    &lt;attr name="position" intvalue="100"/&gt;
+    &lt;/file&gt;
+    &lt;file name="org-openide-actions-CopyAction.instance"&gt;
+    &lt;attr name="position" intvalue="110"/&gt;
+    &lt;/file&gt;
 &lt;/folder&gt;
-
             </pre>
 
             <br/>
-            <b>Note:</b> As the target mime-type's popup items get merged with "text/base" (global)
-            items the sorting can refer to the "text/base" as well.
+            <b>Note:</b> The ordering attributes should take in account the fact that
+            popup items for a mime type are merged with "all languages" (global)
+            items from the root of the hierarchy under <code>Editors/Popup</code> folder.
 
             <p>
-            Editor's actions are referenced by their name (<code>Action.NAME</code> property)
-            which each editor action mandatorily has:
+            The editor actions are referenced by their name (<code>Action.NAME</code> property;
+            mandatory for all editor actions). For example the code below will add
+            the editor action for code formatting.
             </p>
+            
             <pre>
-&lt;folder name="Popup"&gt;
+&lt;folder name="Editors/Popup"&gt;
     &lt;file name="format"/&gt;
 &lt;/folder&gt;
             </pre>
-            will add an editor action named "format" into popup.
-
         </li>
 
-        <li>Side bar components can be registered under <i>.../SideBar</i> subfolder.<br/>
+        <li>Side bar components can be registered in the <code>SideBar</code> subfolder.
             Their appearance can be specified using two optional attributes - <code>location</code>
 	    (accepting values <code>"North"</code>, <code>"South"</code>, <code>"East"</code> and
 	    <code>"West"</code>) and boolean <code>scrollable</code>. Default values are
-	    <code>"West"</code> and <code>"true"</code> (i.e. component appears in a row header
-            of JScrollPane displaying the editor's JEditoPane).
+	    <code>"West"</code> and <code>"true"</code> (i.e. the side bar component
+            will appear in the row header of a <code>JScrollPane</code> displaying
+            the editor's <code>JEditoPane</code>).
+            
 	    <pre>
 &lt;folder name="SideBar"&gt;
     &lt;file name="org-netbeans-editor-GlyphGutter.instance"/&gt;
@@ -936,28 +942,6 @@ No.
     &lt;/file&gt;
 &lt;/folder&gt;
             </pre>
-        </li>
-
-        <li>
-            Default key bindings for a mime-type can be registered as <i>.../Defaults/keybindings.xml</i>.
-            <br/>
-            Global keybindings can be found <a href="http://www.netbeans.org/source/browse/editor/src/org/netbeans/modules/editor/resources/XMLs/DefaultGlobalKeyBindings.xml">here</a>
-            <br/>
-            DTD can be found <a href="http://www.netbeans.org/source/browse/editor/src/org/netbeans/modules/editor/resources/DTDs/Options/EditorKeyBindings-1_0.dtd">here</a>
-        </li>
-
-        <li>
-            Default abbreviations for a mime-type can be registered as <i>.../Defaults/abbreviations.xml</i>.
-            <br/>
-            Global keybindings can be found <a href="http://www.netbeans.org/source/browse/editor/src/org/netbeans/modules/editor/resources/XMLs/DefaultAbbrevs.xml">here</a>
-            <br/>
-            DTD can be found <a href="http://www.netbeans.org/source/browse/editor/src/org/netbeans/modules/editor/resources/DTDs/Options/EditorAbbreviations-1_0.dtd">here</a>
-        </li>
-
-        <li>
-            Default macros for a mime-type can be registered as <i>.../Defaults/macros.xml</i>.
-            <br/>
-            DTD can be found <a href="http://www.netbeans.org/source/browse/editor/src/org/netbeans/modules/editor/resources/DTDs/Options/EditorMacros-1_0.dtd">here</a>
         </li>
 
     </ul>
