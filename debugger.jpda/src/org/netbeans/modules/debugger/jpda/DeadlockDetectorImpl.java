@@ -140,14 +140,19 @@ public class DeadlockDetectorImpl extends DeadlockDetector implements PropertyCh
 
         Set<Deadlock> result = null;
         if (!monitorToNode.isEmpty()) {
-            Collection<JPDAThread> deadlockedThreads = new ArrayList(monitorToNode.size());
-            for (Entry<Long, Node> entry : monitorToNode.entrySet()) {
-                Node node = entry.getValue();
-                deadlockedThreads.add(node.thread);
-            }
             result = new HashSet<Deadlock>();
-            result.add(createDeadlock(deadlockedThreads));
-        }
+            Set<Node> nodesSet = new HashSet<Node>(monitorToNode.values());
+            while (!nodesSet.isEmpty()) {
+                Collection<JPDAThread> deadlockedThreads = new ArrayList(nodesSet.size());
+                Node node = nodesSet.iterator().next();
+                nodesSet.remove(node);
+                do {
+                    deadlockedThreads.add(node.thread);
+                    node = node.outgoing;
+                } while (nodesSet.remove(node));
+                result.add(createDeadlock(deadlockedThreads));
+            } // while
+        } // if
         return result;
     }
 
