@@ -90,7 +90,11 @@ class NbTestMediator
     require "#{file_name}"
     last_slash = file_name.rindex("/")
     test_class = file_name[last_slash + 1..file_name.length]
-    instance = Object.const_get(camelize(test_class))
+    begin
+      instance = Object.const_get(camelize(test_class))
+    rescue NameError
+      return
+    end
     if (instance.respond_to?(:suite))
       @suites << instance.suite
     else
