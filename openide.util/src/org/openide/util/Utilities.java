@@ -3086,7 +3086,8 @@ widthcheck:  {
                         ref = null;
                     }
                 } catch (InterruptedException ex) {
-                    LOGGER.log(Level.WARNING, null, ex);
+                    // Can happen during VM shutdown, it seems. Ignore.
+                    continue;
                 }
 
                 synchronized (this) {

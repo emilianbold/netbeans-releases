@@ -103,16 +103,20 @@ public class InfoCommand extends SvnCommand {
     }
     
     @Override
+    protected boolean notifyOutput() {
+        return false;
+    }    
+    
+    @Override
     protected int getCommand() {
         return ISVNNotifyListener.Command.INFO;
     }
     
     @Override
     public void prepareCommand(Arguments arguments) throws IOException {
-        // XXX what if empty url list?
         arguments.add("info");
         // XXX arguments.add("--xml");           
-        if(revision != null) { // XXX all other commands
+        if(revision != null) { 
             arguments.add(revision);
         }   
         switch(type) {

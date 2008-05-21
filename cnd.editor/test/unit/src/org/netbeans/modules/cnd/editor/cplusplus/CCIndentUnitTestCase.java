@@ -748,4 +748,31 @@ public class CCIndentUnitTestCase extends CCFormatterBaseUnitTestCase {
             "}"
             );
     }
+
+    // IZ#135150:GNU style: wrong indent in 'if else' expression
+    public void testIZ135150() throws Exception {
+        setDefaultsOptions("GNU");
+        setLoadDocumentText(
+            "int\n" +
+            "main()\n" +
+            "{\n" +
+            "  int i = 0;\n" +
+            "  if (i == 0)\n" +
+            "    i = 1;\n" +
+            "  else\n" +
+            "    {|\n"
+            );
+        indentNewLine();
+        assertDocumentTextAndCaret("IZ#135150:GNU style: wrong indent in 'if else' expression",
+            "int\n" +
+            "main()\n" +
+            "{\n" +
+            "  int i = 0;\n" +
+            "  if (i == 0)\n" +
+            "    i = 1;\n" +
+            "  else\n" +
+            "    {\n" +
+            "      |\n"
+            );
+    }
 }

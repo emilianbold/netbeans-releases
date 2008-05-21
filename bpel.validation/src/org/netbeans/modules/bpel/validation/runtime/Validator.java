@@ -147,7 +147,7 @@ public final class Validator extends BpelValidator {
     if (value == null) {
       return;
     }
-    if ( !value.contains("'P")) { // NOI18N
+    if ( !containsDuration(value)) {
       return;
     }
     if (
@@ -158,8 +158,17 @@ public final class Validator extends BpelValidator {
       value.contains("=") || // NOI18N
       value.contains("!=") // NOI18N
     ) {
-      addWarning("FIX_Compare_Time", condition); // NOI18N
+      addError("FIX_Compare_Time", condition); // NOI18N
     }
+  }
+
+  private boolean containsDuration(String value) {
+    for (int i=0; i <= 9; i++) {
+      if (value.contains("'P" + i)) { // NOI18N
+        return true;
+      }
+    }
+    return false;
   }
 
   @Override

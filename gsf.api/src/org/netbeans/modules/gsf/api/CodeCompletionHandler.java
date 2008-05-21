@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.gsf.api;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.text.JTextComponent;
@@ -63,14 +62,14 @@ import org.netbeans.modules.gsf.api.annotations.NonNull;
  * analysis assuming it's applied to a parse tree using the other SPI default
  * implementation classes.
  *
- * @todo Rename me to CodeCompletion or CompletionProvider or Completer or something like that
  * @todo Instead of passing in caseSensitive, should I pass in a Comparator which should be used
  *   for determining eligibility? That way it's completely insulated from the clients
  * @todo Pass in completion mode such that I can do different stuff for smart-completion
+ * @todo The result should indicate whether it has been filtered!
  *
  * @author Tor Norbye
  */
-public interface Completable {
+public interface CodeCompletionHandler {
     enum QueryType {
         COMPLETION,
         DOCUMENTATION,
@@ -79,10 +78,14 @@ public interface Completable {
         NONE,
         STOP
     }
-
-    @CheckForNull
-    List<CompletionProposal> complete(@NonNull CompilationInfo info, int caretOffset, @NonNull String prefix,
-        @NonNull NameKind kind, @NonNull QueryType queryType, boolean caseSensitive, @NonNull HtmlFormatter formatter);
+    
+    /**
+     * Compute a code completion result for the given code completion request.
+     * If there are no results, you should NOT return null, you should return
+     * {@link CodeCompletionResult.NONE}.
+     */
+    @NonNull
+    CodeCompletionResult complete(@NonNull CodeCompletionContext context);
 
     /**
      *  Return the HTML documentation for the given program element (returned in CompletionProposals

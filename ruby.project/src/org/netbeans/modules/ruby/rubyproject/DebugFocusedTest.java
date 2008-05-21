@@ -43,6 +43,7 @@ package org.netbeans.modules.ruby.rubyproject;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.modules.ruby.NbUtilities;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.gsf.api.EditorAction;
@@ -82,5 +83,10 @@ public class DebugFocusedTest extends AbstractAction implements EditorAction {
         if (pane != null) {
             RunFocusedTest.runTest(pane, true);
         }
+    }
+    
+    public boolean appliesTo(String mimeType) {
+        return RubyInstallation.RHTML_MIME_TYPE.equals(mimeType) ||
+                RubyInstallation.RUBY_MIME_TYPE.equals(mimeType);
     }
 }

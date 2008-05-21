@@ -42,34 +42,29 @@ package org.netbeans.modules.bpel.samples;
 
 import java.io.IOException;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
-import org.netbeans.spi.project.ui.support.ProjectChooser;
-import org.openide.ErrorManager;
+
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 
 public abstract class BluePrintSampleWizardIterator extends SampleWizardIterator {
     private static final long serialVersionUID = 1L;
     
-    public static final String BLUE_PRINT1 = "BluePrint1";
-    public static final String BLUE_PRINT1_COMP_APP = "BluePrint1Application.zip";
-    public static final String BLUE_PRINT1_APP = "BluePrint1Application";
-    public static final String BLUE_PRINT2 = "BluePrint2";
-    public static final String BLUE_PRINT2_COMP_APP = "BluePrint2Application.zip";
-    public static final String BLUE_PRINT2_APP = "BluePrint2Application";
-    public static final String BLUE_PRINT3 = "BluePrint3";
-    public static final String BLUE_PRINT3_COMP_APP = "BluePrint3Application.zip";
-    public static final String BLUE_PRINT3_APP = "BluePrint3Application";
-    public static final String BLUE_PRINT4 = "BluePrint4";
-    public static final String BLUE_PRINT4_COMP_APP = "BluePrint4Application.zip";
-    public static final String BLUE_PRINT4_APP = "BluePrint4Application";
-    public static final String BLUE_PRINT5 = "BluePrint5";
-    public static final String BLUE_PRINT5_COMP_APP = "BluePrint5Application.zip";    
-    public static final String BLUE_PRINT5_APP = "BluePrint5Application";
+    public static final String BLUE_PRINT1 = "BluePrint1"; // NOI18N
+    public static final String BLUE_PRINT1_COMP_APP = "BluePrint1Application.zip"; // NOI18N
+    public static final String BLUE_PRINT1_APP = "BluePrint1Application"; // NOI18N
+    public static final String BLUE_PRINT2 = "BluePrint2"; // NOI18N
+    public static final String BLUE_PRINT2_COMP_APP = "BluePrint2Application.zip"; // NOI18N
+    public static final String BLUE_PRINT2_APP = "BluePrint2Application"; // NOI18N
+    public static final String BLUE_PRINT3 = "BluePrint3"; // NOI18N
+    public static final String BLUE_PRINT3_COMP_APP = "BluePrint3Application.zip"; // NOI18N
+    public static final String BLUE_PRINT3_APP = "BluePrint3Application"; // NOI18N
+    public static final String BLUE_PRINT4 = "BluePrint4"; // NOI18N
+    public static final String BLUE_PRINT4_COMP_APP = "BluePrint4Application.zip"; // NOI18N
+    public static final String BLUE_PRINT4_APP = "BluePrint4Application"; // NOI18N
+    public static final String BLUE_PRINT5 = "BluePrint5"; // NOI18N
+    public static final String BLUE_PRINT5_COMP_APP = "BluePrint5Application.zip"; // NOI18N
+    public static final String BLUE_PRINT5_APP = "BluePrint5Application"; // NOI18N
     
     public BluePrintSampleWizardIterator() {}
     
@@ -83,7 +78,7 @@ public abstract class BluePrintSampleWizardIterator extends SampleWizardIterator
         FileObject compAppProjectDir = projectDir.createFolder(name);                
         
         FileObject bluePrintCompositeApp = Repository.getDefault().
-                getDefaultFileSystem().findResource("org-netbeans-modules-bpel-samples-resources-zip/" + getCompositeApplicationArchiveName());// NOI18N
+                getDefaultFileSystem().findResource("org-netbeans-modules-bpel-samples-resources-zip/" + getCompositeApplicationArchiveName()); // NOI18N
         
         Util.unZipFile(bluePrintCompositeApp.getInputStream(), compAppProjectDir);
         Util.setProjectName(compAppProjectDir, Util.COMPAPP_PROJECT_CONFIGURATION_NAMESPACE, name, getCompositeApplicationName());

@@ -40,40 +40,16 @@
  */
 package org.netbeans.modules.css.gsf;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
-import org.netbeans.modules.gsf.api.GsfLanguage;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.modules.css.lexer.api.CSSTokenId;
+import org.netbeans.modules.gsf.spi.DefaultLanguageConfig;
 
-
-
-/*
- * Language/lexing configuration for Ruby
- *
- * @author Tor Norbye
- */
-import org.openide.filesystems.FileObject;
-/*
- * Language/lexing configuration for Ruby
- *
- * @author Tor Norbye
- */
-/*
- * Language/lexing configuration for Ruby
- *
- * @author Tor Norbye
- */
-public class CSSLanguage implements GsfLanguage {
+public class CSSLanguage extends DefaultLanguageConfig {
     
     public CSSLanguage() {
     }
 
-    public String getLineCommentPrefix() {
-        return null;
-    }
-
+    @Override
     public boolean isIdentifierChar(char c) {
          /** Includes things you'd want selected as a unit when double clicking in the editor */
         return Character.isJavaIdentifierPart(c) 
@@ -82,23 +58,18 @@ public class CSSLanguage implements GsfLanguage {
                 || (c == '#');
     }
 
+    @Override
     public Language getLexerLanguage() {
         return CSSTokenId.language();
     }
 
-    public Collection<FileObject> getCoreLibraries() {
-        return Collections.emptyList();
-    }
-
+    @Override
     public String getDisplayName() {
         return "CSS";
     }
     
+    @Override
     public String getPreferredExtension() {
         return "css"; // NOI18N
-    }
-
-    public Map<String, String> getSourceGroupNames() {
-        return Collections.emptyMap();
     }
 }

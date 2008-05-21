@@ -51,6 +51,14 @@ made subject to such option by the copyright holder.
         </testset>
     </testbag>
 
+    <testbag testattribs="perf,stable" executor="ide" name="performance test">
+        <testset dir="unit/src">
+            <patternset>
+                <include name="org/netbeans/test/web/core/syntax/performance/*Test.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+
      <!--<testbag testattribs="stable" executor="ide" name="jsp folding tests">
         <testset dir="unit/src">
             <patternset>

@@ -45,15 +45,14 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import org.netbeans.api.lexer.Language;
-import org.netbeans.modules.gsf.api.GsfLanguage;
 import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
 
 /*
  * Language/lexing configuration for Groovy
  *
- * @author Tor Norbye
  * @author Martin Adamek
  */
+import org.netbeans.modules.gsf.spi.DefaultLanguageConfig;
 import org.openide.filesystems.FileObject;
 /*
  * Language/lexing configuration for Groovy
@@ -61,36 +60,33 @@ import org.openide.filesystems.FileObject;
  * @author Tor Norbye
  * @author Martin Adamek
  */
-public class GroovyLanguage implements GsfLanguage {
+public class GroovyLanguage extends DefaultLanguageConfig {
     
     public GroovyLanguage() {
     }
 
+    @Override
     public String getLineCommentPrefix() {
         return GroovyUtils.getLineCommentPrefix();
     }
 
+    @Override
     public boolean isIdentifierChar(char c) {
         return GroovyUtils.isIdentifierChar(c);
     }
 
+    @Override
     public Language getLexerLanguage() {
         return GroovyTokenId.language();
     }
 
-    public Collection<FileObject> getCoreLibraries() {
-        return Collections.<FileObject>emptyList();
-    }
-    
+    @Override
     public String getDisplayName() {
         return "Groovy";
     }
 
+    @Override
     public String getPreferredExtension() {
         return "groovy"; // NOI18N
-    }
-
-    public Map<String,String> getSourceGroupNames() {
-        return Collections.emptyMap();
     }
 }
