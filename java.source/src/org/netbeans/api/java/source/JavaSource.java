@@ -91,7 +91,6 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /** Class representing Java source file opened in the editor.
@@ -168,22 +167,7 @@ public final class JavaSource {
     private final ClasspathInfo classpathInfo;    
     
     private static final Logger LOGGER = Logger.getLogger(JavaSource.class.getName());
-    /**
-     * Returns a {@link JavaSource} instance representing given {@link org.openide.filesystems.FileObject}s
-     * and classpath represented by given {@link ClasspathInfo}.
-     * @param cpInfo the classpaths to be used.
-     * @param files for which the {@link JavaSource} should be created
-     * @return a new {@link JavaSource}
-     * @throws {@link IllegalArgumentException} if fileObject or cpInfo is null
-     */
-    public static JavaSource create(final ClasspathInfo cpInfo, final Collection<? extends FileObject> files) throws IllegalArgumentException {
-        if (files == null || cpInfo == null) {
-            throw new IllegalArgumentException ();
-        }
-        return create(cpInfo, null, files);
-    }
-    
-    
+                
     /**
      * Returns a {@link JavaSource} instance representing given {@link org.openide.filesystems.FileObject}s
      * and classpath represented by given {@link ClasspathInfo}.
@@ -196,12 +180,23 @@ public final class JavaSource {
         if (files == null || cpInfo == null) {
             throw new IllegalArgumentException ();
         }
-        return create(cpInfo, null, Arrays.asList(files));
+        return create(cpInfo, Arrays.asList(files));
     }
-    
-    private static JavaSource create(final ClasspathInfo cpInfo, final PositionConverter binding, final Collection<? extends FileObject> files) throws IllegalArgumentException {
+
+    /**
+     * Returns a {@link JavaSource} instance representing given {@link org.openide.filesystems.FileObject}s
+     * and classpath represented by given {@link ClasspathInfo}.
+     * @param cpInfo the classpaths to be used.
+     * @param files for which the {@link JavaSource} should be created
+     * @return a new {@link JavaSource}
+     * @throws {@link IllegalArgumentException} if fileObject or cpInfo is null
+     */
+    public static JavaSource create(final ClasspathInfo cpInfo, final Collection<? extends FileObject> files) throws IllegalArgumentException {
+        if (files == null || cpInfo == null) {
+            throw new IllegalArgumentException ();
+        }
         try {
-            return new JavaSource(cpInfo, binding, files);
+            return new JavaSource(cpInfo, files);
         } catch (DataObjectNotFoundException donf) {
             Logger.getLogger("global").warning("Ignoring non existent file: " + FileUtil.getFileDisplayName(donf.getFileObject()));     //NOI18N
         } catch (IOException ex) {            
@@ -280,19 +275,10 @@ public final class JavaSource {
                 }
             } 
             else {
-                PositionConverter binding = null;
-                if (!"text/x-java".equals(FileUtil.getMIMEType(fileObject)) && !"java".equals(fileObject.getExt())) {  //NOI18N
-                    for (JavaSourceProvider provider : Lookup.getDefault().lookupAll(JavaSourceProvider.class)) {
-                        JavaFileFilterImplementation filter = provider.forFileObject(fileObject);
-                        if (filter != null) {
-                            binding = new PositionConverter(fileObject, filter);
-                            break;
-                        }
-                    }
-                    if (binding == null)
-                        return null;
+                if (!"text/x-java".equals(FileUtil.getMIMEType(fileObject)) && !"java".equals(fileObject.getExt())) {  //NOI18N                    
+                    return null;
                 }
-                js = create(null, binding, Collections.singletonList(fileObject));
+                js = create(null, Collections.singletonList(fileObject));
             }
             file2JavaSource.put(fileObject, new WeakReference<JavaSource>(js));
         }
@@ -331,7 +317,7 @@ public final class JavaSource {
      * @param files to create JavaSource for
      * @param cpInfo classpath info
      */
-    private JavaSource (ClasspathInfo cpInfo, PositionConverter binding, Collection<? extends FileObject> files) throws IOException {        
+    private JavaSource (ClasspathInfo cpInfo, Collection<? extends FileObject> files) throws IOException {        
         boolean multipleSources = files.size() > 1;
         final List<Source> sources = new LinkedList<Source>();
         final List<FileObject> fl = new LinkedList<FileObject>();
@@ -694,7 +680,7 @@ public final class JavaSource {
         }
                                                                        
         public JavaSource create(ClasspathInfo cpInfo, PositionConverter binding, Collection<? extends FileObject> files) throws IllegalArgumentException {
-            return JavaSource.create(cpInfo, binding, files);
+            return JavaSource.create(cpInfo, files);
         }
 
         public PositionConverter create(FileObject fo, int offset, int length, JTextComponent component) {

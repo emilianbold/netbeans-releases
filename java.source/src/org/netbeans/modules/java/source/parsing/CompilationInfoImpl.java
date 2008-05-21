@@ -117,6 +117,10 @@ public final class CompilationInfoImpl {
         this.snapshot = null;
         this.cpInfo = cpInfo;
     }
+    
+    public Snapshot getSnapshot () {
+        return this.snapshot;
+    }
         
     /**
      * Returns the current phase of the {@link JavaSource}.

@@ -294,8 +294,10 @@ public class CompilationInfo {
      */
     public PositionConverter getPositionConverter() {
         checkConfinement();
-        //todo: fixme
-        throw new UnsupportedOperationException("Not yet supported");
+        if (this.impl.getFileObject() == null) {
+            throw new IllegalStateException ();
+        }
+        return new PositionConverter(impl.getSnapshot());
     }
             
     /**
