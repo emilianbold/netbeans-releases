@@ -41,16 +41,24 @@
 
 package org.netbeans.modules.php.project.connections;
 
+import java.awt.Color;
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import javax.swing.DefaultListModel;
+import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.ListCellRenderer;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.plaf.UIResource;
+import org.netbeans.modules.php.project.connections.ConfigManager.Configuration;
 import org.netbeans.modules.php.project.connections.RemoteConnections.ConnectionType;
 import org.openide.util.ChangeSupport;
 
@@ -60,13 +68,17 @@ import org.openide.util.ChangeSupport;
 class RemoteConnectionsPanel extends JPanel {
     private static final long serialVersionUID = -286345875298064616L;
 
-    final ChangeSupport changeSupport = new ChangeSupport(this);
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
+    private final DefaultListModel configListModel = new DefaultListModel();
 
     RemoteConnectionsPanel() {
         initComponents();
         errorLabel.setText(" "); // NOI18N
 
         // init
+        configList.setModel(configListModel);
+        configList.setCellRenderer(new ConfigListRenderer());
+
         setEnabledLoginCredentials();
         setEnabledRemoveButton();
         for (ConnectionType connectionType : ConnectionType.values()) {
@@ -78,6 +90,20 @@ class RemoteConnectionsPanel extends JPanel {
 
         // listeners
         registerListeners();
+    }
+
+    @Override
+    public void addNotify() {
+        super.addNotify();
+        // XXX probably not the best solution
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                if (configListModel.getSize() == 0) {
+                    // no config available => show add config dialog
+                    addButton.doClick();
+                }
+            }
+        });
     }
 
     public void addChangeListener(ChangeListener listener) {
@@ -104,22 +130,89 @@ class RemoteConnectionsPanel extends JPanel {
         removeButton.removeActionListener(listener);
     }
 
+    public void addConfigListListener(ListSelectionListener listener) {
+        configList.addListSelectionListener(listener);
+    }
+
+    public void removeConfigListListener(ListSelectionListener listener) {
+        configList.removeListSelectionListener(listener);
+    }
+
+    public void addConnection(ConfigManager.Configuration connection) {
+        addConnection(connection, true);
+    }
+
+    public void addConnection(ConfigManager.Configuration connection, boolean select) {
+        assert configListModel.indexOf(connection) == -1 : "Connection already in the list: " + connection;
+        configListModel.addElement(connection);
+        if (select) {
+            configList.setSelectedValue(connection, true);
+        }
+    }
+
+    public ConfigManager.Configuration getSelectedConnection() {
+        return (Configuration) configList.getSelectedValue();
+    }
+
+    public void removeConnection(ConfigManager.Configuration connection) {
+        assert configListModel.indexOf(connection) != -1 : "Connection not in the list: " + connection;
+        // select another config if possible
+        int toSelect = -1;
+        int idx = configListModel.indexOf(connection);
+        if (idx + 1 < configListModel.getSize()) {
+            // select the next element
+            toSelect = idx;
+        } else if (configListModel.getSize() > 1) {
+            // select the previous element
+            toSelect = idx - 1;
+        }
+        configListModel.removeElement(connection);
+        if (toSelect != -1) {
+            configList.setSelectedIndex(toSelect);
+        }
+    }
+
+    public void setEnabledFields(boolean enabled) {
+        typeComboBox.setEnabled(enabled);
+        hostTextField.setEnabled(enabled);
+        portTextField.setEnabled(enabled);
+        userTextField.setEnabled(enabled);
+        passwordTextField.setEnabled(enabled);
+        rememberPasswordCheckBox.setEnabled(enabled);
+        anonymousCheckBox.setEnabled(enabled);
+        initialDirectoryTextField.setEnabled(enabled);
+        timeoutTextField.setEnabled(enabled);
+    }
+
+    public void resetFields() {
+        connectionTextField.setText(null);
+        hostTextField.setText(null);
+        portTextField.setText(null);
+        userTextField.setText(null);
+        passwordTextField.setText(null);
+        rememberPasswordCheckBox.setSelected(false);
+        anonymousCheckBox.setSelected(false);
+        initialDirectoryTextField.setText(null);
+        timeoutTextField.setText(null);
+        // reset error as well
+        setError(null);
+    }
+
     public void setError(String msg) {
         errorLabel.setText(" "); // NOI18N
-        errorLabel.setForeground(UIManager.getColor("nb.errorForeground"));
+        errorLabel.setForeground(UIManager.getColor("nb.errorForeground")); // NOI18N
         errorLabel.setText(msg);
     }
 
     public void setWarning(String msg) {
         errorLabel.setText(" "); // NOI18N
-        errorLabel.setForeground(UIManager.getColor("nb.warningForeground"));
+        errorLabel.setForeground(UIManager.getColor("nb.warningForeground")); // NOI18N
         errorLabel.setText(msg);
     }
 
     private void registerListeners() {
         DocumentListener documentListener = new DefaultDocumentListener();
         ActionListener actionListener = new DefaultActionListener();
-        connectionTextField.getDocument().addDocumentListener(documentListener);
         typeComboBox.addActionListener(actionListener);
         hostTextField.getDocument().addDocumentListener(documentListener);
         portTextField.getDocument().addDocumentListener(documentListener);
@@ -143,6 +236,10 @@ class RemoteConnectionsPanel extends JPanel {
         });
     }
 
+    void refreshConfigList() {
+        configList.repaint();
+    }
+
     void setEnabledRemoveButton() {
         setEnabledRemoveButton(configList.getSelectedIndex() != -1);
     }
@@ -155,23 +252,15 @@ class RemoteConnectionsPanel extends JPanel {
         setEnabledLoginCredentials(!anonymousCheckBox.isSelected());
     }
 
+    void fireChange() {
+        changeSupport.fireChange();
+        refreshConfigList();
+    }
+
     private void setEnabledLoginCredentials(boolean enabled) {
         userTextField.setEnabled(enabled);
         passwordTextField.setEnabled(enabled);
         rememberPasswordCheckBox.setEnabled(enabled);
-    }
-
-    private void setEnabledFields(boolean enabled) {
-        connectionTextField.setEnabled(enabled);
-        typeComboBox.setEnabled(enabled);
-        hostTextField.setEnabled(enabled);
-        portTextField.setEnabled(enabled);
-        userTextField.setEnabled(enabled);
-        passwordTextField.setEnabled(enabled);
-        rememberPasswordCheckBox.setEnabled(enabled);
-        anonymousCheckBox.setEnabled(enabled);
-        initialDirectoryTextField.setEnabled(enabled);
-        timeoutTextField.setEnabled(enabled);
     }
 
     /** This method is called from within the constructor to
@@ -209,6 +298,7 @@ class RemoteConnectionsPanel extends JPanel {
         separator = new javax.swing.JSeparator();
         errorLabel = new javax.swing.JLabel();
 
+        configList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         configScrollPane.setViewportView(configList);
 
         org.openide.awt.Mnemonics.setLocalizedText(addButton, org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "LBL_Add")); // NOI18N
@@ -217,6 +307,8 @@ class RemoteConnectionsPanel extends JPanel {
 
         connectionLabel.setLabelFor(connectionTextField);
         org.openide.awt.Mnemonics.setLocalizedText(connectionLabel, org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "LBL_ConnectionName")); // NOI18N
+
+        connectionTextField.setEnabled(false);
 
         org.openide.awt.Mnemonics.setLocalizedText(typeLabel, org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "LBL_Type")); // NOI18N
 
@@ -327,7 +419,6 @@ class RemoteConnectionsPanel extends JPanel {
         );
 
         org.openide.awt.Mnemonics.setLocalizedText(errorLabel, "dummy"); // NOI18N
-        errorLabel.setEnabled(false);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -413,11 +504,11 @@ class RemoteConnectionsPanel extends JPanel {
         connectionTextField.setText(connectionName);
     }
 
-    public ConnectionType getTypeComboBox() {
+    public ConnectionType getType() {
         return (ConnectionType) typeComboBox.getSelectedItem();
     }
 
-    public void setTypeComboBox(ConnectionType connectionType) {
+    public void setType(ConnectionType connectionType) {
         typeComboBox.setSelectedItem(connectionType);
     }
 
@@ -467,6 +558,7 @@ class RemoteConnectionsPanel extends JPanel {
 
     public void setAnonymousLogin(boolean anonymousLogin) {
         anonymousCheckBox.setSelected(anonymousLogin);
+        setEnabledLoginCredentials();
     }
 
     public String getInitialDirectory() {
@@ -496,13 +588,44 @@ class RemoteConnectionsPanel extends JPanel {
             processUpdate();
         }
         private void processUpdate() {
-            changeSupport.fireChange();
+            fireChange();
         }
     }
 
     private class DefaultActionListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
-            changeSupport.fireChange();
+            fireChange();
+        }
+    }
+
+    public static class ConfigListRenderer extends JLabel implements ListCellRenderer, UIResource {
+        private static final long serialVersionUID = 3196531352192214602L;
+
+        public ConfigListRenderer() {
+            setOpaque(true);
+        }
+
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            assert value instanceof ConfigManager.Configuration;
+            setName("ComboBox.listRenderer"); // NOI18N
+            Color errorColor = UIManager.getColor("nb.errorForeground"); // NOI18N
+            ConfigManager.Configuration cfg = (ConfigManager.Configuration) value;
+            setText(cfg.getDisplayName());
+            setIcon(null);
+            if (isSelected) {
+                setBackground(list.getSelectionBackground());
+                setForeground(cfg.isValid() ? list.getSelectionForeground() : errorColor);
+            } else {
+                setBackground(list.getBackground());
+                setForeground(cfg.isValid() ? list.getForeground() : errorColor);
+            }
+            return this;
+        }
+
+        @Override
+        public String getName() {
+            String name = super.getName();
+            return name == null ? "ComboBox.renderer" : name; // NOI18N
         }
     }
 }

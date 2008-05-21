@@ -40,6 +40,15 @@
 package org.netbeans.modules.php.project.connections;
 
 import java.awt.Dialog;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.HashMap;
+import java.util.Map;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import org.netbeans.modules.php.project.connections.ConfigManager.Configuration;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -50,6 +59,8 @@ import org.openide.util.NbBundle;
  */
 public final class RemoteConnections {
 
+    public static final int DEFAULT_PORT = 21;
+    public static final int DEFAULT_TIMEOUT = 30;
     public static enum ConnectionType {
         FTP ("LBL_Ftp"); // NOI18N
 
@@ -64,19 +75,62 @@ public final class RemoteConnections {
         }
     }
 
-    private final RemoteConnectionsPanel remoteConnectionsPanel;
+    static final String TYPE = "type"; // NOI18N
+    static final String HOST = "host"; // NOI18N
+    static final String PORT = "port"; // NOI18N
+    static final String USER = "user"; // NOI18N
+    static final String PASSWORD = "password"; // NOI18N
+    static final String REMEMBER_PASSWORD = "rememberPassword"; // NOI18N
+    static final String ANONYMOUS_LOGIN = "anonymousLogin"; // NOI18N
+    static final String INITIAL_DIRECTORY = "initialDirectory"; // NOI18N
+    static final String TIMEOUT = "timeout"; // NOI18N
+
+    static final String[] PROPERTIES = new String[] {
+        TYPE,
+        HOST,
+        PORT,
+        USER,
+        PASSWORD,
+        REMEMBER_PASSWORD,
+        ANONYMOUS_LOGIN,
+        INITIAL_DIRECTORY,
+        TIMEOUT,
+    };
+
+    private final RemoteConnectionsPanel panel;
+    private final ConfigManager configManager;
+    private final ChangeListener defaultChangeListener = new DefaultChangeListener();
+    private DialogDescriptor descriptor;
 
     public static RemoteConnections get() {
         return new RemoteConnections();
     }
 
     private RemoteConnections() {
-        remoteConnectionsPanel = new RemoteConnectionsPanel();
+        panel = new RemoteConnectionsPanel();
+        configManager = new ConfigManager(new DefaultConfigProvider());
+
+        panel.addChangeListener(defaultChangeListener);
+        panel.addAddButtonActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                addConfig();
+            }
+        });
+        panel.addRemoveButtonActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                removeConfig();
+            }
+        });
+        panel.addConfigListListener(new ListSelectionListener() {
+            public void valueChanged(ListSelectionEvent e) {
+                selectCurrentConfig();
+            }
+        });
     }
 
-    public void open() {
+    public void openManager() {
         String title = NbBundle.getMessage(RemoteConnectionsPanel.class, "LBL_ManageRemoteConnections");
-        DialogDescriptor descriptor = new DialogDescriptor(remoteConnectionsPanel, title, true, null);
+        descriptor = new DialogDescriptor(panel, title, true, null);
         Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
         try {
             dialog.setVisible(true);
@@ -88,7 +142,248 @@ public final class RemoteConnections {
         }
     }
 
+    void addConfig() {
+        NotifyDescriptor.InputLine d = new NotifyDescriptor.InputLine(NbBundle.getMessage(RemoteConnections.class, "LBL_ConnectionName"),
+                NbBundle.getMessage(RemoteConnections.class, "LBL_CreateNewConnection"));
+
+        if (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.OK_OPTION) {
+            String name = d.getInputText();
+            String config = name.replaceAll("[^a-zA-Z0-9_.-]", "_"); // NOI18N
+
+            String err = null;
+            if (name.trim().length() == 0) {
+                err = NbBundle.getMessage(RemoteConnections.class, "MSG_EmptyConnectionExists");
+            } else if (configManager.exists(config)) {
+                err = NbBundle.getMessage(RemoteConnections.class, "MSG_ConnectionExists", config);
+            }
+            if (err != null) {
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(err, NotifyDescriptor.WARNING_MESSAGE));
+                return;
+            }
+            Configuration cfg = configManager.createNew(config, name);
+            cfg.putValue(PORT, String.valueOf(DEFAULT_PORT));
+            cfg.putValue(TIMEOUT, String.valueOf(DEFAULT_TIMEOUT));
+            panel.addConnection(cfg);
+            configManager.markAsCurrentConfiguration(config);
+        }
+    }
+
+    void removeConfig() {
+        Configuration cfg = panel.getSelectedConnection();
+        assert cfg != null;
+        configManager.configurationFor(cfg.getName()).delete();
+        panel.removeConnection(cfg); // this will change the current selection in the list => selectCurrentConfig() is called
+    }
+
+    void selectCurrentConfig() {
+        Configuration cfg = panel.getSelectedConnection();
+
+        // unregister default listener (validate() would be called soooo many times)
+        panel.removeChangeListener(defaultChangeListener);
+
+        // change the state of the fields
+        panel.setEnabledFields(cfg != null);
+
+        if (cfg != null) {
+            configManager.markAsCurrentConfiguration(cfg.getName());
+
+            panel.setConnectionName(cfg.getDisplayName());
+            panel.setType(resolveType(cfg.getValue(TYPE)));
+            panel.setHostName(cfg.getValue(HOST));
+            panel.setPort(cfg.getValue(PORT));
+            panel.setUserName(cfg.getValue(USER));
+            panel.setPassword(cfg.getValue(PASSWORD));
+            panel.setRememberPassword(resolveBoolean(cfg.getValue(REMEMBER_PASSWORD)));
+            panel.setAnonymousLogin(resolveBoolean(cfg.getValue(ANONYMOUS_LOGIN)));
+            panel.setInitialDirectory(cfg.getValue(INITIAL_DIRECTORY));
+            panel.setTimeout(cfg.getValue(TIMEOUT));
+        } else {
+            panel.resetFields();
+        }
+        // register default listener
+        panel.addChangeListener(defaultChangeListener);
+
+        if (cfg != null) {
+            // validate fields only if there's valid config
+            validate();
+        }
+    }
+
+    void validate() {
+        if (!validateHost()) {
+            return;
+        }
+
+        if (!validatePort()) {
+            return;
+        }
+
+        if (!validateUser()) {
+            return;
+        }
+
+        if (!validateTimeout()) {
+            return;
+        }
+
+        // remember password is dangerous
+        if (!validateRememberPassword()) {
+            return;
+        }
+
+        // everything ok
+        setError(null);
+
+        // check whether all the configs are errorless
+        checkAllTheConfigs();
+    }
+
+    private boolean validateHost() {
+        if (panel.getHostName().trim().length() == 0) {
+            setError("MSG_NoHostName");
+            return false;
+        }
+        return true;
+    }
+
+    private boolean validatePort() {
+        String err = null;
+        try {
+            int port = Integer.parseInt(panel.getPort());
+            if (port < 1) {
+                err = "MSG_PortNotPositive"; // NOI18N
+            }
+        } catch (NumberFormatException nfe) {
+            err = "MSG_PortNotNumeric"; // NOI18N
+        }
+        setError(err);
+        return err == null;
+    }
+
+    private boolean validateUser() {
+        if (panel.isAnonymousLogin()) {
+            return true;
+        }
+        if (panel.getUserName().trim().length() == 0) {
+            setError("MSG_NoUserName");
+            return false;
+        }
+        return true;
+    }
+
+    private boolean validateTimeout() {
+        String err = null;
+        try {
+            int timeout = Integer.parseInt(panel.getTimeout());
+            if (timeout < 0) {
+                err = "MSG_TimeoutNotPositive"; // NOI18N
+            }
+        } catch (NumberFormatException nfe) {
+            err = "MSG_TimeoutNotNumeric"; // NOI18N
+        }
+        setError(err);
+        return err == null;
+    }
+
+    private boolean validateRememberPassword() {
+        if (panel.isRememberPassword()) {
+            setWarning("MSG_PasswordRememberDangerous"); // NOI18N
+            return false;
+        }
+        return true;
+    }
+
+    private void checkAllTheConfigs() {
+        for (String name : configManager.configurationNames()) {
+            if (name == null) {
+                // no default config
+                continue;
+            }
+            Configuration cfg = configManager.configurationFor(name);
+            if (!cfg.isValid()) {
+                panel.setError(NbBundle.getMessage(RemoteConnections.class, "MSG_InvalidConfiguration", cfg.getDisplayName()));
+                descriptor.setValid(false);
+                return;
+            }
+        }
+    }
+
+    private void setError(String errorKey) {
+        Configuration cfg = panel.getSelectedConnection();
+        String err = errorKey != null ? NbBundle.getMessage(RemoteConnections.class, errorKey) : null;
+        cfg.setErrorMessage(err);
+        panel.setError(err);
+        descriptor.setValid(err == null);
+    }
+
+    private void setWarning(String errorKey) {
+        // first clean error from configuration if any
+        setError(null);
+        panel.setWarning(NbBundle.getMessage(RemoteConnections.class, errorKey));
+    }
+
+    private void updateActiveConfig() {
+        Configuration cfg = panel.getSelectedConnection();
+        if (cfg == null) {
+            // no config selected
+            return;
+        }
+        cfg.putValue(TYPE, panel.getType().name());
+        cfg.putValue(HOST, panel.getHostName());
+        cfg.putValue(PORT, panel.getPort());
+        cfg.putValue(USER, panel.getUserName());
+        cfg.putValue(PASSWORD, panel.getPassword());
+        cfg.putValue(REMEMBER_PASSWORD, String.valueOf(panel.isRememberPassword()));
+        cfg.putValue(ANONYMOUS_LOGIN, String.valueOf(panel.isAnonymousLogin()));
+        cfg.putValue(INITIAL_DIRECTORY, panel.getInitialDirectory());
+        cfg.putValue(TIMEOUT, panel.getTimeout());
+    }
+
     private void saveRemoteConnections() {
-        // XXX
+        // XXX save configs (files)
+    }
+
+    private ConnectionType resolveType(String type) {
+        if (type == null) {
+            return ConnectionType.FTP;
+        }
+        ConnectionType connectionType = null;
+        try {
+            connectionType = ConnectionType.valueOf(type);
+        } catch (IllegalArgumentException iae) {
+            connectionType = ConnectionType.FTP;
+        }
+        return connectionType;
+    }
+
+    private boolean resolveBoolean(String value) {
+        return Boolean.valueOf(value);
+    }
+
+    private class DefaultConfigProvider implements ConfigManager.ConfigProvider {
+        public String[] getConfigProperties() {
+            return PROPERTIES;
+        }
+
+        public Map<String, Map<String, String>> getConfigs() {
+            // XXX
+            Map<String, Map<String, String>> config = new HashMap<String, Map<String, String>>();
+            config.put(null, null);
+            return config;
+        }
+
+        public String getActiveConfig() {
+            return null;
+        }
+
+        public void setActiveConfig(String configName) {
+        }
+    }
+
+    private class DefaultChangeListener implements ChangeListener {
+        public void stateChanged(ChangeEvent e) {
+            updateActiveConfig();
+            validate();
+        }
     }
 }

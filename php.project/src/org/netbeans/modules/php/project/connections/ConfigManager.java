@@ -55,6 +55,8 @@ public class ConfigManager {
     private static final String PROP_DISPLAY_NAME = "$label"; // NOI18N
 
     private final Map<String/*|null*/, Map<String, String/*|null*/>/*|null*/> configs;
+    // error messages for configruations
+    private final Map<String/*|null*/, String/*|null*/> configErrors = new HashMap<String, String>();
     private final ConfigProvider configProvider;
     private final String[] propertyNames;
     private final ChangeSupport changeSupport;
@@ -183,6 +185,32 @@ public class ConfigManager {
             synchronized (ConfigManager.this) {
                 return ConfigManager.this.getPropertyNames();
             }
+        }
+
+        /**
+         * Get the error message for the configuration.
+         * @return the error message for the configuration.
+         * @see #setErrorMessage(java.lang.String)
+         */
+        public String getErrorMessage() {
+            return configErrors.get(name);
+        }
+
+        /**
+         * Set the error message for the configuration. The message should be internalized. The configuration is then invalid.
+         * Valid configuration can be set using <code>null</code>.
+         * @param errorMessage the error message for the configuration or <code>null</code> to set the configuration as valid.
+         */
+        public void setErrorMessage(String errorMessage) {
+            configErrors.put(name, errorMessage);
+        }
+
+        /**
+         * Return <code>true</code> if the configuration is valid (it means that no error message is set).
+         * @return
+         */
+        public boolean isValid() {
+            return configErrors.get(name) == null;
         }
     }
 

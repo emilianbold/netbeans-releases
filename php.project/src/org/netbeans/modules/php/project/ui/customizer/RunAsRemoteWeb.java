@@ -322,7 +322,7 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void manageRemoteConnectionButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_manageRemoteConnectionButtonActionPerformed
-        RemoteConnections.get().open();
+        RemoteConnections.get().openManager();
     }//GEN-LAST:event_manageRemoteConnectionButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
