@@ -39,14 +39,14 @@
 
 package org.netbeans.modules.parsing.impl;
 
+import java.util.Collection;
 import java.util.Collections;
-
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.ParserFactory;
 import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
 
 
 /**
@@ -71,10 +71,15 @@ public class ParserManagerImpl {
         if (parser == null) {
             String mimeType = source.getMimeType ();
             Lookup lookup = getLookup (mimeType);
-            ParserFactory parserFactory = lookup.lookup (ParserFactory.class);
-            assert parserFactory != null : "No Parser Factory registerred for: " + mimeType;   //NOI18N
-            parser = parserFactory.createParser (Collections.singleton (source.createSnapshot()));
-            assert parser != null : "Factory: " + parserFactory.getClass ().getName ()+" returned null parser for: " + source;   //NOI18N
+            final Collection <? extends ParserFactory> parserFactories = lookup.lookupAll(ParserFactory.class);
+            final Collection<Snapshot> _tmp = Collections.singleton (source.createSnapshot());
+            for (final ParserFactory parserFactory : parserFactories) {
+                parser = parserFactory.createParser (_tmp);
+                if (parser != null) {
+                    break;
+                }
+            }           
+            assert parser != null : "No parser found for: " + source;   //NOI18N
         }
         synchronized (source) {
             if (SourceAccessor.getINSTANCE().getParser(source)==null) {
@@ -85,10 +90,11 @@ public class ParserManagerImpl {
     }
     
     private static Lookup getLookup (String mimeType) {
-        return new ProxyLookup (
-            Lookups.forPath ("Editors/text/base"),
-            Lookups.forPath ("Editors" + mimeType)
-        );
+        return MimeLookup.getLookup(mimeType);
+//        return new ProxyLookup (
+//            Lookups.forPath ("Editors" + mimeType),         
+//            Lookups.forPath ("Editors/text/base")            
+//        );
     }
     
 }

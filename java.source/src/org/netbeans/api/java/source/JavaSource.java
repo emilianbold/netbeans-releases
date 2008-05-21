@@ -192,7 +192,7 @@ public final class JavaSource {
      * @throws {@link IllegalArgumentException} if fileObject or cpInfo is null
      */
     public static JavaSource create(final ClasspathInfo cpInfo, final Collection<? extends FileObject> files) throws IllegalArgumentException {
-        if (files == null || cpInfo == null) {
+        if (files == null) {
             throw new IllegalArgumentException ();
         }
         try {
@@ -380,7 +380,7 @@ public final class JavaSource {
                 ParserManager.run(new GenericUserTask() {
                     public void run() throws Exception {
                         if (cachedCi == null) {
-                            assert cachedCi != null;
+                            assert classpathInfo != null;
                             cachedCi = new CompilationInfoImpl(classpathInfo);
                         }
                         final CompilationController cc = new CompilationController(cachedCi);

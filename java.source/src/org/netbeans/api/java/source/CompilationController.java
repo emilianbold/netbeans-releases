@@ -44,6 +44,7 @@ package org.netbeans.api.java.source;
 
 import java.io.IOException;
 import org.netbeans.modules.java.source.parsing.CompilationInfoImpl;
+import org.netbeans.modules.java.source.parsing.JavacParser;
 import org.netbeans.modules.java.source.parsing.JavacParserResult;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.openide.util.Parameters;
@@ -99,6 +100,11 @@ public class CompilationController extends CompilationInfo {
      */
     @Override
     protected void doInvalidate () {
-        this.impl.getParser().resultFinished (false);
+        final JavacParser parser = this.impl.getParser();    //Parser may be null in case when JS was
+                                                                         //created with no sources - java corner case
+                                                                         //not covered by parsing API.
+        if (parser != null) {
+            parser.resultFinished (false);
+        }
     }
 }
