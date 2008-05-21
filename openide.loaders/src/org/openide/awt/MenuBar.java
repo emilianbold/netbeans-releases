@@ -156,9 +156,9 @@ public class MenuBar extends JMenuBar implements Externalizable {
         //items on Mac if the screen menu flag is true.
         if (Utilities.isMac() && 
                 Boolean.getBoolean ("apple.laf.useScreenMenuBar")) { //NOI18N
-            if (!(c instanceof JMenu)) {
-                return;
-            }
+//            if (!(c instanceof JMenu)) {
+//                return;
+//            }
         }
         super.addImpl (c, constraint, idx);
     }
