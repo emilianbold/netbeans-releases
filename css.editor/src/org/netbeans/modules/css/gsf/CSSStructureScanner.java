@@ -111,19 +111,10 @@ public class CSSStructureScanner implements StructureScanner {
                     if (eo != so) {
                         //we need to get the text directly from the document otherwise
                         //the GENERATED_xxx items may appear in the navigator
-                        String nodeName;
-                        try {
-                            int documentSO = AstUtils.documentPosition(node.startOffset(), source);
-                            int documentEO = AstUtils.documentPosition(node.endOffset(), source);
-                            nodeName = info.getDocument().getText(documentSO, documentEO - documentSO);
-                        } catch (IOException ex) {
-                             Logger.global.log(Level.INFO, "Cannot get structure item text.", ex); //NOI18N
-                             nodeName = node.image();
-                        }  catch (BadLocationException ex) {
-                             Logger.global.log(Level.INFO, "Cannot get structure item text.", ex); //NOI18N
-                             nodeName = node.image();
-                        }
-                        
+                        int documentSO = AstUtils.documentPosition(node.startOffset(), source);
+                        int documentEO = AstUtils.documentPosition(node.endOffset(), source);
+                        String nodeName = info.getText().substring(documentSO, documentEO);
+
                         items.add(new CssRuleStructureItem(nodeName, new CssElementHandle(ruleNode, node, info), source));
                     }
                 }

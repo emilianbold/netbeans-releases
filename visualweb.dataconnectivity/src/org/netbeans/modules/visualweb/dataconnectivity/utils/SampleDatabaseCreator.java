@@ -117,13 +117,13 @@ public class SampleDatabaseCreator {
         FileObject systemHomeFO = FileUtil.toFileObject(systemHomeFile);
         // Partial fix for Issue 121195.  If toFileObject can't find the file on disk, it returns null
         if (systemHomeFO == null) {
-            LOGGER.log(Level.WARNING, org.openide.util.NbBundle.getMessage(SampleDatabaseCreator.class, "MSG_DERBY_SYSTEM_FOLDER_NOT_FOUND")); // NOI18N
-            throw new FileNotFoundException(org.openide.util.NbBundle.getMessage(SampleDatabaseCreator.class, "MSG_DERBY_SYSTEM_FOLDER_NOT_FOUND") + systemHomeFile.getCanonicalPath()); // NOI18N
-        }
-        FileObject sampleFO = systemHomeFO.getFileObject(databaseName); // NOI18N
-        if (sampleFO == null) {
-            sampleFO = systemHomeFO.createFolder(databaseName);
-            this.extractZip(sourceFO, sampleFO);
+            LOGGER.log(Level.WARNING, org.openide.util.NbBundle.getMessage(SampleDatabaseCreator.class, "MSG_DERBY_SYSTEM_FOLDER_NOT_FOUND")); // NOI18N                  
+        } else {
+            FileObject sampleFO = systemHomeFO.getFileObject(databaseName); // NOI18N
+            if (sampleFO == null) {
+                sampleFO = systemHomeFO.createFolder(databaseName);
+                extractZip(sourceFO, sampleFO);
+            }
         }
     }
 

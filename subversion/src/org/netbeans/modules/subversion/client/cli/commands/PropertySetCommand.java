@@ -87,6 +87,11 @@ public class PropertySetCommand extends SvnCommand {
     }
     
     @Override
+    protected boolean notifyOutput() {
+        return false;
+    }    
+    
+    @Override
     public void prepareCommand(Arguments arguments) throws IOException {        
         arguments.add("propset");        
         if(recursivelly) {

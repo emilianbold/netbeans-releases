@@ -324,6 +324,7 @@ public class ConnectAction extends DatabaseAction {
                     JComponent progressComponent = ProgressHandleFactory.createProgressComponent(progress);
                     progressComponent.setPreferredSize(new Dimension(350, 20));
                     ConnectProgressDialog panel = new ConnectProgressDialog(progressComponent);
+                    panel.getAccessibleContext().setAccessibleDescription(bundle().getString("ACS_ConnectingDialogTextA11yDesc"));
                     descriptor = new DialogDescriptor(panel, bundle().getString("ConnectingDialogTitle"), true, new Object[] { DialogDescriptor.CANCEL_OPTION }, 
                             DialogDescriptor.CANCEL_OPTION, DialogDescriptor.DEFAULT_ALIGN, null, null);
                     final Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);

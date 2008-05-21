@@ -42,6 +42,14 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.web.client.javascript.debugger.js.api</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>0.6</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.spi.debugger.ui</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -73,6 +81,14 @@
                     <compile-dependency/>
                     <run-dependency>
                         <specification-version>7.6</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.explorer</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>6.14</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -131,13 +147,6 @@
                         <specification-version>6.19</specification-version>
                     </run-dependency>
                 </dependency>
-		<dependency>
-                    <code-name-base>org.netbeans.modules.web.client.javascript.debugger.js.api</code-name-base>
-		    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>0.6</specification-version>
-                    </run-dependency>
-                </dependency>
             </module-dependencies>
             <test-dependencies>
                 <test-type>
@@ -169,6 +178,7 @@
             </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.web.client.javascript.debugger.ant</friend>
+                <friend>org.netbeans.modules.ruby.railsprojects</friend>
                 <package>org.netbeans.modules.web.client.javascript.debugger.api</package>
             </friend-packages>
         </data>

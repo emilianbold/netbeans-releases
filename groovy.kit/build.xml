@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir="." default="netbeans" name="groovy.kit">
+    <description>Builds, tests, and runs the project org.netbeans.modules.groovy.kit</description>
+    <import file="../nbbuild/templates/projectized.xml"/>
+    
+    <target name="groovy-build" description="Builds all the modules constituting the Groovy/Grails support">
+        <ant dir="../groovy.support" inheritAll="false" target="netbeans"/>
+        <ant dir="../groovy.editor" inheritAll="false" target="netbeans"/>
+        <ant dir="../groovy.grails" inheritAll="false" target="netbeans"/>
+        <ant dir="../groovy.grailsproject" inheritAll="false" target="netbeans"/>
+        <ant dir="../groovy.gsp" inheritAll="false" target="netbeans"/>
+    </target>
+
+    <target name="groovy-clean" description="Cleans all the modules constituting the Groovy/Grails support">
+        <ant dir="../groovy.gsp" inheritAll="false" target="clean"/>
+        <ant dir="../groovy.grailsproject" inheritAll="false" target="clean"/>
+        <ant dir="../groovy.grails" inheritAll="false" target="clean"/>
+        <ant dir="../groovy.editor" inheritAll="false" target="clean"/>
+        <ant dir="../groovy.support" inheritAll="false" target="clean"/>
+    </target>
+
+    <target name="groovy-nbm" description="Creates nbm archives for all Groovy/Grails modules">
+        <ant dir="../groovy.support" inheritAll="false" target="nbm"/>
+        <ant dir="../groovy.editor" inheritAll="false" target="nbm"/>
+        <ant dir="../groovy.grails" inheritAll="false" target="nbm"/>
+        <ant dir="../groovy.grailsproject" inheritAll="false" target="nbm"/>
+        <ant dir="../groovy.gsp" inheritAll="false" target="nbm"/>
+        <move todir="." flatten="true">
+            <fileset dir="..">
+                <include name="groovy.*/**/*.nbm"/>
+            </fileset>
+        </move>
+    </target>
+
+</project>

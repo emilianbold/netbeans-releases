@@ -82,6 +82,9 @@ import org.netbeans.modules.xml.xam.dom.DocumentComponent;
 import org.openide.text.NbDocument;
 import org.openide.util.Lookup;
 import javax.swing.text.StyledDocument;
+import org.netbeans.core.api.multiview.MultiViewHandler;
+import org.netbeans.core.api.multiview.MultiViewPerspective;
+import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentModel;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -416,16 +419,66 @@ public class SoaUtil {
       if (model == null) {
         return null;
       }
-      ModelSource src = model.getModelSource();
+      ModelSource source = model.getModelSource();
 
-      if (src == null) {
+      if (source == null) {
        return null;
       }
-      Lookup lookup = src.getLookup();
+      Lookup lookup = source.getLookup();
 
       if (lookup == null) {
         return null;
       }
       return lookup.lookup(FileObject.class);
     }
+
+    public static void openActiveMVEditor(String mvPreferedID) {
+        if (mvPreferedID == null) {
+            return;
+        }
+
+        TopComponent tc = WindowManager.getDefault().getRegistry().getActivated();
+
+        MultiViewHandler mvh = MultiViews.findMultiViewHandler(tc);
+        if (mvh == null) {
+            return;
+        }
+
+        MultiViewPerspective[] mvps = mvh.getPerspectives();
+        if (mvps != null && mvps.length >0) {
+            for (MultiViewPerspective mvp : mvps) {
+                if (mvp.preferredID().equals(mvPreferedID)) {  // NOI18N
+                    mvh.requestVisible(mvp);
+                    mvh.requestActive(mvp);
+                }
+            }
+        }
+    }
+
+    public static int getLineNum(DocumentComponent entity) {
+        int position = entity.findPosition();
+        ModelSource modelSource = entity.getModel().getModelSource();
+        assert modelSource != null;
+        Lookup lookup = modelSource.getLookup();
+
+        StyledDocument document = lookup.lookup(StyledDocument.class);
+        if (document == null) {
+            return -1;
+        }
+        return NbDocument.findLineNumber(document,position);
+    }
+
+    public static int getColumnNum(DocumentComponent entity) {
+        int position = entity.findPosition();
+        ModelSource modelSource = entity.getModel().getModelSource();
+        assert modelSource != null;
+        Lookup lookup = modelSource.getLookup();
+
+        StyledDocument document = lookup.lookup(StyledDocument.class);
+        if (document == null) {
+            return -1;
+        }
+        return NbDocument.findLineColumn(document,position);
+    }
+
 }

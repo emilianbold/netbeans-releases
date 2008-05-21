@@ -69,7 +69,7 @@ public class Tool {
         public static boolean cloneGuessing = true;
         
         // Here lies all of the optimizations which works with CND grammar, but may not in common case
-        public static boolean agressive = true; 
+        public static boolean agressive = false; 
 
 	private BitSet cmdLineArgValid = new BitSet();
 
