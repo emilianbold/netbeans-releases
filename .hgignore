@@ -335,3 +335,6 @@ derby\.log
 ^xtest/server/logs$
 ^xtest/server/build-info$
 ^xtest/test/instance/results$
+\.orig\..*$
+\.chg\..*$
+\.conflict\~$
