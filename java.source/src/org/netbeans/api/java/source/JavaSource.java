@@ -708,6 +708,11 @@ public final class JavaSource {
         public CompilationController createCompilationController (final CompilationInfoImpl impl) {
             return new CompilationController(impl);
         }
+        
+        public void invalidate (final CompilationInfo info) {
+            assert info != null;
+            info.invalidate();
+        }
 
         @Override
         public Collection<Source> getSources(JavaSource js) {

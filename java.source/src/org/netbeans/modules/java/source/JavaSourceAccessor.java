@@ -222,6 +222,13 @@ public abstract class JavaSourceAccessor {
      */
     public abstract CompilationController createCompilationController (CompilationInfoImpl impl);                    
     
+    
+    /**
+     * Invalidates given {@link CompilationInfo}
+     * @param info
+     */
+    public abstract void invalidate (CompilationInfo info);
+    
     private static class CancelableTaskWrapper extends ParserResultTask {
         
         private final int priority;

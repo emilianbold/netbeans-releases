@@ -40,6 +40,7 @@
 package org.netbeans.modules.java.source.parsing;
 
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.parsing.spi.Parser;
 
 /**
@@ -69,7 +70,7 @@ public class JavacParserResult extends Parser.Result {
 
     @Override
     public void invalidate() {
-        info.invalidate();
+        JavaSourceAccessor.getINSTANCE().invalidate (info);
     }
 
 }

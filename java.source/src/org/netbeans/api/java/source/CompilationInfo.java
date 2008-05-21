@@ -351,7 +351,7 @@ public class CompilationInfo {
      * Marks this {@link CompilationInfo} as invalid, may be used to
      * verify confinement.
      */
-    public final void invalidate () {
+    final void invalidate () {
         this.invalid = true;
         doInvalidate();
     }
