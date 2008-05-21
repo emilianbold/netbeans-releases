@@ -140,7 +140,7 @@ public abstract class UMLNodeWidget extends Widget
         decoratorLayer.setLayout(LayoutFactory.createAbsoluteLayout());
         addChild(decoratorLayer);
         
-        setCheckClipping(true);
+        //setCheckClipping(true);
         
         localResourceTable = new ResourceTable(scene.getResourceTable());
         ResourceValue.initResources(getResourcePath(), childLayer);
