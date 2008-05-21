@@ -47,6 +47,7 @@ import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.UnsupportedCharsetException;
@@ -62,6 +63,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.source.BuildArtifactMapper;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
@@ -171,6 +173,9 @@ public final class J2SEProject implements Project, AntProjectListener {
         lookup = createLookup(aux, actionProvider);
         actionProvider.startFSListener();
         helper.addAntProjectListener(this);
+        
+        mapBuildArtifacts("build.classes.dir", sourceRoots.getRootURLs());
+        mapBuildArtifacts("build.test.classes.dir", testRoots.getRootURLs());
     }
 
     /**
@@ -376,7 +381,22 @@ public final class J2SEProject implements Project, AntProjectListener {
         });
     }
 
+    private void mapBuildArtifacts(String targetFolderProperty, URL[] sources) {
+        if (sources.length == 0) {
+            return ;
+        }
+        
+        String buildClassesDir = evaluator().getProperty(targetFolderProperty);
+        File buildClasses = buildClassesDir != null ? getAntProjectHelper().resolveFile(buildClassesDir) : null;
 
+        if (buildClasses != null) {
+            for (URL u : sources) {
+                BuildArtifactMapper.map(u, buildClasses);
+            }
+        } else {
+            //XXX: warn?
+        }
+    }
 
 
     // Private innerclasses ----------------------------------------------------

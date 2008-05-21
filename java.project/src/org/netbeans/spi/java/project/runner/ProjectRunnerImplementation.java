@@ -39,7 +39,9 @@
 
 package org.netbeans.spi.java.project.runner;
 import java.io.IOException;
+import java.util.List;
 import java.util.Properties;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.openide.filesystems.FileObject;
 import org.openide.windows.InputOutput;
@@ -51,5 +53,6 @@ import org.openide.windows.InputOutput;
 public interface ProjectRunnerImplementation {
 
     public void run(JavaPlatform p, Properties props, FileObject toRun) throws IOException;
+    public void test(JavaPlatform p, List<FileObject> toRun) throws IOException;
 
 }

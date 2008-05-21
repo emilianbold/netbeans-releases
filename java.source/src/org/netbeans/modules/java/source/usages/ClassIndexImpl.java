@@ -146,19 +146,6 @@ public abstract class ClassIndexImpl {
         }
     }
     
-    public void classCacheUpdated(final File cacheRoot, final Collection<File> deletedClassFiles, final Collection<File> updatedClassFiles) {
-        WeakReference<ClassIndexImplListener>[] _listeners;
-        synchronized (this.listeners) {
-            _listeners = this.listeners.toArray(new WeakReference[this.listeners.size()]);
-        }
-        for (WeakReference<ClassIndexImplListener> lr : _listeners) {
-            ClassIndexImplListener l = lr.get();
-            if (l != null) {
-                l.classCacheUpdated(cacheRoot, deletedClassFiles, updatedClassFiles);
-            }
-        }
-    }
-    
     private class Ref extends WeakReference<ClassIndexImplListener> implements Runnable {
         public Ref (ClassIndexImplListener listener) {
             super (listener, Utilities.activeReferenceQueue());

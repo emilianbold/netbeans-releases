@@ -39,6 +39,7 @@
 
 package org.netbeans.api.java.project.runner;
 import java.io.IOException;
+import java.util.List;
 import java.util.Properties;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.spi.java.project.runner.ProjectRunnerImplementation;
@@ -60,6 +61,16 @@ public final class ProjectRunner {
         }
         
         pri.run(p, props, toRun);
+    }
+    
+    public static void test(JavaPlatform p, List<FileObject> files) throws IOException {
+        ProjectRunnerImplementation pri = Lookup.getDefault().lookup(ProjectRunnerImplementation.class);
+        
+        if (pri == null) {
+            throw new IOException("No project runner");
+        }
+        
+        pri.test(p, files);
     }
     
 }

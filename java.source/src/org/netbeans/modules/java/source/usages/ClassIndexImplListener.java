@@ -73,6 +73,4 @@ public interface ClassIndexImplListener extends EventListener {
      */
     public void typesChanged (ClassIndexImplEvent event);
 
-    public void classCacheUpdated(File cacheRoot, Collection<File> deletedClassFiles, Collection<File> updatedClassFiles);
-
 }

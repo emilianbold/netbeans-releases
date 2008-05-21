@@ -40,13 +40,9 @@
  */
 package org.netbeans.modules.web.project;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -58,9 +54,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
-import org.netbeans.api.java.source.RootsEvent;
 import org.netbeans.api.java.source.SourceUtils;
-import org.netbeans.api.java.source.TypesEvent;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.dd.api.common.EjbLocalRef;
@@ -95,13 +89,11 @@ import java.util.HashSet;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
-import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
-import org.netbeans.api.java.source.ClassIndex;
-import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.BuildArtifactMapper;
+import org.netbeans.api.java.source.BuildArtifactMapper.ArtifactsUpdated;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.ExtendedClassIndexListener;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.web.api.webmodule.RequestParametersQuery;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
@@ -111,7 +103,6 @@ import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
 import org.netbeans.modules.websvc.api.client.WsCompileClientEditorSupport;
 import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
 import org.netbeans.modules.websvc.api.webservices.WsCompileEditorSupport;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.DialogDescriptor;
@@ -1377,89 +1368,44 @@ class WebActionProvider implements ActionProvider {
         return foundWebServiceAnnotation[0];
     }
 
-    private ClassIndex ci;
-    
     private void startListeningOnCos() {
-        ClassPath cp = ClassPathSupport.createClassPath(project.getSourceRoots().getRoots());
-        ClassPath empty = ClassPathSupport.createClassPath(new FileObject[0]);
-        (ci = ClasspathInfo.create(empty, empty, cp).getClassIndex()).addClassIndexListener(new ExtendedClassIndexListenerImpl());
-    }
-    
-    private final class ExtendedClassIndexListenerImpl implements ExtendedClassIndexListener {
+        String buildClassesDir = project.evaluator().getProperty("build.classes.dir");
+        File buildClasses = buildClassesDir != null ? project.getAntProjectHelper().resolveFile(buildClassesDir) : null;
 
-        public void classCacheUpdated(ClassCacheEvent evt) {
-            FileObject fo = FileUtil.toFileObject(evt.getRoot());
-            
-            if (fo == null) {
-                return ;
-            }
-            
+        if (buildClasses == null) {
+            //XXX: warn?
+            return ;
+        }
+        
+        URL buildClassesURL = FileUtil.urlForArchiveOrDir(buildClasses);
+        
+        if (buildClassesURL == null) {
+            //XXX: warn?
+            return ;
+        }
+
+        for (FileObject file : SourceForBinaryQuery.findSourceRoots(buildClassesURL).getRoots()) {
             try {
-                FileObject[] sources = SourceForBinaryQuery.findSourceRoots(fo.getURL()).getRoots();
-                
-                if (sources.length == 1) {
-                    FileObject source = sources[0];
-                    
-                    if (Arrays.asList(project.getSourceRoots().getRoots()).contains(source)) {
-                        String buildClassesDir = project.evaluator().getProperty("build.classes.dir");
-                        File buildClasses = buildClassesDir != null ? project.getAntProjectHelper().resolveFile(buildClassesDir) : null;
-                        
-                        if (buildClasses != null) {
-                            for (File deleted : evt.getDeletedClassFiles()) {
-                                PropertyUtils.resolveFile(buildClasses, PropertyUtils.relativizeFile(evt.getRoot(), deleted)).delete();
-                            }
-                            for (File updated : evt.getUpdatedClassFiles()) {
-                                File target = PropertyUtils.resolveFile(buildClasses, PropertyUtils.relativizeFile(evt.getRoot(), updated));
-                                InputStream ins = null;
-                                OutputStream out = null;
-                                
-                                try {
-                                    ins = new FileInputStream(updated);
-                                    out = new FileOutputStream(target);
-                                    
-                                    FileUtil.copy(ins, out);
-                                } catch (IOException ex) {
-                                    Exceptions.printStackTrace(ex);
-                                } finally {
-                                    if (ins != null) {
-                                        try {
-                                            ins.close();
-                                        } catch (IOException ex) {
-                                            Exceptions.printStackTrace(ex);
-                                        }
-                                    }
-                                    
-                                    if (out != null) {
-                                        try {
-                                            out.close();
-                                        } catch (IOException ex) {
-                                            Exceptions.printStackTrace(ex);
-                                        }
-                                    }
-                                }
-                                
-                            }
-
-                            File webXML = new File(buildClasses.getParentFile(), "web.xml");
-                            
-                            webXML.setLastModified(System.currentTimeMillis());
-                        }
-                    }
-                }
+                BuildArtifactMapper.map(file.getURL(), buildClasses, new ArtifactsUpdatedListenerImpl(buildClasses));
             } catch (FileStateInvalidException ex) {
                 Exceptions.printStackTrace(ex);
             }
         }
+    }
+    
+    private final class ArtifactsUpdatedListenerImpl implements ArtifactsUpdated {
 
-        public void typesAdded(TypesEvent event) {}
+        private final File buildClasses;
 
-        public void typesRemoved(TypesEvent event) {}
+        public ArtifactsUpdatedListenerImpl(File buildClasses) {
+            this.buildClasses = buildClasses;
+        }
+        
+        public void artifactsUpdated(Iterable<File> artifacts) {
+            File webXML = new File(buildClasses.getParentFile(), "web.xml");
 
-        public void typesChanged(TypesEvent event) {}
-
-        public void rootsAdded(RootsEvent event) {}
-
-        public void rootsRemoved(RootsEvent event) {}
+            webXML.setLastModified(System.currentTimeMillis());
+        }
         
     }
 }
