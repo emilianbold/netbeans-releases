@@ -41,17 +41,28 @@
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
 <filesystem>
+    <folder name="Actions">
+        <folder name="BpelNodes">
+            <file name="org-netbeans-modules-bpel-validation-action-FixImportAction.instance"/>
+        </folder>
+    </folder>
+
     <folder name="Editors">
         <folder name="text">
             <folder name="x-bpel+xml">
-                <folder name="Toolbars">
-                    <folder name="Default">
-                        <file name="org-netbeans-modules-soa-validation-action-QuickFixAction.instance">
-                            <attr name="position" intvalue="19291"/>
-                        </file>
-                    </folder>
+                <folder name="Popup">
+                    <file name="org-netbeans-modules-bpel-validation-action-FixImportAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/BpelNodes/org-netbeans-modules-bpel-validation-action-FixImportAction.instance"/>
+                        <attr name="position" intvalue="1250"/>
+                    </file>
                 </folder>
             </folder>
         </folder>
+    </folder>
+
+    <folder name="Shortcuts">
+        <file name="DS-I.shadow"> <!-- Ctrl+Shift+I -->
+            <attr name="originalFile" stringvalue="Actions/BpelNodes/org-netbeans-modules-bpel-validation-action-FixImportAction.instance"/>
+        </file>
     </folder>
 </filesystem>

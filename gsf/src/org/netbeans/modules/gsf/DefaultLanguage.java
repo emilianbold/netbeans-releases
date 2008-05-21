@@ -45,8 +45,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Action;
-import org.netbeans.modules.gsf.api.Completable;
-import org.netbeans.modules.gsf.api.BracketCompletion;
+import org.netbeans.modules.gsf.api.CodeCompletionHandler;
+import org.netbeans.modules.gsf.api.KeystrokeHandler;
 import org.netbeans.modules.gsf.api.DeclarationFinder;
 import org.netbeans.modules.gsf.api.Formatter;
 import org.netbeans.modules.gsf.api.InstantRenamer;
@@ -77,11 +77,11 @@ public class DefaultLanguage implements Language {
     private List<Action> actions;
     private GsfLanguage language;
     private Parser parser;
-    private Completable completionProvider;
+    private CodeCompletionHandler completionProvider;
     private InstantRenamer renamer;
     private DeclarationFinder declarationFinder;
     private Formatter formatter;
-    private BracketCompletion bracketCompletion;
+    private KeystrokeHandler bracketCompletion;
     private Indexer indexer;
     private StructureScanner structure;
     private HintsProvider hintsProvider;;
@@ -110,8 +110,8 @@ public class DefaultLanguage implements Language {
 
     /** For testing purposes only!*/
     public DefaultLanguage(String iconBase, String mime, List<Action> actions,
-            GsfLanguage gsfLanguage, Parser parser, Completable completionProvider, InstantRenamer renamer,
-            DeclarationFinder declarationFinder, Formatter formatter, BracketCompletion bracketCompletion, Indexer indexer,
+            GsfLanguage gsfLanguage, Parser parser, CodeCompletionHandler completionProvider, InstantRenamer renamer,
+            DeclarationFinder declarationFinder, Formatter formatter, KeystrokeHandler bracketCompletion, Indexer indexer,
             StructureScanner structure, /*PaletteController*/Object palette, boolean useCustomEditorKit) {
         this.iconBase = iconBase;
         this.mime = mime;
@@ -236,10 +236,10 @@ public class DefaultLanguage implements Language {
         return mime + ":" + getDisplayName();
     }
 
-    public Completable getCompletionProvider() {
+    public CodeCompletionHandler getCompletionProvider() {
         if (completionProvider == null && completionProviderFile != null) {
             // Lazily construct completion provider
-            completionProvider = (Completable)createInstance(completionProviderFile);
+            completionProvider = (CodeCompletionHandler)createInstance(completionProviderFile);
             if (completionProvider == null) {
                 // Don't keep trying
                 completionProviderFile = null;
@@ -248,7 +248,7 @@ public class DefaultLanguage implements Language {
         return completionProvider;
     }
 
-    public void setCompletionProvider(Completable completionProvider) {
+    public void setCompletionProvider(CodeCompletionHandler completionProvider) {
         this.completionProvider = completionProvider;
     }
     
@@ -301,9 +301,9 @@ public class DefaultLanguage implements Language {
         this.formatterFile = formatterFile;
     }
     
-    public BracketCompletion getBracketCompletion() {
+    public KeystrokeHandler getBracketCompletion() {
         if (bracketCompletion == null && bracketCompletionFile != null) {
-            bracketCompletion = (BracketCompletion)createInstance(bracketCompletionFile);
+            bracketCompletion = (KeystrokeHandler)createInstance(bracketCompletionFile);
             if (bracketCompletion == null) {
                 // Don't keep trying
                 bracketCompletionFile = null;
@@ -392,6 +392,10 @@ public class DefaultLanguage implements Language {
         return this.formatterFile != null;
     }
 
+    public boolean hasHints() {
+        return this.hintsProviderFile != null;
+    }
+    
     public OccurrencesFinder getOccurrencesFinder() {
         if (occurrences == null && occurrencesFile != null) {
             occurrences = (OccurrencesFinder)createInstance(occurrencesFile);

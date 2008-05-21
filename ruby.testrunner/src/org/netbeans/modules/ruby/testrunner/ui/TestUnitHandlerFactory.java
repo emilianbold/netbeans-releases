@@ -67,19 +67,24 @@ public class TestUnitHandlerFactory extends OutputRecognizer {
     static class TestFailedHandler extends TestRecognizerHandler {
 
         public TestFailedHandler() {
-            super("%TEST_FAILED%\\stime=(\\d+\\.\\d+)\\sFailure:[.[^\\w]]*(\\w+)\\((\\w+)\\)(.*)");
+            super("%TEST_FAILED%\\stime=(\\d+\\.\\d+)\\stestname=([\\w]+)\\(([\\w]+)\\)\\smessage=(.*)\\slocation=(.*)");
         }
 
         @Override
         void updateUI( Manager manager, TestSession session) {
             Report.Testcase testcase = new Report.Testcase();
             testcase.timeMillis = toMillis(matcher.group(1));
-            testcase.className = matcher.group(3);
             testcase.name = matcher.group(2);
+            testcase.className = matcher.group(3);
             testcase.trouble = new Report.Trouble(false);
-            testcase.trouble.stackTrace = new String[]{matcher.group(4)};
+            String message = matcher.group(4);
+            String location = matcher.group(5);
+            testcase.trouble.stackTrace = new String[]{message, location};
             session.addTestCase(testcase);
-            manager.displayOutput(session, matcher.group(4), false);
+            manager.displayOutput(session, testcase.name + "(" + testcase.className + "):", false);
+            manager.displayOutput(session, message, false);
+            manager.displayOutput(session, location, false);
+            manager.displayOutput(session, "", false);
         }
 
         @Override
@@ -91,7 +96,7 @@ public class TestUnitHandlerFactory extends OutputRecognizer {
     static class TestErrorHandler extends TestRecognizerHandler {
 
         public TestErrorHandler() {
-            super("%TEST_ERROR%\\stime=(\\d+\\.\\d+)\\sError:[.[^\\w]]*(\\w+)\\((\\w+)\\)(.*)");
+            super("%TEST_ERROR%\\stime=(\\d+\\.\\d+)\\stestname=([\\w]+)\\(([\\w]+)\\)\\smessage=(.*)\\slocation=(.*)");
         }
 
         @Override
@@ -101,9 +106,22 @@ public class TestUnitHandlerFactory extends OutputRecognizer {
             testcase.className = matcher.group(3);
             testcase.name = matcher.group(2);
             testcase.trouble = new Report.Trouble(true);
-            testcase.trouble.stackTrace = new String[]{matcher.group(4)};
+            String message = matcher.group(4);
+            
+            List<String> stackTrace = new ArrayList<String>();
+            stackTrace.add(message);
+            for (String location : matcher.group(5).split("%BR%")) { //NOI18N
+                if (!location.contains("nb_test_mediator.rb")) {
+                    stackTrace.add(location);
+                }
+            }
+            testcase.trouble.stackTrace = stackTrace.toArray(new String[stackTrace.size()]);
             session.addTestCase(testcase);
-            manager.displayOutput(session, matcher.group(4), true);
+            manager.displayOutput(session, testcase.name + "(" + testcase.className + "):", false);
+            for (String line : stackTrace) {
+                manager.displayOutput(session, line, true);
+            }
+            manager.displayOutput(session, "", false);
         }
 
         @Override

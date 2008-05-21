@@ -31,7 +31,7 @@
                 </file>
                 
                 <file name="completion.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.Completable"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.CodeCmpletionHandler"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.php.editor.PHPCodeCompletion"/>
                 </file>
 
@@ -66,7 +66,7 @@
                 </file>
                 
                 <file name="bracket.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.BracketCompletion"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.KeystrokeHandler"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.php.editor.indent.PHPBracketCompleter"/>
                 </file>
                 

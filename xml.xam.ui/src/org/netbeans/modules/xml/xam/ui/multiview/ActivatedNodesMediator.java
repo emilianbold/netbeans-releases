@@ -124,20 +124,20 @@ public class ActivatedNodesMediator
     }
     
     private void updateExplorerManager(Node[] selected) {
-        if (explorerManagerProvider != null) {
-            if (selected.length > 0) {
-                explorerManagerProvider.getExplorerManager().setRootContext(
-                        getRoot(selected[0]));
-            }
-            try {
-                explorerManagerProvider.getExplorerManager().setSelectedNodes(
-                        selected);
-            } catch (PropertyVetoException pve) {
-                // nothing we can do here
-            } catch (IllegalArgumentException iae) {
-                // Thread timing can result in our selecting nodes that
-                // are not under the root node, so catch and ignore.
-            }
+        if ( (explorerManagerProvider == null) || (selected == null) ||
+             (explorerManagerProvider.getExplorerManager() == null) )
+            return;
+        ExplorerManager em = explorerManagerProvider.getExplorerManager();
+        if (selected.length > 0) {
+            em.setRootContext(getRoot(selected[0]));
+        }
+        try {            
+            em.setSelectedNodes(selected);
+        } catch (PropertyVetoException pve) {
+            // nothing we can do here
+        } catch (IllegalArgumentException iae) {
+            // Thread timing can result in our selecting nodes that
+            // are not under the root node, so catch and ignore.
         }
     }
 

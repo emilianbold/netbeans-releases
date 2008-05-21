@@ -40,12 +40,10 @@
  */
 package org.netbeans.modules.ruby;
 
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import org.netbeans.modules.gsf.api.GsfLanguage;
 import org.netbeans.api.lexer.Language;
+import org.netbeans.modules.gsf.spi.DefaultLanguageConfig;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
 
 
@@ -54,40 +52,36 @@ import org.netbeans.modules.ruby.lexer.RubyTokenId;
  *
  * @author Tor Norbye
  */
-import org.openide.filesystems.FileObject;
-/*
- * Language/lexing configuration for Ruby
- *
- * @author Tor Norbye
- */
-public class RubyLanguage implements GsfLanguage {
+public class RubyLanguage extends DefaultLanguageConfig {
     public RubyLanguage() {
     }
 
+    @Override
     public String getLineCommentPrefix() {
         return RubyUtils.getLineCommentPrefix();
     }
 
+    @Override
     public boolean isIdentifierChar(char c) {
         return RubyUtils.isIdentifierChar(c);
     }
 
+    @Override
     public Language getLexerLanguage() {
         return RubyTokenId.language();
     }
 
-    public Collection<FileObject> getCoreLibraries() {
-        return Collections.emptyList();
-    }
-
+    @Override
     public String getDisplayName() {
         return "Ruby";
     }
 
+    @Override
     public String getPreferredExtension() {
         return "rb"; // NOI18N
     }
 
+    @Override
     public Map<String,String> getSourceGroupNames() {
         Map<String,String> sourceGroups = new HashMap<String,String>();
         sourceGroups.put("RubyProject", "ruby"); // NOI18N
