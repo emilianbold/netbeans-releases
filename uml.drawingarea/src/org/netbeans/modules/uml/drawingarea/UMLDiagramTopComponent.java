@@ -324,7 +324,7 @@ public class UMLDiagramTopComponent extends TopComponent
 
     protected boolean isEdgesGrouped()
     {
-        return false;
+        return true;
     }
     
     private void initRootNode()

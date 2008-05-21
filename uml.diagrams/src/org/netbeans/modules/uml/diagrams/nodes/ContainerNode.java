@@ -40,6 +40,7 @@ package org.netbeans.modules.uml.diagrams.nodes;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.ArrayList;
@@ -196,9 +197,13 @@ public abstract class ContainerNode extends UMLNodeWidget implements org.netbean
     
     protected class ContainerResizeProvider extends WindowStyleResizeProvider
     {
-//        private ArrayList < ChildInformation > childInfo = new ArrayList < ChildInformation >();
         private ArrayList < Widget > children = new ArrayList < Widget >();
         private int prevIndex = -1;
+        
+        private double leftBounds = Double.MAX_VALUE;
+        private double topBounds = Double.MAX_VALUE;
+        private double rightBounds = Double.MIN_VALUE;
+        private double bottomBounds = Double.MIN_VALUE;
         
         public ContainerResizeProvider()
         {
@@ -236,7 +241,17 @@ public abstract class ContainerNode extends UMLNodeWidget implements org.netbean
                 // for more information.
                 Widget parent = getParentWidget();
                 parent.removeChild(ContainerNode.this);
-                parent.addChild(prevIndex, ContainerNode.this);
+                
+                // If the new number of children is now less than before the 
+                // resize then add the container node to the end.
+                if(parent.getChildren().size() < prevIndex)
+                {
+                    parent.addChild(ContainerNode.this);
+                }
+                else
+                {
+                    parent.addChild(prevIndex, ContainerNode.this);
+                }
                 prevIndex = -1;
 
                 children.clear();
@@ -245,7 +260,10 @@ public abstract class ContainerNode extends UMLNodeWidget implements org.netbean
 
         @Override
         public Rectangle boundsSuggested(Widget widget, Rectangle originalBounds, Rectangle suggestedBounds, ControlPoint controlPoint) {
+            
             suggestedBounds = super.boundsSuggested(widget, originalBounds, suggestedBounds, controlPoint);
+            suggestedBounds = restrictBounds( widget, suggestedBounds);
+            
             if(widget instanceof UMLNodeWidget)
             {
                 UMLNodeWidget nw=(UMLNodeWidget) widget;
@@ -285,17 +303,88 @@ public abstract class ContainerNode extends UMLNodeWidget implements org.netbean
 
                 children.addAll(container.getChildren());
 
+                Widget containerParent = container.getParentWidget();
+                Insets insets = null;
+                if(containerParent.getBorder() != null)
+                {
+                    insets = containerParent.getBorder().getInsets();
+                }
+                
+                Point containerLoc = containerParent.convertLocalToScene(container.getLocation());
+                Point nodeLoc = getParentWidget().convertLocalToScene(getLocation());
+                
+                int dx = containerLoc.x - nodeLoc.x;
+                if(insets != null)
+                {
+                    dx += insets.left;
+                }
+                
+                int dy = containerLoc.y - nodeLoc.y;
+                if(insets != null)
+                {
+                    dy += insets.top;
+                }
+                
+                leftBounds = Double.MAX_VALUE;
+                topBounds = Double.MAX_VALUE;
+                rightBounds = Double.MIN_VALUE;
+                bottomBounds = Double.MIN_VALUE;
+        
                 for(Widget child : children)
                 {
-                    Point location = container.convertLocalToScene(child.getLocation());
-                    child.setPreferredLocation(location);
+                    Point location = child.getLocation();
+                    Point childSceneLocation = child.getParentWidget().convertLocalToScene(location);
+                    
+                    double width = child.getClientArea().width;
+                    double height = child.getClientArea().height;
+                    
+                    leftBounds = Math.min(leftBounds, childSceneLocation.getX() - dx);
+                    topBounds = Math.min(topBounds, childSceneLocation.getY() - dy);
+                    rightBounds = Math.max(rightBounds, childSceneLocation.getX() + dx + width);
+                    bottomBounds = Math.max(bottomBounds, childSceneLocation.getY() + height + 
+                                            (insets != null ? insets.top + insets.bottom : 0));
 
+                    child.setPreferredLocation(childSceneLocation);
                     container.removeChild(child);
                     parent.addChild(child);
                 }
-            }
+            } 
         }
-        
+    
+        private Rectangle restrictBounds(Widget widget, Rectangle suggestedBounds)
+        {
+            Rectangle testBounds = widget.convertLocalToScene(suggestedBounds);
+            int x = testBounds.x;
+            int y = testBounds.y;
+            int width = testBounds.width;
+            int height = testBounds.height;
+
+            if (testBounds.x > leftBounds)
+            {
+                x = (int) leftBounds;
+                width = (int) (testBounds.x + testBounds.width) - x;
+            }
+
+            System.out.println(testBounds.y + " > " + topBounds + "== " + (testBounds.y > topBounds));
+            if (testBounds.y > topBounds)
+            {
+                y = (int) topBounds;
+                height = (int) (testBounds.y + testBounds.height) - y;
+            }
+
+            if ((testBounds.x + testBounds.width) < rightBounds)
+            {
+                width = (int) rightBounds - x;
+            }
+
+            if ((testBounds.y + testBounds.height) < bottomBounds)
+            {
+                height = (int) bottomBounds - y;
+            }
+
+            Point newLocation = convertSceneToLocal(new Point((int) x, (int) y));
+            return new Rectangle(newLocation.x, newLocation.y, width, height);
+        }
     }
 
     @Override
