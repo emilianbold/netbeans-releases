@@ -134,8 +134,8 @@ final class TestMethodNode extends AbstractNode {
         String callstackFrameInfo =
                 ((trouble != null)
                         && (trouble.stackTrace != null)
-                        && (trouble.stackTrace.length != 0))
-                ? trouble.stackTrace[0]
+                        && (trouble.stackTrace.length >= 1))
+                ? trouble.stackTrace[1]
                 : null;
         
         return new JumpAction(this, callstackFrameInfo);
