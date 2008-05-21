@@ -64,6 +64,7 @@ public final class CPIntegerInfo extends CPEntry {
 	return ConstantPool.CONSTANT_Integer;
     }
 
+    @Override
     public String toString() {
         return getClass().getName() + ": value=" + value; //NOI18N
     }

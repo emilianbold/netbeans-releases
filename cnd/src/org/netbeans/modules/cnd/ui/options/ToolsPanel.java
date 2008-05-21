@@ -65,6 +65,7 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
@@ -149,10 +150,16 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         currentCompilerSet = null;
         
         errorTextArea.setText("");
-        errorTextArea.setBackground(jPanel1.getBackground());
+        //errorTextArea.setBackground(jPanel1.getBackground());
         
         lstDirlist.setCellRenderer(new MyCellRenderer());
         
+        if( "Windows".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
+            setOpaque( false );
+        }
+        else {
+            errorTextArea.setBackground(getBackground());
+        }
     }
     
     class MyCellRenderer extends DefaultListCellRenderer {
@@ -1814,9 +1821,11 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         add(btVersions, gridBagConstraints);
         btVersions.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ToolsPanel.class, "ToolsPanel.btVersions.AccessibleContext.accessibleDescription")); // NOI18N
 
+        buttomPanel.setOpaque(false);
         buttomPanel.setLayout(new java.awt.GridBagLayout());
 
         errorScrollPane.setBorder(null);
+        errorScrollPane.setOpaque(false);
 
         errorTextArea.setEditable(false);
         errorTextArea.setForeground(new java.awt.Color(255, 0, 0));
@@ -1863,6 +1872,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
         add(buttomPanel, gridBagConstraints);
 
+        ToolSetPanel.setOpaque(false);
         ToolSetPanel.setLayout(new java.awt.GridBagLayout());
 
         spDirlist.setMinimumSize(new java.awt.Dimension(180, 20));
@@ -1884,6 +1894,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         gridBagConstraints.weighty = 1.0;
         ToolSetPanel.add(spDirlist, gridBagConstraints);
 
+        buttonPanel.setOpaque(false);
         buttonPanel.setLayout(new java.awt.GridBagLayout());
 
         btAdd.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("MNEM_AddButton").charAt(0));

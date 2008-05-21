@@ -68,6 +68,10 @@ final class Report {
     int totalTests;
     int failures;
     int errors;
+    /**
+     * The number of tests that are pending (RSpec).
+     */
+    int pending;
     int elapsedTimeMillis;
     /**
      * number of recognized (by the parser) passed test reports
@@ -113,9 +117,21 @@ final class Report {
         this.totalTests = report.totalTests;
         this.failures = report.failures;
         this.errors = report.errors;
+        this.pending = report.pending;
         this.elapsedTimeMillis = report.elapsedTimeMillis;
         this.detectedPassedTests = report.detectedPassedTests;
         this.tests = report.tests;
+    }
+    
+    Status getStatus() {
+        if (errors > 0) {
+            return Status.ERROR;
+        } else if (failures > 0) {
+            return Status.FAILED;
+        } else if (pending > 0) {
+            return Status.PENDING;
+        }
+        return Status.PASSED;
     }
     
     /**
@@ -156,6 +172,21 @@ final class Report {
         String name;
         int timeMillis;
         Trouble trouble;
+        private Status status;
+        
+        void setStatus(Status status) {
+            this.status = status;
+        }
+
+        Status getStatus() {
+            if (status != null) {
+                return status;
+            }
+            if (trouble == null) {
+                return Status.PASSED;
+            }
+            return trouble.isError() ? Status.ERROR : Status.FAILED;
+        }
     }
     
     /**

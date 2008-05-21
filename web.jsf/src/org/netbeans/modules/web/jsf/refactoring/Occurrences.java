@@ -238,7 +238,8 @@ public class Occurrences {
                 BaseDocument document = JSFEditorUtilities.getBaseDocument(dataObject);
                 int [] offsets = JSFEditorUtilities.getManagedBeanDefinition(document, bean.getManagedBeanName());
                 String text = document.getText(offsets);
-                int offset = offsets[0] + text.indexOf(oldValue);
+                int offset = text.indexOf(getXMLElementName());
+                offset = offsets[0] + text.indexOf(oldValue, offset);
                 position =  createPosition(offset, offset + oldValue.length());
             } catch (BadLocationException exception) {
                 LOGGER.log(Level.SEVERE, exception.getMessage(), exception);
@@ -327,10 +328,10 @@ public class Occurrences {
             try{
                 DataObject dataObject = DataObject.find(config);
                 BaseDocument document = JSFEditorUtilities.getBaseDocument(dataObject);
-                int [] offsets = JSFEditorUtilities.getConverterDefinition(document, "converter-class", converter.getConverterClass()); //NOI18N
-                 
+                int [] offsets = JSFEditorUtilities.getConverterDefinition(document, "converter-id", converter.getConverterId()); //NOI18N
                 String text = document.getText(offsets);
-                int offset = offsets[0] + text.indexOf(oldValue);
+                int offset = text.indexOf(getXMLElementName());
+                offset = offsets[0] + text.indexOf(oldValue, offset);
                 position =  createPosition(offset, offset + oldValue.length());
             } catch (BadLocationException exception) {
                 LOGGER.log(Level.SEVERE, exception.getMessage(), exception);
@@ -423,7 +424,8 @@ public class Occurrences {
                 BaseDocument document = JSFEditorUtilities.getBaseDocument(dataObject);
                 int [] offsets = JSFEditorUtilities.getConverterDefinition(document, "converter-for-class", converter.getConverterForClass());
                 String text = document.getText(offsets);
-                int offset = offsets[0] + text.indexOf(oldValue);
+                int offset = text.indexOf(getXMLElementName());
+                offset = offsets[0] + text.indexOf(oldValue, offset);
                 position =  createPosition(offset, offset + oldValue.length());
             } catch (BadLocationException exception) {
                 LOGGER.log(Level.SEVERE, exception.getMessage(), exception);

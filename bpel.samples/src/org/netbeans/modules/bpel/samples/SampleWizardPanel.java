@@ -78,7 +78,7 @@ public class SampleWizardPanel implements WizardDescriptor.Panel, WizardDescript
         }
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("unchecked") // NOI18N
     protected final void fireChangeEvent() {
         Iterator it;
         synchronized (listeners) {

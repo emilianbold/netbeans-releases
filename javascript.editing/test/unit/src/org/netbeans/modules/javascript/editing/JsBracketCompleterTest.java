@@ -44,7 +44,7 @@ package org.netbeans.modules.javascript.editing;
 import javax.swing.JTextArea;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
-import org.netbeans.modules.gsf.api.BracketCompletion;
+import org.netbeans.modules.gsf.api.KeystrokeHandler;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 
@@ -66,7 +66,7 @@ public class JsBracketCompleterTest extends JsTestBase {
     }
     
     @Override
-    protected BracketCompletion getBracketCompletion() {
+    protected KeystrokeHandler getBracketCompletion() {
         return new JsBracketCompleter();
     }
 

@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.bpel.validation.statics;
 
+import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -56,6 +57,9 @@ import java.util.Set;
 import java.util.Map.Entry;
 import javax.xml.namespace.QName;
 
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Lookup;
 import org.netbeans.modules.bpel.model.api.BaseScope;
 import org.netbeans.modules.bpel.model.api.BpelContainer;
 import org.netbeans.modules.bpel.model.api.BpelModel;
@@ -167,8 +171,8 @@ import org.netbeans.modules.bpel.model.api.PortTypeReference;
 import org.netbeans.modules.bpel.validation.core.BpelValidator;
 import org.netbeans.modules.bpel.model.api.support.SimpleBpelModelVisitor;
 import org.netbeans.modules.bpel.model.api.support.SimpleBpelModelVisitorAdaptor;
-import org.openide.filesystems.FileObject;
-import org.openide.util.Lookup;
+import org.netbeans.modules.soa.validation.util.LineUtil;
+import org.netbeans.modules.soa.ui.SoaUtil;
 import static org.netbeans.modules.xml.ui.UI.*;
 
 /**
@@ -190,15 +194,23 @@ public final class Validator extends BpelValidator {
     List<Model> wsdls = new LinkedList<Model>();
     List<Model> schemas = new LinkedList<Model>();
 
+//out();
     for (Import imp : imports) {
+//out("see: " + imp.getLocation());
       WSDLModel wsdl = ImportHelper.getWsdlModel(imp, false);
 
-      if (wsdl != null) {
+      if (wsdl != null && !wsdls.contains(wsdl)) {
         wsdls.add(wsdl);
       }
       SchemaModel schema = ImportHelper.getSchemaModel(imp, false);
 
-      if (schema != null) {
+      if (schema == null) {
+        continue;
+      }
+      if (schemas.contains(schema)) {
+        addWarning("FIX_Duplicate_Imports", imp); // NOI18N
+      }
+      else {
         schemas.add(schema);
       }
     }
@@ -231,12 +243,15 @@ public final class Validator extends BpelValidator {
   }
 
   private void checkDuplicate(Process process, Model model1, Model model2) {
+//out("check: ");
     String targetNamespace1 = getTargetNamespace(model1);
+//out("  tns1: " + targetNamespace1);
 
     if (targetNamespace1 == null) {
       return;
     }
     String targetNamespace2 = getTargetNamespace(model2);
+//out("  tns2: " + targetNamespace1);
 
     if (targetNamespace2 == null) {
       return;
@@ -256,7 +271,10 @@ public final class Validator extends BpelValidator {
   }
 
   private void checkDuplicate(Process process, Definitions definitions1, Definitions definitions2) {
-    // todo a
+    checkDuplicate(process, definitions1.getMessages(), definitions2.getMessages());
+    checkDuplicate(process, definitions1.getPortTypes(), definitions2.getPortTypes());
+    checkDuplicate(process, definitions1.getBindings(), definitions2.getBindings());
+    checkDuplicate(process, definitions1.getServices(), definitions2.getServices());
   }
 
   private void checkDuplicate(Process process, Schema schema1, Schema schema2) {
@@ -275,64 +293,79 @@ public final class Validator extends BpelValidator {
     List<Named> list2 = list(collection2);
 
     for (int i=0; i < list1.size(); i++) {
-      Named named = list1.get(i);
+      checkDuplicate(process, list1.get(i), list2);
+    }
+  }
 
-      if (contains(named, list2)) {
-        String file1 = getFileName(named);
+  private void checkDuplicate(Process process, Named named1, List<Named> list) {
+    String name1 = named1.getName();
 
-        if (file1 == null) {
-          continue;
+    if (name1 == null || name1.length() == 0) {
+      return;
+    }
+    String file1 = getFileName(named1);
+    
+    for (int i=0; i < list.size(); i++) {
+      Named named2 = list.get(i);
+
+      if ( !(name1.equals(named2.getName()))) {
+        continue;
+      }
+      String file2 = getFileName(named2);
+
+      if (getPresentation(named1).equals(getPresentation(named2))) {
+        if (file1 == null || file2 == null) {
+          addWarning("FIX_SA00014_Identical", process, named1.getName()); // NOI18N
         }
-        String file2 = getFileName(list2.get(0));
-
-        if (file2 == null) {
-          continue;
+        else {
+          addWarning("FIX_SA00014_Identical_File", process, named1.getName(), file1, file2); // NOI18N
         }
-        // todo a: warning for identical, error for different
-        addError("FIX_SA00014", process, named.getName(), file1, file2); // NOI18N
+      }
+      else {
+        if (file1 == null || file2 == null) {
+          addError("FIX_SA00014_Different", process, named1.getName()); // NOI18N
+        }
+        else {
+          addError("FIX_SA00014_Different_File", process, named1.getName(), file1, file2); // NOI18N
+        }
       }
     }
+  }
+
+  private String getPresentation(Component component) {
+    StringBuffer buffer = new StringBuffer(getName(component));
+    buffer.append("("); // NOI18N
+    
+    List children = component.getChildren();
+
+    for (Object child : children) {
+      if ( !(child instanceof Component)) {
+        continue;
+      }
+      buffer.append(getPresentation((Component) child));
+    }
+    buffer.append(")"); // NOI18N
+
+    return buffer.toString();
+  }
+
+  private String getName(Component component) {
+    if ( !(component instanceof Named)) {
+      return "[]"; // NOI18N
+    }
+    return ((Named) component).getName();
   }
 
   private String getFileName(Component component) {
     if (component == null) {
       return null;
     }
-    Model model = component.getModel();
-
-    if (model == null) {
-      return null;
-    }
-    ModelSource source = model.getModelSource();
-
-    if (source == null) {
-      return null;
-    }
-    Lookup lookup = source.getLookup();
-
-    if (lookup == null) {
-      return null;
-    }
-    FileObject file = lookup.lookup(FileObject.class);
+    FileObject file = SoaUtil.getFileObjectByModel(component.getModel());
 
     if (file == null) {
       return null;
     }
-    return file.getPath();
-  }
-
-  private boolean contains(Named named, List<Named> list) {
-    String name = named.getName();
-
-    if (name == null || name.length() == 0) {
-      return false;
-    }
-    for (int i=0; i < list.size(); i++) {
-      if (name.equals(list.get(i).getName())) {
-        return true;
-      }
-    }
-    return false;
+    return LineUtil.getLocation(FileUtil.toFile(file), component);
   }
 
   private List<Named> list(Collection<? extends Named> collection) {

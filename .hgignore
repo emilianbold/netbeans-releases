@@ -2,6 +2,8 @@
 /build$
 /dist$
 /nbproject/private$
+/nbproject/sqe.properties$
+/nbproject/findbugs.settings$
 /test/(coverage|lib|results|work)$
 derby\.log
 \.class$

@@ -363,7 +363,7 @@ public class PHPIndex {
         search(PHPIndexer.FIELD_BASE, name.toLowerCase(), NameKind.PREFIX, result, ALL_SCOPE, TERMS_BASE);
 
         for (SearchResult map : result) {
-            if (map.getPersistentUrl() != null && (context == null || isReachable(context, map.getPersistentUrl()))) {
+            if (map.getPersistentUrl() != null) {
                 String[] signatures = map.getValues(PHPIndexer.FIELD_BASE);
 
                 if (signatures == null) {
@@ -387,8 +387,9 @@ public class PHPIndex {
 
                     IndexedFunction func = new IndexedFunction(funcName, null,
                             this, map.getPersistentUrl(), arguments, offset, 0, ElementKind.METHOD);
-
-                        functions.add(func);
+                    
+                    func.setResolved(context != null && isReachable(context, map.getPersistentUrl()));
+                    functions.add(func);
                     
                 }
             }
@@ -403,9 +404,9 @@ public class PHPIndex {
         search(PHPIndexer.FIELD_CONST, name.toLowerCase(), NameKind.PREFIX, result, ALL_SCOPE, TERMS_CONST);
 
         for (SearchResult map : result) {
-            if (map.getPersistentUrl() != null && (context == null || isReachable(context, map.getPersistentUrl()))) {
+            if (map.getPersistentUrl() != null) {
                 String[] signatures = map.getValues(PHPIndexer.FIELD_CONST);
-                
+
                 if (signatures == null) {
                     continue;
                 }
@@ -414,21 +415,21 @@ public class PHPIndex {
                     Signature sig = Signature.get(signature);
                     //sig.string(0) is the case insensitive search key
                     String constName = sig.string(1);
-                    
-                    if(kind == NameKind.PREFIX) {
+
+                    if (kind == NameKind.PREFIX) {
                         //case sensitive
-                        if(!constName.startsWith(name)) {
+                        if (!constName.startsWith(name)) {
                             continue;
                         }
                     }
-                    
+
                     int offset = sig.integer(2);
-                    
+
                     IndexedConstant constant = new IndexedConstant(constName, null,
                             this, map.getPersistentUrl(), offset, 0, null);
 
-                        constants.add(constant);
-                    
+                    constant.setResolved(context != null && isReachable(context, map.getPersistentUrl()));
+                    constants.add(constant);
                 }
             }
         }
@@ -442,7 +443,7 @@ public class PHPIndex {
         search(PHPIndexer.FIELD_CLASS, name.toLowerCase(), NameKind.PREFIX, result, ALL_SCOPE, TERMS_BASE);
        
         for (SearchResult map : result) {
-            if (map.getPersistentUrl() != null && (context == null || isReachable(context, map.getPersistentUrl()))) {
+            if (map.getPersistentUrl() != null) {
                 String[] signatures = map.getValues(PHPIndexer.FIELD_CLASS);
 
                 if (signatures == null) {
@@ -471,9 +472,9 @@ public class PHPIndex {
 
                     IndexedClass clazz = new IndexedClass(className, null,
                             this, map.getPersistentUrl(), superClass, offset, 0);
-
-                    classes.add(clazz);
                     
+                    clazz.setResolved(context != null && isReachable(context, map.getPersistentUrl()));
+                    classes.add(clazz);
                 }
             }
         }
