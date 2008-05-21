@@ -328,7 +328,7 @@ public class Occurrences {
             try{
                 DataObject dataObject = DataObject.find(config);
                 BaseDocument document = JSFEditorUtilities.getBaseDocument(dataObject);
-                int [] offsets = JSFEditorUtilities.getConverterDefinition(document, "converter-class", converter.getConverterClass()); //NOI18N
+                int [] offsets = JSFEditorUtilities.getConverterDefinition(document, "converter-id", converter.getConverterId()); //NOI18N
                 String text = document.getText(offsets);
                 int offset = text.indexOf(getXMLElementName());
                 offset = offsets[0] + text.indexOf(oldValue, offset);
