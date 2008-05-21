@@ -117,6 +117,8 @@ public abstract class LookupSensitiveAction extends BasicAction implements Looku
 
     /** Needs to override isEnabled in order to force refresh
      */
+    
+    //NEZAVOLA SE S apple.laf...
     public @Override boolean isEnabled() {
         init ();
         if ( needsRefresh ) {
