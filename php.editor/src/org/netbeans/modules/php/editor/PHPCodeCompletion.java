@@ -293,7 +293,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 break;
         }
         
-        return new PHPCompletionResult(proposals);
+        return new PHPCompletionResult(completionContext, proposals);
     }
     
     private void autoCompleteClassNames(List<CompletionProposal> proposals, PHPCompletionItem.CompletionRequest request) {

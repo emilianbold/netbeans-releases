@@ -39,23 +39,71 @@
 
 package org.netbeans.modules.php.editor;
 
+import java.io.IOException;
 import java.util.List;
+import javax.swing.text.BadLocationException;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Utilities;
+import org.netbeans.modules.gsf.api.CodeCompletionContext;
 import org.netbeans.modules.gsf.api.CompletionProposal;
 import org.netbeans.modules.gsf.spi.DefaultCompletionResult;
+import org.netbeans.modules.php.editor.index.IndexedElement;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 /**
  *
  * @author Tomasz.Slota@Sun.COM
  */
 public class PHPCompletionResult extends DefaultCompletionResult{
+    private CodeCompletionContext completionContext;
 
-    public PHPCompletionResult(List<CompletionProposal> list) {
+    public PHPCompletionResult(CodeCompletionContext completionContext, List<CompletionProposal> list) {
         super(list, false);
+        this.completionContext = completionContext;
     }
 
     @Override
     public void afterInsert(CompletionProposal item) {
+        if (item instanceof PHPCompletionItem) {
+            PHPCompletionItem phpItem = (PHPCompletionItem) item;
+            
+            if (phpItem.getElement() instanceof IndexedElement) {
+                IndexedElement elem = (IndexedElement) phpItem.getElement();
+                
+                if (!elem.isResolved()){
+                    try {
+                        BaseDocument doc = (BaseDocument) completionContext.getInfo().getDocument();
+                        
+                        doc.atomicLock();
+                        
+                        try {
+                            FileObject currentFolder = completionContext.getInfo().getFileObject().getParent();
+                            String includePath = FileUtil.getRelativePath(currentFolder, elem.getFileObject());
+                            
+                            StringBuilder builder = new StringBuilder();
+                            builder.append("\nrequire \""); //NOI18N
+                            builder.append(includePath);
+                            builder.append("\";\n"); //NOI18N
+                            
+                            // TODO use the index of previous AST instead
+                            int prevLineNumber = Utilities.getLineOffset(doc, completionContext.getCaretOffset());
+                            int prevLineEnd = Utilities.getRowStartFromLineOffset(doc, prevLineNumber);
+                                                       
+                            doc.insertString(prevLineEnd, builder.toString(), null);
+                            Utilities.reformatLine(doc, Utilities.getRowStart(doc, prevLineEnd + 1));
+                        } catch (BadLocationException e){
+                            Exceptions.printStackTrace(e);
+                        } finally {
+                            doc.atomicUnlock();
+                        }
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            }
+        }
         
-        super.afterInsert(item);
     }
 }
