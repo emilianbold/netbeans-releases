@@ -928,6 +928,25 @@ public class PHPCodeCompletion implements Completable {
             super(constant, request);
             this.constant = constant;
         }
+        
+        @Override public String getLhsHtml() {
+            HtmlFormatter formatter = request.formatter;
+            IndexedConstant constant = ((IndexedConstant)getElement());
+            formatter.reset();
+            formatter.name(getKind(), true);
+            
+            if (constant.isResolved()){
+                formatter.emphasis(true);
+                formatter.appendText(getName());
+                formatter.emphasis(false);
+            } else {
+                formatter.appendText(getName());
+            }
+            
+            formatter.name(getKind(), false);
+            
+            return formatter.getText();
+        }
 
         @Override
         public ElementKind getKind() {
@@ -1010,11 +1029,6 @@ public class PHPCodeCompletion implements Completable {
         }
         
         @Override
-        public String getInsertPrefix() {
-            return getName();
-        }
-
-        @Override
         public String getCustomInsertTemplate() {
             StringBuilder template = new StringBuilder();
             template.append(getName());
@@ -1045,29 +1059,23 @@ public class PHPCodeCompletion implements Completable {
             HtmlFormatter formatter = request.formatter;
             formatter.reset();
             
-//            boolean emphasize = true; //!function.isInherited();
-//            if (emphasize) {
-//                formatter.emphasis(true);
-//            }
             formatter.name(kind, true);
-            formatter.appendText(getName());
-            formatter.name(kind, false);
             
-//            if (strike) {
-//                formatter.deprecated(false);
-//            }
-//            
+            if (getFunction().isResolved()){
+                formatter.emphasis(true);
+                formatter.appendText(getName());
+                formatter.emphasis(false);
+            } else {
+                formatter.appendText(getName());
+            }
+            
+            formatter.name(kind, false);
+       
             formatter.appendHtml("("); // NOI18N
             formatter.parameters(true);
             formatter.appendText(getParamsStr());
             formatter.parameters(false);
             formatter.appendHtml(")"); // NOI18N
-
-//            if (getFunction().getType() != null && 
-//                    getFunction().getKind() != ElementKind.CONSTRUCTOR) {
-//                formatter.appendHtml(" : ");
-//                formatter.appendText(getFunction().getType());
-//            }
             
             return formatter.getText();
         }
@@ -1125,6 +1133,13 @@ public class PHPCodeCompletion implements Completable {
         }
 
         public String getSortText() {
+            if (getElement() instanceof IndexedElement) {
+                IndexedElement indexedElement = (IndexedElement) getElement();
+                
+                if (indexedElement.isResolved()){
+                    return "-" + getName(); //NOI18N
+                }
+            }
             return getName();
         }
 
