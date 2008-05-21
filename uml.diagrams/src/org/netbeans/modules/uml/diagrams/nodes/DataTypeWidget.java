@@ -39,7 +39,10 @@
 package org.netbeans.modules.uml.diagrams.nodes;
 
 import java.awt.Color;
+import java.awt.GradientPaint;
+import java.awt.Graphics2D;
 import java.awt.Paint;
+import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import org.netbeans.api.visual.border.Border;
@@ -50,6 +53,7 @@ import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.core.constructs.IDataType;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
+import org.netbeans.modules.uml.drawingarea.view.ResourceValue;
 import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
 
 /**
@@ -63,7 +67,7 @@ public class DataTypeWidget extends UMLNodeWidget implements PropertyChangeListe
    
     public DataTypeWidget(Scene scene)
     {
-        super(scene);
+        super(scene, true);
     }
     
     public DataTypeWidget(Scene scene, IPresentationElement pe)
@@ -78,6 +82,8 @@ public class DataTypeWidget extends UMLNodeWidget implements PropertyChangeListe
     {
         IDataType type = (IDataType) presentation.getFirstSubject();
         setCurrentView(createDataTypeView(type));
+        setOpaque(true);
+        ResourceValue.initResources(getResourcePath(), this);
     }
 
     public Widget createDataTypeView(IDataType type)
@@ -91,34 +97,62 @@ public class DataTypeWidget extends UMLNodeWidget implements PropertyChangeListe
         LabelWidget keywordWidget = new LabelWidget(getScene());
         keywordWidget.setBackground((Paint)null); 
         keywordWidget.setForeground((Color)null);
-        keywordWidget.setLabel("<<datatype>>");
+        keywordWidget.setLabel("<<datatype>>"); //NOI18N
         keywordWidget.setAlignment(LabelWidget.Alignment.CENTER);
         retVal.addChild(keywordWidget);
         
         nameWidget = new UMLNameWidget(getScene(), getWidgetID());
         nameWidget.initialize(type);
-//        if (getFont() != null)
-//            nameWidget.setNameFont(getFont().deriveFont(Font.BOLD, getFont().getSize() + 4));
         retVal.addChild(nameWidget);
         
         Border lineBorder = BorderFactory.createLineBorder(1, Color.BLACK);
         Border emptyBorder = BorderFactory.createEmptyBorder(5);
         retVal.setBorder(BorderFactory.createCompositeBorder(lineBorder, emptyBorder));
-//        retVal.setBackground(Color.WHITE);
-//        retVal.setOpaque(true);
 
         return retVal;
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent event)
     {
         nameWidget.propertyChange(event);
     }
  
+    
+    
+    @Override
+    protected void paintBackground()
+    {
+        if(nameWidget != null)
+        {
+            Paint bg = getBackground();
+
+            // TODO: Need to test if gradient paint preference is set.
+            if((bg instanceof Color) && (useGradient == true))
+            {
+                Rectangle bounds = getClientArea();
+                float midX = bounds.width / 2;
+
+                Color bgColor = (Color)bg;
+                GradientPaint paint = new GradientPaint(midX, 0, Color.WHITE,
+                                                        midX, getBounds().height, 
+                                                        bgColor);
+                Graphics2D g = getGraphics();
+                g.setPaint(paint);
+                g.fillRect(0, 0, bounds.width, bounds.height);
+            }
+            else
+            {
+                super.paintBackground();
+            }
+        }
+    }
+    
     public String getWidgetID() {
         return UMLWidgetIDString.DATATYPEWIDGET.toString();
     }
     
+    @Override
      protected String getResourcePath()
     {
         return pe==null? super.getResourcePath() : pe.getFirstSubjectsType() + "." + super.getResourcePath();

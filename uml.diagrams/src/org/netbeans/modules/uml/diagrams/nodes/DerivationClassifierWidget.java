@@ -39,6 +39,10 @@
 package org.netbeans.modules.uml.diagrams.nodes;
 
 import java.awt.Color;
+import java.awt.GradientPaint;
+import java.awt.Graphics2D;
+import java.awt.Paint;
+import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import org.netbeans.api.visual.border.Border;
@@ -48,6 +52,7 @@ import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.IDerivationClassifier;
 import org.netbeans.modules.uml.drawingarea.palette.context.DefaultContextPaletteModel;
+import org.netbeans.modules.uml.drawingarea.view.ResourceValue;
 import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
 
 /**
@@ -60,7 +65,7 @@ public class DerivationClassifierWidget extends UMLNodeWidget implements Propert
     
     public DerivationClassifierWidget(Scene scene)
     {
-        super(scene);
+        super(scene, true);
         
         addToLookup(initializeContextPalette());
     }
@@ -70,12 +75,14 @@ public class DerivationClassifierWidget extends UMLNodeWidget implements Propert
         this(scene);
         initializeNode(presentation);
     }
-
+    
     @Override
     public void initializeNode(IPresentationElement presentation)
     {
         IDerivationClassifier type = (IDerivationClassifier) presentation.getFirstSubject();
         setCurrentView(createDataTypeView(type));
+        setOpaque(true);
+        ResourceValue.initResources(getResourcePath(), this);
     }
 
     private DefaultContextPaletteModel initializeContextPalette()
@@ -87,22 +94,48 @@ public class DerivationClassifierWidget extends UMLNodeWidget implements Propert
     
     public Widget createDataTypeView(IDerivationClassifier type)
     {
-        nameWidget = new UMLNameWidget(getScene(), UMLWidgetIDString.UMLCLASSWIDGET.toString());
+        nameWidget = new UMLNameWidget(getScene(), UMLWidgetIDString.DERIVATIONCLASSIFIERWIDGET.toString());
         nameWidget.initialize(type);
-//        nameWidget.setNameFont(getFont().deriveFont(Font.BOLD, getFont().getSize() + 4));
         
         Border lineBorder = BorderFactory.createLineBorder(1, Color.BLACK);
         Border emptyBorder = BorderFactory.createEmptyBorder(5);
         nameWidget.setBorder(BorderFactory.createCompositeBorder(lineBorder, emptyBorder));
-//        nameWidget.setBackground(Color.WHITE);
-//        nameWidget.setOpaque(true);
 
         return nameWidget;
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent event)
     {
         nameWidget.propertyChange(event);
+    }
+    
+    @Override
+    protected void paintBackground()
+    {
+        if(nameWidget != null)
+        {
+            Paint bg = getBackground();
+
+            // TODO: Need to test if gradient paint preference is set.
+            if((bg instanceof Color) && (useGradient == true))
+            {
+                Rectangle bounds = getClientArea();
+                float midX = bounds.width / 2;
+
+                Color bgColor = (Color)bg;
+                GradientPaint paint = new GradientPaint(midX, 0, Color.WHITE,
+                                                        midX, getBounds().height, 
+                                                        bgColor);
+                Graphics2D g = getGraphics();
+                g.setPaint(paint);
+                g.fillRect(0, 0, bounds.width, bounds.height);
+            }
+            else
+            {
+                super.paintBackground();
+            }
+        }
     }
     
     public String getWidgetID() {
