@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.util.*;
 import org.netbeans.junit.*;
 import java.beans.PropertyChangeListener;
+import junit.framework.Test;
 
 /** Check what can be done when registering loaders in layer.
  * @author Jaroslav Tulach
@@ -57,8 +58,17 @@ public class DataLoaderInLayerTest extends NbTestCase {
         super(name);
     }
     
+    public static Test suite() {
+        return new NbTestSuite(DataLoaderInLayerTest.class);
+        //return new DataLoaderInLayerTest("testSimpleLoader");
+    }
+    
+    protected FileSystem createFS(String... resources) throws IOException {
+        return TestUtilHid.createLocalFileSystem(getWorkDir(), resources);
+    }
+    
     @Override
-    protected void setUp() throws IOException {
+    protected void setUp() throws Exception {
         clearWorkDir();
         FileUtil.setMIMEType("simple", "text/plain");
         FileUtil.setMIMEType("ant", "text/ant+xml");
@@ -85,9 +95,7 @@ public class DataLoaderInLayerTest extends NbTestCase {
         DataLoader l = DataLoader.getLoader(SimpleUniFileLoader.class);
         addRemoveLoader(l, true);
         try {
-            FileSystem lfs = TestUtilHid.createLocalFileSystem(getWorkDir (), new String[] {
-                "folder/file.simple",
-            });
+            FileSystem lfs = createFS("folder/file.simple");
             FileObject fo = lfs.findResource("folder");
             DataFolder df = DataFolder.findFolder(fo);
             DataObject[] arr = df.getChildren();
@@ -97,16 +105,13 @@ public class DataLoaderInLayerTest extends NbTestCase {
         } finally {
             addRemoveLoader(l, false);
         }
-        TestUtilHid.destroyLocalFileSystem(getName());
     }
 
     public void testSimpleLoader() throws Exception {
         DataLoader l = DataLoader.getLoader(SimpleUniFileLoader.class);
         addRemoveLoader(l, true);
         try {
-            FileSystem lfs = TestUtilHid.createLocalFileSystem(getWorkDir (), new String[] {
-                "folder/file.simple",
-            });
+            FileSystem lfs = createFS("folder/file.simple");
             FileObject fo = lfs.findResource("folder/file.simple");
             assertNotNull(fo);
             DataObject dob = DataObject.find(fo);
@@ -114,18 +119,13 @@ public class DataLoaderInLayerTest extends NbTestCase {
         } finally {
             addRemoveLoader(l, false);
         }
-        TestUtilHid.destroyLocalFileSystem(getName());
     }
 
-    /** Test for bugfix #23065
-     */
     public void testDataObjectFind() throws Exception {
         DataLoader l = DataLoader.getLoader(SimpleUniFileLoader.class);
         addRemoveLoader(l, true);
         try {
-            FileSystem lfs = TestUtilHid.createLocalFileSystem(getWorkDir (), new String[] {
-                "folder/file.simple",
-            });
+            FileSystem lfs = createFS("folder/file.simple");
             FileObject fo = lfs.findResource("folder/file.simple");
             assertNotNull(fo);
             
@@ -141,7 +141,6 @@ public class DataLoaderInLayerTest extends NbTestCase {
         } finally {
             addRemoveLoader(l, false);
         }
-        TestUtilHid.destroyLocalFileSystem(getName());
     }
 
     public void testAntAsAntSimpleLoader() throws Exception {
@@ -152,7 +151,7 @@ public class DataLoaderInLayerTest extends NbTestCase {
         addRemoveLoader("text/ant+xml", l2, true);
         addRemoveLoader("text/xml", l3, true);
         try {
-            FileSystem lfs = TestUtilHid.createLocalFileSystem(getWorkDir (), new String[] {
+            FileSystem lfs = createFS(new String[] {
                 "folder/file.ant",
             });
             FileObject fo = lfs.findResource("folder/file.ant");
@@ -164,7 +163,6 @@ public class DataLoaderInLayerTest extends NbTestCase {
         addRemoveLoader("text/ant+xml", l2, false);
         addRemoveLoader("text/xml", l3, false);
         }
-        TestUtilHid.destroyLocalFileSystem(getName());
     }
     public void testAntWithoutAntSimpleLoader() throws Exception {
         DataLoader l1 = DataLoader.getLoader(SimpleUniFileLoader.class);
@@ -174,9 +172,7 @@ public class DataLoaderInLayerTest extends NbTestCase {
         //addRemoveLoader("text/ant+xml", l2, true);
         addRemoveLoader("text/xml", l3, true);
         try {
-            FileSystem lfs = TestUtilHid.createLocalFileSystem(getWorkDir (), new String[] {
-                "folder/file.ant",
-            });
+            FileSystem lfs = createFS("folder/file.ant");
             FileObject fo = lfs.findResource("folder/file.ant");
             assertNotNull(fo);
             DataObject dob = DataObject.find(fo);
@@ -186,7 +182,6 @@ public class DataLoaderInLayerTest extends NbTestCase {
         //addRemoveLoader("text/ant+xml", l2, false);
         addRemoveLoader("text/xml", l3, false);
         }
-        TestUtilHid.destroyLocalFileSystem(getName());
     }
 
     public void testAntAsUnknownSimpleLoader() throws Exception {
@@ -197,9 +192,7 @@ public class DataLoaderInLayerTest extends NbTestCase {
         //addRemoveLoader("text/ant+xml", l2, true);
         addRemoveLoader("content/unknown", l3, true);
         try {
-            FileSystem lfs = TestUtilHid.createLocalFileSystem(getWorkDir (), new String[] {
-                "folder/file.ant",
-            });
+            FileSystem lfs = createFS("folder/file.ant");
             FileObject fo = lfs.findResource("folder/file.ant");
             assertNotNull(fo);
             DataObject dob = DataObject.find(fo);
@@ -209,7 +202,6 @@ public class DataLoaderInLayerTest extends NbTestCase {
         //addRemoveLoader("text/ant+xml", l2, false);
         addRemoveLoader("content/unknown", l3, false);
         }
-        TestUtilHid.destroyLocalFileSystem(getName());
     }
     
     public static final class XMLUniFileLoader extends SimpleUniFileLoader {
