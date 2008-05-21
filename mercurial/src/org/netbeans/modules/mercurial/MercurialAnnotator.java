@@ -397,11 +397,8 @@ public class MercurialAnnotator extends VCSAnnotator {
             }else{
                 actions.add(new StatusAction(loc.getString("CTL_PopupMenuItem_Status"), ctx)); // NOI18N
                 actions.add(new DiffAction(loc.getString("CTL_PopupMenuItem_Diff"), ctx)); // NOI18N
-                actions.add(new UpdateAction(loc.getString("CTL_PopupMenuItem_Update"), ctx)); // NOI18N
                 actions.add(new CommitAction(loc.getString("CTL_PopupMenuItem_Commit"), ctx)); // NOI18N
                 actions.add(null);
-                actions.add(new MergeAction(NbBundle.getMessage(MercurialAnnotator.class, 
-                        "CTL_PopupMenuItem_Merge"), ctx)); // NOI18N
                 actions.add(new ResolveConflictsAction(NbBundle.getMessage(MercurialAnnotator.class,
                         "CTL_PopupMenuItem_Resolve"), ctx)); // NOI18N
                 if (!onlyProjects  && !onlyFolders) {
@@ -418,8 +415,6 @@ public class MercurialAnnotator extends VCSAnnotator {
                     actions.add(tempA);
                 }
                 actions.add(new LogAction(loc.getString("CTL_PopupMenuItem_Log"), ctx)); // NOI18N
-                actions.add(new IncomingAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_ShowIncoming"), ctx)); // NOI18N
-                actions.add(new OutAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_ShowOut"), ctx)); // NOI18N
                 actions.add(null);
                 actions.add(new RevertModificationsAction(NbBundle.getMessage(MercurialAnnotator.class,
                         "CTL_PopupMenuItem_Revert"), ctx)); // NOI18N

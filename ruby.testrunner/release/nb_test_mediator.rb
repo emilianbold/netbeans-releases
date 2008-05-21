@@ -90,7 +90,11 @@ class NbTestMediator
     require "#{file_name}"
     last_slash = file_name.rindex("/")
     test_class = file_name[last_slash + 1..file_name.length]
-    instance = Object.const_get(camelize(test_class))
+    begin
+      instance = Object.const_get(camelize(test_class))
+    rescue NameError
+      return
+    end
     if (instance.respond_to?(:suite))
       @suites << instance.suite
     else
@@ -160,9 +164,10 @@ class NbTestMediator
   
   def test_fault(result)
     if (result.instance_of?(Test::Unit::Failure))
-      puts "%TEST_FAILED% time=#{elapsed_time} #{result.to_s.gsub($/, "")}"
+      puts "%TEST_FAILED% time=#{elapsed_time} testname=#{result.test_name} message=#{result.message.to_s.gsub($/, " ")} location=#{result.location}"
     else
-      puts "%TEST_ERROR% time=#{elapsed_time} #{result.to_s.gsub($/, "")}"
+      stacktrace = result.exception.backtrace.join("%BR%")
+      puts "%TEST_ERROR% time=#{elapsed_time} testname=#{result.test_name} message=#{result.message.to_s.gsub($/, " ")} location=#{stacktrace}"
     end
   end
   

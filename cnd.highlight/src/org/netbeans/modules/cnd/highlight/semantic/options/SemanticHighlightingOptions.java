@@ -62,7 +62,7 @@ public class SemanticHighlightingOptions {
 
     private final Preferences preferences = NbPreferences.forModule(SemanticHighlightingOptions.class);
 
-    private static final String ENABLE_MARK_OCCURENCES = "EnableMarkOccurrences"; // NOI18N
+    private static final String ENABLE_MARK_OCCURRENCES = "EnableMarkOccurrences"; // NOI18N
     private static final String KEEP_MARKS = "KeepMarks"; // NOI18N
     private static final String DIFFER_SYSTEM_MACROS = "SysMacros"; // NOI18N
 
@@ -84,12 +84,12 @@ public class SemanticHighlightingOptions {
         setOption(key, value);
     }
     
-    public boolean getEnableMarkOccurences() {
-        return getOption(ENABLE_MARK_OCCURENCES, true);
+    public boolean getEnableMarkOccurrences() {
+        return getOption(ENABLE_MARK_OCCURRENCES, true);
     }
 
-    public void setEnableMarkOccurences(boolean value) {
-        setOption(ENABLE_MARK_OCCURENCES, value);
+    public void setEnableMarkOccurrences(boolean value) {
+        setOption(ENABLE_MARK_OCCURRENCES, value);
     }
 
     public boolean getKeepMarks() {

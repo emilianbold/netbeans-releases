@@ -438,7 +438,7 @@ public final class WebProject implements Project, AntProjectListener {
             new WebActionProvider( this, this.updateHelper ),
             new WebLogicalViewProvider(this, this.updateHelper, evaluator (), refHelper),
             new CustomizerProviderImpl(this, this.updateHelper, evaluator(), refHelper),        
-            new ClassPathProviderMerger(cpProvider),
+            LookupMergerSupport.createClassPathProviderMerger(cpProvider),
             QuerySupport.createCompiledSourceForBinaryQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots(), 
                     new String[]{"build.classes.dir", "dist.war"}, new String[]{"build.test.classes.dir"}),
             QuerySupport.createJavadocForBinaryQuery(helper, evaluator(), new String[]{"build.classes.dir", "dist.war"}),

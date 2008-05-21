@@ -76,17 +76,21 @@ public class PropertiesEditorTestCase extends JellyTestCase {
     private String treeSubPackagePathToFile;
     protected String TREE_SEPARATOR = "|";
     protected String menuSeparator = "#";
+    public String defaultPackageDir = "src";
+    public String rootPackageName = "Source Packages";
     protected String defaultPackage = "<default package>";
-    protected final String WIZARD_CATEGORY = "Standard";
+    protected final String WIZARD_CATEGORY = "Other";
     protected final String WIZARD_CATEGORY_FILE = "Other";
     protected final String WIZARD_FILE_TYPE = "Properties File";
-    protected final String WIZARD_DEFAULT_PROPERTIES_FILE_NAME = "newproperties";
-    
+    protected final String WIZARD_DEFAULT_PROPERTIES_FILE_NAME = "newproperties";    //variables for New Property dialog
+    public JTextFieldOperator KEY;
+    public JTextFieldOperator VALUE;
+    public JTextFieldOperator COMMENTS;
     /*
      * declaration of members variables
      */
     private final String TITLE_ADD_LOCALE_DIALOG = "";//Bundle.getStringTrimmed("org.netbeans.modules.properties.Bundle", "CTL_NewLocaleTitle");    // String : New Locale
-    private final String TITLE_NEW_PROPERTY_DIALOG = "";//Bundle.getStringTrimmed("org.netbeans.modules.properties.Bundle", "CTL_NewPropertyTitle");    // String : New Property
+    private final String TITLE_NEW_PROPERTY_DIALOG = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.properties.Bundle", "CTL_NewPropertyTitle");
     private final String TITLE_HELP_DIALOG = "Help";
     private final String TITLE_ERROR_DIALOG = "";//Bundle.getStringTrimmed("org.openide.Bundle", "NTF_ErrorTitle");  // String : Error
     private final String TITLE_SAVE_QUESTION_DIALOG = "";//Bundle.getStringTrimmed("org.openide.text.Bundle", "LBL_SaveFile_Title");    // String : Question
@@ -118,7 +122,8 @@ public class PropertiesEditorTestCase extends JellyTestCase {
     private final String EXCEPTION_TEXT = "Text typing";
     private final String WIZARD_TREE_STRING = "";//Bundle.getStringTrimmed("org.netbeans.modules.text.Bundle", "Templates/Other")+"|"+Bundle.getStringTrimmed("org.netbeans.modules.properties.Bundle", "Templates/Other/properties.properties"); // String : "Other|Properties File";
     public EditorOperator eo;
-    public static  String BUTTON_NEW_PROPERTY = org.netbeans.jellytools.Bundle.getString("org.netbeans.core.windows.services.Bundle", "OK_OPTION_CAPTION");;
+    public static String BUTTON_NEW_PROPERTY = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.properties.Bundle", "CTL_NewPropertyTitle");
+    ;
 
     /** This constructor only creates operator's object and then does nothing. */
     public PropertiesEditorTestCase(String testMethodName) {
@@ -183,12 +188,17 @@ public class PropertiesEditorTestCase extends JellyTestCase {
         return node;
     }
 
-    protected Node getNode(String packageName) {
-        ProjectsTabOperator pto = new ProjectsTabOperator();
-        pto.invoke();
+    protected PropertiesNode getNode(String projectName, String pathToBundle) {
+        ProjectsTabOperator pto = ProjectsTabOperator.invoke();
         ProjectRootNode prn = pto.getProjectRootNode(projectName);
-        prn.select();
-        Node node = new Node(prn, "Source Packages" + TREE_SEPARATOR + packageName);
+        PropertiesNode node = new PropertiesNode(prn, pathToBundle);
+        return node;
+    }
+
+    protected PropertiesNode getNodeFilesTab(String projectName, String pathToBundle) {
+        FilesTabOperator fto = FilesTabOperator.invoke();
+        Node projectNode = fto.getProjectNode(projectName);
+        PropertiesNode node = new PropertiesNode(projectNode, pathToBundle);
         return node;
     }
 
@@ -230,6 +240,16 @@ public class PropertiesEditorTestCase extends JellyTestCase {
         newWizard.finish();
     }
 
+    public void createNewPropertiesFile(Node node, String packageName, String fileName) {
+        NewFileWizardOperator newWizard = NewFileWizardOperator.invoke(node, this.WIZARD_CATEGORY, this.WIZARD_FILE_TYPE);
+        NewFileNameLocationStepOperator nfnlso = new NewFileNameLocationStepOperator();
+        nfnlso.setObjectName(fileName);
+        JTextFieldOperator jtfo = new JTextFieldOperator(nfnlso, 2);
+        jtfo.setText(packageName);
+
+        newWizard.finish();
+    }
+
     /** It clicks to the 'New property' button in properties editor ( table view ) */
     public void propertiesEditorClickNewPropertyButton(String fileName) {
         JButtonOperator jButtonOperator = new JButtonOperator(new TopComponentOperator(fileName), this.BUTTON_NAME_NEW_PROPERTY);
@@ -264,7 +284,18 @@ public class PropertiesEditorTestCase extends JellyTestCase {
      * @param filesystemNode of tree, where file is stored ( without file name )
      * @param filePath of file to delete
      */
-    public void closePropertiesFile(String fileName) {
+    public boolean closePropertiesFile(String fileName) {
+
+        try {
+            EditorOperator eo = new EditorOperator(fileName);
+            eo.close(false);
+            return true;
+        } catch (TimeoutExpiredException ex) {
+            return false;
+        }
+    }
+    //This closes properties file without back controll
+    public void closePropertiesFileWithoutCheck(String fileName) {
         EditorOperator eo = new EditorOperator(fileName);
         eo.close(false);
     }
@@ -1008,6 +1039,18 @@ public class PropertiesEditorTestCase extends JellyTestCase {
         }
     }
 
+    public boolean existsFileInFilesTab(String fileName) {
+        try {
+            log("Testing name of file in Files Explorer : \"" + fileName + "\"");
+            FilesTabOperator fto = FilesTabOperator.invoke();
+            Node projectNode = fto.getProjectNode(DEFAULT_PROJECT_NAME);
+            Node propertyNode = new Node(projectNode, fileName);
+            return true;
+        } catch (TimeoutExpiredException ex) {
+            return false;
+        }
+    }
+
     public void requestFocusEditorPane(String nameOfTab) {
         TopComponentOperator tco = new TopComponentOperator(nameOfTab);
         tco.requestFocus();
@@ -1048,6 +1091,42 @@ public class PropertiesEditorTestCase extends JellyTestCase {
             return false;
         }
 
+    }
+    //Fill key, value and comments in dialog New Property
+    public void fillNewKeyValue(String key, String value, String comments) {
+        NbDialogOperator nbdo = new NbDialogOperator(BUTTON_NEW_PROPERTY);
+        KEY = new JTextFieldOperator(nbdo, 0);
+        KEY.typeText(key);
+
+        VALUE = new JTextFieldOperator(nbdo, 1);
+        VALUE.typeText(value);
+
+        COMMENTS = new JTextFieldOperator(nbdo, 2);
+        COMMENTS.typeText(comments);
+
+        new EventTool().waitNoEvent(1000);
+        nbdo.ok();
+    }
+
+    public boolean checkKeysAndValues(String bundle, String key, String value, String comments) {
+        StringTokenizer tokenizer = new StringTokenizer("#" + comments + "\n" + key + "=" + value, "\n");
+        boolean result = true;
+        int pos = -1;
+
+        eo = new EditorOperator(bundle);
+        String editortext = eo.getText();
+        while (tokenizer.hasMoreTokens()) {
+            String token = tokenizer.nextToken();
+            pos = editortext.indexOf(token, pos);
+            if (pos == -1) {
+                result = false;
+                break;
+            }
+            pos += token.length();
+        }
+
+        System.out.println(result);
+        return result;
     }
 }
 

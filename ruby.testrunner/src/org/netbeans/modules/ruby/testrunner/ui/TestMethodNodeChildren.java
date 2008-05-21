@@ -90,7 +90,11 @@ final class TestMethodNodeChildren extends Children.Array {
                     trouble.exceptionClsName);
         }
         for (int i = 0; index < nodesCount; i++) {
-            children[index++] = new CallstackFrameNode(trouble.stackTrace[i]);
+            if (i == 0 && nodesCount >= 1) {
+                children[index++] = new CallstackFrameNode(trouble.stackTrace[1], trouble.stackTrace[0]);
+            } else {
+                children[index++] = new CallstackFrameNode(trouble.stackTrace[i]);
+            }
         }
         
         if (trouble.nestedTrouble != null) {

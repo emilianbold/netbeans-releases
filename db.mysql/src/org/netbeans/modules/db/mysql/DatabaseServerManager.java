@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.db.mysql;
 
+import org.netbeans.modules.db.mysql.impl.MySQLDatabaseServer;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -67,7 +68,7 @@ public class DatabaseServerManager {
             // 
             // TODO - fix the DB Explorer so it refreshes its children
             // on a separate thread, so we don't get into this situation.
-            DatabaseServer server = lookupDatabaseServer();
+            DatabaseServer server = MySQLDatabaseServer.getDefault();
             
             synchronized(DatabaseServerManager.class) {
                 if ( SERVER == null ) {

@@ -61,6 +61,7 @@ public class TokenTable {
     ArrayList<Declaration> functions = new ArrayList<Declaration>();
     ArrayList<Declaration> aloneVariableDeclarations = new ArrayList<Declaration>();
     ArrayList<Declaration> aloneFunctionDeclarations = new ArrayList<Declaration>();
+    boolean noContainCheck = false;
 
     TokenTable() {
         this.workDir = null;
@@ -76,11 +77,42 @@ public class TokenTable {
                 return;
             }
         }
-//        if (!variables.contains(var)) {
-        variables.add(var);
-//        } else {
-//            System.out.println("Double variable declaration");
-//        }
+        if (noContainCheck || !variables.contains(var)) {
+            variables.add(var);
+        }
+    }
+
+    public void addVariableDeclaration(Declaration var, Declaration decl) {
+        if (workDir != null) {
+            if (!decl.pos.file.startsWith(workDir)) {
+                return;
+            }
+        }
+        if (noContainCheck || !var.declarations.contains(decl)) {
+            var.declarations.add(decl);
+        }
+    }
+
+    public void addAloneVariableDeclaration(Declaration var) {
+        if (workDir != null) {
+            if (!var.pos.file.startsWith(workDir)) {
+                return;
+            }
+        }
+        if (noContainCheck || !aloneVariableDeclarations.contains(var)) {
+            aloneVariableDeclarations.add(var);
+        }
+    }
+
+    public void addVariableUsage(Declaration var, Offset usage) {
+        if (workDir != null) {
+            if (!usage.file.startsWith(workDir)) {
+                return;
+            }
+        }
+        if (noContainCheck || !var.usages.contains(usage)) {
+            var.usages.add(usage);
+        }
     }
 
     public void addFunction(Declaration fun) {
@@ -90,11 +122,45 @@ public class TokenTable {
                 return;
             }
         }
-//        if (!functions.contains(fun)) {
-        functions.add(fun);
+        if (noContainCheck || !functions.contains(fun)) {
+            functions.add(fun);
+        }
 //        } else {
 //            System.out.println("Double function declaration");
 //        }
+    }
+
+    public void addFunctionDeclaration(Declaration fun, Declaration decl) {
+        if (workDir != null) {
+            if (!decl.pos.file.startsWith(workDir)) {
+                return;
+            }
+        }
+        if (noContainCheck || !fun.declarations.contains(decl)) {
+            fun.declarations.add(decl);
+        }
+    }
+
+    public void addAloneFunctionDeclaration(Declaration fun) {
+        if (workDir != null) {
+            if (!fun.pos.file.startsWith(workDir)) {
+                return;
+            }
+        }
+        if (noContainCheck || !aloneFunctionDeclarations.contains(fun)) {
+            aloneFunctionDeclarations.add(fun);
+        }
+    }
+
+    public void addFunctionUsage(Declaration fun, Offset usage) {
+        if (workDir != null) {
+            if (!usage.file.startsWith(workDir)) {
+                return;
+            }
+        }
+        if (noContainCheck || !fun.usages.contains(usage)) {
+            fun.usages.add(usage);
+        }
     }
 
     public Declaration findFunctionDefinition(Offset qualifier, String fullName) {
@@ -129,8 +195,10 @@ public class TokenTable {
             }
         }
         for (Declaration decl : aloneFunctionDeclarations) {
-            if (decl.pos.equals(pos)) {
-                return decl;
+            if (decl.name.equals(name)) {
+                if (decl.pos.equals(pos)) {
+                    return decl;
+                }
             }
         }
 
@@ -169,13 +237,16 @@ public class TokenTable {
             }
         }
         for (Declaration decl : aloneVariableDeclarations) {
-            if (decl.pos.equals(pos)) {
-                return decl;
+            if (decl.name.equals(name)) {
+                if (decl.pos.equals(pos)) {
+                    return decl;
+                }
             }
         }
 
         return null;
     }
+    int faultsNumber = 0;
 
     public void verifyDeclaration(String name, Offset offset, int line) {
 
@@ -266,6 +337,7 @@ public class TokenTable {
         }
 
         System.out.println("verification fault on " + name + " " + line + " " + offset.file + ":" + offset.line + ":" + offset.row);
+        faultsNumber++;
     }
 
     public void printNumbers() {
@@ -296,6 +368,7 @@ public class TokenTable {
             funNumber += fun.usages.size();
         }
         System.out.println("functions: " + funNumber);
+        System.out.println("faults: " + faultsNumber);
     }
 
     public void printVariables() {
@@ -386,6 +459,41 @@ public class TokenTable {
             }
 
         }
+        for (Declaration var : aloneVariableDeclarations) {
+            if (!var.pos.file.startsWith(workDir)) {
+                continue;
+            }
+
+            ArrayList<String> offsets = new ArrayList<String>();
+            for (Offset o : var.usages) {
+                offsets.add(o.file.substring(workDir.length() + 1) + ":" + o.line + ":" + o.row);
+            }
+
+            Collections.sort(offsets);
+
+            String fileName = var.namePos.file.substring(workDir.length() + 1) + ":" + var.namePos.line + ":" + var.namePos.row + " " + var.name;
+
+            fileName = fileName.replaceAll("/", ".");
+            fileName = fileName.replaceAll("\"", "");
+
+            File f = new File(dir + "/" + fileName);
+            try {
+                f.createNewFile();
+            } catch (IOException ex) {
+                Logger.getLogger(TokenTable.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            try {
+                PrintStream ps = new PrintStream(f);
+
+                ps.println(var.namePos.file.substring(workDir.length() + 1) + ":" + var.namePos.line + ":" + var.namePos.row + " " + var.name.replaceAll("\"", ""));
+                for (String string : offsets) {
+                    ps.println(string);
+                }
+
+            } catch (FileNotFoundException ex) {
+                Logger.getLogger(TokenTable.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
     }
 
     public void printFunctions() {
@@ -408,7 +516,11 @@ public class TokenTable {
             }
             Collections.sort(offsets);
 
-            System.out.println(fun.namePos.file + ":" + fun.namePos.line + ":" + fun.namePos.row + fun.namePos.elsaLine + " " + fun.name.replaceAll("\"", ""));
+//            if (fun.qualifierPos != null && fun.fullName != null) {
+//                System.out.println(fun.namePos.file + ":" + fun.namePos.line + ":" + fun.namePos.row + ":" + fun.namePos.elsaLine + " " + fun.name.replaceAll("\"", "") + " " + fun.fullName + " " + fun.qualifierPos.file + ":" + fun.qualifierPos.line + ":" + fun.qualifierPos.row);
+//            } else {
+                System.out.println(fun.namePos.file + ":" + fun.namePos.line + ":" + fun.namePos.row + ":" + fun.namePos.elsaLine + " " + fun.name.replaceAll("\"", ""));
+//            }
             for (String string : offsets) {
                 System.out.println(string);
             }
@@ -426,7 +538,7 @@ public class TokenTable {
 
             Collections.sort(offsets);
 
-            System.out.println(fun.namePos.file + ":" + fun.namePos.line + ":" + fun.namePos.row + fun.namePos.elsaLine + " " + fun.name.replaceAll("\"", ""));
+            System.out.println(fun.namePos.file + ":" + fun.namePos.line + ":" + fun.namePos.row + ":" + fun.namePos.elsaLine + " " + fun.name.replaceAll("\"", ""));
             for (String string : offsets) {
                 System.out.println(string);
             }
@@ -480,6 +592,85 @@ public class TokenTable {
             }
 
         }
+        
+        for (Declaration fun : aloneFunctionDeclarations) {
+            if (!fun.pos.file.startsWith(workDir)) {
+                continue;
+            }
+
+            ArrayList<String> offsets = new ArrayList<String>();
+            for (Offset o : fun.usages) {
+                offsets.add(o.file.substring(workDir.length() + 1) + ":" + o.line + ":" + o.row);
+            }
+
+            Collections.sort(offsets);
+
+            String fileName = fun.namePos.file.substring(workDir.length() + 1) + ":" + fun.namePos.line + ":" + fun.namePos.row + " " + fun.name;
+            fileName = fileName.replace("operator/", "operator div");
+            fileName = fileName.replace("*", " star");
+            fileName = fileName.replace("|", " or");
+            fileName = fileName.replace("?", " q");
+
+            fileName = fileName.replaceAll("/", ".");
+            fileName = fileName.replaceAll("\"", "");
+
+            File f = new File(dir + "/" + fileName);
+            try {
+                f.createNewFile();
+            } catch (IOException ex) {
+                Logger.getLogger(TokenTable.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            try {
+                PrintStream ps = new PrintStream(f);
+
+                ps.println(fun.namePos.file.substring(workDir.length() + 1) + ":" + fun.namePos.line + ":" + fun.namePos.row + " " + fun.name.replaceAll("\"", ""));
+                for (String string : offsets) {
+                    ps.println(string);
+                }
+
+            } catch (FileNotFoundException ex) {
+                Logger.getLogger(TokenTable.class.getName()).log(Level.SEVERE, null, ex);
+            }
+
+        }        
+    }
+
+    public void removeDuplicateAloneDeclarations() {
+        ArrayList<Declaration> newAloneFunctionDeclarations = new ArrayList<Declaration>();
+        f: for (Declaration declaration : aloneFunctionDeclarations) {
+            for (Declaration def : functions) {
+                if (def.name.equals(declaration.name)) {
+                    if (def.pos.equals(declaration.pos)) {
+                        continue;
+                    }
+                    for (Declaration decl : def.declarations) {
+                        if (decl.pos.equals(declaration.pos)) {
+                            continue f;
+                        }
+                    }
+                }
+            }
+            newAloneFunctionDeclarations.add(declaration);
+        }
+        aloneFunctionDeclarations = newAloneFunctionDeclarations;
+        
+        ArrayList<Declaration> newAloneVariableDeclarations = new ArrayList<Declaration>();
+        f: for (Declaration declaration : aloneVariableDeclarations) {
+            for (Declaration def : variables) {
+                if (def.name.equals(declaration.name)) {
+                    if (def.pos.equals(declaration.pos)) {
+                        continue;
+                    }
+                    for (Declaration decl : def.declarations) {
+                        if (decl.pos.equals(declaration.pos)) {
+                            continue f;
+                        }
+                    }
+                }
+            }
+            newAloneVariableDeclarations.add(declaration);
+        }
+        aloneVariableDeclarations = newAloneVariableDeclarations;
     }
 }
 

@@ -81,6 +81,18 @@ public class StrictWarningTest extends HintTestBase {
         findHints(this, new StrictWarning(StrictWarning.NO_SIDE_EFFECTS), "testfiles/functions-sideeffects.js", null);
     }
     
+    public void testSideEffects() throws Exception {
+        goldenfileSuffix = "";
+        // See 135144
+        findHints(this, new StrictWarning(StrictWarning.NO_SIDE_EFFECTS), "testfiles/sideeffects.js", null);
+    }
+
+    // Test no false return warnings
+    public void testReturnAnalysis() throws Exception {
+        goldenfileSuffix = "";
+        findHints(this, new StrictWarning(StrictWarning.ANON_NO_RETURN_VALUE), "testfiles/returns.js", null);
+    }
+    
     public void testTrailingComma() throws Exception {
         goldenfileSuffix = "";
         findHints(this, new StrictWarning(StrictWarning.TRAILING_COMMA), "testfiles/trailingcomma.js", null);
