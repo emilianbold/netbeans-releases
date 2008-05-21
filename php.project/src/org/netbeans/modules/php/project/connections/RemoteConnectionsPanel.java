@@ -254,6 +254,7 @@ class RemoteConnectionsPanel extends JPanel {
 
     void fireChange() {
         changeSupport.fireChange();
+        // because of correct coloring of list items (invalid configurations)
         refreshConfigList();
     }
 
