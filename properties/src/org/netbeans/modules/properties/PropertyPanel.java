@@ -144,8 +144,7 @@ final class PropertyPanel extends JPanel {
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(LEADING)
-            .add(layout.createSequentialGroup()
+            layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(LEADING)
                     .add(keyLabel)
@@ -156,11 +155,10 @@ final class PropertyPanel extends JPanel {
                     .add(keyText, DEFAULT_SIZE, PREFERRED_SIZE, Short.MAX_VALUE)
                     .add(valueText, DEFAULT_SIZE, PREFERRED_SIZE, Short.MAX_VALUE)
                     .add(commentText, DEFAULT_SIZE, PREFERRED_SIZE, Short.MAX_VALUE))
-                .addContainerGap())
+                .addContainerGap()
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(LEADING)
-            .add(layout.createSequentialGroup()
+            layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(BASELINE)
                     .add(keyLabel)
@@ -173,7 +171,7 @@ final class PropertyPanel extends JPanel {
                 .add(layout.createParallelGroup(BASELINE)
                     .add(commentText, PREFERRED_SIZE, PREFERRED_SIZE, PREFERRED_SIZE)
                     .add(commentLabel))
-                .addContainerGap())
+                .addContainerGap()
         );
     }// </editor-fold>
 
