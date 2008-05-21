@@ -252,7 +252,7 @@ public class UseSuperTypeRefactoringPlugin extends JavaRefactoringPlugin {
                 Element expreElem = asElement(memSelTree.getExpression());
                 //If a static member was referenced using the object instead 
                 //of the class, don't handle it here.
-                if(! (ElementKind.CLASS.equals(expreElem.getKind()) || 
+                if(expreElem == null || ! (ElementKind.CLASS.equals(expreElem.getKind()) || 
                         ElementKind.INTERFACE.equals(expreElem.getKind()))){
                     return super.visitMemberSelect(memSelTree, elemToFind);
                 }
