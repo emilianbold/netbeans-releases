@@ -203,7 +203,7 @@ public class OpenSolaris extends KnownProject {
     private boolean createImpl() throws IOException{
         File proto = new File(root+"/proto"); // NOI18N
         if (!proto.exists()) {
-            if (TRACE) System.out.println("Iinstalling proto..."); //NOI18N
+            if (TRACE) System.out.println("Installing proto..."); //NOI18N
             for(InstallLine il : copyHeader){
                 il.install();
             }
