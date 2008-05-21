@@ -9,12 +9,14 @@ ${IMPORTS}
 
 public class ${CLASS_NAME} implements CodeGenerator {
 
+    JTextComponent textComp;
+
     /**
      * 
      * @param context containing JTextComponent and possibly other items registered by {@link CodeGeneratorContextProvider}
      */
-    private ${CLASS_NAME}(Lookup context) {
-        JTextComponent textComp = context.lookup(JTextComponent.class);
+    private ${CLASS_NAME}(Lookup context) { // Good practice is not to save Lookup outside ctor
+        textComp = context.lookup(JTextComponent.class);
     }
 
     public static class Factory implements CodeGenerator.Factory {
@@ -32,7 +34,7 @@ public class ${CLASS_NAME} implements CodeGenerator {
     }
 
     /**
-     * This will be invoked when user chooses thsi Generator from Insert Code
+     * This will be invoked when user chooses this Generator from Insert Code
      * dialog
      */
     public void invoke() {
