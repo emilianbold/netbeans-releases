@@ -610,7 +610,7 @@ public class OpenSolaris extends KnownProject {
                         if (s.getCompilePath().startsWith(root)) {
                             File file = new File(s.getItemPath());
                             String p = FileUtil.normalizeFile(file).getAbsolutePath();
-                            if (set.contains(p)) {
+                            if (!set.contains(p)) {
                                 res.add(s);
                                 set.add(p);
                             }
