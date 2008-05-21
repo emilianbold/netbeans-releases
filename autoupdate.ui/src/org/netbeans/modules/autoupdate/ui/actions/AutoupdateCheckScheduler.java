@@ -119,7 +119,7 @@ public class AutoupdateCheckScheduler {
     }
     
     private static void scheduleRefreshProviders () {
-        refreshUpdatCenters (null);
+        refreshUpdateCenters (null);
         final int delay = 500;
         final long startTime = System.currentTimeMillis ();
         RequestProcessor.Task t = RequestProcessor.getDefault ().post (doCheckAvailableUpdates, delay);
@@ -185,7 +185,7 @@ public class AutoupdateCheckScheduler {
         // check
         err.log (Level.FINEST, "Check UpdateElements for " + type);
         if (forceReload) {
-            refreshUpdatCenters (ProgressHandleFactory.createHandle ("dummy-check-for-updates")); // NOI18N
+            refreshUpdateCenters (ProgressHandleFactory.createHandle ("dummy-check-for-updates")); // NOI18N
         }
         List<UpdateUnit> units = UpdateManager.getDefault ().getUpdateUnits (Utilities.getUnitTypes ());
         boolean handleUpdates = OperationType.UPDATE == type;
@@ -237,7 +237,7 @@ public class AutoupdateCheckScheduler {
         return updates;
     }
     
-    private static Collection<String> refreshUpdatCenters (ProgressHandle progress) {
+    private static Collection<String> refreshUpdateCenters (ProgressHandle progress) {
         final long startTime = System.currentTimeMillis ();
         Collection<String> problems = new HashSet<String> ();
         assert ! SwingUtilities.isEventDispatchThread () : "Cannot run refreshProviders in EQ!";
