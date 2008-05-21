@@ -771,13 +771,17 @@ public class WindowsRegistry {
     
     
     public void setMode(int m) {
-        if(isModeSupported(m)) {
+        if(isModeSupported(m)) {            
             mode = m;
         }
     }
     
+    public boolean isAlternativeModeSupported() {
+        return (IsWow64Process() || System.getProperty("os.arch").equals("amd64"));                 
+    }    
+    
     public void setMode(Boolean modeChange) {
-        mode = modeBooleanToInteger(modeChange);
+        setMode(modeBooleanToInteger(modeChange));
     }
     public boolean isModeSupported(int mode) {
         switch (mode) {
@@ -785,8 +789,7 @@ public class WindowsRegistry {
                 return true;
             case MODE_64BIT:
             case MODE_32BIT:
-                return (IsWow64Process() || 
-                        System.getProperty("os.arch").equals("amd64"));
+                return isAlternativeModeSupported();
             default:
                 return false;
         }        
@@ -795,7 +798,7 @@ public class WindowsRegistry {
     public int getMode() {        
         return mode;        
     }
-    public Boolean isAlternativeView() {        
+    public Boolean isAlternativeMode() {        
         return modeIntegerToBoolean(mode);        
     }
     public boolean IsWow64Process() {
