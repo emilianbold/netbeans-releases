@@ -75,6 +75,7 @@ import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.OutputRecognizer;
 import org.netbeans.modules.ruby.rubyproject.UpdateHelper;
 import org.netbeans.modules.ruby.rubyproject.rake.RakeRunner;
+import org.netbeans.modules.ruby.rubyproject.spi.TestRunner;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.openide.ErrorManager;
@@ -234,13 +235,18 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
             runServer("", debugCommand);
             return;
         } else if (COMMAND_TEST.equals(command)) {
-            File pwd = FileUtil.toFile(project.getProjectDirectory());
-            RakeRunner runner = new RakeRunner(project);
-            runner.setPWD(pwd);
-            runner.setFileLocator(new RailsFileLocator(context, project));
-            runner.showWarnings(true);
-            runner.setDebug(COMMAND_DEBUG_SINGLE.equals(command));
-            runner.run("test"); // NOI18N
+            TestRunner testRunner = getTestRunner(TestRunner.TestType.TEST_UNIT);
+            if (testRunner != null) {
+                testRunner.getInstance().runAllTests(project);
+            } else {
+                File pwd = FileUtil.toFile(project.getProjectDirectory());
+                RakeRunner runner = new RakeRunner(project);
+                runner.setPWD(pwd);
+                runner.setFileLocator(new RailsFileLocator(context, project));
+                runner.showWarnings(true);
+                runner.setDebug(COMMAND_DEBUG_SINGLE.equals(command));
+                runner.run("test"); // NOI18N
+            }
             return;
         } else if (COMMAND_TEST_SINGLE.equals(command) || COMMAND_DEBUG_TEST_SINGLE.equals(command)) {
             if (!RubyPlatform.platformFor(project).isValidRuby(true)) {
@@ -272,13 +278,22 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
  
             RSpecSupport rspec = new RSpecSupport(project);
             if (rspec.isRSpecInstalled() && RSpecSupport.isSpecFile(file)) {
-                rspec.runRSpec(null, file, file.getName(), new RailsFileLocator(context, project), true, isDebug);
+                TestRunner rspecRunner = getTestRunner(TestRunner.TestType.RSPEC);
+                if (rspecRunner != null) {
+                    rspecRunner.runTest(file);
+                } else {
+                    rspec.runRSpec(null, file, file.getName(), new RailsFileLocator(context, project), true, isDebug);
+                }
                 return;
             }
-            
-            runRubyScript(file, FileUtil.toFile(file).getAbsolutePath(), file.getNameExt(), context, 
-                    isDebug, new OutputRecognizer[] { new TestNotifier(true, true) });
-            
+
+            TestRunner testRunner = getTestRunner(TestRunner.TestType.TEST_UNIT);
+            if (testRunner != null) {
+                testRunner.getInstance().runTest(file);
+            } else {
+                runRubyScript(file, FileUtil.toFile(file).getAbsolutePath(),
+                        file.getNameExt(), context, isDebug, new OutputRecognizer[]{new TestNotifier(true, true)});
+            }
             return;
 
         } else if (COMMAND_RUN_SINGLE.equals(command) || debugSingleCommand) {
@@ -818,6 +833,17 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
         
         String lowercase = propValue.toLowerCase();
         return lowercase.equals("yes") || lowercase.equals("on") || lowercase.equals("true"); // NOI18N
+    }
+    
+    // TODO: duplicated in RubyActionProvider
+    private TestRunner getTestRunner(TestRunner.TestType testType) {
+        Collection<? extends TestRunner> testRunners = Lookup.getDefault().lookupAll(TestRunner.class);
+        for (TestRunner each : testRunners) {
+            if (each.supports(testType)) {
+                return each;
+            }
+        }
+        return null;
     }
     
 }
