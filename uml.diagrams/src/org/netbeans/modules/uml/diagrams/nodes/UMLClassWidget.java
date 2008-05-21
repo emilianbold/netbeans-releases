@@ -555,7 +555,7 @@ public class UMLClassWidget  extends SwitchableWidget
             }
             else if(propName.equals(ModelElementChangedKind.TEMPLATE_PARAMETER.toString()))
             {
-                initializeContents((IClassifier)event.getSource());
+                setCurrentView(initializeContents((IClassifier)event.getSource()));
             }
             else if(propName.equals(ModelElementChangedKind.REDEFINED_OWNER_NAME_CHANGED.toString()))
             {
