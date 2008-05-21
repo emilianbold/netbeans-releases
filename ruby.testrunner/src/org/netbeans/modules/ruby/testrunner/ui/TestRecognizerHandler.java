@@ -38,34 +38,56 @@
  */
 package org.netbeans.modules.ruby.testrunner.ui;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.modules.ruby.platform.execution.OutputRecognizer.RecognizedOutput;
 import org.netbeans.modules.ruby.platform.execution.OutputRecognizer.FilteredOutput;
 
+/**
+ * Base class for test recognizer handlers. 
+ * 
+ * @author Erno Mononen
+ */
 public abstract class TestRecognizerHandler {
 
+    private static final Logger LOGGER = Logger.getLogger(TestRecognizerHandler.class.getName());
+    
     protected final Pattern pattern;
     protected Matcher matcher;
 
     public TestRecognizerHandler(String regex) {
-        super();
         this.pattern = Pattern.compile(regex);
     }
 
-    final Matcher match(String line) {
+    final boolean matches(String line) {
         this.matcher = pattern.matcher(line);
-        return matcher;
+        return matcher.matches();
     }
 
     abstract void updateUI(Manager manager, TestSession session);
 
+    /**
+     * Gets the RecognizedOutput for output that should be passed on 
+     * for printing to Output. Override in subclasses as needed, the default
+     * implementation supresses all output (i.e. nothing is passed on 
+     * for printing).
+     * 
+     * @return the RecognizedOutput for output that should be passed on 
+     * for printing to Output. 
+     */
     RecognizedOutput getRecognizedOutput() {
         return new FilteredOutput(new String[0]);
     }
 
     protected static int toMillis(String timeInSeconds) {
-        Double elapsedTimeMillis = Double.parseDouble(timeInSeconds) * 1000;
-        return elapsedTimeMillis.intValue();
+        try {
+            Double elapsedTimeMillis = Double.parseDouble(timeInSeconds) * 1000;
+            return elapsedTimeMillis.intValue();
+        } catch (NumberFormatException nfe) {
+            LOGGER.log(Level.WARNING, "Could not parse time, returning 0", nfe);
+        }
+        return 0;
     }
 }

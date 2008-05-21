@@ -41,6 +41,7 @@ package org.netbeans.modules.ruby.testrunner.ui;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.ruby.platform.execution.OutputRecognizer;
+import org.netbeans.modules.ruby.testrunner.TestUnitRunner;
 
 /**
  * An output recognizer for parsing output of the test/unit runner script, 
@@ -67,7 +68,7 @@ public class TestUnitHandlerFactory extends OutputRecognizer {
     static class TestFailedHandler extends TestRecognizerHandler {
 
         public TestFailedHandler() {
-            super("%TEST_FAILED%\\stime=(\\d+\\.\\d+)\\stestname=([\\w]+)\\(([\\w]+)\\)\\smessage=(.*)\\slocation=(.*)");
+            super("%TEST_FAILED%\\stime=(\\d+\\.\\d+)\\stestname=([\\w]+)\\(([\\w]+)\\)\\smessage=(.*)\\slocation=(.*)"); //NOI18N
         }
 
         @Override
@@ -81,7 +82,7 @@ public class TestUnitHandlerFactory extends OutputRecognizer {
             String location = matcher.group(5);
             testcase.trouble.stackTrace = new String[]{message, location};
             session.addTestCase(testcase);
-            manager.displayOutput(session, testcase.name + "(" + testcase.className + "):", false);
+            manager.displayOutput(session, testcase.name + "(" + testcase.className + "):", false); //NOI18N
             manager.displayOutput(session, message, false);
             manager.displayOutput(session, location, false);
             manager.displayOutput(session, "", false);
@@ -96,7 +97,7 @@ public class TestUnitHandlerFactory extends OutputRecognizer {
     static class TestErrorHandler extends TestRecognizerHandler {
 
         public TestErrorHandler() {
-            super("%TEST_ERROR%\\stime=(\\d+\\.\\d+)\\stestname=([\\w]+)\\(([\\w]+)\\)\\smessage=(.*)\\slocation=(.*)");
+            super("%TEST_ERROR%\\stime=(\\d+\\.\\d+)\\stestname=([\\w]+)\\(([\\w]+)\\)\\smessage=(.*)\\slocation=(.*)"); //NOI18N
         }
 
         @Override
@@ -111,13 +112,13 @@ public class TestUnitHandlerFactory extends OutputRecognizer {
             List<String> stackTrace = new ArrayList<String>();
             stackTrace.add(message);
             for (String location : matcher.group(5).split("%BR%")) { //NOI18N
-                if (!location.contains("nb_test_mediator.rb")) {
+                if (!location.contains(TestUnitRunner.MEDIATOR_SCRIPT_NAME)) { //NOI18N
                     stackTrace.add(location);
                 }
             }
             testcase.trouble.stackTrace = stackTrace.toArray(new String[stackTrace.size()]);
             session.addTestCase(testcase);
-            manager.displayOutput(session, testcase.name + "(" + testcase.className + "):", false);
+            manager.displayOutput(session, testcase.name + "(" + testcase.className + "):", false); //NOI18N
             for (String line : stackTrace) {
                 manager.displayOutput(session, line, true);
             }
@@ -133,7 +134,7 @@ public class TestUnitHandlerFactory extends OutputRecognizer {
     static class TestStartedHandler extends TestRecognizerHandler {
 
         public TestStartedHandler() {
-            super("%TEST_STARTED%\\s([\\w]+)\\(([\\w]+)\\)");
+            super("%TEST_STARTED%\\s([\\w]+)\\(([\\w]+)\\)"); //NOI18N
         }
 
         @Override
@@ -144,7 +145,7 @@ public class TestUnitHandlerFactory extends OutputRecognizer {
     static class TestFinishedHandler extends TestRecognizerHandler {
 
         public TestFinishedHandler() {
-            super("%TEST_FINISHED%\\stime=(\\d+\\.\\d+)\\s([\\w]+)\\(([\\w]+)\\)");
+            super("%TEST_FINISHED%\\stime=(\\d+\\.\\d+)\\s([\\w]+)\\(([\\w]+)\\)"); //NOI18N
         }
 
         @Override
@@ -164,7 +165,7 @@ public class TestUnitHandlerFactory extends OutputRecognizer {
     static class TestMiscHandler extends TestRecognizerHandler {
 
         public TestMiscHandler() {
-            super("%TEST_.*");
+            super("%TEST_.*"); //NOI18N
         }
 
         @Override
@@ -175,7 +176,7 @@ public class TestUnitHandlerFactory extends OutputRecognizer {
     static class SuiteFinishedHandler extends TestRecognizerHandler {
 
         public SuiteFinishedHandler() {
-            super("%SUITE_FINISHED%\\s(\\d+\\.\\d+)");
+            super("%SUITE_FINISHED%\\s(\\d+\\.\\d+)"); //NOI18N
         }
 
         @Override
@@ -191,7 +192,7 @@ public class TestUnitHandlerFactory extends OutputRecognizer {
     static class SuiteStartedHandler extends TestRecognizerHandler {
 
         public SuiteStartedHandler() {
-            super("%SUITE_STARTED%\\s.*");
+            super("%SUITE_STARTED%\\s.*"); //NOI18N
         }
 
         @Override
@@ -202,7 +203,7 @@ public class TestUnitHandlerFactory extends OutputRecognizer {
     static class SuiteStartingHandler extends TestRecognizerHandler {
 
         public SuiteStartingHandler() {
-            super("%SUITE_STARTING%\\s(\\w+)");
+            super("%SUITE_STARTING%\\s(\\w+)"); //NOI18N
         }
 
         @Override
@@ -220,7 +221,7 @@ public class TestUnitHandlerFactory extends OutputRecognizer {
     static class SuiteMiscHandler extends TestRecognizerHandler {
 
         public SuiteMiscHandler() {
-            super("%SUITE_.*");
+            super("%SUITE_.*"); //NOI18N
         }
 
         @Override
