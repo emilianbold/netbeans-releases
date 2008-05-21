@@ -325,8 +325,22 @@ implements java.io.Serializable {
         } catch (FileStateInvalidException ex) {
             // OK
         }
+
+
+        ArrayList<DataLoader> all = new ArrayList<DataLoader>();
+        if (preferredLoader != null) {
+            all.add(preferredLoader);
+        }
+        all.addAll(Arrays.asList(getSystemLoaders()));
+        all.add(getFolderLoader());
         
-        return Enumerations.concat(allLoaders(), mimeLoaders);
+        return Enumerations.concat(
+            Collections.enumeration(all),
+            Enumerations.concat(
+                mimeLoaders, 
+                allLoaders()
+            )
+        );
     }
     
     /** Get an array of loaders that are currently registered.
