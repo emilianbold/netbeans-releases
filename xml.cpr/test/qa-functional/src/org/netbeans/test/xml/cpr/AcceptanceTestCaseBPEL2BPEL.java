@@ -59,8 +59,8 @@ import org.netbeans.jellytools.EditorOperator;
 import java.awt.event.KeyEvent;
 import java.awt.Point;
 import java.awt.event.InputEvent;
-
-
+import javax.swing.ListModel;
+import org.netbeans.jellytools.TopComponentOperator;
 
 /**
  *
@@ -100,10 +100,9 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
         "FindUsages2",
         "ValidateAndBuild",
 
-        "MoveSchema",
-
-        // Move : TODO
-        // Fix (customize) : TODO
+        //"MoveSchema",
+        //"FixInMoved",
+        //"FixInReferenced",
 
         "ValidateAndBuild",
         "BuildCompositeApplication",
@@ -599,7 +598,7 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
 
       Node nodeSource = new Node(
           tree,
-          SAMPLE_NAME + "|Process Files|purchaseOrder.xsd"
+          SAMPLE_NAME + "|" + PURCHASE_SCHEMA_FILE_PATH + "|" + PURCHASE_SCHEMA_FILE_NAME
         );
       nodeSource.select( );
       path = tree.getSelectionPath( );
@@ -630,10 +629,85 @@ public class AcceptanceTestCaseBPEL2BPEL extends AcceptanceTestCaseXMLCPR {
 
       // Refactoring
       JDialogOperator jdMove = new JDialogOperator( "Move File" );
-      jdMove.close( );
+
+      JComboBoxOperator jcProject = new JComboBoxOperator( jdMove, 0 );
+      jcProject.selectItem( MODULE_NAME );
+      JButtonOperator jbRefactor = new JButtonOperator( jdMove, "Refactor" );
+      jbRefactor.pushNoBlock( );
       WaitDialogClosed( jdMove );
 
       // Check new tree path to file
+      Node nodeCheck = new Node(
+          tree,
+          MODULE_NAME + "|" + SAMPLE_SCHEMA_PATH + "|" + PURCHASE_SCHEMA_FILE_NAME
+        );
+      nodeCheck.select( );
+
+      endTest( );
+    }
+
+    public void FixInMoved( )
+    {
+      startTest( );
+
+      // REMOVE FROM SPEC???
+      // ALWAYS FIXED AUTOMATICALLY???
+
+      // Open moved file
+      ProjectsTabOperator pto = new ProjectsTabOperator( );
+      JTreeOperator tree = pto.tree();
+      Node nodeCheck = new Node(
+          tree,
+          MODULE_NAME + "|" + SAMPLE_SCHEMA_PATH + "|" + PURCHASE_SCHEMA_FILE_NAME
+        );
+      nodeCheck.select( );
+      nodeCheck.performPopupAction( "Open" );
+
+      // Select referenced schemas
+      SchemaMultiView opMultiView = new SchemaMultiView( PURCHASE_SCHEMA_FILE_NAME );
+      opMultiView.switchToSchema( );
+      opMultiView.switchToSchemaColumns( );
+      JListOperator opList = opMultiView.getColumnListOperator( 0 );
+      opList.selectItem( "Referenced Schemas" );
+
+      // Select reference
+      opList = opMultiView.getColumnListOperator( 1 );
+      opList.selectItem( "import" );
+
+      // Check broken reference
+      opList = opMultiView.getColumnListOperator( 2 );
+      ListModel lmd = opList.getModel( );
+      for( int i = 0; i < lmd.getSize( ); i++ )
+        System.out.println( "****" + lmd.getElementAt( i ) );
+
+      // Fix broken if any
+        // ToDo
+
+      endTest( );
+    }
+
+    public void FixInReferenced( )
+    {
+      startTest( );
+
+      // REMOVE FROM SPEC???
+      // ALWAYS FIXED AUTOMATICALLY???
+
+      // Open wsdl file
+      ProjectsTabOperator pto = new ProjectsTabOperator( );
+      JTreeOperator tree = pto.tree();
+      Node nodeCheck = new Node(
+          tree,
+          SAMPLE_NAME + "|" + PURCHASE_SCHEMA_FILE_PATH + "|POService.wsdl"
+        );
+      nodeCheck.select( );
+      nodeCheck.performPopupAction( "Open" );
+
+      // Get tree
+      TopComponentOperator top = new TopComponentOperator( "POService.wsdl" );
+      JTreeOperator jt = new JTreeOperator( top, 0 );
+      Node n = new Node( jt, "Types|http://manufacturing.org/wsdl/purchase/bp1|Referenced Schemas|import" );
+      n.select( );
 
       endTest( );
     }

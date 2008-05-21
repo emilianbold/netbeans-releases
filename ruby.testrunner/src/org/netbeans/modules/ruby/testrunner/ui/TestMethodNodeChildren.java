@@ -66,7 +66,7 @@ final class TestMethodNodeChildren extends Children.Array {
     protected void addNotify() {
         Report.Trouble trouble = testcase.trouble;
 
-        int nodesCount = 1;                     //exception class name
+        int nodesCount = trouble.exceptionClsName != null ? 1 : 0;                     //exception class name
         if (trouble.message != null) {
             nodesCount++;
         }
@@ -85,8 +85,10 @@ final class TestMethodNodeChildren extends Children.Array {
             children[index++] = new CallstackFrameNode(topFrameInfo,
                                                        trouble.message);
         }
-        children[index++] = new CallstackFrameNode(topFrameInfo,
-                                                   trouble.exceptionClsName);
+        if (trouble.exceptionClsName != null) {
+            children[index++] = new CallstackFrameNode(topFrameInfo,
+                    trouble.exceptionClsName);
+        }
         for (int i = 0; index < nodesCount; i++) {
             children[index++] = new CallstackFrameNode(trouble.stackTrace[i]);
         }

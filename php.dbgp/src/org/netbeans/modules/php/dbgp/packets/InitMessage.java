@@ -44,7 +44,7 @@ import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.php.dbgp.DebugSession;
 import org.netbeans.modules.php.dbgp.DebuggerOptions;
-import org.netbeans.modules.php.dbgp.api.SessionId;
+import org.netbeans.modules.php.dbgp.SessionId;
 import org.netbeans.modules.php.dbgp.breakpoints.AbstractBreakpoint;
 import org.netbeans.modules.php.dbgp.breakpoints.Utils;
 import org.netbeans.modules.php.dbgp.packets.FeatureGetCommand.Feature;
@@ -86,7 +86,7 @@ public class InitMessage extends DbgpMessage {
         
         setBreakpoints( session );
         final String transactionId = session.getTransactionId();        
-        DbgpCommand startCommand = DebuggerOptions.isDebuggerStoppedAtTheFirstLine() ? 
+        DbgpCommand startCommand = DebuggerOptions.getGlobalInstance().isDebuggerStoppedAtTheFirstLine() ? 
             new StepIntoCommand(transactionId) : new RunCommand(transactionId);
         session.sendCommandLater( startCommand );
     }

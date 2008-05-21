@@ -41,13 +41,20 @@
 
 package org.netbeans.modules.vmd.componentssupport.ui.wizard;
 
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import javax.swing.JPanel;
-import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.libraries.Library;
+import org.netbeans.modules.vmd.componentssupport.ui.helpers.JavaMELibsConfigurationHelper;
+import org.netbeans.modules.vmd.componentssupport.ui.helpers.JavaMELibsPreviewHelper;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -58,8 +65,16 @@ import org.openide.util.NbBundle;
  */
 final class NameAndLocationVisualPanel extends JPanel {
     
+    private static final String MSG_EMPTY_LIB_NAME 
+                                              = "MSG_EmptyLibraryName";          // NOI18N 
+    private static final String MSG_EMPTY_LIB_DISPLAY_NAME 
+                                              = "MSG_EmptyLibraryDisplayName";   // NOI18N 
+    private static final String MSG_LIB_EXISTS 
+                                              = "MSG_LibraryExists";             // NOI18N 
+    
     /** Creates new NameAndLocationPanel */
-    NameAndLocationVisualPanel() {
+    NameAndLocationVisualPanel(LibNameAndLocationPanel panel) {
+        myPanel = panel;
         initComponents();
         initAccessibility();
         putClientProperty("NewFileWizard_Title",// NOI18N
@@ -67,88 +82,155 @@ final class NameAndLocationVisualPanel extends JPanel {
         
         DocumentListener dListener = new DocumentAdapter() {
             public void insertUpdate(DocumentEvent e) {
-                //setEnabledForFilesInfo(checkValidity(_data));
-                //setFilesInfoIntoTextAreas(_data);
+                setEnabledForFilesInfo(checkValidity());
+                setFilesInfoIntoTextAreas();
             }
         };
-        libraryNameVale.getDocument().addDocumentListener(dListener);
+        libraryNameValue.getDocument().addDocumentListener(dListener);
         libraryDisplayNameValue.getDocument().addDocumentListener(dListener);
         
     }
     
-    private static String getMessage(String key) {
-        return NbBundle.getMessage(NameAndLocationVisualPanel.class, key);
+    private static String getMessage(String key, Object... args) {
+        return NbBundle.getMessage(NameAndLocationVisualPanel.class, key, args);
     }
     
     private void initAccessibility() {
         getAccessibleContext().setAccessibleDescription(
-                getMessage("ACS_NameIconLocationPanel"));
+                getMessage("ACS_NameIconLocationPanel")); // NOI18N
         createdFilesValue.getAccessibleContext().setAccessibleDescription(
-                getMessage("ACS_LBL_CreatedFiles"));
+                getMessage("ACS_LBL_CreatedFiles")); // NOI18N
         modifiedFilesValue.getAccessibleContext().setAccessibleDescription(
-                getMessage("ACS_LBL_ModifiedFiles"));
+                getMessage("ACS_LBL_ModifiedFiles")); // NOI18N
         libraryDisplayNameValue.getAccessibleContext().setAccessibleDescription(
-                getMessage("ACS_LBL_DisplayName"));
-        libraryNameVale.getAccessibleContext().setAccessibleDescription(
-                getMessage("ACS_LBL_Name"));
+                getMessage("ACS_LBL_DisplayName")); // NOI18N
+        libraryNameValue.getAccessibleContext().setAccessibleDescription(
+                getMessage("ACS_LBL_Name")); // NOI18N
         projectNameValue.getAccessibleContext().setAccessibleDescription(
-                getMessage("ACS_LBL_ProjectName"));
+                getMessage("ACS_LBL_ProjectName")); // NOI18N
         
         getAccessibleContext().setAccessibleName(
-                getMessage("ACS_NameIconLocationPanel"));
+                getMessage("ACS_NameIconLocationPanel")); // NOI18N
         createdFilesValue.getAccessibleContext().setAccessibleName(
-                getMessage("ACS_LBL_CreatedFiles"));
+                getMessage("ACS_LBL_CreatedFiles")); // NOI18N
         modifiedFilesValue.getAccessibleContext().setAccessibleName(
-                getMessage("ACS_LBL_ModifiedFiles"));
+                getMessage("ACS_LBL_ModifiedFiles")); // NOI18N
         libraryDisplayNameValue.getAccessibleContext().setAccessibleName(
-                getMessage("ACS_LBL_DisplayName"));
-        libraryNameVale.getAccessibleContext().setAccessibleName(
-                getMessage("ACS_LBL_Name"));
+                getMessage("ACS_LBL_DisplayName")); // NOI18N
+        libraryNameValue.getAccessibleContext().setAccessibleName(
+                getMessage("ACS_LBL_Name")); // NOI18N
         projectNameValue.getAccessibleContext().setAccessibleName(
-                getMessage("ACS_LBL_ProjectName"));
+                getMessage("ACS_LBL_ProjectName")); // NOI18N
     }
     
     protected void storeData(WizardDescriptor descriptor) {
-        /*NewLibraryDescriptor.DataModel _temp = getTemporaryDataModel();        
-        data.setLibraryName(_temp.getLibraryName());
-        data.setLibraryDisplayName(_temp.getLibraryDisplayName());        
-        data.setCreatedModifiedFiles(_temp.getCreatedModifiedFiles());        */
+        descriptor.putProperty(NewLibraryDescriptor.LIB_NAME, 
+                getLibNameValue() );
+        descriptor.putProperty(NewLibraryDescriptor.DISPLAY_NAME, 
+                getDisplayNameValue() );
     }
-    
-    /*private NewLibraryDescriptor.DataModel getTemporaryDataModel() {
-        NewLibraryDescriptor.DataModel _temp = data.cloneMe(getSettings());        
-        _temp.setLibraryName(libraryNameVale.getText());
-        _temp.setLibraryDisplayName(libraryDisplayNameValue.getText());        
-        if (_temp.isValidLibraryDisplayName() && _temp.isValidLibraryName()) {
-            CreatedModifiedFiles files = CreatedModifiedFilesProvider.createInstance(_temp);
-            _temp.setCreatedModifiedFiles(files);
-        }                
-        return _temp;
-    }*/
-    
-    private void setEnabledForFilesInfo(boolean enabled) {        
-        createdFilesValue.setEnabled(enabled);
-        modifiedFilesValue.setEnabled(enabled);
-    }
-
-    /*private void setFilesInfoIntoTextAreas(final NewLibraryDescriptor.DataModel _temp) {
-        if (_temp.getCreatedModifiedFiles() != null) {
-            createdFilesValue.setText(UIUtil.generateTextAreaContent(
-                    _temp.getCreatedModifiedFiles().getCreatedPaths()));
-            modifiedFilesValue.setText(UIUtil.generateTextAreaContent(
-                    _temp.getCreatedModifiedFiles().getModifiedPaths()));
-        }
-    }*/
     
     void readData( WizardDescriptor descriptor) {
         mySettings = descriptor;
-        libraryNameVale.setText( getLibName() );
+        libraryNameValue.setText( getLibName() );
         libraryDisplayNameValue.setText( getDisplayName() );
         projectNameValue.setText( (String)descriptor.getProperty( 
                 CustomComponentWizardIterator.PROJECT_NAME));
         checkValidity();
     }
 
+    private void setEnabledForFilesInfo(boolean enabled) {        
+        createdFilesValue.setEnabled(enabled);
+        modifiedFilesValue.setEnabled(enabled);
+    }
+
+    private void setFilesInfoIntoTextAreas() {
+        List<String> created = new ArrayList<String>();
+        List<String> modified = new ArrayList<String>();
+
+        addLibJarToList(created, modified);
+        addLibXmlToList(created, modified);
+        addLayerXmlToList(created, modified);
+        addBundleToList(created, modified);
+
+        // publish
+            createdFilesValue.setText(generateTextAreaContent(
+                    created.toArray(new String[]{})));
+            modifiedFilesValue.setText(generateTextAreaContent(
+                    modified.toArray(new String[]{})));
+
+        
+    }
+    
+    private void addLibJarToList(List<String> created, List<String> modified){
+        List<String> existingArchives = getExistingArchives(
+                getExistingLibraries(), getExistingLibraryNames() );
+
+        // add archibes from new lib if are not added yet
+        Library library = (Library)mySettings.getProperty( 
+                    NewLibraryDescriptor.LIBRARY );
+        
+        List<String> archives = 
+                JavaMELibsPreviewHelper.extractLibraryJarsPaths(library, getLibNameValue());
+        for (String arch : archives){
+            if (!existingArchives.contains(arch)){
+                created.add(arch);
+            }
+        }
+    }
+
+    private static List<String> getExistingArchives(List<Library> existingLibs, 
+            List<String> existingLibNames)
+    {
+        List<String> existingArchives = new ArrayList<String>();
+        
+        if (existingLibs == null || existingLibNames == null){
+            return existingArchives;
+        }
+        
+        Iterator<Library> itLib = existingLibs.iterator();
+        Iterator<String> itName = existingLibNames.iterator();
+        while (itLib.hasNext()) {
+            Library library = itLib.next();
+            String name = itName.next();
+
+            existingArchives.addAll(
+                    JavaMELibsPreviewHelper.extractLibraryJarsPaths(library, name) );
+        }
+        return existingArchives;
+    }
+    
+    private void addLibXmlToList(List<String> created, List<String> modified){
+        String dotCodeNameBase = getCodeNameBase();
+        String libName = getLibNameValue();
+
+        String codeNameBase = dotCodeNameBase.replace('.', '/'); // NOI18N
+        
+        created.add(
+                codeNameBase + "/" + libName + 
+                JavaMELibsConfigurationHelper.XML_EXTENSION); // NOI18N
+    }
+    
+    private void addLayerXmlToList(List<String> created, List<String> modified){
+        String dotCodeNameBase = getCodeNameBase();
+        
+        String codeNameBase = dotCodeNameBase.replace('.', '/'); // NOI18N
+        modified.add(
+                codeNameBase + "/" + CustomComponentWizardIterator.LAYER_XML); // NOI18N
+    }
+
+    private void addBundleToList(List<String> created, List<String> modified){
+        String dotCodeNameBase = getCodeNameBase();
+        
+        String codeNameBase = dotCodeNameBase.replace('.', '/'); // NOI18N
+        modified.add(
+                codeNameBase + "/" + CustomComponentWizardIterator.BUNDLE_PROPERTIES); // NOI18N
+    }
+    
+    /**
+     * library display name stored in wizard descriptor
+     * @return library display name
+     */
     private String getDisplayName() {
         String displayName = (String)mySettings.getProperty( 
                 NewLibraryDescriptor.DISPLAY_NAME );
@@ -160,6 +242,10 @@ final class NameAndLocationVisualPanel extends JPanel {
         return displayName;
     }
 
+    /**
+     * library name stored in wizard descriptor
+     * @return library name
+     */
     private String getLibName() {
         String libName = (String)mySettings.getProperty( 
                 NewLibraryDescriptor.LIB_NAME );
@@ -171,28 +257,111 @@ final class NameAndLocationVisualPanel extends JPanel {
         return libName;
     }
 
+    /**
+     * library display name from UI text field
+     * @return String library display name
+     */
+    private String getDisplayNameValue() {
+        return libraryDisplayNameValue.getText();
+    }
+    
+    /**
+     * library name from UI text field
+     * @return String library name
+     */
+    private String getLibNameValue() {
+        return libraryNameValue.getText();
+    }
+    
     private String getPanelName() {
         return NbBundle.getMessage(NameAndLocationVisualPanel.class,"LBL_NameAndLocation_Title"); // NOI18N
     }
 
     private boolean checkValidity(){
-        return true;
-    }
-    /*private boolean checkValidity(final NewLibraryDescriptor.DataModel _data) {
-        if (!_data.isValidLibraryName()) {
-            setError(NbBundle.getMessage(NameAndLocationPanel.class,"ERR_EmptyName")); // NOI18N
+        // TODO add library verification ( e.g.: was not added yet )
+        if (!isValidLibraryName()){
+            setError( getMessage(MSG_EMPTY_LIB_NAME) );
             return false;
-        } else if (!_data.isValidLibraryDisplayName()) {
-            setError(NbBundle.getMessage(NameAndLocationPanel.class,"ERR_EmptyDescName")); // NOI18N
+        } else if (!isValidLibraryDisplayName()){
+            setError( getMessage(MSG_EMPTY_LIB_DISPLAY_NAME) );
             return false;
-        }else if (_data.libraryAlreadyExists()) {
-            setError(NbBundle.getMessage(NameAndLocationPanel.class,
-                    "ERR_LibraryExists", _data.getLibraryName()));
+        } else if (isLibraryNameAlreadyExists()){
+            setError( getMessage(MSG_LIB_EXISTS, getLibNameValue()) );
             return false;
         }
         markValid();
         return true;
-    }*/
+    }
+    
+    // TODO move to class that will perform library instantiation ?
+    private boolean isValidLibraryName() {
+        return getLibNameValue() != null &&
+                getLibNameValue().trim().length() != 0;
+    }
+    // TODO move to class that will perform library instantiation ?
+
+    public boolean isValidLibraryDisplayName() {
+        return getDisplayNameValue() != null &&
+                getDisplayNameValue().trim().length() != 0;
+    }
+
+    // TODO move to class that will perform library instantiation ?
+    public boolean isLibraryNameAlreadyExists() {
+        String libName = getLibNameValue();
+        List<String> existingLibNames = getExistingLibraryNames();
+        
+        if (existingLibNames == null || existingLibNames.size() == 0){
+            return false;
+        }
+        for ( String name : existingLibNames){
+            if (name.equals(libName)){
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    private List<String> getExistingLibraryNames(){
+        return (List<String>)mySettings.getProperty( 
+                NewLibraryDescriptor.EXISTING_LIB_NAMES);
+    }
+
+    private List<Library> getExistingLibraries(){
+        return (List<Library>)mySettings.getProperty( 
+                NewLibraryDescriptor.EXISTING_LIBRARIES);
+    }
+
+    private String getCodeNameBase(){
+        return (String)mySettings.getProperty( 
+                CustomComponentWizardIterator.CODE_BASE_NAME);
+    }
+
+    /**
+     * Set an error message and mark the panel as invalid.
+     */
+    protected final void setError(String message) {
+        assert message != null;
+        setMessage(message);
+        setValid(false);
+    }
+
+    /**
+     * Mark the panel as valid and clear any error or warning message.
+     */
+    protected final void markValid() {
+        setMessage(null);
+        setValid(true);
+    }
+    
+    private final void setMessage(String message) {
+        mySettings.putProperty(
+                CustomComponentWizardIterator.WIZARD_PANEL_ERROR_MESSAGE, 
+                message);
+    }
+
+    private final void setValid(boolean valid) {
+        myPanel.setValid(valid);
+    }
     
     protected HelpCtx getHelp() {
         return new HelpCtx(NameAndLocationVisualPanel.class);
@@ -200,8 +369,30 @@ final class NameAndLocationVisualPanel extends JPanel {
     
     public void addNotify() {
         super.addNotify();
-        //checkValidity(getTemporaryDataModel());
+        checkValidity();
     }
+    
+    /**
+     * Returns a string suitable for text areas respresenting content of {@link
+     * CreatedModifiedFiles} <em>paths</em>.
+     *
+     * @param relPaths should be either
+     *        {@link CreatedModifiedFiles#getCreatedPaths()} or
+     *        {@link CreatedModifiedFiles#getModifiedPaths()}.
+     */
+    private static String generateTextAreaContent(String[] relPaths) {
+        StringBuffer sb = new StringBuffer();
+        if (relPaths.length > 0) {
+            for (int i = 0; i < relPaths.length; i++) {
+                if (i > 0) {
+                    sb.append('\n'); // NOI18N
+                }
+                sb.append(relPaths[i]);
+            }
+        }
+        return sb.toString();
+    }
+    
     
     /** This method is called from within the constructor to
      * initialize the form.
@@ -213,7 +404,7 @@ final class NameAndLocationVisualPanel extends JPanel {
         java.awt.GridBagConstraints gridBagConstraints;
 
         libraryName = new javax.swing.JLabel();
-        libraryNameVale = new javax.swing.JTextField();
+        libraryNameValue = new javax.swing.JTextField();
         libraryDisplayName = new javax.swing.JLabel();
         libraryDisplayNameValue = new javax.swing.JTextField();
         projectName = new javax.swing.JLabel();
@@ -227,7 +418,7 @@ final class NameAndLocationVisualPanel extends JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        libraryName.setLabelFor(libraryNameVale);
+        libraryName.setLabelFor(libraryNameValue);
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/vmd/componentssupport/ui/wizard/Bundle"); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(libraryName, bundle.getString("LBL_LibraryName")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -242,7 +433,7 @@ final class NameAndLocationVisualPanel extends JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(1, 0, 6, 0);
-        add(libraryNameVale, gridBagConstraints);
+        add(libraryNameValue, gridBagConstraints);
 
         libraryDisplayName.setLabelFor(libraryDisplayNameValue);
         org.openide.awt.Mnemonics.setLocalizedText(libraryDisplayName, bundle.getString("LBL_LibraryDisplayName")); // NOI18N
@@ -332,7 +523,7 @@ final class NameAndLocationVisualPanel extends JPanel {
     private javax.swing.JLabel libraryDisplayName;
     private javax.swing.JTextField libraryDisplayNameValue;
     private javax.swing.JLabel libraryName;
-    private javax.swing.JTextField libraryNameVale;
+    private javax.swing.JTextField libraryNameValue;
     private javax.swing.JLabel modifiedFiles;
     private javax.swing.JTextArea modifiedFilesValue;
     private javax.swing.JScrollPane modifiedFilesValueS;
@@ -341,5 +532,6 @@ final class NameAndLocationVisualPanel extends JPanel {
     // End of variables declaration//GEN-END:variables
     
     private WizardDescriptor mySettings;
+    private LibNameAndLocationPanel myPanel;
     
 }

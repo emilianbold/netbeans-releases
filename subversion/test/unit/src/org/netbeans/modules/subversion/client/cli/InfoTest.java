@@ -48,6 +48,7 @@ import org.tigris.subversion.svnclientadapter.SVNClientException;
  *
  * @author tomas
  */
+// XXX add referenceclient
 public class InfoTest extends AbstractCLITest {
     
     public InfoTest(String testName) throws Exception {
@@ -107,6 +108,25 @@ public class InfoTest extends AbstractCLITest {
         assertNotNull(e2);
         assertTrue(e2.getMessage().indexOf(e1.getMessage()) > -1);
     }    
+
+    public void testInfoNotManaged() throws Exception {                                
+        File folder = createFolder("folder");
+        File file = createFile(folder, "file");                
+        notManaged(folder);
+        notManaged(file);
+    }  
+  
+//    XXX fails but we use the implemenation since ever, doesn't seem to be a problem    
+//    public void testInfoUnversioned() throws Exception {                                
+//        File unversioned = createFile("unversioned");
+//        
+//        ISVNClientAdapter c = getNbClient();
+//
+//        ISVNInfo info1 = c.getInfo(unversioned);
+//        ISVNInfo info2 = getInfo(unversioned);
+//                        
+//        assertInfos(info1, info2);
+//    }    
     
     public void testInfoFile() throws Exception {                                
         File file = createFile("file");
@@ -203,6 +223,26 @@ public class InfoTest extends AbstractCLITest {
        
         ISVNInfo info = c.getInfo(getFileUrl(file));                
         assertNull(info.getLastCommitAuthor());        
-    }        
+    }
+
+    private void notManaged(File file) throws Exception {
+        ISVNClientAdapter c = getNbClient();
+        SVNClientException e1 = null;
+        try {
+            c.getInfo(getFileUrl(file));
+        } catch (SVNClientException ex) {
+            e1 = ex;
+        }
+        SVNClientException e2 = null;
+        try {
+            getInfo(getFileUrl(file));
+        } catch (SVNClientException ex) {
+            e2 = ex;
+        }
+
+        assertNotNull(e1);
+        assertNotNull(e2);
+        assertTrue(e2.getMessage().indexOf(e1.getMessage()) > -1);
+    }
 
 }

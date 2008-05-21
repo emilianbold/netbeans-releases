@@ -72,6 +72,7 @@ import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.NewWebProjectNameLocationStepOperator;
+import org.netbeans.jellytools.NewWebProjectServerSettingsStepOperator;
 import org.netbeans.jellytools.NewWebProjectSourcesStepOperator;
 import org.netbeans.jellytools.OptionsOperator;
 import org.netbeans.jellytools.OutputTabOperator;
@@ -131,7 +132,7 @@ public class WebProjectValidation extends JellyTestCase {
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(new WebProjectValidation("testPreconditions"));
         suite.addTest(new WebProjectValidation("testNewWebProject"));
-        //suite.addTest(new WebProjectValidation("testRegisterTomcat"));
+        suite.addTest(new WebProjectValidation("testRegisterTomcat"));
         suite.addTest(new WebProjectValidation("testNewJSP"));
         suite.addTest(new WebProjectValidation("testNewJSP2"));
         suite.addTest(new WebProjectValidation("testJSPNavigator"));
@@ -247,8 +248,10 @@ public class WebProjectValidation extends JellyTestCase {
         nameStep.txtProjectLocation().setText("");
         nameStep.txtProjectLocation().typeText(PROJECT_LOCATION);
         nameStep.next();
-        NewWebProjectSourcesStepOperator sharableStep =  new NewWebProjectSourcesStepOperator();
-        sharableStep.next();
+        NewWebProjectServerSettingsStepOperator serverStep = new NewWebProjectServerSettingsStepOperator();
+        serverStep.selectServer("Tomcat");
+        serverStep.selectJavaEEVersion(org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.j2ee.common.project.ui.Bundle", "J2EESpecLevel_14"));
+        serverStep.next();
         NewWebProjectSourcesStepOperator frameworkStep =  new NewWebProjectSourcesStepOperator();
         frameworkStep.finish();
         // wait for project creation

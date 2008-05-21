@@ -4508,4 +4508,83 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                 "}\n"
                 );
     }
+
+    // IZ#130509:NPE on formatting unbalanced braces
+    // Correct test case when macro will be taken into account
+    public void testIZ135015() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "#define FOR(n) for (int i = 0; i < n; i++) {\n" +
+                "\n" +
+                "int g() {\n" +
+                "    FOR(2)\n" +
+                "        foo();\n" +
+                "    }\n" +
+                "}\n"
+                );
+        reformat();
+        assertDocumentText("IZ#130509:NPE on formatting unbalanced braces",
+                "#define FOR(n) for (int i = 0; i < n; i++) {\n" +
+                "\n" +
+                "int g()\n" +
+                "{\n" +
+                "    FOR(2)\n" +
+                "    foo();\n" +
+                "}\n" +
+                "}\n"
+                );
+    }
+    
+    // IZ#135205:'Spaces Before Keywords|else' option works wrongly in some cases
+    public void testIZ135205() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "int main() {\n" +
+                "    int i = 0;\n" +
+                "    if (1) {\n" +
+                "        i = 2;\n" +
+                "    }else {\n" +
+                "        i = 3;\n" +
+                "    }\n" +
+                "}\n"
+                );
+        reformat();
+        assertDocumentText("IZ#135205:'Spaces Before Keywords|else' option works wrongly in some cases",
+                "int main()\n" +
+                "{\n" +
+                "    int i = 0;\n" +
+                "    if (1) {\n" +
+                "        i = 2;\n" +
+                "    } else {\n" +
+                "        i = 3;\n" +
+                "    }\n" +
+                "}\n"
+                );
+    }
+    
+    // IZ#131721:Comment moves on new line after reformat
+    public void testIZ131721() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "char seek_scrbuf[SEEKBUFSIZE]; /* buffer for seeking */\n" +
+                "int cf_debug; /* non-zero enables debug prints */\n" +
+                "void *\n" +
+                "cf_alloc(void *opaque, unsigned int items, unsigned int size)\n" +
+                "{\n" +
+                "    return (ptr);\n" +
+                "}\n"
+                );
+        reformat();
+        assertDocumentText("IZ#131721:Comment moves on new line after reformat",
+                "char seek_scrbuf[SEEKBUFSIZE]; /* buffer for seeking */\n" +
+                "int cf_debug; /* non-zero enables debug prints */\n" +
+                "\n" +
+                "void *\n" +
+                "cf_alloc(void *opaque, unsigned int items, unsigned int size)\n" +
+                "{\n" +
+                "    return (ptr);\n" +
+                "}\n"
+                );
+    }
+    
 }

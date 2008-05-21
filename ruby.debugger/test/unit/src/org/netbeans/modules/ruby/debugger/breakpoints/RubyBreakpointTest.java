@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -43,6 +43,7 @@ package org.netbeans.modules.ruby.debugger.breakpoints;
 
 import org.netbeans.modules.ruby.debugger.TestBase;
 import java.io.File;
+import org.netbeans.api.debugger.ActionsManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -50,6 +51,10 @@ public final class RubyBreakpointTest extends TestBase {
     
     public RubyBreakpointTest(String testName) {
         super(testName);
+    }
+    
+    public void testBreakpointBasics() {
+        assertTrue("enabled by default", new RubyBreakpoint() {}.isEnabled());
     }
     
     public void testGetBreakpoints() throws Exception {
@@ -71,8 +76,46 @@ public final class RubyBreakpointTest extends TestBase {
         // all
         assertEquals("two Ruby breakpoints", 3, RubyBreakpointManager.getBreakpoints().length);
         // by files
-        assertEquals("two Ruby breakpoints for fruit.rb", 2, RubyBreakpointManager.getBreakpoints(fruitFO).length);
-        assertEquals("one Ruby breakpoint for vegetable.rb", 1, RubyBreakpointManager.getBreakpoints(vegetableFO).length);
+        assertEquals("two Ruby breakpoints for fruit.rb", 2, RubyBreakpointManager.getLineBreakpoints(fruitFO).length);
+        assertEquals("one Ruby breakpoint for vegetable.rb", 1, RubyBreakpointManager.getLineBreakpoints(vegetableFO).length);
     }
     
+    public void testSetCondition() throws Exception {
+        if (tryToSwitchToRDebugIDE()) {
+            String[] testContent = {
+                "1.upto(10) do |i|",
+                "  sleep 0.01",
+                "  sleep 0.01",
+                "end"
+            };
+            File testF = createScript(testContent);
+            FileObject testFO = FileUtil.toFileObject(testF);
+            RubyLineBreakpoint bp = addBreakpoint(testFO, 2);
+            bp.setCondition("i>7");
+            Process p = startDebugging(testF);
+            doContinue(); // i == 8
+            doContinue(); // i == 9
+            doContinue(); // i == 10
+            p.waitFor();
+        }
+    }
+
+    public void testExceptionBreakpoint() throws Exception {
+        if (tryToSwitchToRDebugIDE()) {
+            String[] testContent = {
+                "sleep 0.01",
+                "5/0",
+                "sleep 0.01"};
+            File testF = createScript(testContent);
+            FileObject testFO = FileUtil.toFileObject(testF);
+            addBreakpoint(testFO, 1);
+            RubyBreakpointManager.addExceptionBreakpoint("ZeroDivisionError");
+
+            Process p = startDebugging(testF);
+            doAction(ActionsManager.ACTION_STEP_OVER);
+            doAction(ActionsManager.ACTION_STEP_OVER);
+            doContinue();
+            p.waitFor();
+        }
+    }
 }

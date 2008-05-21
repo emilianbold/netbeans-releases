@@ -96,12 +96,10 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
   }
 
   @Override
-  protected final SimpleBpelModelVisitor getVisitor() { return new SimpleBpelModelVisitorAdaptor()
-  {
+  protected final SimpleBpelModelVisitor getVisitor() { return new SimpleBpelModelVisitorAdaptor() {
 
   @Override
-  public void visit(Copy copy)
-  {
+  public void visit(Copy copy) {
 //out();
 //out("Assign: " + ((Named) copy.getParent()).getName());
     Component fromType = getTypeOfElement(getType(copy.getFrom()));
@@ -129,14 +127,26 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
 //out("  from based: " + ValidationUtil.getBasedSimpleType(fromType));
 //out("    to based: " + ValidationUtil.getBasedSimpleType(toType));
 
-    if (ValidationUtil.getBasedSimpleType(fromType) != ValidationUtil.getBasedSimpleType(toType)) {
-      addWarning("FIX_TYPE_IN_COPY", copy, getTypeName(fromType), getTypeName(toType)); // NOI18N
+    Component fType = ValidationUtil.getBasedSimpleType(fromType);
+    Component tType = ValidationUtil.getBasedSimpleType(toType);
+
+    if (fType == tType) {
+      return;
+    }
+    String fTypeName = getTypeName(fType);
+    String tTypeName = getTypeName(tType);
+    
+    if (fTypeName.equals("string") && tTypeName.equals("time")) { // NOI18N
+      // # 135079
+      addWarning("FIX_Time_in_copy", copy); // NOI18N
+    }
+    else {
+      addWarning("FIX_TYPE_IN_COPY", copy, fTypeName, tTypeName); // NOI18N
     }
   }
 
   @Override
-  public void visit(To to)
-  {
+  public void visit(To to) {
     // # 125525
     checkPartnerLink(to);
     // # 131658

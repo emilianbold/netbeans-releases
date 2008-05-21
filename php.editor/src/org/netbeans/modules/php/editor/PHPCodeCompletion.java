@@ -60,8 +60,10 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.gsf.api.CancellableTask;
+import org.netbeans.modules.gsf.api.CodeCompletionContext;
 import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.Completable;
+import org.netbeans.modules.gsf.api.CodeCompletionHandler;
+import org.netbeans.modules.gsf.api.CodeCompletionResult;
 import org.netbeans.modules.gsf.api.CompletionProposal;
 import org.netbeans.modules.gsf.api.ElementHandle;
 import org.netbeans.modules.gsf.api.ElementKind;
@@ -72,6 +74,7 @@ import org.netbeans.modules.gsf.api.ParameterInfo;
 import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.gsf.api.SourceModel;
 import org.netbeans.modules.gsf.api.SourceModelFactory;
+import org.netbeans.modules.gsf.spi.DefaultCompletionResult;
 import org.netbeans.modules.php.editor.index.IndexedClass;
 import org.netbeans.modules.php.editor.index.IndexedConstant;
 import org.netbeans.modules.php.editor.index.IndexedElement;
@@ -113,7 +116,7 @@ import org.openide.util.NbBundle;
  *
  * @author Tomasz.Slota@Sun.COM
  */
-public class PHPCodeCompletion implements Completable {
+public class PHPCodeCompletion implements CodeCompletionHandler {
     private static final List<PHPTokenId[]> CLASS_NAME_TOKENCHAINS = Arrays.asList(
         new PHPTokenId[]{PHPTokenId.PHP_NEW},
         new PHPTokenId[]{PHPTokenId.PHP_NEW, PHPTokenId.WHITESPACE},
@@ -241,8 +244,12 @@ public class PHPCodeCompletion implements Completable {
         return tokens.toArray(new Token[tokens.size()]);
     }
 
-    public List<CompletionProposal> complete(CompilationInfo info, int caretOffset, String prefix, NameKind kind, QueryType queryType, boolean caseSensitive, HtmlFormatter formatter) {
-        this.caseSensitive = caseSensitive;
+    public CodeCompletionResult complete(CodeCompletionContext completionContext) {
+        CompilationInfo info = completionContext.getInfo();
+        int caretOffset = completionContext.getCaretOffset();
+        String prefix = completionContext.getPrefix();
+        this.caseSensitive = completionContext.isCaseSensitive();
+        HtmlFormatter formatter = completionContext.getFormatter();
         this.nameKind = caseSensitive ? NameKind.PREFIX : NameKind.CASE_INSENSITIVE_PREFIX;
         
         List<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
@@ -250,7 +257,7 @@ public class PHPCodeCompletion implements Completable {
         PHPParseResult result = (PHPParseResult) info.getEmbeddedResult(PHPLanguage.PHP_MIME_TYPE, caretOffset);
         
         if (result.getProgram() == null){
-            return Collections.<CompletionProposal>emptyList();
+            return CodeCompletionResult.NONE;
         }
         
         CompletionContext context = findCompletionContext(info, caretOffset);
@@ -293,7 +300,7 @@ public class PHPCodeCompletion implements Completable {
                 break;
         }
         
-        return proposals;
+        return new DefaultCompletionResult(proposals, false);
     }
     
     private void autoCompleteClassNames(List<CompletionProposal> proposals, CompletionRequest request) {

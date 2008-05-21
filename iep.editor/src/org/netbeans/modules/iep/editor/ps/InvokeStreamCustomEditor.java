@@ -110,8 +110,8 @@ public class InvokeStreamCustomEditor extends DefaultCustomEditor {
             mOutputSchemaNamePanel = PropertyPanel.createSingleLineTextPanel(outputSchemaNameStr, outputSchemaNameProp, false);
             if (mIsSchemaOwner) {
                 if (mOutputSchemaNamePanel.getStringValue() == null || mOutputSchemaNamePanel.getStringValue().trim().equals("")) {
-                	IEPModel model = mComponent.getModel();
-                	String schemaName = NameGenerator.generateSchemaName(model.getPlanComponent().getSchemaComponentContainer());
+                    IEPModel model = mComponent.getModel();
+                    String schemaName = NameGenerator.generateSchemaName(model.getPlanComponent().getSchemaComponentContainer());
                     mOutputSchemaNamePanel.setStringValue(schemaName);
                 }
             } else {
@@ -236,7 +236,7 @@ public class InvokeStreamCustomEditor extends DefaultCustomEditor {
         
         @Override
         protected SelectPanel createSelectPanel(IEPModel model, OperatorComponent component) {
-        	return new MySelectPanel(model, component);
+            return new MySelectPanel(model, component);
         }
 
         @Override
@@ -303,8 +303,8 @@ public class InvokeStreamCustomEditor extends DefaultCustomEditor {
                             mSizePanel.setStringValue(displayName);
                             SchemaComponent sc = inComp.getOutputSchemaId();
                             if(sc != null) {
-                            	mSelectPanel.clearTable();
-                            	mSelectPanel.setAttributes(sc.getSchemaAttributes());
+                                mSelectPanel.clearTable();
+                                mSelectPanel.setAttributes(sc.getSchemaAttributes());
                             }
                         }
                         
@@ -344,40 +344,40 @@ public class InvokeStreamCustomEditor extends DefaultCustomEditor {
     
     class MySelectPanel extends SelectPanel {
 
-		/**
-		 * 
-		 */
-		private static final long serialVersionUID = -4195259789503600814L;
+        /**
+         * 
+         */
+        private static final long serialVersionUID = -4195259789503600814L;
 
-		public MySelectPanel(IEPModel model, OperatorComponent component) {
-			super(model, component);
-		}
-    	
-		@Override
-		protected boolean isAddEmptyRow() {
-			return false;
-		}
+        public MySelectPanel(IEPModel model, OperatorComponent component) {
+            super(model, component);
+        }
+        
+        @Override
+        protected boolean isAddEmptyRow() {
+            return false;
+        }
 
                 @Override
                 protected boolean isShowButtons() {
                     return false;
                 }
-		
+        
                 
-		@Override
-		protected DefaultMoveableRowTableModel createTableModel() {
-			return new MyTableModel();
-		}
+        @Override
+        protected DefaultMoveableRowTableModel createTableModel() {
+            return new MyTableModel();
+        }
     }
     
     class MyTableModel extends DefaultMoveableRowTableModel {
-    	
-    	@Override
-    	public boolean isCellEditable(int row, int column) {
-    		if(column == 0) {
-    			return true;
-    		}
-    		return false;
-    	}
+        
+        @Override
+        public boolean isCellEditable(int row, int column) {
+            if(column == 0) {
+                return true;
+            }
+            return false;
+        }
     }
 }

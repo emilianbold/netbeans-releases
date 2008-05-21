@@ -84,8 +84,7 @@ public final class SearchAction extends IconAction {
   }
 
   @Override
-  public boolean isEnabled()
-  {
+  public boolean isEnabled() {
     return true;
   }
 

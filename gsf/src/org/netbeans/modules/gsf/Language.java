@@ -42,14 +42,14 @@ package org.netbeans.modules.gsf;
 
 import javax.swing.Action;
 import org.netbeans.modules.gsf.api.*;
-import org.netbeans.modules.gsf.api.Completable;
+import org.netbeans.modules.gsf.api.CodeCompletionHandler;
 import org.netbeans.modules.gsf.api.DeclarationFinder;
 import org.netbeans.modules.gsf.api.InstantRenamer;
 import org.netbeans.modules.gsf.api.Parser;
 import org.netbeans.modules.gsf.api.GsfLanguage;
 import org.netbeans.modules.gsf.api.annotations.CheckForNull;
 import org.netbeans.modules.gsf.api.annotations.NonNull;
-import org.netbeans.modules.gsf.api.BracketCompletion;
+import org.netbeans.modules.gsf.api.KeystrokeHandler;
 import org.netbeans.modules.gsf.api.Formatter;
 import org.netbeans.modules.gsf.api.Indexer;
 import org.netbeans.modules.gsf.api.StructureScanner;
@@ -138,7 +138,7 @@ public interface Language {
      * Get a code completion handler, if any
      */
     @CheckForNull
-    Completable getCompletionProvider();
+    CodeCompletionHandler getCompletionProvider();
 
     /**
      * Get a rename helper, if any, for instant renaming
@@ -159,10 +159,10 @@ public interface Language {
     Formatter getFormatter();
     
     /**
-     * Get a BracketCompletion helper, if any, for helping with bracket completion
+     * Get a KeystrokeHandler helper, if any, for helping with bracket completion
      */
     @CheckForNull
-    BracketCompletion getBracketCompletion();
+    KeystrokeHandler getBracketCompletion();
     
     /**
      * Get an associated palette controller, if any

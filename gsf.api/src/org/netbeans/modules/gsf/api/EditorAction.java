@@ -57,9 +57,25 @@ import org.netbeans.modules.gsf.api.annotations.NonNull;
  * @author Tor Norbye
  */
 public interface EditorAction extends Action {
-    /** Action was invoked from an editor */
-    // TODO - must add "applies to" here!!
+    /** 
+     * Action was invoked from an editor. 
+     */
     void actionPerformed(@CheckForNull ActionEvent evt, @NonNull final JTextComponent target);
+    /**
+     * Return true iff this action applies to the given mime type. This method is only called once,
+     * at startup, to determine which editor kits to register the action with.
+     * @param mimeType The mime type to check
+     * @return True iff this action is enabled for the given mimetype
+     */
+    boolean appliesTo(String mimeType);
+    /**
+     * Return the action name that the action will be registered as. This is the name
+     * the action will be refererred to as when registering keyboard shortcuts.
+     */
     @NonNull String getActionName();
+    /**
+     * Return the class for the package where there should be a Bundle.properties file
+     * localizing the action (by the action name).
+     */
     @NonNull Class getShortDescriptionBundleClass();
 }

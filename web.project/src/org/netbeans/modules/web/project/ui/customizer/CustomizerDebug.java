@@ -41,15 +41,22 @@
 
 package org.netbeans.modules.web.project.ui.customizer;
 
+import javax.swing.JPanel;
+import org.netbeans.spi.project.ui.support.ProjectCustomizer;
+import org.openide.util.NbBundle;
+
 /**
  * Customizer panel for the Debug category
  * 
  * @author  quynguyen
  */
-public class CustomizerDebug extends javax.swing.JPanel {
-
+public class CustomizerDebug extends JPanel {
+    private final ProjectCustomizer.Category category;
+    
     /** Creates new form CustomizerDebug */
-    public CustomizerDebug(WebProjectProperties uiProps) {
+    public CustomizerDebug(ProjectCustomizer.Category category, WebProjectProperties uiProps) {
+        this.category = category;
+        
         initComponents();
         
         debugServerJCheckBox.setModel(uiProps.DEBUG_SERVER_MODEL);
@@ -69,7 +76,6 @@ public class CustomizerDebug extends javax.swing.JPanel {
 
         debugServerJCheckBox = new javax.swing.JCheckBox();
         debugClientJCheckBox = new javax.swing.JCheckBox();
-        errorLabel = new javax.swing.JLabel();
 
         org.openide.awt.Mnemonics.setLocalizedText(debugServerJCheckBox, org.openide.util.NbBundle.getMessage(CustomizerDebug.class, "LBL_CustomizeDebug_ServerDebug_JCheckBox")); // NOI18N
         debugServerJCheckBox.addActionListener(new java.awt.event.ActionListener() {
@@ -85,17 +91,12 @@ public class CustomizerDebug extends javax.swing.JPanel {
             }
         });
 
-        errorLabel.setText(org.openide.util.NbBundle.getMessage(CustomizerDebug.class, "CustomizerDebug.errorLabel.text")); // NOI18N
-
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(debugClientJCheckBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 453, Short.MAX_VALUE)
             .add(debugServerJCheckBox, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 453, Short.MAX_VALUE)
-            .add(layout.createSequentialGroup()
-                .add(errorLabel)
-                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -103,9 +104,7 @@ public class CustomizerDebug extends javax.swing.JPanel {
                 .add(debugServerJCheckBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 30, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(debugClientJCheckBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 30, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(18, 18, 18)
-                .add(errorLabel)
-                .add(412, 412, 412))
+                .add(430, 430, 430))
         );
 
         debugServerJCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerDebug.class, "ACS_CustomizeDebug_ServerDebug_A11YDesc")); // NOI18N
@@ -124,9 +123,11 @@ private void debugClientActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
  
     private void validateCheckBoxes() {
         if (!debugClientJCheckBox.isSelected() && !debugServerJCheckBox.isSelected()) {
-            errorLabel.setText(org.openide.util.NbBundle.getMessage(CustomizerDebug.class, "LBL_CustomzieDebug_NoDebug_Error")); // NOI18N
+            category.setErrorMessage(NbBundle.getMessage(CustomizerDebug.class, "LBL_CustomzieDebug_NoDebug_Error"));
+            category.setValid(false);
         }else {
-            errorLabel.setText(null);
+            category.setErrorMessage(null);
+            category.setValid(true);
         }
     }
 
@@ -134,7 +135,6 @@ private void debugClientActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox debugClientJCheckBox;
     private javax.swing.JCheckBox debugServerJCheckBox;
-    private javax.swing.JLabel errorLabel;
     // End of variables declaration//GEN-END:variables
 
 }

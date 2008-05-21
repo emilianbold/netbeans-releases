@@ -41,7 +41,9 @@ package org.netbeans.modules.subversion.client.cli.commands;
 
 import java.io.File;
 import java.io.IOException;
+import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.cli.SvnCommand;
+import org.tigris.subversion.svnclientadapter.ISVNNotifyListener;
 
 /**
  *
@@ -58,23 +60,32 @@ public class AddCommand extends SvnCommand {
         this.force = force;
         this.files = files;
     }
-            
+
+    @Override
+    protected int getCommand() {
+        return ISVNNotifyListener.Command.ADD;
+    }
+    
     @Override
     public void prepareCommand(Arguments arguments) throws IOException {
         arguments.add("add");
         if (!recursive) {
             arguments.add("-N");
         }			
-        arguments.addFileArguments(files);
-        setCommandWorkingDirectory(files);
+        arguments.addFileArguments(files);        
+        setCommandWorkingDirectory(files);        
     }
 
     @Override
+    protected void config(File configDir, String username, String password, Arguments arguments) {
+        arguments.addConfigDir(configDir);        
+    }
+    
+    @Override
     public void errorText(String line) {
-        if (line.startsWith("svn: warning:") /* XXX is not a working copy or line.indexOf("is already under version control") > -1*/) {
+        if (line.startsWith("svn: warning:")) { // ignore warnings           
             return;
         }
         super.errorText(line);
-    }
-    
+    }    
 }

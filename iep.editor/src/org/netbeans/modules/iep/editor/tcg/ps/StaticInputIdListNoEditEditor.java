@@ -7,25 +7,25 @@ import org.netbeans.modules.iep.model.OperatorComponent;
 
 public class StaticInputIdListNoEditEditor extends NoEditEditor {
 
-	 public String getAsText() {
-		 StringBuffer valueBuf = new StringBuffer();
-		 
-		 OperatorComponent op = getOperatorComponent();
-		 List<OperatorComponent> inputs = op.getStaticInputTableList();
-		 Iterator<OperatorComponent> it = inputs.iterator();
-		 valueBuf.append("[");
-		 
-		 while(it.hasNext()) {
-			 OperatorComponent input = it.next();
-			 valueBuf.append(input.getDisplayName());
-			 
-			 if(it.hasNext()) {
-				 valueBuf.append(",");
-			 }
-		 }
-		 
-		 valueBuf.append("]");
-		 return valueBuf.toString();
-		 
-	 }
+     public String getAsText() {
+         StringBuffer valueBuf = new StringBuffer();
+         
+         OperatorComponent op = getOperatorComponent();
+         List<OperatorComponent> inputs = op.getStaticInputTableList();
+         Iterator<OperatorComponent> it = inputs.iterator();
+         valueBuf.append("[");
+         
+         while(it.hasNext()) {
+             OperatorComponent input = it.next();
+             valueBuf.append(input.getDisplayName());
+             
+             if(it.hasNext()) {
+                 valueBuf.append(",");
+             }
+         }
+         
+         valueBuf.append("]");
+         return valueBuf.toString();
+         
+     }
 }

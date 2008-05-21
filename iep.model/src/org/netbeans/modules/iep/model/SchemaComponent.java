@@ -4,7 +4,7 @@ import java.util.List;
 
 public interface SchemaComponent extends Component {
 
-	
+    
     void setSchemaAttributes(List<SchemaAttribute> columns);
     
     List<SchemaAttribute> getSchemaAttributes();

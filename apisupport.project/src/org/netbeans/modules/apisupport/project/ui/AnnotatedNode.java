@@ -56,6 +56,10 @@ import org.openide.nodes.Children;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 
+/**
+ * Essentially copy of logic in ProjectsRootNode which is applied automatically to root nodes.
+ * Would be nice to have available as a separate API. Here used for ImportantFilesNode.
+ */
 class AnnotatedNode extends AbstractNode implements Runnable, FileStatusListener {
     
     private Set<FileObject> files;

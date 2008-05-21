@@ -33,7 +33,7 @@ public final class IEPVisualPanel3 extends JPanel {
     
     @Override
     public String getName() {
-    	return NbBundle.getMessage(IEPVisualPanel1.class, "IEPVisualPanel3_title");
+        return NbBundle.getMessage(IEPVisualPanel1.class, "IEPVisualPanel3_title");
     }
 
     private void initGUI() {

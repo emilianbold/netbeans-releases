@@ -110,11 +110,8 @@ final class PanelOperation<T> extends Panel<T> {
       
       String name = addExtension(fileName);
       FileObject file = getFolder().getFileObject(name);
-
-      if (file != null) {
-        return i18n("ERR_File_Already_Exists", name); // NOI18N
-      }
     }
+
     Operation operation = getOperation();
 
     if (operation == null) {

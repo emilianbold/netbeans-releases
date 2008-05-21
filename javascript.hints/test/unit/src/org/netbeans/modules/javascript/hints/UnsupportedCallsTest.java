@@ -50,4 +50,10 @@ public class UnsupportedCallsTest extends HintTestBase {
         
         findHints(this, new UnsupportedCalls(), "testfiles/unsupportedcalls.js", null);
     }
+
+    public void testXHR() throws Exception {
+        initializeRegistry();
+        
+        findHints(this, new UnsupportedCalls(), "testfiles/gameboard.js", null);
+    }
 }

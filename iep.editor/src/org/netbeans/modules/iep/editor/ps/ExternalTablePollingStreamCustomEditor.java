@@ -193,7 +193,7 @@ public class ExternalTablePollingStreamCustomEditor extends DefaultCustomEditor 
                                                                               DatabaseTableWizardConstants.getTimeUnitInfosCodeName().toArray(mTimeUnitCodeName), 
                                                                               false);
             if(pollingIntervalTimeUnit.getValue() == null || pollingIntervalTimeUnit.getValue().equals("")) {
-            	mPollingIntervalTimeUnitPanel.setStringValue(DatabaseTableWizardConstants.TIMEUNIT_SECOND.getCodeName());
+                mPollingIntervalTimeUnitPanel.setStringValue(DatabaseTableWizardConstants.TIMEUNIT_SECOND.getCodeName());
             }
             
 //            gbc.gridx = 3;
@@ -237,7 +237,7 @@ public class ExternalTablePollingStreamCustomEditor extends DefaultCustomEditor 
             mOutputSchemaNamePanel = PropertyPanel.createSingleLineTextPanel(outputSchemaNameStr, outputSchemaNameProp, false);
             if (mIsSchemaOwner) {
                 if (mOutputSchemaNamePanel.getStringValue() == null || mOutputSchemaNamePanel.getStringValue().trim().equals("")) {
-                	IEPModel model = mComponent.getModel();
+                    IEPModel model = mComponent.getModel();
                         String schemaName = NameGenerator.generateSchemaName(model.getPlanComponent().getSchemaComponentContainer());
                     mOutputSchemaNamePanel.setStringValue(schemaName);
                 }
@@ -439,7 +439,7 @@ public class ExternalTablePollingStreamCustomEditor extends DefaultCustomEditor 
         
         @Override
         protected SelectPanel createSelectPanel(IEPModel model, OperatorComponent component) {
-        	return new MySelectPanel(model, component);
+            return new MySelectPanel(model, component);
         }
 
         @Override
@@ -491,12 +491,35 @@ public class ExternalTablePollingStreamCustomEditor extends DefaultCustomEditor 
             
             //store record identifying columns
             Property recordIdentifyingColumnsSchema = mComponent.getProperty(ExternalTablePollingStreamOperatorComponent.PROP_RECORD_IDENTIFIER_COLUMNS_SCHEMA);
+            String ridschemaName = recordIdentifyingColumnsSchema.getValue();
             if(mRecordIdentifyingColumnsSchema != null) {
                 IEPModel model = getOperatorComponent().getModel();
                 model.startTransaction();
                 SchemaComponentContainer sc = model.getPlanComponent().getSchemaComponentContainer();
+                //remove previous record identifer schema component if
+                //any
+                if(ridschemaName != null && !ridschemaName.trim().equals("")) {
+                    SchemaComponent sComp = sc.findSchema(ridschemaName);
+                    if(sComp != null) {
+                        sc.removeSchemaComponent(sComp);
+                    }
+                }
                 sc.addSchemaComponent(mRecordIdentifyingColumnsSchema);
                 recordIdentifyingColumnsSchema.setValue(mRecordIdentifyingColumnsSchema.getName());
+                model.endTransaction();
+            } else {
+                IEPModel model = getOperatorComponent().getModel();
+                model.startTransaction();
+                
+                if(ridschemaName != null && !ridschemaName.trim().equals("")) {
+                    SchemaComponentContainer sc = model.getPlanComponent().getSchemaComponentContainer();
+                    SchemaComponent sComp = sc.findSchema(ridschemaName);
+                    if(sComp != null) {
+                        sc.removeSchemaComponent(sComp);
+                    }
+                }
+                
+                recordIdentifyingColumnsSchema.setValue("");
                 model.endTransaction();
             }
             
@@ -555,32 +578,30 @@ public class ExternalTablePollingStreamCustomEditor extends DefaultCustomEditor 
        
         
         private String generateUniqueAsColumnName(ColumnInfo column, 
-        										  Set<String> nameSet) {
-        	String baseName = column.getColumnName();
-        	
-        	String newName = baseName;
-        	
-        	int counter = 0;
+                                                  Set<String> nameSet) {
+            String baseName = column.getColumnName();
+            
+            String newName = baseName;
+            
+            int counter = 0;
             while(nameSet.contains(newName)) {
-            	newName = baseName + "_" + counter;
-            	counter++;
+                newName = baseName + "_" + counter;
+                counter++;
             }
-        	return newName;
+            return newName;
         
         }
         
-        private Set<String> getColumnNames(List<ColumnInfo> remainingColumns, 
-        								   Set<String> usedUpNames) {
-        	Set<String> nameSet = new HashSet<String>();
-        	nameSet.addAll(usedUpNames);
-        	
-        	for (int i = 0; i < remainingColumns.size(); i++) {
-            	ColumnInfo c = remainingColumns.get(i);
+        private Set<String> getColumnNames(List<ColumnInfo> remainingColumns) {
+            Set<String> nameSet = new HashSet<String>();
+            
+            for (int i = 0; i < remainingColumns.size(); i++) {
+                ColumnInfo c = remainingColumns.get(i);
                 String colName = c.getColumnName();
                 nameSet.add(colName);
             }
-        	
-        	return nameSet;
+            
+            return nameSet;
         }
         
         private SchemaAttribute createSchemaAttributeFromColumnInfo(ColumnInfo column, String attrName) {
@@ -674,15 +695,10 @@ public class ExternalTablePollingStreamCustomEditor extends DefaultCustomEditor 
                     while(it.hasNext()) {
                         ColumnInfo column = it.next();
                         remainingColumns.remove(column);
-                        Set<String> cnames = getColumnNames(remainingColumns, usedupNames);
                         String asColumnName = null;
-                        //first column we want to keep name as it is.
-                        if(counter ==0) {
-                        	asColumnName = column.getColumnName();
-                        } else {
-                        	asColumnName = generateUniqueAsColumnName(column, cnames);
-                        }
-                        	
+                        
+                        asColumnName = generateUniqueAsColumnName(column, usedupNames);
+                            
                         usedupNames.add(asColumnName);
                         SchemaAttribute sa = createSchemaAttributeFromColumnInfo(column, asColumnName);
                         fromColumnToAsColumnMap.put(column.getQualifiedName(), sa.getAttributeName());
@@ -697,7 +713,7 @@ public class ExternalTablePollingStreamCustomEditor extends DefaultCustomEditor 
                     MyInputTableTreeModel treeModel = new MyInputTableTreeModel(new DefaultMutableTreeNode("root"), mModel, mComponent, tables);
                     mInputSchemaTreePanel.setInputSchemaTreeModel(treeModel);
                     if(mWhereClause != null) {
-                    	mWherePanel.setStringValue(mWhereClause);
+                        mWherePanel.setStringValue(mWhereClause);
                     }
                     
                     if(recordIdentifyingColumns != null && recordIdentifyingColumns.size() > 0) {
@@ -723,6 +739,9 @@ public class ExternalTablePollingStreamCustomEditor extends DefaultCustomEditor 
                         mRecordIdentifyingColumnsTextField.setText(convertListToCommaSeperatedValues(columnList));
                         
 //                        mRecordIdentifyingColumnsPanel.setStringValue(convertListToCommaSeperatedValues(columnList));
+                    } else {
+                        mRecordIdentifyingColumnsSchema = null;
+                        mRecordIdentifyingColumnsTextField.setText("");
                     }
                     
                 }
@@ -747,15 +766,15 @@ public class ExternalTablePollingStreamCustomEditor extends DefaultCustomEditor 
                 Property fromClause = component.getProperty(SharedConstants.FROM_CLAUSE_KEY);
                 
                 if(fromClause != null) {
-	                List tables = (List) fromClause.getPropertyType().getType().parse(fromClause.getValue());
-	                if(tables != null) {
-	                    Iterator it = tables.iterator();
-	                    while(it.hasNext()) {
-	                        String tableQualifedName = (String) it.next();
-	                        DefaultMutableTreeNode inputNode = new DefaultMutableTreeNode(tableQualifedName);
-	                        this.mRoot.add(inputNode);
-	                    }
-	                }
+                    List tables = (List) fromClause.getPropertyType().getType().parse(fromClause.getValue());
+                    if(tables != null) {
+                        Iterator it = tables.iterator();
+                        while(it.hasNext()) {
+                            String tableQualifedName = (String) it.next();
+                            DefaultMutableTreeNode inputNode = new DefaultMutableTreeNode(tableQualifedName);
+                            this.mRoot.add(inputNode);
+                        }
+                    }
                 }
             } catch(Exception e) {
                 mLog.log(Level.SEVERE, NbBundle.getMessage(InputSchemaTreeModel.class, 
@@ -792,40 +811,40 @@ public class ExternalTablePollingStreamCustomEditor extends DefaultCustomEditor 
     
     class MySelectPanel extends SelectPanel {
 
-		/**
-		 * 
-		 */
-		private static final long serialVersionUID = -4195259789503600814L;
+        /**
+         * 
+         */
+        private static final long serialVersionUID = -4195259789503600814L;
 
-		public MySelectPanel(IEPModel model, OperatorComponent component) {
-			super(model, component);
-		}
-    	
-		@Override
-		protected boolean isAddEmptyRow() {
-			return false;
-		}
+        public MySelectPanel(IEPModel model, OperatorComponent component) {
+            super(model, component);
+        }
+        
+        @Override
+        protected boolean isAddEmptyRow() {
+            return false;
+        }
 
                 @Override
                 protected boolean isShowButtons() {
                     return false;
                 }
-		
+        
                 
-		@Override
-		protected DefaultMoveableRowTableModel createTableModel() {
-			return new MyTableModel();
-		}
+        @Override
+        protected DefaultMoveableRowTableModel createTableModel() {
+            return new MyTableModel();
+        }
     }
     
     class MyTableModel extends DefaultMoveableRowTableModel {
-    	
-    	@Override
-    	public boolean isCellEditable(int row, int column) {
-    		if(column == 0 || column == 1) {
-    			return true;
-    		}
-    		return false;
-    	}
+        
+        @Override
+        public boolean isCellEditable(int row, int column) {
+            if(column == 0 || column == 1) {
+                return true;
+            }
+            return false;
+        }
     }
 }
