@@ -95,7 +95,7 @@ public class BuildArtifactMapperImpl {
             return true;
         }
         
-        if (!targetFolder.mkdirs()) {
+        if (!targetFolder.exists() && !targetFolder.mkdirs()) {
             throw new IOException("Cannot create destination folder: " + targetFolder.getAbsolutePath());
         }
         
