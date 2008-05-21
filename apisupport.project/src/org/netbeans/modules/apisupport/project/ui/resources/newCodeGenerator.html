@@ -1,6 +1,7 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -24,7 +25,7 @@ your own identifying information:
 Contributor(s):
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 
 If you wish your version of this file to be governed by only the CDDL
@@ -38,18 +39,12 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-
-<mconfig name="qa-functional tests config">
-                                
-    <testbag testattribs="validation" name="validation Suite">
-        <testset dir="qa-functional/src">            
-            <patternset>             
-                <include name="org/netbeans/modules/test/refactoring/FindUsagesClassTest.class"/>                                            
-            </patternset>
-        </testset>
-    </testbag>
-    
-    <executor name="ide" antfile="build-qa-functional.xml" target="runidetest" default="true"/>
-    
-    <compiler name="qa-functional-compiler" antfile="build-qa-functional.xml" target="qa-functional-compiler" default="true" />    
-</mconfig>
+<html>
+    <body>
+        Use this template to register an <b>Code Generator</b> with this module.
+        The Code Generator SPI gives modules a chance to plug their own code
+        generators into the popup that appears in the editor on the <b>Insert
+        Code</b> 
+        action invocation.
+    </body>
+</html>

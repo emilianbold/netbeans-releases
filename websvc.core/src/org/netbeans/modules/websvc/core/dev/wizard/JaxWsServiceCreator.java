@@ -280,10 +280,10 @@ public class JaxWsServiceCreator implements ServiceCreator {
     }
 
     private String getUniqueJaxwsName(JAXWSSupport jaxWsSupport, String origName) {
-        List<Service> webServices = jaxWsSupport.getServices();
+        List webServices = jaxWsSupport.getServices();
         List<String> serviceNames = new ArrayList<String>(webServices.size());
-        for (Service service : webServices) {
-            serviceNames.add(service.getName());
+        for (Object service : webServices) {
+            serviceNames.add(((Service)service).getName());
         }
         return uniqueWSName(origName, serviceNames);
     }

@@ -222,7 +222,7 @@ public class SQLDBSynchronizationValidationVisitor {
     private void compareCollabTableWithDatabaseTable(SQLDBTable collabTable, DBMetaDataFactory meta) throws Exception {
         if (meta.isTableOrViewExist(AbstractDBTable.getResolvedCatalogName(collabTable), AbstractDBTable.getResolvedSchemaName(collabTable), AbstractDBTable.getResolvedTableName(collabTable))) {
             // Get the table from database
-            Table newTable = new Table(AbstractDBTable.getResolvedCatalogName(collabTable), AbstractDBTable.getResolvedSchemaName(collabTable), AbstractDBTable.getResolvedTableName(collabTable));
+            Table newTable = new Table(AbstractDBTable.getResolvedTableName(collabTable), AbstractDBTable.getResolvedCatalogName(collabTable), AbstractDBTable.getResolvedSchemaName(collabTable));
             meta.populateColumns(newTable);
 
             List collabColumns = collabTable.getColumnList();
