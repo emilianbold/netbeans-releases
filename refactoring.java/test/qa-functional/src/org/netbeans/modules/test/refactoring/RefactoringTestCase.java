@@ -49,7 +49,9 @@ import java.util.List;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JTree;
 import javax.swing.tree.TreeModel;
+import javax.swing.tree.TreePath;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
@@ -99,13 +101,10 @@ public abstract class RefactoringTestCase extends NbTestCase {
         for (int i = 0; i < childs; i++) {
             Object child = model.getChild(parent, i);
             al.add(child);
-        }
-        System.out.println(al);
-        System.out.println(level+" "+sortLevel);
+        }        
         if ((level+1) <= sortLevel) {
             sortChilds(al);
-        }
-        System.out.println(al);
+        }        
 
         while(!al.isEmpty()) {            
             Object child = al.remove(0);
@@ -113,9 +112,7 @@ public abstract class RefactoringTestCase extends NbTestCase {
         }
         
     }
-
-    
-    
+        
     protected  void openFile(String treeSubPackagePathToFile, String fileName) {
         // debug info, to be removed
         //this.treeSubPackagePathToFile = treeSubPackagePathToFile;
@@ -144,6 +141,12 @@ public abstract class RefactoringTestCase extends NbTestCase {
         //node.performPopupAction("Open");
         new OpenAction().performAPI(node);  //should be more stable then performing open action from popup
 
+    }
+    
+    public String getFileForSelectedNode(JTree tree) {
+        TreePath selectionPath = tree.getSelectionPath();
+        Object pathComponent = selectionPath.getPathComponent(2);
+        return (String) getPreviewItemLabel(pathComponent);
     }
 
     private Object getPreviewItemLabel(Object parent)  {
@@ -211,7 +214,7 @@ public abstract class RefactoringTestCase extends NbTestCase {
     
     @Override
     protected void setUp() throws Exception {
-        System.out.println("Test "+getName()+" started");
+        System.out.println("Test "+getName()+" started");        
     }
 
     @Override
