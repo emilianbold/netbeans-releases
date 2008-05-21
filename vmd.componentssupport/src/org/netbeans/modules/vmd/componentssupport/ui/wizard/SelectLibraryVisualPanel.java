@@ -63,7 +63,7 @@ final class SelectLibraryVisualPanel extends JPanel {
         myPanel = panel;
         getAccessibleContext().setAccessibleName(getMessage("ACS_SelectLibraryPanel"));
         getAccessibleContext().setAccessibleDescription(getMessage("ACS_SelectLibraryPanel"));
-        putClientProperty("NewFileWizard_Title", getMessage("LBL_LibraryWizardTitle"));
+
         myInnerPanel = LibraryChooser.createPanel(null, new ClassLibraryFilter() );
         myInnerPanel.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
@@ -109,10 +109,6 @@ final class SelectLibraryVisualPanel extends JPanel {
     void readData( WizardDescriptor settings ) {
         mySettings = settings;
         checkValidity();
-    }
-    
-    protected String getPanelName() {
-        return getMessage("LBL_SelectLibraryPanel_Title");
     }
     
     protected HelpCtx getHelp() {

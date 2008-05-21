@@ -69,8 +69,6 @@ final class ComponentProducerVisualPanel extends JPanel {
     ComponentProducerVisualPanel(ComponentProducerWizardPanel panel) {
         myPanel = panel;
         initComponents();
-        putClientProperty("NewFileWizard_Title",// NOI18N
-                NbBundle.getMessage(ComponentProducerVisualPanel.class,"LBL_LibraryWizardTitle")); // NOI18N
         
         DocumentListener dListener = new DocumentAdapter() {
             public void insertUpdate(DocumentEvent e) {

@@ -67,10 +67,11 @@ import org.openide.util.NbBundle;
  */
 final class NewComponentDescriptor implements WizardDescriptor.InstantiatingIterator {
     
-    private static final String LIB_STEPS_COUNT = "LBL_LibStepsCount";          // NOI18N
+    private static final String WIZARD_TITLE     = "LBL_ComponentWizardTitle";  // NOI18N
+    private static final String LIB_STEPS_COUNT = "LBL_CompWizardStepsCount";   // NOI18N
     
     public static final String  COMPONENT_DESCR_STEP    
-                                                = "LBL_PrefixCompDescrStep";  // NOI18N
+                                                = "LBL_PrefixCompDescrStep";    // NOI18N
     public static final String  COMPONENT_PRODUCER_STEP
                                                 = "LBL_ComponentProducerStep";  // NOI18N
     public static final String  PRESENTERS_STEP = "LBL_ComponentPresentersStep";// NOI18N
@@ -108,6 +109,9 @@ final class NewComponentDescriptor implements WizardDescriptor.InstantiatingIter
                         steps);
             }
         }    
+        
+        wizardDescriptor.setTitle(
+                NbBundle.getMessage(NewLibraryDescriptor.class, WIZARD_TITLE));
         
     }
 
