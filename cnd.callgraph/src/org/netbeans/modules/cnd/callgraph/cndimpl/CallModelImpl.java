@@ -108,7 +108,7 @@ public class CallModelImpl implements CallModel {
     public List<Call> getCallers(Function declaration) {
         FunctionImpl functionImpl = (FunctionImpl) declaration;
         CsmFunction owner = functionImpl.getDeclaration();
-        if (CsmKindUtilities.isFunction(owner)) {
+        if (CsmKindUtilities.isFunction(owner) && owner.getContainingFile().isValid()) {
             HashMap<CsmFunction,CsmReference> set = new HashMap<CsmFunction,CsmReference>();
             for(CsmReference r : repository.getReferences(owner, project, CsmReferenceKind.ANY_USAGE)){
                 CsmFunction o = getFunctionDeclaration(getOwner(r));
@@ -164,7 +164,7 @@ public class CallModelImpl implements CallModel {
     public List<Call> getCallees(Function definition) {
         FunctionImpl definitionImpl = (FunctionImpl) definition;
         CsmFunction owner = definitionImpl.getDefinition();
-        if (CsmKindUtilities.isFunctionDefinition(owner)) {
+        if (CsmKindUtilities.isFunctionDefinition(owner) && owner.getContainingFile().isValid()) {
             final List<CsmOffsetable> list = CsmFileInfoQuery.getDefault().getUnusedCodeBlocks((owner).getContainingFile());
             final HashMap<CsmFunction,CsmReference> set = new HashMap<CsmFunction,CsmReference>();
             references.accept((CsmScope)owner, new CsmFileReferences.Visitor() {
