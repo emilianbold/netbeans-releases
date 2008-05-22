@@ -247,6 +247,8 @@ public class ConfigManager {
 
         /**
          * Get the currently active configuration name.
+         * <p>
+         * This property is outside of {@link ConfigManager} to allow its persistence etc.
          * @return the currently active configuration name.
          */
         String getActiveConfig();
@@ -254,6 +256,7 @@ public class ConfigManager {
         /**
          * Set the currently active configuration name.
          * @param configName the currently active configuration name.
+         * @see #getActiveConfig()
          */
         void setActiveConfig(String configName);
     }
