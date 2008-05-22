@@ -51,6 +51,7 @@ import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.PositionConverter;
 import org.netbeans.modules.java.source.parsing.CompilationInfoImpl;
 import org.netbeans.modules.parsing.api.GenericUserTask;
@@ -60,6 +61,7 @@ import org.netbeans.modules.parsing.impl.Utilities;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.modules.parsing.spi.TaskScheduler;
+import org.netbeans.spi.java.source.JavaParserResultTask;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -170,7 +172,7 @@ public abstract class JavaSourceAccessor {
         assert sources.size() == 1;
         final int pp = translatePriority(priority);
         assert !tasks.keySet().contains(task);
-        final ParserResultTask<?> hanz = new CancelableTaskWrapper(task, pp);
+        final ParserResultTask<?> hanz = new CancelableTaskWrapper(task, pp, phase);
         tasks.put(task, hanz);
         Utilities.addParserResultTask(hanz, sources.iterator().next());
     }
@@ -229,14 +231,18 @@ public abstract class JavaSourceAccessor {
      */
     public abstract void invalidate (CompilationInfo info);
     
-    private static class CancelableTaskWrapper extends ParserResultTask {
+    private static class CancelableTaskWrapper extends JavaParserResultTask {
         
         private final int priority;
+        private final Phase phase;
         private final CancellableTask<CompilationInfo> task;
         
-        public CancelableTaskWrapper (final CancellableTask<CompilationInfo> task, final int priority) {
+        public CancelableTaskWrapper (final CancellableTask<CompilationInfo> task,
+                final int priority, final Phase phase) {
             assert task != null;
+            assert phase != null;
             this.task = task;
+            this.phase = phase;
             this.priority = priority;
         }
 
@@ -264,6 +270,17 @@ public abstract class JavaSourceAccessor {
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
             }
-        }        
+        }
+
+        @Override
+        public Phase getPhase() {
+            return phase;
+        }
+        
+        @Override
+        public String toString () {
+            return this.getClass().getSimpleName()+"[task: "+ task +    //NOI18N
+                    ", phase: "+phase+", priority: "+priority+"]";      //NOI18N
+        }
     }
 }
