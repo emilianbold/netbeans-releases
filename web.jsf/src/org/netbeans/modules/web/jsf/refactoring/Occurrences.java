@@ -332,7 +332,12 @@ public class Occurrences {
             try{
                 DataObject dataObject = DataObject.find(config);
                 BaseDocument document = JSFEditorUtilities.getBaseDocument(dataObject);
-                int [] offsets = JSFEditorUtilities.getConverterDefinition(document, "converter-id", converter.getConverterId()); //NOI18N
+                int [] offsets;
+                if (converter.getConverterId() != null) {
+                    offsets = JSFEditorUtilities.getConverterDefinition(document, "converter-id", converter.getConverterId()); //NOI18N
+                } else {
+                    offsets = JSFEditorUtilities.getConverterDefinition(document, "converter-class", converter.getConverterClass()); //NOI18N
+                }
                 String text = document.getText(offsets);
                 int offset = text.indexOf(getXMLElementName());
                 offset = offsets[0] + text.indexOf(oldValue, offset);
@@ -426,7 +431,12 @@ public class Occurrences {
             try{
                 DataObject dataObject = DataObject.find(config);
                 BaseDocument document = JSFEditorUtilities.getBaseDocument(dataObject);
-                int [] offsets = JSFEditorUtilities.getConverterDefinition(document, "converter-for-class", converter.getConverterForClass());
+                int [] offsets;
+                if (converter.getConverterId() != null) {
+                    offsets = JSFEditorUtilities.getConverterDefinition(document, "converter-id", converter.getConverterId()); //NOI18N
+                } else {
+                    offsets = JSFEditorUtilities.getConverterDefinition(document, "converter-for-class", converter.getConverterForClass()); //NOI18N
+                }
                 String text = document.getText(offsets);
                 int offset = text.indexOf(getXMLElementName());
                 offset = offsets[0] + text.indexOf(oldValue, offset);
