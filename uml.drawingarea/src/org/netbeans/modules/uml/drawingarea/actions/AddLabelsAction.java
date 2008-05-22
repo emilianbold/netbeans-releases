@@ -82,7 +82,14 @@ public class AddLabelsAction extends NodeAction
     {
         context = actionContext.lookup(WidgetContext.class);
         if (context == null)
-            return null;
+        {
+            // (LLS) If you return null you the error message 
+            // ContextAwareAction.createContextAwareInstance(context) returns null. That is illegal!
+            // Therefore return "this".  The enable method will disable the action
+            // if the context is null.
+            return this;
+        }
+        
         type = LabelManager.LabelType.valueOf(context.getContextName());
         model.reset();
         lastManager = null;
@@ -160,8 +167,12 @@ public class AddLabelsAction extends NodeAction
     @Override
     public JMenuItem getPopupPresenter()
     {   
-        JMenuItem item =  new Actions.SubMenu(this, model);
-        Actions.connect(item, (Action)this, true);
+        JMenuItem item = super.getPopupPresenter();
+        if((context != null) && (lastManager != null))
+        {
+            item =  new Actions.SubMenu(this, model);
+            Actions.connect(item, (Action)this, true);
+        }
         
         return item;
     }
