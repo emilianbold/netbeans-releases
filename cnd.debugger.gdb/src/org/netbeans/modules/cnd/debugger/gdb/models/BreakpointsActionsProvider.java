@@ -162,8 +162,8 @@ public class BreakpointsActionsProvider implements NodeActionsProviderFilter {
 
     public void removeModelListener(ModelListener l) {
     }
-
-    public static void customize(Breakpoint b) {
+    
+    public static JComponent getCustomizerComponent(Breakpoint b) {
         JComponent c = null;
         if (b instanceof LineBreakpoint) {
             c = new LineBreakpointPanel((LineBreakpoint) b);
@@ -172,11 +172,17 @@ public class BreakpointsActionsProvider implements NodeActionsProviderFilter {
         } else if (b instanceof AddressBreakpoint) {
             c = new AddressBreakpointPanel((AddressBreakpoint) b);
         } else {
-	    return; // should never happen (ie, its a developer error)
+	    // should never happen (ie, its a developer error)
+            throw new IllegalStateException(b.toString());
 	}
 
         c.getAccessibleContext().setAccessibleDescription(
                 NbBundle.getMessage(BreakpointsActionsProvider.class, "ACSD_Breakpoint_Customizer_Dialog")); // NOI18N
+        return c;
+    }
+
+    public static void customize(Breakpoint b) {
+        JComponent c = getCustomizerComponent(b);
         HelpCtx helpCtx = HelpCtx.findHelp(c);
         if (helpCtx == null) {
             helpCtx = new HelpCtx("debug.add.breakpoint");  // FIXUP - Whats our help ID?

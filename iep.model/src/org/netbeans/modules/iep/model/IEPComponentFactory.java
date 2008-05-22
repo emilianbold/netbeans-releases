@@ -32,13 +32,15 @@ public interface IEPComponentFactory extends ComponentFactory<IEPComponent> {
         Component createComponent(IEPModel model);
         
         OperatorComponent createOperator(IEPModel model);
-        		
+                
         InputOperatorComponent createInputOperator(IEPModel model);
         
         OutputOperatorComponent createOutputOperator(IEPModel model);
         
+        InvokeStreamOperatorComponent createInvokeStreamOperator(IEPModel model);
+        
         LinkComponent createLink(IEPModel model);
-		
+        
         Property createProperty(IEPModel model);
         
         Import createImport(IEPModel model);

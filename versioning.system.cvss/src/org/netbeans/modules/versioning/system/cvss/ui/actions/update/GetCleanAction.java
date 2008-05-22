@@ -231,7 +231,7 @@ public class GetCleanAction extends AbstractSystemAction {
                 cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
                 // 'atomic' action  <<<
             } else {
-                if (group.isCancelled()) {
+                if (group != null && group.isCancelled()) {
                     return;
                 }
                 // locally delete? NOt yet there seems to be bug in checkout -p

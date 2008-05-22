@@ -131,7 +131,7 @@ public class ComponentAddTest extends org.netbeans.performance.test.utilities.Pe
         }
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitStateTimeout", oldTimeout);        
         
-        PaletteOperator.invoke();
+        PaletteComponentOperator.invoke();
     }
     
     public void prepare() {
@@ -149,6 +149,7 @@ public class ComponentAddTest extends org.netbeans.performance.test.utilities.Pe
         return null;
     }
     
+    @Override
     public void close() {
         log("::close");
         surface.closeDiscard();
@@ -158,6 +159,7 @@ public class ComponentAddTest extends org.netbeans.performance.test.utilities.Pe
         log(":: close passed");
     }
     
+    @Override
     protected void shutdown() {
         log("::shutdown");        
         try {

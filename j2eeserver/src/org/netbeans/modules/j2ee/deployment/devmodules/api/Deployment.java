@@ -53,9 +53,16 @@ import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.InstanceListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.j2ee.deployment.impl.*;
-import org.netbeans.modules.j2ee.deployment.impl.projects.*;
-import org.netbeans.modules.j2ee.deployment.impl.ui.*;
+import org.netbeans.modules.j2ee.deployment.impl.ProgressObjectUtil;
+import org.netbeans.modules.j2ee.deployment.impl.Server;
+import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
+import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
+import org.netbeans.modules.j2ee.deployment.impl.ServerString;
+import org.netbeans.modules.j2ee.deployment.impl.ServerTarget;
+import org.netbeans.modules.j2ee.deployment.impl.TargetModule;
+import org.netbeans.modules.j2ee.deployment.impl.TargetServer;
+import org.netbeans.modules.j2ee.deployment.impl.projects.DeploymentTargetImpl;
+import org.netbeans.modules.j2ee.deployment.impl.ui.ProgressUI;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.JDBCDriverDeployer;
@@ -300,6 +307,24 @@ public final class Deployment {
         return null;
     }
     
+
+    /**
+     * Returns the default server instance or <code>null</code> if no default
+     * instance configured.
+     * <p>
+     * This method is deprecated, so don't expect it will return any useful default
+     * instance. Method will be removed in near future.
+     *
+     * @return the default server instance
+     * @deprecated this API is broken by design - the client should choose the
+     *             instance by usage {@link #getServerInstanceIDs} and selection
+     *             of appropriate server instance. Method will be removed in
+     *             near future. See issue 83934.
+     */
+    public String getDefaultServerInstanceID () {
+        return null;
+    }
+
     /**
      * Determine if a server instance will attempt to use file deployment for a
      * J2eeModule.
@@ -320,18 +345,7 @@ public final class Deployment {
         }
         return retVal;
     }
-    
-    public String getDefaultServerInstanceID () {
-        ServerString defInst = ServerRegistry.getInstance ().getDefaultInstance ();
-        if (defInst != null) {
-            ServerInstance si = defInst.getServerInstance();
-            if (si != null) {
-                return si.getUrl ();
-            }
-        }
-        return null;
-    }
-    
+
     public String [] getInstancesOfServer (String id) {
         if (id != null) {
             Server server = ServerRegistry.getInstance().getServer(id);
@@ -389,7 +403,7 @@ public final class Deployment {
      * 
      * @param serverInstanceID server instance ID.
      * 
-     * @returns <code>true</code> if the given server instance is running, <code>false</code>
+     * @return <code>true</code> if the given server instance is running, <code>false</code>
      *          otherwise.
      * 
      * @throws  NullPointerException if serverInstanceID is <code>null</code>.

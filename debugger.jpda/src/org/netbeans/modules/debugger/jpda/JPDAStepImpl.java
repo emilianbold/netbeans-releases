@@ -412,10 +412,6 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
             return true; // Resume
         }
         firePropertyChange(PROP_STATE_EXEC, null, null);
-        if (! getHidden()) {
-            DebuggerManager.getDebuggerManager().setCurrentSession(session);
-            debuggerImpl.setStoppedState(tr.getThreadReference());
-        }
         if (getHidden()) {
             return true; // Resume
         } else {

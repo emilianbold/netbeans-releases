@@ -46,6 +46,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -67,6 +68,7 @@ import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.Lookup;
 import org.openide.util.Parameters;
 import org.openide.util.Utilities;
 
@@ -300,6 +302,7 @@ public final class J2eePlatform {
      *
      * @param  toolName tool name, for example {@link #TOOL_APP_CLIENT_RUNTIME}.
      * @return classpath for the specified tool.
+     * @deprecated {@link #getLookup()} should be used to obtain tool specifics
      */
     public File[] getToolClasspathEntries(String toolName) {
         return impl.getToolClasspathEntries(toolName);
@@ -322,6 +325,7 @@ public final class J2eePlatform {
      *         specified tool.
      *
      * @since 1.16
+     * @deprecated {@link #getLookup()} should be used to obtain tool specifics
      */
     public String getToolProperty(String toolName, String propertyName) {
         return impl.getToolProperty(toolName, propertyName);
@@ -334,6 +338,7 @@ public final class J2eePlatform {
      * @param  toolName tool name, for example {@link #TOOL_APP_CLIENT_RUNTIME}.
      * @return <code>true</code> if platform supports tool of the given name,
      *         <code>false</code> otherwise.
+     * @deprecated {@link #getLookup()} should be used to obtain tool specifics
      */
     public boolean isToolSupported(String toolName) {
         return impl.isToolSupported(toolName);
@@ -496,7 +501,7 @@ public final class J2eePlatform {
         }
 
         LibraryManager manager = LibraryManager.forLocation(location.toURI().toURL());
-        Map<String, List<URL>> content = new HashMap<String, List<URL>>();
+        Map<String, List<URI>> content = new HashMap<String, List<URI>>();
 
         String folderName = getFolderName(baseFolder, libraryName);
         FileObject jarFolder = FileUtil.createFolder(baseFolder, folderName);
@@ -504,47 +509,62 @@ public final class J2eePlatform {
         Map<String, Integer> usedNames = new  HashMap<String, Integer>();
         Map<FileObject, String> copied = new  HashMap<FileObject, String>();
 
-        List<URL> contentItem = new ArrayList<URL>();
+        List<URI> contentItem = new ArrayList<URI>();
         content.put(ServerLibraryTypeProvider.VOLUME_CLASSPATH, contentItem);
         copyFiles(copied, usedNames, jarFolder, folderName,
                 getVolumeContent(this, J2eeLibraryTypeProvider.VOLUME_TYPE_CLASSPATH), contentItem);
 
-        contentItem = new  ArrayList<URL>();
+        contentItem = new  ArrayList<URI>();
         content.put(ServerLibraryTypeProvider.VOLUME_WS_COMPILE_CLASSPATH, contentItem);
         copyFiles(copied, usedNames, jarFolder, folderName,
                 getToolClasspathEntries(TOOL_WSCOMPILE), contentItem);
 
-        contentItem = new  ArrayList<URL>();
+        contentItem = new  ArrayList<URI>();
         content.put(ServerLibraryTypeProvider.VOLUME_WS_GENERATE_CLASSPATH, contentItem);
         copyFiles(copied, usedNames, jarFolder, folderName,
                 getToolClasspathEntries(TOOL_WSGEN), contentItem);
 
-        contentItem = new  ArrayList<URL>();
+        contentItem = new  ArrayList<URI>();
         content.put(ServerLibraryTypeProvider.VOLUME_WS_IMPORT_CLASSPATH, contentItem);
         copyFiles(copied, usedNames, jarFolder, folderName,
                 getToolClasspathEntries(TOOL_WSIMPORT), contentItem);
 
-        contentItem = new  ArrayList<URL>();
+        contentItem = new  ArrayList<URI>();
         content.put(ServerLibraryTypeProvider.VOLUME_WS_INTEROP_CLASSPATH, contentItem);
         copyFiles(copied, usedNames, jarFolder, folderName,
                 getToolClasspathEntries(TOOL_WSIT), contentItem);
 
-        contentItem = new  ArrayList<URL>();
+        contentItem = new  ArrayList<URI>();
         content.put(ServerLibraryTypeProvider.VOLUME_WS_JWSDP_CLASSPATH, contentItem);
         copyFiles(copied, usedNames, jarFolder, folderName,
                 getToolClasspathEntries(TOOL_JWSDP), contentItem);
 
-        contentItem = new ArrayList<URL>();
+        contentItem = new ArrayList<URI>();
         content.put(ServerLibraryTypeProvider.VOLUME_JAVADOC, contentItem);
         copyFiles(copied, usedNames, jarFolder, folderName,
                 getVolumeContent(this, J2eeLibraryTypeProvider.VOLUME_TYPE_JAVADOC), contentItem);
 
-        contentItem = new ArrayList<URL>();
+        contentItem = new ArrayList<URI>();
         content.put(ServerLibraryTypeProvider.VOLUME_SOURCE, contentItem);
         copyFiles(copied, usedNames, jarFolder, folderName,
                 getVolumeContent(this, J2eeLibraryTypeProvider.VOLUME_TYPE_SRC), contentItem);
 
-        return manager.createLibrary(ServerLibraryTypeProvider.LIBRARY_TYPE, libraryName, content); // NOI18N
+        return manager.createURILibrary(ServerLibraryTypeProvider.LIBRARY_TYPE, libraryName, content); // NOI18N
+    }
+
+    /**
+     * Lookup providing a way to find non mandatory technologies supported
+     * by the platform.
+     * <p>
+     * <div class="nonnormative">
+     * The typical example of such support is a webservice stack.
+     * </div>
+     *
+     * @return Lookup providing way to find other supported technologies
+     * @since 1.44
+     */
+    public Lookup getLookup() {
+        return impl.getLookup();
     }
 
     private FileObject[] getVolumeContent(J2eePlatform platform, String volumeType) {
@@ -565,7 +585,7 @@ public final class J2eePlatform {
     }
 
     private void copyFiles(Map<FileObject, String> copied, Map<String, Integer> usedNames,
-            FileObject jarFolder, String folderName, File[] files, List<URL> content) throws IOException {
+            FileObject jarFolder, String folderName, File[] files, List<URI> content) throws IOException {
 
         if (files == null) {
             return;
@@ -586,7 +606,7 @@ public final class J2eePlatform {
     }
 
     private void copyFiles(Map<FileObject, String> copied, Map<String, Integer> usedNames,
-            FileObject jarFolder, String folderName, FileObject[] files, List<URL> content) throws IOException {
+            FileObject jarFolder, String folderName, FileObject[] files, List<URI> content) throws IOException {
 
         if (files == null) {
             return;
@@ -605,11 +625,11 @@ public final class J2eePlatform {
             }
 
             FileObject fresh = jarFolder.getFileObject(copied.get(jarObject));
-            URL u = LibrariesSupport.convertFilePathToURL(folderName
+            URI u = LibrariesSupport.convertFilePathToURI(folderName
                     + File.separator + copied.get(jarObject));
 
             if (FileUtil.isArchiveFile(fresh)) {
-                u = FileUtil.getArchiveRoot(u);
+                u = LibrariesSupport.getArchiveRoot(u);
             }
 
             if (!content.contains(u)) {

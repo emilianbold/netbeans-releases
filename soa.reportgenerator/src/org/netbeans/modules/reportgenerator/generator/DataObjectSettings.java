@@ -7,6 +7,7 @@ package org.netbeans.modules.reportgenerator.generator;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.WeakHashMap;
 import org.netbeans.modules.reportgenerator.api.ReportCustomizationOptions;
 import org.openide.loaders.DataObject;
 
@@ -16,9 +17,9 @@ import org.openide.loaders.DataObject;
  */
 public class DataObjectSettings {
 
-    private static Map<DataObject, ReportCustomizationOptions> mDataObjectToOptionsMap = new HashMap<DataObject, ReportCustomizationOptions>();
+    private static Map<DataObject, ReportCustomizationOptions> mDataObjectToOptionsMap = new WeakHashMap<DataObject, ReportCustomizationOptions>();
     
-    public static ReportCustomizationOptions getOrStoreOptions(DataObject dobj) {
+    public static synchronized ReportCustomizationOptions getOrStoreOptions(DataObject dobj) {
         ReportCustomizationOptions option = mDataObjectToOptionsMap.get(dobj);
         if(option == null) {
             option = new ReportCustomizationOptions();

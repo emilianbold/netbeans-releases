@@ -125,7 +125,7 @@ class EtlproViews {
                 DataObject fileDO;
                 try {
                     fileDO = DataObject.find(srcRoot);
-                    n = new ViewItemNode((DataFolder) fileDO, "collaborations", "collaborations");
+                    n = new ViewItemNode((DataFolder) fileDO, "Collaborations", "Collaborations");
                 } catch (DataObjectNotFoundException e) {
                     throw new AssertionError(e);
                 }

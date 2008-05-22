@@ -48,7 +48,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.text.MessageFormat;
 import java.util.Enumeration;
 import java.util.LinkedHashSet;
 import java.util.NoSuchElementException;
@@ -95,7 +94,7 @@ public class SampleWizardIterator  implements WizardDescriptor.InstantiatingIter
     
     protected String[] createSteps() {
         return new String[] {
-            NbBundle.getMessage(SampleWizardIterator.class, "MSG_SampleProject"),
+            NbBundle.getMessage(SampleWizardIterator.class, "MSG_NameAndLocation"),
         };
     }
     
@@ -182,8 +181,7 @@ public class SampleWizardIterator  implements WizardDescriptor.InstantiatingIter
     }
     
     public String name() {
-        return MessageFormat.format("{0} of {1}", //NOI18N
-            new Object[] {new Integer (index + 1), new Integer (panels.length)});
+        return current().getComponent().getName();
     }
     
     public boolean hasNext() {

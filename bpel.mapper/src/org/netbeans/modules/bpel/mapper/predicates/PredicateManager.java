@@ -25,6 +25,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import org.netbeans.modules.bpel.mapper.predicates.editor.PathConverter;
+import org.netbeans.modules.bpel.mapper.cast.CastManager;
+import org.netbeans.modules.bpel.mapper.tree.models.VariableTreeModel;
+import org.netbeans.modules.bpel.mapper.tree.spi.MapperTreeModel;
 import org.netbeans.modules.bpel.mapper.tree.spi.RestartableIterator;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.xpath.ext.XPathPredicateExpression;
@@ -43,6 +46,17 @@ import org.netbeans.modules.xml.xpath.ext.XPathUtils;
  * @author nk160297
  */
 public class PredicateManager {
+
+    public static PredicateManager getPredicateManager(MapperTreeModel treeModel) {
+        VariableTreeModel varTreeModel = MapperTreeModel.Utils.
+                findExtensionModel(treeModel, VariableTreeModel.class);
+        if (varTreeModel != null) {
+            PredicateManager predManager = varTreeModel.getPredicateManager();
+            return predManager;
+        }
+        //
+        return null;
+    }
     
     // The cache of predicates.
     private LinkedList<CachedPredicate> mPredicates;
@@ -82,7 +96,7 @@ public class PredicateManager {
             AbstractPredicate pred) {
         //
         List<Object> parentPath = 
-                PathConverter.constructPredicateLocationtList(parentItr);
+                PathConverter.constructObjectLocationtList(parentItr, true);
         //
         if (parentPath != null) {
             return addPredicate(parentPath, pred);

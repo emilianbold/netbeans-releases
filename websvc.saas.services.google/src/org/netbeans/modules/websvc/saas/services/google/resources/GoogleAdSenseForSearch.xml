@@ -23,18 +23,8 @@
         <code-gen>
             <artifacts targets="java,servlet"/>
         </code-gen>
-        <!-- http-basic, api-key, custom -->
-        <authentication profile="SaaSServices/Google/profile.properties">
-            <api-key id="zwsid"/>
-        </authentication>
     </saas-metadata>
 
-    <methods>
-        <method name="GoogleAdSenseForSearch" serviceName="AdSenseForSearchServiceService"
-                portName="AdSenseForSearchService" operationName="generateSearchBoxCode">
-            <documentation>Produces a code snippet for Google search box to publish on a web page</documentation>
-        </method>
-    </methods>
-        
+    <methods/>
     
 </saas-services>

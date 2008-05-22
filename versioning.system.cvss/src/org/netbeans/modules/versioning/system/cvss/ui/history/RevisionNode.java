@@ -314,6 +314,10 @@ class RevisionNode extends AbstractNode {
             putValue(Action.NAME, NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_View", revision.getRevision().getNumber()));  // NOI18N
         }
 
+        public boolean isEnabled() {
+            return !"dead".equals(revision.getRevision().getState());
+        }
+
         public void actionPerformed(ActionEvent ex) {
             try {
                 ViewRevisionAction.view(revision.getRevision().getLogInfoHeader().getFile(), revision.getRevision().getNumber(), null);
@@ -327,6 +331,10 @@ class RevisionNode extends AbstractNode {
 
         public RollbackAction() {
             putValue(Action.NAME, NbBundle.getMessage(RevisionNode.class, "CTL_Action_RollbackTo", revision.getRevision().getNumber()));  // NOI18N
+        }
+
+        public boolean isEnabled() {
+            return !"dead".equals(revision.getRevision().getState());
         }
 
         public void actionPerformed(ActionEvent e) {

@@ -234,7 +234,8 @@ public class WadlSaas extends Saas {
         jaxbJars = new ArrayList<FileObject>();
         jaxbSourceJars = new ArrayList<FileObject>();
         for (FileObject xsdFile : getLocalSchemaFiles()) {
-            Xsd2Java xjCompiler = new Xsd2Java(xsdFile, getPackageName());
+            Xsd2Java xjCompiler = new Xsd2Java(xsdFile, getPackageName() + "." + 
+                    SaasUtil.toValidJavaName(xsdFile.getName()).toLowerCase());
             if (! xjCompiler.compile()) {
                 return false;
             }

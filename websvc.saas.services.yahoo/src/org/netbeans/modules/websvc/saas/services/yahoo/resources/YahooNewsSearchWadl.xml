@@ -41,7 +41,7 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 <application xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-  xmlns:yn="urn:yahoo:yn"
+  xmlns:yn="urn:yahoo:newssearchresponse"
   xmlns:ya="urn:yahoo:api"
   xmlns:html="http://www.w3.org/1999/xhtml"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 

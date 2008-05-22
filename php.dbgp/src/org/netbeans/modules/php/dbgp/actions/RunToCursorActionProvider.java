@@ -23,7 +23,7 @@ import java.util.Set;
 
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.modules.php.dbgp.DebugSession;
-import org.netbeans.modules.php.dbgp.api.SessionId;
+import org.netbeans.modules.php.dbgp.SessionId;
 import org.netbeans.modules.php.dbgp.breakpoints.Utils;
 import org.netbeans.modules.php.dbgp.packets.BrkpntCommandBuilder;
 import org.netbeans.modules.php.dbgp.packets.BrkpntSetCommand;
@@ -61,7 +61,7 @@ public class RunToCursorActionProvider extends AbstractActionProvider {
         BrkpntSetCommand command = BrkpntCommandBuilder.buildLineBreakpoint(
                 id, session.getTransactionId(), 
                 Utils.getCurrentFileObject( Utils.getCurrentNode()), 
-                line.getLineNumber() +1);
+                line.getLineNumber() );
         command.setTemporary( true );
         session.sendCommandLater(command);
         

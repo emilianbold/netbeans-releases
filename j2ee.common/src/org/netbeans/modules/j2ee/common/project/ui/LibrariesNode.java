@@ -50,6 +50,7 @@ import java.io.IOException;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -93,7 +94,6 @@ import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
 import org.netbeans.modules.j2ee.common.project.ui.AntArtifactChooser.ArtifactItem;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
-import org.netbeans.spi.java.project.classpath.ProjectClassPathModifierImplementation;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -402,7 +402,6 @@ public final class LibrariesNode extends AbstractNode {
                         Icon libIcon = new ImageIcon (Utilities.loadImage(LIBRARIES_ICON));
                         for (Iterator it = roots.iterator(); it.hasNext();) {
                             URL rootUrl = (URL) it.next();
-                            rootUrl = LibrariesSupport.resolveLibraryEntryURL(lib.getManager().getLocation(), rootUrl);
                             rootsList.add (rootUrl);
                             FileObject root = URLMapper.findFileObject (rootUrl);
                             if (root != null) {
@@ -616,13 +615,17 @@ public final class LibrariesNode extends AbstractNode {
         }
 
         private void addArtifacts (AntArtifactChooser.ArtifactItem[] artifactItems) {
-            for (int i=0; i<artifactItems.length;i++) {
-                try {
-                    ProjectClassPathModifier.addAntArtifacts(new AntArtifact[]{artifactItems[i].getArtifact()}, 
-                            new URI[]{artifactItems[i].getArtifactURI()}, projectSourcesArtifact, ClassPath.COMPILE);
-                } catch (IOException ioe) {
-                    Exceptions.printStackTrace(ioe);
-                }
+            AntArtifact[] artifacts = new AntArtifact[artifactItems.length];
+            URI[] artifactURIs = new URI[artifactItems.length];
+            for (int i = 0; i < artifactItems.length; i++) {
+                artifacts[i] = artifactItems[i].getArtifact();
+                artifactURIs[i] = artifactItems[i].getArtifactURI();
+            }
+            try {
+                ProjectClassPathModifier.addAntArtifacts(artifacts, artifactURIs,
+                        projectSourcesArtifact, ClassPath.COMPILE);
+            } catch (IOException ioe) {
+                Exceptions.printStackTrace(ioe);
             }
         }
     }
@@ -650,13 +653,11 @@ public final class LibrariesNode extends AbstractNode {
         }
 
         private void addLibraries (Library[] libraries) {
-            for (int i=0; i<libraries.length;i++) {
-                try {
-                    ProjectClassPathModifier.addLibraries(new Library[]{libraries[i]}, 
-                            projectSourcesArtifact, ClassPath.COMPILE);
-                } catch (IOException ioe) {
-                    Exceptions.printStackTrace(ioe);
-                }
+            try {
+                ProjectClassPathModifier.addLibraries(libraries,
+                        projectSourcesArtifact, ClassPath.COMPILE);
+            } catch (IOException ioe) {
+                Exceptions.printStackTrace(ioe);
             }
         }
         
@@ -674,8 +675,12 @@ public final class LibrariesNode extends AbstractNode {
         }
 
         public void actionPerformed(ActionEvent e) {
-            org.netbeans.api.project.ant.FileChooser chooser = 
-                    new org.netbeans.api.project.ant.FileChooser(helper, true);
+            org.netbeans.api.project.ant.FileChooser chooser;
+            if (helper.isSharableProject()) {
+                chooser = new org.netbeans.api.project.ant.FileChooser(helper, true);
+            } else {
+                chooser = new org.netbeans.api.project.ant.FileChooser(FileUtil.toFile(helper.getProjectDirectory()), null);
+            }
             FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
             chooser.setFileSelectionMode( JFileChooser.FILES_AND_DIRECTORIES );
             chooser.setMultiSelectionEnabled( true );
@@ -708,19 +713,29 @@ public final class LibrariesNode extends AbstractNode {
                     //Check if the file is acceted by the FileFilter,
                     //user may enter the name of non displayed file into JFileChooser
                     File fl = PropertyUtils.resolveFile(base, filePaths[i]);
-                    if (fileFilter.accept(fl)) {
-                        URL u = LibrariesSupport.convertFilePathToURL(filePaths[i]);
-                        u = FileUtil.getArchiveRoot(u);
+                    FileObject fo = FileUtil.toFileObject(fl);
+                    assert fo != null : fl;
+                    if (fo != null && fileFilter.accept(fl)) {
+                        URI u = LibrariesSupport.convertFilePathToURI(filePaths[i]);
+                        if (FileUtil.isArchiveFile(fo)) {
+                            u = LibrariesSupport.getArchiveRoot(u);
+                        } else if (!u.toString().endsWith("/")) { // NOI18N
+                            try {
+                                u = new URI(u.toString() + "/"); // NOI18N
+                            } catch (URISyntaxException ex) {
+                                throw new AssertionError(ex);
+                            }
+                        }
                         Project prj = FileOwnerQuery.getOwner(helper.getProjectDirectory());
                         ClassPathModifier modifierImpl = prj.getLookup().lookup(ClassPathModifier.class);
                         if (modifierImpl != null) {
                             //sort of hack, in this case we don't want the classpath modifier to perform
                             // the heuristics it normally does, as the user explitly defined how the jar/folder
                             //shall be referenced.
-                            modifierImpl.addRoots(new URL[]{u}, findSourceGroup(projectSourcesArtifact, modifierImpl), ClassPath.COMPILE, ClassPathModifier.ADD_NO_HEURISTICS);
+                            modifierImpl.addRoots(new URI[]{u}, findSourceGroup(projectSourcesArtifact, modifierImpl), ClassPath.COMPILE, ClassPathModifier.ADD_NO_HEURISTICS);
                         } else {
                             //fallback to call that will perform heuristics and eventually override user preferences..
-                            ProjectClassPathModifier.addRoots(new URL[]{u}, projectSourcesArtifact, ClassPath.COMPILE);
+                            ProjectClassPathModifier.addRoots(new URI[]{u}, projectSourcesArtifact, ClassPath.COMPILE);
                         }
                     }
                 } catch (IOException ioe) {

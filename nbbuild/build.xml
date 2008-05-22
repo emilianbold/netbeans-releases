@@ -74,9 +74,15 @@ made subject to such option by the copyright holder.
     <path location="${path.separator}${java.class.path}${path.separator}"/>
   </pathconvert>
 
+  <target name="-load-build-properties">
+    <property file="build.properties"/>
+    <!-- We need absolute path to ${netbeans.dest} -->
+    <property name="netbeans.dest.abs" location="${netbeans.dest}"/>
+  </target>
+
   <target name="bootstrap"
           description="Bootstrap NetBeans-specific Ant extensions."
-          depends="-jdk-init,assure-ant">
+          depends="-jdk-init,assure-ant,-load-build-properties">
     <fail message="You need JDK 1.5 to build NetBeans">
         <condition>
             <not>
@@ -84,8 +90,6 @@ made subject to such option by the copyright holder.
             </not>
         </condition>
     </fail>
-
-    <property file="build.properties"/>
 
     <mkdir dir="build/antclasses"/>
     <javac srcdir="antsrc" destdir="build/antclasses" deprecation="true" debug="${build.compiler.debug}" source="1.5" target="1.5">
@@ -172,8 +176,6 @@ made subject to such option by the copyright holder.
     <taskdef name="getdependsclusters" classname="org.netbeans.nbbuild.GetDependsClusters" classpath="nbantext.jar"/>
     <taskdef name="repeat" classname="org.netbeans.nbbuild.Repeat" classpath="nbantext.jar"/>
 
-    <!-- We need absolute path to ${netbeans.dest} -->
-    <property name="netbeans.dest.abs" location="${netbeans.dest}"/>
     <!-- Overridable. Note: need not necessarily be a number at all): -->
     <property name="buildnum" value="dev-${buildnumber}"/>
     <property name="sanitystart.args" value="-J-Dnetbeans.close=true ${sanitystart.args.additional}"/>
@@ -182,10 +184,6 @@ made subject to such option by the copyright holder.
     <taskdef name="insert-module-all-targets" classname="org.netbeans.nbbuild.InsertModuleAllTargets" classpath="nbantext.jar"/>
     <property name="verify.checkout" value="true"/> 
     <insert-module-all-targets checkModules="${verify.checkout}"/>
-    <property environment="env"/>
-    <condition property="run.env.display" value="${env.NBDISPLAY}" else="${env.DISPLAY}">
-	<isset property="env.NBDISPLAY"/>
-    </condition>
   </target>
   
   <target name="all-installer" description="Dummy target for build system compatibility"/>
@@ -218,7 +216,7 @@ made subject to such option by the copyright holder.
   </target>
 
   <!-- build NBMs for selected modules -->
-  <target name="build-nbms" depends="init">
+  <target name="build-nbms" depends="init" description="Build all NBMs, all modules have to be built before proceed">
       <mkdir dir="nbms" />
       <property name="base.nbm.target.dir" location="nbms" />
       
@@ -1057,6 +1055,7 @@ OpenIDE-Module-Long-Description=Delivers ${locales} localization of whole NetBea
       <taskdef name="releasefileslicense" classname="org.netbeans.nbbuild.extlibs.ReleaseFilesLicense" classpath="${nb_all}/nbbuild/nbantext.jar"/>
       <releasefileslicense license="${license.file.override}" standardlicense="${nb_all}/nbbuild/standard-nbm-license.txt" extralicensefiles="${extra.license.files}"/>
       <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="${nb_all}/nbbuild/nbantext.jar"/>
+      <property name="nbm_alias" value="nb_ide"/>
       <makenbm file="build/ml/${code.name.base.dashes}.nbm"
                productdir="${cluster}"
                module="${module.jar}"
@@ -1286,12 +1285,15 @@ PKGINST=${pkg.svr4.pkginst}</echo>
     </antcall>
   </target>
   
-  <target name="tryme" depends="init,maybe-build-nozip,tryme-setup-debug-args,-jdk-init"
-          description="Try running the IDE interactively (build it first if needed).
+  <target name="tryme" depends="-load-build-properties,tryme-setup-debug-args,-jdk-init"
+          description="Try running the IDE interactively.
 It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in debug mode" 
    >
     <property name="tryme.debug.args" value="" />
-  
+    <property environment="env"/>
+    <condition property="run.env.display" value="${env.NBDISPLAY}" else="${env.DISPLAY}">
+	<isset property="env.NBDISPLAY"/>
+    </condition>
     <exec os="Windows NT Windows 95 Windows 98 Windows 2000 Windows 2003 Windows XP Windows Vista" executable="${netbeans.dest.abs}/bin/nb.exe" failonerror="yes">
       <arg value="--jdkhome"/>
       <arg file="${nbjdk.home}"/>
@@ -1323,6 +1325,16 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <property name="nbms.location" location="nbms"/>
     <l10n nbmsdir="${nbms.location}" tmpdir="tmp" patternsFile="l10n.patterns" kitFile="${l10n.kit}"/>
   </target>
+  
+  <target name="hg-l10n-kit">
+    <property name="l10n.kit" location="build/l10n.zip"/>
+    <mkdir dir="build"/>
+    <zip destfile="${l10n.kit}">
+        <fileset dir="${nb_all}" includesfile="${nb_all}/installer/l10n.list"/>
+        <fileset dir="${nb_all}" includesfile="${nb_all}/nbi/l10n.list"/>
+        <fileset dir="${nb_all}" includesfile="${nb_all}/ide.branding/l10n.list"/>
+    </zip>
+  </target>
 
     <target name="clean-untracked-files" depends="bootstrap" description="Removes files from clusters which are not listed as belonging to any NBM.">
         <taskdef name="ducf" classname="org.netbeans.nbbuild.DeleteUnreferencedClusterFiles" classpath="nbantext.jar"/>
@@ -1335,7 +1347,19 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
         </ducf>
     </target>
 
-  <target name="clean-external">
+  <target name="-cleanall" depends="init-module-list,init-tasks">
+    <taskdef name="cleanall" classname="org.netbeans.nbbuild.CleanAll" classpath="nbantext.jar"/>
+    <cleanall topdir=".." 
+              modules="${allmodules}" 
+              targetname="clean"
+              resolvedependencies="${resolve.clean.dependencies}"
+              deptargetprefix="all-"
+              failonerror="${stop.when.clean.error}" />
+  </target>
+
+  <target name="clean" depends="hg-clean"/><!-- deprecated -->
+
+  <target name="-clean-external">
     <subant target="clean">
       <fileset dir="..">
         <include name="*/external/build.xml"/>
@@ -1345,7 +1369,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
   </target>
 
   <!-- Use hg-clean instead, which will call this if not in a Hg repo. -->
-  <target name="-real-clean" depends="clean,clean-external">
+  <target name="-real-clean" depends="-cleanall,localclean,-clean-external">
     <echo message="Cleaning old builds..."/>
     <delete>
       <fileset dir=".">
@@ -1358,10 +1382,6 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <echo message="Cleaning NetBeans-specific Ant extensions..."/>
     <delete file="nbantext.jar" quiet="true"/>
     <delete dir="build/antclasses"/>
-  </target>
-
-  <target name="ant-clean">
-    <delete file="nbantext.jar"/>
   </target>
 
   <target name="clean-cluster-flags" unless="do-not-rebuild-clusters">
@@ -1381,7 +1401,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <delete dir="${netbeans.dest.dir}"/>
   </target>
 
-  <target name="-hg-check-can-clean">
+  <target name="-hg-check-can-clean" unless="no.hg.clean">
     <available property="can.hg.clean" type="dir" file="../.hg"/>
   </target>
   <target name="-hg-clean-alternative" depends="-hg-check-can-clean" unless="can.hg.clean">
@@ -1405,6 +1425,8 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <exec executable="hg" failonerror="yes" outputproperty="hg.unknown.files">
       <arg value="--cwd"/>
       <arg file="."/>
+      <arg value="--config"/>
+      <arg value="defaults.status="/>
       <arg value="status"/>
       <arg value="--unknown"/>
       <arg value="--no-status"/>
@@ -1487,21 +1509,6 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
         <property name="xtest.debug.address" value="${jpda.address}" />
         <property name="xtest.debug.pause" value="false" />
     </ant>
-  </target>
-
-  <target name="cleanall" depends="init-module-list,init-tasks">
-    <taskdef name="cleanall" classname="org.netbeans.nbbuild.CleanAll" classpath="nbantext.jar"/>
-    <cleanall topdir=".." 
-              modules="${allmodules}" 
-              targetname="clean"
-              resolvedependencies="${resolve.clean.dependencies}"
-              deptargetprefix="all-"
-              failonerror="${stop.when.clean.error}" />
-  </target>
-
-  <target name="clean" depends="cleanall,localclean"
-          description="Clean out (almost) all build products.">
-    <echo message="Run `ant hg-clean' if desired."/>
   </target>
 
   <target name="clean-cluster" description="Clean only one cluster - takes clean.cluster.name as parameters">
@@ -1660,6 +1667,10 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <ant dir="${xtest.home}/instance" target="cleantests">
         <property name="xtest.config" value="commit-validation-nb"/>
     </ant>
+    <!-- XTest is too dumb to know about the test dependency o.n.core -> core.startup: -->
+    <ant dir="../openide.util" target="test-build"/>
+    <ant dir="../openide.filesystems" target="test-build"/>
+    <ant dir="../core.startup" target="test-build"/>
     <ant dir="${xtest.home}/instance" target="runtests">
         <property name="xtest.config" value="commit-validation-nb"/>
         <property name="xtest.fail.on.failure" value="true"/>
@@ -1730,7 +1741,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <resolve name="harness-modules" value="nb.cluster.harness"/>
     
     <mkdir dir="${netbeans.build.dir}"/>
-    <dirset id="source.dirset" dir="${nb_all}" includes="${cluster-modules},${harness-modules},nbbuild"/>
+    <dirset id="source.dirset" dir="${nb_all}" includes="${cluster-modules},${harness-modules},ide,nbbuild"/>
     <pathconvert property="source.dirs" pathsep="," refid="source.dirset">
       <regexpmapper from="${nb_all}/(.*)$" to="\1/**/*" handledirsep="yes"/>
     </pathconvert>
@@ -1770,7 +1781,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <mkdir dir="${generated.files.dir}" />
   </target>
   <target name="generate-golden-files" depends="generate-golden-files-init" >
-    <property name="deps.max.friends" value="25"/> <!-- so high because of org.netbeans.modules.xml.wsdl.bindingsupport.api (21) -->
+    <property name="deps.max.friends" value="40"/> <!-- so high because of xml.wsdl.bindingsupport.api (21), gsf.api (30) -->
     
     <taskdef name="deps" classname="org.netbeans.nbbuild.ModuleDependencies" classpath="nbantext.jar"/>
     
@@ -2017,7 +2028,9 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
   <target name="gen-sigtests" depends="sigtests-init">
     <echo message="Generating signature files for ${cluster.config} modules"/>
     
-    <subant target="gen-sigtest" buildpath="${modules.fullpath}"/>
+    <subant target="gen-sigtest" buildpath="${modules.fullpath}">
+      <property name="ant.core.lib" value="${ant.core.lib}"/>
+    </subant>
   </target>
 
   <target name="check-sigtests" depends="sigtests-init">
@@ -2028,6 +2041,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <mkdir dir="${sigtest.output.dir}"/>
     <subant target="check-sigtest" buildpath="${modules.fullpath}">
         <property name="sigtest.output.dir" value="${sigtest.output.dir}"/>
+        <property name="ant.core.lib" value="${ant.core.lib}"/>
     </subant>
     
     <concat destfile="${sigtest.output.dir}/all">

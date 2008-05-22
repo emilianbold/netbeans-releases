@@ -50,11 +50,11 @@ import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.Target;
 import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
 import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
-import org.netbeans.modules.j2ee.deployment.impl.InstancePropertiesImpl;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeSupport;
 import java.util.Map;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 
 
 /**
@@ -291,13 +291,6 @@ public abstract class InstanceProperties {
     }
 
     /**
-     * Return default instance properties.
-     */
-    public static InstanceProperties getDefaultInstance() {
-        return new InstancePropertiesImpl(ServerRegistry.getInstance().getDefaultInstance().getServerInstance());
-    }
-    
-    /**
      * Set instance properties.
      * @param props properties to set for this server instance.
      * @exception IllegalStateException when instance already removed or not created yet
@@ -328,26 +321,9 @@ public abstract class InstanceProperties {
     public abstract java.util.Enumeration propertyNames() throws IllegalStateException;
     
     /**
-     * Is the target server the default J2EE server for deployment?
-     * @return true if the target server or admin server is the default.
-     */
-    public abstract boolean isDefaultInstance();
-    
-    /**
      * Return DeploymentManager associated with this instance.
      */
     public abstract DeploymentManager getDeploymentManager();
-    
-    /**
-     * Return default Target object for the target server from this instance, if any.
-     */
-    public abstract Target getDefaultTarget();
-    
-    /**
-     * Set the target server the default server.
-     * @param targetName name of the target server; null if admin server is also single target.
-     */
-    public abstract void setAsDefaultServer(String targetName);
     
     /**
      * Ask the server instance to reset cached deployment manager, J2EE
@@ -359,7 +335,7 @@ public abstract class InstanceProperties {
      * Add <code>PropertyChangeListener</code> which will be notified of 
      * <code>InstanceProperties</code> changes.
      * 
-     * @param <code>PropertyChangeListener</code> which will be notified of 
+     * @param listener <code>PropertyChangeListener</code> which will be notified of 
      *        <code>InstanceProperties</code> changes.
      *
      */

@@ -26,6 +26,7 @@ import org.netbeans.modules.iep.editor.model.NameGenerator;
 import org.netbeans.modules.iep.editor.share.SharedConstants;
 import org.netbeans.modules.iep.model.IEPComponentFactory;
 import org.netbeans.modules.iep.model.IEPModel;
+import org.netbeans.modules.iep.model.ModelHelper;
 import org.netbeans.modules.iep.model.OperatorComponent;
 import org.netbeans.modules.iep.model.OperatorComponentContainer;
 import org.netbeans.modules.iep.model.Property;
@@ -136,6 +137,16 @@ public final class IEPWizardIterator implements WizardDescriptor.InstantiatingIt
         //use it and create a stream input.
         IEPModel model = createdObject.getPlanEditorSupport().getModel();
         IEPWizardHelper.processUsingExistingSchema(model, wizard);
+        
+        //set targetNamespace on iepfile
+        String tns = Utility.generateTargetNamespace(createdObject);
+        String packageName = ModelHelper.getPackageName(createdObject); 
+        model.startTransaction();
+        model.getPlanComponent().setName(createdObject.getName());
+        
+//        model.getPlanComponent().setTargetNamespace(tns);
+        model.getPlanComponent().setPackageName(packageName);
+        model.endTransaction();
         
         Set set = new HashSet(1);                
         set.add(createdObject.getPrimaryFile());

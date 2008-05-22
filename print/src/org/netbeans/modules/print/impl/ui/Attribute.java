@@ -11,9 +11,9 @@
  * http://www.netbeans.org/cddl-gplv2.html
  * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
  * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
+ * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
  * particular file as subject to the "Classpath" exception as provided
  * by Sun in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
@@ -70,15 +70,13 @@ import org.openide.util.HelpCtx;
 import org.netbeans.modules.print.impl.util.Percent;
 import org.netbeans.modules.print.impl.util.Macro;
 import org.netbeans.modules.print.impl.util.Option;
-import static org.netbeans.modules.print.impl.util.UI.*;
+import static org.netbeans.modules.print.impl.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
  * @version 2006.02.14
  */
-final class Attribute extends Dialog
-  implements FocusListener, Macro.Listener, Percent.Listener
-{
+final class Attribute extends Dialog implements FocusListener, Macro.Listener, Percent.Listener {
   Attribute(Preview preview) {
     myPreview = preview;
 
@@ -94,8 +92,7 @@ final class Attribute extends Dialog
   }
 
   @Override
-  protected DialogDescriptor createDescriptor()
-  {
+  protected DialogDescriptor createDescriptor() {
     myDescriptor = new DialogDescriptor(
       getResizable(createPanel()),
       i18n("LBL_Print_Options"), // NOI18N
@@ -719,11 +716,7 @@ final class Attribute extends Dialog
     return panel;
   }
 
-  private ItemListener createItemListener(
-    final boolean width,
-    final boolean height,
-    final boolean factor)
-  {
+  private ItemListener createItemListener(final boolean width, final boolean height, final boolean factor) {
     return new ItemListener() {
       public void itemStateChanged(ItemEvent event) {
         if (myZoomWidth != null) {
@@ -895,8 +888,7 @@ final class Attribute extends Dialog
   }
 
   @Override
-  protected void opened()
-  {
+  protected void opened() {
     myHeaderLeft.requestFocus();
   }
 

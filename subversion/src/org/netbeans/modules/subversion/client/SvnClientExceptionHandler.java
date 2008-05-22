@@ -292,7 +292,13 @@ public class SvnClientExceptionHandler {
     }
     private String getRealmFromException() {        
         String exceptionMessage = exception.getMessage().toLowerCase();             
-        String[] errorMessages = new String[] {"host not found (", "could not connect to server (", "could not resolve hostname (", "issuer is not trusted ("};        
+        String[] errorMessages = new String[] {
+            "host not found (", 
+            "could not connect to server (", 
+            "could not resolve hostname (", 
+            "issuer is not trusted (",
+            "authorization failed ("
+        };        
         for(String errorMessage : errorMessages) {
             int idxL = exceptionMessage.indexOf(errorMessage);
             if(idxL < 0) {
@@ -542,15 +548,16 @@ public class SvnClientExceptionHandler {
         return msg.equals(ACTION_CANCELED_BY_USER);
     }
     
-    private static boolean isAuthentication(String msg) {        
+    private static boolean isAuthentication(String msg) {   
+        msg = msg.toLowerCase();       
         return msg.indexOf("authentication error from server: username not found") > - 1 || // NOI18N
                msg.indexOf("authorization failed") > - 1 ||                                 // NOI18N
                msg.indexOf("authentication error from server: password incorrect") > -1 ||  // NOI18N
                msg.indexOf("can't get password") > - 1;                                     // NOI18N
-        // XXX we also have to check for authentication messages from proxy
     }
 
     private static boolean isNoCertificate(String msg) {
+        msg = msg.toLowerCase();       
         return msg.indexOf("server certificate verification failed") > -1;                  // NOI18N
     }
     
@@ -560,6 +567,7 @@ public class SvnClientExceptionHandler {
     }
 
     private static boolean isNoHostConnection(String msg) {
+        msg = msg.toLowerCase();       
         return msg.indexOf("host not found") > -1 ||                                        // NOI18N
                msg.indexOf("could not connect to server") > -1 ||                           // NOI18N
                msg.indexOf("could not resolve hostname") > -1;                              // NOI18N
@@ -611,15 +619,18 @@ public class SvnClientExceptionHandler {
         return msg.indexOf("file not found: revision") > -1;  // NOI18N
     }      
         
-    private static boolean isAlreadyAWorkingCopy(String msg) {        
+    private static boolean isAlreadyAWorkingCopy(String msg) {   
+        msg = msg.toLowerCase();       
         return msg.indexOf("is already a working copy for a different url") > -1;           // NOI18N
     }
 
     private static boolean isClosedConnection(String msg) {
+        msg = msg.toLowerCase();       
         return msg.indexOf("could not read status line: an existing connection was forcibly closed by the remote host.") > -1; // NOI18N
     }
 
     private static boolean isCommitFailed(String msg) {
+        msg = msg.toLowerCase();       
         return msg.indexOf("commit failed (details follow)") > -1;                          // NOI18N
     }
 
@@ -630,12 +641,13 @@ public class SvnClientExceptionHandler {
     }
     
     private static boolean isOutOfDate(String msg) {
+        msg = msg.toLowerCase();       
         return msg.indexOf("out of date") > -1;                                             // NOI18N
     }
     
     private static boolean isNoSvnClient(String msg) {
         msg = msg.toLowerCase();
-        return msg.equals("command line client adapter is not available");
+        return msg.indexOf("command line client adapter is not available") > -1;
     }
 
     public static boolean isMissingOrLocked(String msg) {  

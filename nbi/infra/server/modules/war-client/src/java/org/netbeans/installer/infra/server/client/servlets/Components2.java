@@ -101,7 +101,7 @@ public class Components2 extends HttpServlet {
                 "nb-soa",
                 "nb-uml",
                 "nb-ruby",
-                //"nb-php",
+                "nb-php",
                 "glassfish",
                 "openesb",
                 "sjsam",
@@ -110,6 +110,7 @@ public class Components2 extends HttpServlet {
         final List<String> hidden = Arrays.asList(
                 "nb-platform",
                 //"nb-base",
+                //"nb-php",
                 "openesb",
                 "sjsam");
         final Map<String, String> notes = new HashMap<String, String>();

@@ -64,7 +64,6 @@ import org.openide.filesystems.URLMapper;
 import org.openide.util.WeakListeners;
 // <RAVE>
 import org.netbeans.modules.visualweb.project.jsf.libraries.provider.ComponentLibraryTypeProvider;
-import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 
 /**
  * Finds the locations of sources for various libraries.
@@ -98,7 +97,7 @@ public class SourceForBinaryQueryLibraryImpl implements SourceForBinaryQueryImpl
                     List classes = libs[i].getContent(ComponentLibraryTypeProvider.VOLUME_TYPE_CLASSPATH);
                     for (Iterator it = classes.iterator(); it.hasNext();) {
                         URL entry = (URL) it.next();
-                        URL normalizedEntry = LibrariesSupport.resolveLibraryEntryURL(lm.getLocation(), entry);
+                        URL normalizedEntry = entry;
                         if (isNormalizedURL) {
                             normalizedEntry = getNormalizedURL(entry);
                         }
@@ -175,7 +174,6 @@ public class SourceForBinaryQueryLibraryImpl implements SourceForBinaryQueryImpl
                     List<URL> src = this.lib.getContent(ComponentLibraryTypeProvider.VOLUME_TYPE_SRC);
                     List result = new ArrayList ();
                     for (URL u : src) {
-                        u = LibrariesSupport.resolveLibraryEntryURL(lib.getManager().getLocation(), u);
                         FileObject sourceRootURL = URLMapper.findFileObject(u);
                         if (sourceRootURL!=null) {
                             result.add (sourceRootURL);

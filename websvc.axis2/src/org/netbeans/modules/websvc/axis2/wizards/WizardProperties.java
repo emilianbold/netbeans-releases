@@ -49,6 +49,7 @@ public interface WizardProperties {
     public static final String PROP_GENERATE_WSDL="prop_generate_wsdl"; //NOI18N
     public static final String PROP_GENERATE_SAMPLE_METHOD="prop_generate_sample_method"; //NOI18N
     public static final String PROP_WSDL_URL="prop_wsdl_URL"; //NOI18N
+    public static final String PROP_WSDL_NS="prop_wsdl_ns"; //NOI18N
     public static final String PROP_SERVICE_NAME="prop_service_name"; //NOI18N
     public static final String PROP_PORT_NAME="prop_port_name"; //NOI18N
     public static final String PROP_PACKAGE_NAME="prop_package_name"; //NOI18N

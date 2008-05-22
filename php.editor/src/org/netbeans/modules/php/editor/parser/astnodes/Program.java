@@ -50,19 +50,32 @@ import java.util.List;
 public class Program extends ASTNode {
 
     private final ArrayList<Statement> statements = new ArrayList<Statement>();
+    
+    /**
+     * Comments array of the php program
+     */
+    private final ArrayList<Comment> comments = new ArrayList<Comment>();
 
-    private Program(int start, int end, Statement[] statements) {
+    private Program(int start, int end, Statement[] statements, List<Comment> commentsList) {
         super(start, end);
         for (Statement statement : statements) {
+//            statement.setParent(this);
             this.statements.add(statement);
+        }
+        for (Comment comment : commentsList) {
+//            comment.setParent(this);
+            this.comments.add((Comment) comment);
         }
 
     }
 
-    public Program(int start, int end, List statements) {
-        this(start, end, (Statement[]) statements.toArray(new Statement[statements.size()]));
+    public Program(int start, int end, List statements, List<Comment> commentsList) {
+        this(start, end, (Statement[]) statements.toArray(new Statement[statements.size()]), commentsList);
     }
 
+    public List<Comment> getComments() {
+            return comments;
+    }
     /**
      * Retrieves the statement list of this program 
      * @return statement parts of this program
@@ -70,7 +83,7 @@ public class Program extends ASTNode {
     public List<Statement> getStatements() {
         return this.statements;
     }
-    
+
     @Override
     public void accept(Visitor visitor) {
         visitor.visit(this);

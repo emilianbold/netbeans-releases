@@ -21,6 +21,7 @@ package org.netbeans.modules.bpel.nodes.navigator;
 import java.util.Comparator;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.bpel.model.api.Import;
+import org.netbeans.modules.bpel.model.api.support.Utils;
 import org.netbeans.modules.bpel.properties.ResolverUtility;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
@@ -89,7 +90,7 @@ public class ImportComparator implements Comparator<Import> {
     private String getRelativePath(Import imprt) {
         assert imprt != null;
         FileObject ifo = ResolverUtility.getImportedFileObject(imprt);
-        Project modelProject = ResolverUtility.safeGetProject(imprt.getBpelModel());
+        Project modelProject = Utils.safeGetProject(imprt.getBpelModel());
         return ResolverUtility.safeGetRelativePath(ifo, modelProject);
     }
     

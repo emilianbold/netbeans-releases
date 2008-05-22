@@ -70,7 +70,6 @@ public class JaxRsJspCodeGenerator extends JaxRsServletCodeGenerator {
     public JaxRsJspCodeGenerator(JTextComponent targetComponent,
             FileObject targetFile, WadlSaasMethod m) throws IOException {
         super(targetComponent, targetFile, m);
-        setSubresourceLocatorUriTemplate(findSubresourceLocatorUriTemplate());
         jspSpecialNamesMap.put("page", "page1");
     }
     
@@ -79,10 +78,11 @@ public class JaxRsJspCodeGenerator extends JaxRsServletCodeGenerator {
      */
     @Override
     protected void insertSaasServiceAccessCode(boolean isInBlock) throws IOException {
-        Util.checkScanning();
         try {
             String code = "";
-            code = "\n<%\n"; // NOI18n
+            code += "\n<%@ page import=\""+AbstractGenerator.REST_CONNECTION_PACKAGE+
+                    ".*, "+getBean().getSaasServicePackageName()+".*\" %>";
+            code += "\n<%\n"; // NOI18n
             code += getCustomMethodBody()+"\n";
             code += "%>\n";// NOI18n
             insert(code, getTargetComponent(), true);
@@ -95,35 +95,28 @@ public class JaxRsJspCodeGenerator extends JaxRsServletCodeGenerator {
     protected String getCustomMethodBody() throws IOException {
         String paramUse = "";
         String paramDecl = "";
+        String indent2 = "                 ";
         
         //Evaluate parameters (query(not fixed or apikey), header, template,...)
         List<ParameterInfo> filterParams = renameJspParameterNames(getServiceMethodParameters());//includes request, response also
         paramUse += Util.getHeaderOrParameterUsage(filterParams);
-        filterParams = renameJspParameterNames(super.getServiceMethodParameters());
+        filterParams = filterJspParameters(super.getServiceMethodParameters());
+        filterParams = renameJspParameterNames(filterParams);
         paramDecl += getHeaderOrParameterDeclaration(filterParams);
-        
-        String methodBody = "";
-        methodBody += "             try {\n";
-        methodBody += paramDecl + "\n";
-        methodBody += "             "+REST_CONNECTION_PACKAGE+"."+REST_RESPONSE+" result = " + 
-                getBean().getSaasServicePackageName() + "." + getBean().getSaasServiceName() + 
-                "." + getBean().getSaasServiceMethodName() + "(" + paramUse + ");\n";
-        if(getBean().getHttpMethod() == HttpMethodType.GET) {
-            if(getBean().canGenerateJAXBUnmarshaller()) {
-                String resultClass = getBean().getOutputWrapperPackageName()+ "." +getBean().getOutputWrapperName();
-                methodBody += "             "+resultClass+" resultObj = result.getDataAsJaxbObject("+resultClass+".class);\n";
-                methodBody += "             System.out.println(\"The SaasService returned: \" + resultObj.toString());\n";
-            } else {
-                methodBody += "             System.out.println(\"The SaasService returned: \"+result.getDataAsString());\n";
+        return getCustomMethodBody(paramDecl, paramUse, indent2);
+    }
+    
+    private List<ParameterInfo> filterJspParameters(List<ParameterInfo> params) {
+        List<ParameterInfo> returnParams = new ArrayList<ParameterInfo>();
+        for(ParameterInfo p:params) {
+            String name = getParameterName(p);
+            if(Constants.HTTP_SERVLET_REQUEST_VARIABLE.equals(name) || 
+                    Constants.HTTP_SERVLET_RESPONSE_VARIABLE.equals(name)) {
+                continue;
             }
-        } else {
-            methodBody += "                 System.out.println(\"The SaasService returned: \"+result);\n";
+            returnParams.add(p);
         }
-        methodBody += "             } catch (java.io.IOException ex) {\n";
-        methodBody += "                 ex.printStackTrace();\n";
-        methodBody += "             }\n";
-       
-        return methodBody;
+        return returnParams;
     }
     
     private List<ParameterInfo> renameJspParameterNames(List<ParameterInfo> params) {

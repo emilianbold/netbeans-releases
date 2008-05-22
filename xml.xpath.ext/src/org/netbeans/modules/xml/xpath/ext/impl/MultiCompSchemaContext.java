@@ -71,14 +71,8 @@ public class MultiCompSchemaContext implements XPathSchemaContext {
         mUsedSchemaCompSet = compSet;
     }
     
-    @Override
-    public String toString() {
-        StringBuffer sb = new StringBuffer();
-        //
-        if (mParentContext != null) {
-            sb.append(mParentContext.toString());
-        }
-        sb.append(LocationStep.STEP_SEPARATOR);
+    public String toStringWithoutParent() {
+        StringBuilder sb = new StringBuilder();
         //
         if (mSchemaCompPairSet != null) {
             boolean isFirst = true;
@@ -98,6 +92,20 @@ public class MultiCompSchemaContext implements XPathSchemaContext {
                 SchemaCompPair.appendCompName(sb, schemaComp);
             }
         }
+        //
+        return sb.toString();
+    }
+    
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        //
+        if (mParentContext != null) {
+            sb.append(mParentContext.toString());
+        }
+        sb.append(LocationStep.STEP_SEPARATOR);
+        //
+        sb.append(toStringWithoutParent());
         //
         return sb.toString();
     }

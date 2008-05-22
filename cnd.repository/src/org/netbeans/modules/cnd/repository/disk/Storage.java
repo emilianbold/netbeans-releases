@@ -44,17 +44,21 @@ import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 
 /**
- *
+ * Represents a physical storage.
  * @author Vladimir Kvashin
  */
 public interface Storage {
 
-    public Persistent get(Key key) throws IOException;
+    /** Gets an element from the storage */
+    public Persistent read(Key key) throws IOException;
     
-    public void remove(Key id) throws IOException;
+    /** Removes and element from the storage */
+    public void remove(Key key) throws IOException;
     
+    /** Closes the storage */
     public void close() throws IOException;
     
+    /** Gets the fragmentation percentage */
     public int getFragmentationPercentage() throws IOException;
     
     /** 

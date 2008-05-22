@@ -137,13 +137,16 @@ public class WebProjectLibrariesModifierImpl implements WebProjectLibrariesModif
                         if (!changed.isEmpty()) {
                             String itemRefs[] = cs.encodeToStrings( resources, ClassPathSupportCallbackImpl.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES);
                             projectProperties = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);    //PathParser may change the EditableProperties                                
+                            EditableProperties privateProperties = helper.getProperties (AntProjectHelper.PRIVATE_PROPERTIES_PATH);
                             projectProperties.setProperty(WebProjectProperties.WAR_CONTENT_ADDITIONAL, itemRefs);                                
 
                             ArrayList l = new ArrayList ();
                             l.addAll(cs.itemsList(projectProperties.getProperty(ProjectProperties.JAVAC_CLASSPATH),  WebProjectProperties.TAG_WEB_MODULE_LIBRARIES));
                             l.addAll(resources);
-                            ProjectProperties.storeLibrariesLocations(l.iterator(), projectProperties, project.getProjectDirectory());
+                            ProjectProperties.storeLibrariesLocations(project.getAntProjectHelper(), l.iterator(), 
+                                    project.getAntProjectHelper().isSharableProject() ? projectProperties : privateProperties);
                             helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties);
+                            helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties);
                             if (saveProject) {
                                 ProjectManager.getDefault().saveProject(project);
                             }
@@ -191,12 +194,15 @@ public class WebProjectLibrariesModifierImpl implements WebProjectLibrariesModif
                         if (!changed.isEmpty()) {
                             String itemRefs[] = cs.encodeToStrings( resources, ClassPathSupportCallbackImpl.TAG_WEB_MODULE_LIBRARIES);
                             props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);    //PathParser may change the EditableProperties                                
+                            EditableProperties privateProperties = helper.getProperties (AntProjectHelper.PRIVATE_PROPERTIES_PATH);
                             props.setProperty(ProjectProperties.JAVAC_CLASSPATH, itemRefs);                                
                             ArrayList l = new ArrayList ();
                             l.addAll(resources);
                             l.addAll(cs.itemsList(props.getProperty(WebProjectProperties.WAR_CONTENT_ADDITIONAL),  WebProjectProperties.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES));
-                            ProjectProperties.storeLibrariesLocations(l.iterator(), props, project.getProjectDirectory());
+                            ProjectProperties.storeLibrariesLocations(project.getAntProjectHelper(), l.iterator(), 
+                                    project.getAntProjectHelper().isSharableProject() ? props : privateProperties);
                             helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
+                            helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties);
                             ProjectManager.getDefault().saveProject(project);
                             return true;
                         }
@@ -348,12 +354,11 @@ public class WebProjectLibrariesModifierImpl implements WebProjectLibrariesModif
                                 if (toAdd == null) {
                                     toAdd = roots[i];
                                 }
-                                String filePath = LibrariesSupport.convertURLToFilePath(toAdd);
-                                final File f = PropertyUtils.resolveFile(projectFolderFile, filePath);
+                                final File f = FileUtil.normalizeFile( new File (URI.create(toAdd.toExternalForm())));
                                 if (f == null ) {
                                     throw new IllegalArgumentException ("The file must exist on disk");     //NOI18N
                                 }
-                                filePaths[i] = filePath;
+                                filePaths[i] = f.getPath();
                             }
                             WarIncludesUiSupport.addJarFiles(filePaths, projectFolderFile, addModel);
                             int count = addModel.getRowCount();
@@ -365,14 +370,17 @@ public class WebProjectLibrariesModifierImpl implements WebProjectLibrariesModif
 
                             String[] war_includes = cs.encodeToStrings(WarIncludesUiSupport.getList(addModel), ClassPathSupportCallbackImpl.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES);
                             props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);  //PathParser may change the EditableProperties
+                            EditableProperties privateProperties = helper.getProperties (AntProjectHelper.PRIVATE_PROPERTIES_PATH);
                             props.setProperty(WebProjectProperties.WAR_CONTENT_ADDITIONAL, war_includes);
 
                             ArrayList libs = new ArrayList ();
                             libs.addAll(cs.itemsList(props.getProperty(ProjectProperties.JAVAC_CLASSPATH),  WebProjectProperties.TAG_WEB_MODULE_LIBRARIES));
                             libs.addAll(WarIncludesUiSupport.getList(addModel));
 
-                            ProjectProperties.storeLibrariesLocations (libs.iterator(), props, project.getProjectDirectory());
+                            ProjectProperties.storeLibrariesLocations (project.getAntProjectHelper(), libs.iterator(),
+                                    project.getAntProjectHelper().isSharableProject() ? props : privateProperties);
                             helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
+                            helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties);
 
                             ProjectManager.getDefault().saveProject(project);
                             return true;
@@ -387,12 +395,11 @@ public class WebProjectLibrariesModifierImpl implements WebProjectLibrariesModif
                                 if (toAdd == null) {
                                     toAdd = roots[i];
                                 }
-                                String filePath = LibrariesSupport.convertURLToFilePath(toAdd);
-                                final File f = PropertyUtils.resolveFile(projectFolderFile, filePath);
+                                final File f = FileUtil.normalizeFile( new File (URI.create(toAdd.toExternalForm())));                                
                                 if (f == null ) {
                                     throw new IllegalArgumentException ("The file must exist on disk");     //NOI18N
                                 }
-                                ClassPathSupport.Item item = ClassPathSupport.Item.create( filePath, projectFolderFile, null);
+                                ClassPathSupport.Item item = ClassPathSupport.Item.create( f.getPath(), projectFolderFile, null);
                                 item.setAdditionalProperty(ClassPathSupportCallbackImpl.PATH_IN_DEPLOYMENT, path);
                                 if (resources.contains(item)) {
                                     resources.remove(item);
@@ -451,12 +458,11 @@ public class WebProjectLibrariesModifierImpl implements WebProjectLibrariesModif
                             if (toAdd == null) {
                                 toAdd = roots[i];
                             }
-                            String filePath = LibrariesSupport.convertURLToFilePath(toAdd);
-                            final File f = PropertyUtils.resolveFile(projectFolderFile, filePath);
+                            File f = FileUtil.normalizeFile( new File (URI.create(toAdd.toExternalForm())));
                             if (f == null ) {
                                 throw new IllegalArgumentException ("The file must exist on disk");     //NOI18N
                             }
-                            ClassPathSupport.Item item = ClassPathSupport.Item.create( filePath, projectFolderFile, null);
+                            ClassPathSupport.Item item = ClassPathSupport.Item.create( f.getPath(), projectFolderFile, null);
                             if (operation == ADD && !resources.contains(item)) {
                                 resources.add(item);
                                 changed = true;

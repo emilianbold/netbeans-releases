@@ -107,7 +107,7 @@ public class ViewAction extends ContextAction {
             }else if(Utilities.isWindows()){
                 bHgkFound = HgUtils.isInUserPath(HG_SCRIPTS_DIR + File.separator + hgkCommand);                    
             }
-            boolean bHgkPropExists = HgConfigFiles.getInstance().containsProperty(
+            boolean bHgkPropExists = HgConfigFiles.getSysInstance().containsProperty(
                             HgConfigFiles.HG_EXTENSIONS, HgConfigFiles.HG_EXTENSIONS_HGK);
             
             if(!bHgkFound){
@@ -129,7 +129,7 @@ public class ViewAction extends ContextAction {
                 if (bConfirmSetHgkProp) {
                     logger.outputInRed(
                             NbBundle.getMessage(ViewAction.class, "MSG_VIEW_SETHGK_PROP_DO_INFO")); // NOI18N
-                    HgConfigFiles.getInstance().setProperty(HgConfigFiles.HG_EXTENSIONS_HGK, ""); // NOI18N
+                    HgConfigFiles.getSysInstance().setProperty(HgConfigFiles.HG_EXTENSIONS_HGK, ""); // NOI18N
                 }else{
                     logger.outputInRed(
                             NbBundle.getMessage(ViewAction.class, "MSG_VIEW_NOTSETHGK_PROP_INFO")); // NOI18N

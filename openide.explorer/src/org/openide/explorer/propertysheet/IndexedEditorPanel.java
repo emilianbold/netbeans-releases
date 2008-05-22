@@ -53,6 +53,8 @@ import java.awt.Component;
 
 import java.beans.*;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -92,6 +94,7 @@ class IndexedEditorPanel extends javax.swing.JPanel implements ExplorerManager.P
     // End of variables declaration//GEN-END:variables
     // XXX look into constructor
     private TreeTableView treeTableView1;
+    private static final Logger LOG = Logger.getLogger(IndexedEditorPanel.class.getName());
 
     /** Creates new form IndexedEditorPanel */
     public IndexedEditorPanel(Node node, Node.Property[] props) {
@@ -119,17 +122,26 @@ class IndexedEditorPanel extends javax.swing.JPanel implements ExplorerManager.P
         node.addPropertyChangeListener(this);
 
         try {
+            ClassLoader l = Lookup.getDefault().lookup(ClassLoader.class);
+            if (l == null) {
+                l = Thread.currentThread().getContextClassLoader();
+            }
+            if (l == null) {
+                l = getClass().getClassLoader();
+            }
+            
             selectedLookup = org.openide.util.lookup.Lookups.proxy(this);
 
-            NodeAction globalMoveUp = SystemAction.get(Class.forName("org.openide.actions.MoveUpAction").asSubclass(NodeAction.class)); // NOI18N
-            NodeAction globalMoveDown = SystemAction.get(Class.forName("org.openide.actions.MoveDownAction").asSubclass(NodeAction.class)); // NOI18N
-            NodeAction globalNewAction = SystemAction.get(Class.forName("org.openide.actions.NewAction").asSubclass(NodeAction.class)); // NOI18N
+            NodeAction globalMoveUp = SystemAction.get(Class.forName("org.openide.actions.MoveUpAction", true, l).asSubclass(NodeAction.class)); // NOI18N
+            NodeAction globalMoveDown = SystemAction.get(Class.forName("org.openide.actions.MoveDownAction", true, l).asSubclass(NodeAction.class)); // NOI18N
+            NodeAction globalNewAction = SystemAction.get(Class.forName("org.openide.actions.NewAction", true, l).asSubclass(NodeAction.class)); // NOI18N
 
             // Get context aware instances.
             moveUp = globalMoveUp.createContextAwareInstance(selectedLookup);
             moveDown = globalMoveDown.createContextAwareInstance(selectedLookup);
             newAction = globalNewAction.createContextAwareInstance(selectedLookup);
         } catch (ClassNotFoundException cnfe) {
+            LOG.log(Level.INFO, "Maybe missing openide.actions module?", cnfe);
         }
 
         java.util.ResourceBundle bundle = NbBundle.getBundle(IndexedEditorPanel.class);

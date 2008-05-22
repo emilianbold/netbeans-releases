@@ -84,7 +84,9 @@ import org.openide.util.WeakListeners;
  * This is a dummy class; all methods are static.
  */
 public final class FileUtil extends Object {
-    
+
+    private static final Logger LOG = Logger.getLogger(FileUtil.class.getName());
+
     /** Normal header for ZIP files. */
     private static byte[] ZIP_HEADER_1 = {0x50, 0x4b, 0x03, 0x04};
     /** Also seems to be used at least in apisupport/project/test/unit/data/example-external-projects/suite3/nbplatform/random/modules/ext/stuff.jar; not known why */
@@ -193,7 +195,7 @@ public final class FileUtil extends Object {
         FileSystem fs = getDiskFileSystem();
         if (fs == null) {fs = getDiskFileSystemFor(File.listRoots());}
         if (fs != null) {
-            fs.addFileChangeListener(fcl);
+            fs.removeFileChangeListener(fcl);
         }
     }
     
@@ -644,7 +646,7 @@ public final class FileUtil extends Object {
         if (asserts) {
             File normFile = normalizeFile(file);
             if (!file.equals(normFile)) {
-                Logger.getLogger(FileUtil.class.getName()).log(Level.WARNING, null, new IllegalArgumentException(
+                LOG.log(Level.WARNING, null, new IllegalArgumentException(
                 "Parameter file was not " + // NOI18N   
                 "normalized. Was " + file + " instead of " + normFile
                 ));
@@ -765,7 +767,11 @@ public final class FileUtil extends Object {
 
             Object value = source.getAttribute(key);
 
-            if (value != null) {
+            // #132801 and #16761 - don't set attributes where value is 
+            // instance of VoidValue because these attributes were previously written 
+            // by mistake in code. So it should happen only if you import some
+            // settings from old version.
+            if (value != null && !(value instanceof MultiFileObject.VoidValue)) {
                 dest.setAttribute(key, value);
             }
         }
@@ -1369,7 +1375,7 @@ public final class FileUtil extends Object {
                 retVal = canonicalFile;
             }
         } catch (IOException ioe) {
-            Logger.getAnonymousLogger().severe("Normalization failed on file " + file + ": " + ioe);
+            LOG.warning("Normalization failed on file " + file + ": " + ioe);
 
             // OK, so at least try to absolutize the path
             retVal = file.getAbsoluteFile();
@@ -1429,9 +1435,7 @@ public final class FileUtil extends Object {
             try {
                 retVal = file.getCanonicalFile();
             } catch (IOException e) {
-                Logger.getAnonymousLogger().severe(
-                    "getCanonicalFile() on file " + file + " failed. " + e.toString()
-                ); // NOI18N
+                LOG.warning("getCanonicalFile() on file " + file + " failed: " + e);
             }
         }
 
@@ -1636,7 +1640,7 @@ public final class FileUtil extends Object {
                     in.close();
                 }
             } catch (IOException ioe) {
-                Logger.getLogger(FileUtil.class.getName()).log(Level.INFO, null, ioe);
+                LOG.log(Level.INFO, null, ioe);
             }
 
             if (b == null) {

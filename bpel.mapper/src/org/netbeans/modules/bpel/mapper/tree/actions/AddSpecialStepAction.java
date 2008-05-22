@@ -26,11 +26,12 @@ import org.netbeans.modules.bpel.mapper.predicates.SpecialStepManager;
 import org.netbeans.modules.bpel.mapper.predicates.editor.PathConverter;
 import org.netbeans.modules.bpel.mapper.tree.MapperSwingTreeModel;
 import org.netbeans.modules.bpel.mapper.tree.models.VariableTreeModel;
+import org.netbeans.modules.bpel.mapper.tree.search.TreeFinderProcessor;
 import org.netbeans.modules.bpel.mapper.tree.spi.MapperTcContext;
 import org.netbeans.modules.bpel.mapper.tree.spi.MapperTreeModel;
 import org.netbeans.modules.bpel.mapper.tree.spi.RestartableIterator;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
-import org.netbeans.modules.bpel.model.api.support.XPathModelFactory;
+import org.netbeans.modules.bpel.model.api.support.BpelXPathModelFactory;
 import org.netbeans.modules.soa.mappercore.LeftTree;
 import org.netbeans.modules.soa.mappercore.Mapper;
 import org.netbeans.modules.soa.mappercore.model.MapperModel;
@@ -95,7 +96,7 @@ public class AddSpecialStepAction extends MapperAction<RestartableIterator<Objec
         // TODO show modal dialog for processing instruciton
         StepNodeTypeTest newStepType = new StepNodeTypeTest(mStepType, null);
         BpelEntity selectedEntity = getDesignContext().getSelectedEntity();
-        XPathModel newModel = XPathModelFactory.create(selectedEntity);
+        XPathModel newModel = BpelXPathModelFactory.create(selectedEntity);
         newModel.setSchemaContext(sContext);
         LocationStep newStep = newModel.getFactory().
                 newLocationStep(null, newStepType, null);
@@ -127,7 +128,8 @@ public class AddSpecialStepAction extends MapperAction<RestartableIterator<Objec
         treeModel.insertChild(mTreePath, 0, newStep);
         //
         // Set selection to the added predicate item
-        TreePath newPredPath = treeModel.findChildByDataObj(mTreePath, newStep);
+        TreeFinderProcessor findProc = new TreeFinderProcessor(treeModel);
+        TreePath newPredPath = findProc.findChildByDataObj(mTreePath, newStep);
         if (mInLeftTree) {
             LeftTree leftTree = mMapperTcContext.getMapper().getLeftTree();
             leftTree.setSelectionPath(newPredPath);

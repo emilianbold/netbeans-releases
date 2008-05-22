@@ -44,9 +44,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+
+import org.openide.util.Lookup;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
-import org.openide.util.Lookup;
 
 /**
  * Validation clients use this interface to start validation on a model.
@@ -55,116 +56,91 @@ import org.openide.util.Lookup;
  *
  * @author Nam Nguyen
  * @author Praveen Savur
- *
  */
 public class Validation {
     
-    private static Collection<Validator> validators;
-    
-    static {
-        // Lookup all available providers and create a list of providers.
-        lookupProviders();        
-    }
-    
-    private List<ResultItem> validationResult;
-    private List<Model> validatedModels;
-    
     public Validation() {
-//        System.out.println("ValidationImpl(): In constructor");
-        initialise();
+      myValidationResult = new ArrayList<ResultItem>();
+      myValidatedModels = new ArrayList<Model>();
     }
         
-    
-    
     /**
      * Validates the model.
      * Note: Clients should call this method on a Validation instance only
      * once. The same Validation instance should not be reused.
      *
      * @param model Contains the model for which validation has to be provided.
-     * @param validationType Type of validation: complete or partial.
+     * @param type Type of validation: complete or partial.
      */
-    public void validate(Model model, ValidationType validationType) {
-//        System.out.println("ValidationImpl(): validate()");
+    public void validate(Model model, ValidationType type) {
+        isStopped = false;
         
-        if (validatedModels.contains(model))
+        if (myValidatedModels.contains(model)) {
             return;
-        
-        validatedModels.add(model);
-        // Call each provider and accumulate results.
-        for(Validator provider: validators) {
-            ValidationResult result = provider.validate(model, this, validationType);
-            if (result != null) {
-                // Gather validation results.
-                validationResult.addAll(result.getValidationResult());
-
-                // Updated validated models list.
-                validatedModels.addAll(result.getValidatedModels());
-            }
         }
+        myValidatedModels.add(model);
+//System.out.println();
+//System.out.println();
+
+        for (Validator validator : ourValidators) {
+            if (isStopped) {
+//System.out.println("-- STOPPED !!! --");
+                myValidationResult = null;
+                myValidatedModels = new ArrayList<Model>();
+                break;
+            }
+//System.out.println("see provider: " + validator.getClass().getName());
+            ValidationResult result = validator.validate(model, this, type);
+
+            if (result == null) {
+                continue;
+            }
+//System.out.println("            : errors found");
+            myValidationResult.addAll(result.getValidationResult());
+            myValidatedModels.addAll(result.getValidatedModels());
+        }
+//System.out.println();
     }
     
-    
-    
-    /**
-     *  Returns the last validationResult.
-     */
     public List<ResultItem> getValidationResult() {
-        return validationResult;
+        if (myValidationResult == null) {
+            return null;
+        }
+        return Collections.unmodifiableList(myValidationResult);
     }
     
-    
-    /**
-     * Retuns an unmodifiable list of validated models.
-     */
     public List<Model> getValidatedModels() {
-        return Collections.unmodifiableList(validatedModels);
+        return Collections.unmodifiableList(myValidatedModels);
     }
     
-    
-    /**
-     *  The type of validation.
-     *  COMPLETE indicates that the model will be recursively validated.
-     *     ie., all imported models will also be validated.
-     *  PARTIAL indicated that only the model will be validated and
-     *    no imports will be validated.
-     */
     public enum ValidationType {
         COMPLETE, PARTIAL
     }
     
-    
-    
-    /**
-     *  Initialise.
-     */
-    private void initialise() {
-        validationResult = new ArrayList<ResultItem>();
-        validatedModels = new ArrayList<Model>();
-    }
-    
-    
-    /**
-     *  Get a list of all providers.
-     */
     private static void lookupProviders() {
-
-        if(validators != null)
+        if (ourValidators!= null) {
             return;
-        
-        validators = new ArrayList<Validator>();
-        
-//        System.out.println("ValidationImpl(): lookupProviders()");
-        Lookup.Result result = Lookup.getDefault().lookup(
-                new Lookup.Template(Validator.class));
-        
-        for(Object obj: result.allInstances()) {
-            Validator validator = (Validator) obj;
-            validators.add(validator);
         }
-//        System.out.println("providers are: " + validators);
+        ourValidators = new ArrayList<Validator>();
+        Lookup.Result result = Lookup.getDefault().lookup(new Lookup.Template(Validator.class));
+        
+        for (Object object : result.allInstances()) {
+            ourValidators.add((Validator) object);
+        }
+    }
+
+    public static void stop() {
+//System.out.println("-- PLEASE STOP --");
+        isStopped = true;
+    }
+
+    private static Collection<Validator> ourValidators;
+    
+    static {
+        lookupProviders();        
     }
     
-    
-
+    private List<Model> myValidatedModels;
+    private List<ResultItem> myValidationResult;
+    private static boolean isStopped = false;
 }

@@ -225,12 +225,21 @@ public class JsAnalyzer implements StructureScanner {
     
     static AnalysisResult analyze(JsParseResult result, CompilationInfo info) {
         AnalysisResult analysisResult = new AnalysisResult(info);
-        ParseTreeWalker walker = new ParseTreeWalker(analysisResult);
-        Node root = result.getRootNode();
-        if (root != null) {
-            walker.walk(root);
+        BaseDocument doc = LexUtilities.getDocument(info, true);
+        if (doc != null) {
+            try {
+                doc.readLock(); // Read-lock due to token hierarchy use
+
+                ParseTreeWalker walker = new ParseTreeWalker(analysisResult);
+                Node root = result.getRootNode();
+                if (root != null) {
+                    walker.walk(root);
+                }
+                analysisResult.postProcess(result);
+            } finally {
+                doc.readUnlock();
+            }
         }
-        analysisResult.postProcess(result);
         
         return analysisResult;
     }
@@ -624,20 +633,23 @@ public class JsAnalyzer implements StructureScanner {
             
             Map<String, String> typeMap = element.getDocProps();
             if (typeMap != null) {
-                String clz = typeMap.get("@class"); // NOI18N
-                if (clz != null) {
-                    int dot = clz.lastIndexOf('.');
-                    if (dot != -1) {
-                        element.in = clz.substring(0, dot);
-                        element.name = clz.substring(dot+1);
-                    } else {
-                        element.name = clz;
-                    }
+// I can't look at @class since for Jsdoc (such as in Woodstock) the @class is just
+// a marker and it may not actually specify the class - it could just be the first
+// word of the class description!                
+//                String clz = typeMap.get("@class"); // NOI18N
+//                if (clz != null) {
+//                    int dot = clz.lastIndexOf('.');
+//                    if (dot != -1) {
+//                        element.in = clz.substring(0, dot);
+//                        element.name = clz.substring(dot+1);
+//                    } else {
+//                        element.name = clz;
+//                    }
                     String s = typeMap.get("@extends"); // NOI18N
                     if (s != null) {
                         addSuperClass(element.name, s);
                     }
-                }
+//                }
                 String namespace = typeMap.get("@namespace"); // NOI18N
                 if (namespace != null) {
                     addNameSpace(element.name, namespace);
@@ -791,6 +803,10 @@ public class JsAnalyzer implements StructureScanner {
                 return false;
             }
 
+            if (isLeaf() != d.isLeaf()) {
+                return false;
+            }
+
             return true;
         }
 
@@ -889,7 +905,7 @@ public class JsAnalyzer implements StructureScanner {
 
             if (element.getType() != null && element.getType() != Node.UNKNOWN_TYPE) {
                 formatter.appendHtml(" : ");
-                formatter.appendText(element.getType());
+                formatter.appendText(JsUtils.normalizeTypeString(element.getType()));
             }
 
             return formatter.getText();

@@ -135,15 +135,17 @@ public class WebProjectValidation13 extends WebProjectValidation {
         nameStep.txtProjectName().typeText(PROJECT_NAME);
         nameStep.txtProjectLocation().setText("");
         nameStep.txtProjectLocation().typeText(PROJECT_LOCATION);
-        String sJ2EE_1_3 = Bundle.getStringTrimmed(
-                "org.netbeans.modules.web.project.ui.wizards.Bundle",
-                "J2EESpecLevel_13");
-        nameStep.selectJ2EEVersion(sJ2EE_1_3);
-        nameStep.finish();
-        Timeouts timeouts = nameStep.getTimeouts().cloneThis();
-        nameStep.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 60000);
-        nameStep.waitClosed();
-        nameStep.setTimeouts(timeouts);
+        nameStep.next();
+        NewWebProjectServerSettingsStepOperator serverStep = new NewWebProjectServerSettingsStepOperator();
+        serverStep.selectServer("Tomcat");
+        serverStep.selectJavaEEVersion(org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.j2ee.common.project.ui.Bundle", "J2EESpecLevel_13"));
+        serverStep.next();
+        NewWebProjectSourcesStepOperator frameworkStep =  new NewWebProjectSourcesStepOperator();
+        frameworkStep.finish();
+        Timeouts timeouts = frameworkStep.getTimeouts().cloneThis();
+        frameworkStep.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 60000);
+        frameworkStep.waitClosed();
+        frameworkStep.setTimeouts(timeouts);
         // wait for project creation
         sleep(5000);
         ProjectSupport.waitScanFinished();

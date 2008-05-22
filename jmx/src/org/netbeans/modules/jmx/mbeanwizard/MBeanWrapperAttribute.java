@@ -43,7 +43,7 @@ package org.netbeans.modules.jmx.mbeanwizard;
 
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.modules.jmx.MBeanAttribute;
-import org.netbeans.modules.jmx.WizardConstants;
+import org.netbeans.modules.jmx.common.WizardConstants;
 
 /**
  *

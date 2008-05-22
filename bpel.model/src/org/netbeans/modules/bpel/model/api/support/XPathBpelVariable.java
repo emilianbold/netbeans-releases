@@ -16,11 +16,10 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.modules.bpel.model.api.support;
 
 import javax.xml.namespace.QName;
-import org.netbeans.modules.bpel.model.api.VariableDeclaration;
+import org.netbeans.modules.bpel.model.api.AbstractVariableDeclaration;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.GlobalType;
 import org.netbeans.modules.xml.schema.model.ReferenceableSchemaComponent;
@@ -35,19 +34,19 @@ import org.netbeans.modules.xml.xpath.ext.spi.XPathVariable;
  */
 public final class XPathBpelVariable implements XPathVariable {
 
-    private VariableDeclaration myVarDecl;
+    private AbstractVariableDeclaration myVarDecl;
     private Part myPart;
 
     /**
      * The part can be null.
      */ 
-    public XPathBpelVariable(VariableDeclaration var, Part part) {
+    public XPathBpelVariable(AbstractVariableDeclaration var, Part part) {
         assert var != null;
         myVarDecl = var;
         myPart = part;
     }
     
-    public VariableDeclaration getVarDecl() {
+    public AbstractVariableDeclaration getVarDecl() {
         return myVarDecl;
     }
     
@@ -70,7 +69,7 @@ public final class XPathBpelVariable implements XPathVariable {
                 gTypeRef = part.getType();
             }
         } else {
-            VariableDeclaration varDecl = getVarDecl();
+            AbstractVariableDeclaration varDecl = getVarDecl();
             gElementRef = varDecl.getElement();
             if (gElementRef == null) {
                 gTypeRef = varDecl.getType();

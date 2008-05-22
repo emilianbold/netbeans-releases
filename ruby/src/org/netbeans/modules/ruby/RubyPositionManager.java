@@ -46,24 +46,16 @@ import org.jruby.ast.Node;
 import org.jruby.lexer.yacc.ISourcePosition;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.ElementHandle;
-import org.netbeans.modules.ruby.elements.Element;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.gsf.api.PositionManager;
 import org.netbeans.modules.ruby.elements.AstElement;
 import org.netbeans.modules.ruby.elements.RubyElement;
 
-
 /**
- *
  * @author Tor Norbye
  */
 public class RubyPositionManager implements PositionManager {
-    /**
-     * Creates a new instance of JRubyPositionManager
-     */
-    public RubyPositionManager() {
-    }
 
     public OffsetRange getOffsetRange(CompilationInfo info, ElementHandle objectHandle) {
         RubyElement object = RubyParser.resolveHandle(info, objectHandle);
@@ -73,8 +65,8 @@ public class RubyPositionManager implements PositionManager {
 
             return new OffsetRange(pos.getStartOffset(), pos.getEndOffset());
         } else {
-            throw new IllegalArgumentException((("Foreign element: " + object + " of type " +
-                object) != null) ? object.getClass().getName() : "null");
+            throw new IllegalArgumentException("Foreign element: " + object + " of type " +
+                    (object != null ? object.getClass().getName() : "null"));
         }
     }
 

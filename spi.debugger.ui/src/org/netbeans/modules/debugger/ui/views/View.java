@@ -81,6 +81,8 @@ public class View extends TopComponent implements org.openide.util.HelpCtx.Provi
     private View (String icon, String name, String helpID, String propertiesHelpID,
                   String displayNameResource, String toolTipResource) {
         setIcon (Utilities.loadImage (icon));
+        // Remember the location of the component when closed.
+        putClientProperty("KeepNonPersistentTCInModelWhenClosed", Boolean.TRUE); // NOI18N
         this.name = name;
         this.helpID = helpID;
         this.propertiesHelpID = propertiesHelpID;

@@ -53,7 +53,6 @@ import org.netbeans.api.java.queries.JavadocForBinaryQuery;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation;
-import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.openide.ErrorManager;
 import org.openide.util.WeakListeners;
 import org.openide.filesystems.URLMapper;
@@ -91,7 +90,6 @@ public class JavadocForBinaryQueryLibraryImpl implements JavadocForBinaryQueryIm
                 if (this.cachedRoots == null) {
                     List<URL> result = new ArrayList<URL>();
                     for (URL u : lib.getContent(J2SELibraryTypeProvider.VOLUME_TYPE_JAVADOC)) {
-                        u = LibrariesSupport.resolveLibraryEntryURL(lib.getManager().getLocation(), u);
                         result.add (getIndexFolder(u));
                     }
                     this.cachedRoots = result.toArray(new URL[result.size()]);
@@ -127,7 +125,6 @@ public class JavadocForBinaryQueryLibraryImpl implements JavadocForBinaryQueryIm
                     continue;
                 }
                 for (URL entry : lib.getContent(J2SELibraryTypeProvider.VOLUME_TYPE_CLASSPATH)) {
-                    entry = LibrariesSupport.resolveLibraryEntryURL(mgr.getLocation(), entry);
                     URL normalizedEntry;
                     if (isNormalizedURL) {
                         normalizedEntry = getNormalizedURL(entry);

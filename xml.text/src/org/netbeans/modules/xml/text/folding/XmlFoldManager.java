@@ -43,6 +43,8 @@ package org.netbeans.modules.xml.text.folding;
 
 import java.io.IOException;
 import java.util.Stack;
+import java.util.Timer;
+import java.util.TimerTask;
 import javax.swing.event.DocumentEvent;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -61,7 +63,6 @@ import org.netbeans.api.xml.lexer.XMLTokenId;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.xml.text.folding.TokenElement.Token;
 import org.netbeans.modules.xml.text.folding.TokenElement.TokenType;
-import org.openide.util.RequestProcessor;
 
 /**
  * This class is an implementation of @see org.netbeans.spi.editor.fold.FoldManager
@@ -74,7 +75,8 @@ public class XmlFoldManager implements FoldManager {
 
     private FoldOperation operation;
     private long dirtyTimeMillis = 0;
-    private RequestProcessor.Task SYNCHRONIZER = null;
+    private Timer timer;
+    private TimerTask timerTask;
    
     public static final int DELAY_SYNCER = 2000;  // milisecs.
     public static final int DELAY_DIRTY = 1000;  // milisecs.
@@ -83,42 +85,87 @@ public class XmlFoldManager implements FoldManager {
         this.operation = operation;
     }
 
-    //fold hiearchy has been released
+    /**
+     * Ideally release should get called, but god knows why it doesn't.
+     */
     public void release() {
+        releaseTimerTask();
+        timer = null;
     }
 
     protected FoldOperation getOperation() {
         return operation;
     }
       
+    
+    /**
+     * Do NOT update folds here. For some reason, three fold managers get
+     * instantiated by the infrastructure and three initFolds() get called.
+     * 
+     * Schedule fold updates in insertUpdate removeUpdate and changeUpdate.
+     * First fold will be created by changeUpdate.
+     * @param transaction
+     */
     public void initFolds(FoldHierarchyTransaction transaction) {
-        Document doc = getOperation().getHierarchy().getComponent().getDocument();
-        //filtering of the PlainDocument set during the JEditorPane initialization
-        if (!(doc instanceof BaseDocument)) {
-            return;
-        }
-        
-        //do not update folds inside initFolds
-        //updateFolds();
-           
-        SYNCHRONIZER = RequestProcessor.getDefault().post(
-                new Runnable() {
-                    public void run() {
-                        if (dirtyIntervalMillis() > DELAY_DIRTY) {
-                            unsetDirty();
-                            updateFolds();
-                        }
-                        SYNCHRONIZER.schedule(DELAY_SYNCER);
-                    }
-                }, DELAY_SYNCER);
+    }
+    
+    private BaseDocument getDocument() {
+        return (BaseDocument) getOperation().getHierarchy().getComponent().getDocument();
+    }
+
+    public void insertUpdate(DocumentEvent evt, FoldHierarchyTransaction transaction) {
+        scheduleFoldUpdate();
+    }
+
+    public void removeUpdate(DocumentEvent evt, FoldHierarchyTransaction transaction) {
+        scheduleFoldUpdate();
+    }
+
+    public void changedUpdate(DocumentEvent evt, FoldHierarchyTransaction transaction) {
+        scheduleFoldUpdate();
+    }
+
+    public void removeEmptyNotify(Fold epmtyFold) {
+    }
+
+    public void removeDamagedNotify(Fold damagedFold) {
+    }
+
+    public void expandNotify(Fold expandedFold) {
     }
    
-    public void setDirty() {
+    private void scheduleFoldUpdate() {
+        if (timer == null) {
+            timer = new Timer();
+        }
         dirtyTimeMillis = System.currentTimeMillis();
+        
+        //dump the old timerTask
+        releaseTimerTask();
+        
+        timerTask = new TimerTask() {
+            public void run() {
+                if (dirtyIntervalMillis() > DELAY_DIRTY) {
+                    updateFolds();
+                    unsetDirty();
+                }
+            }
+        };
+        timer.schedule(timerTask, DELAY_SYNCER);
+    }
+    
+    private void releaseTimerTask() {
+        if(timerTask == null)
+            return;
+        
+        timerTask.cancel();
+        timerTask = null;
     }
    
     public void unsetDirty() {
         dirtyTimeMillis = 0;
+        timer.cancel();
+        timer = null;
     }
    
     private long dirtyIntervalMillis() {
@@ -334,31 +381,6 @@ public class XmlFoldManager implements FoldManager {
             }
             currentTokensSize += image.length();
         }
-    }
-
-    private BaseDocument getDocument() {
-        return (BaseDocument) getOperation().getHierarchy().getComponent().getDocument();
-    }
-
-    public void insertUpdate(DocumentEvent evt, FoldHierarchyTransaction transaction) {
-        setDirty();
-    }
-
-    public void removeUpdate(DocumentEvent evt, FoldHierarchyTransaction transaction) {
-        setDirty();
-    }
-
-    public void changedUpdate(DocumentEvent evt, FoldHierarchyTransaction transaction) {
-        setDirty();
-    }
-
-    public void removeEmptyNotify(Fold epmtyFold) {
-    }
-
-    public void removeDamagedNotify(Fold damagedFold) {
-    }
-
-    public void expandNotify(Fold expandedFold) {
     }
    
     public boolean isOneLiner(int start, int end) {

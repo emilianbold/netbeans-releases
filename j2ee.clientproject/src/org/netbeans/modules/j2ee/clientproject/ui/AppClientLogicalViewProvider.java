@@ -51,16 +51,11 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.ResourceBundle;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
@@ -117,10 +112,6 @@ import org.openide.actions.FindAction;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.FileStatusEvent;
-import org.openide.filesystems.FileStatusListener;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
 import org.openide.nodes.AbstractNode;
@@ -283,24 +274,12 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider {
     
     /** Filter node containin additional features for the J2SE physical
      */
-    private final class AppClientLogicalViewRootNode extends AbstractNode implements Runnable, FileStatusListener, ChangeListener, PropertyChangeListener {
+    private final class AppClientLogicalViewRootNode extends AbstractNode {
         
         private Action brokenLinksAction;
         private BrokenServerAction brokenServerAction;
         private boolean broken;         //Represents a state where project has a broken reference repairable by broken reference support
         private boolean illegalState;   //Represents a state where project is not in legal state, eg invalid source/target level
-        
-        // icon badging >>>
-        private Set<FileObject> files;
-        private Map<FileSystem, FileStatusListener> fileSystemListeners;
-        private RequestProcessor.Task task;
-        private final Object privateLock = new Object();
-        private boolean iconChange;
-        private boolean nameChange;
-        private ChangeListener sourcesListener;
-        private Map<SourceGroup, PropertyChangeListener> groupsListeners;
-        //private Project project;
-        // icon badging <<<
         
         public AppClientLogicalViewRootNode() {
             super(new LogicalViewChildren(project, evaluator, helper, resolver), Lookups.singleton(project));
@@ -316,74 +295,6 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider {
             J2eeModuleProvider moduleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
             moduleProvider.addInstanceListener(
                     WeakListeners.create(InstanceListener.class, brokenServerAction, moduleProvider));
-            setProjectFiles(project);
-        }
-        
-        
-        protected void setProjectFiles(Project project) {
-            Sources sources = ProjectUtils.getSources(project);  // returns singleton
-            if (sourcesListener == null) {
-                sourcesListener = WeakListeners.change(this, sources);
-                sources.addChangeListener(sourcesListener);
-            }
-            setGroups(Arrays.asList(sources.getSourceGroups(Sources.TYPE_GENERIC)));
-        }
-        
-        
-        private void setGroups(Collection groups) {
-            if (groupsListeners != null) {
-                Iterator it = groupsListeners.keySet().iterator();
-                while (it.hasNext()) {
-                    SourceGroup group = (SourceGroup) it.next();
-                    PropertyChangeListener pcl = groupsListeners.get(group);
-                    group.removePropertyChangeListener(pcl);
-                }
-            }
-            groupsListeners = new HashMap<SourceGroup, PropertyChangeListener>();
-            Set<FileObject> roots = new HashSet<FileObject>();
-            Iterator it = groups.iterator();
-            while (it.hasNext()) {
-                SourceGroup group = (SourceGroup) it.next();
-                PropertyChangeListener pcl = WeakListeners.propertyChange(this, group);
-                groupsListeners.put(group, pcl);
-                group.addPropertyChangeListener(pcl);
-                FileObject fo = group.getRootFolder();
-                roots.add(fo);
-            }
-            setFiles(roots);
-        }
-        
-        protected void setFiles(Set<FileObject> files) {
-            if (fileSystemListeners != null) {
-                for (FileSystem fs : fileSystemListeners.keySet()) {
-                    FileStatusListener fsl = fileSystemListeners.get(fs);
-                    fs.removeFileStatusListener(fsl);
-                }
-            }
-            
-            fileSystemListeners = new HashMap<FileSystem, FileStatusListener>();
-            this.files = files;
-            if (files == null) {
-                return;
-            }
-            
-            Iterator it = files.iterator();
-            Set<FileSystem> hookedFileSystems = new HashSet<FileSystem>();
-            while (it.hasNext()) {
-                FileObject fo = (FileObject) it.next();
-                try {
-                    FileSystem fs = fo.getFileSystem();
-                    if (hookedFileSystems.contains(fs)) {
-                        continue;
-                    }
-                    hookedFileSystems.add(fs);
-                    FileStatusListener fsl = FileUtil.weakFileStatusListener(this, fs);
-                    fs.addFileStatusListener(fsl);
-                    fileSystemListeners.put(fs, fsl);
-                } catch (FileStateInvalidException e) {
-                    Logger.getLogger("global").log(Level.INFO, null, Exceptions.attachMessage(e, "Cannot get " + fo + " filesystem, ignoring...")); // NOI18N
-                }
-            }
         }
         
         @Override
@@ -400,21 +311,6 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider {
         
         @Override
         public Image getIcon(int type) {
-            Image img = getMyIcon(type);
-            
-            if (files != null && files.iterator().hasNext()) {
-                try {
-                    FileObject fo = files.iterator().next();
-                    img = fo.getFileSystem().getStatus().annotateIcon(img, type, files);
-                } catch (FileStateInvalidException e) {
-                    Logger.getLogger("global").log(Level.INFO, null, e);
-                }
-            }
-            
-            return img;
-        }
-        
-        private Image getMyIcon(int type) {
             Image original = super.getIcon(type);
             return broken || illegalState || brokenServerAction.isEnabled()
                    ? Utilities.mergeImages(original, ProjectProperties.ICON_BROKEN_BADGE.getImage(), 8, 0)
@@ -423,18 +319,10 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider {
         
         @Override
         public Image getOpenedIcon(int type) {
-            Image img = getMyOpenedIcon(type);
-            
-            if (files != null && files.iterator().hasNext()) {
-                try {
-                    FileObject fo = files.iterator().next();
-                    img = fo.getFileSystem().getStatus().annotateIcon(img, type, files);
-                } catch (FileStateInvalidException e) {
-                    Logger.getLogger("global").log(Level.INFO, null, e);
-                }
-            }
-            
-            return img;
+            Image original = super.getOpenedIcon(type);
+            return broken || illegalState || brokenServerAction.isEnabled()
+                   ? Utilities.mergeImages(original, ProjectProperties.ICON_BROKEN_BADGE.getImage(), 8, 0)
+                   : original;
         }
         
         @Override
@@ -443,62 +331,6 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider {
             return NbBundle.getMessage(AppClientLogicalViewProvider.class, "HINT_project_root_node", prjDirDispName); // NO18N
         }
 
-        private Image getMyOpenedIcon(int type) {
-            Image original = super.getOpenedIcon(type);
-            return broken || illegalState || brokenServerAction.isEnabled()
-                   ? Utilities.mergeImages(original, ProjectProperties.ICON_BROKEN_BADGE.getImage(), 8, 0)
-                   : original;
-        }
-        
-        public void run() {
-            boolean fireIcon;
-            boolean fireName;
-            synchronized (privateLock) {
-                fireIcon = iconChange;
-                fireName = nameChange;
-                iconChange = false;
-                nameChange = false;
-            }
-            if (fireIcon) {
-                fireIconChange();
-                fireOpenedIconChange();
-            }
-            if (fireName) {
-                fireDisplayNameChange(null, null);
-            }
-        }
-        
-        public void annotationChanged(FileStatusEvent event) {
-            if (task == null) {
-                task = RequestProcessor.getDefault().create(this);
-            }
-            
-            synchronized (privateLock) {
-                if ((iconChange == false && event.isIconChange()) || (nameChange == false && event.isNameChange())) {
-                    Iterator it = files.iterator();
-                    while (it.hasNext()) {
-                        FileObject fo = (FileObject) it.next();
-                        if (event.hasChanged(fo)) {
-                            iconChange |= event.isIconChange();
-                            nameChange |= event.isNameChange();
-                        }
-                    }
-                }
-            }
-            
-            task.schedule(50); // batch by 50 ms
-        }
-        
-        // sources change
-        public void stateChanged(ChangeEvent e) {
-            setProjectFiles(project);
-        }
-        
-        // group change
-        public void propertyChange(PropertyChangeEvent evt) {
-            setProjectFiles(project);
-        }
-        
         @Override
         public Action[] getActions( boolean context ) {
             return getAdditionalActions();
@@ -513,18 +345,6 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider {
         public void setName(String s) {
             DefaultProjectOperations.performDefaultRenameOperation(project, s);
         }
-        
-        /*
-        public boolean canDestroy() {
-            return true;
-        }
-         
-        public void destroy() throws IOException {
-            System.out.println("Destroy " + project.getProjectDirectory());
-            LogicalViews.closeProjectAction().actionPerformed(new ActionEvent(this, 0, ""));
-            project.getProjectDirectory().delete();
-        }
-         */
         
         // Private methods -------------------------------------------------
         
@@ -588,10 +408,6 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider {
             actions.add(CommonProjectActions.customizeProjectAction());
 
             return actions.toArray(new Action[actions.size()]);
-        }
-        
-        private boolean isBroken() {
-            return this.broken;
         }
         
         private void setBroken(boolean broken) {

@@ -52,6 +52,7 @@ public class JsUtils {
         return JsTokenId.JAVASCRIPT_MIME_TYPE.equals(mimeType);
     }
 
+    public static final String HTML_MIME_TYPE = "text/html"; // NOI18N
     public static final String RHTML_MIME_TYPE = "application/x-httpd-eruby"; // NOI18N
     
     public static boolean isRhtmlDocument(Document doc) {
@@ -308,6 +309,14 @@ public class JsUtils {
                 (c == '!') || (c == '?') || (c == '=');
     }
 
+    /** The following keywords apply inside a call expression */
+    public static final String[] CALL_KEYWORDS =
+            new String[] {
+        "true", // NOI18N
+        "false", // NOI18N
+        "null" // NOI18N
+    };
+    
     // Section 7.5.2 in ECMAScript Language Specification, ECMA-262
     public static final String[] JAVASCRIPT_KEYWORDS =
             new String[]{
@@ -551,5 +560,31 @@ public class JsUtils {
         } else {
             return s.substring(0, length - 3) + "...";
         }
+    }
+    
+    /**
+     * Convert the display string used for types internally to something
+     * suitable. For example, Array<String> is shown as String[].
+     */
+    public static String normalizeTypeString(String s) {
+       if (s.indexOf("Array<") != -1) { // NOI18N
+           String[] types = s.split("\\|"); // NOI18N
+           StringBuilder sb = new StringBuilder();
+           for (String t : types) {
+               if (sb.length() > 0) {
+                   sb.append("|"); // NOI18N
+               }
+               if (t.startsWith("Array<") && t.endsWith(">")) { // NOI18N
+                   sb.append(t.substring(6, t.length()-1));
+                   sb.append("[]"); // NOI18N
+               } else {
+                   sb.append(t);
+               }
+           }
+           
+           return sb.toString();
+       } 
+       
+       return s;
     }
 }

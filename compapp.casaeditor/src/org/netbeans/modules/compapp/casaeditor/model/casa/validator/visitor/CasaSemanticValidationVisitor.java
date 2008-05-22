@@ -53,6 +53,7 @@ import org.netbeans.modules.compapp.casaeditor.model.casa.CasaEndpointRef;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaLink;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaServiceEngineServiceUnit;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
+import org.netbeans.modules.compapp.casaeditor.model.casa.ConnectionState;
 import org.netbeans.modules.compapp.casaeditor.model.casa.validator.CasaSemanticValidator;
 import org.netbeans.modules.xml.wsdl.model.Port;
 import org.netbeans.modules.xml.wsdl.model.PortType;
@@ -104,19 +105,22 @@ public class CasaSemanticValidationVisitor extends CasaComponentVisitor.Deep {
         Set<String> consumerNames = new HashSet<String>();
 
         for (CasaConnection connection : connections.getConnections()) {
+            // ignore deleted connections
+            if (connection.getState().equals(ConnectionState.DELETED.getState())) {
+                continue;
+            }
+            
             String consumerName = connection.getConsumer().getRefString();
             if (consumerNames.contains(consumerName)) {
                 CasaWrapperModel model = (CasaWrapperModel) connections.getModel();
                 CasaEndpointRef consumes = model.getCasaEndpointRef(connection, true);
                 
                 CasaEndpoint cEndpoint = connection.getConsumer().get();
-                QName consumeServiceQName = cEndpoint.getServiceQName();
-                String consumeEndpointName = cEndpoint.getEndpointName();
                 
                 getValidateSupport().fireToDo(Validator.ResultType.ERROR, consumes,
                         NbBundle.getMessage(CasaSemanticValidationVisitor.class, 
                         "ONE_CONSUMER_MULTIPLE_PROVIDERS", // NOI18N
-                        /*consumeServiceQName + "." +*/ consumeEndpointName), 
+                        cEndpoint.toString()),
                         NbBundle.getMessage(CasaSemanticValidationVisitor.class, 
                         "FIX_ONE_CONSUMER_MULTIPLE_PROVIDERS")); // NOI18N
             } else {
@@ -126,10 +130,15 @@ public class CasaSemanticValidationVisitor extends CasaComponentVisitor.Deep {
     }
     
     // CSVR #2: Make sure the two endpoints of a connection have the same interface.
-    // CSVR #3: Make sure there is self connection.
+    // CSVR #3: Make sure there is no self connection.
     // CSVR #4: Make sure there is no connection connecting two external endpoints.
     @Override
     public void visit(CasaConnection connection) {
+        // ignore deleted connections
+        if (connection.getState().equals(ConnectionState.DELETED.getState())) {
+            return;
+        }
+            
         CasaWrapperModel model = (CasaWrapperModel) connection.getModel();
         
         NamedComponentReference<CasaEndpoint> consumer = connection.getConsumer();
@@ -188,7 +197,7 @@ public class CasaSemanticValidationVisitor extends CasaComponentVisitor.Deep {
                 getValidateSupport().fireToDo(Validator.ResultType.ERROR, sesu,
                         NbBundle.getMessage(CasaSemanticValidationVisitor.class,
                         "SERVICE_ENGINE_SERVICE_UNIT_WSDL_NOT_AVAILABLE", // NOI18N
-                        endpoint.getEndpointName()),
+                        endpoint.toString()),
                         NbBundle.getMessage(CasaSemanticValidationVisitor.class,
                         "FIX_SERVICE_ENGINE_SERVICE_UNIT_WSDL_NOT_AVAILABLE")); // NOI18N
             }

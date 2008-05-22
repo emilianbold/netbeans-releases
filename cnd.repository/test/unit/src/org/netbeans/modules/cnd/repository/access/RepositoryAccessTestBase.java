@@ -42,9 +42,18 @@
 package org.netbeans.modules.cnd.repository.access;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.Collections;
+import java.util.List;
 import org.netbeans.junit.Manager;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.test.ModelImplBaseTestCase;
+import org.netbeans.modules.cnd.modelimpl.trace.NativeProjectProvider;
+import org.netbeans.modules.cnd.modelimpl.trace.TraceModelBase;
 
 /**
  * Common ancestor for tests that just access repository in different combinations,
@@ -78,4 +87,17 @@ public class RepositoryAccessTestBase  extends ModelImplBaseTestCase {
 	    lib.waitParse();
 	}
     }
+    
+    protected static ProjectBase createExtraProject(TraceModelBase traceModel, File projectRoot, String name) {
+	return createExtraProject(traceModel, Collections.singletonList(projectRoot), name);
+    }
+    
+    protected static ProjectBase createExtraProject(TraceModelBase traceModel, List<File> files, String name) {
+	NativeProject nativeProject = NativeProjectProvider.createProject(name, files, 
+		Collections.<String>emptyList(), Collections.<String>emptyList(), 
+                Collections.<String>emptyList(), Collections.<String>emptyList(), true);
+	ProjectBase result = traceModel.getModel().addProject(nativeProject, name, true); // NOI18N
+	return result;
+    }
+    
 }

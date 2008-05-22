@@ -55,23 +55,20 @@ import org.openide.loaders.DataObjectNotFoundException;
  */
 public class JaxWsCodeGeneratorFactory {
 
-    public static JaxWsCodeGenerator create(JTextComponent targetComponent, 
+    public static JaxWsCodeGenerator create(JTextComponent targetComponent,
             FileObject targetFO, WsdlSaasMethod method) throws IOException {
         JaxWsCodeGenerator codegen = null;
         try {
             DataObject d = DataObject.find(targetFO);
-            if(Util.isRestJavaFile(d)) {
-                codegen = new JaxWsResourceClassCodeGenerator(
-                                targetComponent, targetFO, method);
-            } else if(Util.isServlet(d)) {
+            if (Util.isRestJavaFile(d) || Util.isServlet(d)) {
                 codegen = new JaxWsServletCodeGenerator(
-                                targetComponent, targetFO, method);
-            } else if(Util.isJsp(d)) {
+                        targetComponent, targetFO, method);
+            } else if (Util.isJsp(d)) {
                 codegen = new JaxWsJspCodeGenerator(
-                                targetComponent, targetFO, method);
+                        targetComponent, targetFO, method);
             } else {
                 codegen = new JaxWsJavaClientCodeGenerator(
-                                targetComponent, targetFO, method);
+                        targetComponent, targetFO, method);
             }
         } catch (DataObjectNotFoundException ex) {
             throw new IOException(ex.getMessage());

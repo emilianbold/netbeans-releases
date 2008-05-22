@@ -52,6 +52,7 @@ import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
+import org.netbeans.installer.utils.helper.UiMode;
 import org.netbeans.installer.utils.exceptions.InitializationException;
 import org.netbeans.installer.utils.exceptions.NativeException;
 import org.netbeans.installer.utils.system.WindowsNativeUtils;
@@ -71,6 +72,10 @@ import static org.netbeans.installer.utils.helper.DetailedStatus.INSTALLED_WITH_
 public class NbRegistrationAction extends WizardAction {
 
     public NbRegistrationAction() {
+        if(UiMode.getCurrentUiMode() == UiMode.SILENT) {
+            System.setProperty(NbPostInstallSummaryPanel.
+                ALLOW_SERVICETAG_REGISTRATION_PROPERTY, "" + false);
+        }
     }
 
     public void execute() {
@@ -196,7 +201,7 @@ public class NbRegistrationAction extends WizardAction {
      * Opens a browser for JDK product registration.
      * @param url Registration Webapp URL
      */
-    private boolean openBrowser(URI uri) throws IOException {
+    public static boolean openBrowser(URI uri) throws IOException {
         LogManager.log("... opening in the browser: " + uri);
         boolean result = false;
         try {
@@ -221,7 +226,7 @@ public class NbRegistrationAction extends WizardAction {
         new NbRegistrationAction();
     }
 
-    private boolean openBrowserFallback(URI uri) {
+    private static boolean openBrowserFallback(URI uri) {
         try {
             if (SystemUtils.isWindows()) {
                 WindowsNativeUtils wnu = (WindowsNativeUtils) SystemUtils.getNativeUtils();
@@ -299,7 +304,7 @@ public class NbRegistrationAction extends WizardAction {
         return null;
     }
 
-    private boolean browseUnix(URI uri) throws IOException {
+    private static boolean browseUnix(URI uri) throws IOException {
         File browser = getUnixBrowser();
         if (browser != null) {
             LogManager.log("... using browser: " + browser);

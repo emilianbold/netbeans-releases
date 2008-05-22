@@ -30,15 +30,15 @@ Microsystems, Inc. All Rights Reserved.
                    
     <target name="get-bits">
         <echo message="Downloading OpenESB from ${openesb_location}" />
-        <get src="${openesb_builds_host}/${openesb_location}" dest="jbi_components_installer.jar" usetimestamp="true"/>
-        <echo message="Downloading JBI core runtime from ${openesb_core_source}" />
-        <get src="${openesb_builds_host}/${openesb_core_source}" dest="jbi-core-installer.jar" usetimestamp="true"/>        
+        <get src="${openesb_location}" dest="jbi_components_installer.jar" usetimestamp="true"/>
+        <!--echo message="Downloading JBI core runtime from ${openesb_core_source}" />
+        <get src="${openesb_core_source}" dest="jbi-core-installer.jar" usetimestamp="true"/-->        
     </target>
     
     <target name="unzip" depends="get-bits">
         <mkdir dir="build/app"/>
         <move file="jbi_components_installer.jar" tofile="build/app/jbi_components_installer.jar"/>
-        <move file="jbi-core-installer.jar"       tofile="build/app/jbi-core-installer.jar"/>        
+        <!--move file="jbi-core-installer.jar"       tofile="build/app/jbi-core-installer.jar"/-->        
     </target>
     
     <target name="build-pkg" depends="clean, unzip">
@@ -64,7 +64,7 @@ Microsystems, Inc. All Rights Reserved.
         
         <copy file="${basedir}/../commonfiles/Description.plist" overwrite="true" filtering="true" tofile="pkg/scripts/Description.plist">
             <filterset>
-                <filter token="TITLE" value="${openesb.appname}"/>
+                <filter token="TITLE" value="${openesb-title}"/>
             </filterset>
         </copy>
         

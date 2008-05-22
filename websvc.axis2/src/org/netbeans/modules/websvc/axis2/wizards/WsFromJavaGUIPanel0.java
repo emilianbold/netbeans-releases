@@ -64,7 +64,7 @@ public class WsFromJavaGUIPanel0 extends javax.swing.JPanel implements ItemListe
     public WsFromJavaGUIPanel0(WsFromJavaPanel0 wizardPanel) {
         this.wizardPanel = wizardPanel;
         initComponents();
-        setName("Service Type Selection");
+        setName("Service Type Selection"); // NOI18N
         jRadioButton1.addItemListener(this);
         jRadioButton2.addItemListener(this);
         jTextField1.getDocument().addDocumentListener(new DocumentListener() {
@@ -100,19 +100,20 @@ public class WsFromJavaGUIPanel0 extends javax.swing.JPanel implements ItemListe
         jCheckBox1 = new javax.swing.JCheckBox();
         jLabel2 = new javax.swing.JLabel();
 
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(WsFromJavaGUIPanel0.class, "WsFromJavaGUIPanel0.jLabel1.text")); // NOI18N
+        jLabel1.setLabelFor(jTextField1);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(WsFromJavaGUIPanel0.class, "WsFromJavaGUIPanel0.jLabel1.text")); // NOI18N
         jLabel1.setEnabled(false);
 
         buttonGroup1.add(jRadioButton1);
         jRadioButton1.setSelected(true);
-        jRadioButton1.setText(org.openide.util.NbBundle.getMessage(WsFromJavaGUIPanel0.class, "WsFromJavaGUIPanel0.jRadioButton1.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jRadioButton1, org.openide.util.NbBundle.getMessage(WsFromJavaGUIPanel0.class, "WsFromJavaGUIPanel0.jRadioButton1.text")); // NOI18N
 
         buttonGroup1.add(jRadioButton2);
-        jRadioButton2.setText(org.openide.util.NbBundle.getMessage(WsFromJavaGUIPanel0.class, "WsFromJavaGUIPanel0.jRadioButton2.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jRadioButton2, org.openide.util.NbBundle.getMessage(WsFromJavaGUIPanel0.class, "WsFromJavaGUIPanel0.jRadioButton2.text")); // NOI18N
 
         jTextField1.setEditable(false);
 
-        jButton1.setText(org.openide.util.NbBundle.getMessage(WsFromJavaGUIPanel0.class, "WsFromJavaGUIPanel0.jButton1.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jButton1, org.openide.util.NbBundle.getMessage(WsFromJavaGUIPanel0.class, "WsFromJavaGUIPanel0.jButton1.text")); // NOI18N
         jButton1.setEnabled(false);
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -120,7 +121,7 @@ public class WsFromJavaGUIPanel0 extends javax.swing.JPanel implements ItemListe
             }
         });
 
-        jCheckBox1.setText(org.openide.util.NbBundle.getMessage(WsFromJavaGUIPanel0.class, "WsFromJavaGUIPanel0.jCheckBox1.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jCheckBox1, org.openide.util.NbBundle.getMessage(WsFromJavaGUIPanel0.class, "WsFromJavaGUIPanel0.jCheckBox1.text")); // NOI18N
 
         jLabel2.setText(org.openide.util.NbBundle.getMessage(WsFromJavaGUIPanel0.class, "WsFromJavaGUIPanel0.jLabel2.text")); // NOI18N
 
@@ -135,7 +136,7 @@ public class WsFromJavaGUIPanel0 extends javax.swing.JPanel implements ItemListe
                         .add(21, 21, 21)
                         .add(jLabel1)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jTextField1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 399, Short.MAX_VALUE)
+                        .add(jTextField1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 263, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(jButton1)
                         .addContainerGap())
@@ -147,7 +148,7 @@ public class WsFromJavaGUIPanel0 extends javax.swing.JPanel implements ItemListe
                                 .add(21, 21, 21)
                                 .add(jLabel2))
                             .add(jCheckBox1))
-                        .addContainerGap(148, Short.MAX_VALUE))))
+                        .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -165,13 +166,22 @@ public class WsFromJavaGUIPanel0 extends javax.swing.JPanel implements ItemListe
                 .add(jCheckBox1)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jLabel2)
-                .addContainerGap(158, Short.MAX_VALUE))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        jRadioButton1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WsFromJavaGUIPanel0.class, "WsFromJavaGUIPanel0.jRadioButton1.AccessibleContext.accessibleDescription")); // NOI18N
+        jRadioButton2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WsFromJavaGUIPanel0.class, "WsFromJavaGUIPanel0.jRadioButton2.AccessibleContext.accessibleDescription")); // NOI18N
+        jTextField1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WsFromJavaGUIPanel0.class, "WsFromJavaGUIPanel0.jTextField1.AccessibleContext.accessibleDescription")); // NOI18N
+        jButton1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WsFromJavaGUIPanel0.class, "WsFromJavaGUIPanel0.jButton1.AccessibleContext.accessibleDescription")); // NOI18N
+        jCheckBox1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WsFromJavaGUIPanel0.class, "WsFromJavaGUIPanel0.jCheckBox1.AccessibleContext.accessibleDescription")); // NOI18N
+
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WsFromJavaGUIPanel0.class, "WsFromJavaGUIPanel0.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         SelectClassPanel panel = new SelectClassPanel(wizardPanel.getProject());
-        DialogDescriptor dd = new DialogDescriptor(panel, "Select class");
+        DialogDescriptor dd = new DialogDescriptor(panel, 
+                org.openide.util.NbBundle.getMessage(WsFromJavaGUIPanel0.class, "TTL_SelectClass"));
         DialogDisplayer.getDefault().notify(dd);
         if (dd.getValue() == DialogDescriptor.OK_OPTION) {
             Node[] nodes = panel.getSelectedNodes();

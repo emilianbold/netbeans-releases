@@ -162,65 +162,65 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         }
         
         // install the jvm option ///////////////////////////////////////////////////
-        try {
-            progress.setDetail(getString("CL.install.add.jvm.option")); // NOI18N
-            
-            GlassFishUtils.setJvmOption(
-                    asLocation,
-                    GlassFishUtils.DEFAULT_DOMAIN,
-                    "-Dcom.sun.enterprise.server.ss.ASQuickStartup=false"); // NOI18N
-        } catch (IOException e) {
-            throw new InstallationException(
-                    getString("CL.install.error.add.jvm.option"), // NOI18N
-                    e);
-        } catch (XMLException e) {
-            throw new InstallationException(
-                    getString("CL.install.error.add.jvm.option"), // NOI18N
-                    e);
-        }
-        progress.addPercentage(DELTA_PROGRESS);
+        //try {
+        //    progress.setDetail(getString("CL.install.add.jvm.option")); // NOI18N
+        //    
+        //    GlassFishUtils.setJvmOption(
+        //            asLocation,
+        //            GlassFishUtils.DEFAULT_DOMAIN,
+        //            "-Dcom.sun.enterprise.server.ss.ASQuickStartup=false"); // NOI18N
+        //} catch (IOException e) {
+        //    throw new InstallationException(
+        //            getString("CL.install.error.add.jvm.option"), // NOI18N
+        //            e);
+        //} catch (XMLException e) {
+        //    throw new InstallationException(
+        //            getString("CL.install.error.add.jvm.option"), // NOI18N
+        //            e);
+        //}
+        //progress.addPercentage(DELTA_PROGRESS);
         
         // start the default domain /////////////////////////////////////////////////
-        try {
-            progress.setDetail(getString("CL.install.start.as")); // NOI18N
-            
-            GlassFishUtils.startDefaultDomain(asLocation);
-        } catch (IOException e) {
-            throw new InstallationException(
-                    getString("CL.install.error.start.as"), // NOI18N
-                    e);
-        }
-        progress.addPercentage(DELTA_PROGRESS);
+        //try {
+        //    progress.setDetail(getString("CL.install.start.as")); // NOI18N
+        //    
+        //    GlassFishUtils.startDefaultDomain(asLocation);
+        //} catch (IOException e) {
+        //    throw new InstallationException(
+        //            getString("CL.install.error.start.as"), // NOI18N
+        //            e);
+        //}
+        //progress.addPercentage(DELTA_PROGRESS);
         
         // stop the default domain //////////////////////////////////////////////////
-        try {
-            progress.setDetail(getString("CL.install.stop.as")); // NOI18N
-            
-            GlassFishUtils.stopDefaultDomain(asLocation);
-        } catch (IOException e) {
-            throw new InstallationException(
-                    getString("CL.install.error.stop.as"), // NOI18N
-                    e);
-        }
-        progress.addPercentage(DELTA_PROGRESS * 7);
+        //try {
+        //    progress.setDetail(getString("CL.install.stop.as")); // NOI18N
+        //    
+        //    GlassFishUtils.stopDefaultDomain(asLocation);
+        //} catch (IOException e) {
+        //    throw new InstallationException(
+        //            getString("CL.install.error.stop.as"), // NOI18N
+        //            e);
+        //}
+        //progress.addPercentage(DELTA_PROGRESS * 7);
         
         // remove the jvm option ///////////////////////////////////////////////////
-        try {
-            progress.setDetail(getString("CL.install.remove.jvm.option")); // NOI18N
-            
-            GlassFishUtils.removeJvmOption(
-                    asLocation,
-                    GlassFishUtils.DEFAULT_DOMAIN,
-                    "-Dcom.sun.enterprise.server.ss.ASQuickStartup=false"); // NOI18N
-        } catch (IOException e) {
-            throw new InstallationException(
-                    getString("CL.install.error.remove.jvm.option"), // NOI18N
-                    e);
-        } catch (XMLException e) {
-            throw new InstallationException(
-                    getString("CL.install.error.remove.jvm.option"), // NOI18N
-                    e);
-        }
+        //try {
+        //    progress.setDetail(getString("CL.install.remove.jvm.option")); // NOI18N
+        //    
+        //    GlassFishUtils.removeJvmOption(
+        //            asLocation,
+        //            GlassFishUtils.DEFAULT_DOMAIN,
+        //            "-Dcom.sun.enterprise.server.ss.ASQuickStartup=false"); // NOI18N
+        //} catch (IOException e) {
+        //    throw new InstallationException(
+        //            getString("CL.install.error.remove.jvm.option"), // NOI18N
+        //            e);
+        //} catch (XMLException e) {
+        //    throw new InstallationException(
+        //            getString("CL.install.error.remove.jvm.option"), // NOI18N
+        //            e);
+        //}
         
         /////////////////////////////////////////////////////////////////////////////
         progress.setPercentage(Progress.COMPLETE);

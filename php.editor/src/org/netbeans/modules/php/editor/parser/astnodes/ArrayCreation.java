@@ -59,6 +59,7 @@ public class ArrayCreation extends Expression {
         }
 
         for (ArrayElement arrayElement : elements) {
+//            arrayElement.setParent(this);
             this.elements.add(arrayElement);
         }
     }

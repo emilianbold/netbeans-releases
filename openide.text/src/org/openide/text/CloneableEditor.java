@@ -51,9 +51,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.border.Border;
-import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
-import javax.swing.border.LineBorder;
 import javax.swing.text.*;
 import org.openide.awt.UndoRedo;
 import org.openide.cookies.EditorCookie;
@@ -184,7 +182,13 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
 
     
     final static Logger TIMER = Logger.getLogger("TIMER"); // NOI18N
-    final boolean NEW_INITIALIZE = !Boolean.getBoolean("org.openide.text.CloneableEditor.oldInitialize"); // NOI18N
+    
+    final boolean newInitialize() {
+        if (Boolean.getBoolean("org.openide.text.CloneableEditor.oldInitialize")) { // NOI18N
+            return false;
+        }
+        return !Boolean.TRUE.equals(getClientProperty("oldInitialize")); // NOI18N
+    }
 
     class DoInitialize implements Runnable, ActionListener {
         private final QuietEditorPane tmp;
@@ -198,7 +202,7 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
             this.tmp = tmp;
             this.tmpComp = initLoading();
             new Timer(1000, this).start();
-            if (NEW_INITIALIZE) {
+            if (newInitialize()) {
                 task = CloneableEditorSupport.RP.create(this);
                 task.setPriority(Thread.MIN_PRIORITY + 2);
                 task.schedule(0);
@@ -234,13 +238,13 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
             switch (phase++) {
             case 0: 
                 initNonVisual();
-                if (NEW_INITIALIZE) {
+                if (newInitialize()) {
                     WindowManager.getDefault().invokeWhenUIReady(this);
                     break;
                 }
             case 1:
                 initVisual();
-                if (NEW_INITIALIZE) {
+                if (newInitialize()) {
                     task.schedule(1000);
                     break;
                 }
@@ -254,7 +258,8 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
             long howLong = System.currentTimeMillis() - now;
             if (TIMER.isLoggable(Level.FINE)) {
                 String thread = SwingUtilities.isEventDispatchThread() ? "AWT" : "RP"; // NOI18N
-                Object who = doc.getProperty(Document.StreamDescriptionProperty);
+                Document d = doc;
+                Object who = d == null ? null : d.getProperty(Document.StreamDescriptionProperty);
                 if (who == null) {
                     who = support.messageName();
                 }
@@ -287,20 +292,19 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
             paneMap.put(DefaultEditorKit.pasteAction, getAction(DefaultEditorKit.pasteAction));
             
             
-            EditorKit k; 
-            synchronized (this) {
-                k = support.cesKit();
-                doc = support.getDocument();
-                kit = k;
-                notifyAll();
-            }
-            
-            if (k instanceof Callable) {
+            EditorKit k = support.cesKit();
+            if (newInitialize() && k instanceof Callable) {
                 try {
                     ((Callable) k).call();
                 } catch (Exception e) {
                     Exceptions.printStackTrace(e);
                 }
+            }
+            
+            synchronized (this) {
+                doc = support.getDocument();
+                kit = k;
+                notifyAll();
             }
         }
         
@@ -365,10 +369,7 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
                 return;
             }
             
-            // the following two shall be done out of AWT:
             initCustomEditor();
-            initDecoration();
-            
             if (customComponent != null) {
                 add(support.wrapEditorComponent(customComponent), BorderLayout.CENTER);
             } else { // not custom editor
@@ -379,6 +380,7 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
                 add(support.wrapEditorComponent(noBorderPane), BorderLayout.CENTER);
             }
 
+            initDecoration();
             if (customToolbar != null) {
                 Border b = (Border) UIManager.get("Nb.Editor.Toolbar.border"); //NOI18N
                 customToolbar.setBorder(b);
@@ -519,9 +521,14 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
             Class<? extends SystemAction> c = Class.forName("org.openide.actions.FileSystemAction", true, l).asSubclass(SystemAction.class); // NOI18N
             SystemAction ra = SystemAction.findObject(c, true);
 
-            Action[] a2 = new Action[a.length + 1];
+            Class<? extends SystemAction> c2 = Class.forName("org.netbeans.modules.diff.DiffAction", true, l).asSubclass(SystemAction.class); // NOI18N
+            SystemAction ra2 = SystemAction.findObject(c2, true);           
+            
+            Action[] a2 = new Action[a.length + 2];
             System.arraycopy(a, 0, a2, 0, a.length);
             a2[a.length] = ra;
+            a2[a.length + 1] = ra2;
+
             return a2;
         } catch (Exception ex) {
             // ok, we no action like this I guess
@@ -536,10 +543,12 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
     public void requestFocus() {
         super.requestFocus();
 
-        if ((customComponent != null) && !SwingUtilities.isDescendingFrom(pane, customComponent)) {
-            customComponent.requestFocus();
-        } else if (pane != null) {
-            pane.requestFocus();
+        if (pane != null) {
+            if ((customComponent != null) && !SwingUtilities.isDescendingFrom(pane, customComponent)) {
+                customComponent.requestFocus();
+            } else {
+                pane.requestFocus();
+            }
         }
     }
 
@@ -549,10 +558,12 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
     public boolean requestFocusInWindow() {
         super.requestFocusInWindow();
 
-        if ((customComponent != null) && !SwingUtilities.isDescendingFrom(pane, customComponent)) {
-            return customComponent.requestFocusInWindow();
-        } else if (pane != null) {
-            return pane.requestFocusInWindow();
+        if (pane != null) {
+            if ((customComponent != null) && !SwingUtilities.isDescendingFrom(pane, customComponent)) {
+                return customComponent.requestFocusInWindow();
+            } else {
+                return pane.requestFocusInWindow();
+            }
         }
 
         return false;

@@ -235,9 +235,9 @@ public class CppUtils {
                     while ((line = br.readLine()) != null) {
                         line = line.trim();
                         if (line.startsWith("Inno Setup: App Path")) { // NOI18N
-                            int pos = line.lastIndexOf('\t');
+                            int pos = line.lastIndexOf(':');
                             if (pos != -1 && pos < line.length()) {
-                                msysBase = line.substring(pos + 1);
+                                msysBase = line.substring(pos - 1);
                             }
                         }
                     }

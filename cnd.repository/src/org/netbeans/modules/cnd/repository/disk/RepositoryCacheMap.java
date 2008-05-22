@@ -43,13 +43,12 @@ package org.netbeans.modules.cnd.repository.disk;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.netbeans.modules.cnd.repository.util.Filter;
 
 /**
  * The cache that maps K to V
@@ -201,12 +200,8 @@ public class RepositoryCacheMap<K,V>  {
         return null;
     }
     
-    public interface Filter<V> {
-        boolean accept(V value);
-    }
-    
     public Collection<V> remove(Filter<V> filter) {
-        Set<V> retSet = new HashSet<V>();
+        Collection<V> retSet = new ArrayList<V>(size());
         List<RepositoryCacheValue<V>> entriesToRemove = new ArrayList<RepositoryCacheValue<V>>(DEFAULT_CAPACITY);
         for( RepositoryCacheValue<V> entry : valueToKey.keySet() ) {
             if( filter.accept(entry.value) ) {
@@ -218,6 +213,26 @@ public class RepositoryCacheMap<K,V>  {
                 K removedKey = valueToKey.get(entry);
                 valueToKey.remove(entry);
                 keyToValue.remove(removedKey);
+        }
+        return retSet;
+    }
+    
+    public int size() {
+        return keyToValue.size();
+    }
+    
+    public Collection<V> values() {
+        Collection<V> retSet = new ArrayList<V>(size());
+        for( RepositoryCacheValue<V> entry : valueToKey.keySet() ) {
+            retSet.add(entry.value);
+        }
+        return retSet;
+    }
+            
+    public Collection<K> keys() {
+        Collection<K> retSet = new ArrayList<K>(size());
+        for( K key : keyToValue.keySet() ) {
+            retSet.add(key);
         }
         return retSet;
     }

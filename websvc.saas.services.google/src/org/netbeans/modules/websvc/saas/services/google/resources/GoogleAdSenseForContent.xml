@@ -20,23 +20,8 @@
         <code-gen>
             <artifacts targets="java,servlet"/>
         </code-gen>
-        <!-- http-basic, api-key, custom -->
-        <authentication profile="SaaSServices/Google/profile.properties">
-            <api-key id="zwsid"/>
-        </authentication>
     </saas-metadata>
 
-    <!-- The method elements are used to specified a subset of important operations
-         in cases where the wsdl contains a large number of operations. -->
-    <!-- TODO -->     
-    <methods>
-        <method name="GoogleAdSenseForContent" serviceName="AdSenseForContentServiceService"
-                portName="AdSenseForContentService" operationName="generateAdCode">
-            <documentation>
-                Allows a developer to generate ad code snippets to include in a publisher's web pages to start serving and displaying contextual advertising. When an end-user clicks through an ad, Google credits a payment.
-            </documentation>
-        </method>
-    </methods>
-        
+    <methods/>
     
 </saas-services>

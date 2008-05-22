@@ -17,6 +17,7 @@ installer/engine/src/**/Bundle*.properties
 installer/engine/src/data/engine.properties
 installer/engine/branding/**/src/**/Bundle*.properties
 installer/engine/branding/**/src/data/engine.properties
+installer/engine/branding/**/src/native/launcher/**/launcher.properties
 
 installer/infra/build/web/language.properties
 installer/infra/build/web/js/*_strings.js
@@ -24,17 +25,6 @@ installer/infra/build/web/img/download.gif
 installer/infra/build/web/img/download_d.gif
 installer/infra/build/web/img/download_h.gif
 
-
-#i18n files for native mac installer
-installer/mac/glassfish/pkg/Welcome.html
-installer/mac/glassfish/pkg/License.html
-installer/mac/glassfish/pkg/Description.plist
-installer/mac/pkg/Welcome.html
-installer/mac/pkg/License.html
-installer/mac/pkg/Description.plist
-installer/mac/openesb/pkg/License.html
-installer/mac/openesb/pkg/Welcome.html
-installer/mac/openesb/pkg/Description.plist
-installer/mac/tomcat/pkg/Welcome.html
-installer/mac/tomcat/pkg/License.html
-installer/mac/tomcat/pkg/Description.plist
+#i18n files for new native mac installer
+installer/mac/newbuild/Bundle.properties
+installer/mac/newbuild/dmg/Resources/Welcome*.html

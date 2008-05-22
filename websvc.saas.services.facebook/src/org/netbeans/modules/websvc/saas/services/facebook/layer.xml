@@ -28,8 +28,6 @@
         <folder name="Facebook">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.saas.services.facebook.Bundle"/>
             <file name="Facebook.xml" url="/org/netbeans/modules/websvc/saas/services/facebook/resources/Facebook.xml"/>
-            <file name="FacebookSecure.xml" url="/org/netbeans/modules/websvc/saas/services/facebook/resources/FacebookSecure.xml"/>
-            <file name="profile.properties" url="/org/netbeans/modules/websvc/saas/services/facebook/resources/profile.properties"/>
         </folder>
     </folder>
     

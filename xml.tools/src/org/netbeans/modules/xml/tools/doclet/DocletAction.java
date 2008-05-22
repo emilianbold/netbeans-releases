@@ -40,11 +40,9 @@
  */
 package org.netbeans.modules.xml.tools.doclet;
 
-import java.util.*;
 import java.awt.datatransfer.StringSelection;
 import java.io.*;
 
-import javax.swing.text.*;
 
 import org.openide.*;
 import org.openide.awt.StatusDisplayer;
@@ -59,6 +57,7 @@ import org.openide.util.actions.*;
 import org.netbeans.tax.*;
 import org.netbeans.modules.xml.*;
 import org.netbeans.modules.xml.actions.CollectDTDAction;
+import org.netbeans.modules.xml.api.EncodingUtil;
 import org.netbeans.modules.xml.tools.generator.*;
 import org.netbeans.modules.xml.tax.cookies.TreeEditorCookie;
 
@@ -96,14 +95,11 @@ public final class DocletAction extends CookieAction implements CollectDTDAction
         final Node dtd = nodes[0];
 
         final DTDDataObject dtdo = (DTDDataObject) dtd.getCookie(DTDDataObject.class);
-
+        final String encoding = EncodingUtil.getProjectEncoding(dtdo.getPrimaryFile());
         Thread thread = null;
-        ErrorManager emgr = ErrorManager.getDefault();
-        
+        ErrorManager emgr = ErrorManager.getDefault();        
         try {
-
             TreeDocumentRoot result;
-
             TreeEditorCookie cake = (TreeEditorCookie) dtdo.getCookie(TreeEditorCookie.class);
             if (cake != null) {
                 result = cake.openDocumentRoot();
@@ -116,7 +112,7 @@ public final class DocletAction extends CookieAction implements CollectDTDAction
 
             Runnable task = new Runnable() {
                 public void run() {
-                    text.append(doclet.createDoclet (treeDTD));
+                    text.append(doclet.createDoclet (treeDTD, encoding));
                 }
             };
 

@@ -36,7 +36,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="lblContext" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="fldContext" pref="808" max="32767" attributes="0"/>
+                      <Component id="fldContext" pref="803" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="btnGoToContext" min="-2" max="-2" attributes="0"/>
                   </Group>
@@ -50,7 +50,7 @@
           <Group type="102" alignment="1" attributes="0">
               <Component id="pnlMenu" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="pnlMapper" pref="551" max="32767" attributes="0"/>
+              <Component id="pnlMapper" pref="550" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="lblContext" alignment="3" min="-2" max="-2" attributes="0"/>

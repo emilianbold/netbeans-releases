@@ -74,43 +74,25 @@ public class WadlSaasBean extends SaasBean {
     public static final String PROTOCOL_SEPERATOR_ALT = "  ";
     private String url;
     private WadlSaasMethod m;
-    private String groupName;
-    private String displayName;
     private String serviceMethodName = null;
     
     public WadlSaasBean(WadlSaasMethod m)  throws IOException {
-        super(Util.deriveResourceName(m.getName()), null, 
+        this(m, false);
+    }
+    
+    public WadlSaasBean(WadlSaasMethod m, boolean isDropTargetWeb)  throws IOException {
+        super(m.getSaas(), Util.deriveResourceName(m.getName()), null, 
                 Util.deriveUriTemplate(m.getName()), new MimeType[]{MimeType.XML}, 
                 new String[]{"java.lang.String"},       //NOI18N
                 new HttpMethodType[]{HttpMethodType.GET});
     
         this.m = m;
+        setIsDropTargetWeb(isDropTargetWeb);
         init();
     }
 
     public WadlSaasMethod getMethod() {
         return m;
-    }
-    
-    public String getGroupName() {
-        return groupName;
-    }
-    
-    public String getDisplayName() {
-        return displayName;
-    }
-    
-    public String getSaasName() {
-        return getGroupName()+getDisplayName();
-    }
-    
-    public String getSaasServiceName() {
-        return getGroupName()+getDisplayName()/*+"Service"*/;
-    }
-    
-    public String getSaasServicePackageName() {
-        return SaasCodeGenerator.REST_CONNECTION_PACKAGE+"."+
-                SaasUtil.toValidJavaName(getGroupName()).toLowerCase();
     }
     
     public String getSaasServiceMethodName() {
@@ -121,21 +103,8 @@ public class WadlSaasBean extends SaasBean {
         return serviceMethodName;
     }
     
-    public String getAuthenticatorClassName() {
-        return Util.getAuthenticatorClassName(getSaasName());
-    }
-    
-    public String getAuthorizationFrameClassName() {
-        return Util.getAuthorizationFrameClassName(getSaasName());
-    }
-    
     private void init() throws IOException { 
         setResourceClassTemplate(RESOURCE_TEMPLATE);
-        SaasGroup g = getMethod().getSaas().getParentGroup();
-        if(g.getParent() == null) //g is root group, so use topLevel group usually the vendor group
-            g = getMethod().getSaas().getTopLevelGroup();
-        this.groupName = Util.normailizeName(g.getName());
-        this.displayName = Util.normailizeName(getMethod().getSaas().getDisplayName());
         setHttpMethod(HttpMethodType.valueOf(getMethod().getWadlMethod().getName()));
         findAuthentication(m);
         initUrl();
@@ -238,7 +207,10 @@ public class WadlSaasBean extends SaasBean {
         findRepresentationType(response, repTypes);
         return repTypes;
     }
-    
+  
+    public static List<RepresentationType> findInputRepresentations(WadlSaasMethod m) {
+        return m.getWadlMethod().getRequest().getRepresentation();
+    }
     
     public String getUrl() {
         return this.url;
@@ -262,6 +234,23 @@ public class WadlSaasBean extends SaasBean {
         }
     }
 
+    public static void findMediaType(Request request, List<String> mimeTypes) {
+        if(request == null)
+            return;
+        List<RepresentationType> reps = request.getRepresentation();
+        for (RepresentationType rep : reps) {
+            String mediaType = rep.getMediaType();
+            if(mediaType == null)
+                continue;
+            String[] mTypes = mediaType.split(",");
+            for(String m: mTypes) {
+                if (m != null && !mimeTypes.contains(m)) {
+                    mimeTypes.add(m);
+                }
+            }
+        }
+    }
+    
     public static void findWadlParams(List<ParameterInfo> paramInfos, List<Param> params) {
         if (params != null) {
             for (Param param:params) {
@@ -298,25 +287,34 @@ public class WadlSaasBean extends SaasBean {
     }
     
     @Override
-    protected Object getAuthUsingId(Authentication auth) {
+    protected Object getSignedUrl(Authentication auth) {
+        Object signedUrl = null;
         if(auth.getSignedUrl() != null && auth.getSignedUrl().size() > 0) {
-            Resource[] rArray = m.getResourcePath();
-            if (rArray == null || rArray.length == 0) {
-                return null;
-            }
-            String id = rArray[rArray.length-1].getId();
-            if(id != null && !id.trim().equals("")) {
-                for(SignedUrl s: auth.getSignedUrl()) {
-                    if(id.equals(s.getId()))
-                        return s;
+            String id = m.getWadlMethod().getId();
+            signedUrl = getSignedUrlById(auth, id);
+            if(signedUrl == null) {
+                Resource[] rArray = m.getResourcePath();
+                if (rArray == null || rArray.length == 0) {
+                    return null;
                 }
+                id = rArray[rArray.length-1].getId();
+                signedUrl = getSignedUrlById(auth, id);
+            }
+        }
+        return signedUrl;
+    }
+    
+    private Object getSignedUrlById(Authentication auth, String id) {
+        if(id != null && !id.trim().equals("")) {
+            for(SignedUrl s: auth.getSignedUrl()) {
+                if(id.equals(s.getId()))
+                    return s;
             }
         }
         return null;
     }
     
     public boolean canGenerateJAXBUnmarshaller() {
-        return getHttpMethod() == HttpMethodType.GET &&
-                    !findRepresentationTypes(getMethod()).isEmpty();
+        return !findRepresentationTypes(getMethod()).isEmpty();
     }
 }

@@ -44,8 +44,8 @@ Portions Copyrighted 2008 Sun Microsystems, Inc.
     <localizing-bundle>org.netbeans.libs.springframework.Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
-        <resource>jar:nbinst://org.netbeans.modules.spring.beans/modules/ext/spring/commons-logging-1.1.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.modules.spring.beans/modules/ext/spring/spring-2.5.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.libs.commons_logging/modules/ext/commons-logging-1.1.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring/spring-2.5.jar!/</resource>
     </volume>
     <volume>
         <type>src</type>

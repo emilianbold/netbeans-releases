@@ -43,6 +43,7 @@ package org.netbeans.modules.visualweb.test.components.composite;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.jellytools.Bundle;
+import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.SaveAllAction;
@@ -52,7 +53,6 @@ import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.ide.ProjectSupport;
 import org.netbeans.modules.visualweb.gravy.Action;
 import org.netbeans.modules.visualweb.gravy.EditorOperator;
-import org.netbeans.modules.visualweb.gravy.RaveTestCase;
 import org.netbeans.modules.visualweb.gravy.TestUtils;
 import org.netbeans.modules.visualweb.gravy.Util;
 import org.netbeans.modules.visualweb.gravy.properties.SheetTableOperator;
@@ -66,7 +66,7 @@ import static org.netbeans.modules.visualweb.gravy.designer.DesignerPaneOperator
 /**
  * @author Martin Schovanek (Martin.Schovanek@sun.com)
  */
-public class CompositeComponentsTest extends RaveTestCase {
+public class CompositeComponentsTest extends JellyTestCase {
 
     private String projectName;
     private boolean projectDeployed;

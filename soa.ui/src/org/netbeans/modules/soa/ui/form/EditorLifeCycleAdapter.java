@@ -18,7 +18,6 @@
  */
 package org.netbeans.modules.soa.ui.form;
 
-import java.awt.Container;
 import javax.swing.JPanel;
 
 /**

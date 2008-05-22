@@ -61,9 +61,9 @@ public class RubyPlatformTest extends RubyTestBase {
         assertTrue("is valid", jruby.isValid());
         assertTrue("is default", jruby.isDefault());
         assertEquals("right version", "1.8.6", jruby.getVersion());
-//        assertEquals("right label", NbBundle.getMessage(RubyPlatformManager.class, "CTL_BundledJRubyLabel"), jruby.getLabel());
         assertEquals("right ruby home", TestUtil.getXTestJRubyHome(), jruby.getHome());
-        assertEquals("right ruby lib", new File(TestUtil.getXTestJRubyHome(), "lib/ruby/1.8").getAbsolutePath(), jruby.getLibDir());
+        assertEquals("right ruby home", new File(jruby.getHome(), "lib").getAbsolutePath(), jruby.getLibDir());
+        assertEquals("right ruby lib", new File(jruby.getHome(), "lib/ruby/1.8").getAbsolutePath(), jruby.getVersionLibDir());
     }
     
     public void testHasRubyGemsInstalled() throws Exception {
@@ -111,14 +111,14 @@ public class RubyPlatformTest extends RubyTestBase {
     
     public void testLongDescription() throws Exception {
         RubyPlatform jruby = RubyPlatformManager.getDefaultPlatform();
-        assertEquals("right long description", "JRuby 1.8.6 (2008-01-12 patchlevel 5512) [java]", jruby.getInfo().getLongDescription());
+        assertEquals("right long description", "JRuby 1.8.6 (2008-03-31 patchlevel 6360) [java]", jruby.getInfo().getLongDescription());
         RubyPlatform ruby = RubyPlatformManager.addPlatform(setUpRuby());
         assertEquals("right long description without patchlevel", "Ruby 0.1 (2000-01-01) [abcd]", ruby.getInfo().getLongDescription());
     }
     
     public void testLabel() throws Exception {
         RubyPlatform jruby = RubyPlatformManager.getDefaultPlatform();
-        assertEquals("right label for build-in JRuby", "Built-in JRuby (1.1RC2)", jruby.getLabel());
+        assertEquals("right label for build-in JRuby", "Built-in JRuby (1.1)", jruby.getLabel());
         RubyPlatform ruby = RubyPlatformManager.addPlatform(setUpRuby());
         assertEquals("right label for Ruby", "Ruby (0.1)", ruby.getLabel());
     }
@@ -136,6 +136,9 @@ public class RubyPlatformTest extends RubyTestBase {
     
     public void testHasFastDebuggerInstalledExactness() throws IOException {
         RubyPlatform jruby = RubyPlatformManager.getDefaultPlatform();
+        FileObject gemRepo = FileUtil.toFileObject(getWorkDir()).createFolder("gem-repo");
+        GemManager.initializeRepository(gemRepo);
+        jruby.setGemHome(FileUtil.toFile(gemRepo));
         installFakeGem(RubyPlatform.RUBY_DEBUG_BASE_NAME, "9.9.9", "java", jruby);
         installFakeGem(RubyPlatform.RUBY_DEBUG_IDE_NAME, "9.9.9", "java", jruby);
         assertFalse("does have fast debugger in exact version", jruby.hasFastDebuggerInstalled());
@@ -158,9 +161,27 @@ public class RubyPlatformTest extends RubyTestBase {
         });
         
         installFakeGem("jalokivi", "9.9", jruby);
-        
         assertTrue(gotEvent[0]);
-        
     }
 
+    public void testDefaultPlatformInfo() {
+        RubyPlatform platform = RubyPlatformManager.getDefaultPlatform();
+        RubyPlatform.Info info = platform.getInfo();
+        RubyPlatform.Info computed = RubyPlatformManager.computeInfo(platform.getInterpreterFile());
+        assertEquals("correct info for bundled JRuby", computed, info);
+        assertEquals("correct info for bundled JRuby", computed.getJVersion(), info.getJVersion());
+        assertEquals("correct info for bundled JRuby", computed.getLibDir(), info.getLibDir());
+    }
+    
+    public void testRubinius() throws IOException {
+        RubyPlatform rubinius = RubyPlatformManager.addPlatform(setUpRubinius());
+        assertNotNull("rubinius supported", rubinius);
+        assertTrue("is Rubinius", rubinius.isRubinius());
+        assertNotNull("has label", rubinius.getLabel());
+        assertTrue("is valid", rubinius.isValid());
+        assertFalse("is default", rubinius.isDefault());
+        assertEquals("right version", "0.1", rubinius.getVersion());
+        assertEquals("right ruby lib", new File(rubinius.getHome(), "lib").getAbsolutePath(), rubinius.getLibDir());
+        assertNull("does not throw AssertionError", rubinius.getSystemRoot(FileUtil.toFileObject(new File(rubinius.getHome(), "lib"))));
+    }
 }

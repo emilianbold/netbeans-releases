@@ -8,12 +8,14 @@ package org.netbeans.module.iep.editor.xsd;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
-import javax.swing.JCheckBox;
+
+import javax.swing.Icon;
 import javax.swing.JTree;
 import javax.swing.UIManager;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreeCellRenderer;
-import org.netbeans.module.iep.editor.xsd.nodes.AbstractSchemaArtifactNode;
+
+
 import org.netbeans.module.iep.editor.xsd.nodes.SelectableTreeNode;
 
 /**
@@ -56,10 +58,19 @@ public class SchemaArtifactTreeCellRenderer implements TreeCellRenderer  {
     
     public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
         
-        AbstractSchemaArtifactNode nodeValue = (AbstractSchemaArtifactNode) value;
+        
+        
+        TreeNodeInterface nodeValue = null;
+        Icon icon = null;
+        
+        if(value instanceof TreeNodeInterface) {
+            nodeValue = (TreeNodeInterface) value;
+            icon = nodeValue.getIcon();
+        }
+        
         
         String  stringValue = tree.convertValueToText(value, false,
-					    expanded, leaf, row, false);
+                        expanded, leaf, row, false);
         
         
         Component comp = null;
@@ -68,8 +79,9 @@ public class SchemaArtifactTreeCellRenderer implements TreeCellRenderer  {
             SelectableTreeNode node = (SelectableTreeNode) value;
             
             checkBoxRenderer.setSelected(node.isSelected());
-            
-            checkBoxRenderer.setIcon(nodeValue.getIcon());
+            if(icon != null) {
+                checkBoxRenderer.setIcon(icon);
+            }
             checkBoxRenderer.setText(stringValue);
             checkBoxRenderer.setEnabled(tree.isEnabled());
             
@@ -86,8 +98,10 @@ public class SchemaArtifactTreeCellRenderer implements TreeCellRenderer  {
             comp = checkBoxRenderer;
           
         } else {
-            mDefaultRenderer.setOpenIcon(nodeValue.getIcon());
-            mDefaultRenderer.setClosedIcon(nodeValue.getIcon());
+            if(icon != null) {
+                mDefaultRenderer.setOpenIcon(icon);
+                mDefaultRenderer.setClosedIcon(icon);
+            }
             comp = mDefaultRenderer.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
         }
         

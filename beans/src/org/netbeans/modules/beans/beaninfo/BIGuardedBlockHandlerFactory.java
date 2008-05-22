@@ -105,7 +105,7 @@ public final class BIGuardedBlockHandlerFactory implements GuardedBlockHandlerFa
                     js.runUserActionTask(new Task<CompilationController>() {
 
                         public void run(CompilationController javac) throws Exception {
-                            javac.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                            javac.toPhase(JavaSource.Phase.RESOLVED);
                             result[0] = checkChange(javac, span);
                         }
                     }, true);

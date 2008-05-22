@@ -56,8 +56,8 @@ public abstract class AbstractGenerator {
     public static final String REST_CONNECTION_PACKAGE = "org.netbeans.saas";
     public static final String SAAS_SERVICES = "SaaSServices"; //NOI18N
     public static final String TEMPLATES_SAAS = "Templates/"+SAAS_SERVICES+"/"; //NOI18N
-    public static final String REST_CONNECTION_TEMPLATE = TEMPLATES_SAAS+REST_CONNECTION+".java"; //NOI18N
-    public static final String REST_RESPONSE_TEMPLATE = TEMPLATES_SAAS+REST_RESPONSE+".java"; //NOI18N
+    public static final String REST_CONNECTION_TEMPLATE = TEMPLATES_SAAS+REST_CONNECTION+"."+Constants.JAVA_EXT; //NOI18N
+    public static final String REST_RESPONSE_TEMPLATE = TEMPLATES_SAAS+REST_RESPONSE+"."+Constants.JAVA_EXT; //NOI18N
     public static final String COMMENT_END_OF_HTTP_MEHTOD_GET = "TODO return proper representation object";      //NOI18N
     public static final String GENERIC_REF_CONVERTER_TEMPLATE = TEMPLATES_SAAS+"RefConverter.java"; //NOI18N
     public static final String GENERIC_REF_CONVERTER = "GenericRefConverter"; //NOI18N

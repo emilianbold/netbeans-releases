@@ -62,7 +62,7 @@ public interface InstantRenamer {
      *   to a short description string (explaining why renaming is not allowed) which
      *   may be displayed to the user.
      */
-    boolean isRenameAllowed(@NonNull CompilationInfo info, int caretOffset, String[] explanationRetValue);
+    boolean isRenameAllowed(@NonNull CompilationInfo info, int caretOffset, @CheckForNull String[] explanationRetValue);
 
     /**
      * Return a Set of regions that should be renamed if the element under the caret offset is

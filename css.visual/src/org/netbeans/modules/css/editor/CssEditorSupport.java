@@ -157,7 +157,7 @@ public class CssEditorSupport {
                                     //check if the last item has semicolon
                                     //add it if there is no semicolon
                                     if (last.semicolonOffset() == -1) {
-                                        doc.insertString(last.value().offset() + last.value().name().length(), ";", null); //NOI18N
+                                        doc.insertString(last.value().offset() + last.value().name().trim().length(), ";", null); //NOI18N
                                     }
 
                                     initialNewLine = Utilities.getLineOffset(doc, myRule.getRuleCloseBracketOffset()) == Utilities.getLineOffset(doc, last.key().offset());
@@ -349,8 +349,10 @@ public class CssEditorSupport {
         this.current = null;
 
         if (caretListenerRegistered) {
-            editorPane.removeCaretListener(CARET_LISTENER);
-            d("removed caret listener: " + current);
+            if(editorPane != null) {
+                editorPane.removeCaretListener(CARET_LISTENER);
+                d("removed caret listener: " + current);
+            }
             caretListenerRegistered = false;
         }
 
@@ -371,12 +373,12 @@ public class CssEditorSupport {
     }
 
     private synchronized void updateSelectedRule(int dotPos) {
-        d("update selected rule " + current.getName() + " to position " + dotPos);
-        if (document == null || model == null) {
+        if (document == null || model == null || current == null) {
             //document unloaded, just return
-            d("document == null or model == null, exiting");
+            d("document = " + document + "; model = " + model + "; current TC = " + current + " => exiting");
             return;
         }
+        d("update selected rule " + current.getName() + " to position " + dotPos);
 
         LOGGER.log(Level.FINE, "updateSelectedRule(" + dotPos + ")");
         if (model.rules() == null) {

@@ -38,5 +38,5 @@ public interface NameMatcher {
      * Determine whether the name matches a pattern or not
      * return true
      */
-    boolean matches(String name);
+    boolean accept(String name);
 }

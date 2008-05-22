@@ -311,6 +311,7 @@ class ActionFilterNode extends FilterNode {
             if (removed) {
                 String[] itemRefs = cs.encodeToStrings(resources, webModuleElementName);
                 props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);    //Reread the properties, PathParser changes them
+                EditableProperties privateProps = helper.getProperties (AntProjectHelper.PRIVATE_PROPERTIES_PATH);
                 props.setProperty (classPathId, itemRefs);
                 
                 if (libUpdaterProperties != null) {
@@ -320,10 +321,11 @@ class ActionFilterNode extends FilterNode {
                         List wmLibs = cs.itemsList(props.getProperty(property),  null);
                         set.addAll(wmLibs);
                     }
-                    ProjectProperties.storeLibrariesLocations(set.iterator(), props, helper.getAntProjectHelper().getProjectDirectory());
+                    ProjectProperties.storeLibrariesLocations(helper.getAntProjectHelper(), set.iterator(), helper.getAntProjectHelper().isSharableProject() ? props : privateProps);
                 }
                 
                 helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
+                helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProps);
                return FileOwnerQuery.getOwner(helper.getAntProjectHelper().getProjectDirectory());
            } else {
                return null;

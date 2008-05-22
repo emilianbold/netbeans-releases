@@ -73,6 +73,8 @@ public class Assignment extends Expression {
         this.leftHandSide = leftHandSide;
         this.operator = operator;
         this.rightHandSide = rightHandSide;
+//        leftHandSide.setParent(this);
+//        rightHandSide.setParent(this);
     }
 
     /**

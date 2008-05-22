@@ -115,16 +115,20 @@ public class RestSamplesTest extends RestTestBase {
         undeployProject("CustomerDBSample"); //NOI18N
     }
 
-    /** Creates suite from particular test cases. You can define order of testcases here. */
+    /**
+     * Creates suite from particular test cases. You can define order of testcases here.
+     */
     public static TestSuite suite() {
         TestSuite suite = new NbTestSuite();
-        suite.addTest(new RestSamplesTest("testHelloWorldSample"));
-        suite.addTest(new RestSamplesTest("testCustomerDBSample"));
-        suite.addTest(new RestSamplesTest("testCustomerDBClientSample"));
+        suite.addTest(new RestSamplesTest("testHelloWorldSample")); //NOI18N
+        suite.addTest(new RestSamplesTest("testCustomerDBSample")); //NOI18N
+        suite.addTest(new RestSamplesTest("testCustomerDBClientSample")); //NOI18N
         return suite;
     }
 
-    /* Method allowing test execution directly from the IDE. */
+    /**
+     * Method allowing test execution directly from the IDE.
+     */
     public static void main(java.lang.String[] args) {
         // run whole suite
         TestRunner.run(suite());

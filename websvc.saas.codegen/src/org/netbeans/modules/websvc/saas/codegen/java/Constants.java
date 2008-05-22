@@ -49,9 +49,34 @@ import javax.lang.model.element.Modifier;
  */
 public class Constants {
     
-    public static final String CONTENT_TYPE = "Content-Type";
+    public static final String AUTH = "auth"; //NOI18N
+
+    public static final String LOGIN = "login"; //NOI18N
     
-    public static final String PUT_POST_CONTENT = "content";
+    public static final String CALLBACK = "callback"; //NOI18N
+
+    
+    public static final String JAVA_ANNOTATION_PACKAGE = "javax.annotation."; //NOI18N
+    
+    public static final String JAVA_ANNOTATION_RESOURCE = "Resource"; //NOI18N
+    
+    public static final String HTTP_SERVLET_PACKAGE = "javax.servlet.http.";       //NOI18N
+    
+    public static final String HTTP_SERVLET_REQUEST_CLASS = "HttpServletRequest";//NOI18N
+    
+    public static final String HTTP_SERVLET_RESPONSE_CLASS = "HttpServletResponse";//NOI18N
+    
+    public static final String HTTP_SERVLET_REQUEST_VARIABLE = "request";//NOI18N
+    
+    public static final String HTTP_SERVLET_RESPONSE_VARIABLE = "response";//NOI18N
+    
+    public static final String HTTP_RESOURCE_ANNOTATION = "Resource";     //NOI18N
+    
+    public static final String CONTENT_TYPE = "Content-Type";//NOI18N
+    
+    public static final String PUT_POST_CONTENT = "content";//NOI18N
+    
+    public static final String UNSUPPORTED_DROP = "WARN_UnsupportedDropTarget";//NOI18N
     
     public static final String HEADER_PARAMS = "headerParams"; // NOI18n
     
@@ -178,6 +203,33 @@ public class Constants {
    
     public static final String JAVA_EXT = "java"; //NI18N
     
+    public enum DropFileType {
+        JAVA_CLIENT("javaClient", "System.out"), 
+        RESOURCE("resource", "System.out"),
+        SERVLET("servlet", "out"),
+        JSP("jsp", "out");
+        
+        private String prefix; 
+        private String printWriterType;
+        
+        DropFileType(String prefix, String printWriterType) {
+            this.prefix = prefix;
+            this.printWriterType = printWriterType;
+        }
+        
+        public String value() {
+            return name();
+        }
+        
+        public String prefix() {
+            return prefix;
+        }
+        
+        public String getPrintWriterType() {
+            return printWriterType;
+        }
+    }
+
     public enum MimeType {
         XML("application/xml", "Xml"),      //NOI18N
         JSON("application/json", "Json"),   //NOI18N

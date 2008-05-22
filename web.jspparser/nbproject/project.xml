@@ -43,7 +43,7 @@ made subject to such option by the copyright holder.
 <project xmlns="http://www.netbeans.org/ns/project/1">
     <type>org.netbeans.modules.apisupport.project</type>
     <configuration>
-        <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
+        <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
             <code-name-base>org.netbeans.modules.web.jspparser</code-name-base>
             <module-dependencies>
                 <dependency>
@@ -186,6 +186,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.web.core</friend>
                 <friend>org.netbeans.modules.web.core.syntax</friend>
                 <friend>org.netbeans.modules.web.project</friend>
+                <friend>org.netbeans.modules.web.frameworks.facelets</friend>
                 <package>org.netbeans.modules.web.jsps.parserapi</package>
             </friend-packages>
             <extra-compilation-unit>

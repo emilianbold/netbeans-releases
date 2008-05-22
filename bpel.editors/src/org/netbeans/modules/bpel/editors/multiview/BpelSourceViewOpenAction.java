@@ -18,7 +18,7 @@ package org.netbeans.modules.bpel.editors.multiview;
 
 import org.netbeans.modules.bpel.core.BPELDataEditorSupport;
 import org.netbeans.modules.bpel.core.BPELDataObject;
-import org.netbeans.modules.bpel.editors.api.utils.Util;
+import org.netbeans.modules.bpel.editors.api.EditorUtil;
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.api.Process;
 import org.openide.actions.OpenAction;
@@ -27,7 +27,6 @@ import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
 /**
- *
  * @author Vitaly Bychkov
  * @version 1.0
  */
@@ -63,7 +62,7 @@ public class BpelSourceViewOpenAction extends OpenAction {
             if (process != null) {
                 if (editorSupport.getOpenedPanes() == null ||
                         editorSupport.getOpenedPanes().length == 0) {
-                    Util.goToSource(process);
+                    EditorUtil.goToSource(process);
                 } else {
                     editorSupport.open();
                 }

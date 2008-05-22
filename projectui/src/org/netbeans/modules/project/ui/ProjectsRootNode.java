@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.project.ui;
 
+import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.CharConversionException;
@@ -51,12 +52,16 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
@@ -64,12 +69,10 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileStatusEvent;
@@ -93,9 +96,10 @@ import org.openidex.search.SearchInfo;
 import org.openidex.search.SearchInfoFactory;
 
 /** Root node for list of open projects
- * @author Petr Hrebejk
  */
 public class ProjectsRootNode extends AbstractNode {
+
+    private static final Logger LOG = Logger.getLogger(ProjectsRootNode.class.getName());
 
     static final int PHYSICAL_VIEW = 0;
     static final int LOGICAL_VIEW = 1;
@@ -286,7 +290,7 @@ public class ProjectsRootNode extends AbstractNode {
             LogicalViewProvider lvp = project.getLookup().lookup(LogicalViewProvider.class);
             
             if ( lvp == null ) {
-                ErrorManager.getDefault().log(ErrorManager.WARNING, "Warning - project " + ProjectUtils.getInformation(project).getName() + " failed to supply a LogicalViewProvider in its lookup"); // NOI18N
+                LOG.warning("Warning - project " + ProjectUtils.getInformation(project).getName() + " failed to supply a LogicalViewProvider in its lookup"); // NOI18N
                 Sources sources = ProjectUtils.getSources(project);
                 sources.removeChangeListener(this);
                 sources.addChangeListener(this);
@@ -300,7 +304,7 @@ public class ProjectsRootNode extends AbstractNode {
                 node = lvp.createLogicalView();
                 if (node.getLookup().lookup(Project.class) != project) {
                     // Various actions, badging, etc. are not going to work.
-                    ErrorManager.getDefault().log(ErrorManager.WARNING, "Warning - project " + ProjectUtils.getInformation(project).getName() + " failed to supply itself in the lookup of the root node of its own logical view"); // NOI18N
+                    LOG.warning("Warning - project " + ProjectUtils.getInformation(project).getName() + " failed to supply itself in the lookup of the root node of its own logical view"); // NOI18N
                     //#114664
                     if (projectInLookup != null) {
                         projectInLookup[0] = false;
@@ -401,14 +405,17 @@ public class ProjectsRootNode extends AbstractNode {
                                                 
     }
         
-    private static final class BadgingNode extends FilterNode implements PropertyChangeListener, Runnable, FileStatusListener {
+    private static final class BadgingNode extends FilterNode implements ChangeListener, PropertyChangeListener, Runnable, FileStatusListener {
 
         private static String badgedNamePattern = NbBundle.getMessage(ProjectsRootNode.class, "LBL_MainProject_BadgedNamePattern");
-        private final FileObject file;
-        private final Set<FileObject> files;
-        private FileStatusListener fileSystemListener;
+        private final Object privateLock = new Object();
+        private Set<FileObject> files;
+        private Map<FileSystem,FileStatusListener> fileSystemListeners;
+        private ChangeListener sourcesListener;
+        private Map<SourceGroup,PropertyChangeListener> groupsListeners;
         private RequestProcessor.Task task;
-        private volatile boolean nameChange;
+        private boolean nameChange;
+        private boolean iconChange;
         private final boolean logicalView;
         private final ProjectChildren.Pair pair;
 
@@ -417,24 +424,7 @@ public class ProjectsRootNode extends AbstractNode {
             this.pair = p;
             this.logicalView = logicalView;
             OpenProjectList.getDefault().addPropertyChangeListener(WeakListeners.propertyChange(this, OpenProjectList.getDefault()));
-            Project proj = getOriginal().getLookup().lookup(Project.class);
-            if (proj != null) {
-                file = proj.getProjectDirectory();
-                assert file != null : "Project returns null directory: " + proj;
-                files = Collections.singleton(file);
-                try {
-                    FileSystem fs = file.getFileSystem();
-                    fileSystemListener = FileUtil.weakFileStatusListener(this, fs);
-                    fs.addFileStatusListener(fileSystemListener);
-                } catch (FileStateInvalidException e) {
-                    ErrorManager err = ErrorManager.getDefault();
-                    err.annotate(e, "Can not get " + file + " filesystem, ignoring..."); // NO18N
-                    err.notify(ErrorManager.INFORMATIONAL, e);
-                }
-            } else {
-                file = null;
-                files = null; 
-            }
+            setProjectFiles();
         }
         
         private static Lookup badgingLookup(Node n, boolean addSearchInfo) {
@@ -445,10 +435,97 @@ public class ProjectsRootNode extends AbstractNode {
             }
         }
         
+        protected final void setProjectFiles() {
+            Project prj = getLookup().lookup(Project.class);
+
+            if (prj != null) {
+                setProjectFiles(prj);
+            }
+        }
+
+        protected final void setProjectFiles(Project project) {
+            Sources sources = ProjectUtils.getSources(project);  // returns singleton
+            if (sourcesListener == null) {
+                sourcesListener = WeakListeners.change(this, sources);
+                sources.addChangeListener(sourcesListener);
+            }
+            setGroups(Arrays.asList(sources.getSourceGroups(Sources.TYPE_GENERIC)), project.getProjectDirectory());
+        }
+
+        private final void setGroups(Collection<SourceGroup> groups, FileObject projectDirectory) {
+            if (groupsListeners != null) {
+                for (Map.Entry<SourceGroup, PropertyChangeListener> entry : groupsListeners.entrySet()) {
+                    entry.getKey().removePropertyChangeListener(entry.getValue());
+                }
+            }
+            groupsListeners = new HashMap<SourceGroup, PropertyChangeListener>();
+            Set<FileObject> roots = new HashSet<FileObject>();
+            for (SourceGroup group : groups) {
+                PropertyChangeListener pcl = WeakListeners.propertyChange(this, group);
+                groupsListeners.put(group, pcl);
+                group.addPropertyChangeListener(pcl);
+                FileObject fo = group.getRootFolder();
+                if (fo.equals(projectDirectory)) {
+                    // #78994: do not listen to project root folder since changes in a nested project will mark it as modified.
+                    // Instead, listen to direct subdirs which are owned by this project. Not very precise but the best we can do.
+                    // (Would ideally obtain a complete but minimal list of dirs which cover this project but no subprojects.
+                    // Unfortunately the current APIs provide no efficient way of doing this in general.)
+                    for (FileObject kid : fo.getChildren()) {
+                        Project owner = FileOwnerQuery.getOwner(kid);
+                        // Not sufficient to check owner == project, because at startup owner will be a LazyProject.
+                        if (owner != null && owner.getProjectDirectory() == projectDirectory) {
+                            roots.add(kid);
+                        }
+                    }
+                } else {
+                    roots.add(fo);
+                }
+            }
+            setFiles(roots);
+        }
+
+        protected final void setFiles(Set<FileObject> files) {
+            if (fileSystemListeners != null) {
+                for (Map.Entry<FileSystem, FileStatusListener> entry : fileSystemListeners.entrySet()) {
+                    entry.getKey().removeFileStatusListener(entry.getValue());
+                }
+            }
+
+            fileSystemListeners = new HashMap<FileSystem, FileStatusListener>();
+            this.files = files;
+
+            Set<FileSystem> hookedFileSystems = new HashSet<FileSystem>();
+            for (FileObject fo : files) {
+                try {
+                    FileSystem fs = fo.getFileSystem();
+                    if (hookedFileSystems.contains(fs)) {
+                        continue;
+                    }
+                    hookedFileSystems.add(fs);
+                    FileStatusListener fsl = FileUtil.weakFileStatusListener(this, fs);
+                    fs.addFileStatusListener(fsl);
+                    fileSystemListeners.put(fs, fsl);
+                } catch (FileStateInvalidException e) {
+                    LOG.log(Level.INFO, "Cannot get " + fo + " filesystem, ignoring...", e); // NOI18N
+                }
+            }
+        }
+
         public void run() {
-            if (nameChange) {
-                fireDisplayNameChange(null, null);
+            boolean fireIcon;
+            boolean fireName;
+            synchronized (privateLock) {
+                fireIcon = iconChange;
+                fireName = nameChange;
+                iconChange = false;
                 nameChange = false;
+            }
+            if (fireIcon) {
+                fireIconChange();
+                fireOpenedIconChange();
+            }
+            if (fireName) {
+                fireDisplayNameChange(null, null);
             }
         }
 
@@ -457,31 +534,33 @@ public class ProjectsRootNode extends AbstractNode {
                 task = RequestProcessor.getDefault().create(this);
             }
 
-            if (nameChange == false && event.isNameChange()) {
-                if (event.hasChanged(file)) {
-                    nameChange |= event.isNameChange();
+            synchronized (privateLock) {
+                if ((iconChange == false && event.isIconChange())  || (nameChange == false && event.isNameChange())) {
+                    for (FileObject fo : files) {
+                        if (event.hasChanged(fo)) {
+                            iconChange |= event.isIconChange();
+                            nameChange |= event.isNameChange();
+                        }
+                    }
                 }
             }
 
-            task.schedule(50); // batch by 50 ms
+            task.schedule(50);  // batch by 50 ms
         }
-
-
-        
-        public String getDisplayName() {
+    
+        public @Override String getDisplayName() {
             String original = super.getDisplayName();
-            Project proj = getOriginal().getLookup().lookup(Project.class);
-            if (proj != null) {
-                try {            
-                    original = proj.getProjectDirectory().getFileSystem().getStatus().annotateName(original, Collections.singleton(proj.getProjectDirectory()));
+            if (files != null && files.iterator().hasNext()) {
+                try {
+                    original = files.iterator().next().getFileSystem().getStatus().annotateName(original, files);
                 } catch (FileStateInvalidException e) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                    LOG.log(Level.INFO, null, e);
                 }
-            }           
+            }
             return isMain() ? MessageFormat.format( badgedNamePattern, new Object[] { original } ) : original;
         }
 
-        public String getHtmlDisplayName() {
+        public @Override String getHtmlDisplayName() {
             String htmlName = getOriginal().getHtmlDisplayName();
             String dispName = null;
             if (isMain() && htmlName == null) {
@@ -492,24 +571,53 @@ public class ProjectsRootNode extends AbstractNode {
                     // ignore
                 }
             }
-            Project proj = getOriginal().getLookup().lookup(Project.class);
-            if (proj != null) {
+            if (files != null && files.iterator().hasNext()) {
                 try {
-                    FileSystem.Status stat = proj.getProjectDirectory().getFileSystem().getStatus();
+                    FileSystem.Status stat = files.iterator().next().getFileSystem().getStatus();
                     if (stat instanceof FileSystem.HtmlStatus) {
                         FileSystem.HtmlStatus hstat = (FileSystem.HtmlStatus) stat;
 
-                        String result = hstat.annotateNameHtml(super.getDisplayName(), Collections.singleton(proj.getProjectDirectory()));
+                        String result = hstat.annotateNameHtml(super.getDisplayName(), files);
                         //Make sure the super string was really modified
                         if (result != null && !super.getDisplayName().equals(result)) {
                            return isMain() ? "<b>" + (result) + "</b>" : result; //NOI18N
                         }
                     }
                 } catch (FileStateInvalidException e) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                    LOG.log(Level.INFO, null, e);
                 }
             }      
             return isMain() ? "<b>" + (htmlName == null ? dispName : htmlName) + "</b>" : htmlName; //NOI18N
+        }
+
+        public @Override Image getIcon(int type) {
+            Image img = super.getIcon(type);
+
+            if (files != null && files.iterator().hasNext()) {
+                try {
+                    FileObject fo = files.iterator().next();
+                    img = fo.getFileSystem().getStatus().annotateIcon(img, type, files);
+                } catch (FileStateInvalidException e) {
+                    LOG.log(Level.INFO, null, e);
+                }
+            }
+
+            return img;
+        }
+
+        public @Override Image getOpenedIcon(int type) {
+            Image img = super.getOpenedIcon(type);
+
+            if (files != null && files.iterator().hasNext()) {
+                try {
+                    FileObject fo = files.iterator().next();
+                    img = fo.getFileSystem().getStatus().annotateIcon(img, type, files);
+                } catch (FileStateInvalidException e) {
+                    LOG.log(Level.INFO, null, e);
+                }
+            }
+
+            return img;
         }
 
         public void propertyChange( PropertyChangeEvent e ) {
@@ -548,7 +656,7 @@ public class ProjectsRootNode extends AbstractNode {
                                 break;
                             }
                         }
-                        assert n != null;
+                        assert n != null : "newProject yields null node: " + newProj;
                     }
                     OpenProjectList.LOGGER.log(Level.FINER, "change original: {0}", n);
                     changeOriginal(n, true);
@@ -566,6 +674,9 @@ public class ProjectsRootNode extends AbstractNode {
                     OpenProjectList.LOGGER.log(Level.FINE, "wrong directories. current: " + fo + " new " + newProj.getProjectDirectory());
                 }
             }
+            if (SourceGroup.PROP_CONTAINERSHIP.equals(e.getPropertyName())) {
+                setProjectFiles();
+            }
         }
 
         private boolean isMain() {
@@ -573,6 +684,15 @@ public class ProjectsRootNode extends AbstractNode {
             return p != null && OpenProjectList.getDefault().isMainProject( p );
         }
         
+        // sources change
+        public void stateChanged(ChangeEvent e) {
+            RequestProcessor.getDefault().post(new Runnable () {
+                public void run() {
+                    setProjectFiles();
+                }
+            });
+        }
+
     } // end of BadgingNode
     
     private static final class BadgingLookup extends ProxyLookup {

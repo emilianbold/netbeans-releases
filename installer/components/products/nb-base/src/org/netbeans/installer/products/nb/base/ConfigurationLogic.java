@@ -55,6 +55,7 @@ import org.netbeans.installer.utils.exceptions.InstallationException;
 import org.netbeans.installer.utils.exceptions.NativeException;
 import org.netbeans.installer.utils.exceptions.UninstallationException;
 import org.netbeans.installer.utils.helper.FilesList;
+import org.netbeans.installer.utils.helper.RemovalMode;
 import org.netbeans.installer.utils.helper.Status;
 import org.netbeans.installer.utils.helper.Text;
 import org.netbeans.installer.utils.progress.Progress;
@@ -395,7 +396,30 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                     getString("CL.install.error.tomcat.integration"), // NOI18N
                     e);
         }
+        
+        /////////////////////////////////////////////////////////////////////////////
+        try {
+            final List<Product> jdks = Registry.getInstance().getProducts("jdk");
+            for (Product jdk : jdks) {
+                // if the IDE was installed in the same session as the jdk, 
+                // we should add jdk`s "product id" to the IDE
+                if (jdk.getStatus().equals(Status.INSTALLED) && jdk.hasStatusChanged()) {
+                    NetBeansUtils.addPackId(installLocation, JDK_PRODUCT_ID);
+                    break;
+                }
+            }
+        } catch  (IOException e) {
+            LogManager.log("Cannot add jdk`s id to netbeans productid file", e);
+        }
 
+        try {
+            filesList.add(new File(nbCluster,"servicetag/registration.xml"));
+            filesList.add(new File(nbCluster,"servicetag"));
+        } catch (IOException e) {
+            LogManager.log(e);
+        }
+
+	
         /////////////////////////////////////////////////////////////////////////////
         progress.setPercentage(Progress.COMPLETE);
     }
@@ -564,6 +588,9 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         return shortcut;
     }
     
+    public RemovalMode getRemovalMode() {
+        return RemovalMode.LIST;
+    }
     
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
@@ -607,7 +634,8 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         "Java",// NOI18N
         "IDE"// NOI18N
     };
-    
+    public static final String JDK_PRODUCT_ID =
+            "JDK";//NOI18N
     public static final String GLASSFISH_JVM_OPTION_NAME =
             "-Dcom.sun.aas.installRoot"; // NOI18N
     

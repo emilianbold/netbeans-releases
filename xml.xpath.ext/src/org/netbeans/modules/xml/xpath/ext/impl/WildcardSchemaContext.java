@@ -43,7 +43,7 @@ public class WildcardSchemaContext implements XPathSchemaContext {
     private boolean lookForElements;
     private boolean lookForAttributes; 
     
-    // TODO replace to weak reference
+    // TO DO replace to weak reference
     private Set<SchemaCompPair> mSchemaCompPair = null;
     private Set<SchemaComponent> mUsedSchemaCompSet;
     
@@ -85,7 +85,7 @@ public class WildcardSchemaContext implements XPathSchemaContext {
                     Schema schema = sModel.getSchema();
                     FindAllChildrenSchemaVisitor visitor = 
                             new FindAllChildrenSchemaVisitor(
-                            lookForElements, lookForAttributes);
+                            lookForElements, lookForAttributes, false);
                     visitor.lookForSubcomponents(schema);
                     //
                     List<SchemaComponent> foundComps = visitor.getFound();
@@ -101,7 +101,7 @@ public class WildcardSchemaContext implements XPathSchemaContext {
                 SchemaComponent parentComp = parentCompPair.getComp();
                 FindAllChildrenSchemaVisitor visitor = 
                         new FindAllChildrenSchemaVisitor(
-                        lookForElements, lookForAttributes);
+                        lookForElements, lookForAttributes, false);
                 visitor.lookForSubcomponents(parentComp);
                 //
                 List<SchemaComponent> foundComps = visitor.getFound();
@@ -136,6 +136,10 @@ public class WildcardSchemaContext implements XPathSchemaContext {
         mUsedSchemaCompSet = compSet;
     }
 
+    public String toStringWithoutParent() {
+        return "";
+    }
+    
     @Override
     public boolean equals(Object obj)  {
         if (obj instanceof XPathSchemaContext) {

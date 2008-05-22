@@ -44,12 +44,12 @@ package org.netbeans.modules.cnd.modelimpl.impl.services;
 import antlr.TokenStream;
 import antlr.TokenStreamException;
 import java.io.IOException;
-import java.io.InputStream;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.EnumSet;
+import java.util.Set;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -88,7 +88,7 @@ public class ReferenceRepositoryImpl extends CsmReferenceRepository {
     public ReferenceRepositoryImpl() {
     }
     
-    public Collection<CsmReference> getReferences(CsmObject target, CsmProject project, EnumSet<CsmReferenceKind> kinds) {
+    public Collection<CsmReference> getReferences(CsmObject target, CsmProject project, Set<CsmReferenceKind> kinds) {
         if (!(project instanceof ProjectBase)) {
             return Collections.<CsmReference>emptyList();
         }
@@ -116,7 +116,7 @@ public class ReferenceRepositoryImpl extends CsmReferenceRepository {
         return out;
     }
     
-    public Collection<CsmReference> getReferences(CsmObject target, CsmFile file, EnumSet<CsmReferenceKind> kinds) {
+    public Collection<CsmReference> getReferences(CsmObject target, CsmFile file, Set<CsmReferenceKind> kinds) {
         CsmScope scope = getDeclarationScope(target);
         CsmFile scopeFile = CsmKindUtilities.isOffsetable(scope) ? ((CsmOffsetable)scope).getContainingFile() : null;
         if (!(file instanceof FileImpl)) {
@@ -138,7 +138,7 @@ public class ReferenceRepositoryImpl extends CsmReferenceRepository {
         }
     }
     
-    public Map<CsmObject, Collection<CsmReference>> getReferences(CsmObject[] targets, CsmProject project, EnumSet<CsmReferenceKind> kinds) {
+    public Map<CsmObject, Collection<CsmReference>> getReferences(CsmObject[] targets, CsmProject project, Set<CsmReferenceKind> kinds) {
         Map<CsmObject, Collection<CsmReference>> out = new HashMap<CsmObject, Collection<CsmReference>>(targets.length);
         for (CsmObject target : targets) {
             out.put(target, getReferences(target, project, kinds));
@@ -146,7 +146,7 @@ public class ReferenceRepositoryImpl extends CsmReferenceRepository {
         return out;
     }
     
-    public Collection<CsmReference> getReferences(CsmObject[] targets, CsmFile file, EnumSet<CsmReferenceKind> kinds) {
+    public Collection<CsmReference> getReferences(CsmObject[] targets, CsmFile file, Set<CsmReferenceKind> kinds) {
         Collection<CsmReference> refs = new LinkedHashSet<CsmReference>(1024);
         // TODO: optimize performance
         for (CsmObject target : targets) {            
@@ -169,7 +169,7 @@ public class ReferenceRepositoryImpl extends CsmReferenceRepository {
     // prototype of impl
     
     private Collection<CsmReference> getReferences(CsmObject targetDecl, CsmObject targetDef, FileImpl file, 
-            EnumSet<CsmReferenceKind> kinds, boolean unboxInstantiation, int startOffset, int endOffset) {
+            Set<CsmReferenceKind> kinds, boolean unboxInstantiation, int startOffset, int endOffset) {
         assert targetDecl != null;
         assert file != null;
         CharSequence name = "";
@@ -221,7 +221,9 @@ public class ReferenceRepositoryImpl extends CsmReferenceRepository {
                 APTToken prev = null;
                 while (!APTUtils.isEOF(token)) {
                     if (token.getOffset() >= startOffset) {
-                        if (APTUtils.isID(token) && name.equals(token.getText())) {
+                        int id = token.getType();
+                        if ((id == APTTokenTypes.ID || id == APTTokenTypes.ID_DEFINED) &&
+                                name.equals(token.getText())) {
                             // this is candidate to resolve
                             if (!destructor || (prev != null && prev.getType() == APTTokenTypes.TILDE)) {
                                 tokens.add(token);
@@ -243,18 +245,18 @@ public class ReferenceRepositoryImpl extends CsmReferenceRepository {
     
     private TokenStream getTokenStream(FileImpl file) {
         // build token stream for file
-        InputStream stream = null;
+        Reader reader = null;
         TokenStream ts = null;
         try {
-            stream = file.getBuffer().getInputStream();
-            ts = APTTokenStreamBuilder.buildTokenStream(file.getAbsolutePath(), stream);
+            reader = file.getBuffer().getReader();
+            ts = APTTokenStreamBuilder.buildTokenStream(file.getAbsolutePath(), reader);
         } catch (IOException ex) {
             DiagnosticExceptoins.register(ex);
             ts = null;
         } finally {
-            if (stream != null) {
+            if (reader != null) {
                 try {
-                    stream.close();
+                    reader.close();
                 } catch (IOException ex) {
                     DiagnosticExceptoins.register(ex);
                 }
@@ -264,7 +266,7 @@ public class ReferenceRepositoryImpl extends CsmReferenceRepository {
     }
 
     private boolean acceptReference(CsmReference ref, CsmObject targetDecl, CsmObject targetDef, 
-            EnumSet<CsmReferenceKind> kinds, boolean unboxInstantiation) {
+            Set<CsmReferenceKind> kinds, boolean unboxInstantiation) {
         assert targetDecl != null;
         boolean accept = false;
         CsmObject referencedObj = ref == null ? null : ref.getReferencedObject();

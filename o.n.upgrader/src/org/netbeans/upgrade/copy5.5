@@ -84,7 +84,13 @@ include Services/org-netbeans-modules-java-settings-JavaSettings\.settings
 
 include Editors/AnnotationTypes/.*
 include Editors/.*
+exclude Editors/.*/Popup.*
+exclude Editors/.*/.*\.instance
+exclude Editors/.*/Settings\.settings
 include Services/IndentEngine/.*
+#does not import C/C++ indent settings
+exclude Services/IndentEngine/org-netbeans-modules-cnd-editor-cplusplus-CCIndentEngine\.settings
+exclude Services/IndentEngine/org-netbeans-modules-cnd-editor-cplusplus-CIndentEngine\.settings
 
 include Services/org-netbeans-modules-javadoc-settings-DocumentationSettings\.settings
 

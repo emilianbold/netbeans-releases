@@ -11,9 +11,9 @@
  * http://www.netbeans.org/cddl-gplv2.html
  * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
  * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
+ * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
  * particular file as subject to the "Classpath" exception as provided
  * by Sun in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
@@ -53,7 +53,7 @@ import javax.swing.JComponent;
 import org.netbeans.modules.print.spi.PrintPage;
 import org.netbeans.modules.print.impl.util.Macro;
 import org.netbeans.modules.print.impl.util.Option;
-import static org.netbeans.modules.print.impl.util.UI.*;
+import static org.netbeans.modules.print.impl.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -139,8 +139,7 @@ final class Paper extends JComponent {
   }
 
   @Override
-  public void print(Graphics g)
-  {
+  public void print(Graphics g) {
     myIsPainting = false;
     setScale(1.0);
     super.print(g);
@@ -148,8 +147,7 @@ final class Paper extends JComponent {
   }
 
   @Override
-  public void paint(Graphics graphics)
-  {
+  public void paint(Graphics graphics) {
     Graphics2D g = Option.getDefault().getGraphics(graphics);
 
     // scaling
@@ -256,28 +254,14 @@ final class Paper extends JComponent {
     }
   }
 
-  private void drawTitle(
-    Graphics2D g,
-    String left,
-    String center,
-    String right,
-    int y,
-    Color color,
-    Font f)
-  {
+  private void drawTitle(Graphics2D g, String left, String center, String right, int y, Color color, Font f) {
     g.setColor(color);
     drawTitle(g, left,  myPageX, y, f);
     drawTitle(g, center,myPageX + (myPageWidth - getWidth(center, f))/2, y, f);
     drawTitle(g, right, myPageX + myPageWidth - getWidth(right, f), y, f);
   }
 
-  private void drawTitle(
-    Graphics2D g,
-    String text,
-    int x,
-    int y,
-    Font font)
-  {
+  private void drawTitle(Graphics2D g, String text, int x, int y, Font font) {
     g.setFont(font);
     g.drawString(text, x, y);
   }

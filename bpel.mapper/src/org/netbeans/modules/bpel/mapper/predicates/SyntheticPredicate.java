@@ -42,7 +42,7 @@ public class SyntheticPredicate extends AbstractPredicate {
         mPredicateArr = predicateArr;
     }
     
-    public XPathSchemaContext getContext() {
+    public XPathSchemaContext getSchemaContext() {
         return mSContext;
     }
     

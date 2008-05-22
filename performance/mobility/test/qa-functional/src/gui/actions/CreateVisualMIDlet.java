@@ -38,24 +38,23 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package gui.actions;
 
-import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NewFileNameLocationStepOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
-import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
-import org.netbeans.jellytools.actions.NewFileAction;
 
 
+import gui.window.MIDletEditorOperator;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.junit.ide.ProjectSupport;
 import java.io.File;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.jemmy.operators.JDialogOperator;
+
 /**
  * Test Create Visual MIDlet
  *
@@ -64,10 +63,9 @@ import org.netbeans.jellytools.nodes.Node;
 public class CreateVisualMIDlet extends org.netbeans.performance.test.utilities.PerformanceTestCase {
 
     private NewFileNameLocationStepOperator location;
-    private NewFileWizardOperator wizard ;
-        
-    private static String testProjectName = "MobileApplicationVisualMIDlet";  
-    
+    private static String testProjectName = "MobileApplicationVisualMIDlet";
+    private String midletName;
+
     /**
      * Creates a new instance of CreateVisualMIDlet
      * @param testName the name of the test
@@ -75,9 +73,9 @@ public class CreateVisualMIDlet extends org.netbeans.performance.test.utilities.
     public CreateVisualMIDlet(String testName) {
         super(testName);
         expectedTime = 10000;
-        WAIT_AFTER_OPEN=4000;
+        WAIT_AFTER_OPEN = 4000;
     }
-    
+
     /**
      * Creates a new instance of CreateVisualMIDlet
      * @param testName the name of the test
@@ -86,20 +84,17 @@ public class CreateVisualMIDlet extends org.netbeans.performance.test.utilities.
     public CreateVisualMIDlet(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         expectedTime = 10000;
-        WAIT_AFTER_OPEN=4000;
+        WAIT_AFTER_OPEN = 4000;
     }
-    
-  
-    
-    public void initialize(){
-                
-        ProjectSupport.openProject(System.getProperty("xtest.tmpdir")+File.separator+testProjectName);
-        new CloseAllDocumentsAction().performAPI();
 
+    @Override
+    public void initialize() {
+        ProjectSupport.openProject(System.getProperty("xtest.tmpdir") + File.separator + testProjectName);
+        new CloseAllDocumentsAction().performAPI();
     }
-    
-    public void prepare(){
-  
+
+    public void prepare() {
+
         Node pNode = new ProjectsTabOperator().getProjectRootNode(testProjectName);
         pNode.select();
 
@@ -107,27 +102,40 @@ public class CreateVisualMIDlet extends org.netbeans.performance.test.utilities.
         wizard.selectCategory("MIDP"); //NOI18N
         wizard.selectFileType("Visual MIDlet"); //NOI18N
         wizard.next();
-        
+
         new EventTool().waitNoEvent(1000);
         location = new NewFileNameLocationStepOperator();
-        location.txtObjectName().setText("VisualMIDlet_"+System.currentTimeMillis());
-    
-    }
-    
-    public ComponentOperator open(){
-      location.finish();
-       return null;
-    }
-    
-    public void close(){
-        new CloseAllDocumentsAction().performAPI(); //avoid issue 68671 - editors are not closed after closing project by ProjectSupport
+        midletName = "VisualMIDlet_" + System.currentTimeMillis();
+        location.txtObjectName().setText(midletName);
     }
 
-    protected void shutdown() {
-         ProjectSupport.closeProject(testProjectName);
-//    new CloseAllDocumentsAction().performAPI(); //avoid issue 68671 - editors are not closed after closing project by ProjectSupport      
+    public ComponentOperator open() {
+        location.finish();
+        return null;
     }
-    
+
+    @Override
+    public void close() {
+        new Thread("Question dialog discarder") {
+
+            @Override
+            public void run() {
+                try {
+                    new JButtonOperator(new JDialogOperator("Question"), "Discard").push();
+                } catch (Exception e) {
+                    // There is no need to care about this exception as this dialog is optional 
+                    e.printStackTrace();
+                }
+            }
+        }.start();
+        MIDletEditorOperator.findMIDletEditorOperator(midletName + ".java").close();
+    }
+
+    @Override
+    protected void shutdown() {
+        ProjectSupport.closeProject(testProjectName);
+    }
+
     public static void main(java.lang.String[] args) {
         junit.textui.TestRunner.run(new CreateVisualMIDlet("measureTime"));
     }

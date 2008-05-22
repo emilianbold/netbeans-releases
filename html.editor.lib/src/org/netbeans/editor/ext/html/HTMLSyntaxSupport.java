@@ -822,12 +822,14 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
         for( elem= elem.getPrevious() ; elem != null; elem = elem.getPrevious() ) {
             if( elem.getType() == SyntaxElement.TYPE_ENDTAG) { // NOI18N
                 DTD.Element tag = dtd.getElement( ((SyntaxElement.Named)elem).getName().toUpperCase() );
-                if(tag != null && !tag.isEmpty()) stack.push( ((SyntaxElement.Named)elem).getName().toUpperCase() );
+                if(tag != null) {
+                    stack.push( ((SyntaxElement.Named)elem).getName().toUpperCase() );
+                }
             } else if(elem.getType() == SyntaxElement.TYPE_TAG) { //now </ and > are returned as SyntaxElement.TAG so I need to filter them  NOI18N
                 DTD.Element tag = dtd.getElement( ((SyntaxElement.Tag)elem).getName().toUpperCase() );
                 
                 if( tag == null ) continue; // Unknown tag - ignore
-                if( tag.isEmpty() ) continue; // ignore empty Tags - they are like start and imediate end
+                if(((SyntaxElement.Tag)elem).isEmpty() ) continue; // ignore empty Tags - they are like start and imediate end
                 
                 String name = tag.getName();
                 
@@ -856,7 +858,7 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
                 String tagName = ((SyntaxElement.Named)elem).getName();
                 //check if the tag has required endtag
                 Element dtdElem = getDTD().getElement(tagName.toUpperCase());
-                if( dtdElem == null || !dtdElem.isEmpty()) {
+                if(!((SyntaxElement.Tag)elem).isEmpty() && (dtdElem == null || !dtdElem.isEmpty())) {
                     CompletionItem eti = new HTMLCompletionQuery.AutocompleteEndTagItem(tagName, offset);
                     l.add(eti);
                 }

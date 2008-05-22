@@ -153,7 +153,14 @@ made subject to such option by the copyright holder.
                 <xsl:variable name="catalog" select = "jaxws:catalog-file"/>
                 <target name="wsimport-client-check-{$wsname}" depends="wsimport-init">
                     <condition property="wsimport-client-{$wsname}.notRequired">
-                        <available file="${{build.generated.dir}}/wsimport/client/{$package_path}" type="dir"/>
+                        <xsl:choose>
+                            <xsl:when test="jaxws:package-name">
+                                <available file="${{build.generated.dir}}/wsimport/client/{$package_path}" type="dir"/>    
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <available file="${{build.generated.dir}}/wsimport/client/dummy" type="dir"/>
+                            </xsl:otherwise>
+                        </xsl:choose>
                     </condition>
                 </target>
                 <target name="wsimport-client-{$wsname}" depends="wsimport-init,wsimport-client-check-{$wsname}" unless="wsimport-client-{$wsname}.notRequired">

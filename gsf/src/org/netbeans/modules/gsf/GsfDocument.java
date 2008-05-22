@@ -86,6 +86,7 @@ public class GsfDocument extends NbEditorDocument {
     }
 
     /** Get the formatter for this document. */
+    @Override
     public Formatter getFormatter() {
         if (formatter == null) {
             // NbDocument will go looking in the settings map for a formatter - let's make
@@ -103,7 +104,10 @@ public class GsfDocument extends NbEditorDocument {
     public int getShiftWidth() {
         org.netbeans.modules.gsf.api.Formatter f = language.getFormatter();
         if (f != null) {
-            return f.indentSize();
+            int shiftWidth = f.indentSize();
+            if (shiftWidth > 0) {
+                return shiftWidth;
+            }
         }
         return super.getShiftWidth();
     }

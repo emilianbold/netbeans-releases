@@ -19,9 +19,12 @@
 package org.netbeans.modules.xslt.tmap.model.impl;
 
 import java.util.List;
+import org.netbeans.modules.xslt.tmap.model.api.Import;
 import org.netbeans.modules.xslt.tmap.model.api.Service;
+import org.netbeans.modules.xslt.tmap.model.api.TMapAttributes;
 import org.netbeans.modules.xslt.tmap.model.api.TMapVisitor;
 import org.netbeans.modules.xslt.tmap.model.api.TransformMap;
+import org.netbeans.modules.xslt.tmap.model.api.events.VetoException;
 import org.w3c.dom.Element;
 
 /**
@@ -64,5 +67,33 @@ public class TransformMapImpl extends TMapComponentContainerImpl
     
     public Class<TransformMap> getComponentType() {
         return TransformMap.class;
+    }
+
+    public String getTargetNamespace() {
+        return getAttribute(TMapAttributes.TARGET_NAMESPACE);
+    }
+
+    public void setTargetNamespace(String value) throws VetoException {
+        setAttribute(TransformMap.TARGET_NAMESPACE, TMapAttributes.TARGET_NAMESPACE, value);
+    }
+
+    public int getSizeOfImports() {
+        return getChildren( Import.class ).size();
+    }
+
+    public List<Import> getImports() {
+        return getChildren(Import.class);
+    }
+
+    public void addImport(Import impt, int position) {
+        insertAtIndex( Import.TYPE.getTagName() , impt, position );
+    }
+
+    public void addImport(Import impt) {
+        addBefore( Import.TYPE.getTagName(), impt , TYPE.getChildTypes());
+    }
+
+    public void removeImport(Import impt) {
+        removeChild(TYPE.getTagName(), impt);
     }
 }

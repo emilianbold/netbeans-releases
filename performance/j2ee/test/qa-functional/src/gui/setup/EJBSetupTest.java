@@ -65,12 +65,12 @@ public class EJBSetupTest extends org.netbeans.junit.NbTestCase {
         ProjectSupport.waitScanFinished();
         ProjectSupport.openProject(System.getProperty("xtest.tmpdir")+"/perf/TestApplication/TestApplication-war");
         ProjectSupport.waitScanFinished();
-        ProjectSupport.openProject(System.getProperty("xtest.tmpdir")+"/perf/DeployTest");
+/*        ProjectSupport.openProject(System.getProperty("xtest.tmpdir")+"/perf/DeployTest");
         ProjectSupport.waitScanFinished();
         ProjectSupport.openProject(System.getProperty("xtest.tmpdir")+"/perf/DeployTest/DeployTest-ejb");
         ProjectSupport.waitScanFinished();
         ProjectSupport.openProject(System.getProperty("xtest.tmpdir")+"/perf/DeployTest/DeployTest-war");
-        ProjectSupport.waitScanFinished();
+        ProjectSupport.waitScanFinished();*/
         //waitForScan();
     }
     
@@ -135,6 +135,10 @@ public class EJBSetupTest extends org.netbeans.junit.NbTestCase {
                                                                                                       
     }
 
+    public void testJAXRPC() {
+       new JButtonOperator(new NbDialogOperator("Warning")).push();
+       new JButtonOperator(new NbDialogOperator("Warning")).push();
+    }
     
     private void waitForScan() {
         // "Scanning Project Classpaths"

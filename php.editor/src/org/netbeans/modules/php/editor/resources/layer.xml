@@ -31,7 +31,7 @@
                 </file>
                 
                 <file name="completion.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.Completable"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.CodeCmpletionHandler"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.php.editor.PHPCodeCompletion"/>
                 </file>
 
@@ -44,24 +44,115 @@
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.SemanticAnalyzer"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.php.editor.parser.SemanticAnalysis"/>
                 </file>
+                
+                <file name="structure.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.StructureScanner"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.php.editor.parser.PhpStructureScanner"/>
+                </file>
+                
+                <file name="declarationfinder.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.DeclarationFinder"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.php.editor.nav.DeclarationFinderImpl"/>
+                </file>
+                
+                <file name="occurrences.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.OccurrencesFinder"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.php.editor.nav.OccurrencesFinderImpl"/>
+                </file>
+                
+                <file name="formatter.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.Formatter"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.php.editor.indent.PHPFormatter"/>
+                </file>
+                
+                <file name="bracket.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.KeystrokeHandler"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.php.editor.indent.PHPBracketCompleter"/>
+                </file>
+                
+                <file name="renamer.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.InstantRenamer"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.php.editor.nav.InstantRenamerImpl"/>
+                </file>
+                
             </folder>
         </folder>
     </folder>
     <folder name="Editors">
         <folder name="text">
             <folder name="x-php5">
-                <file name="org-netbeans-modules-php-editor-indent-PHPIndentTaskFactory.instance"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.editor.resources.Bundle"/>
+                
+                <file name="language.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.editor.lexer.PHPTokenId.language"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.api.lexer.Language"/>
+                </file>
                 
                 <folder name="FontsColors">
                     <folder name="NetBeans">
                         <folder name="Defaults">
-                            <file name="fontsColors.xml" url="fontsColors.xml">
+                            <file name="org-netbeans-modules-php-editor-fontsColors.xml" url="fontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.editor.resources.Bundle"/>
                             </file>
                         </folder>
                     </folder>
                 </folder>
                 
+                <folder name="CodeTemplates">
+                    <folder name="Defaults">
+                        <file name="org-netbeans-modules-php-editor-codetemplates.xml" url="code-templates.xml">
+                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.editor.resources.Bundle"/>
+                        </file>
+                    </folder>
+                </folder>
+                
+                <folder name="CompletionProviders">
+                    <file name="org-netbeans-modules-editor-html-HTMLCompletionProvider.instance"/>
+                    <file name="org-netbeans-modules-php-editor-FSCompletion.instance"/>
+                </folder>
+                
+                <!--issue #127161:-->
+                <folder name="Popup">
+                    <file name="in-place-refactoring">
+                        <attr name="position" intvalue="680" />
+                    </file>
+                    <folder name="goto">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.editor.resources.Bundle"/>
+                        <attr name="position" intvalue="500" />
+                        <file name="goto-declaration">
+                            <attr name="position" intvalue="500" />
+                        </file>
+                        <file name="goto">
+                            <attr name="position" intvalue="600" />
+                        </file>
+                    </folder>
+                    <file name="SeparatorBeforeCut.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
+                        <attr name="position" intvalue="1200" />
+                    </file>
+                    <file name="format">
+                        <attr name="position" intvalue="750" />
+                    </file>
+                    <file name="SeparatorAfterFormat.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
+                        <attr name="position" intvalue="780" />
+                    </file>
+                </folder>
+                <!--end of issue #127161-->
+                
+                <!-- associating platte with the mime type -->
+                <file name="PaletteFactory.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.spi.palette.PaletteController"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.editor.palette.PHPPaletteFactory.getPalette"/>
+                </file>
+                
+            </folder>
+            <folder name="x-php-doccomment">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.editor.resources.Bundle"/>
+                <file name="language.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.editor.lexer.PHPDocCommentTokenId.language"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.api.lexer.Language"/>
+                </file>
             </folder>
         </folder>
     </folder>
@@ -71,9 +162,35 @@
                 <file name="x-php5" url="PHP5Example"/>
             </folder>
         </folder>
-        <file name="RubyOptions.instance">
-            <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.RubyOptionsCategory"/>
-            <attr name="position" intvalue="305"/>
-        </file>     
     </folder>
+    
+    <!-- registering PHP palette -->
+    <folder name="Menu">
+        <folder name="Tools">
+            <folder name="PaletteManager">
+                <file name="org-netbeans-modules-html-palette-HTMLPaletteCustomizerAction.instance_hidden"/>
+                <file name="org-netbeans-modules-php-editor-palette-PHPPaletteCustomizerAction.instance">
+                    <attr name="position" intvalue="1200"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
+    
+    <folder name="Palettes">
+        <folder name="PHP">
+
+            <file name="HTML.shadow">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.editor.resources.Bundle"/>
+                <attr name="originalFile" stringvalue="HTMLPalette/HTML"/>
+                <attr name="position" intvalue="100"/>
+            </file>
+
+            <file name="HTML_Forms.shadow">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.editor.resources.Bundle"/>
+                <attr name="originalFile" stringvalue="HTMLPalette/HTML_Forms"/>
+                <attr name="position" intvalue="200"/>
+            </file>
+
+        </folder>    
+     </folder>
 </filesystem>

@@ -105,6 +105,10 @@ public abstract class Constants {
     /** Name of client property (of Boolean type) which says whether the TopComponent is allowed
      * to be docked anywhere (even crossing view-editor border). */
     public static final String TOPCOMPONENT_ALLOW_DOCK_ANYWHERE = "TopComponentAllowDockAnywhere"; // NOI18N
+    
+    /** Name of client property (of Boolean type) which says whether position in model
+     * of the TopComponent which is nonpersistent when closed should be kept. */
+    public static final String KEEP_NON_PERSISTENT_TC_IN_MODEL_WHEN_CLOSED = "KeepNonPersistentTCInModelWhenClosed"; // NOI18N
 
     /** Client property to distinguish JWindows/JDialogs used as ui elements
      * for separate modes - floating windows.

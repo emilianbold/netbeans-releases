@@ -11,7 +11,7 @@
                 <friend>org.netbeans.modules.cnd.make2netbeans</friend>
                 <friend>org.netbeans.modules.cnd.modelimpl</friend>
                 <friend>org.netbeans.modules.cnd.folding</friend>
-                <friend>org.netbeans.modules.fortran</friend>
+                <friend>org.netbeans.modules.cnd.fortran</friend>
                 <package>antlr</package>
                 <package>antlr.ASdebug</package>
                 <package>antlr.collections</package>

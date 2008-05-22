@@ -39,66 +39,73 @@
 
 package org.netbeans.modules.php.project.ui.wizards;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.BorderLayout;
 import javax.swing.JPanel;
 import javax.swing.MutableComboBoxModel;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.openide.util.ChangeSupport;
+import org.netbeans.modules.php.project.ui.CopyFilesVisual;
+import org.netbeans.modules.php.project.ui.LocalServer;
+import org.netbeans.modules.php.project.ui.WebFolderNameProvider;
 import org.openide.util.NbBundle;
 
 /**
  * @author Tomas Mysik
  */
-public class ConfigureServerPanelVisual extends JPanel implements ActionListener, ChangeListener {
-    private static final long serialVersionUID = -105799339751969L;
+public class ConfigureServerPanelVisual extends JPanel {
+    private static final long serialVersionUID = 186471932981722630L;
 
-    private final ConfigureServerPanel wizardPanel;
-    private final WebFolderNameProvider webFolderNameProvider;
-    private final ChangeSupport changeSupport = new ChangeSupport(this);
+    private final CopyFilesVisual copyFilesVisual;
 
-    private MutableComboBoxModel localServerComboBoxModel;
-    private final LocalServer.ComboBoxEditor localServerComboBoxEditor = new LocalServer.ComboBoxEditor(this);
-
+    /** Creates new form ConfigureServerPanelVisual */
     public ConfigureServerPanelVisual(ConfigureServerPanel wizardPanel, WebFolderNameProvider webFolderNameProvider) {
-        this.wizardPanel = wizardPanel;
-        this.webFolderNameProvider = webFolderNameProvider;
 
         // Provide a name in the title bar.
-        setName(NbBundle.getMessage(ConfigureProjectPanelVisual.class, "LBL_ProjectServer"));
+        setName(NbBundle.getMessage(ConfigureServerPanelVisual.class, "LBL_ProjectServer"));
         putClientProperty("WizardPanel_contentSelectedIndex", 1); // NOI18N
         // Step name (actually the whole list for reference).
         putClientProperty("WizardPanel_contentData", wizardPanel.getSteps()); // NOI18N
 
         initComponents();
 
-        init();
+        copyFilesVisual = new CopyFilesVisual(webFolderNameProvider);
+        copyFilesPanel.add(BorderLayout.NORTH, copyFilesVisual);
     }
 
-    private void init() {
-        copyFilesCheckBox.addActionListener(this);
-        changeLocalServerFieldsState(false);
-
-        localServerComboBoxModel = new LocalServer.ComboBoxModel(new LocalServer((String) null));
-
-        localServerComboBox.setModel(localServerComboBoxModel);
-        localServerComboBox.setRenderer(new LocalServer.ComboBoxRenderer());
-        localServerComboBox.setEditor(localServerComboBoxEditor);
+    public void addServerListener(ChangeListener listener) {
+        copyFilesVisual.addChangeListener(listener);
     }
 
-    void addServerListener(ChangeListener listener) {
-        changeSupport.addChangeListener(listener);
+    public void removeServerListener(ChangeListener listener) {
+        copyFilesVisual.removeChangeListener(listener);
     }
 
-    void removeServerListener(ChangeListener listener) {
-        changeSupport.removeChangeListener(listener);
+
+    public boolean isCopyFiles() {
+        return copyFilesVisual.isCopyFiles();
     }
 
-    private void changeLocalServerFieldsState(boolean state) {
-        localServerComboBox.setEnabled(state);
-        locateButton.setEnabled(state);
-        browseButton.setEnabled(state);
+    public void setCopyFiles(boolean copyFiles) {
+        copyFilesVisual.setCopyFiles(copyFiles);
+    }
+
+    public LocalServer getLocalServer() {
+        return copyFilesVisual.getLocalServer();
+    }
+
+    public MutableComboBoxModel getLocalServerModel() {
+        return copyFilesVisual.getLocalServerModel();
+    }
+
+    public void setLocalServerModel(MutableComboBoxModel localServers) {
+        copyFilesVisual.setLocalServerModel(localServers);
+    }
+
+    public void selectLocalServer(LocalServer localServer) {
+        copyFilesVisual.selectLocalServer(localServer);
+    }
+
+    public void setState(boolean enabled) {
+        copyFilesVisual.setState(enabled);
     }
 
     /** This method is called from within the constructor to
@@ -110,133 +117,30 @@ public class ConfigureServerPanelVisual extends JPanel implements ActionListener
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        copyFilesCheckBox = new javax.swing.JCheckBox();
-        localServerInfoLabel = new javax.swing.JLabel();
-        localServerComboBox = new javax.swing.JComboBox();
-        localServerLabel = new javax.swing.JLabel();
-        locateButton = new javax.swing.JButton();
-        browseButton = new javax.swing.JButton();
+        copyFilesPanel = new javax.swing.JPanel();
 
-        org.openide.awt.Mnemonics.setLocalizedText(copyFilesCheckBox, org.openide.util.NbBundle.getMessage(ConfigureServerPanelVisual.class, "LBL_CopyFiles")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(localServerInfoLabel, org.openide.util.NbBundle.getMessage(ConfigureServerPanelVisual.class, "TXT_LocalServerFolder")); // NOI18N
-
-        localServerComboBox.setEditable(true);
-
-        localServerLabel.setLabelFor(localServerComboBox);
-        org.openide.awt.Mnemonics.setLocalizedText(localServerLabel, org.openide.util.NbBundle.getMessage(ConfigureServerPanelVisual.class, "LBL_LocalServerFolder")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(locateButton, org.openide.util.NbBundle.getMessage(ConfigureServerPanelVisual.class, "LBL_LocateLocalServer")); // NOI18N
-        locateButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                locateButtonActionPerformed(evt);
-            }
-        });
-
-        org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(ConfigureServerPanelVisual.class, "LBL_BrowseLocalServer")); // NOI18N
-        browseButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                browseButtonActionPerformed(evt);
-            }
-        });
+        copyFilesPanel.setLayout(new java.awt.BorderLayout());
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(localServerLabel)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(localServerComboBox, 0, 205, Short.MAX_VALUE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(locateButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(browseButton))
-                    .add(copyFilesCheckBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 339, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(localServerInfoLabel)))
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .add(0, 0, 0)
+                .add(copyFilesPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 388, Short.MAX_VALUE)
                 .addContainerGap())
         );
-
-        layout.linkSize(new java.awt.Component[] {browseButton, locateButton}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
-
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(copyFilesCheckBox)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(localServerInfoLabel)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(browseButton)
-                    .add(localServerLabel)
-                    .add(locateButton)
-                    .add(localServerComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .add(copyFilesPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void locateButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_locateButtonActionPerformed
-        Utils.locateLocalServerAction();
-    }//GEN-LAST:event_locateButtonActionPerformed
-
-    private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
-        Utils.browseLocalServerAction(this, localServerComboBox, localServerComboBoxModel,
-                webFolderNameProvider.getWebFolderName());
-    }//GEN-LAST:event_browseButtonActionPerformed
-
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton browseButton;
-    private javax.swing.JCheckBox copyFilesCheckBox;
-    private javax.swing.JComboBox localServerComboBox;
-    private javax.swing.JLabel localServerInfoLabel;
-    private javax.swing.JLabel localServerLabel;
-    private javax.swing.JButton locateButton;
+    private javax.swing.JPanel copyFilesPanel;
     // End of variables declaration//GEN-END:variables
 
-    void setLocalServerState(boolean enabled) {
-        copyFilesCheckBox.setEnabled(enabled);
-        changeLocalServerFieldsState(enabled && copyFilesCheckBox.isSelected());
-    }
-
-    LocalServer getSourcesLocation() {
-        return (LocalServer) localServerComboBox.getSelectedItem();
-    }
-
-    MutableComboBoxModel getLocalServerModel() {
-        return localServerComboBoxModel;
-    }
-
-    void setLocalServerModel(MutableComboBoxModel localServers) {
-        localServerComboBoxModel = localServers;
-        localServerComboBox.setModel(localServerComboBoxModel);
-    }
-
-    void selectSourcesLocation(LocalServer localServer) {
-        localServerComboBox.setSelectedItem(localServer);
-    }
-
-    boolean isCopyFiles() {
-        return copyFilesCheckBox.isSelected();
-    }
-
-    void setCopyFiles(boolean copyFiles) {
-        copyFilesCheckBox.setSelected(copyFiles);
-    }
-
-    // listeners
-    public void actionPerformed(ActionEvent e) {
-        changeLocalServerFieldsState(copyFilesCheckBox.isSelected());
-        changeSupport.fireChange();
-    }
-
-    public void stateChanged(ChangeEvent e) {
-        changeSupport.fireChange();
-    }
 }

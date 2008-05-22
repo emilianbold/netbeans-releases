@@ -85,13 +85,15 @@ public class CompletionContext {
     private XMLSyntaxSupport support;
     private FileObject fileObject;
     private BaseDocument internalDoc = new BaseDocument(XMLKit.class, false);
+    private int queryType;
 
-    public CompletionContext(Document doc, int caretOffset) {
+    public CompletionContext(Document doc, int caretOffset, int queryType) {
         this.caretOffset = caretOffset;
         this.fileObject = NbEditorUtilities.getFileObject(doc);
+        this.queryType = queryType;
         initContext((BaseDocument) doc);
     }
-    
+
     private void initContext(BaseDocument bDoc) {
         boolean copyResult = copyDocument(bDoc, internalDoc);
         if(!copyResult) {
@@ -228,21 +230,19 @@ public class CompletionContext {
             case XMLDefaultTokenContext.WS_ID:
                 completionType = CompletionType.NONE;
                 
-                if(token.getOffset() == caretOffset) {
-                    break;
-                }
-                
                 TokenItem prev = token.getPrevious();
                 while (prev != null &&
                         (prev.getTokenID().getNumericID() == XMLDefaultTokenContext.WS_ID)) {
                     prev = prev.getPrevious();
                 }
                 
-                if(prev.getTokenID().getNumericID() == XMLDefaultTokenContext.ARGUMENT_ID) {
+                if(prev.getTokenID().getNumericID() == XMLDefaultTokenContext.ARGUMENT_ID
+                        && prev.getOffset() + prev.getImage().length() == caretOffset) {
                     typedChars = prev.getImage();
                     completionType = CompletionType.ATTRIBUTE;
-                } else if ((prev.getTokenID().getNumericID() == XMLDefaultTokenContext.VALUE_ID) ||
-                        (prev.getTokenID().getNumericID() == XMLDefaultTokenContext.TAG_ID)) {
+                } else if (((prev.getTokenID().getNumericID() == XMLDefaultTokenContext.VALUE_ID) ||
+                        (prev.getTokenID().getNumericID() == XMLDefaultTokenContext.TAG_ID))
+                        && !tokenBoundary) {
                     completionType = CompletionType.ATTRIBUTE;
                 }
                 break;
@@ -318,5 +318,13 @@ public class CompletionContext {
         }
         
         return existingAttributes;
+    }
+
+    public int getQueryType() {
+        return queryType;
+    }
+    
+    public Document getDocument() {
+        return internalDoc;
     }
 }

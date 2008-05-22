@@ -97,8 +97,8 @@ public class PartitionedWindowCustomEditor extends TcgComponentNodePropertyEdito
         
         protected void initialize() {
             try {
-            	mComponent = getOperatorComponent();
-            	getContentPane().setLayout(new GridBagLayout());
+                mComponent = getOperatorComponent();
+                getContentPane().setLayout(new GridBagLayout());
                 GridBagConstraints gbc = new GridBagConstraints();
                 gbc.insets = new Insets(3, 3, 3, 3);
                 int gGridy = 0;
@@ -274,8 +274,8 @@ public class PartitionedWindowCustomEditor extends TcgComponentNodePropertyEdito
         
         public void validateContent(PropertyChangeEvent evt) throws PropertyVetoException {
             try {
-            	OperatorComponentContainer ocContainer = mModel.getPlanComponent().getOperatorComponentContainer();
-            	
+                OperatorComponentContainer ocContainer = mModel.getPlanComponent().getOperatorComponentContainer();
+                
                 // name
                 mNamePanel.validateContent(evt);
                 String newName = mNamePanel.getStringValue();

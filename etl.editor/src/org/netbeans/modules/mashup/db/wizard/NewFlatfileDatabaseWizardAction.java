@@ -29,6 +29,7 @@ public final class NewFlatfileDatabaseWizardAction extends CallableSystemAction 
     public static final String DEFAULT_FLATFILE_JDBC_URL_PREFIX = "jdbc:axiondb:";
     private static transient final Logger mLogger = Logger.getLogger(NewFlatfileDatabaseWizardAction.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
+    public String nbBundle6 = mLoc.t("BUND773: Create Mashup Database...");
     public String nbBundle1 = mLoc.t("BUND265: Create Mashup Database");
     public void performAction() {
         WizardDescriptor wizardDescriptor = new WizardDescriptor(getPanels());
@@ -88,7 +89,7 @@ public final class NewFlatfileDatabaseWizardAction extends CallableSystemAction 
     }
 
     public String getName() {
-        return nbBundle1.substring(15);
+        return nbBundle6.substring(15);
     }
 
     @Override
@@ -130,6 +131,7 @@ public final class NewFlatfileDatabaseWizardAction extends CallableSystemAction 
             location = ETLEditorSupport.PRJ_PATH + "\\nbproject\\private\\databases";
         } else {
             location = getDefaultWorkingFolder();
+			name = name + "_" + System.currentTimeMillis();
         }       
         MashupTableWizardIterator.IS_PROJECT_CALL = false;
         boolean status = false;

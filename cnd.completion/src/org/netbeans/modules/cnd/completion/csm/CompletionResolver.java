@@ -125,6 +125,9 @@ public interface CompletionResolver {
     public static final int RESOLVE_VARIABLES              = RESOLVE_GLOB_VARIABLES | RESOLVE_LIB_VARIABLES | RESOLVE_CLASS_FIELDS | RESOLVE_FILE_LOCAL_VARIABLES;
     
     public static final int FILE_LOCAL_ELEMENTS            = RESOLVE_FILE_LOCAL_FUNCTIONS | RESOLVE_FILE_LOCAL_MACROS | RESOLVE_FILE_LOCAL_VARIABLES;
+    
+    public static final int RESOLVE_LIB_ELEMENTS           = RESOLVE_LIB_CLASSES | RESOLVE_LIB_ENUMERATORS |
+            RESOLVE_LIB_FUNCTIONS | RESOLVE_LIB_MACROS | RESOLVE_LIB_NAMESPACES | RESOLVE_LIB_VARIABLES | RESOLVE_FILE_LIB_MACROS;
     /**
      * specify what to resolve by this resolver
      */

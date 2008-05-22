@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--       
-*     Copyright © 2007 Sun Microsystems, Inc. All rights reserved.
+*     Copyright ï¿½ 2008 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 -->
 <html>
@@ -11,10 +11,34 @@
 <body>
 <h2>Enterprise Application Client Project Properties Dialog Box: Libraries</h2>
 <p> <small><a href="#seealso">See Also</a>&nbsp; </small> 
-<p>The Libraries panel enables you to register libraries on a project's various 
-    classpaths as well as set the target Java platform against which all source 
-    files are compiled and run. You open the Enterprise Application Client Properties 
-dialog box by right-clicking any application client node and choosing Properties. </p>
+  <p>The Libraries panel enables you to register libraries on a project's various 
+  classpaths as well as set the target Java platform against which all source 
+  files are compiled and run. You open the Enterprise Application Client Properties 
+  dialog box by right-clicking any application client node and choosing Properties. </p>
+  <p><b>Java Platform.</b> You can use the Java Platform drop-down list to set the specific JDK installation 
+  that the IDE uses to compile and run your project. The IDE adds the selected 
+  platform's libraries to the classpath and uses the platform's executables (such 
+  as <tt>javac</tt> and <tt>java</tt>) to run and build the project. The default 
+  platform for all projects is the platform on which the IDE is running. You can 
+  register additional platforms and attach Javadoc and source files to a platform 
+  by clicking Manage Platforms.</p>
+
+<p><b>Libraries Folder. </b>To make it easier to 
+<a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/project/proj_sharing.html">share libraries</a> among different 
+users and projects, you can set a folder to hold those libraries (or references to 
+those libraries). You can create a new folder or specify an existing folder that 
+already contains copies of the libraries on which your project depends. 
+</p>
+<p>To specify the folder, click Browse. If there is already a libraries folder, a 
+file chooser opens. If there is not a libraries folder, the New Libraries wizard opens. 
+In the New Libraries wizard, you set a libraries folder and then specify how to reference 
+each library. The simplest case is to have the libraries copied to that folder. 
+You can also refer to the libraries in their existing location 
+(with a relative path or an absolute path). If you have specified an existing folder, 
+you also have the option of using copies of libraries that are already in that folder 
+instead of the copies that are contained in the IDE's Library Manager.</p>
+
+
 <p> You can configure the following project classpaths: </p>
 <ul>
 	
@@ -37,10 +61,9 @@ and change the order of classpath elements. You can add any of the following:</p
   <li>If a JAR file with attached souce code and Javadoc documentation is registered
   	with a project as a member of a Java Class Library, you can simply
   	add the JAR file to the classpath and the IDE finds the Javadoc documentation
-  	and source code automatically. <!--You should use the Add Library button if you
-  		want to add a library that contains several JAR files. -->
+  	and source code automatically. 
 	Adding a Java Class Library rather than a regular JAR file also makes it easier for other developers
-  		you share the project with to fix broken references to Javadoc documentation
+        you share the project with to fix broken references to Javadoc documentation
 	and source code. </li>
   <li>Adding a <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
     <param name="content" value="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/project/csh/glossary_freeform.html">
@@ -66,6 +89,7 @@ and change the order of classpath elements. You can add any of the following:</p
   <dt><a name="seealso">See Also</a></dt>
   <dd><a href="../appclient_about.html">About Enterprise Application Clients</a></dd>
   <dd><a href="../appclient_create.html">Creating an Enterprise Application Client</a></dd>
+  <dd><a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/project/proj_sharing.html">Sharing Libraries in a Java Project</a></dd>
   <dd>Enterprise Application Client Properties Dialog Box:</dd>
   <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="appclient_props_sources.html">Sources</a></dd>
   <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="appclient_props_compiling.html">Compiling</a></dd>

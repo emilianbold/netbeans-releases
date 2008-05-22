@@ -33,7 +33,7 @@ public interface TMapComponentFactory extends ComponentFactory<TMapComponent> {
  * 
  * <pre>
  * &lt;?xml version="1.0" encoding="UTF-8" standalone="yes"?&gt;
- * &lt;transformmap xmlns='http://xml.netbeans.org/schema/transformmap'&gt;
+ * &lt;transformmap xmlns='http://www.sun.com/jbi/xsltse/transformmap'&gt;
  *        
  *      &lt;service partnerLinkType="ns0:plt1" roleName="role1"&gt;
  *            &lt;operation opName="operation0"&gt;
@@ -53,6 +53,8 @@ public interface TMapComponentFactory extends ComponentFactory<TMapComponent> {
 
     TransformMap createTransformMap();
     
+    Import createImport();
+
     Service createService();
     
     Operation createOperation();

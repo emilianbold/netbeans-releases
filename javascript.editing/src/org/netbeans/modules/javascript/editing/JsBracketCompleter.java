@@ -61,7 +61,7 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.gsf.api.BracketCompletion;
+import org.netbeans.modules.gsf.api.KeystrokeHandler;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 import org.openide.util.Exceptions;
@@ -90,7 +90,7 @@ import org.openide.util.Exceptions;
  *
  * @author Tor Norbye
  */
-public class JsBracketCompleter implements BracketCompletion {
+public class JsBracketCompleter implements KeystrokeHandler {
     /** When true, automatically reflows comments that are being edited according to the rdoc
      * conventions as well as the right hand side margin
      */
@@ -282,16 +282,23 @@ public class JsBracketCompleter implements BracketCompletion {
         // (in that case we'd notice the brace imbalance, and insert the closing
         // brace on the line below the insert position, and indent properly.
         // Catch this scenario and handle it properly.
-        if ((id == JsTokenId.RBRACE || id == JsTokenId.RBRACKET) && (Utilities.getRowLastNonWhite(doc, offset) == offset)) {
-            int indent = LexUtilities.getLineIndent(doc, offset);
-            StringBuilder sb = new StringBuilder();
-            // XXX On Windows, do \r\n?
-            sb.append("\n"); // NOI18N
-            LexUtilities.indent(sb, indent);
+        if ((id == JsTokenId.RBRACE || id == JsTokenId.RBRACKET) && offset > 0) {
+            Token<? extends JsTokenId> prevToken = LexUtilities.getToken(doc, offset - 1);
+            if (prevToken != null) {
+                JsTokenId prevTokenId = prevToken.id();
+                if (id == JsTokenId.RBRACE && prevTokenId == JsTokenId.LBRACE ||
+                        id == JsTokenId.RBRACKET && prevTokenId == JsTokenId.LBRACKET) {
+                    int indent = LexUtilities.getLineIndent(doc, offset);
+                    StringBuilder sb = new StringBuilder();
+                    // XXX On Windows, do \r\n?
+                    sb.append("\n"); // NOI18N
+                    LexUtilities.indent(sb, indent);
 
-            int insertOffset = offset; // offset < length ? offset+1 : offset;
-            doc.insertString(insertOffset, sb.toString(), null);
-            caret.setDot(insertOffset);
+                    int insertOffset = offset; // offset < length ? offset+1 : offset;
+                    doc.insertString(insertOffset, sb.toString(), null);
+                    caret.setDot(insertOffset);
+                }
+            }
         }
         
         if (id == JsTokenId.WHITESPACE) {

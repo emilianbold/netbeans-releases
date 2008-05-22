@@ -44,12 +44,16 @@ package gui.window;
 import java.awt.Component;
 import java.awt.Container;
 
+import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.PaletteOperator;
 
 import org.netbeans.jemmy.ComponentChooser;
+import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.ContainerOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JListOperator;
+import org.netbeans.jemmy.operators.JMenuBarOperator;
+import org.netbeans.jemmy.operators.JMenuItemOperator;
 
 /**
  *
@@ -83,7 +87,19 @@ public class PaletteComponentOperator extends PaletteOperator {
         
         return new JListOperator((javax.swing.JList) expected);
     }
-    
+    public static PaletteComponentOperator invoke() {
+        PaletteComponentOperator testOp = null;
+        try {
+            testOp = new PaletteComponentOperator();
+        } catch (TimeoutExpiredException tex) {
+            MainWindowOperator mv = MainWindowOperator.getDefault();
+            JMenuBarOperator menuBar = mv.menuBar();
+            JMenuItemOperator item = menuBar.showMenuItem("Window|Palette");
+            item.clickMouse();
+            testOp = new PaletteComponentOperator();
+        }       
+        return testOp;        
+    }
     private static class CategoryListChooser implements ComponentChooser {
         public boolean checkComponent(Component comp) {
             return (comp.getClass().getName().equals("org.netbeans.modules.palette.ui.CategoryList"));

@@ -52,6 +52,7 @@ import javax.swing.event.DocumentEvent;
 import org.netbeans.modules.ruby.platform.PlatformComponentFactory;
 import org.netbeans.modules.ruby.platform.RubyPlatformCustomizer;
 import org.netbeans.modules.ruby.rubyproject.Util;
+import org.netbeans.modules.ruby.rubyproject.ui.wizards.NewRubyProjectWizardIterator.Type;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.util.NbBundle;
@@ -61,10 +62,10 @@ public final class PanelOptionsVisual extends SettingsPanel implements ActionLis
     
     private static boolean lastMainClassCheck = true; // XXX Store somewhere
     
-    private PanelConfigureProject panel;
+    private final PanelConfigureProject panel;
     private boolean valid;
     
-    public PanelOptionsVisual(PanelConfigureProject panel, int type) {
+    PanelOptionsVisual(PanelConfigureProject panel, Type type) {
         initComponents();
         Util.preselectWizardPlatform(platforms);
         this.panel = panel;
@@ -77,21 +78,18 @@ public final class PanelOptionsVisual extends SettingsPanel implements ActionLis
         });
 
         switch (type) {
-//            case NewRubyProjectWizardIterator.TYPE_LIB:
-//                setAsMainCheckBox.setVisible( false );
-//                createMainCheckBox.setVisible( false );
-//                mainClassTextField.setVisible( false );
-//                break;
-            case NewRubyProjectWizardIterator.TYPE_APP:
-                createMainCheckBox.addActionListener( this );
-                createMainCheckBox.setSelected( lastMainClassCheck );
-                mainClassTextField.setEnabled( lastMainClassCheck );
+            case APPLICATION:
+                createMainCheckBox.addActionListener(this);
+                createMainCheckBox.setSelected(lastMainClassCheck);
+                mainClassTextField.setEnabled(lastMainClassCheck);
                 break;
-            case NewRubyProjectWizardIterator.TYPE_EXT:
-                setAsMainCheckBox.setVisible( true );
-                createMainCheckBox.setVisible( false );
-                mainClassTextField.setVisible( false );
+            case EXISTING:
+                setAsMainCheckBox.setVisible(true);
+                createMainCheckBox.setVisible(false);
+                mainClassTextField.setVisible(false);
                 break;
+            default:
+                throw new IllegalStateException("unknown type: " + type);
         }
         
         this.mainClassTextField.getDocument().addDocumentListener( new DocumentListener () {
@@ -250,8 +248,6 @@ public final class PanelOptionsVisual extends SettingsPanel implements ActionLis
         d.putProperty( /*XXX Define somewhere */ "setAsMain", setAsMainCheckBox.isSelected() && setAsMainCheckBox.isVisible() ? Boolean.TRUE : Boolean.FALSE ); // NOI18N
         d.putProperty( /*XXX Define somewhere */ "mainClass", createMainCheckBox.isSelected() && createMainCheckBox.isVisible() ? mainClassTextField.getText() : null ); // NOI18N
         d.putProperty("platform", PlatformComponentFactory.getPlatform(platforms));
-        // XXX
-//        RubyInstallation.getInstance().removePropertyChangeListener(this);
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

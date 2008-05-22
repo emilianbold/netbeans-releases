@@ -43,6 +43,7 @@ package org.netbeans.modules.spring.beans.editor;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Map.Entry;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -125,6 +126,10 @@ public class DocumentContext {
     
     public Collection<String> getDeclaredNamespaces() {
         return declaredNamespaces.values();
+    }
+    
+    public Map<String, String> getDeclaredNamespacesMap() {
+        return declaredNamespaces;
     }
 
     public int getCaretOffset() {

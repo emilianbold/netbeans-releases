@@ -42,9 +42,11 @@ package org.netbeans.modules.timers;
 import java.awt.Component;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.util.logging.Level;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import junit.framework.TestCase;
+import org.netbeans.junit.Log;
 import org.netbeans.junit.MockServices;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -117,6 +119,26 @@ public class ObjectListRendererTest extends TestCase {
         }
         JLabel l = (JLabel)result;
         assertEquals("Name", "Ahoj", l.getText());
+    }
+
+    public void testRenderInvalidDataObject() throws IOException {
+        JList list = new JList();
+        Object wr = new WeakReference<Object>(obj);
+        int index = 0;
+        boolean isSelected = false;
+        boolean cellHasFocus = false;
+        obj.delete();
+        CharSequence log = Log.enable("", Level.WARNING);
+        ObjectListRenderer instance = new ObjectListRenderer();
+        Component result = instance.getListCellRendererComponent(list, wr, index, isSelected, cellHasFocus);
+        if (!(result instanceof JLabel)) {
+            fail("Not JLabel: " + result);
+        }
+        JLabel l = (JLabel)result;
+        assertEquals("Name", obj.getName(), l.getText());
+        if (log.length() > 0) {
+            fail("There should be no warnings!\n" + log);
+        }
     }
 
     public void testRenderNode() {

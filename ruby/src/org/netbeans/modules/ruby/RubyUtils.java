@@ -547,7 +547,7 @@ public class RubyUtils {
         Project p = FileOwnerQuery.getOwner(controllerFile);
         FileObject controllers = p.getProjectDirectory().getFileObject("app/controllers"); // NOI18N
         if (controllers != null) {
-            String relative = controllerFile.getName();;
+            String relative = controllerFile.getName();
             FileObject f = controllerFile.getParent();
             while (f != controllers && f != null) {
                 relative = f.getName() + "/" + relative;

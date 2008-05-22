@@ -57,11 +57,11 @@ import javax.swing.border.EtchedBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Formatter;
+import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.awt.Mnemonics;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 
@@ -248,26 +248,32 @@ ActionListener {
         model.setRightMargin(
             (Integer) sRightMargin.getValue ()
         );
+
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
+            // ignore
+        }
         
         // start formatter
         SwingUtilities.invokeLater (new Runnable () {
             public void run () {
                 epPreview.setText (originalText);
-                Document doc = epPreview.getDocument ();
-                if (doc instanceof BaseDocument) {
-                    BaseDocument bdoc = (BaseDocument)doc;
-                    Formatter formatter = bdoc.getFormatter();
-                    formatter.reformatLock();
-                    bdoc.atomicLock();
-                    try {
-                        formatter.reformat (bdoc, 0, bdoc.getLength());
-                    } catch (BadLocationException ex) {
-                        ex.printStackTrace ();
-                    } finally {
-                        bdoc.atomicUnlock();
-                        formatter.reformatUnlock();
-                    }
-                }
+		BaseDocument doc = (BaseDocument) epPreview.getDocument();
+		Reformat reformat = Reformat.get(doc);
+		reformat.lock();
+		try {
+		    doc.atomicLock();
+		    try {
+			reformat.reformat(0, doc.getLength());
+		    } finally {
+			doc.atomicUnlock();
+		    }
+		} catch (BadLocationException ex) {
+		    Exceptions.printStackTrace(ex);
+		} finally {
+		    reformat.unlock();
+		}
             }
         });
     }

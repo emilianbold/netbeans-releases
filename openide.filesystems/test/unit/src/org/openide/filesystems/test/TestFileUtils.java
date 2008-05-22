@@ -35,12 +35,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.zip.CRC32;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 import static junit.framework.Assert.*;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -78,41 +72,7 @@ public class TestFileUtils {
      */
     public static FileObject writeZipFile(FileObject root, String path, String... entries) throws IOException {
         FileObject fo = FileUtil.createData(root, path);
-        OutputStream os = fo.getOutputStream();
-        ZipOutputStream zos = new ZipOutputStream(os);
-        Set<String> parents = new HashSet<String>();
-        for (String entry : entries) {
-            int colon = entry.indexOf(':');
-            assert colon != -1 : entry;
-            String name = entry.substring(0, colon);
-            assert name.length() > 0 && !name.endsWith("/") && !name.startsWith("/") && name.indexOf("//") == -1: name;
-            for (int i = 0; i < name.length(); i++) {
-                if (name.charAt(i) == '/') {
-                    String parent = name.substring(0, i + 1);
-                    if (parents.add(parent)) {
-                        ZipEntry ze = new ZipEntry(parent);
-                        ze.setMethod(ZipEntry.STORED);
-                        ze.setSize(0);
-                        ze.setCrc(0);
-                        zos.putNextEntry(ze);
-                        zos.closeEntry();
-                    }
-                }
-            }
-            byte[] data = entry.substring(colon + 1).getBytes("UTF-8");
-            ZipEntry ze = new ZipEntry(name);
-            ze.setMethod(ZipEntry.STORED);
-            ze.setSize(data.length);
-            CRC32 crc = new CRC32();
-            crc.update(data);
-            ze.setCrc(crc.getValue());
-            zos.putNextEntry(ze);
-            zos.write(data, 0, data.length);
-            zos.closeEntry();
-        }
-        zos.finish();
-        zos.close();
-        os.close();
+        org.openide.util.test.TestFileUtils.writeZipFile(fo.getOutputStream(), entries);
         return fo;
     }
 

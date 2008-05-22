@@ -55,11 +55,8 @@ import org.openide.util.NbBundle;
 import org.openide.util.Lookup;
 import org.openide.windows.*;
 
-import org.netbeans.api.diff.Diff;
 //import org.netbeans.api.diff.DiffWrapperPanel;
-import org.netbeans.api.diff.Difference;
-import org.netbeans.api.diff.DiffView;
-import org.netbeans.api.diff.StreamSource;
+import org.netbeans.api.diff.*;
 import org.netbeans.spi.diff.*;
 import org.netbeans.modules.diff.builtin.visualizer.DiffViewImpl;
 import org.netbeans.modules.diff.builtin.visualizer.editable.EditableDiffView;
@@ -371,6 +368,7 @@ public class DefaultDiff extends Diff implements Serializable {
             add(c, BorderLayout.CENTER);            
             getAccessibleContext().setAccessibleName(NbBundle.getMessage(DiffTopComponent.class, "ACSN_Diff_Top_Component")); // NOI18N
             getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DiffTopComponent.class, "ACSD_Diff_Top_Component")); // NOI18N
+            setName(c.getName());
         }
         
         public int getPersistenceType(){

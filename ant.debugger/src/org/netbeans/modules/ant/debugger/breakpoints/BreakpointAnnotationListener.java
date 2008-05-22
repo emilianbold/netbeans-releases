@@ -50,6 +50,7 @@ import org.netbeans.api.debugger.DebuggerManager;
 
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.modules.ant.debugger.DebuggerAnnotation;
+import org.netbeans.modules.ant.debugger.DebuggerBreakpointAnnotation;
 
 
 /**
@@ -76,7 +77,7 @@ implements PropertyChangeListener {
     */
     public void breakpointAdded (Breakpoint b) {
         if (! (b instanceof AntBreakpoint)) return;
-        addAnnotation (b);
+        addAnnotation ((AntBreakpoint) b);
     }
 
     /**
@@ -98,17 +99,17 @@ implements PropertyChangeListener {
     public void propertyChange (PropertyChangeEvent evt) {
         if (evt.getPropertyName () != Breakpoint.PROP_ENABLED) return;
         removeAnnotation ((Breakpoint) evt.getSource ());
-        addAnnotation ((Breakpoint) evt.getSource ());
+        addAnnotation ((AntBreakpoint) evt.getSource ());
     }
     
-    private void addAnnotation (Breakpoint b) {
+    private void addAnnotation (AntBreakpoint b) {
         breakpointToAnnotation.put (
             b,
-            new DebuggerAnnotation (
+            new DebuggerBreakpointAnnotation (
                 b.isEnabled () ? 
-                    DebuggerAnnotation.BREAKPOINT_ANNOTATION_TYPE :
-                    DebuggerAnnotation.DISABLED_BREAKPOINT_ANNOTATION_TYPE, 
-                ((AntBreakpoint) b).getLine ()
+                    DebuggerBreakpointAnnotation.BREAKPOINT_ANNOTATION_TYPE :
+                    DebuggerBreakpointAnnotation.DISABLED_BREAKPOINT_ANNOTATION_TYPE, 
+                b
             )
         );
         b.addPropertyChangeListener (
@@ -118,7 +119,7 @@ implements PropertyChangeListener {
     }
     
     private void removeAnnotation (Breakpoint b) {
-        DebuggerAnnotation annotation = (DebuggerAnnotation) 
+        DebuggerBreakpointAnnotation annotation = (DebuggerBreakpointAnnotation) 
             breakpointToAnnotation.remove (b);
         if (annotation == null) return;
         annotation.detach ();

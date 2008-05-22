@@ -72,7 +72,14 @@ import org.netbeans.jemmy.operators.JMenuBarOperator;
 import java.io.File;
 import org.netbeans.jellytools.MainWindowOperator;
 import java.awt.event.KeyEvent;
+import java.awt.event.InputEvent;
 import java.awt.Robot;
+import org.netbeans.jemmy.operators.JEditorPaneOperator;
+import org.netbeans.jemmy.operators.JCheckBoxOperator;
+import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.FilesTabOperator;
+import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
+import org.netbeans.jemmy.JemmyException;
 
 /**
  *
@@ -81,177 +88,358 @@ import java.awt.Robot;
 
 public class AcceptanceTestCase extends JellyTestCase {
     
-    static final String [] m_aTestMethods = {
-        "CreateJavaApplication",
-        "Compile"
-        //"CreateJAXBBinding",
-        //"AddJAXBMarshaling",
-        //"ExecuteJavaApplication"
-        /*
-        "createNewSchema",
-                "createSchemaComponents",
-                "customizeSchema",
-                "checkSourceCRC",
-                "refactorComplexType",
-                "applyDesignPattern"
-        */
-    };
-    
-    static final String TEST_JAVA_APP_NAME = "java4jaxb";
-    //static final String SCHEMA_EXTENSION = ".xsd";
+    static final String JAXB_CATEGORY_NAME = "XML";
+    static final String JAXB_COMPONENT_NAME = "JAXB Binding";
 
-    private String sApplicationPath = null;
-    
+    static final String BUTTON_NAME_VERBOSE = "verbose";
+    static final String BUTTON_NAME_READONLY = "readOnly";
+    static final String BUTTON_NAME_FINISH = "Finish";
+    static final String BUTTON_NAME_YES = "Yes";
+
+    static final String POPUP_CHANGE_JAXB_OPTIONS = "Change JAXB Options";
+    static final String POPUP_DELETE = "Delete";
+
     public AcceptanceTestCase(String arg0) {
         super(arg0);
     }
     
-    public static TestSuite suite() {
-        TestSuite testSuite = new TestSuite(AcceptanceTestCase.class.getName());
-        
-        for (String strMethodName : m_aTestMethods) {
-            testSuite.addTest(new AcceptanceTestCase(strMethodName));
-        }
-        
-        return testSuite;
-    }
-    
-    public void Dummy() {
-        startTest();
-        
-        endTest();
-    }
-    
-    public void CreateJavaApplication() {
-        startTest();
-
-        // Create Java application
-        NewProjectWizardOperator opNewProjectWizard = NewProjectWizardOperator.invoke();
-        opNewProjectWizard.selectCategory("Java");
-        opNewProjectWizard.selectProject("Java Application");
-        opNewProjectWizard.next();
-        
-        NewProjectNameLocationStepOperator opNewProjectNameLocationStep = new NewProjectNameLocationStepOperator();
-        opNewProjectNameLocationStep.txtProjectLocation( ).setText( System.getProperty( "work.dir" )  );
-        opNewProjectNameLocationStep.txtProjectName( ).setText( TEST_JAVA_APP_NAME );
-        opNewProjectWizard.finish();
-
-        endTest();
-    }
-    
-    public void Compile() {
-        startTest();
-
-        new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("Build|Build Main Project");
-
-        // Wait till JAXB really deleted
-        MainWindowOperator.StatusTextTracer stt = MainWindowOperator.getDefault( ).getStatusTextTracer( );
-        stt.start( );
-        stt.waitText( "Finished building " + TEST_JAVA_APP_NAME + " (jar)." );
-        stt.stop( );
-
-        new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("Run|Run Main Project");
-
-        endTest();
-    }
-    
-    public void CreateJAXBBinding() {
-        startTest();
-
+    // We need to create one from different points, so moved
+    // code out of startTest/endTest field.
+    public void CreateJAXBBindingInternal(
+        String sBindingName,
+        String sPackageName,
+        String sApplicationName,
+        String sBaseFile,
+        boolean bSuppressInformation
+      )
+    {
         // Create JAXB Binding
-        NewFileWizardOperator opNewFileWizard = NewFileWizardOperator.invoke();
-        opNewFileWizard.selectCategory("XML");
-        opNewFileWizard.selectFileType("JAXB Binding");
+        NewFileWizardOperator opNewFileWizard = NewFileWizardOperator.invoke( );
+        opNewFileWizard.selectCategory( JAXB_CATEGORY_NAME );
+        opNewFileWizard.selectFileType( JAXB_COMPONENT_NAME );
         opNewFileWizard.next();
 
         JDialogOperator opCustomizer = new JDialogOperator( );
-        new JTextFieldOperator( opCustomizer, 0 ).setText( "aaa" );
+        new JTextFieldOperator( opCustomizer, 0 ).setText( sBindingName );
 
         new JButtonOperator( opCustomizer, 0 ).pushNoBlock( );
         JFileChooserOperator opFileChooser = new JFileChooserOperator( );
-        opFileChooser.chooseFile( System.getProperty( "work.dir" ) + File.separator + "data" + File.separator + "CreditReport.xsd" );
-        new JTextFieldOperator( opCustomizer, 4 ).setText( "bbb" );
+        opFileChooser.chooseFile( System.getProperty( "xtest.data" ) + File.separator + sBaseFile );
+
+        if( bSuppressInformation )
+        {
+          JDialogOperator jinfo = new JDialogOperator( "Information" );
+          JButtonOperator jbut = new JButtonOperator( jinfo, "OK" );
+          jbut.push( );
+          //jinfo.waitClose( );
+        }
+
+        new JTextFieldOperator( opCustomizer, 4 ).setText( sPackageName );
+
+        new JCheckBoxOperator( opCustomizer, BUTTON_NAME_VERBOSE ).setSelected( true );
+
+        // Ensure we will catch all with any slowness
+        MainWindowOperator.StatusTextTracer stt = MainWindowOperator.getDefault( ).getStatusTextTracer( );
+        stt.start( );
 
         opNewFileWizard.finish( );
 
-        endTest();
-    }
-    
-    public void AddJAXBMarshaling( ) {
-        startTest();
+        // Wait till JAXB really created
+        stt.waitText( "Finished building " + sApplicationName + " (jaxb-code-generation)." );
+        stt.stop( );
 
+        return;
+    }
+
+    public void ChangeJAXBOptionsInternal(
+        String sBindingName,
+        String sApplicationName
+      )
+    {
+        ProjectsTabOperator pto = ProjectsTabOperator.invoke( );
+
+        ProjectRootNode prn = pto.getProjectRootNode( sApplicationName );
+        prn.select( );
+
+        Node bindingNode = new Node( prn, "JAXB Binding|" + sBindingName );
+        bindingNode.select( );
+        bindingNode.performPopupActionNoBlock( POPUP_CHANGE_JAXB_OPTIONS );
+
+        NbDialogOperator opCustomizer = new NbDialogOperator( "Change JAXB options" );
+        new JCheckBoxOperator( opCustomizer, BUTTON_NAME_READONLY ).setSelected( true );
+
+        // Start waiting before pressing finish button
+        MainWindowOperator.StatusTextTracer stt = MainWindowOperator.getDefault( ).getStatusTextTracer( );
+        stt.start( );
+
+        new JButtonOperator( opCustomizer, BUTTON_NAME_FINISH ).pushNoBlock( );
+        
+        stt.waitText( "Finished building " + sApplicationName + " (jaxb-clean-code-generation)." );
+        stt.stop( );
+
+        // Check options
+        FilesTabOperator fto = FilesTabOperator.invoke( );
+
+        Node projectNode = fto.getProjectNode( sApplicationName );
+        projectNode.select( );
+
+        Node nodeWalk = new Node( projectNode, "nbproject|xml_binding_cfg.xml" );
+        nodeWalk.performPopupAction( "Edit" );
+        EditorOperator eoXMLCode = new EditorOperator( "xml_binding_cfg.xml" );
+        String sText = eoXMLCode.getText( );
+
+        String[] asIdealCode =
+        {
+          "<xjc-options>",
+          "<xjc-option name='-verbose' value='true'/>",
+          "<xjc-option name='-readOnly' value='true'/>"
+        };
+
+        for( String sIdealCode : asIdealCode )
+        {
+          if( -1 == sText.indexOf( sIdealCode ) )
+          {
+            fail( "Unable to find required code inside xml_binding_cfg.xml : " + sIdealCode );
+          }
+        }
+        eoXMLCode.close( false );
+    }
+
+    private void WaitCredCompletion( EditorOperator eoJavaCode, boolean bConstructor )
+    {
+      eoJavaCode.insert( "Cred" );
+      eoJavaCode.typeKey( ' ', InputEvent.CTRL_MASK );
+      int iPassed = 0;
+      while( true )
+      {
+        String sCompletedText = eoJavaCode.getText( eoJavaCode.getLineNumber( ) );
+        if( !sCompletedText.endsWith( "Cred\n" ) )
+        {
+          if( bConstructor )
+            eoJavaCode.insert( "( )" );
+          break;
+        }
+        if( ++iPassed > 10 )
+        {
+          try
+          {
+            CompletionJListOperator jCompl = new CompletionJListOperator( );
+            jCompl.clickOnItem( 0, 2 );
+            bConstructor = false;
+          }
+          catch( JemmyException ex )
+          {
+          }
+        }
+        try{ Thread.sleep( 100 ); } catch( InterruptedException ex ) {}
+      }
+    }
+
+    private void WaitEndOfLine( EditorOperator eoJavaCode, String sEnd )
+    {
+      while( true )
+      {
+        String sCompletedText = eoJavaCode.getText( eoJavaCode.getLineNumber( ) );
+        if( !sCompletedText.endsWith( sEnd ) )
+          break;
+        try{ Thread.sleep( 100 ); } catch( InterruptedException ex ) {}
+      }
+    }
+
+    private CompletionJListOperator GetCompletion( )
+    {
+      CompletionJListOperator comp = null;
+      while( true )
+      {
+        comp = new CompletionJListOperator( );
+        try
+        {
+          Object o = comp.getCompletionItems( ).get( 0 );
+          if( !o.toString( ).contains( "No suggestions" ) )
+            return comp;
+        }
+        catch( java.lang.Exception ex )
+        {
+          return null;
+        }
+        try{ Thread.sleep( 100 ); } catch( InterruptedException ex ) {}
+      }
+    }
+
+
+
+    public void CodeCompletion1Internal( )
+    {
         // Access java code with editor
         EditorOperator eoJavaCode = new EditorOperator( "Main.java" );
+
         eoJavaCode.setCaretPosition(
             "// TODO code application logic here",
             0,
             false
           );
-        eoJavaCode.pushKey( KeyEvent.VK_ENTER );
-        // Use jaxbm pattern
-        //eoJavaCode.insert( "jaxbm" );
-        // Press tab key
-        eoJavaCode.pushKey( KeyEvent.VK_J );
-        eoJavaCode.pushKey( KeyEvent.VK_A );
-        eoJavaCode.pushKey( KeyEvent.VK_X );
-        eoJavaCode.pushKey( KeyEvent.VK_B );
-        eoJavaCode.pushKey( KeyEvent.VK_M );
-        eoJavaCode.pushTabKey( );
-        /*
-        try
-        {
-        Robot r = new Robot( );
-        r.keyPress( KeyEvent.VK_TAB );
-        r.keyRelease( KeyEvent.VK_TAB );
-        }
-        catch( java.awt.AWTException ex )
-        {
-        }
-        */
+        eoJavaCode.insert( "\n" );
 
-        eoJavaCode.pushUpArrowKey( );
+        JEditorPaneOperator editor = eoJavaCode.txtEditorPane( );
+
+        // First most important line like "CreditReport cr = new CreditReport( );"
+        WaitCredCompletion( eoJavaCode, false );
+        eoJavaCode.insert( " cr = new " );
+        WaitCredCompletion( eoJavaCode, true );
+        eoJavaCode.insert( ";\n" );
+
+        // Next lines
+        eoJavaCode.insert( "cr" );
+        editor.typeKey( '.' );
+        CompletionJListOperator jCompl = GetCompletion( );
+        int iIndex = jCompl.findItemIndex( "setFirstName" );
+        if( -1 == iIndex )
+          fail( "Unable to find setFirstName() completion." );
+        eoJavaCode.insert( "setFirstName( \"Hello\" );\n" );
+
+        // Next lines
+        eoJavaCode.insert( "cr" );
+        editor.typeKey( '.' );
+        jCompl = GetCompletion( );
+        iIndex = jCompl.findItemIndex( "setLastName" );
+        if( -1 == iIndex )
+          fail( "Unable to find setLastName() completion." );
+        eoJavaCode.insert( "setLastName( \"World\" );\n" );
+
+        // Next lines
+        eoJavaCode.insert( "cr" );
+        editor.typeKey( '.' );
+        jCompl = GetCompletion( );
+        iIndex = jCompl.findItemIndex( "setScore" );
+        if( -1 == iIndex )
+          fail( "Unable to find setScore() completion." );
+        eoJavaCode.insert( "setScore( 999 );\n" );
+
+        // Next lines
+        eoJavaCode.insert( "cr" );
+        editor.typeKey( '.' );
+        jCompl = GetCompletion( );
+        iIndex = jCompl.findItemIndex( "setSsn" );
+        if( -1 == iIndex )
+          fail( "Unable to find setSsn() completion." );
+        eoJavaCode.insert( "setSsn( \"123-456-ABC\" );\n" );
+
+        // TODO : Check result
+    }
+
+    public void CodeCompletion2Internal( String sPackage ) {
+
+        // Access java code with editor
+        EditorOperator eoJavaCode = new EditorOperator( "Main.java" );
+
+        // Use jaxbm template
+        JEditorPaneOperator editor = eoJavaCode.txtEditorPane( );
+        String sCode = "jaxbm\t";
+        for( int i = 0; i < sCode.length( ); i++ )
+          editor.typeKey( sCode.charAt( i ) );
+
         // Check result
+        eoJavaCode.pushUpArrowKey( );
         String[] asIdealCodeLines =
         {
           "try {",
-          "javax.xml.bind.JAXBContext jaxbCtx = javax.xml.bind.JAXBContext.newInstance(args.getClass().getPackage().getName());",
+          "javax.xml.bind.JAXBContext jaxbCtx = javax.xml.bind.JAXBContext.newInstance(args.getClass().getPackage().getName());|javax.xml.bind.JAXBContext jaxbCtx = javax.xml.bind.JAXBContext.newInstance(obj2BMarshalled.getClass().getPackage().getName());|javax.xml.bind.JAXBContext jaxbCtx = javax.xml.bind.JAXBContext.newInstance(cr.getClass().getPackage().getName());",
           "javax.xml.bind.Marshaller marshaller = jaxbCtx.createMarshaller();",
           "marshaller.setProperty(javax.xml.bind.Marshaller.JAXB_ENCODING, \"UTF-8\"); //NOI18N",
-          "",
           "marshaller.setProperty(javax.xml.bind.Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);",
-          "marshaller.marshal(args, System.out);",
+          "marshaller.marshal(args, System.out);|marshaller.marshal(obj2BMarshalled, System.out);|marshaller.marshal(cr, System.out);",
           "} catch (javax.xml.bind.JAXBException ex) {",
           "// XXXTODO Handle exception",
           "java.util.logging.Logger.getLogger(\"global\").log(java.util.logging.Level.SEVERE, null, ex); //NOI18N",
-          "",
           "}",
           "}"
         };
-        for( int i = 0; i < asIdealCodeLines.length; i++ )
+
+        for( String sIdealCodeLine : asIdealCodeLines )
         {
           String sCodeLine = eoJavaCode.getText( eoJavaCode.getLineNumber( ) );
-          if( -1 == sCodeLine.indexOf( asIdealCodeLines[ i ] ) )
+          while( sCodeLine.matches( "^[ \t\n]*$" ) )
+          {
+            eoJavaCode.pushDownArrowKey( );
+            sCodeLine = eoJavaCode.getText( eoJavaCode.getLineNumber( ) );
+          }
+          String[] asIdealVersions = sIdealCodeLine.split( "\\|" );
+          boolean bFound = false;
+          for( String sIdealVersion : asIdealVersions )
+          {
+            if( -1 != sCodeLine.indexOf( sIdealVersion ) )
+            {
+              bFound = true;
+              break;
+            }
+          }
+
+          if( !bFound )
           {
             // Test <suite> failed
             fail(
                 "Ideal code was not found at line #" + eoJavaCode.getLineNumber( ) +
-                " : " + asIdealCodeLines[ i ]
+                " : " + sIdealCodeLine
               );
           }
           eoJavaCode.pushDownArrowKey( );
         }
 
-        endTest();
+        // Replace args with cr
+        eoJavaCode.setCaretPosition( "javax.xml.bind.JAXBContext.newInstance(", 0, false );
+        editor = eoJavaCode.txtEditorPane( );
+        editor.pushKey( KeyEvent.VK_DELETE, InputEvent.CTRL_MASK );
+        editor.releaseKey( KeyEvent.VK_DELETE, InputEvent.CTRL_MASK );
+        eoJavaCode.insert( "cr" );
+
+        eoJavaCode.setCaretPosition( "marshaller.marshal(", 0, false );
+        editor = eoJavaCode.txtEditorPane( );
+        editor.pushKey( KeyEvent.VK_DELETE, InputEvent.CTRL_MASK );
+        editor.releaseKey( KeyEvent.VK_DELETE, InputEvent.CTRL_MASK );
+        eoJavaCode.insert( "cr" );
+
+        // Correct imports
+        new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("Source|Fix Imports...");
+
+        // Check there is required import statement
+        String sText = eoJavaCode.getText( );
+        if( -1 == sText.indexOf( "import " + sPackage + ".CreditReport;" ) )
+          fail( "Unable to fix imports." );
     }
 
-    public void ExecuteJavaApplication( ) {
-        startTest();
+    public void RunTheProjectInternal( String sAppName ) {
+
+        MainWindowOperator.StatusTextTracer stt = MainWindowOperator.getDefault( ).getStatusTextTracer( );
+        stt.start( );
 
         // Run
         new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("Run|Run Main Project");
-          // ToDo
-        
-        endTest();
+
+        stt.waitText( "Finished building " + sAppName + " (run)." );
+        stt.stop( );
+
+        // Check output
+        OutputOperator out = new OutputOperator( );
+        String sText = out.getText( );
+        String[] asIdealOutput =
+        {
+          "run:",
+          "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>",
+          "<CreditReport xmlns=\"http://xml.netbeans.org/schema/CreditReport\">",
+          "<firstName>Hello</firstName>",
+          "<lastName>World</lastName>",
+          "<ssn>123-456-ABC</ssn>",
+          "<score>999</score>",
+          "</CreditReport>",
+          "BUILD SUCCESSFUL (total time: ",
+        };
+        for( String sChecker : asIdealOutput )
+        {
+          if( -1 == sText.indexOf( sChecker ) )
+            fail( "Unable to find ideal output: " + sChecker + "\n" + sText );
+        }
+        if( -1 != sText.indexOf( "BUILD FAILED" ) )
+          fail( "BUILD FAILED\n" + sText );
     }
     
     public void tearDown() {

@@ -35,7 +35,6 @@
 				<file title="DebuggerWindows.html"/>
 				<file title="DebuggingCorC++Project.html"/>
 				<file title="Environment.html"/>
-				<file title="EvaluatingCorC++Expression.html"/>
 				<file title="FinishingCorC++DebugSession.html"/>
 				<file title="Libraries.html"/>
 				<file title="LinkerOptions.html"/>
@@ -204,7 +203,6 @@
 			</directory>
 			<file title="cnd.hs"/>
 			<file title="cndTOC.xml"/>
-			<file title="index.xml"/>
 			<file title="map.xml"/>
 			<file title="stopwords.swd"/>
 		</directory>

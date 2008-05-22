@@ -48,16 +48,18 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.HashMap;
 import javax.swing.JPanel;
+import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.makeproject.NativeProjectProvider;
+import org.netbeans.modules.cnd.ui.options.IsChangedListener;
 import org.netbeans.modules.cnd.ui.options.ToolsPanel;
 import org.openide.util.NbBundle;
 
-public class ParserSettingsPanel extends JPanel implements ChangeListener, ActionListener {
+public class ParserSettingsPanel extends JPanel implements ChangeListener, ActionListener, IsChangedListener {
 
     private HashMap predefinedPanels = new HashMap();
     private boolean updating = false;
@@ -70,6 +72,10 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
     public ParserSettingsPanel() {
         setName("TAB_CodeAssistanceTab"); // NOI18N
         initComponents();
+        
+        if( "Windows".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
+            setOpaque( false );
+        }
 
         //infoTextArea.setBackground(collectionPanel.getBackground());
         //setPreferredSize(new java.awt.Dimension(600, 700));
@@ -81,6 +87,7 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
             // This gets called from commitValidation and tp is null - its not a run-time problem
             // because the "real" way we create this a ToolsPanel exists. But not the commitValidation way!
             tp.addCompilerSetChangeListener(this);
+            tp.addIsChangedListener(this);
         }
     }
 
@@ -122,14 +129,22 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
             toolSet.add(cppCompiler);
         }
         for (Tool tool : toolSet) {
-            PredefinedPanel predefinedPanel = (PredefinedPanel) predefinedPanels.get(tool.getPath());
+            PredefinedPanel predefinedPanel = (PredefinedPanel) predefinedPanels.get(compilerCollection.getName() + tool.getPath());
             if (predefinedPanel == null) {
                 predefinedPanel = new PredefinedPanel((CCCCompiler) tool, this);
-                predefinedPanels.put(tool.getPath(), predefinedPanel);
+                predefinedPanels.put(compilerCollection.getName() + tool.getPath(), predefinedPanel);
                 //modified = true; // See 126368
             }
             tabbedPane.addTab(tool.getDisplayName(), predefinedPanel);
         }
+    }
+    
+    public void setModified(boolean val) {
+        modified = val;
+    }
+    
+    public boolean isModified() {
+        return modified;
     }
 
     public void fireFilesPropertiesChanged() {
@@ -169,6 +184,8 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
         tabPanel = new javax.swing.JPanel();
         tabbedPane = new javax.swing.JTabbedPane();
 
+        collectionPanel.setOpaque(false);
+
         compilerCollectionLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/options/Bundle").getString("COMPILER_COLLECTION_MN").charAt(0));
         compilerCollectionLabel.setLabelFor(compilerCollectionComboBox);
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/options/Bundle"); // NOI18N
@@ -181,7 +198,7 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
             .add(collectionPanelLayout.createSequentialGroup()
                 .add(compilerCollectionLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(compilerCollectionComboBox, 0, 246, Short.MAX_VALUE)
+                .add(compilerCollectionComboBox, 0, 310, Short.MAX_VALUE)
                 .addContainerGap())
         );
         collectionPanelLayout.setVerticalGroup(
@@ -190,6 +207,10 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
                 .add(compilerCollectionLabel)
                 .add(compilerCollectionComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
+
+        scrollPane.setOpaque(false);
+
+        tabPanel.setOpaque(false);
 
         org.jdesktop.layout.GroupLayout tabPanelLayout = new org.jdesktop.layout.GroupLayout(tabPanel);
         tabPanel.setLayout(tabPanelLayout);
@@ -222,7 +243,7 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(collectionPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(265, Short.MAX_VALUE))
+                .addContainerGap(272, Short.MAX_VALUE))
             .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                 .add(layout.createSequentialGroup()
                     .add(36, 36, 36)
@@ -283,7 +304,7 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
         return isDataValid;
     }
 
-    boolean isChanged() {
+    public boolean isChanged() {
         boolean isChanged = false;
         PredefinedPanel[] viewedPanels = getPredefinedPanels();
         for (int i = 0; i < viewedPanels.length; i++) {

@@ -67,6 +67,7 @@ import org.netbeans.modules.mercurial.ui.annotate.AnnotateAction;
 import org.netbeans.modules.mercurial.ui.commit.CommitAction;
 import org.netbeans.modules.mercurial.ui.diff.DiffAction;
 import org.netbeans.modules.mercurial.ui.diff.ExportDiffAction;
+import org.netbeans.modules.mercurial.ui.diff.ExportDiffChangesAction;
 import org.netbeans.modules.mercurial.ui.diff.ImportDiffAction;
 import org.netbeans.modules.mercurial.ui.ignore.IgnoreAction;
 import org.netbeans.modules.mercurial.ui.log.IncomingAction;
@@ -223,8 +224,10 @@ public class MercurialAnnotator extends VCSAnnotator {
             if (info == null) {
                 File parentFile = file.getParentFile();
                 Mercurial.LOG.log(Level.FINE, "null cached status for: {0} {1} {2}", new Object[] {file, folderToScan, parentFile});
-                folderToScan = parentFile;
-                reScheduleScan(1000);
+                if (!Mercurial.getInstance().isRefreshScheduled(parentFile)) {
+                    folderToScan = parentFile;
+                    reScheduleScan(1000);
+                }
                 info = new FileInformation(FileInformation.STATUS_VERSIONED_UPTODATE, false);
             }
             int status = info.getStatus();
@@ -354,6 +357,7 @@ public class MercurialAnnotator extends VCSAnnotator {
             actions.add(new CommitAction(loc.getString("CTL_PopupMenuItem_Commit"), ctx)); // NOI18N
             actions.add(null);
             actions.add(new ExportDiffAction(loc.getString("CTL_PopupMenuItem_ExportDiff"), ctx)); // NOI18N
+            actions.add(new ExportDiffChangesAction(loc.getString("CTL_PopupMenuItem_ExportDiffChanges"), ctx)); // NOI18N
             actions.add(new ImportDiffAction(loc.getString("CTL_PopupMenuItem_ImportDiff"), ctx)); // NOI18N
 
             actions.add(null);
@@ -393,11 +397,8 @@ public class MercurialAnnotator extends VCSAnnotator {
             }else{
                 actions.add(new StatusAction(loc.getString("CTL_PopupMenuItem_Status"), ctx)); // NOI18N
                 actions.add(new DiffAction(loc.getString("CTL_PopupMenuItem_Diff"), ctx)); // NOI18N
-                actions.add(new UpdateAction(loc.getString("CTL_PopupMenuItem_Update"), ctx)); // NOI18N
                 actions.add(new CommitAction(loc.getString("CTL_PopupMenuItem_Commit"), ctx)); // NOI18N
                 actions.add(null);
-                actions.add(new MergeAction(NbBundle.getMessage(MercurialAnnotator.class, 
-                        "CTL_PopupMenuItem_Merge"), ctx)); // NOI18N
                 actions.add(new ResolveConflictsAction(NbBundle.getMessage(MercurialAnnotator.class,
                         "CTL_PopupMenuItem_Resolve"), ctx)); // NOI18N
                 if (!onlyProjects  && !onlyFolders) {
@@ -414,8 +415,6 @@ public class MercurialAnnotator extends VCSAnnotator {
                     actions.add(tempA);
                 }
                 actions.add(new LogAction(loc.getString("CTL_PopupMenuItem_Log"), ctx)); // NOI18N
-                actions.add(new IncomingAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_ShowIncoming"), ctx)); // NOI18N
-                actions.add(new OutAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_ShowOut"), ctx)); // NOI18N
                 actions.add(null);
                 actions.add(new RevertModificationsAction(NbBundle.getMessage(MercurialAnnotator.class,
                         "CTL_PopupMenuItem_Revert"), ctx)); // NOI18N
@@ -656,8 +655,7 @@ public class MercurialAnnotator extends VCSAnnotator {
     }
 
     private void reScheduleScan(int delayMillis) {
-        File dirToScan = dirsToScan.peek();
-        if (!folderToScan.equals(dirToScan)) {
+        if (!dirsToScan.contains(folderToScan)) {
             if (!dirsToScan.offer(folderToScan)) {
                 Mercurial.LOG.log(Level.FINE, "reScheduleScan failed to add to dirsToScan queue: {0} ", folderToScan);
             }

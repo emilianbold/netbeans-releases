@@ -1,4 +1,4 @@
-_cb:METHOD:[]:ESCAPED{_cb} : ESCAPED{void}:
+_cb:METHOD:[PRIVATE]:ESCAPED{_cb} : ESCAPED{void}:
 logWidgetError:METHOD:[]:ESCAPED{logWidgetError}(PARAMETERS{ESCAPED{name}, ESCAPED{uuid}, ESCAPED{url}, ESCAPED{line}, ESCAPED{_m}, ESCAPED{div}}) : ESCAPED{void}:
 logError:METHOD:[]:ESCAPED{logError}(PARAMETERS{ESCAPED{message}, ESCAPED{div}}) : ESCAPED{void}:
 postInitialize:METHOD:[]:ESCAPED{postInitialize} : ESCAPED{void}:
@@ -9,7 +9,7 @@ inject:METHOD:[]:ESCAPED{inject}(PARAMETERS{ESCAPED{task}}) : ESCAPED{void}:
 processTask:METHOD:[]:ESCAPED{processTask}(PARAMETERS{ESCAPED{injectionPoint}, ESCAPED{task}}) : ESCAPED{void}:
 processNextTask:METHOD:[]:ESCAPED{processNextTask} : ESCAPED{void}:
 getContent:METHOD:[]:ESCAPED{getContent}(PARAMETERS{ESCAPED{rawContent}, ESCAPED{_task}}) : ESCAPED{void}:
-_globalScope:GLOBAL:[]:ESCAPED{_globalScope}:
+_globalScope:GLOBAL:[PRIVATE]:ESCAPED{_globalScope}:
 jmaki:GLOBAL:[]:ESCAPED{jmaki}:
 oldLoad:GLOBAL:[]:ESCAPED{oldLoad}:
 myo:GLOBAL:[]:ESCAPED{myo}:

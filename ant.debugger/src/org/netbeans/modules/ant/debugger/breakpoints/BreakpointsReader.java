@@ -78,7 +78,24 @@ public class BreakpointsReader implements Properties.Reader {
             properties.getString ("url", null),
             properties.getInt ("lineNumber", 1));
         if (line == null) return null;
-        return new AntBreakpoint (line);
+        AntBreakpoint b = new AntBreakpoint (line);
+        b.setGroupName(
+            properties.getString (Breakpoint.PROP_GROUP_NAME, "")
+        );
+        int hitCountFilter = properties.getInt(Breakpoint.PROP_HIT_COUNT_FILTER, 0);
+        Breakpoint.HIT_COUNT_FILTERING_STYLE hitCountFilteringStyle;
+        if (hitCountFilter > 0) {
+            hitCountFilteringStyle = Breakpoint.HIT_COUNT_FILTERING_STYLE.values()
+                    [properties.getInt(Breakpoint.PROP_HIT_COUNT_FILTER+"_style", 0)]; // NOI18N
+        } else {
+            hitCountFilteringStyle = null;
+        }
+        b.setHitCountFilter(hitCountFilter, hitCountFilteringStyle);
+        if (properties.getBoolean (Breakpoint.PROP_ENABLED, true))
+            b.enable ();
+        else
+            b.disable ();
+        return b;
     }
     
     public void write (Object object, Properties properties) {
@@ -91,6 +108,14 @@ public class BreakpointsReader implements Properties.Reader {
                 "lineNumber", 
                 b.getLine ().getLineNumber ()
             );
+            properties.setString (
+                Breakpoint.PROP_GROUP_NAME, 
+                b.getGroupName ()
+            );
+            properties.setBoolean (Breakpoint.PROP_ENABLED, b.isEnabled ());
+            properties.setInt(Breakpoint.PROP_HIT_COUNT_FILTER, b.getHitCountFilter());
+            Breakpoint.HIT_COUNT_FILTERING_STYLE style = b.getHitCountFilteringStyle();
+            properties.setInt(Breakpoint.PROP_HIT_COUNT_FILTER+"_style", style != null ? style.ordinal() : 0); // NOI18N
         } catch (FileStateInvalidException ex) {
             ex.printStackTrace ();
         }

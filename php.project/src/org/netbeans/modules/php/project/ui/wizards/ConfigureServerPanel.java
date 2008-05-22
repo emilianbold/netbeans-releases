@@ -39,11 +39,17 @@
 
 package org.netbeans.modules.php.project.ui.wizards;
 
+import org.netbeans.modules.php.project.environment.PhpEnvironment.DocumentRoot;
+import org.netbeans.modules.php.project.ui.WebFolderNameProvider;
+import org.netbeans.modules.php.project.ui.LocalServer;
 import java.awt.Component;
 import java.io.File;
+import java.util.List;
 import javax.swing.MutableComboBoxModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.php.project.environment.PhpEnvironment;
+import org.netbeans.modules.php.project.ui.Utils;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
@@ -53,7 +59,8 @@ import org.openide.util.NbBundle;
 /**
  * @author Tomas Mysik
  */
-public class ConfigureServerPanel implements WizardDescriptor.Panel, WizardDescriptor.FinishablePanel, ChangeListener {
+public class ConfigureServerPanel implements WizardDescriptor.Panel<WizardDescriptor>,
+        WizardDescriptor.FinishablePanel<WizardDescriptor>, ChangeListener {
 
     static final String COPY_FILES = "copyFiles"; // NOI18N
     static final String COPY_TARGET = "copyTarget"; // NOI18N
@@ -82,50 +89,48 @@ public class ConfigureServerPanel implements WizardDescriptor.Panel, WizardDescr
         return new HelpCtx(ConfigureServerPanel.class.getName());
     }
 
-    public void readSettings(Object settings) {
+    public void readSettings(WizardDescriptor settings) {
         getComponent();
-        descriptor = (WizardDescriptor) settings;
+        descriptor = settings;
 
         unregisterListeners();
 
         // copying enabled?
-        configureServerPanelVisual.setLocalServerState(isProjectFolder());
-
-        Boolean copyFiles = isCopyFiles();
-        if (copyFiles != null) {
-            configureServerPanelVisual.setCopyFiles(copyFiles);
+        configureServerPanelVisual.setState(isProjectFolderSelected());
+        if (!isProjectFolderSelected()) {
+            configureServerPanelVisual.setCopyFiles(false);
+        } else {
+            Boolean copyFiles = isCopyFiles();
+            if (copyFiles != null) {
+                configureServerPanelVisual.setCopyFiles(copyFiles);
+            }
         }
 
-        MutableComboBoxModel localServers = getLocalServers();
-        if (localServers != null) {
-            configureServerPanelVisual.setLocalServerModel(localServers);
-        }
+        configureServerPanelVisual.setLocalServerModel(getLocalServerModel());
         LocalServer wwwFolder = getLocalServer();
         if (wwwFolder != null) {
-            configureServerPanelVisual.selectSourcesLocation(wwwFolder);
+            configureServerPanelVisual.selectLocalServer(wwwFolder);
         }
 
         registerListeners();
         fireChangeEvent();
     }
 
-    public void storeSettings(Object settings) {
-        WizardDescriptor d = (WizardDescriptor) settings;
-
-        d.putProperty(COPY_FILES, configureServerPanelVisual.isCopyFiles());
-        d.putProperty(COPY_TARGET, configureServerPanelVisual.getSourcesLocation());
-        d.putProperty(COPY_TARGETS, configureServerPanelVisual.getLocalServerModel());
+    public void storeSettings(WizardDescriptor settings) {
+        settings.putProperty(COPY_FILES, configureServerPanelVisual.isCopyFiles());
+        settings.putProperty(COPY_TARGET, configureServerPanelVisual.getLocalServer());
+        settings.putProperty(COPY_TARGETS, configureServerPanelVisual.getLocalServerModel());
     }
 
     public boolean isValid() {
         getComponent();
+        descriptor.putProperty("WizardPanel_errorMessage", " "); // NOI18N
         String error = validateServerLocation();
         if (error != null) {
             descriptor.putProperty("WizardPanel_errorMessage", error); // NOI18N
             descriptor.putProperty(SERVER_IS_VALID, false);
             return false;
         }
-        descriptor.putProperty("WizardPanel_errorMessage", " "); // NOI18N
         descriptor.putProperty(SERVER_IS_VALID, true);
         return true;
     }
@@ -150,7 +155,7 @@ public class ConfigureServerPanel implements WizardDescriptor.Panel, WizardDescr
         return steps;
     }
 
-    private boolean isProjectFolder() {
+    private boolean isProjectFolderSelected() {
         LocalServer localServer = (LocalServer) descriptor.getProperty(ConfigureProjectPanel.WWW_FOLDER);
         return ConfigureProjectPanel.isProjectFolder(localServer);
     }
@@ -163,8 +168,19 @@ public class ConfigureServerPanel implements WizardDescriptor.Panel, WizardDescr
         return (LocalServer) descriptor.getProperty(COPY_TARGET);
     }
 
-    private MutableComboBoxModel getLocalServers() {
-        return (MutableComboBoxModel) descriptor.getProperty(COPY_TARGETS);
+    private MutableComboBoxModel getLocalServerModel() {
+        MutableComboBoxModel model = (MutableComboBoxModel) descriptor.getProperty(COPY_TARGETS);
+        if (model != null) {
+            return model;
+        }
+        model = new LocalServer.ComboBoxModel();
+
+        List<DocumentRoot> roots = PhpEnvironment.get().getDocumentRoots(webFolderNameProvider.getWebFolderName());
+        for (DocumentRoot root : roots) {
+            LocalServer ls = new LocalServer(root.getDocumentRoot());
+            model.addElement(ls);
+        }
+        return model;
     }
 
     private String validateServerLocation() {
@@ -172,13 +188,46 @@ public class ConfigureServerPanel implements WizardDescriptor.Panel, WizardDescr
             return null;
         }
 
-        String sourcesLocation = configureServerPanelVisual.getSourcesLocation().getSrcRoot();
+        LocalServer copyTarget = configureServerPanelVisual.getLocalServer();
+        String sourcesLocation = copyTarget.getSrcRoot();
+        File sources = FileUtil.normalizeFile(new File(sourcesLocation));
         if (sourcesLocation == null
-                || !Utils.isValidFileName(new File(sourcesLocation).getName())) {
+                || !Utils.isValidFileName(sources)) {
             return NbBundle.getMessage(ConfigureServerPanel.class, "MSG_IllegalFolderName");
         }
 
-        return Utils.validateProjectDirectory(sourcesLocation, "Folder"); // NOI18N
+        String err = Utils.validateProjectDirectory(sourcesLocation, "Folder", false, true); // NOI18N
+        if (err != null) {
+            return err;
+        }
+        err = validateSourcesAndCopyTarget();
+        if (err != null) {
+            return err;
+        }
+        // warn about visibility of source folder
+        String url = (String) descriptor.getProperty(ConfigureProjectPanel.URL);
+        String warning = NbBundle.getMessage(ConfigureServerPanel.class, "MSG_TargetFolderVisible", url);
+        descriptor.putProperty("WizardPanel_errorMessage", warning); // NOI18N
+        return null;
+    }
+
+    // #131023
+    private String validateSourcesAndCopyTarget() {
+        LocalServer sources = (LocalServer) descriptor.getProperty(ConfigureProjectPanel.WWW_FOLDER);
+        assert sources != null;
+        String sourcesSrcRoot = sources.getSrcRoot();
+        if (ConfigureProjectPanel.isProjectFolder(sources)) {
+            File projectLocation = (File) descriptor.getProperty(ConfigureProjectPanel.PROJECT_DIR);
+            String projectName = (String) descriptor.getProperty(ConfigureProjectPanel.PROJECT_NAME);
+            assert projectLocation != null;
+            assert projectName != null;
+            File project = new File(projectLocation, projectName);
+            File src = FileUtil.normalizeFile(new File(project, ConfigureProjectPanel.DEFAULT_SOURCE_FOLDER));
+            sourcesSrcRoot = src.getAbsolutePath();
+        }
+        File normalized = FileUtil.normalizeFile(new File(configureServerPanelVisual.getLocalServer().getSrcRoot()));
+        String copyTarget = normalized.getAbsolutePath();
+        return Utils.validateSourcesAndCopyTarget(sourcesSrcRoot, copyTarget);
     }
 
     private void registerListeners() {

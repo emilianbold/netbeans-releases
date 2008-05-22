@@ -72,6 +72,8 @@ public class SampleWizardPanelVisual extends JPanel implements DocumentListener 
         // Register listener on the textFields to make the automatic updates
         projectNameTextField.getDocument().addDocumentListener( this );
         projectLocationTextField.getDocument().addDocumentListener( this );
+        // Provide a name in the title bar.
+        setName(NbBundle.getMessage(SampleWizardPanelVisual.class, "MSG_NameAndLocation")); //NOI18N
     }
     
     protected String getDefaultProjectName() {

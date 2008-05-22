@@ -204,12 +204,11 @@ public class WeakSetTest extends NbTestCase {
         //CharSequence log = Log.enable(WeakSet.class.getName(), Level.FINE);
         ArrayList<WeakReference<TestObj>> awr = new ArrayList<WeakReference<TestObj>>();
         ExecutorService exec = Executors.newFixedThreadPool(5);
+        exec.execute(new GC());
         for (int i = 0; i < 1000; i++) {
             TestObj to = new TestObj("T" + i);
             awr.add(new WeakReference<TestObj>(to));
-            if (i < 2) {
-                exec.execute(new GC());
-            }
+            Thread.yield();
             for (WeakReference<TestObj> wro : awr) {
                 TestObj wroo = wro.get();
                 if (wroo != null) {

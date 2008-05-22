@@ -70,7 +70,6 @@
 	<mapID target="org.netbeans.modules.bpel.navigator.BpelNavigatorVisualPanel" url="windows_editors/nav_bpelview.html"/>
 	<mapID target="org.netbeans.modules.bpel.project.ui.customizer.CustomizerGeneral" url="properties/bpel_project_props.html"/>
 	<mapID target="org.netbeans.modules.bpel.project.ui.customizer.IcanproCustomizer" url="properties/bpel_project_props.html"/>
-	<mapID target="org.netbeans.modules.bpel.project.ui.customizer.IcanproCustomizer" url="properties/bpel_project_props.html"/>
 	<mapID target="org.netbeans.modules.bpel.project.ui.IcanproLogicalViewProvider" url="windows_editors/project_node.html"/>
 	<mapID target="org.netbeans.modules.bpel.xpath.view.output.ExpressionTopComponent" url="mapper/about_mapper.html"/>
 	<mapID target="orch_windows_editors_print" url="windows_editors/design_print.html"/>
@@ -109,4 +108,7 @@
 	<mapID target="orch_elements_compensatescope" url="elements/compensatescope.html"/>
 	<mapID target="orch_elements_rethrow" url="elements/rethrow.html"/>
 	<mapID target="design_print" url="windows_editors/design_print.html"/>
+	<mapID target="debug_windows_partner_links" url="debug/debug_windows_partner_links.html"/>
+	<mapID target="debug_windows_threads" url="debug/debug_windows_threads.html"/>
+	<mapID target="logging_about_logging" url="logging/about_logging.html"/>
 </map>

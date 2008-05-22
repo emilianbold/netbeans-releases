@@ -11,9 +11,9 @@
  * http://www.netbeans.org/cddl-gplv2.html
  * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
  * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
+ * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
  * particular file as subject to the "Classpath" exception as provided
  * by Sun in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
@@ -40,64 +40,63 @@
  */
 package org.netbeans.modules.bpel.validation.xpath;
 
-import java.util.Collection;
+import java.util.Set;
 
-import org.netbeans.modules.bpel.model.api.Activity;
+import org.netbeans.modules.xml.xam.Component;
+import org.netbeans.modules.xml.xam.Named;
+import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
+import org.netbeans.modules.xml.schema.model.SchemaComponent;
+import org.netbeans.modules.xml.schema.model.GlobalElement;
+import org.netbeans.modules.xml.schema.model.GlobalType;
+import org.netbeans.modules.xml.wsdl.model.Message;
+import org.netbeans.modules.xml.wsdl.model.Part;
+import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
+import org.netbeans.modules.xml.wsdl.model.extensions.bpel.validation.ValidationUtil;
+
+import org.netbeans.modules.soa.validation.util.Duration;
+import org.netbeans.modules.soa.validation.util.DurationUtil;
+
 import org.netbeans.modules.bpel.model.api.BooleanExpr;
-import org.netbeans.modules.bpel.model.api.BpelEntity;
-import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.api.Branches;
 import org.netbeans.modules.bpel.model.api.Condition;
 import org.netbeans.modules.bpel.model.api.ContentElement;
 import org.netbeans.modules.bpel.model.api.Copy;
 import org.netbeans.modules.bpel.model.api.DeadlineExpression;
-import org.netbeans.modules.bpel.model.api.ExpressionLanguageSpec;
+import org.netbeans.modules.bpel.model.api.DurationExpression;
 import org.netbeans.modules.bpel.model.api.FinalCounterValue;
 import org.netbeans.modules.bpel.model.api.For;
 import org.netbeans.modules.bpel.model.api.From;
-import org.netbeans.modules.bpel.model.api.OnAlarmEvent;
 import org.netbeans.modules.bpel.model.api.Query;
 import org.netbeans.modules.bpel.model.api.RepeatEvery;
 import org.netbeans.modules.bpel.model.api.StartCounterValue;
 import org.netbeans.modules.bpel.model.api.To;
+import org.netbeans.modules.bpel.model.api.PartnerLink;
 import org.netbeans.modules.bpel.model.api.VariableDeclaration;
 import org.netbeans.modules.bpel.model.api.VariableReference;
-import org.netbeans.modules.bpel.model.api.references.BpelReference;
-import org.netbeans.modules.bpel.model.api.references.SchemaReferenceBuilder;
-import org.netbeans.modules.xml.xpath.ext.schema.ExNamespaceContext;
-import org.netbeans.modules.bpel.model.api.support.XPathModelFactory;
-import org.netbeans.modules.xml.xam.Component;
-import org.netbeans.modules.xml.xam.Named;
-import org.netbeans.modules.xml.schema.model.SchemaModel;
-import org.netbeans.modules.xml.schema.model.SchemaComponent;
-import org.netbeans.modules.xml.xpath.ext.XPathModelHelper;
-import org.netbeans.modules.xml.xpath.ext.XPathException;
-import org.netbeans.modules.xml.xpath.ext.XPathExpression;
-import org.netbeans.modules.xml.xpath.ext.XPathModel;
-import org.netbeans.modules.xml.xpath.ext.spi.ExternalModelResolver;
 import org.netbeans.modules.bpel.model.api.PartReference;
 import org.netbeans.modules.bpel.model.api.support.PathValidationContext;
-import org.netbeans.modules.bpel.model.api.support.BpelXPathNamespaceContext;
-import org.netbeans.modules.bpel.model.api.support.BpelVariableResolver;
-import org.netbeans.modules.bpel.model.api.support.BpelXpathExtFunctionResolver;
+import org.netbeans.modules.bpel.model.api.support.Utils;
+import org.netbeans.modules.bpel.model.api.support.ValidationVisitor;
+import org.netbeans.modules.bpel.model.api.references.BpelReference;
 import org.netbeans.modules.bpel.model.api.references.SchemaReference;
 import org.netbeans.modules.bpel.model.api.references.WSDLReference;
-import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
-import org.netbeans.modules.xml.schema.model.GlobalElement;
-import org.netbeans.modules.xml.schema.model.GlobalType;
-import org.netbeans.modules.xml.wsdl.model.Message;
-import org.netbeans.modules.xml.wsdl.model.Part;
-import org.netbeans.modules.xml.schema.model.GlobalSimpleType;
 import org.netbeans.modules.bpel.validation.core.BpelValidator;
-import org.netbeans.modules.bpel.model.api.support.ValidationVisitor;
-import org.netbeans.modules.xml.wsdl.model.extensions.bpel.validation.ValidationUtil;
-import static org.netbeans.modules.soa.ui.util.UI.*;
+import org.netbeans.modules.bpel.model.api.support.SimpleBpelModelVisitor;
+import org.netbeans.modules.bpel.model.api.support.SimpleBpelModelVisitorAdaptor;
+import static org.netbeans.modules.xml.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
  * @version 2008.02.08
  */
 public final class Validator extends BpelValidator implements ValidationVisitor {
+
+  public Set<ResultItem> getResultItems() {
+    return getValidationResult();
+  }
+
+  @Override
+  protected final SimpleBpelModelVisitor getVisitor() { return new SimpleBpelModelVisitorAdaptor() {
 
   @Override
   public void visit(Copy copy) {
@@ -112,23 +111,137 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
       return;
     }
     String fromName = ((Named) fromType).getName();
-//out("  form name: " + fromName);
+//out("   from name: " + fromName);
     String toName = ((Named) toType).getName();
-//out("    to name: " + fromName);
+//out("     to name: " + toName);
 
-    if (fromName != null && fromName.equals(toName)) {
+    if (fromName == null || toName == null) {
       return;
     }
-    if (ValidationUtil.getBasedSimpleType(fromType) != ValidationUtil.getBasedSimpleType(toType)) {
-      addWarning("FIX_TYPE_IN_COPY", copy, getTypeName(fromType), getTypeName(toType)); // NOI18N
+    if (fromName.equals(toName)) {
+      return;
+    }
+    if (fromName.equals("anyType") || toName.equals("anyType")) { // NOI18N
+      return;
+    }
+    // # 135489
+    if (isPositive(fromName) && isNegative(toName)) {
+out("   from name: " + fromName);
+out("     to name: " + toName);
+//todo a      addError("FIX_Positive_Negative_Copy", copy);
+      return;
+    }
+    // # 135489
+    if (isNegative(fromName) && isPositive(toName)) {
+out("   from name: " + fromName);
+out("     to name: " + toName);
+//todo a      addError("FIX_Negative_Positive_Copy", copy);
+      return;
+    }
+    // # 135489
+    if (isNumeric(fromName) && isNumeric(toName)) {
+      return;
+    }
+    Component fType = ValidationUtil.getBasedSimpleType(fromType);
+    Component tType = ValidationUtil.getBasedSimpleType(toType);
+
+    if (fType == tType) {
+      return;
+    }
+    String fTypeName = getTypeName(fType);
+    String tTypeName = getTypeName(tType);
+//out("  from based: " + fTypeName);
+//out("    to based: " + tTypeName);
+
+    if (fTypeName.equals("string") && tTypeName.equals("time")) { // NOI18N
+      // # 135079
+      addWarning("FIX_Time_in_copy", copy); // NOI18N
+    }
+    else {
+      addWarning("FIX_TYPE_IN_COPY", copy, fTypeName, tTypeName); // NOI18N
+    }
+  }
+
+  private boolean isPositive(String value) {
+    return value.startsWith("positive") || value.startsWith("nonNegative"); // NOI18N
+  }
+
+  private boolean isNegative(String value) {
+    return value.startsWith("negative") || value.startsWith("nonPositive"); // NOI18N
+  }
+
+  private boolean isNumeric(String value) {
+    return
+      value.equals("byte") || // NOI18N
+      value.equals("decimal") || // NOI18N
+      value.equals("double") || // NOI18N
+      value.equals("float") || // NOI18N
+      value.equals("int") || // NOI18N
+      value.equals("integer") || // NOI18N
+      value.equals("long") || // NOI18N
+      value.equals("negativeInteger") || // NOI18N
+      value.equals("nonNegativeInteger") || // NOI18N
+      value.equals("nonPositiveInteger") || // NOI18N
+      value.equals("positiveInteger") || // NOI18N
+      value.equals("short") || // NOI18N
+      value.equals("unsignedByte") || // NOI18N
+      value.equals("unsignedInt") || // NOI18N
+      value.equals("unsignedLong") || // NOI18N
+      value.equals("unsignedShort"); // NOI18N
+  }
+
+  @Override
+  public void visit(To to) {
+    // # 125525
+    checkPartnerLink(to);
+    // # 131658
+    checkVariable(to);
+  }
+
+  private void checkPartnerLink(To to) {
+    BpelReference<PartnerLink> ref = to.getPartnerLink();
+
+    if (ref == null) {
+      return;
+    }
+    PartnerLink partnerLink = ref.get();
+
+    if (partnerLink == null) {
+      return;
+    }
+    WSDLReference<Role> ref1 = partnerLink.getPartnerRole();
+
+    if (ref1 == null || ref1.get() == null) {
+      addError("FIX_To_PartnerLink", to);
+    }
+  }
+
+  private void checkVariable(To to) {
+    String value = to.getContent();
+//out();
+//out("to: " + value);
+//out();
+    if (value == null) {
+      return;
+    }
+    value = value.trim();
+
+    if (value.length() == 0) {
+      return;
+    }
+    if ( !value.startsWith("$")) { // NOI18N
+      addError("FIX_To_Value", to, value); // NOI18N
     }
   }
 
   private Component getType(From from) {
+//out();
+//out("get type: " + from);
     if (from == null) {
       return null;
     }
     Component variableType = getVariableType(from);
+//out("  var: " + variableType);
 
     if (variableType != null) {
       Component partType = getPartType(from);
@@ -140,7 +253,8 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
         return partType;
       }
     }
-    return checkXPathExpression(from);
+//out("  see xpath: " + checkXPath(from));
+    return checkXPath(from);
   }
 
   private Component getType(To to) {
@@ -159,7 +273,7 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
         return partType;
       }
     }
-    return checkXPathExpression(to);
+    return checkXPath(to);
   }
 
   private Component getVariableType(VariableReference reference) {
@@ -245,151 +359,95 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
   }
   
   @Override
-  public void visit(BooleanExpr expr) {
-      checkXPathExpression(expr);
+  public void visit(BooleanExpr bool) {
+    checkXPath(bool);
   }
 
   @Override
   public void visit(Branches branches) {
-      checkXPathExpression(branches);
+    checkXPath(branches);
   }
 
   @Override
   public void visit(Condition condition) {
-      checkXPathExpression(condition);
+    checkXPath(condition);
   }
   
   @Override
-  public void visit(DeadlineExpression expression) {
-      checkXPathExpression(expression);
+  public void visit(DeadlineExpression deadline) {
+    checkXPath(deadline);
   }
   
   @Override
-  public void visit(FinalCounterValue value) {
-      checkXPathExpression(value);
+  public void visit(FinalCounterValue counter) {
+    checkXPath(counter);
   }
   
   @Override
   public void visit(For fo) {
-      checkXPathExpression(fo);
-  }
-  
-  @Override
-  public void visit(Query query) {
-      checkXPathExpression(query);
+    checkXPath(fo);
+    checkDuration(fo);
   }
   
   @Override
   public void visit(RepeatEvery repeatEvery) {
-      checkXPathExpression(repeatEvery);
+    checkXPath(repeatEvery);
+    checkDuration(repeatEvery);
+    // # 117688
+    checkNegative(repeatEvery);
+  }
+
+  private void checkNegative(RepeatEvery repeatEvery) {
+    String value = repeatEvery.getContent();
+
+    try {
+      Duration duration = DurationUtil.parseDuration(value, true);
+
+      if (duration == null) {
+        return;
+      }
+      if (duration.hasMinus() || isZero(duration)) {
+        addError("FIX_Negative_RepeatEvery", repeatEvery); // NOI18N
+      }
+    }
+    catch (IllegalArgumentException e) {}
+  }
+
+  private boolean isZero(Duration duration) {
+//out("duration: " + duration);
+    return
+      duration.getYears() == 0 &&
+      duration.getMonths() == 0 &&
+      duration.getDays() == 0 &&
+      duration.getHours() == 0 &&
+      duration.getMinutes() == 0 &&
+      duration.getSeconds() == 0.0;
   }
   
   @Override
-  public void visit(StartCounterValue value) {
-      checkXPathExpression(value);
+  public void visit(Query query) {
+    checkXPath(query);
   }
-  
+
   @Override
-  public void visit(OnAlarmEvent event) {
-      myValidatedActivity = event;
-  }
-  
-  @Override
-  protected void visit(Activity activity) {
-      myValidatedActivity = activity;
-  }
-  
-  private SchemaComponent checkXPathExpression(ContentElement element) {
-      String content = element.getContent();
-      
-      if (content == null) {
-          return null;
-      }
-      content = content.trim();
-
-      if (content.length() == 0) {
-          return null;
-      }
-      String expressionLang = null;
-      
-      if (element instanceof ExpressionLanguageSpec) {
-          expressionLang = ((ExpressionLanguageSpec) element).
-                  getExpressionLanguage();
-      }
-      return checkExpression(expressionLang, content, element);
-  }
-  
-  public SchemaComponent checkExpression(String exprLang, String exprText, final ContentElement element) {
-      boolean isXPathExpr = exprLang == null || XPathModelFactory.DEFAULT_EXPR_LANGUAGE.equals(exprLang);
-
-      if ( !isXPathExpr) {
-          return null;
-      }
-      XPathModelHelper helper= XPathModelHelper.getInstance();
-      XPathModel model = helper.newXPathModel();
-      assert myValidatedActivity != null;
-
-      final PathValidationContext context = new PathValidationContext(model, this, this, myValidatedActivity, element);
-      model.setValidationContext(context);
-
-      ExNamespaceContext nsContext = ((BpelEntity)element).getNamespaceContext();
-      model.setNamespaceContext(new BpelXPathNamespaceContext(nsContext));
-
-      model.setVariableResolver(new BpelVariableResolver(context, myValidatedActivity));
-      model.setExtensionFunctionResolver(new BpelXpathExtFunctionResolver());
-
-      model.setExternalModelResolver(new ExternalModelResolver() {
-          public Collection<SchemaModel> getModels(String modelNsUri) {
-              BpelModel bpelModel = ((BpelEntity)element).getBpelModel();
-              return SchemaReferenceBuilder.getSchemaModels(bpelModel, modelNsUri);
-          }
-
-          public Collection<SchemaModel> getVisibleModels() {
-              context.addResultItem(Validator.ResultType.ERROR, i18n(Validator.class, "ABSOLUTE_PATH_DISALLOWED")); // NOI18N
-              return null;
-          }
-
-          public boolean isSchemaVisible(String schemaNamespaceUri) {
-              return context.isSchemaImported(schemaNamespaceUri);
-          }
-      });
-      // Checks if the expression contains ";". 
-      // If it does, then split it to parts and verifies them separately.
-      if (XPathModelFactory.isSplitable(exprText)) {
-          context.addResultItem(exprText, Validator.ResultType.ERROR, i18n(Validator.class, "INCOMPLETE_XPATH")); // NOI18N
-          String[] partsArr = XPathModelFactory.split(exprText);
-
-          for (String anExprText : partsArr) {
-              checkSingleExpr(model, anExprText);
-          }
-          return null;
-      } 
-      else {
-          return checkSingleExpr(model, exprText);
-      }
+  public void visit(StartCounterValue counter) {
+    checkXPath(counter);
   }
 
-  private SchemaComponent checkSingleExpr(XPathModel model, String exprText) {
-      try {
-          XPathExpression xpath = model.parseExpression(exprText);
-          model.resolveExtReferences(true);
-          return model.getLastSchemaComponent();
-      } 
-      catch (XPathException e) {
-          // Nothing to do here because of the validation context 
-          // was specified before and it has to be populated 
-          // with a set of problems.
-          return null;
-      }
+  private SchemaComponent checkXPath(ContentElement element) {
+    return Utils.checkXPathExpression(element, new PathValidationContext(Validator.this, Validator.this, element));
   }
 
-  private static void out() {
-    System.out.println();
+  // # 117689
+  private void checkDuration(DurationExpression duration) {
+    String value = duration.getContent();
+
+    try {
+      DurationUtil.parseDuration(value, true);
+    }
+    catch (IllegalArgumentException e) {
+      addError("FIX_Duration", duration, e.getMessage()); // NOI18N
+    }
   }
 
-  private void out(Object object) {
-    System.out.println("*** " + object); // NOI18N
-  }
-
-  private BpelEntity myValidatedActivity; 
-}
+};}}

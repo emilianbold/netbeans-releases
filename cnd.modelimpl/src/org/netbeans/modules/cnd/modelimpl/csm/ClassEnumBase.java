@@ -124,19 +124,20 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
     
     abstract public Kind getKind();
     
-    protected void register(CsmScope scope) {
+    protected void register(CsmScope scope, boolean registerUnnamedInNamespace) {
         
         RepositoryUtils.put(this);
-        
+        boolean registerInNamespace = registerUnnamedInNamespace;
         if( ProjectBase.canRegisterDeclaration(this) ) {
             registerInProject();
-	    
-	    
-	    if( getContainingClass() == null ) {
-		if(  CsmKindUtilities.isNamespace(scope) ) {
-		    ((NamespaceImpl) scope).addDeclaration(this);
-		}
-	    }
+	    registerInNamespace = true;
+        }
+        if (registerInNamespace) {
+            if (getContainingClass() == null) {
+                if (CsmKindUtilities.isNamespace(scope)) {
+                    ((NamespaceImpl) scope).addDeclaration(this);
+                }
+            }
         }
     }
     

@@ -60,7 +60,6 @@ import org.netbeans.napi.gsfret.source.CompilationController;
 import org.netbeans.napi.gsfret.source.CompilationInfo;
 import org.netbeans.modules.gsfpath.api.queries.SourceForBinaryQuery;
 import org.netbeans.modules.gsf.Language;
-import org.netbeans.modules.gsf.LanguageRegistry;
 import org.netbeans.napi.gsfret.source.ClassIndex;
 import org.netbeans.napi.gsfret.source.Phase;
 import org.netbeans.napi.gsfret.source.Source;
@@ -149,21 +148,20 @@ public class PersistentClassIndex extends ClassIndexImpl {
     // Private methods ---------------------------------------------------------                          
 
     private Void runIndexers(final CompilationInfo info) throws IOException {
-
-        Set<String> mimeTypes = info.getEmbeddedMimeTypes();
+        Indexer indexer = language.getIndexer();
+        if (indexer == null) {
+            return null;
+        }
         final SourceAnalyser sa = getSourceAnalyser();
         long st = System.currentTimeMillis();
-        for (String mimeType : mimeTypes) {
-            for (ParserResult result: info.getEmbeddedResults(mimeType)) {
-                assert result != null;
+        String mimeType = language.getMimeType();
+        
+        for (ParserResult result: info.getEmbeddedResults(mimeType)) {
+            assert result != null;
 
-                Language language = LanguageRegistry.getInstance().getLanguageByMimeType(mimeType);
-                Indexer indexer = language.getIndexer();
-                if (indexer != null) {
-                    sa.analyseUnitAndStore(indexer, result);
-                }
-            }
+            sa.analyseUnitAndStore(indexer, result);
         }
+        
         long et = System.currentTimeMillis();
         return null;
     }
@@ -180,7 +178,7 @@ public class PersistentClassIndex extends ClassIndexImpl {
                 if (SourceAccessor.getINSTANCE().isDispatchThread()) {
                     //Already under javac's lock
                     try {
-                        ClassIndexManager.get(language).writeLock(
+                        ClassIndexManager.writeLock(
                             new ClassIndexManager.ExceptionAction<Void>() {
                                 public Void run () throws IOException {
                                     CompilationInfo compilationInfo = SourceAccessor.getINSTANCE().getCurrentCompilationInfo (js, Phase.RESOLVED);
@@ -200,7 +198,7 @@ public class PersistentClassIndex extends ClassIndexImpl {
                         js.runUserActionTask(new CancellableTask<CompilationController>() {
                             public void run (final CompilationController controller) {
                                 try {                            
-                                    ClassIndexManager.get(language).writeLock(
+                                    ClassIndexManager.writeLock(
                                         new ClassIndexManager.ExceptionAction<Void>() {
                                             public Void run () throws IOException {
                                                 controller.toPhase(Phase.RESOLVED);

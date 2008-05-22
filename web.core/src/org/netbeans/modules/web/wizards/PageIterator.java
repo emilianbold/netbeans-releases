@@ -51,12 +51,12 @@ import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.openide.cookies.SaveCookie;
-
 import org.openide.filesystems.FileObject;
 import org.openide.WizardDescriptor;
-import org.openide.loaders.*;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.TemplateWizard;
 import org.openide.util.NbBundle;
-
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.Sources;
@@ -65,7 +65,6 @@ import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.modules.web.core.Util;
-
 import org.netbeans.modules.web.taglib.TLDDataObject;
 import org.netbeans.modules.web.taglib.model.Taglib;
 import org.netbeans.modules.web.taglib.model.TagFileType;
@@ -81,6 +80,7 @@ import org.netbeans.modules.web.taglib.model.TagFileType;
  */
 public class PageIterator implements TemplateWizard.Iterator {
 
+    private static final Logger LOG = Logger.getLogger(PageIterator.class.getName());
     private static final long serialVersionUID = -7586964579556513549L;
     
     private transient FileType fileType;
@@ -169,7 +169,7 @@ public class PageIterator implements TemplateWizard.Iterator {
         };
     }
 
-    public Set instantiate (TemplateWizard wiz) throws IOException/*, IllegalStateException*/ {
+    public Set<DataObject> instantiate (TemplateWizard wiz) throws IOException/*, IllegalStateException*/ {
         // Here is the default plain behavior. Simply takes the selected
         // template (you need to have included the standard second panel
         // in createPanels(), or at least set the properties targetName and
@@ -242,7 +242,8 @@ public class PageIterator implements TemplateWizard.Iterator {
                         Taglib taglib=null;
                         try {
                             taglib = tldDO.getTaglib();
-                        } catch (IOException ex) {
+                        }
+                        catch (IOException ex) {
                             String mes = java.text.MessageFormat.format (
                                     NbBundle.getMessage (PageIterator.class, "MSG_tldCorrupted"),
                                     new Object [] {tldFo.getNameExt()});
@@ -263,8 +264,9 @@ public class PageIterator implements TemplateWizard.Iterator {
                             if (save!=null) save.save();
                             try {
                                 tldDO.write(taglib);
-                            } catch (IOException ex) {
-                                Logger.getLogger("global").log(Level.WARNING, null, ex);
+                            }
+                            catch (IOException ex) {
+                                LOG.log(Level.WARNING, null, ex);
                             }
                         }
                     }
@@ -352,7 +354,7 @@ public class PageIterator implements TemplateWizard.Iterator {
         if (! hasPrevious ()) throw new NoSuchElementException ();
         index--;
     }
-    public WizardDescriptor.Panel current () {
+    public WizardDescriptor.Panel current() {
         return panels[index];
     }
     

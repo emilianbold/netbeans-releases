@@ -37,7 +37,7 @@
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>0.23.0</specification-version>
+                        <specification-version>1.1.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -290,6 +290,7 @@
                         <code-name-base>org.netbeans.modules.gsf</code-name-base>
                         <recursive/>
                         <compile-dependency/>
+                        <test/>
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.lexer</code-name-base>
@@ -380,15 +381,14 @@
             </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.ruby.debugger</friend>
-                <friend>org.netbeans.modules.ruby.platform</friend>
-                <friend>org.netbeans.modules.ruby.refactoring</friend>
-                <friend>org.netbeans.modules.ruby.railsprojects</friend>
                 <friend>org.netbeans.modules.ruby.javaint</friend>
+                <friend>org.netbeans.modules.ruby.platform</friend>
+                <friend>org.netbeans.modules.ruby.railsprojects</friend>
+                <friend>org.netbeans.modules.ruby.refactoring</friend>
                 <friend>org.netbeans.modules.ruby.rspec</friend>
+                <friend>org.netbeans.modules.ruby.testrunner</friend>
                 <package>org.netbeans.modules.ruby.rubyproject</package>
-                <package>org.netbeans.modules.ruby.rubyproject.api</package>
-                <package>org.netbeans.modules.ruby.rubyproject.execution</package>
-                <package>org.netbeans.modules.ruby.rubyproject.gems</package>
+                <package>org.netbeans.modules.ruby.rubyproject.rake</package>
                 <package>org.netbeans.modules.ruby.rubyproject.spi</package>
                 <package>org.netbeans.modules.ruby.rubyproject.ui</package>
             </friend-packages>

@@ -54,8 +54,6 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.debugger.ActionsManager;
-import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.api.debugger.Session;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.ActionsProvider;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
@@ -263,11 +261,6 @@ implements Executor, PropertyChangeListener {
             }
             if (stop) {
                 removeStepRequests (le.thread ());
-                Session session = contextProvider.lookupFirst(null, Session.class);
-                if (session != null) {
-                    DebuggerManager.getDebuggerManager().setCurrentSession(session);
-                }
-                getDebuggerImpl ().setStoppedState (tr);
             } else {
                 smartLogger.finer(" => do next step.");
                 if (smartSteppingStepOut) {

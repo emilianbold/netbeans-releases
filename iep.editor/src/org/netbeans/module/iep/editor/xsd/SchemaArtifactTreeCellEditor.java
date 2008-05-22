@@ -38,11 +38,11 @@ public class SchemaArtifactTreeCellEditor extends AbstractCellEditor implements 
     
     private SelectableTreeNode mCellValue;
     
-    private List<AXIComponent> mExistingArtificatNames = new ArrayList<AXIComponent>();
+    private List mExistingArtificatNames = new ArrayList();
     
     public SchemaArtifactTreeCellEditor(JTree tree,
                                         TreeCellRenderer renderer,
-                                        List<AXIComponent> existingArtificatNames) { 
+                                        List existingArtificatNames) { 
         this.mTree = tree;
         this.mRenderer = renderer;
         this.mExistingArtificatNames = existingArtificatNames;
@@ -70,7 +70,7 @@ public class SchemaArtifactTreeCellEditor extends AbstractCellEditor implements 
     
     @Override
     public boolean shouldSelectCell(EventObject anEvent) { 
-	return true; 
+    return true; 
     }
 
     @Override
@@ -111,20 +111,18 @@ public class SchemaArtifactTreeCellEditor extends AbstractCellEditor implements 
             mCheckBox.removeItemListener(this);
             stopCellEditing();
             
-            AXIComponent comp = (AXIComponent) mNode.getUserObject();
+            //AXIComponent comp = (AXIComponent) mNode.getUserObject();
+            Object comp =  mNode.getUserObject();
             
-            if(comp instanceof AXIType) {
-                AXIType type = (AXIType) comp;
-                String name = type.getName();
-                if(mNode.isSelected()) {
-                    if(!mExistingArtificatNames.contains(comp)) {
-                        mExistingArtificatNames.add(comp);
-                    }
-                } else {
-                    mExistingArtificatNames.remove(comp);
+            if(mNode.isSelected()) {
+                if(!mExistingArtificatNames.contains(comp)) {
+                    mExistingArtificatNames.add(comp);
                 }
-                
+            } else {
+                mExistingArtificatNames.remove(comp);
             }
+                
+            
           }
         
     }

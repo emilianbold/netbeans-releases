@@ -109,7 +109,9 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                     DEFAULT_WELCOME_TEXT_HEADER_JDK :
                     (type.equals(BundleType.JAVA_TOOLS) ? 
                            DEFAULT_WELCOME_TEXT_HEADER_JTB : 
-                                   DEFAULT_WELCOME_TEXT_HEADER )));
+                           (type.equals(BundleType.MYSQL) ? 
+                                  DEFAULT_WELCOME_TEXT_HEADER_MYSQL : 
+                                       DEFAULT_WELCOME_TEXT_HEADER ))));
         
         setProperty(WELCOME_TEXT_DETAILS_PROPERTY,
                 ResourceUtils.getString(NbWelcomePanel.class,
@@ -247,7 +249,10 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                             WELCOME_PAGE_TYPE_PROPERTY));
                     boolean stateFileUsed = System.getProperty(
                             Registry.SOURCE_STATE_FILE_PATH_PROPERTY) != null;
-                    if(!stateFileUsed && 
+                    boolean sysPropInstallLocation = System.getProperty(product.getUid() + 
+				StringUtils.DOT + 
+				Product.INSTALLATION_LOCATION_PROPERTY) == null;
+                    if(!stateFileUsed && sysPropInstallLocation &&
                             (tp.equals(BundleType.CUSTOMIZE) || tp.equals(BundleType.CUSTOMIZE_JDK))) {
                         product.setStatus(Status.NOT_INSTALLED);
                     }
@@ -657,7 +662,7 @@ public class NbWelcomePanel extends ErrorMessagePanel {
             BundleType type = BundleType.getType(
                     System.getProperty(WELCOME_PAGE_TYPE_PROPERTY));
             if(!type.equals(BundleType.JAVAEE) && !type.equals(BundleType.JAVAEE_JDK) && 
-                    !type.equals(BundleType.JAVA_TOOLS)) {
+                    !type.equals(BundleType.JAVA_TOOLS) && !type.equals(BundleType.MYSQL)) {
                 add(scrollPane, new GridBagConstraints(
                         1, dy++,                           // x, y
                         4, 1,                              // width, height
@@ -671,7 +676,8 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                     if (node instanceof Product) {
                         final Product product = (Product) node;
                         if(product.getUid().equals("glassfish") ||
-                                product.getUid().equals("tomcat")) {
+                                product.getUid().equals("tomcat") ||
+				product.getUid().equals("mysql")) {
                             final NbiCheckBox chBox;
                             
                             if (product.getStatus() == Status.INSTALLED) {
@@ -865,7 +871,8 @@ public class NbWelcomePanel extends ErrorMessagePanel {
         CND_JDK("cnd.jdk"),
         PHP_JDK("php.jdk"),
         CUSTOMIZE_JDK("customize.jdk"),
-        JAVA_TOOLS("java.tools");
+        JAVA_TOOLS("java.tools"),
+	MYSQL("mysql");
         
         private String name;
         private BundleType(String s) {
@@ -880,11 +887,23 @@ public class NbWelcomePanel extends ErrorMessagePanel {
             }
             return CUSTOMIZE;
         }
+        @Override
         public String toString() {
             return name;
         }
         public boolean isJDKBundle() {
             return name.endsWith(".jdk");
+        }
+        public String getNetBeansBundleId() {
+            if(isJDKBundle()) {
+                return "NBJDK";
+            } else if(this.equals(JAVA_TOOLS)) {
+                return "NBEETOOLS";
+            } else if(this.equals(MYSQL)) {
+                return "NBMYSQL";
+            } else {
+                return "NB";
+            }
         }
     }
     /////////////////////////////////////////////////////////////////////////////////
@@ -940,6 +959,11 @@ public class NbWelcomePanel extends ErrorMessagePanel {
     public static final String DEFAULT_WELCOME_TEXT_HEADER_JTB =
             ResourceUtils.getString(NbWelcomePanel.class,
             "NWP.welcome.text.header.jtb"); // NOI18N
+    public static final String DEFAULT_WELCOME_TEXT_HEADER_MYSQL =
+            ResourceUtils.getString(NbWelcomePanel.class,
+            "NWP.welcome.text.header.nbgfmysql"); // NOI18N
+
+
     public static final String WELCOME_TEXT_HEADER_APPENDING_PROPERTY =
             "NWP.welcome.text.header"; // NOI18N
     

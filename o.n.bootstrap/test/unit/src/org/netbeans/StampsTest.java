@@ -66,7 +66,7 @@ public class StampsTest extends NbTestCase {
     
     
     public static Test suite() {
-//        return new StampsTest("testFastWhenShutdown");
+        //return new StampsTest("testStampsInvalidatedWhenClustersChange");
         return new NbTestSuite(StampsTest.class);
     }
     
@@ -136,8 +136,55 @@ public class StampsTest extends NbTestCase {
         CountingSecurityManager.initialize(new File(userdir, "var").getPath());
         long newStamp2 = Stamps.moduleJARs();
         
-        CountingSecurityManager.assertCounts("Just two accesses to cache", 2);
+        CountingSecurityManager.assertCounts("Just four accesses to cache", 4);
         assertEquals("Stamps are the same", stamp, newStamp2);
+    }        
+    
+    
+    public void testStampsInvalidatedWhenClustersChange() throws IOException {
+        final Stamps s = Stamps.getModulesJARs();
+        
+        assertNull(s.asByteBuffer("mycache.dat"));
+        assertNull(s.asStream("mycache.dat"));
+
+        class Up implements Stamps.Updater {
+
+            public void flushCaches(DataOutputStream os) throws IOException {
+                os.writeInt(1);
+                os.writeInt(2);
+                os.writeShort(2);
+            }
+
+            public void cacheReady() {
+                assertNotNull("stream can be obtained", s.asStream("mycache.dat"));
+            }
+            
+        }
+        Up updater = new Up();
+        
+        s.scheduleSave(updater, "mycache.dat", false);
+        
+        assertNull(s.asByteBuffer("mycache.dat"));
+        assertNull(s.asStream("mycache.dat"));
+        
+        s.waitFor(false);
+        
+        ByteBuffer bb;
+        InputStream is;
+        assertNotNull(bb = s.asByteBuffer("mycache.dat"));
+        assertNotNull(is = s.asStream("mycache.dat"));
+        
+        assertEquals("10 bytes", 10, bb.remaining());
+        assertEquals("10 bytes stream", 10, is.available());
+        is.close();
+        bb.clear();
+
+        System.getProperties().remove("netbeans.dirs");
+        Stamps.main("reset");
+        Stamps p = Stamps.getModulesJARs();
+
+        assertNull(p.asByteBuffer("mycache.dat"));
+        assertNull(p.asStream("mycache.dat"));
     }        
 
     public void testWriteToCache() throws Exception {
@@ -145,7 +192,6 @@ public class StampsTest extends NbTestCase {
         
         assertNull(s.asByteBuffer("mycache.dat"));
         assertNull(s.asStream("mycache.dat"));
-
         class Up implements Stamps.Updater {
 
             public void flushCaches(DataOutputStream os) throws IOException {

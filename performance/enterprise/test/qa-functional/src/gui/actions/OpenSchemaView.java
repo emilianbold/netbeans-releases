@@ -43,12 +43,20 @@ package gui.actions;
 
 import gui.EPUtilities;
 
+import java.io.File;
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
-import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
 
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.junit.NbTestCase;
+import org.openide.cookies.EditorCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 
 
 /**
@@ -60,6 +68,11 @@ import org.netbeans.jemmy.operators.ComponentOperator;
 public class OpenSchemaView extends org.netbeans.performance.test.utilities.PerformanceTestCase {
     
     private static String projectName, schemaName;
+    private boolean testGC = false;
+    private List<WeakReference> refObj = new ArrayList<WeakReference>();
+    private List<WeakReference> refDoc = new ArrayList<WeakReference>();
+    private String filename = System.getProperty("xtest.tmpdir") + File.separator 
+            + "SOATestProject" + File.separator + "src";
     
     /** Creates a new instance of OpenSchemaView */
     public OpenSchemaView(String testName) {
@@ -79,15 +92,32 @@ public class OpenSchemaView extends org.netbeans.performance.test.utilities.Perf
     public void testOpenSchemaView(){
         projectName = "TravelReservationService";
         schemaName = "OTA_TravelItinerary";
+        filename += File.separator + schemaName + ".xsd";
         doMeasurement();
     }
     
     public void testOpenComplexSchemaView(){
         projectName = "SOATestProject";
         schemaName = "fields";
+        filename += File.separator + schemaName + ".xsd";
         doMeasurement();
     }
 
+    public void testGCwithOpenComplexSchemaView(){
+        testGC = true;
+        testOpenComplexSchemaView();
+        for (WeakReference ref : refObj) {
+            log("Trying to assertGC for " + ref);
+            NbTestCase.assertGC("Schema data object can disappear", ref);            
+        }
+        log("All Schema data objects are GCed");
+        for (WeakReference ref : refDoc) {
+            log("Trying to assertGC for " + ref);
+            NbTestCase.assertGC("Schema document can disappear", ref);            
+        }
+        log("All Schema documents are GCed");
+    }
+    
     public void prepare() {
         log(":: prepare");
     }
@@ -101,13 +131,48 @@ public class OpenSchemaView extends org.netbeans.performance.test.utilities.Perf
     }
 
     @Override
+    protected void initialize() {
+        super.initialize();
+        System.gc();
+        new EventTool().waitNoEvent(3000);
+    }
+
+    @Override
     protected void shutdown() {
         super.shutdown();
     }
-    
+
+    @Override
+    @SuppressWarnings("unchecked")
     public void close(){
+        if (testGC) {
+            try {
+                log("filename = " + filename);
+                FileObject fo = FileUtil.toFileObject(new File(filename));
+                if (fo == null) {
+                    log("fo == null");
+                }
+                DataObject obj = DataObject.find(fo);
+                if (obj == null) {
+                    log("obj == null");
+                }
+                log("obj = " + obj);
+                EditorCookie ed = obj.getLookup().lookup(EditorCookie.class);
+                if (ed == null) {
+                }
+                log("ed = " + ed);
+    //            JEditorPane[] arr = ed.getOpenedPanes();
+//                StyledDocument document = ed.getDocument();
+
+                refObj.add(new WeakReference(obj));
+//                refDoc.add(new WeakReference(document));
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to initiate WeakReferences", e);
+            }
+        }
         new CloseAllDocumentsAction().performAPI(); //avoid issue 68671 - editors are not closed after closing project by ProjectSupport
-        new EventTool().waitNoEvent(2000);
+        System.gc();
+        new EventTool().waitNoEvent(3000);
     }
     
 }

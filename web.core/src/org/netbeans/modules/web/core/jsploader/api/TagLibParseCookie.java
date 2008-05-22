@@ -59,6 +59,19 @@ public interface TagLibParseCookie extends org.openide.nodes.Node.Cookie {
      */
     public OpenInfo getOpenInfo(boolean preferCurrent, boolean useEditor);
 
+    
+    /** Sets document dirty flag after modification. 
+     */
+    public void setDocumentDirty(boolean b);
+    
+    /** Checks if the document is dirty - modified after last parsing
+     */
+    public boolean isDocumentDirty();
+    
+    /** @return JSP auto parsing task. 
+     */
+    public org.openide.util.Task autoParse();
+    
     /**
      * Class representing data important for opening the page in the editor, e.g. whether the page is in classic
      * or XML syntax, or what is the file encoding. Implementations of this interface are returned by

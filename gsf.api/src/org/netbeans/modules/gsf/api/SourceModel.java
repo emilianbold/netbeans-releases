@@ -41,6 +41,7 @@
 package org.netbeans.modules.gsf.api;
 
 import java.io.IOException;
+import org.netbeans.modules.gsf.api.annotations.NonNull;
 import org.openide.filesystems.FileObject;
 
 
@@ -50,8 +51,8 @@ import org.openide.filesystems.FileObject;
  * @author Tor Norbye
  */
 public interface SourceModel {
-    void runUserActionTask(final CancellableTask<CompilationInfo> task, final boolean shared) throws IOException;
-    FileObject getFileObject();
+    void runUserActionTask(@NonNull final CancellableTask<CompilationInfo> task, final boolean shared) throws IOException;
+    @NonNull FileObject getFileObject();
     /**
      * Return true iff initial scanning is in progress
      * @return True iff scanning is in progress

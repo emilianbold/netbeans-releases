@@ -119,7 +119,7 @@ public class AutoupdateCheckScheduler {
     }
     
     private static void scheduleRefreshProviders () {
-        refreshUpdatCenters (null);
+        refreshUpdateCenters (null);
         final int delay = 500;
         final long startTime = System.currentTimeMillis ();
         RequestProcessor.Task t = RequestProcessor.getDefault ().post (doCheckAvailableUpdates, delay);
@@ -177,15 +177,15 @@ public class AutoupdateCheckScheduler {
         }
     };
     
-    public static void runCheckAvailableUpdates () {
-        RequestProcessor.getDefault ().post (doCheckAvailableUpdates);
+    public static void runCheckAvailableUpdates (int delay) {
+        RequestProcessor.getDefault ().post (doCheckAvailableUpdates, delay);
     }
     
     public static Collection<UpdateElement> checkUpdateElements (OperationType type, boolean forceReload) {
         // check
         err.log (Level.FINEST, "Check UpdateElements for " + type);
         if (forceReload) {
-            refreshUpdatCenters (ProgressHandleFactory.createHandle ("dummy-check-for-updates")); // NOI18N
+            refreshUpdateCenters (ProgressHandleFactory.createHandle ("dummy-check-for-updates")); // NOI18N
         }
         List<UpdateUnit> units = UpdateManager.getDefault ().getUpdateUnits (Utilities.getUnitTypes ());
         boolean handleUpdates = OperationType.UPDATE == type;
@@ -209,6 +209,17 @@ public class AutoupdateCheckScheduler {
                 if (oc.canBeAdded (unit, element)) {
                     OperationInfo<InstallSupport> operationInfo = oc.add (element);
                     if (operationInfo == null) {
+                        continue;
+                    }
+                    boolean skip = false;
+                    for (UpdateElement tmpEl : operationInfo.getRequiredElements ()) {
+                       if (tmpEl.getUpdateUnit ().isPending ()) {
+                           err.log (Level.WARNING, "Plugin " + element + // NOI18N
+                                   " depends on " + tmpEl + " in pending state.");                           
+                           skip = true;
+                       } 
+                    }
+                    if (skip) {
                         continue;
                     }
                     oc.add (operationInfo.getRequiredElements ());
@@ -237,7 +248,7 @@ public class AutoupdateCheckScheduler {
         return updates;
     }
     
-    private static Collection<String> refreshUpdatCenters (ProgressHandle progress) {
+    private static Collection<String> refreshUpdateCenters (ProgressHandle progress) {
         final long startTime = System.currentTimeMillis ();
         Collection<String> problems = new HashSet<String> ();
         assert ! SwingUtilities.isEventDispatchThread () : "Cannot run refreshProviders in EQ!";
@@ -428,7 +439,7 @@ public class AutoupdateCheckScheduler {
         boolean wasFlashing = flasher != null;
         flasher = AvailableUpdatesNotification.getFlasher (onMouseClick);
         assert flasher != null : "Updates Flasher cannot be null.";
-        flasher.startFlashing ();
+                flasher.startFlashing ();
         final Runnable showBalloon = new Runnable() {
             public void run() {
                 JLabel balloon = new JLabel( units.size() == 1 ?

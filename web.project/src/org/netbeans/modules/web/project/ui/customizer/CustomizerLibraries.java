@@ -42,11 +42,13 @@
 package org.netbeans.modules.web.project.ui.customizer;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import javax.swing.DefaultListModel;
 import javax.swing.JPanel;
 import javax.swing.ListSelectionModel;
@@ -58,16 +60,19 @@ import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.PlatformsCustomizer;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport.Item;
 import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
-import org.netbeans.modules.j2ee.common.SharabilityUtility;
 import org.netbeans.modules.j2ee.common.project.ui.ClassPathUiSupport;
 import org.netbeans.modules.j2ee.common.project.ui.EditMediator;
+import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
 import org.netbeans.modules.web.project.classpath.ClassPathSupportCallbackImpl;
 import org.netbeans.modules.web.project.ui.WebLogicalViewProvider;
 import org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileUtil;
@@ -218,9 +223,37 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
         }
         jTabbedPane1.repaint();
         testBroken();
-        
+        uiProperties.getProject().refreshLibraryProperties();
     }
-        
+    
+    private void cleanupOldLibraryReferences() {
+        ProjectManager.mutex().writeAccess(new Runnable() {
+            public void run() {
+                // remove "libs.XXX.classpath" from project.properties - not needed for shared project
+                AntProjectHelper helper = uiProperties.getProject().getAntProjectHelper();
+                EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                List<String> l = new ArrayList<String>();
+                l.addAll(ep.keySet());
+                for (String key : l) {
+                    if (key.startsWith("libs.") && key.endsWith(".classpath")) { // NOI18N
+                        ep.remove(key);
+                    }
+                }
+                helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+                
+                // remove all libs.XXX.classpath.libfile.XXX props from private properties
+                EditableProperties privateProps = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+                ProjectProperties.removeObsoleteLibraryLocations(privateProps);
+                helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProps);
+                
+                try {
+                    ProjectManager.getDefault().saveProject(uiProperties.getProject());
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }});
+    }
+    
     private void testBroken() {
         
         DefaultListModel[] models = new DefaultListModel[] {
@@ -700,7 +733,7 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabelTarget)
                     .add(jButton1)
-                    .add(jComboBoxTarget, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 18, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(jComboBoxTarget, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(sharedLibrariesLabel)
@@ -735,6 +768,7 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
             collectLibs(uiProperties.JAVAC_CLASSPATH_MODEL.getDefaultListModel(), libs, jars);
             collectLibs(uiProperties.JAVAC_TEST_CLASSPATH_MODEL, libs, jars);
             collectLibs(uiProperties.RUN_TEST_CLASSPATH_MODEL, libs, jars);
+            collectLibs(uiProperties.WAR_CONTENT_ADDITIONAL_MODEL, libs, jars);
             boolean result = SharableLibrariesUtils.showMakeSharableWizard(uiProperties.getProject().getAntProjectHelper(), uiProperties.getProject().getReferenceHelper(), libs, jars);
             if (result) {
                 isSharable = true;
@@ -746,6 +780,7 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
                 updateJars(uiProperties.JAVAC_TEST_CLASSPATH_MODEL);
                 updateJars(uiProperties.RUN_TEST_CLASSPATH_MODEL);
                 switchLibrary();
+                cleanupOldLibraryReferences();
             }
         } else {
             File prjLoc = FileUtil.toFile(uiProperties.getProject().getProjectDirectory());
@@ -762,6 +797,25 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
     private void collectLibs(DefaultListModel model, List<String> libs, List<String> jarReferences) { 
         for (int i = 0; i < model.size(); i++) {
             ClassPathSupport.Item item = (ClassPathSupport.Item) model.get(i);
+            if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY) {
+                if (!item.isBroken()) {
+                    libs.add(item.getLibrary().getName());
+                }
+            }
+            if (item.getType() == ClassPathSupport.Item.TYPE_JAR) {
+                if (item.getReference() != null) {
+                    //TODO reference is null for not yet persisted items.
+                    // there seems to be no way to generate a reference string without actually
+                    // creating and writing the property..
+                    jarReferences.add(item.getReference());
+                }
+            }
+        }
+    }    
+
+    private void collectLibs(WarIncludesUiSupport.ClasspathTableModel model, List<String> libs, List<String> jarReferences) { 
+        for (int i = 0; i < model.getRowCount(); i++) {
+            ClassPathSupport.Item item = (ClassPathSupport.Item) model.getValueAt(i, 0);
             if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY) {
                 if (!item.isBroken()) {
                     libs.add(item.getLibrary().getName());

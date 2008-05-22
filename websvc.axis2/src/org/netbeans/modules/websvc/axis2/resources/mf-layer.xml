@@ -75,6 +75,10 @@ made subject to such option by the copyright holder.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.axis2.wizards.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/websvc/axis2/resources/axis_node_16.png"/> 
             </file>
+            <file name="AxiomService.java" url="nbres:/org/netbeans/modules/websvc/axis2/resources/EmptyAxiomService.template">
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="position" intvalue="3201"/>
+            </file>
         </folder><!-- Axis2 -->
     </folder>
     <folder name="Projects">

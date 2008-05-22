@@ -160,6 +160,12 @@ public class Utilities {
         return opt.getGuessMethodArguments();
     }
 
+    public static boolean pairCharactersCompletion() {
+        Lookup lkp = MimeLookup.getLookup("text/x-java"); //NOI18N
+        JavaOptions opt = lkp != null ? lkp.lookup(JavaOptions.class) : null;
+        return opt.getPairCharactersCompletion();
+    }
+
     private static void lazyInit() {
         if (!inited) {
             inited = true;
@@ -345,16 +351,13 @@ public class Utilities {
         return result;
     }
 
-    public static boolean isInMethod(TreePath tp) {
-        while (tp != null) {
-            if (tp.getLeaf().getKind() == Tree.Kind.METHOD) {
-                return true;
-            }
-            
-            tp = tp.getParentPath();
-        }
-        
-        return false;
+    public static boolean inAnonymousOrLocalClass(TreePath path) {
+        if (path == null)
+            return false;
+        TreePath parentPath = path.getParentPath();
+        if (path.getLeaf().getKind() == Tree.Kind.CLASS && parentPath.getLeaf().getKind() != Tree.Kind.COMPILATION_UNIT && parentPath.getLeaf().getKind() != Tree.Kind.CLASS)                
+            return true;
+        return inAnonymousOrLocalClass(parentPath);
     }
         
     private static List<String> varNamesForType(TypeMirror type, Types types, Elements elements) {
@@ -632,7 +635,8 @@ public class Utilities {
             switch (mit.getMethodSelect().getKind()) {
                 case IDENTIFIER:
                     Scope s = info.getTrees().getScope(path);
-                    on = s.getEnclosingClass().asType();
+                    TypeElement enclosingClass = s.getEnclosingClass();
+                    on = enclosingClass != null ? enclosingClass.asType() : null;
                     methodName = ((IdentifierTree) mit.getMethodSelect()).getName().toString();
                     break;
                 case MEMBER_SELECT:

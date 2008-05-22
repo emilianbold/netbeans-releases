@@ -409,6 +409,9 @@ implements Serializable, AbstractLookup.Storage<ArrayList<Class>> {
 
                                 while (child.hasNext()) {
                                     Node node = extractNode(child);
+                                    if (node == null) {
+                                        continue;
+                                    }
                                     Node prev = nodes.put(node.getType(), node);
 
                                     if (prev != null) {

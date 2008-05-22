@@ -44,7 +44,7 @@
     
     <!-- test -->
     <target name="unit-test" depends="test"/>
-    <target name="proj-test" depends="test-0,test-1,test-2,test-3,test-4,test-5,test-6,test-7,test-8,test-9,test-a"/>
+    <target name="proj-test" depends="test-0,test-1,test-2,test-3,test-4,test-5,test-6,test-7,test-8,test-9,test-a,test-b,test-c"/>
     
     <target name="test">
         <!-- print -->
@@ -64,6 +64,12 @@
         <!-- samples -->
         <subant target="default" inheritAll="false">
             <property name="caps.netbeans.home" location="${home}/nbbuild/netbeans"/>
+            <buildpath location="${samples}/AsynchronousSample/AsynchronousSample/build.xml"/>
+            <buildpath location="${samples}/AsynchronousSample/AsynchronousSampleApplication/build.xml"/>
+            <buildpath location="${samples}/SynchronousSample/SynchronousSample/build.xml"/>
+            <buildpath location="${samples}/SynchronousSample/SynchronousSampleApplication/build.xml"/>
+            <buildpath location="${samples}/TravelReservationService/TravelReservationService/build.xml"/>
+            <buildpath location="${samples}/TravelReservationService/TravelReservationServiceApplication/build.xml"/>
             <buildpath location="${samples}/BluePrint1/BluePrint1/build.xml"/>
             <buildpath location="${samples}/BluePrint1/BluePrint1Application/build.xml"/>
             <buildpath location="${samples}/BluePrint2/BluePrint2/build.xml"/>
@@ -74,12 +80,6 @@
             <buildpath location="${samples}/BluePrint4/BluePrint4Application/build.xml"/>
             <buildpath location="${samples}/BluePrint5/BluePrint5/build.xml"/>
             <buildpath location="${samples}/BluePrint5/BluePrint5Application/build.xml"/>
-            <buildpath location="${samples}/AsynchronousSample/AsynchronousSample/build.xml"/>
-            <buildpath location="${samples}/AsynchronousSample/AsynchronousSampleApplication/build.xml"/>
-            <buildpath location="${samples}/SynchronousSample/SynchronousSample/build.xml"/>
-            <buildpath location="${samples}/SynchronousSample/SynchronousSampleApplication/build.xml"/>
-            <buildpath location="${samples}/TravelReservationService/TravelReservationService/build.xml"/>
-            <buildpath location="${samples}/TravelReservationService/TravelReservationServiceApplication/build.xml"/>
         </subant>
     </target>
 
@@ -94,6 +94,7 @@
         <antcall target="do-test-jbi"><param name="dir" value="assign/MessageWithNoParts"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="assign/predicates"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="assign/VariableAssignments"/></antcall>
+        <antcall target="do-test-jbi"><param name="dir" value="assign/virtualassignBpel"/></antcall>
     </target>
         
     <target name="test-2">
@@ -164,11 +165,19 @@
     </target>
 
     <target name="test-7">
+        <!-- faulthandling -->
+        <antcall target="do-test-jbi"><param name="dir" value="faulthandling/FaultHandlingBpel"/></antcall>
+        <antcall target="do-test-jbi"><param name="dir" value="faulthandling/StandardFaultsBpel"/></antcall>
+        <antcall target="do-test-jbi"><param name="dir" value="faulthandling/SystemFaultsBpel"/></antcall>
+        
         <!-- flow -->
         <antcall target="do-test-jbi"><param name="dir" value="flow/FlowBpel"/></antcall>
 
         <!-- foreach-bpel20 -->
         <antcall target="do-test-jbi"><param name="dir" value="foreach-bpel20/ForEachBpel"/></antcall>
+
+        <!-- i18n -->
+        <antcall target="do-test-jbi"><param name="dir" value="i18n/assign/AssignBpel"/></antcall>
 
         <!-- if -->
         <antcall target="do-test-jbi"><param name="dir" value="if/ifBpel"/></antcall>
@@ -176,19 +185,23 @@
         <!-- implementMultiOperations -->
         <antcall target="do-test-jbi"><param name="dir" value="implementMultiOperations/MultipleBPELs"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="implementMultiOperations/OneBPEL"/></antcall>
+    </target>
 
+    <target name="test-8">
         <!-- JavaEEIntegration -->
         <antcall target="do-test-jbi"><param name="dir" value="JavaEEIntegration/BPToJavaEE/JavaEEFault/FaultBP"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="JavaEEIntegration/DirectElem/MsgDirectElem"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="JavaEEIntegration/InOnlyMultipleBPJava/InOnlyMultiBP"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="JavaEEIntegration/JavaEEToBP/FaultTest/bplGreetService"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="JavaEEIntegration/JavaEEToBP/JavaEEToBPProj"/></antcall>
+        <antcall target="do-test-jbi"><param name="dir" value="JavaEEIntegration/JavaEEToBP/ProdMngmntSamples/CreditApplicationProcessorBusinessProcess"/></antcall>
+        <antcall target="do-test-jbi"><param name="dir" value="JavaEEIntegration/TwoWayEjbToBP/TwoWay"/></antcall>
         
         <!-- MessageExchange -->
         <antcall target="do-test-jbi"><param name="dir" value="MessageExchange/MessageExchangeBpel"/></antcall>
     </target>
 
-    <target name="test-8">
+    <target name="test-9">
         <!-- misc -->
         <antcall target="do-test-jbi"><param name="dir" value="misc/MiscBpel"/></antcall>
 
@@ -210,12 +223,19 @@
         <antcall target="do-test-jbi"><param name="dir" value="rethrow/Rethrow"/></antcall>
     </target>
         
-    <target name="test-9">
+    <target name="test-a">
         <!-- samples -->
         <antcall target="do-test-jbi"><param name="dir" value="samples/AsynchronousSample"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="samples/EndToEndScenario"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="samples/samplesBPEL"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="samples/SynchronousSample"/></antcall>
+
+        <!-- scalability -->
+        <antcall target="do-test-jbi"><param name="dir" value="scalability/ScalabilityBpel"/></antcall>
+        <antcall target="do-test-jbi"><param name="dir" value="scalability/Test2/ScalabilityTest2BP"/></antcall>
+
+        <!-- scenarios -->
+        <antcall target="do-test-jbi"><param name="dir" value="scenarios/CandidateSelection/SelectionProcess"/></antcall>
 
         <!-- SchemaElemDecl -->
         <antcall target="do-test-jbi"><param name="dir" value="SchemaElemDecl/BPwithElemRef"/></antcall>
@@ -225,19 +245,29 @@
         <antcall target="do-test-jbi"><param name="dir" value="SchemaElemDecl/BPwithNestedElemQualified"/></antcall>
     </target>
 
-    <target name="test-a">
+    <target name="test-b">
         <!-- ScopeTermination -->
         <antcall target="do-test-jbi"><param name="dir" value="ScopeTermination/ScopeTerminationBpel"/></antcall>
+
+        <!-- systemicqualities -->
+        <antcall target="do-test-jbi"><param name="dir" value="systemicqualities/Redelivery/RedeliverWithinRetries"/></antcall>
+        <antcall target="do-test-jbi"><param name="dir" value="systemicqualities/Redelivery/RedeliverWithSuspend"/></antcall>
+        <antcall target="do-test-jbi"><param name="dir" value="systemicqualities/Redelivery/RedirectOnFailure"/></antcall>
         
         <!-- TerminationHandler -->
         <antcall target="do-test-jbi"><param name="dir" value="TerminationHandler/TerminationHandlerBpel"/></antcall>
+
+        <!-- TestsForBugs -->
+        <antcall target="do-test-jbi"><param name="dir" value="TestsForBugs/Bug6431708/testBPEL"/></antcall>
 
         <!-- wait -->
         <antcall target="do-test-jbi"><param name="dir" value="wait/WaitBpel"/></antcall>
 
         <!-- while -->
         <antcall target="do-test-jbi"><param name="dir" value="while/WhileBpel"/></antcall>
+    </target>
 
+    <target name="test-c">
         <!-- xpathfunctions -->
         <antcall target="do-test-jbi"><param name="dir" value="xpathfunctions/XPathFunctionsBpel"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="xpathfunctions/XSDFunctions"/></antcall>

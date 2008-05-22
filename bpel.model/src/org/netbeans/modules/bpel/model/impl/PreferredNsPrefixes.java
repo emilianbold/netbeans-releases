@@ -48,6 +48,7 @@ public final class PreferredNsPrefixes {
             uriToPrefixMap.put(Extensions.TRACE_EXT_URI, "sxt"); // NOI18N
             uriToPrefixMap.put(Extensions.ERROR_EXT_URI, "sxeh"); // NOI18N
             uriToPrefixMap.put(Extensions.TRANSACTION_EXT_URI, "sxtx"); // NOI18N
+            uriToPrefixMap.put(Extensions.EDITOR_EXT_URI, "sxed"); // NOI18N
         }
         //
         String prefix = uriToPrefixMap.get(nsUri);

@@ -46,6 +46,11 @@ import org.openide.filesystems.FileUtil;
 
 public final class RubyPlatformManagerTest extends RubyTestBase {
 
+    /** "Bridge" to package private {@link RubyPlatformManager#resetPlatforms}. */
+    public static void resetPlatforms() {
+        RubyPlatformManager.resetPlatforms();
+    }
+
     public RubyPlatformManagerTest(final String testName) {
         super(testName);
     }
@@ -53,15 +58,23 @@ public final class RubyPlatformManagerTest extends RubyTestBase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        RubyPlatformManager.resetPlatforms();
+        resetPlatforms();
     }
 
     public void testAddPlatform() throws Exception {
         assertEquals("bundle JRuby", 1, RubyPlatformManager.getPlatforms().size());
+        RubyPlatform defPlatform = RubyPlatformManager.getDefaultPlatform();
+        assertNotNull("has default platform", defPlatform);
+        assertEquals("platform already present", defPlatform, RubyPlatformManager.addPlatform(defPlatform.getInterpreterFile()));
+        assertEquals("was not added twice", 1, RubyPlatformManager.getPlatforms().size());
+    }
+    
+    public void testAddingTheSamePlatformTwice() throws Exception {
+        assertEquals("bundle JRuby", 1, RubyPlatformManager.getPlatforms().size());
         RubyPlatform ruby = RubyPlatformManager.addPlatform(setUpRuby());
         File defaultRubyHome = getTestRubyHome();
         assertEquals("right ruby home", defaultRubyHome, ruby.getHome());
-        assertEquals("right ruby lib", new File(defaultRubyHome, "lib/ruby/1.8").getAbsolutePath(), ruby.getLibDir());
+        assertEquals("right ruby lib", new File(defaultRubyHome, "lib/ruby/1.8").getAbsolutePath(), ruby.getVersionLibDir());
         assertEquals("two platforms", 2, RubyPlatformManager.getPlatforms().size());
         RubyPlatformManager.removePlatform(ruby);
         assertEquals("platform removed", 1, RubyPlatformManager.getPlatforms().size());
@@ -116,7 +129,7 @@ public final class RubyPlatformManagerTest extends RubyTestBase {
         // remove and check
         gemManager.removeGemPath(dummyRepo);
         // XXX this is neeeded on Windows. But we do use FileObject everywhere (?!)
-        platform.getLibFO().refresh();
+        platform.getLibDirFO().refresh();
         RubyPlatformManager.resetPlatforms();
         platform = RubyPlatformManager.getDefaultPlatform();
         gemManager = platform.getGemManager();

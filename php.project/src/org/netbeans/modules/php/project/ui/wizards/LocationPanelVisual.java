@@ -43,28 +43,39 @@ package org.netbeans.modules.php.project.ui.wizards;
 import java.io.File;
 import javax.swing.JPanel;
 
+import javax.swing.MutableComboBoxModel;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.modules.php.project.ui.LocalServer;
+import org.netbeans.modules.php.project.ui.LocalServerController;
+import org.netbeans.modules.php.project.ui.Utils;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
+import org.openide.util.NbBundle;
 
 /**
  * @author Tomas Mysik
  */
-class LocationPanelVisual extends JPanel implements DocumentListener {
+class LocationPanelVisual extends JPanel implements DocumentListener, ChangeListener {
 
     private static final long serialVersionUID = 9464147466826L;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
+    private final LocalServerController localServerComponent;
 
     public LocationPanelVisual() {
         initComponents();
+        localServerComponent = LocalServerController.create(localServerComboBox, localServerButton,
+                NbBundle.getMessage(LocationPanelVisual.class, "LBL_SelectSourceFolderTitle"));
         init();
     }
 
     private void init() {
         projectLocationTextField.getDocument().addDocumentListener(this);
         projectNameTextField.getDocument().addDocumentListener(this);
+        localServerComponent.addChangeListener(this);
+        urlTextField.getDocument().addDocumentListener(this);
     }
 
     @Override
@@ -97,6 +108,12 @@ class LocationPanelVisual extends JPanel implements DocumentListener {
         browseButton = new javax.swing.JButton();
         createdFolderLabel = new javax.swing.JLabel();
         createdFolderTextField = new javax.swing.JTextField();
+        sourcesLabel = new javax.swing.JLabel();
+        localServerComboBox = new javax.swing.JComboBox();
+        localServerButton = new javax.swing.JButton();
+        urlLabel = new javax.swing.JLabel();
+        urlTextField = new javax.swing.JTextField();
+        urlInfoLabel = new javax.swing.JLabel();
 
         projectNameLabel.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         projectNameLabel.setLabelFor(projectNameTextField);
@@ -118,6 +135,18 @@ class LocationPanelVisual extends JPanel implements DocumentListener {
 
         createdFolderTextField.setEditable(false);
 
+        org.openide.awt.Mnemonics.setLocalizedText(sourcesLabel, org.openide.util.NbBundle.getMessage(LocationPanelVisual.class, "LBL_Sources")); // NOI18N
+        sourcesLabel.setVerticalAlignment(javax.swing.SwingConstants.TOP);
+
+        localServerComboBox.setEditable(true);
+
+        org.openide.awt.Mnemonics.setLocalizedText(localServerButton, org.openide.util.NbBundle.getMessage(LocationPanelVisual.class, "LBL_LocalServerBrowse")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(urlLabel, org.openide.util.NbBundle.getMessage(LocationPanelVisual.class, "LBL_Url")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(urlInfoLabel, org.openide.util.NbBundle.getMessage(LocationPanelVisual.class, "TXT_Url")); // NOI18N
+        urlInfoLabel.setEnabled(false);
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -126,21 +155,32 @@ class LocationPanelVisual extends JPanel implements DocumentListener {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(projectLocationLabel)
                     .add(projectNameLabel)
-                    .add(createdFolderLabel))
-                .add(14, 14, 14)
+                    .add(createdFolderLabel)
+                    .add(sourcesLabel)
+                    .add(urlLabel))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(createdFolderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 349, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(projectLocationTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 254, Short.MAX_VALUE)
+                        .add(localServerComboBox, 0, 269, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(localServerButton))
+                    .add(urlTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 364, Short.MAX_VALUE)
+                    .add(urlInfoLabel)
+                    .add(createdFolderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 364, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                        .add(projectLocationTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 269, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(browseButton))
-                    .add(projectNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 349, Short.MAX_VALUE))
+                    .add(projectNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 364, Short.MAX_VALUE))
                 .addContainerGap())
         );
+
+        layout.linkSize(new java.awt.Component[] {browseButton, localServerButton}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
+
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
+                .add(0, 0, 0)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(projectNameLabel)
                     .add(projectNameTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
@@ -153,35 +193,51 @@ class LocationPanelVisual extends JPanel implements DocumentListener {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(createdFolderLabel)
                     .add(createdFolderTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(sourcesLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 15, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(localServerButton)
+                    .add(localServerComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(urlLabel)
+                    .add(urlTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(urlInfoLabel))
         );
 
-        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/php/project/wizards/Bundle"); // NOI18N
-        projectNameLabel.getAccessibleContext().setAccessibleName(bundle.getString("A11_Project_Name")); // NOI18N
         projectNameTextField.getAccessibleContext().setAccessibleName("Project Name");
-        projectNameTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(LocationPanelVisual.class, "ACS_LBL_ProjectName_A11YDesc")); // NOI18N
-        projectLocationLabel.getAccessibleContext().setAccessibleName(bundle.getString("A11_Project_Location")); // NOI18N
+        projectNameTextField.getAccessibleContext().setAccessibleDescription("null");
         projectLocationTextField.getAccessibleContext().setAccessibleName("Project Location");
-        projectLocationTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(LocationPanelVisual.class, "ACS_LBL_ProjectLocation_A11YDesc")); // NOI18N
+        projectLocationTextField.getAccessibleContext().setAccessibleDescription("null");
         browseButton.getAccessibleContext().setAccessibleName("Browse Project Location");
-        browseButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(LocationPanelVisual.class, "ACS_LBL_BrowseLocation_A11YDesc")); // NOI18N
+        browseButton.getAccessibleContext().setAccessibleDescription("null");
         createdFolderTextField.getAccessibleContext().setAccessibleName("Project Folder");
-        createdFolderTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(LocationPanelVisual.class, "ACS_LBL_CreatedProjectFolder_A11YDesc")); // NOI18N
+        createdFolderTextField.getAccessibleContext().setAccessibleDescription("null");
     }// </editor-fold>//GEN-END:initComponents
 
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
-        String newLocation = Utils.browseLocationAction(this, getProjectLocation());
-        setProjectLocation(newLocation);
+        String newLocation = Utils.browseLocationAction(this, getProjectLocation(),
+                NbBundle.getMessage(LocationPanelVisual.class, "LBL_SelectProjectLocation"));
+        if (newLocation != null) {
+            setProjectLocation(newLocation);
+        }
     }//GEN-LAST:event_browseButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton browseButton;
     private javax.swing.JLabel createdFolderLabel;
     private javax.swing.JTextField createdFolderTextField;
+    private javax.swing.JButton localServerButton;
+    private javax.swing.JComboBox localServerComboBox;
     private javax.swing.JLabel projectLocationLabel;
     private javax.swing.JTextField projectLocationTextField;
     private javax.swing.JLabel projectNameLabel;
     protected javax.swing.JTextField projectNameTextField;
+    private javax.swing.JLabel sourcesLabel;
+    private javax.swing.JLabel urlInfoLabel;
+    private javax.swing.JLabel urlLabel;
+    private javax.swing.JTextField urlTextField;
     // End of variables declaration//GEN-END:variables
 
     public String getProjectName() {
@@ -206,6 +262,30 @@ class LocationPanelVisual extends JPanel implements DocumentListener {
         projectLocationTextField.setText(projectLocation);
     }
 
+    public LocalServer getSourcesLocation() {
+        return localServerComponent.getLocalServer();
+    }
+
+    public MutableComboBoxModel getLocalServerModel() {
+        return localServerComponent.getLocalServerModel();
+    }
+
+    public void setLocalServerModel(MutableComboBoxModel localServers) {
+        localServerComponent.setLocalServerModel(localServers);
+    }
+
+    public void selectSourcesLocation(LocalServer localServer) {
+        localServerComponent.selectLocalServer(localServer);
+    }
+
+    public String getUrl() {
+        return urlTextField.getText().trim();
+    }
+
+    public void setUrl(String url) {
+        urlTextField.setText(url);
+    }
+
     // listeners
     public void insertUpdate(DocumentEvent e) {
         processUpdate();
@@ -221,6 +301,10 @@ class LocationPanelVisual extends JPanel implements DocumentListener {
 
     private void processUpdate() {
         createdFolderTextField.setText(getFullProjectPath());
+        changeSupport.fireChange();
+    }
+
+    public void stateChanged(ChangeEvent e) {
         changeSupport.fireChange();
     }
 }

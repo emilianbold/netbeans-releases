@@ -143,7 +143,7 @@ public class CreateWebPackFiles extends org.netbeans.performance.test.utilities.
     @Override
     public void initialize(){
 	log("::initialize::");
-        pto = ProjectsTabOperator.invoke();
+        pto = VWPUtilities.invokePTO();
                 
         projectRoot = null;
         try {

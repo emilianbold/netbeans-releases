@@ -322,7 +322,11 @@ public class RelatedCMPWizard extends WizardDescriptor.ArrayIterator<WizardDescr
                     // project without persistence.xml
                     configFilesFolder = PersistenceLocation.createLocation(project);
                 }
-                assert configFilesFolder != null : "Should have set configFilesFolder, e.g. by retrieving it from a PersistenceLocationProvider or EjbJar or by asking the user"; // NOI18N
+                if (configFilesFolder == null) {
+                    String message = NbBundle.getMessage(RelatedCMPWizard.class, "TXT_NoConfigFiles");
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+                    return;
+                }
                 
                 String projectName = ProjectUtils.getInformation(project).getDisplayName();
                 dbschemaFile = DBSchemaManager.updateDBSchemas(helper.getSchemaElement(), helper.getDBSchemaFileList(), configFilesFolder, projectName);

@@ -52,14 +52,43 @@ public class PlaceHolderManager implements DnDTool {
         return placeHolders.isEmpty();
     }
 
+    public PlaceHolder getCurrentPlaceholder(){
+        return this.currentPlaceHolder;
+    }
+    
+    public void setCurrentPlaceholder(PlaceHolder newPlaceHolder){
+        
+        //Do not allow to set currentPlaceholder form other view.
+        if (!placeHolders.contains(newPlaceHolder)){
+            newPlaceHolder = null;
+        }
+        
+        PlaceHolder oldPlaceHolder = getCurrentPlaceholder();
+
+        if (oldPlaceHolder != newPlaceHolder) {
+            if (oldPlaceHolder != null) {
+                oldPlaceHolder.dragExit();
+            }
+
+            if (newPlaceHolder != null) {
+                newPlaceHolder.dragEnter();
+            }
+
+            currentPlaceHolder = newPlaceHolder;
+            getDiagramView().repaint();
+        }
+    }
+    
     public void clear() {
         if (!isEmpty()) {
             placeHolders.clear();
             currentPlaceHolder = null;
             draggedPattern = null;
-            getDiagramView().repaint();
+            
             defaultPlaceholder = null;
         }
+        
+        getDiagramView().repaint();
     //getDesignView().getButtonsManager().update();
     }
 
@@ -85,8 +114,8 @@ public class PlaceHolderManager implements DnDTool {
         this.draggedPattern = draggedPattern;
         this.defaultPlaceholder = null;
         createPlaceHolders();
-       
-    //FIXME getDesignView().getButtonsManager().clear();
+        getDiagramView().repaint();
+   
     }
 
     private boolean canContainCompensate(Pattern pattern) {
@@ -150,21 +179,8 @@ public class PlaceHolderManager implements DnDTool {
             return;
         }
 
-        PlaceHolder newCurrentPlaceHolder = findPlaceholder(mp.x, mp.y);
-        PlaceHolder oldCurrentPlaceHolder = currentPlaceHolder;
-
-        if (oldCurrentPlaceHolder != newCurrentPlaceHolder) {
-            if (oldCurrentPlaceHolder != null) {
-                oldCurrentPlaceHolder.dragExit();
-            }
-
-            if (newCurrentPlaceHolder != null) {
-                newCurrentPlaceHolder.dragEnter();
-            }
-
-            currentPlaceHolder = newCurrentPlaceHolder;
-            getDiagramView().repaint();
-        }
+        PlaceHolder newPlaceHolder = findPlaceholder(mp.x, mp.y);
+        setCurrentPlaceholder(newPlaceHolder);
     }
 
     public boolean isValidLocation() {
@@ -182,10 +198,8 @@ public class PlaceHolderManager implements DnDTool {
         }
         if (targetPlaceholder != null) {
             try {
-
                 BpelEntity activity = (BpelEntity) getDraggedPattern().getOMReference();
-                BpelEntity activityParent = (activity != null)
-                        ? activity.getParent() : null;
+                BpelEntity activityParent = (activity != null) ? activity.getParent() : null;
 
                 if (activityParent != null) {
                     activity.cut();
@@ -203,10 +217,6 @@ public class PlaceHolderManager implements DnDTool {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             }
         }
-
-
-
-        clear();
     }
 
     public void paint(Graphics2D g2) {

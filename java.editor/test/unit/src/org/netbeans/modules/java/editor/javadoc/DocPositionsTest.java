@@ -93,9 +93,9 @@ public class DocPositionsTest extends JavadocTestSupport {
         int offset = code.indexOf(what) + what.length();
         Doc javadoc = JavadocCompletionUtils.findJavadoc(info, doc, offset);
         assertNotNull(insertPointer(code, offset), javadoc);
-        TokenSequence<JavadocTokenId> jdts = JavadocCompletionUtils.findJavadocTokenSequence(doc, offset);
-        assertTrue(jdts.moveNext());
+        TokenSequence<JavadocTokenId> jdts = JavadocCompletionUtils.findJavadocTokenSequence(info, offset);
         assertNotNull(insertPointer(code, offset), jdts);
+        assertTrue(jdts.moveNext());
         
         DocPositions positions = DocPositions.get(info, javadoc, jdts);
         Tag[] inlineTags = javadoc.inlineTags();
@@ -166,6 +166,92 @@ public class DocPositionsTest extends JavadocTestSupport {
         assertEquals(logPositions(code, offset, positions), DocPositions.UNCLOSED_INLINE_TAG, tag.kind());
     }
     
+    public void testGetTag_131826() throws Exception {
+        String code = 
+                "/** * @author\n" +
+                " */\n" +
+                "class C {\n" +
+                "}\n";
+        
+        prepareTest(code);
+        
+        String what = "@author";
+        int offset = code.indexOf(what);
+        Doc javadoc = JavadocCompletionUtils.findJavadoc(info, doc, offset);
+        assertNotNull(insertPointer(code, offset), javadoc);
+        TokenSequence<JavadocTokenId> jdts = JavadocCompletionUtils.findJavadocTokenSequence(info, offset);
+        assertTrue(jdts.moveNext());
+        
+        DocPositions positions = DocPositions.get(info, javadoc, jdts);
+        assertNotNull(positions);
+        Tag[] tags = javadoc.tags();
+        
+        // @author
+        Tag tag = positions.getTag(offset);
+        int offsetEnd = offset + what.length();
+        assertEquals(logPositions(code, offset, offsetEnd, tags[0], tag), tags[0], tag);
+    }
+    
+    public void testGetTag_131826_2() throws Exception {
+        String code = 
+                "/**\n" +
+                " ** @author\n" +
+                " */\n" +
+                "class C {\n" +
+                "}\n";
+        
+        prepareTest(code);
+        
+        String what = "@author";
+        int offset = code.indexOf(what);
+        Doc javadoc = JavadocCompletionUtils.findJavadoc(info, doc, offset);
+        assertNotNull(insertPointer(code, offset), javadoc);
+        TokenSequence<JavadocTokenId> jdts = JavadocCompletionUtils.findJavadocTokenSequence(info, offset);
+        assertTrue(jdts.moveNext());
+        
+        DocPositions positions = DocPositions.get(info, javadoc, jdts);
+        assertNotNull(positions);
+        Tag[] tags = javadoc.tags();
+        
+        // @author
+        Tag tag = positions.getTag(offset);
+        int offsetEnd = offset + what.length();
+        assertEquals(logPositions(code, offset, offsetEnd, tags[0], tag), tags[0], tag);
+    }
+    
+    public void testGetTagIn1LineJavadoc() throws Exception {
+        String code = 
+                "package p;\n" +
+                "/** @deprecated this class {@link C} is deprecated. */" +
+                "class C {}";
+        prepareTest(code);
+        String what = "@deprecated this class {@link C} is deprecated.";
+        int offset = code.indexOf(what);
+        Doc javadoc = JavadocCompletionUtils.findJavadoc(info, doc, offset);
+        assertNotNull(insertPointer(code, offset), javadoc);
+        TokenSequence<JavadocTokenId> jdts = JavadocCompletionUtils.findJavadocTokenSequence(info, offset);
+        assertNotNull(insertPointer(code, offset), jdts);
+        assertTrue(jdts.moveNext());
+        
+        DocPositions positions = DocPositions.get(info, javadoc, jdts);
+        assertNotNull(positions);
+        Tag[] inlineTags = javadoc.inlineTags();
+        Tag[] tags = javadoc.tags();
+
+        // @deprecated block tag
+        Tag tag = positions.getTag(offset);
+        int offsetEnd = offset + what.length();
+        assertEquals(logPositions(code, offset, offsetEnd, tags[0], tag), tags[0], tag);
+        
+        //{@link} tag
+        what = "{@link C}";
+        offset = code.indexOf(what);
+        offsetEnd = offset + what.length();
+        tag = positions.getTag(offset);
+        inlineTags = tags[0].inlineTags();
+        assertEquals(logPositions(code, offset, offsetEnd, inlineTags[1], tag), inlineTags[1], tag);
+    }
+
     public void testGarbageCollection() throws Exception {
         String code = 
                 "package p;\n" +
@@ -183,9 +269,9 @@ public class DocPositionsTest extends JavadocTestSupport {
         int offset = code.indexOf(what);
         Doc javadoc = JavadocCompletionUtils.findJavadoc(info, doc, offset);
         assertNotNull(insertPointer(code, offset), javadoc);
-        TokenSequence<JavadocTokenId> jdts = JavadocCompletionUtils.findJavadocTokenSequence(doc, offset);
-        assertTrue(jdts.moveNext());
+        TokenSequence<JavadocTokenId> jdts = JavadocCompletionUtils.findJavadocTokenSequence(info, offset);
         assertNotNull(insertPointer(code, offset), jdts);
+        assertTrue(jdts.moveNext());
         
         DocPositions positions = DocPositions.get(info, javadoc, jdts);
         Tag tag = positions.getTag(offset);

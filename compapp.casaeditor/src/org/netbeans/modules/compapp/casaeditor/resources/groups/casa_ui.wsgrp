@@ -47,7 +47,7 @@ made subject to such option by the copyright holder.
           "http://www.netbeans.org/dtds/group-properties2_0.dtd">
 
 <group version="2.0">
-    <module name="org.netbeans.modules.compapp.casaeditor/1" spec="1.0" />
+    <module name="org.netbeans.modules.compapp.casaeditor" spec="1.0" />
     <name unique="casa_ui" />
     <state opened="false" />
 </group>

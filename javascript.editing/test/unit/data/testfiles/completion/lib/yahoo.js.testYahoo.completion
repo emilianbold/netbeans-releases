@@ -1,0 +1,10 @@
+Results for e // complete on editor members etc with queryType=COMPLETION and nameKind=PREFIX
+METHOD     encodeURI(URI) : void                      Core JS
+METHOD     encodeURIComponent(String) : v             Core JS
+METHOD     eval(string, object) : void                Core JS
+------------------------------------
+METHOD     eval(string) : void                        Object
+KEYWORD    else                                       null
+KEYWORD    enum                                       null
+KEYWORD    export                                     null
+KEYWORD    extends                                    null

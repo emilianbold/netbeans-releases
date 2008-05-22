@@ -63,6 +63,7 @@ public class Block extends Statement {
         this.isCurly = isCurly;
         // set the child nodes' parent
         for (int i = 0; i < statements.length; i++) {
+//            statements[i].setParent(this);
             this.statements.add(statements[i]);
         }
     }

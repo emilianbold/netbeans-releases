@@ -8,12 +8,15 @@
 package org.netbeans.modules.compapp.casaeditor.model.casa;
 
 import java.beans.PropertyChangeEvent;
-import junit.framework.*;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.net.URI;
 import java.util.*;
 import javax.xml.namespace.QName;
+import junit.framework.AssertionFailedError;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.xml.wsdl.model.*;
 import org.netbeans.modules.xml.xam.Component;
@@ -22,16 +25,17 @@ import org.netbeans.modules.xml.xam.ComponentListener;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import static org.junit.Assert.*;
 
 /**
  *
  * @author jqian
  */
-public class CasaWrapperModelTest extends TestCase {
+public class CasaWrapperModelTest {
     
-    private CasaWrapperModel casaWrapperModel;
-    PropertyListener propertyListener;
-    TestComponentListener componentListener;
+    private static  CasaWrapperModel casaWrapperModel;
+    private static PropertyListener propertyListener;
+    private static TestComponentListener componentListener;
     
     private static String ADD_PROPERTY_LISTENER_TEST = "AddPropertyListenerTest";
     private static String REMOVE_PROPERTY_LISTENER_TEST = "RemovePropertyListenerTest";
@@ -94,23 +98,24 @@ public class CasaWrapperModelTest extends TestCase {
         }
     }
     
-    public CasaWrapperModelTest(String testName) {
-        super(testName);
+    public CasaWrapperModelTest() {
     }
 
-    protected void setUp() throws Exception {
+    @BeforeClass
+    public static void setUpClass() throws Exception {
+        URI casaWSDLUri = CasaWrapperModelTest.class.getResource(
+                "resources/SynchronousSampleApplication/jbiasa/casa.wsdl").toURI();
+        File casaWSDLFile = new File(casaWSDLUri);
+        FileObject casaWSDLFileObject = FileUtil.toFileObject(casaWSDLFile);
+        ModelSource casaWSDLModelSource = TestCatalogModel.getDefault().createModelSource(casaWSDLFileObject, true);
+        
         URI uri = CasaWrapperModelTest.class.getResource(
                 "resources/SynchronousSampleApplication/conf/SynchronousSampleApplication.casa").toURI();
         File casaFile = new File(uri);
         FileObject casaFileObject = FileUtil.toFileObject(casaFile);
         ModelSource modelSource = TestCatalogModel.getDefault().createModelSource(casaFileObject, true);
         casaWrapperModel = new CasaWrapperModel(modelSource);
-        
-        URI casaWSDLUri = CasaWrapperModelTest.class.getResource(
-                "resources/SynchronousSampleApplication/jbiasa/casa.wsdl").toURI();
-        File casaWSDLFile = new File(casaWSDLUri);
-        FileObject casaWSDLFileObject = FileUtil.toFileObject(casaWSDLFile);
-        ModelSource casaWSDLModelSource = TestCatalogModel.getDefault().createModelSource(casaWSDLFileObject, true);
+        casaWrapperModel.sync();
         
         componentListener = new TestComponentListener();
         propertyListener = new PropertyListener();
@@ -120,7 +125,8 @@ public class CasaWrapperModelTest extends TestCase {
         TestCatalogModel.getDefault().setDocumentPooling(true);
     }
 
-    protected void tearDown() throws Exception {
+    @AfterClass
+    public static void tearDownClass() throws Exception {
         casaWrapperModel.removePropertyChangeListener(propertyListener);
         casaWrapperModel.removeComponentListener(componentListener);
         
@@ -130,6 +136,7 @@ public class CasaWrapperModelTest extends TestCase {
     /**
      * Test of removePropertyChangeListener method, of class org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel.
      */
+    @Test
     public void testRemovePropertyChangeListener() {
         System.out.println("removePropertyChangeListener");
         casaWrapperModel.removePropertyChangeListener(propertyListener);
@@ -141,6 +148,7 @@ public class CasaWrapperModelTest extends TestCase {
     /**
      * Test of addPropertyChangeListener method, of class org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel.
      */
+    @Test
     public void testAddPropertyChangeListener() {
         System.out.println("addPropertyChangeListener");
         
@@ -153,6 +161,7 @@ public class CasaWrapperModelTest extends TestCase {
     /**
      * Test of getBindingComponentServiceUnits method, of class org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel.
      */
+    @Test
     public void testGetBindingComponentServiceUnits() {
         System.out.println("getBindingComponentServiceUnits");
                 
@@ -201,6 +210,7 @@ public class CasaWrapperModelTest extends TestCase {
     /**
      * Test of getServiceEngineServiceUnits method, of class org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel.
      */
+    @Test
     public void testGetServiceEngineServiceUnits() {
         System.out.println("getServiceEngineServiceUnits");
         
@@ -225,6 +235,7 @@ public class CasaWrapperModelTest extends TestCase {
     /**
      * Test of existingServiceUnit method, of class org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel.
      */
+    @Test
     public void testExistingServiceEngineServiceUnit() {
         System.out.println("existingServiceEngineServiceUnit");
         
@@ -235,6 +246,7 @@ public class CasaWrapperModelTest extends TestCase {
     /**
      * Test of getCasaPorts method, of class org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel.
      */
+    @Test
     public void testGetCasaPorts() {
         System.out.println("getCasaPorts");
         
@@ -259,6 +271,7 @@ public class CasaWrapperModelTest extends TestCase {
     /**
      * Test of getBindingComponentName method, of class org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel.
      */
+    @Test
     public void testGetBindingComponentName() {
         System.out.println("getBindingComponentName");
         
@@ -272,6 +285,7 @@ public class CasaWrapperModelTest extends TestCase {
     /**
      * Test of setEndpointName method, of class org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel.
      */
+    @Test
     public void testSetEndpointName() {
         System.out.println("setEndpointName");
 
@@ -289,6 +303,7 @@ public class CasaWrapperModelTest extends TestCase {
     /**
      * Test of getLinkedWSDLPort method, of class org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel.
      */
+    @Test
     public void testGetLinkedWSDLPort() {
         System.out.println("getLinkedWSDLPort");
         List<CasaPort> casaPorts = casaWrapperModel.getCasaPorts();
@@ -300,6 +315,7 @@ public class CasaWrapperModelTest extends TestCase {
     /**
      * Test of getCasaEndpointRef method, of class org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel.
      */
+    @Test
     public void testGetCasaEndpointRef() {
         System.out.println("getCasaEndpointRef");
         
@@ -318,6 +334,7 @@ public class CasaWrapperModelTest extends TestCase {
     /**
      * Test of setServiceEngineServiceUnitLocation method, of class org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel.
      */
+    @Test
     public void testSetServiceEngineServiceUnitLocation() {
         System.out.println("setServiceEngineServiceUnitLocation");
         
@@ -335,6 +352,7 @@ public class CasaWrapperModelTest extends TestCase {
     /**
      * Test of setCasaPortLocation method, of class org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel.
      */
+    @Test
     public void testSetCasaPortLocation() {
         System.out.println("setCasaPortLocation");
         
@@ -353,6 +371,7 @@ public class CasaWrapperModelTest extends TestCase {
     /**
      * Test of removeConnection method, of class org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel.
      */
+    @Test
     public void testRemoveConnection_CompApp() {
         System.out.println("removeConnection: from CompApp");
         
@@ -367,6 +386,7 @@ public class CasaWrapperModelTest extends TestCase {
     /**
      * Test of addConnection method, of class org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel.
      */
+    @Test
     public void testAddConnection() {
         System.out.println("addConnection");
 
@@ -394,6 +414,7 @@ public class CasaWrapperModelTest extends TestCase {
     /**
      * Test of removeConnection method, of class org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel.
      */
+    @Test
     public void testRemoveConnection_UserDefined() {
         System.out.println("removeConnection: user-defined");
         CasaConnection secondConnection = 
@@ -406,6 +427,7 @@ public class CasaWrapperModelTest extends TestCase {
     /**
      * Test of canConnect method, of class org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel.
      */
+    @Test
     public void testCanConnect() {
         System.out.println("canConnect");
         
@@ -451,6 +473,7 @@ public class CasaWrapperModelTest extends TestCase {
     /**
      * Test of getCasaConnectionList method, of class org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel.
      */
+    @Test
     public void testGetCasaConnectionList() {
         System.out.println("getCasaConnectionList");
         
@@ -460,6 +483,7 @@ public class CasaWrapperModelTest extends TestCase {
     /**
      * Test of getCasaPortType method, of class org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel.
      */
+    @Test
     public void testGetCasaPortType() {
         System.out.println("getCasaPortType");
 
@@ -472,6 +496,7 @@ public class CasaWrapperModelTest extends TestCase {
     /**
      * Test of addServiceEngineServiceUnit method, of class org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel.
      */
+    @Test
     public void testAddServiceEngineServiceUnit() {
         System.out.println("addServiceEngineServiceUnit");
         
@@ -493,6 +518,7 @@ public class CasaWrapperModelTest extends TestCase {
     /**
      * Test of addCasaPort method, of class org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel.
      */
+    @Test
     public void testAddCasaPort() {
         System.out.println("addCasaPort");
         
@@ -527,6 +553,7 @@ public class CasaWrapperModelTest extends TestCase {
     /**
      * Test of removeCasaPort method, of class org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel.
      */
+    @Test
     public void testRemoveCasaPort() {
         System.out.println("removeCasaPort");
         int noOfPorts = casaWrapperModel.getCasaPorts().size();
@@ -539,6 +566,7 @@ public class CasaWrapperModelTest extends TestCase {
     /**
      * Test of removeEndpoint method, of class org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel.
      */
+    @Test
     public void testRemoveEndpoint() {
         System.out.println("removeEndpoint");
         CasaConnection casaConnection = casaWrapperModel.getCasaConnectionList(false).get(0);
@@ -551,6 +579,7 @@ public class CasaWrapperModelTest extends TestCase {
     /**
      * Test of getCasaPort method, of class org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel.
      */
+    @Test
     public void testGetCasaPort() {
         System.out.println("getCasaPort");
 
@@ -563,6 +592,7 @@ public class CasaWrapperModelTest extends TestCase {
     /**
      * Test of getCasaEngineServiceUnit method, of class org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel.
      */
+    @Test
     public void testGetCasaEngineServiceUnit() {
         System.out.println("getCasaEngineServiceUnit");
         
@@ -595,6 +625,7 @@ public class CasaWrapperModelTest extends TestCase {
     /**
      * Test of addEndpointToServiceEngineServiceUnit method, of class org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel.
      */
+    @Test
     public void testAddEndpointToServiceEngineServiceUnit() {
         System.out.println("addEndpointToServiceEngineServiceUnit");
         CasaServiceEngineServiceUnit seSU = casaWrapperModel.addServiceEngineServiceUnit(false,0,0);
@@ -651,6 +682,7 @@ public class CasaWrapperModelTest extends TestCase {
     /**
      * Test of removeServiceEngineServiceUnit method, of class org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel.
      */
+    @Test    
     public void testRemoveServiceEngineServiceUnit() {
         System.out.println("removeServiceEngineServiceUnit");
 
@@ -685,6 +717,7 @@ public class CasaWrapperModelTest extends TestCase {
     /**
      * Test of isDeletable method, of class org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel.
      */
+    @Test
     public void testIsDeletable() {
         System.out.println("isDeletable");
         CasaServiceEngineServiceUnit seSU = 
@@ -695,6 +728,7 @@ public class CasaWrapperModelTest extends TestCase {
     /**
      * Test of setEndpointInterfaceQName method, of class org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel.
      */
+    @Test
     public void testSetEndpointInterfaceQName() {
         System.out.println("setEndpointInterfaceQName");
         
@@ -710,6 +744,7 @@ public class CasaWrapperModelTest extends TestCase {
     /**
      * Test of setEndpointServiceQName method, of class org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel.
      */
+    @Test
     public void testSetEndpointServiceQName() {
         System.out.println("setEndpointServiceQName");
         
@@ -726,6 +761,7 @@ public class CasaWrapperModelTest extends TestCase {
     /**
      * Test of getCasaRegion method, of class org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel.
      */
+    @Test
     public void testGetCasaRegion() {
         System.out.println("getCasaRegion");
         
@@ -745,6 +781,7 @@ public class CasaWrapperModelTest extends TestCase {
     /**
      * Test of setCasaRegionWidth method, of class org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel.
      */
+    @Test
     public void testSetCasaRegionWidth() {
         System.out.println("setCasaRegionWidth");
         
@@ -758,6 +795,7 @@ public class CasaWrapperModelTest extends TestCase {
     /**
      * Test of setUnitName method, of class org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel.
      */
+    @Test
     public void testSetUnitName() {
         System.out.println("setUnitName");
         
@@ -768,8 +806,8 @@ public class CasaWrapperModelTest extends TestCase {
         try {
             casaWrapperModel.setUnitName(seSU, unitName);
             assertTrue(false);
-        } catch (Exception e) {
-            ; // expected
+        } catch (AssertionFailedError e) {
+            System.out.println("");// expected because only external se su's unitName can be set
         }
         
         CasaBindingComponentServiceUnit bcSU = 
@@ -777,14 +815,15 @@ public class CasaWrapperModelTest extends TestCase {
         try {
             casaWrapperModel.setUnitName(bcSU, unitName);
             assertTrue(false);
-        } catch (Exception e) {
-            ; // expected
+        } catch (AssertionFailedError e) {
+            // expected because only external se su's unitName can be set
         }
     }
 
     /**
      * Test of getNamespaces method, of class org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel.
      */
+    @Test
     public void testGetNamespaces() {
         System.out.println("getNamespaces");
         

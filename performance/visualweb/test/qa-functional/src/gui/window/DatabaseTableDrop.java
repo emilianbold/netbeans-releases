@@ -41,12 +41,11 @@
 
 package gui.window;
 
+import gui.VWPUtilities;
 import org.netbeans.jellytools.Bundle;
-import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.RuntimeTabOperator;
 import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.PaletteOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.actions.DeleteAction;
@@ -57,6 +56,8 @@ import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JTextComponentOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
+import org.netbeans.jemmy.operators.Operator;
+import org.netbeans.jemmy.operators.Operator.StringComparator;
 
 /**
  *
@@ -70,6 +71,7 @@ public class DatabaseTableDrop extends org.netbeans.performance.test.utilities.P
     protected String categoryName;
     protected String componentName;
     protected java.awt.Point addPoint;
+    private StringComparator previousComparator;
     
     private static final String DBRootName = "jdbc:derby://localhost:1527/travel [travel on TRAVEL]";
     private static final String DBTableName = "Tables"+"|"+"TRIP";
@@ -105,12 +107,17 @@ public class DatabaseTableDrop extends org.netbeans.performance.test.utilities.P
         new ActionNoBlock("Window|Navigating|Navigator",null).perform(); //NOI18N
         
         rto = RuntimeTabOperator.invoke();
+        Operator.DefaultStringComparator comparator = new Operator.DefaultStringComparator(false, false);
+        previousComparator = rto.tree().getComparator();
+        //rto.setComparator(comparator);
+        rto.tree().setComparator(comparator);
+        
         Node travelBaseNode = new Node(rto.getRootNode(),"Databases"+"|"+DBRootName); // NOI18N
         travelBaseNode.performPopupActionNoBlock("Connect"); // NOI18N
         processDBConnectDialogNoPass();
-        ProjectsTabOperator.invoke();
+        VWPUtilities.invokePTO();
         
-        PaletteOperator.invoke();
+        PaletteComponentOperator.invoke();
         openPage();
     }
     
@@ -178,9 +185,16 @@ public class DatabaseTableDrop extends org.netbeans.performance.test.utilities.P
     }
     
     private void selectDBTableNode() {
-        RuntimeTabOperator.invoke();
+        rto = RuntimeTabOperator.invoke();
+        
+        Operator.DefaultStringComparator comparator = new Operator.DefaultStringComparator(false, false);
+        previousComparator = rto.tree().getComparator();
+        //rto.setComparator(comparator);
+        rto.tree().setComparator(comparator);
+        
         Node TableNode = new Node(rto.getRootNode(),"Databases"+"|"+DBRootName+"|"+DBTableName); // NOI18N
         TableNode.select();
+        log("Selected Node path ="+TableNode.getPath()+" and node is "+TableNode.getText());
         
     }
     
@@ -195,15 +209,24 @@ public class DatabaseTableDrop extends org.netbeans.performance.test.utilities.P
         new DeleteAction().perform(table);
         new NbDialogOperator(title).yes();
         surface.clickOnSurface(10,10);
+        waitNoEvent(5000);
         
-        table = new Node(tree,"Page1|tripDataProvider");
+        navigator.makeComponentVisible();
+        tree =  new JTreeOperator(navigator);
+        table  = new Node(tree,"SessionBean1|trip:");
         new DeleteAction().perform(table);
         new NbDialogOperator(title).yes();
         surface.clickOnSurface(10,10);
+        waitNoEvent(5000);
         
-        table  = new Node(tree,"SessionBean1|tripRowSet:");
+        navigator.makeComponentVisible();
+        tree =  new JTreeOperator(navigator);
+        table = new Node(tree,"Page1|trip");
         new DeleteAction().perform(table);
         new NbDialogOperator(title).yes();
+
+        
+
     }
     
     @Override
@@ -212,6 +235,7 @@ public class DatabaseTableDrop extends org.netbeans.performance.test.utilities.P
         rto = RuntimeTabOperator.invoke();
         Node travelBaseNode = new Node(rto.getRootNode(),"Databases"+"|"+DBRootName); // NOI18N
         travelBaseNode.performPopupActionNoBlock("Disconnect"); // NOI18N
+        rto.tree().setComparator(previousComparator);
     }
     
     public static void main(String[] args) {

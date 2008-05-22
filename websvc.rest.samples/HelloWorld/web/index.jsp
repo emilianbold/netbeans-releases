@@ -39,12 +39,6 @@
  made subject to such option by the copyright holder.
 --%>
 
-<%-- 
-    Document   : index
-    Created on : Aug 17, 2007, 4:00:55 PM
-    Author     : Peter Liu
---%>
-
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
    "http://www.w3.org/TR/html4/loose.dtd">

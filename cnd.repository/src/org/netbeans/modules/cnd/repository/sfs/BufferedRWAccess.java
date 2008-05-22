@@ -93,7 +93,7 @@ public class BufferedRWAccess implements FileRWAccess {
         
 	randomAccessFile = new RandomAccessFile(file, "rw"); // NOI18N
 	channel = randomAccessFile.getChannel();
-	writeBuffer.allocateDirect(bufSize);
+	ByteBuffer.allocateDirect(bufSize);
     }
         
     public Persistent read(PersistentFactory factory, long offset, int size) throws IOException {

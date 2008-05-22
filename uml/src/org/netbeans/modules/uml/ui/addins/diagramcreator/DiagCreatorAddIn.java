@@ -889,7 +889,6 @@ public class DiagCreatorAddIn implements IDiagCreatorAddIn, IAcceleratorListener
       // Fixed issue 96119. 
       // Set the diagram dirty to force autosave.
       retObj.setIsDirty(true);
-      retObj.save();
       return retObj;
    }
 

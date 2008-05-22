@@ -70,6 +70,7 @@ import org.netbeans.modules.spring.api.beans.ConfigFileGroup;
 import org.netbeans.modules.spring.api.beans.ConfigFileManager;
 import org.netbeans.modules.spring.api.beans.SpringConstants;
 import org.netbeans.modules.spring.beans.ProjectSpringScopeProvider;
+import org.netbeans.modules.spring.spi.beans.SpringConfigFileLocationProvider;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileAlreadyLockedException;
@@ -207,6 +208,14 @@ public final class NewSpringXMLConfigWizardIterator implements WizardDescriptor.
 
     public void initialize(WizardDescriptor wizard) {
         this.wizard = wizard;
+        if (Templates.getTargetFolder(wizard) == null) {
+            Project project = Templates.getProject(wizard);
+            SpringConfigFileLocationProvider provider = project != null ? project.getLookup().lookup(SpringConfigFileLocationProvider.class) : null;
+            FileObject location = provider != null ? provider.getLocation() : null;
+            if (location != null) {
+                Templates.setTargetFolder(wizard, location);
+            }
+        }
     }
 
     public void uninitialize(WizardDescriptor wizard) {

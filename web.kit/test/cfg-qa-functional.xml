@@ -50,7 +50,7 @@ made subject to such option by the copyright holder.
             </patternset>
         </testset>
     </testbag>
-    
+ 
     <testbag testattribs="stable,validation13" executor="ide" name="Webapps Validation (J2EE 1.3)">
         <testset dir="qa-functional/src">
             <patternset>
@@ -66,7 +66,14 @@ made subject to such option by the copyright holder.
             </patternset>
         </testset>
     </testbag>
-        
+    <testbag testattribs="stable,validationEE5" executor="ide-appserver" name="Webapps Validation (J2EE5)">
+        <testset dir="qa-functional/src">
+            <patternset>
+		<include name="org/netbeans/test/web/WebProjectValidationEE5.class"/>
+            </patternset>
+        </testset>
+    </testbag>
     <executor name="ide" antfile="build-qa-functional.xml" target="runidetest" default="true"/>
+    <executor name="ide-appserver" antfile="build-qa-functional.xml" target="runidetest-with-appserver"/> 
     <compiler name="qa-functional-compiler" antfile="build-qa-functional.xml" target="qa-functional-compiler" default="true"/>
 </mconfig>

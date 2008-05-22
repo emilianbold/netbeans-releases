@@ -38,14 +38,11 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
-
 package gui.actions;
 
 import java.io.File;
 
 import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.OutputOperator;
 import org.netbeans.jellytools.OutputTabOperator;
@@ -62,32 +59,29 @@ import org.netbeans.junit.ide.ProjectSupport;
  *
  */
 public class CodeGenerationFromUMLProject extends org.netbeans.performance.test.utilities.PerformanceTestCase {
-    
+
     private static String testProjectName = "jEdit-Model";
-    private NbDialogOperator codeDialog ;   
-   
+    private NbDialogOperator codeDialog;
+
     /** Creates a new instance of GenerateModelReport */
     public CodeGenerationFromUMLProject(String testName) {
         super(testName);
-        //TODO: Adjust expectedTime value        
         expectedTime = 10000;
-        WAIT_AFTER_OPEN=4000;        
+        WAIT_AFTER_OPEN = 4000;
     }
-    public CodeGenerationFromUMLProject(String testName, String  performanceDataName) {
+
+    public CodeGenerationFromUMLProject(String testName, String performanceDataName) {
         super(testName, performanceDataName);
-        //TODO: Adjust expectedTime value
         expectedTime = 10000;
-        WAIT_AFTER_OPEN=4000;                
+        WAIT_AFTER_OPEN = 4000;
     }
-    
-    public void initialize(){
+
+    @Override
+    public void initialize() {
         log(":: initialize");
-        
-        ProjectSupport.openProject(System.getProperty("xtest.tmpdir")+File.separator+testProjectName);
-//        new CloseAllDocumentsAction().performAPI();
-        
+        ProjectSupport.openProject(System.getProperty("xtest.tmpdir") + File.separator + testProjectName);
     }
-   
+
     public void prepare() {
         log(":: prepare");
         Node pNode = new ProjectsTabOperator().getProjectRootNode(testProjectName);
@@ -99,28 +93,25 @@ public class CodeGenerationFromUMLProject extends org.netbeans.performance.test.
         codeDialog = new NbDialogOperator("Generate Code");
         codeDialog.ok();
         OutputOperator oot = new OutputOperator();
-        oot.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout",600000);
+        oot.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 600000);
         OutputTabOperator asot = oot.getOutputTab("Generate Code Log");
-        asot.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout",600000);
+        asot.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 600000);
         asot.waitText("Task Successful");
-      
         return null;
     }
-    
+
+    @Override
     protected void shutdown() {
         log("::shutdown");
         ProjectSupport.closeProject(testProjectName);
     }
-   
 
-    public void close(){
+    @Override
+    public void close() {
         log("::close");
-//      new CloseAllDocumentsAction().performAPI();
- 
-    } 
+    }
+
     public static void main(java.lang.String[] args) {
         junit.textui.TestRunner.run(new CodeGenerationFromUMLProject("measureTime"));
-    }      
-
-
+    }
 }

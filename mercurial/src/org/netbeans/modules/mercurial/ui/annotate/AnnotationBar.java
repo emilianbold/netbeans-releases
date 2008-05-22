@@ -187,6 +187,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         this.foldHierarchy = FoldHierarchy.get(editorUI.getComponent());
         this.doc = editorUI.getDocument();
         this.caret = textComponent.getCaret();
+        setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
     }
     
     // public contract ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -419,6 +420,8 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
 
     private void revert(final File file, String revision) {
         final File root = Mercurial.getInstance().getTopmostManagedParent(file);
+        if(root == null) return;
+        
         File[] files = new File [1];
         files[0] = file; 
         final RevertModifications revertModifications = new RevertModifications(root, files, revision);
@@ -560,7 +563,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
 
         if (al.getCommitMessage() != null) {
             recentStatusMessage = al.getCommitMessage();
-            statusBar.setText(StatusBar.CELL_MAIN, al.getAuthor() + ": " + recentStatusMessage); // NOI18N
+            statusBar.setText(StatusBar.CELL_MAIN, al.getRevision() + ":" + al.getId() + " - " + al.getAuthor() + ": " + recentStatusMessage); // NOI18N
         } else {
             clearRecentFeedback();
         };
@@ -701,7 +704,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
                 }
 
                 // always return unique string to avoid tooltip sharing on mouse move over same revisions -->
-                annotation.append("<html><!-- line=" + line++ + " -->" + al.getRevision()  + " - <b>" + escapedAuthor + "</b>"); // NOI18N
+                annotation.append("<html><!-- line=" + line++ + " -->" + al.getRevision()  + ":" + al.getId() + " - <b>" + escapedAuthor + "</b>"); // NOI18N
                 if (al.getDate() != null) {
                     annotation.append(" " + DateFormat.getDateInstance().format(al.getDate())); // NOI18N                    
                 }

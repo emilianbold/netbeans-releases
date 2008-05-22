@@ -65,6 +65,7 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
@@ -149,10 +150,16 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         currentCompilerSet = null;
         
         errorTextArea.setText("");
-        errorTextArea.setBackground(jPanel1.getBackground());
+        //errorTextArea.setBackground(jPanel1.getBackground());
         
         lstDirlist.setCellRenderer(new MyCellRenderer());
         
+        if( "Windows".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
+            setOpaque( false );
+        }
+        else {
+            errorTextArea.setBackground(getBackground());
+        }
     }
     
     class MyCellRenderer extends DefaultListCellRenderer {
@@ -442,7 +449,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
     }
     
     private void validateMakePathField() {
-        setPathFieldValid(tfMakePath, isPathFieldValid(tfMakePath));
+        setPathFieldValid(tfMakePath, isPathFieldValid(tfMakePath) && supportedMake(tfMakePath));
         dataValid();
     }
     
@@ -481,6 +488,20 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         setPathFieldValid(tfFortranPath, isPathFieldValid(tfFortranPath));
         dataValid();
     }
+    
+    public static boolean supportedMake(String name) {
+        name = IpeUtils.getBaseName(name);
+        return !name.toLowerCase().equals("mingw32-make.exe"); // NOI18N
+    }
+    
+    private boolean supportedMake(JTextField field) {
+        String txt = field.getText();
+        if (txt.length() == 0) {
+            return false;
+        }
+        return supportedMake(txt);
+    }
+    
     
     private boolean isPathFieldValid(JTextField field) {
         String txt = field.getText();
@@ -897,7 +918,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
     
     /** Apply changes */
     public void applyChanges() {
-        if (changed) {
+        if (changed || isChangedInOtherPanels()) {
 //            CompilerSet cs = (CompilerSet) cbCompilerSet.getSelectedItem();
             CompilerSet cs = (CompilerSet)lstDirlist.getSelectedValue();
             changed = false;
@@ -970,7 +991,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             return true;
         } else {
             boolean csmValid = csm.getCompilerSets().size() > 0;
-            boolean makeValid = cbMakeRequired.isSelected() ? isPathFieldValid(tfMakePath) : true;
+            boolean makeValid = cbMakeRequired.isSelected() ? isPathFieldValid(tfMakePath) && supportedMake(tfMakePath) : true;
             boolean gdbValid = cbGdbRequired.isSelected() ? isPathFieldValid(tfGdbPath) : true;
             boolean cValid = cbCRequired.isSelected() ? isPathFieldValid(tfCPath) : true;
             boolean cppValid = cbCppRequired.isSelected() ? isPathFieldValid(tfCppPath) : true;
@@ -991,7 +1012,12 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             if (!valid) {
                 ArrayList<String> errors = new ArrayList<String>();
                 if (cbMakeRequired.isSelected() && !makeValid) {
-                    errors.add(NbBundle.getBundle(ToolsPanel.class).getString("TP_ErrorMessage_MissedMake"));
+                    if (!isPathFieldValid(tfMakePath)) {
+                        errors.add(NbBundle.getBundle(ToolsPanel.class).getString("TP_ErrorMessage_MissedMake"));
+                    }
+                    else {
+                        errors.add(NbBundle.getMessage(ToolsPanel.class, "TP_ErrorMessage_UnsupportedMake", "mingw32-make")); // NOI18N
+                    }
                 }
                 if (cbCRequired.isSelected() && !cValid) {
                     errors.add(NbBundle.getBundle(ToolsPanel.class).getString("TP_ErrorMessage_MissedCCompiler"));
@@ -1182,6 +1208,27 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         for (ChangeListener l : listenerModified) {
             l.stateChanged(ev);
         }
+    }
+    
+    static Set<IsChangedListener> listenerIsChanged = new HashSet();
+    
+    public static void addIsChangedListener(IsChangedListener l) {
+        listenerIsChanged.add(l);
+    }
+    
+    public static void removeIsChangedListener(IsChangedListener l) {
+        listenerIsChanged.remove(l);
+    }
+    
+    private boolean isChangedInOtherPanels() {
+        boolean isChanged = false;
+        for (IsChangedListener l : listenerIsChanged) {
+            if (l.isChanged()) {
+                isChanged = true;
+                break;
+            }
+        }
+        return isChanged;
     }
     
     // implement ActionListener
@@ -1774,9 +1821,11 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         add(btVersions, gridBagConstraints);
         btVersions.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ToolsPanel.class, "ToolsPanel.btVersions.AccessibleContext.accessibleDescription")); // NOI18N
 
+        buttomPanel.setOpaque(false);
         buttomPanel.setLayout(new java.awt.GridBagLayout());
 
         errorScrollPane.setBorder(null);
+        errorScrollPane.setOpaque(false);
 
         errorTextArea.setEditable(false);
         errorTextArea.setForeground(new java.awt.Color(255, 0, 0));
@@ -1823,6 +1872,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
         add(buttomPanel, gridBagConstraints);
 
+        ToolSetPanel.setOpaque(false);
         ToolSetPanel.setLayout(new java.awt.GridBagLayout());
 
         spDirlist.setMinimumSize(new java.awt.Dimension(180, 20));
@@ -1844,6 +1894,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         gridBagConstraints.weighty = 1.0;
         ToolSetPanel.add(spDirlist, gridBagConstraints);
 
+        buttonPanel.setOpaque(false);
         buttonPanel.setLayout(new java.awt.GridBagLayout());
 
         btAdd.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("MNEM_AddButton").charAt(0));

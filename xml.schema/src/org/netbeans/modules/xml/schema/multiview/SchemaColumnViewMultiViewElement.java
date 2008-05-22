@@ -84,10 +84,10 @@ import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 import org.netbeans.modules.xml.xam.ui.category.Category;
 import org.netbeans.modules.xml.xam.ui.category.CategoryPane;
 import org.netbeans.modules.xml.xam.ui.category.DefaultCategoryPane;
-import org.netbeans.modules.xml.xam.ui.search.SearchManager;
 import org.netbeans.modules.xml.xam.ui.multiview.ActivatedNodesMediator;
 import org.netbeans.modules.xml.xam.ui.multiview.CookieProxyLookup;
 import org.netbeans.modules.xml.xam.ui.undo.QuietUndoManager;
+import org.netbeans.modules.xml.search.api.SearchManager;
 import org.openide.ErrorManager;
 import org.openide.actions.FindAction;
 import org.openide.explorer.ExplorerManager;
@@ -408,7 +408,9 @@ public class SchemaColumnViewMultiViewElement extends TopComponent
     @Override
     public void componentDeactivated() {
         super.componentDeactivated();
-        ExplorerUtils.activateActions(manager, false);
+        if(manager != null) {
+            ExplorerUtils.activateActions(manager, false);
+        }
     }
 
     @Override
@@ -419,10 +421,12 @@ public class SchemaColumnViewMultiViewElement extends TopComponent
     @Override
     public void componentClosed() {
         super.componentClosed();
-        categoryPane.close();
-        toolbar.removeAll();
-        //manager.setRootContext(null);
-        manager = null;
+        if(categoryPane!= null) categoryPane.close();
+        if(toolbar!= null) toolbar.removeAll();
+        if(manager != null) {
+            ExplorerUtils.activateActions(manager, false);
+            manager = null;
+        }
         toolbar = null;
         validateAction = null;
         schemaModel = null;
@@ -488,14 +492,12 @@ public class SchemaColumnViewMultiViewElement extends TopComponent
                     toolbar.addSeparator();
                     categoryPane.populateToolbar(toolbar);
                 }
-                // vlv: search
-                SearchManager sm = SearchManager.getDefault();
-
-                if (sm != null) {
-                  toolbar.addSeparator();
-                  toolbar.add(sm.getSearchAction());
-                }
                 toolbar.addSeparator();
+
+                // vlv: search
+                toolbar.add(SearchManager.getDefault().getSearchAction());
+                toolbar.addSeparator();
+
                 validateAction = new ValidateAction(model);
                 JButton validateButton = toolbar.add(validateAction);
                 validateButton.getAccessibleContext().setAccessibleName(""+

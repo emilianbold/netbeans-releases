@@ -49,6 +49,7 @@ import com.tomsawyer.editor.TSEGraphImageEncoder;
 import com.tomsawyer.editor.TSEGraphWindow;
 import com.tomsawyer.editor.TSEObjectUI;
 import com.tomsawyer.editor.TSTransform;
+import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
@@ -228,13 +229,18 @@ public class ETEGraphImageEncoder extends TSEGraphImageEncoder
             int width,
             int height)
     {
-        
+        int w = width;
+        int h = height;
+        boolean svg = "svg".equals(format);
         BufferedImage bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         if (visibleAreaOnly)
         {
-            Image visible = getGraphWindow().getVisibleGraphImage(drawGrid, selectedOnly);
-            if (visible instanceof BufferedImage)
-                bufferedImage = (BufferedImage)visible;
+            if (! svg) 
+            {
+                Image visible = getGraphWindow().getVisibleGraphImage(drawGrid, selectedOnly);
+                if (visible instanceof BufferedImage)
+                    bufferedImage = (BufferedImage)visible;
+            }
         }
         else
         {
@@ -243,8 +249,8 @@ public class ETEGraphImageEncoder extends TSEGraphImageEncoder
                         drawGrid, selectedOnly, width, height);
             else
             {
-                int w = (int)getGraphWindow().getGraph().getFrameBounds().getWidth();
-                int h = (int)getGraphWindow().getGraph().getFrameBounds().getHeight();
+                w = (int)getGraphWindow().getGraph().getFrameBounds().getWidth();
+                h = (int)getGraphWindow().getGraph().getFrameBounds().getHeight();
                 if (zoomType == TSEGraphWindow.CURRENT_ZOOM_LEVEL)
                 {
                     w = (int)(width * getGraphWindow().getZoomLevel());
@@ -258,10 +264,12 @@ public class ETEGraphImageEncoder extends TSEGraphImageEncoder
                     w = (int)(w * ratio);
                     h = (int)(h * ratio);
                 }
-                
-                bufferedImage = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
-                getGraphWindow().createEntireGraphImage(bufferedImage, zoomType,
-                        drawGrid, selectedOnly, w, h);
+                if (! svg) 
+                {
+                    bufferedImage = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
+                    getGraphWindow().createEntireGraphImage(bufferedImage, zoomType,
+                                                            drawGrid, selectedOnly, w, h);
+                }
             }
         }
         try
@@ -304,8 +312,22 @@ public class ETEGraphImageEncoder extends TSEGraphImageEncoder
                         ctx.setEmbeddedFontsOn(true);
                         SVGGraphics2D svgGenerator = new SVGGraphics2D(ctx, true);
                         
-                        svgGenerator.drawRenderedImage(bufferedImage,  new AffineTransform());
-                        
+                        if (visibleAreaOnly)
+                        {
+                            w = getGraphWindow().getWidth();
+                            h = getGraphWindow().getHeight();
+                        }
+                        svgGenerator.setSVGCanvasSize(new Dimension(w, h));
+                        if (visibleAreaOnly)
+                        {
+                            getGraphWindow().drawGraph(svgGenerator, drawGrid, selectedOnly);            
+                        }
+                        else 
+                        {
+                            com.tomsawyer.editor.graphics.TSEGraphics tseg = getGraphWindow().newGraphics(svgGenerator);
+                            getGraphWindow().drawEntireGraph(tseg, zoomType, drawGrid, selectedOnly, w, h);
+                        }
+
                         // Finally, stream out SVG to the output using UTF-8 encoding.
                         boolean useCSS = true; // we want to use CSS style attributes
                         Writer out = new OutputStreamWriter((OutputStream)fo, "UTF-8");  // NOI18N

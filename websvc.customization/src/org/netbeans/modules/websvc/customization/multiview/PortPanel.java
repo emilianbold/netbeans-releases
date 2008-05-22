@@ -94,7 +94,7 @@ public class PortPanel extends SaveableSectionInnerPanel {
         this.model = this.port.getModel();
         this.node = node;
         initComponents();
-        
+        disableEnterKey();
         sync();
         
         defaultListener = new DefaultItemListener();

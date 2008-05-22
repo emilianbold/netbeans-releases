@@ -45,7 +45,6 @@ import org.netbeans.modules.gsf.api.Index;
 import org.netbeans.modules.ruby.elements.CommentElement;
 import java.io.BufferedInputStream;
 import java.io.IOException;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -76,12 +75,11 @@ import org.jruby.ast.NodeType;
 import org.jruby.ast.types.INameNode;
 import org.jruby.lexer.yacc.ISourcePosition;
 import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.Completable;
+import org.netbeans.modules.gsf.api.CodeCompletionHandler;
 import org.netbeans.modules.gsf.api.CompletionProposal;
 import org.netbeans.modules.gsf.api.DeclarationFinder.DeclarationLocation;
 import org.netbeans.modules.ruby.elements.Element;
 import org.netbeans.modules.gsf.api.ElementKind;
-import org.netbeans.modules.ruby.lexer.RubyTokenId;
 import org.netbeans.modules.gsf.api.HtmlFormatter;
 import org.netbeans.modules.ruby.elements.IndexedField;
 import static org.netbeans.modules.gsf.api.Index.*;
@@ -95,13 +93,14 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.editor.Utilities;
+import org.netbeans.modules.gsf.api.CodeCompletionContext;
+import org.netbeans.modules.gsf.api.CodeCompletionResult;
+import org.netbeans.modules.gsf.spi.DefaultCompletionResult;
 import org.netbeans.modules.ruby.RubyParser.Sanitize;
 import org.netbeans.modules.ruby.elements.AstElement;
 import org.netbeans.modules.ruby.elements.AstFieldElement;
 import org.netbeans.modules.ruby.elements.AstVariableElement;
 import org.netbeans.modules.ruby.elements.ClassElement;
-import org.netbeans.modules.ruby.elements.IndexedClass;
 import org.netbeans.modules.ruby.elements.IndexedClass;
 import org.netbeans.modules.ruby.elements.IndexedElement;
 import org.netbeans.modules.ruby.elements.IndexedMethod;
@@ -179,10 +178,7 @@ import org.openide.util.NbBundle;
  *    { } and do/end !!
  * @author Tor Norbye
  */
-public class CodeCompleter implements Completable {
-    /** Include call items in code completion? */
-    private static final boolean INCLUDE_CALL_ITEMS = true;
-    
+public class CodeCompleter implements CodeCompletionHandler {
     /** Another good logical parameter would be SINGLE_WHITESPACE which would insert a whitespace separator IF NEEDED */
     /** Live code template parameter: require the given file, if not already done so */
     private static final String KEY_REQUIRE = "require"; // NOI18N
@@ -1297,7 +1293,7 @@ public class CodeCompleter implements Completable {
     }
     
     private static int callLineStart = -1;
-    private static IndexedMethod callMethod;
+    static IndexedMethod callMethod;
 
     /** Compute the current method call at the given offset. Returns false if we're not in a method call. 
      * The argument index is returned in parameterIndexHolder[0] and the method being
@@ -1624,22 +1620,20 @@ public class CodeCompleter implements Completable {
         IndexedMethod targetMethod = methodHolder[0];
         int index = paramIndexHolder[0];
         
-        if (INCLUDE_CALL_ITEMS) {
-            CallItem callItem = new CallItem(targetMethod, index, anchor, request);
-            proposals.add(callItem);
-            // Also show other documented, not nodoc'ed items (except for those
-            // with identical signatures, such as overrides of the same method)
-            if (alternatesHolder[0] != null) {
-                Set<String> signatures = new HashSet<String>();
-                signatures.add(targetMethod.getSignature().substring(targetMethod.getSignature().indexOf('#')+1));
-                for (IndexedMethod m : alternatesHolder[0]) {
-                    if (m != targetMethod && m.isDocumented() && !m.isNoDoc()) {
-                        String sig = m.getSignature().substring(m.getSignature().indexOf('#')+1);
-                        if (!signatures.contains(sig)) {
-                            CallItem item = new CallItem(m, index, anchor, request);
-                            proposals.add(item);
-                            signatures.add(sig);
-                        }
+        CallItem callItem = new CallItem(targetMethod, index, anchor, request);
+        proposals.add(callItem);
+        // Also show other documented, not nodoc'ed items (except for those
+        // with identical signatures, such as overrides of the same method)
+        if (alternatesHolder[0] != null) {
+            Set<String> signatures = new HashSet<String>();
+            signatures.add(targetMethod.getSignature().substring(targetMethod.getSignature().indexOf('#')+1));
+            for (IndexedMethod m : alternatesHolder[0]) {
+                if (m != targetMethod && m.isDocumented() && !m.isNoDoc()) {
+                    String sig = m.getSignature().substring(m.getSignature().indexOf('#')+1);
+                    if (!signatures.contains(sig)) {
+                        CallItem item = new CallItem(m, index, anchor, request);
+                        proposals.add(item);
+                        signatures.add(sig);
                     }
                 }
             }
@@ -2048,9 +2042,14 @@ public class CodeCompleter implements Completable {
     
 
     // TODO: Move to the top
-    public List<CompletionProposal> complete(final CompilationInfo info, int lexOffset, String prefix,
-        final NameKind kind, final QueryType queryType, final boolean caseSensitive, final HtmlFormatter formatter) {
-        this.caseSensitive = caseSensitive;
+    public CodeCompletionResult complete(CodeCompletionContext context) {
+        CompilationInfo info = context.getInfo();
+        int lexOffset = context.getCaretOffset();
+        String prefix = context.getPrefix();
+        NameKind kind = context.getNameKind();
+        QueryType queryType = context.getQueryType();
+        this.caseSensitive = context.isCaseSensitive();
+        HtmlFormatter formatter = context.getFormatter();
 
         final int astOffset = AstUtilities.getAstOffset(info, lexOffset);
         if (astOffset == -1) {
@@ -2063,6 +2062,7 @@ public class CodeCompleter implements Completable {
         }
 
         List<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
+        DefaultCompletionResult completionResult = new DefaultCompletionResult(proposals, false);
 
         anchor = lexOffset - prefix.length();
 
@@ -2121,6 +2121,7 @@ public class CodeCompleter implements Completable {
         // and I don't want to pass dozens of parameters from method to method; just pass
         // a request context with supporting info needed by the various completion helpers i
         CompletionRequest request = new CompletionRequest();
+        request.completionResult = completionResult;
         request.formatter = formatter;
         request.lexOffset = lexOffset;
         request.astOffset = astOffset;
@@ -2137,7 +2138,7 @@ public class CodeCompleter implements Completable {
         // do completions applicable to strings - require-completion,
         // escape codes for quoted strings and regular expressions, etc.
         if (completeStrings(proposals, request)) {
-            return proposals;
+            return completionResult;
         }
         
         Call call = Call.getCallType(doc, th, lexOffset);
@@ -2149,7 +2150,7 @@ public class CodeCompleter implements Completable {
         if (root == null) {
             completeKeywords(proposals, request, showSymbols);
 
-            return proposals;
+            return completionResult;
         }
 
         // Compute the bounds of the line that the caret is on, and suppress nodes overlapping the line.
@@ -2256,12 +2257,12 @@ public class CodeCompleter implements Completable {
 
                 if ((fqn != null) && queryType == QueryType.COMPLETION && // doesn't apply to (or work with) documentation/tooltip help
                         completeDefOrInclude(proposals, request, fqn)) {
-                    return proposals;
+                    return completionResult;
                 }
 
                 if ((fqn != null) &&
                         completeObjectMethod(proposals, request, fqn, call)) {
-                    return proposals;
+                    return completionResult;
                 }
 
                 // Only call local and inherited methods if we don't have an LHS, such as Foo::
@@ -2337,7 +2338,7 @@ public class CodeCompleter implements Completable {
             if (showUpper) {
                 if (queryType == QueryType.COMPLETION && // doesn't apply to (or work with) documentation/tooltip help
                         completeDefOrInclude(proposals, request, "")) {
-                    return proposals;
+                    return completionResult;
                 }
             }
             if ((showUpper && ((prefix != null && prefix.length() > 0) ||
@@ -2448,7 +2449,7 @@ public class CodeCompleter implements Completable {
         }
 
         if (completeKeywords(proposals, request, showSymbols)) {
-            return proposals;
+            return completionResult;
         }
 
         if (queryType == QueryType.DOCUMENTATION) {
@@ -2459,7 +2460,7 @@ public class CodeCompleter implements Completable {
             doc.readUnlock();
         }
 
-        return proposals;
+        return completionResult;
     }
         
     private void addActionViewMethods(Set<IndexedMethod> inheritedMethods, FileObject fileObject, RubyIndex index, String prefix, 
@@ -3155,7 +3156,7 @@ public class CodeCompleter implements Completable {
             final RubyParser parser = new RubyParser();
             if (link.startsWith("#")) {
                 // Put the current class etc. in front of the method call if necessary
-                Element surrounding = parser.resolveHandle(null, elementHandle);
+                Element surrounding = RubyParser.resolveHandle(null, elementHandle);
                 if (surrounding != null && surrounding.getKind() != ElementKind.KEYWORD) {
                     String name = surrounding.getName();
                     ElementKind kind = surrounding.getKind();
@@ -3464,6 +3465,7 @@ public class CodeCompleter implements Completable {
     }
     
     private static class CompletionRequest {
+        private DefaultCompletionResult completionResult;
         private TokenHierarchy<Document> th;
         private CompilationInfo info;
         private AstPath path;
@@ -4120,11 +4122,6 @@ public class CodeCompleter implements Completable {
             this.index = parameterIndex;
         }
 
-        @Override
-        public String getRhsHtml() {
-            return super.getRhsHtml();//null;
-        }
-        
         @Override
         public ElementKind getKind() {
             return ElementKind.CALL;

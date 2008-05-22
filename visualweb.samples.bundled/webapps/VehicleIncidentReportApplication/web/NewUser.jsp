@@ -31,42 +31,42 @@
 <jsp:root version="2.1" xmlns:f="http://java.sun.com/jsf/core" xmlns:h="http://java.sun.com/jsf/html" xmlns:jsp="http://java.sun.com/JSP/Page" xmlns:webuijsf="http://www.sun.com/webui/webuijsf">
     <jsp:directive.page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8"/>
     <f:view>
-        <webuijsf:page binding="#{NewUser.page1}" id="page1">
-            <webuijsf:html binding="#{NewUser.html1}" id="html1">
-                <webuijsf:head binding="#{NewUser.head1}" id="head1">
-                    <webuijsf:link binding="#{NewUser.link1}" id="link1" url="/resources/stylesheet.css"/>
+        <webuijsf:page id="page1">
+            <webuijsf:html id="html1">
+                <webuijsf:head id="head1">
+                    <webuijsf:link id="link1" url="/resources/stylesheet.css"/>
                 </webuijsf:head>
-                <webuijsf:body binding="#{NewUser.body1}" id="body1" style="-rave-layout: grid">
-                    <webuijsf:form binding="#{NewUser.form1}" id="form1">
+                <webuijsf:body id="body1" style="-rave-layout: grid">
+                    <webuijsf:form id="form1">
                         <div style="position: absolute; left: 0px; top: 0px">
                             <jsp:directive.include file="Header.jspf"/>
-                            <h:panelGrid binding="#{NewUser.content}" id="content" style="left: 0px; top: 240px; position: absolute; width: 800px" styleClass="contents">
-                                <h:panelGrid binding="#{NewUser.contentGrid}" id="contentGrid" style="width: 100%; height: 100%;">
-                                    <h:panelGrid binding="#{NewUser.messageGrid}" id="messageGrid" style="height: 100%; width: 100%">
-                                        <webuijsf:messageGroup binding="#{NewUser.messageGroup1}" id="messageGroup1"/>
+                            <h:panelGrid id="content" style="left: 0px; top: 240px; position: absolute; width: 800px" styleClass="contents">
+                                <h:panelGrid id="contentGrid" style="width: 100%; height: 100%;">
+                                    <h:panelGrid id="messageGrid" style="height: 100%; width: 100%">
+                                        <webuijsf:messageGroup id="messageGroup1"/>
                                     </h:panelGrid>
-                                    <h:panelGrid binding="#{NewUser.dataGrid}" cellpadding="5" columns="3" id="dataGrid" style="height: 100%; width: 100%">
-                                        <webuijsf:label binding="#{NewUser.label1}" id="label1" text="User ID:"/>
+                                    <h:panelGrid cellpadding="5" columns="3" id="dataGrid" style="height: 100%; width: 100%">
+                                        <webuijsf:label id="label1" text="User ID:"/>
                                         <webuijsf:textField binding="#{NewUser.userId}" converter="#{NewUser.integerConverter1}" id="userId"/>
-                                        <webuijsf:message binding="#{NewUser.message1}" for="userId" id="message1" showDetail="false" showSummary="true"/>
-                                        <webuijsf:label binding="#{NewUser.label2}" id="label2" text="First Name:"/>
+                                        <webuijsf:message for="userId" id="message1" showDetail="false" showSummary="true"/>
+                                        <webuijsf:label id="label2" text="First Name:"/>
                                         <webuijsf:textField binding="#{NewUser.firstName}" id="firstName"/>
-                                        <webuijsf:message binding="#{NewUser.message2}" for="firstName" id="message2" showDetail="false" showSummary="true"/>
-                                        <webuijsf:label binding="#{NewUser.label3}" id="label3" text="Last Name:"/>
+                                        <webuijsf:message for="firstName" id="message2" showDetail="false" showSummary="true"/>
+                                        <webuijsf:label id="label3" text="Last Name:"/>
                                         <webuijsf:textField binding="#{NewUser.lastName}" id="lastName"/>
-                                        <webuijsf:message binding="#{NewUser.message3}" for="lastName" id="message3" showDetail="false" showSummary="true"/>
-                                        <webuijsf:label binding="#{NewUser.label4}" id="label4" text="Email Address:"/>
+                                        <webuijsf:message for="lastName" id="message3" showDetail="false" showSummary="true"/>
+                                        <webuijsf:label id="label4" text="Email Address:"/>
                                         <webuijsf:textField binding="#{NewUser.emailAddress}" id="emailAddress" validatorExpression="#{NewUser.emailAddress_validate}"/>
-                                        <webuijsf:message binding="#{NewUser.message4}" for="emailAddress" id="message4" showDetail="false" showSummary="true"/>
-                                        <webuijsf:label binding="#{NewUser.label5}" id="label5" text="Password:"/>
+                                        <webuijsf:message for="emailAddress" id="message4" showDetail="false" showSummary="true"/>
+                                        <webuijsf:label id="label5" text="Password:"/>
                                         <webuijsf:passwordField binding="#{NewUser.password}" id="password" validatorExpression="#{NewUser.passwordLengthValidator.validate}"/>
-                                        <webuijsf:message binding="#{NewUser.message5}" for="password" id="message5" showDetail="false" showSummary="true"/>
-                                        <webuijsf:label binding="#{NewUser.label6}" id="label6" text="Retype Password:"/>
+                                        <webuijsf:message for="password" id="message5" showDetail="false" showSummary="true"/>
+                                        <webuijsf:label id="label6" text="Retype Password:"/>
                                         <webuijsf:passwordField binding="#{NewUser.retypePassword}" id="retypePassword" validatorExpression="#{NewUser.passwordLengthValidator.validate}"/>
-                                        <webuijsf:message binding="#{NewUser.message6}" for="retypePassword" id="message6" showDetail="false" showSummary="true"/>
+                                        <webuijsf:message for="retypePassword" id="message6" showDetail="false" showSummary="true"/>
                                     </h:panelGrid>
-                                    <h:panelGrid binding="#{NewUser.paddingPanel}" id="paddingPanel" style="height: 20px; width: 100%"/>
-                                    <webuijsf:button actionExpression="#{NewUser.register_action}" binding="#{NewUser.register}" id="register" text="Register"/>
+                                    <h:panelGrid id="paddingPanel" style="height: 20px; width: 100%"/>
+                                    <webuijsf:button actionExpression="#{NewUser.register_action}" id="register" text="Register"/>
                                 </h:panelGrid>
                             </h:panelGrid>
                         </div>

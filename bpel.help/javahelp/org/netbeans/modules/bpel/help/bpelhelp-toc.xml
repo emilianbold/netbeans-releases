@@ -50,6 +50,7 @@
 					<tocitem text="Working with Predicates" target="orch_mapper_predicates" />
 					<tocitem text="XPath Function Reference" target="orch_mapper_functions" />
 				</tocitem>
+				<tocitem text="Logging and Alerting" target="logging_about_logging" />
 			</tocitem>
 			<tocitem text="Working with BPEL Elements" expand="false">
 				<tocitem text="About BPEL Elements " target="orch_elements_about" />
@@ -111,10 +112,12 @@
 			<tocitem text="Debugging BPEL Processes" expand="false">
 				<tocitem text="About Debugging BPEL Processes" target="orch_debug_about" />
 				<tocitem text="BPEL Debugger Windows" target="orch_debug_windows" expand="false">
+					<tocitem text="BPEL Partner Links Window" target="debug_windows_partner_links" />
 					<tocitem text="BPEL Process Instances Window" target="org.netbeans.modules.bpel.debugger.ui.process.BpelProcessTopComponent" />
-					<tocitem text="BPEL Debugger: Sessions Window" target="orch_debug_windows_sessions" />
-					<tocitem text="BPEL Variables Window" target="org.netbeans.modules.bpel.debugger.ui.variable.BpelVariableTopComponent" />
 					<tocitem text="BPEL Process Execution Window" target="orch_debug_windows_exec" />
+					<tocitem text="BPEL Debugger: Sessions Window" target="orch_debug_windows_sessions" />
+					<tocitem text="Local Variables Window" target="org.netbeans.modules.bpel.debugger.ui.variable.BpelVariableTopComponent" />
+					<tocitem text="BPEL Debugger: Threads Window" target="debug_windows_threads" />
 				</tocitem>
 				<tocitem text="Starting and Finishing a BPEL Debugging Session" target="orch_debug_start_stop" />
 				<tocitem text="Using Breakpoints to Debug BPEL Processes" target="orch_debug_breakpoints" />

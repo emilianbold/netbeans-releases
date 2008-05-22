@@ -149,8 +149,11 @@ final class ProjectJaxRpcWebServiceView extends AbstractProjectWebServiceViewImp
         if(wscs==null) {
             return new Node[0];
         }
-        ArrayList<Node> nodes = new ArrayList<Node>();
         FileObject wsdlFolder = wscs.getWsdlFolder();
+        if(wsdlFolder==null) {
+            return new Node[0];
+        }
+        ArrayList<Node> nodes = new ArrayList<Node>();
         FileObject[] wsdls = wsdlFolder.getChildren();
         for (FileObject wsdl : wsdls) {
             if (!WSDL_EXT.equals(wsdl.getExt())) {

@@ -48,6 +48,8 @@ import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jellytools.properties.PropertySheetOperator;
+import org.netbeans.jemmy.JemmyProperties;
+import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.util.PNGEncoder;
 import org.netbeans.junit.NbTestSuite;
 
@@ -87,13 +89,21 @@ public class SortByNameActionTest extends JellyTestCase {
         if(pso.tblSheet().getRowCount() == 0) {
             // property sheet not initialized properly => try it once more
             pso.close();
-            new PropertiesAction().perform(node);
+            int oldDispatching = JemmyProperties.getCurrentDispatchingModel();
+            JemmyProperties.setCurrentDispatchingModel(JemmyProperties.ROBOT_MODEL_MASK);
+            try {
+                new QueueTool().waitEmpty(2000);
+                new PropertiesAction().perform(node);
+            } finally {
+                JemmyProperties.setCurrentDispatchingModel(oldDispatching);
+            }
             pso = new PropertySheetOperator("SampleClass1.java"); // NOI18N
         }
         // set default sorting
         pso.sortByCategory();
         int oldCount = pso.tblSheet().getRowCount();
         log("oldCount="+oldCount);
+        assertTrue("Property sheet mustn't be empty.", oldCount != 0); // NOI18N
         try {
             PNGEncoder.captureScreen(getWorkDir().getAbsolutePath() + File.separator + "screen1-AfterSortByCategory.png");
         } catch (Exception e) {

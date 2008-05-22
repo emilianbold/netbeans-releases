@@ -155,7 +155,7 @@ public final class CodeTemplateParameter {
      * @see CodeTemplateInsertRequest#isInserted()
      */
     public void setValue(String newValue) {
-        impl.setValue(newValue, true);
+        impl.setValue(newValue);
     }
     
     /**

@@ -40,8 +40,14 @@ public class Decoration {
     
     public Decoration(Descriptor descriptor) {
         this(new Descriptor[]{descriptor});
+        myDescriptor = descriptor;
     }
+
+    private Descriptor myDescriptor;
     
+    public Descriptor getDescriptor() {
+      return myDescriptor;
+    }
     
     public Decoration(Descriptor[] descriptors){
         for (Descriptor d : descriptors){

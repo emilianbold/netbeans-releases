@@ -51,6 +51,15 @@ made subject to such option by the copyright holder.
         jemmy and jellytools jars are on classpath for both. -->
     <import file="../../nbbuild/templates/xtest-qa-functional.xml"/>
 
+    <!--
+        Explicitly build dependency
+    -->
+    <target name="qa-functional-compiler" depends="build-jellytools">
+        <!-- Build tests but don't build module sources. -->
+        <ant dir="../../websvc.kit/test" target="buildtests" inheritall="false" />
+        <antcall target="xtest-qa-functional.qa-functional-compiler" />
+    </target>
+
     <target name="-setup-proxy" if="proxy.host" >
         <setproxy proxyhost="${proxy.host}" proxyport="${proxy.port}" />
     </target>

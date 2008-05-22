@@ -41,6 +41,9 @@ import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import java.util.Collection;
+import java.util.Set;
+import org.netbeans.modules.xml.schema.model.AttributeReference;
+import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext;
 
 /**
  * This schema visitor is inteneded to look for a children elements or attributes 
@@ -52,16 +55,25 @@ import java.util.Collection;
  */
 public class FindChildrenSchemaVisitor extends AbstractSchemaSearchVisitor {
     
+    private XPathSchemaContext mParentContext;
     private String mySoughtName;
     private String mySoughtNamespace;
     private boolean isAttribute; // hints that the sought object is an attribute
     
     private List<SchemaComponent> myFound = new ArrayList<SchemaComponent>();
     
-    public FindChildrenSchemaVisitor(String soughtName, String soughtNamespace, boolean isAttribute) {
+//    public FindChildrenSchemaVisitor(
+//            String soughtName, String soughtNamespace, boolean isAttribute) {
+//        this(null, soughtName,  soughtNamespace, isAttribute);
+//    }
+    
+    public FindChildrenSchemaVisitor(XPathSchemaContext parentContext, 
+            String soughtName, String soughtNamespace, boolean isAttribute) {
+        //
         super();
         assert soughtName != null : "At least sought name has to be specified!"; // NOI18N
         //
+        mParentContext = parentContext;
         mySoughtName = soughtName;
         mySoughtNamespace = soughtNamespace;
         this.isAttribute = isAttribute;
@@ -70,6 +82,42 @@ public class FindChildrenSchemaVisitor extends AbstractSchemaSearchVisitor {
 //out();
 //out("=== FindChildrenSchemaVisitor: " + soughtName);
     }
+    
+    @Override
+    public void visit(ElementReference er) {
+        if (!isAttribute) {
+            //
+            // # 105159, #130053
+            if (!isXdmDomUsed(er)) {
+                checkComponent(er);
+            }
+            //
+            String name = fastGetRefName(er.getRef());
+            if (!mySoughtName.equals(name)) {
+                return;
+            }
+            super.visit(er);
+        }
+    }
+    
+    @Override
+    public void visit(AttributeReference ar) {
+        if (isAttribute) {
+            //
+            // # 105159, #130053
+            if (!isXdmDomUsed(ar)) {
+                checkComponent(ar);
+            }
+            //
+            String name = fastGetRefName(ar.getRef());
+            if (!mySoughtName.equals(name)) {
+                return;
+            }
+            super.visit(ar);
+        }
+    }
+    
+    //-----------------------------------------------------------------
     
     public List<SchemaComponent> getFound() {
         return myFound;
@@ -279,16 +327,17 @@ public class FindChildrenSchemaVisitor extends AbstractSchemaSearchVisitor {
           }
         }
         if (sc instanceof Named) {
-            String namespace = sc.getModel().getEffectiveNamespace(sc);
             String name = ((Named)sc).getName();
-         
             if (mySoughtName.equals(name)) {
                 //
                 // Compare namespace as well if it is specified
                 if (mySoughtNamespace == null || mySoughtNamespace.length() == 0) {
                     myFound.add(sc);
                 } else {
-                    if (mySoughtNamespace.equals(namespace)) {
+                    Set<String> namespacesSet = XPathSchemaContext.Utilities.
+                            getEffectiveNamespaces(sc, mParentContext);
+                    //
+                    if (namespacesSet.contains(mySoughtNamespace)) {
                         myFound.add(sc);
                     }
                 }

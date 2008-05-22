@@ -41,9 +41,8 @@
 
 package org.netbeans.modules.web.core.jsploader;
 
-import java.io.*;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import org.openide.filesystems.*;
 import org.openide.nodes.*;
 import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObject;
@@ -52,8 +51,6 @@ import org.openide.actions.OpenAction;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 import org.netbeans.modules.web.core.WebExecSupport;
-
-//import org.netbeans.modules.java.Util;
 import org.openide.util.Exceptions;
 
 /** The node representation of <code>JspDataObject</code> for internet files.
@@ -65,11 +62,11 @@ public class JspNode extends DataNode {
     private static final String EXECUTION_SET_NAME = "Execution"; // NOI18N
     private static final String SHEETNAME_TEXT_PROPERTIES = "textProperties"; // NOI18N
 
-    private static final String ICON_JSP = "org/netbeans/modules/web/core/resources/jsp16"; // NOI18N
-    private static final String ICON_TAG = "org/netbeans/modules/web/core/resources/tag16"; // NOI18N
-    private static final String ICON_JSP_XML = "org/netbeans/modules/web/core/resources/jsp-xml16"; // NOI18N
-    private static final String ICON_JSP_FRAGMENT = "org/netbeans/modules/web/core/resources/jsp-fragment16"; // NOI18N
-            
+    private static final String ICON_JSP = "org/netbeans/modules/web/core/resources/jsp16.gif"; // NOI18N
+    private static final String ICON_TAG = "org/netbeans/modules/web/core/resources/tag16.gif"; // NOI18N
+    private static final String ICON_JSP_XML = "org/netbeans/modules/web/core/resources/jsp-xml16.gif"; // NOI18N
+    private static final String ICON_JSP_FRAGMENT = "org/netbeans/modules/web/core/resources/jsp-fragment16.gif"; // NOI18N
+    
     public static final String PROP_FILE_ENCODING = "encoding"; //NOI18N
     public static final String PROP_REQUEST_PARAMS   = "requestparams"; // NOI18N
     
@@ -82,7 +79,7 @@ public class JspNode extends DataNode {
     }
 
     private void initialize () {
-        setIconBase(getIconBase());
+        setIconBaseWithExtension(getIconBase());
         setDefaultAction (SystemAction.get (OpenAction.class));
 
         if (isTagFile())
@@ -102,6 +99,7 @@ public class JspNode extends DataNode {
             || ext.equals(JspLoader.TAG_FILE_EXTENSION));
     }
     
+    @Override
     public DataObject getDataObject() {
         return super.getDataObject();
     }
@@ -110,6 +108,7 @@ public class JspNode extends DataNode {
     * Subclasses may want to override this and add additional properties.
     * @return the sheet
     */
+    @Override
     protected Sheet createSheet () {
         Sheet.Set ps;
 
@@ -151,7 +150,6 @@ public class JspNode extends DataNode {
         // remove the debugger type property
         //ps.remove(ExecSupport.PROP_DEBUGGER_TYPE);
 
-        
 
         // text sheet
         ps = new Sheet.Set();
@@ -171,7 +169,6 @@ public class JspNode extends DataNode {
                }
            }
            );
-        
         
         return sheet;
     }
@@ -209,8 +206,8 @@ public class JspNode extends DataNode {
     }
 
     /** Get the icon base.
-    * This should be a resource path, e.g. <code>/some/path/</code>,
-    * where icons are held. Subclasses may override this.
+    * This should be complete resource path to an icon,
+    * e.g. <code>some/path/someIcon.png</code>. Subclasses may override this.
     * @return the icon base
     * @see #getIcons
     */
@@ -227,7 +224,6 @@ public class JspNode extends DataNode {
         if (ext.equals(JspLoader.JSPX_EXTENSION))
                 return ICON_JSP_XML;
         return ICON_JSP;
-
     }
 
 }

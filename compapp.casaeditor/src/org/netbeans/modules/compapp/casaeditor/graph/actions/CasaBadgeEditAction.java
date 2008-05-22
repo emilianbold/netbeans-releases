@@ -59,6 +59,7 @@ import org.netbeans.modules.compapp.casaeditor.nodes.actions.WsitServerConfigAct
 import org.netbeans.modules.compapp.casaeditor.nodes.actions.WsitClientConfigAction;
 import org.netbeans.modules.compapp.casaeditor.design.CasaModelGraphScene;
 import org.netbeans.modules.compapp.casaeditor.graph.CasaBindingBadges;
+import org.netbeans.modules.compapp.casaeditor.graph.CasaBindingBadges.Badge;
 import org.netbeans.modules.compapp.casaeditor.graph.CasaNodeWidgetBinding;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaPort;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
@@ -81,9 +82,10 @@ public class CasaBadgeEditAction extends WidgetAction.Adapter {
         mScene = scene;
     }
 
-    private boolean inBadge(WidgetMouseEvent event, CasaBindingBadges.Badge badge, CasaNodeWidgetBinding nodeWidget) {
+    private boolean inBadge(WidgetMouseEvent event, 
+            CasaBindingBadges.Badge badge, CasaNodeWidgetBinding nodeWidget) {
         Rectangle badgeBounds = nodeWidget.getBadges().getBadgeBoundsForParent(badge, nodeWidget);
-        return (badgeBounds.contains(event.getPoint()));
+        return badgeBounds != null && badgeBounds.contains(event.getPoint());
     }
 
     public State mousePressed(Widget widget, WidgetMouseEvent event) {
@@ -94,40 +96,27 @@ public class CasaBadgeEditAction extends WidgetAction.Adapter {
         }
 
         CasaNodeWidgetBinding nodeWidget = (CasaNodeWidgetBinding) widget;
-        if (inBadge(event, CasaBindingBadges.Badge.IS_EDITABLE, nodeWidget)) {
+        
+        for (Badge badge : CasaBindingBadges.Badge.values()) {
+            if (inBadge(event, badge, nodeWidget)) {
 
-            CasaPort endpoint = (CasaPort) mScene.findObject(widget);
-            if (endpoint == null || !mScene.getModel().isEditable(endpoint)) {
-                return State.REJECTED;
-            }
+                CasaPort endpoint = (CasaPort) mScene.findObject(widget);
+                if (endpoint == null || !mScene.getModel().isEditable(endpoint)) {
+                    return State.REJECTED;
+                }
 
-            mEditNode = mScene.getNodeFactory().createNodeFor(endpoint);
-            if (mEditNode == null) {
-                return State.REJECTED;
-            }
+                mEditNode = mScene.getNodeFactory().createNodeFor(endpoint);
+                if (mEditNode == null) {
+                    return State.REJECTED;
+                }
 
-            nodeWidget.getBadges().setBadgePressed(CasaBindingBadges.Badge.IS_EDITABLE, true);
+                nodeWidget.getBadges().setBadgePressed(badge, true);
 
-            return State.CONSUMED;
-
-        } else if (inBadge(event, CasaBindingBadges.Badge.WS_POLICY, nodeWidget)) {
-
-            CasaPort endpoint = (CasaPort) mScene.findObject(widget);
-            if (endpoint == null || !mScene.getModel().isEditable(endpoint)) {
-                return State.REJECTED;
-            }
-
-            mEditNode = mScene.getNodeFactory().createNodeFor(endpoint);
-            if (mEditNode == null) {
-                return State.REJECTED;
-            }
-
-            nodeWidget.getBadges().setBadgePressed(CasaBindingBadges.Badge.WS_POLICY, true);
-
-            return State.CONSUMED;
-
+                return State.CONSUMED;
+            } 
         }
-         return State.REJECTED;
+        
+        return State.REJECTED;
     }
 
 

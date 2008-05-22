@@ -82,6 +82,9 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
     
     static final Logger LOG = TokenHierarchyUpdate.LOG;
     
+    // -J-Dorg.netbeans.spi.lexer.MutableTextInput.level=FINE
+    private static final Logger LOG_LOCK = Logger.getLogger(MutableTextInput.class.getName()); // Logger for read/write-lock
+
     /**
      * Input source of this token hierarchy.
      */
@@ -312,20 +315,20 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
     }
     
     public void ensureReadLocked() {
-        if (isMutable() && LOG.isLoggable(Level.FINE) &&
+        if (isMutable() && LOG_LOCK.isLoggable(Level.FINE) &&
                 !LexerSpiPackageAccessor.get().isReadLocked(mutableTextInput)
         ) { // Not read-locked
-            LOG.log(Level.INFO, "!!WARNING!! Missing READ-LOCK of input source "
+            LOG_LOCK.log(Level.INFO, "!!WARNING!! Missing READ-LOCK of input source "
                     + LexerSpiPackageAccessor.get().inputSource(mutableTextInput),
                     new Exception());
         }
     }
     
     public void ensureWriteLocked() {
-        if (isMutable() && LOG.isLoggable(Level.FINE) &&
+        if (isMutable() && LOG_LOCK.isLoggable(Level.FINE) &&
                 !LexerSpiPackageAccessor.get().isWriteLocked(mutableTextInput)
         ) { // Not write-locked
-            LOG.log(Level.INFO, "!!WARNING!! Missing WRITE-LOCK of input source "
+            LOG_LOCK.log(Level.INFO, "!!WARNING!! Missing WRITE-LOCK of input source "
                     + LexerSpiPackageAccessor.get().inputSource(mutableTextInput),
                     new Exception());
         }

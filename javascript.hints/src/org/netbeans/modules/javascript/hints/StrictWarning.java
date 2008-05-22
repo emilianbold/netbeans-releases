@@ -38,7 +38,7 @@
  */
 package org.netbeans.modules.javascript.hints;
 
-import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -55,13 +55,15 @@ import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.javascript.editing.AstUtilities;
 import org.netbeans.modules.javascript.editing.BrowserVersion;
 import org.netbeans.modules.javascript.editing.SupportedBrowsers;
+import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 import org.netbeans.modules.javascript.hints.spi.Description;
+import org.netbeans.modules.javascript.hints.spi.EditList;
 import org.netbeans.modules.javascript.hints.spi.ErrorRule;
 import org.netbeans.modules.javascript.hints.spi.Fix;
 import org.netbeans.modules.javascript.hints.spi.HintSeverity;
+import org.netbeans.modules.javascript.hints.spi.PreviewableFix;
 import org.netbeans.modules.javascript.hints.spi.RuleContext;
-import org.openide.awt.HtmlBrowser;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -83,6 +85,33 @@ import org.openide.util.NbBundle;
  */
 public class StrictWarning implements ErrorRule {
 
+    public static final String ANON_NO_RETURN_VALUE = "msg.anon.no.return.value"; // NOI18N
+    public static final String BAD_OCTAL_LITERAL = "msg.bad.octal.literal"; // NOI18N
+    public static final String DUP_PARAMS = "msg.dup.parms"; // NOI18N
+    public static final String NO_RETURN_VALUE = "msg.no.return.value"; // NOI18N
+    public static final String NO_SIDE_EFFECTS = "msg.no.side.effects"; // NOI18N
+    public static final String RESERVED_KEYWORD = "msg.reserved.keyword"; // NOI18N
+    public static final String RETURN_INCONSISTENT = "msg.return.inconsistent"; // NOI18N
+    public static final String TRAILING_COMMA = "msg.trailing.comma"; // NOI18N
+    public static final String VAR_HIDES_ARG = "msg.var.hides.arg"; // NOI18N
+    public static final String VAR_REDECL = "msg.var.redecl"; // NOI18N
+
+    // Handled by separate hint implementation, AccidentalAssignment
+    //"msg.equal.as.assign", // NOI18N
+    /** Public only for testing infrastructure. Others should not touch!! */
+    public static final String[] KNOWN_STRICT_ERROR_KEYS = new String[]{
+        // NetBeans custom rule
+        TRAILING_COMMA,
+        BAD_OCTAL_LITERAL, 
+        RESERVED_KEYWORD,
+        DUP_PARAMS, 
+        RETURN_INCONSISTENT, 
+        NO_RETURN_VALUE, 
+        ANON_NO_RETURN_VALUE, 
+        VAR_HIDES_ARG, 
+        VAR_REDECL, 
+        NO_SIDE_EFFECTS
+    };
     private String key;
     private HintSeverity defaultSeverity = HintSeverity.WARNING;
 
@@ -99,27 +128,30 @@ public class StrictWarning implements ErrorRule {
         BaseDocument doc = context.doc;
 
         OffsetRange range = null;
-        
+
         int astOffset = error.getStartPosition();
         int lexOffset = LexUtilities.getLexerOffset(info, astOffset);
 
-        if ("msg.trailing.comma".equals(key)) { // NOI18N
+        if (TRAILING_COMMA.equals(key)) { // NOI18N
             // See if we're targeting the applicable browsers
+
             if (!SupportedBrowsers.getInstance().isSupported(BrowserVersion.IE7)) { // If you want IE5.5 you're also affected
                 // We don't care about this error anyway
+
                 context.remove = true;
                 return;
             }
-            
-            int start = (Integer)error.getParameters()[0];
-            range = new OffsetRange(start, start+1);
-        } else if ("msg.reserved.keyword".equals(key)) {
+
+            astOffset = (Integer) error.getParameters()[0];
+            lexOffset = LexUtilities.getLexerOffset(info, astOffset);
+            range = new OffsetRange(lexOffset, lexOffset + 1);
+        } else if (RESERVED_KEYWORD.equals(key)) {
             String keyword = (String) error.getParameters()[1];
-            range = new OffsetRange(lexOffset-keyword.length(), lexOffset);
+            range = new OffsetRange(lexOffset - keyword.length(), lexOffset);
         } else if (error.getParameters() != null) {
             Node node = (Node) error.getParameters()[0];
-            
-            final boolean isInconsistentReturn = "msg.return.inconsistent".equals(key); // NOI18N
+
+            final boolean isInconsistentReturn = RETURN_INCONSISTENT.equals(key); // NOI18N
 
             if (isInconsistentReturn) {
                 // Find the corresponding return node
@@ -133,8 +165,17 @@ public class StrictWarning implements ErrorRule {
                 }
             }
 
+            // In HTML etc ignore these
+            if (node.getType() == Token.EMPTY && !JsTokenId.JAVASCRIPT_MIME_TYPE.equals(info.getFileObject().getMIMEType())) {
+                context.remove = true;
+                return;
+            }
+
             OffsetRange astRange = AstUtilities.getRange(node);
             range = LexUtilities.getLexerOffsets(info, astRange);
+            if (range.getLength() == 0) {
+                range = new OffsetRange(range.getStart(), Math.min(doc.getLength(), range.getStart()+1));
+            }
         } else {
             int errorOffset = lexOffset;
             try {
@@ -143,7 +184,7 @@ public class StrictWarning implements ErrorRule {
                     rowLastNonWhite = Utilities.getRowEnd(doc, errorOffset);
                     if (errorOffset == rowLastNonWhite) {
                         errorOffset = Utilities.getRowFirstNonWhite(doc, errorOffset);
-                        rowLastNonWhite = Utilities.getRowLastNonWhite(doc, errorOffset)+1;
+                        rowLastNonWhite = Utilities.getRowLastNonWhite(doc, errorOffset) + 1;
                     }
                 }
                 range = new OffsetRange(errorOffset, rowLastNonWhite);
@@ -158,12 +199,21 @@ public class StrictWarning implements ErrorRule {
 
             //Fix fix = new InsertParenFix(info, offset, callNode);
             //List<Fix> fixList = Collections.singletonList(fix);
-            List<Fix> fixList = Collections.<Fix>singletonList(new MoreInfoFix(key));
+            List<Fix> fixList;
+            if (key.equals(TRAILING_COMMA)) { // NOI18N
+
+                fixList = new ArrayList<Fix>(2);
+                fixList.add(new RemoveTrailingCommaFix(info, lexOffset));
+                fixList.add(new MoreInfoFix(key));
+            } else {
+                fixList = Collections.<Fix>singletonList(new MoreInfoFix(key));
+            }
 
             String message = getDisplayName();
             // I don't have the strings to pass to the error here
             // so for now just use the original error message instead
             if (message.indexOf("{0}") != -1) { // NOI18N
+
                 message = error.getDisplayName();
             }
 
@@ -224,6 +274,7 @@ public class StrictWarning implements ErrorRule {
 
     public String getDescription() {
         return NbBundle.getMessage(StrictWarning.class, key + ".desc"); // NOI18N
+
     }
 
     public boolean getDefaultEnabled() {
@@ -234,28 +285,44 @@ public class StrictWarning implements ErrorRule {
         return null;
     }
 
-    private static class MoreInfoFix implements Fix {
+    private static class RemoveTrailingCommaFix implements PreviewableFix {
 
-        private String key;
+        private CompilationInfo info;
+        private int offset;
 
-        public MoreInfoFix(String key) {
-            this.key = key;
+        public RemoveTrailingCommaFix(CompilationInfo info, int offset) {
+            this.info = info;
+            this.offset = offset;
         }
 
         public String getDescription() {
-            return NbBundle.getMessage(StrictWarning.class, "ShowInfo");
+            return NbBundle.getMessage(StrictWarning.class, "RemoveTrailingCommaFix");
         }
 
         public void implement() throws Exception {
-            URL url = new URL("http://wiki.netbeans.org/JavaScript_" + key.replace("msg.", "").replace(".", "")); // NOI18N
-            HtmlBrowser.URLDisplayer.getDefault().showURL(url);
+            EditList edits = getEditList();
+            if (edits != null) {
+                edits.apply();
+            }
+        }
+
+        public EditList getEditList() throws Exception {
+            BaseDocument doc = (BaseDocument) info.getDocument();
+            EditList list = new EditList(doc);
+            list.replace(offset, 1, null, false, 0);
+
+            return list;
         }
 
         public boolean isSafe() {
-            return true;
+            return false;
         }
 
         public boolean isInteractive() {
+            return false;
+        }
+
+        public boolean canPreview() {
             return true;
         }
     }

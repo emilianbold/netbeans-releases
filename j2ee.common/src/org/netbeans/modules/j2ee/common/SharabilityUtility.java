@@ -215,6 +215,7 @@ public final class SharabilityUtility {
             for (Iterator<ClassPathSupport.Item> it = javaClasspathList.iterator(); it.hasNext(); i++) {
                 ClassPathSupport.Item item = it.next();
                 if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY
+                        && !item.isBroken()
                         && item.getLibrary().getType().equals(J2eePlatform.LIBRARY_TYPE)
                         && names.contains(item.getLibrary().getName())) {
                     it.remove();
@@ -231,6 +232,7 @@ public final class SharabilityUtility {
                 boolean add = true;
                 for (ClassPathSupport.Item item : javaClasspathList) {
                     if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY
+                            && !item.isBroken()
                             && item.getLibrary().getType().equals(J2eePlatform.LIBRARY_TYPE)
                             && item.getLibrary().getName().equals(lib.getName())) {
                         add = false;
@@ -264,6 +266,7 @@ public final class SharabilityUtility {
             for (Iterator<ClassPathSupport.Item> it = javaClasspathList.iterator(); it.hasNext();) {
                 ClassPathSupport.Item item = it.next();
                 if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY
+                        && !item.isBroken()
                         && item.getLibrary().getType().equals(J2eePlatform.LIBRARY_TYPE)
                         && names.contains(item.getLibrary().getName())) {
                     containLibs = true;

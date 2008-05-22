@@ -133,8 +133,10 @@ public class WebProjectValidationNb36WebModule extends WebProjectValidation {
         nameStep.txtProjectFolder().setText(System.getProperty("xtest.data")+
                 File.separator+PROJECT_NAME+"Prj");
         nameStep.next();
-        NewWebProjectSourcesStepOperator srcStep =
-                new NewWebProjectSourcesStepOperator();
+        NewWebProjectServerSettingsStepOperator serverStep = new NewWebProjectServerSettingsStepOperator();
+        serverStep.cboServer().selectItem(0);
+        serverStep.next();
+        NewWebProjectSourcesStepOperator srcStep =  new NewWebProjectSourcesStepOperator();
         srcStep.finish();
         Timeouts timeouts = nameStep.getTimeouts().cloneThis();
         srcStep.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 90000);

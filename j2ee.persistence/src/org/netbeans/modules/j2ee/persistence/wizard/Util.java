@@ -344,6 +344,9 @@ public class Util {
             return false;
         }
         PUDataObject pud = ProviderUtil.getPUDataObject(project);
+        if (pud == null) {
+            return false;
+        }
         pud.addPersistenceUnit(punit);
         pud.save();
         return true;

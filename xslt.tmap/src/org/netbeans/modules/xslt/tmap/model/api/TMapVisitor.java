@@ -31,6 +31,12 @@ public interface TMapVisitor {
     void visit(TransformMap transformMap);
     
     /**
+     * Visit "import" element.
+     * @param imprt visited element
+     */
+    void visit(Import imprt);
+
+    /**
      * Visit "service" element.
      * @param service visited element
      */

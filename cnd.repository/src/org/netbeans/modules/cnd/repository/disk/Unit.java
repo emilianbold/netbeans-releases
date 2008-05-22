@@ -41,12 +41,106 @@
 
 package org.netbeans.modules.cnd.repository.disk;
 
+import java.io.IOException;
+import org.netbeans.modules.cnd.repository.spi.Key;
+import org.netbeans.modules.cnd.repository.spi.Persistent;
+
 /**
- * Represents a repository unit
+ * Represents a repository unit.
+ * Repository implementation delegates all operation to units.
+
+ * Typically, a unit is backed with physical storage (see Stoage interface)
+ * and also has an in-memory cache
+ * 
  * @author Sergey Grinev
+ * @author Vladimir Kvashin
  */
-public interface Unit extends Storage {
+public interface Unit {
     
-    /** Gets this unit unique name */
+    /** 
+     * Gets this unit unique name. 
+     * This name should be the same as Key.getUnit()
+     */
     public String getName();
+
+    /** 
+     * Gets the object stored by the given key 
+     * Typically, the implementation first looks it up in a cache,
+     * then, if not found, reads it from te Storage its's backed with
+     */
+    public Persistent get(Key key) throws IOException;
+    
+    /**
+     * The writing operations are queued and performed in a separate thread.
+     * 
+     * This thread communicates with the central repository implementation,
+     * which in turn delegates requests to units.
+     * 
+     * That's why put and remove operations are separated into
+     * cache-related and physicall operations.
+     * 
+     * This design is quite arguable; anyhow I'm not going to change at that point
+     * 
+     * This method puts the object to in-memory cache;
+     * it's the caller's responsibility to enqueue writing this object
+     * into physical storage
+     */
+    public void putToCache(Key key, Persistent obj);
+    
+    /** 
+     * Writes object to physical storage
+     * (see comment to putToCache method)
+     */
+    public void putPhysically(Key key, Persistent object)  throws IOException ;
+    
+    /** 
+     * Removes the object from cache
+     * (see comment to putToCache method)
+     */
+    public void removeFromCache(Key key);
+    
+    /**
+     * Removes the given from physical storage
+     * (see comment to putToCache method)
+     */
+    public void removePhysically(Key key) throws IOException;
+    
+    
+    /** 
+     * Places object into hard-ref map
+     */
+    public void hang(Key key, Persistent obj);
+
+    /** 
+     * Tries to get the object from in-memory cache 
+     * @return object in the case it resides in cache, otherwise null
+     */
+    public Persistent tryGet(Key key);
+    
+    
+    /** Closes the unit */
+    public void close() throws IOException;
+    
+    
+    /** 
+     * Clears in-memory cache. 
+     * Used for testing purposes 
+     */
+    public void debugClear();
+    
+    /** 
+     * Determines the necessity of maintenance.
+     * When a maintenancy is to be done, repository
+     * sorts all units in accordance with the returned value.
+     * So greater is the value, more need in maintenance unit has.
+     */
+    public int getMaintenanceWeight() throws IOException;
+    
+    /**
+     * Performes necessary maintenance (such as defragmentation) during the given timeout
+     * @return true if maintenance was finished by timeout and needs more time to be completed
+     */
+    public boolean maintenance(long timeout)  throws IOException;
+    
+    
 }

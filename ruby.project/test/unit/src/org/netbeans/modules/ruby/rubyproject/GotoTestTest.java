@@ -146,6 +146,15 @@ public class GotoTestTest extends RubyProjectTestBase {
         assertEquals(-1, loc.getOffset());
     }
 
+    public void testGotoTestRspecRubyProject() {
+        assertNotNull(project);
+        
+        DeclarationLocation loc = gotoTest.findTest(getProjFile("lib/gibbon.rb"), -1);
+        assertNotSame(DeclarationLocation.NONE, loc);
+        assertIsProjFile("spec/gibbon_spec.rb", loc.getFileObject());
+        assertEquals(-1, loc.getOffset());
+    }
+
     public void testGotoTestRails() {
         assertNotNull(project);
         

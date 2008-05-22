@@ -40,14 +40,10 @@
 package org.netbeans.modules.php.editor.lexer;
 
 import java.io.IOException;
-import java.io.Reader;
-import java.io.StringReader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.lexer.Token;
-import org.netbeans.modules.php.editor.PHPVersion;
 import org.netbeans.spi.lexer.Lexer;
-import org.netbeans.spi.lexer.LexerInput;
 import org.netbeans.spi.lexer.LexerRestartInfo;
 import org.netbeans.spi.lexer.TokenFactory;
 
@@ -55,64 +51,28 @@ import org.netbeans.spi.lexer.TokenFactory;
 
 /**
  *
- * @author Petr Pisl
+ * @author Petr Pisl, Marek Fukala
  */
 public class GSFPHPLexer implements Lexer<PHPTokenId> {
     
-    // empty buffer
-    private static final StringReader EMPTY_STRING_READER = new StringReader("");
-    
-    /** This is still not working; I wonder if release() is called correctly at all times...*/
-    private static final boolean REUSE_LEXERS = false;
-    
-    private static GSFPHPLexer cached;
-    private final PHPScanner scanner;
-    private LexerInput input;
+    private final PHP5ColoringLexer scanner;
     private TokenFactory<PHPTokenId> tokenFactory;    
     
     private GSFPHPLexer(LexerRestartInfo<PHPTokenId> info) {
-        scanner = PHPScannerManager.getDefault().getPHPScanner(PHPVersion.PHP_5, EMPTY_STRING_READER, false);
+        scanner = new PHP5ColoringLexer(info, false);
+        tokenFactory = info.tokenFactory();
     }
     
     public static synchronized GSFPHPLexer create(LexerRestartInfo<PHPTokenId> info) {
-        GSFPHPLexer phpLexer = cached;
-
-        if (phpLexer == null) {
-            phpLexer = new GSFPHPLexer(info);
-        }
-
-        phpLexer.restart(info);
-
-        return phpLexer;
-    }
-    
-    void restart(LexerRestartInfo<PHPTokenId> info) {
-
-        input = info.input();
-        Reader lexerReader = new LexerInputReader(input);
-        scanner.reset(lexerReader);
-        
-        tokenFactory = info.tokenFactory();
-
-        Object state = info.state();
-        if (state instanceof PHP5ColoringLexer.LexerState) {
-            scanner.setState((PHP5ColoringLexer.LexerState)state);
-        }
-        
-    }
-    
-    private Token<PHPTokenId> createToken(PHPTokenId id, int length) {
-        String fixedText = id.fixedText();
-        return (fixedText != null) ? tokenFactory.getFlyweightToken(id, fixedText)
-                                   : tokenFactory.createToken(id, length);
+        return new GSFPHPLexer(info);
     }
     
     public Token<PHPTokenId> nextToken() {
         try {
-            PHPTokenId symbol = scanner.nextToken(); 
+            PHPTokenId tokenId = scanner.nextToken(); 
             Token<PHPTokenId> token = null;
-            if (symbol != null) {
-                token = createToken(symbol, scanner.getTokenLength());
+            if (tokenId != null) {
+                token = tokenFactory.createToken(tokenId);
             }
             return token;
         } catch (IOException ex) {
@@ -122,44 +82,10 @@ public class GSFPHPLexer implements Lexer<PHPTokenId> {
     }
 
     public Object state() {
-        Object state = scanner.getState();
-        return state;
+        return scanner.getState();
     }
 
     public void release() {
-        if (REUSE_LEXERS) {
-            // Possibly reset the structures that could cause memory leaks
-            synchronized (GSFPHPLexer.class) {
-                cached = this;
-            }
-        }
     }
     
-    private static class LexerInputReader extends Reader {
-        private LexerInput input;
-
-        LexerInputReader(LexerInput input) {
-            this.input = input;
-        }
-
-        public int read(char[] buf, int off, int len) throws IOException {
-            for (int i = 0; i < len; i++) {
-                int c = input.read();
-                if (c == LexerInput.EOF) {
-                    if (i > 0) {
-                        return i;
-                    }
-                    else {
-                        return -1;
-                    }
-                }
-                buf[i + off] = (char)c;
-            }
-            return len;
-        }
-
-        public void close() throws IOException {
-        }
-    }
-
 }

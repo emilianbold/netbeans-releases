@@ -167,10 +167,7 @@
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <public-packages>
-                <package>org.netbeans.modules.cnd.debugger.gdb</package>
-                <package>org.netbeans.modules.cnd.debugger.gdb.disassembly</package>
-            </public-packages>
+            <public-packages/>
         </data>
     </configuration>
 </project>

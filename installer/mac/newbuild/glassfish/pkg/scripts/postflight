@@ -68,3 +68,9 @@ fi
 if [ -d "/Library/Receipts/glassfish.pkg" ] ; then
     rm -rf "/Library/Receipts/glassfish.pkg"
 fi
+
+#Fix for 132115
+sed -i '' "s/never/TUE/" $2/updatecenter/config/config.xml
+
+#add Product ID
+"$script_dir"/addproduct_id.sh "GLASSFISH"

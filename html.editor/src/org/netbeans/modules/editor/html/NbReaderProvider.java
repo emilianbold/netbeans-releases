@@ -52,22 +52,26 @@ public class NbReaderProvider implements ReaderProvider {
     private static final String DTD_FOLDER = "DTDs"; // NOI18 // NOI18N
     private static final String CATALOG_FILE_NAME = "catalog"; // NOI18N
 
+    private static boolean setUp = false;
+    
     Map mapping = null;
     boolean valid = false;
     FileObject dtdSetFolder;
 
-    public static void setupReaders() {
-        FileObject rootFolder = Repository.getDefault().getDefaultFileSystem().getRoot();
-        rootFolder.addFileChangeListener( new RootFolderListener() );
-        
-        FileObject dtdFolder = rootFolder.getFileObject( DTD_FOLDER );
-        if( dtdFolder != null) {
-            dtdFolder.addFileChangeListener( new DTDFolderListener() );
-            processSubfolders( dtdFolder );
+    //hopefully no need to call the method twice
+    public static synchronized void setupReaders() {
+        if (!setUp) {
+            FileObject rootFolder = Repository.getDefault().getDefaultFileSystem().getRoot();
+            rootFolder.addFileChangeListener(new RootFolderListener());
+
+            FileObject dtdFolder = rootFolder.getFileObject(DTD_FOLDER);
+            if (dtdFolder != null) {
+                dtdFolder.addFileChangeListener(new DTDFolderListener());
+                processSubfolders(dtdFolder);
+            }
+            setUp = true;
         }
     }
-    
-    
 
     public NbReaderProvider( FileObject folder ) {
         dtdSetFolder = folder;

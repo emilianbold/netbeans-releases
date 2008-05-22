@@ -78,13 +78,13 @@ public class SaasServicesModelTest extends NbTestCase {
     public void testLoading() throws Exception {
 
         SaasServicesModel instance = SaasServicesModel.getInstance();
-        assertEquals("YouTube", instance.getGroups().get(1).getName());
+        assertEquals("Zillow", instance.getGroups().get(1).getName());
         //No Sub-group for now
         //SaasGroup group = instance.getGroups().get(0).getChildGroup("Videos");
         //assertNotNull(group);
         SaasGroup group = instance.getGroups().get(1);
         WadlSaas service = (WadlSaas) group.getServices().get(0);
-        assertEquals("Video Service", service.getDisplayName());
+        assertEquals("Real Estate Service", service.getDisplayName());
         assertNotNull(service.getWadlModel());
 
         SetupUtil.commonTearDown();

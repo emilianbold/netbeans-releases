@@ -48,12 +48,12 @@ import java.util.List;
 public class AstPath {
 
     private AstNode first,  last;
-
+    
     /** @param first may be null; in such case a path from the root is created */
     AstPath(AstNode first, AstNode last) {
-        if(first != null && !isDescendant(first, last)) {
-            throw new IllegalArgumentException("AstNode " + last + " is not an ancestor of AstNode " + first);
-        }
+//        if(first != null && !isDescendant(first, last)) {
+//            throw new IllegalArgumentException("AstNode " + last + " is not an ancestor of AstNode " + first);
+//        }
         this.first = first;
         this.last = last;
     }
@@ -65,7 +65,7 @@ public class AstPath {
     public AstNode last() {
         return last;
     }
-    
+     
     /** returns a list of nodes from the first node to the last node including the boundaries. */
     public List<AstNode> path() {
         List<AstNode> path = new  ArrayList<AstNode>();
@@ -80,7 +80,25 @@ public class AstPath {
         return path;
     }
 
-    public boolean equals(AstPath path, AstElementComparator comparator) {
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        for(AstNode node : path()) {
+            AstNode parent = node.parent();
+            //int myIndex = parent == null ? 0 : node.parent().children().indexOf(node);
+            int myIndex = parent == null ? 0 : indexInSimilarNodes(node.parent(), node);
+            sb.append(node.name() + "[" + node.type() + "]( " + myIndex + ")/");
+        }
+        return sb.toString();
+    }
+    
+    @Override
+    public boolean equals(Object o) {
+        if(!(o instanceof AstPath)) {
+            return false;
+        }
+        AstPath path = (AstPath)o;
+        
         List<AstNode> p1 = path();
         List<AstNode> p2 = path.path();
         
@@ -92,12 +110,51 @@ public class AstPath {
             AstNode n1 = p1.get(i);
             AstNode n2 = p2.get(i);
             
-            if(!comparator.equals(n1, n2)) {
+            AstNode n1Parent = n1.parent();
+            AstNode n2Parent = n2.parent();
+            
+            if(n1Parent == null && n2Parent == null) {
+                continue;
+            }
+            
+//            int n1Index = n1Parent.children().indexOf(n1);
+//            int n2Index = n2Parent.children().indexOf(n2);
+            int n1Index = indexInSimilarNodes(n1Parent, n1);
+            int n2Index = indexInSimilarNodes(n2Parent, n2);
+            
+            if(n1Index != n2Index) {
                 return false;
             }
+            
+            if(!n1.signature().equals(n2.signature())) {
+                return false;
+            }
+            
         }
         
         return true;
+    }
+
+    public static int indexInSimilarNodes(AstNode parent, AstNode node) {
+        int index = -1;
+        for(AstNode child : parent.children()) {
+            if(node.name().equals(child.name()) && node.type() == child.type()) {
+                index++;
+            }
+            if(child == node) {
+                break;
+            }
+        }
+        return index;
+    }
+    
+    
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 47 * hash + (this.first != null ? this.first.hashCode() : 0);
+        hash = 47 * hash + (this.last != null ? this.last.hashCode() : 0);
+        return hash;
     }
     
     public static boolean isDescendant(AstNode amcestor, AstNode descendant) {
@@ -111,12 +168,6 @@ public class AstPath {
             }
         }
         return false;
-    }
- 
-    public interface AstElementComparator {
-        
-        public boolean equals(AstNode node1, AstNode node2);
-        
     }
     
 }

@@ -61,15 +61,12 @@
         <group name="Google">
         </group>
 
-        <authentication profile="SaaSServices/Google/profile.properties">
+        <authentication profile="Templates/SaaSServices/apikey.properties">
             <api-key id="key"/>
         </authentication>
 
     </saas-metadata>
 
-    <!--<methods>
-        <method name="accountsClientLogin" 
-            href="#google.accounts_ClientLogin"/>
-    </methods>-->
+    <methods/>
 
 </saas-services>

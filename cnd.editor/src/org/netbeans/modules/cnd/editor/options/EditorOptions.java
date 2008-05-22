@@ -82,6 +82,9 @@ public class EditorOptions {
     public static final String indentSize = "indentSize"; // NOI18N 
     public static final int indentSizeDefault = 4;
 
+    public static final String expandTabToSpaces = "expandTabToSpaces"; // NOI18N 
+    public static final boolean expandTabToSpacesDefault = true;
+
     /**
      * Whether to indent preprocessors positioned at start of line.
      * Those not starting at column 0 of the line will automatically be indented.
@@ -120,6 +123,9 @@ public class EditorOptions {
      */
     public static final String newLineBeforeBraceDeclaration = "newLineBeforeBraceDeclaration"; //NOI18N
     public static final String newLineBeforeBraceDeclarationDefault = BracePlacement.SAME_LINE.name();
+    public static final String ignoreEmptyFunctionBody = "ignoreEmptyFunctionBody"; //NOI18N
+    public static final boolean ignoreEmptyFunctionBodyDefault = false;
+    
     /**
      * Whether insert extra new-line before the compound bracket or not.
      * Values: java.lang.Boolean instances
@@ -134,6 +140,8 @@ public class EditorOptions {
      */
     public static final String newLineBeforeBrace = "newLineBeforeBrace"; //NOI18N
     public static final String newLineBeforeBraceDefault = BracePlacement.SAME_LINE.name();
+    public static final String newLineBeforeBraceSwitch = "newLineBeforeBraceSwitch"; //NOI18N
+    public static final String newLineBeforeBraceSwitchDefault = BracePlacement.SAME_LINE.name();
 
     //MultilineAlignment
     public static final String alignMultilineArrayInit = "alignMultilineArrayInit"; //NOI18N
@@ -148,7 +156,9 @@ public class EditorOptions {
     public static final boolean alignMultilineIfConditionDefault = false;
     public static final String alignMultilineWhileCondition = "alignMultilineWhileCondition"; //NOI18N
     public static final boolean alignMultilineWhileConditionDefault = false;
-
+    public static final String alignMultilineParen = "alignMultilineParen"; //NOI18N
+    public static final boolean alignMultilineParenDefault = false;
+    
     //NewLine
     public static final String newLineFunctionDefinitionName = "newLineFunctionDefinitionName"; //NOI18N
     public static final boolean newLineFunctionDefinitionNameDefault = false;
@@ -304,6 +314,7 @@ public class EditorOptions {
         defaults = new HashMap<String,Object>();
         // Indents
         defaults.put(indentSize, indentSizeDefault);
+        defaults.put(expandTabToSpaces, expandTabToSpacesDefault);
         defaults.put(statementContinuationIndent,statementContinuationIndentDefault);
         defaults.put(indentPreprocessorDirectives,indentPreprocessorDirectivesDefault);
         defaults.put(sharpAtStartLine, sharpAtStartLineDefault);
@@ -315,6 +326,8 @@ public class EditorOptions {
         defaults.put(newLineBeforeBraceNamespace,newLineBeforeBraceNamespaceDefault);
         defaults.put(newLineBeforeBraceClass,newLineBeforeBraceClassDefault);
         defaults.put(newLineBeforeBraceDeclaration,newLineBeforeBraceDeclarationDefault);
+        defaults.put(ignoreEmptyFunctionBody,ignoreEmptyFunctionBodyDefault);
+        defaults.put(newLineBeforeBraceSwitch,newLineBeforeBraceSwitchDefault);
         defaults.put(newLineBeforeBrace,newLineBeforeBraceDefault);
         //MultilineAlignment
         defaults.put(alignMultilineArrayInit,alignMultilineArrayInitDefault);
@@ -323,6 +336,7 @@ public class EditorOptions {
         defaults.put(alignMultilineFor,alignMultilineForDefault);
         defaults.put(alignMultilineIfCondition,alignMultilineIfConditionDefault);
         defaults.put(alignMultilineWhileCondition,alignMultilineWhileConditionDefault);
+        defaults.put(alignMultilineParen,alignMultilineParenDefault);
         //NewLine
         defaults.put(newLineFunctionDefinitionName,newLineFunctionDefinitionNameDefault);
         defaults.put(newLineCatch,newLineCatchDefault);
@@ -431,6 +445,7 @@ public class EditorOptions {
         gnu.put(alignMultilineMethodParams, true);
         gnu.put(alignMultilineIfCondition, true);
         gnu.put(alignMultilineWhileCondition, true);
+        gnu.put(alignMultilineParen, true);
         gnu.put(spaceBeforeMethodCallParen, true);
         gnu.put(spaceBeforeMethodDeclParen, true);
         gnu.put(newLineFunctionDefinitionName, true);
@@ -440,7 +455,9 @@ public class EditorOptions {
         gnu.put(newLineBeforeBraceNamespace, BracePlacement.NEW_LINE_HALF_INDENTED.name());
         gnu.put(newLineBeforeBraceClass, BracePlacement.NEW_LINE_HALF_INDENTED.name());
         gnu.put(newLineBeforeBraceDeclaration, BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        gnu.put(newLineBeforeBraceSwitch, BracePlacement.NEW_LINE_HALF_INDENTED.name());
         gnu.put(newLineBeforeBrace, BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        gnu.put(ignoreEmptyFunctionBody,true);
 
         //LUNIX_PROFILE
         Map<String,Object> lunix = new HashMap<String,Object>();
@@ -448,6 +465,7 @@ public class EditorOptions {
         lunix.put(indentCasesFromSwitch, false);
         lunix.put(indentSize, 8);
         lunix.put(newLineBeforeBraceDeclaration, BracePlacement.NEW_LINE.name());
+        lunix.put(spaceBeforeKeywordParen, false);
         
         //ANSI_PROFILE
         Map<String,Object> ansi = new HashMap<String,Object>();
@@ -455,12 +473,15 @@ public class EditorOptions {
         ansi.put(newLineBeforeBraceNamespace, BracePlacement.NEW_LINE.name());
         ansi.put(newLineBeforeBraceClass, BracePlacement.NEW_LINE.name());
         ansi.put(newLineBeforeBraceDeclaration, BracePlacement.NEW_LINE.name());
+        ansi.put(newLineBeforeBraceSwitch, BracePlacement.NEW_LINE.name());
         ansi.put(newLineBeforeBrace, BracePlacement.NEW_LINE.name());
         ansi.put(alignMultilineMethodParams, true);
         ansi.put(alignMultilineCallArgs, true);
         ansi.put(newLineCatch, true);
         ansi.put(newLineElse, true);
         ansi.put(newLineWhile, true);
+        ansi.put(indentCasesFromSwitch, false);
+        ansi.put(indentNamespace, false);
         
         //OPEN_SOLARIS_PROFILE
         Map<String,Object> solaris = new HashMap<String,Object>();
@@ -480,7 +501,10 @@ public class EditorOptions {
         //K_AND_R_PROFILE
         Map<String,Object> KandR = new HashMap<String,Object>();
         namedDefaults.put(K_AND_R_PROFILE, KandR);
-        KandR.put(indentSize, 2);
+        KandR.put(absoluteLabelIndent, false);
+        KandR.put(indentCasesFromSwitch, false);
+        KandR.put(indentNamespace, false);
+        KandR.put(newLineBeforeBraceDeclaration, BracePlacement.NEW_LINE.name());
 
         //MYSQL_PROFILE
         Map<String,Object> mysql = new HashMap<String,Object>();
@@ -491,6 +515,13 @@ public class EditorOptions {
         mysql.put(newLineBeforeBraceClass, BracePlacement.NEW_LINE.name());
         mysql.put(newLineBeforeBraceDeclaration, BracePlacement.NEW_LINE.name());
         mysql.put(newLineBeforeBrace, BracePlacement.NEW_LINE.name());
+        mysql.put(alignMultilineCallArgs, true);
+        mysql.put(alignMultilineWhileCondition, true);
+        mysql.put(alignMultilineFor, true);
+        mysql.put(alignMultilineMethodParams, true);
+        mysql.put(alignMultilineIfCondition, true);
+        mysql.put(spaceAroundAssignOps, false);
+        mysql.put(addLeadingStarInComment, false);
     }
 
     public static Object getDefault(CodeStyle.Language language, String styleId, String id){
@@ -640,6 +671,19 @@ public class EditorOptions {
     public static void resetToDefault(CodeStyle codeStyle){
         Preferences preferences = getPreferences(codeStyle);
         for(Map.Entry<String,Object> entry : defaults.entrySet()){
+            if (entry.getValue() instanceof Boolean){
+                preferences.putBoolean(entry.getKey(), (Boolean)entry.getValue());
+            } else if (entry.getValue() instanceof Integer){
+                preferences.putInt(entry.getKey(), (Integer)entry.getValue());
+            } else {
+                preferences.put(entry.getKey(), entry.getValue().toString());
+            }
+        }
+    }
+
+    public static void resetToDefault(CodeStyle codeStyle, String name){
+        Preferences preferences = getPreferences(codeStyle);
+        for(Map.Entry<String,Object> entry : namedDefaults.get(name).entrySet()){
             if (entry.getValue() instanceof Boolean){
                 preferences.putBoolean(entry.getKey(), (Boolean)entry.getValue());
             } else if (entry.getValue() instanceof Integer){

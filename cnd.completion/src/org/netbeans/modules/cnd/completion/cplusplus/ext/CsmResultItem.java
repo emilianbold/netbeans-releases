@@ -70,6 +70,7 @@ import java.util.List;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.completion.Completion;
+import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
@@ -83,7 +84,9 @@ import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceAlias;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
+import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.netbeans.modules.cnd.modelutil.CsmPaintComponent;
@@ -311,8 +314,7 @@ public abstract class CsmResultItem
                 CsmFile currentFile = CsmUtilities.getCsmFile(doc, false);
                 if (!inclResolver.isObjectVisible(currentFile, (CsmObject) ob)) {
                     String include = inclResolver.getIncludeDirective(currentFile, (CsmObject) ob);
-
-                    if (include.length() != 0) {
+                    if (include.length() != 0 && !isForwardDeclaration(component) && !isAlreadyIncluded(component, include)) {
                         insertInclude(component, currentFile, include, include.charAt(include.length() - 1) == '>');
                     }
                 }
@@ -325,7 +327,67 @@ public abstract class CsmResultItem
         }
 
     }
+    
+    // Checks that include directive have not been already included
+    // It needs in case if some files have not been parsed yet
+    private boolean isAlreadyIncluded(JTextComponent component, String include) {
+        TokenSequence<CppTokenId> ts;
+        ts = CndLexerUtilities.getCppTokenSequence(component, 0);
+        ts.moveStart();
+        while (ts.moveNext()) {
+            if (ts.token().id().equals(CppTokenId.PREPROCESSOR_DIRECTIVE)) {
+                if(isIncludesEqual(include, ts.token().text().toString())) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
+    // Compares include directives dy file names
+    private boolean isIncludesEqual(String inc1, String inc2) {
+        normalizeInclude(inc1);
+        normalizeInclude(inc2);
+        return (inc1.equals(inc2));
+    }
+    
+    // Normailizes include directive string
+    private void normalizeInclude(String inc) {
+        inc.toLowerCase();
+        inc = inc.replaceAll("[\\s\n]+", " "); // NOI18N
+        inc = inc.replaceAll("[<>\"]", "\""); // NOI18N
+        inc = inc.trim();
+    }
 
+    // Says is it forward declarartion or not
+    private boolean isForwardDeclaration(JTextComponent component) {
+        TokenSequence<CppTokenId> ts;
+        ts = CndLexerUtilities.getCppTokenSequence(component, 0);
+        ts.moveStart();
+        if (!ts.moveNext()) {
+            return false;
+        }
+        Token lastToken = ts.token();
+        while (ts.offset() < substituteOffset) {
+            if (!ts.token().id().equals(CppTokenId.BLOCK_COMMENT) &&
+                    !ts.token().id().equals(CppTokenId.DOXYGEN_COMMENT) &&
+                    !ts.token().id().equals(CppTokenId.NEW_LINE) &&
+                    !ts.token().id().equals(CppTokenId.LINE_COMMENT) &&
+                    !ts.token().id().equals(CppTokenId.WHITESPACE)) {
+                lastToken = ts.token();
+            }
+            if (!ts.moveNext()) {
+                return false;
+            }
+        }
+        if (lastToken.id().equals(CppTokenId.CLASS) ||
+                lastToken.id().equals(CppTokenId.STRUCT) ||
+                lastToken.id().equals(CppTokenId.UNION)) {
+            return true;
+        }
+        return false;
+    }
+    
     // Inserts include derctive into document
     private void insertInclude(JTextComponent component, CsmFile currentFile, String include, boolean isSystem) {
         BaseDocument doc = (BaseDocument) component.getDocument();
@@ -352,11 +414,17 @@ public abstract class CsmResultItem
                     doc.insertString(lastInclude.getStartOffset(), include + "\n\n", null); // NOI18N
                 }
             } else {
+                CsmFileInfoQuery fiq = CsmFileInfoQuery.getDefault();
+                CsmOffsetable guardOffset = fiq.getGuardOffset(currentFile);
                 TokenSequence<CppTokenId> ts;
-                ts = CndLexerUtilities.getCppTokenSequence(component, 0);
+                if(guardOffset != null) {
+                    ts = CndLexerUtilities.getCppTokenSequence(component, guardOffset.getStartOffset());
+                } else {
+                    ts = CndLexerUtilities.getCppTokenSequence(component, 0);
+                }
                 if (ts != null) {
                     int offset = getIncludeOffsetFromTokenSequence(ts);
-                    if (offset == 0) {
+                    if (offset == 0 || guardOffset != null) {
                         doc.insertString(offset, "\n" + include + "\n\n", null); // NOI18N
                     } else {
                         doc.insertString(offset, "\n\n" + include + "\n", null); // NOI18N
@@ -372,43 +440,58 @@ public abstract class CsmResultItem
 
     // Finds place for include insertion in case if there is no other includes in document
     private int getIncludeOffsetFromTokenSequence(TokenSequence<CppTokenId> ts) {
-        ts.moveStart();
         if (!ts.moveNext()) {
             return 0;
         }
-        while (ts.token().id().equals(CppTokenId.WHITESPACE) ||
-                ts.token().id().equals(CppTokenId.NEW_LINE)) {
-            if (!ts.moveNext()) {
-                return 0;
-            }
-        }
-        if (ts.token().id().equals(CppTokenId.BLOCK_COMMENT) ||
-                ts.token().id().equals(CppTokenId.DOXYGEN_COMMENT)) {
-            if (!ts.moveNext()) {
-                return 0;
-            }
-            int firstCommentEndOffset = ts.offset();
-            int newLineNumber = 0;
-            while (ts.token().id().equals(CppTokenId.WHITESPACE) ||
-                    ts.token().id().equals(CppTokenId.NEW_LINE)) {
-                if (ts.token().id().equals(CppTokenId.NEW_LINE)) {
-                    newLineNumber++;
-                }
+        int offset = ts.offset();
+
+        if (offset != 0) {
+            if (ts.token().id().equals(CppTokenId.PREPROCESSOR_DIRECTIVE)) {
                 if (!ts.moveNext()) {
                     return 0;
+                }
+                offset = ts.offset();
+                if (ts.token().id().equals(CppTokenId.PREPROCESSOR_DIRECTIVE)) {
+                    if (!ts.moveNext()) {
+                        return 0;
+                    }
+                    offset = ts.offset();
+                }
+            }
+        } else {
+            while (ts.token().id().equals(CppTokenId.WHITESPACE) ||
+                    ts.token().id().equals(CppTokenId.NEW_LINE)) {
+                if (!ts.moveNext()) {
+                    return offset;
                 }
             }
             if (ts.token().id().equals(CppTokenId.BLOCK_COMMENT) ||
                     ts.token().id().equals(CppTokenId.DOXYGEN_COMMENT)) {
-                return firstCommentEndOffset;
-            } else {
-                if (newLineNumber > 1) {
-                    return firstCommentEndOffset;
+                if (!ts.moveNext()) {
+                    return offset;
                 }
-                return 0;
+                int firstCommentEndOffset = ts.offset();
+                int newLineNumber = 0;
+                while (ts.token().id().equals(CppTokenId.WHITESPACE) ||
+                        ts.token().id().equals(CppTokenId.NEW_LINE)) {
+                    if (ts.token().id().equals(CppTokenId.NEW_LINE)) {
+                        newLineNumber++;
+                    }
+                    if (!ts.moveNext()) {
+                        return offset;
+                    }
+                }
+                if (ts.token().id().equals(CppTokenId.BLOCK_COMMENT) ||
+                        ts.token().id().equals(CppTokenId.DOXYGEN_COMMENT)) {
+                    return firstCommentEndOffset;
+                } else {
+                    if (newLineNumber > 1) {
+                        return firstCommentEndOffset;
+                    }
+                }
             }
         }
-        return 0;
+        return offset;
     }
     
     protected String getReplaceText() {

@@ -56,6 +56,7 @@ import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 
 /**
  * Implements CsmClass
@@ -159,18 +160,34 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
                     // other members
                     case CPPTokenTypes.CSM_CTOR_DEFINITION:
                     case CPPTokenTypes.CSM_CTOR_TEMPLATE_DEFINITION:
-                        addMember(new ConstructorDDImpl(token, ClassImpl.this, curentVisibility));
+                        try {
+                            addMember(new ConstructorDDImpl(token, ClassImpl.this, curentVisibility));
+                        } catch (AstRendererException e) {
+                            DiagnosticExceptoins.register(e);
+                        }
                         break;
                     case CPPTokenTypes.CSM_CTOR_DECLARATION:
                     case CPPTokenTypes.CSM_CTOR_TEMPLATE_DECLARATION:
-                        addMember(new ConstructorImpl(token, ClassImpl.this, curentVisibility));
+                        try {
+                            addMember(new ConstructorImpl(token, ClassImpl.this, curentVisibility));
+                        } catch (AstRendererException e) {
+                            DiagnosticExceptoins.register(e);
+                        }
                         break;
                     case CPPTokenTypes.CSM_DTOR_DEFINITION:
                     case CPPTokenTypes.CSM_DTOR_TEMPLATE_DEFINITION:
-                        addMember(new DestructorDDImpl(token, ClassImpl.this, curentVisibility));
+                        try {
+                            addMember(new DestructorDDImpl(token, ClassImpl.this, curentVisibility));
+                        } catch (AstRendererException e) {
+                            DiagnosticExceptoins.register(e);
+                        }
                         break;
                     case CPPTokenTypes.CSM_DTOR_DECLARATION:
-                        addMember(new DestructorImpl(token, ClassImpl.this, curentVisibility));
+                        try {
+                            addMember(new DestructorImpl(token, ClassImpl.this, curentVisibility));
+                        } catch (AstRendererException e) {
+                            DiagnosticExceptoins.register(e);
+                        }
                         break;
                     case CPPTokenTypes.CSM_FIELD:
 			child = token.getFirstChild();
@@ -200,15 +217,53 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
 			child = token.getFirstChild();
 			if( child != null) {
                             if (child.getType() == CPPTokenTypes.LITERAL_friend) {
+                                try {
+                                    CsmScope scope = ClassImpl.this.getScope();
+                                    CsmFriendFunction friend;
+                                    CsmFunction func;
+                                    if (isMemberDefinition(token)) {
+                                        FriendFunctionImplEx impl = new FriendFunctionImplEx(token, ClassImpl.this, scope);
+                                        func = impl;
+                                        friend = impl;
+                                    } else {
+                                        FriendFunctionImpl impl = new FriendFunctionImpl(token, ClassImpl.this, scope);
+                                        friend = impl;
+                                        func = impl;
+                                        if (scope instanceof NamespaceImpl) {
+                                            ((NamespaceImpl)scope).addDeclaration(func);
+                                        } else {
+                                            ((NamespaceImpl)getContainingFile().getProject().getGlobalNamespace()).addDeclaration(func);
+                                        }
+                                    }
+                                    //((FileImpl)getContainingFile()).addDeclaration(func);
+                                    addFriend(friend);
+                                } catch (AstRendererException e) {
+                                    DiagnosticExceptoins.register(e);
+                                }
+                            } else {
+                                try {
+                                    addMember(new MethodImpl(token, ClassImpl.this, curentVisibility));
+                                } catch (AstRendererException e) {
+                                    DiagnosticExceptoins.register(e);
+                                }
+                            }
+			}
+                        break;
+                    case CPPTokenTypes.CSM_FUNCTION_DEFINITION:
+                    case CPPTokenTypes.CSM_FUNCTION_TEMPLATE_DEFINITION:
+		    case CPPTokenTypes.CSM_USER_TYPE_CAST_DEFINITION:
+			child = token.getFirstChild();
+			if( child != null && child.getType() == CPPTokenTypes.LITERAL_friend) {
+                            try {
                                 CsmScope scope = ClassImpl.this.getScope();
                                 CsmFriendFunction friend;
                                 CsmFunction func;
                                 if (isMemberDefinition(token)) {
-                                    FriendFunctionImplEx impl = new FriendFunctionImplEx(token, ClassImpl.this, scope);
+                                    FriendFunctionDefinitionImpl impl = new FriendFunctionDefinitionImpl(token, ClassImpl.this, null);
                                     func = impl;
                                     friend = impl;
                                 } else {
-                                    FriendFunctionImpl impl = new FriendFunctionImpl(token, ClassImpl.this, scope);
+                                    FriendFunctionDDImpl impl = new FriendFunctionDDImpl(token, ClassImpl.this, scope);
                                     friend = impl;
                                     func = impl;
                                     if (scope instanceof NamespaceImpl) {
@@ -219,37 +274,15 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
                                 }
                                 //((FileImpl)getContainingFile()).addDeclaration(func);
                                 addFriend(friend);
-                            } else {
-                                addMember(new MethodImpl(token, ClassImpl.this, curentVisibility));
+                            } catch (AstRendererException e) {
+                                DiagnosticExceptoins.register(e);
                             }
-			}
-                        break;
-                    case CPPTokenTypes.CSM_FUNCTION_DEFINITION:
-                    case CPPTokenTypes.CSM_FUNCTION_TEMPLATE_DEFINITION:
-		    case CPPTokenTypes.CSM_USER_TYPE_CAST_DEFINITION:
-			child = token.getFirstChild();
-			if( child != null && child.getType() == CPPTokenTypes.LITERAL_friend) {
-                            CsmScope scope = ClassImpl.this.getScope();
-                            CsmFriendFunction friend;
-                            CsmFunction func;
-                            if (isMemberDefinition(token)) {
-                                FriendFunctionDefinitionImpl impl = new FriendFunctionDefinitionImpl(token, ClassImpl.this, null);
-                                func = impl;
-                                friend = impl;
-                            } else {
-                                FriendFunctionDDImpl impl = new FriendFunctionDDImpl(token, ClassImpl.this, scope);
-                                friend = impl;
-                                func = impl;
-                                if (scope instanceof NamespaceImpl) {
-                                    ((NamespaceImpl)scope).addDeclaration(func);
-                                } else {
-                                    ((NamespaceImpl)getContainingFile().getProject().getGlobalNamespace()).addDeclaration(func);
-                                }
-                            }
-                            //((FileImpl)getContainingFile()).addDeclaration(func);
-                            addFriend(friend);
                         } else {
-                            addMember(new MethodDDImpl(token, ClassImpl.this, curentVisibility));
+                            try {
+                                addMember(new MethodDDImpl(token, ClassImpl.this, curentVisibility));
+                            } catch (AstRendererException e) {
+                                DiagnosticExceptoins.register(e);
+                            }
                         }
                         break;
                     case CPPTokenTypes.CSM_VISIBILITY_REDEF:
@@ -357,7 +390,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
         RepositoryUtils.hang(this); // "hang" now and then "put" in "register()"
         new ClassAstRenderer().render(ast);
         leftBracketPos = initLeftBracketPos(ast);
-        register(scope);
+        register(scope, false);
     }
     
     public static ClassImpl create(AST ast, CsmScope scope, CsmFile file) {

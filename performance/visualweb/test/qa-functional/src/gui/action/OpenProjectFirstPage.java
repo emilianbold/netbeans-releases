@@ -41,6 +41,7 @@
 
 package gui.action;
 
+import gui.VWPUtilities;
 import gui.window.WebFormDesignerOperator;
 
 import org.netbeans.jellytools.EditorOperator;
@@ -94,7 +95,7 @@ public class OpenProjectFirstPage extends org.netbeans.performance.test.utilitie
     public void initialize(){
         log("::initialize::");
         EditorOperator.closeDiscardAll();
-        pto = ProjectsTabOperator.invoke();        
+        pto = VWPUtilities.invokePTO();        
         //Workaround for "Update data sources" dialog
         try {
             new JDialogOperator(org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.visualweb.dataconnectivity.utils.Bundle", "MSG_Update_Datasources_Title")).close();

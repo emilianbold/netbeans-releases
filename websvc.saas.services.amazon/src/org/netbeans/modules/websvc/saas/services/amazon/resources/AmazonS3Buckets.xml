@@ -60,9 +60,9 @@
 
         <group name="Amazon"/>
 
-        <authentication profile="SaaSServices/AmazonS3/profile.properties">
+        <authentication profile="Templates/SaaSServices/signedurl.properties">
             <signed-url sig-id="Authorization">
-                <sign>
+                <sign id="authorization">
                     <params>
                         <param name="HTTP-Verb" type="httpMethod" required="true"/>
                         <param name="Date" type="date" required="true"/>
@@ -75,9 +75,7 @@
 
     </saas-metadata>
 
-    <!--
-    <methods>
-        <method name="getBuckets" href="#amazons3.getBuckets"/>
-    </methods>
-    -->
+    <!-- Process all methods in the wadl !-->
+    <methods/>
+    
 </saas-services>

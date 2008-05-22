@@ -229,6 +229,13 @@ public class RubyExecution extends ExecutionService {
                 argvList.add("-Djruby.script=jruby"); // NOI18N
             }
 
+            String[] jrubyProps = descriptor == null ? null : descriptor.getJRubyProps();
+            if (jrubyProps != null) {
+                for (String prop : jrubyProps) {
+                    argvList.add(prop);
+                }
+            }
+
             // Main class
             argvList.add("org.jruby.Main"); // NOI18N
 

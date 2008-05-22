@@ -96,4 +96,3 @@ public class DesignViewLayout implements java.awt.LayoutManager {
     }
     private static final int BORDER = 3;
 }
- 

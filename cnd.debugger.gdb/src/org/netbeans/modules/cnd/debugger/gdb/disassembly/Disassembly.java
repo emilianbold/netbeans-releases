@@ -50,9 +50,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -65,6 +67,7 @@ import org.netbeans.modules.cnd.debugger.gdb.EditorContextBridge;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.AddressBreakpoint;
 import org.openide.cookies.CloseCookie;
+import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
@@ -84,7 +87,6 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
     
     private final List<Line> lines = new ArrayList<Line>();
     private static String functionName = "";
-    private CallStackFrame lastFrame = null;
     private boolean withSource = true;
     private boolean opened = false;
     private boolean opening = false;
@@ -103,13 +105,15 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
     private static final String NUMBER_HEADER="number"; // NOI18N
     private static final String VALUE_HEADER="value"; // NOI18N
     
-    public static final String REGISTER_NAMES_HEADER="^done,register-names=["; // NOI18N
-    public static final String REGISTER_VALUES_HEADER="^done,register-values=["; // NOI18N
-    public static final String REGISTER_MODIFIED_HEADER="^done,changed-registers=["; // NOI18N
-    public static final String RESPONSE_HEADER="^done,asm_insns=["; // NOI18N
+    public static final String REGISTER_NAMES_HEADER="^done,register-names="; // NOI18N
+    public static final String REGISTER_VALUES_HEADER="^done,register-values="; // NOI18N
+    public static final String REGISTER_MODIFIED_HEADER="^done,changed-registers="; // NOI18N
+    public static final String RESPONSE_HEADER="^done,asm_insns="; // NOI18N
     private static final String COMBINED_HEADER="src_and_asm_line={"; // NOI18N
     
     private static FileObject fo = null;
+    
+    private static Logger LOG = Logger.getLogger("gdb.logger"); // NOI18N
     
     public Disassembly(GdbDebugger debugger) {
         this.debugger = debugger;
@@ -118,7 +122,7 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
     
     public void update(String msg) {
         assert msg.startsWith(RESPONSE_HEADER) : "Invalid asm response message"; // NOI18N
-
+        
         synchronized (lines) {
             lines.clear();
             disLength = 0;
@@ -157,12 +161,12 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
                     FileObject src_fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
                     if (src_fo != null) {
                         try {
-                            text.addLine("//" + DataObject.find(src_fo).getCookie(LineCookie.class).getLineSet().getCurrent(lineIdx-1).getText()); // NOI18N
+                            text.addLine("!" + DataObject.find(src_fo).getCookie(LineCookie.class).getLineSet().getCurrent(lineIdx-1).getText()); // NOI18N
                         } catch (DataObjectNotFoundException doe) {
                             // do nothing
                         }
                     } else {
-                        text.addLine("//" + NbBundle.getMessage(Disassembly.class, "MSG_Source_Not_Found", fileStr, lineIdx)); // NOI18N
+                        text.addLine("!" + NbBundle.getMessage(Disassembly.class, "MSG_Source_Not_Found", fileStr, lineIdx)); // NOI18N
                     }
                     pos = combinedPos+1;
                 } else {
@@ -199,7 +203,7 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
         assert msg.startsWith(REGISTER_NAMES_HEADER) : "Invalid asm response message"; // NOI18N
         regNames.clear();
         int idx = 0;
-        int pos = REGISTER_NAMES_HEADER.length();
+        int pos = msg.indexOf("\"", REGISTER_NAMES_HEADER.length()); // NOI18N
         while (pos != -1) {
             int end = msg.indexOf("\"", pos+1); // NOI18N
             if (end == -1) {
@@ -214,7 +218,7 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
     public void updateRegModified(String msg) {
         assert msg.startsWith(REGISTER_MODIFIED_HEADER) : "Invalid asm response message"; // NOI18N
         regModified.clear();
-        int pos = REGISTER_MODIFIED_HEADER.length();
+        int pos = msg.indexOf("\"", REGISTER_MODIFIED_HEADER.length()); // NOI18N
         while (pos != -1) {
             int end = msg.indexOf("\"", pos+1); // NOI18N
             if (end == -1) {
@@ -252,7 +256,12 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
     public Collection<RegisterValue> getRegisterValues() {
         Collection<RegisterValue> res = new ArrayList<RegisterValue>();
         for (Integer idx : regValues.keySet()) {
-            res.add(new RegisterValue(regNames.get(idx), regValues.get(idx), regModified.contains(idx)));
+            String name = regNames.get(idx);
+            if (name == null) {
+                LOG.severe("Unknown register: " + idx); // NOI18N
+                name = String.valueOf(idx);
+            }
+            res.add(new RegisterValue(name, regValues.get(idx), regModified.contains(idx)));
         }
         return res;
     }
@@ -299,12 +308,11 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
             return;
         }
         // reload disassembler if needed
-        // TODO: there may be functions with the same name called one from the other, we need to check that too
         CallStackFrame frame = debugger.getCurrentCallStackFrame();
         if (frame == null) {
             return;
         }
-        if (force || lastFrame == null || !lastFrame.getFunctionName().equals(frame.getFunctionName())) {
+        if (force || getAddressLine(frame.getAddr()) == -1) {
             String filename = frame.getFileName();
             if (filename != null && filename.length() > 0) {
                 debugger.getGdbProxy().data_disassemble(filename, frame.getLineNumber(), withSource);
@@ -312,7 +320,6 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
                 // if filename is not known - just disassemble using address
                 debugger.getGdbProxy().data_disassemble(1000, withSource);
             }
-            lastFrame = frame;
         }
     }
     
@@ -355,6 +362,24 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
         if (dis != null) {
             return dis.getLineAddress(idx);
         } else {
+            return "";
+        }
+    }
+    
+    public String getNextAddress(String address) {
+        //TODO : can use binary search
+        synchronized (lines) {
+            for (Iterator<Line> iter = lines.iterator(); iter.hasNext();) {
+                Line line = iter.next();
+                if (line.address.equals(address)) {
+                    // Fix for IZ:131372 (Step Over doesn't work in Disasm)
+                    // return next address only for call instructions
+                    if (line.instruction.startsWith("call") && iter.hasNext()) { // NOI18N
+                        return iter.next().address;
+                    }
+                    return "";
+                }
+            }
             return "";
         }
     }
@@ -452,6 +477,22 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
         try {
             DataObject dobj = DataObject.find(getFileObject());
             dobj.getNodeDelegate().setDisplayName(NbBundle.getMessage(Disassembly.class, "LBL_Disassembly_Window")); // NOI18N
+            final EditorCookie editorCookie = dobj.getCookie(EditorCookie.class);
+            if (editorCookie instanceof EditorCookie.Observable) {
+                ((EditorCookie.Observable)editorCookie).addPropertyChangeListener(new PropertyChangeListener() {
+                    public void propertyChange(PropertyChangeEvent evt) {
+                        if (EditorCookie.Observable.PROP_OPENED_PANES.equals(evt.getPropertyName())) {
+                            if (editorCookie.getOpenedPanes() == null) {
+                                Disassembly dis = getCurrent();
+                                if (dis != null) {
+                                    dis.opened = false;
+                                }
+                                ((EditorCookie.Observable)editorCookie).removePropertyChangeListener(this);
+                            }
+                        }
+                    }
+                });
+            }
             dobj.getCookie(OpenCookie.class).open();
             Disassembly dis = getCurrent();
             if (dis != null) {

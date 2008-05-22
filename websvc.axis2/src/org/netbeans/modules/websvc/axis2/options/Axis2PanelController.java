@@ -65,37 +65,30 @@ public final class Axis2PanelController extends OptionsPanelController {
 
     public void applyChanges () {
         if (advancedPanel.isChanged()) {
-            System.out.println("apply changes");
             Preferences preferences = AxisUtils.getPreferences();
-//            String oldAxisHome = preferences.get("AXIS_HOME",""); //NOI18N
             String oldAxisDeploy = preferences.get("AXIS_DEPLOY",""); //NOI18N
-            
-//            String axisHome = advancedPanel.getAxisHome();
-//            if (!axisHome.equals(oldAxisHome)) {
-//                preferences.put("AXIS_HOME", axisHome);
-//            }
+
             String axisDeploy = advancedPanel.getAxisDeploy();
-            System.out.println("changing AXIS_DEPLOY "+oldAxisDeploy+":"+axisDeploy);
             if (!axisDeploy.equals(oldAxisDeploy)) {
-                preferences.put("AXIS_DEPLOY", axisDeploy);
+                preferences.put("AXIS_DEPLOY", axisDeploy); // NOI18N
             }
 
             String axisUrl = advancedPanel.getAxisUrl();
-            String oldAxisUrl = preferences.get("AXIS_URL","");
+            String oldAxisUrl = preferences.get("AXIS_URL",""); // NOI18N
             if (axisUrl.length() > 0 && !axisUrl.equals(oldAxisUrl)) {
-                preferences.put("AXIS_URL", axisUrl);
+                preferences.put("AXIS_URL", axisUrl); // NOI18N
             } else if (axisUrl.length() == 0) {
-                preferences.remove("AXIS_URL");
+                preferences.remove("AXIS_URL"); // NOI18N
             }
 
             String tomcatUser = advancedPanel.getTomcatManagerUsername();
-            String oldTomcatUser = preferences.get("TOMCAT_USER","");
+            String oldTomcatUser = preferences.get("TOMCAT_USER",""); // NOI18N
             if (tomcatUser != null && tomcatUser.length() > 0 && !tomcatUser.equals(oldTomcatUser)) {
-                preferences.put("TOMCAT_MANAGER_USER", tomcatUser);
-                preferences.put("TOMCAT_MANAGER_PASSWORD", advancedPanel.getTomcatManagerPassword());
+                preferences.put("TOMCAT_MANAGER_USER", tomcatUser); // NOI18N
+                preferences.put("TOMCAT_MANAGER_PASSWORD", advancedPanel.getTomcatManagerPassword()); // NOI18N
             } else if (tomcatUser == null || tomcatUser.length() == 0) {
-                preferences.remove("TOMCAT_MANAGER_USER");
-                preferences.remove("TOMCAT_MANAGER_PASSWORD");
+                preferences.remove("TOMCAT_MANAGER_USER"); // NOI18N
+                preferences.remove("TOMCAT_MANAGER_PASSWORD"); // NOI18N
             }
             advancedPanel.setChanged(false);
         }
@@ -120,7 +113,7 @@ public final class Axis2PanelController extends OptionsPanelController {
     }
     
     public HelpCtx getHelpCtx () {
-        return HelpCtx.DEFAULT_HELP;
+        return new HelpCtx(Axis2PanelController.class);
     }
     
     public void addPropertyChangeListener (PropertyChangeListener l) {

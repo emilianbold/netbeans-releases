@@ -60,7 +60,7 @@ import customerdb.converter.CustomerConverter;
 
 /**
  *
- * @author nam
+ * @author __USER__
  */
 
 @Path("/customers/")

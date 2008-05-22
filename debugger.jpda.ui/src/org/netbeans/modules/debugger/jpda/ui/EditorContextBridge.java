@@ -46,6 +46,7 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.netbeans.api.debugger.Breakpoint.VALIDITY;
@@ -180,7 +181,7 @@ public class EditorContextBridge {
             url,
             lineNumber,
             annotationType,
-            null
+            b
         );
     }
 
@@ -265,7 +266,7 @@ public class EditorContextBridge {
         List annotations = new ArrayList(URLs.length);
         for (int i = 0; i < URLs.length; i++) {
             if (lineNumbers[i] >= 1) {
-                Object annotation = getContext().annotate (URLs[i], lineNumbers[i], annotationType, null);
+                Object annotation = getContext().annotate (URLs[i], lineNumbers[i], annotationType, b);
                 if (annotation != null) {
                     annotations.add(annotation);
                 }
@@ -405,8 +406,16 @@ public class EditorContextBridge {
             return s;
         }
         
-        public void removeAnnotation (Object annotation) {
-            CompoundAnnotation ca = (CompoundAnnotation) annotation;
+        public void removeAnnotation (Object value) {
+            if (value instanceof List) {
+                for (Iterator iter = ((List) value).iterator(); iter.hasNext();) {
+                    CompoundAnnotation ca = (CompoundAnnotation) iter.next();
+                    cp1.removeAnnotation (ca.annotation1);
+                    cp2.removeAnnotation (ca.annotation2);
+                }
+                return;
+            }
+            CompoundAnnotation ca = (CompoundAnnotation) value;
             cp1.removeAnnotation (ca.annotation1);
             cp2.removeAnnotation (ca.annotation2);
         }

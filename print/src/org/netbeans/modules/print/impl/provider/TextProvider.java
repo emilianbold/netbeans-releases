@@ -11,9 +11,9 @@
  * http://www.netbeans.org/cddl-gplv2.html
  * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
  * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
+ * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
  * particular file as subject to the "Classpath" exception as provided
  * by Sun in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
@@ -58,7 +58,7 @@ import org.openide.text.AttributedCharacters;
 import org.netbeans.editor.BaseDocument;
 
 import org.netbeans.modules.print.impl.util.Option;
-import static org.netbeans.modules.print.impl.util.UI.*;
+import static org.netbeans.modules.print.impl.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -72,8 +72,7 @@ public final class TextProvider extends ComponentProvider {
   }
 
   @Override
-  protected JComponent getComponent()
-  {
+  protected JComponent getComponent() {
     if (Option.getDefault().isAsEditor()) {
       JEditorPane[] panes = myEditor.getOpenedPanes();
 
@@ -117,10 +116,8 @@ public final class TextProvider extends ComponentProvider {
       Document.TitleProperty)).replace('\\', '/'); // NOI18N
   }
 
-  // --------------------------------------
-  private static final class PrintContainer
-    implements org.netbeans.editor.PrintContainer
-  {
+  // --------------------------------------------------------------------------------------
+  private static final class PrintContainer implements org.netbeans.editor.PrintContainer {
     PrintContainer() {
       myCharacters = new AttributedCharacters();
       myCharactersList = new ArrayList<AttributedCharacters>();

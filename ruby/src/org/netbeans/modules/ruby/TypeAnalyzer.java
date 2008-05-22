@@ -81,6 +81,8 @@ import org.openide.filesystems.FileObject;
  *   I need to realize the type of "t" is ActiveRecord::ConnectionAdapters::TableDefinition from schema_definitions.rb
  * @todo Methods whose names end with "?" probably return TrueClass or FalseClass
  *   so I can handle those expressions without actual return value lookup
+ * @todo Possible conventions - http://www.alexandria.ucsb.edu/~gjanee/archive/2005/python-type-checking.html
+ * @todo http://www.codecommit.com/blog/ruby/adding-type-checking-to-ruby
  *
  * @author Tor Norbye
  */

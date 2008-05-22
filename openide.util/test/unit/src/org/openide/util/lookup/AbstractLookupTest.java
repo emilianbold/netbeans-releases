@@ -49,6 +49,7 @@ import junit.framework.*;
 import org.netbeans.junit.*;
 import java.io.Serializable;
 import org.openide.util.io.NbMarshalledObject;
+import org.openide.util.lookup.AbstractLookup.Pair;
 
 public class AbstractLookupTest extends AbstractLookupBaseHid implements AbstractLookupBaseHid.Impl {
     public AbstractLookupTest(java.lang.String testName) {
@@ -274,6 +275,46 @@ public class AbstractLookupTest extends AbstractLookupBaseHid implements Abstrac
         }
     }
 
+    public void testMatchesIssue130673() {
+        class BrokenPairReturningNullID extends Pair<Object> {
+            @Override
+            protected boolean instanceOf(Class<?> c) {
+                return false;
+            }
+
+            @Override
+            protected boolean creatorOf(Object obj) {
+                return false;
+            }
+
+            @Override
+            public Object getInstance() {
+                return null;
+            }
+
+            @Override
+            public Class<? extends Object> getType() {
+                return null;
+            }
+
+            @Override
+            public String getId() {
+                return null;
+            }
+
+            @Override
+            public String getDisplayName() {
+                return null;
+            }
+        }
+        BrokenPairReturningNullID broken = new BrokenPairReturningNullID();
+        
+        
+        Lookup.Template<String> t = new Lookup.Template<String>(String.class, "ID", null);
+        boolean not = AbstractLookup.matches(t, broken, true);
+        assertFalse("Does not match the template, but throws no exception", not);
+    }
+    
     private static final class ICP extends AbstractLookup.Pair {
         private Number s;
 

@@ -292,11 +292,11 @@ public class BreakpointAnnotationProvider implements AnnotationProvider, Debugge
         if (lc == null) {
             return;
         }
-        List<DebuggerAnnotation> annotations = new ArrayList<DebuggerAnnotation>();
+        List<DebuggerBreakpointAnnotation> annotations = new ArrayList<DebuggerBreakpointAnnotation>();
         for (int l : lines) {
             try {
                 Line line = lc.getLineSet().getCurrent(l - 1);
-                DebuggerAnnotation annotation = new DebuggerAnnotation (annotationType, line);
+                DebuggerBreakpointAnnotation annotation = new DebuggerBreakpointAnnotation (annotationType, line, b);
                 annotations.add(annotation);
             } catch (IndexOutOfBoundsException e) {
             } catch (IllegalArgumentException e) {

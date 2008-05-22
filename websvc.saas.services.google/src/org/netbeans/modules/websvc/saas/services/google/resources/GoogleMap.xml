@@ -59,23 +59,26 @@
         </group>
         <code-gen>
             <artifacts targets="servlet,resource">
-                <artifact id="GoogleMap" type="template"
+                <artifact id="GoogleMapService" type="template" requires="profile.properties"
                     url="Templates/SaaSServices/GoogleMapResource.java"/>
+                <artifact id="googlemapservice" type="template"
+                    url="Templates/SaaSServices/apikey.properties"/>
             </artifacts>
         </code-gen>
         <!-- http-basic, api-key, custom -->
-        <authentication profile="SaaSServices/Google/profile.properties">
-            <api-key id="key"/>
-        </authentication>
+        <!--<authentication profile="SaaSServices/Google/profile.properties">
+            <api-key id="apiKey"/>
+        </authentication>-->
     </saas-metadata>
 
     <methods>
-        <method name="getGoogleMap" href="GoogleMap">      
+        <method name="getGoogleMap" href="GoogleMapService">      
             <input>
                 <params>
-                    <param name="apiKey" type="string"/>
+                    <!--<param name="apiKey" type="string"/>-->
                     <param name="address" type="string" default="16 Network Circle, Menlo Park"/>
                     <param name="zoom" type="int" default="15"/>
+                    <param name="iframe" type="string" default="false"/>
                 </params>
             </input>
             <output>

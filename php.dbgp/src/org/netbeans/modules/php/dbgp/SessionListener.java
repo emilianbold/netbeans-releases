@@ -45,7 +45,7 @@ import java.util.List;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.modules.php.dbgp.actions.KillActionProvider;
-import org.netbeans.modules.php.dbgp.api.SessionId;
+import org.netbeans.modules.php.dbgp.SessionId;
 import org.netbeans.spi.debugger.ActionsProvider;
 
 
@@ -54,7 +54,6 @@ import org.netbeans.spi.debugger.ActionsProvider;
  *
  */
 public class SessionListener extends DebuggerManagerAdapter {
-
     /* (non-Javadoc)
      * @see org.netbeans.api.debugger.DebuggerManagerAdapter#sessionAdded(org.netbeans.api.debugger.Session)
      */
@@ -63,6 +62,8 @@ public class SessionListener extends DebuggerManagerAdapter {
         if ( session.lookupFirst( null , SessionId.class ) == null ){
             return;
         }
+	SessionProgress progress = SessionProgress.forSession(session);
+	progress.start();
         List list = session.lookup( null , ActionsProvider.class );
         boolean found = false;
         for (Object object : list) {
@@ -74,4 +75,13 @@ public class SessionListener extends DebuggerManagerAdapter {
         assert found;
     }
 
+    /* (non-Javadoc)
+     * @see org.netbeans.api.debugger.DebuggerManagerAdapter#sessionRemoved(org.netbeans.api.debugger.Session)
+     */    
+    @Override
+    public void sessionRemoved(Session session) {
+	super.sessionRemoved(session);
+	SessionProgress progress = SessionProgress.forSession(session);
+	progress.finish();	
+    }    
 }

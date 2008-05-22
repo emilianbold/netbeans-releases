@@ -68,13 +68,11 @@
                     url="Templates/SaaSServices/FacebookCallback.java"/>
             </artifacts>
         </code-gen>
-        <authentication profile="SaaSServices/Facebook/profile.properties">
+        <authentication profile="Templates/SaaSServices/sessionkey.properties">
             <session-key api-id="api_key" session-id="session_key" sig-id="sig">
                 <sign id="sig">
                     <params>
-                        <param name="method" type="string" required="true"/>
-                        <param name="v" type="string" required="true" default="1.0"/>
-                        <param name="call_id" type="string" required="true" default="String.valueOf(System.currentTimeMillis())"/>
+                        <param name="call_id" type="time" required="true"/>
                         <param id="api_key={api_key}" name="api_key" type="string" required="true"/>
                         <param id="session_key={session_key}" name="session_key" type="string" required="true"/>
                     </params>
@@ -85,9 +83,9 @@
                             <template type="auth" href="FacebookAuthenticatorDesktop"/>
                         </desktop>
                         <web>
-                            <template type="auth" href="FacebookAuthenticatorWeb"/>
-                            <template type="login" href="FacebookLogin"/>
-                            <template type="callback" href="FacebookCallback"/>
+                            <template type="auth" href="FacebookAuthenticator"/>
+                            <template type="login" href="FacebookAuthenticatorLogin"/>
+                            <template type="callback" href="FacebookAuthenticatorCallback"/>
                         </web>
                     </use-templates>
                 </authenticator>

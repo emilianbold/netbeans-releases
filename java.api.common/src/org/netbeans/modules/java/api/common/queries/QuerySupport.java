@@ -49,6 +49,7 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.queries.FileBuiltQueryImplementation;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.netbeans.spi.queries.SharabilityQueryImplementation;
+import org.openide.loaders.CreateFromTemplateAttributesProvider;
 import org.openide.util.Parameters;
 
 /**
@@ -72,12 +73,32 @@ public final class QuerySupport {
      */
     public static SourceForBinaryQueryImplementation createCompiledSourceForBinaryQuery(AntProjectHelper helper,
             PropertyEvaluator evaluator, SourceRoots srcRoots, SourceRoots testRoots) {
+        return createCompiledSourceForBinaryQuery(helper,
+            evaluator, srcRoots, testRoots, new String[]{"build.classes.dir", "dist.jar"}, new String[]{"build.test.classes.dir"});
+    }
+
+    /**
+     * Create a new query to provide information about where Java sources
+     * corresponding to binaries (classfiles) can be found.
+     * @param helper {@link AntProjectHelper} used for resolving files, e.g. output directory.
+     * @param evaluator {@link PropertyEvaluator} used for obtaining project properties.
+     * @param srcRoots a list of source roots.
+     * @param testRoots a list of test roots.
+     * @param binaryProperties array of property names of binary artifacts produced by this project, e.g. dist.jar
+     * @param testBinaryProperties array of property names of test binary artifacts produced by this project, e.g. build.test.classes.dir
+     * @return {@link SourceForBinaryQueryImplementation} to provide information about where Java sources can be found.
+     * @see SourceForBinaryQueryImplementation
+     * @since org.netbeans.modules.java.api.common/0 1.3
+     */
+    public static SourceForBinaryQueryImplementation createCompiledSourceForBinaryQuery(AntProjectHelper helper,
+            PropertyEvaluator evaluator, SourceRoots srcRoots, SourceRoots testRoots, String[] binaryProperties, String[] testBinaryProperties) {
         Parameters.notNull("helper", helper); // NOI18N
         Parameters.notNull("evaluator", evaluator); // NOI18N
         Parameters.notNull("srcRoots", srcRoots); // NOI18N
         Parameters.notNull("testRoots", testRoots); // NOI18N
+        Parameters.notNull("binaryProperties", binaryProperties); // NOI18N
 
-        return new CompiledSourceForBinaryQueryImpl(helper, evaluator, srcRoots, testRoots);
+        return new CompiledSourceForBinaryQueryImpl(helper, evaluator, srcRoots, testRoots, binaryProperties, testBinaryProperties);
     }
 
     /**
@@ -103,10 +124,25 @@ public final class QuerySupport {
      */
     public static JavadocForBinaryQueryImplementation createJavadocForBinaryQuery(AntProjectHelper helper,
             PropertyEvaluator evaluator) {
+
+        return createJavadocForBinaryQuery(helper, evaluator, new String[]{"build.classes.dir", "dist.jar"});
+    }
+
+    /**
+     * Create a new query to find Javadoc. The returned query listens on changes of the Javadoc directory.
+     * @param helper {@link AntProjectHelper} used for resolving files, e.g. output directory.
+     * @param evaluator {@link PropertyEvaluator} used for obtaining the Javadoc root.
+     * @param binaryProperties array of property names of binary artifacts produced by this project, e.g. dist.jar
+     * @return a {@link JavadocForBinaryQueryImplementation} to find Javadoc.
+     * @since org.netbeans.modules.java.api.common/0 1.3
+     */
+    public static JavadocForBinaryQueryImplementation createJavadocForBinaryQuery(AntProjectHelper helper,
+            PropertyEvaluator evaluator, String[] binaryProperties) {
         Parameters.notNull("helper", helper); // NOI18N
         Parameters.notNull("evaluator", evaluator); // NOI18N
+        Parameters.notNull("binaryProperties", binaryProperties); // NOI18N
 
-        return new JavadocForBinaryQueryImpl(helper, evaluator);
+        return new JavadocForBinaryQueryImpl(helper, evaluator, binaryProperties);
     }
 
     /**
@@ -186,5 +222,21 @@ public final class QuerySupport {
         Parameters.notNull("testRoots", testRoots); // NOI18N
 
         return new FileBuiltQueryImpl(helper, evaluator, sourceRoots, testRoots);
+    }
+
+    /**
+     * Creates an implementation of {@link CreateFromTemplateAttributesProvider} providing
+     * attributes for the project license and encoding.
+     *
+     * @param helper {@link AntProjectHelper} used for reading the project properties.
+     * @param encodingQuery {@link FileEncodingQueryImplementation} used to obtain an encoding.
+     * @return a {@code CreateFromTemplateAttributesProvider}.
+     *
+     * @since 1.1
+     */
+    public static CreateFromTemplateAttributesProvider createTemplateAttributesProvider(AntProjectHelper helper, FileEncodingQueryImplementation encodingQuery) {
+        Parameters.notNull("helper", helper);
+        Parameters.notNull("encodingQuery", encodingQuery);
+        return new TemplateAttributesProviderImpl(helper, encodingQuery);
     }
 }

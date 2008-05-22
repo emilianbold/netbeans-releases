@@ -155,6 +155,11 @@ if [ -z "$BUILD_JTB" ] ; then
     BUILD_JTB=0
 fi
 
+if [ -z "$BUILD_MYSQL" ] ; then
+    #do not build NetBeans/GlassFish/MySQL bundles by default
+    BUILD_MYSQL=0
+fi
+
 run() {
     ################################################################################
     # run the build
@@ -166,6 +171,7 @@ run() {
             \"-Dnb.files.prefix=${NB_FILES_PREFIX}\" \
             \"-Dnb.locales=${LOCALES}\" \
             \"-Dnb.build.type=${NB_BUILD_TYPE}\" \
+            \"-Dgf.build.type=${GF_BUILD_TYPE}\" \
             \"-Dglassfish.builds.host=${GLASSFISH_BUILDS_HOST}\" \
             \"-Dopenesb.builds.host=${OPENESB_BUILDS_HOST}\" \
             \"-Dsjsam.builds.host=${SJSAM_BUILDS_HOST}\" \
@@ -178,6 +184,7 @@ run() {
             \"-Dbuild.jdk5=${BUILD_NBJDK5}\" \
             \"-Dbuild.jdk6=${BUILD_NBJDK6}\" \
             \"-Dbuild.jtb=${BUILD_JTB}\" \
+            \"-Dbuild.mysql=${BUILD_MYSQL}\" \
             \"-Dbuild.netbeans.bundles=${BUILD_NETBEANS}\" \
             \"-Dglassfish.home=${GLASSFISH_HOME}\" \
             \"-Dglassfish.asadmin=${GLASSFISH_ASADMIN}\" \
@@ -244,6 +251,7 @@ fi
 if [ 1 == "$ML_BUILD" ] ; then
 	setNetBeansBuildsHost $ML_BUILD
 	NB_BUILD_TYPE=ml
+        GF_BUILD_TYPE=ml
 	OUTPUT_DIR=${OUTPUT_DIR}/${NB_BUILD_TYPE}
 	run $*
 fi

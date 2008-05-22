@@ -40,18 +40,13 @@
  */
 package org.netbeans.modules.websvc.saas.codegen.java;
 
-import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.text.MessageFormat;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -63,10 +58,8 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.ModificationResult;
-import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlParameter;
 import org.netbeans.modules.websvc.saas.codegen.java.model.JaxwsOperationInfo;
@@ -74,7 +67,6 @@ import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo;
 import org.netbeans.modules.websvc.saas.codegen.java.model.WsdlSaasBean;
 import org.netbeans.modules.websvc.saas.codegen.java.support.AbstractTask;
 import org.netbeans.modules.websvc.saas.codegen.java.support.JavaSourceHelper;
-import org.netbeans.modules.websvc.saas.codegen.java.support.SourceGroupSupport;
 import org.netbeans.modules.websvc.saas.model.WsdlSaasMethod;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -100,10 +92,6 @@ public class JaxWsCodeGenerator extends SaasCodeGenerator {
         super(targetComponent, targetFile, new WsdlSaasBean(m, FileOwnerQuery.getOwner(targetFile)));
     }
 
-    public boolean wrapperResourceExists() {
-        return getWrapperResourceFile() != null;
-    }
-    
     @Override
     protected void preGenerate() throws IOException {
     }
@@ -113,87 +101,15 @@ public class JaxWsCodeGenerator extends SaasCodeGenerator {
         return (WsdlSaasBean) bean;
     }
 
-    @Override
-    public void addSupportingMethods() throws IOException {
-        if (getBean().getHeaderParameters().isEmpty()) {
-            return;
-        }
-        ModificationResult result = getWrapperResourceSource().runModificationTask(new AbstractTask<WorkingCopy>() {
-            public void run(WorkingCopy copy) throws IOException {
-                copy.toPhase(JavaSource.Phase.RESOLVED);
-                JavaSourceHelper.addImports(copy, new String[] { QNAME, WS_BINDING_PROVIDER, HEADERS} );
-                ClassTree initial = JavaSourceHelper.getTopLevelClassTree(copy);
-                ClassTree tree = addSetHeaderParamsMethod(copy, initial, getBean().lastOperationInfo().getPort().getJavaName());
-                copy.rewrite(initial, tree);
-            }}
-        );
-        result.commit();
-    }
-
     protected String getCustomMethodBody() throws IOException {
-        String methodBody = "try { ";
-        String converterName = getConverterName();
-        if (converterName != null) {
-            methodBody += "$CONVERTER$ representation = new $CONVERTER$(); ".
-                replace("$CONVERTER$", getConverterName());
-        }
-        JaxwsOperationInfo[] operations = ((WsdlSaasBean) bean).getOperationInfos();
-        for (JaxwsOperationInfo info : operations) {
-            methodBody += getWSInvocationCode(info);
-        }
-
-        if (getBean().needsHtmlRepresentation()) {
-            methodBody += "return result;"; //NOI18N
-        } else {
-            methodBody += "return representation;"; //NOI18N
-        }
-        methodBody += "} catch(Exception ex) { //TODO handle \n throw new WebApplicationException(ex); }";
-        return methodBody;
+        return "";
     }
     
-    
-    @Override
-    protected void addImportsToWrapperResource() throws IOException {
-    }
-    
-    public static final String HINT_INIT_ARGUMENTS = " // TODO initialize WS operation arguments here\n"; //NOI18N
-    // {0} = service java name (as variable, e.g. "AddNumbersService")
-    // {1} = port java name (e.g. "AddNumbersPort")
-    // {2} = port getter method (e.g. "getAddNumbersPort")
-    // {3} = argument initialization part (e.g. "int x=0; int y=0;")
-    // {4} = java result type (e.g. "int")
-    // {5} = operation java method name (e.g. "add")
-    // {6} = java method arguments (e.g. "int x, int y")
-    // {7} = service field name
-    private static final String JAVA_SERVICE_DEF = "   {0} {7} = new {0}();\n"; //NOI18N
-    private static final String JAVA_PORT_DEF = "   {1} port = {7}.{2}();\n"; //NOI18N
-    private static final String JAVA_RESULT = "   {3}" + "   // TODO process result here\n" + "   {4} result = port.{5}({6});\n"; //NOI18N
-    private static final String JAVA_VOID = "   {3}" + "   port.{5}({6});\n"; //NOI18N
-    private static final String JAVA_OUT = "   {8}.println(\"Result = \"+result);\n"; //NOI18N
-    // {0} = service java name (as variable, e.g. "AddNumbersService")
-    // {1} = port java name (e.g. "AddNumbersPort")
-    // {2} = port getter method (e.g. "getAddNumbersPort")
-    // {3} = argument initialization part (e.g. "int x=0; int y=0;")
-    // {4} = java result type (e.g. "int")
-    // {5} = operation java method name (e.g. "add")
-    // {6} = java method arguments (e.g. "int x, int y")
-    private static final String JAVA_STATIC_STUB_ASYNC_POLLING = "\ntry '{' // Call Web Service Operation(async. polling)\n" + "   {0} service = new {0}();\n" + "   {1} port = service.{2}();\n" + "   {3}" + "   // TODO process asynchronous response here\n" + "   {4} resp = port.{5}({6});\n" + "   while(!resp.isDone()) '{'\n" + "       // do something\n" + "       Thread.sleep(100);\n" + "   '}'\n" + "   System.out.println(\"Result = \"+resp.get());\n" + "'}' catch (Exception ex) '{'\n" + "   // TODO handle custom exceptions here\n" + "'}'\n"; //NOI18N
-    // {0} = service java name (as variable, e.g. "AddNumbersService")
-    // {1} = port java name (e.g. "AddNumbersPort")
-    // {2} = port getter method (e.g. "getAddNumbersPort")
-    // {3} = argument initialization part (e.g. "int x=0; int y=0;")
-    // {4} = java result type (e.g. "int")
-    // {5} = operation java method name (e.g. "add")
-    // {6} = java method arguments (e.g. "int x, int y")
-    // {7} = response type (e.g. FooResponse)
-    private static final String JAVA_STATIC_STUB_ASYNC_CALLBACK = "\ntry '{' // Call Web Service Operation(async. callback)\n" + "   {0} service = new {0}();\n" + "   {1} port = service.{2}();\n" + "   {3}" + "       public void handleResponse(javax.xml.ws.Response<{7}> response) '{'\n" + "           try '{'\n" + "               // TODO process asynchronous response here\n" + "               System.out.println(\"Result = \"+ response.get());\n" + "           '}' catch(Exception ex) '{'\n" + "               // TODO handle exception\n" + "           '}'\n" + "       '}'\n" + "   '}';\n" + "   {4} result = port.{5}({6});\n" + "   while(!result.isDone()) '{'\n" + "       // do something\n" + "       Thread.sleep(100);\n" + "   '}'\n" + "'}' catch (Exception ex) '{'\n" + "   // TODO handle custom exceptions here\n" + "'}'\n"; //NOI18N
-
-    /**
+     /**
      * Add JAXWS client code for invoking the given operation at current position.
      */
     protected String getWSInvocationCode(JaxwsOperationInfo info) throws IOException {
         //Collect java names for invocation code
-        String wsdlUrl = info.getWsdlURL();
         final String serviceJavaName = info.getService().getJavaName();
         String portJavaName = info.getPort().getJavaName();
         String operationJavaName = info.getOperation().getJavaName();
@@ -216,7 +132,8 @@ public class JaxWsCodeGenerator extends SaasCodeGenerator {
                     callbackHandlerName = argumentTypeName;
                 }
                 String argumentName = outArguments.get(i).getName();
-                argumentBuffer1.append("\t" + argumentTypeName + " " + argumentName + " = " + resolveInitValue(argumentTypeName) + "\n"); //NOI18N
+                argumentBuffer1.append(INDENT_2 + argumentTypeName + " " + argumentName + 
+                        " = " + resolveInitValue(argumentTypeName) + "\n"); //NOI18N
             }
 
             List<WsdlParameter> parameters = info.getOperation().getParameters();
@@ -224,17 +141,18 @@ public class JaxWsCodeGenerator extends SaasCodeGenerator {
                 String argument = parameters.get(i).getName();
                 argumentBuffer2.append(i > 0 ? ", " + argument : argument); //NOI18N
             }
-            argumentInitializationPart = (argumentBuffer1.length() > 0 ? "\t" + HINT_INIT_ARGUMENTS + argumentBuffer1.toString() : "");
+            argumentInitializationPart = (argumentBuffer1.length() > 0 ? "\t" + 
+                    HINT_INIT_ARGUMENTS + argumentBuffer1.toString() : "");
             argumentDeclarationPart = argumentBuffer2.toString();
         } catch (NullPointerException npe) {
             // !PW notify failure to extract service information.
             npe.printStackTrace();
-            String message = NbBundle.getMessage(JaxWsCodeGenerator.class, "ERR_FailedUnexpectedWebServiceDescriptionPattern"); // NOI18N
-            NotifyDescriptor desc = new NotifyDescriptor.Message(message, NotifyDescriptor.Message.ERROR_MESSAGE);
+            String message = NbBundle.getMessage(JaxWsCodeGenerator.class, 
+                    "ERR_FailedUnexpectedWebServiceDescriptionPattern"); // NOI18N
+            NotifyDescriptor desc = new NotifyDescriptor.Message(message, 
+                    NotifyDescriptor.Message.ERROR_MESSAGE);
             DialogDisplayer.getDefault().notify(desc);
         }
-
-        boolean success = false;
 
         final boolean[] insertServiceDef = {true};
         final String[] printerName = {"System.out"}; // NOI18N
@@ -287,56 +205,46 @@ public class JaxWsCodeGenerator extends SaasCodeGenerator {
             }
         };
 
-        // create the inserted text
-        getWrapperResourceSource().runUserActionTask(task, true);
+        String invocationBody = getJavaInvocationBody(info.getOperation(), 
+                insertServiceDef[0], serviceJavaName, portJavaName, 
+                portGetterMethod, argumentInitPart[0], returnTypeName, 
+                operationJavaName, argumentDeclPart[0], serviceFName[0], 
+                printerName[0], responseType);
 
-        String invocationBody = getJavaInvocationBody(info.getOperation(), insertServiceDef[0], serviceJavaName, portJavaName, portGetterMethod, argumentInitPart[0], returnTypeName, operationJavaName, argumentDeclPart[0], serviceFName[0], printerName[0], responseType);
-
-        if (!getBean().needsHtmlRepresentation()) {
-            List<WsdlParameter> outParams = info.getOutputParameters();
-            String outputClassName = SourceGroupSupport.getClassName(info.getOutputType());
-            invocationBody += "representation.set" + outputClassName + "(";
-            if (Constants.VOID.equals(returnTypeName) && outParams.size() > 0) {
-                invocationBody += outParams.get(0).getName() + ".value);";
-            } else if (!Constants.VOID.equals(returnTypeName)) {
-                invocationBody += "result);";
-            } else {
-                throw new IllegalArgumentException("Unsupported return type " + returnTypeName);
-            }
-        }
-
-        if (generateWsRefInjection[0]) {
-            insertServiceRef(getWrapperResourceSource(), info, serviceFieldName);
-        }
         return invocationBody;
     }
 
-    private void insertServiceRef(JavaSource targetJS, JaxwsOperationInfo info, final String serviceFieldName) throws IOException {
-        final String serviceJavaName = info.getService().getJavaName();
-        String wsdlUrl = info.getWsdlURL();
-
-        if (wsdlUrl.startsWith("file:")) {
-            //NOI18N
-            wsdlUrl = info.getWsdlLocation();
-        }
-        final String localWsdlUrl = wsdlUrl;
-        CancellableTask<WorkingCopy> modificationTask = new CancellableTask<WorkingCopy>() {
-
-            public void run(WorkingCopy workingCopy) throws IOException {
-                workingCopy.toPhase(Phase.RESOLVED);
-                TreeMaker make = workingCopy.getTreeMaker();
-                TypeElement typeElement = JavaSourceHelper.getTopLevelClassElement(workingCopy);
-                ClassTree javaClass = JavaSourceHelper.getClassTree(workingCopy, typeElement);
-                VariableTree serviceRefInjection = generateServiceRefInjection(workingCopy, make, serviceFieldName, serviceJavaName, localWsdlUrl);
-                ClassTree modifiedClass = make.insertClassMember(javaClass, 0, serviceRefInjection);
-                workingCopy.rewrite(javaClass, modifiedClass);
-            }
-
-            public void cancel() {
-            }
-        };
-        targetJS.runModificationTask(modificationTask).commit();
-    }
+    public static final String HINT_INIT_ARGUMENTS = " // TODO initialize WS operation arguments here\n"; //NOI18N
+    // {0} = service java name (as variable, e.g. "AddNumbersService")
+    // {1} = port java name (e.g. "AddNumbersPort")
+    // {2} = port getter method (e.g. "getAddNumbersPort")
+    // {3} = argument initialization part (e.g. "int x=0; int y=0;")
+    // {4} = java result type (e.g. "int")
+    // {5} = operation java method name (e.g. "add")
+    // {6} = java method arguments (e.g. "int x, int y")
+    // {7} = service field name
+    private static final String JAVA_SERVICE_DEF = "   {0} {7} = new {0}();\n"; //NOI18N
+    private static final String JAVA_PORT_DEF = "   {1} port = {7}.{2}();\n"; //NOI18N
+    private static final String JAVA_RESULT = "   {3}" + "   // TODO process result here\n" + "   {4} result = port.{5}({6});\n"; //NOI18N
+    private static final String JAVA_VOID = "   {3}" + "   port.{5}({6});\n"; //NOI18N
+    private static final String JAVA_OUT = "   {8}.println(\"Result = \"+result);\n"; //NOI18N
+    // {0} = service java name (as variable, e.g. "AddNumbersService")
+    // {1} = port java name (e.g. "AddNumbersPort")
+    // {2} = port getter method (e.g. "getAddNumbersPort")
+    // {3} = argument initialization part (e.g. "int x=0; int y=0;")
+    // {4} = java result type (e.g. "int")
+    // {5} = operation java method name (e.g. "add")
+    // {6} = java method arguments (e.g. "int x, int y")
+    private static final String JAVA_STATIC_STUB_ASYNC_POLLING = "\ntry '{' // Call Web Service Operation(async. polling)\n" + "   {0} service = new {0}();\n" + "   {1} port = service.{2}();\n" + "   {3}" + "   // TODO process asynchronous response here\n" + "   {4} resp = port.{5}({6});\n" + "   while(!resp.isDone()) '{'\n" + "       // do something\n" + "       Thread.sleep(100);\n" + "   '}'\n" + "   System.out.println(\"Result = \"+resp.get());\n" + "'}' catch (Exception ex) '{'\n" + "   // TODO handle custom exceptions here\n" + "'}'\n"; //NOI18N
+    // {0} = service java name (as variable, e.g. "AddNumbersService")
+    // {1} = port java name (e.g. "AddNumbersPort")
+    // {2} = port getter method (e.g. "getAddNumbersPort")
+    // {3} = argument initialization part (e.g. "int x=0; int y=0;")
+    // {4} = java result type (e.g. "int")
+    // {5} = operation java method name (e.g. "add")
+    // {6} = java method arguments (e.g. "int x, int y")
+    // {7} = response type (e.g. FooResponse)
+    private static final String JAVA_STATIC_STUB_ASYNC_CALLBACK = "\ntry '{' // Call Web Service Operation(async. callback)\n" + "   {0} service = new {0}();\n" + "   {1} port = service.{2}();\n" + "   {3}" + "       public void handleResponse(javax.xml.ws.Response<{7}> response) '{'\n" + "           try '{'\n" + "               // TODO process asynchronous response here\n" + "               System.out.println(\"Result = \"+ response.get());\n" + "           '}' catch(Exception ex) '{'\n" + "               // TODO handle exception\n" + "           '}'\n" + "       '}'\n" + "   '}';\n" + "   {4} result = port.{5}({6});\n" + "   while(!result.isDone()) '{'\n" + "       // do something\n" + "       Thread.sleep(100);\n" + "   '}'\n" + "'}' catch (Exception ex) '{'\n" + "   // TODO handle custom exceptions here\n" + "'}'\n"; //NOI18N
 
     /**
      * Determines the initialization value of a variable of type "type"
@@ -375,6 +283,63 @@ public class JaxWsCodeGenerator extends SaasCodeGenerator {
 
         return "null;"; //NOI18N
     }
+    
+    /**
+     * Determines the initialization value of a variable of type "type"
+     * @param type Type of the variable
+     * @param targetFile FileObject containing the class that declares the type
+     */
+    protected static String resolveInitValue(ParameterInfo p) {
+        String type = p.getTypeName();
+        Object defaultVal = p.getDefaultValue();
+        if (type.startsWith("javax.xml.ws.Holder")) {
+            //NOI18N
+            return "new " + type + "();";
+        }
+        if ("int".equals(type) || "long".equals(type) || "short".equals(type) || "byte".equals(type) ||
+                 "java.lang.Integer".equals(type) || "java.lang.Long".equals(type) || 
+                 "java.lang.Short".equals(type) || "java.lang.Byte".equals(type)) {
+            //NOI18N
+            try {
+                int val = Integer.parseInt((String) defaultVal);
+                return String.valueOf(val) + ";";
+            } catch(Exception ex) {}
+            return "0;"; //NOI18N
+        }
+        if ("boolean".equals(type) || "java.lang.Boolean".equals(type)) {
+            //NOI18N
+            try {
+                boolean val = Boolean.parseBoolean((String) defaultVal);
+                return String.valueOf(val) + ";";
+            } catch(Exception ex) {}
+            return "false;"; //NOI18N
+        }
+        if ("float".equals(type) || "double".equals(type) ||
+                 "java.lang.Float".equals(type) || "java.lang.Double".equals(type)) {
+            //NOI18N
+            try {
+                double val = Double.parseDouble((String) defaultVal);
+                return String.valueOf(val) + ";";
+            } catch(Exception ex) {}
+            return "0.0;"; //NOI18N
+        }
+        if ("java.lang.String".equals(type)) {
+            //NOI18N
+            if(defaultVal != null && defaultVal instanceof String)
+                return "\"" + (String) defaultVal + "\";";
+            return "\"\";"; //NOI18N
+        }
+        if (type.endsWith("CallbackHandler")) {
+            //NOI18N
+            return "new " + type + "();"; //NOI18N
+        }
+        if (type.startsWith("javax.xml.ws.AsyncHandler")) {
+            //NOI18N
+            return "new " + type + "() {"; //NOI18N
+        }
+
+        return "null;"; //NOI18N
+    }
 
     protected static String resolveResponseType(String argumentType) {
         int start = argumentType.indexOf("<");
@@ -387,6 +352,10 @@ public class JaxWsCodeGenerator extends SaasCodeGenerator {
     }
     
     public static final String SET_HEADER_PARAMS_CALL = SET_HEADER_PARAMS + "(port); \n";
+    
+    public static final String INDENT_2 = "             ";
+    
+    public static final String INDENT = "        ";
 
     protected String getJavaInvocationBody(WsdlOperation operation, 
             boolean insertServiceDef, String serviceJavaName, String portJavaName, 
@@ -394,7 +363,7 @@ public class JaxWsCodeGenerator extends SaasCodeGenerator {
             String returnTypeName, String operationJavaName, String argumentDeclarationPart, 
             String serviceFieldName, String printerName, String responseType) {
 
-        String invocationBody = "";
+        String invocationBody = INDENT_2;
         String setHeaderParams = getBean().getHeaderParameters().size() > 0 ? SET_HEADER_PARAMS_CALL : "" ;
         Object[] args = new Object[]{serviceJavaName, portJavaName, portGetterMethod, argumentInitializationPart, returnTypeName, operationJavaName, argumentDeclarationPart, serviceFieldName, printerName};
         switch (operation.getOperationType()) {
@@ -423,17 +392,6 @@ public class JaxWsCodeGenerator extends SaasCodeGenerator {
                 }
         }
         return invocationBody;
-    }
-
-    private static VariableTree generateServiceRefInjection(WorkingCopy workingCopy, TreeMaker make, String fieldName, String fieldType, String wsdlUrl) {
-        TypeElement wsRefElement = workingCopy.getElements().getTypeElement("javax.xml.ws.WebServiceRef"); //NOI18N
-        AnnotationTree wsRefAnnotation = make.Annotation(make.QualIdent(wsRefElement), Collections.<ExpressionTree>singletonList(make.Assignment(make.Identifier("wsdlLocation"), make.Literal(wsdlUrl))));
-        // create method modifier: public and no annotation
-        ModifiersTree methodModifiers = make.Modifiers(Collections.<Modifier>singleton(Modifier.PUBLIC), Collections.<AnnotationTree>singletonList(wsRefAnnotation));
-        TypeElement typeElement = workingCopy.getElements().getTypeElement(fieldType);
-
-        VariableTree var = make.Variable(methodModifiers, fieldName, make.Type(typeElement.asType()), null);
-        return make.Variable(make.Modifiers(var.getModifiers().getFlags(), var.getModifiers().getAnnotations()), var.getName(), var.getType(), var.getInitializer());
     }
 
     protected static String findProperServiceFieldName(Set serviceFieldNames) {

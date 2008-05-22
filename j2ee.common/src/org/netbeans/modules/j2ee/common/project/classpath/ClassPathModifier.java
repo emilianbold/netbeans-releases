@@ -133,20 +133,34 @@ public final class ClassPathModifier extends ProjectClassPathModifierImplementat
     }
 
     protected boolean removeRoots(final URL[] classPathRoots, final SourceGroup sourceGroup, final String type) throws IOException, UnsupportedOperationException {
+        return removeRoots(convertURLsToURIs(classPathRoots), sourceGroup, type);
+    }
+
+    @Override
+    protected boolean removeRoots(final URI[] classPathRoots, final SourceGroup sourceGroup, final String type) throws IOException, UnsupportedOperationException {
         String classPathProperty = cpModifierCallback.getClassPathProperty(sourceGroup, type);
         return handleRoots (classPathRoots, classPathProperty, cpModifierCallback.getElementName(classPathProperty), REMOVE);
     }
 
     protected boolean addRoots (final URL[] classPathRoots, final SourceGroup sourceGroup, final String type) throws IOException, UnsupportedOperationException {        
+        return addRoots(convertURLsToURIs(classPathRoots), sourceGroup, type);
+    }
+    
+    public boolean addRoots (URL[] classPathRoots, String classPathProperty) throws IOException, UnsupportedOperationException {
+        return handleRoots(convertURLsToURIs(classPathRoots), classPathProperty, cpModifierCallback.getElementName(classPathProperty), ADD);
+    }
+    
+    @Override
+    protected boolean addRoots (final URI[] classPathRoots, final SourceGroup sourceGroup, final String type) throws IOException, UnsupportedOperationException {        
         return addRoots(classPathRoots, sourceGroup, type, ADD);
     }
     
-    public boolean addRoots (final URL[] classPathRoots, final SourceGroup sourceGroup, final String type, int operation) throws IOException, UnsupportedOperationException {        
+    public boolean addRoots (final URI[] classPathRoots, final SourceGroup sourceGroup, final String type, int operation) throws IOException, UnsupportedOperationException {        
         String classPathProperty = cpModifierCallback.getClassPathProperty(sourceGroup, type);
-        return handleRoots (classPathRoots, classPathProperty, cpModifierCallback.getElementName(classPathProperty), ADD);
+        return handleRoots (classPathRoots, classPathProperty, cpModifierCallback.getElementName(classPathProperty), operation);
     }
     
-    boolean handleRoots (final URL[] classPathRoots, final String classPathProperty, final String projectXMLElementName, final int operation) throws IOException, UnsupportedOperationException {
+    boolean handleRoots (final URI[] classPathRoots, final String classPathProperty, final String projectXMLElementName, final int operation) throws IOException, UnsupportedOperationException {
         assert classPathRoots != null : "The classPathRoots cannot be null";      //NOI18N        
         assert classPathProperty != null;
         try {
@@ -161,11 +175,11 @@ public final class ClassPathModifier extends ProjectClassPathModifierImplementat
                             for (int i=0; i< classPathRoots.length; i++) {
                                 String filePath;
                                 if (ADD_NO_HEURISTICS == operation || REMOVE == operation) {
-                                    URL toAdd = FileUtil.getArchiveFile(classPathRoots[i]);
+                                    URI toAdd = LibrariesSupport.getArchiveFile(classPathRoots[i]);
                                     if (toAdd == null) {
                                         toAdd = classPathRoots[i];
                                     }
-                                    filePath =  LibrariesSupport.convertURLToFilePath(toAdd);
+                                    filePath =  LibrariesSupport.convertURIToFilePath(toAdd);
                                 } else {
                                     filePath = ClassPathModifier.this.performSharabilityHeuristics(classPathRoots[i], antHelper);
                                 }

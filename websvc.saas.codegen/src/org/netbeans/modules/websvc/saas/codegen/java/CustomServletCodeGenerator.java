@@ -42,7 +42,11 @@ package org.netbeans.modules.websvc.saas.codegen.java;
 
 import org.netbeans.modules.websvc.saas.model.CustomSaasMethod;
 import java.io.IOException;
+import java.util.List;
 import javax.swing.text.JTextComponent;
+import org.netbeans.modules.websvc.saas.codegen.java.Constants.SaasAuthenticationType;
+import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo;
+import org.netbeans.modules.websvc.saas.codegen.java.support.Util;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -55,5 +59,48 @@ public class CustomServletCodeGenerator extends CustomJavaClientCodeGenerator {
     public CustomServletCodeGenerator(JTextComponent targetComponent,
             FileObject targetFile, CustomSaasMethod m) throws IOException {
         super(targetComponent, targetFile, m);
+    }
+    
+    @Override
+    protected List<ParameterInfo> getServiceMethodParameters() {
+        if(bean.getAuthenticationType() == SaasAuthenticationType.SESSION_KEY ||
+                bean.getAuthenticationType() == SaasAuthenticationType.HTTP_BASIC)
+            return getServiceMethodParametersForWeb(getBean());
+        else
+            return super.getServiceMethodParameters();
+    }
+    
+    
+    protected String getCustomMethodBody(String paramDecl, String paramUse, String indent2) {
+        String indent = "             ";
+        String methodBody = "";
+        methodBody += indent+"try {\n";
+        methodBody += paramDecl + "\n";
+        methodBody +=indent2+REST_RESPONSE+" result = " + getBean().getSaasServiceName() + 
+                "." + getBean().getSaasServiceMethodName() + "(" + paramUse + ");\n";
+        methodBody += Util.createPrintStatement(
+                getBean().getOutputWrapperPackageName(), 
+                getBean().getOutputWrapperName(),
+                getDropFileType(), 
+                getBean().getHttpMethod(), 
+                getBean().canGenerateJAXBUnmarshaller(), indent2);
+        methodBody += indent+"} catch (Exception ex) {\n";
+        methodBody += indent2+"ex.printStackTrace();\n";
+        methodBody += indent+"}\n";
+        return methodBody;
+    }
+    
+    @Override
+    protected List<ParameterInfo> getAuthenticatorMethodParameters() {
+        if(bean.getAuthenticationType() == SaasAuthenticationType.SESSION_KEY ||
+                bean.getAuthenticationType() == SaasAuthenticationType.HTTP_BASIC)
+            return Util.getAuthenticatorMethodParametersForWeb();
+        else
+            return super.getAuthenticatorMethodParameters();
+    }
+    
+    @Override
+    protected String getLoginArguments() {
+        return Util.getLoginArgumentsForWeb();
     }
 }

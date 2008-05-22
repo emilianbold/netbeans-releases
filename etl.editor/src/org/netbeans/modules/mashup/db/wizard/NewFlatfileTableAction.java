@@ -1,6 +1,7 @@
 package org.netbeans.modules.mashup.db.wizard;
 
 import java.awt.Dialog;
+import java.io.File;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -16,6 +17,7 @@ import org.netbeans.modules.mashup.db.model.FlatfileDBTable;
 import org.netbeans.modules.mashup.db.model.FlatfileDatabaseModel;
 import org.netbeans.modules.mashup.db.model.impl.FlatfileDBTableImpl;
 import org.netbeans.modules.mashup.tables.wizard.MashupTableWizardIterator;
+import org.netbeans.modules.sql.framework.common.utils.DBExplorerUtil;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -26,12 +28,13 @@ import org.openide.util.actions.CallableSystemAction;
 public final class NewFlatfileTableAction extends CallableSystemAction {
     private static transient final Logger mLogger = Logger.getLogger(NewFlatfileTableAction.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
-    public String nbBundle1 = mLoc.t("BUND274: Add External Table(s)");
+    public String nbBundle1 = mLoc.t("BUND274: Add External Tables...");
+    public String nbBundle6 = mLoc.t("BUND874: Add External Tables");
     public void performAction() {
         WizardDescriptor.Iterator iterator = new MashupTableWizardIterator();
         WizardDescriptor wizardDescriptor = new WizardDescriptor(iterator);
-        wizardDescriptor.setTitleFormat(new MessageFormat("{0} ({1})"));
-        wizardDescriptor.setTitle(nbBundle1.substring(15));
+        wizardDescriptor.setTitleFormat(new MessageFormat("{0}"));
+        wizardDescriptor.setTitle(nbBundle6.substring(15));
         ((MashupTableWizardIterator)iterator).setDescriptor(wizardDescriptor);
         Dialog dialog = DialogDisplayer.getDefault().createDialog(wizardDescriptor);
         dialog.getAccessibleContext().setAccessibleDescription("This dialog helps to create a flatfile table from xls,csv and txt sources");
@@ -50,6 +53,7 @@ public final class NewFlatfileTableAction extends CallableSystemAction {
                     MashupTableWizardIterator.TABLE_LIST);
             Connection conn = null;
             Statement stmt = null;
+            String dbDir = (DBExplorerUtil.parseConnUrl(jdbcUrl))[1];
             try {
                 conn = FlatfileDBConnectionFactory.getInstance().getConnection(jdbcUrl);
                 if(conn != null) {
@@ -79,8 +83,12 @@ public final class NewFlatfileTableAction extends CallableSystemAction {
                             stmt.execute("shutdown");
                         }
                         conn.close();
+                        File dbExplorerNeedRefresh = new File(dbDir + "/dbExplorerNeedRefresh");
+                        dbExplorerNeedRefresh.createNewFile();
                     } catch (SQLException ex) {
                         conn = null;
+                    } catch(Exception ex) {
+                        // ignore
                     }
                 }
             }

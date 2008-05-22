@@ -43,6 +43,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -60,9 +61,10 @@ import org.netbeans.modules.spring.api.Action;
 import org.netbeans.modules.spring.api.beans.model.SpringBean;
 import org.netbeans.modules.spring.api.beans.model.SpringBeans;
 import org.netbeans.modules.spring.api.beans.model.SpringConfigModel;
+import org.netbeans.modules.spring.beans.BeansAttributes;
+import org.netbeans.modules.spring.java.JavaUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
-import org.w3c.dom.Node;
 
 /**
  * Finds the actual class which is implementing the specified bean. 
@@ -95,21 +97,16 @@ import org.w3c.dom.Node;
  */
 public class BeanClassFinder {
 
-    private static final String ID_ATTRIB = "id"; // NOI18N
-    private static final String NAME_ATTRIB = "name"; // NOI18N
-    
-    private Node beanNode;
     private FileObject fileObject;
     private Set<String> walkedBeanNames;  
     private String startBeanName;
     private SpringBean startBean;
 
-    public BeanClassFinder(Node beanNode, FileObject fileObject) {
-        this.beanNode = beanNode;
+    public BeanClassFinder(Map<String, String> beanAttribs, FileObject fileObject) {
         this.fileObject = fileObject;
         this.walkedBeanNames = new HashSet<String>();
-        this.startBean = SpringXMLConfigEditorUtils.getMergedBean(beanNode, fileObject);
-        startBeanName = getBeanIdOrName(beanNode);
+        this.startBean = SpringXMLConfigEditorUtils.getMergedBean(beanAttribs, fileObject);
+        this.startBeanName = getBeanIdOrName(beanAttribs);
     }
 
     public String findImplementationClass() {
@@ -188,7 +185,7 @@ public class BeanClassFinder {
         }
         
         try {
-            JavaSource js = SpringXMLConfigEditorUtils.getJavaSource(fileObject);
+            JavaSource js = JavaUtils.getJavaSource(fileObject);
             if (js == null) {
                 return null;
             }
@@ -196,7 +193,7 @@ public class BeanClassFinder {
             js.runUserActionTask(new Task<CompilationController>() {
 
                 public void run(CompilationController cc) throws Exception {
-                    TypeElement te = SpringXMLConfigEditorUtils.findClassElementByBinaryName(implClass, cc);
+                    TypeElement te = JavaUtils.findClassElementByBinaryName(implClass, cc);
                     if (te == null) {
                         return;
                     }
@@ -286,16 +283,17 @@ public class BeanClassFinder {
         return null;
     }
     
-    private String getBeanIdOrName(Node beanNode) {
-        if(SpringXMLConfigEditorUtils.hasAttribute(beanNode, ID_ATTRIB)) {
-            return SpringXMLConfigEditorUtils.getAttribute(beanNode, ID_ATTRIB);
+    private String getBeanIdOrName(Map<String, String> beanAttribs) {
+        String name = beanAttribs.get(BeansAttributes.ID);
+        if(name != null) {
+            return name;
         }
         
-        if(SpringXMLConfigEditorUtils.hasAttribute(beanNode, NAME_ATTRIB)) {
-            String names = SpringXMLConfigEditorUtils.getAttribute(beanNode, NAME_ATTRIB);
-            return StringUtils.tokenize(names, SpringXMLConfigEditorUtils.BEAN_NAME_DELIMITERS).get(0);
+        name = beanAttribs.get(BeansAttributes.NAME);
+        if(name != null) {
+            name = StringUtils.tokenize(name, SpringXMLConfigEditorUtils.BEAN_NAME_DELIMITERS).get(0);
         }
         
-        return null;
+        return name;
     }
 }

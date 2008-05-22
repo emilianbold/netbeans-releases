@@ -83,6 +83,8 @@ import org.netbeans.performance.test.guitracker.LoggingEventQueue;
  * @author  mmirilovic@netbeans.org, rkubacki@netbeans.org, anebuzelsky@netbeans.org, mrkam@netbeans.org
  */
 public abstract class PerformanceTestCase extends JellyTestCase implements NbPerformanceTest{
+    public static final String OPEN_AFTER = "OPEN - after";
+    public static final String OPEN_BEFORE = "OPEN - before";
 
     private static final boolean logMemory = Boolean.getBoolean("org.netbeans.performance.memory.usage.log");
 
@@ -315,9 +317,9 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
 
                     logMemoryUsage();
 
-                    tr.add(tr.TRACK_TRACE_MESSAGE, "OPEN - before");
+                    tr.add(tr.TRACK_TRACE_MESSAGE,OPEN_BEFORE);
                     testedComponentOperator = open();
-                    tr.add(tr.TRACK_TRACE_MESSAGE, "OPEN - after");
+                    tr.add(tr.TRACK_TRACE_MESSAGE,OPEN_AFTER);
 
                     // this is to optimize delays
                     long wait_time = (wait_after_open_heuristic>WAIT_AFTER_OPEN)?WAIT_AFTER_OPEN:wait_after_open_heuristic;
@@ -394,7 +396,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
 
         dumpLog();
         if(exceptionDuringMeasurement!=null)
-            throw new Error("Exception {" + exceptionDuringMeasurement + "} rises during measurement.", exceptionDuringMeasurement);
+            throw new RuntimeException("Exception {" + exceptionDuringMeasurement + "} rises during measurement.", exceptionDuringMeasurement);
 
         compare(measuredTime);
 
@@ -422,9 +424,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
 
         useTwoOrderTypes = false;
 
-        // issue 56091 and applied workarround on the next line
-        // JemmyProperties.setCurrentDispatchingModel(JemmyProperties.ROBOT_MODEL_MASK);
-        JemmyProperties.setCurrentDispatchingModel(JemmyProperties.getCurrentDispatchingModel()|JemmyProperties.ROBOT_MODEL_MASK);
+        JemmyProperties.setCurrentDispatchingModel(JemmyProperties.ROBOT_MODEL_MASK);
         JemmyProperties.setCurrentTimeout("EventDispatcher.RobotAutoDelay", 1);
         log("----------------------- DISPATCHING MODEL = "+JemmyProperties.getCurrentDispatchingModel());
 
@@ -512,7 +512,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
         }
 
         if(exceptionDuringMeasurement!=null)
-            throw new Error("Exception rises during measurement, look at appropriate log file for stack trace(s).");
+            throw new RuntimeException("Exception rises during measurement, look at appropriate log file for stack trace(s).");
 
     }
 
@@ -747,29 +747,35 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
 
     /**
      * Compare each measured value with expected value.
-     *  Test fails if one of the measured value is bigger than expected one.
+     *  Test fails if more than one of the measured value is bigger than expected one.
      * @param measuredValues array of measured values
      */
     public void compare(long[] measuredValues){
-        boolean fail = false;
+        boolean firstTimeUsageFail = false;
+        int numberOfFails = 0;
+        final int NUMBER_OF_FAILS_THRESHOLD = 1;
         String measuredValuesString = "";
 
         for(int i=1; i<measuredValues.length; i++){
             measuredValuesString = measuredValuesString + " " + measuredValues[i];
 
             if( (i>1  && measuredValues[i] > expectedTime) ||
-                    (i==1 && measuredValues.length==1 && measuredValues[i] > expectedTime) )
+                    (i==1 && measuredValues.length==1 && measuredValues[i] > expectedTime) ) {
                 // fail if it's subsequent usage and it's over expected time or it's first usage without any other usages and it's over expected time
-                fail = true;
-            else if(i==1 && measuredValues.length > 1 && measuredValues[i] > 2*expectedTime)
+                numberOfFails++;
+            } else if(i==1 && measuredValues.length > 1 && measuredValues[i] > 2*expectedTime) {
                 // fail if it's first usage and it isn't the last one and it's over 2-times expected time
-                fail = true;
+                numberOfFails++;
+                firstTimeUsageFail = true;
+            }
         }
 
-        if(fail){
+        if (numberOfFails > NUMBER_OF_FAILS_THRESHOLD || firstTimeUsageFail) {
             captureScreen = false;
-            fail("One of the measuredTime(s) ["+measuredValuesString+" ] > expectedTime["+expectedTime+"] - performance issue (it's ok if the first usage is in boundary <0,2*expectedTime>) .");
-        }
+            fail(numberOfFails + " of the measuredTime(s) [" + measuredValuesString 
+                    + " ] > expectedTime[" + expectedTime 
+                    + "] - performance issue (it's ok if the first usage is in boundary of 0 to 2*expectedTime) .");
+        } 
     }
 
     /**
@@ -841,12 +847,19 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
             
             try {                
                 for (ActionTracker.Tuple tuple : tr.getCurrentEvents()) {
+                    if (tuple == null) {
+                        // TODO: Investigate how can this happen?
+                        continue;
+                    }
                     int code = tuple.getCode();
 
                     // start 
-                    if (code == MY_START_EVENT) {
+                    if (code == MY_START_EVENT || (MY_START_EVENT == ActionTracker.TRACK_OPEN_BEFORE_TRACE_MESSAGE
+                            && code == ActionTracker.TRACK_TRACE_MESSAGE && tuple.getName().equals(OPEN_BEFORE))
+                            || (MY_START_EVENT == ActionTracker.TRACK_OPEN_AFTER_TRACE_MESSAGE
+                            && code == ActionTracker.TRACK_TRACE_MESSAGE && tuple.getName().equals(OPEN_AFTER))) {
                         start = tuple;
-                    } else if(MY_START_EVENT == MY_EVENT_NOT_AVAILABLE && 
+                    } else if (MY_START_EVENT == MY_EVENT_NOT_AVAILABLE && 
                             ( code == ActionTracker.TRACK_START
                             || code == track_mouse_event  // it could be ActionTracker.TRACK_MOUSE_RELEASE (by default) or ActionTracker.TRACK_MOUSE_PRESS or ActionTracker.TRACK_MOUSE_MOVE
                             || code == ActionTracker.TRACK_KEY_PRESS
@@ -854,7 +867,10 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
                         start = tuple;
 
                     //end 
-                    } else if (code == MY_END_EVENT) {
+                    } else if (code == MY_END_EVENT || (MY_END_EVENT == ActionTracker.TRACK_OPEN_BEFORE_TRACE_MESSAGE
+                            && code == ActionTracker.TRACK_TRACE_MESSAGE && tuple.getName().equals(OPEN_BEFORE))
+                            || (MY_END_EVENT == ActionTracker.TRACK_OPEN_AFTER_TRACE_MESSAGE
+                            && code == ActionTracker.TRACK_TRACE_MESSAGE && tuple.getName().equals(OPEN_AFTER))) {
                         end = tuple;
                     } else if (MY_END_EVENT == MY_EVENT_NOT_AVAILABLE && 
                             ( code == ActionTracker.TRACK_PAINT
@@ -879,7 +895,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
             long result = end.getTimeMillis() - start.getTimeMillis();
 
             if (result < 0 || start.getTimeMillis() == 0) {
-                throw new IllegalStateException("Measuring failed, because we start ["+start.getTimeMillis()+"] > end ["+end.getTimeMillis()+"] or start=0");
+                throw new IllegalStateException("Measuring failed, because start ["+start.getTimeMillis()+"] > end ["+end.getTimeMillis()+"] or start=0");
             }
             return result;
         }

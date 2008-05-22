@@ -39,47 +39,40 @@
 
 package org.netbeans.modules.php.editor;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
 import org.netbeans.api.lexer.Language;
-import org.netbeans.modules.gsf.api.GsfLanguage;
+import org.netbeans.modules.gsf.spi.DefaultLanguageConfig;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
-import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Petr Pisl
  */
-public class PHPLanguage implements GsfLanguage {
+public class PHPLanguage extends DefaultLanguageConfig {
 
-    public static final String PHP_MIME_TYPE = "text/x-php5";
+    public static final String PHP_MIME_TYPE = "text/x-php5"; // NOI18N
     
+    @Override
     public String getLineCommentPrefix() {
         return "//";    //NOI18N
     }
 
+    @Override
     public boolean isIdentifierChar(char c) {
         return Character.isJavaIdentifierPart(c) || (c == '$') ;
     }
 
+    @Override
     public Language getLexerLanguage() {
         return PHPTokenId.language();
     }
 
-    public Collection<FileObject> getCoreLibraries() {
-        return Collections.EMPTY_LIST;
-    }
-
+    @Override
     public String getDisplayName() {
         return "PHP";
     }
 
+    @Override
     public String getPreferredExtension() {
         return "php"; // NOI18N
-    }
-
-    public Map<String, String> getSourceGroupNames() {
-        return Collections.emptyMap();
     }
 }

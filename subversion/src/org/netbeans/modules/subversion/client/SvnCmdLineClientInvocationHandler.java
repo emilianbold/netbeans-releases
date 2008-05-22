@@ -43,8 +43,6 @@ package org.netbeans.modules.subversion.client;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.*;
-import javax.swing.SwingUtilities;
 import org.netbeans.modules.subversion.client.parser.LocalSubversionException;
 import org.netbeans.modules.subversion.client.parser.SvnWcParser;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
@@ -56,11 +54,7 @@ import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
  */
 public class SvnCmdLineClientInvocationHandler extends SvnClientInvocationHandler {
 
-    private static final String ISVNSTATUS_IMPL = System.getProperty("ISVNStatus.impl", ""); // NOI18N
-    private static final String GET_SINGLE_STATUS = "getSingleStatus"; // NOI18N
-    private static final String GET_STATUS = "getStatus"; // NOI18N
-    private static final String GET_INFO_FROM_WORKING_COPY = "getInfoFromWorkingCopy"; // NOI18N
-
+    private static final String ISVNSTATUS_IMPL = System.getProperty("ISVNStatus.impl", ""); // NOI18N    
     
     private SvnWcParser wcParser = new SvnWcParser();    
     
@@ -68,6 +62,7 @@ public class SvnCmdLineClientInvocationHandler extends SvnClientInvocationHandle
         super(adapter, desc, support, handledExceptions);
     }
    
+    @Override
     protected Object invokeMethod(Method proxyMethod, Object[] args)
     throws NoSuchMethodException, IllegalAccessException, InvocationTargetException
     {
@@ -84,16 +79,12 @@ public class SvnCmdLineClientInvocationHandler extends SvnClientInvocationHandle
         return ret;
     }
 
-    private static boolean isHandledIntern(Method method, Object[] args) {
+    private boolean isHandledIntern(Method method, Object[] args) {
         boolean exec = ISVNSTATUS_IMPL.equals("exec"); // NOI18N
         if(exec) {
             return false;
-        }        
-        
-        String methodName = method.getName();
-        return methodName.equals(GET_SINGLE_STATUS) || 
-               methodName.equals(GET_INFO_FROM_WORKING_COPY) ||  
-               (method.getName().equals(GET_STATUS) && method.getParameterTypes().length == 3); 
+        }                
+        return isLocalReadCommand(method, args);
     }
 
     private Object handleIntern(Method method, Object[] args) throws LocalSubversionException {
@@ -111,23 +102,6 @@ public class SvnCmdLineClientInvocationHandler extends SvnClientInvocationHandle
             );
         }
         return returnValue;
-    }
-
-    protected boolean parallelizable(Method method, Object[] args) {
-        return super.parallelizable(method, args) || isHandledIntern(method, args);
-    }
-
-    /**
-     * @return false for methods that perform calls over network
-     */
-    protected boolean noRemoteCallinAWT(String methodName, Object[] args) {
-        boolean ret = super.noRemoteCallinAWT(methodName, args);
-        if(!ret) {
-            if ("getStatus".equals(methodName)) { // NOI18N
-                ret = args.length != 4 || (Boolean.TRUE.equals(args[3]) == false);
-            }
-        }                
-        return ret;
     }
     
 }

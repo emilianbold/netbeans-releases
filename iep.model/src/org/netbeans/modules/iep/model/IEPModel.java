@@ -76,9 +76,30 @@ public abstract class IEPModel extends AbstractDocumentModel<IEPComponent> imple
      
      public abstract File getWsdlFile(); 
      
-	 public abstract void saveWsdl() throws Exception;
- 
-	 public abstract List<InputOperatorComponent> getInputList();
-	 
-	 public abstract List<OutputOperatorComponent> getOutputList();
+     public abstract void saveWsdl() throws Exception;
+
+     public abstract List<InputOperatorComponent> getInputList();
+
+     public abstract List<OutputOperatorComponent> getOutputList();
+     
+     /**
+      * Get Qualified name for IEP file.
+      * Qualified name for IEP file is package name + iep file
+      * name where dot in file name is removed with underscore.
+      * 
+      * example:
+      * 
+      *   projectA
+      *         src->
+      *             com->
+      *                 sun->
+      *                       events->
+      *                              deadDeviceDetection.iep
+      *                
+      * so qualified name will be:
+      * 
+      * com.sun.events.deadDeviceDetection_iep
+      * @return
+      */
+     public abstract String getQualifiedName();
 }

@@ -105,6 +105,19 @@ is the proper place.
 
     <changes>
         
+        <change id="project-encoding-property">
+           <api name="general"/>
+           <summary>Adding template attribute <code>project.encoding</code></summary>
+           <version major="1" minor="29"/>
+           <date day="26" month="3" year="2008"/>
+           <author login="abadea"/>
+           <compatibility addition="yes"/>
+           <description>
+                Added the template attribute <code>project.encoding</code> for templates using scripting language.
+           </description>
+           <issue number="129685"/>
+        </change>
+        
         <change id="folder-based-privileged-templates">
             <api name="general"/>
             <summary>PrivilegedTemplates instance in global action context is preferred</summary>

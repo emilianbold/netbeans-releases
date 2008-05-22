@@ -42,6 +42,7 @@ package org.netbeans.modules.bpel.samples;
 
 import java.awt.GridBagConstraints;
 import java.io.File;
+import java.io.IOException;
 import java.text.MessageFormat;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
@@ -66,7 +67,7 @@ public class SampleWizardPanelVisual extends JPanel implements DocumentListener 
         myPanel = panel;
         projectNameTextField.getDocument().addDocumentListener( this );
         projectLocationTextField.getDocument().addDocumentListener( this );
-        getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(SampleWizardPanelVisual.class).getString("ACS_SampleWizardPanel_Description"));
+        getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(SampleWizardPanelVisual.class).getString("ACS_SampleWizardPanel_Description")); // NOI18N
     }
 
     protected String getDefaultProjectName() {
@@ -93,26 +94,26 @@ public class SampleWizardPanelVisual extends JPanel implements DocumentListener 
         projectNameLabel.setLabelFor(projectNameTextField);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
-        org.openide.awt.Mnemonics.setLocalizedText(projectNameLabel,NbBundle.getMessage(SampleWizardPanelVisual.class, "LBL_ProjectName_Label"));
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 2*2*2 + 2*2, 0);
+        org.openide.awt.Mnemonics.setLocalizedText(projectNameLabel,NbBundle.getMessage(SampleWizardPanelVisual.class, "LBL_ProjectName_Label")); // NOI18N
         add(projectNameLabel, gridBagConstraints);
-        projectNameTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SampleWizardPanelVisual.class, "ACS_ProjectName_Description"));
+        projectNameTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SampleWizardPanelVisual.class, "ACS_ProjectName_Description")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 12, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 2*2*2 + 2*2, 2*2*2 + 2*2, 0);
         add(projectNameTextField, gridBagConstraints);
 
         projectLocationLabel.setLabelFor(projectLocationTextField);
-        projectLocationTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SampleWizardPanelVisual.class, "ACS_ProjectLocation_Description"));
+        projectLocationTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SampleWizardPanelVisual.class, "ACS_ProjectLocation_Description")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
-        org.openide.awt.Mnemonics.setLocalizedText(projectLocationLabel, NbBundle.getMessage(SampleWizardPanelVisual.class, "LBL_ProjectLocation_Label"));
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 2+2+2, 0);
+        org.openide.awt.Mnemonics.setLocalizedText(projectLocationLabel, NbBundle.getMessage(SampleWizardPanelVisual.class, "LBL_ProjectLocation_Label")); // NOI18N
         add(projectLocationLabel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -120,10 +121,10 @@ public class SampleWizardPanelVisual extends JPanel implements DocumentListener 
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 2*2*2 + 2*2, 2+2+2, 0);
         add(projectLocationTextField, gridBagConstraints);
 
-        browseButton.setActionCommand("BROWSE");
+        browseButton.setActionCommand(BROWSE);
         browseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 browseLocationAction(evt);
@@ -133,26 +134,26 @@ public class SampleWizardPanelVisual extends JPanel implements DocumentListener 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 5, 0);
-        org.openide.awt.Mnemonics.setLocalizedText(browseButton, NbBundle.getMessage(SampleWizardPanelVisual.class, "LBL_BrowseLocation_Button"));
-        browseButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SampleWizardPanelVisual.class, "ACS_BrowseLocation__Description"));
+        gridBagConstraints.insets = new java.awt.Insets(0, 2+2+2, 2+2+2, 0);
+        org.openide.awt.Mnemonics.setLocalizedText(browseButton, NbBundle.getMessage(SampleWizardPanelVisual.class, "LBL_BrowseLocation_Button")); // NOI18N
+        browseButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SampleWizardPanelVisual.class, "ACS_BrowseLocation__Description")); // NOI18N
         add(browseButton, gridBagConstraints);
 
         createdFolderLabel.setLabelFor(createdFolderTextField);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        org.openide.awt.Mnemonics.setLocalizedText(createdFolderLabel, NbBundle.getMessage(SampleWizardPanelVisual.class, "LBL_CreatedProjectFolder_Lablel"));
+        org.openide.awt.Mnemonics.setLocalizedText(createdFolderLabel, NbBundle.getMessage(SampleWizardPanelVisual.class, "LBL_CreatedProjectFolder_Lablel")); // NOI18N
         add(createdFolderLabel, gridBagConstraints);
 
         createdFolderTextField.setEditable(false);
-        createdFolderTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SampleWizardPanelVisual.class, "ACS_CreatedProjectFolder_Description"));
+        createdFolderTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SampleWizardPanelVisual.class, "ACS_CreatedProjectFolder_Description")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 12, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 2*2*2 + 2*2, 2*2*2 + 2*2, 0);
         add(createdFolderTextField, gridBagConstraints);
 
         initAdditionalComponents();
@@ -164,23 +165,23 @@ public class SampleWizardPanelVisual extends JPanel implements DocumentListener 
 
         GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 1+2;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 2+2+2, 0, 0);
         add(specialLabel, gridBagConstraints);
     }
 
     private void browseLocationAction(java.awt.event.ActionEvent evt) {
         String command = evt.getActionCommand();
-        if ( "BROWSE".equals( command ) ) { // NOI18N
+        if (BROWSE.equals(command)) {
             JFileChooser chooser = new JFileChooser();
             FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
-            chooser.setDialogTitle(NbBundle.getMessage(SampleWizardPanelVisual.class, "LBL_SelectProjectLocation"));
+            chooser.setDialogTitle(NbBundle.getMessage(SampleWizardPanelVisual.class, "LBL_SelectProjectLocation")); // NOI18N
             chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
             String path = this.projectLocationTextField.getText();
             if (path.length() > 0) {
@@ -197,101 +198,128 @@ public class SampleWizardPanelVisual extends JPanel implements DocumentListener 
         }
     }
 
-
     public void addNotify() {
         super.addNotify();
-        //same problem as in 31086, initial focus on Cancel button
         projectNameTextField.requestFocus();
     }
 
-    protected boolean valid( WizardDescriptor wizardDescriptor ) {
+    boolean valid(WizardDescriptor wizardDescriptor) {
+//System.out.println();
+        String projectName = projectNameTextField.getText();
+//System.out.println("projectName: " + projectName + " " + isValidName(projectName));
 
-        if ( projectNameTextField.getText().length() == 0 ) {
-            wizardDescriptor.putProperty( "WizardPanel_errorMessage", //NOI18N
-                    NbBundle.getMessage(SampleWizardPanelVisual.class, "MSG_IllegalProjectName"));
-            return false; // Display name not specified
-        }
-
-        if (! isValidName(projectNameTextField.getText() )) {
-            wizardDescriptor.putProperty( "WizardPanel_errorMessage", //NOI18N
-                    NbBundle.getMessage(SampleWizardPanelVisual.class, "MSG_IllegalProjectName"));
-            return false; // Display name not specified
-        }
-        File f = FileUtil.normalizeFile(new File(projectLocationTextField.getText()).getAbsoluteFile());
-        if (!f.isDirectory()) {
-            String message = NbBundle.getMessage(SampleWizardPanelVisual.class, "MSG_IllegalProjectLocation");
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", message); // NOI18N
+        if (projectName.length() == 0
+                || projectName.indexOf('/')  >= 0 // NOI18N
+                || projectName.indexOf("\\") >= 0 // NOI18N
+                || projectName.indexOf(':')  >= 0 // NOI18N
+                || !isValidName(projectName)) {
+//System.out.println(" 1: " + projectName + " " + isValidName(projectName));
+            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(getClass(), "MSG_IllegalProjectName")); // NOI18N
             return false;
         }
-        final File destFolder = FileUtil.normalizeFile(new File(createdFolderTextField.getText()).getAbsoluteFile());
+        if (projectName.indexOf(' ')  >= 0) {
+            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(getClass(), "MSG_IllegalProjectNameWithWhiteSpace")); // NOI18N
+            return false;
+        }
+        File f = new File(projectLocationTextField.getText()).getAbsoluteFile();
 
-        File projLoc = destFolder;
+        if (getCanonicalFile(f) == null) {
+            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(getClass(), "MSG_IllegalProjectLocation")); // NOI18N
+            return false;
+        }
+        final File destFolder = new File(createdFolderTextField.getText()).getAbsoluteFile();
+
+        if (getCanonicalFile(destFolder) == null) {
+            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(getClass(), "MSG_IllegalProjectName")); // NOI18N
+            return false;
+        }
+        File projLoc = FileUtil.normalizeFile(destFolder);
+
         while (projLoc != null && !projLoc.exists()) {
             projLoc = projLoc.getParentFile();
         }
         if (projLoc == null || !projLoc.canWrite()) {
-            wizardDescriptor.putProperty( "WizardPanel_errorMessage", // NOI18N
-                    NbBundle.getMessage(SampleWizardPanelVisual.class, "MSG_ProjectFolderReadOnly"));
+            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(getClass(), "MSG_ProjectFolderReadOnly")); // NOI18N
             return false;
         }
-
         if (FileUtil.toFileObject(projLoc) == null) {
-            String message = NbBundle.getMessage(SampleWizardPanelVisual.class, "MSG_IllegalProjectLocation");
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", message); // NOI18N
+            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(getClass(), "MSG_IllegalProjectLocation")); // NOI18N
             return false;
         }
-
         File[] kids = destFolder.listFiles();
-        if ( destFolder.exists() && kids != null && kids.length > 0) {
-            wizardDescriptor.putProperty( "WizardPanel_errorMessage", // NOI18N
-                    NbBundle.getMessage(SampleWizardPanelVisual.class, "MSG_ProjectFolderExists"));
+
+        if (destFolder.exists() && kids != null && kids.length > 0) {
+            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(getClass(), "MSG_ProjectFolderExists")); // NOI18N
             return false;
         }
-        wizardDescriptor.putProperty( "WizardPanel_errorMessage", ""); // NOI18N
+        wizardDescriptor.putProperty("WizardPanel_errorMessage", ""); // NOI18N
         return true;
     }
 
-    protected void store( WizardDescriptor d ) {
+    private boolean isValidName(String fileName) {
+      try {
+          boolean isValid = true;
+          File tempFile =  new File(fileName);
+          String tempFileName ="00" + fileName; // NOI18N
+          File actualTempFile = File.createTempFile(tempFileName, null);
 
-        String name = projectNameTextField.getText().trim();
-        String location = projectLocationTextField.getText().trim();
-        String folder = createdFolderTextField.getText().trim();
+          if ( !FileUtil.normalizeFile(tempFile).equals(tempFile.getCanonicalFile())) {
+            isValid = false;
+          }
+          actualTempFile.delete();
+          actualTempFile = null;
+          tempFile = null;
+          return isValid;
+      }
+      catch (IOException e) {
+        return false;
+      }
+    }
 
-        d.putProperty( SampleWizardIterator.PROJDIR, new File( folder ));
-        d.putProperty(  SampleWizardIterator.NAME, name );
+    protected void store(WizardDescriptor d) {
+      String name = projectNameTextField.getText().trim();
+
+      d.putProperty(SampleWizardIterator.PROJECT_DIR, new File(createdFolderTextField.getText().trim()));
+      d.putProperty(SampleWizardIterator.NAME, name);
+
+      File projectsDir = new File(this.projectLocationTextField.getText());
+
+      if (projectsDir.isDirectory()) {
+          ProjectChooser.setProjectsFolder (projectsDir);
+      }
     }
 
     protected void read(WizardDescriptor settings) {
-        File projectLocation = (File) settings.getProperty(SampleWizardIterator.PROJDIR);
-        if (projectLocation == null || projectLocation.getParentFile() == null || !projectLocation.getParentFile().isDirectory()) {
-            projectLocation = ProjectChooser.getProjectsFolder();
-        } else {
-            projectLocation = projectLocation.getParentFile();
-        }
-        this.projectLocationTextField.setText(projectLocation.getAbsolutePath());
+      File projectLocation = (File) settings.getProperty(SampleWizardIterator.PROJECT_DIR);
 
-        String projectName = (String) settings.getProperty(SampleWizardIterator.NAME);
-        if (projectName == null) {
-            projectName = getDefaultProjectName();
+      if (projectLocation == null || projectLocation.getParentFile() == null || !projectLocation.getParentFile().isDirectory()) {
+          projectLocation = ProjectChooser.getProjectsFolder();
+      }
+      else {
+          projectLocation = projectLocation.getParentFile();
+      }
+      projectLocationTextField.setText(projectLocation.getAbsolutePath());
+      String projectName = (String) settings.getProperty(SampleWizardIterator.NAME);
 
-            File file = new File(projectLocation, projectName);
-            int index1 = 1;
-            if(file.exists()) {
-                while(file.exists()) {
-                    file = new File(projectLocation, projectName + String.valueOf(index1));
-                    index1++;
-                }
-                projectName = projectName + String.valueOf(index1 -1);
-            }
+      if (projectName == null) {
+          projectName = getDefaultProjectName();
+          File file = new File(projectLocation, projectName);
+          int index1 = 1;
 
-        }
-        this.projectNameTextField.setText(projectName);
-        this.projectNameTextField.selectAll();
+          if(file.exists()) {
+              while(file.exists()) {
+                  file = new File(projectLocation, projectName + String.valueOf(index1));
+                  index1++;
+              }
+              projectName = projectName + String.valueOf(index1 -1);
+          }
+
+      }
+      projectNameTextField.setText(projectName);
+      projectNameTextField.selectAll();
     }
 
-    protected void validate(WizardDescriptor d) throws WizardValidationException {
-        // nothing to validate
-    }
+    protected void validate(WizardDescriptor d) throws WizardValidationException {}
 
     private javax.swing.JButton browseButton;
     private javax.swing.JLabel createdFolderLabel;
@@ -301,14 +329,12 @@ public class SampleWizardPanelVisual extends JPanel implements DocumentListener 
     private javax.swing.JLabel projectNameLabel;
     private javax.swing.JTextField projectNameTextField;
 
-    // Private methods ---------------------------------------------------------
-
     private static JFileChooser createChooser() {
         JFileChooser chooser = new JFileChooser();
         FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
         chooser.setFileSelectionMode( JFileChooser.DIRECTORIES_ONLY );
         chooser.setAcceptAllFileFilterUsed( false );
-        chooser.setName( NbBundle.getMessage(SampleWizardPanelVisual.class, "LBL_SelectProjectDirectory") );
+        chooser.setName( NbBundle.getMessage(SampleWizardPanelVisual.class, "LBL_SelectProjectDirectory")); // NOI18N
         return chooser;
     }
 
@@ -317,7 +343,6 @@ public class SampleWizardPanelVisual extends JPanel implements DocumentListener 
         File file = new File(parentFolder, name);
         return file.exists() ? null : name;
     }
-    // Implementation of DocumentListener --------------------------------------
 
     public void changedUpdate( DocumentEvent e ) {
         updateTexts( e );
@@ -340,31 +365,31 @@ public class SampleWizardPanelVisual extends JPanel implements DocumentListener 
         }
     }
 
-    private void updateTexts( DocumentEvent e ) {
-
+    private void updateTexts(DocumentEvent e) {
         Document doc = e.getDocument();
 
-        if ( doc == projectNameTextField.getDocument() || doc == projectLocationTextField.getDocument() ) {
-            // Change in the project name
-
+        if (doc == projectNameTextField.getDocument() || doc == projectLocationTextField.getDocument()) {
             String projectName = projectNameTextField.getText();
             String projectFolder = projectLocationTextField.getText();
-
-            //if ( projectFolder.trim().length() == 0 || projectFolder.equals( oldName )  ) {
-            createdFolderTextField.setText( projectFolder + File.separatorChar + projectName );
-            //}
-
-        }
-        myPanel.fireChangeEvent(); // Notify that the panel changed
+            String projFolderPath = FileUtil.normalizeFile(new File(projectFolder)).getAbsolutePath();
+            
+            if (projFolderPath.endsWith(File.separator)) {
+                createdFolderTextField.setText(projFolderPath + projectName);
+            }
+            else {
+                createdFolderTextField.setText(projFolderPath + File.separator + projectName);
+            }
+        }                
+        myPanel.fireChangeEvent();
     }
 
-    static boolean isValidName(String fileName){
+    private File getCanonicalFile(File file) {
         try {
-            File tempFile = File.createTempFile(0+fileName, null);
-            tempFile.delete();
-            return true;
-        }catch (Exception e) {
-            return false;
+            return file.getCanonicalFile();
+        } catch (IOException e) {
+            return null;
         }
     }
+
+    private static final String BROWSE = "BROWSE"; // NOI18N
 }

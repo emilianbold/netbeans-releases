@@ -212,6 +212,7 @@ public class TruststorePanel extends JPanel {
                 ComboConstants.PROF_STSISSUED.equals(profile) ||
                 ComboConstants.PROF_STSISSUEDCERT.equals(profile) ||
                 ComboConstants.PROF_STSISSUEDENDORSE.equals(profile) ||
+                ComboConstants.PROF_STSISSUEDSUPPORTING.equals(profile) ||
                 ComboConstants.PROF_MUTUALCERT.equals(profile)) {
                 aliasRequired = false;
             }

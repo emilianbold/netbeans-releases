@@ -41,6 +41,7 @@
 
 package gui.action;
 
+import gui.VWPUtilities;
 import gui.window.WebFormDesignerOperator;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.EditorWindowOperator;
@@ -81,7 +82,7 @@ public class ViewSwitchTest extends org.netbeans.performance.test.utilities.Perf
     public void initialize() {
         log("::initialize");  
         EditorOperator.closeDiscardAll();
-        pto = ProjectsTabOperator.invoke();  
+        pto = VWPUtilities.invokePTO();  
     }
     
     public void prepare() {

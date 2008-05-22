@@ -174,8 +174,8 @@ public class PreviewManager {
     private class NewDiffSource extends StreamSource {
         private SimpleRefactoringElementImplementation element;
         
-        NewDiffSource(SimpleRefactoringElementImplementation r) {
-            this.element = r;
+        NewDiffSource(SimpleRefactoringElementImplementation refactElemImpl) {
+            this.element = refactElemImpl;
         }
 
         public String getName() {
@@ -217,10 +217,10 @@ public class PreviewManager {
             return Lookups.singleton(getDocument());
         }
         
-        public void setNewText(String r) {
+        public void setNewText(String newText) {
             try {
                 internal.remove(0, internal.getLength());
-                internal.insertString(0, r, null);
+                internal.insertString(0, newText, null);
             } catch (BadLocationException ex) {
                 Logger.getLogger(getClass().getName()).log(Level.SEVERE, ex.getMessage(), ex);
             }

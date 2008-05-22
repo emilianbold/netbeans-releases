@@ -49,9 +49,9 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.util.RequestProcessor;
+import org.netbeans.modules.soa.ui.SoaUtil;
 
 /**
- *
  * @author Vitaly Bychkov
  * @version 1.0
  */
@@ -63,14 +63,12 @@ public class MapperContextImpl implements MapperContext {
     private Transform myTransformContextComponent;
     private XslModel myXslModel;
     private AXIComponent mySourceComponent;
-//    private SchemaModel mySourceSchemaModel;
     private AXIModel mySourceAxiModel;
     
     private WSDLReference<Part> mySourcePart;
     private WSDLModel mySourceModel;
 
     private AXIComponent myTargetComponent;
-//    private SchemaModel myTargetSchemaModel;
     private AXIModel myTargetAxiModel;
     
     private WSDLReference<Part> myTargetPart;
@@ -129,8 +127,8 @@ public class MapperContextImpl implements MapperContext {
         myTargetPart = getTargetPart(myTransformContextComponent);
         myTargetModel = getWsdlModel(myTargetPart);
 
-        myTMapFo = org.netbeans.modules.xslt.core.util.Util.getFileObjectByModel(myTMapModel);
-        myXslFo = myXslModel == null ? null : org.netbeans.modules.xslt.core.util.Util.getFileObjectByModel(myXslModel);
+        myTMapFo = SoaUtil.getFileObjectByModel(myTMapModel);
+        myXslFo = myXslModel == null ? null : SoaUtil.getFileObjectByModel(myXslModel);
     }
 
     private void init(Transform transform, XslModel xslModel, AXIComponent sourceComponent, AXIComponent targetComponent) {
@@ -226,7 +224,7 @@ public class MapperContextImpl implements MapperContext {
                 myTMapFo.removeFileChangeListener(myFileChangeListener);
             }
 
-            myTMapFo = org.netbeans.modules.xslt.core.util.Util.getFileObjectByModel(myTMapModel);
+            myTMapFo = SoaUtil.getFileObjectByModel(myTMapModel);
             if (myTMapFo != null) {
                 myTMapFo.addFileChangeListener(myFileChangeListener);
             }
@@ -249,7 +247,7 @@ public class MapperContextImpl implements MapperContext {
                 myXslFo.removeFileChangeListener(myFileChangeListener);
             }
 
-            myXslFo = myXslModel == null ? null : org.netbeans.modules.xslt.core.util.Util.getFileObjectByModel(myXslModel);
+            myXslFo = myXslModel == null ? null : SoaUtil.getFileObjectByModel(myXslModel);
             if (myXslFo != null) {
                 myXslFo.addFileChangeListener(myFileChangeListener);
             }
@@ -749,28 +747,24 @@ public class MapperContextImpl implements MapperContext {
 
     public String getValidationMessage() {
         String result = null;
-
         TransformmapValidator validator = TransformmapValidatorImpl.getInstance();
+
         if (myXslFo != null) {
             result = validator.validate(Util.getTransformationDescriptor(Util.getProject(myXslFo)));
 
             if (result == null) {
                 result = validator.validate(myTMapModel, myXslFo);
             }
-            
             if (result == null) {
                 AXIComponent typeIn = getSourceType();
                 result = validator.validate(typeIn, "source"); // NOI18N
 
             }
-            
             if (result == null) {
                 AXIComponent typeOut = getTargetType();
                 result = validator.validate(typeOut, "target"); // NOI18N
             }
         }
-        
-            
         return result;
     }
 }

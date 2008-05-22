@@ -45,7 +45,6 @@ made subject to such option by the copyright holder.
 <!--
     IMPORTANT:  This file modifies keybindings from DefaultKeyBindings.xml to make them work in Mac OS.
 -->
-
 <bindings>
     <bind key="O-G" remove="true"/>
     <bind key="OS-G" actionName="goto-declaration"/>
@@ -53,9 +52,9 @@ made subject to such option by the copyright holder.
     <bind key="DOS-UP" actionName="select-element-next"/>
     <bind key="OS-DOWN" remove="true"/>
     <bind key="DOS-DOWN" actionName="select-element-previous"/>
-    <bind key="O-I" actionName="generate-code"/>
     <bind actionName="complete-line" key="D-SEMICOLON"/>
     <bind actionName="complete-line-newline" key="DS-SEMICOLON"/>
-    <!-- remove Ctrl-INSERT on Mac (no INSERT on Mac keyboard)-->
-    <bind key="O-INSERT" remove="true"/>
+
+    <bind actionName="java-next-marked-occurrence" key="O-DOWN"/>
+    <bind actionName="java-prev-marked-occurrence" key="O-UP"/>
 </bindings>

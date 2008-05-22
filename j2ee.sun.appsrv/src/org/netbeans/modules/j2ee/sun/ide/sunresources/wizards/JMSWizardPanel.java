@@ -148,6 +148,10 @@ public class JMSWizardPanel extends ResourceWizardPanel {
         FileObject resFolder = ResourceUtils.getResourceDirectory(this.helper.getData().getTargetFileObject());
         this.helper.getData().setTargetFileObject (resFolder);
         if(resFolder != null){
+            String resourceName = helper.getData().getString("jndi-name"); //NOI18N
+            if((resourceName != null) && (! resourceName.equals(""))) {
+                targetName = resourceName;
+            }
             targetName = ResourceUtils.createUniqueFileName (targetName, resFolder, __JMSResource);
             this.helper.getData ().setTargetFile (targetName);
             if(component == null)

@@ -100,10 +100,19 @@ public class ColonToThen implements AstRule {
         try {
             // (1) make sure the body is on the same line as the when, and
             // (2) the separator is ":", not "then" or something else
-            int whenStart = when.getPosition().getStartOffset();
-            int bodyStart = body.getPosition().getStartOffset();
-            if (Utilities.getRowEnd(doc, bodyStart) !=
-                    Utilities.getRowEnd(doc, whenStart)) {
+            int astWhenStart = when.getPosition().getStartOffset();
+            int astBodyStart = body.getPosition().getStartOffset();
+            int lexWhenStart = LexUtilities.getLexerOffset(info, astWhenStart);
+            int lexBodyStart = LexUtilities.getLexerOffset(info, astBodyStart);
+            if (lexWhenStart == -1 || lexBodyStart == -1) {
+                return;
+            }
+            int docLength = doc.getLength();
+            if (lexWhenStart > docLength || lexBodyStart > docLength) {
+                return;
+            }
+            if (Utilities.getRowEnd(doc, lexBodyStart) !=
+                    Utilities.getRowEnd(doc, lexWhenStart)) {
                 return;
             }
 
@@ -112,11 +121,11 @@ public class ColonToThen implements AstRule {
                 // Check tokens - look for ":" as opposed to then
                 doc.readLock();
                 TokenSequence<? extends RubyTokenId> ts = LexUtilities.getRubyTokenSequence(doc,
-                        bodyStart);
+                       lexBodyStart);
                 if (ts == null) {
                     return;
                 }
-                ts.move(bodyStart);
+                ts.move(lexBodyStart);
                 while (ts.movePrevious()) {
                     Token<? extends RubyTokenId> token = ts.token();
                     TokenId id = token.id();

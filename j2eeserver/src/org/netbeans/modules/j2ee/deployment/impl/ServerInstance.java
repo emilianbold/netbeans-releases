@@ -1505,11 +1505,7 @@ public class ServerInstance implements Node.Cookie, Comparable {
             }
         }
     }
-    
-    public boolean isDefault() {
-        return url.equals(ServerRegistry.getInstance().getDefaultInstance().getUrl());
-    }
-    
+
     public String toString() {
         return getDisplayName();
     }

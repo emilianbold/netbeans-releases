@@ -41,9 +41,10 @@
 
 package org.netbeans.modules.cnd.repository.sfs;
 
+import org.netbeans.modules.cnd.repository.test.TestObject;
+import org.netbeans.modules.cnd.repository.test.TestObjectCreator;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 import org.netbeans.junit.NbTestCase;
 

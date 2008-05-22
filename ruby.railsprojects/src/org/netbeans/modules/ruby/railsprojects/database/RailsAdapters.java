@@ -48,6 +48,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
+import org.openide.util.Parameters;
 
 /**
  * Utility methods for modifying database.yml.
@@ -64,8 +65,12 @@ final class RailsAdapters {
      * after modifications.
      * 
      * @param dir the project dir under which database.yml should be.
+     * @param host the host to be used.
      */
-    static void commentOutSocket(FileObject dir) {
+    static void commentOutSocket(FileObject dir, String host) {
+        Parameters.notNull("dir", dir); 
+        Parameters.notNull("host", host);
+        
         FileObject fo = dir.getFileObject("config/database.yml"); // NOI18N
         if (fo != null) {
             try {
@@ -96,7 +101,7 @@ final class RailsAdapters {
                         for (int i = 0; i < indent; i++) {
                             sb.append(" ");
                         }
-                        sb.append("host: localhost\n"); //NOI18N
+                        sb.append("host: " + host + "\n"); //NOI18N
                     }
                     for (int i = 0; i < indent; i++) {
                         sb.append(" ");

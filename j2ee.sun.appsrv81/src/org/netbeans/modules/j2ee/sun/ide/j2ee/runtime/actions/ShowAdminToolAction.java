@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.j2ee.sun.ide.j2ee.runtime.actions;
 
-
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.MissingResourceException;
@@ -52,9 +51,9 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CookieAction;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
-
 import org.netbeans.modules.j2ee.sun.ide.j2ee.runtime.nodes.ManagerNode;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.ui.Util;
+import org.openide.util.RequestProcessor;
 
 /** Action that can always be invoked and work procedurally.
  * This action will display the URL for the given admin server node in the runtime explorer
@@ -72,31 +71,32 @@ public class ShowAdminToolAction extends CookieAction {
     }
     
     protected void performAction(Node[] nodes) {
-        if( (nodes != null) &&  (nodes.length == 1) ) {
-            if(nodes[0].getLookup().lookup(ManagerNode.class) != null){
-                ManagerNode node = (ManagerNode)nodes[0].getCookie(ManagerNode.class);
-                try {
-                    if (node.getDeploymentManager().isRunning()) {
-                        String url = node.getAdminURL() + 
-                                "/?"+genRandomString()+"="+genRandomString();
-                        URLDisplayer.getDefault().showURL(new URL(url));
-                    } else {
-                        Util.showInformation(
-                                NbBundle.getMessage(ShowAdminToolAction.class,
-                                "MESS_START_INSTANCE"));
+        if(nodes != null && nodes.length == 1) {
+            final ManagerNode node = nodes[0].getLookup().lookup(ManagerNode.class);
+            if(node != null) {
+                // Move this action off AWT thread just in case getDeploymentManager() blocks.
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        try {
+                            if(node.getDeploymentManager().isRunning()) {
+                                String url = node.getAdminURL() + "/?" + genRandomString() +
+                                        "=" + genRandomString();
+                                URLDisplayer.getDefault().showURL(new URL(url));
+                            } else {
+                                Util.showInformation(NbBundle.getMessage(ShowAdminToolAction.class,
+                                        "MESS_START_INSTANCE"));
+                            }
+                        } catch(MissingResourceException ex) {
+                            // this should not happen... If it does, we should find out.
+                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                        } catch(MalformedURLException ex) {
+                            // this should not happen... If it does, we should find out.
+                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                        } catch(Exception ex){
+                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                        }
                     }
-                } catch (MissingResourceException ex) {
-                    // this should not happen... If it does, we should find out.
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
-                            ex);
-                } catch (MalformedURLException ex) {
-                    // this should not happen... If it does, we should find out.
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
-                            ex);
-                } catch (Exception e){
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
-                            e);
-               }
+                });
             }
         }
     }

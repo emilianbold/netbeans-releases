@@ -325,7 +325,9 @@ public class AppserverJBIMgmtController {
                     logger.fine("                  appBase=" + appBase);
                 }
 
-                if (!isLocalHost || appBase.toLowerCase().startsWith(localInstanceLocation.toLowerCase())) {
+                if (!isLocalHost || 
+                        appBase.toLowerCase().startsWith(localInstanceLocation.toLowerCase()) &&
+                        new File(localInstanceLocation).exists()) {
                     objectName = new ObjectName(HTTP_PORT_MBEAN_NAME);
                     String port = (String) mBeanServerConnection.getAttribute(objectName, "port");  // NOI18N
                     String instanceHttpPort = instance.getHttpPortNumber();

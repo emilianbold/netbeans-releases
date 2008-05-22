@@ -71,7 +71,10 @@ public class SQLMapWriter {
             sb.append("\t \t operation= \"" + sqlFileName + "\" \n");
             sb.append("\t \t wsdlfile=\"" + wsdlDefinition.getQName().getLocalPart() + ".wsdl" + "\"\n");
             sb.append("\t \t sqlfile=\"" + sqlFilePath + "\"\n");
-            sb.append("\t \t type= \"requestReplyService\" /> \n");
+            sb.append("\t \t type= \"requestReplyService\"  \n");
+            sb.append("\t \t displayName=\"" + wsdlDefinition.getQName().getLocalPart() + "\"\n");
+            sb.append("\t \t processName=\"" + wsdlDefinition.getQName().getLocalPart() + "\"\n");
+            sb.append("\t \t filePath= \"" + sqlFilePath + "\" /> \n");
 
 
         }

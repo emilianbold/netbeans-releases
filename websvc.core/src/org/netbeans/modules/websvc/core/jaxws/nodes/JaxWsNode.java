@@ -154,9 +154,13 @@ public class JaxWsNode extends AbstractNode implements
         this.content = content;
         this.implBeanClass = implBeanClass;
         project = FileOwnerQuery.getOwner(srcRoot);
-        if (implBeanClass.getAttribute("jax-ws-service") == null) {
+        if (implBeanClass.getAttribute("jax-ws-service") == null ||
+                service.isUseProvider() && implBeanClass.getAttribute("jax-ws-service-provider") == null) {
             try {
-                implBeanClass.setAttribute("jax-ws-service", java.lang.Boolean.TRUE);
+                if(implBeanClass.getAttribute("jax-ws-service") == null)
+                    implBeanClass.setAttribute("jax-ws-service", Boolean.TRUE);
+                if(service.isUseProvider() && implBeanClass.getAttribute("jax-ws-service-provider") == null)
+                    implBeanClass.setAttribute("jax-ws-service-provider", Boolean.TRUE);
                 getDataObject().setValid(false);
             } catch (PropertyVetoException ex) {
                 ErrorManager.getDefault().notify(ex);

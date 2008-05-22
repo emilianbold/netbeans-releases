@@ -1,20 +1,42 @@
 /*
- * The contents of this file are subject to the terms of the Common Development
- * and Distribution License (the License). You may not use this file except in
- * compliance with the License.
- * 
- * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
- * or http://www.netbeans.org/cddl.txt.
- * 
- * When distributing Covered Code, include this CDDL Header Notice in each file
- * and include the License file at http://www.netbeans.org/cddl.txt.
- * If applicable, add the following below the CDDL Header, with the fields
- * enclosed by brackets [] replaced by your own identifying information:
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License. When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
+ * Contributor(s):
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
  */
 package org.netbeans.modules.bpel.nodes.validation;
 
@@ -22,12 +44,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.netbeans.modules.soa.validation.core.Controller;
+import org.netbeans.modules.soa.validation.core.Listener;
 import org.netbeans.modules.bpel.core.annotations.AnnotationListener;
 import org.netbeans.modules.bpel.core.annotations.AnnotationManagerCookie;
 import org.netbeans.modules.bpel.core.annotations.DiagramAnnotation;
-import org.netbeans.modules.bpel.core.util.BPELValidationController;
-import org.netbeans.modules.bpel.core.util.BPELValidationListener;
-import org.netbeans.modules.bpel.core.util.ValidationUtil;
+import org.netbeans.modules.bpel.editors.api.EditorUtil;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.BPELExtensibilityComponent;
@@ -38,36 +61,32 @@ import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
 
 /**
- *
  * @author Vitaly Bychkov
  * @version 1.1
- *
  */
-public class ValidationProxyListener implements BPELValidationListener, AnnotationListener {
+public class ValidationProxyListener implements Listener, AnnotationListener {
     private Map<Component, Validator.ResultType> cachedResultMap = new HashMap<Component, Validator.ResultType>();
     private ChangeValidationSupport myValidationSupport;
     private Lookup myLookup;
-    private BPELValidationController myValidationController;
+    private Controller myValidationController;
     private AnnotationManagerCookie cookie;
     
-    private ValidationProxyListener(Lookup lookup
-            , BPELValidationController validationController) {
+    private ValidationProxyListener(Lookup lookup, Controller validationController) {
         assert lookup != null && validationController != null;
         myLookup = lookup;
         myValidationController = validationController;
         myValidationSupport = new ChangeValidationSupport();
         attachValidationController(this);
         subscribeOnAnnotationChanges();
-        runValidation();
+        myValidationController.triggerValidation();
     }
     
     public synchronized static ValidationProxyListener getInstance(Lookup lookup) {
         if (lookup == null) {
             return null;
         }
-        
-        BPELValidationController validationController =
-                (BPELValidationController) lookup.lookup(BPELValidationController.class);
+        Controller validationController = (Controller) lookup.lookup(Controller.class);
+
         if (validationController == null) {
             return null;
         }
@@ -92,7 +111,7 @@ public class ValidationProxyListener implements BPELValidationListener, Annotati
     }
     
     public synchronized void validationUpdated(List<Validator.ResultItem> validationResults ) {
-        validationResults = ValidationUtil.filterBpelResultItems(validationResults);
+        validationResults = EditorUtil.filterBpelResultItems(validationResults);
         
         Map<Component, Validator.ResultType> newResultMap
                 = getComponentResultMap(validationResults);
@@ -112,22 +131,6 @@ public class ValidationProxyListener implements BPELValidationListener, Annotati
         if (changedResults != null && changedResults.size() > 0) {
             myValidationSupport.fireChangeValidation(changedResults);
         }
-        
-//        List<Validator.ResultItem> changedItems = new ArrayList<Validator.ResultItem>();
-        
-//        List<Validator.ResultItem> removedResultItem = ValidationUtil
-//                .getRemovedResultItems(previousResultItems, validationResults);
-//        if (removedResultItem != null) {
-//            myValidationSupport.fireRemoveValidation(removedResultItem);
-//        }
-//
-//        List<Validator.ResultItem> addedResultItem = ValidationUtil
-//                .getAddedResultItems(previousResultItems, validationResults);
-//        if (addedResultItem != null && addedResultItem.size() > 0) {
-//            myValidationSupport.fireChangeValidation(addedResultItem);
-//        }
-//
-//        previousResultItems = validationResults;
     }
     
     private Map<Component, Validator.ResultType> getRemovedComponentResultMap(
@@ -204,37 +207,12 @@ public class ValidationProxyListener implements BPELValidationListener, Annotati
         return null;
     }
     
-    private synchronized void runValidation() {
-//        BPELValidationController validationController =
-//                (BPELValidationController) getLookup().lookup(BPELValidationController.class);
-//        if (validationController == null) {
-//            return;
-//        }
-        myValidationController.triggerValidation();
+    private void attachValidationController(Listener listener) {
+        myValidationController.addListener(listener);
     }
     
-    /**
-     *  Attach listener to validation changes.
-     */
-    private void attachValidationController(BPELValidationListener listener) {
-//        BPELValidationController validationController =
-//                (BPELValidationController) getLookup().lookup(BPELValidationController.class);
-//        if (validationController == null) {
-//            return;
-//        }
-        myValidationController.addValidationListener(listener);
-    }
-    
-    /**
-     *  Dettach listener to validation changes.
-     */
-    private void detachValidationController(BPELValidationListener listener) {
-//        BPELValidationController validationController =
-//                (BPELValidationController) getLookup().lookup(BPELValidationController.class);
-//        if (validationController == null) {
-//            return;
-//        }
-        myValidationController.removeValidationListener(listener);
+    private void detachValidationController(Listener listener) {
+        myValidationController.removeListener(listener);
     }
     
     /**
@@ -242,22 +220,14 @@ public class ValidationProxyListener implements BPELValidationListener, Annotati
      */
     private void subscribeOnAnnotationChanges() {
         DataObject dobj = (DataObject) myLookup.lookup(DataObject.class);
-//        System.out.println("annotation : dataobj "+dobj);
+
         if (dobj != null){
             cookie = (AnnotationManagerCookie) dobj.getCookie(AnnotationManagerCookie.class);
         }
         cookie.addAnnotationListener(this);
     }
     
-    /**
-     *  Dettach listener to validation changes.
-     */
     private void unSubscribeOnAnnotationChanges() {
-//        BPELValidationController validationController =
-//                (BPELValidationController) getLookup().lookup(BPELValidationController.class);
-//        if (validationController == null) {
-//            return;
-//        }
         cookie.removeAnnotationListener(this);
     }
 

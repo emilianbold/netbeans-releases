@@ -88,6 +88,8 @@ public class InstancesView extends TopComponent {
     public InstancesView() {
         setIcon (Utilities.loadImage ("org/netbeans/modules/debugger/jpda/resources/root.gif")); // NOI18N
         setLayout (new BorderLayout ());
+        // Remember the location of the component when closed.
+        putClientProperty("KeepNonPersistentTCInModelWhenClosed", Boolean.TRUE); // NOI18N
     }
 
     protected void componentShowing() {

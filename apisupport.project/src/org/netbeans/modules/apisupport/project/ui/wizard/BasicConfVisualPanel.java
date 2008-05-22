@@ -51,6 +51,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteUtils;
+import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -72,7 +73,7 @@ import org.openide.util.NbBundle;
  */
 final class BasicConfVisualPanel extends BasicVisualPanel.NewTemplatePanel {
     
-    static final String EXAMPLE_BASE_NAME = "org.yourorghere."; // NOI18N
+    static final String EXAMPLE_BASE_NAME = "org.<yourorghere>."; // NOI18N
     
     private boolean wasBundleUpdated;
     
@@ -129,22 +130,13 @@ final class BasicConfVisualPanel extends BasicVisualPanel.NewTemplatePanel {
             }
             if (getData().isNetBeansOrg()) {
                 // Ensure that official naming conventions are respected.
-                String cnbShort = abbreviate(dotName);
+                String cnbShort = ModuleList.abbreviate(dotName);
                 String name = getData().getProjectName();
                 if (!name.equals(cnbShort)) {
                     setError(NbBundle.getMessage(BasicConfVisualPanel.class, "BasicConfVisualPanel_err_wrong_nborg_name", cnbShort));
                 }
             }
         }
-    }
-    private static String abbreviate(String cnb) {
-        return cnb.replaceFirst("^org\\.netbeans\\.modules\\.", ""). // NOI18N
-                   replaceFirst("^org\\.netbeans\\.(libs|lib|api|spi|core)\\.", "$1."). // NOI18N
-                   replaceFirst("^org\\.netbeans\\.", "o.n."). // NOI18N
-                   replaceFirst("^org\\.openide\\.", "openide."). // NOI18N
-                   replaceFirst("^org\\.", "o."). // NOI18N
-                   replaceFirst("^com\\.sun\\.", "c.s."). // NOI18N
-                   replaceFirst("^com\\.", "c."); // NOI18N
     }
     
     private void checkBundle() {

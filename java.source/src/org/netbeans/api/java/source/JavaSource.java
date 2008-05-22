@@ -155,6 +155,7 @@ import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementa
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaSourceProvider;
 import org.netbeans.modules.java.source.PostFlowAnalysis;
 import org.netbeans.modules.java.source.TreeLoader;
+import org.netbeans.modules.java.source.parsing.OutputFileManager;
 import org.netbeans.modules.java.source.parsing.SourceFileObject;
 import org.netbeans.modules.java.source.tasklist.CompilerSettings;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
@@ -339,7 +340,7 @@ public final class JavaSource {
     
     private PositionConverter binding;
     private final boolean supportsReparse;
-    
+        
     private static final Logger LOGGER = Logger.getLogger(JavaSource.class.getName());
         
     static {
@@ -1371,10 +1372,10 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
     });
     
     private void resetState (boolean invalidate, boolean updateIndex) {
-        resetState (invalidate, updateIndex, null);
+        resetState (invalidate, updateIndex, false, null);
     }
                
-    private void resetState(boolean invalidate, boolean updateIndex, Pair<DocPositionRegion,MethodTree> changedMethod) {
+    private void resetState(boolean invalidate, boolean updateIndex, boolean filterOutFileManager, Pair<DocPositionRegion,MethodTree> changedMethod) {
         boolean invalid;
         synchronized (this) {
             invalid = (this.flags & INVALID) != 0;
@@ -1387,7 +1388,15 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
             }
             if (updateIndex) {
                 this.flags|=UPDATE_INDEX;
-            }            
+            }
+            if (filterOutFileManager && binding != null && rootFo != null) {
+                //No need to be fully synchronized OutputFileManager.setFilteredFiles is idempotent
+                OutputFileManager ofm = this.classpathInfo.getOutputFileManager();
+                if (ofm != null && !ofm.isFiltered()) {
+                    Set<File> files = RepositoryUpdater.getAffectedCacheFiles(binding.getFileObject(), rootFo);
+                    ofm.setFilteredFiles(files);                    
+                }
+            }
         }
         if (updateIndex && !invalid) {
             //First change set the index as dirty
@@ -1830,7 +1839,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                     }
                 }
             }
-            JavaSource.this.resetState(true, changedMethod==null, changedMethod);
+            JavaSource.this.resetState(true, changedMethod==null, true, changedMethod);
         }        
     }
     
@@ -1946,11 +1955,16 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
             DataObject invalidDO = (DataObject) pce.getSource();
             if (invalidDO != dobj)
                 return;
-            if (DataObject.PROP_VALID.equals(pce.getPropertyName())) {
+            final String propName = pce.getPropertyName();
+            if (DataObject.PROP_VALID.equals(propName)) {
                 handleInvalidDataObject(invalidDO);
+                resetOutputFileManagerFilter();
+            } else if (DataObject.PROP_MODIFIED.equals(propName) && !invalidDO.isModified()) {
+                resetOutputFileManagerFilter();
             } else if (pce.getPropertyName() == null && !dobj.isValid()) {
                 handleInvalidDataObject(invalidDO);
-            }
+                resetOutputFileManagerFilter();
+            }            
         }
         
         private void handleInvalidDataObject(final DataObject invalidDO) {
@@ -1959,6 +1973,15 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                     handleInvalidDataObjectImpl(invalidDO);
                 }
             });
+        }
+        
+        private void resetOutputFileManagerFilter () {
+            if (binding != null) {
+                OutputFileManager ofm = classpathInfo.getOutputFileManager();
+                if (ofm != null) {                    
+                    ofm.clearFilteredFiles();                    
+                }
+            }
         }
         
         private void handleInvalidDataObjectImpl(DataObject invalidDO) {
@@ -2799,7 +2822,11 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
             if (t instanceof ThreadDeath) {
                 throw (ThreadDeath) t;
             }
-            dumpSource(ci, t);
+            boolean a = false;
+            assert a = true; 
+            if (a) {
+                dumpSource(ci, t);
+            }
             return false;
         }
         return true;

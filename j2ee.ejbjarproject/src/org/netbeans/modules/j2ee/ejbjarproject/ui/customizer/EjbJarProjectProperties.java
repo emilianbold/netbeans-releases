@@ -468,7 +468,8 @@ public class EjbJarProjectProperties {
         
         storeAdditionalProperties(projectProperties);
 
-        ProjectProperties.storeLibrariesLocations (ClassPathUiSupport.getList(JAVAC_CLASSPATH_MODEL.getDefaultListModel()).iterator(), projectProperties, getProject().getProjectDirectory());
+        ProjectProperties.storeLibrariesLocations (project.getAntProjectHelper(), ClassPathUiSupport.getList(JAVAC_CLASSPATH_MODEL.getDefaultListModel()).iterator(), 
+                project.getAntProjectHelper().isSharableProject() ? projectProperties : privateProperties);
         
         // Store the property changes into the project
         updateHelper.putProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties );
@@ -702,7 +703,9 @@ public class EjbJarProjectProperties {
 
         List<ClassPathSupport.Item> serverItems = new ArrayList<ClassPathSupport.Item>();
         for (ClassPathSupport.Item item : items) {
-            if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY && item.getLibrary().getType().equals(J2eePlatform.LIBRARY_TYPE)) {
+            if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY
+                    && !item.isBroken()
+                    && item.getLibrary().getType().equals(J2eePlatform.LIBRARY_TYPE)) {
                 serverItems.add(ClassPathSupport.Item.create(item.getLibrary(), null));
             }
         }

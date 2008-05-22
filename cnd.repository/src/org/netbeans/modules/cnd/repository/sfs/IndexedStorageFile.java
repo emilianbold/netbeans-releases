@@ -119,7 +119,7 @@ class IndexedStorageFile extends FileStorage {
         } 
     }
     
-    public Persistent get(final Key key) throws IOException {
+    public Persistent read(final Key key) throws IOException {
         Persistent object = null;
         
         final ChunkInfo chunkInfo = index.get(key);

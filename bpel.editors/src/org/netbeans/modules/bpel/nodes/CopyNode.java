@@ -155,13 +155,13 @@ public class CopyNode extends BpelNode<Copy> {
         }
 
         Copy ref = getReference();
-        From from = ref.getFrom();
+        From from = (ref == null) ? null : ref.getFrom();
         
         if (from != null && from.equals(component)) {
             return true;
         }
         
-        To to = ref.getTo();
+        To to = (ref == null) ? null : ref.getTo();
         if (to != null && to.equals(component)) {
             return true;
         }
@@ -347,7 +347,7 @@ public class CopyNode extends BpelNode<Copy> {
             stringFrom = stringFrom == null ? "" : stringFrom;
             stringTo = stringTo == null ? "" : stringTo;
         }
-        return org.netbeans.modules.bpel.editors.api.utils.Util.getCorrectedHtmlRenderedString(
+        return org.netbeans.modules.bpel.editors.api.EditorUtil.getCorrectedHtmlRenderedString(
                     NbBundle.getMessage(CopyNode.class,"LBL_Copy",stringTo,stringFrom)); // NOI18N
     }
     

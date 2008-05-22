@@ -246,27 +246,6 @@ public class SvnModuleConfig {
         return ret;
     }
     
-    // TODO: persist state
-
-    private TableSorter importTableSorter;
-    private TableSorter commitTableSorter;
-    
-    public TableSorter getImportTableSorter() {
-        return importTableSorter;        
-    }
-
-    public void setImportTableSorter(TableSorter sorter) {
-        importTableSorter = sorter;        
-    }
-
-    public TableSorter getCommitTableSorter() {
-        return commitTableSorter;
-    }
-
-    public void setCommitTableSorter(TableSorter sorter) {
-        commitTableSorter = sorter;
-    }
-    
     // private methods ~~~~~~~~~~~~~~~~~~
     
     private synchronized Set<String> getCommitExclusions() {

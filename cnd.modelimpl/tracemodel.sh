@@ -45,8 +45,8 @@ QUITE=""
 
 function classpath() {
 
-    local nbdist=${NBDIST-"../nbbuild/netbeans/"}
-    local cnddist=${CNDDIST-"${nbdist}/cnd2/"}
+    local nbdist=${NBDIST-"../nbbuild/netbeans"}
+    local cnddist=${CNDDIST-"${nbdist}/cnd2"}
 
     CP=""
 
@@ -81,7 +81,11 @@ function classpath() {
 
     CP=${CP}${path_sep}${ide}/modules/org-netbeans-modules-projectuiapi.jar
     CP=${CP}${path_sep}${ide}/modules/org-netbeans-modules-projectapi.jar
+    CP=${CP}${path_sep}${ide}/modules/org-netbeans-modules-project-ant.jar
+    CP=${CP}${path_sep}${ide}/modules/org-netbeans-modules-project-libraries.jar
+    CP=${CP}${path_sep}${ide}/modules/org-openidex-util.jar
     CP=${CP}${path_sep}${platform}/lib/org-openide-util.jar
+    CP=${CP}${path_sep}${platform}/modules/org-openide-dialogs.jar
     CP=${CP}${path_sep}${platform}/modules/org-openide-nodes.jar
     CP=${CP}${path_sep}${platform}/core/org-openide-filesystems.jar
     CP=${CP}${path_sep}${platform}/core/core.jar
@@ -89,7 +93,9 @@ function classpath() {
     CP=${CP}${path_sep}${platform}/lib/org-openide-modules.jar
     CP=${CP}${path_sep}${platform}/lib/boot.jar
     CP=${CP}${path_sep}${platform}/modules/org-netbeans-api-progress.jar
-
+    CP=${CP}${path_sep}${platform}/modules/org-netbeans-modules-queries.jar
+    CP=${CP}${path_sep}${platform}/modules/org-netbeans-modules-masterfs.jar
+    CP=${CP}${path_sep}${platform}/modules/org-openide-text.jar
 
     CP=${CP}${path_sep}${cnddist}/modules/org-netbeans-modules-cnd-api-model.jar
     CP=${CP}${path_sep}${cnddist}/modules/org-netbeans-modules-cnd-modelimpl.jar
@@ -98,6 +104,7 @@ function classpath() {
     CP=${CP}${path_sep}${cnddist}/modules/org-netbeans-modules-cnd-api-project.jar
     CP=${CP}${path_sep}${cnddist}/modules/org-netbeans-modules-cnd-apt.jar
     CP=${CP}${path_sep}${cnddist}/modules/org-netbeans-modules-cnd-folding.jar
+    CP=${CP}${path_sep}${cnddist}/modules/org-netbeans-modules-cnd-makeproject.jar
     CP=${CP}${path_sep}${cnddist}/modules/org-netbeans-modules-cnd-repository-api.jar
     CP=${CP}${path_sep}${cnddist}/modules/org-netbeans-modules-cnd-repository.jar
     CP=${CP}${path_sep}${cnddist}/modules/org-netbeans-modules-cnd-utils.jar
@@ -248,12 +255,18 @@ function params() {
 
 function main() {
 
+    local nbdist=${NBDIST-"../nbbuild/netbeans"}
+    local cnddist=${CNDDIST-"${nbdist}/cnd2"}
+
     JAVA="${JAVA-`which java`}"
     DEFS=""
     PARAMS=""
     
     DBGPORT=${DBGPORT-5858}
 
+    DEFS="${DEFS} -Dnetbeans.dirs=${nbdist}:${cnddist}"
+    DEFS="${DEFS} -Dnetbeans.home=${nbdist}/platform8"
+    DEFS="${DEFS} -Dnetbeans.user=/tmp/${USER}/cnd-userdir"
     #DEFS="${DEFS} -Dcnd.modelimpl.trace=true"
     #DEFS="${DEFS} -Dparser.cache=true"
     DEFS="${DEFS} -Dparser.report.errors=true"

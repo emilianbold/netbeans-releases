@@ -49,17 +49,18 @@ import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
-import org.netbeans.modules.ruby.debugger.breakpoints.RubyBreakpoint;
+import org.netbeans.modules.ruby.debugger.breakpoints.RubyLineBreakpoint;
 import org.netbeans.modules.ruby.debugger.breakpoints.RubyBreakpointManager;
 import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.gems.GemManager;
+import org.netbeans.modules.ruby.platform.spi.RubyDebuggerImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.RequestProcessor;
 
 public final class RubyDebuggerTest extends TestBase {
     
-    private static final boolean VERBOSE = false;
+    private static final boolean VERBOSE = true;
     
     public RubyDebuggerTest(final String name) {
         super(name, VERBOSE);
@@ -143,7 +144,7 @@ public final class RubyDebuggerTest extends TestBase {
         File testF = createScript(testContent);
         FileObject testFO = FileUtil.toFileObject(testF);
         addBreakpoint(testFO, 2);
-        RubyBreakpoint bp4 = addBreakpoint(testFO, 4);
+        RubyLineBreakpoint bp4 = addBreakpoint(testFO, 4);
         Process p = startDebugging(testF);
         doContinue(); // 2 -> 4
         doContinue(); // 4 -> 2
@@ -164,7 +165,7 @@ public final class RubyDebuggerTest extends TestBase {
         File testF = createScript(testContent, "path spaces semi:colon.rb");
         FileObject testFO = FileUtil.toFileObject(testF);
         addBreakpoint(testFO, 2);
-        RubyBreakpoint bp4 = addBreakpoint(testFO, 4);
+        RubyLineBreakpoint bp4 = addBreakpoint(testFO, 4);
         Process p = startDebugging(testF);
         doContinue(); // 2 -> 4
         doContinue(); // 4 -> 2
@@ -198,7 +199,7 @@ public final class RubyDebuggerTest extends TestBase {
         };
         File testF = createScript(testContent);
         FileObject testFO = FileUtil.toFileObject(testF);
-        RubyBreakpoint bp2 = addBreakpoint(testFO, 2);
+        RubyLineBreakpoint bp2 = addBreakpoint(testFO, 2);
         addBreakpoint(testFO, 3);
         Process p = startDebugging(testF);
         doContinue(); // 2 -> 3
@@ -219,7 +220,7 @@ public final class RubyDebuggerTest extends TestBase {
         };
         File testF = createScript(testContent);
         FileObject testFO = FileUtil.toFileObject(testF);
-        RubyBreakpoint bp2 = addBreakpoint(testFO, 2);
+        RubyLineBreakpoint bp2 = addBreakpoint(testFO, 2);
         addBreakpoint(testFO, 3);
         Process p = startDebugging(testF);
         doContinue(); // 2 -> 3
@@ -396,6 +397,16 @@ public final class RubyDebuggerTest extends TestBase {
         p.waitFor();
     }
 
+    public void testRubiniusDebugging() throws IOException {
+        RubyPlatform rubinius = RubyPlatformManager.addPlatform(setUpRubinius());
+        ExecutionDescriptor descriptor = new ExecutionDescriptor(rubinius);
+        // DialogDisplayerImpl.createDialog() assertion would fail if dialog is shown
+        RubyDebuggerImplementation rdi = new RubyDebugger();
+        rdi.describeProcess(descriptor);
+        assertFalse("Rubinius debuggin is not supported yet", rdi.canDebug());
+        assertFalse("Rubinius debuggin is not supported yet", RubyDebugger.checkAndTuneSettings(descriptor));
+    }
+    
     private DebuggerEngine getEngineManager() {
         return DebuggerManager.getDebuggerManager().getCurrentEngine();
     }

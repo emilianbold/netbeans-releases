@@ -225,6 +225,8 @@ public class DatabaseUtils {
         //Sybase Driver
         driverMap.put("jdbc:sun:sybase:", "com.sun.sql.jdbc.sybase.SybaseDriver");
         
+        //AS400 Driver
+        driverMap.put("jdbc:as400:", "com.ibm.as400.access.AS400JDBCDriver");
     }
 
     static {
@@ -326,9 +328,11 @@ public class DatabaseUtils {
         dsClassMap.put("jdbc:sun:db2:", "com.sun.sql.jdbcx.db2.DB2DataSource");
         //Oracle Driver
         dsClassMap.put("jdbc:sun:oracle:", "com.sun.sql.jdbcx.oracle.OracleDataSource");
-        //Sybase Driver
+        //Sybase 
         dsClassMap.put("jdbc:sun:sybase:", "com.sun.sql.jdbcx.sybase.SybaseDataSource");
         
+        //AS400 
+        dsClassMap.put("jdbc:as400:", "com.ibm.as400.access.AS400JDBCDataSource");
     }
     
     static {
@@ -379,5 +383,9 @@ public class DatabaseUtils {
         cpClassMap.put("jdbc:mysql:", "com.mysql.jdbc.jdbc2.optional.MysqlConnectionPoolDataSource");
         //JDBC-ODBC Bridge
         cpClassMap.put("jdbc:odbc:", "sun.jdbc.odbc.JdbcOdbcDriver");
+        
+        //AS400 
+        cpClassMap.put("jdbc:as400:", "com.ibm.as400.access.AS400JDBCConnectionPoolDataSource");
+        
     }
 }

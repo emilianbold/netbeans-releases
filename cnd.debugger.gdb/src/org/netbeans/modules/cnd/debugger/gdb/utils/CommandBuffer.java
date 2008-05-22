@@ -39,10 +39,9 @@
 
 package org.netbeans.modules.cnd.debugger.gdb.utils;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.cnd.debugger.gdb.proxy.GdbProxy;
 
 /**
  * This class is intended for gathering multiline responses to a single gdb command.
@@ -60,26 +59,22 @@ public class CommandBuffer {
     private final int WAIT_TIME = 30000;
     private boolean timerOn = Boolean.getBoolean("gdb.proxy.timer"); // NOI18N
     
-    private static Map<Integer, CommandBuffer> map = new HashMap<Integer, CommandBuffer>();
-    
-    public static CommandBuffer getCommandBuffer(Integer id) {
-        return map.get(id);
-    }
-    
     // Instance parts
-    private StringBuilder buf;
+    private final StringBuilder buf;
     private Integer token;
     private String err;
     private int state;
-    private Object lock;
+    private final Object lock = new Object();
     protected static Logger log = Logger.getLogger("gdb.logger.cb"); // NOI18N
+    private final GdbProxy gdb;
     
-    public CommandBuffer() {
+    public CommandBuffer(GdbProxy gdb) {
         buf = new StringBuilder();
         token = null;
         state = STATE_NONE;
         err = null;
-        lock = new Object();
+        assert gdb != null;
+        this.gdb = gdb;
     }
     
     /**
@@ -120,10 +115,10 @@ public class CommandBuffer {
                                 GdbUtils.threadId());
                     }
                 }
-                map.remove(token);
+                gdb.removeCB(token);
                 return toString();
             } catch (InterruptedException ex) {
-                map.remove(token);
+                gdb.removeCB(token);
                 return "";
             }
         }
@@ -135,8 +130,8 @@ public class CommandBuffer {
     
     public void setID(int token) {
         synchronized (lock) {
-            this.token = Integer.valueOf(token);
-            map.put(this.token, this);
+            this.token = token;
+            gdb.putCB(this.token, this);
         }
     }
     

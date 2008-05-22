@@ -11,9 +11,9 @@
  * http://www.netbeans.org/cddl-gplv2.html
  * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
  * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
+ * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
  * particular file as subject to the "Classpath" exception as provided
  * by Sun in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
@@ -47,25 +47,20 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Graphics;
-import java.awt.event.ActionEvent;
 
-import java.awt.event.MouseAdapter;
 import java.awt.event.MouseMotionAdapter;
-import javax.swing.Action;
 import javax.swing.BorderFactory;
-import javax.swing.JButton;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JPanel;
 
-import org.openide.util.Lookup;
 import org.netbeans.modules.bpel.mapper.model.customitems.BpelXPathCustomFunction;
 import org.netbeans.modules.bpel.mapper.model.customitems.WrapServiceRefHandler;
 import org.netbeans.modules.soa.mappercore.Mapper;
 import org.netbeans.modules.xml.xpath.ext.CoreFunctionType;
 import org.netbeans.modules.xml.xpath.ext.CoreOperationType;
 import org.netbeans.modules.bpel.model.api.support.BpelXPathExtFunctionMetadata;
-import static org.netbeans.modules.soa.ui.util.UI.*;
+import static org.netbeans.modules.xml.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -75,7 +70,6 @@ public final class Palette {
 
   public Palette(Mapper mapper) {
     myMapper = mapper;
-    myIsCollapsed = true;
   }
 
   public JPanel getPanel() {
@@ -88,22 +82,6 @@ public final class Palette {
     c.fill = GridBagConstraints.BOTH;
     panel.add(createMenuBar(), c);
 
-    // vlv: print
-    JButton button = createPrintPreviewButton();
-
-    if (button != null) {
-      c.weightx = 0.0;
-      c.anchor = GridBagConstraints.EAST;
-      c.fill = GridBagConstraints.NONE;
-      c.insets = new Insets(0, 0, 0, TINY_INSET);
-      panel.add(button, c);
-    }
-    c.weightx = 0.0;
-    c.anchor = GridBagConstraints.EAST;
-    c.fill = GridBagConstraints.NONE;
-    c.insets = new Insets(0, 0, 0, 0);
-    panel.add(createCollapseExpandAllButton(), c);
-
     panel.setBorder(new Border());
     panel.setOpaque(true);
     panel.addMouseMotionListener(new MouseMotionAdapter() {});
@@ -111,7 +89,7 @@ public final class Palette {
     return panel;
   }
 
-  private JMenuBar createMenuBar() {
+  public JMenuBar createMenuBar() {
     myBar = new JMenuBar();
     myBar.setBorder(BorderFactory.createEmptyBorder());
 
@@ -122,37 +100,9 @@ public final class Palette {
     myBar.add(createNumberMenu());
     myBar.add(createDateTimeMenu());
     myBar.add(createBPELMenu());
-
-    return myBar;
-  }
-
-  private JButton createCollapseExpandAllButton() {
-    JButton button = createButton(new ButtonAction(
-      icon(Palette.class, "expose"), // NOI18N
-      i18n(Palette.class, "TLT_Collapse_Expand")) { // NOI18N
-      public void actionPerformed(ActionEvent event) {
-//out("DO: " + myIsCollapsed);
-        if (myIsCollapsed) {
-          myMapper.expandNonEmptyGraphs();
-        }
-        else {
-          myMapper.collapseAll(COLLAPSE_LEVEL);
-        }
-        myIsCollapsed = !myIsCollapsed;
-      }
-    });
-    a11y(button, i18n(Palette.class, "ACS_Collapse_Expand")); // NOI18N
+    myBar.setBorder(new Border());
     
-    return button;
-  }
-
-  private JButton createPrintPreviewButton() {
-    Action action = Lookup.getDefault().lookup(Action.class);
-
-    if (action == null) {
-      return null;
-    }
-    return createButton(action);
+    return myBar;
   }
 
   public void hideMenu() {
@@ -318,6 +268,4 @@ public final class Palette {
 
   private JMenuBar myBar;
   private Mapper myMapper;
-  private boolean myIsCollapsed;
-  private static final int COLLAPSE_LEVEL = 2;
 }

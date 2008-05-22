@@ -45,6 +45,8 @@ import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.lang.StringBuffer;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -1626,7 +1628,7 @@ public final class Models {
     
     private static class DefaultTreeExpansionModel implements TreeExpansionModel {
         
-        private CompoundModel cm;
+        private Reference<CompoundModel> cmRef;
         private CompoundModel oldCM;
         
         public DefaultTreeExpansionModel() {
@@ -1644,6 +1646,8 @@ public final class Models {
          */
         public boolean isExpanded (Object node) 
         throws UnknownTypeException {
+            CompoundModel cm = cmRef.get();
+            if (cm == null) return false;
             return DefaultTreeExpansionManager.get(cm).isExpanded(node);
         }
 
@@ -1653,6 +1657,8 @@ public final class Models {
          * @param node a expanded node
          */
         public void nodeExpanded (Object node) {
+            CompoundModel cm = cmRef.get();
+            if (cm == null) return ;
             DefaultTreeExpansionManager.get(cm).setExpanded(node);
         }
 
@@ -1662,6 +1668,8 @@ public final class Models {
          * @param node a collapsed node
          */
         public void nodeCollapsed (Object node) {
+            CompoundModel cm = cmRef.get();
+            if (cm == null) return ;
             DefaultTreeExpansionManager.get(cm).setCollapsed(node);
         }
 
@@ -1670,11 +1678,11 @@ public final class Models {
                 DefaultTreeExpansionManager.copyExpansions(oldCM, cm);
                 oldCM = null;
             }
-            this.cm = cm;
+            cmRef = new WeakReference<CompoundModel>(cm);
         }
         
         private DefaultTreeExpansionModel cloneForNewModel() {
-            return new DefaultTreeExpansionModel(cm);
+            return new DefaultTreeExpansionModel(cmRef.get());
         }
 
     }

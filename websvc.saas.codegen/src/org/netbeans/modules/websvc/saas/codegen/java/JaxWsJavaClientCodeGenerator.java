@@ -99,15 +99,19 @@ public class JaxWsJavaClientCodeGenerator extends JaxWsCodeGenerator {
     
     @Override
     protected String getCustomMethodBody() throws IOException {
-        String methodBody = "";
+        String methodBody = INDENT + "try {\n";
         for (ParameterInfo param : bean.getQueryParameters()) {
             String name = param.getName();
-            methodBody += "        "+param.getType().getName()+" " + name + " = null;\n";
+            methodBody += INDENT_2 + param.getType().getName() + " " + name + " = "+
+                    resolveInitValue(param)+"\n";
         }
         JaxwsOperationInfo[] operations = ((WsdlSaasBean) bean).getOperationInfos();
         for (JaxwsOperationInfo info : operations) {
             methodBody += getWSInvocationCode(info);
         }
+        methodBody += INDENT + "} catch (Exception ex) {\n";
+        methodBody += INDENT_2 + "ex.printStackTrace();\n";
+        methodBody += INDENT + "}\n";
         return methodBody;
     }
     
@@ -115,7 +119,6 @@ public class JaxWsJavaClientCodeGenerator extends JaxWsCodeGenerator {
      *  Insert the Saas client call
      */
     protected void insertSaasServiceAccessCode(boolean isInBlock) throws IOException {
-        Util.checkScanning();
         try {
             String code = "";
             if(isInBlock) {
@@ -132,124 +135,4 @@ public class JaxWsJavaClientCodeGenerator extends JaxWsCodeGenerator {
         }
     }
     
-     /**
-     * Add JAXWS client code for invoking the given operation at current position.
-     */
-    @Override
-    protected String getWSInvocationCode(JaxwsOperationInfo info) throws IOException {
-        //Collect java names for invocation code
-        final String serviceJavaName = info.getService().getJavaName();
-        String portJavaName = info.getPort().getJavaName();
-        String operationJavaName = info.getOperation().getJavaName();
-        String portGetterMethod = info.getPort().getPortGetter();
-        String serviceFieldName = "service"; //NOI18N
-        String returnTypeName = info.getOperation().getReturnTypeName();
-        List<WsdlParameter> outArguments = info.getOutputParameters();
-        String responseType = "Object"; //NOI18N
-        String callbackHandlerName = "javax.xml.ws.AsyncHandler"; //NOI18N
-        String argumentInitializationPart = "";
-        String argumentDeclarationPart = "";
-        try {
-            StringBuffer argumentBuffer1 = new StringBuffer();
-            StringBuffer argumentBuffer2 = new StringBuffer();
-            for (int i = 0; i < outArguments.size(); i++) {
-                String argumentTypeName = outArguments.get(i).getTypeName();
-                if (argumentTypeName.startsWith("javax.xml.ws.AsyncHandler")) {
-                    //NOI18N
-                    responseType = resolveResponseType(argumentTypeName);
-                    callbackHandlerName = argumentTypeName;
-                }
-                String argumentName = outArguments.get(i).getName();
-                argumentBuffer1.append("\t" + argumentTypeName + " " + argumentName + 
-                        " = " + resolveInitValue(argumentTypeName) + "\n"); //NOI18N
-            }
-
-            List<WsdlParameter> parameters = info.getOperation().getParameters();
-            for (int i = 0; i < parameters.size(); i++) {
-                String argument = parameters.get(i).getName();
-                argumentBuffer2.append(i > 0 ? ", " + argument : argument); //NOI18N
-            }
-            argumentInitializationPart = (argumentBuffer1.length() > 0 ? "\t" + 
-                    HINT_INIT_ARGUMENTS + argumentBuffer1.toString() : "");
-            argumentDeclarationPart = argumentBuffer2.toString();
-        } catch (NullPointerException npe) {
-            // !PW notify failure to extract service information.
-            npe.printStackTrace();
-            String message = NbBundle.getMessage(JaxWsCodeGenerator.class, 
-                    "ERR_FailedUnexpectedWebServiceDescriptionPattern"); // NOI18N
-            NotifyDescriptor desc = new NotifyDescriptor.Message(message, 
-                    NotifyDescriptor.Message.ERROR_MESSAGE);
-            DialogDisplayer.getDefault().notify(desc);
-        }
-
-        final boolean[] insertServiceDef = {true};
-        final String[] printerName = {"System.out"}; // NOI18N
-        final String[] argumentInitPart = {argumentInitializationPart};
-        final String[] argumentDeclPart = {argumentDeclarationPart};
-        final String[] serviceFName = {serviceFieldName};
-        final boolean[] generateWsRefInjection = {false};
-        CancellableTask<CompilationController> task = new CancellableTask<CompilationController>() {
-
-            public void run(CompilationController controller) throws IOException {
-                controller.toPhase(Phase.ELEMENTS_RESOLVED);
-                CompilationUnitTree cut = controller.getCompilationUnit();
-                ClassTree classTree = JavaSourceHelper.findPublicTopLevelClass(controller);
-                generateWsRefInjection[0] = JavaSourceHelper.isInjectionTarget(controller);
-                insertServiceDef[0] = !generateWsRefInjection[0];
-
-                // compute the service field name
-                if (generateWsRefInjection[0]) {
-                    Set<String> serviceFieldNames = new HashSet<String>();
-                    boolean injectionExists = false;
-                    int memberOrder = 0;
-                    for (Tree member : classTree.getMembers()) {
-                        // for the first inner class in top level
-                        ++memberOrder;
-                        if (VARIABLE == member.getKind()) {
-                            // get variable type
-                            VariableTree var = (VariableTree) member;
-                            Tree typeTree = var.getType();
-                            TreePath typeTreePath = controller.getTrees().getPath(cut, typeTree);
-                            TypeElement typeEl = JavaSourceHelper.getTypeElement(controller, typeTreePath);
-                            if (typeEl != null) {
-                                String variableType = typeEl.getQualifiedName().toString();
-                                if (serviceJavaName.equals(variableType)) {
-                                    serviceFName[0] = var.getName().toString();
-                                    generateWsRefInjection[0] = false;
-                                    injectionExists = true;
-                                    break;
-                                }
-                            }
-                            serviceFieldNames.add(var.getName().toString());
-                        }
-                    }
-                    if (!injectionExists) {
-                        serviceFName[0] = findProperServiceFieldName(serviceFieldNames);
-                    }
-                }
-            }
-
-            public void cancel() {
-            }
-        };
-
-        String invocationBody = getJavaInvocationBody(info.getOperation(), 
-                insertServiceDef[0], serviceJavaName, portJavaName, 
-                portGetterMethod, argumentInitPart[0], returnTypeName, 
-                operationJavaName, argumentDeclPart[0], serviceFName[0], 
-                printerName[0], responseType);
-
-        return invocationBody;
-    }
-    
-    
-    @Override
-    public boolean canShowResourceInfo() {
-        return false;
-    }
-    
-    @Override
-    public boolean canShowParam() {
-        return true;
-    }
 }

@@ -86,28 +86,44 @@ public class RestConnection {
         return connect(headers, null);
     }
 
+    public RestResponse put(String[][] headers) throws IOException {
+        return put(headers, (InputStream) null);
+    }
+    
     public RestResponse put(String data) throws IOException {
-        return put(null, new ByteArrayInputStream(data.getBytes("UTF-8")));
+        return put(null, data);
     }
 
     public RestResponse put(InputStream data) throws IOException {
         return put(null, data);
     }
     
+    public RestResponse put(String[][] headers, String data) throws IOException {
+        conn.setRequestMethod("PUT");
+
+        return connect(headers, new ByteArrayInputStream(data.getBytes("UTF-8")));
+    }
+
     public RestResponse put(String[][] headers, InputStream data) throws IOException {
         conn.setRequestMethod("PUT");
 
         return connect(headers, data);
     }
-
+    
     public RestResponse post(String data) throws IOException {
-        return post(null, new ByteArrayInputStream(data.getBytes("UTF-8")));
+        return post(null, data);
     }
     
     public RestResponse post(InputStream data) throws IOException {
         return post(null, data);
     }
+    
+    public RestResponse post(String[][] headers, String data) throws IOException {
+        conn.setRequestMethod("POST");
 
+        return connect(headers, new ByteArrayInputStream(data.getBytes("UTF-8")));
+    }
+    
     public RestResponse post(String[][] headers, InputStream data) throws IOException {
         conn.setRequestMethod("POST");
 

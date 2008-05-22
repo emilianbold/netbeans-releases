@@ -217,8 +217,10 @@ public class AXIModelBuilderQuery extends AbstractModelBuilder {
      * @return
      */
     private boolean checkComponent(SchemaComponent component) {
+        if(component == null)
+            return false;
         SchemaComponent parent = component;
-        while(!(parent.getParent() instanceof Schema)) {
+        while(parent.getParent() != null && !(parent.getParent() instanceof Schema)) {
             parent = parent.getParent();
         }
         if((parent instanceof GlobalComplexType) || (parent instanceof GlobalElement))

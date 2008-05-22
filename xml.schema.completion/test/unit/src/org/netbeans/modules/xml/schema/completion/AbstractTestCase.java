@@ -43,6 +43,8 @@ package org.netbeans.modules.xml.schema.completion;
 import java.util.List;
 import junit.framework.*;
 import javax.swing.text.Document;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.api.xml.lexer.XMLTokenId;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -73,6 +75,7 @@ public abstract class AbstractTestCase extends TestCase {
             instanceDocument.remove(0, instanceDocument.getLength());
             instanceDocument.insertString(0, buffer.toString(), null);
         }
+        instanceDocument.putProperty(Language.class, XMLTokenId.language());        
     }
     
     /**
@@ -122,5 +125,9 @@ public abstract class AbstractTestCase extends TestCase {
             }            
             assert(found);
         }
+    }
+    
+    Document getDocument() {
+        return instanceDocument;
     }
 }

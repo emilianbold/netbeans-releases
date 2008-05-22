@@ -77,16 +77,16 @@ final class WinSysPanel extends javax.swing.JPanel {
         setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
         setLayout(new java.awt.GridBagLayout());
 
-        org.openide.awt.Mnemonics.setLocalizedText(isDragImage, "Drag window image");
+        org.openide.awt.Mnemonics.setLocalizedText(isDragImage, org.openide.util.NbBundle.getMessage(WinSysPanel.class, "LBL_DragWindowImage")); // NOI18N
         isDragImage.setToolTipText(org.openide.util.NbBundle.getMessage(WinSysPanel.class, "IsDragWindowTooltip")); // NOI18N
-        isDragImage.addChangeListener(new javax.swing.event.ChangeListener() {
-            public void stateChanged(javax.swing.event.ChangeEvent evt) {
-                isDragImageStateChanged(evt);
-            }
-        });
         isDragImage.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 isDragImageActionPerformed(evt);
+            }
+        });
+        isDragImage.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                isDragImageStateChanged(evt);
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -94,16 +94,16 @@ final class WinSysPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(isDragImage, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(isAlphaFloating, "Transparent floating windows");
+        org.openide.awt.Mnemonics.setLocalizedText(isAlphaFloating, org.openide.util.NbBundle.getMessage(WinSysPanel.class, "LBL_TransparentFloatingWindows")); // NOI18N
         isAlphaFloating.setToolTipText(org.openide.util.NbBundle.getMessage(WinSysPanel.class, "IsAlphaFloatingTooltip")); // NOI18N
-        isAlphaFloating.addChangeListener(new javax.swing.event.ChangeListener() {
-            public void stateChanged(javax.swing.event.ChangeEvent evt) {
-                isAlphaFloatingStateChanged(evt);
-            }
-        });
         isAlphaFloating.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 isAlphaFloatingActionPerformed(evt);
+            }
+        });
+        isAlphaFloating.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                isAlphaFloatingStateChanged(evt);
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -114,7 +114,7 @@ final class WinSysPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(20, 12, 0, 0);
         add(isAlphaFloating, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(isSnapping, "Snapping floating windows");
+        org.openide.awt.Mnemonics.setLocalizedText(isSnapping, org.openide.util.NbBundle.getMessage(WinSysPanel.class, "LBL_SnapFloatingWindows")); // NOI18N
         isSnapping.setToolTipText(org.openide.util.NbBundle.getMessage(WinSysPanel.class, "IsSnappingTooltip")); // NOI18N
         isSnapping.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
@@ -127,7 +127,7 @@ final class WinSysPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(12, 25, 0, 0);
         add(isSnapping, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(isDragImageAlpha, "Transparent drag window image");
+        org.openide.awt.Mnemonics.setLocalizedText(isDragImageAlpha, org.openide.util.NbBundle.getMessage(WinSysPanel.class, "LBL_TransparentDragWindow")); // NOI18N
         isDragImageAlpha.setToolTipText(org.openide.util.NbBundle.getMessage(WinSysPanel.class, "IsAlphaDragTooltip")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -136,7 +136,7 @@ final class WinSysPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         add(isDragImageAlpha, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(isSnapScreenEdges, "Snap to screen edges");
+        org.openide.awt.Mnemonics.setLocalizedText(isSnapScreenEdges, org.openide.util.NbBundle.getMessage(WinSysPanel.class, "LBL_SnapToScreenEdges")); // NOI18N
         isSnapScreenEdges.setToolTipText(org.openide.util.NbBundle.getMessage(WinSysPanel.class, "IsSnapScreenEdgesTooltip")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;

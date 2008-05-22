@@ -224,14 +224,14 @@ public class GapWindowCustomEditor extends TcgComponentNodePropertyEditor implem
         
         private void updateTable() {
             try {
-                Vector data = new Vector();
+                Vector<Vector<String>> data = new Vector<Vector<String>>();
                 String indexAttribute = mAttributePanel.getStringValue();
                 boolean indexSelected = indexAttribute != null && !indexAttribute.trim().equals("");
                 List<SchemaAttribute> attributeList = mPartitionKeyPanel.getSelectedAttributeList();
-                Vector r;
+                Vector<String> r;
                 for (int i = 0, I = attributeList.size(); i < I; i++) {
                     SchemaAttribute attr = attributeList.get(i);
-                    r = new Vector();
+                    r = new Vector<String>();
                     r.add(attr.getAttributeName());
                     r.add(attr.getAttributeType());
                     r.add(attr.getAttributeSize());
@@ -240,7 +240,7 @@ public class GapWindowCustomEditor extends TcgComponentNodePropertyEditor implem
                 }
                 if (indexSelected) {
                     SchemaAttribute attr = mPartitionKeyPanel.getAttribute(indexAttribute);
-                    r = new Vector();
+                    r = new Vector<String>();
                     r.add(attr.getAttributeName());
                     r.add(attr.getAttributeType());
                     r.add(attr.getAttributeSize());
@@ -294,8 +294,8 @@ public class GapWindowCustomEditor extends TcgComponentNodePropertyEditor implem
             String outputSchemaNameStr = NbBundle.getMessage(DefaultCustomEditor.class, "CustomEditor.OUTPUT_SCHEMA_NAME");
             mOutputSchemaNamePanel = PropertyPanel.createSingleLineTextPanel(outputSchemaNameStr, outputSchemaNameProp, false);
             if (mOutputSchemaNamePanel.getStringValue() == null || mOutputSchemaNamePanel.getStringValue().trim().equals("")) {
-            	IEPModel model = mComponent.getModel();
-            	String schemaName = NameGenerator.generateSchemaName(model.getPlanComponent().getSchemaComponentContainer());
+                IEPModel model = mComponent.getModel();
+                String schemaName = NameGenerator.generateSchemaName(model.getPlanComponent().getSchemaComponentContainer());
                 mOutputSchemaNamePanel.setStringValue(schemaName);
             }
             gbc.gridx = 0;
@@ -401,8 +401,8 @@ public class GapWindowCustomEditor extends TcgComponentNodePropertyEditor implem
         
         public void validateContent(PropertyChangeEvent evt) throws PropertyVetoException {
             try {
-            	OperatorComponentContainer ocContainer = mModel.getPlanComponent().getOperatorComponentContainer();
-            	
+                OperatorComponentContainer ocContainer = mModel.getPlanComponent().getOperatorComponentContainer();
+                
                 // name
                 mNamePanel.validateContent(evt);
                 String newName = mNamePanel.getStringValue();
@@ -422,7 +422,7 @@ public class GapWindowCustomEditor extends TcgComponentNodePropertyEditor implem
                 SchemaComponent outputSchema = mComponent.getOutputSchemaId();
                 String schemaName = null;
                 if(outputSchema != null) {
-                	schemaName = outputSchema.getName();
+                    schemaName = outputSchema.getName();
                 }
                 
                 if (!newSchemaName.equals(schemaName) && scContainer.findSchema(newSchemaName) != null) {
@@ -457,19 +457,6 @@ public class GapWindowCustomEditor extends TcgComponentNodePropertyEditor implem
             }
         }
         
-        private List getAttributeMetadataAsList() {
-            List attributeMetadataList = new ArrayList();
-            Vector r = mTableModel.getDataVector();
-            for (int i = 0, I = r.size(); i < I; i++) {
-                Vector c = (Vector) r.elementAt(i);
-                attributeMetadataList.add(c.elementAt(0));
-                attributeMetadataList.add(c.elementAt(1));
-                attributeMetadataList.add(c.elementAt(2));
-                attributeMetadataList.add(c.elementAt(3));
-                attributeMetadataList.add("");
-            }
-            return attributeMetadataList;
-        }
         
         public List<SchemaAttribute> getAttributes() {
             List<SchemaAttribute> attributeList = new ArrayList<SchemaAttribute>();
@@ -477,21 +464,21 @@ public class GapWindowCustomEditor extends TcgComponentNodePropertyEditor implem
             for (int i = 0, I = r.size(); i < I; i++) {
                 Vector c = (Vector) r.elementAt(i);
                 if (!(c.elementAt(0) == null) && !(c.elementAt(0).equals(""))) {
-                	SchemaAttribute sa = mModel.getFactory().createSchemaAttribute(mModel);
-                	String name = (String) c.elementAt(0);
-                	sa.setName(name);
-                	sa.setTitle(name);
-                	//name
-                	sa.setAttributeName(name);
-                	//type
-                	sa.setAttributeType((String) c.elementAt(1));
-                	//size
-                	sa.setAttributeSize((String) c.elementAt(2));
-                	//scale
-                	sa.setAttributeScale((String) c.elementAt(3));
-                	
-                	
-                	attributeList.add(sa);
+                    SchemaAttribute sa = mModel.getFactory().createSchemaAttribute(mModel);
+                    String name = (String) c.elementAt(0);
+                    sa.setName(name);
+                    sa.setTitle(name);
+                    //name
+                    sa.setAttributeName(name);
+                    //type
+                    sa.setAttributeType((String) c.elementAt(1));
+                    //size
+                    sa.setAttributeSize((String) c.elementAt(2));
+                    //scale
+                    sa.setAttributeScale((String) c.elementAt(3));
+                    
+                    
+                    attributeList.add(sa);
                     
                 }
             }
@@ -501,7 +488,7 @@ public class GapWindowCustomEditor extends TcgComponentNodePropertyEditor implem
         
         
         public void setValue() {
-        	
+            
             IEPModel model = mComponent.getModel();
             SchemaComponentContainer scContainer = model.getPlanComponent().getSchemaComponentContainer();
             mNamePanel.store();
@@ -514,28 +501,28 @@ public class GapWindowCustomEditor extends TcgComponentNodePropertyEditor implem
                 String schemaName = null;
                 
                 if(outputSchema != null) {
-                	schemaName = outputSchema.getName();
+                    schemaName = outputSchema.getName();
                 }
                 
                 boolean schemaExist = schemaName != null && !schemaName.trim().equals("") && outputSchema != null;
                 List<SchemaAttribute> attrs = getAttributes();
                 if (schemaExist) {
                     if (!newSchemaName.equals(schemaName)) {
-                    	model.startTransaction();
-                    	
-//                    	String sName = NameGenerator.generateSchemaName(scContainer);
-                    	SchemaComponent scComp = model.getFactory().createSchema(model);
-                    	scComp.setName(newSchemaName);
-                    	scComp.setTitle(newSchemaName);
-                    	scComp.setSchemaAttributes(attrs);
-                    	
-                    	
-                    	scContainer.addSchemaComponent(scComp);
-                    	scContainer.removeSchemaComponent(outputSchema);
-                    	model.endTransaction();
-                    	
-                    	mOutputSchemaNamePanel.store();
-                    	
+                        model.startTransaction();
+                        
+//                        String sName = NameGenerator.generateSchemaName(scContainer);
+                        SchemaComponent scComp = model.getFactory().createSchema(model);
+                        scComp.setName(newSchemaName);
+                        scComp.setTitle(newSchemaName);
+                        scComp.setSchemaAttributes(attrs);
+                        
+                        
+                        scContainer.addSchemaComponent(scComp);
+                        scContainer.removeSchemaComponent(outputSchema);
+                        model.endTransaction();
+                        
+                        mOutputSchemaNamePanel.store();
+                        
                         //newSchema = ModelManager.createSchema(newSchemaName);
                         //newSchema.setAttributeMetadataAsList(attributes);
                         //plan.addSchema(newSchema);
@@ -546,12 +533,12 @@ public class GapWindowCustomEditor extends TcgComponentNodePropertyEditor implem
                         //        schemaName, newSchemaName);
                         
                     } else {
-                    	model.startTransaction();
-                    	outputSchema.setSchemaAttributes(attrs);
-                    	model.endTransaction();
-                    	
-                    	//rit fix this
-                    	/*
+                        model.startTransaction();
+                        outputSchema.setSchemaAttributes(attrs);
+                        model.endTransaction();
+                        
+                        //rit fix this
+                        /*
                         if (!schema.hasSameAttributeMetadata(attributes)) {
                             schema.setAttributeMetadataAsList(attributes);
                             plan.getPropertyChangeSupport().firePropertyChange("Schema Column Metadata",
@@ -559,14 +546,14 @@ public class GapWindowCustomEditor extends TcgComponentNodePropertyEditor implem
                         }*/
                     }
                 } else {
-                	model.startTransaction();
-                	SchemaComponent scComp = model.getFactory().createSchema(model);
-                	scComp.setName(newSchemaName);
-                	scComp.setTitle(newSchemaName);
-                	scComp.setSchemaAttributes(attrs);
-                	scContainer.addSchemaComponent(scComp);
-                	model.endTransaction();
-                	mOutputSchemaNamePanel.store();
+                    model.startTransaction();
+                    SchemaComponent scComp = model.getFactory().createSchema(model);
+                    scComp.setName(newSchemaName);
+                    scComp.setTitle(newSchemaName);
+                    scComp.setSchemaAttributes(attrs);
+                    scContainer.addSchemaComponent(scComp);
+                    model.endTransaction();
+                    mOutputSchemaNamePanel.store();
                     //mProperty.getNode().getView().updateTcgComponentNodeView();
                     //ritplan.getPropertyChangeSupport().firePropertyChange("Schema",
                     //        null, scComp);

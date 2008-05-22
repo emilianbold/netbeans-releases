@@ -301,7 +301,7 @@ StingLiteral
             '"' StringLiteralBody 
         ;
 
-
+BackSlash : '\\' ;
 
 protected
 StringLiteralBody

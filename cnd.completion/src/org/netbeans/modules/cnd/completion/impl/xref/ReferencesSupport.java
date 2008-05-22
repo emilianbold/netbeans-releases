@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.completion.impl.xref;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
@@ -62,8 +63,8 @@ import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
-import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
+import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
@@ -212,6 +213,16 @@ public final class ReferencesSupport {
         }
         // then full check if needed
         csmItem = csmItem != null ? csmItem : findDeclaration(csmFile, doc, tokenUnderOffset, offset, QueryScope.GLOBAL_QUERY);
+        // if still null try macro info from file (IZ# 130897)
+        if (csmItem == null) {
+            List<CsmReference> macroUsages = CsmFileInfoQuery.getDefault().getMacroUsages(csmFile);
+            for (CsmReference macroRef : macroUsages) {
+                if (macroRef.getStartOffset() <= offset && offset <= macroRef.getEndOffset()) {
+                    csmItem = macroRef.getReferencedObject();
+                    assert csmItem != null : "must be referenced macro" + macroRef;
+                }
+            }
+        }
         return csmItem;
     }
     

@@ -375,7 +375,7 @@ public class RSSFeed extends JPanel implements Constants, PropertyChangeListener
                     new Insets(0,TEXT_INSETS_LEFT+5,2,TEXT_INSETS_RIGHT),0,0 ) );
         }
 
-        WebLink linkButton = new WebLink( item.title, item.link, true );
+        WebLink linkButton = new WebLink( stripHtml(item.title), item.link, true );
         linkButton.getAccessibleContext().setAccessibleName( 
                 BundleSupport.getAccessibilityName( "WebLink", item.title ) ); //NOI18N
         linkButton.getAccessibleContext().setAccessibleDescription( 
@@ -460,14 +460,18 @@ public class RSSFeed extends JPanel implements Constants, PropertyChangeListener
     }
     
     private String trimHtml( String htmlSnippet ) {
-        String res = htmlSnippet.replaceAll( "<[^>]*>", "" ); // NOI18N // NOI18N
-        res = res.replaceAll( "&nbsp;", " " ); // NOI18N // NOI18N
-        res = res.trim();
+        String res = stripHtml(htmlSnippet);
         int maxLen = getMaxDecsriptionLength();
         if( maxLen > 0 && res.length() > maxLen ) {
             res = res.substring( 0, maxLen ) + "..."; // NOI18N
         }
         return res;
+    }
+    
+    private String stripHtml( String htmlSnippet ) {
+        String res = htmlSnippet.replaceAll( "<[^>]*>", "" ); // NOI18N // NOI18N
+        res = res.replaceAll( "&nbsp;", " " ); // NOI18N // NOI18N
+        return res.trim();
     }
     
     protected int getMaxDecsriptionLength() {

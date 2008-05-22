@@ -44,8 +44,6 @@ package org.netbeans.lib.editor.codetemplates;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Position;

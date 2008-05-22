@@ -1,20 +1,42 @@
 /*
- * The contents of this file are subject to the terms of the Common Development
- * and Distribution License (the License). You may not use this file except in
- * compliance with the License.
- * 
- * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
- * or http://www.netbeans.org/cddl.txt.
- * 
- * When distributing Covered Code, include this CDDL Header Notice in each file
- * and include the License file at http://www.netbeans.org/cddl.txt.
- * If applicable, add the following below the CDDL Header, with the fields
- * enclosed by brackets [] replaced by your own identifying information:
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License. When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
+ * Contributor(s):
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
  */
 package org.netbeans.modules.bpel.core.multiview;
 
@@ -36,16 +58,16 @@ import javax.swing.event.CaretListener;
 import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
 
+//import org.netbeans.modules.soa.validation.core.Controller;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.netbeans.modules.bpel.core.BPELDataEditorSupport;
 import org.netbeans.modules.bpel.core.BPELDataObject;
-import org.netbeans.modules.bpel.core.util.BPELValidationController;
 import org.netbeans.modules.bpel.editors.api.nodes.FactoryAccess;
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
-import org.netbeans.modules.bpel.editors.api.utils.Util;
+import org.netbeans.modules.bpel.editors.api.EditorUtil;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.api.events.ArrayUpdateEvent;
@@ -73,17 +95,12 @@ import org.openide.windows.CloneableTopComponent;
 import org.openide.windows.TopComponent;
 
 /**
- *
  * @author ads
  */
-public class BPELSourceMultiViewElement extends CloneableEditor
-    implements MultiViewElement  
-{
+public class BPELSourceMultiViewElement extends CloneableEditor implements MultiViewElement {
     
     private static final int CARET_CHANGE_TASK_DELAY = 500;
-    
     private static final long serialVersionUID = 1L;
-    
     static final String PREFERED_ID="BpelSourceView";   // NOI18N
     
     // for deserialization
@@ -119,9 +136,7 @@ public class BPELSourceMultiViewElement extends CloneableEditor
      * we are using Externalization semantics so that we can get a hook to call
      * initialize() upon deserialization
      */
-    public void readExternal(ObjectInput in)
-        throws IOException, ClassNotFoundException 
-    {
+    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
         super.readExternal(in);
         Object obj = in.readObject();
         if ( obj instanceof BPELDataObject) {
@@ -151,7 +166,7 @@ public class BPELSourceMultiViewElement extends CloneableEditor
         }
         else {
             return MultiViewFactory.createUnsafeCloseState(
-                "Data Object Modified",                             // NOI18N
+                "Data Object Modified", // NOI18N
                 MultiViewFactory.NOOP_CLOSE_ACTION,
                 MultiViewFactory.NOOP_CLOSE_ACTION);            
         }
@@ -182,47 +197,29 @@ public class BPELSourceMultiViewElement extends CloneableEditor
     
     public void componentActivated() {
         super.componentActivated();
-        // Set our activated nodes to kick Undo/Redo into action.
-        // Need to do it twice in the event we are switching from another
-        // multiview element that has the same activated nodes, in which
-        // case no events are fired and so the UndoAction does not
-        // register for changes with our undo manager.
-//        setActivatedNodes(new Node[0]);
-//        setActivatedNodes(new Node[] { getDataObject().getNodeDelegate() });
         setCaretAssocActiveNodes();
         BPELDataEditorSupport editor = getDataObject().getEditorSupport();
         editor.addUndoManagerToDocument();
-//        addUndoManager();
-        
-        getValidationController().triggerValidation(true);
+//      getValidationController().triggerValidation();
     }
+    
+//    private Controller getValidationController() {
+//      return (Controller) getDataObject().getLookup().lookup(Controller.class);
+//    }
     
     public void componentClosed() {
         super.componentClosed();
         removeCaretPositionListener();
-        
-        /*
-         *  Avoid memory leak. The first call is good it seems.
-         *  
-         *  The second is like a hack. But this works and could be a problem
-         *  only when this MultiviewElement will be reused after reopening.
-         *  It seems this is not a case - each time when editor is opened it is
-         *  instantiated. 
-         */
         setMultiViewCallback( null );
+
         if ( getParent()!= null ){
             getParent().remove( this );
         }
-
     }
     
     public void componentDeactivated() {
         super.componentDeactivated();
-//        removeCaretPositionListener();
-//        removeUndoManager();
         BPELDataEditorSupport editor = getDataObject().getEditorSupport();
-        // Sync model before having undo manager listen to the model,
-        // lest we get redundant undoable edits added to the queue.
         editor.syncModel();
         editor.removeUndoManagerFromDocument();
         
@@ -230,13 +227,9 @@ public class BPELSourceMultiViewElement extends CloneableEditor
     
     public void componentHidden() {
         super.componentHidden();
-//        removeCaretPositionListener();
         BPELDataEditorSupport editor = getDataObject().getEditorSupport();
-        // Sync model before having undo manager listen to the model,
-        // lest we get redundant undoable edits added to the queue.
         editor.syncModel();
         editor.removeUndoManagerFromDocument();
-//        removeUndoManager();
     }
     
     public void componentOpened() {
@@ -246,17 +239,6 @@ public class BPELSourceMultiViewElement extends CloneableEditor
     
     public void componentShowing() {
         super.componentShowing();
-        /*BPELDataEditorSupport editor = getDataObject().getEditorSupport();
-        // If the bpel model is valid, discard the edits on the editor
-        // support's undo queue. The idea is to keep our undo/redo model as
-        // simple as can be. Otherwise, the two undo managers would need to
-        // be kept in sync, making the undo/redo code vastly more complicated.
-
-        BpelModel model = editor.getBpelModel();
-        if (model.getState().equals(Model.State.VALID)) {
-            editor.getUndoManager().discardAllEdits();
-        }*/
-//        addUndoManager();
         BPELDataEditorSupport editor = getDataObject().getEditorSupport();
         editor.addUndoManagerToDocument();
     }
@@ -345,17 +327,6 @@ public class BPELSourceMultiViewElement extends CloneableEditor
         }, delegate);
         associateLookup(lookup);
         addPropertyChangeListener("activatedNodes", lookup);
-//      associateLookup(new ProxyLookup(new Lookup[] { // # 67257
-//        Lookups.fixed(new Object[] {
-//          getActionMap(), // # 85512
-//          getDataObject(),
-//          getDataObject().getNodeDelegate() }),
-//          getDataObject().getLookup() })); // # 117029
-    }
-    
-    private BPELValidationController getValidationController() {
-        return (BPELValidationController) getDataObject().
-            getLookup().lookup( BPELValidationController.class );
     }
     
     /**
@@ -458,7 +429,15 @@ public class BPELSourceMultiViewElement extends CloneableEditor
                         return;
                     }
                     if (event.isLastInAtomic()) {
-                        selectElement(0);
+                        if (!SwingUtilities.isEventDispatchThread()) {
+                            SwingUtilities.invokeLater(new Runnable() {
+                                    public void run() {
+                                        selectElement(0);
+                                    }
+                                });
+                        } else {
+                            selectElement(0);
+                        }
                     }
                 }
 
@@ -523,12 +502,10 @@ public class BPELSourceMultiViewElement extends CloneableEditor
                 if (foundedEntity == null) {
                     return;
                 }
-
-        //                NodeFactory nodeFactory = (NodeFactory)getDataObject().getLookup().lookup(NodeFactory.class);
                 NodeFactory nodeFactory = FactoryAccess.getPropertyNodeFactory();
                 assert nodeFactory != null;
 
-                NodeType nodeType = Util.getBasicNodeType(foundedEntity);
+                NodeType nodeType = EditorUtil.getBasicNodeType(foundedEntity);
                 if (nodeType == null) {
                     return;
                 }
@@ -543,22 +520,14 @@ public class BPELSourceMultiViewElement extends CloneableEditor
                 if (node == null) {
                     return;
                 }
-
-        //                    System.out.println("set active node");
-                
                 final TopComponent tc = myMultiViewObserver == null 
                         ? null 
                         : myMultiViewObserver.getTopComponent();
                 if (tc != null) {
-////                    tc.setActivatedNodes(new Node[] {node});
                     setActivatedNodes(new Node[] {node});
                 }
             }
         });
-//                    setActivatedNodes(new Node[] {node});
-//                    setActivatedNodes(new Node[] {node, getDataObject().getNodeDelegate()});
-//            Node[] tmpNodes = getActivatedNodes();
-//                    System.out.println("tmpNodes: "+tmpNodes);
     }
     
     private void removeCaretPositionListener() {
@@ -579,13 +548,14 @@ public class BPELSourceMultiViewElement extends CloneableEditor
         myBpelModelListener = null;
     }
 
+    // TODO m
     private void selectElement(int delay) {
+        assert SwingUtilities.isEventDispatchThread();
         if (myPreviousTask != null) {
             myPreviousTask.cancel();
         }
-        if (myPreviousTask != null && !myPreviousTask.isFinished()
-                && RequestProcessor.getDefault().isRequestProcessorThread()) // issue 125 439
-        {
+        // issue 125 439
+        if (myPreviousTask != null && !myPreviousTask.isFinished() && RequestProcessor.getDefault().isRequestProcessorThread()) {
             myPreviousTask.waitFinished();
             myPreviousTask = null;
         }
@@ -612,18 +582,9 @@ public class BPELSourceMultiViewElement extends CloneableEditor
     }
     
     private transient MultiViewElementCallback myMultiViewObserver;
-    
     private BPELDataObject myDataObject;
-    
     private transient JToolBar myToolBar; 
-    
     private CaretListener myCaretPositionListener;
-    
     private ChangeEventListener myBpelModelListener;
-
     private transient RequestProcessor.Task myPreviousTask;
 }
-
-
-
-

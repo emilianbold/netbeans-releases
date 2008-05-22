@@ -182,11 +182,22 @@ public final class ClassPathSupport {
                 
                 //TODO these should be encapsulated in the Item class 
                 // but that means we need to pass evaluator and antProjectHelper there.
-                String ref = item.getSourceReference();
-                eval = evaluator.evaluate( ref );
+                String ev = null, ev2 = null;
+                String ref = item.getSourceReference();                
+                if (ref != null) {
+                    eval = evaluator.evaluate( ref );                    
+                    if (eval != null && !eval.contains(Item.SOURCE_START)) {
+                        ev = eval;
+                    }
+                }
                 ref = item.getJavadocReference();
-                String eval2 = evaluator.evaluate( ref );
-                item.setInitialSourceAndJavadoc(eval, eval2);
+                if (ref != null) {
+                    eval = evaluator.evaluate( ref );
+                    if (eval != null && !eval.contains(Item.JAVADOC_START)) {
+                        ev2 = eval;
+                    }
+                }
+                item.setInitialSourceAndJavadoc(ev, ev2);
             }
             
             items.add( item );
@@ -302,9 +313,11 @@ public final class ClassPathSupport {
     }
     
     public void updateJarReference(Item item) {
+        assert item.getType() == Item.TYPE_JAR;
+        RelativePath rp = (RelativePath)item.object;
         String eval = evaluator.evaluate( item.getReference() );
 
-        item.object = eval;
+        item.object = new RelativePath(eval, rp.getBase());
 
         //TODO these should be encapsulated in the Item class 
         // but that means we need to pass evaluator and antProjectHelper there.
@@ -556,10 +569,6 @@ public final class ClassPathSupport {
             }
         }
         
-        public Object getObject() {
-            return object;
-        }
-
         public boolean canDelete() {
             return getType() != TYPE_CLASSPATH;
         }
@@ -578,11 +587,21 @@ public final class ClassPathSupport {
          * @return
          */
         public String getSourceReference() {
-            return property != null ? (SOURCE_START + property.substring(REF_START_INDEX)) : property;
+            if (property == null || !property.startsWith(REF_START)) {
+                return null;
+            }            
+            return SOURCE_START + property.substring(REF_START_INDEX);
         }
         
         public String getSourceProperty() {
-            return property != null ? (getSourceReference().substring(2, getSourceReference().length() - 1)) : null;
+            if (property == null || !property.startsWith(REF_START)) {
+                return null;
+            }
+            final String sourceRef = getSourceReference();
+            if (sourceRef == null) {
+                return null;
+            }
+            return sourceRef.substring(2, sourceRef.length() - 1);
         }
         
         /**
@@ -591,11 +610,42 @@ public final class ClassPathSupport {
          * @return
          */
         public String getJavadocReference() {
-            return property != null ? (JAVADOC_START + property.substring(REF_START_INDEX)) : property;
+            if (property == null || !property.startsWith(REF_START)) {
+                return null;
+            }            
+            return JAVADOC_START + property.substring(REF_START_INDEX);
         }
         
         public String getJavadocProperty() {
-            return property != null ? (getJavadocReference().substring(2, getJavadocReference().length() - 1)) : null;
+            if (property == null || !property.startsWith(REF_START)) {
+                return null;
+            }
+            final String javadocRef = getJavadocReference();
+            if (javadocRef == null) {
+                return null;
+            }
+            return javadocRef.substring(2, javadocRef.length() - 1);
+        }
+        
+        public boolean canEdit () {            
+            if (isBroken()) {
+                //Broken item cannot be edited
+                return false;
+            }
+            if (getType() == TYPE_JAR) {
+                //Jar can be edited only for ide created reference
+                if (property == null) {
+                    //Just added item, allow editing
+                    return true;
+                }                
+                return getSourceReference() != null && getJavadocReference() != null;
+            }
+            else if (getType() == TYPE_LIBRARY) {
+                //Library can be edited
+                return true;
+            }
+            //Otherwise: project, classpath - cannot be edited 
+            return false;
         }
         
         /**

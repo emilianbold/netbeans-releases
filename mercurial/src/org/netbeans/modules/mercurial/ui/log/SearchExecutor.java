@@ -169,7 +169,7 @@ class SearchExecutor implements Runnable {
         // traverse in reverse chronological order
         for (int i = logMessages.length - 1; i >= 0; i--) {
             HgLogMessage logMessage = logMessages[i];
-            if (filterUsername && !criteria.getUsername().equals(logMessage.getAuthor())) continue;
+            if (filterUsername && logMessage.getAuthor().indexOf(criteria.getUsername()) == -1) continue;
             if (filterMessage && logMessage.getMessage().indexOf(criteria.getCommitMessage()) == -1) continue;
             RepositoryRevision rev = new RepositoryRevision(logMessage, rootUrl);
             for (RepositoryRevision.Event event : rev.getEvents()) {

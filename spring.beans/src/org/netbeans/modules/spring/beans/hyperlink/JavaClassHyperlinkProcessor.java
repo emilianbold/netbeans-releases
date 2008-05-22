@@ -40,7 +40,7 @@
  */
 package org.netbeans.modules.spring.beans.hyperlink;
 
-import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils;
+import org.netbeans.modules.spring.java.JavaUtils;
 
 /**
  *
@@ -52,6 +52,6 @@ public class JavaClassHyperlinkProcessor extends HyperlinkProcessor {
     }
 
     public void process(HyperlinkEnv env) {
-        SpringXMLConfigEditorUtils.findAndOpenJavaClass(env.getValueString(), env.getDocument());
+        JavaUtils.findAndOpenJavaClass(env.getValueString(), env.getFileObject());
     }
 }

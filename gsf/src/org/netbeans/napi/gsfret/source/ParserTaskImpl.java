@@ -44,6 +44,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.Document;
 import org.netbeans.modules.gsf.api.EmbeddingModel;
 import org.netbeans.modules.gsf.api.Error;
@@ -111,6 +113,13 @@ public class ParserTaskImpl {
 
             List<ParserFile> sourceFiles = new ArrayList<ParserFile>(1);
             sourceFiles.add(file);
+
+            FileObject fo = file.getFileObject();
+            if (fo == null) {
+                // See for example #131671 - some short lived file has been deleted in the meantime.
+                Logger.getLogger(ParserTaskImpl.class.getName()).log(Level.WARNING, "No fileobject for " + file);
+                continue;
+            }
 
             String mimeType = file.getFileObject().getMIMEType();
             LanguageRegistry registry = LanguageRegistry.getInstance();

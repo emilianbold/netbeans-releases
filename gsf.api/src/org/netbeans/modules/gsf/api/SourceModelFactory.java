@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.gsf.api;
 
+import org.netbeans.modules.gsf.api.annotations.NonNull;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 
@@ -57,6 +58,7 @@ public abstract class SourceModelFactory {
     public SourceModelFactory() {
     }
 
+    @NonNull
     public static SourceModelFactory getInstance() {
         // TODO - cache instance?
         SourceModelFactory factory = (SourceModelFactory) Lookup.getDefault().lookup(SourceModelFactory.class);

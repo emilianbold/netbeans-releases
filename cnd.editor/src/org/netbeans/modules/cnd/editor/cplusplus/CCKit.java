@@ -199,7 +199,9 @@ public class CCKit extends NbEditorKit {
             new CCDeleteCharAction(deletePrevCharAction, false),
             getToggleCommentAction(),
             getCommentAction(),
-            getUncommentAction()
+            getUncommentAction(),
+            new InsertSemicolonAction(true),
+            new InsertSemicolonAction(false),            
 	};
         ccActions = TextAction.augmentList(super.createActions(), ccActions);
         Action[] extra = CndEditorActionsProvider.getDefault().getActions(getContentType());
@@ -312,8 +314,10 @@ public class CCKit extends NbEditorKit {
     public static class CCDefaultKeyTypedAction extends ExtDefaultKeyTypedAction {
       
         @Override
-	protected void checkIndentHotChars(JTextComponent target, String typedText) {
-	    boolean reindent = false;
+        protected void checkIndentHotChars(JTextComponent target, String typedText) {
+            // This block is obsolete cause getKeywordBasedReformatBlock() is already called in CCFormatter.getReformatBlock()        
+            /*  
+            boolean reindent = false;
 	
 	    BaseDocument doc = Utilities.getDocument(target);
 	    int dotPos = target.getCaret().getDot();
@@ -327,10 +331,20 @@ public class CCKit extends NbEditorKit {
 		    } catch (BadLocationException e) {
 		    }
 		}
-	    }
+	    }*/
 	
-	    super.checkIndentHotChars(target, typedText);
-	}
+            BaseDocument doc = Utilities.getDocument(target);
+            if (doc != null) {
+                // To fix IZ#130504 we need to differ different reasons line indenting request,
+                // but ATM there is no way to transfer this info from here to FormatSupport 
+                // correctly over FormatWriter because it's final class for some reasons.
+                // But java editor has the same bug, so one day we may have such possibility 
+                doc.putProperty(CCFormatter.IGNORE_IN_COMMENTS_MODE, Boolean.TRUE); 
+                super.checkIndentHotChars(target, typedText);
+                doc.putProperty(CCFormatter.IGNORE_IN_COMMENTS_MODE, null);
+            }
+            
+       	}
         
         @Override
         protected void insertString(BaseDocument doc, int dotPos,

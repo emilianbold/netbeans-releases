@@ -46,9 +46,9 @@
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="1" attributes="0">
-                  <Component id="jScrollPane1" pref="355" max="32767" attributes="2"/>
+                  <Component id="jScrollPane1" pref="363" max="32767" attributes="2"/>
                   <Component id="panelButtons" alignment="0" max="32767" attributes="2"/>
-                  <Component id="jScrollPane2" alignment="0" pref="355" max="32767" attributes="2"/>
+                  <Component id="jScrollPane2" alignment="0" pref="363" max="32767" attributes="2"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>

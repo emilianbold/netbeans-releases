@@ -708,6 +708,7 @@ public class Utils {
                                 ExecutorTask wsimportTask =
                                     ActionUtils.runTarget(buildImplFo,
                                     new String[]{"wsimport-service-clean-"+serviceName,"wsimport-service-"+serviceName},null); //NOI18N                                       ActionUtils.runTarget(buildImplFo,new String[]{"wsimport-client-"+finalName,"wsimport-client-compile" },null); //NOI18N
+                                wsimportTask.waitFinished();
                                 return Boolean.TRUE;
                             }
                         }).booleanValue();

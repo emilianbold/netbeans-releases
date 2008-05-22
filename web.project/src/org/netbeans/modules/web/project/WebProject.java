@@ -48,8 +48,6 @@ import java.io.*;
 import java.lang.ref.WeakReference;
 import java.util.*;
 import java.util.logging.Level;
-import java.util.logging.LogRecord;
-import java.util.logging.Logger;
 import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -61,12 +59,12 @@ import org.netbeans.api.project.ant.AntBuildExtender;
 import org.netbeans.modules.web.project.api.WebPropertyEvaluator;
 import org.netbeans.modules.web.project.jaxws.WebProjectJAXWSClientSupport;
 import org.netbeans.modules.web.project.jaxws.WebProjectJAXWSSupport;
+import org.netbeans.modules.web.spi.webmodule.WebPrivilegedTemplates;
 import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.netbeans.modules.websvc.jaxws.spi.JAXWSSupportFactory;
 import org.netbeans.modules.websvc.spi.client.WebServicesClientSupportFactory;
 import org.netbeans.modules.websvc.spi.jaxws.client.JAXWSClientSupportFactory;
-import org.openide.util.lookup.Lookups;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -129,7 +127,6 @@ import org.netbeans.modules.web.project.jaxws.WebProjectJAXWSVersionProvider;
 import org.netbeans.modules.web.project.spi.BrokenLibraryRefFilter;
 import org.netbeans.modules.web.project.spi.BrokenLibraryRefFilterProvider;
 import org.netbeans.modules.web.project.ui.customizer.CustomizerProviderImpl;
-import org.netbeans.modules.web.spi.webmodule.WebPrivilegedTemplates;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
@@ -138,6 +135,7 @@ import org.netbeans.modules.websvc.spi.webservices.WebServicesSupportFactory;
 import org.netbeans.spi.java.project.support.ExtraSourceJavadocSupport;
 import org.netbeans.spi.java.project.support.LookupMergerSupport;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
+import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileLock;
@@ -154,8 +152,6 @@ import org.openide.util.RequestProcessor;
 public final class WebProject implements Project, AntProjectListener {
     
     private static final Logger LOGGER = Logger.getLogger(WebProject.class.getName());
-    
-    private static final String UI_LOGGER_NAME = "org.netbeans.ui.web.project"; //NOI18N
     
     private static final Icon WEB_PROJECT_ICON = new ImageIcon(Utilities.loadImage("org/netbeans/modules/web/project/ui/resources/webProjectIcon.gif")); // NOI18
     
@@ -336,6 +332,10 @@ public final class WebProject implements Project, AntProjectListener {
         webPagesFileWatch = new FileWatch(WebProjectProperties.WEB_DOCBASE_DIR);
         webInfFileWatch = new FileWatch(WebProjectProperties.WEBINF_DIR);
     }
+
+    public ClassPathModifier getClassPathModifier() {
+        return cpMod;
+    }
     
     private ClassPathModifier.Callback createClassPathModifierCallback() {
         return new ClassPathModifier.Callback() {
@@ -425,6 +425,7 @@ public final class WebProject implements Project, AntProjectListener {
     private Lookup createLookup(AuxiliaryConfiguration aux, ClassPathProviderImpl cpProvider) {
         SubprojectProvider spp = refHelper.createSubprojectProvider();
         final WebSources webSources = new WebSources(this.helper, evaluator(), getSourceRoots(), getTestSourceRoots());
+        FileEncodingQueryImplementation encodingQuery = QuerySupport.createFileEncodingQuery(evaluator(), WebProjectProperties.SOURCE_ENCODING);
         Lookup base = Lookups.fixed(new Object[] {            
             new Info(),
             aux,
@@ -437,9 +438,10 @@ public final class WebProject implements Project, AntProjectListener {
             new WebActionProvider( this, this.updateHelper ),
             new WebLogicalViewProvider(this, this.updateHelper, evaluator (), refHelper),
             new CustomizerProviderImpl(this, this.updateHelper, evaluator(), refHelper),        
-            new ClassPathProviderMerger(cpProvider),
-            QuerySupport.createCompiledSourceForBinaryQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
-            QuerySupport.createJavadocForBinaryQuery(helper, evaluator()),
+            LookupMergerSupport.createClassPathProviderMerger(cpProvider),
+            QuerySupport.createCompiledSourceForBinaryQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots(), 
+                    new String[]{"build.classes.dir", "dist.war"}, new String[]{"build.test.classes.dir"}),
+            QuerySupport.createJavadocForBinaryQuery(helper, evaluator(), new String[]{"build.classes.dir", "dist.war"}),
             new AntArtifactProviderImpl(),
             new ProjectXmlSavedHookImpl(),
             UILookupMergerSupport.createProjectOpenHookMerger(new ProjectOpenedHookImpl()),
@@ -468,8 +470,8 @@ public final class WebProject implements Project, AntProjectListener {
             new WebPropertyEvaluatorImpl(evaluator()),
             WebProject.this, // never cast an externally obtained Project to WebProject - use lookup instead
             libMod,
-            QuerySupport.createFileEncodingQuery(evaluator(), WebProjectProperties.SOURCE_ENCODING),
-            new WebTemplateAttributesProvider(this.helper),
+            encodingQuery,
+            QuerySupport.createTemplateAttributesProvider(helper, encodingQuery),
             ExtraSourceJavadocSupport.createExtraSourceQueryImplementation(this, helper, eval),
             LookupMergerSupport.createSFBLookupMerger(),
             ExtraSourceJavadocSupport.createExtraJavadocQueryImplementation(this, helper, eval),
@@ -498,6 +500,10 @@ public final class WebProject implements Project, AntProjectListener {
     String getBuildXmlName () {
         String storedName = helper.getStandardPropertyEvaluator ().getProperty (WebProjectProperties.BUILD_FILE);
         return storedName == null ? GeneratedFilesHelper.BUILD_XML_PATH : storedName;
+    }
+    
+    public void refreshLibraryProperties() {
+        librariesLocationUpdater.storeLibLocations();
     }
     
     // Package private methods -------------------------------------------------
@@ -839,13 +845,8 @@ public final class WebProject implements Project, AntProjectListener {
                         }
                     }
                     // UI Logging
-                    LogRecord logRecord = new LogRecord(Level.INFO, "UI_WEB_PROJECT_OPENED");  //NOI18N
-                    logRecord.setLoggerName(UI_LOGGER_NAME);                   //NOI18N
-                    logRecord.setResourceBundle(NbBundle.getBundle(WebProject.class));
-                    logRecord.setParameters(new Object[] {
-                        (serverType != null ? serverType : Deployment.getDefault().getServerID(servInstID)),
-                        servInstID});
-                    Logger.getLogger(UI_LOGGER_NAME).log(logRecord);
+                    Utils.logUI(NbBundle.getBundle(WebProject.class), "UI_WEB_PROJECT_OPENED", // NOI18N
+                            new Object[] {(serverType != null ? serverType : Deployment.getDefault().getServerID(servInstID)), servInstID});
                 }
                 
             } catch (IOException e) {
@@ -880,6 +881,12 @@ public final class WebProject implements Project, AntProjectListener {
             if (logicalViewProvider != null &&  logicalViewProvider.hasBrokenLinks()) {   
                 BrokenReferencesSupport.showAlert();
             }
+            if(apiWebServicesSupport.isBroken(WebProject.this)) {
+                apiWebServicesSupport.showBrokenAlert(WebProject.this);
+            }
+            else if(apiWebServicesClientSupport.isBroken(WebProject.this)) {
+                apiWebServicesClientSupport.showBrokenAlert(WebProject.this);
+            }
             webPagesFileWatch.init();
             webInfFileWatch.init();
         }
@@ -901,10 +908,12 @@ public final class WebProject implements Project, AntProjectListener {
             ArrayList<ClassPathSupport.Item> l = new ArrayList<ClassPathSupport.Item>();
             l.addAll(cpMod.getClassPathSupport().itemsList(props.getProperty(ProjectProperties.JAVAC_CLASSPATH),  WebProjectProperties.TAG_WEB_MODULE_LIBRARIES));
             l.addAll(cpMod.getClassPathSupport().itemsList(props.getProperty(WebProjectProperties.WAR_CONTENT_ADDITIONAL),  WebProjectProperties.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES));
-            ProjectProperties.storeLibrariesLocations(l.iterator(), props, getProjectDirectory());
+            ProjectProperties.storeLibrariesLocations(helper, l.iterator(), helper.isSharableProject() ? props : ep);
             
             // #129316
-            ProjectProperties.removeObsoleteLibraryLocations(ep);
+            if (helper.isSharableProject()) {
+                ProjectProperties.removeObsoleteLibraryLocations(ep);
+            }
             ProjectProperties.refreshLibraryTotals(props, cpMod.getClassPathSupport(), ProjectProperties.JAVAC_CLASSPATH,  WebProjectProperties.TAG_WEB_MODULE_LIBRARIES);
             ProjectProperties.refreshLibraryTotals(props, cpMod.getClassPathSupport(), WebProjectProperties.WAR_CONTENT_ADDITIONAL,  WebProjectProperties.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES);
 

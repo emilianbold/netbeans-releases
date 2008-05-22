@@ -22,6 +22,7 @@ import org.netbeans.modules.editor.options.AnnotationTypeProcessor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
 import org.openide.text.Annotation;
+import org.openide.util.Lookup;
 
 /**
  * Test the annotations attached to the editor.
@@ -139,18 +140,10 @@ public class AnnotationsTest extends BaseDocumentUnitTestCase {
         if (lineAnnotations != null) {
             annotations = new ArrayList();
             Class[] inners = NbEditorDocument.class.getDeclaredClasses();
-            Field delegate = null;
-            for (int i = inners.length - 1; i >= 0; i--) {
-                Class cls = inners[i];
-                if (cls.getName().endsWith("AnnotationDescDelegate")) {
-                    delegate = cls.getDeclaredField("delegate");
-                    delegate.setAccessible(true);
-                }
-            }
             
             for (Iterator it = lineAnnotations.getAnnotations(); it.hasNext();) {
                 AnnotationDesc annoDesc = (AnnotationDesc)it.next();
-                Annotation anno = (Annotation)delegate.get(annoDesc);
+                Annotation anno = ((Lookup.Provider) annoDesc).getLookup().lookup(Annotation.class);
                 annotations.add(anno);
             }
             

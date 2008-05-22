@@ -45,7 +45,8 @@ import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -320,6 +321,10 @@ public final class SharableLibrariesUtils {
                 FileUtil.refreshFor(directory);
             }
             FileObject dir = FileUtil.toFileObject(directory);
+            if (!absFile.exists()) {
+                //#131535 is a broken reference probably, ignore.
+                return;
+            }
             updateReference(absFile, reference, true, dir);
             //now process source reference
             String source = reference.replace("${file.reference", "${source.reference"); //NOI18N
@@ -432,51 +437,51 @@ public final class SharableLibrariesUtils {
             File mainPropertiesFile = helper.resolveFile(loc);
             try {
                 LibraryManager man = LibraryManager.forLocation(mainPropertiesFile.toURI().toURL());
-                Map<String, List<URL>> volumes = new HashMap<String, List<URL>>();
+                Map<String, List<URI>> volumes = new HashMap<String, List<URI>>();
                 LibraryTypeProvider provider = LibrariesSupport.getLibraryTypeProvider(library.getType());
                 assert provider != null;
                 for (String volume : provider.getSupportedVolumeTypes()) {
                     List<URL> urls = library.getContent(volume);
-                    List<URL> newurls = new ArrayList<URL>();
+                    List<URI> newurls = new ArrayList<URI>();
                     for (URL url : urls) {
                         String jarFolder = null;
-                        boolean isArchive = false;
                         if ("jar".equals(url.getProtocol())) { // NOI18N
-                            jarFolder = getJarFolder(url);
+                            jarFolder = getJarFolder(URI.create(url.toExternalForm()));
                             url = FileUtil.getArchiveFile(url);
-                            isArchive = true;
                         }
                         FileObject fo = URLMapper.findFileObject(url);
 
+                        URI uri;
                         if (fo != null) {
                             if (keepRelativeLocations) {
                                 File path = FileUtil.toFile(fo);
                                 String str = PropertyUtils.relativizeFile(mainPropertiesFile.getParentFile(), path);
                                 if (str == null) {
                                     // the relative path cannot be established, different drives?
-                                    url = fo.getURL();
+                                    uri = path.toURI();
                                 } else {
-                                    url = LibrariesSupport.convertFilePathToURL(str);
+                                    uri = LibrariesSupport.convertFilePathToURI(str);
                                 }
                             } else {
-                                url = fo.getURL();
+                                File path = FileUtil.toFile(fo);
+                                uri = path.toURI();
                             }
-                            if (isArchive) {
-                                url = FileUtil.getArchiveRoot(url);
+                            if (FileUtil.isArchiveFile(fo)) {
+                                uri = appendJarFolder(uri, jarFolder);
                             }
-                            if (jarFolder != null) {
-                                 url = appendJarFolder(url, jarFolder);
+                            newurls.add(uri);
+                        } else {
+                            try {
+                                newurls.add(url.toURI());
+                            } catch (URISyntaxException ex) {
+                                Exceptions.printStackTrace(ex);
                             }
-                            
                         }
-                        
-
-                        newurls.add(url);
                     }
                     volumes.put(volume, newurls);
                 }
                 
-                man.createLibrary(library.getType(), library.getName(), volumes);
+                man.createURILibrary(library.getType(), library.getName(), volumes);
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -507,24 +512,25 @@ public final class SharableLibrariesUtils {
 
     
     
-    /** for jar url this method returns path wihtin jar or null*/
-    private static String getJarFolder(URL url) {
-        assert "jar".equals(url.getProtocol()) : url;
-        String u = url.toExternalForm();
+    private static String getJarFolder(URI uri) {
+        String u = uri.toString();
         int index = u.indexOf("!/"); //NOI18N
         if (index != -1 && index + 2 < u.length()) {
-            return u.substring(index + 2);
+            return u.substring(index+2);
         }
         return null;
     }
-
-    /** append path to given jar root url */
-    private static URL appendJarFolder(URL u, String jarFolder) {
-        assert "jar".equals(u.getProtocol()) && u.toExternalForm().endsWith("!/") : u;
+    
+    /** append path to given jar root uri */
+    private static URI appendJarFolder(URI u, String jarFolder) {
         try {
-            return new URL(u + jarFolder.replace('\\', '/')); //NOI18N
-        } catch (MalformedURLException e) {
+            if (u.isAbsolute()) {
+                return new URI("jar:" + u.toString() + "!/" + (jarFolder == null ? "" : jarFolder.replace('\\', '/'))); // NOI18N
+            } else {
+                return new URI(u.toString() + "!/" + (jarFolder == null ? "" : jarFolder.replace('\\', '/'))); // NOI18N
+            }
+        } catch (URISyntaxException e) {
             throw new AssertionError(e);
         }
-    }         
+    }
 }

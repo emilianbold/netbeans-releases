@@ -83,6 +83,8 @@ import org.netbeans.modules.gsf.api.TranslatedSource;
  */
 public class JsParser implements Parser {
     private final PositionManager positions = createPositionManager();
+    /** For unit tests such that they can make sure we didn't have a parser abort */
+    static RuntimeException runtimeException;
 
     /**
      * Creates a new instance of JsParser
@@ -192,16 +194,28 @@ public class JsParser implements Parser {
                     int lineEnd = JsUtils.getRowLastNonWhite(doc, offset);
 
                     if (lineEnd != -1) {
+                        lineEnd++; // lineEnd is exclusive, not inclusive
                         StringBuilder sb = new StringBuilder(doc.length());
                         int lineStart = JsUtils.getRowStart(doc, offset);
-                        int rest = lineStart + 1;
-
-                        sb.append(doc.substring(0, lineStart));
-                        sb.append('#');
-
-                        if (rest < doc.length()) {
-                            sb.append(doc.substring(rest, doc.length()));
+                        if (lineEnd >= lineStart+2) {
+                            sb.append(doc.substring(0, lineStart));
+                            sb.append("//");
+                            int rest = lineStart + 2;
+                            if (rest < doc.length()) {
+                                sb.append(doc.substring(rest, doc.length()));
+                            }
+                        } else {
+                            // A line with just one character - can't replace with a comment
+                            // Just replace the char with a space
+                            sb.append(doc.substring(0, lineStart));
+                            sb.append(" ");
+                            int rest = lineStart + 1;
+                            if (rest < doc.length()) {
+                                sb.append(doc.substring(rest, doc.length()));
+                            }
+                            
                         }
+
                         assert sb.length() == doc.length();
 
                         context.sanitizedRange = new OffsetRange(lineStart, lineEnd);
@@ -375,6 +389,12 @@ public class JsParser implements Parser {
         }
 
         int offset = context.parser.getTokenStream().getBufferOffset();
+        
+        if ("msg.unexpected.eof".equals(key) && offset > 0) { // NOI18N
+            // The offset should be within the source, not at the EOF - in embedded files this
+            // would cause me to not be able to compute the position for example
+            offset--;
+        }
 
 //        if (offset != getOffset(context, line, lineOffset)) {
 //            assert offset == getOffset(context, line, lineOffset) : " offset=" + offset + " and computed offset=" + getOffset(context,line,lineOffset) + " and line/lineOffset = " + line + "/" + lineOffset;
@@ -431,7 +451,7 @@ public class JsParser implements Parser {
                                                 int line, String lineSource,
                                                 int lineOffset) {
                     if (!ignoreErrors) {
-                        notifyError(context, message, sourceName, line, lineSource, lineOffset, sanitizing, Severity.WARNING, "", null);
+                        notifyError(context, message, sourceName, line, lineSource, lineOffset, sanitizing, Severity.ERROR, "", null);
                     }
                     return null;
                 }
@@ -494,11 +514,12 @@ public class JsParser implements Parser {
             }
         } catch (IllegalStateException ise) {
             // See issue #128983 for a way to get the compiler to assert for example
+            runtimeException = ise;
         } catch (RuntimeException re) {
             //notifyError(context, message, sourceName, line, lineSource, lineOffset, sanitizing, Severity.WARNING, "", null);
             // XXX TODO - record this somehow
-        }
-            
+            runtimeException = re;
+        }            
         if (root != null) {
             setParentRefs(root, null);
             context.sanitized = sanitizing;

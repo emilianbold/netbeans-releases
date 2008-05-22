@@ -50,7 +50,6 @@ import javax.swing.text.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import org.netbeans.core.output2.ui.AbstractOutputPane;
 import org.openide.util.Exceptions;
@@ -551,10 +550,12 @@ public class OutputDocument implements Document, Element, ChangeListener, Action
             return offset;
         }
         
+        @Override
         public int hashCode() {
             return offset * 11;
         }
         
+        @Override
         public boolean equals (Object o) {
             return (o instanceof ODPosition) && 
                 ((ODPosition) o).getOffset() == offset;
@@ -570,11 +571,13 @@ public class OutputDocument implements Document, Element, ChangeListener, Action
             return OutputDocument.this;
         }
         
+        @Override
         public boolean equals (Object o) {
             return (o instanceof ODEndPosition) && ((ODEndPosition) o).doc() == 
                 doc();
         }
         
+        @Override
         public int hashCode() {
             return -2390481;
         }
@@ -589,11 +592,13 @@ public class OutputDocument implements Document, Element, ChangeListener, Action
             return OutputDocument.this;
         }
         
+        @Override
         public boolean equals (Object o) {
             return (o instanceof ODStartPosition) && ((ODStartPosition) o).doc() == 
                 doc();
         }
         
+        @Override
         public int hashCode() {
             return 2190481;
         }
@@ -607,10 +612,12 @@ public class OutputDocument implements Document, Element, ChangeListener, Action
             this.lineIndex = lineIndex;
         }
         
+        @Override
         public int hashCode() {
             return lineIndex;
         }
         
+        @Override
         public boolean equals (Object o) {
             return (o instanceof ODElement) && ((ODElement) o).lineIndex == lineIndex &&
                 ((ODElement) o).getDocument() == getDocument();
@@ -664,7 +671,10 @@ public class OutputDocument implements Document, Element, ChangeListener, Action
                         endOffset = getLines().getLineStart(lineIndex+1);
                     }
                     assert endOffset >= getStartOffset() : "Illogical getLine #" + lineIndex
-                        + " with lines " + getLines() + " or writer has been reset";
+                        + " with lines " + getLines() + " or writer has been reset"
+                        + ". writer: " + (writer == null ? "is null" : 
+                            ("writer.isDisposed(): " + writer.isDisposed()
+                            + ". writer.getStorage(): " + writer.getStorage()));
                 } else if (lineIndex >= getLines().getLineCount()-1) {
                     //always recalculate the last line...
                     endOffset = getLines().getCharCount() + inBuffer.length();
@@ -676,6 +686,7 @@ public class OutputDocument implements Document, Element, ChangeListener, Action
             return true;
         }
         
+        @Override
         public String toString() {
             try {
                 return OutputDocument.this.getText(getStartOffset(), getEndOffset() 
@@ -854,6 +865,7 @@ public class OutputDocument implements Document, Element, ChangeListener, Action
         }
     }
     
+    @Override
     public String toString() {
         return "OD@" + System.identityHashCode(this) + " for " + getLines().readLock();
     }

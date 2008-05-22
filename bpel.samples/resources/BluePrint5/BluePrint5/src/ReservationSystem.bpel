@@ -35,6 +35,8 @@
          xmlns:ns0="http://localhost/BluePrint5/Reservation"
          xmlns:ns1="http://localhost/BluePrint5/AirLineReservation"
          xmlns="http://docs.oasis-open.org/wsbpel/2.0/process/executable"
+         xmlns:sxt="http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/Trace" 
+         xmlns:sxed="http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/Editor"
          xmlns:ns3="http://localhost/BluePrint5/HotelReservation"
          xmlns:ns2="http://localhost/BluePrint5/CarReservation"
          xmlns:rsrv="http://ReservationSystem.org/xsd/reserve">

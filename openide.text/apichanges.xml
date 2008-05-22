@@ -46,6 +46,28 @@ made subject to such option by the copyright holder.
 <apidef name="text">Text API</apidef>
 </apidefs>
 <changes>
+    <change id="initializeOnBackground">
+        <api name="text"/>
+        <summary>EditorKit, Document and co. are loaded on background by default</summary>
+        <version major="6" minor="18"/>
+        <date day="25" month="3" year="2008"/>
+        <author login="jtulach"/>
+        <compatibility deletion="no" binary="compatible" source="compatible" modification="yes" semantic="incompatible"/>
+        <description>
+            <p>
+            In order to speedup, or remove the load of initialization of kit in AWT during startup,
+            the initialization is done outside of AWT thread as much as possible. This provides
+            new <a href="@TOP@/architecture-summary.html#java-EditorKitInitialization">API for editor kits</a>, 
+            one 
+            <a href="@TOP@/architecture-summary.html#property-oldInitialization">component</a>
+            and one 
+            <a href="@TOP@/architecture-summary.html#property-org.openide.text.CloneableEditor.oldInitialization">system</a>
+            property.
+            </p>
+        </description>
+        <class package="org.openide.text" name="CloneableEditor"/>
+        <issue number="130171"/>
+    </change>
     <change id="NbDocument.Colors">
         <api name="text"/>
         <summary>Public static inner class <code>NbDocument.Colors</code> moved to org.openide.options.</summary>

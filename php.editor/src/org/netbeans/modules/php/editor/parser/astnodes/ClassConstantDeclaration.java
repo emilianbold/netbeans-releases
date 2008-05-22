@@ -61,9 +61,13 @@ public class ClassConstantDeclaration extends Statement {
 
         Iterator<Identifier> iteratorNames = names.iterator();
         Iterator<Expression> iteratorInitializers = initializers.iterator();
+        Identifier identifier;
         while (iteratorNames.hasNext()) {
-            this.names.add(iteratorNames.next());
-            this.initializers.add(iteratorInitializers.next());
+            identifier = iteratorNames.next();
+//            identifier.setParent(this);
+            this.names.add(identifier);
+            Expression initializer = iteratorInitializers.next();
+            this.initializers.add(initializer);
         }
     }
 

@@ -111,13 +111,13 @@ final class GemRunner {
         return installLocal(gem, rdoc, ri, asyncCompletionTask, parent);
     }
 
-    boolean update(final List<String> gemNames, boolean rdoc, boolean ri) {
-        return update(gemNames, rdoc, ri, null, null);
+    boolean update(final List<String> gemNames, boolean rdoc, boolean ri, boolean includeDependencies) {
+        return update(gemNames, rdoc, ri, includeDependencies, null, null);
     }
 
-    boolean updateAsynchronously(List<String> gemNames, boolean rdoc, boolean ri,
+    boolean updateAsynchronously(List<String> gemNames, boolean rdoc, boolean ri, boolean includeDependencies,
             Runnable asyncCompletionTask, Component parent) {
-        return update(gemNames, rdoc, ri, asyncCompletionTask, parent);
+        return update(gemNames, rdoc, ri, includeDependencies, asyncCompletionTask, parent);
     }
 
     boolean uninstall(final List<String> gemNames) {
@@ -183,8 +183,9 @@ final class GemRunner {
         return install(Collections.singletonList(gem.getAbsolutePath()), rdoc, ri, false, null, asyncCompletionTask, parent);
     }
 
-    private boolean update(final List<String> gemNames, boolean rdoc, boolean ri,
-            Runnable asyncCompletionTask, Component parent) {
+    private boolean update(final List<String> gemNames, boolean rdoc, boolean ri, 
+            boolean includeDependencies, Runnable asyncCompletionTask, Component parent) {
+
         List<String> argList = new ArrayList<String>();
 
         if (gemNames != null) {
@@ -202,6 +203,10 @@ final class GemRunner {
             argList.add("--no-ri"); // NOI18N
         }
         
+        if (includeDependencies) {
+            argList.add("--include-dependencies"); //NOI18N
+        }
+        
         includeDeps(argList);
 
         String[] args = argList.toArray(new String[argList.size()]);
@@ -217,7 +222,7 @@ final class GemRunner {
             return gemRunner(gemCmd, null, null, args);
         }
     }
-
+    
     private boolean uninstall(final List<String> gemNames, Runnable asyncCompletionTask, Component parent) {
         List<String> argList = new ArrayList<String>();
 
@@ -259,7 +264,7 @@ final class GemRunner {
 
     private void includeDeps(List<String> argList) {
         // -y and --include-dependencies is deprecated since 0.9.5 (and automatic)
-        if (GemManager.compareGemVersions(platform.getInfo().getGemVersion(), "0.9.5") < 0) { // NOI18N
+        if (Util.compareVersions(platform.getInfo().getGemVersion(), "0.9.5") < 0) { // NOI18N
             argList.add("--include-dependencies"); // NOI18N
         }
     }
@@ -285,7 +290,24 @@ final class GemRunner {
             argList.add(arg);
         }
         
+        if (!platform.getGemManager().isGemHomeWritable()) {
+            // run through gksu
+            String gksu = Util.findOnPath("gksu"); // NOI18N
+            assert gksu != null : "gksu cannot be found; be sure you've checked it before using GemRunner";
+            StringBuilder asString = new StringBuilder();
+            for (String arg : argList) {
+                asString.append(arg).append(' ');
+            }
+            argList = new ArrayList<String>();
+            argList.add(gksu);
+            argList.add("--preserve-env"); // NOI18N
+            argList.add("--description"); // NOI18N
+            argList.add(NbBundle.getMessage(GemRunner.class, "GemRunner.message.for.sudo"));
+            argList.add(asString.toString().trim()); // trim the last space from loop above
+        }
+        
         String[] args = argList.toArray(new String[argList.size()]);
+        
         ProcessBuilder pb = new ProcessBuilder(args);
         GemManager.adjustEnvironment(platform, pb.environment());
         pb.directory(cmd.getParentFile());
@@ -391,7 +413,8 @@ final class GemRunner {
         } catch (InterruptedException e) {
             LOGGER.log(Level.SEVERE, e.getLocalizedMessage(), e);
         }
-        
+
+        LOGGER.finest("Process finished with exit code: " + exitCode);
         boolean succeeded = exitCode == 0;
         
         return succeeded;

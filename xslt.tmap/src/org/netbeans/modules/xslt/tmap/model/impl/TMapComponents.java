@@ -21,7 +21,9 @@ package org.netbeans.modules.xslt.tmap.model.impl;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import org.netbeans.modules.xslt.tmap.model.api.Import;
 import org.netbeans.modules.xslt.tmap.model.api.Service;
+import org.netbeans.modules.xslt.tmap.model.api.Import;
 import org.netbeans.modules.xslt.tmap.model.api.Operation;
 import org.netbeans.modules.xslt.tmap.model.api.Invoke;
 import org.netbeans.modules.xslt.tmap.model.api.Transform;
@@ -35,6 +37,7 @@ import org.netbeans.modules.xslt.tmap.model.api.TMapComponent;
  */
 public enum TMapComponents {
     TRANSFORM_MAP("transformmap", ChildrenTypes.TRANSFORM_MAP_CHILDREN), // NOI18N
+    IMPORT("import", ChildrenTypes.IMPORT_CHILDREN), // NOI18N
     SERVICE("service", ChildrenTypes.SERVICE_CHILDREN), // NOI18N
     OPERATION("operation", ChildrenTypes.OPERATION_CHILDREN), // NOI18N
     INVOKE("invoke", ChildrenTypes.INVOKE_CHILDREN),// NOI18N
@@ -59,6 +62,7 @@ public enum TMapComponents {
             
     public static enum ChildrenTypes {
         TRANSFORM_MAP_CHILDREN(createTransformMap()),
+        IMPORT_CHILDREN(createImport()),
         SERVICE_CHILDREN(createService()),
         OPERATION_CHILDREN(createOperation()),
         INVOKE_CHILDREN(createInvoke()),
@@ -77,10 +81,16 @@ public enum TMapComponents {
         
         private static Collection<Class<? extends TMapComponent>> createTransformMap() {
             Collection<Class<? extends TMapComponent>> children  = new ArrayList<Class<? extends TMapComponent>>(1);
+            children.add(Import.class);
             children.add(Service.class);
             return children;
         }
         
+        private static Collection<Class<? extends TMapComponent>> createImport() {
+            Collection<Class<? extends TMapComponent>> children  = Collections.emptyList();
+            return children;
+        }
+
         private static Collection<Class<? extends TMapComponent>> createService() {
             Collection<Class<? extends TMapComponent>> children  = new ArrayList<Class<? extends TMapComponent>>(1);
             children.add(Operation.class);

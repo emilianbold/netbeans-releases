@@ -95,6 +95,8 @@ public class ClassesCountsView extends TopComponent implements org.openide.util.
     public ClassesCountsView () {
         setIcon (Utilities.loadImage ("org/netbeans/modules/debugger/resources/classesView/Classes.png")); // NOI18N
         setLayout (new BorderLayout ());
+        // Remember the location of the component when closed.
+        putClientProperty("KeepNonPersistentTCInModelWhenClosed", Boolean.TRUE); // NOI18N
     }
     
     protected String preferredID() {

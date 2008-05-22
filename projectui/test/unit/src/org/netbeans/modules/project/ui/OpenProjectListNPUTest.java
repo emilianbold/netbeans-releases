@@ -105,7 +105,7 @@ public class OpenProjectListNPUTest extends NbTestCase {
         f1_3_close = p1.createData("f1_3.java");
 
         project1 = ProjectManager.getDefault ().findProject (p1);
-        OpenProjectList.getDefault().getTemplatesLRU(project1);
+        OpenProjectList.getDefault().getTemplatesLRU(project1, null);
         
         ((TestSupport.TestProject) project1).setLookup (Lookups.singleton (TestSupport.createAuxiliaryConfiguration ()));
         
@@ -131,7 +131,7 @@ public class OpenProjectListNPUTest extends NbTestCase {
 
 
     public void testOpen () throws Exception {
-        OpenProjectList.getDefault().getTemplatesLRU(project1);
+        OpenProjectList.getDefault().getTemplatesLRU(project1, null);
         
         
         assertTrue ("No project is open.", OpenProjectList.getDefault ().getOpenProjects ().length == 0);

@@ -87,8 +87,7 @@ public class CreateCompositeApplication extends org.netbeans.performance.test.ut
     }
     
     public void initialize(){
-        category = Bundle.getStringTrimmed("org.netbeans.modules.bpel.project.wizards.Bundle","Templates/Project/SOA"); // "Service Oriented Architecture"
-//        project = Bundle.getStringTrimmed("org.netbeans.modules.bpel.project.wizards.Bundle","Templates/Project/SOA/emptyBpelpro.xml"); // "Composite Application"
+        category = Bundle.getStringTrimmed("org.netbeans.modules.bpel.project.Bundle", "OpenIDE-Module-Display-Category"); // "SOA"
         project = "Composite Application"; // NOI18N
         index=1;
         

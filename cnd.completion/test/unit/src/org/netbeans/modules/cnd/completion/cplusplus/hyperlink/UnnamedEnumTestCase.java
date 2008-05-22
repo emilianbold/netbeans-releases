@@ -57,10 +57,9 @@ public class UnnamedEnumTestCase extends HyperlinkBaseTestCase {
         performTest("newfile.cc", 7, 14, "newfile.cc", 3, 14);
     }
     
-//    public void testONE() throws Exception {
-//        // still failed see IZ#113287: Hyperlink and Code Completion works wrong with unnamed enums
-//        performTest("newfile.cc", 6, 14, "newfile.h", 1, 7);
-//    }
+    public void testONE() throws Exception {
+        performTest("newfile.cc", 6, 14, "newfile.h", 1, 7);
+    }
 
     public void testExecutionContextT() throws Exception {
         performTest("unnamedTypedefEnum.cc", 6, 20, "unnamedTypedefEnum.cc", 6, 17); // k_eExecutionContextSystemTask

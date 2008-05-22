@@ -77,8 +77,11 @@ public class AXIModelTest extends AbstractTestCase {
     }
     
     public static Test suite() {
-        TestSuite suite = new TestSuite(AXIModelTest.class);
-        
+        TestSuite suite = new TestSuite();
+        suite.addTest(new AXIModelTest("testAXIModel"));
+        suite.addTest(new AXIModelTest("testAXIModelForMetaSchema"));
+        suite.addTest(new AXIModelTest("testRecursiveResolve1"));
+        suite.addTest(new AXIModelTest("testRecursiveResolve2"));
         return suite;
     }        
     
@@ -102,6 +105,30 @@ public class AXIModelTest extends AbstractTestCase {
 //            System.out.println(child);
 //        }
     }    
+    
+    /**
+     * See http://www.netbeans.org/issues/show_bug.cgi?id=134861.
+     */
+    public void testRecursiveResolve1() throws Exception {
+        loadModel("resources/A.xsd");
+        AXIDocument document = axiModel.getRoot();
+        Element e = findAXIGlobalElement("A");
+        assert(e.getChildElements().size() == 2);
+        assert(e.getChildElements().get(0).getName().equals("C11"));
+        assert(e.getChildElements().get(1).getName().equals("C12"));
+    }    
+    
+    /**
+     * See http://www.netbeans.org/issues/show_bug.cgi?id=134861.
+     */
+    public void testRecursiveResolve2() throws Exception {
+        loadModel("resources/A_1.xsd");
+        AXIDocument document = axiModel.getRoot();
+        Element e = findAXIGlobalElement("A");
+        assert(e.getChildElements().size() == 2);
+        assert(e.getChildElements().get(0).getName().equals("C11"));
+        assert(e.getChildElements().get(1).getName().equals("C12"));
+    }
     
     /**
      * Tests forward engineering of AXI model.

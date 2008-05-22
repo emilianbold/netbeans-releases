@@ -515,4 +515,22 @@ public abstract class ExtJellyTestCase extends JellyTestCase {
         new JTextFieldOperator(newJDAOp, 3).typeText(getTestProjectName());
         new JButtonOperator(newJDAOp, "Finish").push(); // NOI18N
     }
+    
+    // Method for checking jdk version
+    
+    public static String getJDKVersionCode() {
+        String specVersion = System.getProperty("java.version");
+        
+        if (specVersion.startsWith("1.4"))
+            return "jdk14";
+        
+        if (specVersion.startsWith("1.5"))
+            return "jdk15";
+        
+        if (specVersion.startsWith("1.6"))
+            return "jdk16";
+        
+        throw new IllegalStateException("Specification version: " + specVersion + " not recognized.");
+    }
+
 }

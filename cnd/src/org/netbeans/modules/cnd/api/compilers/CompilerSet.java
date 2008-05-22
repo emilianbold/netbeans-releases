@@ -75,6 +75,7 @@ public class CompilerSet {
 
     /** Recognized (and prioritized) types of compiler sets */
     public enum CompilerFlavor {
+            Sun13("SunStudio_13"), // NOI18N
             Sun12("SunStudio_12"), // NOI18N
             Sun11("SunStudio_11"), // NOI18N
             Sun10("SunStudio_10"), // NOI18N
@@ -110,7 +111,7 @@ public class CompilerSet {
         }
         
         public boolean isSunStudioCompiler() {
-            return this == Sun12 || this == Sun11 || this == Sun10 || this == Sun9 || this == Sun8 || this == Sun;
+            return this == Sun13 || this == Sun12 || this == Sun11 || this == Sun10 || this == Sun9 || this == Sun8 || this == Sun;
         }
         
         public boolean isSunUCBCompiler() {
@@ -121,6 +122,8 @@ public class CompilerSet {
             if (name != null) {
                 if (name.equals("SunStudio")) { // NOI18N
                     return Sun;
+                } else if (name.equals("SunStudio_13")) { // NOI18N
+                    return Sun13;
                 } else if (name.equals("SunStudio_12")) { // NOI18N
                     return Sun12;
                 } else if (name.equals("SunStudio_11")) { // NOI18N
@@ -187,6 +190,7 @@ public class CompilerSet {
             list.add(GNU);
             list.add(Cygwin);
             list.add(MinGW);
+            list.add(Sun13);
             list.add(Sun12);
             list.add(Sun11);
             list.add(Sun10);
@@ -511,6 +515,9 @@ public class CompilerSet {
         if (finv.exists() && finv.isDirectory()) {
             String[] dirs = finv.list();
             for (int i = 0; i < dirs.length; i++) {
+                if (dirs[i].startsWith("v17")) { // NOI18N
+                    return CompilerFlavor.Sun13;
+                }
                 if (dirs[i].startsWith("v16")) { // NOI18N
                     return CompilerFlavor.Sun12;
                 }
@@ -627,16 +634,19 @@ public class CompilerSet {
         if (!tools.contains(tool)) {
             tools.add(tool);
         }
+        tool.setCompilerSet(this);
         return tool;
     }
     
     public void addTool(Tool tool) {
         tools.add(tool);
+        tool.setCompilerSet(this);
     }
     
     public Tool addNewTool(String name, String path, int kind) {
         Tool tool = compilerProvider.createCompiler(flavor, kind, name, Tool.getToolDisplayName(kind), path);
         tools.add(tool);
+        tool.setCompilerSet(this);
         return tool;
     }
     
@@ -644,6 +654,7 @@ public class CompilerSet {
         for (Tool tool : tools) {
             if (tool.getName().equals(name) && tool.getPath().equals(path) && tool.getKind() == kind) {
                 tools.remove(tool);
+                tool.setCompilerSet(null);
                 return;
             }
         }
@@ -717,6 +728,7 @@ public class CompilerSet {
 //            t = compilerProvider.createCompiler(CompilerFlavor.Unknown, kind, "", noCompDNames[kind], ""); // NOI18N
 //        }
         tools.add(t);
+        t.setCompilerSet(this);
         return t;
     }
     

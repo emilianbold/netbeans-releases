@@ -21,7 +21,10 @@
 package org.netbeans.modules.bpel.design.model.patterns;
 
 
+import java.awt.event.ActionEvent;
 import java.awt.geom.Area;
+import javax.swing.AbstractAction;
+import javax.swing.JPopupMenu;
 import org.netbeans.modules.bpel.design.geometry.FBounds;
 import org.netbeans.modules.bpel.design.geometry.FDimension;
 import org.netbeans.modules.bpel.design.geometry.FInsets;
@@ -121,7 +124,6 @@ public class InvokePattern extends CompositePattern{
             p.setParent(this);
         }
     }
- 
     
     public String getDefaultName() {
         return "Invoke"; // NOI18N

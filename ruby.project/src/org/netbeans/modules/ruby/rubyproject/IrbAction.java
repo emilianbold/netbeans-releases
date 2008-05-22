@@ -49,7 +49,6 @@ import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
 import org.netbeans.modules.ruby.platform.RubyExecution;
@@ -58,11 +57,9 @@ import org.netbeans.modules.ruby.platform.execution.OutputRecognizer;
 import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.filesystems.FileUtil;
-import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
-import org.openide.windows.WindowManager;
 
 /**
  * Action which shows Irb component.
@@ -126,36 +123,12 @@ public class IrbAction extends AbstractAction {
             return;
         }
         
-        Node[] activatedNodes = WindowManager.getDefault().getRegistry().getActivatedNodes();
-        OpenProjects projects = OpenProjects.getDefault();
-
-        if (activatedNodes != null) {
-            Project p = null;
-            for (Node n : activatedNodes) {
-                p = n.getLookup().lookup(Project.class);
-                if (p != null) {
-                    break;
-                }
-            }
-            
-            if (p != null) {
-                boolean ok = runIrbConsole(p);
-                if (ok) {
-                    return;
-                }
-            }
+        RubyBaseProject project = Util.inferRubyProject();
+        if (project != null) {
+            runIrbConsole(project);
+        } else {
+            Toolkit.getDefaultToolkit().beep();
         }
         
-        Project project = projects.getMainProject();
-        if (project != null && runIrbConsole(project)) {
-            return;
-        }
-
-        for (Project p : projects.getOpenProjects()) {
-            if (runIrbConsole(p)) {
-                return;
-            }
-        }
-        Toolkit.getDefaultToolkit().beep();
     }
 }

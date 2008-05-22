@@ -233,17 +233,17 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
         if (isFolder) {
             jLabel3.setText(
                 NbBundle.getMessage(
-                    SimpleTargetChooserPanelGUI.class, "LBL_TargetChooser_FolderName_Label"
+                    SimpleTargetChooserPanelGUI.class, "LABEL_TargetChooser_FolderName_Label"
                 )
             ); // NOI18N
             jLabel3.setDisplayedMnemonic(
                 NbBundle.getMessage(
-                    SimpleTargetChooserPanelGUI.class, "MNE_TargetChooser_FolderName_Label"
+                    SimpleTargetChooserPanelGUI.class, "MNE_TargetChooser_FileName_Label"
                 ).charAt(0)
             ); // NOI18N
             jLabel2.setText(
                 NbBundle.getMessage(
-                    SimpleTargetChooserPanelGUI.class, "LBL_TargetChooser_ParentFolder_Label"
+                    SimpleTargetChooserPanelGUI.class, "LABEL_TargetChooser_ParentFolder_Label"
                 )
             ); // NOI18N
             jLabel2.setDisplayedMnemonic(
@@ -253,7 +253,7 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
             ); // NOI18N
             jLabel4.setText(
                 NbBundle.getMessage(
-                    SimpleTargetChooserPanelGUI.class, "LBL_TargetChooser_CreatedFolder_Label"
+                    SimpleTargetChooserPanelGUI.class, "LABEL_TargetChooser_CreatedFolder_Label"
                 )
             ); // NOI18N
             jLabel4.setDisplayedMnemonic(
@@ -264,17 +264,17 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
         } else {
             jLabel3.setText(
                 NbBundle.getMessage(
-                    SimpleTargetChooserPanelGUI.class, "LBL_TargetChooser_FileName_Label"
+                    SimpleTargetChooserPanelGUI.class, "LABEL_TargetChooser_FileName_Label"
                 )
             ); // NOI18N
             jLabel2.setText(
                 NbBundle.getMessage(
-                    SimpleTargetChooserPanelGUI.class, "LBL_TargetChooser_Folder_Label"
+                    SimpleTargetChooserPanelGUI.class, "LABEL_TargetChooser_Folder_Label"
                 )
             ); // NOI18N
             jLabel4.setText(
                 NbBundle.getMessage(
-                    SimpleTargetChooserPanelGUI.class, "LBL_TargetChooser_CreatedFile_Label"
+                    SimpleTargetChooserPanelGUI.class, "LABEL_TargetChooser_CreatedFile_Label"
                 )
             ); // NOI18N
             jLabel3.setDisplayedMnemonic(
@@ -415,7 +415,7 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
                 "MNE_TargetChooser_FileName_Label").charAt(0));
         this.jLabel3.setLabelFor(this.documentNameTextField);
         this.jLabel3.setText(org.openide.util.NbBundle.getMessage(SimpleTargetChooserPanelGUI.class,
-                "LBL_TargetChooser_FileName_Label"));
+                "LABEL_TargetChooser_FileName_Label"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         this.jPanel1.add(this.jLabel3, gridBagConstraints);
@@ -439,7 +439,7 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
         this.jLabel1.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(SimpleTargetChooserPanelGUI.class,
                 "MNE_TargetChooser_Project_Label").charAt(0));
         this.jLabel1.setText(org.openide.util.NbBundle.getMessage(SimpleTargetChooserPanelGUI.class,
-                "LBL_TargetChooser_Project_Label"));
+                "LABEL_TargetChooser_Project_Label"));
         this.jLabel1.setLabelFor(this.projectTextField);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -459,7 +459,7 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
                 "MNE_TargetChooser_Location_Label").charAt(0));
         this.locationLabel.setLabelFor(this.locationComboBox);
         this.locationLabel.setText(org.openide.util.NbBundle.getMessage(SimpleTargetChooserPanelGUI.class,
-                "LBL_TargetChooser_Location_Label"));
+                "LABEL_TargetChooser_Location_Label"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -479,7 +479,7 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
                 "MNE_TargetChooser_ParentFolder_Label").charAt(0));
         this.jLabel2.setLabelFor(this.folderTextField);
         this.jLabel2.setText(org.openide.util.NbBundle.getMessage(SimpleTargetChooserPanelGUI.class,
-                "LBL_TargetChooser_Folder_Label"));
+                "LABEL_TargetChooser_Folder_Label"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -499,7 +499,7 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
         this.browseButton.setMnemonic(org.openide.util.NbBundle.getMessage(SimpleTargetChooserPanelGUI.class,
                 "MNE_TargetChooser_Browse_Button").charAt(0));
         this.browseButton.setText(org.openide.util.NbBundle.getMessage(SimpleTargetChooserPanelGUI.class,
-                "LBL_TargetChooser_Browse_Button"));
+                "LABEL_TargetChooser_Browse_Button"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -511,7 +511,7 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
         this.jLabel4.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(SimpleTargetChooserPanelGUI.class,
                 "MNE_TargetChooser_CreatedFile_Label").charAt(0));
         this.jLabel4.setText(org.openide.util.NbBundle.getMessage(SimpleTargetChooserPanelGUI.class,
-                "LBL_TargetChooser_CreatedFile_Label"));
+                "LABEL_TargetChooser_CreatedFile_Label"));
         this.jLabel4.setLabelFor(this.fileTextField);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;

@@ -56,6 +56,9 @@ public class CatchClause extends Statement {
         this.className = className;
         this.variable = variable;
         this.body = statement;
+//        className.setParent(this);
+//        variable.setParent(this);
+//        statement.setParent(this);
 
     }
 

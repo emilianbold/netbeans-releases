@@ -51,6 +51,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import javax.swing.ButtonModel;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.text.Document;
@@ -58,12 +59,12 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.railsprojects.RailsProject;
-import org.netbeans.modules.ruby.railsprojects.UpdateHelper;
 import org.netbeans.modules.ruby.railsprojects.server.spi.RubyInstance;
 import org.netbeans.modules.ruby.rubyproject.JavaClassPathUi;
 import org.netbeans.modules.ruby.rubyproject.ProjectPropertyExtender;
 import org.netbeans.modules.ruby.rubyproject.ProjectPropertyExtender.Item;
 import org.netbeans.modules.ruby.rubyproject.SharedRubyProjectProperties;
+import org.netbeans.modules.ruby.rubyproject.UpdateHelper;
 import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectHelper;
 import org.netbeans.modules.ruby.spi.project.support.rake.EditableProperties;
 import org.netbeans.modules.ruby.spi.project.support.rake.GeneratedFilesHelper;
@@ -92,6 +93,9 @@ public class RailsProjectProperties extends SharedRubyProjectProperties {
     //public static final String Ruby_PROJECT_NAME = "rails.project.name"; // NOI18N
     public static final String JAVA_PLATFORM = "platform.active"; // NOI18N
 
+    public static final String DEBUG_SERVER = "debug.server"; // NOI18N
+    public static final String DEBUG_CLIENT = "debug.client"; // NOI18N
+    
     // Properties stored in the PROJECT.PROPERTIES    
     // TODO - nuke me!
     public static final String MAIN_CLASS = "main.file"; // NOI18N
@@ -145,6 +149,10 @@ public class RailsProjectProperties extends SharedRubyProjectProperties {
     private RubyInstance server;
     private String railsEnvironment;
     
+    // CustomizerDebug
+    ButtonModel DEBUG_SERVER_MODEL;
+    ButtonModel DEBUG_CLIENT_MODEL;
+    
     RailsProject getProject() {
         return project;
     }
@@ -191,7 +199,17 @@ public class RailsProjectProperties extends SharedRubyProjectProperties {
         // CustomizerRun
         RUN_CONFIGS = readRunConfigs();
         activeConfig = evaluator.getProperty("config");
-                
+        
+        
+        // CustomizerDebug
+        String serverValue = evaluator.getProperty(DEBUG_SERVER);
+        
+        DEBUG_SERVER_MODEL = projectGroup.createToggleButtonModel(evaluator, DEBUG_SERVER);
+        DEBUG_CLIENT_MODEL = projectGroup.createToggleButtonModel(evaluator, DEBUG_CLIENT);
+        
+        if (serverValue == null) {
+            DEBUG_SERVER_MODEL.setSelected(true);
+        }                
     }
     
     // From ClassPathUiSupport:

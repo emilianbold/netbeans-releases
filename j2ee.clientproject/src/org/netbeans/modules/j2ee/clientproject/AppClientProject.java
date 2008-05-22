@@ -53,6 +53,7 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -119,6 +120,7 @@ import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
+import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileAttributeEvent;
@@ -297,6 +299,7 @@ public final class AppClientProject implements Project, AntProjectListener, File
                 sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
             }
         });
+        FileEncodingQueryImplementation encodingQuery = QuerySupport.createFileEncodingQuery(evaluator(), AppClientProjectProperties.SOURCE_ENCODING);
         Lookup base = Lookups.fixed(new Object[] {
             new Info(),
             aux,
@@ -306,7 +309,7 @@ public final class AppClientProject implements Project, AntProjectListener, File
             new AppClientLogicalViewProvider(this, this.updateHelper, evaluator(), refHelper),
             // new J2SECustomizerProvider(this, this.updateHelper, evaluator(), refHelper),
             new CustomizerProviderImpl(this, this.updateHelper, evaluator(), refHelper, this.genFilesHelper),
-            new ClassPathProviderMerger(cpProvider),
+            LookupMergerSupport.createClassPathProviderMerger(cpProvider),
             QuerySupport.createCompiledSourceForBinaryQuery(helper, evaluator(), getSourceRoots(),getTestSourceRoots()),
             QuerySupport.createJavadocForBinaryQuery(helper, evaluator()),
             new AntArtifactProviderImpl(),
@@ -318,7 +321,8 @@ public final class AppClientProject implements Project, AntProjectListener, File
             QuerySupport.createSharabilityQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots(),
                     AppClientProjectProperties.META_INF),
             QuerySupport.createFileBuiltQuery(helper,  evaluator(), getSourceRoots(), getTestSourceRoots()),
-            QuerySupport.createFileEncodingQuery(evaluator(), AppClientProjectProperties.SOURCE_ENCODING),
+            encodingQuery,
+            QuerySupport.createTemplateAttributesProvider(helper, encodingQuery),
             new RecommendedTemplatesImpl(this.updateHelper),
             classPathExtender,
             buildExtender,
@@ -706,13 +710,14 @@ public final class AppClientProject implements Project, AntProjectListener, File
                 
                 String servInstID = getProperty(AntProjectHelper.PRIVATE_PROPERTIES_PATH, AppClientProjectProperties.J2EE_SERVER_INSTANCE);
                 J2eePlatform platform = Deployment.getDefault().getJ2eePlatform(servInstID);
+                String serverType = null;
                 if (platform != null) {
                     // updates j2ee.platform.cp & wscompile.cp & reg. j2ee platform listener
                     AppClientProjectProperties.setServerInstance(AppClientProject.this, AppClientProject.this.helper, servInstID);
                 } else {
                     // if there is some server instance of the type which was used
                     // previously do not ask and use it
-                    String serverType = getProperty(AntProjectHelper.PROJECT_PROPERTIES_PATH, AppClientProjectProperties.J2EE_SERVER_TYPE);
+                    serverType = getProperty(AntProjectHelper.PROJECT_PROPERTIES_PATH, AppClientProjectProperties.J2EE_SERVER_TYPE);
                     if (serverType != null) {
                         String[] servInstIDs = Deployment.getDefault().getInstancesOfServer(serverType);
                         if (servInstIDs.length > 0) {
@@ -724,6 +729,9 @@ public final class AppClientProject implements Project, AntProjectListener, File
                         BrokenServerSupport.showAlert();
                     }
                 }
+                // UI Logging
+                Utils.logUI(NbBundle.getBundle(AppClientProject.class), "UI_APP_CLIENT_PROJECT_OPENED", // NOI18N
+                        new Object[] {(serverType != null ? serverType : Deployment.getDefault().getServerID(servInstID)), servInstID});                
             } catch (IOException e) {
                 Logger.getLogger("global").log(Level.INFO, null, e);
             }
@@ -763,6 +771,9 @@ public final class AppClientProject implements Project, AntProjectListener, File
             if (physicalViewProvider != null &&  physicalViewProvider.hasBrokenLinks()) {
                 BrokenReferencesSupport.showAlert();
             }
+            if(apiWebServicesClientSupport.isBroken(AppClientProject.this)) {
+                apiWebServicesClientSupport.showBrokenAlert(AppClientProject.this);
+            }
         }
         
         private void updateProject() {
@@ -778,7 +789,7 @@ public final class AppClientProject implements Project, AntProjectListener, File
             EditableProperties props = updateHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
             ArrayList<ClassPathSupport.Item> l = new ArrayList<ClassPathSupport.Item>();
             l.addAll(cpMod.getClassPathSupport().itemsList(props.getProperty(ProjectProperties.JAVAC_CLASSPATH), ClassPathSupportCallbackImpl.ELEMENT_INCLUDED_LIBRARIES));
-            ProjectProperties.storeLibrariesLocations(l.iterator(), props, getProjectDirectory());
+            ProjectProperties.storeLibrariesLocations(helper, l.iterator(), props);
             
             // #129316
             ProjectProperties.removeObsoleteLibraryLocations(ep);

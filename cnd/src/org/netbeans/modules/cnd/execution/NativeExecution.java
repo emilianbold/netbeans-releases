@@ -161,19 +161,16 @@ public class NativeExecution extends ExecutionSupport {
         return rc;
     }
     
-    public void start() {
-        super.start();
-    }
-    
-    public void destroy() {
+    public void stop() {
         /*
         if (executionThread != null) {
             executionThread.interrupt();
         }
          */
-        if (executionProcess != null) {
-            executionProcess.destroy();
-        }
+        outputReaderThread.cancel();
+//        if (executionProcess != null) {
+//            executionProcess.destroy();
+//        }
     }
     
     
@@ -183,7 +180,7 @@ public class NativeExecution extends ExecutionSupport {
         /** This is all output, not just stderr */
         private Reader err;
         private Writer output;
-        private Reader tmp_in;
+        private boolean cancel = false;
         
         public OutputReaderThread(InputStream err, Writer output) {
             this.err = new InputStreamReader(err);
@@ -198,21 +195,29 @@ public class NativeExecution extends ExecutionSupport {
          *  Java don't have a good way of interleaving stdout and stderr while keeping the
          *  exact order of the output.
          */
+        @Override
         public void run() {
             try {
                 int read;
                 
                 while ((read = err.read()) != (-1)) {
+                    if (cancel) { // 131739 
+                        return;
+                    }
                     if (read == 10)
                         output.write("\n"); // NOI18N
                     else
                         output.write((char) read);
-                    output.flush();
+                    //output.flush(); // 135380 
                 }
                 output.flush();
             } catch (IOException e) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             }
+        }
+        
+        public void cancel() {
+            cancel = true;
         }
     }
     
@@ -233,6 +238,7 @@ public class NativeExecution extends ExecutionSupport {
          *  Reader proc to read input from Output2's input textfield and send it
          *  to the running process.
          */
+        @Override
         public void run() {
             int ch;
             

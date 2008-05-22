@@ -11,9 +11,9 @@
  * http://www.netbeans.org/cddl-gplv2.html
  * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
  * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
+ * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
  * particular file as subject to the "Classpath" exception as provided
  * by Sun in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
@@ -56,7 +56,7 @@ import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Query;
-import static org.netbeans.modules.soa.ui.util.UI.*;
+import static org.netbeans.modules.xml.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -66,23 +66,12 @@ final class Util {
 
   private Util() {}
   
-  public static void visit( 
-    NamedComponentReference<GlobalType> type,
-    NamedComponentReference<GlobalElement> element,
-    Referenceable target,
-    Component component,
-    List<Component> usage)
-  {
+  public static void visit(NamedComponentReference<GlobalType> type, NamedComponentReference<GlobalElement> element, Referenceable target, Component component, List<Component> usage) {
     visit(type, target, component, usage);
     visit(element, target, component, usage);
   }        
           
-  public static void visit(
-    Reference reference,
-    Referenceable target,
-    Component component,
-    List<Component> usage)
-  {
+  public static void visit(Reference reference, Referenceable target, Component component, List<Component> usage) {
     if (reference == null || reference.get() == null) {
       return;
     }
@@ -96,12 +85,7 @@ final class Util {
     }
   }
 
-  public static void visit(
-    QName qName,
-    Referenceable target,
-    Component component,
-    List<Component> usage)
-  {
+  public static void visit(QName qName, Referenceable target, Component component, List<Component> usage) {
 //out();
 //out("VISIT: " + qName);
     if (target instanceof Named && contains(qName, (Named) target)) {

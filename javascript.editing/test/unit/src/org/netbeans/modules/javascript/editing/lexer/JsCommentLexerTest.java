@@ -57,6 +57,7 @@ public class JsCommentLexerTest extends NbTestCase {
         super(testName);
     }
 
+    @Override
     protected void setUp() throws Exception {
     }
 
@@ -136,8 +137,8 @@ public class JsCommentLexerTest extends NbTestCase {
         TokenSequence<?> ts = hi.tokenSequence();
         LexerTestUtilities.assertNextTokenEquals(ts, JsCommentTokenId.TAG, "@type");
         LexerTestUtilities.assertNextTokenEquals(ts, JsCommentTokenId.OTHER_TEXT, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsCommentTokenId.TAG, "String[]");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsCommentTokenId.OTHER_TEXT, "\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsCommentTokenId.IDENT, "String");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsCommentTokenId.OTHER_TEXT, "[]\n");
     }
     
 
@@ -146,6 +147,8 @@ public class JsCommentLexerTest extends NbTestCase {
                 "/**\n" +
                 "* Returns a function that will return a number ...\n" +
                 "* @param {String[]|Element[]} fooBar\n" +
+                "* @param {Array<Integer>} name This is my name \n" +
+                "* @param {<a href=\"http://netbeans.org\">MyType</a>} foo\n" +
                 "* @type Object[]\n" +
                 "*/";
 
@@ -155,8 +158,10 @@ public class JsCommentLexerTest extends NbTestCase {
         
         Map<String, String> types = JsCommentLexer.findFunctionTypes(ts);
         
-        assertEquals(types.size(), 2);
-        assertEquals("Object[]", types.get("@return"));
-        assertEquals("String[]|Element[]", types.get("fooBar"));
+        assertEquals(types.size(), 4);
+        assertEquals("Array<Object>", types.get("@return"));
+        assertEquals("Array<String>|Array<Element>", types.get("fooBar"));
+        assertEquals("Array<Integer>", types.get("name"));
+        assertEquals("MyType", types.get("foo"));
     }
 }

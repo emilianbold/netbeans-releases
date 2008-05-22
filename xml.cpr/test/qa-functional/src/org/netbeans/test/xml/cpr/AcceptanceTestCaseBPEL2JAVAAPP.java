@@ -41,46 +41,12 @@
 
 package org.netbeans.test.xml.cpr;
 
-import java.awt.Point;
-import java.util.zip.CRC32;
-import javax.swing.tree.TreePath;
 import junit.framework.TestSuite;
-import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
-import org.netbeans.jellytools.NewFileWizardOperator;
-import org.netbeans.jellytools.OutputOperator;
-import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.TopComponentOperator;
-import org.netbeans.jellytools.WizardOperator;
-import org.netbeans.jellytools.actions.SaveAllAction;
-import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jellytools.nodes.ProjectRootNode;
-import org.netbeans.jemmy.operators.JButtonOperator;
-import org.netbeans.jemmy.operators.JDialogOperator;
-import org.netbeans.jemmy.operators.JListOperator;
-import org.netbeans.jemmy.operators.JPopupMenuOperator;
-import org.netbeans.jemmy.operators.JRadioButtonOperator;
-import org.netbeans.jemmy.operators.JTextFieldOperator;
-import org.netbeans.jemmy.operators.JTreeOperator;
-//import org.netbeans.test.xml.schema.lib.SchemaMultiView;
-//import org.netbeans.test.xml.schema.lib.util.Helpers;
 
-import org.netbeans.jemmy.operators.JFileChooserOperator;
-import org.netbeans.jemmy.operators.JMenuBarOperator;
-import org.netbeans.jemmy.operators.JCheckBoxOperator;
-import org.netbeans.jemmy.operators.JTreeOperator;
-import java.io.File;
-import org.netbeans.jellytools.MainWindowOperator;
-import java.awt.event.KeyEvent;
-//import java.awt.Robot;
-import org.netbeans.jellytools.FilesTabOperator;
-import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jemmy.operators.*;
 import org.netbeans.api.project.ProjectInformation;
-import javax.swing.ListModel;
+import org.netbeans.test.xml.schema.lib.SchemaMultiView;
 
 /**
  *
@@ -94,19 +60,52 @@ public class AcceptanceTestCaseBPEL2JAVAAPP extends AcceptanceTestCaseXMLCPR {
         "CreateJAVAAPPModule",
         "AddProjectReference",
         "DeleteProjectReference",
-
+        "AddSampleSchema",
+        "ImportReferencedSchema",
+        "ImportReferencedSchema2",
+        "DeleteReferencedSchema",
+        "FindUsages", // TODO : How to find find usages output?
+        "ValidateAndBuild",
+        "AddAttribute",
+        "ExploreAttribute",
+        "ManipulateAttribute",
+        "AddComplex",
+        "ExploreComplex",
+        "DeleteComplex",
+        "UndoRedoComplex",
+        "AddElement",
+        "ExploreElement",
+        "DeleteElement",
+        "UndoRedoElement",
+        "AddSimple",
+        "ExploreSimple",
+        "DeleteSimple",
+        "UndoRedoSimple",
         "RenameSampleSchema",
         "UndoRenameSampleSchema",
         "RedoRenameSampleSchema",
+        "FindUsages2",
+        "ValidateAndBuild",
+
+        // Move, fix
+
+        "ValidateAndBuild",
+        "BuildCompositeApplication",
+        "DeployCompositeApplication", // This will failed, followed skipped
+        "CreateNewTest",
+        "RunNewTest",
     };
 
     static final String SAMPLE_CATEGORY_NAME = "Samples|SOA|BPEL BluePrints";
     static final String SAMPLE_PROJECT_NAME = "BluePrint 1";
     static final String SAMPLE_NAME = "SampleApplication2Java";
+    static final String COMPOSITE_APPLICATION_NAME = SAMPLE_NAME + "Application";
 
     static final String MODULE_CATEGORY_NAME = "Java";
     static final String MODULE_PROJECT_NAME = "Java Application";
     static final String MODULE_NAME = "JavaApplication";
+
+    static final String SAMPLE_SCHEMA_PATH = "Source Packages|<default package>";
 
     public AcceptanceTestCaseBPEL2JAVAAPP(String arg0) {
         super(arg0);
@@ -173,11 +172,298 @@ public class AcceptanceTestCaseBPEL2JAVAAPP extends AcceptanceTestCaseXMLCPR {
       endTest( );
     }
 
+    public void AddSampleSchema( )
+    {
+      startTest( );
+      
+      AddSampleSchemaInternal( MODULE_NAME, SAMPLE_SCHEMA_PATH );
+
+      endTest( );
+    }
+
+    private CImportClickData[] acliImport =
+    {
+      new CImportClickData( true, 0, 0, 2, 4, "Unknown import table state after first click, number of rows: ", null ),
+      new CImportClickData( true, 1, 0, 2, 5, "Unknown import table state after second click, number of rows: ", null ),
+      new CImportClickData( true, 2, 0, 2, 7, "Unknown import table state after third click, number of rows: ", null ),
+      new CImportClickData( true, 5, 0, 2, 9, "Unknown import table state after forth click, number of rows: ", null ),
+      new CImportClickData( true, 6, 0, 2, 11, "Unknown import table state after fifth click, number of rows: ", null ),
+      new CImportClickData( true, 7, 0, 2, 12, "Unknown import table state after sixth click, number of rows: ", null ),
+      new CImportClickData( false, 3, 1, 1, 12, "Unknown to click on checkbox. #", null ),
+      new CImportClickData( true, 8, 1, 1, 12, "Unknown to click on checkbox. #", null )
+    };
+
+    private CImportClickData[] acliCheck =
+    {
+      new CImportClickData( true, 0, 0, 2, 4, "Unknown import table state after first click, number of rows: ", null ),
+      new CImportClickData( true, 1, 0, 2, 5, "Unknown import table state after second click, number of rows: ", null ),
+      new CImportClickData( true, 2, 0, 2, 7, "Unknown import table state after third click, number of rows: ", null ),
+      new CImportClickData( true, 5, 0, 2, 9, "Unknown import table state after forth click, number of rows: ", null ),
+      new CImportClickData( true, 6, 0, 2, 11, "Unknown import table state after fifth click, number of rows: ", null ),
+      new CImportClickData( true, 7, 0, 2, 12, "Unknown import table state after sixth click, number of rows: ", null ),
+      new CImportClickData( true, 3, 1, 1, 12, "Unknown to click on checkbox. #", "Selected document is already referenced." ),
+      new CImportClickData( true, 4, 1, 1, 12, "Unknown to click on checkbox. #", "Document cannot reference itself." ),
+      new CImportClickData( true, 8, 1, 1, 12, "Unknown to click on checkbox. #", "Selected document is already referenced." )
+    };
+
+    public void ImportReferencedSchema( )
+    {
+      startTest( );
+      
+      ImportReferencedSchemaInternal(
+          SAMPLE_NAME,
+          PURCHASE_SCHEMA_FILE_PATH,
+          PURCHASE_SCHEMA_FILE_NAME,
+          MODULE_NAME,
+          false,
+          acliImport
+        );
+
+      endTest( );
+    }
+
+    public void ImportReferencedSchema2( )
+    {
+      startTest( );
+
+      ImportReferencedSchema2Internal( acliCheck );
+      
+      endTest( );
+    }
+
+    public void DeleteReferencedSchema( )
+    {
+      startTest( );
+
+      DeleteReferencedSchemaInternal( MODULE_NAME );
+
+      ImportReferencedSchemaInternal(
+          SAMPLE_NAME,
+          PURCHASE_SCHEMA_FILE_PATH,
+          PURCHASE_SCHEMA_FILE_NAME,
+          MODULE_NAME,
+          true,
+          acliImport
+        );
+
+      endTest( );
+    }
+
+    public void FindUsages( )
+    {
+      startTest( );
+
+      FindUsagesInternal(
+          MODULE_NAME,
+          SAMPLE_SCHEMA_PATH,
+          LOAN_SCHEMA_FILE_NAME_ORIGINAL,
+          5
+        );
+
+      endTest( );
+    }
+
+    public void FindUsages2( )
+    {
+      startTest( );
+
+      FindUsagesInternal(
+          MODULE_NAME,
+          SAMPLE_SCHEMA_PATH,
+          LOAN_SCHEMA_FILE_NAME_RENAMED,
+          5
+        );
+
+      endTest( );
+    }
+
+    public void ValidateAndBuild( )
+    {
+      startTest( );
+      
+      ValidateAndBuildInternal( SAMPLE_NAME );
+
+      endTest( );
+    }
+
+    public void AddAttribute( )
+    {
+      startTest( );
+
+      AddItInternal(
+          PURCHASE_SCHEMA_FILE_NAME,
+          "Attributes",
+          "Add Attribute",
+          null, 
+          "Referenced Schemas|import|Simple Types|StateType",
+          ATTRIBUTES_NAMES[ 0 ]
+        );
+
+      endTest( );
+    }
+
+    public void ExploreAttribute( )
+    {
+      startTest( );
+
+      ExploreSimpleInternal(
+          ATTRIBUTES_NAMES[ 0 ],
+          "StateType",
+          "attribute",
+          "ns2:"
+        );
+
+      endTest( );
+    }
+
+    public void ManipulateAttribute( )
+    {
+      startTest( );
+
+      ManipulateAttributeInternal( SAMPLE_NAME );
+
+      endTest( );
+    }
+
+    public void AddComplex( )
+    {
+      startTest( );
+
+      AddItInternal(
+          PURCHASE_SCHEMA_FILE_NAME,
+          "Complex Types",
+          "Add Complex Type",
+          "Use Existing Definition", 
+          "Referenced Schemas|import|Complex Types|CarType",
+          COMPLEX_NAMES[ 0 ]
+        );
+
+      endTest( );
+    }
+
+    public void ExploreComplex( )
+    {
+      startTest( );
+
+
+
+      endTest( );
+    }
+
+    public void DeleteComplex( )
+    {
+      startTest( );
+
+
+
+      endTest( );
+    }
+
+    public void UndoRedoComplex( )
+    {
+      startTest( );
+
+
+
+      endTest( );
+    }
+
+    public void AddElement( )
+    {
+      startTest( );
+
+      AddItInternal(
+          PURCHASE_SCHEMA_FILE_NAME,
+          "Elements",
+          "Add Element",
+          "Use Existing Type", 
+          "Referenced Schemas|import|Complex Types|AddressType",
+          ELEMENT_NAMES[ 0 ]
+        );
+
+      endTest( );
+    }
+
+    public void ExploreElement( )
+    {
+      startTest( );
+
+
+
+      endTest( );
+    }
+
+    public void DeleteElement( )
+    {
+      startTest( );
+
+
+
+      endTest( );
+    }
+
+    public void UndoRedoElement( )
+    {
+      startTest( );
+
+
+
+      endTest( );
+    }
+
+    public void AddSimple( )
+    {
+      startTest( );
+
+      AddItInternal(
+          PURCHASE_SCHEMA_FILE_NAME,
+          "Simple Types",
+          "Add Simple Type",
+          null, 
+          "Referenced Schemas|import|Simple Types|LoanType",
+          SIMPLE_NAMES[ 0 ]
+        );
+
+      endTest( );
+    }
+
+    public void ExploreSimple( )
+    {
+      startTest( );
+
+      ExploreSimpleInternal(
+          SIMPLE_NAMES[ 0 ],
+          "LoanType",
+          "simpleType",
+          null
+        );
+
+      endTest( );
+    }
+
+    public void DeleteSimple( )
+    {
+      startTest( );
+
+
+
+      endTest( );
+    }
+
+    public void UndoRedoSimple( )
+    {
+      startTest( );
+
+
+
+      endTest( );
+    }
+
     public void RenameSampleSchema( )
     {
       startTest( );
 
-      RenameSampleSchemaInternal( MODULE_NAME );
+      RenameSampleSchemaInternal( MODULE_NAME, SAMPLE_SCHEMA_PATH );
 
       endTest( );
     }
@@ -186,7 +472,7 @@ public class AcceptanceTestCaseBPEL2JAVAAPP extends AcceptanceTestCaseXMLCPR {
     {
       startTest( );
 
-      UndoRenameSampleSchemaInternal( MODULE_NAME );
+      UndoRenameSampleSchemaInternal( MODULE_NAME, SAMPLE_SCHEMA_PATH );
 
       endTest( );
     }
@@ -195,18 +481,48 @@ public class AcceptanceTestCaseBPEL2JAVAAPP extends AcceptanceTestCaseXMLCPR {
     {
       startTest( );
 
-      RedoRenameSampleSchemaInternal( MODULE_NAME );
+      RedoRenameSampleSchemaInternal( MODULE_NAME, SAMPLE_SCHEMA_PATH );
 
       endTest( );
     }
 
-    public void tearDown() {
-        new SaveAllAction().performAPI();
+    public void BuildCompositeApplication( )
+    {
+      startTest( );
+      
+      BuildInternal(
+          COMPOSITE_APPLICATION_NAME,
+          false,
+          "jbi-build"
+        );
+
+      endTest( );
     }
 
-    protected void startTest(){
-        super.startTest();
-        //Helpers.closeUMLWarningIfOpened();
+    public void DeployCompositeApplication( )
+    {
+      startTest( );
+
+      DeployCompositeApplicationInternal( COMPOSITE_APPLICATION_NAME );
+      
+      endTest( );
     }
 
+    public void CreateNewTest( )
+    {
+      startTest( );
+
+      CreateNewTestInternal( SAMPLE_NAME, COMPOSITE_APPLICATION_NAME );
+
+      endTest( );
+    }
+
+    public void RunNewTest( )
+    {
+      startTest( );
+
+      RunTestInternal( COMPOSITE_APPLICATION_NAME, "TestCase1" );
+
+      endTest( );
+    }
 }

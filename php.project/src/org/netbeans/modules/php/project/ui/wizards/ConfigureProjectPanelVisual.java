@@ -49,15 +49,11 @@ class ConfigureProjectPanelVisual extends JPanel {
 
     private static final long serialVersionUID = 5104232236340989L;
 
-    private final ConfigureProjectPanel wizardPanel;
     private LocationPanelVisual locationPanelVisual;
-    private SourcesPanelVisual sourcesPanelVisual;
     private OptionsPanelVisual optionsPanelVisual;
 
 
-    ConfigureProjectPanelVisual(final ConfigureProjectPanel wizardPanel) {
-        this.wizardPanel = wizardPanel;
-
+    ConfigureProjectPanelVisual(ConfigureProjectPanel wizardPanel) {
         // Provide a name in the title bar.
         setName(NbBundle.getMessage(ConfigureProjectPanelVisual.class, "LBL_ProjectTitleName"));
         putClientProperty("WizardPanel_contentSelectedIndex", 0); // NOI18N
@@ -69,10 +65,6 @@ class ConfigureProjectPanelVisual extends JPanel {
         // location
         locationPanelVisual = new LocationPanelVisual();
         locationContainer.add(BorderLayout.NORTH, locationPanelVisual);
-
-        // sources
-        sourcesPanelVisual = new SourcesPanelVisual(wizardPanel);
-        sourcesContainer.add(BorderLayout.NORTH, sourcesPanelVisual);
 
         // options
         optionsPanelVisual = new OptionsPanelVisual(null);
@@ -87,10 +79,6 @@ class ConfigureProjectPanelVisual extends JPanel {
         return optionsPanelVisual;
     }
 
-    SourcesPanelVisual getSourcesPanelVisual() {
-        return sourcesPanelVisual;
-    }
-
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -101,7 +89,6 @@ class ConfigureProjectPanelVisual extends JPanel {
         java.awt.GridBagConstraints gridBagConstraints;
 
         locationContainer = new javax.swing.JPanel();
-        sourcesContainer = new javax.swing.JPanel();
         separator1 = new javax.swing.JSeparator();
         optionsContainer = new javax.swing.JPanel();
 
@@ -117,15 +104,6 @@ class ConfigureProjectPanelVisual extends JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         add(locationContainer, gridBagConstraints);
-
-        sourcesContainer.setLayout(new java.awt.BorderLayout());
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        add(sourcesContainer, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -152,7 +130,6 @@ class ConfigureProjectPanelVisual extends JPanel {
     private javax.swing.JPanel locationContainer;
     private javax.swing.JPanel optionsContainer;
     private javax.swing.JSeparator separator1;
-    private javax.swing.JPanel sourcesContainer;
     // End of variables declaration//GEN-END:variables
 
 }

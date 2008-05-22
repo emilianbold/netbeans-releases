@@ -35,6 +35,10 @@ chmod a+w logs
 
 "$script_dir"/perm.sh
 
+#add Product ID
+"$script_dir"/addproduct_id.sh "TOMCAT"
+
+
 if [ -d "/Library/Receipts/tomcat.pkg" ] ; then
     rm -rf "/Library/Receipts/tomcat.pkg"
 fi

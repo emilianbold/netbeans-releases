@@ -162,6 +162,8 @@ public class RightTree extends MapperPanel implements
         iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_CONTEXT_MENU, 0), "show-popupMenu");
         aMap.put("show-popupMenu", new ShowPopupMenuAction());
         
+        ViewTooltips.register(this);
+        
         getAccessibleContext().setAccessibleName(NbBundle
                 .getMessage(RightTree.class, "ACSN_RightTree")); // NOI18N
         getAccessibleContext().setAccessibleDescription(NbBundle
@@ -189,7 +191,7 @@ public class RightTree extends MapperPanel implements
 
     @Override
     public String getToolTipText(MouseEvent event) {
-        MapperModel model = getMapperModel();
+        MapperModel model = getMapper().getModel();
         MapperContext context = getMapper().getContext();
 
         if (model == null || context == null) {
@@ -1024,7 +1026,7 @@ public class RightTree extends MapperPanel implements
         public void actionPerformed(ActionEvent e) {
             RightTree tree = RightTree.this;
             MapperContext context = tree.getContext();
-            MapperModel model = tree.getMapperModel();
+            MapperModel model = tree.getMapper().getModel();
             if (context == null || model == null) { return; }
 
             TreePath treePath = tree.getSelectionModel().getSelectedPath();

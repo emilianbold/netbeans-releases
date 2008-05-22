@@ -279,7 +279,7 @@ public class EmbeddedSectionsHighlighting extends AbstractHighlightsContainer im
         public HighlightsLayer[] createLayers(Context context) {
             return new HighlightsLayer[]{ HighlightsLayer.create(
                 "rhtml-embedded-ruby-scriplets-highlighting-layer", //NOI18N
-                ZOrder.SYNTAX_RACK.forPosition(110), 
+                ZOrder.BOTTOM_RACK.forPosition(100), 
                 true, 
                 new EmbeddedSectionsHighlighting(context.getDocument())
             )};

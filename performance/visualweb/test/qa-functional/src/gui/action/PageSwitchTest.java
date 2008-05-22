@@ -41,6 +41,7 @@
 
 package gui.action;
 
+import gui.VWPUtilities;
 import gui.window.WebFormDesignerOperator;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
@@ -79,7 +80,7 @@ public class PageSwitchTest extends org.netbeans.performance.test.utilities.Perf
         //super.initialize(); 
         log("::initialize");  
         EditorOperator.closeDiscardAll();
-        pto = ProjectsTabOperator.invoke();
+        pto = VWPUtilities.invokePTO();
         long oldTimeout = JemmyProperties.getCurrentTimeout("ComponentOperator.WaitStateTimeout");
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitStateTimeout", 120000);        
         for(String namme: pagesToOpen) {

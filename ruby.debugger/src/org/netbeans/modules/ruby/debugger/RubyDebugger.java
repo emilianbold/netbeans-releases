@@ -76,6 +76,8 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
     
     private static final String PATH_TO_CLASSIC_DEBUG_DIR;
     
+    private ExecutionDescriptor descriptor;
+    
     private RubySession session;
     
     static {
@@ -88,8 +90,15 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
         PATH_TO_CLASSIC_DEBUG_DIR = classicDebug.getParentFile().getAbsolutePath();
     }
     
-    /** @see RubyDebuggerImplementation#debug */
-    public Process debug(final ExecutionDescriptor descriptor) {
+    public void describeProcess(ExecutionDescriptor descriptor) {
+        this.descriptor = descriptor;
+    }
+    
+    public boolean canDebug() {
+        return !descriptor.getPlatform().isRubinius();
+    }
+    
+    public Process debug() {
         Process p = null;
         try {
             session = startDebugging(descriptor);
@@ -108,8 +117,10 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
     public Runnable getFinishAction() {
         return new Runnable() {
             public void run() {
-                session.getActionProvider().doAction(ActionsManager.ACTION_KILL);
-                session = null;
+                if (session != null) { // #131563
+                    session.getActionProvider().doAction(ActionsManager.ACTION_KILL);
+                    session = null;
+                }
             }
         };
     }
@@ -175,6 +186,8 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
             proxy = RubyDebuggerFactory.startClassicDebugger(debugDesc,
                     PATH_TO_CLASSIC_DEBUG_DIR, interpreter, timeout);
         } else { // ruby-debug
+            String version = platform.getGemManager().getLatestVersion("ruby-debug-ide"); // NOI18N
+            debugDesc.setRubyDebugIDEVersion(version);
             Util.LOGGER.fine("Running fast debugger...");
             File rDebugF = new File(Util.findRDebugExecutable(platform));
             proxy = RubyDebuggerFactory.startRubyDebug(debugDesc,
@@ -197,6 +210,9 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
     /** Package private for unit test. */
     static boolean checkAndTuneSettings(final ExecutionDescriptor descriptor) {
         final RubyPlatform platform = descriptor.getPlatform();
+        if (platform.isRubinius()) { // no debugger support for Rubinius yet
+            return false;
+        }
         assert platform.isValid() : platform + " is a valid platform";
 
         boolean jrubySet = platform.isJRuby();

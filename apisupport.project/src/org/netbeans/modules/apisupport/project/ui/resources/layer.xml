@@ -172,12 +172,22 @@ made subject to such option by the copyright holder.
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/newUpdateCenter.html"/>
                 <attr name="templateCategory" stringvalue="nbm-specific"/>
             </file>
+            <file name="newCodeGenerator">
+                <attr name="template" boolvalue="true"/>
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.apisupport.project.ui.wizard.codegenerator.NewCodeGeneratorIterator.createIterator"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.apisupport.project.ui.wizard.codegenerator.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/newCodeGenerator.gif"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/newCodeGenerator.html"/>
+                <attr name="templateCategory" stringvalue="nbm-specific"/>
+            </file>
         </folder>
         <folder name="NetBeansModuleDevelopment-files"> <!-- XXX later could be made visible (just need localized labels) -->
             <attr name="position" intvalue="0"/>
             <attr name="simple" boolvalue="false"/>
             <file name="callableSystemAction.java" url="../wizard/action/callableSystemAction.javx"/>
             <file name="cookieAction.java" url="../wizard/action/cookieAction.javx"/>
+            <file name="codeGenerator.java" url="../wizard/codegenerator/codeGenerator.javx"/>
+            <file name="contextProvider.java" url="../wizard/codegenerator/contextProvider.javx"/>
             <file name="template_myplugin-helpset.xml" url="../wizard/javahelp/template_myplugin-helpset.xml"/>
             <file name="template_myplugin.xml" url="../wizard/javahelp/template_myplugin.hs"/>
             <file name="template_myplugin-idx.xml" url="../wizard/javahelp/template_myplugin-idx.xml"/>
@@ -348,4 +358,19 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
+    <folder name="Editors">
+        <folder name="text">
+            <folder name="x-java">
+                <folder name="HyperlinkProviders">
+                    <file name="org.netbeans.modules.apisupport.project.hyperlink.ApisupportHyperlinkProvider.instance"/>
+                </folder>
+            </folder>
+            <folder name="x-manifest">
+                <folder name="HyperlinkProviders">
+                    <file name="org.netbeans.modules.apisupport.project.hyperlink.ManifestHyperlinkProvider.instance"/>
+                </folder>    
+            </folder>
+        </folder>
+    </folder>
+    
 </filesystem>

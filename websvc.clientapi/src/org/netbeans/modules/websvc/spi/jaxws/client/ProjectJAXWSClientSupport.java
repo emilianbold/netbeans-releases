@@ -148,11 +148,11 @@ public abstract class ProjectJAXWSClientSupport implements JAXWSClientSupportImp
             
             Client client=null;
             finalClientName = findProperClientName(clientName, jaxWsModel);
-                      
+            FileObject xmlResourcesFo = getLocalWsdlFolderForClient(finalClientName,true);                      
             FileObject localWsdl=null;
             try {
                 localWsdl = WSUtils.retrieveResource(
-                        getLocalWsdlFolderForClient(finalClientName,true),
+                        xmlResourcesFo,
                         new URI(wsdlUrl));
             } catch (URISyntaxException ex) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
@@ -179,21 +179,21 @@ public abstract class ProjectJAXWSClientSupport implements JAXWSClientSupportImp
                     jaxWsModel.setJsr109(Boolean.TRUE);
                 }             
                 try {
+                    String localWsdlUrl = FileUtil.getRelativePath(xmlResourcesFo, localWsdl);
                     client = jaxWsModel.addClient(finalClientName, wsdlUrl, packageName);
+                    client.setLocalWsdlFile(localWsdlUrl);
+                    if (packageName == null) {
+                        // compute package name from namespace
+                        client.setPackageName(
+                                WSUtils.getPackageNameForWsdl(FileUtil.toFile(localWsdl)));
+                    }
                 } catch (ClientAlreadyExistsExeption ex) {
                     //this shouldn't happen
                 }
-                if (packageName == null) {
-                    // compute package name from namespace
-                    client.setPackageName(
-                            WSUtils.getPackageNameForWsdl(FileUtil.toFile(localWsdl)));
-                    System.out.println("packageName = "+packageName);
-                }
-                FileObject xmlResorcesFo = getLocalWsdlFolderForClient(finalClientName,false);
-                String localWsdlUrl = FileUtil.getRelativePath(xmlResorcesFo, localWsdl);
-                client.setLocalWsdlFile(localWsdlUrl);
+
                 FileObject catalog = getCatalogFileObject();
                 if (catalog!=null) client.setCatalogFile(CATALOG_FILE);
+                
                 writeJaxWsModel(jaxWsModel);
                 clientAdded=true;
                 // generate wsdl model immediately
@@ -214,19 +214,24 @@ public abstract class ProjectJAXWSClientSupport implements JAXWSClientSupportImp
                                     
                                 } else {
                                     Client client = jaxWsModel.findClientByName(clientName2);
-                                    String packName = client.getPackageName();
-                                    if(packName == null){
-                                        WsdlService service = model.getServices().get(0);
-                                        String javaName = service.getJavaName();
-                                        int index = javaName.lastIndexOf(".");
-                                        if (index != -1){
-                                            packName = javaName.substring(0,index );
-                                        } else {
-                                            packName = javaName;
-                                        }                                 
-                                        client.setPackageName(packName);
-                                        writeJaxWsModel(jaxWsModel);
+                                    String packName = client.getPackageName();                               
+                                    // this shuldn't normally happen
+                                    // this applies only for case when package name cannot be resolved for namespace
+                                    if(packName == null) {
+                                        if (model.getServices().size() > 0) {
+                                            WsdlService service = model.getServices().get(0);
+                                            String javaName = service.getJavaName();
+                                            int index = javaName.lastIndexOf(".");
+                                            if (index != -1){
+                                                packName = javaName.substring(0,index );
+                                            } else {
+                                                packName = javaName;
+                                            }                                 
+                                            client.setPackageName(packName);
+                                            writeJaxWsModel(jaxWsModel);
+                                        }
                                     }
+                                    
                                     runWsimport(clientName2);
                                 }
                             }

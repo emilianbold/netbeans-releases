@@ -119,6 +119,7 @@ public class DataViewWindow extends TopComponent {
     static final long serialVersionUID = 6855188441469780252L;
 
     public DataViewWindow(DatabaseNodeInfo info, String query) throws SQLException {
+        this.info = info;
 
         bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); //NOI18N
 

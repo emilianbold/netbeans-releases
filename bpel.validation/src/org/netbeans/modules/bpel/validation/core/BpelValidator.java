@@ -11,9 +11,9 @@
  * http://www.netbeans.org/cddl-gplv2.html
  * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
  * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
+ * License. When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP. Sun designates this
  * particular file as subject to the "Classpath" exception as provided
  * by Sun in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
@@ -51,28 +51,36 @@ import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.spi.Validation;
 import org.netbeans.modules.xml.xam.spi.Validation.ValidationType;
 import org.netbeans.modules.xml.xam.spi.ValidationResult;
-import org.netbeans.modules.xml.xam.spi.Validator.ResultType;
 
+import org.netbeans.modules.soa.validation.core.Validator;
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.api.CreateInstanceActivity;
 import org.netbeans.modules.bpel.model.api.Process;
 import org.netbeans.modules.bpel.model.api.support.Initiate;
+import org.netbeans.modules.bpel.model.api.support.SimpleBpelModelVisitor;
 import org.netbeans.modules.bpel.model.api.support.TBoolean;
-import static org.netbeans.modules.soa.ui.util.UI.*;
+import static org.netbeans.modules.xml.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
  * @version 2008.02.15
  */
-public abstract class BpelValidator extends CoreValidator {
+public abstract class BpelValidator extends Validator {
 
-  public synchronized ValidationResult validate(Model model, Validation validation, ValidationType type) {
-    if ( !(model instanceof BpelModel)) {
+  protected abstract SimpleBpelModelVisitor getVisitor();
+
+  public synchronized ValidationResult validate(Model m, Validation validation, ValidationType type) {
+    if ( !(m instanceof BpelModel)) {
       return null;
     }
-    final BpelModel bpelModel = (BpelModel) model;
+    BpelModel model = (BpelModel) m;
     
-    if (bpelModel.getState() == Model.State.NOT_WELL_FORMED) {
+    if (model.getState() == Model.State.NOT_WELL_FORMED) {
+      return null;
+    }
+    final Process process = model.getProcess();
+    
+    if (process == null) {
       return null;
     }
     init(validation, type);
@@ -80,23 +88,13 @@ public abstract class BpelValidator extends CoreValidator {
     Runnable run = new Runnable() {
       public void run() {
         startTime();
-        Process process = bpelModel.getProcess();
-
-        if (process != null) {
-          process.accept(BpelValidator.this);
-        }
+        process.accept(getVisitor());
         endTime(getDisplayName());
       }
     };
-    bpelModel.invoke(run);
-//if (getName().contains("custom")) {
-//out();
-//out();
-//out("!!! ERRORS: " + getResultItems().size());
-//out();
-//out();
-//}
-    return new ValidationResult(getResultItems(), Collections.singleton(model));
+    model.invoke(run);
+
+    return createValidationResult(model);
   }
 
   protected final boolean isCreateInstanceYes(CreateInstanceActivity activity) {

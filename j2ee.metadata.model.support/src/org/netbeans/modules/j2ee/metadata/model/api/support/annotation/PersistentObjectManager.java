@@ -243,7 +243,7 @@ public class PersistentObjectManager<T extends PersistentObject> implements Java
     }
 
     public void javaContextLeft() {
-        if (temporary) {
+        if (initialized && temporary) {
             LOGGER.log(Level.FINE, "discarding temporary manager"); // NOI18N
             deinitialize();
         }

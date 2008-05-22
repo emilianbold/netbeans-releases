@@ -47,6 +47,7 @@ public class CCIndentUnitTestCase extends CCFormatterBaseUnitTestCase {
     // indent new line tests
     
     public void testJavadocEnterNothingAfterCaret() {
+        setDefaultsOptions();
         setLoadDocumentText(
                 "/**\n"
                 + " * text|\n"
@@ -63,6 +64,7 @@ public class CCIndentUnitTestCase extends CCFormatterBaseUnitTestCase {
     }
     
     public void testJavadocEnterTextAfterCaret() {
+        setDefaultsOptions();
         setLoadDocumentText(
                 "/**\n"
                 + " * break|text\n"
@@ -79,6 +81,7 @@ public class CCIndentUnitTestCase extends CCFormatterBaseUnitTestCase {
     }
     
     public void testJavadocEnterStarAfterCaret() {
+        setDefaultsOptions();
         setLoadDocumentText(
                 "/**\n"
                 + " * text|*/\n"
@@ -93,6 +96,7 @@ public class CCIndentUnitTestCase extends CCFormatterBaseUnitTestCase {
     }
     
     public void testEnterInMultiLineSystemOutPrintln() {
+        setDefaultsOptions();
         setLoadDocumentText(
                 "void m() {\n"
                 + "    printf(|\n"
@@ -109,6 +113,7 @@ public class CCIndentUnitTestCase extends CCFormatterBaseUnitTestCase {
     }
     
     public void testEnterInMultiLineSystemOutPrintlnLineThree() {
+        setDefaultsOptions();
         setLoadDocumentText(
                 "void m() {\n"
                 + "    printf(\n"
@@ -127,6 +132,7 @@ public class CCIndentUnitTestCase extends CCFormatterBaseUnitTestCase {
     }
     
     public void testEnterInMultiLineSystemOutPrintlnAfterSemiColon() {
+        setDefaultsOptions();
         setLoadDocumentText(
                 "void m() {\n"
                 + "    printf(\n"
@@ -161,6 +167,7 @@ public class CCIndentUnitTestCase extends CCFormatterBaseUnitTestCase {
 //    }
     
     public void testEnterAfterIf() {
+        setDefaultsOptions();
         setLoadDocumentText(
                 "if (true)|\n"
                 );
@@ -172,10 +179,10 @@ public class CCIndentUnitTestCase extends CCFormatterBaseUnitTestCase {
     }
 
     public void testEnterAfterIfHalf() {
+        setDefaultsOptions();
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                 put(EditorOptions.newLineBeforeBrace, 
                 CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
-        try {
         setLoadDocumentText(
                 "if (true)|\n"
                 );
@@ -184,16 +191,13 @@ public class CCIndentUnitTestCase extends CCFormatterBaseUnitTestCase {
                 "if (true)\n"
                 + "  |\n"
                 );
-        } finally{
-            setDefaultsOptions();
-        }
     }
 
     public void testEnterAfterIfBraceHalf() {
+        setDefaultsOptions();
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                 put(EditorOptions.newLineBeforeBrace, 
                 CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
-        try {
         setLoadDocumentText(
                 "if (true)\n" +
                 "  {|\n" +
@@ -206,19 +210,16 @@ public class CCIndentUnitTestCase extends CCFormatterBaseUnitTestCase {
                 "    |\n" +
                 "  }\n" 
                 );
-        } finally{
-            setDefaultsOptions();
-        }
     }
 
     public void testEnterAfterIfBraceHalf2() {
+        setDefaultsOptions();
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                 put(EditorOptions.newLineBeforeBraceDeclaration, 
                 CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                 put(EditorOptions.newLineBeforeBrace, 
                 CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
-        try {
         setLoadDocumentText(
                 "int foo()\n" +
                 "{\n" +
@@ -237,12 +238,10 @@ public class CCIndentUnitTestCase extends CCFormatterBaseUnitTestCase {
                 "    }\n" +
                 "}\n"
                 );
-        } finally{
-            setDefaultsOptions();
-        }
     }
     
     public void testEnterAfterFor() {
+        setDefaultsOptions();
         setLoadDocumentText(
                 "for (int i = 0; i < 10; i++)|\n"
                 );
@@ -254,10 +253,10 @@ public class CCIndentUnitTestCase extends CCFormatterBaseUnitTestCase {
     }
 
     public void testEnterAfterForHalf() {
+        setDefaultsOptions();
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                 put(EditorOptions.newLineBeforeBrace, 
                 CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
-        try {
         setLoadDocumentText(
                 "for (int i = 0; i < 10; i++)|\n"
                 );
@@ -266,12 +265,10 @@ public class CCIndentUnitTestCase extends CCFormatterBaseUnitTestCase {
                 "for (int i = 0; i < 10; i++)\n"
                 + "  |\n"
                 );
-        } finally{
-            setDefaultsOptions();
-        }
     }
     
     public void testEnterAfterWhile() {
+        setDefaultsOptions();
         setLoadDocumentText(
                 "while (true)|\n"
                 );
@@ -283,10 +280,10 @@ public class CCIndentUnitTestCase extends CCFormatterBaseUnitTestCase {
     }
 
     public void testEnterAfterWhileHalf() {
+        setDefaultsOptions();
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                 put(EditorOptions.newLineBeforeBrace, 
                 CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
-        try {
         setLoadDocumentText(
                 "while (true)|\n"
                 );
@@ -295,12 +292,10 @@ public class CCIndentUnitTestCase extends CCFormatterBaseUnitTestCase {
                 "while (true)\n" +
                 "  |\n"
                 );
-        } finally{
-            setDefaultsOptions();
-        }
     }
 
     public void testEnterAfterDo() {
+        setDefaultsOptions();
         setLoadDocumentText(
                 "do|\n"
                 );
@@ -312,24 +307,22 @@ public class CCIndentUnitTestCase extends CCFormatterBaseUnitTestCase {
     }
     
     public void testEnterAfterDoHalf() {
+        setDefaultsOptions();
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                 put(EditorOptions.newLineBeforeBrace, 
                 CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
-        try {
-            setLoadDocumentText(
-                    "do|\n"
-                    );
-            indentNewLine();
-            assertDocumentTextAndCaret("Incorrect new-line indent",
-                    "do\n" +
-                    "  |\n"
-                    );
-        } finally{
-            setDefaultsOptions();
-        }
+        setLoadDocumentText(
+                "do|\n"
+                );
+        indentNewLine();
+        assertDocumentTextAndCaret("Incorrect new-line indent",
+                "do\n" +
+                "  |\n"
+                );
     }
 
     public void testEnterAfterIfStmt() {
+        setDefaultsOptions();
         setLoadDocumentText(
                 "if (true)\n"
                 + "    stmt;|\n"
@@ -343,10 +336,10 @@ public class CCIndentUnitTestCase extends CCFormatterBaseUnitTestCase {
     }
     
     public void testEnterAfterIfStmtHalf() {
+        setDefaultsOptions();
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                 put(EditorOptions.newLineBeforeBrace, 
                 CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
-        try {
         setLoadDocumentText(
                 "if (true)\n"
                 + "  stmt;|\n"
@@ -357,12 +350,10 @@ public class CCIndentUnitTestCase extends CCFormatterBaseUnitTestCase {
                 + "  stmt;\n"
                 + "|\n"
                 );
-        } finally{
-            setDefaultsOptions();
-        }
     }
 
     public void testEnterAfterIfElse() {
+        setDefaultsOptions();
         setLoadDocumentText(
                 "if (true)\n"
                 + "    stmt;\n"
@@ -378,10 +369,10 @@ public class CCIndentUnitTestCase extends CCFormatterBaseUnitTestCase {
     }
 
     public void testEnterAfterIfElseHalf() {
+        setDefaultsOptions();
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                 put(EditorOptions.newLineBeforeBrace, 
                 CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
-        try {
         setLoadDocumentText(
                 "if (true)\n"
                 + "  stmt;\n"
@@ -394,12 +385,10 @@ public class CCIndentUnitTestCase extends CCFormatterBaseUnitTestCase {
                 + "else\n"
                 + "  |\n"
                 );
-        } finally{
-            setDefaultsOptions();
-        }
     }
     
     public void testEnterAfterIfElseStmt() {
+        setDefaultsOptions();
         setLoadDocumentText(
                 "if (true)\n"
                 + "    stmt;\n"
@@ -417,6 +406,7 @@ public class CCIndentUnitTestCase extends CCFormatterBaseUnitTestCase {
     }
     
     public void testEnterAfterIfMultiLine() {
+        setDefaultsOptions();
         setLoadDocumentText(
                 "if (1 < 5|\n"
                 );
@@ -428,6 +418,7 @@ public class CCIndentUnitTestCase extends CCFormatterBaseUnitTestCase {
     }
     
     public void testEnterAfterIfMultiLine2() {
+        setDefaultsOptions();
         setLoadDocumentText(
                 "if (1 < 5|)\n"
                 );
@@ -443,6 +434,7 @@ public class CCIndentUnitTestCase extends CCFormatterBaseUnitTestCase {
      * @see http://www.netbeans.org/issues/show_bug.cgi?id=91561
      */
     public void testIdentUnbalancedBraces() {
+        setDefaultsOptions();
         setLoadDocumentText(
             "void foo() {\n" +
             "#if A\n" +
@@ -470,6 +462,7 @@ public class CCIndentUnitTestCase extends CCFormatterBaseUnitTestCase {
      * @see http://www.netbeans.org/issues/show_bug.cgi?id=91561
      */
     public void testIdentUnbalancedBraces2() {
+        setDefaultsOptions();
         setLoadDocumentText(
             "void foo() {\n" +
             "#if A\n" +
@@ -522,6 +515,7 @@ public class CCIndentUnitTestCase extends CCFormatterBaseUnitTestCase {
     
     public void testIdentMain() {
         setCppEditorKit(false);
+        setDefaultsOptions();
         setLoadDocumentText(
             "int main() {|\n");
         indentNewLine();
@@ -531,45 +525,39 @@ public class CCIndentUnitTestCase extends CCFormatterBaseUnitTestCase {
     }
 
     public void testIdentMainHalf() {
+        setCppEditorKit(false);
+        setDefaultsOptions();
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.C)).
                 put(EditorOptions.newLineBeforeBraceDeclaration, 
                 CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
-        try {
-        setCppEditorKit(false);
         setLoadDocumentText(
             "int main() {|\n");
         indentNewLine();
         assertDocumentText("Incorrect identing of main",
             "int main() {\n" +
             "  \n");
-        } finally{
-            setDefaultsOptions();
-        }
     }
 
     public void testIdentMainHalf2() {
+        setCppEditorKit(false);
+        setDefaultsOptions();
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.C)).
                 put(EditorOptions.newLineBeforeBraceDeclaration, 
                 CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
-        try {
-        setCppEditorKit(false);
         setLoadDocumentText(
             "int main()|\n");
         indentNewLine();
         assertDocumentText("Incorrect identing of main",
             "int main()\n" +
             "\n");
-        } finally{
-            setDefaultsOptions();
-        }
     }
 
     public void testIdentMainHalf3() {
+        setCppEditorKit(false);
+        setDefaultsOptions();
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.C)).
                 put(EditorOptions.newLineBeforeBraceDeclaration, 
                 CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
-        try {
-        setCppEditorKit(false);
         setLoadDocumentText(
             "int main()\n"+
             "{|\n");
@@ -578,12 +566,10 @@ public class CCIndentUnitTestCase extends CCFormatterBaseUnitTestCase {
             "int main()\n" +
             "{\n" +
             "  \n");
-        } finally{
-            setDefaultsOptions();
-        }
     }
 
     public void testIZ101099() {
+        setDefaultsOptions();
         setLoadDocumentText(
                 "template <class T>|\n"
                 );
@@ -595,6 +581,7 @@ public class CCIndentUnitTestCase extends CCFormatterBaseUnitTestCase {
     }
 
     public void testIZ122489() {
+        setDefaultsOptions();
         setLoadDocumentText(
                 "Cpu::Cpu(int units) :\n"+
                 "   Module(units) {\n"+
@@ -614,6 +601,7 @@ public class CCIndentUnitTestCase extends CCFormatterBaseUnitTestCase {
      */
     public void testIdentMethodParameters() {
         setCppEditorKit(false);
+        setDefaultsOptions();
         setLoadDocumentText(
             "int longmain(int a,|\n");
         indentNewLine();
@@ -626,20 +614,16 @@ public class CCIndentUnitTestCase extends CCFormatterBaseUnitTestCase {
      * test parameter aligning
      */
     public void testIdentMethodParameters2() {
+        setCppEditorKit(false);
+        setDefaultsOptions();
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.C)).
                 putBoolean(EditorOptions.alignMultilineMethodParams, true);
-        try {
-            setCppEditorKit(false);
-            setLoadDocumentText(
-                "int longmain(int a,|\n");
-            indentNewLine();
-            assertDocumentText("Incorrect identing of main",
-                "int longmain(int a,\n" +
-                "             \n");
-        } finally{
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.C)).
-                putBoolean(EditorOptions.alignMultilineMethodParams, false);
-        }
+        setLoadDocumentText(
+            "int longmain(int a,|\n");
+        indentNewLine();
+        assertDocumentText("Incorrect identing of main",
+            "int longmain(int a,\n" +
+            "             \n");
     }
 
     /**
@@ -647,6 +631,7 @@ public class CCIndentUnitTestCase extends CCFormatterBaseUnitTestCase {
      */
     public void testIdentCallParameters() {
         setCppEditorKit(false);
+        setDefaultsOptions();
         setLoadDocumentText(
             "a = longmain(a,|\n");
         indentNewLine();
@@ -659,18 +644,135 @@ public class CCIndentUnitTestCase extends CCFormatterBaseUnitTestCase {
      * test parameter aligning
      */
     public void testIdentCallParameters2() {
+        setDefaultsOptions();
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                 putBoolean(EditorOptions.alignMultilineCallArgs, true);
-        try {
-            setLoadDocumentText(
-                "a = longmain(a,|\n");
-            indentNewLine();
-            assertDocumentText("Incorrect identing of main",
-                "a = longmain(a,\n" +
-                "             \n");
-        } finally{
-        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
-                putBoolean(EditorOptions.alignMultilineCallArgs, false);
-        }
+        setLoadDocumentText(
+            "a = longmain(a,|\n");
+        indentNewLine();
+        assertDocumentText("Incorrect identing of main",
+            "a = longmain(a,\n" +
+            "             \n");
+    }
+
+    public void testIdentNewLineLocalDeclararion() throws Exception {
+        setDefaultsOptions("GNU");
+        setLoadDocumentText(
+            "tree\n" +
+            "disp(int i){\n" +
+            "  int i = |\n" +
+            "}"
+            );
+        indentNewLine();
+        assertDocumentTextAndCaret("Incorrect identing of New Line Local Declararion",
+            "tree\n" +
+            "disp(int i){\n" +
+            "  int i = \n" +
+            "  |\n" +
+            "}"
+            );
+    }
+
+    public void testIdentNewLineLocalStatement() throws Exception {
+        setDefaultsOptions("GNU");
+        setLoadDocumentText(
+            "tree\n" +
+            "disp(int i){\n" +
+            "  i = |\n" +
+            "}"
+            );
+        indentNewLine();
+        assertDocumentTextAndCaret("Incorrect identing of New Line Local Statement",
+            "tree\n" +
+            "disp(int i){\n" +
+            "  i = \n" +
+            "          |\n" +
+            "}"
+            );
+    }
+
+    public void testIdentNewLineLocalStatement2() throws Exception {
+        setDefaultsOptions("GNU");
+        setLoadDocumentText(
+            "tree\n" +
+            "disp(int i){\n" +
+            "  i = f(i,|)\n" +
+            "}"
+            );
+        indentNewLine();
+        assertDocumentTextAndCaret("Incorrect identing of New Line Local Statement",
+            "tree\n" +
+            "disp(int i){\n" +
+            "  i = f(i,\n" +
+            "        |)\n" +
+            "}"
+            );
+    }
+
+    public void testIdentNewLineLocalStatement3() throws Exception {
+        setDefaultsOptions("GNU");
+        setLoadDocumentText(
+            "tree\n" +
+            "disp(int i){\n" +
+            "  i = f(i,\n" +
+            "        i+|)\n" +
+            "}"
+            );
+        indentNewLine();
+        assertDocumentTextAndCaret("Incorrect identing of New Line Local Statement",
+            "tree\n" +
+            "disp(int i){\n" +
+            "  i = f(i,\n" +
+            "        i+\n" +
+            "          |)\n" +
+            "}"
+            );
+    }
+
+    public void testIdentNewLineLocalStatement4() throws Exception {
+        setDefaultsOptions("GNU");
+        setLoadDocumentText(
+            "tree\n" +
+            "disp(int i){\n" +
+            "  i = f(i,\n" +
+            "        i+foo(a,|))\n" +
+            "}"
+            );
+        indentNewLine();
+        assertDocumentTextAndCaret("Incorrect identing of New Line Local Statement",
+            "tree\n" +
+            "disp(int i){\n" +
+            "  i = f(i,\n" +
+            "        i+foo(a,\n" +
+            "              |))\n" +
+            "}"
+            );
+    }
+
+    // IZ#135150:GNU style: wrong indent in 'if else' expression
+    public void testIZ135150() throws Exception {
+        setDefaultsOptions("GNU");
+        setLoadDocumentText(
+            "int\n" +
+            "main()\n" +
+            "{\n" +
+            "  int i = 0;\n" +
+            "  if (i == 0)\n" +
+            "    i = 1;\n" +
+            "  else\n" +
+            "    {|\n"
+            );
+        indentNewLine();
+        assertDocumentTextAndCaret("IZ#135150:GNU style: wrong indent in 'if else' expression",
+            "int\n" +
+            "main()\n" +
+            "{\n" +
+            "  int i = 0;\n" +
+            "  if (i == 0)\n" +
+            "    i = 1;\n" +
+            "  else\n" +
+            "    {\n" +
+            "      |\n"
+            );
     }
 }

@@ -50,9 +50,7 @@ import java.util.logging.Logger;
 import javax.swing.text.*;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.openide.filesystems.FileObject;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
+import org.netbeans.modules.xml.core.lib.UnicodeReader;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
@@ -68,6 +66,19 @@ public class EncodingUtil {
     // heuristic constant guessing max prolog length
     private static final int EXPECTED_PROLOG_LENGTH = 1000;
     private static final Logger logger = Logger.getLogger(EncodingUtil.class.getName());
+    
+    /**
+     * Returns a specialized reader that allows to skip BOM marks.
+     * See http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4508058.
+     * See http://www.netbeans.org/issues/show_bug.cgi?id=83321.
+     * @param in
+     * @param encoding
+     * @return a specialized reader that allows to skip BOM marks.
+     */
+    public static Reader getUnicodeReader(InputStream in, String encoding) {
+        return new UnicodeReader(in, encoding);
+    }
+    
     /**
      * Detect input stream encoding.
      * The stream stays intact.

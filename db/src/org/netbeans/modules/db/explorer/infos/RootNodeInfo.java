@@ -48,6 +48,7 @@ import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.db.explorer.ConnectionListener;
 import org.openide.filesystems.*;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
@@ -96,6 +97,12 @@ public class RootNodeInfo extends DatabaseNodeInfo implements
             }
             
             setSpecificationFactory(new SpecificationFactory());
+            
+            ConnectionList.getDefault().addConnectionListener(new ConnectionListener() {
+                public void connectionsChanged() {
+                    stateChanged(new ChangeEvent(this));
+                }
+            });
             
             //initialization listener for debug mode
             initDebugListening();
@@ -219,15 +226,13 @@ public class RootNodeInfo extends DatabaseNodeInfo implements
         return ninfo;
     }
         
-    public void addConnectionNoConnect(DatabaseConnection dbconn) throws DatabaseException {        
+    public void addConnectionNoConnect(DatabaseConnection dbconn) throws DatabaseException {  
         if (ConnectionList.getDefault().contains(dbconn)) {
             return;
         }
         
         ConnectionNodeInfo ninfo = createConnectionNodeInfo(dbconn);
         ConnectionList.getDefault().add(dbconn);
-        addChild(ninfo);
-        
         notifyChange();
     }
     

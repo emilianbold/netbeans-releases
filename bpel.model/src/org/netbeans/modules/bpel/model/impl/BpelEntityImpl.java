@@ -260,11 +260,11 @@ public abstract class BpelEntityImpl extends AbstractDocumentComponent<BpelEntit
     //##    Default implementation.
     //##
     //############################################################################
-    public <T extends ReferenceableSchemaComponent> SchemaReference<T> createSchemaReference(T target, Class<T> type) {
+    public <T extends ReferenceableSchemaComponent> SchemaReference<T> 
+            createSchemaReference(T target, Class<T> type) {
         readLock();
         try {
-            return SchemaReferenceBuilder.getInstance().build(target, type,
-                    this);
+            return SchemaReferenceBuilder.getInstance().build(target, type, this);
         } finally {
             readUnlock();
         }

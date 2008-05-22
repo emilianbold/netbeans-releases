@@ -42,7 +42,6 @@
 package org.netbeans.modules.ruby.rhtml.editor;
 
 import java.awt.event.ActionEvent;
-import java.util.List;
 import javax.swing.Action;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
@@ -64,8 +63,6 @@ import org.netbeans.modules.editor.gsfret.InstantRenameAction;
 import org.netbeans.modules.gsf.DeleteToNextCamelCasePosition;
 import org.netbeans.modules.gsf.DeleteToPreviousCamelCasePosition;
 import org.netbeans.modules.gsf.GsfEditorKitFactory;
-import org.netbeans.modules.gsf.Language;
-import org.netbeans.modules.gsf.LanguageRegistry;
 import org.netbeans.modules.gsf.NextCamelCasePosition;
 import org.netbeans.modules.gsf.PreviousCamelCasePosition;
 import org.netbeans.modules.gsf.SelectCodeElementAction;

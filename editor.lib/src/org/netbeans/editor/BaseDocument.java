@@ -74,6 +74,7 @@ import javax.swing.undo.UndoableEdit;
 import javax.swing.undo.CompoundEdit;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.CannotRedoException;
+import org.netbeans.lib.editor.util.ListenerList;
 import org.netbeans.lib.editor.util.swing.DocumentListenerPriority;
 import org.netbeans.modules.editor.lib.FormatterOverride;
 import org.openide.util.Lookup;
@@ -298,6 +299,8 @@ public class BaseDocument extends AbstractDocument implements SettingsChangeList
     private boolean modsUndoneOrRedone;
     
     private DocumentListener postModificationDocumentListener;
+    
+    private ListenerList<DocumentListener> postModificationDocumentListenerList = new ListenerList<DocumentListener>();
     
     private Position lastPositionEditedByTyping = null;
     
@@ -571,7 +574,8 @@ public class BaseDocument extends AbstractDocument implements SettingsChangeList
         boolean activePostModification;
         DocumentEvent postModificationEvent = null;
         synchronized (this) {
-            activePostModification = (postModificationDocumentListener != null);
+            activePostModification = (postModificationDocumentListener != null
+                    || postModificationDocumentListenerList.getListenerCount() > 0);
             if (activePostModification) {
                 atomicLock();
             }
@@ -668,6 +672,9 @@ public class BaseDocument extends AbstractDocument implements SettingsChangeList
                         if (postModificationDocumentListener != null) {
                             postModificationDocumentListener.insertUpdate(postModificationEvent);
                         }
+                        for (DocumentListener listener: postModificationDocumentListenerList.getListeners()) {
+                            listener.insertUpdate(postModificationEvent);
+                        }
                     }
                 } finally {
                     atomicUnlock();
@@ -723,7 +730,8 @@ public class BaseDocument extends AbstractDocument implements SettingsChangeList
             boolean activePostModification;
             DocumentEvent postModificationEvent = null;
             synchronized (this) {
-                activePostModification = (postModificationDocumentListener != null);
+                activePostModification = (postModificationDocumentListener != null
+                        || postModificationDocumentListenerList.getListenerCount() > 0);
                 if (activePostModification) {
                     atomicLock();
                 }
@@ -801,6 +809,9 @@ public class BaseDocument extends AbstractDocument implements SettingsChangeList
                     if (postModificationEvent != null) { // Modification finished successfully
                         if (postModificationDocumentListener != null) {
                             postModificationDocumentListener.removeUpdate(postModificationEvent);
+                        }
+                        for (DocumentListener listener: postModificationDocumentListenerList.getListeners()) {
+                            listener.removeUpdate(postModificationEvent);
                         }
                     }
                     atomicUnlock();
@@ -1648,9 +1659,37 @@ public class BaseDocument extends AbstractDocument implements SettingsChangeList
      * If there is an active post modification document listener
      * then each document modification is encapsulated in an atomic lock
      * transaction automatically to allow further changes inside a transaction.
+     * 
+     * @deprecated Use addPostModificationDocumentListener(DocumentListener)
      */
     public void setPostModificationDocumentListener(DocumentListener listener) {
         this.postModificationDocumentListener = listener;
+    }
+    
+    /**
+     * Add a special document listener that gets notified
+     * after the modification and that is allowed to do further
+     * mutations to the document.
+     * <br>
+     * Additional mutations will be made in a single atomic transaction
+     * with an original mutation.
+     * <br>
+     * This functionality may be used for example by code templates
+     * to synchronize other regions of the document with the one
+     * currently being modified.
+     * <br>
+     * If there is an active post modification document listener
+     * then each document modification is encapsulated in an atomic lock
+     * transaction automatically to allow further changes inside a transaction.
+     * 
+     * @since 1.25
+     */
+    public void addPostModificationDocumentListener(DocumentListener listener) {
+        postModificationDocumentListenerList.add(listener);
+    }
+
+    public void removePostModificationDocumentListener(DocumentListener listener) {
+        postModificationDocumentListenerList.remove(listener);
     }
 
     /** Was the document modified by either insert/remove

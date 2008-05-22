@@ -91,7 +91,7 @@ public class IOManager {
         debuggerIO.setErrSeparated(false);
         debuggerOut = debuggerIO.getOut ();
         debuggerErr = debuggerIO.getErr();
-        debuggerIO.select();
+        //debuggerIO.select();
     }
     
     

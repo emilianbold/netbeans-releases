@@ -44,6 +44,7 @@ package org.netbeans.modules.j2ee.common.project.ui;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.*;
 import javax.swing.ImageIcon;
@@ -53,14 +54,13 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
-import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
@@ -136,7 +136,7 @@ public final class ProjectProperties {
      * @param privateProps private properties
      * @param projectFolder project folder
      */
-    public static void storeLibrariesLocations (Iterator<ClassPathSupport.Item> classpath, EditableProperties props, FileObject projectFolder) {
+    public static void storeLibrariesLocations (AntProjectHelper antHelper, Iterator<ClassPathSupport.Item> classpath, EditableProperties props) {
         ArrayList exLibs = new ArrayList ();
         Iterator propKeys = props.keySet().iterator();
         while (propKeys.hasNext()) {
@@ -150,7 +150,7 @@ public final class ProjectProperties {
             ClassPathSupport.Item item = (ClassPathSupport.Item)classpath.next();
             ArrayList<String> files = new ArrayList<String>();
             ArrayList<String> dirs = new ArrayList<String>();
-            getFilesForItem (item, files, dirs, projectFolder);
+            getFilesForItem (antHelper, item, files, dirs);
             String key;
             if (files.size() > 1 || (files.size()>0 && dirs.size()>0)) {
                 String ref = item.getType() == ClassPathSupport.Item.TYPE_LIBRARY ? item.getRaw() : item.getReference();
@@ -238,7 +238,8 @@ public final class ProjectProperties {
                     List wmLibs = cs.itemsList(projectProps.getProperty(property),  null);
                     set.addAll(wmLibs);
                 }
-                ProjectProperties.storeLibrariesLocations(set.iterator(), projectProps, project.getProjectDirectory());
+                EditableProperties privateProps = helper.getProperties (AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+                ProjectProperties.storeLibrariesLocations(helper, set.iterator(), helper.isSharableProject() ? projectProps : privateProps);
                 if (refreshLibraryTotals) {
                     // see issue #129316 for more details
                     for (int i = 0; i < properties.length; i++) {
@@ -246,6 +247,7 @@ public final class ProjectProperties {
                     }
                 }
                 helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProps);
+                helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProps);
                 try {
                     ProjectManager.getDefault().saveProject(project);
                 } catch (IOException e) {
@@ -255,14 +257,20 @@ public final class ProjectProperties {
         });
     }
     
-    public static final void getFilesForItem (ClassPathSupport.Item item, List<String> files, List<String> dirs, FileObject projectFolder) {
+    public static final void getFilesForItem (AntProjectHelper antHelper, ClassPathSupport.Item item, List<String> files, List<String> dirs) {
         if (item.isBroken()) {
             return ;
         }
         if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY) {
             List<URL> roots = item.getLibrary().getContent("classpath");  //NOI18N
+            Iterator<URI> uriIterator = item.getLibrary().getURIContent("classpath").iterator();  //NOI18N
             for (URL rootUrl : roots) {
-                FileObject root = LibrariesSupport.resolveLibraryEntryFileObject(item.getLibrary().getManager().getLocation(), rootUrl);
+                FileObject root = URLMapper.findFileObject(rootUrl);
+                URI u = uriIterator.next();
+                URI rootUri = LibrariesSupport.getArchiveFile(u);
+                if (rootUri == null) {
+                    rootUri = u;
+                }
                 
                 //file inside library is broken
                 if (root == null)
@@ -277,7 +285,7 @@ public final class ProjectProperties {
                 if (item.getLibrary().getManager().getLocation() == null) {
                     path = f.getPath();
                 } else {
-                    path = PropertyUtils.relativizeFile(FileUtil.toFile(projectFolder), FileUtil.toFile(root));
+                    path = getLibraryEntryPath(antHelper.getLibrariesLocation(), rootUri);
                 }
                 if (f != null) {
                     if (f.isFile()) {
@@ -310,6 +318,17 @@ public final class ProjectProperties {
                 }
             }
         }
+    }
+    
+    private static String getLibraryEntryPath(String librariesLocation, URI libraryEntryURI) {
+        URI u;
+        if (libraryEntryURI.isAbsolute()) {
+            u = libraryEntryURI;
+        } else {
+            URI libLocation = LibrariesSupport.convertFilePathToURI(librariesLocation);
+            u = libLocation.resolve(libraryEntryURI.getPath());
+        }
+        return LibrariesSupport.convertURIToFilePath(u).replace('\\', '/');
     }
 
     public static ListCellRenderer createClassPathListRendered(PropertyEvaluator evaluator, FileObject projectFolder) {

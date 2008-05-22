@@ -1437,9 +1437,10 @@ public class BaseOptions extends OptionSupport {
                 } else {
                     LOG.warning("Could not find Preferences instance for " + getContentType());
                 }
+                
+                refreshIndentEngineSettings();
             }
 
-            refreshIndentEngineSettings();
 //        }
     }
     

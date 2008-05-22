@@ -117,6 +117,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         
         // http://www.netbeans.org/issues/show_bug.cgi?id=125358
         // run the jbi core installer first - temporary solution        
+        /*
         final File jbiCoreInstallerTemp = new File(openesbLocation, JBI_CORE_INSTALLER);
         final File jbiCoreInstaller = new File(glassfishLocation, JBI_CORE_INSTALLER);
         
@@ -142,7 +143,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                 LogManager.log(e);
             }
         }
-
+        */
         // run the openesb installer ////////////////////////////////////////////////
         try {
             progress.setDetail(getString("CL.install.openesb.installer")); // NOI18N

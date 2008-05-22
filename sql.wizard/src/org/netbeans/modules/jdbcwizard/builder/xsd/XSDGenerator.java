@@ -71,6 +71,8 @@ public class XSDGenerator {
     private static final String ELEMENT_FORM_DEFAULT = "elementFormDefault";
 
     private static final String XSD_SEQUENCE = "sequence";
+    
+    private static final String XSD_REF = "ref";
 
     private static final String XSD_ELEMENT = "element";
 
@@ -173,16 +175,22 @@ public class XSDGenerator {
     private void createComplexTypesForTables(final DBTable aTable) throws Exception {
         final List cols = aTable.getColumnList();
         Element aNode = null;
+        Element bNode = null;
         final String tableName =  XMLCharUtil.makeValidNCName(aTable.getName());
 
         aNode = this.mDoc.createElement(XSDGenerator.XSD_PREFIX + XSDGenerator.XSD_COMPLEX_TYPE);
         aNode.setAttribute(XSDGenerator.NAME_ATTR, tableName);
         this.mRoot.appendChild(aNode);
         this.mCurrentNode = aNode;
-
+        
+        bNode = this.mDoc.createElement(XSDGenerator.XSD_PREFIX + XSDGenerator.XSD_ELEMENT);
+        bNode.setAttribute(XSDGenerator.XSD_REF, "record");
+        bNode.setAttribute(XSDGenerator.MAX_OCCURS_ATTR, "unbounded");
+        
         if (cols.size() > 0) {
             aNode = this.mDoc.createElement(XSDGenerator.XSD_PREFIX + XSDGenerator.XSD_SEQUENCE);
-            aNode.setAttribute(XSDGenerator.MAX_OCCURS_ATTR, "unbounded");
+            //aNode.setAttribute(XSDGenerator.MAX_OCCURS_ATTR, "unbounded");
+            aNode.appendChild(bNode);
             this.mCurrentNode.appendChild(aNode);
             this.mCurrentNode = aNode;
         }
@@ -193,6 +201,12 @@ public class XSDGenerator {
 
     private void createColumnElements(final List cols) throws Exception {
         Element aNode = null;
+        Element bNode = this.mDoc.createElement(XSDGenerator.XSD_PREFIX + XSDGenerator.XSD_ELEMENT);
+        bNode.setAttribute(XSDGenerator.NAME_ATTR, "record");
+        Element cNode = this.mDoc.createElement(XSDGenerator.XSD_PREFIX + XSDGenerator.XSD_COMPLEX_TYPE);
+        Element dNode = this.mDoc.createElement(XSDGenerator.XSD_PREFIX + XSDGenerator.XSD_SEQUENCE);
+        
+        
         for (int ii = 0; ii < cols.size(); ii++) {
             final DBColumn iCol = (DBColumn) cols.get(ii);
             final DBColumnImpl colDesc = iCol instanceof DBColumnImpl ? (DBColumnImpl) iCol : new DBColumnImpl();
@@ -213,8 +227,11 @@ public class XSDGenerator {
             aNode.setAttribute(XSDGenerator.TYPE_ATTR, colType);// defaulted for time being
             // aNode.setAttribute(MIN_OCCURS_ATTR, "0");
             // aNode.setAttribute(MAX_OCCURS_ATTR, "unbounded");
-            this.mCurrentNode.appendChild(aNode);
+            dNode.appendChild(aNode);
         }
+        cNode.appendChild(dNode);
+        bNode.appendChild(cNode);
+        this.mRoot.appendChild(bNode);
     }
 
     private void createComplexTypeRepeatElement(final String typeName, final String elemName) {

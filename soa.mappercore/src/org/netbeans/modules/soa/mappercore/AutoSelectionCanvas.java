@@ -47,6 +47,7 @@ import org.netbeans.modules.soa.mappercore.model.Graph;
 import org.netbeans.modules.soa.mappercore.model.Link;
 import org.netbeans.modules.soa.mappercore.model.TreeSourcePin;
 import org.netbeans.modules.soa.mappercore.model.Vertex;
+import org.netbeans.modules.soa.mappercore.utils.Utils;
 
 /**
  *
@@ -70,6 +71,7 @@ public class AutoSelectionCanvas implements MapperSelectionListener {
         List<Link> links = canvas.getSelectionModel().getSelectedLinks();
         Graph graph = canvas.getSelectionModel().getSelectedGraph();
         TreePath treePath = canvas.getSelectionModel().getSelectedPath();
+        if (treePath == null) return;
         //Change link
         if (links != null && links.size() > 0) {
             Link link = links.get(0);
@@ -84,7 +86,9 @@ public class AutoSelectionCanvas implements MapperSelectionListener {
         
         if (vertexes != null && vertexes.size() > 0) {
             Vertex vertex = vertexes.get(0);
-            if (vertex != currentVertex || (treePath != currentPath && vertex == currentVertex)) {
+            if (vertex != currentVertex || 
+                    (!(Utils.equal(treePath, currentPath) && vertex == currentVertex))) 
+            {
                 
                 currentVertex = vertex;
                 if (mapper.getNode(treePath, true).isGraphCollapsed()) {

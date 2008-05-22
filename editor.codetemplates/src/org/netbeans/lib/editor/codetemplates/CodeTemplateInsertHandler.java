@@ -41,40 +41,20 @@
 
 package org.netbeans.lib.editor.codetemplates;
 
-import java.awt.Color;
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.Action;
-import javax.swing.ActionMap;
-import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
-import javax.swing.text.SimpleAttributeSet;
-import javax.swing.text.StyleConstants;
 import org.netbeans.api.editor.completion.Completion;
-import org.netbeans.api.editor.mimelookup.MimeLookup;
-import org.netbeans.api.editor.mimelookup.MimePath;
-import org.netbeans.api.editor.settings.AttributesUtilities;
-import org.netbeans.api.editor.settings.EditorStyleConstants;
-import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.BaseKit;
-import org.netbeans.editor.BaseTextUI;
 import org.netbeans.editor.Formatter;
 import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
@@ -82,16 +62,15 @@ import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateInsertRequest;
 import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateParameter;
 import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateProcessor;
 import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateProcessorFactory;
+import org.netbeans.lib.editor.codetemplates.textsync.TextRegion;
+import org.netbeans.lib.editor.codetemplates.textsync.TextRegionEditing;
+import org.netbeans.lib.editor.codetemplates.textsync.TextRegionManager;
+import org.netbeans.lib.editor.codetemplates.textsync.TextSync;
+import org.netbeans.lib.editor.codetemplates.textsync.TextSyncGroup;
+import org.netbeans.lib.editor.codetemplates.textsync.TextSyncGroupEditingNotify;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.lib.editor.util.CharacterConversions;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
-import org.netbeans.lib.editor.util.swing.MutablePositionRegion;
-import org.netbeans.lib.editor.util.swing.PositionRegion;
-import org.netbeans.spi.editor.highlighting.HighlightsLayer;
-import org.netbeans.spi.editor.highlighting.HighlightsLayerFactory;
-import org.netbeans.spi.editor.highlighting.ZOrder;
-import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
-import org.openide.ErrorManager;
 
 /**
  * Code template allows the client to paste itself into the given
@@ -99,9 +78,9 @@ import org.openide.ErrorManager;
  *
  * @author Miloslav Metelka
  */
-public final class CodeTemplateInsertHandler
-implements DocumentListener, KeyListener {
-    
+public final class CodeTemplateInsertHandler implements TextSyncGroupEditingNotify {
+
+    // -J-Dorg.netbeans.lib.editor.codetemplates.CodeTemplateInsertHandler.level=FINE
     private static final Logger LOG = Logger.getLogger(CodeTemplateInsertHandler.class.getName());
     /**
      * Property used while nested template expanding.
@@ -122,13 +101,7 @@ implements DocumentListener, KeyListener {
     
     private List<CodeTemplateParameter> allParameters;
     
-    private List<CodeTemplateParameter> allParametersUnmodifiable;
-    
-    private List<CodeTemplateParameter> masters;
-    
-    private List<CodeTemplateParameter> mastersUnmodifiable;
-    
-    private List<CodeTemplateParameter> editableMasters;
+    private List<CodeTemplateParameter> masterParameters;
     
     private CodeTemplateInsertRequest request;
     
@@ -136,59 +109,19 @@ implements DocumentListener, KeyListener {
     
     private boolean released;
     
-    private boolean suspended;
-    
-    private Position caretPosition;
-    
     private boolean completionInvoke;
     
-    private int activeMasterIndex;
+    private TextRegion completeTextRegion;
     
-    private ActionMap componentOrigActionMap;
+    private TextSyncGroup textSyncGroup;
     
-    private Document doc;
-
-    private MutablePositionRegion positionRegion;
+    private CodeTemplateParameterImpl lastActiveMasterImpl;
     
     /**
      * When expanding of a template was requested when still editing parameters
      * of an outer template remember the outer template's handler
      */
     private CodeTemplateInsertHandler outerHandler;
-    
-    /**
-     * Parameter implementation for which the value is being explicitly
-     * set through the API. It prevents the release() call due to not editing
-     * of the active master parameter.
-     */
-    private CodeTemplateParameterImpl apiSetValueParamImpl;
-
-    /**
-     * Used to check whether the just performed modification affected active region.
-     */
-    private int lastActiveRegionStartOffset;
-    
-    /**
-     * Used to check whether the just performed modification affected active region.
-     */
-    private int lastActiveRegionEndOffset;
-    
-    /**
-     * Determines whether the present active parameter's change
-     * should be fired upon the active parameter change.
-     */
-    private boolean activeMasterModified;
-    
-    /**
-     * Whether currently synchronizing the document changes.
-     */
-    private boolean syncingDocModification;
-
-    private AttributeSet attribs = null;
-    private AttributeSet attribsLeft = null;
-    private AttributeSet attribsRight = null;
-    private AttributeSet attribsMiddle = null;
-    private AttributeSet attribsAll = null;
     
     public CodeTemplateInsertHandler(
         CodeTemplate codeTemplate,
@@ -198,8 +131,10 @@ implements DocumentListener, KeyListener {
         this.codeTemplate = codeTemplate;
         this.component = component;
 
-        Position zeroPos = PositionRegion.createFixedPosition(0);
-        this.positionRegion = new MutablePositionRegion(zeroPos, zeroPos);
+        completeTextRegion = new TextRegion();
+        TextSync completeTextSync = new TextSync(completeTextRegion);
+        textSyncGroup = new TextSyncGroup(completeTextSync);
+
         this.request = CodeTemplateSpiPackageAccessor.get().createInsertRequest(this);
 
         processors = new ArrayList<CodeTemplateProcessor>();
@@ -208,6 +143,9 @@ implements DocumentListener, KeyListener {
         }
 
         setParametrizedText(codeTemplate.getParametrizedText());
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("Created " + super.toString() + "\n"); // NOI18N
+        }
     }
     
     public CodeTemplate getCodeTemplate() {
@@ -226,13 +164,12 @@ implements DocumentListener, KeyListener {
         return inserted;
     }
     
-    private synchronized void markInserted() {
-        this.inserted = true;
-        resetCachedInsertText();
-    }
-    
     public synchronized boolean isReleased() {
         return released;
+    }
+    
+    public boolean isSuspended() {
+        return (textRegionEditing().activeTextSyncGroup() == textSyncGroup);
     }
     
     public String getParametrizedText() {
@@ -245,18 +182,17 @@ implements DocumentListener, KeyListener {
     }
 
     public int getInsertOffset() {
-        if (allParameters.isEmpty())
-            return positionRegion.getStartOffset();
-        return Math.min(paramImpl(allParameters.get(0)).getPositionRegion().getStartOffset(), positionRegion.getStartOffset());
+        return completeTextRegion.startOffset();
     }
 
     public String getInsertText() {
         if (inserted) {
             try {
                 int startOffset = getInsertOffset();
-                return doc.getText(startOffset, positionRegion.getEndOffset() - startOffset);
+                Document doc = component.getDocument();
+                return doc.getText(startOffset, completeTextRegion.endOffset() - startOffset);
             } catch (BadLocationException e) {
-                ErrorManager.getDefault().notify(e);
+                LOG.log(Level.WARNING, "Invalid offset", e); // NOI18N
                 return "";
             }
 
@@ -267,11 +203,11 @@ implements DocumentListener, KeyListener {
     }
     
     public List<? extends CodeTemplateParameter> getAllParameters() {
-        return allParametersUnmodifiable;
+        return Collections.unmodifiableList(allParameters);
     }
 
     public List<? extends CodeTemplateParameter> getMasterParameters() {
-        return mastersUnmodifiable;
+        return Collections.unmodifiableList(masterParameters);
     }
     
     public void processTemplate() {
@@ -283,8 +219,10 @@ implements DocumentListener, KeyListener {
         // Insert the template into document
         insertTemplate();
 
-        // Install overriding actions for template post-processing
-        installActions();
+        // For nested template expanding or when without parameters
+        // just update the caret position and release
+        textRegionEditing().startGroupEditing(textSyncGroup, this);
+        checkInvokeCompletion();
     }
 
     void checkInsertTextBuilt() {
@@ -297,19 +235,12 @@ implements DocumentListener, KeyListener {
         insertText = null;
     }
     
-    CodeTemplateParameter getActiveMaster() {
-        return (!suspended && activeMasterIndex < editableMasters.size())
-            ? editableMasters.get(activeMasterIndex)
-            : null;
+    CodeTemplateParameterImpl lastActiveMasterImpl() {
+        return lastActiveMasterImpl;
     }
-    
-    CodeTemplateParameterImpl getActiveMasterImpl() {
-        CodeTemplateParameter master = getActiveMaster();
-        return (master != null) ? paramImpl(master) : null;
-    }
-    
+
     public void insertTemplate() {
-        doc = component.getDocument();
+        Document doc = component.getDocument();
         outerHandler = (CodeTemplateInsertHandler)doc.getProperty(CT_HANDLER_DOC_PROPERTY);
         doc.putProperty(CT_HANDLER_DOC_PROPERTY, this);
         
@@ -338,37 +269,30 @@ implements DocumentListener, KeyListener {
 
             // insert the complete text
             int insertOffset = component.getCaretPosition();
-            int docLen = doc.getLength();
+            completeTextRegion.updateBounds(null, 
+                    TextRegion.createFixedPosition(completeInsertString.length()));
+
             doc.insertString(insertOffset, completeInsertString, null);
             
+            TextRegion<?> caretTextRegion = null;
             // Go through all master parameters and create region infos for them
-            for (Iterator it = request.getMasterParameters().iterator(); it.hasNext();) {
-                CodeTemplateParameter parameter = (CodeTemplateParameter)it.next();
-
-                if (CodeTemplateParameter.CURSOR_PARAMETER_NAME.equals(parameter.getName())) {
-                    caretPosition = doc.createPosition(insertOffset + parameter.getInsertTextOffset());
-                    CodeTemplateParameterImpl paramImpl = CodeTemplateParameterImpl.get(parameter);
-                    paramImpl.resetPositions(caretPosition, caretPosition);
-                    completionInvoke = parameter.getHints().get(CodeTemplateParameter.COMPLETION_INVOKE_HINT_NAME) != null;
-                } else { // Not a CURSOR parameter
-                    List<MutablePositionRegion> parameterRegions = new ArrayList<MutablePositionRegion>(4);
-                    addParameterRegion(parameterRegions, parameter, doc, insertOffset);
-                    for (Iterator slaveIt = parameter.getSlaves().iterator(); slaveIt.hasNext();) {
-                        CodeTemplateParameter slaveParameter = (CodeTemplateParameter)slaveIt.next();
-                        addParameterRegion(parameterRegions, slaveParameter, doc, insertOffset);
-                    }
-                    
-                    SyncDocumentRegion region = new SyncDocumentRegion(doc, parameterRegions);
-                    paramImpl(parameter).setRegion(region);
+            for (CodeTemplateParameter master : masterParameters) {
+                CodeTemplateParameterImpl masterImpl = CodeTemplateParameterImpl.get(master);
+                if (CodeTemplateParameter.CURSOR_PARAMETER_NAME.equals(master.getName())) {
+                    caretTextRegion = masterImpl.textRegion();
+                    completionInvoke = master.getHints().get(CodeTemplateParameter.COMPLETION_INVOKE_HINT_NAME) != null;
                 }
+                textSyncGroup.addTextSync(masterImpl.textRegion().textSync());
             }
             
-            positionRegion.reset(doc.createPosition(insertOffset),
-                    doc.createPosition(insertOffset + (doc.getLength() - docLen)));
-
-            if (caretPosition == null) { // no specific ${cursor} parameter
-                caretPosition = doc.createPosition(insertOffset + completeInsertString.length());
+            if (caretTextRegion == null) { // no specific ${cursor} parameter
+                Position caretFixedPos = TextRegion.createFixedPosition(completeInsertString.length());
+                TextSync caretTextSync = new TextSync(new TextRegion(caretFixedPos, caretFixedPos));
+                caretTextSync.setCaretMarker(true);
+                textSyncGroup.addTextSync(caretTextSync);
             }
+            
+            textRegionManager().addTextSyncGroup(textSyncGroup, insertOffset);
             
             if (doc instanceof BaseDocument) {
                 formatter.reformat(bdoc, insertOffset,
@@ -376,7 +300,7 @@ implements DocumentListener, KeyListener {
             }
             
         } catch (BadLocationException e) {
-            ErrorManager.getDefault().notify(e);
+            LOG.log(Level.WARNING, "Invalid offset", e); // NOI18N
         } finally {
             if (bdoc != null) {
                 bdoc.atomicUnlock();
@@ -385,333 +309,105 @@ implements DocumentListener, KeyListener {
                 }
             }
             
-            markInserted();
+            // Mark inserted
+            this.inserted = true;
+            resetCachedInsertText();
         }
-    }
-    
-    public void installActions() {
-        if (editableMasters.size() > 0) {
-            if (outerHandler != null)
-                outerHandler.suspended = true;
-            
-            // Install the post modification document listener to sync regions
-            if (doc instanceof BaseDocument) {
-                ((BaseDocument)doc).setPostModificationDocumentListener(this);
-                updateLastRegionBounds();
-            }
-
-            componentOrigActionMap = CodeTemplateOverrideAction.installOverrideActionMap(
-                    component, this);
-
-            component.addKeyListener(this);
-            tabUpdate();
-
-        } else {
-            // For nested template expanding or when without parameters
-            // just update the caret position and release
-            forceCaretPosition();
-            release();
-            if (completionInvoke) {
-                //Temporary ugly solution
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        SwingUtilities.invokeLater(new Runnable() {
-                            public void run() {
-                                Completion.get().showCompletion();
-                            }
-                        });
-                    }
-                });
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("CodeTemplateInsertHandler.insertTemplate()\n"); // NOI18N
+            LOG.fine(toString());
+            if (LOG.isLoggable(Level.FINER)) {
+                LOG.finer(textRegionManager().toString() + "\n");
             }
         }
     }
     
-    public void defaultKeyTypedAction(ActionEvent evt, Action origAction) {
-        origAction.actionPerformed(evt);
+    private TextRegionEditing textRegionEditing() {
+        return TextRegionEditing.get(component);
     }
     
-    public void tabAction(ActionEvent evt, Action origAction) {
-        checkNotifyParameterUpdate();
-        if (!isManagedInsert(component.getCaretPosition())) {
-            origAction.actionPerformed(evt);
-        } else if (editableMasters.size() > 1) {
-            activeMasterIndex++;
-            activeMasterIndex %= editableMasters.size();
-            tabUpdate();
-        }
-    }
-    
-    public void shiftTabAction(ActionEvent evt) {
-        checkNotifyParameterUpdate();
-
-        if (editableMasters.size() > 1) {
-            if (activeMasterIndex-- == 0)
-                activeMasterIndex = editableMasters.size() - 1;
-            tabUpdate();
-        }
-    }
-    
-    public void enterAction(ActionEvent evt) {
-        checkNotifyParameterUpdate();
-
-        activeMasterIndex++;
-        if (activeMasterIndex >= editableMasters.size()) { 
-            forceCaretPosition();
-            release();
-            if (completionInvoke) {
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        Completion.get().showCompletion();
-                    }
-                });
-            }
-        } else {
-            tabUpdate();
-        }
-    }
-    
-    void undoAction(ActionEvent evt) {
-        // Disable undo until release
-    }
-    
-    void redoAction(ActionEvent evt) {
-        // Disable redo until release
+    private TextRegionManager textRegionManager() {
+        return TextRegionManager.get(component.getDocument());
     }
     
     public String getDocParameterValue(CodeTemplateParameterImpl paramImpl) {
-        MutablePositionRegion preg = paramImpl.getPositionRegion();
-        int offset = preg.getStartOffset();
+        TextRegion textRegion = paramImpl.textRegion();
+        int offset = textRegion.startOffset();
+        int len = textRegion.endOffset() - offset;
         String parameterText;
         try {
-            parameterText = doc.getText(offset, preg.getEndOffset() - offset);
+            parameterText = component.getDocument().getText(offset, len);
         } catch (BadLocationException e) {
-            ErrorManager.getDefault().notify(e);
+            LOG.log(Level.WARNING, "Invalid offset", e); // NOI18N
             parameterText = ""; //NOI18N
         }
         return parameterText;
     }
     
-    public void setDocParameterValue(CodeTemplateParameterImpl paramImpl, String newValue) {
-        assert (paramImpl != getActiveMasterImpl()); // active master should not be modified
+    public void setDocMasterParameterValue(CodeTemplateParameterImpl paramImpl, String newValue) {
         assert (!paramImpl.isSlave()); // assert master parameter
-        SyncDocumentRegion region = paramImpl.getRegion();
-        assert (region != null);
-        int offset = region.getFirstRegionStartOffset();
-        int length = region.getFirstRegionLength();
-        apiSetValueParamImpl = paramImpl;
+        TextRegion textRegion = paramImpl.textRegion();
+        int offset = textRegion.startOffset();
+        int length = textRegion.endOffset() - offset;
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("CodeTemplateInsertHandler.setMasterParameterValue(): parameter-name=" + paramImpl.getName() + // NOI18N
+                    ", offset=" + offset + // NOI18N
+                    ", length=" + length + ", newValue=\"" + newValue + "\"\n"); // NOI18N
+        }
         try {
+            Document doc = component.getDocument();
             CharSequence parameterText = DocumentUtilities.getText(doc, offset, length);
             if (!CharSequenceUtilities.textEquals(parameterText, newValue)) {
-                doc.remove(offset, length);
-                doc.insertString(offset, newValue, null);
-                // Explicitly synchronize the other regions with the first
-                region.sync(newValue.length());
-                
-                paramImpl.setValue(newValue, false);
+                textRegion.textSync().setText(newValue);
+                notifyParameterUpdate(paramImpl.getParameter(), false);
             }
         } catch (BadLocationException e) {
-            ErrorManager.getDefault().notify(e);
-        } finally {
-            apiSetValueParamImpl = null;
+            LOG.log(Level.WARNING, "Invalid offset", e); // NOI18N
         }
-    }
-    
-    public void insertUpdate(DocumentEvent evt) {
-        int offset = evt.getOffset();
-        int insertLength = evt.getLength();
-        if (offset + insertLength == caretPosition.getOffset()) { // move the caret back
-            try {
-                caretPosition = doc.createPosition(offset);
-            } catch (BadLocationException e) {
-                ErrorManager.getDefault().notify(e);
-            }
-        }
-        
-        if (!syncingDocModification) {
-            syncingDocModification = true;
-            syncInsert(evt);
-            syncingDocModification = false;
-        }
-        
-        requestRepaint();
-    }
-    
-    public void removeUpdate(DocumentEvent evt) {
-        if (!syncingDocModification) {
-            syncingDocModification = true;
-            syncRemove(evt);
-            syncingDocModification = false;
-        }
-        
-        requestRepaint();
-    }
-    
-    public void changedUpdate(DocumentEvent evt) {
-    }
-    
-    public void keyPressed(KeyEvent e) {
-        if (suspended)
-            return;
-        if (KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0).equals(KeyStroke.getKeyStrokeForEvent(e))) {
-            release();
-            e.consume();
-        } else if (KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0).equals(KeyStroke.getKeyStrokeForEvent(e))) {
-            if (getActiveMaster() == null || !isManagedInsert(component.getCaretPosition())) {
-                checkNotifyParameterUpdate();
-                release();
-            }
-        }
-    }
-
-    public void keyReleased(KeyEvent e) {
-    }
-    
-    public void keyTyped(KeyEvent e) {
-    }
-    
-    private void forceCaretPosition() {
-        component.setCaretPosition(caretPosition.getOffset());
     }
     
     private void notifyParameterUpdate(CodeTemplateParameter parameter, boolean typingChange) {
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine(super.toString() + "notifyParameterUpdate() CALLED for " + parameter.getName() + "\n"); // NOI18N
+            LOG.fine(toString());
+            if (LOG.isLoggable(Level.FINER)) {
+                LOG.finer(textRegionManager().toString() + "\n");
+            }
+        }
         // Notify all processors about parameter's change
         for (CodeTemplateProcessor processor : processors) {
             processor.parameterValueChanged(parameter, typingChange);
         }
     }
     
-    private void checkNotifyParameterUpdate() {
-        if (activeMasterModified) {
-            activeMasterModified = false;
-            notifyParameterUpdate(getActiveMaster(), false);
-        }
-    }
-    
     private void parseParametrizedText() {
         allParameters = new ArrayList<CodeTemplateParameter>(2);
-        allParametersUnmodifiable = Collections.unmodifiableList(allParameters);
-        masters = new ArrayList<CodeTemplateParameter>(2);
-        mastersUnmodifiable = Collections.unmodifiableList(masters);
-        editableMasters = new ArrayList<CodeTemplateParameter>(2);
+        masterParameters = new ArrayList<CodeTemplateParameter>(2);
         parametrizedTextParser = new ParametrizedTextParser(this, parametrizedText);
         parametrizedTextParser.parse();
     }
     
     void notifyParameterParsed(CodeTemplateParameterImpl paramImpl) {
         allParameters.add(paramImpl.getParameter());
-        checkSlave(paramImpl.getParameter());
-    }
-        
-
-    /**
-     * Check whether the given parameter is slave of an existing
-     * master parameter.
-     * <br/>
-     * If so the parameter is turned into the slave of its master
-     * otherwise it's added to the list of masters.
-     */ 
-    private void checkSlave(CodeTemplateParameter parameter) {
-        for (Iterator it = getMasterParameters().iterator(); it.hasNext();) {
-            CodeTemplateParameter master = (CodeTemplateParameter)it.next();
-            if (master.getName().equals(parameter.getName())) {
-                paramImpl(parameter).markSlave(master);
+        // Check whether a corresponding master parameter already exists
+        for (CodeTemplateParameter master : masterParameters) {
+            if (master.getName().equals(paramImpl.getName())) {
+                paramImpl.markSlave(master);
+                CodeTemplateParameterImpl masterImpl = CodeTemplateParameterImpl.get(master);
+                TextSync textSync = masterImpl.textRegion().textSync();
+                textSync.addRegion(paramImpl.textRegion());
                 return;
             }
         }
         // Make it master
-        masters.add(parameter);
-        if (parameter.isEditable()) {
-            editableMasters.add(parameter);
-        }
+        masterParameters.add(paramImpl.getParameter());
+        TextSync textSync = new TextSync(paramImpl.textRegion());
+        if (paramImpl.isEditable())
+            textSync.setEditable(true);
+        if (CodeTemplateParameter.CURSOR_PARAMETER_NAME.equals(paramImpl.getName()))
+            textSync.setCaretMarker(true);
     }
     
-    private static CodeTemplateParameterImpl paramImpl(CodeTemplateParameter param) {
-        return CodeTemplateSpiPackageAccessor.get().getImpl(param);
-    }
-    
-    private void tabUpdate() {
-        ((BaseTextUI)component.getUI()).getEditorUI().getWordMatch().clear();
-        updateLastRegionBounds();
-        CodeTemplateParameterImpl activeMasterImpl = getActiveMasterImpl();
-        if (activeMasterImpl != null) {
-            SyncDocumentRegion active = activeMasterImpl.getRegion();
-            component.select(active.getFirstRegionStartOffset(),
-                    active.getFirstRegionEndOffset());
-        }
-        // Repaint the selected blocks according to the current master
-        requestRepaint();
-    }
-    
-    private void requestRepaint() {
-        if (released) {
-            OffsetsBag bag = getBag(doc);
-            bag.clear();
-            attribs = null;
-        } else {
-            CodeTemplateParameterImpl ctpi = getActiveMasterImpl();
-            if (ctpi != null) {
-                // Compute attributes
-                if (attribs == null) {
-                    attribs = getSyncedTextBlocksHighlight();
-                    Color foreground = (Color) attribs.getAttribute(StyleConstants.Foreground);
-                    Color background = (Color) attribs.getAttribute(StyleConstants.Background);
-                    attribsLeft = createAttribs(
-                            StyleConstants.Background, background,
-                            EditorStyleConstants.LeftBorderLineColor, foreground, 
-                            EditorStyleConstants.TopBorderLineColor, foreground, 
-                            EditorStyleConstants.BottomBorderLineColor, foreground
-                    );
-                    attribsRight = createAttribs(
-                            StyleConstants.Background, background,
-                            EditorStyleConstants.RightBorderLineColor, foreground, 
-                            EditorStyleConstants.TopBorderLineColor, foreground, 
-                            EditorStyleConstants.BottomBorderLineColor, foreground
-                    );
-                    attribsMiddle = createAttribs(
-                            StyleConstants.Background, background,
-                            EditorStyleConstants.TopBorderLineColor, foreground, 
-                            EditorStyleConstants.BottomBorderLineColor, foreground
-                    );
-                    attribsAll = createAttribs(
-                            StyleConstants.Background, background,
-                            EditorStyleConstants.LeftBorderLineColor, foreground, 
-                            EditorStyleConstants.RightBorderLineColor, foreground,
-                            EditorStyleConstants.TopBorderLineColor, foreground, 
-                            EditorStyleConstants.BottomBorderLineColor, foreground
-                    );
-                }
-                
-                OffsetsBag nue = new OffsetsBag(doc);
-                PositionRegion region = ctpi.getPositionRegion();
-                try {
-                    int startLine = Utilities.getLineOffset((BaseDocument) doc, region.getStartOffset());
-                    int endLine = Utilities.getLineOffset((BaseDocument) doc, region.getEndOffset());
-
-                    for(int i = startLine; i <= endLine; i++) {
-                        int s = Math.max(Utilities.getRowStartFromLineOffset((BaseDocument) doc, i), region.getStartOffset());
-                        int e = Math.min(Utilities.getRowEnd((BaseDocument) doc, s), region.getEndOffset());
-                        int size = e - s;
-
-                        if (size == 1) {
-                            nue.addHighlight(s, e, attribsAll);
-                        } else if (size > 1) {
-                            nue.addHighlight(s, s + 1, attribsLeft);
-                            nue.addHighlight(e - 1, e, attribsRight);
-                            if (size > 2) {
-                                nue.addHighlight(s + 1, e - 1, attribsMiddle);
-                            }
-                        }
-                    }
-                } catch (BadLocationException ble) {
-                    LOG.log(Level.WARNING, null, ble);
-                }
-
-                OffsetsBag bag = getBag(doc);
-                bag.setHighlights(nue);
-            }
-        }
-    }
-
     private void release() {
         synchronized (this) {
             if (released) {
@@ -720,182 +416,79 @@ implements DocumentListener, KeyListener {
             this.released = true;
         }
 
-        if (editableMasters.size() > 0) {
-            if (doc instanceof BaseDocument) {
-                ((BaseDocument)doc).setPostModificationDocumentListener(null);
-            }
-
-            component.removeKeyListener(this);
-
-            // Restore original action map
-            JTextComponent c = getComponent();
-            c.setActionMap(componentOrigActionMap);
-
-            if (outerHandler != null) {
-                outerHandler.suspended = false;
-                if (doc instanceof BaseDocument)
-                    ((BaseDocument)doc).setPostModificationDocumentListener(outerHandler);
-                CodeTemplateParameterImpl activeMasterImpl = outerHandler.getActiveMasterImpl();
-                doc.putProperty("abbrev-ignore-modification", Boolean.TRUE); // NOI18N
-                try {
-                    activeMasterImpl.getRegion().sync(0);
-                } finally {
-                    doc.putProperty("abbrev-ignore-modification", Boolean.FALSE); // NOI18N
-                }
-                activeMasterImpl.setValue(outerHandler.getDocParameterValue(activeMasterImpl), false);
-                activeMasterImpl.markUserModified();
-                outerHandler.notifyParameterUpdate(activeMasterImpl.getParameter(), true);
-                outerHandler.updateLastRegionBounds();
-                outerHandler.requestRepaint();
-            } else {
-                requestRepaint();
-            }
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine(super.toString() + "release() CALLED\n");
+            LOG.fine(toString());
         }
+        if (outerHandler != null) {
+            CodeTemplateParameterImpl activeMasterImpl = outerHandler.lastActiveMasterImpl();
+            TextSync textSync = activeMasterImpl.textRegion().textSync();
+            textSync.syncByMaster();
+            activeMasterImpl.markUserModified();
+            outerHandler.notifyParameterUpdate(activeMasterImpl.getParameter(), true);
+        }
+        Document doc = component.getDocument();
         doc.putProperty(CT_HANDLER_DOC_PROPERTY, outerHandler);
 
         // Notify processors
         for (CodeTemplateProcessor processor : processors) {
             processor.release();
         }
-        
-    }
-
-    void syncInsert(DocumentEvent evt) {
-        // Ensure that the caret position will stay logically where it is
-        int offset = evt.getOffset();
-        int insertLength = evt.getLength();
-
-        CodeTemplateParameterImpl activeMasterImpl = getActiveMasterImpl();
-        if (apiSetValueParamImpl == null // not setting value through API (explicit sync would be done)
-            && activeMasterImpl != null
-        ) {
-            SyncDocumentRegion region = activeMasterImpl.getRegion();
-            if (isManagedInsert(offset)) {
-                doc.putProperty("abbrev-ignore-modification", Boolean.TRUE); // NOI18N
-                try {
-                    region.sync((offset == lastActiveRegionStartOffset) ? insertLength : 0);
-                } finally {
-                    doc.putProperty("abbrev-ignore-modification", Boolean.FALSE); // NOI18N
-                }
-                activeMasterImpl.setValue(getDocParameterValue(activeMasterImpl), false);
-                activeMasterImpl.markUserModified();
-                notifyParameterUpdate(activeMasterImpl.getParameter(), true);
-            } else { // the insert is not managed => release
-                if (DocumentUtilities.isTypingModification(evt))
-                    release();
-            }
-        }
-        updateLastRegionBounds();
-    }
-    
-    void syncRemove(DocumentEvent evt) {
-        CodeTemplateParameterImpl activeMasterImpl = getActiveMasterImpl();
-        if (apiSetValueParamImpl == null // not setting value through API (explicit sync would be done)
-            && activeMasterImpl != null
-        ) {
-            SyncDocumentRegion region = activeMasterImpl.getRegion();
-            if (isManagedRemove(evt.getOffset(), evt.getLength())) {
-                doc.putProperty("abbrev-ignore-modification", Boolean.TRUE); // NOI18N
-                try {
-                    region.sync(0);
-                } finally {
-                    doc.putProperty("abbrev-ignore-modification", Boolean.FALSE); // NOI18N
-                }
-                activeMasterImpl.setValue(getDocParameterValue(activeMasterImpl), false);
-                activeMasterImpl.markUserModified();
-                if (doc.getProperty(BaseKit.DOC_REPLACE_SELECTION_PROPERTY) == null)
-                    notifyParameterUpdate(activeMasterImpl.getParameter(), true);
-            } else { // the insert is not managed => release
-                if (DocumentUtilities.isTypingModification(evt) || 
-                        evt.getLength() >= evt.getDocument().getLength()) //HACK! - see issue #128600
-                    release();
-            }
-        }
-        updateLastRegionBounds();
-    }
-    
-    private void updateLastRegionBounds() {
-        CodeTemplateParameterImpl masterImpl = getActiveMasterImpl();
-        if (masterImpl != null) {
-            SyncDocumentRegion region = masterImpl.getRegion();
-            lastActiveRegionStartOffset = region.getFirstRegionStartOffset();
-            lastActiveRegionEndOffset = region.getFirstRegionEndOffset();
-        } else {
-            lastActiveRegionStartOffset = -1;
-            lastActiveRegionEndOffset = -1;
-        }
-    }
-    
-    private boolean isManagedInsert(int offset) {
-        return (offset >= lastActiveRegionStartOffset
-            && offset <= lastActiveRegionEndOffset);
-    }
-    
-    private boolean isManagedRemove(int offset, int length) {
-        return (offset >= lastActiveRegionStartOffset
-            && offset + length <= lastActiveRegionEndOffset);
-    }
-    
-    private void addParameterRegion(List<MutablePositionRegion> parameterRegions, CodeTemplateParameter parameter,
-    Document doc, int insertOffset) throws BadLocationException {
-        int startOffset = insertOffset + parameter.getInsertTextOffset();
-        BaseDocument bdoc = (BaseDocument)doc;
-        Position startPos = bdoc.createPosition(startOffset);
-        Position endPos = doc.createPosition(startOffset + parameter.getValue().length());
-        CodeTemplateParameterImpl paramImpl = CodeTemplateParameterImpl.get(parameter);
-        paramImpl.resetPositions(startPos, endPos);
-        parameterRegions.add(paramImpl.getPositionRegion());
+        textRegionEditing().stopGroupEditing(textSyncGroup);
+        textRegionManager().removeTextSyncGroup(textSyncGroup);
     }
 
     private String buildInsertText() {
         return parametrizedTextParser.buildInsertText(allParameters);
     }
 
-    private static synchronized OffsetsBag getBag(Document document) {
-        String propName = CodeTemplateInsertHandler.class.getName() + "-OffsetsBag"; //NOI18N
-        OffsetsBag bag = (OffsetsBag) document.getProperty(propName);
-        if (bag == null) {
-            bag = new OffsetsBag(document);
-            document.putProperty(propName, bag);
+    public void deactivated(TextRegionEditing textRegionEditing, TextSync lastActiveTextSync) {
+        if (lastActiveTextSync != null) {
+            lastActiveMasterImpl = lastActiveTextSync.<CodeTemplateParameterImpl>masterRegion().clientInfo();
         }
-        return bag;
     }
 
-    private static AttributeSet getSyncedTextBlocksHighlight() {
-        FontColorSettings fcs = MimeLookup.getLookup(MimePath.EMPTY).lookup(FontColorSettings.class);
-        AttributeSet as = fcs.getFontColors("synchronized-text-blocks-ext"); //NOI18N
-        return as == null ? SimpleAttributeSet.EMPTY : as;
+    public void released(TextRegionEditing textRegionEditing) {
+        release();
+        checkInvokeCompletion();
     }
 
-    private static AttributeSet createAttribs(Object... keyValuePairs) {
-        assert keyValuePairs.length % 2 == 0 : "There must be even number of prameters. " +
-            "They are key-value pairs of attributes that will be inserted into the set.";
+    public void textSyncActivated(TextRegionEditing textRegionEditing, int origTextSyncIndex) {
+    }
 
-        List<Object> list = new ArrayList<Object>();
-        
-        for(int i = keyValuePairs.length / 2 - 1; i >= 0 ; i--) {
-            Object attrKey = keyValuePairs[2 * i];
-            Object attrValue = keyValuePairs[2 * i + 1];
-
-            if (attrKey != null && attrValue != null) {
-                list.add(attrKey);
-                list.add(attrValue);
-            }
+    public void textSyncModified(TextRegionEditing textRegionEditing) {
+        TextSync activeTextSync = textRegionEditing.activeTextSync();
+        CodeTemplateParameterImpl activeMasterImpl = activeTextSync.<CodeTemplateParameterImpl>masterRegion().clientInfo();
+        if (activeMasterImpl != null) {
+            activeMasterImpl.markUserModified();
+            notifyParameterUpdate(activeMasterImpl.getParameter(), true);
         }
-        
-        return AttributesUtilities.createImmutable(list.toArray());
     }
     
-    public static final class HLFactory implements HighlightsLayerFactory {
-        public HighlightsLayer[] createLayers(Context context) {
-            return new HighlightsLayer[] {
-                HighlightsLayer.create(
-                    "org.netbeans.lib.editor.codetemplates.CodeTemplateParametersHighlights", //NOI18N
-                    ZOrder.SHOW_OFF_RACK.forPosition(490), 
-                    true, 
-                    getBag(context.getDocument())
-                )
-            };
+    private void checkInvokeCompletion() {
+        if (completionInvoke) {
+            completionInvoke = false;
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    Completion.get().showCompletion();
+                }
+            });
         }
-    } // End of HLFactory class
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        for (CodeTemplateParameter param : allParameters) {
+            CodeTemplateParameterImpl paramImpl = CodeTemplateParameterImpl.get(param);
+            sb.append("  ").append(paramImpl.getName()).append(":");
+            sb.append(paramImpl.textRegion());
+            if (!paramImpl.isSlave()) {
+                sb.append(" Master");
+            }
+            sb.append('\n');
+        }
+        return sb.toString();
+    }
+    
 }

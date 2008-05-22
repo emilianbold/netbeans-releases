@@ -61,7 +61,8 @@ public class ConfigFileSpringBeanSourceTest extends ConfigFileTestCase {
         super(testName);
     }
     public void testParse() throws Exception {
-        String contents = TestUtils.createXMLConfigText("<bean id='foo' name='bar baz' " +
+        String contents = TestUtils.createXMLConfigText("<alias name='foo' alias='xyz'/>" +
+                "<bean id='foo' name='bar baz' " +
                 "parent='father' factory-bean='factory' factory-method='createMe' " +
                 "class='org.example.Foo'/>");
         TestUtils.copyStringToFile(contents, configFile);
@@ -72,15 +73,17 @@ public class ConfigFileSpringBeanSourceTest extends ConfigFileTestCase {
         List<SpringBean> beans = source.getBeans();
         assertEquals(1, beans.size());
         SpringBean bean = beans.get(0);
-        assertSame(bean, source.findBeanByIDOrName("foo"));
-        assertSame(bean, source.findBeanByIDOrName("bar"));
-        assertSame(bean, source.findBeanByIDOrName("baz"));
+        assertSame(bean, source.findBean("foo"));
+        assertSame(bean, source.findBean("bar"));
+        assertSame(bean, source.findBean("baz"));
         assertSame(bean, source.findBeanByID("foo"));
         assertNull(source.findBeanByID("bar"));
         assertNull(source.findBeanByID("baz"));
         assertEquals("father", bean.getParent());
         assertEquals("factory", bean.getFactoryBean());
         assertEquals("createMe", bean.getFactoryMethod());
+        assertEquals(1, source.getAliases().size());
+        assertEquals("foo", source.findAliasName("xyz"));
         int offset = contents.indexOf("<bean ");
         Location location = bean.getLocation();
         assertEquals(offset, location.getOffset());

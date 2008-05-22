@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -90,7 +90,11 @@ class DependencyChecker extends Object {
                     }
                     break;
                 case (Dependency.TYPE_JAVA) :
-                    err.log(Level.FINE, "Check dependency on Java platform. Dependency: " + dep);
+                    if (! matchDependencyJava (dep)) {
+                        err.log(Level.FINE, "The Java platform version " + dep +
+                                " or higher was requested but only " + Dependency.JAVA_SPEC + " is running.");
+                        res.add (dep);
+                    }
                     break;
                 default:
                     //assert false : "Unknown type of Dependency, was " + dep.getType ();
@@ -147,7 +151,11 @@ class DependencyChecker extends Object {
                     }
                     break;
                 case (Dependency.TYPE_JAVA) :
-                    err.log(Level.FINE, "Check dependency on Java platform. Dependency: " + dep);
+                    if (! matchDependencyJava (dep)) {
+                        err.log(Level.FINE, "The Java platform version " + dep +
+                                " or higher was requested but only " + Dependency.JAVA_SPEC + " is running.");
+                        res.add (dep);
+                    }
                     break;
                 default:
                     //assert false : "Unknown type of Dependency, was " + dep.getType ();
@@ -184,6 +192,14 @@ class DependencyChecker extends Object {
         }
         
         return null;
+    }
+    
+    private static boolean matchDependencyJava (Dependency dep) {
+        if (dep.getName ().equals (Dependency.JAVA_NAME) && Dependency.COMPARE_SPEC == dep.getComparison ()) {
+            return Dependency.JAVA_SPEC.compareTo (new SpecificationVersion (dep.getVersion ())) >= 0;
+        }
+        // All other usages unlikely
+        return true;
     }
     
     static boolean checkDependencyModuleAllowEqual (Dependency dep, ModuleInfo module) {

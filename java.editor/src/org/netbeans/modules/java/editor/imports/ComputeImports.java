@@ -72,6 +72,7 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ClassIndex.NameKind;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.support.CancellableTreePathScanner;
+import org.netbeans.modules.java.editor.javadoc.JavadocImports;
 import org.openide.util.Union2;
 
 /**
@@ -123,6 +124,8 @@ public class ComputeImports {
         Set<String> unresolvedNames = new HashSet<String>(v.unresolved);
         
         unresolvedNames.addAll(forcedUnresolved);
+        
+        unresolvedNames.addAll(JavadocImports.computeUnresolvedImports(info));
         
         for (String unresolved : unresolvedNames) {
             if (isCancelled())

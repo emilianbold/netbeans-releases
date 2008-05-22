@@ -41,8 +41,8 @@
 package org.netbeans.modules.cnd.completion.impl.xref;
 
 import java.util.ArrayList;
-import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
@@ -84,30 +84,38 @@ public class FileReferencesImpl extends CsmFileReferences  {
         accept(csmScope, visitor, CsmReferenceKind.ALL);
     }
     
-    public void accept(CsmScope csmScope, Visitor visitor, EnumSet<CsmReferenceKind> kinds) {
+    public void accept(CsmScope csmScope, Visitor visitor, Set<CsmReferenceKind> kinds) {
         if (!CsmKindUtilities.isOffsetable(csmScope) && !CsmKindUtilities.isFile(csmScope)){
             return;
         }
         CsmFile csmFile = null;
-        int start=0;
-        int end = Integer.MAX_VALUE;
+
+        int start, end;
+
         if (CsmKindUtilities.isFile(csmScope)){
             csmFile = (CsmFile) csmScope;
         } else {
             csmFile = ((CsmOffsetable)csmScope).getContainingFile();
+        }
+        
+        BaseDocument doc = ReferencesSupport.getDocument(csmFile);
+        assert doc != null;
+        if (CsmKindUtilities.isFile(csmScope)) {
+            start = 0;
+            end = doc.getLength() - 1;
+        } else {
             start = ((CsmOffsetable)csmScope).getStartOffset();
             end = ((CsmOffsetable)csmScope).getEndOffset();
         }
-        for (CsmReference ref : getIdentifierReferences(csmFile,start,end, kinds)) {
+
+        for (CsmReference ref : getIdentifierReferences(csmFile, doc, start,end, kinds)) {
             visitor.visit(ref);
         }        
     }
     
-    private List<CsmReference> getIdentifierReferences(CsmFile csmFile, int start, int end,
-                                                        EnumSet<CsmReferenceKind> kinds) {
+    private List<CsmReference> getIdentifierReferences(CsmFile csmFile, BaseDocument doc, int start, int end,
+                                                        Set<CsmReferenceKind> kinds) {
         List<CsmReference> out = new ArrayList<CsmReference>();
-        BaseDocument doc = ReferencesSupport.getDocument(csmFile);
-        assert doc != null;
         boolean needAfterDereferenceUsages = kinds.contains(CsmReferenceKind.AFTER_DEREFERENCE_USAGE);
         List<Token> tokens = TokenUtilities.getTokens(doc, start, end);
         Token lastToken = null;

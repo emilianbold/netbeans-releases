@@ -50,7 +50,6 @@ import java.nio.charset.UnsupportedCharsetException;
 import java.util.*;
 import java.util.ArrayList;
 import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.ButtonModel;
 import javax.swing.ComboBoxModel;
@@ -76,7 +75,6 @@ import org.openide.util.MutexException;
 import org.openide.util.Mutex;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.j2ee.common.SharabilityUtility;
 import org.netbeans.modules.j2ee.common.project.ui.ClassPathUiSupport;
@@ -258,9 +256,6 @@ public class WebProjectProperties {
     ButtonModel DEBUG_SERVER_MODEL;
     ButtonModel DEBUG_CLIENT_MODEL;
     
-    // ui logging
-    static final String UI_LOGGER_NAME = "org.netbeans.ui.web.project"; //NOI18N
-    static final Logger UI_LOGGER = Logger.getLogger(UI_LOGGER_NAME);
     // for ui logging added frameworks
     private List<String> addedFrameworkNames;
 
@@ -423,12 +418,8 @@ public class WebProjectProperties {
                         
                         // ui logging of the added frameworks
                         if ((addedFrameworkNames != null) && (addedFrameworkNames.size() > 0)) {
-                            LogRecord logRecord = new LogRecord(Level.INFO, "UI_WEB_PROJECT_FRAMEWORK_ADDED");  //NOI18N
-                            logRecord.setLoggerName(UI_LOGGER_NAME); //NOI18N
-                            logRecord.setResourceBundle(NbBundle.getBundle(WebProjectProperties.class));
-
-                            logRecord.setParameters(addedFrameworkNames.toArray());
-                            UI_LOGGER.log(logRecord);
+                            Utils.logUI(NbBundle.getBundle(WebProjectProperties.class),"UI_WEB_PROJECT_FRAMEWORK_ADDED", // NOI18N
+                                    addedFrameworkNames.toArray());
                         }
                     }
                 });
@@ -620,7 +611,8 @@ public class WebProjectProperties {
         libs.addAll(ClassPathUiSupport.getList(JAVAC_CLASSPATH_MODEL.getDefaultListModel()));
         libs.addAll(WarIncludesUiSupport.getList(WAR_CONTENT_ADDITIONAL_MODEL));
         
-        ProjectProperties.storeLibrariesLocations (libs.iterator(), projectProperties, project.getProjectDirectory());
+        ProjectProperties.storeLibrariesLocations (project.getAntProjectHelper(), libs.iterator(), 
+                project.getAntProjectHelper().isSharableProject() ? projectProperties : privateProperties);
         
         // Store the property changes into the project
         updateHelper.putProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties );
@@ -891,16 +883,11 @@ public class WebProjectProperties {
         }
         // ui log for the server change
         if(newServInstID != null && !newServInstID.equals(oldServInstID)) {
-            LogRecord logRecord = new LogRecord(Level.INFO, "UI_WEB_PROJECT_SERVER_CHANGED");  //NOI18N
-            logRecord.setLoggerName(UI_LOGGER_NAME); //NOI18N
-            logRecord.setResourceBundle(NbBundle.getBundle(WebProjectProperties.class));
-            logRecord.setParameters(new Object[] { 
-                Deployment.getDefault().getServerID(oldServInstID),
-                oldServInstID,
-                Deployment.getDefault().getServerID(newServInstID),
-                newServInstID });
-                
-            UI_LOGGER.log(logRecord);
+            Utils.logUI(NbBundle.getBundle(WebProjectProperties.class), "UI_WEB_PROJECT_SERVER_CHANGED", // NOI18N
+                    new Object[] { Deployment.getDefault().getServerID(oldServInstID),
+                        oldServInstID,
+                        Deployment.getDefault().getServerID(newServInstID),
+                        newServInstID });
         }
     }
 
@@ -918,7 +905,9 @@ public class WebProjectProperties {
 
         List<ClassPathSupport.Item> serverItems = new ArrayList<ClassPathSupport.Item>();
         for (ClassPathSupport.Item item : items) {
-            if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY && item.getLibrary().getType().equals(J2eePlatform.LIBRARY_TYPE)) {
+            if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY
+                    && !item.isBroken()
+                    && item.getLibrary().getType().equals(J2eePlatform.LIBRARY_TYPE)) {
                 serverItems.add(ClassPathSupport.Item.create(item.getLibrary(), null));
             }
         }

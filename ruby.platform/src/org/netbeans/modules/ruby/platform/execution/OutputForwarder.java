@@ -53,6 +53,7 @@ import org.netbeans.modules.ruby.platform.Util;
 import org.netbeans.modules.ruby.platform.execution.OutputRecognizer.ActionText;
 import org.netbeans.modules.ruby.platform.execution.OutputRecognizer.FileLocation;
 import org.netbeans.modules.ruby.platform.execution.OutputRecognizer.RecognizedOutput;
+import org.netbeans.modules.ruby.platform.execution.OutputRecognizer.FilteredOutput;
 import org.openide.windows.OutputEvent;
 import org.openide.windows.OutputListener;
 import org.openide.windows.OutputWriter;
@@ -145,7 +146,16 @@ final class OutputForwarder implements Runnable {
                 }
                 handled = true;
 
-            } // TODO: Handle other forms of RecognizedOutput
+            } else if (recognizedOutput instanceof FilteredOutput) {
+                String[] toPrint = ((FilteredOutput) recognizedOutput).getLinesToPrint();
+                if (toPrint != null) {
+                    for (String l : toPrint) {
+                        writer.println(l);
+                    }
+                }
+                handled = true;
+            }
+        // TODO: Handle other forms of RecognizedOutput
         }
 
         if (!handled) {
@@ -278,7 +288,7 @@ final class OutputForwarder implements Runnable {
             } catch (IOException e) {
                 // TODO: happens because at the end of the debugging session the
                 // underlying process is killed.
-                LOGGER.log(Level.INFO, "Process finished unexpectedly: " + e.getMessage());
+                LOGGER.log(Level.INFO, "Process finished unexpectedly: " + e.getMessage(), e);
             } finally {
                 try {
                     read.close();

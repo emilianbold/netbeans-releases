@@ -48,12 +48,13 @@ import org.netbeans.modules.bpel.mapper.palette.Palette;
 import org.netbeans.modules.bpel.mapper.tree.spi.MapperTcContext;
 import org.netbeans.modules.soa.mappercore.model.Graph;
 import org.netbeans.modules.soa.mappercore.utils.Utils;
-import static org.netbeans.modules.soa.ui.util.UI.*;
 
 /**
  * The default implementation of the MapperModel interface for the BPEL Mapper.
  * 
  * @author nk160297
+ * @author Vitaly Bychkov
+ * @author AlexanderPermyakov
  */
 public class BpelMapperModel implements MapperModel, MapperTcContext.Provider {
 
@@ -63,6 +64,7 @@ public class BpelMapperModel implements MapperModel, MapperTcContext.Provider {
     private GraphChangeProcessor mChangeProcessor;
     private MapperSwingTreeModel mLeftTreeModel;
     private MapperSwingTreeModel mRightTreeModel;
+    private ConnectionConstraint[] mConnectionConstraints;
     
     // Maps a TreePath to a Graph
     private Map<TreePath, Graph> mPathGraphMap = new HashMap<TreePath, Graph>();
@@ -79,6 +81,12 @@ public class BpelMapperModel implements MapperModel, MapperTcContext.Provider {
         mRightTreeModel = new MapperSwingTreeModel(mMapperTcContext, rightModel);
         //
         STUB_GRAPH = new Graph(this);
+        //
+        mConnectionConstraints = new ConnectionConstraint[] {
+                ConnectionConstraint.Access.getGeneralConstraint(this),
+                ConnectionConstraint.Access.getPlConstraint(),
+                ConnectionConstraint.Access.getMVarConstraint()
+        };
     }
 
     public MapperTcContext getMapperTcContext() {
@@ -236,95 +244,24 @@ public class BpelMapperModel implements MapperModel, MapperTcContext.Provider {
     //   Modification methods
     //==========================================================================
 
+    protected ConnectionConstraint[] getConstraints() {
+        return mConnectionConstraints;
+    }
+    
     public boolean canConnect(TreePath treePath, SourcePin source, 
             TargetPin target, TreePath oldTreePath, Link oldLink) 
     {
     
-        if (oldTreePath != null && !oldTreePath.equals(treePath)) {
-            // Reconnect
-            // link to another graph is not allowed for a while
-            if (!(oldLink.getSource() instanceof TreeSourcePin)) {
+        ConnectionConstraint[] constraints = getConstraints();
+        for (ConnectionConstraint constraint : constraints) {
+            if (!constraint.canConnect(treePath, source, target, oldTreePath,
+                                      oldLink)) {
                 return false;
             }
         }
-        Boolean result = true;
-        SourcePin oldSource = null;
-        TargetPin oldTarget = null;
-         if (oldLink != null) {
-//          oldGraph = oldLink.getGraph();
-            oldSource = oldLink.getSource();
-            oldTarget = oldLink.getTarget();
- //           oldLink.disconnect();
-            oldLink.setSource(null);
-            oldLink.setTarget(null);
-        }
-       
-        if (target instanceof Graph) {
-       
-            if (!mRightTreeModel.isConnectable(treePath)) {
-                result = false;
+        return true;
             }
        
-            //
-            if (((Graph) target).hasOutgoingLinks()) {
-                // The target tree node already has a connected link
-                result = false;
-            }
-       
-        }
-        //
-        if (source instanceof TreeSourcePin) {
-            TreePath sourceTreePath = ((TreeSourcePin) source).getTreePath();
-            if (!mLeftTreeModel.isConnectable(sourceTreePath)) {
-                result = false;
-            }
-        }
-        //
-        // Check there is only one outgoing link
-        if (source instanceof Vertex) {
-            Link outgoingLink = ((Vertex) source).getOutgoingLink();
-            if (outgoingLink != null) {
-                result = false;
-            }
-        }
-        //
-        if (target instanceof VertexItem) {
-            //
-            // Check if the target vertex item has a value
-//            Object value = ((VertexItem) target).getValue();
-//            if (value != null) {
-//                return false;
-//            }
-            //
-            // Check the item doesn't have incoming link yet
-            Link ingoingLink = ((VertexItem) target).getIngoingLink();
-            if (ingoingLink != null) {
-                result = false;
-            }
-            //
-            // Check connection 2 vertexes 
-            if (source instanceof Vertex) {
-                //
-                // Trying connect the vertex to itself isn't allowed
-                Vertex targetVertex = ((VertexItem) target).getVertex();
-                if (targetVertex == source) {
-                    result = false;
-                }
-                // Check cyclic dependences
-                if (BpelMapperUtils.areVertexDependent((Vertex) source, targetVertex)) {
-                    result = false;
-                }
-            }
-        }
-        //
-        if (oldLink != null) {
-//            oldGraph.addLink(oldLink);
-            oldLink.setSource(oldSource);
-            oldLink.setTarget(oldTarget);
-        }
-        return result;
-    }
-
     public boolean canCopy(TreePath treePath, GraphSubset graphSubset) {
         return true;
     }
@@ -482,7 +419,7 @@ public class BpelMapperModel implements MapperModel, MapperTcContext.Provider {
                 graphSubset = null;
             }
         } else {
-            graphSubset = new GraphSubset(graphSubset);
+            graphSubset = new GraphSubset(graphSubset, treePath);
         }
         
         if (graphSubset == null) {
@@ -494,9 +431,12 @@ public class BpelMapperModel implements MapperModel, MapperTcContext.Provider {
         int x0 = 0;
         int y0 = 0;
         if (graphSubset.getVertexCount() > 0) {
-            x0 = graphSubset.getVertex(0).getX();
-            y0 = graphSubset.getVertex(0).getY();
+            x0 = graphSubset.getMinYVertex().getX();
+            y0 = graphSubset.getMinYVertex().getY();
         }
+        
+        if (y < 0) {y = 0;}
+            
         for (int i = 0; i < graphSubset.getVertexCount(); i++) {
             Vertex vertex = graphSubset.getVertex(i);
 
@@ -536,12 +476,16 @@ public class BpelMapperModel implements MapperModel, MapperTcContext.Provider {
         int x0 = 0;
         int y0 = 0;
         if (graphSubset.getVertexCount() > 0) {
-            x0 = graphSubset.getVertex(0).getX();
-            y0 = graphSubset.getVertex(0).getY();
+            x0 = graphSubset.getMinYVertex().getX();
+            y0 = graphSubset.getMinYVertex().getY();
         }
+        
+
+        if (newY < 0) {newY = 0;}
+        
         for (int i = graphSubset.getVertexCount() - 1; i >= 0; i--) {
             Vertex vertex = graphSubset.getVertex(i);
-
+                        
             if (vertex.getGraph() != null) {
                 oldGraph = vertex.getGraph();
                 if (oldGraph != graph) {
@@ -560,13 +504,14 @@ public class BpelMapperModel implements MapperModel, MapperTcContext.Provider {
                         }
                     }
                 }
-
+                
                 int xi = graphSubset.getVertex(i).getX();
                 int yi = graphSubset.getVertex(i).getY();
+                
                 vertex.setLocation(xi - x0 + newX, yi - y0 + newY);
             }
         }
-        
+                
         if (oldGraph != graph) {
             for (int i = graphSubset.getLinkCount() - 1; i >= 0; i--) {
                 Link link = graphSubset.getLink(i);

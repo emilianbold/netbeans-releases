@@ -50,6 +50,7 @@ import java.io.IOException;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -87,7 +88,6 @@ import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.ant.FileChooser;
 import org.netbeans.api.project.libraries.LibraryChooser;
 import org.netbeans.api.project.libraries.LibraryManager;
@@ -712,7 +712,12 @@ final class LibrariesNode extends AbstractNode {
             assert cpProvider != null;
             final J2SEProjectClassPathModifier cpMod = project.getProjectClassPathModifier();
             assert cpMod != null;
-            FileChooser chooser = new FileChooser(project.getAntProjectHelper(), true);
+            FileChooser chooser;
+            if (project.getAntProjectHelper().isSharableProject()) {
+                chooser = new FileChooser(project.getAntProjectHelper(), true);
+            } else {
+                chooser = new FileChooser(FileUtil.toFile(project.getProjectDirectory()), null);
+            }
             FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
             chooser.setFileSelectionMode( JFileChooser.FILES_AND_DIRECTORIES );
             chooser.setMultiSelectionEnabled( true );
@@ -753,10 +758,20 @@ final class LibrariesNode extends AbstractNode {
                     //Check if the file is acceted by the FileFilter,
                     //user may enter the name of non displayed file into JFileChooser
                     File fl = PropertyUtils.resolveFile(base, files[i]);
-                    if (fileFilter.accept(fl)) {
-                        URL u = LibrariesSupport.convertFilePathToURL(files[i]);
-                        u = FileUtil.getArchiveRoot(u);
-                        cpMod.handleRoots(new URL[]{u}, propName, J2SEProjectClassPathModifier.ADD, false);
+                    FileObject fo = FileUtil.toFileObject(fl);
+                    assert fo != null : fl;
+                    if (fo != null && fileFilter.accept(fl)) {
+                        URI u = LibrariesSupport.convertFilePathToURI(files[i]);
+                        if (FileUtil.isArchiveFile(fo)) {
+                            u = LibrariesSupport.getArchiveRoot(u);
+                        } else if (!u.toString().endsWith("/")) { // NOI18N
+                            try {
+                                u = new URI(u.toString() + "/"); // NOI18N
+                            } catch (URISyntaxException ex) {
+                                throw new AssertionError(ex);
+                            }
+                        }
+                        cpMod.handleRoots(new URI[]{u}, propName, J2SEProjectClassPathModifier.ADD, false);
                     }
                 } catch (IOException ioe) {
                     ErrorManager.getDefault().notify(ioe);

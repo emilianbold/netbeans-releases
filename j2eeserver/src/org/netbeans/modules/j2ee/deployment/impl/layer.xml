@@ -155,12 +155,4 @@ made subject to such option by the copyright holder.
         </folder> <!--memory-->
     </folder>
 
-    <!-- <folder name="Menu">
-        <folder name="Tools">
-            <file name="ServerManagerAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.deployment.impl.ui.actions.ServerManagerAction"/>
-                <attr name="position" intvalue="800"/>
-            </file>
-            </folder>
-    </folder> -->
 </filesystem>

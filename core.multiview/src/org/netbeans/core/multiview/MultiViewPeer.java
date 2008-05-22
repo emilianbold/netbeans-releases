@@ -190,7 +190,7 @@ public final class MultiViewPeer  {
             model.markAsHidden(el);
             el.componentClosed();
         }
-
+        tabs.peerComponentClosed();
     }
     
     void peerComponentShowing() {
@@ -313,19 +313,31 @@ public final class MultiViewPeer  {
      * merge action for the topcomponent and the enclosed MultiViewElement..
      * 
      */
-    Action[] peerGetActions(Action[] superActions) {
+    Action[] peerGetActions(Action[] superActs) {
         //TEMP don't delegate to element's actions..
         Action[] acts = model.getActiveElement().getActions();
+        
+        // copy super actions as we will possibly null it in cycle later
+        Action[] superActions = new Action[superActs.length];
+        System.arraycopy(superActs, 0, superActions, 0, superActs.length);
+        
         for (int i = 0; i < acts.length; i++) {
             Action act = acts[i];
             for (int j = 0 ; j < superActions.length; j++) {
                 Action superact = superActions[j];
+                if (act == null && superact == null){ // just to same some time.
+                    break;
+                }
                 if (superact != null && act != null && superact.getClass().equals(act.getClass())) {
                     // these are the default topcomponent actions.. we need to replace them
                     // in order to have the correct context.
                     acts[i] = superActions[j];
+                    // to keep superact.getClass().equals(act.getClass()) from filtering out
+                    // different instances of the same action, null out the superActions
+                    // array as you go.  
+                    superActions[j] = null;
                     break;
-                }
+                }                
             }
         }
         return acts;

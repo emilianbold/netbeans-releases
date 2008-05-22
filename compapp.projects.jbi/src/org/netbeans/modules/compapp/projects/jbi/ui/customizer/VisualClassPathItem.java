@@ -158,8 +158,12 @@ public class VisualClassPathItem {
             if (idx > 0) {
                 asaType = aType.substring(idx + 1); 
             } else {
-                if (isJavaEEProjectAntArtifact(aa)){
+                // Get the appropriate AA. 
+                AntArtifact jaa = getJavaEEAntArtifact(aa);
+                if (jaa != null){
                     asaType = JbiProjectConstants.JAVA_EE_SE_COMPONENT_NAME;
+                    aa = jaa;
+                    this.cpElement = jaa;
                 }
             }
                         
@@ -228,6 +232,32 @@ public class VisualClassPathItem {
             }
          }
         return false;
+    }
+
+    private static AntArtifact getJavaEEAntArtifact(AntArtifact aa){
+        Project project = aa.getProject();
+        AntArtifact javaEEAntArtifact = null;
+         if ( project != null ) {
+            AntArtifactProvider prov = project.getLookup().lookup(AntArtifactProvider.class);
+            if (prov != null) {
+                AntArtifact[] artifacts = prov.getBuildArtifacts();
+                Iterator<String> artifactTypeItr = null;
+                String artifactType = null;
+                if (artifacts != null) {
+                    for (int i = 0; i < artifacts.length; i++) {
+                        artifactTypeItr = JbiProjectConstants.JAVA_EE_AA_TYPES.iterator();
+                        while (artifactTypeItr.hasNext()){
+                            artifactType = artifactTypeItr.next();
+                            if (artifacts[i].getType().startsWith(artifactType)) {
+                                javaEEAntArtifact = artifacts[i];
+                                return javaEEAntArtifact;
+                            }
+                        }
+                    }
+                }
+            }
+         }
+        return javaEEAntArtifact;
     }
     
     /**

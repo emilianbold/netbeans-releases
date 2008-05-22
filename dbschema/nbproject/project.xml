@@ -47,6 +47,15 @@ made subject to such option by the copyright holder.
             <code-name-base>org.netbeans.modules.dbschema</code-name-base>
             <module-dependencies>
                 <dependency>
+                    <code-name-base>org.jdesktop.layout</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.5</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.api.progress</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -147,6 +156,7 @@ made subject to such option by the copyright holder.
             <friend-packages>
                 <friend>org.netbeans.modules.j2ee.ejbcore</friend>
                 <friend>org.netbeans.modules.j2ee.persistence</friend>
+                <friend>org.netbeans.modules.hibernate</friend>
                 <friend>org.netbeans.modules.j2ee.sun.appsrv</friend>
                 <friend>org.netbeans.modules.j2ee.sun.ddui</friend>
                 <package>org.netbeans.modules.dbschema</package>

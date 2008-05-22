@@ -40,8 +40,6 @@
  */
 package org.netbeans.modules.websvc.saas.codegen.java;
 
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.MethodTree;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -49,47 +47,26 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.AnnotationValue;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.ElementFilter;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.ModificationResult;
-import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.websvc.saas.codegen.java.Constants.MimeType;
 import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo;
 import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo.ParamFilter;
 import org.netbeans.modules.websvc.saas.codegen.java.model.ParameterInfo.ParamStyle;
 import org.netbeans.modules.websvc.saas.codegen.java.model.SaasBean;
-import org.netbeans.modules.websvc.saas.codegen.java.support.AbstractTask;
-import org.netbeans.modules.websvc.saas.codegen.java.support.Inflector;
 import org.netbeans.modules.websvc.saas.codegen.java.support.JavaSourceHelper;
 import org.netbeans.modules.websvc.saas.codegen.java.support.SourceGroupSupport;
 import org.netbeans.modules.websvc.saas.codegen.java.support.Util;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.util.Exceptions;
 
 /**
  * Code generator for REST services wrapping WSDL-based web service.
@@ -99,16 +76,10 @@ import org.openide.util.Exceptions;
 abstract public class SaasCodeGenerator extends AbstractGenerator {
 
     private FileObject targetFile; // resource file target of the drop
+    private JavaSource targetSource;
     private FileObject destDir;
-    private FileObject wrapperResourceFile;
     private Project project;
     protected SaasBean bean;
-    private JavaSource wrapperResourceJS;
-    private JavaSource targetResourceJS;
-    private JavaSource jaxbOutputWrapperJS;
-    private String subresourceLocatorName;
-    private String subresourceLocatorUriTemplate;
-    private Collection<String> existingUriTemplates = Collections.emptyList();
     private JTextComponent targetComponent;
 
     public SaasCodeGenerator(JTextComponent targetComponent, 
@@ -122,12 +93,10 @@ abstract public class SaasCodeGenerator extends AbstractGenerator {
             throw new IllegalArgumentException(targetFile.getPath() + " is not part of a project.");
         }
 
-        targetResourceJS = JavaSource.forFileObject(targetFile);
-        String packageName = JavaSourceHelper.getPackageName(targetResourceJS);
+        targetSource = JavaSource.forFileObject(targetFile);
+        String packageName = JavaSourceHelper.getPackageName(targetSource);
         this.bean = bean;
         getBean().setPackageName(packageName);
-        getBean().setPrivateFieldForQueryParam(true);
-        wrapperResourceFile = SourceGroupSupport.findJavaSourceFile(project, getBean().getName());
     }
 
     protected JTextComponent getTargetComponent() {
@@ -138,38 +107,14 @@ abstract public class SaasCodeGenerator extends AbstractGenerator {
         return this.targetFile;
     }
     
+    protected JavaSource getTargetSource() {
+        return this.targetSource;
+    }
+    
     protected FileObject getTargetFolder() {
         return this.destDir;
     }
-    
-    protected FileObject getWrapperResourceFile() {
-        return this.wrapperResourceFile;
-    }
-    
-    protected void setWrapperResourceFile(FileObject wrapperResourceFile) {
-        this.wrapperResourceFile = wrapperResourceFile;
-    }
-    
-    protected JavaSource getTargetSource() {
-        return targetResourceJS;
-    }
-    
-    protected JavaSource getWrapperResourceSource() {
-        return wrapperResourceJS;
-    }
-    
-    protected void setWrapperResourceSource(JavaSource wrapperResourceJS) {
-        this.wrapperResourceJS = wrapperResourceJS;
-    }
-    
-    protected JavaSource getJaxbOutputWrapperSource() {
-        return this.jaxbOutputWrapperJS;
-    }
-    
-    protected void setJaxbOutputWrapperSource(JavaSource jaxbOutputWrapperJS) {
-       this.jaxbOutputWrapperJS = jaxbOutputWrapperJS;
-    }
-    
+   
     protected Project getProject() {
         return this.project;
     }
@@ -209,224 +154,16 @@ abstract public class SaasCodeGenerator extends AbstractGenerator {
         return bean;
     }
 
-    public boolean canShowResourceInfo() {
-        return true;
-    }
-
-    public boolean canShowParam() {
-        return wrapperResourceFile == null;
-    }
-
     public Set<FileObject> generate(ProgressHandle pHandle) throws IOException {
         initProgressReporting(pHandle);
 
         preGenerate();
-
-        FileObject outputWrapperFO = generateJaxbOutputWrapper();
-        if (outputWrapperFO != null) {
-            jaxbOutputWrapperJS = JavaSource.forFileObject(outputWrapperFO);
-        }
-        generateSaasServiceResourceClass();
-        addSubresourceLocator();
-        FileObject refConverterFO = getOrCreateGenericRefConverter().getFileObjects().iterator().next();
-        modifyTargetConverter();
-        FileObject[] result = new FileObject[]{targetFile, wrapperResourceFile, refConverterFO, outputWrapperFO};
-        if (outputWrapperFO == null) {
-            result = new FileObject[]{targetFile, wrapperResourceFile, refConverterFO};
-        }
+        FileObject[] result = new FileObject[]{targetFile};
         JavaSourceHelper.saveSource(result);
 
         finishProgressReporting();
 
         return new HashSet<FileObject>(Arrays.asList(result));
-    }
-
-    protected FileObject generateJaxbOutputWrapper() throws IOException {
-        MimeType mimeType = getBean().getMimeTypes()[0];
-
-        if (mimeType == MimeType.JSON || mimeType == MimeType.XML) {
-            FileObject converterFolder = getConverterFolder();
-            String packageName = SourceGroupSupport.packageForFolder(converterFolder);
-            getBean().setOutputWrapperPackageName(packageName);
-            String[] returnTypeNames = getBean().getOutputTypes();
-            XmlOutputWrapperGenerator gen = new XmlOutputWrapperGenerator(converterFolder, getBean().getOutputWrapperName(), packageName, returnTypeNames);
-
-            return gen.generate();
-        }
-        
-        return null;
-    }
-
-    protected void generateSaasServiceResourceClass() throws IOException {
-        if (wrapperResourceFile == null) {
-            GenericResourceGenerator delegate = new GenericResourceGenerator(destDir, bean);
-            delegate.setTemplate(getBean().getResourceClassTemplate());
-            Set<FileObject> files = delegate.generate(getProgressHandle());
-
-            if (files == null || files.size() == 0) {
-                return;
-            }
-            wrapperResourceFile = files.iterator().next();
-            wrapperResourceJS = JavaSource.forFileObject(wrapperResourceFile);
-            addImportsToWrapperResource();
-            addSupportingMethods();
-            modifyHttpMethod();
-        } else {
-            wrapperResourceJS = JavaSource.forFileObject(wrapperResourceFile);
-        }
-    }
-    
-    protected void addImportsToWrapperResource() throws IOException {
-        List<String> imports = new ArrayList<String>();
-        imports.add(REST_CONNECTION_PACKAGE+"."+REST_CONNECTION);
-        Util.addImportsToSource(wrapperResourceJS, imports);
-    }
-
-    protected void addSubresourceLocator() throws IOException {
-        Util.checkScanning();
-        ModificationResult result = targetResourceJS.runModificationTask(new AbstractTask<WorkingCopy>() {
-
-            public void run(WorkingCopy copy) throws IOException {
-                copy.toPhase(JavaSource.Phase.RESOLVED);
-                JavaSourceHelper.addImports(copy, getSubresourceLocatorImports());
-
-                ClassTree tree = JavaSourceHelper.getTopLevelClassTree(copy);
-                String[] annotations = new String[]{Constants.PATH_ANNOTATION};
-                Object[] annotationAttrs = new Object[]{getSubresourceLocatorUriTemplate()};
-                boolean addTryFinallyBlock = false;
-
-                if (hasGetEntityMethod(JavaSourceHelper.getTopLevelClassElement(copy))) {
-                    addTryFinallyBlock = true;
-                }
-
-                String body = "{";
-
-                if (addTryFinallyBlock) {
-                    body += "try {";
-                }
-
-                body += getParamInitStatements(copy);
-                body += "return new $CLASS$($ARGS$);}";
-                body = body.replace("$CLASS$", JavaSourceHelper.getClassName(wrapperResourceJS));
-                body = body.replace("$ARGS$", getParamList());
-
-                String comment = "Returns " + getBean().getName() + " sub-resource.\n";
-
-                if (addTryFinallyBlock) {
-                    body += "finally { PersistenceService.getInstance().close()";
-                }
-
-                ClassTree modifiedTree = JavaSourceHelper.addMethod(copy, tree, 
-                        Constants.PUBLIC, annotations, annotationAttrs, 
-                        getSubresourceLocatorName(), getBean().getQualifiedClassName(), 
-                        null, null, null, null, 
-                        body, comment);
-                copy.rewrite(tree, modifiedTree);
-            }
-        });
-        result.commit();
-    }
-
-    /**
-     *  Add supporting methods, if any, for GET
-     */
-    protected void addSupportingMethods() throws IOException {
-    }
-
-    /**
-     *  Return target and generated file objects
-     */
-    protected void modifyHttpMethod() throws IOException {
-        ModificationResult result = wrapperResourceJS.runModificationTask(new AbstractTask<WorkingCopy>() {
-
-            public void run(WorkingCopy copy) throws IOException {
-                copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                String converterType = getConverterType();
-                if (converterType != null) {
-                    JavaSourceHelper.addImports(copy, new String[]{getConverterType()});
-                }
-
-                String methodBody = "{" + getOverridingStatements(); //NOI18N
-                methodBody += getCustomMethodBody();
-
-                methodBody += "}"; //NOI18N
-                for(MimeType mime:getBean().getMimeTypes()) {
-                    MethodTree methodTree = JavaSourceHelper.getMethodByName(
-                            copy, getBean().getHttpMethodName(getBean().getHttpMethod(), mime));
-                    JavaSourceHelper.replaceMethodBody(copy, methodTree, methodBody);
-                }
-            }
-        });
-        result.commit();
-    }
-
-    protected String getOverridingStatements() {
-        String text = "";
-        List<ParameterInfo> params = Util.filterParametersByAuth(
-                getBean().getAuthenticationType(), getBean().getAuthentication(),
-                getBean().getQueryParameters());
-        for (ParameterInfo param : params) {
-            if(param.isApiKey() || param.isSessionKey() || param.isFixed())
-                continue;
-            String name = getParameterName(param, true, true, true);
-            text += "if (this." + name + " != null) {" + name + " = this." + name + ";" + "}\n";
-        }
-
-        return text;
-    }
-
-    protected JavaSource getOrCreateGenericRefConverter() {
-        FileObject converterFolder = getConverterFolder();
-        String packageName = SourceGroupSupport.packageForFolder(converterFolder);
-        FileObject refConverterFO = converterFolder.getFileObject(GENERIC_REF_CONVERTER, "java"); //NOI18N
-        if (refConverterFO == null) {
-            JavaSource source = JavaSourceHelper.createJavaSource(GENERIC_REF_CONVERTER_TEMPLATE, converterFolder, packageName, GENERIC_REF_CONVERTER);
-            return source;
-        } else {
-            return JavaSource.forFileObject(refConverterFO);
-        }
-    }
-
-    protected String getConverterType() throws IOException {
-        if (jaxbOutputWrapperJS != null) {
-            return JavaSourceHelper.getClassType(jaxbOutputWrapperJS);
-        }
-        return null;
-    }
-
-    protected String getConverterName() throws IOException {
-        String converterType = getConverterType();
-        if (converterType == null) {
-            return null;
-        }
-        return converterType.substring(converterType.lastIndexOf('.') + 1);
-    }
-
-    private String getParamInitStatements(WorkingCopy copy) {
-        String comment = "// TODO: Assign a value to one of the following variables if you want to \n" + "// override the corresponding default value or value from the query \n" + "// parameter in the subresource class.\n"; //NOI18N
-        String statements = ""; //NOI18N
-        boolean addGetEntityStatement = false;
-
-        for (ParameterInfo param : bean.filterParametersByAuth(
-                bean.filterParameters(new ParamFilter[]{ParamFilter.FIXED}))) {
-            String initValue = "null"; //NOI18N
-            String access = match(JavaSourceHelper.getTopLevelClassElement(copy), getParameterName(param, true, true, true));
-
-            if (access != null) {
-                initValue = access;
-                addGetEntityStatement = true;
-            }
-
-            statements += param.getSimpleTypeName() + " " + getParameterName(param, true, true, true) + " = " + initValue + ";"; //NOI18N
-        }
-
-        String getEntityStatement = "";
-
-        if (addGetEntityStatement) {
-            getEntityStatement = getEntityType(JavaSourceHelper.getTopLevelClassElement(copy)) + " entity = getEntity()";
-        }
-
-        return comment + getEntityStatement + statements;
     }
 
     private String getParamList() {
@@ -446,214 +183,7 @@ abstract public class SaasCodeGenerator extends AbstractGenerator {
         return text;
     }
 
-    private String getOutputWrapperQualifiedName() throws IOException {
-        return JavaSourceHelper.getClassType(jaxbOutputWrapperJS);
-    }
-
-    private boolean hasGetEntityMethod(TypeElement typeElement) {
-        List<ExecutableElement> methods = ElementFilter.methodsIn(typeElement.getEnclosedElements());
-   
-        for (ExecutableElement method : methods) {
-            if (method.getSimpleName().contentEquals("getEntity")) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private String getUriParam(TypeElement typeElement) {
-        List<ExecutableElement> methods = ElementFilter.methodsIn(typeElement.getEnclosedElements());
-        boolean hasMethodGetEntity = false;
-        String uriParam = null;
-        for (ExecutableElement method : methods) {
-            if (hasMethodGetEntity && uriParam != null) {
-                return uriParam;
-            }
-            if (method.getSimpleName().contentEquals("getEntity")) {
-                hasMethodGetEntity = true;
-            }
-            for (VariableElement ve : method.getParameters()) {
-                List<? extends AnnotationMirror> annotations = ve.getAnnotationMirrors();
-                for (AnnotationMirror m : annotations) {
-                    if (JavaSourceHelper.isOfAnnotationType(m, Constants.URI_PARAM_ANNOTATION)) {
-                        Collection<? extends AnnotationValue> values = m.getElementValues().values();
-                        for (AnnotationValue av : values) {
-                            if (av.getValue() instanceof String) {
-                                String v = (String) av.getValue();
-                                uriParam = v;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return null;
-    }
-
-    private String getEntityType(TypeElement typeElement) {
-        List<ExecutableElement> methods = ElementFilter.methodsIn(typeElement.getEnclosedElements());
-
-        for (ExecutableElement method : methods) {
-            if (method.getSimpleName().contentEquals("getEntity")) {
-                return method.getReturnType().toString();
-            }
-        }
-        return null;
-    }
-
-    public String getSubresourceLocatorName() {
-        if (subresourceLocatorName == null) {
-            String uriTemplate = getSubresourceLocatorUriTemplate();
-
-            if (uriTemplate.endsWith("/")) {
-                uriTemplate = uriTemplate.substring(0, uriTemplate.length() - 1);
-            }
-            subresourceLocatorName = "get" + Inflector.getInstance().camelize(uriTemplate);
-        }
-
-        return subresourceLocatorName;
-    }
-
-    public void setSubresourceLocatorName(String name) {
-        this.subresourceLocatorName = name;
-    }
-
-    public String getSubresourceLocatorUriTemplate() {
-        if (subresourceLocatorUriTemplate == null) {
-            subresourceLocatorUriTemplate = getAvailableUriTemplate();
-        }
-
-        if (!subresourceLocatorUriTemplate.endsWith("/")) {
-            //NOI18N
-            subresourceLocatorUriTemplate += "/"; //NOI18N
-        }
-        return subresourceLocatorUriTemplate;
-    }
-
-    public void setSubresourceLocatorUriTemplate(String uriTemplate) {
-        this.subresourceLocatorUriTemplate = uriTemplate;
-    }
-
-    public String match(TypeElement targetClass, String arg) {
-        String argName = arg.toLowerCase();
-        List<ExecutableElement> methods = ElementFilter.methodsIn(targetClass.getEnclosedElements());
-        for (ExecutableElement method : methods) {
-            if ("getEntity".equals(method.getSimpleName().toString())) {
-                TypeMirror tm = method.getReturnType();
-                if (tm.getKind() == TypeKind.DECLARED) {
-                    Element element = ((DeclaredType) tm).asElement();
-                    List<ExecutableElement> eMethods = ElementFilter.methodsIn(element.getEnclosedElements());
-                    for (ExecutableElement m : eMethods) {
-                        String mName = m.getSimpleName().toString().toLowerCase();
-                        if (mName.startsWith("get") && match(mName.substring(3), argName)) {
-                            return "entity." + m.getSimpleName().toString() + "()"; //NOI18N
-                        }
-                    }
-                }
-            }
-        }
-        return null;
-    }
-
-    private boolean match(String s1, String lower) {
-        String s10 = s1.toLowerCase();
-        return s10.indexOf(lower) > -1 || lower.indexOf(s10) > -1;
-    }
-
-    protected void modifyTargetConverter() throws IOException {
-        TypeElement targetResourceType = JavaSourceHelper.getTypeElement(targetResourceJS);
-        TypeElement representationType = JavaSourceHelper.getXmlRepresentationClass(targetResourceType, CONVERTER_SUFFIX);
-        if (representationType != null) {
-            JavaSource representationJS = JavaSourceHelper.forTypeElement(representationType, project);
-            ModificationResult result = representationJS.runModificationTask(new AbstractTask<WorkingCopy>() {
-
-                public void run(WorkingCopy copy) throws IOException {
-                    copy.toPhase(JavaSource.Phase.RESOLVED);
-                    ClassTree tree = JavaSourceHelper.getTopLevelClassTree(copy);
-                    ClassTree modifiedTree = addGetComponentRefMethod(copy, tree);
-                    copy.rewrite(tree, modifiedTree);
-                }
-            });
-            result.commit();
-        }
-    }
-
-    private ClassTree addGetComponentRefMethod(WorkingCopy copy, ClassTree tree) {
-        String[] annotations = new String[]{Constants.XML_ELEMENT_ANNOTATION};
-        String uriTemplate = getSubresourceLocatorUriTemplate();
-        String xmlElementName = null;
-
-        if (uriTemplate.endsWith("/")) {
-            xmlElementName = uriTemplate.substring(0, uriTemplate.length() - 1) + "Ref";
-        } else {
-            xmlElementName = uriTemplate + "Ref";
-        }
-
-        Object[] annotationAttrs = new Object[]{JavaSourceHelper.createAssignmentTree(copy, "name", xmlElementName)};
-
-        String body = "{ return new $CLASS$(uri.resolve(\"$URITEMPLATE$\")); }";
-        body = body.replace("$CLASS$", GENERIC_REF_CONVERTER);
-        body = body.replace("$URITEMPLATE$", uriTemplate);
-        String comment = "Returns reference to " + getBean().getName() + " resource.\n";
-        String methodName = getSubresourceLocatorName() + "Ref";
-        return JavaSourceHelper.addMethod(copy, tree, Constants.PUBLIC, annotations, annotationAttrs, methodName, GENERIC_REF_CONVERTER, null, null, null, null, body, comment);
-    }
-
-    private FileObject getConverterFolder() {
-        FileObject converterDir = destDir;
-        if (destDir.getParent() != null) {
-            FileObject dir = destDir.getParent().getFileObject(CONVERTER_FOLDER);
-            if (dir != null) {
-                converterDir = dir;
-            }
-        }
-        return converterDir;
-    }
-
-    public Collection<String> getExistingUriTemplates() {
-        if (existingUriTemplates == null) {
-            try {
-                if (targetFile != null && DataObject.find(targetFile) != null
-                        && Util.isJava(DataObject.find(targetFile))) {
-                    existingUriTemplates = JavaSourceHelper.getAnnotationValuesForAllMethods(targetResourceJS, Constants.PATH);
-                }
-            } catch (DataObjectNotFoundException ex) {//ignore
-            }
-        }
-
-        return existingUriTemplates;
-    }
-
-    private String getAvailableUriTemplate() {
-        //TODO: Need to create an unique UriTemplate value.
-        Collection<String> existingUriTemplates = getExistingUriTemplates();
-        int counter = 1;
-        String uriTemplate = Inflector.getInstance().camelize(getBean().getShortName(), true);
-        String temp = uriTemplate;
-
-        while (existingUriTemplates.contains(temp) || existingUriTemplates.contains(temp + "/")) {
-            //NOI18N
-            temp = uriTemplate + counter++;
-        }
-
-        return temp;
-    }
-
-    private String[] getSubresourceLocatorImports() throws IOException {
-        List<String> imports = new ArrayList<String>();
-        //imports.add(getOutputWrapperQualifiedName());
-        List<ParameterInfo> inputParams = getBean().getInputParameters();
-
-        for (ParameterInfo param : inputParams) {
-            if (!param.getType().getPackage().getName().equals("java.lang")) {
-                imports.add(param.getType().getName());
-            }
-        }
-
-        return imports.toArray(new String[imports.size()]);
-    }
-    
+  
     protected static void insert(String s, JTextComponent target, boolean reformat)
     throws BadLocationException {
         Document doc = target.getDocument();
@@ -661,10 +191,12 @@ abstract public class SaasCodeGenerator extends AbstractGenerator {
             return;
         
         if (s == null)
-            s = "";
+            return;
         
-        if (doc instanceof BaseDocument)
-            ((BaseDocument)doc).atomicLock();
+        //We dont need to lock the document, since there is no way user can
+        //update document during Dnd with a modal dialog
+//        if (doc instanceof BaseDocument)
+//            ((BaseDocument)doc).atomicLock();
         
         int start = insert(s, target, doc);
         
@@ -685,8 +217,10 @@ abstract public class SaasCodeGenerator extends AbstractGenerator {
 //            caret.setSelectionVisible(true);
 //        }
         
-        if (doc instanceof BaseDocument)
-            ((BaseDocument)doc).atomicUnlock();
+        //We dont need to lock the document, since there is no way user can
+        //update document during Dnd with a modal dialog
+//        if (doc instanceof BaseDocument)
+//            ((BaseDocument)doc).atomicUnlock();
     }
     
     protected static int insert(String s, JTextComponent target, Document doc)
@@ -726,15 +260,7 @@ abstract public class SaasCodeGenerator extends AbstractGenerator {
         JavaSource restResponseJS = JavaSourceHelper.createJavaSource(restResponseTemplate, targetFolder, pkg, REST_RESPONSE);
     }
     
-    protected String[] getUriParamTypes() {
-        String defaultType = String.class.getName();
-        String[] types = new String[getBean().getUriParams().length];
-        for (int i=0; i < types.length; i++) {
-            types[i] = defaultType;
-        }
-        return types;
-    }
-    
+   
     protected String[] getGetParamNames(List<ParameterInfo> queryParams) {
         ArrayList<String> params = new ArrayList<String>();
         params.addAll(Arrays.asList(getParamNames(queryParams)));

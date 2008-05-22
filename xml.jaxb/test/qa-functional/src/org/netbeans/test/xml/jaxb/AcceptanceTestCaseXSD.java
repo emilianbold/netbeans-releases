@@ -79,15 +79,15 @@ import org.netbeans.jellytools.FilesTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jemmy.operators.*;
-import java.awt.event.InputEvent;
 import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
+import org.netbeans.test.xml.schema.lib.SchemaMultiView;
 
 /**
  *
  * @author michaelnazarov@netbeans.org
  */
 
-public class AcceptanceTestCaseXSD extends JellyTestCase {
+public class AcceptanceTestCaseXSD extends AcceptanceTestCase {
     
     static final String [] m_aTestMethods = {
         "CreateJavaApplication",
@@ -95,11 +95,11 @@ public class AcceptanceTestCaseXSD extends JellyTestCase {
         "ExploreJAXBBinding",
         "ChangeJAXBOptions",
         "DeleteJAXBBinding",
-        "OpenSchemaFile", // <--
-        "RefreshSchemaFile", // <--
-        "RegenerateJavaCode", // <--
-        "CodeCompletion1", // <--
-        "CodeCompletion2", // <--
+        "OpenSchemaFile",
+        "RefreshSchemaFile",
+        "RegenerateJavaCode",
+        "CodeCompletion1",
+        "CodeCompletion2",
         "RunTheProject"
     };
 
@@ -109,17 +109,6 @@ public class AcceptanceTestCaseXSD extends JellyTestCase {
 
     static final String JAVA_CATEGORY_NAME = "Java";
     static final String JAVA_PROJECT_NAME = "Java Application";
-
-    static final String JAXB_CATEGORY_NAME = "XML";
-    static final String JAXB_COMPONENT_NAME = "JAXB Binding";
-
-    static final String BUTTON_NAME_VERBOSE = "verbose";
-    static final String BUTTON_NAME_READONLY = "readOnly";
-    static final String BUTTON_NAME_FINISH = "Finish";
-    static final String BUTTON_NAME_YES = "Yes";
-
-    static final String POPUP_CHANGE_JAXB_OPTIONS = "Change JAXB Options";
-    static final String POPUP_DELETE = "Delete";
 
     class CFulltextStringComparator implements Operator.StringComparator
     {
@@ -170,41 +159,17 @@ public class AcceptanceTestCaseXSD extends JellyTestCase {
         endTest( );
     }
 
-    // We need to create one from different points, so moved
-    // code out of startTest/endTest field.
-    public void CreateJAXBBindingInternal( )
+    public void CreateJAXBBinding( )
     {
-        // Create JAXB Binding
-        NewFileWizardOperator opNewFileWizard = NewFileWizardOperator.invoke();
-        opNewFileWizard.selectCategory( JAXB_CATEGORY_NAME );
-        opNewFileWizard.selectFileType( JAXB_COMPONENT_NAME );
-        opNewFileWizard.next();
-
-        JDialogOperator opCustomizer = new JDialogOperator( );
-        new JTextFieldOperator( opCustomizer, 0 ).setText( JAXB_BINDING_NAME );
-
-        new JButtonOperator( opCustomizer, 0 ).pushNoBlock( );
-        JFileChooserOperator opFileChooser = new JFileChooserOperator( );
-        opFileChooser.chooseFile( System.getProperty( "xtest.data" ) + File.separator + "CreditReport.xsd" );
-        new JTextFieldOperator( opCustomizer, 4 ).setText( JAXB_PACKAGE_NAME );
-
-        new JCheckBoxOperator( opCustomizer, BUTTON_NAME_VERBOSE ).setSelected( true );
-
-        opNewFileWizard.finish( );
-
-        // Wait till JAXB really created
-        MainWindowOperator.StatusTextTracer stt = MainWindowOperator.getDefault( ).getStatusTextTracer( );
-        stt.start( );
-        stt.waitText( "Finished building " + TEST_JAVA_APP_NAME + " (jaxb-code-generation)." );
-        stt.stop( );
-
-        return;
-    }
-
-    public void CreateJAXBBinding() {
         startTest();
 
-        CreateJAXBBindingInternal( );
+        CreateJAXBBindingInternal(
+            JAXB_BINDING_NAME,
+            JAXB_PACKAGE_NAME,
+            TEST_JAVA_APP_NAME,
+            "CreditReport.xsd",
+            false
+          );
 
         endTest();
     }
@@ -339,51 +304,7 @@ public class AcceptanceTestCaseXSD extends JellyTestCase {
     {
         startTest( );
 
-        ProjectsTabOperator pto = ProjectsTabOperator.invoke( );
-
-        ProjectRootNode prn = pto.getProjectRootNode( TEST_JAVA_APP_NAME );
-        prn.select( );
-
-        Node bindingNode = new Node( prn, "JAXB Binding|" + JAXB_BINDING_NAME );
-        bindingNode.select( );
-        bindingNode.performPopupActionNoBlock( POPUP_CHANGE_JAXB_OPTIONS );
-
-        NbDialogOperator opCustomizer = new NbDialogOperator( "Change JAXB options" );
-        new JCheckBoxOperator( opCustomizer, BUTTON_NAME_READONLY ).setSelected( true );
-        new JButtonOperator( opCustomizer, BUTTON_NAME_FINISH ).pushNoBlock( );
-        
-        // Wait till JAXB really deleted
-        MainWindowOperator.StatusTextTracer stt = MainWindowOperator.getDefault( ).getStatusTextTracer( );
-        stt.start( );
-        stt.waitText( "Finished building " + TEST_JAVA_APP_NAME + " (jaxb-clean-code-generation)." );
-        stt.stop( );
-
-        // Check options
-        FilesTabOperator fto = FilesTabOperator.invoke( );
-
-        Node projectNode = fto.getProjectNode( TEST_JAVA_APP_NAME );
-        projectNode.select( );
-
-        Node nodeWalk = new Node( projectNode, "nbproject|xml_binding_cfg.xml" );
-        nodeWalk.performPopupAction( "Edit" );
-        EditorOperator eoXMLCode = new EditorOperator( "xml_binding_cfg.xml" );
-        String sText = eoXMLCode.getText( );
-
-        String[] asIdealCode =
-        {
-          "<xjc-options>",
-          "<xjc-option name='-verbose' value='true'/>",
-          "<xjc-option name='-readOnly' value='true'/>"
-        };
-
-        for( String sIdealCode : asIdealCode )
-        {
-          if( -1 == sText.indexOf( sIdealCode ) )
-          {
-            fail( "Unable to find required code inside xml_binding_cfg.xml : " + sIdealCode );
-          }
-        }
-        eoXMLCode.close( false );
+        ChangeJAXBOptionsInternal( JAXB_BINDING_NAME, TEST_JAVA_APP_NAME );
 
         endTest( );
     }
@@ -411,14 +332,34 @@ public class AcceptanceTestCaseXSD extends JellyTestCase {
         stt.waitText( "Finished building " + TEST_JAVA_APP_NAME + " (jaxb-clean-code-generation)." );
         stt.stop( );
 
+        CreateJAXBBindingInternal(
+            JAXB_BINDING_NAME,
+            JAXB_PACKAGE_NAME,
+            TEST_JAVA_APP_NAME,
+            "CreditReport.xsd",
+            false
+          );
+
         endTest( );
+    }
+
+    protected boolean CheckSchemaView( String sView )
+    {
+      for( int i = 0; i < 2; i++ )
+      {
+        JMenuBarOperator bar = new JMenuBarOperator( MainWindowOperator.getDefault( ) );
+        JMenuItemOperator menu = bar.showMenuItem("View|Editors|" + sView );
+        boolean bres = menu.isSelected( );
+        bar.closeSubmenus( );
+        if( bres )
+          return true;
+      }
+      return false;
     }
 
     public void OpenSchemaFile( )
     {
         startTest( );
-
-        CreateJAXBBindingInternal( );
 
         ProjectsTabOperator pto = ProjectsTabOperator.invoke( );
 
@@ -429,74 +370,225 @@ public class AcceptanceTestCaseXSD extends JellyTestCase {
         bindingNode.select( );
         bindingNode.performPopupActionNoBlock( "Open" );
         
-        EditorOperator eoXMLCode = new EditorOperator( JAXB_PACKAGE_NAME + ".xsd" );
-        // TODO : check schema view is in use
+        // TODO : expected fail
+        // if( !CheckSchemaView( "Schema" ) )
+          // fail( "Wrong schema view used, required \"Schema\"." );
 
         endTest( );
+    }
+
+    protected void AddItInternal(
+        int iColumn,
+        String sItName,
+        String sMenuToAdd,
+        String sRadioName,
+        String sTypePath,
+        String sAddedName
+      )
+    {
+      // Swicth to Schema view
+      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("View|Editors|Schema");
+
+      // Select first column, Attributes
+      SchemaMultiView opMultiView = new SchemaMultiView( JAXB_PACKAGE_NAME + ".xsd" );
+      opMultiView.switchToSchema( );
+      opMultiView.switchToSchemaColumns( );
+      JListOperator opList = opMultiView.getColumnListOperator( iColumn );
+      opList.selectItem( sItName );
+
+      // Right click on Reference Schemas
+      int iIndex = opList.findItemIndex( sItName );
+      Point pt = opList.getClickPoint( iIndex );
+      opList.clickForPopup( pt.x, pt.y );
+
+      // Click Add Attribute...
+      JPopupMenuOperator popup = new JPopupMenuOperator( );
+      popup.pushMenuNoBlock( sMenuToAdd + "..." );
+
+      // Get dialog
+      JDialogOperator jadd = new JDialogOperator( sMenuToAdd.replace( "|", " " ) );
+
+      // Set unique name
+      JTextFieldOperator txt = new JTextFieldOperator( jadd, 0 );
+      txt.setText( sAddedName );
+
+      // Use existing definition
+      if( null != sRadioName )
+      {
+        JRadioButtonOperator jex = new JRadioButtonOperator( jadd, sRadioName );
+        jex.setSelected( true );
+      }
+
+      // Get tree
+      if( null != sTypePath )
+      {
+        JTreeOperator jtree = new JTreeOperator( jadd, 0 );
+        TreePath path = jtree.findPath( sTypePath );
+      
+        jtree.selectPath( path );
+        jtree.clickOnPath( path );
+      }
+
+      // Close
+      JButtonOperator jOK = new JButtonOperator( jadd, "OK" ); // TODO : OK
+      jOK.push( );
+      jadd.waitClosed( );
+
+      // Check attribute was added successfully
+      opList = opMultiView.getColumnListOperator( iColumn + 1 );
+      iIndex = opList.findItemIndex( sAddedName );
+      if( -1 == iIndex )
+        fail( "It was not added." );
+
+    }
+
+    protected void WaitSaveAll( )
+    {
+      for( int i = 0; i < 2; i++ )
+      {
+        JMenuBarOperator bar = new JMenuBarOperator( MainWindowOperator.getDefault( ) );
+        JMenuItemOperator menu = bar.showMenuItem("File|Save All" );
+        boolean bres = menu.isEnabled( );
+        bar.closeSubmenus( );
+        if( bres )
+          return;
+      }
+      return;
     }
 
     public void RefreshSchemaFile( )
     {
-        startTest( );
+      startTest( );
 
-        // TODO
+      // TODO : Add elements using design.
+      // TEMPORARY : Using Schema view
+      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("View|Editors|Schema");
+      AddItInternal(
+          0,
+          "Elements",
+          "Add Element",
+          "Use Existing Type",
+          "Built-in Types|string",
+          "NewElementForRefresh"
+        );
 
-        endTest( );
+      // Save All
+      WaitSaveAll( );
+      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("File|Save All");
+
+      // Invoke Refresh
+      ProjectsTabOperator pto = ProjectsTabOperator.invoke( );
+
+      ProjectRootNode prn = pto.getProjectRootNode( TEST_JAVA_APP_NAME );
+      prn.select( );
+
+      Node bindingNode = new Node( prn, "JAXB Binding|" + JAXB_BINDING_NAME + "|" + JAXB_PACKAGE_NAME + ".xsd" );
+      bindingNode.select( );
+      bindingNode.performPopupAction( "Refresh" );
+
+      // TODO : check result
+      // TEMPORARY : Using Schema view
+      try { Thread.sleep( 1000 ); } catch( InterruptedException ex ) { }
+      SchemaMultiView opMultiView = new SchemaMultiView( JAXB_PACKAGE_NAME + ".xsd" );
+      JListOperator opList = opMultiView.getColumnListOperator( 0 );
+      opList.selectItem( "Elements" );
+      opList = opMultiView.getColumnListOperator( 1 );
+      int iIndex = opList.findItemIndex( "NewElementForRefresh" );
+      if( -1 != iIndex )
+      {
+        fail( "Element still presents after schema Refresh." );
+      }
+
+      // Back to schema?
+      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("View|Editors|Schema");
+
+      endTest( );
     }
 
     public void RegenerateJavaCode( )
     {
-        startTest( );
+      startTest( );
 
-        // TODO
+      // TODO : Add elements using Design view.
+      // TEMPORARY : Using Schema view
+      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("View|Editors|Schema");
+      AddItInternal(
+          0,
+          "Complex Types",
+          "Add Complex Type",
+          null,
+          null,
+          "NewComplexTypeForRegeneration"
+        );
 
-        endTest( );
+      AddItInternal(
+          2,
+          "sequence",
+          "Add|Element",
+          "Use Existing Type",
+          "Built-in Types|date",
+          "SubElementDate"
+        );
+
+      //new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("View|Editors|Design");
+
+      // Invoke Refresh
+      ProjectsTabOperator pto = ProjectsTabOperator.invoke( );
+
+      ProjectRootNode prn = pto.getProjectRootNode( TEST_JAVA_APP_NAME );
+      prn.select( );
+
+      Node bindingNode = new Node( prn, "JAXB Binding" );
+      bindingNode.select( );
+
+      // Wait till JAXB really deleted
+      MainWindowOperator.StatusTextTracer stt = MainWindowOperator.getDefault( ).getStatusTextTracer( );
+      stt.start( );
+
+      bindingNode.performPopupAction( "Regenerate Java Code" );
+
+      stt.waitText( "Finished building " + TEST_JAVA_APP_NAME + " (jaxb-code-generation)." );
+      stt.stop( );
+
+      // TODO : check result
+      // Access to files page
+      FilesTabOperator fto = FilesTabOperator.invoke( );
+
+      Node projectNode = fto.getProjectNode( TEST_JAVA_APP_NAME );
+      projectNode.select( );
+
+      String[] asFilesToCheck =
+      {
+        "build|classes|" + JAXB_PACKAGE_NAME + "|NewComplexTypeForRegeneration.class",
+        "build|generated|addons|jaxb|" + JAXB_PACKAGE_NAME + "|NewComplexTypeForRegeneration.java",
+        "build|generated|jaxbCache|" + JAXB_BINDING_NAME + "|" + JAXB_PACKAGE_NAME + "|NewComplexTypeForRegeneration.java",
+      };
+
+      projectNode.setComparator( new CFulltextStringComparator( ) );
+      for( int i = 0; i < asFilesToCheck.length; i++ )
+      {
+        Node node = new Node(
+            projectNode,
+            asFilesToCheck[ i ]
+          );
+        if( null == node )
+        {
+          fail( "Unable to explore files node named: " + asFilesToCheck[ i ] );
+        }
+      }
+
+      // Close schema
+      EditorOperator eoXMLCode = new EditorOperator( JAXB_PACKAGE_NAME + ".xsd" );
+      eoXMLCode.close( );
+
+      endTest( );
     }
 
     public void CodeCompletion1( )
     {
         startTest( );
 
-        // Access java code with editor
-        EditorOperator eoJavaCode = new EditorOperator( "Main.java" );
-
-        eoJavaCode.setCaretPosition(
-            "// TODO code application logic here",
-            0,
-            false
-          );
-        eoJavaCode.pushKey( KeyEvent.VK_ENTER );
-
-        eoJavaCode.insert( "Cred" );
-        JEditorPaneOperator editor = eoJavaCode.txtEditorPane( );
-        editor.typeKey( ' ', InputEvent.CTRL_MASK );
-
-        CompletionJListOperator jCompl = new CompletionJListOperator( );
-        //jCompl.
-        System.out.println( "**** 1 ****" );
-        try{Thread.sleep( 30000 );}catch(InterruptedException ex){}
-        jCompl.clickOnItem( "CreditReport" );
-        System.out.println( "**** 2 ****" );
-        jCompl.hideAll( );
-
-        System.out.println( "**** 3 ****" );
-
-        String sCompletedText = eoJavaCode.getText( eoJavaCode.getLineNumber( ) );
-        if( !sCompletedText.matches( "^[ \\t]*CreditReport$" ) )
-        {
-          fail( "Wrong completion of Cred: \"" + sCompletedText + "\"" );
-        }
-        eoJavaCode.insert( " cr = new CreditReport( );\ncr" );
-
-        // TODO : Wait till suggestions will come.
-        // How to access them?
-
-        editor.typeKey( '.' );
-
-        jCompl = new CompletionJListOperator( );
-        jCompl.clickOnItem( "setLastName" );
-
-        // TODO : Check result
+        CodeCompletion1Internal( );
 
         endTest( );
     }
@@ -504,52 +596,7 @@ public class AcceptanceTestCaseXSD extends JellyTestCase {
     public void CodeCompletion2( ) {
         startTest();
 
-        // Access java code with editor
-        EditorOperator eoJavaCode = new EditorOperator( "Main.java" );
-        eoJavaCode.setCaretPosition(
-            "// TODO code application logic here",
-            0,
-            false
-          );
-        eoJavaCode.pushKey( KeyEvent.VK_ENTER );
-        // Use jaxbm template
-        JEditorPaneOperator editor = eoJavaCode.txtEditorPane( );
-        String sCode = "jaxbm\t";
-        for( int i = 0; i < sCode.length( ); i++ )
-          editor.typeKey( sCode.charAt( i ) );
-
-        // Check result
-        eoJavaCode.pushUpArrowKey( );
-        String[] asIdealCodeLines =
-        {
-          "try {",
-          "javax.xml.bind.JAXBContext jaxbCtx = javax.xml.bind.JAXBContext.newInstance(args.getClass().getPackage().getName());",
-          "javax.xml.bind.Marshaller marshaller = jaxbCtx.createMarshaller();",
-          "marshaller.setProperty(javax.xml.bind.Marshaller.JAXB_ENCODING, \"UTF-8\"); //NOI18N",
-          "",
-          "marshaller.setProperty(javax.xml.bind.Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);",
-          "marshaller.marshal(args, System.out);",
-          "} catch (javax.xml.bind.JAXBException ex) {",
-          "// XXXTODO Handle exception",
-          "java.util.logging.Logger.getLogger(\"global\").log(java.util.logging.Level.SEVERE, null, ex); //NOI18N",
-          "",
-          "}",
-          "}"
-        };
-
-        for( String sIdealCodeLine : asIdealCodeLines )
-        {
-          String sCodeLine = eoJavaCode.getText( eoJavaCode.getLineNumber( ) );
-          if( -1 == sCodeLine.indexOf( sIdealCodeLine ) )
-          {
-            // Test <suite> failed
-            fail(
-                "Ideal code was not found at line #" + eoJavaCode.getLineNumber( ) +
-                " : " + sIdealCodeLine
-              );
-          }
-          eoJavaCode.pushDownArrowKey( );
-        }
+        CodeCompletion2Internal( JAXB_PACKAGE_NAME );
 
         endTest();
     }
@@ -557,27 +604,9 @@ public class AcceptanceTestCaseXSD extends JellyTestCase {
     public void RunTheProject( ) {
         startTest();
 
-        // Run
-        new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("Run|Run Main Project");
+        RunTheProjectInternal( TEST_JAVA_APP_NAME );
 
-        MainWindowOperator.StatusTextTracer stt = MainWindowOperator.getDefault( ).getStatusTextTracer( );
-        stt.start( );
-        stt.waitText( "Finished building " + TEST_JAVA_APP_NAME + " (run)." );
-        stt.stop( );
-
-        // Check output
-          // TODO : is there XML?
-        
         endTest();
     }
     
-    public void tearDown() {
-        new SaveAllAction().performAPI();
-    }
-
-    protected void startTest(){
-        super.startTest();
-        //Helpers.closeUMLWarningIfOpened();
-    }
-
 }

@@ -41,8 +41,13 @@
 package org.netbeans.modules.etl.project;
 
 import java.io.File;
+import java.util.StringTokenizer;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.project.Localizer;
 
 public class ChooseLocationDialog extends javax.swing.JDialog {
 
@@ -198,11 +203,12 @@ public class ChooseLocationDialog extends javax.swing.JDialog {
         JFileChooser chooser = new JFileChooser();
         //chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         FileFilter currentFilter = chooser.getFileFilter();
-        chooser.addChoosableFileFilter(new Filter(new String[] {".xml"}));
+        chooser.addChoosableFileFilter(new Filter(new String[]{".xml"}));
         chooser.setFileFilter(currentFilter);
         int value = chooser.showOpenDialog(this);
         if (value == JFileChooser.APPROVE_OPTION) {
             objDefnTextField.setText(chooser.getSelectedFile().toString());//getCurrentDirectory().toString());
+
         } else {
             objDefnTextField.setText("");
         }
@@ -253,49 +259,63 @@ public class ChooseLocationDialog extends javax.swing.JDialog {
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
         setDBLocation(dbLocationTextField.getText());
         String str = objDefnTextField.getText();
-        if(str.endsWith("object.xml")){
-          str = str.replace("object.xml", "");          
-        }else{
-            System.out.println("Choose object.xml");
+        StringTokenizer tokenizer = new StringTokenizer(str, File.separator);
+
+        while (tokenizer.hasMoreTokens()) {
+            fileName = tokenizer.nextToken();
         }
+        String extn = ".xml";        
+        if (!(fileName.toLowerCase().endsWith(extn))) {
+            String errMsg = "Choose a valid xml file.";
+            mLogger.infoNoloc(mLoc.t(errMsg));
+            JOptionPane.showMessageDialog(new JFrame(), errMsg, "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        str = str.replace(fileName, "");
         setObjectDefinition(str);
         setDBName(dbNameTextField.getText());
-        this.dispose();       
+        this.dispose();
     }//GEN-LAST:event_okButtonActionPerformed
+
+    public String getFileName() {
+        return fileName;
+    }
 
     /**
      * @param args the command line arguments
      */
     /*public static void main(String[] args) {
-        java.awt.EventQueue.invokeLater(new Runnable() {
-
-            public void run() {
-                ChooseLocationDialog dialog = new ChooseLocationDialog(new javax.swing.JFrame(), true);
-                dialog.addWindowListener(new java.awt.event.WindowAdapter() {
-
-                    @Override
-                    public void windowClosing(java.awt.event.WindowEvent e) {
-                        System.exit(0);
-                    }
-                });
-                dialog.setVisible(true);
-            }
-        });
+    java.awt.EventQueue.invokeLater(new Runnable() {
+    
+    public void run() {
+    ChooseLocationDialog dialog = new ChooseLocationDialog(new javax.swing.JFrame(), true);
+    dialog.addWindowListener(new java.awt.event.WindowAdapter() {
+    
+    @Override
+    public void windowClosing(java.awt.event.WindowEvent e) {
+    System.exit(0);
+    }
+    });
+    dialog.setVisible(true);
+    }
+    });
     }*/
     class Filter extends javax.swing.filechooser.FileFilter {
+
         private String[] extensions;
-        public Filter(String[] extensions) {            
+
+        public Filter(String[] extensions) {
             this.extensions = new String[extensions.length];
             for (int i = 0; i < extensions.length; i++) {
                 this.extensions[i] = extensions[i].toUpperCase();
             }
         }
-        
-         @Override
+
+        @Override
         public boolean accept(File file) {
             //String filename = file.getName();
             //return filename.endsWith(".xml");
-             if (file.isDirectory()) {
+            if (file.isDirectory()) {
                 return true;
             }
             for (int i = 0; i < extensions.length; i++) {
@@ -303,14 +323,18 @@ public class ChooseLocationDialog extends javax.swing.JDialog {
                     return true;
                 }
             }
-            
+
             return false;
         }
+
         public String getDescription() {
             return "*.xml";
         }
-       
     }
+    private String fileName = null;
+    private static transient final Logger mLogger = Logger.getLogger(ChooseLocationDialog.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel btnPanel;
     private javax.swing.JButton cancelButton;

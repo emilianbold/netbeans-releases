@@ -69,8 +69,8 @@ public final class SelectInModel extends CookieAction {
 		DataObject obj = (DataObject) activatedNodes[0].getCookie(DataObject.class);
 		if (obj !=null)
 		{
-			Project umlProject = getAssociatedUMLProject(obj);
-			ProjectUtil.selectInModel(umlProject, obj);
+			ProjectUtil.selectInModel
+                            (UMLJavaAssociationUtil.getAllAssociatedUMLProjects(obj), obj);
 		}
 		else
 		{

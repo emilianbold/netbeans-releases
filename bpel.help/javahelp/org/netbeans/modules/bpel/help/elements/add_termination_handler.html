@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
-* Copyright 2007 Sun Microsystems, Inc. All rights reserved.
+* Copyright 2008 Sun Microsystems, Inc. All rights reserved.
 * Use is subject to license terms.
 -->
 <html>
@@ -11,9 +11,11 @@
 <body>
 <h2>BPEL Designer: Adding Termination Handlers </h2>
 <p><small><a href="#seealso">See Also</a></small></p>
-<p>The termination handler is used to control the termination of a scope. The termination of a scope happens if a scope or process enclosing it has faulted. </p>
-<p>When a fault is thrown inside a scope or process, a fault handler associated with the scope or process should be run, but before that all the running activities inside the faulted  scope or process should be terminated. If a faulted scope or process contains any nested scopes, they also should be terminated. Terminating a scope means terminating activities inside it and executing the termination handler associated with the scope.</p>
-<p>The termination handler is a container for the activities that will be performed in case a scope is terminated. You can add one termination handler for a  scope.</p>
+<p>The termination handler is used to control the termination of a running scope. The termination of a running scope happens if a scope or process enclosing it has faulted. </p>
+<p>When a fault is thrown inside a scope or process, a fault handler associated with the scope or process should be run, but before that all the running activities inside the faulted  scope or process should be terminated. If a faulted scope or process has any enclosed scopes which are still running, they also should be terminated. Terminating a scope means terminating activities inside it and executing the termination handler associated with the scope.</p>
+<p>Note that a scope can be terminated only if, it is either running normally, is running its compensation handler or termination handler. A completed scope as well as a scope that is faulted or is running its fault handlers cannot be terminated.</p>
+<p>The termination handler is a container for the activities that will be performed in case a scope is terminated. You can add one termination handler for a  scope. </p>
+<p>If a fault occurs inside the termination handler of a scope, the fault is not propagated to the enclosing scope.</p>
 <p><b>To add a Termination Handler  to Scope or Process elements:</b></p>
 <ol>
   <li>In the Design view right-click the Scope element  and choose Add &gt;  Termination Handler.<br>

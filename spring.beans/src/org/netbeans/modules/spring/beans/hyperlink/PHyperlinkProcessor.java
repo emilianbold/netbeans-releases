@@ -50,9 +50,9 @@ import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.modules.spring.beans.editor.BeanClassFinder;
 import org.netbeans.modules.spring.beans.editor.ContextUtilities;
-import org.netbeans.modules.spring.beans.editor.Property;
-import org.netbeans.modules.spring.beans.editor.PropertyFinder;
-import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils;
+import org.netbeans.modules.spring.java.JavaUtils;
+import org.netbeans.modules.spring.java.Property;
+import org.netbeans.modules.spring.java.PropertyFinder;
 import org.openide.util.Exceptions;
 
 /**
@@ -81,13 +81,13 @@ public class PHyperlinkProcessor extends HyperlinkProcessor {
                 temp = temp.substring(0, temp.indexOf("-ref")); // NOI18N
             }
 
-            final String className = new BeanClassFinder(env.getCurrentTag(), 
-                    env.getFile()).findImplementationClass();
+            final String className = new BeanClassFinder(env.getBeanAttributes(), 
+                    env.getFileObject()).findImplementationClass();
             if(className == null) {
                 return;
             }
             
-            JavaSource js = SpringXMLConfigEditorUtils.getJavaSource(env.getDocument());
+            JavaSource js = JavaUtils.getJavaSource(env.getFileObject());
             if(js == null) {
                 return;
             }
@@ -97,7 +97,7 @@ public class PHyperlinkProcessor extends HyperlinkProcessor {
 
                     public void run(CompilationController cc) throws Exception {
                         ElementUtilities eu = cc.getElementUtilities();
-                        TypeElement type = SpringXMLConfigEditorUtils.findClassElementByBinaryName(className, cc);
+                        TypeElement type = JavaUtils.findClassElementByBinaryName(className, cc);
                         Property[] props = new PropertyFinder(type.asType(), propName, eu).findProperties();
                         if(props.length > 0 && props[0].getSetter() != null) {
                             ElementOpen.open(cc.getClasspathInfo(), props[0].getSetter());
@@ -118,8 +118,7 @@ public class PHyperlinkProcessor extends HyperlinkProcessor {
         }
         
         if(env.getType().isAttributeHyperlink()) {
-            int start = env.getToken().getOffset();
-            return new int[] { start, start + env.getToken().getImage().length() };
+            return new int[] { env.getTokenStartOffset(), env.getTokenEndOffset() };
         }
         
         return null;

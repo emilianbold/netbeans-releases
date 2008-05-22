@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.cnd.modelui.switcher;
 
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import javax.swing.Action;
@@ -59,6 +58,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
+import org.openide.windows.OutputWriter;
 
 /**
  *
@@ -218,10 +218,11 @@ public class TestProjectReferencesAction extends NodeAction {
         io.select();
         final ProgressHandle handle = ProgressHandleFactory.createHandle(task);
         handle.start();
-        final PrintWriter out = io.getOut();
+        final OutputWriter out = io.getOut();
+        final OutputWriter err = io.getErr();
         final long[] time = new long[2];
         time[0] = System.currentTimeMillis();
-        TraceXRef.traceProjectRefsStatistics(p, out, new CsmProgressAdapter() {
+        TraceXRef.traceProjectRefsStatistics(p, out, err, new CsmProgressAdapter() {
             private int handled = 0;
             @Override
             public void projectFilesCounted(CsmProject project, int filesCount) {

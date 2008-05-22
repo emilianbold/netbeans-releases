@@ -294,10 +294,10 @@ public class JaxWsUtils {
         //open in editor
 
         DataObject dobj = DataObject.find(implClassFo);
-        List<Service> services = jaxWsSupport.getServices();
+        List services = jaxWsSupport.getServices();
         if (serviceID != null) {
-            for (Service serv : services) {
-                if (serviceID.equals(serv.getName())) {
+            for (Object serv : services) {
+                if (serviceID.equals(((Service)serv).getName())) {
 
                     final EditCookie editCookie = dobj.getCookie(EditCookie.class);
                     if (editCookie != null) {
@@ -384,6 +384,18 @@ public class JaxWsUtils {
                             make.QualIdent(WSAn),
                             attrs);
                     modifiedClass = genUtils.addAnnotation(modifiedClass, WSAnnotation);
+                    
+                    if (WsdlPort.SOAP_VERSION_12.equals(port.getSOAPVersion())) {                       
+                        TypeElement BindingAn = workingCopy.getElements().getTypeElement("javax.xml.ws.BindingType"); //NOI18N
+
+                        List<ExpressionTree> bindingAttrs = new ArrayList<ExpressionTree>();
+                        bindingAttrs.add(make.Assignment(make.Identifier("value"), //NOI18N
+                                make.Identifier("javax.xml.ws.soap.SOAPBinding.SOAP12HTTP_BINDING"))); //NOI18N
+                        AnnotationTree bindingAnnotation = make.Annotation(
+                                make.QualIdent(BindingAn),
+                                bindingAttrs);
+                        modifiedClass = genUtils.addAnnotation(modifiedClass, bindingAnnotation);
+                    }
 
                     // add @Stateless annotation
                     if (projectType == EJB_PROJECT_TYPE) {//EJB project
@@ -467,17 +479,10 @@ public class JaxWsUtils {
         //open in editor
 
         DataObject dobj = DataObject.find(implClassFo);
-        List<Service> services = jaxWsSupport.getServices();
-        if (serviceID != null) {
-            for (Service serv : services) {
-                if (serviceID.equals(serv.getName())) {
-                    openFileInEditor(dobj, serv);
-                }
-            }
-        }
+        openFileInEditor(dobj);
     }
 
-    public static void openFileInEditor(DataObject dobj, Service service) {
+    public static void openFileInEditor(DataObject dobj) {
 
         final OpenCookie openCookie = dobj.getCookie(OpenCookie.class);
         if (openCookie != null) {
@@ -498,28 +503,6 @@ public class JaxWsUtils {
         }
     }
 
-    // Retouche
-    //    private static String createBody(Type type) {
-    //        String initVal;
-    //
-    //        if (type instanceof PrimitiveType) {
-    //            PrimitiveTypeKind primitiveType = ((PrimitiveType) type).getKind();
-    //            if (PrimitiveTypeKindEnum.BOOLEAN.equals(primitiveType)) {
-    //                initVal = "false"; // NOI18N
-    //            } else if (PrimitiveTypeKindEnum.CHAR.equals(primitiveType)) {
-    //                initVal = "'\\0'"; // NOI18N
-    //            } else if (PrimitiveTypeKindEnum.VOID.equals(primitiveType)) {
-    //                return "throw new UnsupportedOperationException(\"Not yet implemented\");"; // NOI18N
-    //            } else {
-    //                initVal = "0"; // NOI18N
-    //            }
-    //        } else if (type instanceof ClassDefinition) {
-    //            initVal = "null"; // NOI18N
-    //        } else {
-    //            throw new IllegalArgumentException("Type "+type.getClass()); // NOI18N
-    //        }
-    //        return "return ".concat(initVal).concat(";"); // NOI18N
-    //    }
     public static String getPackageName(String fullyQualifiedName) {
         String packageName = "";
         int index = fullyQualifiedName.lastIndexOf(".");
@@ -892,16 +875,8 @@ public class JaxWsUtils {
 
     public static void setSOAP12Binding(final FileObject implClassFo, final boolean isSOAP12) {
         final JavaSource javaSource = JavaSource.forFileObject(implClassFo);
-        final CancellableTask<WorkingCopy> modificationTask = new CancellableTask<WorkingCopy 
-
-                  
-                
-                   
-                   
-                   
-                   
-                  > () {
-
+        final CancellableTask<WorkingCopy> modificationTask = new CancellableTask<WorkingCopy > () { 
+                 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
                 TreeMaker make = workingCopy.getTreeMaker();

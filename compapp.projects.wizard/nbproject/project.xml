@@ -126,8 +126,8 @@
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.iep.editor</friend>
-                <package>org.netbeans.modules.compapp.projects.wizard</package>
                 <friend>com.sun.jbi.sapbc.sapwsdlgenerator</friend>
+                <package>org.netbeans.modules.compapp.projects.wizard</package>
            </friend-packages>
         </data>
     </configuration>

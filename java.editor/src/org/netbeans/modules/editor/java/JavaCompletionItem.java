@@ -197,8 +197,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
         return new DefaultConstructorItem(elem, substitutionOffset, smartType);
     }
     
-    public static final JavaCompletionItem createParametersItem(ExecutableElement elem, ExecutableType type, int substitutionOffset, boolean isDeprecated, int activeParamIndex) {
-        return new ParametersItem(elem, type, substitutionOffset, isDeprecated, activeParamIndex);
+    public static final JavaCompletionItem createParametersItem(ExecutableElement elem, ExecutableType type, int substitutionOffset, boolean isDeprecated, int activeParamIndex, String name) {
+        return new ParametersItem(elem, type, substitutionOffset, isDeprecated, activeParamIndex, name);
     }
 
     public static final JavaCompletionItem createAnnotationItem(TypeElement elem, DeclaredType type, int substitutionOffset, boolean isDeprecated) {
@@ -1323,8 +1323,11 @@ public abstract class JavaCompletionItem implements CompletionItem {
                                 controller.toPhase(JavaSource.Phase.PARSED);
                                 TreePath tp = controller.getTreeUtilities().pathFor(c.getSelectionEnd());
                                 Tree tree = tp.getLeaf();
-                                if (tree.getKind() == Tree.Kind.IDENTIFIER || tree.getKind() == Tree.Kind.PRIMITIVE_TYPE)
+                                if (tree.getKind() == Tree.Kind.IDENTIFIER || tree.getKind() == Tree.Kind.PRIMITIVE_TYPE) {
                                     tp = tp.getParentPath();
+                                    if (tp.getLeaf().getKind() == Tree.Kind.VARIABLE && ((VariableTree)tp.getLeaf()).getType() == tree)
+                                        ret[0] = ";"; //NOI18N
+                                }
                                 if (tp.getLeaf().getKind() == Tree.Kind.MEMBER_SELECT ||
                                     (tp.getLeaf().getKind() == Tree.Kind.METHOD_INVOCATION && ((MethodInvocationTree)tp.getLeaf()).getMethodSelect() == tree))
                                     tp = tp.getParentPath();
@@ -1337,15 +1340,18 @@ public abstract class JavaCompletionItem implements CompletionItem {
                     }
                 }
             }
+            boolean pairCompletion = Utilities.pairCharactersCompletion();
             if (inImport || params.isEmpty()) {
-                String add = inImport ? ";" : CodeStyle.getDefault(null).spaceBeforeMethodCallParen() ? " ()" : "()"; //NOI18N
+                String add = inImport ? ";" : CodeStyle.getDefault(null).spaceBeforeMethodCallParen() ? " (" : "("; //NOI18N
+                if (pairCompletion)
+                    add += ")"; //NOI18N
                 if (toAdd != null && !add.startsWith(toAdd))
                     add += toAdd;
                 super.substituteText(c, offset, len, add);
-                if ("(".equals(toAdd)) //NOI18N
+                if ("(".equals(toAdd) && pairCompletion) //NOI18N
                     c.setCaretPosition(c.getCaretPosition() - 1);
             } else {
-                String add = "()"; //NOI18N
+                String add = Utilities.pairCharactersCompletion()? "()" : "("; //NOI18N
                 if (toAdd != null && !add.startsWith(toAdd))
                     add += toAdd;
                 BaseDocument doc = (BaseDocument)c.getDocument();
@@ -1520,7 +1526,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                             return;
                         TreePath tp = copy.getTreeUtilities().pathFor(offset);
                         if (tp.getLeaf().getKind() == Tree.Kind.CLASS) {
-                            if (Utilities.isInMethod(tp))
+                            if (Utilities.inAnonymousOrLocalClass(tp))
                                 copy.toPhase(Phase.RESOLVED);
                             int idx = 0;
                             for (Tree tree : ((ClassTree)tp.getLeaf()).getMembers()) {
@@ -1679,7 +1685,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                             return;
                         TreePath tp = copy.getTreeUtilities().pathFor(offset);
                         if (tp.getLeaf().getKind() == Tree.Kind.CLASS) {
-                            if (Utilities.isInMethod(tp))
+                            if (Utilities.inAnonymousOrLocalClass(tp))
                                 copy.toPhase(Phase.RESOLVED);
                             int idx = 0;
                             for (Tree tree : ((ClassTree)tp.getLeaf()).getMembers()) {
@@ -1763,7 +1769,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 TypeMirror tm = tIt.next();
                 this.params.add(new ParamDesc(tm.toString(), Utilities.getTypeName(tm, false, elem.isVarArgs() && !tIt.hasNext()).toString(), it.next().getSimpleName().toString()));
             }
-            this.isAbstract = elem.getEnclosingElement().getModifiers().contains(Modifier.ABSTRACT);
+            this.isAbstract = !insertName && elem.getEnclosingElement().getModifiers().contains(Modifier.ABSTRACT);
         }
         
         public int getSortPriority() {
@@ -1875,9 +1881,12 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 }
                 sequence.moveNext();
             }
-            String add = isAbstract ? "() {}" : "()"; //NOI18N
-            if (toAdd != null && !add.startsWith(toAdd))
-                add += toAdd;   
+            String add = isAbstract ? "() {}" : Utilities.pairCharactersCompletion() ? "()" : "("; //NOI18N
+            if (toAdd != null && !add.startsWith(toAdd)) {
+                add += toAdd;
+            } else {
+                toAdd = null;
+            }
             String text = CodeStyle.getDefault(null).spaceBeforeMethodCallParen() ? " " : ""; //NOI18N
             if (sequence == null) {
                 text += add;
@@ -2069,7 +2078,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 }
                 sequence.moveNext();
             }
-            String add = isAbstract ? "() {}" : "()"; //NOI18N
+            String add = isAbstract ? "() {}" : Utilities.pairCharactersCompletion() ? "()" : "("; //NOI18N
             if (toAdd != null && !add.startsWith(toAdd))
                 add += toAdd;
             String text = CodeStyle.getDefault(null).spaceBeforeMethodCallParen() ? " " : ""; //NOI18N
@@ -2165,12 +2174,12 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private String leftText;
         private String rightText;
 
-        private ParametersItem(ExecutableElement elem, ExecutableType type, int substitutionOffset, boolean isDeprecated, int activeParamsIndex) {
+        private ParametersItem(ExecutableElement elem, ExecutableType type, int substitutionOffset, boolean isDeprecated, int activeParamsIndex, String name) {
             super(substitutionOffset);
             this.elementHandle = ElementHandle.create(elem);
             this.isDeprecated = isDeprecated;
             this.activeParamsIndex = activeParamsIndex;
-            this.simpleName = elem.getKind() == ElementKind.CONSTRUCTOR ? elem.getEnclosingElement().getSimpleName().toString() : elem.getSimpleName().toString();
+            this.simpleName = name != null ? name : elem.getKind() == ElementKind.CONSTRUCTOR ? elem.getEnclosingElement().getSimpleName().toString() : elem.getSimpleName().toString();
             this.params = new ArrayList<ParamDesc>();
             Iterator<? extends VariableElement> it = elem.getParameters().iterator();
             Iterator<? extends TypeMirror> tIt = type.getParameterTypes().iterator();
@@ -3023,9 +3032,6 @@ public abstract class JavaCompletionItem implements CompletionItem {
                     while (t == null && tp != null) {
                         switch(tp.getLeaf().getKind()) {
                             case EXPRESSION_STATEMENT:
-                                ExpressionTree expr = ((ExpressionStatementTree)tp.getLeaf()).getExpression();
-                                if (expr != null && expr.getKind() == Tree.Kind.ERRONEOUS)
-                                    break;
                             case IMPORT:                                
                                 t = tp.getLeaf();
                                 break;

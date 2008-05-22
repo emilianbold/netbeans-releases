@@ -3,6 +3,7 @@
 <Form version="1.2" maxVersion="1.2" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
+    <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
@@ -36,12 +37,12 @@
                               </Group>
                               <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
                           </Group>
-                          <Component id="projectLocation" pref="402" max="32767" attributes="0"/>
+                          <Component id="projectLocation" pref="404" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                   <Component id="testRootsPanel" alignment="0" max="32767" attributes="0"/>
                   <Component id="sourceRootsPanel" alignment="0" max="32767" attributes="0"/>
-                  <Component id="jPanel1" alignment="0" pref="500" max="32767" attributes="0"/>
+                  <Component id="jPanel1" alignment="0" pref="502" max="32767" attributes="0"/>
               </Group>
               <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
           </Group>
@@ -171,15 +172,15 @@
       <Layout>
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
-              <Component id="jLabel2" alignment="0" pref="500" max="32767" attributes="0"/>
+              <Component id="jLabel2" alignment="0" pref="502" max="32767" attributes="0"/>
               <Group type="102" alignment="1" attributes="0">
                   <Component id="jScrollPane1" pref="393" max="32767" attributes="0"/>
                   <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
-                  <Group type="103" groupAlignment="1" attributes="0">
-                      <Component id="addSourceRoot" min="-2" max="-2" attributes="0"/>
-                      <Component id="removeSourceRoot" min="-2" pref="97" max="-2" attributes="0"/>
-                      <Component id="upSourceRoot" min="-2" pref="97" max="-2" attributes="0"/>
-                      <Component id="downSourceRoot" min="-2" pref="97" max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="1" max="-2" attributes="0">
+                      <Component id="addSourceRoot" alignment="1" max="32767" attributes="1"/>
+                      <Component id="removeSourceRoot" alignment="1" max="32767" attributes="1"/>
+                      <Component id="upSourceRoot" alignment="1" max="32767" attributes="1"/>
+                      <Component id="downSourceRoot" alignment="1" max="32767" attributes="1"/>
                   </Group>
               </Group>
           </Group>
@@ -198,7 +199,7 @@
                           <Component id="upSourceRoot" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="downSourceRoot" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace min="-2" pref="24" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
                       </Group>
                       <Component id="jScrollPane1" min="0" pref="0" max="32767" attributes="2"/>
                   </Group>
@@ -309,15 +310,15 @@
       <Layout>
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
-              <Component id="jLabel3" alignment="0" pref="500" max="32767" attributes="0"/>
+              <Component id="jLabel3" alignment="0" pref="502" max="32767" attributes="0"/>
               <Group type="102" alignment="1" attributes="0">
                   <Component id="jScrollPane2" pref="393" max="32767" attributes="0"/>
                   <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
-                  <Group type="103" groupAlignment="1" attributes="0">
-                      <Component id="addTestRoot" min="-2" max="-2" attributes="0"/>
-                      <Component id="removeTestRoot" min="-2" pref="97" max="-2" attributes="0"/>
-                      <Component id="upTestRoot" min="-2" pref="97" max="-2" attributes="0"/>
-                      <Component id="downTestRoot" min="-2" pref="97" max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="1" max="-2" attributes="0">
+                      <Component id="addTestRoot" alignment="1" max="32767" attributes="1"/>
+                      <Component id="removeTestRoot" alignment="1" max="32767" attributes="1"/>
+                      <Component id="upTestRoot" alignment="1" max="32767" attributes="1"/>
+                      <Component id="downTestRoot" alignment="1" max="32767" attributes="1"/>
                   </Group>
               </Group>
           </Group>
@@ -336,10 +337,10 @@
                           <Component id="upTestRoot" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="downTestRoot" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace pref="50" max="32767" attributes="0"/>
                       </Group>
-                      <Component id="jScrollPane2" pref="160" max="32767" attributes="0"/>
+                      <Component id="jScrollPane2" pref="171" max="32767" attributes="0"/>
                   </Group>
+                  <EmptySpace min="-2" pref="11" max="-2" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>

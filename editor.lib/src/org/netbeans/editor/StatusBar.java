@@ -596,7 +596,8 @@ public class StatusBar implements PropertyChangeListener, SettingsChangeListener
                 Border b = getBorder();
                 Insets ins = (b != null) ? b.getBorderInsets(this) : NULL_INSETS;
                 FontMetrics fm = getFontMetrics(f);
-                int mw = fm.stringWidth(this.getText());
+                String text = this.getText();
+                int mw = text == null ? 0 : fm.stringWidth(text);
                 maxDimension.height = fm.getHeight() + ins.top + ins.bottom;
                 if (widestStrings != null) {
                     for (int i = 0; i < widestStrings.length; i++) {

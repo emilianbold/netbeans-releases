@@ -99,11 +99,6 @@ public class ActionsPanel extends javax.swing.JPanel {
         setLayout(new java.awt.GridBagLayout());
 
         tfPrintText.setToolTipText(bundle.getString("TTT_TF_Actions_Panel_Print_Text")); // NOI18N
-        tfPrintText.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                tfPrintTextActionPerformed(evt);
-            }
-        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -123,11 +118,6 @@ public class ActionsPanel extends javax.swing.JPanel {
         jLabel1.getAccessibleContext().setAccessibleDescription(bundle.getString("ASCD_L_Actions_Panel_Suspend")); // NOI18N
 
         cbSuspend.setToolTipText(bundle.getString("TTT_CB_Actions_Panel_Suspend")); // NOI18N
-        cbSuspend.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cbSuspendActionPerformed(evt);
-            }
-        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
@@ -145,16 +135,6 @@ public class ActionsPanel extends javax.swing.JPanel {
 
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ActionsPanel.class, "ACSD_Actions")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
-
-    private void tfPrintTextActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_tfPrintTextActionPerformed
-    {//GEN-HEADEREND:event_tfPrintTextActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_tfPrintTextActionPerformed
-
-    private void cbSuspendActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_cbSuspendActionPerformed
-    {//GEN-HEADEREND:event_cbSuspendActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_cbSuspendActionPerformed
     
     /**
      * Called when "Ok" button is pressed.

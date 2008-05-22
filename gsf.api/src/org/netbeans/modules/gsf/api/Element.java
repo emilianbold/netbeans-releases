@@ -44,9 +44,12 @@ package org.netbeans.modules.gsf.api;
 import java.util.Set;
 
 /**
- *
+ * @deprecated This interface is going away; GSF no longer interprets elements in any way.
+ * Copy this interface to your own module if you want to use it; GSF only cares about
+ * Element HANDLES.
  * @author Tor Norbye
  */
+@Deprecated
 public interface Element {
     String getName();
     String getIn();

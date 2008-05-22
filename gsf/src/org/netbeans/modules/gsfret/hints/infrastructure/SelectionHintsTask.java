@@ -44,7 +44,6 @@ import java.util.List;
 import javax.swing.text.Document;
 import org.netbeans.modules.gsf.api.HintsProvider;
 import org.netbeans.napi.gsfret.source.CompilationInfo;
-import org.netbeans.napi.gsfret.source.support.CaretAwareSourceTaskFactory;
 import org.netbeans.modules.gsfret.editor.semantic.ScanningCancellableTask;
 import org.netbeans.napi.gsfret.source.support.SelectionAwareSourceTaskFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;

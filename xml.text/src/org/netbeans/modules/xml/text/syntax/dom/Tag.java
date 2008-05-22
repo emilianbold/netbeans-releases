@@ -101,7 +101,7 @@ public abstract class Tag extends SyntaxNode implements Element, XMLTokenIDs {
                     name = next.getImage();
                     while (next.getTokenID() != VALUE) {
                         next = next.getNext();
-                        if (next == null) break SCAN_LOOP;
+                        if (next == null || next.getTokenID() == ERROR) break SCAN_LOOP;
                     }
                     
                     // fuzziness to relax minor tokenization changes

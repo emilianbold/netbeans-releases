@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.repository.disk;
 import java.io.IOException;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
-import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
 import org.netbeans.modules.cnd.repository.util.RepositoryExceptionImpl;
 import org.netbeans.modules.cnd.repository.util.RepositoryListenersManager;
 
@@ -71,10 +70,8 @@ public class MultyFileStorage implements Storage {
     public void write(Key id, final Persistent obj) {
         assert id != null;
         assert obj != null;
-        final PersistentFactory theFactory = id.getPersistentFactory();
-        assert theFactory != null;
         try {
-            theFilesHelper.write(id, theFactory, obj);
+            theFilesHelper.write(id, obj);
         } catch (Throwable ex) {
             RepositoryListenersManager.getInstance().fireAnException(
                     id.getUnit().toString(), new RepositoryExceptionImpl(ex));
@@ -85,14 +82,11 @@ public class MultyFileStorage implements Storage {
 	return false;
     }
     
-    public Persistent get(Key id) {
+    public Persistent read(Key id) {
         assert id != null;
         Persistent obj = null;
-        // get the factory
-        final PersistentFactory theFactory = id.getPersistentFactory();
-        assert theFactory != null;
         try {
-            obj = theFilesHelper.read(id, theFactory);
+            obj = theFilesHelper.read(id);
         }  catch (Throwable ex) {
             RepositoryListenersManager.getInstance().fireAnException(
                     id.getUnit().toString(), new RepositoryExceptionImpl(ex));

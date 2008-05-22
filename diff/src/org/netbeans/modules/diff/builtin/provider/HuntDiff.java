@@ -45,26 +45,38 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
+import java.util.regex.MatchResult;
+
 import org.netbeans.api.diff.Difference;
 
+/**
+ * Internal Diff algorithm.
+ * 
+ * @author Maros Sandor
+ * @author Martin Entlicher
+ */
+class HuntDiff {
 
-public class HuntDiff {
-
+    private static final Pattern twoOrMoreSpaces = Pattern.compile("\\S  +\\S");
+    private static final Pattern whitespaceExceptSpace = Pattern.compile("\\S[\t\n\f\r]\\S");
+    
     private HuntDiff() {
     }
 
     /**
      * @param lines1 array of lines from the first source
      * @param lines2 array of lines from the second source
-     * @param ignoreWhitespace true to ignore leading and trailing whitespace when computing diff, false to also find differences in whitespace
+     * @param options additional paremeters for the diff algorithm
      * @return computed diff
      */ 
-    public static Difference[] diff(String[] lines1, String[] lines2, boolean ignoreWhitespace) {
+    public static Difference[] diff(String[] lines1, String[] lines2, BuiltInDiffProvider.Options options) {
         int m = lines1.length;
         int n = lines2.length;
         String [] lines1_original = lines1;
         String [] lines2_original = lines2;
-        if (ignoreWhitespace) {
+        if (options.ignoreLeadingAndtrailingWhitespace) {
             lines1 = new String[lines1_original.length];
             lines2 = new String[lines2_original.length];
             for (int i = 0 ; i < lines1_original.length; i++) {
@@ -73,6 +85,34 @@ public class HuntDiff {
             for (int i = 0 ; i < lines2_original.length; i++) {
                 lines2[i] = lines2_original[i].trim();
             }
+        }
+        if (options.ignoreCase) {
+            String [] tmpLines1 = new String[lines1.length];
+            String [] tmpLines2 = new String[lines2.length];
+            for (int i = 0 ; i < lines1.length; i++) {
+                tmpLines1[i] = lines1[i].toUpperCase();
+            }
+            for (int i = 0 ; i < lines2.length; i++) {
+                tmpLines2[i] = lines2[i].toUpperCase();
+            }
+            lines1 = tmpLines1;
+            lines2 = tmpLines2;
+        }
+        if (options.ignoreInnerWhitespace) {
+            String [] tmpLines1 = new String[lines1.length];
+            String [] tmpLines2 = new String[lines2.length];
+            for (int i = 0 ; i < lines1.length; i++) {
+                
+                Matcher mm = whitespaceExceptSpace.matcher(lines1[i]);
+                tmpLines1[i] = whitespaceExceptSpace.matcher(lines1[i]).replaceAll(" ");
+                tmpLines1[i] = twoOrMoreSpaces.matcher(tmpLines1[i]).replaceAll(" ");
+            }
+            for (int i = 0 ; i < lines2.length; i++) {
+                tmpLines2[i] = whitespaceExceptSpace.matcher(lines2[i]).replaceAll(" ");
+                tmpLines2[i] = twoOrMoreSpaces.matcher(tmpLines2[i]).replaceAll(" ");
+            }
+            lines1 = tmpLines1;
+            lines2 = tmpLines2;
         }
         Line[] l2s = new Line[n + 1];
         // In l2s we have sorted lines of the second file <1, n>

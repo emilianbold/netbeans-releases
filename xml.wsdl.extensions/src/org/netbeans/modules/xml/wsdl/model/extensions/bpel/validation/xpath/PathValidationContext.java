@@ -135,17 +135,21 @@ public class PathValidationContext implements XPathValidationContext {
         return myNsContext;
     }
 
-    //==========================================================================
-    
-    public void addResultItem(ResultType resultType, String bundleKey,
-            Object... values){
+    public void setXPathModel(XPathModel model) {
+        myXPathModel = model;
+    }
+
+    public void addResultItem(String exprText, ResultType resultType, String str, Object... values) {
+        addResultItemImpl(resultType, str, values);
+    }
+
+    public void addResultItem(ResultType resultType, String bundleKey, Object... values){
         //
         String str = NbBundle.getMessage(BPELExtensionXpathValidator.class, bundleKey);
         addResultItemImpl(resultType, str, values);
     }
     
-    public void addResultItem(XPathExpression expr, ResultType resultType, 
-            XPathProblem problem, Object... values) {
+    public void addResultItem(XPathExpression expr, ResultType resultType, XPathProblem problem, Object... values) {
         //
         addResultItemImpl(resultType, problem.getMsgTemplate(), values);
     }
@@ -167,5 +171,4 @@ public class PathValidationContext implements XPathValidationContext {
                 getValidator(), resultType, getXpathContentElement(), str);
         getVVisitor().getResultItems().add(resultItem);
     }
-
 }

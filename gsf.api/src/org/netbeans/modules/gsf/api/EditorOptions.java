@@ -27,6 +27,7 @@
  */
 package org.netbeans.modules.gsf.api;
 
+import org.netbeans.modules.gsf.api.annotations.CheckForNull;
 import org.openide.util.Lookup;
 
 /**
@@ -44,6 +45,7 @@ public abstract class EditorOptions {
     public abstract boolean getMatchBrackets();
     public abstract int getRightMargin();
     
+    @CheckForNull
     public static EditorOptions get(String mimeType) {
         EditorOptionsFactory factory = Lookup.getDefault().lookup(EditorOptionsFactory.class);
         if (factory != null) {

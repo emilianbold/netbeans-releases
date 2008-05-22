@@ -56,7 +56,6 @@
     <folder name="SaaSServices">
         <folder name="Google">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.saas.services.google.Bundle"/>
-            <file name="profile.properties" url="/org/netbeans/modules/websvc/saas/services/google/resources/profile.properties"/>
             <file name="GoogleAccounts.xml" url="/org/netbeans/modules/websvc/saas/services/google/resources/GoogleAccounts.xml"/>
             <file name="GoogleAdSenseForContent.xml" url="/org/netbeans/modules/websvc/saas/services/google/resources/GoogleAdSenseForContent.xml"/>
             <file name="GoogleAdSenseForSearch.xml" url="/org/netbeans/modules/websvc/saas/services/google/resources/GoogleAdSenseForSearch.xml"/>

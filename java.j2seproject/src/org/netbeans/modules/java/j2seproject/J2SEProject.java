@@ -104,6 +104,7 @@ import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
+import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -253,6 +254,7 @@ public final class J2SEProject implements Project, AntProjectListener {
     private Lookup createLookup(final AuxiliaryConfiguration aux,
             final ActionProvider actionProvider) {
         final SubprojectProvider spp = refHelper.createSubprojectProvider();        
+        FileEncodingQueryImplementation encodingQuery = QuerySupport.createFileEncodingQuery(evaluator(), J2SEProjectProperties.SOURCE_ENCODING);
         final Lookup base = Lookups.fixed(new Object[] {
             J2SEProject.this,
             new Info(),
@@ -263,7 +265,7 @@ public final class J2SEProject implements Project, AntProjectListener {
             new J2SELogicalViewProvider(this, this.updateHelper, evaluator(), spp, refHelper),
             // new J2SECustomizerProvider(this, this.updateHelper, evaluator(), refHelper),
             new CustomizerProviderImpl(this, this.updateHelper, evaluator(), refHelper, this.genFilesHelper),        
-            new ClassPathProviderMerger(cpProvider),
+            LookupMergerSupport.createClassPathProviderMerger(cpProvider),
             QuerySupport.createCompiledSourceForBinaryQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
             QuerySupport.createJavadocForBinaryQuery(helper, evaluator()),
             new AntArtifactProviderImpl(),
@@ -285,9 +287,9 @@ public final class J2SEProject implements Project, AntProjectListener {
             UILookupMergerSupport.createPrivilegedTemplatesMerger(),
             UILookupMergerSupport.createRecommendedTemplatesMerger(),
             LookupProviderSupport.createSourcesMerger(),
-            QuerySupport.createFileEncodingQuery(evaluator(), J2SEProjectProperties.SOURCE_ENCODING),
+            encodingQuery,
             new J2SEPropertyEvaluatorImpl(evaluator()),
-            new J2SETemplateAttributesProvider(this.helper),
+            QuerySupport.createTemplateAttributesProvider(helper, encodingQuery),
             ExtraSourceJavadocSupport.createExtraSourceQueryImplementation(this, helper, eval),
             LookupMergerSupport.createSFBLookupMerger(),
             ExtraSourceJavadocSupport.createExtraJavadocQueryImplementation(this, helper, eval),

@@ -185,7 +185,7 @@ public class CompletionTest extends JellyTestCase {
     }
 
     protected void waitTypingFinished(BaseDocument doc) {
-        final int delay = 500;
+        final int delay = 2000;
         final int repeat = 20;
         final Object lock = new Object();
         Runnable posted = new Runnable() {
@@ -348,11 +348,11 @@ public class CompletionTest extends JellyTestCase {
             caret.setDot(step.getOffset() + 1);
             EditorOperator eo = new EditorOperator(testFileObj.getNameExt());
             eo.insert(step.getPrefix());
-            waitTypingFinished(doc);
             if (!isJavaScript()) {
                 caret.setDot(step.getCursorPos());
             }
 
+            waitTypingFinished(doc);
             CompletionJListOperator comp = null;
             boolean print = false;
             int counter = 0;
@@ -369,6 +369,7 @@ public class CompletionTest extends JellyTestCase {
                 }
                 if (comp != null) {
                     print = dumpCompletion(comp, step, editor, print) || print;
+                    waitTypingFinished(doc);
                     CompletionJListOperator.hideAll();
                     if (!print) {// wait for refresh
                         Thread.sleep(1000);
@@ -463,10 +464,16 @@ public class CompletionTest extends JellyTestCase {
                     assertInstanceOf(CompletionItem.class, next);
                     selectedItem = (CompletionItem) next;
                 }
-                if (printDirectly) {
+                if (printDirectly && !isJavaScript()) {
                     ref(g.getTextUni());
                 } else {
                     finalItems.add(g.getTextUni());
+                }
+            }
+            if (printDirectly && isJavaScript()){
+                Collections.sort(finalItems);
+                for (String str : finalItems) {
+                    ref(str);
                 }
             }
             class DefaultActionRunner implements Runnable {
@@ -488,12 +495,14 @@ public class CompletionTest extends JellyTestCase {
             if (selectedItem != null) {
                 // move to separate class
                 if (!printDirectly) {
+                    if (isJavaScript()){
+                        Collections.sort(finalItems);
+                    }
                     for (String str : finalItems) {
                         ref(str);
                     }
                 }
-                Runnable run = new DefaultActionRunner(selectedItem, editor);
-                runInAWT(run);
+                runInAWT(new DefaultActionRunner(selectedItem, editor));
                 return true;
             } else {
                 if (printDirectly) {
@@ -599,13 +608,10 @@ public class CompletionTest extends JellyTestCase {
         return sb.toString();
     }
 
-    protected void ending() throws Exception {
-        if (!GENERATE_GOLDEN_FILES) {
-            compareReferenceFiles();
-        } else {
-            getRef().flush();
-            File ref = new File(getWorkDir(), this.getName() + ".ref");
-            File f = getDataDir();
+    static void generateGoldenFiles(JellyTestCase test) throws Exception {
+            test.getRef().flush();
+            File ref = new File(test.getWorkDir(), test.getName() + ".ref");
+            File f = test.getDataDir();
             ArrayList<String> names = new ArrayList<String>();
             names.add("goldenfiles");
             names.add("data");
@@ -617,13 +623,20 @@ public class CompletionTest extends JellyTestCase {
             for (int i = names.size() - 1; i > -1; i--) {
                 f = new File(f, names.get(i));
             }
-            f = new File(f, getClass().getName().replace('.', File.separatorChar));
-            f = new File(f, this.getName() + ".pass");
+            f = new File(f, test.getClass().getName().replace('.', File.separatorChar));
+            f = new File(f, test.getName() + ".pass");
             if (!f.getParentFile().exists()) {
                 f.getParentFile().mkdirs();
             }
             ref.renameTo(f);
             assertTrue("Generating golden files to " + f.getAbsolutePath(), false);
+    }
+    
+    protected void ending() throws Exception {
+        if (!GENERATE_GOLDEN_FILES) {
+            compareReferenceFiles();
+        } else {
+            generateGoldenFiles(this);
         }
 
     }

@@ -172,9 +172,13 @@ public class ExecutionService {
     }
     
     public void kill() {
+        // temp logging to track down #131628
+        LOGGER.log(Level.FINE, "Killing " + this.displayName + " " + this);
         if (stopAction != null) {
+            LOGGER.log(Level.FINE, "StopAction: " + stopAction);
             stopAction.actionPerformed(null);
             if (stopAction.process != null) {
+                LOGGER.log(Level.FINE, "Destroying process: " + stopAction.process);
                 stopAction.process.destroy();
             }
         }
@@ -221,6 +225,14 @@ public class ExecutionService {
     }
 
     public Task run() {
+        if (descriptor.debug) {
+            RubyDebuggerImplementation debugger = Lookup.getDefault().lookup(RubyDebuggerImplementation.class);
+            debugger.describeProcess(descriptor);
+            if (debugger == null || !debugger.canDebug()) {
+                return null;
+            }
+        }
+
         if (!rerun) {
             // try to find free output windows
             synchronized (this) {
@@ -274,8 +286,9 @@ public class ExecutionService {
                         Process process = null;
                         if (descriptor.debug) {
                             RubyDebuggerImplementation debugger = Lookup.getDefault().lookup(RubyDebuggerImplementation.class);
-                            if (debugger != null) {
-                                process = debugger.debug(descriptor);
+                            debugger.describeProcess(descriptor);
+                            if (debugger != null && debugger.canDebug()) {
+                                process = debugger.debug();
                             }
                             if (process == null) { 
                                 return; 
@@ -304,7 +317,10 @@ public class ExecutionService {
                             
                             Map<String, String> env = pb.environment();
                             // set up custom environment configuration
-                            env.putAll(descriptor.getAdditionalEnvironment());
+                            Map<String, String> additionalEnv = descriptor.getAdditionalEnvironment();
+                            if (additionalEnv != null) {
+                                env.putAll(additionalEnv);
+                            }
                             if (descriptor.addBinPath) {
                                 setupProcessEnvironment(env);
                             }

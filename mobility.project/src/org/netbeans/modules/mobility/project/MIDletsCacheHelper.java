@@ -55,6 +55,8 @@ import java.util.*;
 import java.io.IOException;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import org.netbeans.api.project.ProjectManager;
+import org.openide.util.Mutex;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -109,40 +111,51 @@ public class MIDletsCacheHelper implements AntProjectListener {
         });
     }
     
-    private synchronized void refreshCore() {
-        set = new HashSet<String>();
-        
-        final ProjectConfiguration activeProjectConfiguration = confs.getActiveConfiguration();
-        final String activeConfiguration = (activeProjectConfiguration != null   &&  activeProjectConfiguration != confs.getDefaultConfiguration()) ? activeProjectConfiguration.getDisplayName() : null;
-        String value = null;
-        final PropertyEvaluator pe = helper.getStandardPropertyEvaluator();
-        if (activeConfiguration != null) {
-            final String property = VisualPropertySupport.prefixPropertyName(activeConfiguration, DefaultPropertiesDescriptor.MANIFEST_MIDLETS);
-            value = pe.getProperty(property);
-        }
-        if (value == null)
-            value = pe.getProperty(DefaultPropertiesDescriptor.MANIFEST_MIDLETS);
-        if (value == null)
-            return;
-        
-        HashMap<String,String> map = (HashMap<String,String>)DefaultPropertyParsers.MANIFEST_PROPERTY_PARSER.decode(value, null, null);
-        if (map == null)
-            return;
-        
-        int i = 1;
-        Object item;
-        while ((item = map.get("MIDlet-" + i)) != null) { // NOI18N
-            i ++;
-            if (!(item instanceof String))
-                continue;
-            final String[] strs = ((String) item).split(",", -1); // NOI18N
-            if (strs.length < 2)
-                continue;
-            final String midlet = strs[2].trim();
-            if ("".equals(midlet)) // NOI18N
-                continue;
-            set.add(midlet);
-        }
+    private void refreshCore() {        
+        ProjectManager.mutex().readAccess(new Mutex.Action() {
+            public Object run() {
+                final ProjectConfiguration activeProjectConfiguration = confs.getActiveConfiguration();
+                final String activeConfiguration = (activeProjectConfiguration != null   &&  activeProjectConfiguration != confs.getDefaultConfiguration()) ? activeProjectConfiguration.getDisplayName() : null;        
+                set = new HashSet<String>();
+                String value = null;
+                final PropertyEvaluator pe = helper.getStandardPropertyEvaluator();
+                if (activeConfiguration != null) {
+                    final String property = VisualPropertySupport.prefixPropertyName(activeConfiguration, DefaultPropertiesDescriptor.MANIFEST_MIDLETS);
+                    value = pe.getProperty(property);
+                }
+                if (value == null) {
+                    value = pe.getProperty(DefaultPropertiesDescriptor.MANIFEST_MIDLETS);
+                }
+                if (value == null) {
+                    return null;
+                }
+                HashMap<String, String> map = (HashMap<String, String>) DefaultPropertyParsers.MANIFEST_PROPERTY_PARSER.decode(value, null, null);
+                if (map == null) {
+                    return null;
+                }
+                int i = 1;
+                Object item;
+                while ((item = map.get("MIDlet-" + i)) != null) { // NOI18N
+
+                    i++;
+                    if (!(item instanceof String)) {
+                        continue;
+                    }
+                    final String[] strs = ((String) item).split(",", -1); // NOI18N
+
+                    if (strs.length < 2) {
+                        continue;
+                    }
+                    final String midlet = strs[2].trim();
+                    if ("".equals(midlet)) // NOI18N
+                    {
+                        continue;
+                    }
+                    set.add(midlet);
+                }
+                return null;
+            }
+        });
     }
     
     public void addMIDletsCacheListener(final MIDletsCacheListener listener) {

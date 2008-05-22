@@ -113,7 +113,7 @@ public class ContextDisplay extends DataDisplay {
 	// context data 
 	addGridBagComponent(this, 
 			    createHeaderLabel
-			    (NbBundle.getBundle(ClientDisplay.class).getString("MON_Servlet_context"), NbBundle.getBundle(ClientDisplay.class).getString("MON_Servlet_context_Mnemonic").charAt(0), NbBundle.getBundle(ClientDisplay.class).getString("ACS_MON_Servlet_contextA11yDesc"), contextTable), 
+			    (NbBundle.getBundle(ClientDisplay.class).getString("MON_Servlet_context"), NbBundle.getBundle(ClientDisplay.class).getString("ACS_MON_Servlet_contextA11yDesc"), contextTable), 
 			    0, ++gridy,
 			    fullGridWidth, 1, 0, 0, 
 			    java.awt.GridBagConstraints.WEST,
@@ -146,8 +146,7 @@ public class ContextDisplay extends DataDisplay {
 	    DisplayTable dt = new DisplayTable(ctxtparam);
 	    addGridBagComponent(this,
 				createHeaderLabel
-				(NbBundle.getBundle(ClientDisplay.class).getString("MON_Context_att"),
-				 NbBundle.getBundle(ClientDisplay.class).getString("MON_Context_att_Mnemonic").charAt(0), 
+				(NbBundle.getBundle(ClientDisplay.class).getString("MON_Context_att"), 
 				 NbBundle.getBundle(ClientDisplay.class).getString("ACS_MON_Context_att_A11yDesc"),
 				 dt),
 				0, ++gridy,
@@ -187,8 +186,7 @@ public class ContextDisplay extends DataDisplay {
 	    paramTable.setToolTipText(NbBundle.getBundle(ClientDisplay.class).getString("ACS_MON_Init_parametersTableA11yDesc"));
 	    addGridBagComponent(this, 
 				createHeaderLabel
-				(NbBundle.getBundle(ClientDisplay.class).getString("MON_Init_parameters"), 
-				 NbBundle.getBundle(ClientDisplay.class).getString("MON_Init_parameters_Mnemonic").charAt(0),
+				(NbBundle.getBundle(ClientDisplay.class).getString("MON_Init_parameters"),
 				 NbBundle.getBundle(ClientDisplay.class).getString("ACS_MON_Init_parametersA11yDesc"),
 				 paramTable),
 				0, ++gridy,
@@ -239,7 +237,7 @@ public class ContextDisplay extends DataDisplay {
 	// context data 
 	addGridBagComponent(this, 
 			    createHeaderLabel
-			    (NbBundle.getBundle(ClientDisplay.class).getString("MON_Servlet_context"), NbBundle.getBundle(ClientDisplay.class).getString("MON_Servlet_context_Mnemonic").charAt(0), NbBundle.getBundle(ClientDisplay.class).getString("ACS_MON_Servlet_contextA11yDesc"), contextTable), 
+			    (NbBundle.getBundle(ClientDisplay.class).getString("MON_Servlet_context"), NbBundle.getBundle(ClientDisplay.class).getString("ACS_MON_Servlet_contextA11yDesc"), contextTable), 
 			    0, ++gridy,
 			    fullGridWidth, 1, 0, 0, 
 			    java.awt.GridBagConstraints.WEST,

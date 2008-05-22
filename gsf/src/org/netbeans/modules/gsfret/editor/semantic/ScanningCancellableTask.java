@@ -59,8 +59,8 @@ public abstract class ScanningCancellableTask<T> implements CancellableTask<T> {
     }
 
     public final synchronized void cancel() {
-        System.err.println("ScanningCancellableTask.cancel: Not yet implemented");
-//        canceled = true;
+//        System.err.println("ScanningCancellableTask.cancel: Not yet implemented");
+        canceled = true;
 //        
 //        if (pathScanner != null) {
 //            pathScanner.cancel();

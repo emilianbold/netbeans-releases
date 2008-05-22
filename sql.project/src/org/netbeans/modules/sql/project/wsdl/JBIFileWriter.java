@@ -41,6 +41,12 @@ public class JBIFileWriter {
 
 	private FileOutputStream fos = null;
 
+	//added as a result of http://www.netbeans.org/issues/show_bug.cgi?id=129492
+	public static final String JBI_EXT_NS = "http://www.sun.com/jbi/descriptor/service-unit"; // NOI18N
+	public static final String JBI_EXT_DISPLAY_NAME = "display-name";
+	public static final String JBI_EXT_PROC_NAME = "process-name";
+	public static final String JBI_EXT_FILE_PATH = "file-path"; 
+
 	public JBIFileWriter(String mJbiDescriptorFile, String sqlMapFile, String mBuildDir) {
 		this.mJbiDescriptorFile = mJbiDescriptorFile;
 		this.sqlMapFile = sqlMapFile;
@@ -131,6 +137,10 @@ public class JBIFileWriter {
 		// endpoint-name=role-name link-type="standard"/>
 		// </services>
 		// </jbi>
+
+		 	
+
+
 		try {
 			StringBuffer sb = new StringBuffer();
 			sb.append("<!--start of generated code -->\n");
@@ -145,6 +155,11 @@ public class JBIFileWriter {
 					sb.append("\n");
 				}
 			}
+
+			//added as a result of http://www.netbeans.org/issues/show_bug.cgi?id=129492
+			int var = nsTable.size()+1;
+			sb.append("		xmlns:ns"+var+"=\" " +JBI_EXT_NS+"\"");
+			
 			sb.append(">\n");
 			sb.append("    <services binding-component=\"false\">\n");
 			// Generate all <provides> first
@@ -154,7 +169,18 @@ public class JBIFileWriter {
 						+ getDottedQName(xme.getPortType(), nsTable));
 				sb.append("\" service-name=\"" + getDottedQName(xme.getPartnerLink(), nsTable));
 				sb.append("\" endpoint-name=\"" + xme.getRoleName());
-				sb.append("\"/>\n");
+				sb.append("\">\n");
+				
+				//added as a result of http://www.netbeans.org/issues/show_bug.cgi?id=129492
+				final String extPrefix = "ns" + var;
+				final String extDnElem = extPrefix + ":" + JBI_EXT_DISPLAY_NAME;
+				final String extPnElem = extPrefix + ":" + JBI_EXT_PROC_NAME;
+				final String extFpElem = extPrefix + ":" + JBI_EXT_FILE_PATH;
+				sb.append(" <" + extDnElem + ">" + xme.getDisplayName() + "</" + extDnElem + ">\n");
+				sb.append(" <" + extPnElem + ">" + xme.getProcessName() + "</" + extPnElem + ">\n");
+				sb.append(" <" + extFpElem + ">" + xme.getFilePath() + "</" + extFpElem + ">\n");
+				sb.append(" </provides>\n"); 
+				
 			//}
 			// Generate all <consumes> second
 			//for (int i = 0, I = sqlEntryList.size(); i < I; i++) {

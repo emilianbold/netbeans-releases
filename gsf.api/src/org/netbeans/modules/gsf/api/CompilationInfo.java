@@ -44,6 +44,8 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import javax.swing.text.Document;
+import org.netbeans.modules.gsf.api.annotations.CheckForNull;
+import org.netbeans.modules.gsf.api.annotations.NonNull;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -64,36 +66,42 @@ public abstract class CompilationInfo {
     private FileObject fo;
     private Document doc;
 
-    public CompilationInfo(final FileObject fo) throws IOException {
+    public CompilationInfo(@NonNull final FileObject fo) throws IOException {
         this.fo = fo;
     }
 
     /** 
      * Get all embedded results for a given mime type for this compilation info
      */
-    public abstract Collection<? extends ParserResult> getEmbeddedResults(String mimeType);
+    @NonNull
+    public abstract Collection<? extends ParserResult> getEmbeddedResults(@NonNull String mimeType);
     
     /**
      * Get the embedded result of the given mime type that applies to the given offset
      */
-    public abstract ParserResult getEmbeddedResult(String mimeType, int offset);
+    @CheckForNull
+    public abstract ParserResult getEmbeddedResult(@NonNull String mimeType, int offset);
     
     /**
      * Returns the content of the file.
      *
      * @return String the java source
      */
+    @NonNull
     public abstract String getText();
     
     /**
      * Returns the index associated with this file
      */
-    public abstract Index getIndex(String mimeType);
-    
+    @CheckForNull
+    public abstract Index getIndex(@NonNull String mimeType);
+
+    @NonNull
     public FileObject getFileObject() {
         return fo;
     }
 
+    @CheckForNull
     public Document getDocument() throws IOException {
         if (doc == null) {
             if (this.fo == null) {
@@ -113,5 +121,6 @@ public abstract class CompilationInfo {
         return doc;
     }
 
+    @NonNull
     public abstract List<Error> getErrors();
 }

@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.repository.disk;
 import java.io.IOException;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
-import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
 
 
 /**
@@ -60,13 +59,13 @@ public interface FilesAccessStrategy {
      * Gets an input stream that corresponds to the given key,
      * calls the factory to create an object from this stream
      */
-    Persistent read(Key key, PersistentFactory factory) throws IOException;
+    Persistent read(Key key) throws IOException;
     
     /*
      * Gets an input stream that corresponds to the given key,
      * calls the factory to write the object to this stream
      */
-    void write(Key key, PersistentFactory factory, Persistent object) throws IOException;
+    void write(Key key, Persistent object) throws IOException;
     
     /** Remove the record */
     void remove(Key id) throws IOException;

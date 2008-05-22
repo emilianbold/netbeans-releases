@@ -175,7 +175,7 @@ public class AxisUtils {
         FileObject configFolder = projectDir.getFileObject("xml-resources/axis2/META-INF"); //NOI18N
         if (configFolder == null && create) {
             try {
-                configFolder = FileUtil.createFolder(projectDir, "xml-resources/axis2/META-INF");
+                configFolder = FileUtil.createFolder(projectDir, "xml-resources/axis2/META-INF"); // NOI18N
             } catch (IOException ex) {
                 ex.printStackTrace();
             }
@@ -211,7 +211,7 @@ public class AxisUtils {
                 return new ModelSource(proxyLookup, editable);
             }
         } catch (DataObjectNotFoundException ex) {
-            java.util.logging.Logger.getLogger("global").log(java.util.logging.Level.SEVERE,
+            java.util.logging.Logger.getLogger("global").log(java.util.logging.Level.SEVERE, // NOI18N
                 ex.getMessage(), ex);
         }
         
@@ -291,7 +291,7 @@ public class AxisUtils {
     }
     
     public static boolean runTargets(FileObject projectDir, final String[] targets, final long timeLimit ) {
-        final FileObject buildImplFo = projectDir.getFileObject(GeneratedFilesHelper.BUILD_IMPL_XML_PATH);
+        final FileObject buildImplFo = projectDir.getFileObject(GeneratedFilesHelper.BUILD_XML_PATH);
         try {
             return ProjectManager.mutex().readAccess(new Mutex.ExceptionAction<Boolean>() {
                 public Boolean run() throws IOException, InterruptedException {
@@ -301,7 +301,7 @@ public class AxisUtils {
                 }
             }).booleanValue();
         } catch (MutexException e) {
-            Logger.getLogger(AxisUtils.class.getName()).log(Level.FINE, "AxisUtils.runTargets", e);
+            Logger.getLogger(AxisUtils.class.getName()).log(Level.FINE, "AxisUtils.runTargets", e); //NOI18N
             return false;
         }       
     }
@@ -332,12 +332,12 @@ public class AxisUtils {
         EditableProperties ep = AxisUtils.getEditableProperties(prj, AntProjectHelper.PRIVATE_PROPERTIES_PATH);
         boolean needStore = false;
         if (ep != null) {
-            String oldAxisDeploy = ep.getProperty("axis2.deploy.war");
-            if (oldAxisDeploy == null) oldAxisDeploy = ep.getProperty("axis2.deploy.dir");
+            String oldAxisDeploy = ep.getProperty("axis2.deploy.war"); //NOI18N
+            if (oldAxisDeploy == null) oldAxisDeploy = ep.getProperty("axis2.deploy.dir"); //NOI18N
             if (axisDeploy != null && !axisDeploy.equals(oldAxisDeploy)) {
                 if (axisDeploy.endsWith(".war")) { //NOI18N
                     ep.setProperty("axis2.deploy.war",axisDeploy); //NOI18N
-                    ep.remove("axis2.deploy.dir");
+                    ep.remove("axis2.deploy.dir"); // NOI18N
                 } else {
                     ep.setProperty("axis2.deploy.dir",axisDeploy); //NOI18N
                     ep.remove("axis2.deploy.war"); //NOI18N                       
@@ -422,17 +422,17 @@ public class AxisUtils {
     
     private static boolean isJarReferenced(EditableProperties ep, URL jar) {
         String urlString = jar.toExternalForm().replace('\\', '/');
-        int index = urlString.lastIndexOf("/");
+        int index = urlString.lastIndexOf("/"); // NOI18N
         if (index >= 0) {
             String jarName = urlString.substring(index+1);
-            if (ep.getProperty("file.reference."+jarName) != null) return true;
+            if (ep.getProperty("file.reference."+jarName) != null) return true; //NOI18N
         }
         return false;
     }
     
     public static String getJarName(URL url) {
         String text = url.getPath().replace('\\', '/');
-        int ind = text.lastIndexOf("/");
+        int ind = text.lastIndexOf("/"); // NOI18N
         return ind >= 0 ? text.substring(ind+1):text;
     }
 }

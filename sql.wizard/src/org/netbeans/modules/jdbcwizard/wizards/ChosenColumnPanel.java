@@ -181,7 +181,8 @@ public class ChosenColumnPanel extends JPanel implements JDBCTableColumnDisplaya
          */
         private static final long serialVersionUID = 1L;
 
-        private final String[] tcolumnNames = { "Select", "Column Name" };
+        private final String[] tcolumnNames = { NbBundle.getMessage(ChosenColumnPanel.class, "LBL_SEL"), 
+            NbBundle.getMessage(ChosenColumnPanel.class, "LBL_COL_NAME") };
 
         private List rowList;
 
@@ -487,9 +488,7 @@ public class ChosenColumnPanel extends JPanel implements JDBCTableColumnDisplaya
         // set checkbox column size
         final TableColumn column = this.metaDataTColumn.getColumnModel().getColumn(0);
         column.setResizable(true);
-        column.setMinWidth(40);
-        column.setPreferredWidth(80);
-        column.setMaxWidth(120);
+        column.setPreferredWidth(40);
     }
 
     public void addColumnTable(final List testList) {
@@ -503,9 +502,7 @@ public class ChosenColumnPanel extends JPanel implements JDBCTableColumnDisplaya
         // set checkbox column size
         final TableColumn column = this.metaDataTColumn.getColumnModel().getColumn(0);
         column.setResizable(true);
-        column.setMinWidth(40);
-        column.setPreferredWidth(80);
-        column.setMaxWidth(120);
+        column.setPreferredWidth(40);
         this.tableScroll = new JScrollPane(this.metaDataTColumn);
         final javax.swing.border.Border inside = BorderFactory.createCompoundBorder(BorderFactory.createEmptyBorder(3, 3, 3,
                 3), BorderFactory.createLineBorder(Color.GRAY));

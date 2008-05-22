@@ -43,7 +43,6 @@ package gui.window;
 
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.PaletteOperator;
 import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.nodes.Node;
@@ -51,7 +50,6 @@ import org.netbeans.jellytools.properties.PropertySheetOperator;
 
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 
@@ -117,13 +115,14 @@ public class PageFragmentBoxDialog extends org.netbeans.performance.test.utiliti
         return new Node(tree,"Page1|page1|html1|body1|form1|div|directive.include");
     }
             
+    @Override
     protected void initialize() {
         log("::initialize");
         
         dlgName = Bundle.getString("org.netbeans.modules.visualweb.xhtml.Bundle", "fragmentCustTitle"); //Select Page Fragment
         menuCmd = Bundle.getString("org.netbeans.modules.visualweb.xhtml.Bundle", "fragmentCustTitleEllipse"); // Select Page Fragment...
         new ActionNoBlock("Window|Navigating|Navigator",null).perform(); //NOI18N
-        PaletteOperator.invoke();
+        PaletteComponentOperator.invoke();
 
         addPFBComponent();
         prepareCloseBoxDialog();
@@ -145,6 +144,7 @@ public class PageFragmentBoxDialog extends org.netbeans.performance.test.utiliti
         waitNoEvent(5000);
     }
     
+    @Override
     protected void shutdown() {
         log("::shutdown");
         surface.closeDiscard();
@@ -156,6 +156,7 @@ public class PageFragmentBoxDialog extends org.netbeans.performance.test.utiliti
         }        
     }
     
+    @Override
     public void close() {
         super.close();
     }

@@ -22,7 +22,7 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" alignment="0" attributes="0">
+          <Group type="102" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
@@ -39,9 +39,9 @@
                   <Component id="scanningLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="includedListLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="excludedListLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="includedListPane" alignment="1" pref="440" max="32767" attributes="0"/>
-                  <Component id="explanation" alignment="1" pref="440" max="32767" attributes="0"/>
-                  <Component id="excludedListPane" alignment="1" pref="440" max="32767" attributes="0"/>
+                  <Component id="includedListPane" alignment="1" pref="456" max="32767" attributes="0"/>
+                  <Component id="excludedListPane" alignment="1" pref="456" max="32767" attributes="0"/>
+                  <Component id="explanation" alignment="1" pref="456" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -50,29 +50,29 @@
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="includesLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="includes" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="excludesLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="excludes" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Component id="scanningLabel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Component id="includedListLabel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
-              <Component id="includedListPane" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <Component id="includedListPane" pref="143" max="32767" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Component id="excludedListLabel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
-              <Component id="excludedListPane" min="-2" pref="143" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
-              <Component id="explanation" pref="40" max="32767" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <Component id="excludedListPane" pref="143" max="32767" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <Component id="explanation" min="-2" max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>

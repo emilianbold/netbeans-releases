@@ -184,6 +184,8 @@ public class ClientStubsGenerator extends AbstractGenerator {
     private static final int READ_BUF_SIZE = 65536;
     private static final int WRITE_BUF_SIZE = 65536;
     private FileObject wadlFile;
+    private String folderName;
+    private String baseUrl;
     
     public ClientStubsGenerator(FileObject root, Project p, boolean createJmaki, boolean overwrite) throws IOException {
         assert root != null;
@@ -199,9 +201,8 @@ public class ClientStubsGenerator extends AbstractGenerator {
             boolean createJmaki, boolean overwrite) throws IOException {
         assert root != null;
         assert p != null;
-        this.root = root.getFileObject(folderName);
-        if(this.root == null)
-            this.root = root.createFolder(folderName);
+        this.root = root;
+        this.folderName = folderName;
         this.p = p;
         this.createJmaki = createJmaki;
         this.overwrite = overwrite;
@@ -212,9 +213,8 @@ public class ClientStubsGenerator extends AbstractGenerator {
             boolean createJmaki, boolean overwrite) throws IOException {
         assert root != null;
         assert wadlFile != null;
-        this.root = root.getFileObject(folderName);
-        if(this.root == null)
-            this.root = root.createFolder(folderName);
+        this.root = root;
+        this.folderName = folderName;
         this.wadlFile = wadlFile;
         this.createJmaki = createJmaki;
         this.overwrite = overwrite;
@@ -223,6 +223,10 @@ public class ClientStubsGenerator extends AbstractGenerator {
     
     public FileObject getRootDir() {
         return root;
+    }
+    
+    public String getFolderName() {
+        return folderName;
     }
     
     public Project getProject() {
@@ -245,17 +249,43 @@ public class ClientStubsGenerator extends AbstractGenerator {
         return model;
     }
 
+    public static final String DEFAULT_PROTOCOL = "http";
+    public static final String DEFAULT_HOST = "localhost";
+    public static final String DEFAULT_PORT = "8080";
+    
+    private String getApplicationNameFromUrl(String url) {
+        String appName = url.replaceAll(DEFAULT_PROTOCOL+"://", "");
+        if(appName.endsWith("/"))
+            appName = appName.substring(0, appName.length()-1);
+        String[] paths = appName.split("/");
+        if(paths != null && paths.length > 0) {
+            for(int i=0;i<paths.length;i++) {
+                String path = paths[i];
+                if(path != null && path.startsWith(DEFAULT_HOST) &&
+                        i+1 < paths.length && paths[i+1] != null &&
+                        paths[i+1].trim().length() > 0) {
+                    return paths[i+1];
+                }
+            }
+        }
+        return ClientStubModel.normailizeName(appName);
+    }
+    
     public Set<FileObject> generate(ProgressHandle pHandle) throws IOException {
         if(pHandle != null)
             initProgressReporting(pHandle, false);
         
         this.model = new ClientStubModel();
-        if(p != null)
+        baseUrl = DEFAULT_PROTOCOL+"://"+DEFAULT_HOST+":"+DEFAULT_PORT+"/";
+        if(p != null) {
             this.model.buildModel(p);
-        else if(wadlFile != null) {
-            String appName = this.model.buildModel(wadlFile);
-            if(appName != null)
-                this.projectName = appName;
+            baseUrl += getProjectName() + "/resources";
+        } else if(wadlFile != null) {
+            String url = this.model.buildModel(wadlFile);
+            if(url != null) {
+                baseUrl = url;
+                this.projectName = getApplicationNameFromUrl(baseUrl);
+            }
         }
         List<Resource> resourceList = model.getResources();
         
@@ -274,23 +304,23 @@ public class ClientStubsGenerator extends AbstractGenerator {
         }
         
         if (createJmaki()) {
-            resourcesDir = getRootDir();
+            resourcesDir = createFolder(getRootDir(), RESOURCES);
             dojoDir = createFolder(resourcesDir, DOJO);
             restDir = createFolder(dojoDir, REST);
             rjsDir = createFolder(restDir, RJS);
             rdjDir = createFolder(restDir, RDJ);
-            templatesDir = createFolder(getRootDir().getParent(), TEMPLATES);
+            templatesDir = createFolder(getRootDir(), TEMPLATES);
             initJs(p);
             initDojo(p, resourceList);
             initJmaki(p, resourceList);
         } else {
-            rjsDir = createFolder(getRootDir().getParent(), REST);
+            rjsDir = createFolder(getRootDir(), getFolderName());
             initJs(p);
         }
         
         FileObject prjStubDir = createFolder(rjsDir, getProjectName().toLowerCase());
         createDataObjectFromTemplate(JS_PROJECTSTUB_TEMPLATE, prjStubDir, getProjectName(), JS, canOverwrite());
-        updateProjectStub(prjStubDir.getFileObject(getProjectName(), JS), getProjectName(), "");
+        updateProjectStub(prjStubDir.getFileObject(getProjectName(), JS), getProjectName(), "", baseUrl);
             
         for (Resource r : resourceList) {
             if(pHandle != null)
@@ -303,7 +333,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
                 new ResourceDojoComponents(r, rdjDir).generate();
                 new ResourceJmakiComponent(r, restDir).generate();
                 File dir = new File(FileUtil.toFile(templatesDir), DOJO+File.separator+REST);
-                dir.mkdirs();
+                FileUtil.createFolder(dir);
                 new ResourceJmakiTemplate(r, FileUtil.toFileObject(dir)).generate();
             }
         }
@@ -497,7 +527,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
     
     private void initJmaki(Project p, List<Resource> resourceList) throws IOException {
         createDataObjectFromTemplate(JMAKI_README_TEMPLATE, restDir, JMAKI_README, TXT, canOverwrite());
-        createDataObjectFromTemplate(JMAKI_RESTBUNDLE_TEMPLATE, getRootDir().getParent(), BUNDLE, PROPERTIES, canOverwrite());
+        createDataObjectFromTemplate(JMAKI_RESTBUNDLE_TEMPLATE, getRootDir(), BUNDLE, PROPERTIES, canOverwrite());
                 
         //find first container 
         Resource c = null;
@@ -642,9 +672,13 @@ public class ClientStubsGenerator extends AbstractGenerator {
                 }
                 final File entryFile = new File(targetFolder, entry.getName());
                 if(entry.isDirectory()) {
-                    if(!entryFile.exists() && !entryFile.mkdirs()) {
-                        throw new RuntimeException("Failed to create folder: " +
-                                entryFile.getName() + ".  Terminating archive installation.");
+                    if(!entryFile.exists()) {
+                        try {
+                            FileObject fObj = FileUtil.createFolder(entryFile);
+                        } catch(IOException iox) {
+                            throw new RuntimeException("Failed to create folder: " +
+                                    entryFile.getName() + ".  Terminating archive installation.");
+                        }
                     }
                 } else {
                     if(entryFile.exists() && overwrite) {
@@ -654,9 +688,13 @@ public class ClientStubsGenerator extends AbstractGenerator {
                         }
                     }
                     File parentFile = entryFile.getParentFile();
-                    if(!parentFile.exists() && !parentFile.mkdirs()) {
-                        throw new RuntimeException("Failed to create folder: " +
+                    if(!parentFile.exists()) {
+                        try {
+                            FileObject fObj = FileUtil.createFolder(parentFile);
+                        } catch(IOException iox) {
+                            throw new RuntimeException("Failed to create folder: " +
                                 parentFile.getName() + ".  Terminating archive installation.");
+                        }
                     }
                     targetFS.runAtomicAction(new FileSystem.AtomicAction() {
                         public void run() throws IOException {
@@ -693,7 +731,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
         return result;
     }
 
-    private void updateProjectStub(FileObject projectStub, String prjName, String pkg) throws IOException {
+    private void updateProjectStub(FileObject projectStub, String prjName, String pkg, String baseUrl) throws IOException {
         FileLock lock = projectStub.lock();
         try {
             BufferedReader reader = new BufferedReader(new FileReader(FileUtil.toFile(projectStub)));
@@ -701,7 +739,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
             StringBuffer sb = new StringBuffer();
             while ((line = reader.readLine()) != null) {
                 if (line.contains("__BASE_URL__")) {
-                    sb.append(line.replaceAll("__BASE_URL__", "http://localhost:8080/" + prjName + "/resources"));
+                    sb.append(line.replaceAll("__BASE_URL__", baseUrl));
                 } else if (line.contains("__PROJECT_NAME__")) {
                     sb.append(line.replaceAll("__PROJECT_NAME__", prjName));
                 } else if (line.contains("__PROJECT_INIT_BODY__")) {
@@ -744,20 +782,22 @@ public class ClientStubsGenerator extends AbstractGenerator {
         sb2.append("\t\tvar str = '';\n");
         sb2.append("\t\t//Example test code for " + prjName + "\n");
         sb2.append("\t\tstr = '<h2>Resources for " + prjName + ":</h2><br><table border=\"1\">';\n");
-        sb2.append("\t\tvar app = new " + pkg+prjName + "();\n");
+        sb2.append("\t\tvar app = new " + pkg+prjName + "('"+baseUrl+"');\n");
         sb2.append("\t\tvar resources = app.getResources();\n");
         sb2.append("\t\tfor(i=0;i<resources.length;i++) {\n");
         sb2.append("\t\t  var resource = resources[i];\n");
         sb2.append("\t\t  var uri = resource.getUri();\n");
         sb2.append("\t\t  str += '<tr><td valign=\"top\"><a href=\"'+uri+'\" target=\"_blank\">'+uri+'</a></td><td>';\n");
         sb2.append("\t\t  var items  = resource.getItems();\n");
-        sb2.append("\t\t  if(items != undefined) {\n");
+        sb2.append("\t\t  if(items != undefined && items.length > 0) {\n");
         sb2.append("\t\t    for(j=0;j<items.length;j++) {\n");
         sb2.append("\t\t        var item = items[j];\n");
         sb2.append("\t\t        var uri2 = item.getUri();\n");
         sb2.append("\t\t        str += '<a href=\"'+uri2+'\" target=\"_blank\">'+uri2+'</a><br/>';\n");
         sb2.append("\t\t        str += '&nbsp;&nbsp;<font size=\"-3\">'+item.toString()+'</font><br/>';\n");
         sb2.append("\t\t    }\n");
+        sb2.append("\t\t  } else {\n");
+        sb2.append("\t\t    str += 'No items, please check the url: <a href=\"'+uri+'\" target=\"_blank\">'+uri+'</a>';\n");
         sb2.append("\t\t  }\n");
         sb2.append("\t\t  str += '</td></tr>';\n");
         sb2.append("\t\t}\n");

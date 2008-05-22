@@ -69,18 +69,24 @@ class CompiledSourceForBinaryQueryImpl implements SourceForBinaryQueryImplementa
     private final SourceRoots sourceRoots;
     private final SourceRoots testRoots;
     private final Map<URL, SourceForBinaryQuery.Result> cache = new HashMap<URL, SourceForBinaryQuery.Result>();
+    private final String[] binaryProperties;
+    private final String[] testBinaryProperties;
 
     public CompiledSourceForBinaryQueryImpl(AntProjectHelper helper, PropertyEvaluator evaluator, SourceRoots srcRoots,
-            SourceRoots testRoots) {
+            SourceRoots testRoots, String[] binaryProperties, String[] testBinaryProperties) {
         assert helper != null;
         assert evaluator != null;
         assert srcRoots != null;
         assert testRoots != null;
+        assert binaryProperties != null && binaryProperties.length > 0;
+        assert testBinaryProperties != null && testBinaryProperties.length > 0;
 
         this.helper = helper;
         this.evaluator = evaluator;
         this.sourceRoots = srcRoots;
         this.testRoots = testRoots;
+        this.binaryProperties = binaryProperties;
+        this.testBinaryProperties = testBinaryProperties;
     }
 
     public SourceForBinaryQuery.Result findSourceRoots(URL binaryRoot) {
@@ -93,12 +99,19 @@ class CompiledSourceForBinaryQueryImpl implements SourceForBinaryQueryImplementa
             return res;
         }
         SourceRoots src = null;
-        if (hasSources(binaryRoot, "build.classes.dir")) { //NOI18N
-            src = sourceRoots;
-        } else if (hasSources(binaryRoot, "dist.jar")) { //NOI18N
-            src = sourceRoots;
-        } else if (hasSources(binaryRoot, "build.test.classes.dir")) { //NOI18N
-            src = testRoots;
+        for (String property : binaryProperties) {
+            if (hasSources(binaryRoot, property)) {
+                src = sourceRoots;
+                break;
+            }
+        }
+        if (src == null) {
+            for (String property : testBinaryProperties) {
+                if (hasSources(binaryRoot, property)) {
+                    src = testRoots;
+                    break;
+                }
+            }
         }
         if (src == null) {
             return null;

@@ -17,13 +17,13 @@ import org.netbeans.modules.iep.model.IEPModel;
  */
 public class GraphView extends javax.swing.JPanel {
 
-	private IEPModel mModel;
-	
-	private PlanCanvas mCanvas;
-	
+    private IEPModel mModel;
+    
+    private PlanCanvas mCanvas;
+    
     /** Creates new form GraphView */
     public GraphView(IEPModel model) {
-    	this.mModel = model;
+        this.mModel = model;
         initComponents();
         initGUI();
     }
@@ -49,13 +49,13 @@ public class GraphView extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void initGUI() {
-    	this.mCanvas = new PlanCanvas(this.mModel);
-    	this.setLayout(new BorderLayout());
-    	this.add(BorderLayout.CENTER, this.mCanvas);
+        this.mCanvas = new PlanCanvas(this.mModel);
+        this.setLayout(new BorderLayout());
+        this.add(BorderLayout.CENTER, this.mCanvas);
     }
 
     public PlanCanvas getPlanCanvas() {
-    	return this.mCanvas;
+        return this.mCanvas;
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

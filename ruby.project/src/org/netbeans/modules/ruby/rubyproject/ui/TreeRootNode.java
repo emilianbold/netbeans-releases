@@ -54,8 +54,6 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.queries.VisibilityQuery;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.ChangeableDataFilter;
@@ -66,7 +64,6 @@ import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeNotFoundException;
 import org.openide.nodes.NodeOp;
-import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
@@ -105,7 +102,7 @@ public final class TreeRootNode extends FilterNode implements PropertyChangeList
         g.addPropertyChangeListener(WeakListeners.propertyChange(this, g));
     }
 
-    static Image PACKAGE_BADGE = Utilities.loadImage( "org/netbeans/modules/ruby/rubyproject/ui/packageBadge.gif" ); // NOI18N
+    private final static Image PACKAGE_BADGE = Utilities.loadImage("org/netbeans/modules/ruby/rubyproject/ui/packageBadge.gif"); // NOI18N
     
     /** Copied from PackageRootNode with modifications. */
     private Image computeIcon(boolean opened, int type) {
@@ -254,27 +251,11 @@ public final class TreeRootNode extends FilterNode implements PropertyChangeList
         @Override
         protected Node copyNode(final Node originalNode) {
             DataObject dobj = originalNode.getLookup().lookup(DataObject.class);
-            return (dobj instanceof DataFolder) ? new PackageFilterNode (originalNode) : super.copyNode(originalNode);
+            return (dobj instanceof DataFolder)
+                    ? new FilterNode(originalNode, new PackageFilterChildren(originalNode))
+                    : super.copyNode(originalNode);
+
         }
-    }
-    
-    private static final class PackageFilterNode extends FilterNode {
-        
-        public PackageFilterNode (final Node origNode) {
-            super (origNode, new PackageFilterChildren (origNode));
-        }
-        
-        @Override
-        public void setName (final String name) {
-            if (Utilities.isJavaIdentifier (name)) {
-                super.setName (name);
-            }
-            else {
-                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message (
-                    NbBundle.getMessage(TreeRootNode.class,"MSG_InvalidPackageName"), NotifyDescriptor.INFORMATION_MESSAGE));
-            }
-        }                
-        
     }
     
 }

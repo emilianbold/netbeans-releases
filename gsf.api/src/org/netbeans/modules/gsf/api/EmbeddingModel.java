@@ -30,6 +30,7 @@ package org.netbeans.modules.gsf.api;
 import java.util.Collection;
 import java.util.Set;
 import javax.swing.text.Document;
+import org.netbeans.modules.gsf.api.annotations.NonNull;
 
 /**
  * An embedding model is used for files that have a GSF model embedded in some
@@ -39,14 +40,17 @@ import javax.swing.text.Document;
  */
 public interface EmbeddingModel {
     /** This model creates target source code of the given mime type */
+    @NonNull
     String getTargetMimeType();
     /** This model is capable of translating to the {@link #getTargetMimeType}
      * from the following source mime types.
      */
+    @NonNull
     Set<String> getSourceMimeTypes();
     /** Produce the source code (of mime type {@link #getTargetMimeType}
      * from the given document (which must have outer mime type of one
      * of the given {@link #getSourceMimeTypes}.
      */
+    @NonNull
     Collection<? extends TranslatedSource> translate(Document doc);
 }

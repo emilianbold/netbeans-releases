@@ -150,7 +150,6 @@ public class AccidentalAssignment implements ErrorRule {
         }
 
         public EditList getEditList() throws Exception {
-            // TODO - offer to add double parentheses around the expression to "really mean it"
             BaseDocument doc = (BaseDocument) info.getDocument();
             EditList list = new EditList(doc);
             OffsetRange astRange = AstUtilities.getNameRange(assignment);
