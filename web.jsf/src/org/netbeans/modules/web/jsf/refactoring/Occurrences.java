@@ -195,7 +195,7 @@ public class Occurrences {
             Collection<ManagedBean> beans = faces.getManagedBeans();
             for (Iterator<ManagedBean> it = beans.iterator(); it.hasNext();) {
                 ManagedBean managedBean = it.next();
-                if (bean.getManagedBeanName().equals(managedBean.getManagedBeanName())){
+                if (oldValue.equals(managedBean.getManagedBeanClass())){
                     faces.getModel().startTransaction();
                     faces.removeManagedBean(managedBean);
                     faces.getModel().endTransaction();
