@@ -105,6 +105,7 @@ public class HibernateRevengDbTablesWizardDescriptor implements WizardDescriptor
                 HibernateRevengWizardHelper helper = HibernateRevengWizard.getHelper(wizardDescriptor);               
                 
                 helper.setTableClosure(getComponent().getTableClosure());
+                helper.setConfigurationFile(getComponent().getConfigurationFile());
             }
 
     }

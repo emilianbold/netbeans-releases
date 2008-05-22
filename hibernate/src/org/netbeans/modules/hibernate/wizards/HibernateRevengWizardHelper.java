@@ -42,6 +42,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.hibernate.wizards.support.SelectedTables;
 import org.netbeans.modules.hibernate.wizards.support.TableClosure;
+import org.openide.filesystems.FileObject;
 
 /**
  * Helper class to access all the information from the panels
@@ -57,6 +58,7 @@ public class HibernateRevengWizardHelper {
     private String packageName;    
     private boolean domainGen;
     private boolean hbmGen;
+    private FileObject confFile;
 
     public HibernateRevengWizardHelper(Project project) {
         this.project = project;
@@ -115,5 +117,13 @@ public class HibernateRevengWizardHelper {
     public void setHbmGen(boolean value) {
         this.hbmGen = value;
     }   
+    
+    public void setConfigurationFile(FileObject confFile) {
+        this.confFile = confFile;
+    }
+    
+    public FileObject getConfigurationFile() {
+        return confFile;
+    }
     
 }

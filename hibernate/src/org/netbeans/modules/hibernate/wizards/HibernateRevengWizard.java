@@ -39,9 +39,13 @@
 package org.netbeans.modules.hibernate.wizards;
 
 import java.awt.Component;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
@@ -62,6 +66,18 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.NbBundle;
+import org.xml.sax.EntityResolver;
+import org.xml.sax.InputSource;
+import org.dom4j.io.SAXReader;
+import org.hibernate.cfg.JDBCMetaDataConfiguration;
+import org.hibernate.cfg.reveng.DefaultReverseEngineeringStrategy;
+import org.hibernate.cfg.reveng.OverrideRepository;
+import org.hibernate.tool.hbm2x.POJOExporter;
+import org.hibernate.util.XMLHelper;
+import org.netbeans.modules.hibernate.util.HibernateUtil;
+import org.netbeans.modules.j2ee.core.api.support.SourceGroups;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -70,6 +86,7 @@ import org.openide.util.NbBundle;
 public class HibernateRevengWizard implements WizardDescriptor.InstantiatingIterator {
 
     private static final String PROP_HELPER = "wizard-helper"; //NOI18N
+
     private int index;
     private Project project;
     private WizardDescriptor wizardDescriptor;
@@ -80,6 +97,8 @@ public class HibernateRevengWizard implements WizardDescriptor.InstantiatingIter
     private final String DEFAULT_REVENG_FILENAME = "hibernate.reveng";
     private final String ATTRIBUTE_NAME = "match-schema";
     private final String MATCH_NAME = "match-name";
+    private XMLHelper xmlHelper;
+    private EntityResolver entityResolver;
 
     public static HibernateRevengWizard create() {
         return new HibernateRevengWizard();
@@ -219,13 +238,14 @@ public class HibernateRevengWizard implements WizardDescriptor.InstantiatingIter
             HibernateReverseEngineering hre = hro.getHibernateReverseEngineering();
             ArrayList<Table> list = (ArrayList<Table>) helper.getSelectedTables().getTables();
             for (int i = 0; i < list.size(); i++) {
-                int index = hre.addTableFilter(true);                
+                int index = hre.addTableFilter(true);
                 //hre.setAttributeValue(hre.TABLE_FILTER, index, ATTRIBUTE_NAME, ".*");
                 hre.setAttributeValue(hre.TABLE_FILTER, index, MATCH_NAME, list.get(i).getName());
 
             }
             hro.addReveng();
             hro.save();
+           // generateClasses(hro.getPrimaryFile());
             return Collections.singleton(hro.getPrimaryFile());
         } catch (Exception e) {
             return Collections.EMPTY_SET;
@@ -235,7 +255,7 @@ public class HibernateRevengWizard implements WizardDescriptor.InstantiatingIter
 
     public final void initialize(WizardDescriptor wiz) {
         wizardDescriptor = wiz;
-        Project project = Templates.getProject(wiz);
+        project = Templates.getProject(wiz);
         helper = new HibernateRevengWizardHelper(project);
 
         wiz.putProperty(PROP_HELPER, helper);
@@ -270,6 +290,52 @@ public class HibernateRevengWizard implements WizardDescriptor.InstantiatingIter
 
         wiz.putProperty("NewFileWizard_Title", NbBundle.getMessage(HibernateRevengWizard.class, wizardBundleKey)); // NOI18N        
 
+    }
+
+    public void generateClasses(FileObject revengFile) throws IOException {
+        HibernateEnvironment env = null;
+        JDBCMetaDataConfiguration cfg = null;
+        File f = null;        
+        DataObject revengDataObject = DataObject.find(revengFile);
+
+        // String fileName = FileUtil.toFile(revengFile).getAbsolutePath();
+        String fileName = HibernateUtil.getRelativeSourcePath(revengDataObject.getPrimaryFile(), Util.getSourceRoot(project));
+        File confFile  = FileUtil.toFile(helper.getConfigurationFile());      
+
+        try {       
+
+            cfg = new JDBCMetaDataConfiguration();            
+            OverrideRepository or = new OverrideRepository();
+            InputStream xmlInputStream = new FileInputStream(FileUtil.toFile(revengFile));
+            xmlHelper = new XMLHelper();
+            entityResolver = XMLHelper.DEFAULT_DTD_RESOLVER;
+            List errors = new ArrayList();
+            
+            SAXReader saxReader = xmlHelper.createSAXReader("XML InputStream", errors, entityResolver);
+            
+            org.dom4j.Document doc = saxReader.read(new InputSource(xmlInputStream));
+            
+            cfg.configure(confFile);        
+            
+            cfg.setReverseEngineeringStrategy(or.getReverseEngineeringStrategy(new DefaultReverseEngineeringStrategy()));
+            
+            cfg.readFromJDBC();
+            
+        } catch (Exception e) {
+            e.printStackTrace();      
+        }
+
+        // Generating POJOs
+        FileObject pkg;
+        try {
+            pkg = SourceGroups.getFolderForPackage(helper.getLocation(), helper.getPackageName());            
+            File outputDir = FileUtil.toFile(pkg);            
+            POJOExporter exporter = new POJOExporter(cfg, outputDir);            
+            exporter.getProperties().setProperty("ejb3", "true");            
+            exporter.start();            
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 
     public void uninitialize(WizardDescriptor wiz) {
