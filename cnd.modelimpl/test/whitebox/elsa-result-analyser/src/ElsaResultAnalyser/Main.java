@@ -54,20 +54,26 @@ import java.util.logging.Logger;
 public class Main {
 
     /**
-     * @param args the command line arguments
+     * Main function
+     * Collects definitions, declarations and usages and then dumps them as gol
+     * 
+     * @param args the command line arguments. There should be work dir and elsa files
      */
     public static void main(String[] args) {
         if (args.length == 0) {
             return;
         }
 
-
         String workDir = args[0];
 
+        String projName = workDir.replaceAll(".*/", "");
+        System.out.println("Analyzing " + projName);       
+        
         TokenTable table = new TokenTable(workDir);
 
         for (int i = 1; i < args.length; i++) {
             try {
+                System.out.println("Loading " + args[i]);
                 BufferedReader in = new BufferedReader(new FileReader(args[i]));
                 Parser parser = new Parser(in);
                 AstNode tree = parser.parse();
@@ -83,47 +89,32 @@ public class Main {
 
         for (int i = 1; i < args.length; i++) {
             try {
+                System.out.println("Loading " + args[i]);
                 BufferedReader in = new BufferedReader(new FileReader(args[i]));
                 Parser parser = new Parser(in);
                 AstNode tree = parser.parse();
 
                 System.out.println("find variable declarations for " + args[i]);
-//                for (Declaration decl : table.variables) {
-//                    tree.findVariableDeclarations(decl);
-//                }
-//                System.out.println("find function declarations for " + args[i]);
-//                for (Declaration decl : table.functions) {
-//                    tree.findFunctionDeclarations(decl);
-//                }
                 tree.findVariableDeclarations(table, null);
+                System.out.println("find function declarations for " + args[i]);
                 tree.findFunctionDeclarations(table, null);
             } catch (FileNotFoundException ex) {
                 Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
 
+        table.removeDuplicateAloneDeclarations();
+        
         for (int i = 1; i < args.length; i++) {
             try {
+                System.out.println("Loading " + args[i]);
                 BufferedReader in = new BufferedReader(new FileReader(args[i]));
                 Parser parser = new Parser(in);
                 AstNode tree = parser.parse();
 
                 System.out.println("find variable usages for " + args[i]);
-//                for (Declaration decl : table.variables) {
-//                    tree.findVariableUssages(decl);
-//                    for (Declaration decl2 : decl.declarations) {
-//                        tree.findVariableUssages(decl2);
-//                    }
-//                }
-//
-//                System.out.println("find function usages for " + args[i]);
-//                for (Declaration decl : table.functions) {
-//                    tree.findFunctionUssages(decl);
-//                    for (Declaration decl2 : decl.declarations) {
-//                        tree.findFunctionUssages(decl2);
-//                    }
-//                }
                 tree.findVariableUssages(table, null);
+                System.out.println("find function usages for " + args[i]);
                 tree.findFunctionUssages(table, null);
 
             } catch (FileNotFoundException ex) {
@@ -131,24 +122,35 @@ public class Main {
             }
         }
 
-        for (int i = 1; i < args.length; i++) {
-            try {
-                BufferedReader in = new BufferedReader(new FileReader(args[i]));
-                Parser parser = new Parser(in);
-                AstNode tree = parser.parse();
-                
-                tree.verifyUsages(table);
-
-            } catch (FileNotFoundException ex) {
-                Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
+//        for (int i = 1; i < args.length; i++) {
+//            try {
+//                System.out.println("Loading " + args[i]);
+//                BufferedReader in = new BufferedReader(new FileReader(args[i]));
+//                Parser parser = new Parser(in);
+//                AstNode tree = parser.parse();
+//                
+//                System.out.println("Usages verification for " + args[i]);
+//                tree.verifyUsages(table);
+//
+//            } catch (FileNotFoundException ex) {
+//                Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+//            }
+//        }
         
-        table.printVariables();
-        table.printFunctions();
+//        table.printVariables();
+//        table.printFunctions();
         table.printNumbers();
 
-        table.dumpVariables("variableusages");
-        table.dumpFunctions("functionusages");
+        System.out.println("Dumping results...");
+        
+        System.out.println("    for variables");
+        table.dumpVariables(projName + "/variables");
+        System.out.println("    for functions");
+        table.dumpFunctions(projName + "/functions");
+        
+        System.out.println("Dumping index...");
+        table.dumpIndex(projName + "/index");
+        
+        System.out.println("Comlited");
     }
 }

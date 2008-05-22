@@ -108,7 +108,7 @@ import org.netbeans.modules.php.editor.lexer.PHPTokenId;
  *
  * @author Tor Norbye
  */
-public class PHPBracketCompleter implements org.netbeans.modules.gsf.api.BracketCompletion {
+public class PHPBracketCompleter implements org.netbeans.modules.gsf.api.KeystrokeHandler {
 //    /** When true, automatically reflows comments that are being edited according to the rdoc
 //     * conventions as well as the right hand side margin
 //     */

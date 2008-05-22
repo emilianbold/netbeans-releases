@@ -25,6 +25,7 @@ package org.netbeans.modules.xslt.tmap;
  */
 public interface TMapConstants {
 
+    final String TRANSFORMMAP_XML = "transformmap.xml";// NOI18N
     final String OLD_TRANSFORM_MAP_NS_URI = "http://xml.netbeans.org/schema/transformmap"; // NOI18N
     
 }

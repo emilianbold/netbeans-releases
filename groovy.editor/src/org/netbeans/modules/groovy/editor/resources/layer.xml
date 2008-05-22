@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    
+    <folder name="Actions">
+        <folder name="Groovy">
+            <file name="org-netbeans-modules-groovy-editor-actions-FixImportsAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.groovy.editor.actions.FixImportsAction"/>
+            </file>
+        </folder>
+    </folder>
+    
+    <folder name="org-netbeans-modules-groovy-editor-hints">
+        <folder name="rules">
+            <folder name="selection">
+                <file name="org-netbeans-modules-groovy-editor-hints-CommentOutRule.instance"/>
+            </folder>    
+            <folder name="errors">
+                <file name="org-netbeans-modules-groovy-editor-hints-ClassNotFoundRule.instance"/>
+            </folder>    
+            <!-- folder name="hints">
+                <folder name="general">
+                   <attr name="position" intvalue="100"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ruby.hints.Bundle"/>
+                    <file name="org-netbeans-modules-ruby-hints-BlockVarReuse.instance"/>
+                    <file name="org-netbeans-modules-ruby-hints-Deprecations.instance"/>
+                </folder>    
+            </folder -->    
+        </folder>
+    </folder>
+
+
+    
+    <folder name="Services">
+        <folder name="MIMEResolver">
+            <file name="GroovyMimeResolver.xml" url="GroovyMimeResolver.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.groovy.editor.Bundle"/>
+                <attr name="position" intvalue="281"/>
+            </file>
+        </folder>
+    </folder>
+    <folder name="Editors">
+        <folder name="text">
+            <folder name="x-groovy">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.groovy.editor.Bundle"/>
+
+                <folder name="Popup">
+                    <file name="org-netbeans-modules-groovy-editor-actions-FixImportsAction.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.groovy.editor.actions.FixImportsAction"/>
+                        <attr name="position" intvalue="801"/>
+                    </file>
+                </folder>
+
+
+                <file name="language.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.groovy.editor.lexer.GroovyTokenId.language"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.api.lexer.Language"/>
+                </file>
+                
+                <!-- folder name="HyperlinkProviders">
+                    <file name="GroovyHyperlinkProvider.instance">
+                        <attr name="instanceClass" 
+                              stringvalue="org.netbeans.modules.groovy.editor.GroovyHyperlinkProvider"/>
+                        <attr name="instanceOf" 
+                              stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider"/>
+                    </file>
+                </folder -->
+
+                <folder name="CodeTemplates">
+                    <folder name="Defaults">
+                        <file name="org-netbeans-modules-editor-java-codetemplates.xml" url="DefaultAbbrevs.xml">
+                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.editor.resources.Bundle"/>
+                        </file>
+                    </folder>
+                </folder>
+
+                <folder name="FontsColors">
+                    <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <file name="coloring.xml" url="fontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.groovy.editor.resources.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
+                </folder>
+
+                <folder name="Keybindings">
+                    <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-groovy-keybindings.xml" url="DefaultKeyBindings.xml"/>
+                            <file name="org-netbeans-modules-groovy-keybindings-mac.xml" url="DefaultKeyBindings-Mac.xml">
+                                <attr name="nbeditor-settings-targetOS" stringvalue="OS_MAC"/>
+                            </file>
+                        </folder>
+                    </folder>
+                </folder>
+
+            </folder>
+        </folder>
+    </folder>
+    
+    <folder name="OptionsDialog">
+        <folder name="PreviewExamples">
+            <folder name="text">
+                <file name="x-groovy" url="GroovyPreviewExample"/>
+            </folder>
+        </folder>
+    </folder>
+    
+    <folder name="GsfPlugins">
+        <folder name="text">
+            <folder name="x-groovy">
+                <file name="language.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.GsfLanguage"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.groovy.editor.GroovyLanguage"/>
+                </file>
+                
+                <file name="parser.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.Parser"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.groovy.editor.parser.GroovyParser"/>
+                </file>
+                
+                <file name="formatter.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.Formatter"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.groovy.editor.Formatter"/>
+                </file>
+
+                <file name="bracket.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.KeystrokeHandler"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.groovy.editor.BracketCompleter"/>
+                </file>
+                
+                <file name="completion.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.CodeCmpletionHandler"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.groovy.editor.CodeCompleter"/>
+                </file>
+                
+                <file name="semantic.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.SemanticAnalyzer"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.groovy.editor.parser.GroovySemanticAnalyzer"/>
+                </file>
+                
+                <file name="occurrences.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.OccurrencesFinder"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.groovy.editor.parser.GroovyOccurrencesFinder"/>
+                </file>
+                
+                <file name="structure.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.StructureScanner"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.groovy.editor.StructureAnalyzer"/>
+                </file>
+                
+                <file name="indexer.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.Indexer"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.groovy.editor.GroovyIndexer"/>
+                </file>
+                
+                <file name="hints.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.HintsProvider"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.groovy.editor.hints.infrastructure.GroovyHintsProvider"/>
+                </file>
+                
+                <file name="declarationfinder.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.DeclarationFinder"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.groovy.editor.GroovyDeclarationFinder"/>
+                </file>
+                
+            </folder>
+        </folder>
+    </folder>
+    
+    <folder name="Loaders">
+        <folder name="text">
+            <folder name="x-groovy">
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/groovy/editor/resources/groovydoc.png"/>
+                <attr name="iconBase" stringvalue="org/netbeans/modules/groovy/editor/resources/groovydoc.png"/>
+                <folder name="Actions">
+                    <file name="OpenAction.instance">
+                        <attr name="instanceClass" stringvalue="org.openide.actions.OpenAction"/>
+                        <attr name="position" intvalue="100"/>
+                    </file>
+                    <file name="Separator1.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="200"/>
+                    </file>
+                    <file name="CutAction.instance">
+                        <attr name="instanceClass" stringvalue="org.openide.actions.CutAction"/>
+                        <attr name="position" intvalue="300"/>
+                    </file>     
+                    <file name="CopyAction.instance">
+                        <attr name="instanceClass" stringvalue="org.openide.actions.CopyAction"/>
+                        <attr name="position" intvalue="400"/>
+                    </file>
+                    <file name="PasteAction.instance">
+                        <attr name="instanceClass" stringvalue="org.openide.actions.PasteAction"/>
+                        <attr name="position" intvalue="500"/>
+                    </file>
+                    <file name="Separator2.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="600"/>
+                    </file>
+                    <file name="NewAction.instance">
+                        <attr name="instanceClass" stringvalue="org.openide.actions.NewAction"/>
+                        <attr name="position" intvalue="700"/>
+                    </file>
+                    <file name="DeleteAction.instance">
+                        <attr name="instanceClass" stringvalue="org.openide.actions.DeleteAction"/>
+                        <attr name="position" intvalue="800"/>
+                    </file>
+                    <file name="RenameAction.instance">
+                        <attr name="instanceClass" stringvalue="org.openide.actions.RenameAction"/>
+                        <attr name="position" intvalue="900"/>
+                    </file>
+                    <file name="Separator3.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1000"/>
+                    </file>
+                    <file name="SaveAsTemplateAction.instance">
+                        <attr name="instanceClass" stringvalue="org.openide.actions.SaveAsTemplateAction"/>
+                        <attr name="position" intvalue="1100"/>
+                    </file>
+                    <file name="Separator4.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1200"/>
+                    </file>
+                    <file name="FileSystemAction.instance">
+                        <attr name="instanceClass" stringvalue="org.openide.actions.FileSystemAction"/>
+                        <attr name="position" intvalue="1300"/>
+                    </file>
+                    <file name="Separator5.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1400"/>
+                    </file> 
+                    <file name="ToolsAction.instance">
+                        <attr name="instanceClass" stringvalue="org.openide.actions.ToolsAction"/>
+                        <attr name="position" intvalue="1500"/>
+                    </file> 
+                    <file name="PropertiesAction.instance">
+                        <attr name="instanceClass" stringvalue="org.openide.actions.PropertiesAction"/>
+                        <attr name="position" intvalue="1600"/>
+                    </file> 
+                </folder>            
+            </folder>
+        </folder>
+    </folder>
+
+    <folder name="org-netbeans-api-project-libraries">
+        <folder name="Libraries">
+            <file name="groovy-all.xml" url="groovy-all.xml"/>
+        </folder>
+    </folder>
+
+</filesystem>

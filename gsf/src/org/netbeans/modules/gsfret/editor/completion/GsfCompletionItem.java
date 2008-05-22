@@ -54,10 +54,11 @@ import javax.swing.text.Position;
 import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.modules.gsf.api.CompletionProposal;
 import org.netbeans.modules.gsf.api.ElementHandle;
-import org.netbeans.modules.gsf.api.Modifier;
+//import org.netbeans.modules.gsf.api.Modifier;
 import org.netbeans.napi.gsfret.source.CompilationInfo;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplateManager;
+import org.netbeans.modules.gsf.api.CodeCompletionResult;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.CompletionUtilities;
@@ -74,6 +75,7 @@ public abstract class GsfCompletionItem implements CompletionItem {
     static org.netbeans.modules.gsf.api.CompletionProposal tipProposal;
     
     protected CompilationInfo info;
+    protected CodeCompletionResult completionResult;
     
     protected static int SMART_TYPE = 1000;
         
@@ -81,9 +83,12 @@ public abstract class GsfCompletionItem implements CompletionItem {
         private org.netbeans.modules.gsf.api.CompletionProposal item;
         private static ImageIcon icon[][] = new ImageIcon[2][4];
         
-        private DelegatedItem(CompilationInfo info, org.netbeans.modules.gsf.api.CompletionProposal item) {
+        private DelegatedItem(CompilationInfo info, 
+                CodeCompletionResult completionResult, 
+                org.netbeans.modules.gsf.api.CompletionProposal item) {
             super(item.getAnchorOffset());
             this.item = item;
+            this.completionResult = completionResult;
             this.info = info;
         }
         
@@ -264,6 +269,20 @@ public abstract class GsfCompletionItem implements CompletionItem {
     
         @Override
         protected void substituteText(final JTextComponent c, int offset, int len, String toAdd) {
+            if (completionResult != null) {
+                completionResult.beforeInsert(item);
+                
+                if (!completionResult.insert(item)) {
+                    defaultSubstituteText(c, offset, len, toAdd);
+                }
+                
+                completionResult.afterInsert(item);
+            } else {
+                defaultSubstituteText(c, offset, len, toAdd);
+            }
+        }
+            
+        private void defaultSubstituteText(final JTextComponent c, int offset, int len, String toAdd) {
             String template = item.getCustomInsertTemplate();
             if (template != null) {
                 BaseDocument doc = (BaseDocument)c.getDocument();
@@ -334,8 +353,8 @@ public abstract class GsfCompletionItem implements CompletionItem {
     }
     
 
-    public static final GsfCompletionItem createItem(CompletionProposal proposal, CompilationInfo info) {
-        return new DelegatedItem(info, proposal);
+    public static final GsfCompletionItem createItem(CompletionProposal proposal, CodeCompletionResult result, CompilationInfo info) {
+        return new DelegatedItem(info, result, proposal);
     }
 
     public static final String COLOR_END = "</font>"; //NOI18N
@@ -503,18 +522,18 @@ public abstract class GsfCompletionItem implements CompletionItem {
     
     
 
-    private static final int PUBLIC_LEVEL = 3;
-    private static final int PROTECTED_LEVEL = 2;
-    private static final int PACKAGE_LEVEL = 1;
-    private static final int PRIVATE_LEVEL = 0;
-    
-    private static int getProtectionLevel(Set<Modifier> modifiers) {
-        if(modifiers.contains(Modifier.PUBLIC))
-            return PUBLIC_LEVEL;
-        if(modifiers.contains(Modifier.PROTECTED))
-            return PROTECTED_LEVEL;
-        if(modifiers.contains(Modifier.PRIVATE))
-            return PRIVATE_LEVEL;
-        return PACKAGE_LEVEL;
-    }    
+//    private static final int PUBLIC_LEVEL = 3;
+//    private static final int PROTECTED_LEVEL = 2;
+//    private static final int PACKAGE_LEVEL = 1;
+//    private static final int PRIVATE_LEVEL = 0;
+//    
+//    private static int getProtectionLevel(Set<Modifier> modifiers) {
+//        if(modifiers.contains(Modifier.PUBLIC))
+//            return PUBLIC_LEVEL;
+//        if(modifiers.contains(Modifier.PROTECTED))
+//            return PROTECTED_LEVEL;
+//        if(modifiers.contains(Modifier.PRIVATE))
+//            return PRIVATE_LEVEL;
+//        return PACKAGE_LEVEL;
+//    }    
 }

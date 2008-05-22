@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package ElsaResultAnalyser;
 
 import java.io.File;
@@ -47,6 +46,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -61,6 +61,7 @@ public class TokenTable {
     ArrayList<Declaration> functions = new ArrayList<Declaration>();
     ArrayList<Declaration> aloneVariableDeclarations = new ArrayList<Declaration>();
     ArrayList<Declaration> aloneFunctionDeclarations = new ArrayList<Declaration>();
+    boolean noContainCheck = false;
 
     TokenTable() {
         this.workDir = null;
@@ -76,11 +77,42 @@ public class TokenTable {
                 return;
             }
         }
-//        if (!variables.contains(var)) {
-        variables.add(var);
-//        } else {
-//            System.out.println("Double variable declaration");
-//        }
+        if (noContainCheck || !variables.contains(var)) {
+            variables.add(var);
+        }
+    }
+
+    public void addVariableDeclaration(Declaration var, Declaration decl) {
+        if (workDir != null) {
+            if (!decl.pos.file.startsWith(workDir)) {
+                return;
+            }
+        }
+        if (noContainCheck || !var.declarations.contains(decl)) {
+            var.declarations.add(decl);
+        }
+    }
+
+    public void addAloneVariableDeclaration(Declaration var) {
+        if (workDir != null) {
+            if (!var.pos.file.startsWith(workDir)) {
+                return;
+            }
+        }
+        if (noContainCheck || !aloneVariableDeclarations.contains(var)) {
+            aloneVariableDeclarations.add(var);
+        }
+    }
+
+    public void addVariableUsage(Declaration var, Offset usage) {
+        if (workDir != null) {
+            if (!usage.file.startsWith(workDir)) {
+                return;
+            }
+        }
+        if (noContainCheck || !var.usages.contains(usage)) {
+            var.usages.add(usage);
+        }
     }
 
     public void addFunction(Declaration fun) {
@@ -90,11 +122,45 @@ public class TokenTable {
                 return;
             }
         }
-//        if (!functions.contains(fun)) {
-        functions.add(fun);
+        if (noContainCheck || !functions.contains(fun)) {
+            functions.add(fun);
+        }
 //        } else {
 //            System.out.println("Double function declaration");
 //        }
+    }
+
+    public void addFunctionDeclaration(Declaration fun, Declaration decl) {
+        if (workDir != null) {
+            if (!decl.pos.file.startsWith(workDir)) {
+                return;
+            }
+        }
+        if (noContainCheck || !fun.declarations.contains(decl)) {
+            fun.declarations.add(decl);
+        }
+    }
+
+    public void addAloneFunctionDeclaration(Declaration fun) {
+        if (workDir != null) {
+            if (!fun.pos.file.startsWith(workDir)) {
+                return;
+            }
+        }
+        if (noContainCheck || !aloneFunctionDeclarations.contains(fun)) {
+            aloneFunctionDeclarations.add(fun);
+        }
+    }
+
+    public void addFunctionUsage(Declaration fun, Offset usage) {
+        if (workDir != null) {
+            if (!usage.file.startsWith(workDir)) {
+                return;
+            }
+        }
+        if (noContainCheck || !fun.usages.contains(usage)) {
+            fun.usages.add(usage);
+        }
     }
 
     public Declaration findFunctionDefinition(Offset qualifier, String fullName) {
@@ -129,8 +195,10 @@ public class TokenTable {
             }
         }
         for (Declaration decl : aloneFunctionDeclarations) {
-            if (decl.pos.equals(pos)) {
-                return decl;
+            if (decl.name.equals(name)) {
+                if (decl.pos.equals(pos)) {
+                    return decl;
+                }
             }
         }
 
@@ -169,13 +237,16 @@ public class TokenTable {
             }
         }
         for (Declaration decl : aloneVariableDeclarations) {
-            if (decl.pos.equals(pos)) {
-                return decl;
+            if (decl.name.equals(name)) {
+                if (decl.pos.equals(pos)) {
+                    return decl;
+                }
             }
         }
 
         return null;
     }
+    int faultsNumber = 0;
 
     public void verifyDeclaration(String name, Offset offset, int line) {
 
@@ -266,6 +337,7 @@ public class TokenTable {
         }
 
         System.out.println("verification fault on " + name + " " + line + " " + offset.file + ":" + offset.line + ":" + offset.row);
+        faultsNumber++;
     }
 
     public void printNumbers() {
@@ -296,6 +368,9 @@ public class TokenTable {
             funNumber += fun.usages.size();
         }
         System.out.println("functions: " + funNumber);
+        if (noContainCheck) {
+            System.out.println("faults: " + faultsNumber);
+        }
     }
 
     public void printVariables() {
@@ -386,6 +461,41 @@ public class TokenTable {
             }
 
         }
+        for (Declaration var : aloneVariableDeclarations) {
+            if (!var.pos.file.startsWith(workDir)) {
+                continue;
+            }
+
+            ArrayList<String> offsets = new ArrayList<String>();
+            for (Offset o : var.usages) {
+                offsets.add(o.file.substring(workDir.length() + 1) + ":" + o.line + ":" + o.row);
+            }
+
+            Collections.sort(offsets);
+
+            String fileName = var.namePos.file.substring(workDir.length() + 1) + ":" + var.namePos.line + ":" + var.namePos.row + " " + var.name;
+
+            fileName = fileName.replaceAll("/", ".");
+            fileName = fileName.replaceAll("\"", "");
+
+            File f = new File(dir + "/" + fileName);
+            try {
+                f.createNewFile();
+            } catch (IOException ex) {
+                Logger.getLogger(TokenTable.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            try {
+                PrintStream ps = new PrintStream(f);
+
+                ps.println(var.namePos.file.substring(workDir.length() + 1) + ":" + var.namePos.line + ":" + var.namePos.row + " " + var.name.replaceAll("\"", ""));
+                for (String string : offsets) {
+                    ps.println(string);
+                }
+
+            } catch (FileNotFoundException ex) {
+                Logger.getLogger(TokenTable.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
     }
 
     public void printFunctions() {
@@ -408,7 +518,11 @@ public class TokenTable {
             }
             Collections.sort(offsets);
 
-            System.out.println(fun.namePos.file + ":" + fun.namePos.line + ":" + fun.namePos.row + fun.namePos.elsaLine + " " + fun.name.replaceAll("\"", ""));
+//            if (fun.qualifierPos != null && fun.fullName != null) {
+//                System.out.println(fun.namePos.file + ":" + fun.namePos.line + ":" + fun.namePos.row + ":" + fun.namePos.elsaLine + " " + fun.name.replaceAll("\"", "") + " " + fun.fullName + " " + fun.qualifierPos.file + ":" + fun.qualifierPos.line + ":" + fun.qualifierPos.row);
+//            } else {
+            System.out.println(fun.namePos.file + ":" + fun.namePos.line + ":" + fun.namePos.row + ":" + fun.namePos.elsaLine + " " + fun.name.replaceAll("\"", ""));
+//            }
             for (String string : offsets) {
                 System.out.println(string);
             }
@@ -426,7 +540,7 @@ public class TokenTable {
 
             Collections.sort(offsets);
 
-            System.out.println(fun.namePos.file + ":" + fun.namePos.line + ":" + fun.namePos.row + fun.namePos.elsaLine + " " + fun.name.replaceAll("\"", ""));
+            System.out.println(fun.namePos.file + ":" + fun.namePos.line + ":" + fun.namePos.row + ":" + fun.namePos.elsaLine + " " + fun.name.replaceAll("\"", ""));
             for (String string : offsets) {
                 System.out.println(string);
             }
@@ -475,6 +589,292 @@ public class TokenTable {
                     ps.println(string);
                 }
 
+            } catch (FileNotFoundException ex) {
+                Logger.getLogger(TokenTable.class.getName()).log(Level.SEVERE, null, ex);
+            }
+
+        }
+
+        for (Declaration fun : aloneFunctionDeclarations) {
+            if (!fun.pos.file.startsWith(workDir)) {
+                continue;
+            }
+
+            ArrayList<String> offsets = new ArrayList<String>();
+            for (Offset o : fun.usages) {
+                offsets.add(o.file.substring(workDir.length() + 1) + ":" + o.line + ":" + o.row);
+            }
+
+            Collections.sort(offsets);
+
+            String fileName = fun.namePos.file.substring(workDir.length() + 1) + ":" + fun.namePos.line + ":" + fun.namePos.row + " " + fun.name;
+            fileName = fileName.replace("operator/", "operator div");
+            fileName = fileName.replace("*", " star");
+            fileName = fileName.replace("|", " or");
+            fileName = fileName.replace("?", " q");
+
+            fileName = fileName.replaceAll("/", ".");
+            fileName = fileName.replaceAll("\"", "");
+
+            File f = new File(dir + "/" + fileName);
+            try {
+                f.createNewFile();
+            } catch (IOException ex) {
+                Logger.getLogger(TokenTable.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            try {
+                PrintStream ps = new PrintStream(f);
+
+                ps.println(fun.namePos.file.substring(workDir.length() + 1) + ":" + fun.namePos.line + ":" + fun.namePos.row + " " + fun.name.replaceAll("\"", ""));
+                for (String string : offsets) {
+                    ps.println(string);
+                }
+
+            } catch (FileNotFoundException ex) {
+                Logger.getLogger(TokenTable.class.getName()).log(Level.SEVERE, null, ex);
+            }
+
+        }
+    }
+
+    public void removeDuplicateAloneDeclarations() {
+        ArrayList<Declaration> newAloneFunctionDeclarations = new ArrayList<Declaration>();
+        f:
+        for (Declaration declaration : aloneFunctionDeclarations) {
+            for (Declaration def : functions) {
+                if (def.name.equals(declaration.name)) {
+                    if (def.pos.equals(declaration.pos)) {
+                        continue;
+                    }
+                    for (Declaration decl : def.declarations) {
+                        if (decl.pos.equals(declaration.pos)) {
+                            continue f;
+                        }
+                    }
+                }
+            }
+            newAloneFunctionDeclarations.add(declaration);
+        }
+        aloneFunctionDeclarations = newAloneFunctionDeclarations;
+
+        ArrayList<Declaration> newAloneVariableDeclarations = new ArrayList<Declaration>();
+        f:
+        for (Declaration declaration : aloneVariableDeclarations) {
+            for (Declaration def : variables) {
+                if (def.name.equals(declaration.name)) {
+                    if (def.pos.equals(declaration.pos)) {
+                        continue;
+                    }
+                    for (Declaration decl : def.declarations) {
+                        if (decl.pos.equals(declaration.pos)) {
+                            continue f;
+                        }
+                    }
+                }
+            }
+            newAloneVariableDeclarations.add(declaration);
+        }
+        aloneVariableDeclarations = newAloneVariableDeclarations;
+    }
+
+    class MyToken {
+
+        String name;
+        Offset offset;
+        String description;
+
+        MyToken(String s, Offset o, String d) {
+            name = s;
+            offset = o;
+            description = d;
+        }
+    }
+
+    class MyFile {
+
+        String name;
+        ArrayList<MyToken> tokens = new ArrayList<MyToken>();
+
+        MyFile(String s) {
+            name = s;
+        }
+
+        public boolean equals(Object o) {
+            MyFile f = (MyFile) o;
+            return name.equals(f.name);
+        }
+    }
+
+    private class MyTokenOffsetComparator implements Comparator<MyToken> {
+
+        public int compare(MyToken t1, MyToken t2) {
+            int result = compareStrings(t1.offset.file, t2.offset.file);
+            if (result == 0) {
+                result = (new Integer(t1.offset.line)).compareTo(t2.offset.line);
+                if (result == 0) {
+                    result = (new Integer(t1.offset.row)).compareTo(t2.offset.row);
+                }
+            }
+            return result;
+        }
+
+        private int compareStrings(String s1, String s2) {
+            if (s1 == null) {
+                s1 = ""; // NOI18N
+
+            }
+            if (s2 == null) {
+                s2 = ""; // NOI18N
+
+            }
+            return s1.compareTo(s2);
+        }
+    }
+
+    public void dumpIndex(String dir) {
+        ArrayList<MyFile> files = new ArrayList<MyFile>();
+        for (Declaration fun : functions) {
+            MyFile f = new MyFile(fun.pos.file);
+            if (files.contains(f)) {
+                files.get(files.indexOf(f)).tokens.add(new MyToken(fun.name, fun.namePos, fun.decription));
+            } else {
+                f.tokens.add(new MyToken(fun.name, fun.namePos, fun.decription));
+                files.add(f);
+            }
+
+            for (Offset o : fun.usages) {
+                f = new MyFile(o.file);
+                if (files.contains(f)) {
+                    files.get(files.indexOf(f)).tokens.add(new MyToken(fun.name, o, fun.decription + "-usage"));
+                } else {
+                    f.tokens.add(new MyToken(fun.name, o, fun.decription + "-usage"));
+                    files.add(f);
+                }
+            }
+
+            for (Declaration decl : fun.declarations) {
+                f = new MyFile(decl.pos.file);
+                if (files.contains(f)) {
+                    files.get(files.indexOf(f)).tokens.add(new MyToken(fun.name, decl.namePos, decl.decription));
+                } else {
+                    f.tokens.add(new MyToken(fun.name, decl.namePos, decl.decription));
+                    files.add(f);
+                }
+
+                for (Offset o : decl.usages) {
+                    f = new MyFile(o.file);
+                    if (files.contains(f)) {
+                        files.get(files.indexOf(f)).tokens.add(new MyToken(fun.name, o, decl.decription + "-usage"));
+                    } else {
+                        f.tokens.add(new MyToken(fun.name, o, decl.decription + "-usage"));
+                        files.add(f);
+                    }
+                }
+            }
+        }
+
+        for (Declaration fun : aloneFunctionDeclarations) {
+            MyFile f = new MyFile(fun.pos.file);
+            if (files.contains(f)) {
+                files.get(files.indexOf(f)).tokens.add(new MyToken(fun.name, fun.namePos, fun.decription));
+            } else {
+                f.tokens.add(new MyToken(fun.name, fun.namePos, fun.decription));
+                files.add(f);
+            }
+
+            for (Offset o : fun.usages) {
+                f = new MyFile(o.file);
+                if (files.contains(f)) {
+                    files.get(files.indexOf(f)).tokens.add(new MyToken(fun.name, o, fun.decription + "-usage"));
+                } else {
+                    f.tokens.add(new MyToken(fun.name, o, fun.decription + "-usage"));
+                    files.add(f);
+                }
+            }
+        }
+
+        for (Declaration var : variables) {
+            MyFile f = new MyFile(var.pos.file);
+            if (files.contains(f)) {
+                files.get(files.indexOf(f)).tokens.add(new MyToken(var.name, var.namePos, var.decription));
+            } else {
+                f.tokens.add(new MyToken(var.name, var.namePos, var.decription));
+                files.add(f);
+            }
+
+            for (Offset o : var.usages) {
+                f = new MyFile(o.file);
+                if (files.contains(f)) {
+                    files.get(files.indexOf(f)).tokens.add(new MyToken(var.name, o, var.decription + "-usage"));
+                } else {
+                    f.tokens.add(new MyToken(var.name, o, var.decription + "-usage"));
+                    files.add(f);
+                }
+            }
+
+            for (Declaration decl : var.declarations) {
+                f = new MyFile(decl.pos.file);
+                if (files.contains(f)) {
+                    files.get(files.indexOf(f)).tokens.add(new MyToken(var.name, decl.namePos, decl.decription));
+                } else {
+                    f.tokens.add(new MyToken(var.name, decl.namePos, decl.decription));
+                    files.add(f);
+                }
+
+                for (Offset o : decl.usages) {
+                    f = new MyFile(o.file);
+                    if (files.contains(f)) {
+                        files.get(files.indexOf(f)).tokens.add(new MyToken(var.name, o, decl.decription + "-usage"));
+                    } else {
+                        f.tokens.add(new MyToken(var.name, o, decl.decription + "-usage"));
+                        files.add(f);
+                    }
+                }
+            }
+        }
+
+        for (Declaration var : aloneVariableDeclarations) {
+            MyFile f = new MyFile(var.pos.file);
+            if (files.contains(f)) {
+                files.get(files.indexOf(f)).tokens.add(new MyToken(var.name, var.namePos, var.decription));
+            } else {
+                f.tokens.add(new MyToken(var.name, var.namePos, var.decription));
+                files.add(f);
+            }
+
+            for (Offset o : var.usages) {
+                f = new MyFile(o.file);
+                if (files.contains(f)) {
+                    files.get(files.indexOf(f)).tokens.add(new MyToken(var.name, o, var.decription + "-usage"));
+                } else {
+                    f.tokens.add(new MyToken(var.name, o, var.decription + "-usage"));
+                    files.add(f);
+                }
+            }
+        }
+
+        for (MyFile mf : files) {
+            Collections.sort(mf.tokens, new MyTokenOffsetComparator());
+
+            String fileName = mf.name.substring(workDir.length() + 1);
+            fileName = fileName.replaceAll("/", ".");
+            fileName = fileName.replaceAll("\"", "");
+
+            // System.out.println(fileName);
+
+            File f = new File(dir + "/" + fileName);
+            try {
+                f.createNewFile();
+            } catch (IOException ex) {
+                Logger.getLogger(TokenTable.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            try {
+                PrintStream ps = new PrintStream(f);
+
+                for (MyToken t : mf.tokens) {
+                    //    System.out.println(t.offset.file + ":" + t.offset.line + ":" + t.offset.row + " " + t.name.replaceAll("\"", ""));
+                    ps.println(t.offset.line + ":" + t.offset.row + " " + t.name.replaceAll("\"", "") + " " + t.description);
+                }
             } catch (FileNotFoundException ex) {
                 Logger.getLogger(TokenTable.class.getName()).log(Level.SEVERE, null, ex);
             }

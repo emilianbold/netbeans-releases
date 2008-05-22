@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.test.xml.schema.lib.util;
 
 import java.awt.Component;
@@ -62,15 +61,15 @@ import org.netbeans.test.xml.schema.lib.SchemaMultiView;
  * @author ca@netbeans.org
  */
 public class Helpers {
-    
+
     public static final String WAIT_COMPONENT_TIMEOUT = "ComponentOperator.WaitComponentTimeout";
     public static final int NO_EVENT_TIMEOUT = 500;
     public static EventTool et = new EventTool();
-    
+
     public static void closeTopComponentIfOpened(String strName) {
         for (int i = 0; i < 5; i++) {
             JComponent theOneToClose = TopComponentOperator.findTopComponent(strName, 0);
-            if(theOneToClose != null) {
+            if (theOneToClose != null) {
                 new TopComponentOperator(theOneToClose).close();
                 break;
             } else {
@@ -81,8 +80,8 @@ public class Helpers {
 
     public static void closeUMLWarningIfOpened() {
         for (int i = 0; i < 5; i++) {
-            JDialog theOneToClose = JDialogOperator.findJDialog("Platform Warning",true,true);
-            if(theOneToClose != null) {
+            JDialog theOneToClose = JDialogOperator.findJDialog("Platform Warning", true, true);
+            if (theOneToClose != null) {
                 new JDialogOperator(theOneToClose).close();
                 break;
             } else {
@@ -90,119 +89,129 @@ public class Helpers {
             }
         }
     }
-    
+
+    public static void closeMimeWarningIfOpened() {
+
+        JDialog theOneToClose = JDialogOperator.findJDialog("Warning", true, true);
+        if (theOneToClose != null) {
+            new JDialogOperator(theOneToClose).close();
+        } else {
+            pause(200);
+        }
+    }
+
     public static void recurseColumns(int column, Node node, SchemaMultiView opView, final int maxColumnIndex) {
         node.select();
-        
+
         System.out.println("path: " + node.getPath());
-/*
-        if (column < maxColumnIndex) {
-            JListOperator opList = opView.getColumnListOperator(column + 1);
-            Node nextColumnNode = opTree.getRootNode();
-            if (nextColumnNode != null) {
-                recurseColumns(column + 1, nextColumnNode, opView, maxColumnIndex);
-            }
-        }
- 
-        for (int i = 0; i < node.getChildren().length; i++) {
-            Node childNode = new Node(node, i);
-            recurseColumns(column, childNode, opView, maxColumnIndex);
-        }
- */
+    /*
+    if (column < maxColumnIndex) {
+    JListOperator opList = opView.getColumnListOperator(column + 1);
+    Node nextColumnNode = opTree.getRootNode();
+    if (nextColumnNode != null) {
+    recurseColumns(column + 1, nextColumnNode, opView, maxColumnIndex);
+    }
     }
     
+    for (int i = 0; i < node.getChildren().length; i++) {
+    Node childNode = new Node(node, i);
+    recurseColumns(column, childNode, opView, maxColumnIndex);
+    }
+     */
+    }
+
     public static void pause(int milliseconds) {
         System.out.println("Paused for " + milliseconds);
         try {
             Thread.currentThread().sleep(milliseconds);
         } catch (Exception e) {
-            
         }
     }
-    
+
     public static void recurseComponent(int level, Component component) {
-        
+
         JemmyProperties.getCurrentOutput().print("*");
         System.out.print("*");
-        
+
         for (int j = 0; j < level; j++) {
             JemmyProperties.getCurrentOutput().print("|");
             System.out.print("|");
         }
-        
+
         System.out.println("Name: " + component.getName() + ", Class: " + component.getClass());
         JemmyProperties.getCurrentOutput().printLine("Name: " + component.getName() + ", Class: " + component.getClass());
-        
+
 //        System.out.println("Component: " + component);
-        
+
         if (component instanceof Container) {
-            Component[] comps = ((Container)component).getComponents();
+            Component[] comps = ((Container) component).getComponents();
             for (int i = 0; i < comps.length; i++) {
-                recurseComponent(level+1, comps[i]);
+                recurseComponent(level + 1, comps[i]);
             }
         }
     }
-    
+
     public static JComponentOperator getComponent(ContainerOperator opContainer, final String strComponentClass) {
         return new JComponentOperator(opContainer,
                 new ComponentChooser() {
-            public boolean checkComponent(java.awt.Component comp) {
-                return comp.getClass().toString().equals("class " + strComponentClass);
-            }
-            
-            public String getDescription() {
-                return strComponentClass;
-            }
-        });
+
+                    public boolean checkComponent(java.awt.Component comp) {
+                        return comp.getClass().toString().equals("class " + strComponentClass);
+                    }
+
+                    public String getDescription() {
+                        return strComponentClass;
+                    }
+                });
     }
-    
+
     public static void waitNoEvent() {
         waitNoEvent(NO_EVENT_TIMEOUT);
     }
-    
+
     public static void waitNoEvent(int milliseconds) {
         et.waitNoEvent(milliseconds);
     }
-    
+
     public static JComponentOperator getComponentOperator(ContainerOperator opContainer, final String strComponentClass, final int index) {
         return getComponentOperator(opContainer, strComponentClass, index, 2000);
     }
-    
+
     public static JComponentOperator getComponentOperator(ContainerOperator opContainer, final String strComponentClass, final int index, final int timeout) {
-        
+
         Timeouts times = JemmyProperties.getCurrentTimeouts();
         long to = times.setTimeout(Helpers.WAIT_COMPONENT_TIMEOUT, timeout);
-        
+
         JComponentOperator opJComponent = null;
-        
+
         try {
             opJComponent = new JComponentOperator(opContainer,
                     new ComponentChooser() {
-                
-                public boolean checkComponent(java.awt.Component comp) {
-                    return comp.getClass().toString().equals("class " + strComponentClass);
-                }
-                
-                public String getDescription() {
-                    return strComponentClass;
-                }
-            }, index);
+
+                        public boolean checkComponent(java.awt.Component comp) {
+                            return comp.getClass().toString().equals("class " + strComponentClass);
+                        }
+
+                        public String getDescription() {
+                            return strComponentClass;
+                        }
+                    }, index);
         } catch (TimeoutExpiredException e) {
         } finally {
             times.setTimeout(Helpers.WAIT_COMPONENT_TIMEOUT, to);
         }
-        
+
         return opJComponent;
     }
-    
+
     public static void writeJemmyLog(String str) {
         JemmyProperties.getCurrentOutput().printLine(str);
     }
-    
+
     public static String getUnqualifiedName(String qualifiedName) {
-        return qualifiedName.substring(qualifiedName.lastIndexOf(":")+1);
+        return qualifiedName.substring(qualifiedName.lastIndexOf(":") + 1);
     }
-    
+
     public static String getFullTestName(String strName) {
         return strName.replaceAll(" |:|,|#", "_");
     }

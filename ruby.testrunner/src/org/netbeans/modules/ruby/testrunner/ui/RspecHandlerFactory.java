@@ -44,8 +44,8 @@ import org.netbeans.modules.ruby.platform.execution.OutputRecognizer.FilteredOut
 import org.netbeans.modules.ruby.platform.execution.OutputRecognizer.RecognizedOutput;
 
 /**
- * An output recognizer for parsing output of the test/unit runner script, 
- * <code>nb_test_mediator.rb</code>. Updates the test result UI.
+ * An output recognizer for parsing output of the rspec runner script, 
+ * <code>nb_rspec_mediator.rb</code>. Updates the test result UI.
  *
  * @author Erno Mononen
  */
@@ -58,6 +58,7 @@ public class RspecHandlerFactory {
         result.add(new SuiteFinishedHandler());
         result.add(new TestStartedHandler());
         result.add(new TestFailedHandler());
+        result.add(new TestPendingHandler());
         result.add(new TestFinishedHandler());
         return result;
     }
@@ -65,7 +66,7 @@ public class RspecHandlerFactory {
     static class TestFailedHandler extends TestRecognizerHandler {
 
         public TestFailedHandler() {
-            super(".*%TEST_FAILED%\\s(.*)\\stime=(\\d+\\.\\d+)\\s(.*)");
+            super(".*%TEST_FAILED%\\s(.*)\\stime=(\\d+\\.\\d+)\\s(.*)"); //NOI18N
         }
 
         @Override
@@ -90,7 +91,7 @@ public class RspecHandlerFactory {
     static class TestStartedHandler extends TestRecognizerHandler {
 
         public TestStartedHandler() {
-            super(".*%TEST_STARTED%\\s(.*)");
+            super(".*%TEST_STARTED%\\s(.*)"); //NOI18N
         }
 
         @Override
@@ -101,7 +102,7 @@ public class RspecHandlerFactory {
     static class TestFinishedHandler extends TestRecognizerHandler {
 
         public TestFinishedHandler() {
-            super(".*%TEST_FINISHED%\\s(.*)\\stime=(\\d+\\.\\d+)");
+            super(".*%TEST_FINISHED%\\s(.*)\\stime=(\\d+\\.\\d+)"); //NOI18N
         }
 
         @Override
@@ -110,6 +111,25 @@ public class RspecHandlerFactory {
             testcase.timeMillis = toMillis(matcher.group(2));
             testcase.className = session.getSuiteName();
             testcase.name = matcher.group(1);
+            session.addTestCase(testcase);
+        }
+    }
+
+    static class TestPendingHandler extends TestRecognizerHandler {
+
+        public TestPendingHandler() {
+            super(".*%TEST_PENDING%\\s(.*)\\stime=(\\d+\\.\\d+)\\s(.*)");
+        }
+
+        @Override
+        void updateUI( Manager manager, TestSession session) {
+            Report.Testcase testcase = new Report.Testcase();
+            testcase.timeMillis = toMillis(matcher.group(2));
+            testcase.className = session.getSuiteName();
+            testcase.name = matcher.group(1);
+            testcase.trouble = new Report.Trouble(false);
+            testcase.trouble.stackTrace = new String[]{matcher.group(3)};
+            testcase.setStatus(Status.PENDING);
             session.addTestCase(testcase);
         }
     }
