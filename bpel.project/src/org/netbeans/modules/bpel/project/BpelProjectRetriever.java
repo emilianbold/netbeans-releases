@@ -110,7 +110,7 @@ public class BpelProjectRetriever {
      * @param projectDirectory FileObject instance of project directory
      */
     public BpelProjectRetriever(FileObject projectDirectory) {
-        retrieveWrap.mProjectDirectoryPath = projectDirectory.getPath();
+        retrieveWrap.mProjectDirectoryPath = FileUtil.toFile(projectDirectory).getAbsolutePath();
         //mProjectDirectoryPath = projectDirectory.getPath();
     }
 
@@ -213,7 +213,7 @@ mProgressDisplay.displayStatus(NbBundle.getMessage( BpelProjectRetriever.class, 
                     mRetrieveToDirectory.mkdirs();
                 }
                 processSourceDir(sourceDirectory);
-                moveCachedDirs();
+                //moveCachedDirs();
                 displayStatus(NbBundle.getMessage( BpelProjectRetriever.class, "LBL_Populate_Catalog_Complete" ));
 
             }catch(Exception ex) {
@@ -454,7 +454,8 @@ mProgressDisplay.displayStatus(NbBundle.getMessage( BpelProjectRetriever.class, 
 
 
                                     Retriever.getDefault().retrieveResource(catalogFO,
-                                                                   FileUtil.normalizeFile(new File(CommandlineBpelProjectXmlCatalogProvider.getInstance().getRetrieverCatalogUri())).toURI(),
+                                                                   //FileUtil.normalizeFile(new File(CommandlineBpelProjectXmlCatalogProvider.getInstance().getRetrieverCatalogUri())).toURI(),
+                                            null,
                                                                             resourceURI);
 
                                } catch (Exception ex) {
@@ -503,7 +504,8 @@ mProgressDisplay.displayStatus(NbBundle.getMessage( BpelProjectRetriever.class, 
 
 
                                         Retriever.getDefault().retrieveResource(catalogFO,
-                                                                       FileUtil.normalizeFile(new File(CommandlineBpelProjectXmlCatalogProvider.getInstance().getRetrieverCatalogUri())).toURI(),
+                                                                       //FileUtil.normalizeFile(new File(CommandlineBpelProjectXmlCatalogProvider.getInstance().getRetrieverCatalogUri())).toURI(),
+                                                null,
                                                                                 resourceURI);
 
                                    } catch (Exception ex) {
@@ -567,7 +569,8 @@ mProgressDisplay.displayStatus(NbBundle.getMessage( BpelProjectRetriever.class, 
                                displayStatus(importLocationLowerCase);
 
                                Retriever.getDefault().retrieveResource(catalogFO,
-                                                                       FileUtil.normalizeFile(new File(CommandlineBpelProjectXmlCatalogProvider.getInstance().getRetrieverCatalogUri())).toURI(),
+                                                                       //FileUtil.normalizeFile(new File(CommandlineBpelProjectXmlCatalogProvider.getInstance().getRetrieverCatalogUri())).toURI(),
+                                                                       null,
                                                                        resourceURI);
 
                            } catch (Exception ex) {
@@ -630,7 +633,8 @@ mProgressDisplay.displayStatus(NbBundle.getMessage( BpelProjectRetriever.class, 
                                    displayStatus(importLocationLowerCase);
 
                                    Retriever.getDefault().retrieveResource(catalogFO,
-                                                                           FileUtil.normalizeFile(new File(CommandlineBpelProjectXmlCatalogProvider.getInstance().getRetrieverCatalogUri())).toURI(),
+                                                                           //FileUtil.normalizeFile(new File(CommandlineBpelProjectXmlCatalogProvider.getInstance().getRetrieverCatalogUri())).toURI(),
+                                                                            null,
                                                                            resourceURI);
 
                                } catch (Exception ex) {
