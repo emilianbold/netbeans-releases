@@ -40,16 +40,27 @@
 package org.netbeans.modules.cnd.callgraph.cndimpl;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.netbeans.modules.cnd.api.model.CsmClass;
+import org.netbeans.modules.cnd.api.model.CsmClassifier;
+import org.netbeans.modules.cnd.api.model.CsmCompoundClassifier;
+import org.netbeans.modules.cnd.api.model.CsmDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmFriend;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
+import org.netbeans.modules.cnd.api.model.CsmMember;
+import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmScope;
+import org.netbeans.modules.cnd.api.model.CsmTypedef;
+import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.deep.CsmCondition;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
 import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
@@ -71,16 +82,19 @@ public class CallModelImpl implements CallModel {
     private CsmReferenceRepository repository;
     private CsmFileReferences references;
     private CsmProject project;
-    private CsmFunction root;
+    private String name;
+    private FunctionUIN uin;
     
     public CallModelImpl(CsmProject project, CsmFunction root){
         repository = CsmReferenceRepository.getDefault();
         references = CsmFileReferences.getDefault();
         this.project = project;
-        this.root = root;
+        uin = new FunctionUIN(project, root);
+        name = root.getName().toString();
     }
 
     public Function getRoot() {
+        CsmFunction root = uin.getFunction();
         if (root != null) {
             return new FunctionImpl(root);
         }
@@ -88,18 +102,10 @@ public class CallModelImpl implements CallModel {
     }
 
     public String getName() {
-        if (root != null) {
-            return root.getName().toString();
-        }
-        return ""; // NOI18N
+        return name;
     }
 
     public void refresh() {
-        if (root != null) {
-            if (!project.isValid() || !root.getContainingFile().isValid()){
-                root = null;
-            }
-        }
     }
     
     public List<Call> getCallers(Function declaration) {
@@ -195,6 +201,90 @@ public class CallModelImpl implements CallModel {
             return res;
         } else {
             return Collections.<Call>emptyList();
+        }
+    }
+    
+    private static class FunctionUIN {
+
+        private CsmProject project;
+        private CharSequence functionUin;
+        private CsmUID<CsmFile> fileUid;
+
+        private FunctionUIN(CsmProject project, CsmFunction root) {
+            this.project = project;
+            functionUin = root.getUniqueName();
+            fileUid = root.getContainingFile().getUID();
+        }
+
+        private CsmFunction getFunction() {
+            if (!project.isValid()) {
+                return null;
+            }
+            CsmFunction root = (CsmFunction) project.findDeclaration(functionUin);
+            if (root != null) {
+                return root;
+            }
+            CsmFile file = fileUid.getObject();
+            if (!file.isValid()) {
+                return null;
+            }
+            for (CsmDeclaration d : file.getDeclarations()) {
+                root = findFunction(d);
+                if (root != null){
+                    return root;
+                }
+            }
+            return null;
+        }
+
+        private CsmFunction findFunction(CsmDeclaration element) {
+            if (CsmKindUtilities.isTypedef(element)) {
+                CsmTypedef def = (CsmTypedef) element;
+                if (def.isTypeUnnamed()) {
+                    CsmClassifier cls = def.getType().getClassifier();
+                    if (cls != null && cls.getName().length() == 0 &&
+                            (cls instanceof CsmCompoundClassifier)) {
+                        return findFunction((CsmCompoundClassifier) cls);
+                    }
+                }
+                return null;
+            } else if (CsmKindUtilities.isClassifier(element)) {
+                String name = ((CsmClassifier) element).getName().toString();
+                if (name.length() == 0 && (element instanceof CsmCompoundClassifier)) {
+                    Collection list = ((CsmCompoundClassifier) element).getEnclosingTypedefs();
+                    if (list.size() > 0) {
+                        return null;
+                    }
+                }
+                if (CsmKindUtilities.isClass(element)) {
+                    CsmClass cls = (CsmClass) element;
+                    for (CsmMember m : cls.getMembers()) {
+                        CsmFunction res = findFunction(m);
+                        if (res != null) {
+                            return res;
+                        }
+                    }
+                    for (CsmFriend m : cls.getFriends()) {
+                        CsmFunction res = findFunction(m);
+                        if (res != null) {
+                            return res;
+                        }
+                    }
+                }
+                return null;
+            } else if (CsmKindUtilities.isNamespaceDefinition(element)) {
+                for (CsmDeclaration d : ((CsmNamespaceDefinition) element).getDeclarations()) {
+                    CsmFunction res = findFunction(d);
+                    if (res != null) {
+                        return res;
+                    }
+                }
+            } else if (CsmKindUtilities.isFunction(element)) {
+                if (element.getUniqueName().equals(functionUin)) {
+                    return (CsmFunction) element;
+                }
+            }
+            return null;
         }
     }
 }
