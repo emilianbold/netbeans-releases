@@ -280,11 +280,13 @@ public class Occurrences {
         }
         
         public String getWhereUsedMessage(){
-            return NbBundle.getMessage(Occurrences.class, "MSG_ConverterClass_WhereUsed", getElementText()); //NOI18N
+            return NbBundle.getMessage(Occurrences.class, "MSG_ConverterClass_WhereUsed", //NOI18N
+                    new Object[] { converter.getConverterId(), getElementText()});
         }
         
         public String getChangeMessage(){
-            return NbBundle.getMessage(Occurrences.class, "MSG_ConverterClass_Rename", getElementText()); //NOI18N
+            return NbBundle.getMessage(Occurrences.class, "MSG_ConverterClass_Rename", //NOI18N
+                    new Object[] { converter.getConverterId(), getElementText()});
         }
         
         public void performSafeDelete() {
@@ -309,8 +311,8 @@ public class Occurrences {
         }
         
         public String getSafeDeleteMessage() {
-            return NbBundle.getMessage(Occurrences.class, "MSG_Converter_SafeDelete",  //NOI18N
-                    new Object[] { getElementText()});
+            return NbBundle.getMessage(Occurrences.class, "MSG_Converter_SafeDelete", //NOI18N
+                    new Object[] { converter.getConverterId(), getElementText()});
         }
         
         private void changeConverterClass(String oldClass, String newClass){
@@ -377,11 +379,13 @@ public class Occurrences {
         }
         
         public String getWhereUsedMessage(){
-            return NbBundle.getMessage(Occurrences.class, "MSG_ConverterForClass_WhereUsed", getElementText()); //NOI18N
+            return NbBundle.getMessage(Occurrences.class, "MSG_ConverterForClass_WhereUsed", //NOI18N
+                    new Object[] { converter.getConverterId(), getElementText()});
         }
         
         public String getChangeMessage(){
-            return NbBundle.getMessage(Occurrences.class, "MSG_ConverterForClass_Rename", getElementText()); //NOI18N
+            return NbBundle.getMessage(Occurrences.class, "MSG_ConverterForClass_Rename", //NOI18N
+                    new Object[] { converter.getConverterId(), getElementText()});
         }
         
         public void performSafeDelete() {
@@ -402,14 +406,12 @@ public class Occurrences {
             FacesConfig facesConfig = ConfigurationUtils.getConfigModel(config, true).getRootComponent();
             facesConfig.getModel().startTransaction();
             facesConfig.addConverter(copy);
-            // XXX why this is twice here?
-            //facesConfig.addConverter(converter);
             facesConfig.getModel().endTransaction();
         }
         
         public String getSafeDeleteMessage() {
-            return NbBundle.getMessage(Occurrences.class, "MSG_Converter_SafeDelete",  //NOI18N
-                    new Object[] { getElementText()});
+            return NbBundle.getMessage(Occurrences.class, "MSG_Converter_SafeDelete", //NOI18N
+                    new Object[] { converter.getConverterId(), getElementText()});
         }
         
         private void changeConverterForClass(String oldClass, String newClass){
