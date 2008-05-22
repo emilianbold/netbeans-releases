@@ -64,7 +64,7 @@ public class InterfaceWidget extends UMLClassWidget
         
         addToLookup(initializeContextPalette());
         addToLookup(new DefaultWidgetContext("Class"));
-        addToLookup(new ClassifierSelectAction());
+//        addToLookup(new ClassifierSelectAction());
         
     }
 
