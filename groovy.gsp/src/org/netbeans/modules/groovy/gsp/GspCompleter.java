@@ -31,9 +31,9 @@ package org.netbeans.modules.groovy.gsp;
 import java.io.IOException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.groovy.editor.CodeCompleter;
 import org.netbeans.modules.groovy.gsp.lexer.api.GspTokenId;
 import org.netbeans.modules.gsf.api.CodeCompletionContext;
@@ -41,11 +41,12 @@ import org.netbeans.modules.gsf.api.CodeCompletionResult;
 import org.openide.util.Exceptions;
 
 /**
- * RHTML code completer
+ * GSP code completer
  * 
  * @author Tor Norbye
+ * @author Martin Adamek
  */
-public class GsplCompleter extends CodeCompleter {
+public class GspCompleter extends CodeCompleter {
     /**
      *  @todo Pass in the completion type? (Smart versus documentation etc.)
      *  @todo Pass in the line offsets? Nah, just make the completion provider figure those out.
@@ -58,10 +59,6 @@ public class GsplCompleter extends CodeCompleter {
             Document doc = info.getDocument();
             if (isWithinGroovy(doc, caretOffset)) {
                 return super.complete(context);
-            }
-            else {
-                //write code for gsp tag completion - gopal 
-                //simply create a list of gsp tags and return the same temporarily.
             }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);

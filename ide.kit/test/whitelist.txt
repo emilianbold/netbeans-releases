@@ -485,6 +485,7 @@ java.security.Permissions
 java.security.PrivilegedActionException
 java.security.PrivilegedExceptionAction
 java.security.ProtectionDomain
+java.sql.Connection
 java.sql.DatabaseMetaData
 java.sql.Driver
 java.sql.SQLException
@@ -739,6 +740,7 @@ javax.swing.plaf.TextUI
 javax.swing.plaf.ToolBarUI
 javax.swing.plaf.UIResource
 javax.swing.plaf.basic.BasicCheckBoxMenuItemUI
+javax.swing.plaf.basic.BasicEditorPaneUI
 javax.swing.plaf.basic.BasicListUI
 javax.swing.plaf.basic.BasicMenuItemUI
 javax.swing.plaf.basic.BasicMenuUI
@@ -748,6 +750,7 @@ javax.swing.plaf.basic.BasicPopupMenuUI
 javax.swing.plaf.basic.BasicRadioButtonMenuItemUI
 javax.swing.plaf.basic.BasicScrollPaneUI
 javax.swing.plaf.basic.BasicTextUI
+javax.swing.plaf.basic.BasicToolBarSeparatorUI
 javax.swing.plaf.basic.BasicViewportUI
 javax.swing.plaf.metal.MetalBorders$ToolBarBorder
 javax.swing.plaf.metal.MetalButtonUI
@@ -2208,6 +2211,7 @@ org.netbeans.lib.ddl.DatabaseProductNotFoundException
 org.netbeans.lib.ddl.DatabaseSpecification
 org.netbeans.lib.ddl.DatabaseSpecificationFactory
 org.netbeans.lib.ddl.DriverSpecificationFactory
+org.netbeans.lib.ddl.impl.DriverSpecification
 org.netbeans.lib.ddl.impl.SpecificationFactory
 org.netbeans.lib.ddl.impl.SpecificationParser
 org.netbeans.lib.ddl.util.PListReader
@@ -2574,6 +2578,7 @@ org.netbeans.modules.bpel.nodes.actions.ShowBpelMapperAction
 org.netbeans.modules.bpel.nodes.refactoring.FindUsagesActionImplementationProvider
 org.netbeans.modules.bpel.palette.SoaPaletteMenu
 org.netbeans.modules.bpel.project.BpelproProjectType
+org.netbeans.modules.bpel.validation.action.FixImportAction
 org.netbeans.modules.cnd.CndModule
 org.netbeans.modules.cnd.api.model.CsmClassifier
 org.netbeans.modules.cnd.api.model.CsmDeclaration
@@ -2603,6 +2608,8 @@ org.netbeans.modules.cnd.api.model.xref.CsmReference
 org.netbeans.modules.cnd.apt.debug.APTTraceFlags
 org.netbeans.modules.cnd.apt.debug.DebugUtils
 org.netbeans.modules.cnd.apt.support.APTFileBuffer
+org.netbeans.modules.cnd.callgraph.impl.CallGraphAction
+org.netbeans.modules.cnd.callgraph.impl.CallGraphTopComponent
 org.netbeans.modules.cnd.classview.ClassViewTopComponent
 org.netbeans.modules.cnd.classview.actions.SelectInClassesAction
 org.netbeans.modules.cnd.classview.actions.ShowHideClassViewAction
@@ -2712,6 +2719,7 @@ org.netbeans.modules.cnd.modelimpl.platform.CppUpToDateStatusTaskFactory
 org.netbeans.modules.cnd.modelimpl.platform.ModelSupport
 org.netbeans.modules.cnd.modelimpl.platform.ModelSupport$1
 org.netbeans.modules.cnd.modelimpl.platform.ModelSupport$1$1
+org.netbeans.modules.cnd.modelimpl.platform.ModelSupport$2
 org.netbeans.modules.cnd.modelimpl.platform.ModelSupport$ModifiedObjectsChangeListener
 org.netbeans.modules.cnd.modelimpl.util.WeakList
 org.netbeans.modules.cnd.modelutil.CsmUtilities
@@ -2729,6 +2737,7 @@ org.netbeans.modules.cnd.refactoring.ui.RefactoringActionsProvider$NodeToElement
 org.netbeans.modules.cnd.refactoring.ui.RefactoringActionsProvider$TextComponentTask
 org.netbeans.modules.cnd.repository.spi.Persistent
 org.netbeans.modules.cnd.repository.support.SelfPersistent
+org.netbeans.modules.cnd.utils.CndUtils
 org.netbeans.modules.compapp.casaeditor.CasaDataLoader
 org.netbeans.modules.compapp.casaeditor.CasaDataObject
 org.netbeans.modules.compapp.projects.base.IcanproConstants
@@ -2751,6 +2760,7 @@ org.netbeans.modules.db.explorer.DatabaseConnectionConvertor
 org.netbeans.modules.db.explorer.DatabaseConnectionConvertor$AtomicWriter
 org.netbeans.modules.db.explorer.DatabaseConnectionConvertor$Handler
 org.netbeans.modules.db.explorer.DatabaseConnectionConvertor$PCL
+org.netbeans.modules.db.explorer.DatabaseDriver
 org.netbeans.modules.db.explorer.DatabaseOption
 org.netbeans.modules.db.explorer.DatabaseOptionBeanInfo
 org.netbeans.modules.db.explorer.DatabasePropertySupport
@@ -3779,6 +3789,7 @@ org.netbeans.modules.mercurial.HgException
 org.netbeans.modules.mercurial.HgModuleConfig
 org.netbeans.modules.mercurial.HgProgressSupport
 org.netbeans.modules.mercurial.Mercurial
+org.netbeans.modules.mercurial.Mercurial$1
 org.netbeans.modules.mercurial.MercurialAnnotator
 org.netbeans.modules.mercurial.MercurialAnnotator$ScanTask
 org.netbeans.modules.mercurial.MercurialInterceptor
@@ -4309,7 +4320,9 @@ org.netbeans.modules.subversion.client.SvnClientFactory
 org.netbeans.modules.subversion.client.SvnClientFactory$1
 org.netbeans.modules.subversion.client.SvnClientFactory$2
 org.netbeans.modules.subversion.client.SvnClientFactory$ClientAdapterFactory
+org.netbeans.modules.subversion.client.SvnClientInvocationHandler
 org.netbeans.modules.subversion.client.SvnClientRefreshHandler
+org.netbeans.modules.subversion.client.SvnCmdLineClientInvocationHandler
 org.netbeans.modules.subversion.client.SvnProgressSupport
 org.netbeans.modules.subversion.config.SvnConfigFiles
 org.netbeans.modules.subversion.config.SvnConfigFiles$ConfigIniFilePatcher
@@ -4326,6 +4339,8 @@ org.netbeans.modules.subversion.ui.blame.LinesReader
 org.netbeans.modules.subversion.ui.status.OpenVersioningAction
 org.netbeans.modules.subversion.ui.status.ShowAllChangesAction
 org.netbeans.modules.subversion.util.FileUtils
+org.netbeans.modules.subversion.util.SvnUtils
+org.netbeans.modules.subversion.util.SvnUtils$1
 org.netbeans.modules.swingapp.ActionRescanJavaSourceTaskFactoryImpl
 org.netbeans.modules.swingapp.actions.ShowGlobalActionTableAction
 org.netbeans.modules.tasklist.ui.TaskListAction
@@ -4731,6 +4746,12 @@ org.netbeans.modules.vmd.midp.java.MidpValidatorWarmUp
 org.netbeans.modules.vmd.midp.palette.MidpPaletteManagerAction
 org.netbeans.modules.vmd.palette.PaletteItemDataLoader
 org.netbeans.modules.vmd.palette.PaletteItemDataObject
+org.netbeans.modules.web.client.javascript.debugger.actions.NbJSDebugURLAction
+org.netbeans.modules.web.client.javascript.debugger.filesystem.URLFileObject
+org.netbeans.modules.web.client.javascript.debugger.filesystem.URLFileObjectFactory
+org.netbeans.modules.web.client.javascript.debugger.filesystem.URLFileObjectMapper
+org.netbeans.modules.web.client.javascript.debugger.ui.NbJSEditorUtil
+org.netbeans.modules.web.client.javascript.debugger.ui.breakpoints.NbJSBreakpointActionProvider
 org.netbeans.modules.web.core.EditQueryStringAction
 org.netbeans.modules.web.core.JspEditorWarmUpTask
 org.netbeans.modules.web.core.QueryStringCookie
@@ -5093,6 +5114,7 @@ org.netbeans.spi.sendopts.Option
 org.netbeans.spi.sendopts.Option$1
 org.netbeans.spi.sendopts.OptionProcessor
 org.netbeans.spi.settings.Saver
+org.netbeans.spi.viewmodel.Models$ActionPerformer
 org.netbeans.swing.dirchooser.DelegatingChooserUI
 org.netbeans.swing.dirchooser.Module
 org.netbeans.swing.dirchooser.Module$1

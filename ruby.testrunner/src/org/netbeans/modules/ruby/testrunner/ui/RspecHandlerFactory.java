@@ -44,8 +44,8 @@ import org.netbeans.modules.ruby.platform.execution.OutputRecognizer.FilteredOut
 import org.netbeans.modules.ruby.platform.execution.OutputRecognizer.RecognizedOutput;
 
 /**
- * An output recognizer for parsing output of the test/unit runner script, 
- * <code>nb_test_mediator.rb</code>. Updates the test result UI.
+ * An output recognizer for parsing output of the rspec runner script, 
+ * <code>nb_rspec_mediator.rb</code>. Updates the test result UI.
  *
  * @author Erno Mononen
  */
@@ -66,7 +66,7 @@ public class RspecHandlerFactory {
     static class TestFailedHandler extends TestRecognizerHandler {
 
         public TestFailedHandler() {
-            super(".*%TEST_FAILED%\\s(.*)\\stime=(\\d+\\.\\d+)\\s(.*)");
+            super(".*%TEST_FAILED%\\s(.*)\\stime=(\\d+\\.\\d+)\\s(.*)"); //NOI18N
         }
 
         @Override
@@ -91,7 +91,7 @@ public class RspecHandlerFactory {
     static class TestStartedHandler extends TestRecognizerHandler {
 
         public TestStartedHandler() {
-            super(".*%TEST_STARTED%\\s(.*)");
+            super(".*%TEST_STARTED%\\s(.*)"); //NOI18N
         }
 
         @Override
@@ -102,7 +102,7 @@ public class RspecHandlerFactory {
     static class TestFinishedHandler extends TestRecognizerHandler {
 
         public TestFinishedHandler() {
-            super(".*%TEST_FINISHED%\\s(.*)\\stime=(\\d+\\.\\d+)");
+            super(".*%TEST_FINISHED%\\s(.*)\\stime=(\\d+\\.\\d+)"); //NOI18N
         }
 
         @Override

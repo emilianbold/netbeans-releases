@@ -516,14 +516,16 @@ public class VerifyLibsAndLicenses extends Task {
         }
         File root = dir;
         String path = "";
-        File hgignore;
-        while (!(hgignore = new File(root, ".hgignore")).isFile()) {
+        File hgignore = null;
+        while (root != null && !(hgignore = new File(root, ".hgignore")).isFile()) {
             path = root.getName() + "/" + path;
             root = root.getParentFile();
         }
         List<Pattern> ignoredPatterns;
         synchronized (hgignores) {
-            if (hgignores.containsKey(root)) {
+            if (root == null) {
+                ignoredPatterns = Collections.emptyList();
+            } else if (hgignores.containsKey(root)) {
                 ignoredPatterns = hgignores.get(root);
             } else {
                 ignoredPatterns = new ArrayList<Pattern>();
