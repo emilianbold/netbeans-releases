@@ -77,12 +77,12 @@ import org.openide.util.actions.Presenter;
  * @author Alexander Simon
  */
 public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, HelpCtx.Provider  {
-    private static final boolean SHOW_GRAPH = Boolean.getBoolean("cnd.callgraph.showgraph");
 
     private ExplorerManager explorerManager = new ExplorerManager();
     private AbstractNode root;
     private Action[] actions;
     private CallModel model;
+    private boolean showGraph;
     private boolean isCalls;
     public static final String IS_CALLS = "CallGraphIsCalls"; // NOI18N
 
@@ -91,12 +91,13 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
     private static double dividerLocation = 0.5;
     
     /** Creates new form CallGraphPanel */
-    public CallGraphPanel() {
+    public CallGraphPanel(boolean showGraph) {
         initComponents();
         isCalls = NbPreferences.forModule(CallGraphPanel.class).getBoolean(IS_CALLS, true);
         getTreeView().setRootVisible(false);
         Children.Array children = new Children.SortedArray();
-        if (SHOW_GRAPH) {
+        this.showGraph = showGraph;
+        if (showGraph) {
             scene = new CallGraphScene();
             actions = new Action[]{new RefreshAction(),
                                    null, new WhoIsCalledAction(), new WhoCallsAction(),
@@ -114,7 +115,7 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
             }
         };
         getExplorerManager().setRootContext(root);
-        if (SHOW_GRAPH) {
+        if (showGraph) {
             addComponentListener(new ComponentListener() {
                 public void componentResized(ComponentEvent e) {
                     jSplitPane1.setDividerLocation(dividerLocation);
@@ -256,7 +257,7 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
     public void setModel(CallModel model) {
         this.model = model;
         //this.isCalls = model.isCalls();
-        if (SHOW_GRAPH) {
+        if (showGraph) {
             scene.setModel(model);
         }
         updateButtons();
@@ -264,10 +265,9 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
     }
 
     private synchronized void update() {
-        if (SHOW_GRAPH) {
+        if (showGraph) {
             scene.clean();
         }
-        model.refresh();
         final Function function = model.getRoot();
         if (function != null){
             final Children children = root.getChildren();

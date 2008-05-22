@@ -48,6 +48,7 @@ import groovyjarjarantlr.LexerSharedInputState;
 import groovyjarjarantlr.TokenStreamException;
 import java.io.IOException;
 import java.io.Reader;
+import java.util.ArrayList;
 import java.util.logging.Logger;
 import org.codehaus.groovy.antlr.parser.GroovyRecognizer;
 import org.codehaus.groovy.antlr.parser.GroovyTokenTypes;
@@ -85,10 +86,6 @@ public final class GroovyLexer implements Lexer<GroovyTokenId> {
     
     private void restart(LexerRestartInfo<GroovyTokenId> info) {
         
-        if (info.state() != null) {
-            scanner.setState((Integer) info.state());
-        }
-        
         tokenFactory = info.tokenFactory();
         this.lexerInput = info.input();
 
@@ -101,6 +98,7 @@ public final class GroovyLexer implements Lexer<GroovyTokenId> {
         if (inputState != null) {
             scanner.resetText();
         }
+        scanner.setState((State) info.state());
     }
 
     private void scannerConsumeChar() {
@@ -235,18 +233,71 @@ public final class GroovyLexer implements Lexer<GroovyTokenId> {
         }
     }
 
+    /**
+     * Thin wrapper around lexer to have acces to internal state of lexer itself
+     */
+    @SuppressWarnings("unchecked")
     private static class DelegateLexer extends org.codehaus.groovy.antlr.parser.GroovyLexer {
 
         public DelegateLexer(LexerSharedInputState state) {
             super(state);
         }
         
-        public int getState() {
-            return stringCtorState;
+        public State getState() {
+            if (stringCtorState > 0 || !parenLevelStack.isEmpty()) {
+                return new State(stringCtorState, parenLevelStack);
+            }
+            return null;
         }
         
-        public void setState(int state) {
-            stringCtorState = state;
+        public void setState(State d) {
+            if (d != null) {
+                stringCtorState = d.stringCtorState;
+                parenLevelStack = new ArrayList(d.parenLevelStack);
+            }
+        }
+        
+    }
+    
+    /**
+     * Holds state of lexer, which is needed to recover in incremental parsing
+     * in expressions used in GStrings
+     */
+    @SuppressWarnings("unchecked")
+    private static class State {
+        
+        private final int stringCtorState;
+        private final ArrayList parenLevelStack;
+
+        public State(int stringCtorState, ArrayList parenLevelStack) {
+            this.stringCtorState = stringCtorState;
+            this.parenLevelStack = new ArrayList(parenLevelStack);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final State other = (State) obj;
+            if (this.stringCtorState != other.stringCtorState) {
+                return false;
+            }
+            if (this.parenLevelStack == null || !this.parenLevelStack.equals(other.parenLevelStack)) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 5;
+            hash = 67 * hash + this.stringCtorState;
+            hash = 67 * hash + (this.parenLevelStack != null ? this.parenLevelStack.hashCode() : 0);
+            return hash;
         }
         
     }
