@@ -48,6 +48,7 @@ import org.netbeans.modules.uml.util.DummyCorePreference;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
+import org.openide.cookies.SaveCookie;
 import org.openide.cookies.ViewCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObjectExistsException;
@@ -90,7 +91,7 @@ public class UMLDiagramDataObject extends MultiDataObject {
     }
 
     public void addSaveCookie(GraphScene scene) {
-        Cookie saveCookie = getCookie(SaveDiagram.class);
+        Cookie saveCookie = getCookie(SaveCookie.class);
         if ( saveCookie == null)  {
             CookieSet cookies = getCookieSet();
             cookies.add(new SaveDiagram(scene, diagFO));
@@ -98,7 +99,7 @@ public class UMLDiagramDataObject extends MultiDataObject {
     }
 
     public void removeSaveCookie() {
-        Cookie saveCookie = getCookie(SaveDiagram.class);
+        Cookie saveCookie = getCookie(SaveCookie.class);
         if ( saveCookie != null) {
             CookieSet cookies = getCookieSet();
             cookies.remove(saveCookie);
@@ -117,7 +118,7 @@ public class UMLDiagramDataObject extends MultiDataObject {
             removeSaveCookie();
         }
     }
-    
+      
     public FileObject getDiagramFile() {
         return diagFO;
     }

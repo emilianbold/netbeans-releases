@@ -72,7 +72,7 @@ public class SaveDiagram implements SaveCookie {
         //Remove the save cookie    
         DataObject dobj = DataObject.find(fileObj);
         if (dobj instanceof UMLDiagramDataObject) {
-            ((UMLDiagramDataObject)dobj).setDirty(false, null);
+            ((UMLDiagramDataObject)dobj).setDirty(false, scene);
         }
          System.out.println(" !!!!!!!!!!!! END Saving... !!!!!!!!!!!!!!!!!!");
     }

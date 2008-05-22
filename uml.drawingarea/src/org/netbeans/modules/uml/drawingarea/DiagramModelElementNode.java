@@ -115,7 +115,8 @@ public class DiagramModelElementNode extends UMLModelElementNode
     public void addSaveCookie()
     {
         Cookie cookie = dataObject.getCookie(SaveCookie.class);
-        lookupContent.add(cookie);
+        if (lookupContent != null && cookie != null)
+            lookupContent.add(cookie);
     }
 
     public void removeSaveCookie()
