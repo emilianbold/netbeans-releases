@@ -85,7 +85,7 @@
 
     <target name="test-1">
         <!-- assign -->
-        <antcall target="do-test-jbi"><param name="dir" value="assign/ActivateBilling_Simple"/></antcall>
+        <!-- antcall target="do-test-jbi"><param name="dir" value="assign/ActivateBilling_Simple"/></antcall -->
         <antcall target="do-test-jbi"><param name="dir" value="assign/AssignBpel"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="assign/AssignNamespaces"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="assign/AtomicAssign"/></antcall>
@@ -94,7 +94,7 @@
         <antcall target="do-test-jbi"><param name="dir" value="assign/MessageWithNoParts"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="assign/predicates"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="assign/VariableAssignments"/></antcall>
-        <antcall target="do-test-jbi"><param name="dir" value="assign/virtualassignBpel"/></antcall>
+        <!-- antcall target="do-test-jbi"><param name="dir" value="assign/virtualassignBpel"/></antcall -->
     </target>
         
     <target name="test-2">
@@ -217,7 +217,7 @@
         <antcall target="do-test-jbi"><param name="dir" value="pick/PickBpel"/></antcall>
 
         <!-- repeatuntil -->
-        <antcall target="do-test-jbi"><param name="dir" value="repeatuntil/RepeatUntilBpel"/></antcall>
+        <!-- antcall target="do-test-jbi"><param name="dir" value="repeatuntil/RepeatUntilBpel"/></antcall -->
 
         <!-- rethrow -->
         <antcall target="do-test-jbi"><param name="dir" value="rethrow/Rethrow"/></antcall>
@@ -231,11 +231,11 @@
         <antcall target="do-test-jbi"><param name="dir" value="samples/SynchronousSample"/></antcall>
 
         <!-- scalability -->
-        <antcall target="do-test-jbi"><param name="dir" value="scalability/ScalabilityBpel"/></antcall>
+        <!-- antcall target="do-test-jbi"><param name="dir" value="scalability/ScalabilityBpel"/></antcall -->
         <antcall target="do-test-jbi"><param name="dir" value="scalability/Test2/ScalabilityTest2BP"/></antcall>
 
         <!-- scenarios -->
-        <antcall target="do-test-jbi"><param name="dir" value="scenarios/CandidateSelection/SelectionProcess"/></antcall>
+        <!-- antcall target="do-test-jbi"><param name="dir" value="scenarios/CandidateSelection/SelectionProcess"/></antcall -->
 
         <!-- SchemaElemDecl -->
         <antcall target="do-test-jbi"><param name="dir" value="SchemaElemDecl/BPwithElemRef"/></antcall>
