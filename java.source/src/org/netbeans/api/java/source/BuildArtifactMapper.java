@@ -38,43 +38,32 @@
  */
 
 package org.netbeans.api.java.source;
+
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
-import java.util.EventObject;
-import java.util.Collection;
+import org.netbeans.modules.java.source.usages.BuildArtifactMapperImpl;
 
 /**
  *
  * @author lahvac
  */
-public interface ExtendedClassIndexListener extends ClassIndexListener {
+public class BuildArtifactMapper {
 
-    public void classCacheUpdated(ClassCacheEvent evt);
-    
-    public static final class ClassCacheEvent extends EventObject {
-
-        private File cacheRoot;
-        private Collection<File> deletedClassFiles;
-        private Collection<File> updatedClassFiles;
-
-        public ClassCacheEvent(Object source, File cacheRoot, Collection<File> deletedClassFiles, Collection<File> updatedClassFiles) {
-            super(source);
-            this.cacheRoot = cacheRoot;
-            this.deletedClassFiles = deletedClassFiles;
-            this.updatedClassFiles = updatedClassFiles;
-        }
-
-        public Collection<File> getDeletedClassFiles() {
-            return deletedClassFiles;
-        }
-
-        public File getRoot() {
-            return cacheRoot;
-        }
-
-        public Collection<File> getUpdatedClassFiles() {
-            return updatedClassFiles;
-        }
-        
+    public static void map(URL sourceRoot, File targetRoot) {
+        map(sourceRoot, targetRoot, null);
     }
+    
+    public static void map(URL sourceRoot, File targetRoot, ArtifactsUpdated listener) {
+        BuildArtifactMapperImpl.map(sourceRoot, targetRoot, listener);
+    }
+    
+    public static boolean ensureBuilt(URL sourceRoot) throws IOException {
+        return BuildArtifactMapperImpl.ensureBuilt(sourceRoot);
+    }
+    
+    public static interface ArtifactsUpdated {
+        public void artifactsUpdated(Iterable<File> artifacts);
+    }
+    
 }

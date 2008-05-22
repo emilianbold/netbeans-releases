@@ -2104,7 +2104,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 uqImpl.typesEvent(_at.isEmpty() ? null : new ClassIndexImplEvent(uqImpl, _at),
                         _rt.isEmpty() ? null : new ClassIndexImplEvent (uqImpl,_rt),
                         added.isEmpty() ? null : new ClassIndexImplEvent (uqImpl,added));
-                uqImpl.classCacheUpdated(classCache, removedFiles, addedFiles);
+                BuildArtifactMapperImpl.classCacheUpdated(root, classCache, removedFiles, addedFiles);
             }            
         }
         
@@ -2344,7 +2344,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         uqImpl.typesEvent(_at.isEmpty() ? null : new ClassIndexImplEvent(uqImpl, _at),
                                 _rt.isEmpty() ? null : new ClassIndexImplEvent(uqImpl,_rt), 
                                 added.isEmpty() ? null : new ClassIndexImplEvent(uqImpl,added));                
-                        uqImpl.classCacheUpdated(classCache, removedFiles, addedFiles);
+                        BuildArtifactMapperImpl.classCacheUpdated(root, classCache, removedFiles, addedFiles);
                     }
                 } catch (OutputFileManager.InvalidSourcePath e) {
                     return ;

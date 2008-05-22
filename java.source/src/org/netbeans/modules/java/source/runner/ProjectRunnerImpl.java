@@ -53,9 +53,11 @@ import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.ClassPath.Entry;
 import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.queries.BinaryForSourceQuery;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
-import org.netbeans.modules.java.source.usages.Index;
+import org.netbeans.api.java.source.BuildArtifactMapper;
 import org.netbeans.spi.java.project.runner.ProjectRunnerImplementation;
+import org.openide.LifecycleManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
@@ -73,12 +75,8 @@ public class ProjectRunnerImpl implements ProjectRunnerImplementation {
     private static final Logger LOG = Logger.getLogger(ProjectRunnerImpl.class.getName());
 
     public void run(JavaPlatform p, Properties props, FileObject toRun) throws IOException {
-        FileObject java = p.findTool("java");
-        File javaFile = java != null ? FileUtil.toFile(java) : null;
-        
-        if (javaFile == null) {
-            throw new IOException();
-        }
+        LifecycleManager.getDefault().saveAll();
+        File javaFile = findJavaTool(p);
         
         String jvmArgs = props.getProperty("run.jvmargs");
         String args = props.getProperty("application.args");
@@ -88,18 +86,91 @@ public class ProjectRunnerImpl implements ProjectRunnerImplementation {
         
         LOG.log(Level.FINE, "execute classpath={0}", exec);
         
+        String cp = translate(exec);
+        
+        List<String> params = new LinkedList<String>();
+        
+        params.add(javaFile.getAbsolutePath());
+        if (jvmArgs != null)
+            params.addAll(Arrays.asList(jvmArgs.split(" ")));//TODO: correct spliting
+        params.add("-classpath");
+        params.add(cp);
+        params.add(source.getResourceName(toRun, '.', false));
+        if (args != null)
+            params.addAll(Arrays.asList(args.split(" ")));//TODO: correct spliting
+        
+        execute(toRun.getNameExt(), params);
+    }
+
+
+    public void test(JavaPlatform p, List<FileObject> toRun) throws IOException {
+        if (toRun.isEmpty()) {
+            throw new IllegalArgumentException();
+        }
+        
+        LifecycleManager.getDefault().saveAll();
+        File javaFile = findJavaTool(p);
+        
+        FileObject firstFile = toRun.iterator().next();
+        ClassPath exec = ClassPath.getClassPath(firstFile, ClassPath.EXECUTE);
+        ClassPath source = ClassPath.getClassPath(firstFile, ClassPath.SOURCE);
+        
+        LOG.log(Level.FINE, "execute classpath={0}", exec);
+        
+        String cp = translate(exec);
+        
+        List<String> params = new LinkedList<String>();
+
+        params.add(javaFile.getAbsolutePath());
+        params.add("-classpath");
+        params.add(cp);
+        params.add("junit.textui.TestRunner");
+        //XXX: should run all the files:
+        params.add(source.getResourceName(firstFile, '.', false));
+        
+        execute("Test", params);
+    }
+
+    private void execute(String name, List<String> params) throws IOException {
+        //TODO: correct spliting
+        InputOutput io = IOProvider.getDefault().getIO("Run " + name, false);
+
+        io.getOut().reset();
+        io.select();
+
+        LOG.log(Level.FINE, "arguments={0}", params);
+
+        Process process = Runtime.getRuntime().exec(params.toArray(new String[0]));
+
+        new StreamCopier(new InputStreamReader(process.getInputStream()), io.getOut()).start();
+        new StreamCopier(new InputStreamReader(process.getErrorStream()), io.getErr()).start();
+//        new StreamCopier(io.getIn(), new OutputStreamWriter(process.getOutputStream())).start();
+    }
+
+    private File findJavaTool(JavaPlatform p) throws IOException {
+        FileObject java = p.findTool("java");
+        File javaFile = java != null ? FileUtil.toFile(java) : null;
+
+        if (javaFile == null) {
+            throw new IOException();
+        }
+
+        return javaFile;
+    }
+
+    private String translate(ClassPath exec) {
         StringBuilder cp = new StringBuilder();
         boolean first = true;
-        
+
         for (Entry e : exec.entries()) {
             File[] files = translate(e.getURL());
-            
+
             if (files.length == 0) {
                 //TODO: log
                 LOG.log(Level.FINE, "cannot translate {0} to file", e.getURL().toExternalForm());
                 continue;
             }
-            
+
             for (File f : files) {
                 if (!first) {
                     cp.append(File.pathSeparatorChar);
@@ -109,32 +180,10 @@ public class ProjectRunnerImpl implements ProjectRunnerImplementation {
                 first = false;
             }
         }
-        
-        List<String> params = new LinkedList<String>();
-        
-        params.add(javaFile.getAbsolutePath());
-        if (jvmArgs != null)
-            params.addAll(Arrays.asList(jvmArgs.split(" ")));//TODO: correct spliting
-        params.add("-classpath");
-        params.add(cp.toString());
-        params.add(source.getResourceName(toRun, '.', false));
-        if (args != null)
-            params.addAll(Arrays.asList(args.split(" ")));//TODO: correct spliting
-        
-        InputOutput io = IOProvider.getDefault().getIO("Run " + toRun.getNameExt(), false);
-        
-        io.getOut().reset();
-        io.select();
-        
-        LOG.log(Level.FINE, "arguments={0}", params);
-        
-        Process process = Runtime.getRuntime().exec(params.toArray(new String[0]));
-        
-        new StreamCopier(new InputStreamReader(process.getInputStream()), io.getOut()).start();
-        new StreamCopier(new InputStreamReader(process.getErrorStream()), io.getErr()).start();
-//        new StreamCopier(io.getIn(), new OutputStreamWriter(process.getOutputStream())).start();
-    }
 
+        return cp.toString();
+    }
+    
     private File[] translate(URL entry) {
         try {
             if (FileUtil.isArchiveFile(entry)) {
@@ -148,14 +197,19 @@ public class ProjectRunnerImpl implements ProjectRunnerImplementation {
                 
                 for (FileObject source : r.getRoots()) {
                     File sourceFile = FileUtil.toFile(source);
-                    File cache = Index.getClassFolder(source.getURL(), true);
-
-                    if (cache != null) {
-                        translated.add(cache);
-                    }
+                    BuildArtifactMapper.ensureBuilt(sourceFile.toURI().toURL());
                     
-                    if (sourceFile != null) {
-                        translated.add(sourceFile);
+                    for (URL binary : BinaryForSourceQuery.findBinaryRoots(source.getURL()).getRoots()) {
+                        FileObject binaryFO = URLMapper.findFileObject(binary);
+                        File cache = binaryFO != null ? FileUtil.toFile(binaryFO) : null;
+
+                        if (cache != null) {
+                            translated.add(cache);
+                        }
+
+                        if (sourceFile != null) {
+                            translated.add(sourceFile);
+                        }
                     }
                 }
                 
@@ -165,13 +219,7 @@ public class ProjectRunnerImpl implements ProjectRunnerImplementation {
             Exceptions.printStackTrace(ex);
         }
 
-        FileObject fo = URLMapper.findFileObject(entry);//?
-
-        if (fo == null) {
-            return new File[0];
-        }
-
-        File f = FileUtil.toFile(fo);
+        File f = FileUtil.archiveOrDirForURL(entry);
         
         if (f != null) {
             return new File[] {f};

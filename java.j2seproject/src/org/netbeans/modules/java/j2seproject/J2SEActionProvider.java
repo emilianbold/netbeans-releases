@@ -50,6 +50,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -326,6 +327,15 @@ class J2SEActionProvider implements ActionProvider {
                     bypassAntBuildScript(command, context, p);
                     
                     return ;
+                }
+                if (COMMAND_TEST_SINGLE.equals(command)) {
+                    FileObject[] files = findSources(context);
+                    final String activePlatformId = J2SEActionProvider.this.project.evaluator().getProperty("platform.active"); //NOI18N
+                    try {
+                        ProjectRunner.test(J2SEProjectUtil.getActivePlatform(activePlatformId), Arrays.asList(files));
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
                 }
                 if (targetNames.length == 0) {
                     targetNames = null;
@@ -881,6 +891,7 @@ class J2SEActionProvider implements ActionProvider {
 
     private void bypassAntBuildScript(String command, Lookup context, Properties p) throws IllegalArgumentException {
         FileObject toRun;
+        boolean run = true;
 
         if (COMMAND_RUN.equals(command)) {
             final String mainClass = project.evaluator().getProperty(J2SEProjectProperties.MAIN_CLASS);
@@ -912,13 +923,27 @@ class J2SEActionProvider implements ActionProvider {
 
             toRun = mainClassFile[0];
         } else {
+            //run single:
             FileObject[] files = findSources(context);
+            
+            if (files == null || files.length != 1) {
+                files = findTestSources(context, false);
+                run = false;
+            }
 
+            if (files == null || files.length != 1) {
+                return ;//warn the user
+            }
+            
             toRun = files[0];
         }
         final String activePlatformId = J2SEActionProvider.this.project.evaluator().getProperty("platform.active"); //NOI18N
         try {
-            ProjectRunner.run(J2SEProjectUtil.getActivePlatform(activePlatformId), p, toRun);
+            if (run) {
+                ProjectRunner.run(J2SEProjectUtil.getActivePlatform(activePlatformId), p, toRun);
+            } else {
+                ProjectRunner.test(J2SEProjectUtil.getActivePlatform(activePlatformId), Collections.singletonList(toRun));
+            }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }

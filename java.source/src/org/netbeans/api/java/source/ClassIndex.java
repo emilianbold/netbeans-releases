@@ -58,7 +58,6 @@ import java.util.logging.Logger;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.source.ExtendedClassIndexListener.ClassCacheEvent;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.classpath.GlobalSourcePath;
@@ -681,13 +680,5 @@ public final class ClassIndex {
             }
         }
 
-        public void classCacheUpdated(File cacheRoot, Collection<File> deletedClassFiles, Collection<File> updatedClassFiles) {
-            ClassCacheEvent _event = new ClassCacheEvent(ClassIndex.this, cacheRoot, deletedClassFiles, updatedClassFiles);
-            for (ClassIndexListener l : listeners) {
-                if (l instanceof ExtendedClassIndexListener) {
-                    ((ExtendedClassIndexListener) l).classCacheUpdated(_event);
-                }
-            }
-        }
     }   
 }
