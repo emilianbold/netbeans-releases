@@ -44,9 +44,9 @@ package org.netbeans.modules.uml.drawingarea.persistence;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -64,6 +64,7 @@ import org.netbeans.api.visual.widget.Widget;
 
 import org.netbeans.modules.uml.common.generics.ETPairT;
 import org.netbeans.modules.uml.core.IApplication;
+import org.netbeans.modules.uml.core.eventframework.IEventPayload;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
@@ -95,10 +96,10 @@ import org.netbeans.modules.uml.drawingarea.ui.addins.diagramcreator.SQDDiagramE
 import org.netbeans.modules.uml.drawingarea.view.UMLEdgeWidget;
 import org.netbeans.modules.uml.drawingarea.view.UMLWidget.UMLWidgetIDString;
 import org.netbeans.modules.uml.drawingarea.widgets.ContainerNode;
+import org.netbeans.modules.uml.ui.support.DispatchHelper;
+import org.netbeans.modules.uml.ui.support.diagramsupport.IDrawingAreaEventDispatcher;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
 
@@ -126,8 +127,8 @@ public class TSDiagramConverter
     private TSDiagramDetails diagramDetails;
     
     private XMLInputFactory factory;
-    private FileInputStream fisPres;
-    private FileInputStream fisData;
+    private InputStream fisPres;
+    private InputStream fisData;
     private XMLStreamReader readerPres;
     private XMLStreamReader readerData;
     
@@ -170,6 +171,9 @@ public class TSDiagramConverter
     private Boolean ShowAllReturnMessages;
     private Boolean ShowMessageNumbers;
 
+    private FileObject etldFO;
+
+    private FileObject etlpFO;;
     
     public TSDiagramConverter(IProxyDiagram proxyDiagram)
     {
@@ -210,11 +214,14 @@ public class TSDiagramConverter
             
             factory = XMLInputFactory.newInstance();
             factory.setProperty(XMLInputFactory.IS_COALESCING, Boolean.TRUE);
+            etldFO = FileUtil.toFileObject(new File(diagramDetails.getDiagramFileName()));
+        
+            etlpFO = FileUtil.findBrother(etldFO, FileExtensions.DIAGRAM_TS_PRESENTATION_EXT_NODOT);
             
-            fisData = new FileInputStream(diagramDetails.getDiagramFileName());
+            fisData = etldFO.getInputStream();
             readerData = factory.createXMLStreamReader(fisData, "UTF-8");
 
-            fisPres = new FileInputStream(diagramDetails.getDiagramFileName2());
+            fisPres = etlpFO.getInputStream();
             readerPres = factory.createXMLStreamReader(fisPres, "UTF-8");
         }
         
@@ -303,15 +310,29 @@ public class TSDiagramConverter
                          cont.getResizeStrategyProvider().resizingFinished(cont);
                     }
                 }
-                archiveTSDiagram();
+                scene.validate();
                 try {
                     scene.getDiagram().save();
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
                 }
+                processArchiveWithValidationWait();
+                scene.revalidate();
+                scene.validate();
             }
         }, scene);
     }
+    
+    private void processArchiveWithValidationWait()
+    {
+        new AfterValidationExecutor(new ActionProvider() {
+
+            public void perfomeAction() {
+                archiveTSDiagram();
+            }
+        }, scene);
+    }     
+    
     
     private void addEdgesGeneral()
     {
@@ -336,50 +357,27 @@ public class TSDiagramConverter
         if(messagesInfo.size()>0)addMessagesToSQD(messagesInfo);
     }
     
-
-//    private void saveDiagram()
-//    {
-//        IDiagram diagram = topComponent.getAssociatedDiagram();
-//        diagram.setDirty(true);
-
-//        try
-//        {
-//            diagram.save();
-//        }
-//        
-//        catch (IOException ex)
-//        {
-//            Exceptions.printStackTrace(ex);
-//        }
-//    }
-    
     private void archiveTSDiagram()
     {
-        // automatic diagram node/file removal/backup
-        // (doesn't seem to work though)
-        // IProxyDiagramManager manager = ProxyDiagramManager.instance();
-        // manager.removeDiagram(diagramDetails.getDiagramFileName());
-        
-        // manual FileObject/DataObject diagram file/node removal/backup
-        FileObject etldFO = FileUtil.toFileObject(
-            new File(diagramDetails.getDiagramFileName()));
-        
-        FileObject etlpFO = FileUtil.findBrother(
-            etldFO, FileExtensions.DIAGRAM_TS_PRESENTATION_EXT_NODOT);
-        
         FileObject projectFO = etldFO.getParent();
         
         try
         {
             FileObject backupFO = 
                 FileUtil.createFolder(projectFO, "DiagramBackup");
-            
-            DataFolder projectDF = DataFolder.findFolder(backupFO);
-            DataObject etldDO = DataObject.find(etldFO);
-            etldDO.move(projectDF);
-
-            DataObject etlpDO = DataObject.find(etlpFO);
-            etlpDO.move(projectDF);
+            FileObject parent=etldFO.getParent();
+            String path=etldFO.getPath();
+            String path2=etlpFO.getPath();
+            String parpath=parent.getPath();
+            FileUtil.moveFile(etldFO, backupFO, etldFO.getName());
+            FileUtil.moveFile(etlpFO, backupFO, etlpFO.getName());
+            IDrawingAreaEventDispatcher dispatcher = getDispatcher();
+            if (dispatcher != null) {
+                IEventPayload payload = dispatcher.createPayload("DrawingAreaFileRemoved");
+                dispatcher.fireDrawingAreaFileRemoved(diagramDetails.getDiagramFileName(), payload);
+                dispatcher.fireDrawingAreaFileRemoved(path2, payload);
+            }
+            //FileUtil.refreshFor(new File(parpath));
         }
         
         catch (DataObjectNotFoundException ex)
@@ -1491,5 +1489,14 @@ public class TSDiagramConverter
         public double getProportionalOffetX() {
             return proportionalX;
         }
+    }
+    private IDrawingAreaEventDispatcher getDispatcher()
+    {
+        IDrawingAreaEventDispatcher retVal = null;
+        
+        DispatchHelper helper = new DispatchHelper();
+        retVal = helper.getDrawingAreaDispatcher();
+        
+        return retVal;
     }
 }
