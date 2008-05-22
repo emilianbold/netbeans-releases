@@ -129,34 +129,9 @@ public class MySQLDatabaseServer implements DatabaseServer {
     
     private MySQLDatabaseServer() {  
         updateDisplayName();
-        RequestProcessor.getDefault().post(connProcessor);        
-        startRefreshTask();
+        RequestProcessor.getDefault().post(connProcessor);
     }
-        
-    private synchronized void startRefreshTask() {        
-        // Start a background task that keeps the list of databases
-        // up-to-date
-        final long sleepInterval = OPTIONS.getRefreshThreadSleepInterval();
-        
-        refreshTask = RequestProcessor.getDefault().post(new Runnable() {
-            public void run() {
-                Thread.currentThread().setName("MySQL Server Refresh Thread");
                 
-                for ( ; ; ) {
-                    try {
-                        Thread.sleep(sleepInterval);
-                        
-                        if ( OPTIONS.isProviderRegistered() && isConnected() ) {
-                            refreshDatabaseList();
-                        }
-                    } catch ( InterruptedException ie ) {
-                        return;
-                    }
-                }
-            }
-        });
-    }
-        
     public String getHost() {
         return Utils.isEmpty(OPTIONS.getHost()) ?  
             MySQLOptions.getDefaultHost() : OPTIONS.getHost();

@@ -338,16 +338,6 @@ public class MySQLOptions {
         putProperty(PROP_CONNECT_TIMEOUT, timeout);
     }
     
-    public long getRefreshThreadSleepInterval() {
-        return getLongProperty(PROP_REFRESH_THREAD_SLEEP_INTERVAL,
-                DEFAULT_REFRESH_THREAD_SLEEP_INTERVAL);
-    }
-    
-    public void setRefreshThreadSleepInterval(long interval) {
-        putProperty(PROP_REFRESH_THREAD_SLEEP_INTERVAL, interval,
-                DEFAULT_REFRESH_THREAD_SLEEP_INTERVAL);
-    }
-
     public static String getDriverClass() {
         return DRIVER_CLASS;
     }
