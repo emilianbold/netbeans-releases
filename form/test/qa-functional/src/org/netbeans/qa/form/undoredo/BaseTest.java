@@ -41,14 +41,11 @@
 
 package org.netbeans.qa.form.undoredo;
 
-import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.ProjectsTabOperator;
 
 import org.netbeans.junit.NbTestSuite;
 
 import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.modules.form.*;
-import org.netbeans.jellytools.modules.form.properties.editors.*;
 import org.netbeans.jellytools.nodes.*;
 import org.netbeans.jellytools.properties.*;
 import org.netbeans.jellytools.actions.*;
@@ -57,7 +54,6 @@ import org.netbeans.jemmy.operators.*;
 import java.awt.Color;
 import org.netbeans.jellytools.properties.Property;
 import org.netbeans.jemmy.operators.JToggleButtonOperator;
-//import org.netbeans.junit.ide.ProjectSupport;
 import org.netbeans.qa.form.*;
 import java.io.*;
 

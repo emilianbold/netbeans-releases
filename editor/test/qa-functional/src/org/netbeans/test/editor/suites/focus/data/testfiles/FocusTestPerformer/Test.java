@@ -52,6 +52,9 @@ import java.util.Vector;
 import java.util.Collection;
 
 import org.netbeans.test.editor.app.Main;
+import org.netbeans.test.editor.app.core.Logger;
+import org.netbeans.test.editor.app.core.TestNode;
+import org.netbeans.test.editor.app.core.TestStep;
 import org.netbeans.test.editor.app.core.properties.ArrayProperty;
 import org.netbeans.test.editor.app.core.properties.BadPropertyNameException;
 import org.netbeans.test.editor.app.core.properties.BooleanProperty;
@@ -312,7 +315,7 @@ public class Test extends TestAction {
                                             memory=Runtime.getRuntime().totalMemory()-Runtime.getRuntime().freeMemory()-memory;
                                             String content=Main.frame.getEditor().getText();
                                             System.err.println("Call action: "+name+" finished performing");
-                                            if (!Test.isTesting()) {
+                                            if (!org.netbeans.test.editor.app.core.Test.isTesting()) {
                                                 if (content.compareTo(output) != 0 )
                                                     System.err.println("***************** Call action: "+name+" error in outputs comparation. ******************");
                                             } else {
