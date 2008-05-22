@@ -74,6 +74,7 @@ import org.netbeans.modules.uml.drawingarea.engines.DiagramEngine;
 import org.netbeans.modules.uml.drawingarea.palette.RelationshipFactory;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
+import org.netbeans.modules.uml.ui.support.ProductHelper;
 import org.openide.util.Lookup;
 
 
@@ -117,7 +118,6 @@ public class SceneConnectProvider implements ExConnectProvider
         {
             ObjectScene scene = (ObjectScene) sourceWidget.getScene();
             // Verify that this relationship is ok
-            RelationProxy relationshipProxy = new RelationProxy();
             IPresentationElement source = getElement(sourceWidget);
             IPresentationElement target = getElement(targetWidget);
 
@@ -131,14 +131,11 @@ public class SceneConnectProvider implements ExConnectProvider
 
             if ((source != null) && (target != null))
             {
-                relationshipProxy.setFrom(source.getFirstSubject());
-                relationshipProxy.setTo(target.getFirstSubject());
-                relationshipProxy.setConnectionElementType(getRelationshipFactory().getElementType());
-
-                // Verify the relation
-                validator.validateRelation(relationshipProxy);
-
-                if (relationshipProxy.getRelationValidated() == true)
+                
+                IElement from = source.getFirstSubject();
+                IElement to = target.getFirstSubject();
+                String type = getRelationshipFactory().getElementType();
+                if (isValidRelationship(from, to, type, true) == true)
                 {
                     retVal = ConnectorState.ACCEPT;
                 }
@@ -153,6 +150,25 @@ public class SceneConnectProvider implements ExConnectProvider
             }
         }
 
+        return retVal;
+    }
+
+    protected boolean isValidRelationship(IElement from, IElement to, String type, boolean silent)
+    {
+        boolean oldValue = ProductHelper.getMessenger().getDisableMessaging();
+        if((oldValue == false) && (silent == true))
+        {
+            ProductHelper.getMessenger().setDisableMessaging(true);
+        }
+                
+        RelationProxy relationshipProxy = new RelationProxy();
+        relationshipProxy.setFrom(from);
+        relationshipProxy.setTo(to);
+        relationshipProxy.setConnectionElementType(type);
+        
+        boolean retVal = validator.validateRelation(relationshipProxy);
+        
+        ProductHelper.getMessenger().setDisableMessaging(oldValue);
         return retVal;
     }
 
@@ -259,11 +275,12 @@ public class SceneConnectProvider implements ExConnectProvider
      *                    GraphScene.
      * @return The new node that was created.
      */
-    public Widget createTargetWidget(Scene targetScene)
+    public Widget createTargetWidget(Scene targetScene, Widget sourceWidget)
     {
         Widget retVal = null;
 
-        if (targetScene instanceof DesignerScene)
+        IPresentationElement sourceElement = getElement(sourceWidget);
+        if ((targetScene instanceof DesignerScene) && (sourceElement != null))
         {
             DesignerScene scene = (DesignerScene) targetScene;
             Object value = FactoryRetriever.instance().createType(defaultTargetType, null);
@@ -271,14 +288,24 @@ public class SceneConnectProvider implements ExConnectProvider
             if (value instanceof INamedElement)
             {
                 INamedElement namedElement = (INamedElement) value;
-                IPresentationElement element = createNodePresentationElement(namedElement);
-                retVal = scene.addNode(element);
-
-                IDiagram diagram = scene.getDiagram();
-                if (diagram != null)
+                
+                IElement from = sourceElement.getFirstSubject();
+                String type = getRelationshipFactory().getElementType();
+                if(isValidRelationship(from, namedElement, type, false) == true)
                 {
-                    INamespace space = diagram.getNamespaceForCreatedElements();
-                    space.addOwnedElement(namedElement);
+                    IPresentationElement element = createNodePresentationElement(namedElement);
+                    retVal = scene.addNode(element);
+
+                    IDiagram diagram = scene.getDiagram();
+                    if (diagram != null)
+                    {
+                        INamespace space = diagram.getNamespaceForCreatedElements();
+                        space.addOwnedElement(namedElement);
+                    }
+                }
+                else
+                {
+                    namedElement.delete();
                 }
             }
         }

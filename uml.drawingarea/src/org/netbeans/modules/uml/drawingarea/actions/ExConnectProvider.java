@@ -64,5 +64,5 @@ public interface ExConnectProvider extends ConnectProvider
      * 
      * @param scene The scene that will contain the new widget.
      */
-    public Widget createTargetWidget(Scene scene);
+    public Widget createTargetWidget(Scene scene, Widget sourceWidget);
 }

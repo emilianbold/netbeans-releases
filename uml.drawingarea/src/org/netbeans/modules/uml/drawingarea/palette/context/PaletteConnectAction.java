@@ -114,7 +114,8 @@ public class PaletteConnectAction extends WidgetAction.Adapter
             
             if (provider.hasTargetWidgetCreator() == true)
             {
-                targetWidget = provider.createTargetWidget(interractionLayer.getScene());
+                targetWidget = provider.createTargetWidget(interractionLayer.getScene(),
+                                                           sourceWidget);
                 targetWidget.setPreferredLocation(event.getPoint());
             }
             cancel();

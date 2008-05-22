@@ -205,7 +205,8 @@ public class ConnectAction extends WidgetAction.LockedAdapter {
                 {
                     targetWidget = ((ExConnectWithLocationProvider)provider).createTargetWidget(interractionLayer.getScene(),finishPnt);
                 }
-                else targetWidget = provider.createTargetWidget(interractionLayer.getScene());
+                else targetWidget = provider.createTargetWidget(interractionLayer.getScene(),
+                                                                sourceWidget);
                 
                 if(targetWidget != null)
                 {

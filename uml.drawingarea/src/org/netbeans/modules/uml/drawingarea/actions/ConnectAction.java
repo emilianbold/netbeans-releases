@@ -108,7 +108,8 @@ public class ConnectAction extends WidgetAction.LockedAdapter {
             }
             else if(provider.hasTargetWidgetCreator() == true)
             {
-                targetWidget = provider.createTargetWidget(interractionLayer.getScene());
+                targetWidget = provider.createTargetWidget(interractionLayer.getScene(), 
+                                                           sourceWidget);
                 if(targetWidget != null)
                 {
                     Point targetSceneLocation = widget.convertLocalToScene (point);
