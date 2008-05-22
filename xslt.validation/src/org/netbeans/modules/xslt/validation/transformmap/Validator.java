@@ -59,7 +59,6 @@ public final class Validator extends TMapValidator {
 
   @Override
   public void visit(TransformMap transformMap) {
-      System.out.println("work transformmap validator");
     String namespace = transformMap.getPeer().getNamespaceURI();
 
     if (TMapConstants.OLD_TRANSFORM_MAP_NS_URI.equals(namespace)) {

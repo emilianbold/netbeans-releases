@@ -54,7 +54,10 @@ import java.util.logging.Logger;
 public class Main {
 
     /**
-     * @param args the command line arguments
+     * Main function
+     * Collects definitions, declarations and usages and then dumps them as gol
+     * 
+     * @param args the command line arguments. There should be work dir and elsa files
      */
     public static void main(String[] args) {
         if (args.length == 0) {
@@ -63,6 +66,9 @@ public class Main {
 
         String workDir = args[0];
 
+        String projName = workDir.replaceAll(".*/", "");
+        System.out.println("Analyzing " + projName);       
+        
         TokenTable table = new TokenTable(workDir);
 
         for (int i = 1; i < args.length; i++) {
@@ -131,11 +137,20 @@ public class Main {
 //            }
 //        }
         
-        table.printVariables();
-        table.printFunctions();
+//        table.printVariables();
+//        table.printFunctions();
         table.printNumbers();
 
-        table.dumpVariables("variables");
-        table.dumpFunctions("functions");
+        System.out.println("Dumping results...");
+        
+        System.out.println("    for variables");
+        table.dumpVariables(projName + "/variables");
+        System.out.println("    for functions");
+        table.dumpFunctions(projName + "/functions");
+        
+        System.out.println("Dumping index...");
+        table.dumpIndex(projName + "/index");
+        
+        System.out.println("Comlited");
     }
 }

@@ -177,7 +177,7 @@
         <antcall target="do-test-jbi"><param name="dir" value="foreach-bpel20/ForEachBpel"/></antcall>
 
         <!-- i18n -->
-        <antcall target="do-test-jbi"><param name="dir" value="i18n/assign/AssignBpel"/></antcall>
+        <!-- antcall target="do-test-jbi"><param name="dir" value="i18n/assign/AssignBpel"/></antcall -->
 
         <!-- if -->
         <antcall target="do-test-jbi"><param name="dir" value="if/ifBpel"/></antcall>
