@@ -225,7 +225,7 @@ public class Occurrences {
                     facesConfig.getModel().startTransaction();
                     managedBean.setManagedBeanClass(newClass);
                     facesConfig.getModel().endTransaction();
-                    continue;
+                    break;
                 }
             }
         }
