@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.hibernate.refactoring;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -133,12 +134,12 @@ public class HibernateMappingRenamePlugin implements RefactoringPlugin {
             return null;
         
         Map<FileObject, List<OccurrenceItem>> occurrences =
-                HibernateRefactoringUtil.getMappingResourceOccurrences(configFiles, oldResourceName);
+                HibernateRefactoringUtil.getMappingResourceOccurrences(configFiles, oldResourceName, false);
 
-        for (FileObject mappingFile : occurrences.keySet()) {
-            List<OccurrenceItem> foundPlaces = occurrences.get(mappingFile);
+        for (FileObject configFile : occurrences.keySet()) {
+            List<OccurrenceItem> foundPlaces = occurrences.get(configFile);
             for (OccurrenceItem foundPlace : foundPlaces) {
-                HibernateRenameRefactoringElement elem = new HibernateRenameRefactoringElement(mappingFile,
+                HibernateRenameRefactoringElement elem = new HibernateRenameRefactoringElement(configFile,
                         oldResourceName,
                         newResourceName,
                         foundPlace.getLocation(),

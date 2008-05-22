@@ -55,9 +55,15 @@ import org.openide.filesystems.FileObject;
 public class HibernateMappingRenameTransaction extends RenameTransaction {
 
     private final String rescrName = "Resource"; // NOI18N
+    private boolean pathOnly = false; // Only replace the path part of it
     
     public HibernateMappingRenameTransaction(java.util.Set<FileObject> files, String origName, String newName) {
+        this(files, origName, newName, false);
+    }
+    
+    public HibernateMappingRenameTransaction(java.util.Set<FileObject> files, String origName, String newName, boolean pathOnly) {
         super(files, origName, newName);
+        this.pathOnly = pathOnly;
     }
 
     /**
@@ -76,8 +82,16 @@ public class HibernateMappingRenameTransaction extends RenameTransaction {
                 if(sfactory != null) {
                     for(int i = 0; i < sfactory.sizeMapping(); i ++ ) {
                         String resourceName = sfactory.getAttributeValue(SessionFactory.MAPPING, i, rescrName);
-                        if(resourceName.equals(origName)) {
-                            sfactory.setAttributeValue(SessionFactory.MAPPING, i, rescrName, newName);
+                        String comparePart = resourceName;
+                        String newResourceName = newName;
+                        
+                        // If we're only replace the directory part of the resource name, then...
+                        if(pathOnly) {
+                            comparePart = resourceName.substring(0, resourceName.lastIndexOf('/'));
+                            newResourceName = newName + "/" + resourceName.substring(resourceName.lastIndexOf('/')+1);
+                        }
+                        if(comparePart.equals(origName)) {
+                            sfactory.setAttributeValue(SessionFactory.MAPPING, i, rescrName, newResourceName);
                         }
                     }
                 }

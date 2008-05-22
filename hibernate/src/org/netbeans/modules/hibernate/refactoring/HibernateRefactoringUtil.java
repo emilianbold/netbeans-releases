@@ -529,16 +529,16 @@ public class HibernateRefactoringUtil {
 
         return foundPlaces;
     }
-
-    public static Map<FileObject, List<OccurrenceItem>> getMappingResourceOccurrences(List<FileObject> configFiles, String origName) {
+    
+    public static Map<FileObject, List<OccurrenceItem>> getMappingResourceOccurrences(List<FileObject> configFiles, String origName, boolean searchingPathOnly) {
         Map<FileObject, List<OccurrenceItem>> occurrences = new HashMap<FileObject, List<OccurrenceItem>>();
         for (FileObject file : configFiles) {
-            occurrences.put(file, getMappingResourceOccurPlaces(file,origName));
+            occurrences.put(file, getMappingResourceOccurPlaces(file, origName, searchingPathOnly));
         }
         return occurrences;
     }
     
-    private static List<OccurrenceItem> getMappingResourceOccurPlaces(FileObject configFile, String resourceName) {
+    private static List<OccurrenceItem> getMappingResourceOccurPlaces(FileObject configFile, String resourceName, boolean searchingPathOnly) {
         List<OccurrenceItem> foundPlaces = new ArrayList<OccurrenceItem>();
         try {
             // Get the document for this file
@@ -577,19 +577,25 @@ public class HibernateRefactoringUtil {
                                 itemImage.contains(HibernateCfgXmlConstants.MAPPING_TAG)){ 
 
                             mappingResourceAttribValue = getAttributeValue(theNode, HibernateCfgXmlConstants.RESOURCE_ATTRIB);
+                            if(mappingResourceAttribValue != null) {
+                                if(searchingPathOnly) {
+                                    mappingResourceAttribValue = mappingResourceAttribValue.substring(0, mappingResourceAttribValue.lastIndexOf('/'));
+                                }
 
-                            if (mappingResourceAttribValue != null && mappingResourceAttribValue.equals(resourceName)) {
+                                if (mappingResourceAttribValue.equals(resourceName)) {
 
-                                text = document.getText(item.getOffset(), element.getElementLength());
 
-                                // find the offset for the field name
-                                int index = text.indexOf(resourceName);
-                                int startOffset = item.getOffset() + index;
-                                int endOffset = startOffset + resourceName.length();
-                                PositionBounds loc = new PositionBounds(editor.createPositionRef(startOffset, Bias.Forward),
-                                        editor.createPositionRef(endOffset, Bias.Forward));
+                                    text = document.getText(item.getOffset(), element.getElementLength());
 
-                                foundPlaces.add(new OccurrenceItem(loc, text));
+                                    // find the offset for the field name
+                                    int index = text.indexOf(resourceName);
+                                    int startOffset = item.getOffset() + index;
+                                    int endOffset = startOffset + resourceName.length();
+                                    PositionBounds loc = new PositionBounds(editor.createPositionRef(startOffset, Bias.Forward),
+                                            editor.createPositionRef(endOffset, Bias.Forward));
+
+                                    foundPlaces.add(new OccurrenceItem(loc, text));
+                                }
                             }
                         }
                     }

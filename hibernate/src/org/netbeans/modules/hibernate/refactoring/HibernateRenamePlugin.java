@@ -40,6 +40,7 @@ package org.netbeans.modules.hibernate.refactoring;
 
 import com.sun.source.tree.Tree.Kind;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import javax.lang.model.element.Element;
@@ -53,10 +54,14 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.hibernate.loaders.mapping.HibernateMappingDataLoader;
 import org.netbeans.modules.hibernate.refactoring.HibernateRefactoringUtil.OccurrenceItem;
 import org.netbeans.modules.hibernate.refactoring.HibernateRefactoringUtil.RenamedClassName;
 import org.netbeans.modules.hibernate.service.HibernateEnvironment;
+import org.netbeans.modules.j2ee.core.api.support.SourceGroups;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
@@ -233,7 +238,9 @@ public class HibernateRenamePlugin implements RefactoringPlugin {
 
     private void renameJavaPackage(RefactoringElementsBag refactoringElements, final TreePathHandle treePathHandle,
             FileObject fo, boolean recursive) throws IOException {
-
+        
+        // First, find all the occurrences of the affected Java classes in the mapping files
+        
         String oldPackageName = HibernateRefactoringUtil.getPackageName(fo);
         // If the rename is not recursive (e.g, "a.b.c" -> "x.b.c"), the new name is the whole package name.
         String newPackageName = recursive ? HibernateRefactoringUtil.getRenamedPackageName(fo, refactoring.getNewName()) : refactoring.getNewName();
@@ -256,5 +263,33 @@ public class HibernateRenamePlugin implements RefactoringPlugin {
 
             refactoringElements.registerTransaction(new JavaPackageRenameTransaction(occurrences.keySet(), oldPackageName, newPackageName));
         }
+        
+        // Second, find all the occurrences of the affected the mapping file in the tobe-renamed pacakge in the configuration files
+        String oldResourcePath = oldPackageName.replace('.', '/');
+        String newResourcePath = newPackageName.replace('.', '/');
+        
+        // Get the configuration files
+        Project proj = FileOwnerQuery.getOwner(fo);
+        HibernateEnvironment env = proj.getLookup().lookup(HibernateEnvironment.class);
+        List<FileObject> configFiles = env.getAllHibernateConfigFileObjects();
+        if(configFiles.isEmpty())
+            return;
+        
+        Map<FileObject, List<OccurrenceItem>> occurrences =
+                HibernateRefactoringUtil.getMappingResourceOccurrences(configFiles, oldResourcePath, true);
+
+        for (FileObject configFile : occurrences.keySet()) {
+            List<OccurrenceItem> foundPlaces = occurrences.get(configFile);
+            for (OccurrenceItem foundPlace : foundPlaces) {
+                HibernateRenameRefactoringElement elem = new HibernateRenameRefactoringElement(configFile,
+                        oldResourcePath,
+                        newResourcePath,
+                        foundPlace.getLocation(),
+                        foundPlace.getText());
+                refactoringElements.add(refactoring, elem);
+            }
+        }
+        refactoringElements.registerTransaction(new HibernateMappingRenameTransaction(
+                occurrences.keySet(), oldResourcePath, newResourcePath, true));
     }
 }
