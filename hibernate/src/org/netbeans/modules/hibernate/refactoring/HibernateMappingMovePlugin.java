@@ -132,7 +132,7 @@ public class HibernateMappingMovePlugin implements RefactoringPlugin {
         // TODO: have all the modifications in one transaction
         for(MappingFileData tobemoved : toBeMovedMappingFiles) {
             Map<FileObject, List<OccurrenceItem>> occurrences =
-                    HibernateRefactoringUtil.getMappingResourceOccurrences(configFiles, tobemoved.getResourceName());
+                    HibernateRefactoringUtil.getMappingResourceOccurrences(configFiles, tobemoved.getResourceName(), false);
 
             for (FileObject configFile : occurrences.keySet()) {
                 List<OccurrenceItem> foundPlaces = occurrences.get(configFile);

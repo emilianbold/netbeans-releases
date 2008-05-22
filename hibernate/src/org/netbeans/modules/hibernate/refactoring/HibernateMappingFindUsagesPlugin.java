@@ -109,7 +109,7 @@ public class HibernateMappingFindUsagesPlugin implements RefactoringPlugin {
             }
             
             Map<FileObject, List<OccurrenceItem>> occurrences =
-                    HibernateRefactoringUtil.getMappingResourceOccurrences(configFiles, origResourceName);
+                    HibernateRefactoringUtil.getMappingResourceOccurrences(configFiles, origResourceName, false);
 
             for (FileObject mappingFile : occurrences.keySet()) {
                 List<OccurrenceItem> foundPlaces = occurrences.get(mappingFile);
