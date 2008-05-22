@@ -1236,14 +1236,32 @@ public class WSDLGenerator {
      */
     private void writeWsdl() throws WSDLException {
         try {
-            WSDLWriter writer = factory.newWSDLWriter();
-            Writer sink = new FileWriter(wsdlFileLocation + File.separator + wsdlFileName + ".wsdl");
-            writer.writeWSDL(def, sink);
-            logger.log(Level.INFO, "Successfully generated wsdl file:" + wsdlFileName + ".wsdl");
-        } catch (Exception e) {
-            throw new WSDLException(WSDLException.OTHER_ERROR, e.getMessage());
+            final WSDLWriter writer = WSDLGenerator.factory.newWSDLWriter();
+            final String outputFileName = this.wsdlFileLocation + File.separator + this.wsdlFileName + ".wsdl";
+            java.io.FileOutputStream fos = new java.io.FileOutputStream(outputFileName);
+            final Writer sink = new java.io.OutputStreamWriter(fos);
+            writer.writeWSDL(this.def, sink);
+            WSDLGenerator.logger.log(Level.INFO, "Successfully generated wsdl file :" + outputFileName);
+        } catch (final Exception e) {
+           if(e instanceof FileNotFoundException){
+                e.printStackTrace();
+            }else if(e instanceof IOException){
+                e.printStackTrace();
+            }else if(e instanceof WSDLException){ 
+            if((((WSDLException)e).getMessage()).indexOf("Unsupported Java encoding for writing wsdl file") != -1){
+                try{ 
+                   final WSDLWriter writer = WSDLGenerator.factory.newWSDLWriter();
+                   final String outputFileName = this.wsdlFileLocation + File.separator + this.wsdlFileName + ".wsdl";
+                   java.io.FileOutputStream fos = new java.io.FileOutputStream(outputFileName);
+                   final Writer sink = new java.io.OutputStreamWriter(fos,"UTF-8");
+                   writer.writeWSDL(this.def, sink);
+                   WSDLGenerator.logger.log(Level.INFO, "Successfully generated wsdl file :" + outputFileName);
+                   }catch(Exception ex){
+                       ex.printStackTrace();
+                   }
+                }else e.printStackTrace();
+            }else e.printStackTrace();
         }
-
     }
 
     private void indentWSDLFile(Writer writer) {
