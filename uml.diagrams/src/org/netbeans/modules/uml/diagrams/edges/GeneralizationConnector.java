@@ -44,6 +44,7 @@ import java.awt.Color;
 import org.netbeans.api.visual.anchor.AnchorShape;
 import org.netbeans.api.visual.anchor.PointShape;
 import org.netbeans.api.visual.widget.Scene;
+import org.netbeans.modules.uml.diagrams.DefaultWidgetContext;
 
 /**
  *
@@ -60,6 +61,8 @@ public class GeneralizationConnector extends AbstractUMLConnectionWidget
         setTargetAnchorShape(AnchorShape.TRIANGLE_HOLLOW);
         setControlPointShape(PointShape.SQUARE_FILLED_BIG);
         setEndPointShape(PointShape.SQUARE_FILLED_BIG);
+        
+        addToLookup(new DefaultWidgetContext("Generalization"));
     }
     
     public String getWidgetID() {

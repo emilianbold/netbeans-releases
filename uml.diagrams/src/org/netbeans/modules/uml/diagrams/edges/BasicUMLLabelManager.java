@@ -41,6 +41,9 @@
 package org.netbeans.modules.uml.diagrams.edges;
 
 import java.beans.PropertyChangeEvent;
+import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.ResourceBundle;
 import javax.swing.Action;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.widget.ConnectionWidget;
@@ -52,8 +55,10 @@ import org.netbeans.modules.uml.diagrams.nodes.EditableCompartmentWidget;
 import org.netbeans.modules.uml.drawingarea.AbstractLabelManager;
 import org.netbeans.modules.uml.drawingarea.LabelManager.LabelType;
 import org.netbeans.modules.uml.drawingarea.ModelElementChangedKind;
+import org.netbeans.modules.uml.drawingarea.actions.ToggleLabelAction;
 import org.netbeans.modules.uml.drawingarea.support.ModelElementBridge;
 import org.netbeans.modules.uml.drawingarea.view.UMLLabelWidget;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -96,7 +101,23 @@ public class BasicUMLLabelManager extends AbstractLabelManager
 
     public Action[] getContextActions(LabelType type)
     {
-        return new Action[0];
+        ArrayList < Action > actions = new ArrayList < Action >();
+        ResourceBundle bundle = NbBundle.getBundle(BasicUMLLabelManager.class);
+        
+        if(type == LabelType.EDGE)
+        {
+            EnumSet < LabelType > thisEndType = EnumSet.of(type);
+            ToggleLabelAction nameAction = new ToggleLabelAction(this, 
+                                                             NAME, 
+                                                             thisEndType, 
+                                                             bundle.getString("LBL_NAME_LABEL"));
+            
+            actions.add(nameAction);
+        }
+        
+        Action[] retVal = new Action[actions.size()];
+        actions.toArray(retVal);
+        return retVal;
     }
     
     //////////////////////////////////////////////////////////////////
