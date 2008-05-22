@@ -180,11 +180,12 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
         return commit(files, message, false, recurse);
     }
 
-    public long commit(File[] files, String message, boolean keep, boolean recursive) throws SVNClientException {
-        CommitCommand cmd = new CommitCommand(files, keep, recursive, message);
+    public long commit(File[] files, String message, boolean keep, boolean recursive) throws SVNClientException {        
         int retry = 0;
+        CommitCommand cmd = null;
         while (true) {
             try {
+                cmd = new CommitCommand(files, keep, recursive, message); // prevent cmd reuse
                 exec(cmd);
                 break;
             } catch (SVNClientException e) {
@@ -196,13 +197,15 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
                             throw e;
                         }
                         Thread.sleep(retry * 50);
-                    } catch (InterruptedException ex) {
-                        // do nothing
+                    } catch (InterruptedException ex) {                        
+                        break;
                     }
+                } else {
+                    throw e;
                 }
             }                
         }               
-        return cmd.getRevision();
+        return cmd != null ? cmd.getRevision() : SVNRevision.SVN_INVALID_REVNUM;
     }
     
     public ISVNDirEntry[] getList(SVNUrl url, SVNRevision revision, boolean recursivelly) throws SVNClientException {

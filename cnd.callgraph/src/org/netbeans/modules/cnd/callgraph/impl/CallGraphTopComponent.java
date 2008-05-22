@@ -54,6 +54,7 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTabbedPane;
 import org.netbeans.modules.cnd.callgraph.api.CallModel;
+import org.netbeans.modules.cnd.callgraph.api.ui.CallGraphUI;
 import org.netbeans.modules.cnd.callgraph.impl.CallGraphPanel;
 import org.openide.awt.MouseUtils;
 import org.openide.awt.TabbedPaneFactory;
@@ -91,8 +92,13 @@ public final class CallGraphTopComponent extends TopComponent {
         closeL = new CloseListener();
     }
 
-    public void setModel(CallModel model) {
-        CallGraphPanel panel = new CallGraphPanel();
+    public void setModel(CallModel model, CallGraphUI graphUI) {
+        CallGraphPanel panel;
+        if (graphUI != null) {
+            panel = new CallGraphPanel(graphUI.showGraph());
+        } else {
+            panel = new CallGraphPanel(false);
+        }
         panel.setName(model.getName());
         panel.setToolTipText(panel.getName()+" - "+NbBundle.getMessage(getClass(), "CTL_CallGraphTopComponent")); // NOI18N
         if (false) {
@@ -246,10 +252,12 @@ public final class CallGraphTopComponent extends TopComponent {
                 add(c, BorderLayout.CENTER);
                 setName(((JPanel)c).getToolTipText());
             }
+        } else if (comp instanceof CallGraphPanel)  {
+            remove(comp);
+            add(jButton1, BorderLayout.CENTER);
+            setName(NbBundle.getMessage(CallGraphTopComponent.class, "CTL_CallGraphTopComponent")); // NOI18N
+            close();
         } else {
-            if (comp != null) {
-                remove(comp);
-            }
             close();
         }
         validate();
