@@ -62,37 +62,37 @@ public class IntroduceHintTest extends HintTestBase {
     }            
 
     public void testHint1() throws Exception {
-        findHints(this, new IntroduceHint(), "testfiles/introduce1.rb", null);
+        checkHints(this, new IntroduceHint(), "testfiles/introduce1.rb", null);
     }
 
     public void testHintNoPartialExps() throws Exception {
-        findHints(new IntroduceHint(), "testfiles/introduce4.rb", "^ x = 51", "puts y^");
+        checkHints(new IntroduceHint(), "testfiles/introduce4.rb", "^ x = 51", "puts y^");
     }
     
     public void testIntroduceConstant() throws Exception {
-        findHints(this, new IntroduceHint(), "testfiles/introduce1.rb", "50+30^");
+        checkHints(this, new IntroduceHint(), "testfiles/introduce1.rb", "50+30^");
     }
 
     public void testIntroduceField() throws Exception {
-        findHints(this, new IntroduceHint(), "testfiles/introduce1.rb", "x+30^");
+        checkHints(this, new IntroduceHint(), "testfiles/introduce1.rb", "x+30^");
     }
     
     public void testExtractMethod() throws Exception {
-        findHints(new IntroduceHint(), "testfiles/introduce1.rb", "^good_symbol = 50", "x = 50^");
+        checkHints(new IntroduceHint(), "testfiles/introduce1.rb", "^good_symbol = 50", "x = 50^");
     }
 
     public void testExtractMethod8() throws Exception {
         // No extract method for loops involving returns, etc.
-        findHints(new IntroduceHint(), "testfiles/introduce8.rb", "^ny, = clfloor(y + 1, 1)", "return unless [ny, 1] == jd_to_ordinal(jd - d, ns)^");
+        checkHints(new IntroduceHint(), "testfiles/introduce8.rb", "^ny, = clfloor(y + 1, 1)", "return unless [ny, 1] == jd_to_ordinal(jd - d, ns)^");
     }
     
     public void testExtractMethod9() throws Exception {
         // No extract method for loops involving returns, etc.
-        findHints(new IntroduceHint(), "testfiles/introduce8.rb", "^loop do", "name = newname^");
+        checkHints(new IntroduceHint(), "testfiles/introduce8.rb", "^loop do", "name = newname^");
     }
     
     public void testImbalancedExpr() throws Exception {
-        findHints(new IntroduceHint(), "testfiles/introduce4.rb", "^[10,11,12].each do |bar|", "end #block^");
+        checkHints(new IntroduceHint(), "testfiles/introduce4.rb", "^[10,11,12].each do |bar|", "end #block^");
     }
 
     public void testApplyExtractMethod() throws Exception {
