@@ -1,4 +1,3 @@
-
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
@@ -38,33 +37,70 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.client.javascript.debugger.kit;
+package org.netbeans.modules.iep.model.impl;
 
-import java.io.File;
+import org.netbeans.modules.iep.model.ExternalTablePollingStreamOperatorComponent;
+import org.netbeans.modules.iep.model.IEPModel;
+import org.netbeans.modules.iep.model.Property;
+import org.netbeans.modules.iep.model.TableInputOperatorComponent;
+import org.w3c.dom.Element;
 
 /**
- * This is a workaround for an issue related to installation JavaScript
- * Debugger modules on Mac OS. This deletes the 
- * <code>&lt;userdir>&gt;var/cache/all-modules.dat</code> file.
  *
- * @author Sandip V. Chitale <sandipchitale@netbeans.org>
+ * @author radval
  */
-public class PostInstall {
-    public static void main(String[] args) {
-        // Get os
-        final String osname = System.getProperty("os.name");
-        // Is it a Mac OS
-        if (osname != null && osname.indexOf("Mac OS") == 0) {
-            // Get userdir
-            String userDir = System.getProperty("ideUser"); // NOI18N
-            if (userDir != null) {
-                // If <userdir>/var/cache/all-modules.dat exists the delete it
-                File allModulesDotDat = new File(userDir,
-                        "var/cache/all-modules.dat"); // NOI18N
-                if (allModulesDotDat.exists()) {
-                    allModulesDotDat.delete();
-                }
-            }
-        }
+public class TableInputOperatorComponentImpl extends OperatorComponentImpl implements  TableInputOperatorComponent {
+
+    public TableInputOperatorComponentImpl(IEPModel model,  Element e) {
+        super(model, e);
     }
+
+    public TableInputOperatorComponentImpl(IEPModel model) {
+        super(model);
+    }
+
+    public void setDatabaseJndiName(String databaseJndiName) {
+        Property p = super.getProperty(PROP_DATABASE_JNDI_NAME);
+        if(p == null) {
+            p = getModel().getFactory().createProperty(getModel());
+            p.setName(PROP_DATABASE_JNDI_NAME);
+            addProperty(p);
+        }
+        
+        p.setValue(databaseJndiName);
+    }
+
+    public String getDatabaseJndiName() {
+        String databaseJndiName = null;
+        
+        Property p = super.getProperty(PROP_DATABASE_JNDI_NAME);
+        if(p != null) {
+            databaseJndiName = p.getValue();
+        }
+
+        return databaseJndiName;
+    }
+
+    public void setExternalTableName(String tableName) {
+        Property p = super.getProperty(PROP_EXTERNAL_TABLE_NAME);
+        if(p == null) {
+            p = getModel().getFactory().createProperty(getModel());
+            p.setName(PROP_EXTERNAL_TABLE_NAME);
+            addProperty(p);
+        }
+        
+        p.setValue(tableName);
+    }
+
+    public String getExternalTableName() {
+        String tableName = null;
+        
+        Property p = super.getProperty(PROP_DATABASE_JNDI_NAME);
+        if(p != null) {
+            tableName = p.getValue();
+        }
+
+        return tableName;
+    }
+
 }

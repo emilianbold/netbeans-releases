@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
+ * 
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,26 +31,32 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
+ * 
  * Contributor(s):
- *
- * Sandip V. Chitale (sandipchitale@netbeans.org)
- *
+ * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-// NetBeans namespace
-var NetBeans = function(){};
+package org.netbeans.modules.iep.model;
 
-(function() {   
-    this.aboutNetBeansFirefoxExtension = function()
-    {
-        window.openDialog("chrome://netbeans-firefox-extension/content/netbeans-firefox-extension-about.xul", "_blank", "chrome,modal");
-    }
-}).apply(NetBeans);
+/**
+ *
+ * @author radval
+ */
+public interface TableInputOperatorComponent extends OperatorComponent {
 
-NetBeans.Utils = function(){};
-NetBeans.SocketUtils = function(){};
-NetBeans.DebuggerLauncher = function(){};
-NetBeans.Debugger = function(){};
-NetBeans.NetMonitor = function(){};
+    public static String PROP_DATABASE_JNDI_NAME = "databaseJndiName";
+    
+    public static String PROP_EXTERNAL_TABLE_NAME = "externalTableName";
+    
+    
+    public void setDatabaseJndiName(String jndiName);
+    
+    public String getDatabaseJndiName();
+    
+    public void setExternalTableName(String tableName);
+    
+    public String getExternalTableName();
+    
+    
+}
