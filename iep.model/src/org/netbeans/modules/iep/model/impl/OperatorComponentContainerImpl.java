@@ -35,12 +35,17 @@ public class OperatorComponentContainerImpl extends ComponentImpl implements Ope
                 }
                 if (localName.equals(COMPONENT_CHILD)) {
                      String type = childEl.getAttribute(OperatorComponent.TYPE_PROPERTY);
-                     if(type.endsWith("Input")) {
+                     
+                     if(type.endsWith("TableInput")) {
+                        child = new TableInputOperatorComponentImpl(getModel(), childEl);
+                     } else if(type.endsWith("Input")) {
                          child = new InputOperatorComponentImpl(getModel(), childEl);
                      } else if(type.endsWith("Output")) {
                          child = new OutputOperatorComponentImpl(getModel(), childEl);
-                     }  else if(type.endsWith("InvokeStream")) {
+                     } else if(type.endsWith("InvokeStream")) {
                          child = new InvokeStreamOperatorComponentImpl(getModel(), childEl);
+                     } else if  (type.endsWith("ExternalTablePollingStream")) {
+                         child = new ExternalTablePollingStreamOperatorComponentImpl(getModel(), childEl);
                      } else {
                         child = new OperatorComponentImpl(getModel(), childEl);
                      }
