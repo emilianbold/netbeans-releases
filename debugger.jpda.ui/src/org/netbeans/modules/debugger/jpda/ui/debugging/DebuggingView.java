@@ -471,9 +471,8 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
                     }
                     leftBarHeight = 0;
                     isCurrent = jpdaThread == currentThread && jpdaThread.isSuspended();
-                    isAtBreakpoint = infoPanel.isBreakpointHit(jpdaThread); // [TODO] breakpoint hits should be stored elsewhere
+                    isAtBreakpoint = threadsListener.isBreakpointHit(jpdaThread);
                     isInDeadlock = deadlockedThreads.contains(jpdaThread);
-                } else {
                 }
 
                 JTree tree = treeView.getTree();

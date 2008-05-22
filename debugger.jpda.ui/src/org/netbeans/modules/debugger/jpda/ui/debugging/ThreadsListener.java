@@ -190,6 +190,18 @@ public final class ThreadsListener implements PropertyChangeListener {
         return hits.size();
     }
     
+    public synchronized boolean isBreakpointHit(JPDAThread thread) {
+        return hits.contains(thread);
+    }
+    
+    public synchronized void goToHit() {
+        hits.goToHit();
+    }
+    
+    // **************************************************************************
+    // private methods
+    // **************************************************************************
+    
     private boolean isCurrent(JPDAThread thread) {
         return debugger.getCurrentThread() == thread;
     }
@@ -240,10 +252,17 @@ public final class ThreadsListener implements PropertyChangeListener {
     }
     
     // **************************************************************************
+    // inner classes
+    // **************************************************************************
     
     class BreakpointHits {
         private Set<JPDAThread> stoppedThreadsSet = new HashSet<JPDAThread>();
         private LinkedList<JPDAThread> stoppedThreads = new LinkedList<JPDAThread>();
+        
+        public void goToHit() {
+            JPDAThread thread = stoppedThreads.getLast();
+            thread.makeCurrent();
+        }
         
         public boolean contains(JPDAThread thread) {
             return stoppedThreadsSet.contains(thread);

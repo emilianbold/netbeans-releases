@@ -112,6 +112,7 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-modules-debugger-jpda-ui-actions-ToggleMethodFieldBreakpointAction.instance"/>
             <file name="org-netbeans-modules-debugger-jpda-ui-actions-EvaluateAction.instance"/>
             <file name="org-netbeans-modules-debugger-jpda-ui-debugging-ThreadsHistoryAction.instance"/>
+            <file name="org-netbeans-modules-debugger-jpda-ui-actions-GoToHitAction.instance"/>
         </folder>
         <folder name="Window">
             <folder name="Debug">
@@ -263,6 +264,9 @@ made subject to such option by the copyright holder.
         </file>
         <file name="D-8.shadow">
             <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-jpda-ui-debugging-ThreadsHistoryAction.instance"/>
+        </file>
+        <file name="D-9.shadow">
+            <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-jpda-ui-actions-GoToHitAction.instance"/>
         </file>
         <file name="D-F9.shadow">
             <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-jpda-ui-actions-EvaluateAction.instance"/>

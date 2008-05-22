@@ -175,11 +175,6 @@ public class InfoPanel extends javax.swing.JPanel {
         hitsLabel.setText(text);
     }
     
-    // [TODO]
-    boolean isBreakpointHit(JPDAThread thread) {
-        return threadToMenuItem.containsKey(thread);
-    }
-
     void setShowDeadlock(final boolean visible) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
