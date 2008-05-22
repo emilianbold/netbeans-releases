@@ -105,9 +105,6 @@ public class CallModelImpl implements CallModel {
         return name;
     }
 
-    public void refresh() {
-    }
-    
     public List<Call> getCallers(Function declaration) {
         FunctionImpl functionImpl = (FunctionImpl) declaration;
         CsmFunction owner = functionImpl.getDeclaration();
