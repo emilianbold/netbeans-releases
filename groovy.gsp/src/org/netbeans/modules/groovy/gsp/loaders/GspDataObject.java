@@ -39,45 +39,36 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.groovy.gsp.editor;
+package org.netbeans.modules.groovy.gsp.loaders;
 
-import org.netbeans.modules.html.editor.options.HTMLOptions;
-import java.util.MissingResourceException;
-import org.netbeans.modules.groovy.gsp.lexer.api.GspTokenId;
-import org.openide.util.NbBundle;
+import java.io.IOException;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObjectExistsException;
+import org.openide.loaders.MultiDataObject;
+import org.openide.nodes.CookieSet;
+import org.openide.nodes.Node;
+import org.openide.util.Lookup;
+import org.openide.text.DataEditorSupport;
 
-/**
-* Options for the GSP editor kit
-*
-* @author Miloslav Metelka
-* @author Tor Norbye
-* @version 1.00
-*/
-public class GspOptions extends HTMLOptions {
-
-    public static final String GSP = "gsp"; // NOI18N
-
-    static final long serialVersionUID = 75289734362748537L;
-   
-    public GspOptions() {
-        super(GspKit.class, GSP);
+public class GspDataObject extends MultiDataObject
+        implements Lookup.Provider {
+    
+    public GspDataObject(FileObject pf, GspDataLoader loader) throws DataObjectExistsException, IOException {
+        super(pf, loader);
+        CookieSet cookies = getCookieSet();
+        cookies.add((Node.Cookie) DataEditorSupport.create(this, getPrimaryEntry(), cookies));
+        //CookieSet set = getCookieSet();
+        //set.add(HtmlEditorSupport.class, this);
+        //set.add(ViewSupport.class, this);
     }
-
-    /**
-     * Get localized string
-     */
+    
     @Override
-    protected String getString(String key) {
-        try {
-            return NbBundle.getMessage(GspOptions.class, key);
-        } catch (MissingResourceException e) {
-            return super.getString(key);
-        }
+    protected Node createNodeDelegate() {
+        return new GspDataNode(this, getLookup());
     }
-
+    
     @Override
-    protected String getContentType() {
-        return GspTokenId.MIME_TYPE;
+    public Lookup getLookup() {
+        return getCookieSet().getLookup();
     }
-
 }

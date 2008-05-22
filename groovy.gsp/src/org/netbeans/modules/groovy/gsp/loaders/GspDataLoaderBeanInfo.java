@@ -39,45 +39,35 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.groovy.gsp.editor;
+package org.netbeans.modules.groovy.gsp.loaders;
 
-import org.netbeans.modules.html.editor.options.HTMLOptions;
-import java.util.MissingResourceException;
-import org.netbeans.modules.groovy.gsp.lexer.api.GspTokenId;
-import org.openide.util.NbBundle;
+import java.awt.Image;
+import java.beans.BeanInfo;
+import java.beans.IntrospectionException;
+import java.beans.Introspector;
+import java.beans.SimpleBeanInfo;
+import org.openide.loaders.UniFileLoader;
+import org.openide.util.Utilities;
 
-/**
-* Options for the GSP editor kit
-*
-* @author Miloslav Metelka
-* @author Tor Norbye
-* @version 1.00
-*/
-public class GspOptions extends HTMLOptions {
-
-    public static final String GSP = "gsp"; // NOI18N
-
-    static final long serialVersionUID = 75289734362748537L;
-   
-    public GspOptions() {
-        super(GspKit.class, GSP);
-    }
-
-    /**
-     * Get localized string
-     */
+public class GspDataLoaderBeanInfo extends SimpleBeanInfo {
+    
     @Override
-    protected String getString(String key) {
+    public BeanInfo[] getAdditionalBeanInfo() {
         try {
-            return NbBundle.getMessage(GspOptions.class, key);
-        } catch (MissingResourceException e) {
-            return super.getString(key);
+            return new BeanInfo[] {Introspector.getBeanInfo(UniFileLoader.class)};
+        } catch (IntrospectionException e) {
+            throw new AssertionError(e);
         }
     }
-
+    
     @Override
-    protected String getContentType() {
-        return GspTokenId.MIME_TYPE;
+    public Image getIcon(int type) {
+        if (type == BeanInfo.ICON_COLOR_16x16 || type == BeanInfo.ICON_MONO_16x16) {
+            return Utilities.loadImage("org/netbeans/modules/groovy/gsp/resources/gsp16.png");
+        } else {
+            return null;
+        }
+        
     }
-
+    
 }
