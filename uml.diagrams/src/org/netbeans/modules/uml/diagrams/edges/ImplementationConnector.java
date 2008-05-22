@@ -46,7 +46,6 @@ import javax.swing.Action;
 import org.netbeans.api.visual.anchor.AnchorShape;
 import org.netbeans.api.visual.anchor.PointShape;
 import org.netbeans.api.visual.widget.Scene;
-import org.netbeans.modules.uml.diagrams.DefaultWidgetContext;
 import org.netbeans.modules.uml.diagrams.nodes.InterfaceWidget;
 import org.netbeans.modules.uml.drawingarea.view.WidgetViewManager;
 
@@ -64,7 +63,6 @@ public class ImplementationConnector extends AbstractUMLConnectionWidget
         
         initializeAsDependency();
         addToLookup(new ImplementationViewManager());
-        addToLookup(new DefaultWidgetContext("Implementation"));
     }
     
     protected void initializeAsDependency()

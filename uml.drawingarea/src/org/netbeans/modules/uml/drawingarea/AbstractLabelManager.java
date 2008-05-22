@@ -42,6 +42,7 @@
 package org.netbeans.modules.uml.drawingarea;
 
 import java.awt.Color;
+import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.HashMap;
@@ -97,7 +98,7 @@ public abstract class AbstractLabelManager implements LabelManager
         showLabel(name, LabelType.EDGE);
     }
     
-    public void showLabel(String name, LabelType type)
+    public void showLabel(final String name, final LabelType type)
     {
         String completeName = name + "_" + type.toString();
         Widget label = labelMap.get(completeName);
@@ -119,6 +120,23 @@ public abstract class AbstractLabelManager implements LabelManager
             WidgetAction.Chain chain = child.createActions(DesignerTools.SELECT);
             chain.addAction(scene.createSelectAction());
             chain.addAction(ActionFactory.createMoveAction());
+            chain.addAction(new WidgetAction.Adapter()
+            {
+                public WidgetAction.State keyPressed(Widget widget,
+                                                     WidgetAction.WidgetKeyEvent event)
+                {
+                    WidgetAction.State retVal = WidgetAction.State.REJECTED;
+                    
+                    if((event.getKeyCode() == KeyEvent.VK_DELETE) ||
+                       (event.getKeyCode() == KeyEvent.VK_BACK_SPACE))
+                    {
+                        hideLabel(name, type);
+                        retVal = WidgetAction.State.CONSUMED;
+                    }
+                    
+                    return retVal;
+                }
+            });
             
             if(label != null)
             {
