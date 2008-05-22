@@ -64,6 +64,7 @@ import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.modules.debugger.jpda.ui.models.DebuggingNodeModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.awt.DropDownButtonFactory;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 /**
@@ -126,7 +127,7 @@ public class InfoPanel extends javax.swing.JPanel {
                     return;
                 }
                 arrowMenu.remove(item);
-                hitsLabel.setText("New Breakpoint Hits (" + newHitsCount + ")"); // [TODO]
+                setHitsText(newHitsCount);
                 if (newHitsCount == 0) {
                     hideHitsPanel();
                 }
@@ -156,12 +157,22 @@ public class InfoPanel extends javax.swing.JPanel {
                 });
                 threadToMenuItem.put(thread, item);
                 arrowMenu.add(item);
-                hitsLabel.setText("New Breakpoint Hits (" + newHitsCount + ")"); // [TODO]
+                setHitsText(newHitsCount);
                 if (newHitsCount == 1) {
                     showHitsPanel();
                 }
             }
         });
+    }
+    
+    private void setHitsText(int hitsNumber) {
+        String text;
+        if (hitsNumber == 1) {
+            text = NbBundle.getMessage(InfoPanel.class, "LBL_OneNewHit");
+        } else {
+            text = NbBundle.getMessage(InfoPanel.class, "LBL_NewHits", hitsNumber);
+        }
+        hitsLabel.setText(text);
     }
     
     // [TODO]
