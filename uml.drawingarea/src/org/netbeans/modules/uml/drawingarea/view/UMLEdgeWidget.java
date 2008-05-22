@@ -156,24 +156,28 @@ public abstract class UMLEdgeWidget extends ConnectionWidget implements DiagramE
         if (manager != null)
         {
             List<EdgeInfo.EdgeLabel> edgeLabels = edgeReader.getLabels();
+            
             for (Iterator<EdgeInfo.EdgeLabel> it = edgeLabels.iterator(); it.hasNext();)
             {
                 EdgeInfo.EdgeLabel edgeLabel = it.next();
-                if (edgeLabel.getLabel().equalsIgnoreCase(NAME))
-                {
-                    manager.showLabel(NAME);
-                }
-                else if (edgeLabel.getLabel().equalsIgnoreCase(STEREOTYPE))
-                {
-                    manager.showLabel(STEREOTYPE);
-                }
-                else if (edgeLabel.getLabel().equalsIgnoreCase(TAGGEDVALUE))
-                {
-                    manager.showLabel(TAGGEDVALUE);
-                }
-
+                manager.showLabel(edgeLabel.getLabel());
+//                if (edgeLabel.getLabel().equalsIgnoreCase(NAME))
+//                {
+//                    manager.showLabel(NAME);
+//                }
+//                else if (edgeLabel.getLabel().equalsIgnoreCase(STEREOTYPE))
+//                {
+//                    manager.showLabel(STEREOTYPE);
+//                }
+//                else if (edgeLabel.getLabel().equalsIgnoreCase(TAGGEDVALUE))
+//                {
+//                    manager.showLabel(TAGGEDVALUE);
+//                }
+//                else if (edgeLabel.getLabel().equalsIgnoreCase("GuardCondition"))
+//                {
+//                    manager.showLabel("GuardCondition");
+//                }
             }
-
         }
     }
 
