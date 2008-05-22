@@ -45,6 +45,7 @@ import java.util.Collections;
 import org.netbeans.modules.parsing.impl.TaskProcessor;
 import org.netbeans.modules.parsing.impl.UserTaskImpl;
 import org.netbeans.modules.parsing.spi.ParseException;
+import sun.tools.jstat.ParserException;
 
 
 /**
@@ -112,15 +113,11 @@ public final class ParserManager {
                             userTask
     ) throws ParseException {
         TaskProcessor.runUserTask (new GenericUserTask () {
-            public void run () {
+            public void run () throws Exception {
                 for (Source source : sources) {
                     Snapshot snapshot = source.createSnapshot ();
                     ResultIterator resultIterator = new ResultIterator (snapshot, userTask);
-                    try {
-                        userTask.run (resultIterator);
-                    } catch (Exception ex) {
-                        //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                    }
+                    userTask.run (resultIterator);
                 }
             }
         });
