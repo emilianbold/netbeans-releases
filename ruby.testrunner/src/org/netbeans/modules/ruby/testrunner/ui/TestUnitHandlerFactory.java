@@ -107,8 +107,18 @@ public class TestUnitHandlerFactory extends OutputRecognizer {
             testcase.className = matcher.group(3);
             testcase.name = matcher.group(2);
             testcase.trouble = new Report.Trouble(true);
+            testcase.trouble.stackTrace = getStackTrace();
+            session.addTestCase(testcase);
+            manager.displayOutput(session, testcase.name + "(" + testcase.className + "):", false); //NOI18N
+            for (String line : testcase.trouble.stackTrace) {
+                manager.displayOutput(session, line, true);
+            }
+            manager.displayOutput(session, "", false);
+        }
+
+        // package private for tests
+        String[] getStackTrace() {
             String message = matcher.group(4);
-            
             List<String> stackTrace = new ArrayList<String>();
             stackTrace.add(message);
             for (String location : matcher.group(5).split("%BR%")) { //NOI18N
@@ -116,15 +126,9 @@ public class TestUnitHandlerFactory extends OutputRecognizer {
                     stackTrace.add(location);
                 }
             }
-            testcase.trouble.stackTrace = stackTrace.toArray(new String[stackTrace.size()]);
-            session.addTestCase(testcase);
-            manager.displayOutput(session, testcase.name + "(" + testcase.className + "):", false); //NOI18N
-            for (String line : stackTrace) {
-                manager.displayOutput(session, line, true);
-            }
-            manager.displayOutput(session, "", false);
+            return stackTrace.toArray(new String[stackTrace.size()]);
         }
-
+        
         @Override
         RecognizedOutput getRecognizedOutput() {
             return new FilteredOutput(matcher.group(4));

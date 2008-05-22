@@ -62,8 +62,15 @@ public abstract class TestRecognizerHandler {
     }
 
     final boolean matches(String line) {
+        return match(line).matches();
+    }
+    
+    /**
+     * <i>Package private for unit tests, otherwise don't use directly</i>.
+     */
+    final Matcher match(String line) {
         this.matcher = pattern.matcher(line);
-        return matcher.matches();
+        return matcher;
     }
 
     abstract void updateUI(Manager manager, TestSession session);
