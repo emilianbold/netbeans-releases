@@ -39,45 +39,35 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.groovy.gsp.editor;
+package org.netbeans.modules.groovy.gsp.loaders;
 
-import org.netbeans.modules.html.editor.options.HTMLOptions;
-import java.util.MissingResourceException;
-import org.netbeans.modules.groovy.gsp.lexer.api.GspTokenId;
-import org.openide.util.NbBundle;
+import org.openide.loaders.DataNode;
+import org.openide.nodes.Children;
+import org.openide.util.Lookup;
 
-/**
-* Options for the GSP editor kit
-*
-* @author Miloslav Metelka
-* @author Tor Norbye
-* @version 1.00
-*/
-public class GspOptions extends HTMLOptions {
-
-    public static final String GSP = "gsp"; // NOI18N
-
-    static final long serialVersionUID = 75289734362748537L;
-   
-    public GspOptions() {
-        super(GspKit.class, GSP);
+public class GspDataNode extends DataNode {
+    
+    private static final String IMAGE_ICON_BASE = "org/netbeans/modules/groovy/gsp/resources/gsp16.png";
+    
+    public GspDataNode(GspDataObject obj) {
+        super(obj, Children.LEAF);
+        setIconBaseWithExtension(IMAGE_ICON_BASE);
     }
-
-    /**
-     * Get localized string
-     */
-    @Override
-    protected String getString(String key) {
-        try {
-            return NbBundle.getMessage(GspOptions.class, key);
-        } catch (MissingResourceException e) {
-            return super.getString(key);
-        }
+    GspDataNode(GspDataObject obj, Lookup lookup) {
+        super(obj, Children.LEAF, lookup);
+        setIconBaseWithExtension(IMAGE_ICON_BASE);
     }
-
-    @Override
-    protected String getContentType() {
-        return GspTokenId.MIME_TYPE;
-    }
-
+    
+    //    /** Creates a property sheet. */
+    //    protected Sheet createSheet() {
+    //        Sheet s = super.createSheet();
+    //        Sheet.Set ss = s.get(Sheet.PROPERTIES);
+    //        if (ss == null) {
+    //            ss = Sheet.createPropertiesSet();
+    //            s.put(ss);
+    //        }
+    //        // TODO add some relevant properties: ss.put(...)
+    //        return s;
+    //    }
+    
 }

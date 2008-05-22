@@ -39,45 +39,42 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.groovy.gsp.editor;
+package org.netbeans.modules.groovy.gsp.loaders;
 
-import org.netbeans.modules.html.editor.options.HTMLOptions;
-import java.util.MissingResourceException;
+import java.io.IOException;
 import org.netbeans.modules.groovy.gsp.lexer.api.GspTokenId;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObjectExistsException;
+import org.openide.loaders.MultiDataObject;
+import org.openide.loaders.UniFileLoader;
 import org.openide.util.NbBundle;
 
-/**
-* Options for the GSP editor kit
-*
-* @author Miloslav Metelka
-* @author Tor Norbye
-* @version 1.00
-*/
-public class GspOptions extends HTMLOptions {
-
-    public static final String GSP = "gsp"; // NOI18N
-
-    static final long serialVersionUID = 75289734362748537L;
-   
-    public GspOptions() {
-        super(GspKit.class, GSP);
+public class GspDataLoader extends UniFileLoader {
+    
+    private static final long serialVersionUID = 1L;
+    
+    public GspDataLoader() {
+        super("org.netbeans.modules.groovy.gsp.loaders.GspDataObject");
     }
-
-    /**
-     * Get localized string
-     */
+    
     @Override
-    protected String getString(String key) {
-        try {
-            return NbBundle.getMessage(GspOptions.class, key);
-        } catch (MissingResourceException e) {
-            return super.getString(key);
-        }
+    protected String defaultDisplayName() {
+        return NbBundle.getMessage(GspDataLoader.class, "LBL_Gsp_loader_name");
     }
-
+    
     @Override
-    protected String getContentType() {
-        return GspTokenId.MIME_TYPE;
+    protected void initialize() {
+        super.initialize();
+        getExtensions().addMimeType(GspTokenId.MIME_TYPE);
     }
-
+    
+    protected MultiDataObject createMultiObject(FileObject primaryFile) throws DataObjectExistsException, IOException {
+        return new GspDataObject(primaryFile, this);
+    }
+    
+    @Override
+    protected String actionsContext() {
+        return "Loaders/" + GspTokenId.MIME_TYPE + "/Actions";
+    }
+    
 }
