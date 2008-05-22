@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,60 +34,19 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.cnd.callgraph.api.ui;
-
-import org.netbeans.modules.cnd.callgraph.api.CallModel;
-import org.openide.nodes.Node;
-import org.openide.util.Lookup;
 
 /**
  *
  * @author Alexander Simon
  */
-public abstract class CallGraphModelFactory {
-    private static final CallGraphModelFactory DEFAULT = new Default();
-    
-    protected CallGraphModelFactory() {
-    }
-
-    public abstract CallModel getModel(Node[] activatedNodes);
-    public abstract CallGraphUI getUI(CallModel model);
-    
-    public static CallGraphModelFactory getDefault() {
-        return DEFAULT;
-    }
-
-    private static final class Default extends CallGraphModelFactory {
-        private final Lookup.Result<CallGraphModelFactory> res;
-
-        private Default() {
-            res = Lookup.getDefault().lookupResult(CallGraphModelFactory.class);
-        }
-
-        @Override
-        public CallModel getModel(Node[] activatedNodes) {
-            for (CallGraphModelFactory resolver : res.allInstances()) {
-                CallModel out = resolver.getModel(activatedNodes);
-                if (out != null) {
-                    return out;
-                }
-            }
-            return null;
-        }
-
-        @Override
-        public CallGraphUI getUI(CallModel model) {
-            for (CallGraphModelFactory resolver : res.allInstances()) {
-                CallGraphUI out = resolver.getUI(model);
-                if (out != null) {
-                    return out;
-                }
-            }
-            return null;
-        }
-
-    }    
+public interface CallGraphUI {
+    /**
+     * if method returns true the call graph shows tree and graph views.
+     * if method returns false the call graph shows only tree view.
+     */
+    boolean showGraph();
 }
