@@ -15,6 +15,15 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.libs.freemarker</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <implementation-version/>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.servletjspapi</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -70,10 +79,7 @@
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/hibernate/hibernate-annotations.jar</runtime-relative-path>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/hibernate/freemarker.jar</runtime-relative-path>
-            </class-path-extension>
+            </class-path-extension>           
         </data>
     </configuration>
 </project>
