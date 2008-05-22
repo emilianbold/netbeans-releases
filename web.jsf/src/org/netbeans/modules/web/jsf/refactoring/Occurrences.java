@@ -173,11 +173,11 @@ public class Occurrences {
         }
         
         public void performChange(){
-            changeBeanClass(newValue);
+            changeBeanClass(oldValue, newValue);
         }
         
         public void undoChange(){
-            changeBeanClass(oldValue);
+            changeBeanClass(newValue, oldValue);
         }
         
         public String getWhereUsedMessage(){
@@ -216,18 +216,17 @@ public class Occurrences {
                     new Object[] { bean.getManagedBeanName(), getElementText()});
         }
         
-        private void changeBeanClass(String className){
+        private void changeBeanClass(String oldClass, String newClass){
             FacesConfig facesConfig = ConfigurationUtils.getConfigModel(config, true).getRootComponent();
             List <ManagedBean> beans = facesConfig.getManagedBeans();
             for (Iterator<ManagedBean> it = beans.iterator(); it.hasNext();) {
                 ManagedBean managedBean = it.next();
-                if (bean.getManagedBeanName().equals(managedBean.getManagedBeanName())){
+                if (oldClass.equals(managedBean.getManagedBeanClass())){
                     facesConfig.getModel().startTransaction();
-                    managedBean.setManagedBeanClass(className);
+                    managedBean.setManagedBeanClass(newClass);
                     facesConfig.getModel().endTransaction();
                     continue;
                 }
-                
             }
         }
         
@@ -236,7 +235,12 @@ public class Occurrences {
             try{
                 DataObject dataObject = DataObject.find(config);
                 BaseDocument document = JSFEditorUtilities.getBaseDocument(dataObject);
-                int [] offsets = JSFEditorUtilities.getManagedBeanDefinition(document, bean.getManagedBeanName());
+                int [] offsets;
+                if (bean.getManagedBeanName() != null) {
+                    offsets = JSFEditorUtilities.getManagedBeanDefinition(document, "managed-bean-name", bean.getManagedBeanName()); //NOI18N
+                } else {
+                    offsets = JSFEditorUtilities.getManagedBeanDefinition(document, "managed-bean-class", bean.getManagedBeanClass()); //NOI18N
+                }
                 String text = document.getText(offsets);
                 int offset = text.indexOf(getXMLElementName());
                 offset = offsets[0] + text.indexOf(oldValue, offset);
