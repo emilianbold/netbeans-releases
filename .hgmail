@@ -16,6 +16,7 @@ cvs@enterprise.netbeans.org=bpel.core/*,bpel.debugger/*,bpel.debugger.api/*,bpel
 cvs@extbrowser.netbeans.org=extbrowser/*
 cvs@form.netbeans.org=form/*,form.j2ee/*,form.kit/*,swingapp/*
 cvs@graph.netbeans.org=api.visual/*
+cvs@groovy.netbeans.org=groovy.editor/*,groovy.grails/*,groovy.grailsproject/*,groovy.gsp/*,groovy.kit/*,groovy.support/*
 cvs@html.netbeans.org=html/*,html.editor/*,html.editor.lib/*,html.lexer/*
 cvs@httpserver.netbeans.org=httpserver/*,servletapi/*
 cvs@i18n.netbeans.org=i18n/*,i18n.form/*
