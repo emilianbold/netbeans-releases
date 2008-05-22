@@ -533,9 +533,8 @@ public class MySQLDatabaseServer implements DatabaseServer {
      * @see #getStartWaitTime()
      */
     public void start() throws DatabaseException {        
-        if ( !Utils.isValidExecutable(getStopPath(), false)) {
-            throw new DatabaseException(Utils.getMessage(
-                    "MSG_InvalidStartCommand"));
+        if (!Utils.isValidExecutable(getStopPath(), false)) {
+            throw new DatabaseException(Utils.getMessage("MSG_InvalidStartCommand"));
         }
         
         try {
@@ -543,36 +542,27 @@ public class MySQLDatabaseServer implements DatabaseServer {
                     true, Utils.getMessage( 
                         "LBL_StartOutputTab"));
             
-            // Spawn off a thread to poll the server and attempt to 
-            // reconnect.  Give up after 5 minutes
+            // Spawn off a thread to try reconnecting to the server after
+            // a few seconds
             RequestProcessor.getDefault().post(
                 new Runnable() {
                     public void run() {
-                        long fiveMinutes = 1000 * 60 * 5;
-                        long runTime = 0;
+                        try {
+                            Thread.sleep(3000);
+                        } catch ( InterruptedException e ) {
+                            return;
+                        }
 
-                        while ( runTime < fiveMinutes ) {
-                            try {
-                                Thread.sleep(1000);
-                            } catch ( InterruptedException e ) {
-                                break;
-                            }
-
-                            try {
-                                reconnect();
-                                return;
-                            } catch ( DatabaseException e ) {
-                            }
-
-                            runTime += 1000;
-                        }                        
+                        try {
+                            reconnect();
+                        } catch ( DatabaseException e ) {
+                        }
                     }
             });
 
         } catch ( Exception e ) {
             throw new DatabaseException(e);
         }
-
     }
     
     public void stop() throws DatabaseException {
