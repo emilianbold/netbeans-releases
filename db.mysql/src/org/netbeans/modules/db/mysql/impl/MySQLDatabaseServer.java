@@ -685,7 +685,7 @@ public class MySQLDatabaseServer implements DatabaseServer {
                 if ( outqueue != null ) {
                     this.throwable = e;
                 } else {
-                    LOGGER.log(Level.WARNING, null, e);
+                    LOGGER.log(Level.INFO, null, e);
                 }
             } finally {
                 if (outqueue != null) {
