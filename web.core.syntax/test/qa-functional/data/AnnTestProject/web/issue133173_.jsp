@@ -2,8 +2,8 @@
 <script type="text/javascript">
     function f()
     {
-        <c:url value="" value="${param.dd}">
-            <c:param name="bar" value="${param.value}"></c:param>
+        <c:url value="" value="${param.dd}()">
+            <c:param name="bar" value="${param.value}()"></c:param>
         </c:url>
     }
 </script>

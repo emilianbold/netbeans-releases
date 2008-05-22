@@ -53,6 +53,7 @@ import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.view.ListView;
 import org.openide.loaders.DataObject;
+import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -112,16 +113,20 @@ public final class AntNavigatorPanel implements NavigatorPanel {
                 @Override
                 public boolean requestFocusInWindow() {
                     boolean b = view.requestFocusInWindow();
-                    if (manager.getSelectedNodes().length == 0) {
-                        Node[] children = manager.getRootContext().getChildren().getNodes(true);
-                        if (children.length > 0) {
-                            try {
-                                manager.setSelectedNodes(new Node[] {children[0]});
-                            } catch (PropertyVetoException e) {
-                                assert false : e;
+                    Children.MUTEX.postReadRequest(new Runnable() {
+                        public void run() {
+                            if (manager.getSelectedNodes().length == 0) {
+                                Node[] children = manager.getRootContext().getChildren().getNodes(true);
+                                if (children.length > 0) {
+                                    try {
+                                        manager.setSelectedNodes(new Node[] {children[0]});
+                                    } catch (PropertyVetoException e) {
+                                        assert false : e;
+                                    }
+                                }
                             }
                         }
-                    }
+                    });
                     return b;
                 }
                 public Lookup getLookup() {

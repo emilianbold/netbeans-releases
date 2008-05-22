@@ -44,7 +44,7 @@ made subject to such option by the copyright holder.
     <testbag testattribs="validation" name="validation Suite">
         <testset dir="qa-functional/src">            
             <patternset>             
-                <include name="org/netbeans/modules/test/refactoring/FindUsagesTestCase.class"/>                                            
+                <include name="org/netbeans/modules/test/refactoring/FindUsagesClassTest.class"/>                                            
             </patternset>
         </testset>
     </testbag>

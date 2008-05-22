@@ -2863,6 +2863,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                 for (Tree t : argTypes)
                     types[j++] = controller.getTrees().getTypeMirror(new TreePath(path, t));
                 List<Pair<ExecutableElement, ExecutableType>> methods = null;
+                String name = null;
                 Tree mid = mit.getMethodSelect();
                 path = new TreePath(path, mid);
                 switch (mid.getKind()) {
@@ -2911,7 +2912,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                                 }
                             }
                         };
-                        String name = ((IdentifierTree)mid).getName().toString();
+                        name = ((IdentifierTree)mid).getName().toString();
                         if (SUPER_KEYWORD.equals(name) && enclClass != null) {
                             TypeMirror superclass = enclClass.getSuperclass();
                             methods = getMatchingExecutables(superclass, controller.getElementUtilities().getMembers(superclass, acceptor), INIT, types, controller.getTypes());
@@ -2920,6 +2921,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                             methods = getMatchingExecutables(thisclass, controller.getElementUtilities().getMembers(thisclass, acceptor), INIT, types, controller.getTypes());
                         } else {
                             methods = getMatchingExecutables(enclClass != null ? enclClass.asType() : null, controller.getElementUtilities().getLocalMembersAndVars(scope, acceptor), name, types, controller.getTypes());
+                            name = null;
                         }
                         break;
                     }
@@ -2928,7 +2930,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     Elements elements = controller.getElements();
                     for (Pair<ExecutableElement, ExecutableType> method : methods)
                         if (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(method.a))
-                            results.add(JavaCompletionItem.createParametersItem(method.a, method.b, anchorOffset, elements.isDeprecated(method.a), types.length));
+                            results.add(JavaCompletionItem.createParametersItem(method.a, method.b, anchorOffset, elements.isDeprecated(method.a), types.length, name));
                 }
             }
         }
@@ -2961,7 +2963,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                 Elements elements = controller.getElements();
                 for (Pair<ExecutableElement, ExecutableType> ctor : ctors)
                     if (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(ctor.a))
-                        results.add(JavaCompletionItem.createParametersItem(ctor.a, ctor.b, anchorOffset, elements.isDeprecated(ctor.a), types.length));
+                        results.add(JavaCompletionItem.createParametersItem(ctor.a, ctor.b, anchorOffset, elements.isDeprecated(ctor.a), types.length, null));
             }
         }
 

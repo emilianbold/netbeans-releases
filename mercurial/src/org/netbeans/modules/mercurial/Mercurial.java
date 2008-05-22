@@ -204,27 +204,15 @@ public class Mercurial {
             return;
         }
         if (version != null && !goodVersion) {
-             if (runVersion == null || !runVersion.equals(version)) {
+            if (runVersion == null || !runVersion.equals(version)) {
                 Preferences prefs = HgModuleConfig.getDefault().getPreferences();
-                NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(NbBundle.getMessage(Mercurial.class, "MSG_VERSION_CONFIRM_QUERY", version)); // NOI18N
-                descriptor.setTitle(NbBundle.getMessage(Mercurial.class, "MSG_VERSION_CONFIRM")); // NOI18N
-                descriptor.setMessageType(JOptionPane.WARNING_MESSAGE);
-                descriptor.setOptionType(NotifyDescriptor.YES_NO_OPTION);
 
-                Object res = DialogDisplayer.getDefault().notify(descriptor);
                 OutputLogger logger = getLogger(Mercurial.MERCURIAL_OUTPUT_TAB_TITLE);
-                if (res == NotifyDescriptor.YES_OPTION) {
-                    goodVersion = true;
-                    prefs.put(HgModuleConfig.PROP_RUN_VERSION, version);
-                    logger.outputInRed(NbBundle.getMessage(Mercurial.class, "MSG_USING_VERSION_MSG", version)); // NOI18N);
-                } else {
-                    prefs.remove(HgModuleConfig.PROP_RUN_VERSION);
-                    logger.outputInRed(NbBundle.getMessage(Mercurial.class, "MSG_NOT_USING_VERSION_MSG", version)); // NOI18N);
-                }
+                prefs.put(HgModuleConfig.PROP_RUN_VERSION, version);
+                logger.outputInRed(NbBundle.getMessage(Mercurial.class, "MSG_USING_UNSUPPORTED_VERSION_MSG", version)); // NOI18N);
                 logger.closeLog();
-            } else {
-                goodVersion = true;
             }
+            goodVersion = true;         
         } else if (version == null) {
             Preferences prefs = HgModuleConfig.getDefault().getPreferences();
             prefs.remove(HgModuleConfig.PROP_RUN_VERSION);

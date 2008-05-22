@@ -22,6 +22,7 @@
  */
 package org.netbeans.test.installer;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.logging.Logger;
 import junit.framework.Test;
@@ -49,7 +50,7 @@ public class TestUninstallerAll extends NbTestCase {
         TestData data = new TestData(Logger.getLogger("global"));
 
         try {
-            data.setWorkDir(getWorkDir());
+            data.setWorkDir(new File(System.getProperty("xtest.tmpdir")));
         } catch (IOException ex) {
             NbTestCase.fail("Can not get WorkDir");
         }

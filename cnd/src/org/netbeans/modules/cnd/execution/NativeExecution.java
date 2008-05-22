@@ -208,7 +208,7 @@ public class NativeExecution extends ExecutionSupport {
                         output.write("\n"); // NOI18N
                     else
                         output.write((char) read);
-                    output.flush();
+                    //output.flush(); // 135380 
                 }
                 output.flush();
             } catch (IOException e) {

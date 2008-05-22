@@ -73,7 +73,7 @@ import org.openide.util.NbBundle;
  */
 final class BasicConfVisualPanel extends BasicVisualPanel.NewTemplatePanel {
     
-    static final String EXAMPLE_BASE_NAME = "org.yourorghere."; // NOI18N
+    static final String EXAMPLE_BASE_NAME = "org.<yourorghere>."; // NOI18N
     
     private boolean wasBundleUpdated;
     

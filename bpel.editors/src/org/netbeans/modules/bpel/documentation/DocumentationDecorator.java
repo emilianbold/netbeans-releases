@@ -81,6 +81,10 @@ public final class DocumentationDecorator extends DecorationProvider
   public Decoration getDecoration(BpelEntity entity) {
     String documentation = getDocumentation(entity);
     UniqueId id = entity.getUID();
+
+    if (id == null) {
+      return null;
+    }
 //out();
 //out("entity: " + entity);
 //out(" docum: " + documentation);

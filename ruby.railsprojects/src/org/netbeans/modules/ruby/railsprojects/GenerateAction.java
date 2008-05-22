@@ -49,7 +49,6 @@ import java.util.List;
 import javax.swing.JButton;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.event.ChangeListener;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.gsf.api.EditorAction;
@@ -380,5 +379,10 @@ public final class GenerateAction extends NodeAction implements EditorAction {
 
     public Class getShortDescriptionBundleClass() {
         return GenerateAction.class;
+    }
+    
+    public boolean appliesTo(String mimeType) {
+        return RubyInstallation.RHTML_MIME_TYPE.equals(mimeType) ||
+                RubyInstallation.RUBY_MIME_TYPE.equals(mimeType);
     }
 }

@@ -618,11 +618,15 @@ public class Reformatter implements ReformatTask {
                                         blankLines(cs.getBlankLinesAfterFields());
                                     }
                                 } else {
-                                    if (!fieldGroup && !first)
-                                        blankLines(cs.getBlankLinesBeforeFields());
-                                    scan(member, p);
-                                    if(!fieldGroup)
-                                        blankLines(cs.getBlankLinesAfterFields());
+                                    boolean b = tokens.moveNext();
+                                    if (b) {
+                                        tokens.movePrevious();
+                                        if (!fieldGroup && !first)
+                                            blankLines(cs.getBlankLinesBeforeFields());
+                                        scan(member, p);
+                                        if(!fieldGroup)
+                                            blankLines(cs.getBlankLinesAfterFields());
+                                    }
                                 }
                                 break;
                             case METHOD:
@@ -2727,8 +2731,10 @@ public class Reformatter implements ReformatTask {
             int idx = 0;
             while ((idx = text.indexOf('\n', idx)) >= 0) { //NOI18N
                 int i = idx + 1;
-                while(text.charAt(i) <= ' ' && text.charAt(i) != '\n') //NOI18N
+                while(i < text.length() && text.charAt(i) <= ' ' && text.charAt(i) != '\n') //NOI18N
                     i++;
+                if (i >= text.length())
+                    break;
                 String s = text.charAt(i) == '*' ? indent + SPACE : indent;
                 if (!s.equals(text.substring(idx + 1, i)))
                     diffs.addFirst(new Diff(tokens.offset() + idx + 1, tokens.offset() + i, s)); //NOI18N

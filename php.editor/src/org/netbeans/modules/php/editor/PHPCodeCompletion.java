@@ -45,12 +45,10 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import javax.swing.ImageIcon;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -60,13 +58,13 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.gsf.api.CancellableTask;
+import org.netbeans.modules.gsf.api.CodeCompletionContext;
 import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.Completable;
+import org.netbeans.modules.gsf.api.CodeCompletionHandler;
+import org.netbeans.modules.gsf.api.CodeCompletionResult;
 import org.netbeans.modules.gsf.api.CompletionProposal;
 import org.netbeans.modules.gsf.api.ElementHandle;
-import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.gsf.api.HtmlFormatter;
-import org.netbeans.modules.gsf.api.Modifier;
 import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.modules.gsf.api.ParameterInfo;
 import org.netbeans.modules.gsf.api.ParserResult;
@@ -113,7 +111,7 @@ import org.openide.util.NbBundle;
  *
  * @author Tomasz.Slota@Sun.COM
  */
-public class PHPCodeCompletion implements Completable {
+public class PHPCodeCompletion implements CodeCompletionHandler {
     private static final List<PHPTokenId[]> CLASS_NAME_TOKENCHAINS = Arrays.asList(
         new PHPTokenId[]{PHPTokenId.PHP_NEW},
         new PHPTokenId[]{PHPTokenId.PHP_NEW, PHPTokenId.WHITESPACE},
@@ -154,8 +152,6 @@ public class PHPCodeCompletion implements Completable {
     private final static String[] PHP_CLASS_KEYWORDS = {
         "$this->", "self::", "parent::"
     };
-    
-    private static ImageIcon keywordIcon = null;
     
     private boolean caseSensitive;
     private NameKind nameKind;
@@ -241,8 +237,12 @@ public class PHPCodeCompletion implements Completable {
         return tokens.toArray(new Token[tokens.size()]);
     }
 
-    public List<CompletionProposal> complete(CompilationInfo info, int caretOffset, String prefix, NameKind kind, QueryType queryType, boolean caseSensitive, HtmlFormatter formatter) {
-        this.caseSensitive = caseSensitive;
+    public CodeCompletionResult complete(CodeCompletionContext completionContext) {
+        CompilationInfo info = completionContext.getInfo();
+        int caretOffset = completionContext.getCaretOffset();
+        String prefix = completionContext.getPrefix();
+        this.caseSensitive = completionContext.isCaseSensitive();
+        HtmlFormatter formatter = completionContext.getFormatter();
         this.nameKind = caseSensitive ? NameKind.PREFIX : NameKind.CASE_INSENSITIVE_PREFIX;
         
         List<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
@@ -250,12 +250,12 @@ public class PHPCodeCompletion implements Completable {
         PHPParseResult result = (PHPParseResult) info.getEmbeddedResult(PHPLanguage.PHP_MIME_TYPE, caretOffset);
         
         if (result.getProgram() == null){
-            return Collections.<CompletionProposal>emptyList();
+            return CodeCompletionResult.NONE;
         }
         
         CompletionContext context = findCompletionContext(info, caretOffset);
         
-        CompletionRequest request = new CompletionRequest();
+        PHPCompletionItem.CompletionRequest request = new PHPCompletionItem.CompletionRequest();
         request.anchor = caretOffset - prefix.length();
         request.formatter = formatter;
         request.result = result;
@@ -275,8 +275,8 @@ public class PHPCodeCompletion implements Completable {
                 autoCompleteExpression(proposals, request);
                 break;
             case HTML:
-                proposals.add(new KeywordItem("<?php", request)); //NOI18N
-                proposals.add(new KeywordItem("<?=", request)); //NOI18N
+                proposals.add(new PHPCompletionItem.KeywordItem("<?php", request)); //NOI18N
+                proposals.add(new PHPCompletionItem.KeywordItem("<?=", request)); //NOI18N
                 break;
             case CLASS_NAME:
                 autoCompleteClassNames(proposals, request);
@@ -293,17 +293,17 @@ public class PHPCodeCompletion implements Completable {
                 break;
         }
         
-        return proposals;
+        return new PHPCompletionResult(completionContext, proposals);
     }
     
-    private void autoCompleteClassNames(List<CompletionProposal> proposals, CompletionRequest request) {
+    private void autoCompleteClassNames(List<CompletionProposal> proposals, PHPCompletionItem.CompletionRequest request) {
         for (IndexedClass clazz : request.index.getClasses(request.result, request.prefix, nameKind)) {
-            proposals.add(new ClassItem(clazz, request));
+            proposals.add(new PHPCompletionItem.ClassItem(clazz, request));
         }
     }
     
     private void autoCompleteClassMembers(List<CompletionProposal> proposals,
-            CompletionRequest request, boolean staticContext) {
+            PHPCompletionItem.CompletionRequest request, boolean staticContext) {
         try {
             TokenHierarchy th = TokenHierarchy.get(request.info.getDocument());
             TokenSequence<PHPTokenId> tokenSequence = th.tokenSequence();
@@ -372,7 +372,7 @@ public class PHPCodeCompletion implements Completable {
                     
                     for (IndexedFunction method : methods){
                         if (staticContext && method.isStatic() || instanceContext && !method.isStatic()) {
-                            proposals.add(new FunctionItem(method, request));
+                            proposals.add(new PHPCompletionItem.FunctionItem(method, request));
                         }
                     }
                     
@@ -382,7 +382,7 @@ public class PHPCodeCompletion implements Completable {
                     
                     for (IndexedConstant prop : properties){
                         if (staticContext && prop.isStatic() || instanceContext && !prop.isStatic()) {
-                            VariableItem item = new VariableItem(prop, request);
+                            PHPCompletionItem.VariableItem item = new PHPCompletionItem.VariableItem(prop, request);
                             
                             if (!completeDollarPrefix) {
                                 item.doNotInsertDollarPrefix();
@@ -397,7 +397,7 @@ public class PHPCodeCompletion implements Completable {
                                 request.result, typeName, request.prefix, nameKind);
                         
                         for (IndexedConstant constant : classConstants) {
-                            proposals.add(new VariableItem(constant, request));
+                            proposals.add(new PHPCompletionItem.VariableItem(constant, request));
                         }
                     }
                 }
@@ -417,11 +417,11 @@ public class PHPCodeCompletion implements Completable {
         return null;
     }
     
-    private void autoCompleteExpression(List<CompletionProposal> proposals, CompletionRequest request) {
+    private void autoCompleteExpression(List<CompletionProposal> proposals, PHPCompletionItem.CompletionRequest request) {
         // KEYWORDS
         for (String keyword : PHP_KEYWORDS) {
             if (startsWith(keyword, request.prefix)) {
-                proposals.add(new KeywordItem(keyword, request));
+                proposals.add(new PHPCompletionItem.KeywordItem(keyword, request));
             }
         }
 
@@ -429,12 +429,12 @@ public class PHPCodeCompletion implements Completable {
         PHPIndex index = request.index;
 
         for (IndexedFunction function : index.getFunctions(request.result, request.prefix, nameKind)) {
-            proposals.add(new FunctionItem(function, request));
+            proposals.add(new PHPCompletionItem.FunctionItem(function, request));
         }
 
         // CONSTANTS
         for (IndexedConstant constant : index.getConstants(request.result, request.prefix, nameKind)) {
-            proposals.add(new ConstantItem(constant, request));
+            proposals.add(new PHPCompletionItem.ConstantItem(constant, request));
         }
 
         // LOCAL VARIABLES
@@ -449,13 +449,15 @@ public class PHPCodeCompletion implements Completable {
         if (classDecl != null) {
             for (String keyword : PHP_CLASS_KEYWORDS) {
                 if (startsWith(keyword, request.prefix)) {
-                    proposals.add(new KeywordItem(keyword, request));
+                    proposals.add(new PHPCompletionItem.KeywordItem(keyword, request));
                 }
             }
         }
     }
 
-    private Collection<CompletionProposal> getLocalVariableProposals(Collection<Statement> statementList, CompletionRequest request){
+    private Collection<CompletionProposal> getLocalVariableProposals(Collection<Statement> statementList,
+            PHPCompletionItem.CompletionRequest request){
+        
         Collection<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
         String url = null;
         try {
@@ -467,7 +469,7 @@ public class PHPCodeCompletion implements Completable {
         Collection<IndexedConstant> localVars = getLocalVariables(statementList, request.prefix, request.anchor, url);
         
         for (IndexedConstant localVar : localVars){
-            CompletionProposal proposal = new VariableItem(localVar, request);
+            CompletionProposal proposal = new PHPCompletionItem.VariableItem(localVar, request);
             proposals.add(proposal);
         }
         
@@ -865,343 +867,5 @@ public class PHPCodeCompletion implements Completable {
 
         return caseSensitive ? theString.startsWith(prefix)
                 : theString.toLowerCase().startsWith(prefix.toLowerCase());
-    }
-
-    private class KeywordItem extends PHPCompletionItem {
-        private String description = null;
-        private String keyword = null;
-        private static final String PHP_KEYWORD_ICON = "org/netbeans/modules/php/editor/resources/php16Key.png"; //NOI18N
-        
-        
-        KeywordItem(String keyword, CompletionRequest request) {
-            super(null, request);
-            this.keyword = keyword;
-        }
-
-        @Override
-        public String getName() {
-            return keyword;
-        }
-        
-        @Override public String getLhsHtml() {
-            HtmlFormatter formatter = request.formatter;
-            formatter.reset();
-            formatter.name(getKind(), true);
-            formatter.appendText(getName());
-            formatter.name(getKind(), false);
-            
-            return formatter.getText();
-        }
-
-        @Override
-        public ElementKind getKind() {
-            return ElementKind.KEYWORD;
-        }
-        
-        @Override
-        public String getRhsHtml() {
-            if (description != null) {
-                HtmlFormatter formatter = request.formatter;
-                formatter.reset();
-                formatter.appendHtml(description);
-                return formatter.getText();
-                
-            } else {
-                return null;
-            }
-        }
-        
-        @Override
-        public ImageIcon getIcon() {
-            if (keywordIcon == null) {
-                keywordIcon = new ImageIcon(org.openide.util.Utilities.loadImage(PHP_KEYWORD_ICON));
-            }
-
-            return keywordIcon;
-        }
-    }
-    
-    private class ConstantItem extends PHPCompletionItem {
-        private IndexedConstant constant = null;
-
-        ConstantItem(IndexedConstant constant, CompletionRequest request) {
-            super(constant, request);
-            this.constant = constant;
-        }
-
-        @Override
-        public ElementKind getKind() {
-            return ElementKind.GLOBAL;
-        }
-    }
-    
-    private class ClassItem extends PHPCompletionItem {
-        ClassItem(IndexedClass clazz, CompletionRequest request) {
-            super(clazz, request);
-        }
-
-        @Override
-        public ElementKind getKind() {
-            return ElementKind.CLASS;
-        }
-    }
-    
-    private class VariableItem extends PHPCompletionItem {
-        private boolean insertDollarPrefix = true;
-
-        VariableItem(IndexedConstant constant, CompletionRequest request) {
-            super(constant, request);
-        }
-        
-        @Override public String getLhsHtml() {
-            HtmlFormatter formatter = request.formatter;
-            String typeName = ((IndexedConstant)getElement()).getTypeName();
-            formatter.reset();
-            
-            if (typeName == null) {
-                typeName = "?"; //NOI18N
-            }
-            
-            formatter.type(true);
-            formatter.appendText(typeName);
-            formatter.type(false);
-            formatter.appendText(" "); //NOI18N
-            formatter.name(getKind(), true);
-            formatter.appendText(getName());
-            formatter.name(getKind(), false);
-            
-            return formatter.getText();
-        }
-
-        @Override
-        public ElementKind getKind() {
-            return ElementKind.VARIABLE;
-        }
-
-        @Override
-        public String getName() {
-            String name = super.getName();
-            
-            if (!insertDollarPrefix && name.startsWith("$")){ //NOI18N
-                return name.substring(1);
-            }
-            
-            return name;
-        }
-        
-        void doNotInsertDollarPrefix(){
-            insertDollarPrefix = false;
-        }
-    }
-    
-    private class FunctionItem extends PHPCompletionItem {
-
-        FunctionItem(IndexedFunction function, CompletionRequest request) {
-            super(function, request);
-        }
-        
-        public IndexedFunction getFunction(){
-            return (IndexedFunction)getElement();
-        }
-
-        @Override
-        public ElementKind getKind() {
-            return ElementKind.METHOD;
-        }
-        
-        @Override
-        public String getInsertPrefix() {
-            return getName();
-        }
-
-        @Override
-        public String getCustomInsertTemplate() {
-            StringBuilder template = new StringBuilder();
-            template.append(getName());
-            template.append("("); //NOI18N
-            
-            List<String> params = getInsertParams();
-            
-            for (int i = 0; i < params.size(); i++) {
-                String param = params.get(i);
-                template.append("${php-cc-"); //NOI18N
-                template.append(Integer.toString(i));
-                template.append(" default=\""); // NOI18N
-                template.append(param);
-                template.append("\"}"); //NOI18N
-                
-                if (i < params.size() - 1){
-                    template.append(", "); //NOI18N
-                }
-            }
-            
-            template.append(')');
-            
-            return template.toString();
-        }
-        
-        @Override public String getLhsHtml() {
-            ElementKind kind = getKind();
-            HtmlFormatter formatter = request.formatter;
-            formatter.reset();
-            
-//            boolean emphasize = true; //!function.isInherited();
-//            if (emphasize) {
-//                formatter.emphasis(true);
-//            }
-            formatter.name(kind, true);
-            formatter.appendText(getName());
-            formatter.name(kind, false);
-            
-//            if (strike) {
-//                formatter.deprecated(false);
-//            }
-//            
-            formatter.appendHtml("("); // NOI18N
-            formatter.parameters(true);
-            formatter.appendText(getParamsStr());
-            formatter.parameters(false);
-            formatter.appendHtml(")"); // NOI18N
-
-//            if (getFunction().getType() != null && 
-//                    getFunction().getKind() != ElementKind.CONSTRUCTOR) {
-//                formatter.appendHtml(" : ");
-//                formatter.appendText(getFunction().getType());
-//            }
-            
-            return formatter.getText();
-        }
-        
-        @Override
-        public List<String> getInsertParams() {
-            return getFunction().getParameters();
-        }
-        
-        private String getParamsStr(){
-            StringBuilder builder = new StringBuilder();
-            Collection<String> parameters = getFunction().getParameters();
-            
-            if ((parameters != null) && (parameters.size() > 0)) {
-                Iterator<String> it = parameters.iterator();
-
-                while (it.hasNext()) { // && tIt.hasNext()) {
-                    String param = it.next();
-                    builder.append(param);
-
-                    if (it.hasNext()) {
-                        builder.append(", "); // NOI18N
-                    }
-                }
-            }
-            
-            return builder.toString();
-        }
-    }
-
-    private static class PHPCompletionItem implements CompletionProposal {
-
-        protected final CompletionRequest request;
-        private final ElementHandle element;
-
-        PHPCompletionItem(ElementHandle element, CompletionRequest request) {
-            this.request = request;
-            this.element = element;
-        }
-
-        public int getAnchorOffset() {
-            return request.anchor;
-        }
-
-        public ElementHandle getElement() {
-            return element;
-        }
-
-        public String getName() {
-            return element.getName();
-        }
-
-        public String getInsertPrefix() {
-            return getName();
-        }
-
-        public String getSortText() {
-            return getName();
-        }
-
-        public String getLhsHtml() {
-            HtmlFormatter formatter = request.formatter;
-            formatter.reset();
-            formatter.appendText(getName());
-            return formatter.getText();
-        }
-
-        public ElementKind getKind() {
-            return null;
-        }
-
-        public ImageIcon getIcon() {
-            return null;
-        }
-
-        public Set<Modifier> getModifiers() {
-            return null;
-        }
-
-        public boolean isSmart() {
-            // true for elements defined in the currently file
-            if (getElement() instanceof IndexedElement) {
-                IndexedElement indexedElement = (IndexedElement) getElement();
-                String url = indexedElement.getFilenameUrl();
-                return url != null && url.equals(request.currentlyEditedFileURL);
-            }
-
-            return false;
-        }
-
-        public String getCustomInsertTemplate() {
-            return null;
-        }
-
-        public List<String> getInsertParams() {
-            return null;
-        }
-
-        public String[] getParamListDelimiters() {
-            return new String[] { "(", ")" }; // NOI18N
-        }
-        
-        public String getRhsHtml() {
-            HtmlFormatter formatter = request.formatter;
-            formatter.reset();
-            
-            if (element.getIn() != null) {
-                formatter.appendText(element.getIn());
-                return formatter.getText();
-            } else if (element instanceof IndexedElement) {
-                IndexedElement ie = (IndexedElement)element;
-                String filename = ie.getFilenameUrl();
-                if (filename != null) {
-                    int index = filename.lastIndexOf('/');
-                    if (index != -1) {
-                        filename = filename.substring(index + 1);
-                    }
-
-                    formatter.appendText(filename);
-                    return formatter.getText();
-                }
-            }
-            
-            return null;
-        }
-    }
-
-    private static class CompletionRequest {
-        private HtmlFormatter formatter;
-        private int anchor;
-        private PHPParseResult result;
-        private CompilationInfo info;
-        private String prefix;
-        private String currentlyEditedFileURL;
-        PHPIndex index;
     }
 }

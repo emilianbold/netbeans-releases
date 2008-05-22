@@ -10,12 +10,6 @@
         </folder>
     </folder>
     
-    <folder name="Shortcuts">   
-        <file name="DS-A.shadow">
-            <attr name="originalFile" stringvalue="Actions/Groovy/org-netbeans-modules-groovy-editor-actions-FixImportsAction.instance"/>
-        </file>           
-    </folder>  
-    
     <folder name="org-netbeans-modules-groovy-editor-hints">
         <folder name="rules">
             <folder name="selection">
@@ -132,12 +126,12 @@
                 </file>
 
                 <file name="bracket.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.BracketCompletion"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.KeystrokeHandler"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.groovy.editor.BracketCompleter"/>
                 </file>
                 
                 <file name="completion.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.Completable"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.gsf.api.CodeCmpletionHandler"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.groovy.editor.CodeCompleter"/>
                 </file>
                 
