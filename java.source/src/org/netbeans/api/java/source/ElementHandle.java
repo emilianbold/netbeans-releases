@@ -124,6 +124,7 @@ public final class ElementHandle<T extends Element> {
         assert compilationInfo != null;
         return resolveImpl (compilationInfo.impl.getJavacTask());
     }
+        
     
     private T resolveImpl (final JavacTaskImpl jt) {
                 

@@ -41,17 +41,17 @@
 
 package org.netbeans.modules.languages.features.refactoring;
 
-import javax.swing.JEditorPane;
-import javax.swing.text.Document;
-import java.util.Collection;
+import java.util.Collections;
 import javax.swing.text.JTextComponent;
 
 import org.netbeans.api.languages.ASTNode;
-import org.netbeans.api.languages.ASTPath;
-import org.netbeans.api.languages.ParseException;
-import org.netbeans.api.languages.ParserManager;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.api.languages.ParserResult;
 import org.netbeans.modules.editor.NbEditorDocument;
-import org.netbeans.modules.languages.ParserManagerImpl;
+import org.netbeans.modules.parsing.api.MultiLanguageUserTask;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.refactoring.spi.ui.ActionsImplementationProvider;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.netbeans.modules.refactoring.spi.ui.UI;
@@ -60,8 +60,8 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
 import org.openide.nodes.Node;
-import org.openide.text.CloneableEditorSupport;
 import org.openide.windows.TopComponent;
+
 
 
 /**
@@ -81,51 +81,81 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
     }
     
     public void doFindUsages(Lookup lookup) {
-        FileObject fobj = getFileObject(lookup);
-        Object[] objs = getASTPathAndDocument(lookup);
-        ASTPath path = (ASTPath)objs[0];
-        Document doc = (Document)objs[1];
-        TopComponent activetc = TopComponent.getRegistry().getActivated();
-        RefactoringUI ui = new WhereUsedQueryUI(path, fobj, doc);
-        UI.openRefactoringUI(ui, activetc);
+        final FileObject fobj = getFileObject(lookup);
+        EditorCookie ec = lookup.lookup (EditorCookie.class);
+        final JTextComponent textComp = ec.getOpenedPanes()[0];
+        final NbEditorDocument doc = (NbEditorDocument )textComp.getDocument ();
+        final String selectedText = textComp.getSelectedText ();
+        Source source = Source.create (doc);
+        try {
+            ParserManager.parse (Collections.<Source>singleton (source), new MultiLanguageUserTask () {
+                @Override
+                public void run (ResultIterator resultIterator) throws ParseException {
+                    ParserResult parserResult = (ParserResult) resultIterator.getParserResult ();
+                    int position = 0;
+                    if (selectedText != null) {
+                        position = textComp.getSelectionStart();
+                        for (int x = 0; x < selectedText.length(); x++) {
+                            if (Character.isWhitespace (selectedText.charAt (x))) {
+                                position++;
+                            } else {
+                                break;
+                            }
+                        }
+                    } else {
+                        position = textComp.getCaretPosition ();
+                    }
+                    TopComponent activetc = TopComponent.getRegistry ().getActivated ();
+                    ASTNode node = parserResult.getRootNode ();
+                    RefactoringUI ui = new WhereUsedQueryUI (node.findPath (position), fobj, doc);
+                    UI.openRefactoringUI(ui, activetc);
+                }
+            });
+        } catch (ParseException ex) {
+            ex.printStackTrace ();
+        }
     }
     
     public void doRename(Lookup lookup) {
-        FileObject fobj = getFileObject(lookup);
-        Object[] objs = getASTPathAndDocument(lookup);
-        ASTPath path = (ASTPath)objs[0];
-        Document doc = (Document)objs[1];
-        TopComponent activetc = TopComponent.getRegistry().getActivated();
-        RefactoringUI ui = new RenameRefactoringUI(path, fobj, doc);
-        UI.openRefactoringUI(ui, activetc);
+        final FileObject fobj = getFileObject(lookup);
+        EditorCookie ec = lookup.lookup (EditorCookie.class);
+        final JTextComponent textComp = ec.getOpenedPanes()[0];
+        final NbEditorDocument doc = (NbEditorDocument )textComp.getDocument ();
+        final String selectedText = textComp.getSelectedText ();
+        Source source = Source.create (doc);
+        try {
+            ParserManager.parse (Collections.<Source>singleton (source), new MultiLanguageUserTask () {
+                @Override
+                public void run (ResultIterator resultIterator) throws ParseException {
+                    ParserResult parserResult = (ParserResult) resultIterator.getParserResult ();
+                    int position = 0;
+                    if (selectedText != null) {
+                        position = textComp.getSelectionStart();
+                        for (int x = 0; x < selectedText.length(); x++) {
+                            if (Character.isWhitespace (selectedText.charAt (x))) {
+                                position++;
+                            } else {
+                                break;
+                            }
+                        }
+                    } else {
+                        position = textComp.getCaretPosition ();
+                    }
+                    TopComponent activetc = TopComponent.getRegistry ().getActivated ();
+                    ASTNode node = parserResult.getRootNode ();
+                    RefactoringUI ui = new RenameRefactoringUI (parserResult, node.findPath (position), fobj, doc);
+                    UI.openRefactoringUI(ui, activetc);
+                }
+            });
+        } catch (ParseException ex) {
+            ex.printStackTrace ();
+        }
     }
     
     private static FileObject getFileObject(Lookup lookup) {
         Node n = (Node)lookup.lookup(Node.class);
         DataObject dob = n.getCookie(DataObject.class);
         return dob.getPrimaryFile();
-    }
-    
-    private static Object[] getASTPathAndDocument(Lookup lookup) {
-        EditorCookie ec = lookup.lookup(EditorCookie.class);
-        JTextComponent textComp = ec.getOpenedPanes()[0];
-        NbEditorDocument doc = (NbEditorDocument)textComp.getDocument();
-        String selectedText = textComp.getSelectedText();
-        ASTNode node = ParserManagerImpl.getImpl (doc).getAST ();
-        int position = 0;
-        if (selectedText != null) {
-            position = textComp.getSelectionStart();
-            for (int x = 0; x < selectedText.length(); x++) {
-                if (Character.isWhitespace(selectedText.charAt(x))) {
-                    position++;
-                } else {
-                    break;
-                }
-            }
-        } else {
-            position = textComp.getCaretPosition();
-        }
-        return new Object[] {node.findPath(position), doc};
     }
     
     private static boolean canRefactor(Lookup lookup) {

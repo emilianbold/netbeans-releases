@@ -248,7 +248,7 @@ public class LanguagesEditorKit extends NbEditorKit {
         doc.putProperty("mimeType", mimeType); //NOI18N
         new AnnotationManager (doc);
         new SyntaxErrorHighlighter (doc);
-        new DatabaseManager (doc);
+        //new DatabaseManager (doc);
     }
     
 //    public Syntax createSyntax (Document doc) {

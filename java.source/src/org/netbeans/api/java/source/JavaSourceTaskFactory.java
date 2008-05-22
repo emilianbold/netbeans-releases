@@ -56,7 +56,9 @@ import org.openide.filesystems.FileObject;
 import org.netbeans.api.java.source.support.EditorAwareJavaSourceTaskFactory;
 import org.netbeans.api.java.source.support.CaretAwareJavaSourceTaskFactory;
 import org.netbeans.api.java.source.support.LookupBasedJavaSourceTaskFactory;
+import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.JavaSourceTaskFactoryManager;
+import org.netbeans.modules.parsing.api.Source;
 import org.openide.ErrorManager;
 import org.openide.util.RequestProcessor;
 
@@ -242,15 +244,15 @@ public abstract class JavaSourceTaskFactory {
         };
         ACCESSOR2 = new Accessor2() {
             public void addPhaseCompletionTask(JavaSource js, CancellableTask<CompilationInfo> task, Phase phase, Priority priority) throws IOException {
-                js.addPhaseCompletionTask(task, phase, priority);
+                JavaSourceAccessor.getINSTANCE().addPhaseCompletionTask (js, task, phase, priority);                
             }
 
             public void removePhaseCompletionTask(JavaSource js, CancellableTask<CompilationInfo> task) {
-                js.removePhaseCompletionTask(task);
+                JavaSourceAccessor.getINSTANCE().removePhaseCompletionTask(js,task);
             }
 
             public void rescheduleTask(JavaSource js, CancellableTask<CompilationInfo> task) {
-                js.rescheduleTask(task);
+                JavaSourceAccessor.getINSTANCE().rescheduleTask(js, task);
             }
         };
     }

@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.languages.features;
 
+import java.util.Collections;
 import org.netbeans.api.languages.ASTPath;
 import java.awt.event.ActionEvent;
 import java.io.File;
@@ -52,12 +53,18 @@ import javax.swing.text.StyledDocument;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.api.languages.ASTNode;
+import org.netbeans.api.languages.ParserResult;
 import org.netbeans.api.languages.database.DatabaseContext;
 import org.netbeans.api.languages.database.DatabaseDefinition;
 import org.netbeans.api.languages.database.DatabaseUsage;
 import org.netbeans.api.languages.database.DatabaseItem;
 import org.netbeans.modules.editor.NbEditorUtilities;
-import org.netbeans.modules.languages.ParserManagerImpl;
+import org.netbeans.modules.parsing.api.MultiLanguageUserTask;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.spi.Parser.Result;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
@@ -80,88 +87,92 @@ public class GoToDeclarationAction extends BaseAction {
     }
     
     public void actionPerformed (ActionEvent e, JTextComponent component) {
-        JTextComponent comp = getTextComponent(null);
+        final JTextComponent comp = getTextComponent(null);
         if (comp == null) return;
-        ASTNode node = getASTNode(comp);
-        if (node == null) return;
-        NbEditorDocument doc = (NbEditorDocument)comp.getDocument();
-        int position = comp.getCaretPosition();
-        ASTPath path = node.findPath(position);
-        DatabaseContext root = DatabaseManager.getRoot((ASTNode) path.getRoot());
-        if (root == null) return;
-        DatabaseItem item = root.getDatabaseItem (path.getLeaf ().getOffset ());
-        if (item == null) return;
-        if (item instanceof DatabaseUsage) {
-            item = ((DatabaseUsage) item).getDefinition();
-        }
-        
-        int offset = item.getOffset();
-        DataObject dobj = null;
-        StyledDocument docToGo = null;
-        URL url = ((DatabaseDefinition) item).getSourceFileUrl();
-        if (url == null) {
-            dobj = NbEditorUtilities.getDataObject (doc);
-            docToGo = doc;
-        } else {
-            File file = null;
-            try {
-                file = new File(url.toURI());
-            } catch (URISyntaxException ex) {
-                ex.printStackTrace();
-            }
-            
-            if (file != null && file.exists()) {
-                /** convert file to an uni absolute pathed file (../ etc will be coverted) */
-                file = FileUtil.normalizeFile(file);
-                FileObject fobj = FileUtil.toFileObject(file);
-                try {
-                    dobj = DataObject.find(fobj);
-                } catch (DataObjectNotFoundException ex) {
-                    ex.printStackTrace();
-                }
-                if (dobj != null) {
-                    Node nodeOfDobj = dobj.getNodeDelegate();
-                    EditorCookie ec = nodeOfDobj.getCookie(EditorCookie.class);
-                    try {
-                        docToGo = ec.openDocument();
-                    } catch (IOException ex) {
-                        ex.printStackTrace();
+        final NbEditorDocument doc = (NbEditorDocument)comp.getDocument();
+        Source source = Source.create (doc);
+        try {
+            ParserManager.parse (Collections.<Source>singleton (source), new MultiLanguageUserTask () {
+                @Override
+                public void run (ResultIterator resultIterator) throws ParseException {
+                    int position = comp.getCaretPosition();
+                    ParserResult result = (ParserResult) resultIterator.getParserResult ();
+                    ASTPath path = result.getRootNode ().findPath (position);
+                    DatabaseContext root = result.getSemanticStructure ();
+                    if (root == null) return;
+                    DatabaseItem item = root.getDatabaseItem (path.getLeaf ().getOffset ());
+                    if (item == null) return;
+                    if (item instanceof DatabaseUsage) {
+                        item = ((DatabaseUsage) item).getDefinition();
                     }
+
+                    int offset = item.getOffset();
+                    DataObject dobj = null;
+                    StyledDocument docToGo = null;
+                    URL url = ((DatabaseDefinition) item).getSourceFileUrl();
+                    if (url == null) {
+                        dobj = NbEditorUtilities.getDataObject (doc);
+                        docToGo = doc;
+                    } else {
+                        File file = null;
+                        try {
+                            file = new File(url.toURI());
+                        } catch (URISyntaxException ex) {
+                            ex.printStackTrace();
+                        }
+
+                        if (file != null && file.exists()) {
+                            /** convert file to an uni absolute pathed file (../ etc will be coverted) */
+                            file = FileUtil.normalizeFile(file);
+                            FileObject fobj = FileUtil.toFileObject(file);
+                            try {
+                                dobj = DataObject.find(fobj);
+                            } catch (DataObjectNotFoundException ex) {
+                                ex.printStackTrace();
+                            }
+                            if (dobj != null) {
+                                Node nodeOfDobj = dobj.getNodeDelegate();
+                                EditorCookie ec = nodeOfDobj.getCookie(EditorCookie.class);
+                                try {
+                                    docToGo = ec.openDocument();
+                                } catch (IOException ex) {
+                                    ex.printStackTrace();
+                                }
+                            }
+
+                        }
+                    }
+
+                    if (dobj == null) {
+                        return;
+                    }
+
+                    LineCookie lc = (LineCookie)dobj.getCookie(LineCookie.class);
+                    Line.Set lineSet = lc.getLineSet();
+                    Line line = lineSet.getCurrent(NbDocument.findLineNumber(docToGo, offset));
+                    int column = NbDocument.findLineColumn (docToGo, offset);
+                    line.show (Line.SHOW_GOTO, column);
                 }
-                
-            }
+            });
+        } catch (ParseException ex) {
+            ex.printStackTrace ();
         }
-        
-        if (dobj == null) {
-            return;
-        }
-        
-        LineCookie lc = (LineCookie)dobj.getCookie(LineCookie.class);
-        Line.Set lineSet = lc.getLineSet();
-        Line line = lineSet.getCurrent(NbDocument.findLineNumber(docToGo, offset));
-        int column = NbDocument.findLineColumn (docToGo, offset);
-        line.show (Line.SHOW_GOTO, column);
     }
     
     public boolean isEnabled() {
         JTextComponent comp = getTextComponent(null);
         if (comp == null)
             return false;
-        ASTNode node = getASTNode(comp);
-        if (node == null)
-            return false;
-        int position = comp.getCaretPosition();
-        ASTPath path = node.findPath(position);
-        if (path == null)
-            return false;
-        DatabaseContext root = DatabaseManager.getRoot((ASTNode) path.getRoot());
-        if (root == null)
-            return false;
-        DatabaseItem item = root.getDatabaseItem (path.getLeaf ().getOffset ());
-        return item != null;
-    }
-    
-    private ASTNode getASTNode(JTextComponent comp) {
-        return ParserManagerImpl.getImpl ((NbEditorDocument)comp.getDocument ()).getAST ();
+        return true;
+//!        ASTNode node = getASTNode(comp);
+//        int position = comp.getCaretPosition();
+//        ASTPath path = node.findPath(position);
+//        if (path == null)
+//            return false;
+//        DatabaseContext root = DatabaseManager.getRoot((ASTNode) path.getRoot());
+//        if (root == null)
+//            return false;
+//        DatabaseItem item = root.getDatabaseItem (path.getLeaf ().getOffset ());
+//        return item != null;
     }
 }

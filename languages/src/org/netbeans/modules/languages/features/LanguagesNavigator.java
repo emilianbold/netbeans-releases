@@ -71,8 +71,6 @@ import org.netbeans.spi.navigator.NavigatorPanel;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.languages.LanguagesManager;
 import org.openide.cookies.EditorCookie;
-import org.openide.cookies.LineCookie;
-import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
 import org.openide.util.Lookup.Result;
 import org.openide.util.LookupEvent;

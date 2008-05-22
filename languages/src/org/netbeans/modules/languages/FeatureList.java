@@ -54,7 +54,6 @@ import org.netbeans.api.languages.ASTItem;
 import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.ASTPath;
 import org.netbeans.api.languages.ASTToken;
-import org.netbeans.api.languages.ParserManager.State;
 
 
 /**
@@ -170,7 +169,6 @@ public class FeatureList {
     }
     
     void evaluate (
-        State                           state, 
         List<ASTItem>                   path, 
         Map<String,Set<ASTEvaluator>>   evaluatorsMap                           //,Map<Object,Long> times
     ) {
@@ -196,7 +194,7 @@ public class FeatureList {
                                 List<Feature> featureList = it3.next ();
                                 Iterator<Feature> it4 = featureList.iterator ();
                                 while (it4.hasNext ()) {                        //long time = System.currentTimeMillis ();
-                                    evaluator.evaluate (state, path, it4.next ());
+                                    evaluator.evaluate (path, it4.next ());
                                                                                 //Long l = times.get (evaluator);time = System.currentTimeMillis () - time; if (l != null) time += l.longValue (); times.put (evaluator, time);
                                 }
                             }
@@ -212,7 +210,7 @@ public class FeatureList {
                             Iterator<ASTEvaluator> it3 = evaluators.iterator ();
                             while (it3.hasNext ()) {
                                ASTEvaluator evaluator = it3.next ();            //long time = System.currentTimeMillis ();
-                               evaluator.evaluate (state, path, feature);       //Long l = times.get (evaluator);time = System.currentTimeMillis () - time; if (l != null) time += l.longValue (); times.put (evaluator, time);
+                               evaluator.evaluate (path, feature);       //Long l = times.get (evaluator);time = System.currentTimeMillis () - time; if (l != null) time += l.longValue (); times.put (evaluator, time);
                             }
                         }
                     }

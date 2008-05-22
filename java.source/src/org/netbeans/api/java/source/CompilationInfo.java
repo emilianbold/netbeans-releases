@@ -58,10 +58,15 @@ import javax.lang.model.util.Types;
 import javax.swing.text.Document;
 import javax.tools.Diagnostic;
 import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.modules.java.source.parsing.CompilationInfoImpl;
+import org.netbeans.modules.java.source.parsing.DocPositionRegion;
 import org.netbeans.modules.java.source.parsing.FileObjects;
+import org.netbeans.modules.java.source.parsing.JavacParserResult;
 import org.netbeans.modules.java.source.usages.Pair;
+import org.netbeans.modules.parsing.spi.Parser;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Parameters;
 
 /** Asorted information about the JavaSource.
  *
@@ -87,6 +92,16 @@ public class CompilationInfo {
     CompilationInfo (final CompilationInfoImpl impl)  {
         assert impl != null;
         this.impl = impl;
+    }
+    
+    public static CompilationInfo get (final Parser.Result result) {
+        Parameters.notNull("result", result);   //NOI18N
+        CompilationInfo info = null;
+        if (result instanceof JavacParserResult) {
+            final JavacParserResult javacResult = (JavacParserResult)result;            
+            info = javacResult.get(CompilationInfo.class);            
+        }
+        return info;
     }
              
     // API of the class --------------------------------------------------------
@@ -118,7 +133,7 @@ public class CompilationInfo {
         if (JavaSource.Phase.PARSED.compareTo (impl.getPhase())>0) {
             return null;
         }
-        final Pair<JavaSource.DocPositionRegion,MethodTree> changedTree = impl.getChangedTree();
+        final Pair<DocPositionRegion,MethodTree> changedTree = impl.getChangedTree();
         if (changedTree == null) {
             return null;
         }
@@ -177,16 +192,15 @@ public class CompilationInfo {
      */
     public List<? extends TypeElement> getTopLevelElements () throws IllegalStateException {
         checkConfinement();
-        if (this.impl.getPositionConverter() == null) {
+        if (this.impl.getFileObject() == null) {
             throw new IllegalStateException ();
         }
         final List<TypeElement> result = new ArrayList<TypeElement>();
-        final JavaSource javaSource = this.impl.getJavaSource();
-        if (javaSource.isClassFile()) {
+        if (this.impl.isClassFile()) {
             Elements elements = getElements();
             assert elements != null;
-            assert javaSource.rootFo != null;
-            String name = FileObjects.convertFolder2Package(FileObjects.stripExtension(FileUtil.getRelativePath(javaSource.rootFo, getFileObject())));
+            assert this.impl.getRoot() != null;
+            String name = FileObjects.convertFolder2Package(FileObjects.stripExtension(FileUtil.getRelativePath(this.impl.getRoot(), this.impl.getFileObject())));
             TypeElement e = ((JavacElements)elements).getTypeElementByBinaryName(name);
             if (e != null) {                
                 result.add (e);
@@ -248,7 +262,8 @@ public class CompilationInfo {
      */
     public JavaSource getJavaSource() {
         checkConfinement();
-        return this.impl.getJavaSource();
+        //todo: fixme
+        throw new UnsupportedOperationException("Not yet supported");
     }
     
     /**
@@ -279,7 +294,10 @@ public class CompilationInfo {
      */
     public PositionConverter getPositionConverter() {
         checkConfinement();
-        return this.impl.getPositionConverter();
+        if (this.impl.getFileObject() == null) {
+            throw new IllegalStateException ();
+        }
+        return new PositionConverter(impl.getSnapshot());
     }
             
     /**
@@ -337,6 +355,11 @@ public class CompilationInfo {
      */
     final void invalidate () {
         this.invalid = true;
+        doInvalidate();
+    }
+    
+    protected void doInvalidate () {
+        this.impl.getParser().resultFinished (true);
     }
     
     /**
