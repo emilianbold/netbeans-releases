@@ -66,7 +66,7 @@ public abstract class Parser {
     public abstract void parse (
         Snapshot            snapshot,
         Task                task
-    );
+    ) throws ParseException;
     
     /**
      * Called when some client needs some result of parsing. Parser must parse
@@ -78,7 +78,7 @@ public abstract class Parser {
      */
     public abstract Result getResult (
         Task                task
-    );
+    ) throws ParseException;
         
     
     /**
