@@ -172,8 +172,8 @@ public class DataLoaderInLayerTest extends NbTestCase {
         //addRemoveLoader("text/ant+xml", l2, true);
         addRemoveLoader("text/xml", l3, true);
         try {
-            FileSystem lfs = createFS("folder/file.ant");
-            FileObject fo = lfs.findResource("folder/file.ant");
+            FileSystem lfs = createFS("folder2/file.ant");
+            FileObject fo = lfs.findResource("folder2/file.ant");
             assertNotNull(fo);
             DataObject dob = DataObject.find(fo);
             assertEquals(l3, dob.getLoader());
@@ -192,8 +192,8 @@ public class DataLoaderInLayerTest extends NbTestCase {
         //addRemoveLoader("text/ant+xml", l2, true);
         addRemoveLoader("content/unknown", l3, true);
         try {
-            FileSystem lfs = createFS("folder/file.ant");
-            FileObject fo = lfs.findResource("folder/file.ant");
+            FileSystem lfs = createFS("folder3/file.ant");
+            FileObject fo = lfs.findResource("folder3/file.ant");
             assertNotNull(fo);
             DataObject dob = DataObject.find(fo);
             assertEquals(l3, dob.getLoader());
