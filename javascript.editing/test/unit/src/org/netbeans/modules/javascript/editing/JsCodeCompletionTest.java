@@ -43,10 +43,10 @@ package org.netbeans.modules.javascript.editing;
 
 import javax.swing.JTextArea;
 import javax.swing.text.Caret;
-import org.netbeans.modules.gsf.api.Completable.QueryType;
+import org.netbeans.modules.gsf.api.CodeCompletionHandler.QueryType;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.gsf.GsfTestCompilationInfo;
-import org.netbeans.modules.gsf.api.Completable;
+import org.netbeans.modules.gsf.api.CodeCompletionHandler;
 
 /**
  *
@@ -59,7 +59,7 @@ public class JsCodeCompletionTest extends JsTestBase {
     }
     
     @Override
-    protected Completable getCodeCompleter() {
+    protected CodeCompletionHandler getCodeCompleter() {
         return new JsCodeCompletion();
     }
     

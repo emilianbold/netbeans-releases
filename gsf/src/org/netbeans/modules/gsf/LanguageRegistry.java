@@ -974,6 +974,19 @@ public class LanguageRegistry implements Iterable<Language> {
                 }
             }
         }
+        
+        // Glyph gutter actions
+        if (((DefaultLanguage)l).hasHints()) {
+            FileObject gf = root.getFileObject("GlyphGutterActions/org-netbeans-modules-editor-hints-FixAction.instance");
+            if (gf == null) {
+                try {
+                    FileObject fo = FileUtil.createData(root, "GlyphGutterActions/org-netbeans-modules-editor-hints-FixAction.instance");
+                    fo.setAttribute("position", 200);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
 
         // Temporarily disabled; each language does it instead
         //initializeColoring(l);

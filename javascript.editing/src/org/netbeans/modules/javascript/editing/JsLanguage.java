@@ -45,8 +45,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import org.netbeans.modules.gsf.api.GsfLanguage;
 import org.netbeans.api.lexer.Language;
+import org.netbeans.modules.gsf.spi.DefaultLanguageConfig;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 
 
@@ -59,25 +59,29 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 
-public class JsLanguage implements GsfLanguage {
+public class JsLanguage extends DefaultLanguageConfig {
 
     private FileObject jsStubsFO;
 
     public JsLanguage() {
     }
 
+    @Override
     public String getLineCommentPrefix() {
         return JsUtils.getLineCommentPrefix();
     }
 
+    @Override
     public boolean isIdentifierChar(char c) {
         return JsUtils.isIdentifierChar(c);
     }
 
+    @Override
     public Language getLexerLanguage() {
         return JsTokenId.language();
     }
 
+    @Override
     public Collection<FileObject> getCoreLibraries() {
         return Collections.singletonList(getJsStubs());
     }
@@ -112,14 +116,17 @@ public class JsLanguage implements GsfLanguage {
         return jsStubsFO;
     }
     
+    @Override
     public String getDisplayName() {
         return "JavaScript";
     }
     
+    @Override
     public String getPreferredExtension() {
         return "js"; // NOI18N
     }
     
+    @Override
     public Map<String,String> getSourceGroupNames() {
         Map<String,String> sourceGroups = new HashMap<String,String>();
         sourceGroups.put("RubyProject", "ruby"); // NOI18N

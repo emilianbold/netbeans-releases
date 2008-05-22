@@ -61,7 +61,12 @@ public class RelocateCommand extends SvnCommand {
         this.path = path;
         this.rec = rec;
     }
-       
+
+    @Override
+    protected boolean notifyOutput() {
+        return false;
+    }    
+    
     @Override
     protected int getCommand() {
         return ISVNNotifyListener.Command.RELOCATE;
