@@ -50,7 +50,6 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.ListCellRenderer;
-import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
@@ -90,20 +89,6 @@ class RemoteConnectionsPanel extends JPanel {
 
         // listeners
         registerListeners();
-    }
-
-    @Override
-    public void addNotify() {
-        super.addNotify();
-        // XXX probably not the best solution
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                if (configListModel.getSize() == 0) {
-                    // no config available => show add config dialog
-                    addButton.doClick();
-                }
-            }
-        });
     }
 
     public void addChangeListener(ChangeListener listener) {
@@ -488,14 +473,6 @@ class RemoteConnectionsPanel extends JPanel {
     private javax.swing.JLabel userLabel;
     private javax.swing.JTextField userTextField;
     // End of variables declaration//GEN-END:variables
-
-    public JList getConfigList() {
-        return configList;
-    }
-
-    public void setConfigList(JList configList) {
-        this.configList = configList;
-    }
 
     public String getConnectionName() {
         return connectionTextField.getText();

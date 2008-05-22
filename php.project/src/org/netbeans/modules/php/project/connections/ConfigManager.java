@@ -156,6 +156,7 @@ public class ConfigManager {
         public void delete() {
             synchronized (ConfigManager.this) {
                 configs.put(getName(), null);
+                configErrors.put(getName(), null);
                 //configs.remove(getName());
                 markAsCurrentConfiguration(null);
             }

@@ -44,6 +44,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.HashMap;
 import java.util.Map;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
@@ -133,6 +134,15 @@ public final class RemoteConnections {
         descriptor = new DialogDescriptor(panel, title, true, null);
         Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
         try {
+            // XXX probably not the best solution
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    if (configManager.configurationNames().size() == 1) {
+                        // no config available => show add config dialog
+                        addConfig();
+                    }
+                }
+            });
             dialog.setVisible(true);
         } finally {
             dialog.dispose();
