@@ -63,6 +63,4 @@ public interface CallModel {
     Function getRoot();
     
     String getName();
-    
-    void refresh();
 }
