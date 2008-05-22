@@ -101,7 +101,7 @@ public final class RemoteConnections {
     private final RemoteConnectionsPanel panel;
     private final ConfigManager configManager;
     private final ChangeListener defaultChangeListener = new DefaultChangeListener();
-    private DialogDescriptor descriptor;
+    private DialogDescriptor descriptor = null;
 
     public static RemoteConnections get() {
         return new RemoteConnections();
@@ -304,14 +304,11 @@ public final class RemoteConnections {
     }
 
     private void checkAllTheConfigs() {
-        for (String name : configManager.configurationNames()) {
-            if (name == null) {
-                // no default config
-                continue;
-            }
-            Configuration cfg = configManager.configurationFor(name);
+        for (Configuration cfg : panel.getAllConfigurations()) {
+            assert cfg != null;
             if (!cfg.isValid()) {
                 panel.setError(NbBundle.getMessage(RemoteConnections.class, "MSG_InvalidConfiguration", cfg.getDisplayName()));
+                assert descriptor != null;
                 descriptor.setValid(false);
                 return;
             }
@@ -323,6 +320,7 @@ public final class RemoteConnections {
         String err = errorKey != null ? NbBundle.getMessage(RemoteConnections.class, errorKey) : null;
         cfg.setErrorMessage(err);
         panel.setError(err);
+        assert descriptor != null;
         descriptor.setValid(err == null);
     }
 

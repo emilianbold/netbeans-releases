@@ -45,7 +45,10 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import javax.swing.DefaultListModel;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import javax.swing.AbstractListModel;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -68,7 +71,7 @@ class RemoteConnectionsPanel extends JPanel {
     private static final long serialVersionUID = -286345875298064616L;
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
-    private final DefaultListModel configListModel = new DefaultListModel();
+    private final ConfigListModel configListModel = new ConfigListModel();
 
     RemoteConnectionsPanel() {
         initComponents();
@@ -137,6 +140,10 @@ class RemoteConnectionsPanel extends JPanel {
 
     public ConfigManager.Configuration getSelectedConnection() {
         return (Configuration) configList.getSelectedValue();
+    }
+
+    public List<Configuration> getAllConfigurations() {
+        return configListModel.getAllElements();
     }
 
     public void removeConnection(ConfigManager.Configuration connection) {
@@ -604,6 +611,50 @@ class RemoteConnectionsPanel extends JPanel {
         public String getName() {
             String name = super.getName();
             return name == null ? "ComboBox.renderer" : name; // NOI18N
+        }
+    }
+
+    public class ConfigListModel extends AbstractListModel {
+        private static final long serialVersionUID = -194518992310432557L;
+
+        private final List<Configuration> data = new ArrayList<Configuration>();
+
+        public int getSize() {
+            return data.size();
+        }
+
+        public Configuration getElementAt(int index) {
+            return data.get(index);
+        }
+
+        public boolean addElement(Configuration connection) {
+            assert connection != null;
+            if (!data.add(connection)) {
+                return false;
+            }
+            Collections.sort(data, ConfigManager.getConfigurationComparator());
+            int idx = indexOf(connection);
+            fireIntervalAdded(this, idx, idx);
+            return true;
+        }
+
+        public int indexOf(Configuration connection) {
+            return data.indexOf(connection);
+        }
+
+        public boolean removeElement(Configuration connection) {
+            int idx = indexOf(connection);
+            if (idx == -1) {
+                return false;
+            }
+            boolean result = data.remove(connection);
+            assert result == true;
+            fireIntervalRemoved(this, idx, idx);
+            return true;
+        }
+
+        public List<Configuration> getAllElements() {
+            return Collections.unmodifiableList(data);
         }
     }
 }

@@ -38,9 +38,11 @@
  */
 package org.netbeans.modules.php.project.connections;
 
+import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -69,6 +71,17 @@ public class ConfigManager {
         List<String> tmp = new ArrayList<String>(Arrays.asList(configProvider.getConfigProperties()));
         tmp.add(PROP_DISPLAY_NAME);
         propertyNames = tmp.toArray(new String[tmp.size()]);
+    }
+
+    public static Comparator<Configuration> getConfigurationComparator() {
+        return new Comparator<Configuration>() {
+            Collator coll = Collator.getInstance();
+            public int compare(Configuration c1, Configuration c2) {
+                String lbl1 = c1.getDisplayName();
+                String lbl2 = c2.getDisplayName();
+                return coll.compare(lbl1, lbl2);
+            }
+        };
     }
 
     public void addChangeListener(ChangeListener listener) {
