@@ -126,12 +126,16 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
     }
     // # 135489
     if (isPositive(fromName) && isNegative(toName)) {
-      addError("FIX_Positive_Negative_Copy", copy);
+out("   from name: " + fromName);
+out("     to name: " + toName);
+//todo a      addError("FIX_Positive_Negative_Copy", copy);
       return;
     }
     // # 135489
     if (isNegative(fromName) && isPositive(toName)) {
-      addError("FIX_Negative_Positive_Copy", copy);
+out("   from name: " + fromName);
+out("     to name: " + toName);
+//todo a      addError("FIX_Negative_Positive_Copy", copy);
       return;
     }
     // # 135489
