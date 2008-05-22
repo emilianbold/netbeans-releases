@@ -107,6 +107,16 @@ public final class ParserManager {
     ) {
         //org.netbeans.modules.parsing.impl.ParserManagerImpl.parseUserTask (sources, userTask);
     }
+
+    /**
+     * Runs given task in parser thread.
+     * 
+     * @param run
+     */
+    public static void run (
+        Runnable            runnable
+    ) {
+    }
 }
 
 

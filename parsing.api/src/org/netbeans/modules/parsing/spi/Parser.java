@@ -60,10 +60,12 @@ public abstract class Parser {
      * Original document is there for various registration purposes only.
      * 
      * @param source        A source that should be parsed.
+     * @param task          A task asking for parsing result.
      * @return              Result of parsing or null.
      */
     public abstract Result parse (
-        Source              source
+        Source              source,
+        Task                task
     );
         
     
