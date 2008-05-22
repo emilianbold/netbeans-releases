@@ -79,7 +79,7 @@ public final class ResultIterator {
     }
     
     public Source getSource () {
-        return null;
+        return this.snapshot.getSource();
     }
     
     /**
