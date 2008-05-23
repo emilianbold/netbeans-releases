@@ -1023,11 +1023,13 @@ class DiagramLoader
                     else if (reader.getName().getLocalPart().equalsIgnoreCase("GraphElement.contained"))
                     {
                         edgeContainedStack.push(CONTAINED);
+                        mostRecentEnd = mostRecentEnd;
                     }
                 }
                 else if (reader.isEndElement() && reader.getName().getLocalPart().equalsIgnoreCase("GraphElement.contained"))
                 {
                     edgeContainedStack.pop();
+                    mostRecentEnd = null;
                 }
                 else if (reader.isEndElement() && reader.getName().getLocalPart().equalsIgnoreCase("GraphNode"))
                 {
