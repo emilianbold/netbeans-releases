@@ -367,12 +367,7 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
      * A mess.
      */
     Map<String/*|null*/, Map<String, String>> readRunConfigs() {
-        Map<String, Map<String, String>> m = new TreeMap<String, Map<String, String>>(new Comparator<String>() {
-
-            public int compare(String s1, String s2) {
-                return s1 != null ? (s2 != null ? s1.compareTo(s2) : 1) : (s2 != null ? -1 : 0);
-            }
-        });
+        Map<String, Map<String, String>> m = ConfigManager.createEmptyConfigs();
         Map<String, String> def = new TreeMap<String, String>();
         EditableProperties privateProperties = getProject().getHelper().getProperties(
                 AntProjectHelper.PRIVATE_PROPERTIES_PATH);
