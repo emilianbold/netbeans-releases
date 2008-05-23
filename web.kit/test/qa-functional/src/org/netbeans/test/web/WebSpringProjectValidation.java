@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,7 +31,12 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+
 package org.netbeans.test.web;
 
 import java.io.File;
@@ -48,33 +47,28 @@ import java.net.URL;
 import java.net.URLConnection;
 import javax.swing.SwingUtilities;
 import org.netbeans.jellytools.Bundle;
-import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.NewWebProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewWebProjectServerSettingsStepOperator;
-import org.netbeans.jellytools.nodes.SourcePackagesNode;
-import org.netbeans.jemmy.EventTool;
-import org.netbeans.jemmy.JemmyException;
-import org.netbeans.jemmy.JemmyProperties;
-import org.netbeans.jemmy.TimeoutExpiredException;
-import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.OutputTabOperator;
-import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.WizardOperator;
 import org.netbeans.jellytools.modules.j2ee.nodes.J2eeServerNode;
 import org.netbeans.jellytools.modules.web.nodes.WebPagesNode;
+import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jellytools.nodes.SourcePackagesNode;
+import org.netbeans.jemmy.JemmyException;
+import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.QueueTool;
-import org.netbeans.jemmy.operators.JRadioButtonOperator;
-import org.netbeans.jemmy.operators.JTextFieldOperator;
+import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.ide.ProjectSupport;
 
 /**
+ *
+ * @author dk198696
  */
-public class WebProjectValidationEE5 extends WebProjectValidation {
-
-    protected static ProjectHelper phelper = new ProjectHelper() {
+public class WebSpringProjectValidation extends WebProjectValidationEE5 {
+        protected static ProjectHelper phelper = new ProjectHelper() {
 
         public Node getSourceNode() {
             return new SourcePackagesNode(PROJECT_NAME);
@@ -83,56 +77,52 @@ public class WebProjectValidationEE5 extends WebProjectValidation {
     
 
     static {
-        PROJECT_NAME = "WebJ2EE5Project"; // NOI18N
+        PROJECT_NAME = "WebSpringProject";
         PROJECT_FOLDER = PROJECT_LOCATION + File.separator + PROJECT_NAME;
     }
 
+    // folder of sample project
     protected TestURLDisplayer urlDisplayer;
     private static final String BUILD_SUCCESSFUL = "BUILD SUCCESSFUL";
     private ServerInstance server;
     protected static int logIdx = 0;
 
     /** Need to be defined because of JUnit */
-    public WebProjectValidationEE5(String name) {
+    public WebSpringProjectValidation(String name) {
         super(name);
     }
 
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new WebProjectValidationEE5("testPreconditions"));
-        suite.addTest(new WebProjectValidationEE5("testNewWebProject"));
-        suite.addTest(new WebProjectValidationEE5("testNewJSP"));
-        suite.addTest(new WebProjectValidationEE5("testNewJSP2"));
-//        suite.addTest(new WebProjectValidationEE5("testJSPNavigator"));
-        suite.addTest(new WebProjectValidationEE5("testNewServlet"));
-        suite.addTest(new WebProjectValidationEE5("testNewServlet2"));
-        suite.addTest(new WebProjectValidationEE5("testBuildProject"));
-        suite.addTest(new WebProjectValidationEE5("testCompileAllJSP"));
-        suite.addTest(new WebProjectValidationEE5("testCompileJSP"));
-        suite.addTest(new WebProjectValidationEE5("testCleanProject"));
-        suite.addTest(new WebProjectValidationEE5("testRunProject"));
-        suite.addTest(new WebProjectValidationEE5("testRunJSP"));
-        suite.addTest(new WebProjectValidationEE5("testViewServlet"));
-        suite.addTest(new WebProjectValidationEE5("testRunServlet"));
-        suite.addTest(new WebProjectValidationEE5("testCreateTLD"));
-        suite.addTest(new WebProjectValidationEE5("testCreateTagHandler"));
-        suite.addTest(new WebProjectValidationEE5("testRunTag"));
-        suite.addTest(new WebProjectValidationEE5("testNewHTML"));
-//        suite.addTest(new WebProjectValidationEE5("testHTMLNavigator"));
-        suite.addTest(new WebProjectValidationEE5("testRunHTML"));
-        suite.addTest(new WebProjectValidationEE5("testNewSegment"));
-        suite.addTest(new WebProjectValidationEE5("testNewDocument"));
-        suite.addTest(new WebProjectValidationEE5("testStopServer"));
-        suite.addTest(new WebProjectValidationEE5("testStartServer"));
-        suite.addTest(new WebProjectValidationEE5("testBrowserSettings"));
-        suite.addTest(new WebProjectValidationEE5("testFinish"));
+        suite.addTest(new WebSpringProjectValidation("testPreconditions"));
+        suite.addTest(new WebSpringProjectValidation("testNewSpringWebProject"));
+//        suite.addTest(new WebVWJSFProjectValidation("testNewJSP"));
+//        suite.addTest(new WebVWJSFProjectValidation("testNewJSP2"));
+//        suite.addTest(new WebVWJSFProjectValidation("testJSPNavigator"));
+//        suite.addTest(new WebVWJSFProjectValidation("testNewServlet"));
+//        suite.addTest(new WebVWJSFProjectValidation("testNewServlet2"));
+        suite.addTest(new WebSpringProjectValidation("testBuildProject"));
+        suite.addTest(new WebSpringProjectValidation("testCompileAllJSP"));
+//        suite.addTest(new WebVWJSFProjectValidation("testCompileJSP"));
+        suite.addTest(new WebSpringProjectValidation("testCleanProject"));
+//        suite.addTest(new WebVWJSFProjectValidation("testRunProject"));
+//        suite.addTest(new WebVWJSFProjectValidation("testRunJSP"));
+//        suite.addTest(new WebVWJSFProjectValidation("testViewServlet"));
+//        suite.addTest(new WebVWJSFProjectValidation("testRunServlet"));
+//        suite.addTest(new WebVWJSFProjectValidation("testCreateTLD"));
+//        suite.addTest(new WebVWJSFProjectValidation("testCreateTagHandler"));
+//        suite.addTest(new WebVWJSFProjectValidation("testRunTag"));
+//        suite.addTest(new WebVWJSFProjectValidation("testNewHTML"));
+//        suite.addTest(new WebVWJSFProjectValidation("testHTMLNavigator"));
+//        suite.addTest(new WebVWJSFProjectValidation("testRunHTML"));
+//        suite.addTest(new WebVWJSFProjectValidation("testNewSegment"));
+//        suite.addTest(new WebVWJSFProjectValidation("testNewDocument"));
+//        suite.addTest(new WebVWJSFProjectValidation("testStopServer"));
+//        suite.addTest(new WebVWJSFProjectValidation("testStartServer"));
+//        suite.addTest(new WebVWJSFProjectValidation("testBrowserSettings"));
+//        suite.addTest(new WebVWJSFProjectValidation("testFinish"));
         return suite;
     }
-
-    /** Use for execution inside IDE */
-    public static void main(java.lang.String[] args) {
-    }
-
     @Override
     public void setUp() {
         System.out.println("########  " + getName() + "  #######");
@@ -166,18 +156,17 @@ public class WebProjectValidationEE5 extends WebProjectValidation {
         } catch (ConnectException e) {
         }
     }
-
     /** Test creation of web project.
      * - open New Project wizard from main menu (File|New Project)
      * - select Web|Web Application
      * - in the next panel type project name and project location
-     * - in next panel sets server to Glassfish and J2EE version to Java EE 5     
+     * - in next panel sets server to Glassfish and J2EE version to Java EE 5
+     * - in Framework panel set Spring framework
      * - finish the wizard
      * - wait until scanning of java files is finished
      * - check index.jsp is opened
      */
-    public void testNewWebProject() throws IOException {
-        installJemmyQueue();
+    public void testNewSpringWebProject() throws IOException {
         NewProjectWizardOperator projectWizard = NewProjectWizardOperator.invoke();
         String category = Bundle.getStringTrimmed(
                 "org.netbeans.modules.web.core.Bundle",
@@ -189,64 +178,57 @@ public class WebProjectValidationEE5 extends WebProjectValidation {
         nameStep.txtProjectName().setText("");
         nameStep.txtProjectName().typeText(PROJECT_NAME);
         nameStep.txtProjectLocation().setText("");
-        nameStep.txtProjectLocation().typeText(PROJECT_LOCATION);
+        nameStep.txtProjectLocation().typeText(getProjectFolder(PROJECT_NAME));
         nameStep.next();
         NewWebProjectServerSettingsStepOperator serverStep = new NewWebProjectServerSettingsStepOperator();
         serverStep.selectServer("GlassFish V2");
         serverStep.selectJavaEEVersion(org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.j2ee.common.project.ui.Bundle", "JavaEESpecLevel_50"));
         serverStep.next();
-        NewWebProjectJSFFrameworkStepOperator frameworkStep = new NewWebProjectJSFFrameworkStepOperator();
+
+        NewWebProjectSpringFrameworkStepOperator frameworkStep = new NewWebProjectSpringFrameworkStepOperator();
+        assertTrue("Spring framework not present!", frameworkStep.setSpringFrameworkCheckbox());
+        frameworkStep.setJTextField("");
+        assertEquals(org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.spring.webmvc.Bundle", "MSG_DispatcherNameIsEmpty"), frameworkStep.lblTheDispatcherNameHasToBeEntered().getText());
+        frameworkStep.txtJTextField().typeText("hhhhh*");
+        assertEquals("The name entered contains invalid characters for a filename.", frameworkStep.lblTheNameEnteredContainsInvalidCharactersForAFilename().getText());
+        frameworkStep.setJTextField("");
+        frameworkStep.txtJTextField().typeText("hhhhh");
+        frameworkStep.setJTextField2("");
+        assertEquals(org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.spring.webmvc.Bundle", "MSG_DispatcherMappingPatternIsEmpty"), frameworkStep.lblTheDispatcherMappingHasToBeEntered().getText());
+        frameworkStep.txtJTextField2().typeText("hhhh*");
+        assertEquals(org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.spring.webmvc.Bundle", "MSG_DispatcherMappingPatternIsNotValid"), frameworkStep.lblTheDispatcherMappingIsNotValid().getText());
+        frameworkStep.setJTextField2("");
+        frameworkStep.txtJTextField2().typeText("*.htm");
+        frameworkStep.selectPageLibraries();
+//        frameworkStep.cbIncludeJSTL().push();
+
         frameworkStep.finish();
-        // wait for project creation
-        sleep(5000);
+        frameworkStep.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 60000);
+        frameworkStep.waitClosed();
+        // Opening Projects
+        String openingProjectsTitle = Bundle.getString(
+                "org.netbeans.modules.project.ui.Bundle",
+                "LBL_Opening_Projects_Progress");
+        try {
+            // wait at most 60 second until progress dialog dismiss
+            NbDialogOperator openingOper = new NbDialogOperator(openingProjectsTitle);
+            frameworkStep.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 60000);
+            openingOper.waitClosed();
+        } catch (TimeoutExpiredException e) {
+            // ignore when progress dialog was closed before we started to wait for it
+        }
         ProjectSupport.waitScanFinished();
-//        EditorWindowOperator.getEditor("index.jsp");//NOI18N
-//        ProjectSupport.waitScanFinished();
-//        // XXX HACK
+    // Check project contains all needed files.
         WebPagesNode webPages = new WebPagesNode(PROJECT_NAME);
-        new Node(webPages,"index.jsp");//NOI18N
-        new Node(webPages,"WEB-INF|web.xml");//NOI18N
+        new Node(webPages, "redirect.jsp");
+        new Node(webPages,"WEB-INF|jsp|index.jsp");//NOI18N
+        new Node(webPages,"WEB-INF|applicationContext.xml");//NOI18N
+        new Node(webPages,"WEB-INF|hhhhh-servlet.xml");//NOI18N
         new Node(webPages,"WEB-INF|sun-web.xml");//NOI18N
-//        new Node(webPages,"META-INF|context.xml");//NOI18N
+        new Node(webPages,"WEB-INF|web.xml");//NOI18N
         ref(Util.dumpProjectView(PROJECT_NAME));
         compareReferenceFiles();
-//        assertEquals(true,ProjectSupport.closeProject(PROJECT_NAME));
-    }
-
-    public void testNewDocument() throws IOException {
-        Node sample1Node = new Node(new ProjectsTabOperator().getProjectRootNode(PROJECT_NAME), "Web Pages");
-        // create a new class
-        new ActionNoBlock(null, "New|JSP").perform(sample1Node);
-        // WORKAROUND
-        new EventTool().waitNoEvent(1000);
-        WizardOperator newFileWizard = new WizardOperator("New JSP File");
-        new JTextFieldOperator(newFileWizard).typeText("document");
-        new JRadioButtonOperator(newFileWizard, 1).changeSelection(true);
-        newFileWizard.finish();
-        // check class is opened in Editor and then close all documents
-        new EditorOperator("document.jspx").close();
-        ref(Util.dumpProjectView(PROJECT_NAME));
-        new Node(new ProjectsTabOperator().getProjectRootNode(PROJECT_NAME), "Web Pages|document.jspx");
-    //compareReferenceFiles();
-    //compareDD();
-    }
-    public void testStopServer() throws Exception {
-        server.stop();
-        //try { Thread.currentThread().sleep(5000); } catch (InterruptedException e) {}
-        URL url = server.getServerURL();
-        URLConnection connection = url.openConnection();
-        try {
-            connection.connect();
-            fail("Connection to: "+url+" established, but the server" +
-                    " should not be running.");
-        } catch (ConnectException e) {  }
-    }
-    
-    public void testStartServer() throws Exception {
-        server.start();
-        URL url = server.getServerURL();
-        URLConnection connection = url.openConnection();
-        connection.connect();
+//        ProjectSupport.closeProject(PROJECT_NAME);
     }
 
     //********************************************************
@@ -376,5 +358,5 @@ public class WebProjectValidationEE5 extends WebProjectValidation {
             getServerNode().start();
         }
     }
-}
 
+}
