@@ -235,15 +235,10 @@ public class Occurrences {
             try{
                 DataObject dataObject = DataObject.find(config);
                 BaseDocument document = JSFEditorUtilities.getBaseDocument(dataObject);
-                int [] offsets;
-                if (bean.getManagedBeanName() != null) {
-                    offsets = JSFEditorUtilities.getManagedBeanDefinition(document, "managed-bean-name", bean.getManagedBeanName()); //NOI18N
-                } else {
-                    offsets = JSFEditorUtilities.getManagedBeanDefinition(document, "managed-bean-class", bean.getManagedBeanClass()); //NOI18N
-                }
-                String text = document.getText(offsets);
+                int start = bean.findPosition();
+                String text = document.getText(start, document.getLength()-start);
                 int offset = text.indexOf(getXMLElementName());
-                offset = offsets[0] + text.indexOf(oldValue, offset);
+                offset = start + text.indexOf(oldValue, offset);
                 position =  createPosition(offset, offset + oldValue.length());
             } catch (BadLocationException exception) {
                 LOGGER.log(Level.SEVERE, exception.getMessage(), exception);
@@ -334,15 +329,10 @@ public class Occurrences {
             try{
                 DataObject dataObject = DataObject.find(config);
                 BaseDocument document = JSFEditorUtilities.getBaseDocument(dataObject);
-                int [] offsets;
-                if (converter.getConverterId() != null) {
-                    offsets = JSFEditorUtilities.getConverterDefinition(document, "converter-id", converter.getConverterId()); //NOI18N
-                } else {
-                    offsets = JSFEditorUtilities.getConverterDefinition(document, "converter-class", converter.getConverterClass()); //NOI18N
-                }
-                String text = document.getText(offsets);
+                int start = converter.findPosition();
+                String text = document.getText(start, document.getLength()-start);
                 int offset = text.indexOf(getXMLElementName());
-                offset = offsets[0] + text.indexOf(oldValue, offset);
+                offset = start + text.indexOf(oldValue, offset);
                 position =  createPosition(offset, offset + oldValue.length());
             } catch (BadLocationException exception) {
                 LOGGER.log(Level.SEVERE, exception.getMessage(), exception);
@@ -433,15 +423,10 @@ public class Occurrences {
             try{
                 DataObject dataObject = DataObject.find(config);
                 BaseDocument document = JSFEditorUtilities.getBaseDocument(dataObject);
-                int [] offsets;
-                if (converter.getConverterId() != null) {
-                    offsets = JSFEditorUtilities.getConverterDefinition(document, "converter-id", converter.getConverterId()); //NOI18N
-                } else {
-                    offsets = JSFEditorUtilities.getConverterDefinition(document, "converter-for-class", converter.getConverterForClass()); //NOI18N
-                }
-                String text = document.getText(offsets);
+                int start = converter.findPosition();
+                String text = document.getText(start, document.getLength()-start);
                 int offset = text.indexOf(getXMLElementName());
-                offset = offsets[0] + text.indexOf(oldValue, offset);
+                offset = start + text.indexOf(oldValue, offset);
                 position =  createPosition(offset, offset + oldValue.length());
             } catch (BadLocationException exception) {
                 LOGGER.log(Level.SEVERE, exception.getMessage(), exception);
