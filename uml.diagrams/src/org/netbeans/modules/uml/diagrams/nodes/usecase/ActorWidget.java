@@ -41,7 +41,6 @@ package org.netbeans.modules.uml.diagrams.nodes.usecase;
 import java.beans.PropertyChangeEvent;
 import java.util.ResourceBundle;
 import javax.swing.BorderFactory;
-import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
@@ -49,14 +48,12 @@ import org.netbeans.modules.uml.core.metamodel.core.constructs.IActor;
 import org.netbeans.modules.uml.core.metamodel.core.constructs.IPartFacade;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
-import org.netbeans.modules.uml.diagrams.DefaultWidgetContext;
-import org.netbeans.modules.uml.diagrams.actions.ClassifierSelectAction;
 import org.netbeans.modules.uml.diagrams.nodes.ActorSymbolWidget;
 import org.netbeans.modules.uml.diagrams.nodes.EditableCompartmentWidget;
 import org.netbeans.modules.uml.diagrams.nodes.UMLNameWidget;
+import org.netbeans.modules.uml.drawingarea.ModelElementChangedKind;
 import org.netbeans.modules.uml.drawingarea.palette.context.DefaultContextPaletteModel;
-import org.netbeans.modules.uml.drawingarea.view.DesignerTools;
-import org.netbeans.modules.uml.drawingarea.view.SwitchableWidget;
+import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
 import org.netbeans.modules.uml.drawingarea.view.UMLWidget;
 import org.openide.util.NbBundle;
 
@@ -64,73 +61,26 @@ import org.openide.util.NbBundle;
  *
  * @author jyothi
  */
-public class ActorWidget extends SwitchableWidget
+public class ActorWidget extends UMLNodeWidget
 {
+
     protected static ResourceBundle bundle = NbBundle.getBundle(EditableCompartmentWidget.class);
     public static int DEFAULT_WIDTH = 60;
     public static int DEFAULT_HEIGHT = 90;
-    Widget mainView = null;
     ActorSymbolWidget stickFigureWidget = null;
     UMLNameWidget nameWidget = null;
-    
+    Scene scene;
+    IActor actor;
+    private Widget currentView;
+    private Widget actorWidget;
+
     public ActorWidget(Scene scene)
     {
-        super(scene, "Actor", true);
-        WidgetAction.Chain actions = createActions(DesignerTools.SELECT);
-
+        super((Scene) scene);
+        this.scene = scene;
         addToLookup(initializeContextPalette());
-        addToLookup(new DefaultWidgetContext("Actor"));
-        addToLookup(new ClassifierSelectAction());
     }
 
-    @Override
-    public Widget createDefaultWidget(IPresentationElement element)
-    {
-        if (element != null)
-        {
-            IActor actorElt = (IActor) element.getFirstSubject();
-            Scene scene = getScene();
-            setOpaque(true);
-
-            //create the main view
-            mainView = new Widget(scene);
-            mainView.setLayout(
-                    LayoutFactory.createVerticalFlowLayout(
-                    LayoutFactory.SerialAlignment.JUSTIFY, 0));
-            mainView.setBorder(BorderFactory.createEmptyBorder());
-
-            //create the stick figure widget
-            stickFigureWidget = new ActorSymbolWidget(
-                    scene, DEFAULT_WIDTH, DEFAULT_WIDTH, getWidgetID(),
-                    bundle.getString("LBL_body"));
-            stickFigureWidget.setOpaque(true);
-            mainView.addChild(stickFigureWidget);
-            mainView.setChildConstraint(stickFigureWidget, 100);
-            
-            //create the name widget
-            nameWidget = new UMLNameWidget(scene, false, getWidgetID());
-            setStaticText(nameWidget, element.getFirstSubject());
-            nameWidget.initialize(actorElt);
-
-            mainView.addChild(nameWidget);
-            mainView.setChildConstraint(nameWidget, 1);
-
-            setCurrentView(mainView);
-        }
-        return mainView;
-    }
-
-    @Override
-    public void removingView()
-    {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public String getWidgetID()
-    {
-        return UMLWidget.UMLWidgetIDString.ACTORWIDGET.toString();
-    }
-    
     private DefaultContextPaletteModel initializeContextPalette()
     {
         DefaultContextPaletteModel paletteModel = new DefaultContextPaletteModel(this);
@@ -138,24 +88,79 @@ public class ActorWidget extends SwitchableWidget
         return paletteModel;
     }
 
+    @Override
+    public void initializeNode(IPresentationElement element)
+    {
+        if (element != null)
+        {
+            IElement pElt = element.getFirstSubject();
+            if (pElt instanceof IActor)
+            {
+                actor = (IActor) pElt;
+                currentView = initActorWidget(actor);
+                setCurrentView(currentView);
+            }
+        }
+    }
+
+    private Widget initActorWidget(IActor actor)
+    {
+        actorWidget = new Widget(scene);
+        actorWidget.setLayout(
+                LayoutFactory.createVerticalFlowLayout(
+                LayoutFactory.SerialAlignment.JUSTIFY, 0));
+//            actorWidget.setBorder(BorderFactory.createEmptyBorder());
+
+        //create the stick figure widget
+        stickFigureWidget = new ActorSymbolWidget(
+                scene, DEFAULT_WIDTH, DEFAULT_WIDTH, getWidgetID(),
+                bundle.getString("LBL_body"));
+        stickFigureWidget.setUseGradient(useGradient);
+        stickFigureWidget.setOpaque(true);
+
+        actorWidget.addChild(stickFigureWidget);
+            actorWidget.setChildConstraint(stickFigureWidget, 100);
+
+        //create the name widget
+        nameWidget = new UMLNameWidget(scene, false, getWidgetID());
+        setStaticText(nameWidget, actor);
+        nameWidget.initialize(actor);
+
+        actorWidget.addChild(nameWidget);
+            actorWidget.setChildConstraint(nameWidget, 1);
+
+        return actorWidget;
+    }
+
+    public String getWidgetID()
+    {
+        return UMLWidget.UMLWidgetIDString.ACTORWIDGET.toString();
+    }
+
     private void setStaticText(UMLNameWidget nameWidget, IElement element)
     {
         if (element instanceof IPartFacade)
         {
             String sStaticText = "<<role>>";
-            nameWidget.setStaticText(sStaticText);            
+            nameWidget.setStaticText(sStaticText);
         }
     }
 
     @Override
     public void propertyChange(PropertyChangeEvent event)
     {
-        super.propertyChange(event);
-        IElement element = (IElement) event.getSource();
-        String propName = event.getPropertyName();
-        if (element != null && element instanceof IActor)
+        if (!event.getSource().equals(actor))
         {
-            nameWidget.propertyChange(event);
+            return;
+        }
+        String propName = event.getPropertyName();
+
+        if (propName.equals(ModelElementChangedKind.NAME_MODIFIED.toString()))
+        {
+            if (nameWidget != null)
+            {
+                nameWidget.propertyChange(event);
+            }
         }
     }
 }
