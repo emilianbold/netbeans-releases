@@ -152,9 +152,9 @@ public class UMLClassWidget  extends SwitchableWidget
         setBackground(null);
         
         boolean viewRequireUpdate = initializeClassView(clazz);
-        boolean paramRequireUpate = initializeParameterWidget(clazz);
+        boolean paramRequireUpdate = initializeParameterWidget(clazz);
 
-        if ((viewRequireUpdate == true) || (paramRequireUpate == true))
+        if ((viewRequireUpdate == true) || (paramRequireUpdate == true))
         {
             if(classView.getParentWidget() != null)
             {
@@ -178,6 +178,17 @@ public class UMLClassWidget  extends SwitchableWidget
             {
                 retVal = classView;
             }
+        }
+        else if(parameterWidget != null)
+        {
+            classView.removeFromParent();
+            parameterWidget.removeFromParent();
+            
+            retVal = new Widget(getScene());
+            retVal.setForeground((Color)null);
+            retVal.setLayout(new TemplateWidgetLayout());
+            retVal.addChild(classView);
+            retVal.addChild(parameterWidget);
         }
         
         return retVal;
@@ -555,7 +566,9 @@ public class UMLClassWidget  extends SwitchableWidget
             }
             else if(propName.equals(ModelElementChangedKind.TEMPLATE_PARAMETER.toString()))
             {
-                setCurrentView(initializeContents((IClassifier)event.getSource()));
+                Widget result = initializeContents((IClassifier)event.getSource());
+                result.removeFromParent();
+                setCurrentView(result);
             }
             else if(propName.equals(ModelElementChangedKind.REDEFINED_OWNER_NAME_CHANGED.toString()))
             {
