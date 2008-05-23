@@ -116,7 +116,7 @@ public class RubyHintsProvider implements HintsProvider {
         }
 
         @SuppressWarnings("unchecked")
-        List<RubySelectionRule> hints = (List)manager.getSelectionHints();
+        List<RubySelectionRule> hints = (List<RubySelectionRule>)manager.getSelectionHints();
 
         if (hints.isEmpty()) {
             return;
@@ -244,7 +244,6 @@ public class RubyHintsProvider implements HintsProvider {
     /** Apply error rules and return true iff somebody added an error description for it */
     private boolean applyRules(RubyError error, RuleContext context, Map<ID,List<RubyErrorRule>> hints,
             List<Hint> result) {
-        CompilationInfo info = context.compilationInfo;
         ID code = error.getId();
         if (code != null) {
             List<RubyErrorRule> rules = hints.get(code);
@@ -270,7 +269,6 @@ public class RubyHintsProvider implements HintsProvider {
     private void applyRules(HintsManager manager, RuleContext context, List<RubySelectionRule> rules, List<Hint> result) {
 
         RubyRuleContext rubyContext = (RubyRuleContext)context;
-        CompilationInfo info = context.compilationInfo;
         
         for (RubySelectionRule rule : rules) {
             if (!rule.appliesTo(context)) {

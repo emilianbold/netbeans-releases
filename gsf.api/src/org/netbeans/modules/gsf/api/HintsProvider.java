@@ -111,20 +111,20 @@ public interface HintsProvider {
         public abstract boolean isEnabled(UserConfigurableRule rule);
         
         @NonNull
-        public abstract Map<? extends Object,List<? extends ErrorRule>> getErrors();
+        public abstract Map<?,List<? extends ErrorRule>> getErrors();
 
         @NonNull
-        public abstract Map<? extends Object,List<? extends AstRule>> getHints();
+        public abstract Map<?,List<? extends AstRule>> getHints();
 
         @NonNull
         public abstract List<? extends SelectionRule> getSelectionHints();
 
         @NonNull
-        public abstract Map<? extends Object,List<? extends AstRule>> getHints(boolean onLine, RuleContext context);
+        public abstract Map<?,List<? extends AstRule>> getHints(boolean onLine, RuleContext context);
 
         // Is this redundant -- e.g. the getHints(boolean,CompilationInfo) method is used for this?
         @NonNull
-        public abstract Map<? extends Object,List<? extends AstRule>> getSuggestions();
+        public abstract Map<?,List<? extends AstRule>> getSuggestions();
 
         /** Force the hints in the given context to be recomputed and the display updated */
         public abstract void refreshHints(@NonNull RuleContext context);
