@@ -115,10 +115,10 @@ public final class RemoteConnections {
         TIMEOUT,
     };
 
-    private final RemoteConnectionsPanel panel;
     private final ConfigManager configManager;
     private final ConfigManager.ConfigProvider configProvider = new DefaultConfigProvider();
     private final ChangeListener defaultChangeListener = new DefaultChangeListener();
+    private RemoteConnectionsPanel panel = null;
     private DialogDescriptor descriptor = null;
 
     public static RemoteConnections get() {
@@ -126,9 +126,14 @@ public final class RemoteConnections {
     }
 
     private RemoteConnections() {
-        panel = new RemoteConnectionsPanel();
         configManager = new ConfigManager(configProvider);
+    }
 
+    private void initPanel() {
+        if (panel != null) {
+            return;
+        }
+        panel = new RemoteConnectionsPanel();
         // data
         panel.setConfigurations(getConfigurations());
 
@@ -152,6 +157,7 @@ public final class RemoteConnections {
     }
 
     public void openManager() {
+        initPanel();
         String title = NbBundle.getMessage(RemoteConnectionsPanel.class, "LBL_ManageRemoteConnections");
         descriptor = new DialogDescriptor(panel, title, true, null);
         Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
