@@ -483,7 +483,7 @@ public class LanguageRegistry implements Iterable<Language> {
                 FileObject mimeFile = innerChildren[j];
 
                 String mime = mimePrefixFile.getName() + "/" + mimeFile.getName();
-                DefaultLanguage language = new DefaultLanguage(mime);
+                Language language = new Language(mime);
                 languages.add(language);
 
                 Boolean useCustomEditorKit = (Boolean)mimeFile.getAttribute("useCustomEditorKit"); // NOI18N
@@ -597,7 +597,7 @@ public class LanguageRegistry implements Iterable<Language> {
         // I can't call language.getStructure() here - it causes initialization
         // of the language objects too early (before registry is populated),
         // so just check if we potentially have a structure scanner
-        if (((DefaultLanguage)language).hasStructureScanner()) {
+        if (language.hasStructureScanner()) {
             String navFileName = "Navigator/Panels/" + language.getMimeType() + "/org-netbeans-modules-gsfret-navigation-ClassMemberPanel.instance";
 
             FileObject fo = fs.findResource(navFileName);
@@ -976,7 +976,7 @@ public class LanguageRegistry implements Iterable<Language> {
         }
         
         // Glyph gutter actions
-        if (((DefaultLanguage)l).hasHints()) {
+        if (l.hasHints()) {
             FileObject gf = root.getFileObject("GlyphGutterActions/org-netbeans-modules-editor-hints-FixAction.instance");
             if (gf == null) {
                 try {

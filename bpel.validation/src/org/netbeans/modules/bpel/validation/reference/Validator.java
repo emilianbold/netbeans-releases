@@ -40,37 +40,26 @@
  */
 package org.netbeans.modules.bpel.validation.reference;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import org.netbeans.modules.bpel.model.api.BpelContainer;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
-import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.api.ContentElement;
 import org.netbeans.modules.bpel.model.api.Import;
 import org.netbeans.modules.bpel.model.api.Process;
 import org.netbeans.modules.bpel.model.api.Variable;
 import org.netbeans.modules.bpel.model.api.VariableDeclaration;
 import org.netbeans.modules.bpel.model.api.VariableDeclarationScope;
-import org.netbeans.modules.bpel.model.api.references.BpelReference;
 import org.netbeans.modules.bpel.model.api.references.MappedReference;
 import org.netbeans.modules.bpel.model.api.references.ReferenceCollection;
-import org.netbeans.modules.bpel.model.api.references.SchemaReference;
-import org.netbeans.modules.bpel.model.api.references.WSDLReference;
 import org.netbeans.modules.bpel.model.api.support.ExpressionUpdater;
 import org.netbeans.modules.bpel.model.api.support.ImportHelper;
-import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.Reference;
 import org.netbeans.modules.xml.xam.Referenceable;
-import org.netbeans.modules.xml.xam.dom.Attribute;
-import org.netbeans.modules.xml.xam.spi.ValidationResult;
-import org.netbeans.modules.xml.xam.spi.Validation;
-import org.netbeans.modules.xml.xam.spi.Validation.ValidationType;
 import org.netbeans.modules.bpel.validation.core.BpelValidator;
 import org.netbeans.modules.bpel.model.api.support.SimpleBpelModelVisitor;
 import org.netbeans.modules.bpel.model.api.support.SimpleBpelModelVisitorAdaptor;
@@ -83,11 +72,10 @@ import static org.netbeans.modules.xml.ui.UI.*;
 public final class Validator extends BpelValidator {
 
   @Override
-  protected final SimpleBpelModelVisitor getVisitor() { return new SimpleBpelModelVisitorAdaptor() {
+  protected SimpleBpelModelVisitor getVisitor() { return new SimpleBpelModelVisitorAdaptor() {
 
   @Override
-  public void visit(Process process)
-  {
+  public void visit(Process process) {
     processEntity(process);
   }
 
@@ -146,10 +134,10 @@ public final class Validator extends BpelValidator {
     String key;
 
     if (set.size() > 1) {
-      key = "FIX_Variables";
+      key = "FIX_Variables"; // NOI18N
     }
     else {
-      key = "FIX_Variable";
+      key = "FIX_Variable"; // NOI18N
     }
     addError(key, entity, builder.substring(0, builder.length()-2), expression.trim());
   }
@@ -194,7 +182,7 @@ public final class Validator extends BpelValidator {
       }
   }
 
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("unchecked") // NOI18N
   private void checkReferenceCollection(BpelEntity entity) {
     if ( !(entity instanceof ReferenceCollection)) {
       return;
@@ -212,7 +200,7 @@ public final class Validator extends BpelValidator {
       String tag = entity.getPeer().getLocalName();
       String attr = ((MappedReference) reference).getAttribute().getName();
 
-      addQuickFix("FIX_Reference", entity, tag, attr, QuickFix.get(entity, (Reference<Referenceable>) reference));
+      addQuickFix("FIX_Reference", entity, tag, attr, QuickFix.get(entity, (Reference<Referenceable>) reference)); // NOI18N
     }
   }
 

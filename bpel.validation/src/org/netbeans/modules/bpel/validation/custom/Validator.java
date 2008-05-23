@@ -42,13 +42,9 @@ package org.netbeans.modules.bpel.validation.custom;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.HashMap;
 import java.util.Collection;
-import java.util.Set;
 
 import org.netbeans.modules.bpel.model.api.BaseCorrelation;
-import org.netbeans.modules.bpel.model.api.BaseScope;
-import org.netbeans.modules.bpel.model.api.BpelContainer;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.Branches;
 import org.netbeans.modules.bpel.model.api.CompletionCondition;
@@ -69,9 +65,7 @@ import org.netbeans.modules.bpel.model.api.Invoke;
 import org.netbeans.modules.bpel.model.api.OnAlarmEvent;
 import org.netbeans.modules.bpel.model.api.OnEvent;
 import org.netbeans.modules.bpel.model.api.OnMessage;
-import org.netbeans.modules.bpel.model.api.OperationReference;
 import org.netbeans.modules.bpel.model.api.PartnerLink;
-import org.netbeans.modules.bpel.model.api.PartnerLinkContainer;
 import org.netbeans.modules.bpel.model.api.PatternedCorrelation;
 import org.netbeans.modules.bpel.model.api.PatternedCorrelationContainer;
 import org.netbeans.modules.bpel.model.api.Pick;
@@ -90,11 +84,7 @@ import org.netbeans.modules.bpel.model.api.support.ExpressionUpdater;
 import org.netbeans.modules.xml.wsdl.model.Operation;
 import org.netbeans.modules.xml.wsdl.model.PortType;
 import org.netbeans.modules.xml.wsdl.model.RequestResponseOperation;
-import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
 import org.netbeans.modules.xml.xam.Component;
-import org.netbeans.modules.xml.xam.spi.Validator.ResultType;
-import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
-import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.bpel.validation.core.BpelValidator;
 import org.netbeans.modules.bpel.model.api.support.SimpleBpelModelVisitor;
 import org.netbeans.modules.bpel.model.api.support.SimpleBpelModelVisitorAdaptor;
@@ -107,17 +97,15 @@ import static org.netbeans.modules.xml.ui.UI.*;
 public final class Validator extends BpelValidator {
 
   @Override
-  protected final void init()
-  {
+  protected void init() {
     myErrored = new ArrayList<Component>();
   }
 
   @Override
-  protected final SimpleBpelModelVisitor getVisitor() { return new SimpleBpelModelVisitorAdaptor() {
+  protected SimpleBpelModelVisitor getVisitor() { return new SimpleBpelModelVisitorAdaptor() {
 
   @Override
-  public void visit(ForEach forEach)
-  {
+  public void visit(ForEach forEach) {
 //out();
     // # 124918
     checkCounters(forEach);
@@ -314,8 +302,8 @@ public final class Validator extends BpelValidator {
     if (
       samePartnerLink(receive1, receive2) &&
       samePortType(receive1, receive2) &&
-      sameOperation(receive1, receive2))
-    {
+      sameOperation(receive1, receive2)
+    ) {
       addWarning("FIX_Receives_in_OnEventOnAlarm", receive1, receive1.getName(), receive2.getName()); // NOI18N
       addWarning("FIX_Receives_in_OnEventOnAlarm", receive2, receive2.getName(), receive1.getName()); // NOI18N
     }
@@ -516,7 +504,7 @@ public final class Validator extends BpelValidator {
     }
     Correlation [] correlations = container.getCorrelations();
 
-    if (correlations == null)  {
+    if (correlations == null) {
       return;
     }
     Process process = holder.getBpelModel().getProcess();
@@ -570,7 +558,7 @@ public final class Validator extends BpelValidator {
     }
     Correlation [] correlations = container.getCorrelations();
 
-    if (correlations == null)  {
+    if (correlations == null) {
       return false;
     }
     for (Correlation correlation : correlations) {
@@ -595,7 +583,7 @@ public final class Validator extends BpelValidator {
     }
     PatternedCorrelation [] correlations = container.getPatternedCorrelations();
 
-    if (correlations == null)  {
+    if (correlations == null) {
       return false;
     }
     for (PatternedCorrelation correlation : correlations) {
@@ -698,8 +686,8 @@ public final class Validator extends BpelValidator {
     CorrelationsHolder holder1,
     CorrelationsHolder holder2,
     BpelEntity parent1,
-    BpelEntity parent2)
-  {
+    BpelEntity parent2
+  ) {
     // # 128357
     if (holder1 instanceof OnMessage && parent1 instanceof Pick) {
       return false;
