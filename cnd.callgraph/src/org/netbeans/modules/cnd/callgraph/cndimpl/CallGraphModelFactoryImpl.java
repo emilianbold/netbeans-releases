@@ -47,6 +47,7 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 import org.netbeans.modules.cnd.callgraph.api.CallModel;
 import org.netbeans.modules.cnd.callgraph.api.ui.CallGraphModelFactory;
+import org.netbeans.modules.cnd.callgraph.api.ui.CallGraphUI;
 import org.openide.nodes.Node;
 
 /**
@@ -78,6 +79,18 @@ public class CallGraphModelFactoryImpl extends CallGraphModelFactory {
         }
         if (function != null) {
             return new CallModelImpl(project, function);
+        }
+        return null;
+    }
+
+    @Override
+    public CallGraphUI getUI(CallModel model) {
+        if (model instanceof CallModelImpl) {
+            return new CallGraphUI(){
+                public boolean showGraph() {
+                    return Boolean.getBoolean("cnd.callgraph.showgraph");
+                }
+            };
         }
         return null;
     }

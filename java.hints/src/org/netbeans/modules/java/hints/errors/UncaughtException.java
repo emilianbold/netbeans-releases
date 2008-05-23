@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.java.hints.errors;
 
+import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.CatchTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
@@ -289,13 +290,27 @@ public final class UncaughtException implements ErrorRule<Void> {
                 }
                 
                 if (ErrorFixesFakeHint.enabled(ErrorFixesFakeHint.FixKind.SURROUND_WITH_TRY_CATCH)) {
-                    result.add(new OrigSurroundWithTryCatchFix(info.getJavaSource(), thandles, TreePathHandle.create(path, info)));
-                    result.add(new MagicSurroundWithTryCatchFix(info.getJavaSource(), thandles, offset, ElementHandle.create(method), fqns));
+                    result.add(new OrigSurroundWithTryCatchFix(info.getJavaSource(), thandles, TreePathHandle.create(path, info), fqns));
+                    //#134408: "Surround Block with try-catch" is redundant when the block contains just a single statement
+                    TreePath tp = findBlock(path);
+                    boolean magic = true;
+                    if(tp != null && tp.getLeaf().getKind() == Kind.BLOCK) {
+                        magic = ((BlockTree) tp.getLeaf()).getStatements().size() != 1;
+                    }
+                    if(magic)
+                        result.add(new MagicSurroundWithTryCatchFix(info.getJavaSource(), thandles, offset, ElementHandle.create(method), fqns));
                 }
             }
         }
         
         return result;
+    }
+    
+    private TreePath findBlock(TreePath path) {
+        while (path != null && path.getLeaf().getKind() != Kind.BLOCK) {
+            path = path.getParentPath();
+        }
+        return path;
     }
     
     /**

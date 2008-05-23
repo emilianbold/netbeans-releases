@@ -41,8 +41,8 @@
 package org.netbeans.modules.cnd.completion.impl.xref;
 
 import java.util.ArrayList;
-import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
@@ -84,7 +84,7 @@ public class FileReferencesImpl extends CsmFileReferences  {
         accept(csmScope, visitor, CsmReferenceKind.ALL);
     }
     
-    public void accept(CsmScope csmScope, Visitor visitor, EnumSet<CsmReferenceKind> kinds) {
+    public void accept(CsmScope csmScope, Visitor visitor, Set<CsmReferenceKind> kinds) {
         if (!CsmKindUtilities.isOffsetable(csmScope) && !CsmKindUtilities.isFile(csmScope)){
             return;
         }
@@ -99,7 +99,15 @@ public class FileReferencesImpl extends CsmFileReferences  {
         }
         
         BaseDocument doc = ReferencesSupport.getDocument(csmFile);
-        assert doc != null;
+        if (doc == null || !csmFile.isValid()) {
+            // This rarely can happen:
+            // 1. if file was put on reparse and scope we have here is already obsolete
+            // TODO: find new scope if API would allow that one day
+            // 2. renamed
+            // TODO: search by unique name
+            // 3. deleted
+            return;
+        }
         if (CsmKindUtilities.isFile(csmScope)) {
             start = 0;
             end = doc.getLength() - 1;
@@ -114,7 +122,7 @@ public class FileReferencesImpl extends CsmFileReferences  {
     }
     
     private List<CsmReference> getIdentifierReferences(CsmFile csmFile, BaseDocument doc, int start, int end,
-                                                        EnumSet<CsmReferenceKind> kinds) {
+                                                        Set<CsmReferenceKind> kinds) {
         List<CsmReference> out = new ArrayList<CsmReference>();
         boolean needAfterDereferenceUsages = kinds.contains(CsmReferenceKind.AFTER_DEREFERENCE_USAGE);
         List<Token> tokens = TokenUtilities.getTokens(doc, start, end);

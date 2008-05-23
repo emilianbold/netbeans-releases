@@ -173,11 +173,11 @@ public class Occurrences {
         }
         
         public void performChange(){
-            changeBeanClass(newValue);
+            changeBeanClass(oldValue, newValue);
         }
         
         public void undoChange(){
-            changeBeanClass(oldValue);
+            changeBeanClass(newValue, oldValue);
         }
         
         public String getWhereUsedMessage(){
@@ -195,7 +195,7 @@ public class Occurrences {
             Collection<ManagedBean> beans = faces.getManagedBeans();
             for (Iterator<ManagedBean> it = beans.iterator(); it.hasNext();) {
                 ManagedBean managedBean = it.next();
-                if (bean.getManagedBeanName().equals(managedBean.getManagedBeanName())){
+                if (oldValue.equals(managedBean.getManagedBeanClass())){
                     faces.getModel().startTransaction();
                     faces.removeManagedBean(managedBean);
                     faces.getModel().endTransaction();
@@ -216,18 +216,17 @@ public class Occurrences {
                     new Object[] { bean.getManagedBeanName(), getElementText()});
         }
         
-        private void changeBeanClass(String className){
+        private void changeBeanClass(String oldClass, String newClass){
             FacesConfig facesConfig = ConfigurationUtils.getConfigModel(config, true).getRootComponent();
             List <ManagedBean> beans = facesConfig.getManagedBeans();
             for (Iterator<ManagedBean> it = beans.iterator(); it.hasNext();) {
                 ManagedBean managedBean = it.next();
-                if (bean.getManagedBeanName().equals(managedBean.getManagedBeanName())){
+                if (oldClass.equals(managedBean.getManagedBeanClass())){
                     facesConfig.getModel().startTransaction();
-                    managedBean.setManagedBeanClass(className);
+                    managedBean.setManagedBeanClass(newClass);
                     facesConfig.getModel().endTransaction();
-                    continue;
+                    break;
                 }
-                
             }
         }
         
@@ -236,9 +235,10 @@ public class Occurrences {
             try{
                 DataObject dataObject = DataObject.find(config);
                 BaseDocument document = JSFEditorUtilities.getBaseDocument(dataObject);
-                int [] offsets = JSFEditorUtilities.getManagedBeanDefinition(document, bean.getManagedBeanName());
-                String text = document.getText(offsets);
-                int offset = offsets[0] + text.indexOf(oldValue);
+                int start = bean.findPosition();
+                String text = document.getText(start, document.getLength()-start);
+                int offset = text.indexOf(getXMLElementName());
+                offset = start + text.indexOf(oldValue, offset);
                 position =  createPosition(offset, offset + oldValue.length());
             } catch (BadLocationException exception) {
                 LOGGER.log(Level.SEVERE, exception.getMessage(), exception);
@@ -275,11 +275,13 @@ public class Occurrences {
         }
         
         public String getWhereUsedMessage(){
-            return NbBundle.getMessage(Occurrences.class, "MSG_ConverterClass_WhereUsed", getElementText()); //NOI18N
+            return NbBundle.getMessage(Occurrences.class, "MSG_ConverterClass_WhereUsed", //NOI18N
+                    new Object[] { converter.getConverterId(), getElementText()});
         }
         
         public String getChangeMessage(){
-            return NbBundle.getMessage(Occurrences.class, "MSG_ConverterClass_Rename", getElementText()); //NOI18N
+            return NbBundle.getMessage(Occurrences.class, "MSG_ConverterClass_Rename", //NOI18N
+                    new Object[] { converter.getConverterId(), getElementText()});
         }
         
         public void performSafeDelete() {
@@ -304,8 +306,8 @@ public class Occurrences {
         }
         
         public String getSafeDeleteMessage() {
-            return NbBundle.getMessage(Occurrences.class, "MSG_Converter_SafeDelete",  //NOI18N
-                    new Object[] { getElementText()});
+            return NbBundle.getMessage(Occurrences.class, "MSG_Converter_SafeDelete", //NOI18N
+                    new Object[] { converter.getConverterId(), getElementText()});
         }
         
         private void changeConverterClass(String oldClass, String newClass){
@@ -327,10 +329,10 @@ public class Occurrences {
             try{
                 DataObject dataObject = DataObject.find(config);
                 BaseDocument document = JSFEditorUtilities.getBaseDocument(dataObject);
-                int [] offsets = JSFEditorUtilities.getConverterDefinition(document, "converter-class", converter.getConverterClass()); //NOI18N
-                 
-                String text = document.getText(offsets);
-                int offset = offsets[0] + text.indexOf(oldValue);
+                int start = converter.findPosition();
+                String text = document.getText(start, document.getLength()-start);
+                int offset = text.indexOf(getXMLElementName());
+                offset = start + text.indexOf(oldValue, offset);
                 position =  createPosition(offset, offset + oldValue.length());
             } catch (BadLocationException exception) {
                 LOGGER.log(Level.SEVERE, exception.getMessage(), exception);
@@ -367,11 +369,13 @@ public class Occurrences {
         }
         
         public String getWhereUsedMessage(){
-            return NbBundle.getMessage(Occurrences.class, "MSG_ConverterForClass_WhereUsed", getElementText()); //NOI18N
+            return NbBundle.getMessage(Occurrences.class, "MSG_ConverterForClass_WhereUsed", //NOI18N
+                    new Object[] { converter.getConverterId(), getElementText()});
         }
         
         public String getChangeMessage(){
-            return NbBundle.getMessage(Occurrences.class, "MSG_ConverterForClass_Rename", getElementText()); //NOI18N
+            return NbBundle.getMessage(Occurrences.class, "MSG_ConverterForClass_Rename", //NOI18N
+                    new Object[] { converter.getConverterId(), getElementText()});
         }
         
         public void performSafeDelete() {
@@ -392,14 +396,12 @@ public class Occurrences {
             FacesConfig facesConfig = ConfigurationUtils.getConfigModel(config, true).getRootComponent();
             facesConfig.getModel().startTransaction();
             facesConfig.addConverter(copy);
-            // XXX why this is twice here?
-            //facesConfig.addConverter(converter);
             facesConfig.getModel().endTransaction();
         }
         
         public String getSafeDeleteMessage() {
-            return NbBundle.getMessage(Occurrences.class, "MSG_Converter_SafeDelete",  //NOI18N
-                    new Object[] { getElementText()});
+            return NbBundle.getMessage(Occurrences.class, "MSG_Converter_SafeDelete", //NOI18N
+                    new Object[] { converter.getConverterId(), getElementText()});
         }
         
         private void changeConverterForClass(String oldClass, String newClass){
@@ -421,9 +423,10 @@ public class Occurrences {
             try{
                 DataObject dataObject = DataObject.find(config);
                 BaseDocument document = JSFEditorUtilities.getBaseDocument(dataObject);
-                int [] offsets = JSFEditorUtilities.getConverterDefinition(document, "converter-for-class", converter.getConverterForClass());
-                String text = document.getText(offsets);
-                int offset = offsets[0] + text.indexOf(oldValue);
+                int start = converter.findPosition();
+                String text = document.getText(start, document.getLength()-start);
+                int offset = text.indexOf(getXMLElementName());
+                offset = start + text.indexOf(oldValue, offset);
                 position =  createPosition(offset, offset + oldValue.length());
             } catch (BadLocationException exception) {
                 LOGGER.log(Level.SEVERE, exception.getMessage(), exception);

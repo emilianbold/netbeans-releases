@@ -47,6 +47,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.*;
 import java.util.ArrayList;
+import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.cli.CommandlineClient.NotificationHandler;
 import org.netbeans.modules.subversion.client.cli.Parser.Line;
 import org.tigris.subversion.svnclientadapter.SVNBaseDir;
@@ -120,15 +121,20 @@ public abstract class SvnCommand implements CommandNotificationListener {
      * @throws ClearcaseException
      */
     public abstract void prepareCommand(Arguments arguments) throws IOException;
-   
+
+    protected abstract int getCommand();  
+
     public void setCommandWorkingDirectory(File... files) {
         notificationHandler.setBaseDir(SVNBaseDir.getBaseDir(files));        
     }
-
-    protected abstract int getCommand();       
+        
     protected boolean hasBinaryOutput() {
         return false;
     }       
+    
+    protected boolean notifyOutput() {
+        return true;
+    }
     
     public void commandStarted() {
         assert !commandExecuted : "Command re-use is not supported";
@@ -137,11 +143,15 @@ public abstract class SvnCommand implements CommandNotificationListener {
         notificationHandler.logCommandLine(cmdString);        
     }
 
-    // XXX don't do this for every command
     public void outputText(String lineString) {
+        Subversion.LOG.fine("outputText [" + lineString + "]");
+        if(!notifyOutput()) {
+            return;
+        }
         Line line = Parser.getInstance().parse(lineString);
         if(line != null) {
             if(notificationHandler != null && line.getPath() != null) {
+                Subversion.LOG.fine("outputText [" + line.getPath() + "]");
                 notificationHandler.notifyListenersOfChange(line.getPath());
             }
             notify(line);

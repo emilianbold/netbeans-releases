@@ -3047,7 +3047,7 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
             "    if (strm->zalloc == ( alloc_func ) 0) return;\n" +
             "    stream.zalloc = ( alloc_func ) 0;\n" +
             "    put_short(s, ( ush ) len);\n" +
-            "    put_short(s, ( ush )~len);\n" +
+            "    put_short(s, ( ush ) ~len);\n" +
             "}\n"
         );
     }
@@ -3977,7 +3977,7 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
             "{\n" +
             "    int i = 0;\n" +
             "    i = - i;\n" +
-            "    i = ( - i);\n" +
+            "    i = (- i);\n" +
             "    return (0);\n" +
             "}\n"
             );
@@ -4534,4 +4534,57 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                 "}\n"
                 );
     }
+    
+    // IZ#135205:'Spaces Before Keywords|else' option works wrongly in some cases
+    public void testIZ135205() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "int main() {\n" +
+                "    int i = 0;\n" +
+                "    if (1) {\n" +
+                "        i = 2;\n" +
+                "    }else {\n" +
+                "        i = 3;\n" +
+                "    }\n" +
+                "}\n"
+                );
+        reformat();
+        assertDocumentText("IZ#135205:'Spaces Before Keywords|else' option works wrongly in some cases",
+                "int main()\n" +
+                "{\n" +
+                "    int i = 0;\n" +
+                "    if (1) {\n" +
+                "        i = 2;\n" +
+                "    } else {\n" +
+                "        i = 3;\n" +
+                "    }\n" +
+                "}\n"
+                );
+    }
+    
+    // IZ#131721:Comment moves on new line after reformat
+    public void testIZ131721() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "char seek_scrbuf[SEEKBUFSIZE]; /* buffer for seeking */\n" +
+                "int cf_debug; /* non-zero enables debug prints */\n" +
+                "void *\n" +
+                "cf_alloc(void *opaque, unsigned int items, unsigned int size)\n" +
+                "{\n" +
+                "    return (ptr);\n" +
+                "}\n"
+                );
+        reformat();
+        assertDocumentText("IZ#131721:Comment moves on new line after reformat",
+                "char seek_scrbuf[SEEKBUFSIZE]; /* buffer for seeking */\n" +
+                "int cf_debug; /* non-zero enables debug prints */\n" +
+                "\n" +
+                "void *\n" +
+                "cf_alloc(void *opaque, unsigned int items, unsigned int size)\n" +
+                "{\n" +
+                "    return (ptr);\n" +
+                "}\n"
+                );
+    }
+    
 }

@@ -41,6 +41,7 @@ package org.netbeans.modules.subversion.client.cli.commands;
 
 import java.io.File;
 import java.io.IOException;
+import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.cli.SvnCommand;
 import org.tigris.subversion.svnclientadapter.ISVNNotifyListener;
 
@@ -82,7 +83,7 @@ public class AddCommand extends SvnCommand {
     
     @Override
     public void errorText(String line) {
-        if (line.startsWith("svn: warning:") /* XXX is not a working copy or line.indexOf("is already under version control") > -1*/) {
+        if (line.startsWith("svn: warning:")) { // ignore warnings           
             return;
         }
         super.errorText(line);

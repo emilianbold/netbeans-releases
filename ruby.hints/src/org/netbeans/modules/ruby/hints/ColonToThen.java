@@ -57,13 +57,15 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.ruby.hints.spi.AstRule;
-import org.netbeans.modules.ruby.hints.spi.Description;
-import org.netbeans.modules.ruby.hints.spi.EditList;
-import org.netbeans.modules.ruby.hints.spi.Fix;
-import org.netbeans.modules.ruby.hints.spi.HintSeverity;
-import org.netbeans.modules.ruby.hints.spi.PreviewableFix;
-import org.netbeans.modules.ruby.hints.spi.RuleContext;
+import org.netbeans.modules.gsf.api.Hint;
+import org.netbeans.modules.gsf.api.EditList;
+import org.netbeans.modules.gsf.api.HintFix;
+import org.netbeans.modules.gsf.api.HintSeverity;
+import org.netbeans.modules.gsf.api.PreviewableFix;
+import org.netbeans.modules.gsf.api.RuleContext;
+import org.netbeans.modules.ruby.Formatter;
+import org.netbeans.modules.ruby.hints.infrastructure.RubyAstRule;
+import org.netbeans.modules.ruby.hints.infrastructure.RubyRuleContext;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
 import org.openide.util.Exceptions;
@@ -79,13 +81,13 @@ import org.openide.util.NbBundle;
  * 
  * @author Tor Norbye
  */
-public class ColonToThen implements AstRule {
+public class ColonToThen extends RubyAstRule {
 
     public Set<NodeType> getKinds() {
         return Collections.singleton(NodeType.WHENNODE);
     }
 
-    public void run(RuleContext context, List<Description> result) {
+    public void run(RubyRuleContext context, List<Hint> result) {
         Node node = context.node;
         CompilationInfo info = context.compilationInfo;
 
@@ -152,11 +154,11 @@ public class ColonToThen implements AstRule {
             }
             OffsetRange range = new OffsetRange(offset, offset+1);
             String displayName = NbBundle.getMessage(ColonToThen.class, "ColonToThenGutter");
-            List<Fix> fixes = new ArrayList<Fix>(2);
+            List<HintFix> fixes = new ArrayList<HintFix>(2);
             fixes.add(new ColonFix(doc, offset, INSERT_THEN));
             fixes.add(new ColonFix(doc, offset, INSERT_SEMICOLON));
             fixes.add(new ColonFix(doc, offset, INSERT_NEWLINE));
-            Description desc = new Description(this, displayName, info.getFileObject(), range, 
+            Hint desc = new Hint(this, displayName, info.getFileObject(), range, 
                     fixes, 150);
             result.add(desc);
         } catch (BadLocationException ex) {
@@ -180,7 +182,7 @@ public class ColonToThen implements AstRule {
         return null;
     }
 
-    public boolean appliesTo(CompilationInfo info) {
+    public boolean appliesTo(RuleContext context) {
         return true;
     }
 
@@ -233,6 +235,7 @@ public class ColonToThen implements AstRule {
             EditList list = new EditList(doc);
             switch (mode) {
             case INSERT_NEWLINE:
+                list.setFormatter(new Formatter(), false);
                 list.replace(offset, 1, "\n", true, 0); // NOI18N
                 break;
             case INSERT_THEN: {
