@@ -36,60 +36,66 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.cnd.editor.filecreation;
 
-import java.io.IOException;
-import java.util.HashSet;
+import java.awt.Component;
 import java.util.Map;
-import java.util.Set;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
-import org.netbeans.modules.cnd.loaders.HDataLoader;
 import org.netbeans.modules.cnd.settings.CppSettings;
-import org.netbeans.spi.project.ui.templates.support.Templates;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.TemplateWizard;
+import org.openide.WizardDescriptor;
 
 /**
  *
  * @author sg155630
  */
-public class CndClassWizardIterator extends CCFSrcFileIterator {
+public class NewCndClassPanel extends CndPanel {
+    
+    NewCndClassPanel(Project project, SourceGroup[] folders, WizardDescriptor.Panel<WizardDescriptor> bottomPanel) {
+        super(project, folders, bottomPanel);
+    }
 
-    @Override
-    public void initialize(TemplateWizard wiz) {
-        Project project = Templates.getProject(wiz);
-        Sources sources = ProjectUtils.getSources(project);
-        SourceGroup[] groups = sources.getSourceGroups(Sources.TYPE_GENERIC);
-        targetChooserDescriptorPanel = new NewCndClassPanel(project, groups, null);
+    public Component getComponent() {
+        if (gui == null) {
+            gui = new NewCndClassPanelGUI(project, folders, bottomPanel == null ? null : bottomPanel.getComponent());
+            gui.addChangeListener(this);
+        }
+        return gui;
     }
 
     @Override
-    public Set<DataObject> instantiate(TemplateWizard wiz) throws IOException {
-        DataFolder targetFolder = wiz.getTargetFolder();
-        DataObject template = wiz.getTemplate();
-
-        String sourceFileName = wiz.getTargetName();
-
-        FileObject bro = FileUtil.findBrother(template.files().iterator().next(), "h"); // NOI18N
-        DataObject dobjBro = DataObject.find(bro);
-
-        Set<DataObject> res = new HashSet<DataObject>();
-        res.add(template.createFromTemplate(targetFolder, sourceFileName ));
-
-        String headerExt = ExtensionsSettings.getInstance(HDataLoader.getInstance()).getDefaultExtension();
-        res.add(dobjBro.createFromTemplate(targetFolder, sourceFileName.substring(0,sourceFileName.lastIndexOf(".")+1) + headerExt));
-
-        return res;
+    protected void doStoreSettings() {
+        String table = (CppSettings.findObject(CppSettings.class, true)).getReplaceableStringsTable();
+        table +="\nCLASSNAME=" + getGui().getClassName(); // NOI18N
+        table +="\nDEFAULT_HEADER_EXT=" + getGui().getHeaderExt(); // NOI18N
+        (CppSettings.findObject(CppSettings.class, true)).setReplaceableStringsTable(table);
+    }
+    
+    NewCndClassPanelGUI getGui() {
+        return (NewCndClassPanelGUI)gui;
     }
 
     @Override
-    public String name() {
-        return "CndClassWizardIterator"; //NOI8N
+    public boolean isValid() {
+        boolean ok = super.isValid(); 
+        
+        if (!ok) {
+            setErrorMessage (""); // NOI18N
+
+            return false;
+        }
+        if (!org.openide.util.Utilities.isJavaIdentifier( getGui().getClassName() )) {
+            setErrorMessage("MSG_not_valid_classname");
+            return false;
+        }
+        // check if the file name can be created
+        String errorMessage = canUseFileName(getGui().getTargetGroup().getRootFolder(), getGui().getTargetFolder(), getGui().getSourceFileName(), false);
+        if (errorMessage == null) {
+            errorMessage = canUseFileName(getGui().getTargetGroup().getRootFolder(), getGui().getTargetFolder(), getGui().getHeaderFileName(), false);
+        }
+        setErrorMessage(errorMessage); // NOI18N
+
+        return errorMessage == null;
     }
 }

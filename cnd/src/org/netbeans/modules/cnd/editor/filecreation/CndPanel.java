@@ -97,8 +97,6 @@ public abstract class CndPanel implements WizardDescriptor.Panel<WizardDescripto
         changeSupport.removeChangeListener(l);
     }
 
-//    protected abstract void initGui();
-//
     public boolean isValid() {
         return gui != null && gui.getTargetName() != null &&
                ( bottomPanel == null || bottomPanel.isValid() ) ;

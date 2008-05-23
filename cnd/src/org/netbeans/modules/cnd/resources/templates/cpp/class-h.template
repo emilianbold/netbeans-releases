@@ -8,10 +8,10 @@
 #ifndef _%<%GUARD_NAME%>%
 #define	_%<%GUARD_NAME%>%
 
-class %<%NAME%>% {
+class %<%CLASSNAME%>% {
 public:
-	%<%NAME%>%();
-	virtual ~%<%NAME%>%();
+	%<%CLASSNAME%>%();
+	virtual ~%<%CLASSNAME%>%();
 
 protected:
 
