@@ -47,15 +47,6 @@ made subject to such option by the copyright holder.
             <code-name-base>org.netbeans.modules.xml.retriever</code-name-base>
             <module-dependencies>
                 <dependency>
-                    <code-name-base>org.netbeans.api.xml</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.10.1</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.apache.xml.resolver</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -71,7 +62,16 @@ made subject to such option by the copyright holder.
                         <release-version>1</release-version>
                         <specification-version>1.5.1</specification-version>
                     </run-dependency>
-                </dependency>                
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.api.xml</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.10.1</specification-version>
+                    </run-dependency>
+                </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.editor.lib</code-name-base>
                     <build-prerequisite/>
@@ -172,15 +172,6 @@ made subject to such option by the copyright holder.
                         <specification-version>6.8.1</specification-version>
                     </run-dependency>
                 </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.editor.deprecated.pre61settings</code-name-base>
-                    <run-dependency>
-                        <release-version>0-1</release-version>
-                        <specification-version>1.0</specification-version>
-                    </run-dependency>
-                <build-prerequisite/>
-                    <compile-dependency/>
-                </dependency>
             </module-dependencies>
             <test-dependencies>
                 <test-type>
@@ -201,7 +192,7 @@ made subject to such option by the copyright holder.
             <public-packages>
                 <package>org.netbeans.modules.xml.retriever</package>
                 <package>org.netbeans.modules.xml.retriever.catalog</package>
-            </public-packages>            
+            </public-packages>
         </data>
     </configuration>
 </project>
