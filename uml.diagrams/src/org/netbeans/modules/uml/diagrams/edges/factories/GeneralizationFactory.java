@@ -69,7 +69,7 @@ public class GeneralizationFactory extends AbstractRelationshipFactory
         
         if((source instanceof IClassifier) && (target instanceof IClassifier))
         {
-            if (target instanceof IInterface)
+            if ((target instanceof IInterface) && !(source instanceof IInterface))
             {
                 IPackage space = source.getOwningPackage();
             
