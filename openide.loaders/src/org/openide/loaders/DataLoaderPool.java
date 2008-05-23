@@ -316,9 +316,6 @@ implements java.io.Serializable {
         }
         String mime = fo.getMIMEType();
         Enumeration<DataObject.Factory> mimeLoaders = new MimeEnum(mime);
-        if (mime.startsWith("text/") && mime.endsWith("+xml")) { // NOI18N
-            mimeLoaders = Enumerations.concat(mimeLoaders, new MimeEnum("text/xml")); // NOI18N
-        }
         mimeLoaders = Enumerations.concat(mimeLoaders, new MimeEnum("content/unknown")); // NOI18N
         try {
             if (!fo.getFileSystem().isDefault()) {

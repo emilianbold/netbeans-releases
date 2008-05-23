@@ -176,7 +176,8 @@ public class DataLoaderInLayerTest extends NbTestCase {
             FileObject fo = lfs.findResource("folder2/file.ant");
             assertNotNull(fo);
             DataObject dob = DataObject.find(fo);
-            assertEquals(l3, dob.getLoader());
+            MultiFileLoader xmlL = DataLoader.getLoader(XMLDataObject.Loader.class);
+            assertEquals("No special handling for XML", xmlL, dob.getLoader());
         } finally {
         addRemoveLoader(l1, false);
         //addRemoveLoader("text/ant+xml", l2, false);
