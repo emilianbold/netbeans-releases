@@ -31,6 +31,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.logging.Logger;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -42,11 +45,16 @@ import javax.swing.border.CompoundBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 
-import org.netbeans.modules.iep.editor.wizard.database.TablePollingStreamWizardHelper;
+import org.netbeans.modules.iep.editor.wizard.database.ColumnInfo;
+import org.netbeans.modules.iep.editor.wizard.database.DatabaseMetaDataHelper;
+import org.netbeans.modules.iep.editor.wizard.database.DatabaseTableWizardConstants;
+import org.netbeans.modules.iep.editor.wizard.database.TableInfo;
 import org.netbeans.modules.iep.editor.wizard.database.tableInput.ExternalTableWizardHelper;
 import org.netbeans.modules.iep.model.IEPModel;
 import org.netbeans.modules.iep.model.OperatorComponent;
 import org.netbeans.modules.iep.model.Property;
+import org.netbeans.modules.iep.model.SchemaAttribute;
+import org.netbeans.modules.iep.model.TableInputOperatorComponent;
 import org.netbeans.modules.iep.model.lib.TcgPropertyType;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
@@ -86,6 +94,10 @@ public class TableInputCustomEditor extends DefaultCustomEditor {
         public MyCustomizer(TcgPropertyType propertyType, OperatorComponent component, TcgComponentNodePropertyCustomizerState customizerState) {
             super(propertyType, component, customizerState);
         }
+        
+//        protected JPanel createPropertyPanel() throws Exception {
+//            return new TableInputConfigurationPanel((TableInputOperatorComponent) getOperatorComponent(), mSelectPanel);
+//        }
         
         protected JPanel createPropertyPanel() throws Exception {
             JPanel pane = new JPanel();
@@ -259,9 +271,7 @@ public class TableInputCustomEditor extends DefaultCustomEditor {
             mGlobalIdPanel.store();
         }
         
-    }
-    
-     class SelectIEPProcessOperatorActionListener implements ActionListener {
+        class SelectIEPProcessOperatorActionListener implements ActionListener {
 
             public void actionPerformed(ActionEvent e) {
                 IEPModel model = getOperatorComponent().getModel();
@@ -274,8 +284,29 @@ public class TableInputCustomEditor extends DefaultCustomEditor {
                 dialog.toFront();
                 boolean cancelled = wizardDescriptor.getValue() != WizardDescriptor.FINISH_OPTION;
                 if (!cancelled) {
+                
+                    List<TableInfo> tables = (List) wizardDescriptor.getProperty(DatabaseTableWizardConstants.PROP_SELECTED_TABLES);
+                    List<ColumnInfo> columns = (List) wizardDescriptor.getProperty(DatabaseTableWizardConstants.PROP_SELECTED_COLUMNS);
+                    String databaseJNDIName = (String) wizardDescriptor.getProperty(DatabaseTableWizardConstants.PROP_JNDI_NAME);
                     
-            }
+                    List<SchemaAttribute> attrs = new ArrayList<SchemaAttribute>();
+                    //go through user selected columns
+                    Iterator<ColumnInfo> it = columns.iterator();
+                    while(it.hasNext()) {
+                        ColumnInfo column = it.next();
+                        String columnName = column.getColumnName();
+                        SchemaAttribute sa = DatabaseMetaDataHelper.createSchemaAttributeFromColumnInfo(column, columnName, model);
+                        attrs.add(sa);
+                    }
+                    
+                    mSelectPanel.clearTable();
+                    mSelectPanel.setAttributes(attrs);
+                    
+                }
         }
     }
+        
+    }
+    
+     
 }

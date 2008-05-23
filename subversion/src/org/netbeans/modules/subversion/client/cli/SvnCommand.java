@@ -47,6 +47,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.*;
 import java.util.ArrayList;
+import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.cli.CommandlineClient.NotificationHandler;
 import org.netbeans.modules.subversion.client.cli.Parser.Line;
 import org.tigris.subversion.svnclientadapter.SVNBaseDir;
@@ -143,12 +144,14 @@ public abstract class SvnCommand implements CommandNotificationListener {
     }
 
     public void outputText(String lineString) {
+        Subversion.LOG.fine("outputText [" + lineString + "]");
         if(!notifyOutput()) {
             return;
         }
         Line line = Parser.getInstance().parse(lineString);
         if(line != null) {
             if(notificationHandler != null && line.getPath() != null) {
+                Subversion.LOG.fine("outputText [" + line.getPath() + "]");
                 notificationHandler.notifyListenersOfChange(line.getPath());
             }
             notify(line);

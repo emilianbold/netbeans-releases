@@ -268,7 +268,6 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
         if (showGraph) {
             scene.clean();
         }
-        model.refresh();
         final Function function = model.getRoot();
         if (function != null){
             final Children children = root.getChildren();

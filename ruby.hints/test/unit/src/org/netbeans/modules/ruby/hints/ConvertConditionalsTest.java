@@ -46,96 +46,96 @@ public class ConvertConditionalsTest extends HintTestBase {
     }            
 
     public void testNoHint1() throws Exception {
-        findHints(this, new ConvertConditionals(), "testfiles/conditionals.rb", null);
+        checkHints(this, new ConvertConditionals(), "testfiles/conditionals.rb", null);
     }
 
     public void testNoHint2() throws Exception {
-        findHints(this, new ConvertConditionals(), "testfiles/conditionals2.rb", "uri = env_pr^oxy ? URI.parse(env_proxy) : nil");
+        checkHints(this, new ConvertConditionals(), "testfiles/conditionals2.rb", "uri = env_pr^oxy ? URI.parse(env_proxy) : nil");
     }
 
     public void testNoHint3() throws Exception {
-        findHints(this, new ConvertConditionals(), "testfiles/conditionals2.rb", "(uri =~ /.(https?|ftp|file):/) ? u^ri : \"http://#{uri}\"");
+        checkHints(this, new ConvertConditionals(), "testfiles/conditionals2.rb", "(uri =~ /.(https?|ftp|file):/) ? u^ri : \"http://#{uri}\"");
     }
     
     public void testNoHint4() throws Exception {
-        findHints(this, new ConvertConditionals(), "testfiles/emptycondition.rb", "if (^)");
+        checkHints(this, new ConvertConditionals(), "testfiles/emptycondition.rb", "if (^)");
     }
     
     public void testNoHint5() throws Exception {
-        findHints(this, new ConvertConditionals(), "testfiles/conditionals3.rb", "if (^x > 5)");
+        checkHints(this, new ConvertConditionals(), "testfiles/conditionals3.rb", "if (^x > 5)");
     }
     
     public void testNoHint6() throws Exception {
-        findHints(this, new ConvertConditionals(), "testfiles/conditionals3.rb", "i^f jd >= commercial_to_jd");
+        checkHints(this, new ConvertConditionals(), "testfiles/conditionals3.rb", "i^f jd >= commercial_to_jd");
     }
     
     public void testNoHint7() throws Exception {
-        findHints(this, new ConvertConditionals(), "testfiles/elsif.rb", 
+        checkHints(this, new ConvertConditionals(), "testfiles/elsif.rb", 
                 "elsi^f !str.blank?");
     }
 
     public void testNoHint8() throws Exception {
-        findHints(this, new ConvertConditionals(), "testfiles/elsif.rb", 
+        checkHints(this, new ConvertConditionals(), "testfiles/elsif.rb", 
                 "elsif !str.bla^nk?");
     }
 
     public void testNoHint9() throws Exception {
-        findHints(this, new ConvertConditionals(), "testfiles/elsif.rb", 
+        checkHints(this, new ConvertConditionals(), "testfiles/elsif.rb", 
                 "if st^r != 'something'");
     }
 
     public void testNoHint10() throws Exception {
-        findHints(this, new ConvertConditionals(), "testfiles/emptybody.rb", 
+        checkHints(this, new ConvertConditionals(), "testfiles/emptybody.rb", 
                 "if !^x");
     }
 
     public void testNoHint11() throws Exception {
-        findHints(this, new ConvertConditionals(), "testfiles/emptybody.rb", 
+        checkHints(this, new ConvertConditionals(), "testfiles/emptybody.rb", 
                 "if !^y");
     }
 
     public void testHint2() throws Exception {
-        findHints(this, new ConvertConditionals(), "testfiles/conditionals.rb", "if tr^ue");
+        checkHints(this, new ConvertConditionals(), "testfiles/conditionals.rb", "if tr^ue");
     }
 
     public void testHint3() throws Exception {
-        findHints(this, new ConvertConditionals(), "testfiles/conditionals.rb", "i^f x < 5");
+        checkHints(this, new ConvertConditionals(), "testfiles/conditionals.rb", "i^f x < 5");
     }
     
     public void testHint4() throws Exception {
-        findHints(this, new ConvertConditionals(), "testfiles/conditionals.rb", "i^f (x < 6)");
+        checkHints(this, new ConvertConditionals(), "testfiles/conditionals.rb", "i^f (x < 6)");
     }
 
     public void testHint5() throws Exception {
-        findHints(this, new ConvertConditionals(), "testfiles/conditionals.rb", "i^f !x");
+        checkHints(this, new ConvertConditionals(), "testfiles/conditionals.rb", "i^f !x");
     }
 
     public void testHint6() throws Exception {
-        findHints(this, new ConvertConditionals(), "testfiles/conditionals.rb", "i^f x < 8");
+        checkHints(this, new ConvertConditionals(), "testfiles/conditionals.rb", "i^f x < 8");
     }
 
     public void testHint7() throws Exception {
-        findHints(this, new ConvertConditionals(), "testfiles/conditionals.rb", "i^f x < 9");
+        checkHints(this, new ConvertConditionals(), "testfiles/conditionals.rb", "i^f x < 9");
     }
     
     public void testHint8() throws Exception {
-        findHints(this, new ConvertConditionals(), "testfiles/conditionals.rb", "^x < 11");
+        checkHints(this, new ConvertConditionals(), "testfiles/conditionals.rb", "^x < 11");
     }
     
     public void testHint9() throws Exception {
-        findHints(this, new ConvertConditionals(), "testfiles/conditionals.rb", "unl^ess x < 5");
+        checkHints(this, new ConvertConditionals(), "testfiles/conditionals.rb", "unl^ess x < 5");
     }
     
     public void testHint10() throws Exception {
-        findHints(this, new ConvertConditionals(), "testfiles/conditionals.rb", "un^less (x < 6)");
+        checkHints(this, new ConvertConditionals(), "testfiles/conditionals.rb", "un^less (x < 6)");
     }
     
     public void testHint11() throws Exception {
-        findHints(this, new ConvertConditionals(), "testfiles/conditionals.rb", "^x > 12");
+        checkHints(this, new ConvertConditionals(), "testfiles/conditionals.rb", "^x > 12");
     }
     
     public void testHint12() throws Exception {
-        findHints(this, new ConvertConditionals(), "testfiles/conditionals.rb", "i^f x < 12");
+        checkHints(this, new ConvertConditionals(), "testfiles/conditionals.rb", "i^f x < 12");
     }
     
     public void testFix1() throws Exception {

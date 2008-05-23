@@ -42,15 +42,17 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 <filesystem>
-    <folder name="org-netbeans-modules-ruby-hints">
-        <folder name="rules">
-            <folder name="hints">
-                <folder name="experimental">
-                    <attr name="position" intvalue="300"/>
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ruby.hints.Bundle"/>
-                    <!-- Add your rules here! -->
+    <folder name="gsf-hints">
+        <folder name="text">
+            <folder name="x-ruby">
+                <folder name="hints">
+                    <folder name="experimental">
+                        <attr name="position" intvalue="300"/>
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ruby.hints.Bundle"/>
+                        <!-- Add your rules here! -->
+                    </folder>    
                 </folder>    
-            </folder>    
+            </folder>
         </folder>
     </folder>
 </filesystem>

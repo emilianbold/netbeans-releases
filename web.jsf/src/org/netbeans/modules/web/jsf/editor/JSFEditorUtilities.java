@@ -299,10 +299,10 @@ public class JSFEditorUtilities {
     
     /* Returns offset, where starts the definition of the manage bean
      **/
-    public static int[] getManagedBeanDefinition(BaseDocument doc, String beanName){
+    public static int[] getManagedBeanDefinition(BaseDocument doc, String byElement, String content){
         try{
             String text = doc.getText(0, doc.getLength());
-            int offset = text.indexOf(beanName);
+            int offset = text.indexOf(content);
             int start = 0;
             int end = 0;
             ExtSyntaxSupport sup = (ExtSyntaxSupport)doc.getSyntaxSupport();
@@ -315,7 +315,7 @@ public class JSFEditorUtilities {
                             && !(token.getTokenID().getNumericID() == JSFEditorUtilities.XML_ELEMENT
                             && !token.getImage().equals(">")))
                         token = token.getPrevious();
-                    if (token != null && token.getImage().equals("<managed-bean-name")){    //NOI18N
+                    if (token != null && token.getImage().equals("<" + byElement)){    //NOI18N
                         while (token != null
                                 && !(token.getTokenID().getNumericID() == JSFEditorUtilities.XML_ELEMENT
                                 && token.getImage().equals("<managed-bean")))
@@ -341,7 +341,7 @@ public class JSFEditorUtilities {
                         }
                     }
                 }
-                offset = text.indexOf(beanName, offset+beanName.length());
+                offset = text.indexOf(content, offset+content.length());
             }
         }
         catch (BadLocationException e) {
