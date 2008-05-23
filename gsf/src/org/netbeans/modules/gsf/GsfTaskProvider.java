@@ -53,7 +53,10 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.gsf.api.Hint;
 import org.netbeans.modules.gsf.api.ParserResult;
+import org.netbeans.modules.gsf.api.RuleContext;
+import org.netbeans.modules.gsfret.hints.infrastructure.GsfHintsManager;
 import org.netbeans.napi.gsfret.source.CompilationController;
 import org.netbeans.napi.gsfret.source.Phase;
 import org.netbeans.napi.gsfret.source.Source;
@@ -291,8 +294,15 @@ public class GsfTaskProvider extends PushTaskScanner  {
                                 continue;
                             }
 
-                            List<Error> errors = provider.computeErrors(info, result);
-                            provider.computeHints(info, result);
+                            List<Error> errors = new ArrayList<Error>();
+                            GsfHintsManager manager = language.getHintsManager();
+                            RuleContext ruleContext = manager.createRuleContext(info, language, -1, -1, -1);
+                            if (ruleContext == null) {
+                                continue;
+                            }
+                            final List<Hint> hints = new ArrayList<Hint>();
+                            provider.computeErrors(manager, ruleContext, hints, errors);
+                            provider.computeHints(manager, ruleContext, hints);
                             for (Error error : errors) {
                                 try {
                                     int astOffset = error.getStartPosition();
@@ -316,6 +326,10 @@ public class GsfTaskProvider extends PushTaskScanner  {
                                 } catch (IOException ioe) {
                                     Exceptions.printStackTrace(ioe);
                                 }
+                            }
+                            for (Hint desc : hints) {
+                                ErrorDescription errorDesc = manager.createDescription(desc, ruleContext, false);
+                                result.add(errorDesc);
                             }
                         }
                     }

@@ -560,8 +560,7 @@ public class LeftTree extends JTree implements
             if (lastComp == null) { return; }
             
             JPopupMenu popup = tree.mapper.getContext().
-                    getLeftPopupMenu(tree.mapper.getModel(),
-                    lastComp);
+                    getLeftPopupMenu(tree.mapper.getModel(), lastComp);
                    
             if (popup != null) {
                 popup.show(tree, rect.x, rect.y);

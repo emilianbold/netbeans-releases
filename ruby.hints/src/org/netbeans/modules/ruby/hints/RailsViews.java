@@ -41,14 +41,15 @@ import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.gsf.api.Hint;
+import org.netbeans.modules.gsf.api.HintFix;
+import org.netbeans.modules.gsf.api.HintSeverity;
+import org.netbeans.modules.gsf.api.RuleContext;
 import org.netbeans.modules.ruby.Arity;
 import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.ruby.RubyUtils;
-import org.netbeans.modules.ruby.hints.spi.AstRule;
-import org.netbeans.modules.ruby.hints.spi.Description;
-import org.netbeans.modules.ruby.hints.spi.Fix;
-import org.netbeans.modules.ruby.hints.spi.HintSeverity;
-import org.netbeans.modules.ruby.hints.spi.RuleContext;
+import org.netbeans.modules.ruby.hints.infrastructure.RubyAstRule;
+import org.netbeans.modules.ruby.hints.infrastructure.RubyRuleContext;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -59,11 +60,12 @@ import org.openide.util.actions.SystemAction;
  * 
  * @author Tor Norbye
  */
-public class RailsViews implements AstRule {
+public class RailsViews extends RubyAstRule {
     public RailsViews() {
     }
 
-    public boolean appliesTo(CompilationInfo info) {
+    public boolean appliesTo(RuleContext context) {
+        CompilationInfo info = context.compilationInfo;
         return info.getFileObject().getName().endsWith("_controller"); // NOI18N
     }
 
@@ -71,7 +73,7 @@ public class RailsViews implements AstRule {
         return Collections.singleton(NodeType.DEFNNODE);
     }
     
-    public void run(RuleContext context, List<Description> result) {
+    public void run(RubyRuleContext context, List<Hint> result) {
         Node node = context.node;
         CompilationInfo info = context.compilationInfo;
         
@@ -92,8 +94,8 @@ public class RailsViews implements AstRule {
         if (view == null && shouldHaveView(info, node)) {
             String displayName = NbBundle.getMessage(RailsViews.class, "MissingView");
             OffsetRange range = AstUtilities.getNameRange(node);
-            List<Fix> fixList = Collections.<Fix>singletonList(new CreateViewFix(file, name));
-            Description desc = new Description(this, displayName, file, range, fixList, 400);
+            List<HintFix> fixList = Collections.<HintFix>singletonList(new CreateViewFix(file, name));
+            Hint desc = new Hint(this, displayName, file, range, fixList, 400);
             result.add(desc);
         }
     }
@@ -153,7 +155,7 @@ public class RailsViews implements AstRule {
         return null;
     }
     
-    private static class CreateViewFix implements Fix {
+    private static class CreateViewFix implements HintFix {
 
         private FileObject controller;
         private String action;

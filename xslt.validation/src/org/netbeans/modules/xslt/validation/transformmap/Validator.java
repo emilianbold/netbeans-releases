@@ -40,13 +40,11 @@
  */
 package org.netbeans.modules.xslt.validation.transformmap;
 
-
 import org.netbeans.modules.xslt.tmap.TMapConstants;
 import org.netbeans.modules.xslt.tmap.model.api.TMapComponent;
 import org.netbeans.modules.xslt.tmap.model.api.TMapVisitor;
 import org.netbeans.modules.xslt.tmap.model.api.TMapVisitorAdapter;
 import org.netbeans.modules.xslt.tmap.model.api.TransformMap;
-
 import org.netbeans.modules.xslt.validation.core.TMapValidator;
 
 /**

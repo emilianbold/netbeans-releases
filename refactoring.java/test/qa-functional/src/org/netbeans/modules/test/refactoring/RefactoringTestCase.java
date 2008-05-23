@@ -39,6 +39,8 @@
 package org.netbeans.modules.test.refactoring;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -58,6 +60,7 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.JemmyProperties;
+import org.netbeans.jemmy.TestOut;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 import org.netbeans.junit.NbTestCase;
@@ -77,6 +80,8 @@ public abstract class RefactoringTestCase extends NbTestCase {
      * to ref file
      */
     public static int sortLevel = 2;
+    private PrintStream jemmyError;
+    private PrintStream jemmyOutput;
 
     public RefactoringTestCase(String name) {
         super(name);
@@ -213,13 +218,18 @@ public abstract class RefactoringTestCase extends NbTestCase {
     }
     
     @Override
-    protected void setUp() throws Exception {
+    protected void setUp() throws Exception {        
+        jemmyOutput = new PrintStream(new File(getWorkDir(), getName() + ".jemmy"));
+        jemmyError = new PrintStream(new File(getWorkDir(), getName() + ".error"));        
+        JemmyProperties.setCurrentOutput(new TestOut(System.in, jemmyOutput , jemmyError));
         System.out.println("Test "+getName()+" started");        
     }
 
     @Override
     protected void tearDown() throws Exception {        
         getRef().close();
+        jemmyOutput.close();
+        jemmyError.close();
         System.out.println();
         assertFile("Golden file differs ", new File(getWorkDir(),getName()+".ref"), getGoldenFile(), getWorkDir(), new LineDiff());
         System.out.println("Test "+getName()+" finished");

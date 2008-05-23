@@ -58,6 +58,7 @@ made subject to such option by the copyright holder.
                 <folder name="GlyphGutterActions">
                     <file name="org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance"/>
+                        <attr name="position" intvalue="500"/>
                     </file>
                 </folder>
                 <folder name="Popup">
@@ -89,6 +90,7 @@ made subject to such option by the copyright holder.
                 <folder name="GlyphGutterActions">
                     <file name="org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance"/>
+                        <attr name="position" intvalue="500"/>
                     </file>
                 </folder>
                 <folder name="Popup">
@@ -121,6 +123,7 @@ made subject to such option by the copyright holder.
                 <folder name="GlyphGutterActions">
                     <file name="org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance"/>
+                        <attr name="position" intvalue="500"/>
                     </file>
                 </folder>
                 <folder name="Popup">

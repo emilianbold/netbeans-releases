@@ -55,11 +55,11 @@ public class AttributeIsLocalTest extends HintTestBase {
     }
 
     public void testHint1() throws Exception {
-        findHints(this, new AttributeIsLocal(), "testfiles/localattributes.rb", null);
+        checkHints(this, new AttributeIsLocal(), "testfiles/localattributes.rb", null);
     }
 
     public void testHint2() throws Exception {
-        findHints(this, new AttributeIsLocal(), "testfiles/localattributes2.rb", null);
+        checkHints(this, new AttributeIsLocal(), "testfiles/localattributes2.rb", null);
     }
     
     public void testNoPositives() throws Exception {

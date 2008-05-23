@@ -724,18 +724,18 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
     }
     
     private void checkErrors(SvnCommand cmd) throws SVNClientException {
-
         List<String> errors = cmd.getCmdError();
-        if (errors.size() > 0) {
-            StringBuffer sb = new StringBuffer();
-            for (int i = 0; i < errors.size(); i++) {
-                sb.append(errors.get(i));
-                if (i < errors.size() - 1) {
-                    sb.append('\n');
-                }
+        if(errors == null || errors.size() == 0) {
+            return;
+        }        
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < errors.size(); i++) {
+            sb.append(errors.get(i));
+            if (i < errors.size() - 1) {
+                sb.append('\n');
             }
-            throw new SVNClientException(sb.toString());
         }
+        throw new SVNClientException(sb.toString());
     }
 
     private List<SVNUrl> getAllNotExistingParents(SVNUrl url) throws SVNClientException {        
