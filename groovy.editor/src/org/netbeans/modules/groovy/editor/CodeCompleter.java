@@ -79,6 +79,7 @@ import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.PropertyExpression;
 import org.codehaus.groovy.ast.stmt.ExpressionStatement;
+import org.codehaus.groovy.reflection.CachedClass;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.modules.groovy.editor.elements.AstMethodElement;
@@ -115,7 +116,7 @@ public class CodeCompleter implements CodeCompletionHandler {
         // FIXME: Here we only care for the GDK, but not for the additional
         // Groovy classes. I have to add those as well.
 
-        String gHomeDoc = groovySettings.getGroovyHome() + "/" + "html" + "/" + "groovy-jdk/";
+        String gHomeDoc = groovySettings.getGroovyDoc() + "/" + "groovy-jdk/";
         File gdoc = new File(gHomeDoc);
 
         if (gdoc.exists() && gdoc.isDirectory()) {
@@ -350,31 +351,64 @@ public class CodeCompleter implements CodeCompletionHandler {
 
     /**
      * create the signature-string of this method usable as a 
-    Javadoc URL suffix (behind the # ) 
-    
-    This was needed since from groovy 1.5.4 to 
-    1.5.5 the MetaMethod.getSignature() changed from
-    human-readable to Class.getName() output.
-    
+     * Javadoc URL suffix (behind the # ) 
+     *    
+     * This was needed, since from groovy 1.5.4 to 
+     * 1.5.5 the MetaMethod.getSignature() changed from
+     * human-readable to Class.getName() output.
+     * 
+     * To make matters worse, we have some subtle 
+     * differences between JDK and GDK MetaMethods
+     * 
+     * method.getSignature for the JDK gives the return-
+     * value right behind the method and encodes like Class.getName():
+     *   
+     * codePointCount(II)I
+     *    
+     * GDK-methods look like this:
+     * java.lang.String center(java.lang.Number, java.lang.String)
+     * 
+     * TODO: if groovy folks ever change this (again), we're falling
+     * flat on our face.
+     * 
      */
-    String getMethodSignature(MetaMethod method, boolean forURL) {
+    String getMethodSignature(MetaMethod method, boolean forURL, boolean isGDK) {
         String methodSignature = method.getSignature();
         methodSignature = methodSignature.trim();
 
-        String parts[] = methodSignature.split("[()]");
+        if (isGDK) {
+            // remove return value
+            int firstSpace = methodSignature.indexOf(" ");
 
-        if (parts.length < 2) {
-            return "";
+            if (firstSpace != -1) {
+                methodSignature = methodSignature.substring(firstSpace + 1);
+            }
+
+            if (forURL) {
+                methodSignature = methodSignature.replaceAll(", ", ",%20");
+            }
+            
+            return methodSignature;
+
+        } else {
+            String parts[] = methodSignature.split("[()]");
+
+            if (parts.length < 2) {
+                return "";
+            }
+
+            String paramsBody = decodeTypes(parts[1], forURL);
+
+            return parts[0] + "(" + paramsBody + ")";
         }
-
-        String paramsBody = decodeTypes(parts[1], forURL);
-
-        return parts[0] + "(" + paramsBody + ")";
     }
 
+    /**
+     * This is more a less the reverse function for Class.getName() 
+     */
+    
     String decodeTypes(final String encodedType, boolean forURL) {
 
-        /* This is more a less the reverse function for Class.getName() */
 
         String DELIMITER = ",";
 
@@ -458,27 +492,43 @@ public class CodeCompleter implements CodeCompletionHandler {
             // enable this to troubleshoot subtle differences in JDK/GDK signatures
             printMethod(mm);
 
-            // some (artificial) methods are declared on other Classes
-            // we have to figure this out.
+            // figure out who originally defined this method
 
-            Class clz;
+            String className = null;
 
             if (ame.isGDK()) {
-                clz = mm.getDeclaringClass().getCachedClass();
+                className = mm.getDeclaringClass().getCachedClass().getName();
             } else {
-                clz = ame.getClz();
+
+                String declName = null;
+
+                if (mm != null) {
+                    CachedClass cc = mm.getDeclaringClass();
+                    if (cc != null) {
+                        Class clz = cc.getCachedClass();
+                        if (clz != null) {
+                            declName = clz.getName();
+                        }
+                    }
+                }
+
+                if (declName != null) {
+                    className = declName;
+                } else {
+                    className = ame.getClz().getName();
+                }
             }
 
             // LOG.log(Level.FINEST, "clz = {0}", clz.getName());
             
             // create path from fq java package name:
             // java.lang.String -> java/lang/String.html
-            String classNamePath = clz.getName().replace(".", "/");
+            String classNamePath = className.replace(".", "/");
             classNamePath = classNamePath + ".html";
 
             // create the signature-string of the method
-            String sig = getMethodSignature(ame.getMethod(), true);
-            String printSig = getMethodSignature(ame.getMethod(), false);
+            String sig = getMethodSignature(ame.getMethod(), true, ame.isGDK());
+            String printSig = getMethodSignature(ame.getMethod(), false, ame.isGDK());
 
             String urlName = base + classNamePath + "#" + sig;
 
@@ -500,10 +550,7 @@ public class CodeCompleter implements CodeCompletionHandler {
                 doctext = "Sorry, I'm unable to find the documentation.";
             }
 
-            doctext = "<h2>" + clz.getName() + "</h2><BR>" +
-                "<h3>" + printSig + "</h3><BR>" +
-                doctext;
-
+            doctext = "<h3>" + className + "." + printSig + "</h3><BR>" + doctext;
         }
         return doctext;
     }
@@ -715,7 +762,7 @@ public class CodeCompleter implements CodeCompletionHandler {
 
                 formatter.appendText("(" + simpleSig + ")");
             } else {
-                formatter.appendText(getMethodSignature(method, false));
+                formatter.appendText(getMethodSignature(method, false, isGDK));
             }
 
 

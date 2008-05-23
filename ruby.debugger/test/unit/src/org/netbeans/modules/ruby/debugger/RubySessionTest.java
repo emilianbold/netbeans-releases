@@ -69,7 +69,7 @@ public final class RubySessionTest extends TestBase {
             RubySession session = Util.getCurrentSession();
             assertEquals("a variable", 1, session.getVariables().length);
             doContinue();
-            p.waitFor();
+            waitFor(p);
         }
     }
     
@@ -95,7 +95,7 @@ public final class RubySessionTest extends TestBase {
             Thread.sleep(1000);
             assertEquals("a variable", 0, session.getVariables().length);
             doAction(ActionsManager.ACTION_KILL);
-            p.waitFor();
+            waitFor(p);
         }
     }
     
@@ -112,7 +112,7 @@ public final class RubySessionTest extends TestBase {
             RubyThreadInfo ti = session.getThreadInfos()[0];
             session.switchThread(ti.getId(), null);
             doAction(ActionsManager.ACTION_KILL);
-            p.waitFor();
+            waitFor(p);
         }
     }
 
@@ -128,7 +128,7 @@ public final class RubySessionTest extends TestBase {
         assertNotNull("test.rb relative resolved", session.resolveAbsolutePath(testF.getName()));
         assertNotNull("test.rb absolute resolved", session.resolveAbsolutePath(testF.getAbsolutePath()));
         doContinue();
-        p.waitFor();
+        waitFor(p);
     }
 
     public void testSynchronization() throws Exception { // #111088
@@ -164,7 +164,7 @@ public final class RubySessionTest extends TestBase {
         doContinue();
         RubyBreakpointManager.removeBreakpoint(bp);
         doContinue();
-        p.waitFor();
+        waitFor(p);
     }
     
     public void testRunTo() throws Exception {
@@ -193,7 +193,7 @@ public final class RubySessionTest extends TestBase {
             });
             assertTrue("session suspended", session.isSessionSuspended());
             doContinue();
-            p.waitFor();
+            waitFor(p);
         }
     }
 }

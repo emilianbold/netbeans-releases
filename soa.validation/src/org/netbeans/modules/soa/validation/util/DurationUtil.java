@@ -206,15 +206,11 @@ public final class DurationUtil {
     return new Duration(hasMinus, years, months, days, hours, minutes, seconds);
   }
 
-  private static Duration throwException(String key, boolean throwException, 
-    boolean hasMinus, int years, int months, int days, int hours, int minutes, double seconds)
-  {
+  private static Duration throwException(String key, boolean throwException, boolean hasMinus, int years, int months, int days, int hours, int minutes, double seconds) {
     return throwExceptionMsg(i18n(DurationUtil.class, key), throwException, hasMinus, years, months, days, hours, minutes, seconds);
   }
 
-  private static Duration throwException(String key, String param, boolean throwException, 
-    boolean hasMinus, int years, int months, int days, int hours, int minutes, double seconds)
-  {
+  private static Duration throwException(String key, String param, boolean throwException, boolean hasMinus, int years, int months, int days, int hours, int minutes, double seconds) {
     return throwExceptionMsg(i18n(DurationUtil.class, key, param), throwException, hasMinus, years, months, days, hours, minutes, seconds);
   }
 
@@ -225,8 +221,8 @@ public final class DurationUtil {
     int days,
     int hours,
     int minutes,
-    double seconds)
-  {
+    double seconds
+  ) {
 //out("ERROR: " + message);
     if (throwException) {
       throw new IllegalArgumentException(message);
@@ -258,8 +254,8 @@ public final class DurationUtil {
     int day,
     int hour,
     int minute,
-    double second)
-  {
+    double second
+  ) {
     if (isFor) {
       StringBuffer content = new StringBuffer();
       content.append(P_DELIM);
@@ -295,8 +291,8 @@ public final class DurationUtil {
     String day,
     String hour,
     String minute,
-    String second)
-  {
+    String second
+  ) {
     StringBuffer content = new StringBuffer();
     content.append(year);
     content.append(MINUS);
