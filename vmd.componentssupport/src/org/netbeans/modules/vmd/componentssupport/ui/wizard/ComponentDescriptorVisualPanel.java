@@ -41,22 +41,12 @@
 
 package org.netbeans.modules.vmd.componentssupport.ui.wizard;
 
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import org.netbeans.api.project.libraries.Library;
-import org.netbeans.modules.vmd.componentssupport.ui.helpers.JavaMELibsConfigurationHelper;
-import org.netbeans.modules.vmd.componentssupport.ui.helpers.JavaMELibsPreviewHelper;
 import org.openide.WizardDescriptor;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.URLMapper;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  * Represents <em>Name and Location</em> panel in J2ME Library Descriptor Wizard.
@@ -65,47 +55,278 @@ import org.openide.util.NbBundle;
  */
 final class ComponentDescriptorVisualPanel extends JPanel {
     
+    public static final String TXT_DEFAULT_PREFIX
+                                              = "TXT_DefaultClassNamePrefix";// NOI18N 
+
+    private static final String MSG_ERR_PREFIX_EMPTY 
+                                              = "MSG_CD_EmptyPrefix";       // NOI18N 
+    private static final String MSG_ERR_PREFIX_WITH_DOT 
+                                              = "MSG_CD_DotInPrefix";          // NOI18N 
+    private static final String MSG_ERR_PREFIX_INVALID 
+                                              = "MSG_CD_InvalidPrefix";          // NOI18N 
+    private static final String MSG_ERR_CLASS_NAME_EMPTY 
+                                              = "MSG_CD_EmptyClassName";       // NOI18N 
+    private static final String MSG_ERR_CLASS_NAME_INVALID 
+                                              = "MSG_CD_InvalidClassName";          // NOI18N 
+    private static final String MSG_ERR_TYPE_ID_EMPTY 
+                                              = "MSG_CD_EmptyTypeID";       // NOI18N 
+    private static final String MSG_ERR_SUPER_CLASS_EMPTY 
+                                              = "MSG_CD_EmptySuperClass";       // NOI18N 
+    private static final String MSG_ERR_SUPER_CLASS_INVALID 
+                                              = "MSG_CD_InvalidSuperClass";          // NOI18N 
+    
+    
+            
     /** Creates new NameAndLocationPanel */
     ComponentDescriptorVisualPanel(ComponentDescriptorWizardPanel panel) {
         myPanel = panel;
         initComponents();
         
-        DocumentListener dListener = new DocumentAdapter() {
-            public void insertUpdate(DocumentEvent e) {
-                // TODO check all fields and notify panel about changes
-            }
-        };
-        //libraryNameValue.getDocument().addDocumentListener(dListener);
+        myCDVersionCombo.setModel(Version.getComboBoxModel());
         
+        myPrefix.getDocument().addDocumentListener(new DocumentAdapter() {
+            public void insertUpdate(DocumentEvent e) {
+                updateValuesOnPrefixUpdate();
+                checkValidity();
+            }
+        });
+        myCDClassName.getDocument().addDocumentListener(new DocumentAdapter() {
+            public void insertUpdate(DocumentEvent e) {
+                isCDClassNameUpdated = true;
+                updateValuesOnClassNameUpdate();
+                checkValidity();
+            }
+        });
+        myCDTypeId.getDocument().addDocumentListener(new DocumentAdapter() {
+            public void insertUpdate(DocumentEvent e) {
+                isCDTypeIdUpdated = true;
+                checkValidity();
+            }
+        });
+        myCDSuperClass.getDocument().addDocumentListener(new DocumentAdapter() {
+            public void insertUpdate(DocumentEvent e) {
+                checkValidity();
+            }
+        });
     }
     
 
     void storeData(WizardDescriptor descriptor) {
-        // TODO store
+        descriptor.putProperty(NewComponentDescriptor.CC_PREFIX, 
+                getPrefixValue());
+        descriptor.putProperty(NewComponentDescriptor.CD_CLASS_NAME, 
+                getClassNameValue());
+        descriptor.putProperty(NewComponentDescriptor.CD_TYPE_ID, 
+                getTypeIdValue());
+        descriptor.putProperty(NewComponentDescriptor.CD_SUPER_DESCR_CLASS, 
+                getSuperDescrValue());
+        descriptor.putProperty(NewComponentDescriptor.CD_VERSION, 
+                getVersionValue());
+        descriptor.putProperty(NewComponentDescriptor.CD_CAN_INSTANTIATE, 
+                getCanInstantiateValue());
+        descriptor.putProperty(NewComponentDescriptor.CD_CAN_BE_SUPER, 
+                getCanBeSuperValue());
     }
     
     void readData( WizardDescriptor descriptor) {
         mySettings = descriptor;
-        // TODO read
+
+        myPrefix.setText(getPrefix());
+        myCDClassName.setText((String)mySettings.getProperty(
+                NewComponentDescriptor.CD_CLASS_NAME));
+        myCDTypeId.setText((String)mySettings.getProperty(
+                NewComponentDescriptor.CD_TYPE_ID));
+        myCDSuperClass.setText(getSuperDescriptor());
+        myCDVersionCombo.setSelectedItem(getVersion());
+        myCanInstantiateChk.setSelected(getCanInstantiate());
+        myCanBeSuperChk.setSelected(getCanBeSuper());
+
+        isCDClassNameUpdated = false;
+        isCDTypeIdUpdated = false;
+        updateValuesOnPrefixUpdate();
         checkValidity();
     }
 
+    private String getSuperDescriptor(){
+        String superDescr = (String)mySettings.getProperty(
+                NewComponentDescriptor.CD_SUPER_DESCR_CLASS);
+        if (superDescr == null){
+            superDescr = NewComponentDescriptor.COMPONENT_DECRIPTOR_DEFAULT_PARENT;
+        }
+        return superDescr;
+    }
+
+    private boolean getCanInstantiate(){
+        Object value = mySettings.getProperty(
+                NewComponentDescriptor.CD_CAN_INSTANTIATE);
+        return extractBoolean(value, false);
+    }
+
+    private boolean getCanBeSuper(){
+        Object value = mySettings.getProperty(
+                NewComponentDescriptor.CD_CAN_BE_SUPER);
+        return extractBoolean(value, false);
+    }
+    
+    private static boolean extractBoolean(Object value, boolean defaultValue){
+        if (value == null || !(value instanceof Boolean)){
+            return defaultValue;
+        }
+        return (Boolean)value;
+    }
+    
+    private String getPrefix(){
+        String prefix = (String)mySettings.getProperty(
+                NewComponentDescriptor.CC_PREFIX);
+        if (prefix == null){
+            prefix = getDefaultPrefix();
+        }
+        return prefix;
+    }
+    private String getDefaultPrefix(){
+        return NbBundle.getMessage(ComponentDescriptorVisualPanel.class,
+                    TXT_DEFAULT_PREFIX);
+    }
+    
+    private Version getVersion(){
+        Object value = mySettings.getProperty(
+                NewComponentDescriptor.CD_VERSION);
+        if (value == null || !(value instanceof Version)){
+            return Version.MIDP;
+        }
+        return (Version)value;
+    }
+    
     private boolean checkValidity(){
-        // TODO add library verification ( e.g.: was not added yet )
-        //if (!isValidLibraryName()){
-        //    setError( getMessage(MSG_EMPTY_LIB_NAME) );
-        //    return false;
-        //}
+        if (!isCCPrefixValid()){
+            return false;
+        }
+        if (!isCCClassNameValid()){
+            return false;
+        }
+        if (!isCCTypeIDValid()){
+            return false;
+        }
+        if (!isCCSuperClassValid()){
+            return false;
+        }
         markValid();
         return true;
     }
+
+    private void updateValuesOnPrefixUpdate(){
+        if (isCCPrefixValid()){
+            if (!isCDClassNameUpdated){
+                myCDClassName.setText(getPrefixValue() + 
+                        NewComponentDescriptor.COMPONENT_DESCRIPTOR_POSTFIX);
+                isCDClassNameUpdated = false;
+            }
+            if (!isCDTypeIdUpdated){
+                myCDTypeId.setText(getCodeNameBase() + "." + getPrefixValue());
+                isCDTypeIdUpdated = false;
+            }
+        }
+    }
     
-    //private boolean isValidLibraryName() {
-    //    return getLibNameValue() != null &&
-    //            getLibNameValue().trim().length() != 0;
-    //}
+    private void updateValuesOnClassNameUpdate(){
+        if (isCCClassNameValid()){
+            if (!isCDTypeIdUpdated){
+                myCDTypeId.setText(getCodeNameBase() + "." + getPrefixValue());
+                isCDTypeIdUpdated = false;
+            }
+        }
+    }
+    
+    private String getCodeNameBase(){
+        return (String)mySettings.getProperty( 
+                NewComponentDescriptor.CODE_NAME_BASE);
+    }
 
-
+    // TODO add unique validation
+    private boolean isCCClassNameValid(){
+        String name = getClassNameValue();
+        if (name.length() == 0) {
+            setError(NbBundle.getMessage(ComponentDescriptorVisualPanel.class, 
+                    MSG_ERR_CLASS_NAME_EMPTY));
+            return false;
+        } else if (!Utilities.isJavaIdentifier(name)){
+            setError(NbBundle.getMessage(ComponentDescriptorVisualPanel.class, 
+                    MSG_ERR_CLASS_NAME_INVALID));
+            return false;
+        }
+        return true;
+    }
+    
+    private boolean isCCTypeIDValid(){
+        String typeId = getTypeIdValue();
+        if (typeId.length() == 0) {
+            setError(NbBundle.getMessage(ComponentDescriptorVisualPanel.class, 
+                    MSG_ERR_TYPE_ID_EMPTY));
+            return false;
+        }
+        return true;
+    }
+    
+    private boolean isCCSuperClassValid(){
+        String name = getSuperDescrValue();
+        if (name.length() == 0) {
+            setError(NbBundle.getMessage(ComponentDescriptorVisualPanel.class, 
+                    MSG_ERR_SUPER_CLASS_EMPTY));
+            return false;
+        } else if (!Utilities.isJavaIdentifier(name)){
+            setError(NbBundle.getMessage(ComponentDescriptorVisualPanel.class, 
+                    MSG_ERR_SUPER_CLASS_INVALID));
+            return false;
+        }
+        return true;
+    }
+    
+    private boolean isCCPrefixValid(){
+        String prefix = getPrefixValue();
+        if (prefix.length() == 0) {
+            setError(NbBundle.getMessage(ComponentDescriptorVisualPanel.class, 
+                    MSG_ERR_PREFIX_EMPTY));
+            return false;
+        } else if (prefix.contains(".")){
+            setError(NbBundle.getMessage(ComponentDescriptorVisualPanel.class, 
+                    MSG_ERR_PREFIX_WITH_DOT));
+            return false;
+        } else if (!Utilities.isJavaIdentifier(prefix)){
+            setError(NbBundle.getMessage(ComponentDescriptorVisualPanel.class, 
+                    MSG_ERR_PREFIX_INVALID));
+            return false;
+        }
+        return true;
+    }
+    
+    private String getPrefixValue(){
+        return myPrefix.getText().trim();
+    }
+    
+    private String getClassNameValue(){
+        return myCDClassName.getText().trim();
+    }
+    
+    private String getTypeIdValue(){
+        return myCDTypeId.getText().trim();
+    }
+    
+    private String getSuperDescrValue(){
+        return myCDSuperClass.getText().trim();
+    }
+    
+    private Version getVersionValue(){
+        return (Version)myCDVersionCombo.getSelectedItem();
+    }
+    
+    private Boolean getCanInstantiateValue(){
+        return myCanInstantiateChk.isSelected();
+    }
+    
+    private Boolean getCanBeSuperValue(){
+        return myCanBeSuperChk.isSelected();
+    }
+    
     /**
      * Set an error message and mark the panel as invalid.
      */
@@ -154,13 +375,247 @@ final class ComponentDescriptorVisualPanel extends JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        setLayout(new java.awt.GridBagLayout());
+        CustCompPanel = new javax.swing.JPanel();
+        myCustCompLabel = new javax.swing.JLabel();
+        jSeparator1 = new javax.swing.JSeparator();
+        jPanel1 = new javax.swing.JPanel();
+        myPrefixLabel = new javax.swing.JLabel();
+        myPrefix = new javax.swing.JTextField();
+        CompDescrPanel = new javax.swing.JPanel();
+        myCompDescrLabel = new javax.swing.JLabel();
+        jSeparator2 = new javax.swing.JSeparator();
+        jPanel2 = new javax.swing.JPanel();
+        myCDVersionLabel = new javax.swing.JLabel();
+        myCDVersionCombo = new javax.swing.JComboBox();
+        myCDClassNameLabel = new javax.swing.JLabel();
+        myCDTypeIdLabel = new javax.swing.JLabel();
+        myCDSuperClassLabel = new javax.swing.JLabel();
+        myCDSuperClass = new javax.swing.JTextField();
+        myCDTypeId = new javax.swing.JTextField();
+        myCDClassName = new javax.swing.JTextField();
+        myCanInstantiateChk = new javax.swing.JCheckBox();
+        myCanBeSuperChk = new javax.swing.JCheckBox();
+
+        org.openide.awt.Mnemonics.setLocalizedText(myCustCompLabel, org.openide.util.NbBundle.getMessage(ComponentDescriptorVisualPanel.class, "LBL_CD_CustomComponentArea")); // NOI18N
+
+        myPrefixLabel.setLabelFor(myPrefix);
+        org.openide.awt.Mnemonics.setLocalizedText(myPrefixLabel, org.openide.util.NbBundle.getMessage(ComponentDescriptorVisualPanel.class, "LBL_CD_Prefix")); // NOI18N
+
+        myPrefix.setToolTipText(org.openide.util.NbBundle.getMessage(ComponentDescriptorVisualPanel.class, "ACSD_CD_Prefix")); // NOI18N
+
+        org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .add(myPrefixLabel)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(myPrefix, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 393, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel1Layout.createSequentialGroup()
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(myPrefixLabel)
+                    .add(myPrefix, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        myPrefixLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ComponentDescriptorVisualPanel.class, "ACSN_CD_Prefix")); // NOI18N
+        myPrefixLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ComponentDescriptorVisualPanel.class, "ACSD_CD_Prefix")); // NOI18N
+        myPrefix.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ComponentDescriptorVisualPanel.class, "ACSN_CD_Prefix")); // NOI18N
+        myPrefix.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ComponentDescriptorVisualPanel.class, "ACSD_CD_Prefix")); // NOI18N
+
+        org.jdesktop.layout.GroupLayout CustCompPanelLayout = new org.jdesktop.layout.GroupLayout(CustCompPanel);
+        CustCompPanel.setLayout(CustCompPanelLayout);
+        CustCompPanelLayout.setHorizontalGroup(
+            CustCompPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(CustCompPanelLayout.createSequentialGroup()
+                .add(myCustCompLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 100, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 345, Short.MAX_VALUE))
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        );
+        CustCompPanelLayout.setVerticalGroup(
+            CustCompPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(CustCompPanelLayout.createSequentialGroup()
+                .add(CustCompPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 14, Short.MAX_VALUE)
+                    .add(myCustCompLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+        );
+
+        myCustCompLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ComponentDescriptorVisualPanel.class, "ACSN_CD_CustomComponentArea")); // NOI18N
+        myCustCompLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ComponentDescriptorVisualPanel.class, "ACSD_CD_CustomComponentArea")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(myCompDescrLabel, org.openide.util.NbBundle.getMessage(ComponentDescriptorVisualPanel.class, "LBL_CD_ComponentDescriptor")); // NOI18N
+
+        myCDVersionLabel.setLabelFor(myCDVersionCombo);
+        org.openide.awt.Mnemonics.setLocalizedText(myCDVersionLabel, org.openide.util.NbBundle.getMessage(ComponentDescriptorVisualPanel.class, "LBL_CD_Version")); // NOI18N
+
+        myCDClassNameLabel.setLabelFor(myCDClassName);
+        org.openide.awt.Mnemonics.setLocalizedText(myCDClassNameLabel, org.openide.util.NbBundle.getMessage(ComponentDescriptorVisualPanel.class, "LBL_CD_ClassName")); // NOI18N
+
+        myCDTypeIdLabel.setLabelFor(myCDTypeId);
+        org.openide.awt.Mnemonics.setLocalizedText(myCDTypeIdLabel, org.openide.util.NbBundle.getMessage(ComponentDescriptorVisualPanel.class, "LBL_CD_TypeId")); // NOI18N
+
+        myCDSuperClassLabel.setLabelFor(myCDSuperClass);
+        org.openide.awt.Mnemonics.setLocalizedText(myCDSuperClassLabel, org.openide.util.NbBundle.getMessage(ComponentDescriptorVisualPanel.class, "LBL_CD_SuperDescriptorClass")); // NOI18N
+
+        myCDSuperClass.setToolTipText(org.openide.util.NbBundle.getMessage(ComponentDescriptorVisualPanel.class, "ACSD_CD_SuperDescriptorClass")); // NOI18N
+
+        myCDTypeId.setToolTipText(org.openide.util.NbBundle.getMessage(ComponentDescriptorVisualPanel.class, "ACSD_CD_TypeId")); // NOI18N
+
+        myCDClassName.setToolTipText(org.openide.util.NbBundle.getMessage(ComponentDescriptorVisualPanel.class, "ACSD_CD_ClassName")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(myCanInstantiateChk, org.openide.util.NbBundle.getMessage(ComponentDescriptorVisualPanel.class, "LBL_CD_CanInstantiate")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(myCanBeSuperChk, org.openide.util.NbBundle.getMessage(ComponentDescriptorVisualPanel.class, "LBL_CD_CanBeSuperType")); // NOI18N
+
+        org.jdesktop.layout.GroupLayout jPanel2Layout = new org.jdesktop.layout.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jPanel2Layout.createSequentialGroup()
+                        .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(myCDClassNameLabel)
+                            .add(myCDTypeIdLabel)
+                            .add(myCDSuperClassLabel))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, myCDTypeId, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 313, Short.MAX_VALUE)
+                            .add(myCDClassName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 313, Short.MAX_VALUE)
+                            .add(jPanel2Layout.createSequentialGroup()
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    .add(myCDVersionCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 122, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                    .add(myCDSuperClass, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 313, Short.MAX_VALUE)))))
+                    .add(myCDVersionLabel)
+                    .add(myCanInstantiateChk)
+                    .add(myCanBeSuperChk))
+                .addContainerGap())
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel2Layout.createSequentialGroup()
+                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(myCDClassNameLabel)
+                    .add(myCDClassName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(myCDTypeIdLabel)
+                    .add(myCDTypeId, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(myCDSuperClass, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(myCDSuperClassLabel))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(myCDVersionLabel)
+                    .add(myCDVersionCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(myCanInstantiateChk)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(myCanBeSuperChk)
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        myCDVersionLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ComponentDescriptorVisualPanel.class, "ACSN_CD_Version")); // NOI18N
+        myCDVersionLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ComponentDescriptorVisualPanel.class, "ACSD_CD_Version")); // NOI18N
+        myCDClassNameLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ComponentDescriptorVisualPanel.class, "ACSN_CD_ClassName")); // NOI18N
+        myCDClassNameLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ComponentDescriptorVisualPanel.class, "ACSD_CD_ClassName")); // NOI18N
+        myCDTypeIdLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ComponentDescriptorVisualPanel.class, "ACSN_CD_TypeId")); // NOI18N
+        myCDTypeIdLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ComponentDescriptorVisualPanel.class, "ACSD_CD_TypeId")); // NOI18N
+        myCDSuperClassLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ComponentDescriptorVisualPanel.class, "ACSN_CD_SuperDescriptorClass")); // NOI18N
+        myCDSuperClassLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ComponentDescriptorVisualPanel.class, "ACSD_CD_SuperDescriptorClass")); // NOI18N
+        myCanInstantiateChk.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ComponentDescriptorVisualPanel.class, "ACSN_CD_CanInstantiate")); // NOI18N
+        myCanInstantiateChk.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ComponentDescriptorVisualPanel.class, "ACSD_CD_CanInstantiate")); // NOI18N
+        myCanBeSuperChk.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ComponentDescriptorVisualPanel.class, "ACSN_CD_CanBeSuperType")); // NOI18N
+        myCanBeSuperChk.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ComponentDescriptorVisualPanel.class, "ACSD_CD_CanBeSuperType")); // NOI18N
+
+        org.jdesktop.layout.GroupLayout CompDescrPanelLayout = new org.jdesktop.layout.GroupLayout(CompDescrPanel);
+        CompDescrPanel.setLayout(CompDescrPanelLayout);
+        CompDescrPanelLayout.setHorizontalGroup(
+            CompDescrPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(CompDescrPanelLayout.createSequentialGroup()
+                .add(myCompDescrLabel)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(jSeparator2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 332, Short.MAX_VALUE))
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        );
+        CompDescrPanelLayout.setVerticalGroup(
+            CompDescrPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(CompDescrPanelLayout.createSequentialGroup()
+                .add(CompDescrPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, CompDescrPanelLayout.createSequentialGroup()
+                        .add(myCompDescrLabel)
+                        .add(1, 1, 1))
+                    .add(CompDescrPanelLayout.createSequentialGroup()
+                        .add(jSeparator2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(13, 13, 13)))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .add(jPanel2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+        );
+
+        myCompDescrLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ComponentDescriptorVisualPanel.class, "ACSN_CD_ComponentDescriptor")); // NOI18N
+        myCompDescrLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ComponentDescriptorVisualPanel.class, "ACSD_CD_ComponentDescriptor")); // NOI18N
+
+        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, CompDescrPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, CustCompPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .add(CustCompPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(CompDescrPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+        );
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ComponentDescriptorVisualPanel.class, "ACSN_CD_Panel")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ComponentDescriptorVisualPanel.class, "ACSD_CD_Panel")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JPanel CompDescrPanel;
+    private javax.swing.JPanel CustCompPanel;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
+    private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JSeparator jSeparator2;
+    private javax.swing.JTextField myCDClassName;
+    private javax.swing.JLabel myCDClassNameLabel;
+    private javax.swing.JTextField myCDSuperClass;
+    private javax.swing.JLabel myCDSuperClassLabel;
+    private javax.swing.JTextField myCDTypeId;
+    private javax.swing.JLabel myCDTypeIdLabel;
+    private javax.swing.JComboBox myCDVersionCombo;
+    private javax.swing.JLabel myCDVersionLabel;
+    private javax.swing.JCheckBox myCanBeSuperChk;
+    private javax.swing.JCheckBox myCanInstantiateChk;
+    private javax.swing.JLabel myCompDescrLabel;
+    private javax.swing.JLabel myCustCompLabel;
+    private javax.swing.JTextField myPrefix;
+    private javax.swing.JLabel myPrefixLabel;
     // End of variables declaration//GEN-END:variables
     
     private WizardDescriptor mySettings;
     private ComponentDescriptorWizardPanel myPanel;
+    private boolean isCDClassNameUpdated;
+    private boolean isCDTypeIdUpdated;
     
 }

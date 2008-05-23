@@ -45,18 +45,13 @@ import java.awt.Component;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
-
-import org.netbeans.api.project.libraries.Library;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
-import org.openide.filesystems.FileSystem;
 import org.openide.util.NbBundle;
 
 /**
@@ -76,6 +71,46 @@ final class NewComponentDescriptor implements WizardDescriptor.InstantiatingIter
                                                 = "LBL_ComponentProducerStep";  // NOI18N
     public static final String  PRESENTERS_STEP = "LBL_ComponentPresentersStep";// NOI18N
     public static final String  FINAL_STEP      = "LBL_ComponentFinalStep";     // NOI18N
+    
+    public static final String COMPONENT_DESCRIPTOR_POSTFIX 
+                                                = "CD";                         // NOI18N 
+    public static final String COMPONENT_PRODUCER_POSTFIX 
+                                                = "Producer";                   // NOI18N 
+    public static final String COMPONENT_DECRIPTOR_DEFAULT_PARENT
+                                                = "DisplayableCD";              // NOI18N 
+    
+    // properties - common
+    public static final String CODE_NAME_BASE   = "codeNameBase";               // NOI18N 
+    
+    public static final String CC_PREFIX        = "prefix";                     // NOI18N 
+    // properties - component descriptor step
+    public static final String CD_CLASS_NAME    = "compDescrClassName";         // NOI18N 
+    public static final String CD_TYPE_ID       = "compDescrTypeId";            // NOI18N 
+    public static final String CD_SUPER_DESCR_CLASS  
+                                                = "compDescrSuperClass";        // NOI18N 
+    public static final String CD_VERSION       = "compDescrVersion";           // NOI18N 
+    public static final String CD_CAN_INSTANTIATE  
+                                                = "compDescrCanInstantiate";    // NOI18N 
+    public static final String CD_CAN_BE_SUPER  = "compDescrCanBeSuper";        // NOI18N 
+    // properties - component producer step
+    public static final String CP_CLASS_NAME    = "compProdClassName";          // NOI18N 
+    public static final String CP_PALETTE_DISP_NAME    
+                                                = "compProdPaletteDispName";    // NOI18N 
+    public static final String CP_PALETTE_TIP   = "compProdPaletteTip";         // NOI18N 
+    public static final String CP_PALETTE_CATEGORY    
+                                                = "compProdPaletteCategory";    // NOI18N 
+    public static final String CP_SMALL_ICON    = "compProdSmallIcon";          // NOI18N 
+    public static final String CP_LARGE_ICON    = "compProdLargeIcon";          // NOI18N 
+    public static final String CP_ADD_LIB       = "compProdAddLib";             // NOI18N 
+    public static final String CP_LIB_NAME      = "compProdLibName";            // NOI18N 
+    public static final String CP_VALID_ALWAYS  = "compProdValidAlways";        // NOI18N 
+    public static final String CP_VALID_PLATFORM    
+                                                = "compProdValidPlatform";      // NOI18N 
+    public static final String CP_VALID_CUSTOM  = "compProdValidCustom";        // NOI18N 
+    // properties - component presenters step
+    // properties - final step
+    
+    
     
     NewComponentDescriptor( WizardDescriptor mainDesc ){
         myMainWizard = mainDesc;
@@ -113,6 +148,9 @@ final class NewComponentDescriptor implements WizardDescriptor.InstantiatingIter
         wizardDescriptor.setTitle(
                 NbBundle.getMessage(NewLibraryDescriptor.class, WIZARD_TITLE));
         
+        wizardDescriptor.putProperty(
+                CODE_NAME_BASE, 
+                getCodeNameBase() );
     }
 
     /* (non-Javadoc)
@@ -155,6 +193,28 @@ final class NewComponentDescriptor implements WizardDescriptor.InstantiatingIter
      * @see org.openide.WizardDescriptor.InstantiatingIterator#uninitialize(org.openide.WizardDescriptor)
      */
     public void uninitialize( WizardDescriptor arg0 ) {
+        myWizard.putProperty(CODE_NAME_BASE, null);
+        
+        myWizard.putProperty(CC_PREFIX, null);
+        myWizard.putProperty(CD_CLASS_NAME, null);
+        myWizard.putProperty(CD_TYPE_ID, null);
+        myWizard.putProperty(CD_SUPER_DESCR_CLASS, null);
+        myWizard.putProperty(CD_VERSION, null);
+        myWizard.putProperty(CD_CAN_INSTANTIATE, null);
+        myWizard.putProperty(CD_CAN_BE_SUPER, null);
+
+        myWizard.putProperty(CP_CLASS_NAME, null);
+        myWizard.putProperty(CP_PALETTE_DISP_NAME, null);
+        myWizard.putProperty(CP_PALETTE_TIP, null);
+        myWizard.putProperty(CP_PALETTE_CATEGORY, null);
+        myWizard.putProperty(CP_SMALL_ICON, null);
+        myWizard.putProperty(CP_LARGE_ICON, null);
+        myWizard.putProperty(CP_ADD_LIB, null);
+        myWizard.putProperty(CP_LIB_NAME, null);
+        myWizard.putProperty(CP_VALID_ALWAYS, null);
+        myWizard.putProperty(CP_VALID_PLATFORM, null);
+        myWizard.putProperty(CP_VALID_CUSTOM, null);
+
         myWizard = null;
         myPanels = null;
     }
@@ -227,7 +287,7 @@ final class NewComponentDescriptor implements WizardDescriptor.InstantiatingIter
         return new WizardDescriptor.Panel[] { 
               new ComponentDescriptorWizardPanel(), 
               new ComponentProducerWizardPanel(), 
-              new ComponentPresentersWizardPanel(), 
+              //new ComponentPresentersWizardPanel(), 
               new ComponentFinalWizardPanel()
         };
     }
@@ -238,13 +298,26 @@ final class NewComponentDescriptor implements WizardDescriptor.InstantiatingIter
                         COMPONENT_DESCR_STEP) ,
                 NbBundle.getMessage(NewComponentDescriptor.class, 
                         COMPONENT_PRODUCER_STEP), 
-                NbBundle.getMessage(NewComponentDescriptor.class, 
-                        PRESENTERS_STEP) ,
+                //NbBundle.getMessage(NewComponentDescriptor.class, 
+                //        PRESENTERS_STEP) ,
                 NbBundle.getMessage(NewComponentDescriptor.class, 
                         FINAL_STEP) 
                         };
     }
     
+    // TODO creates code name base for wizard started from main wizard
+    // Move to special provider
+    private String getCodeNameBase(){
+        String codeNameBase = (String)myMainWizard.getProperty( 
+                CustomComponentWizardIterator.CODE_BASE_NAME);
+        String projectName = (String)myMainWizard.getProperty( 
+                CustomComponentWizardIterator.PROJECT_NAME);
+        if ( codeNameBase == null ){
+            codeNameBase = BasicModuleConfVisualPanel.getDefaultCodeNameBase(projectName);
+        }
+        return codeNameBase;
+    }
+
     private int myCurrentIndex;
     private WizardDescriptor.Panel[] myPanels;
     private WizardDescriptor myWizard;

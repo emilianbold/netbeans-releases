@@ -41,22 +41,20 @@
 
 package org.netbeans.modules.vmd.componentssupport.ui.wizard;
 
-import java.net.URL;
-import java.util.ArrayList;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
 import java.util.Iterator;
-import java.util.List;
+import java.util.Set;
+import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.api.project.libraries.Library;
-import org.netbeans.modules.vmd.componentssupport.ui.helpers.JavaMELibsConfigurationHelper;
-import org.netbeans.modules.vmd.componentssupport.ui.helpers.JavaMELibsPreviewHelper;
+import org.netbeans.modules.vmd.componentssupport.ui.IconUtils;
 import org.openide.WizardDescriptor;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.URLMapper;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  * Represents <em>Name and Location</em> panel in J2ME Library Descriptor Wizard.
@@ -65,46 +63,273 @@ import org.openide.util.NbBundle;
  */
 final class ComponentProducerVisualPanel extends JPanel {
     
+    private static final String MSG_ERR_CLASS_NAME_EMPTY 
+                                              = "MSG_CP_EmptyClassName";        // NOI18N 
+    private static final String MSG_ERR_CLASS_NAME_INVALID 
+                                              = "MSG_CP_InvalidClassName";      // NOI18N 
+    private static final String MSG_ERR_PALETTE_DISP_NAME_EMPTY 
+                                              = "MSG_CP_EmptyPaletteDispName";  // NOI18N 
+    private static final String MSG_ERR_LIB_NAME_EMPTY 
+                                              = "MSG_CP_EmptyLibName";          // NOI18N 
+    private static final String MSG_ERR_SMALL_NOT_EXIST 
+                                              = "MSG_CP_SmallIconNotExist";          // NOI18N 
+    private static final String MSG_ERR_LARGE_NOT_EXIST 
+                                              = "MSG_CP_LargeIconNotExist";          // NOI18N 
+    private static final String LBL_SELECT    = "LBL_Select";                   // NOI18N 
+    private static final String TXT_NONE    = "TXT_NONE";                   // NOI18N 
+    
+    private static final String NONE    = getMessage(TXT_NONE);
+    
+
     /** Creates new NameAndLocationPanel */
     ComponentProducerVisualPanel(ComponentProducerWizardPanel panel) {
         myPanel = panel;
         initComponents();
         
+        myCPPaletteCategoryCombo.setModel(PaletteCategory.getComboBoxModel());
+        myCPValidAlwaysRadio.setSelected(true);
+        
         DocumentListener dListener = new DocumentAdapter() {
             public void insertUpdate(DocumentEvent e) {
-                // TODO check all fields and notify panel about changes
+                checkValidity();
             }
         };
-        //libraryNameValue.getDocument().addDocumentListener(dListener);
+        myCPClassName.getDocument().addDocumentListener(dListener);
+        myCPPaletteDispName.getDocument().addDocumentListener(dListener);
+        myCPPaletteTooltip.getDocument().addDocumentListener(dListener);
+        myCPSmallIconPath.getDocument().addDocumentListener(new DocumentAdapter() {
+            public void insertUpdate(DocumentEvent e) {
+                isSmallIconUpdated = true;
+                checkValidity();
+            }
+        });
+        myCPLargeIconPath.getDocument().addDocumentListener(new DocumentAdapter() {
+            public void insertUpdate(DocumentEvent e) {
+                isLargeIconUpdated = true;
+                checkValidity();
+            }
+        });
+        myCPLibName.getDocument().addDocumentListener(dListener);
+        myCPAddLibDepChk.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                checkValidity();
+            }
+        });
         
     }
     
 
     void storeData(WizardDescriptor descriptor) {
-        // TODO store
+        descriptor.putProperty(NewComponentDescriptor.CP_CLASS_NAME, 
+                getClassNameValue());
+        descriptor.putProperty(NewComponentDescriptor.CP_PALETTE_DISP_NAME, 
+                getPaletteDispNameValue());
+        descriptor.putProperty(NewComponentDescriptor.CP_PALETTE_TIP, 
+                getPaletteTooltipValue());
+        descriptor.putProperty(NewComponentDescriptor.CP_PALETTE_CATEGORY, 
+                getPaletteCategoryValue());
+        descriptor.putProperty(NewComponentDescriptor.CP_SMALL_ICON, 
+                getSmallIconValue());
+        descriptor.putProperty(NewComponentDescriptor.CP_LARGE_ICON, 
+                getLargeIconValue());
+        descriptor.putProperty(NewComponentDescriptor.CP_ADD_LIB, 
+                getAddLibraryValue());
+        descriptor.putProperty(NewComponentDescriptor.CP_LIB_NAME, 
+                getLibraryNameValue());
+        descriptor.putProperty(NewComponentDescriptor.CP_VALID_ALWAYS, 
+                getValidAlwaysValue());
+        descriptor.putProperty(NewComponentDescriptor.CP_VALID_PLATFORM, 
+                getValidPlatformValue());
+        descriptor.putProperty(NewComponentDescriptor.CP_VALID_CUSTOM, 
+                getValidCustomValue());
     }
     
     void readData( WizardDescriptor descriptor) {
         mySettings = descriptor;
-        // TODO read
+        
+        myCPClassName.setText(getClassName());
+        myCPPaletteDispName.setText(getPaletteDispName());
+        myCPPaletteTooltip.setText(getPaletteTooltip());
+        myCPPaletteCategoryCombo.setSelectedItem(getPaletteCategory());
+        myCPSmallIconPath.setText(getSmallIcon());
+        myCPLargeIconPath.setText(getLargeIcon());
+        myCPAddLibDepChk.setSelected(getAddLib());
+        myCPLibName.setText((String)mySettings.getProperty(
+                NewComponentDescriptor.CP_LIB_NAME));
+        if (getValidAlways() != null){
+            myCPValidAlwaysRadio.setSelected(getValidAlways());
+        }
+        if (getValidPlatform() != null){
+            myCPValidPlatformRadio.setSelected(getValidPlatform());
+        }
+        if (getValidCustom() != null){
+            myCPValidCustomRadio.setSelected(getValidCustom());
+        }
+        
         checkValidity();
     }
 
+    private String getPaletteDispName() {
+        String value = (String) mySettings.getProperty(
+                NewComponentDescriptor.CP_PALETTE_DISP_NAME);
+        return (value == null) ? getPrefix() : value;
+    }
+    private String getPaletteTooltip() {
+        String value = (String) mySettings.getProperty(
+                NewComponentDescriptor.CP_PALETTE_TIP);
+        return (value == null) ? getPrefix() : value;
+    }
+
+    private PaletteCategory getPaletteCategory(){
+        Object value = mySettings.getProperty(
+                NewComponentDescriptor.CP_PALETTE_CATEGORY);
+        if (value == null || !(value instanceof PaletteCategory)){
+            return PaletteCategory.CATEGORY_DISPLAYABLES;
+        }
+        return (PaletteCategory)value;
+    }
+
+    private String getPrefix(){
+        String prefix = (String) mySettings.getProperty(
+                NewComponentDescriptor.CC_PREFIX);
+        assert prefix != null;
+        return prefix;
+    }
+    
+    private String getClassName() {
+        String name = (String) mySettings.getProperty(
+                NewComponentDescriptor.CP_CLASS_NAME);
+        if (name == null) {
+            String prefix = getPrefix();
+            name = prefix + NewComponentDescriptor.COMPONENT_PRODUCER_POSTFIX;
+        }
+        return name;
+    }
+
+    private Boolean getAddLib() {
+        Object value = mySettings.getProperty(
+                NewComponentDescriptor.CP_ADD_LIB);
+        if (value == null) {
+            return Boolean.FALSE;
+        }
+        return (Boolean)value;
+    }
+
+    private String getSmallIcon(){
+        String value = (String)mySettings.getProperty(
+                NewComponentDescriptor.CP_SMALL_ICON);
+        return (value == null || value.length() == 0) ? NONE : value;
+    }
+
+    private String getLargeIcon(){
+        String value = (String)mySettings.getProperty(
+                NewComponentDescriptor.CP_LARGE_ICON);
+        return (value == null || value.length() == 0) ? NONE : value;
+    }
+
+    private Boolean getValidAlways() {
+        return (Boolean)mySettings.getProperty(
+                NewComponentDescriptor.CP_VALID_ALWAYS);
+    }
+
+    private Boolean getValidPlatform() {
+        return (Boolean)mySettings.getProperty(
+                NewComponentDescriptor.CP_VALID_PLATFORM);
+    }
+
+    private Boolean getValidCustom() {
+        return (Boolean)mySettings.getProperty(
+                NewComponentDescriptor.CP_VALID_CUSTOM);
+    }
+    
     private boolean checkValidity(){
-        // TODO add library verification ( e.g.: was not added yet )
-        //if (!isValidLibraryName()){
-        //    setError( getMessage(MSG_EMPTY_LIB_NAME) );
-        //    return false;
-        //}
+        if (!isCPClassNameValid()){
+            return false;
+        }
+        if (!isCPPaletteDispNameValid()){
+            return false;
+        }
+        if (!isCPSmallIconValid()){
+            return false;
+        }
+        if (!isCPLargeIconValid()){
+            return false;
+        }
+        if (!isCPLibNameValid()){
+            return false;
+        }
         markValid();
         return true;
     }
     
-    //private boolean isValidLibraryName() {
-    //    return getLibNameValue() != null &&
-    //            getLibNameValue().trim().length() != 0;
-    //}
+    private boolean isCPSmallIconValid(){
+        String path = getSmallIconValue();
+        if (path.length() == 0) {
+            setWarning(IconUtils.getNoIconMessage(16, 16));
+        } else if (!isFileExist(path)){
+            setError(getMessage(MSG_ERR_SMALL_NOT_EXIST));
+            return false;
+        } else if (!IconUtils.isValidIcon(new File(path),16,16)) {
+            setWarning(IconUtils.getIconDimensionMessage(new File(path), 16, 16));
+        }
+        return true;
+    }
+    
+    private boolean isCPLargeIconValid(){
+        String path = getLargeIconValue();
+        if (path.length() == 0) {
+            setWarning(IconUtils.getNoIconMessage(24, 24));
+        } else if (!isFileExist(path)){
+            setError(getMessage(MSG_ERR_LARGE_NOT_EXIST));
+            return false;
+        } else if (!IconUtils.isValidIcon(new File(path), 24, 24)) {
+            setWarning(IconUtils.getIconDimensionMessage(new File(path), 24, 24));
+        }
+        return true;
+    }
 
+    private static boolean isFileExist(String path){
+        File file = new File(path);
+        return file.exists();
+    }
+    
+    // TODO add unique validation
+    private boolean isCPClassNameValid(){
+        String name = getClassNameValue();
+        if (name.length() == 0) {
+            setError(NbBundle.getMessage(ComponentProducerVisualPanel.class, 
+                    MSG_ERR_CLASS_NAME_EMPTY));
+            return false;
+        } else if (!Utilities.isJavaIdentifier(name)){
+            setError(NbBundle.getMessage(ComponentProducerVisualPanel.class, 
+                    MSG_ERR_CLASS_NAME_INVALID));
+            return false;
+        }
+        return true;
+    }
+
+    private boolean isCPPaletteDispNameValid(){
+        String name = getPaletteDispNameValue();
+        if (name.length() == 0) {
+            setError(NbBundle.getMessage(ComponentProducerVisualPanel.class, 
+                    MSG_ERR_PALETTE_DISP_NAME_EMPTY));
+            return false;
+        }
+        return true;
+    }
+
+    private boolean isCPLibNameValid(){
+        if (!getAddLibraryValue()){
+            return true;
+        }
+        String name = getLibraryNameValue();
+        if (name.length() == 0) {
+            setError(NbBundle.getMessage(ComponentProducerVisualPanel.class, 
+                    MSG_ERR_LIB_NAME_EMPTY));
+            return false;
+        }
+        return true;
+    }
 
     /**
      * Set an error message and mark the panel as invalid.
@@ -113,6 +338,15 @@ final class ComponentProducerVisualPanel extends JPanel {
         assert message != null;
         setMessage(message);
         setValid(false);
+    }
+
+    /**
+     * Set an warning message but mark the panel as valid.
+     */
+    protected final void setWarning(String message) {
+        assert message != null;
+        setMessage(message);
+        setValid(true);
     }
 
     /**
@@ -141,6 +375,52 @@ final class ComponentProducerVisualPanel extends JPanel {
         return NbBundle.getMessage(ComponentProducerVisualPanel.class, key, args);
     }
     
+    private String getClassNameValue(){
+        return myCPClassName.getText().trim();
+    }
+    
+    private String getPaletteDispNameValue(){
+        return myCPPaletteDispName.getText().trim();
+    }
+    
+    private String getPaletteTooltipValue(){
+        return myCPPaletteTooltip.getText().trim();
+    }
+    
+    private PaletteCategory getPaletteCategoryValue(){
+        return (PaletteCategory)myCPPaletteCategoryCombo.getSelectedItem();
+    }
+    
+    private String getSmallIconValue(){
+        String value = myCPSmallIconPath.getText().trim();
+        return (value.equals(NONE)) ? "" : value;
+    }
+    
+    private String getLargeIconValue(){
+        String value = myCPLargeIconPath.getText().trim();
+        return (value.equals(NONE)) ? "" : value;
+    }
+    
+    private Boolean getAddLibraryValue(){
+        return myCPAddLibDepChk.isSelected();
+    }
+    
+    private String getLibraryNameValue(){
+        return myCPLibName.getText().trim();
+    }
+    
+    private Boolean getValidAlwaysValue(){
+        return myCPValidAlwaysRadio.isSelected();
+    }
+    
+    private Boolean getValidPlatformValue(){
+        return myCPValidPlatformRadio.isSelected();
+    }
+    
+    private Boolean getValidCustomValue(){
+        return myCPValidCustomRadio.isSelected();
+    }
+    
     public void addNotify() {
         super.addNotify();
         checkValidity();
@@ -154,13 +434,423 @@ final class ComponentProducerVisualPanel extends JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        setLayout(new java.awt.GridBagLayout());
+        myValidButtonGroup = new javax.swing.ButtonGroup();
+        jPanel1 = new javax.swing.JPanel();
+        jSeparator1 = new javax.swing.JSeparator();
+        jLabel1 = new javax.swing.JLabel();
+        jPanel2 = new javax.swing.JPanel();
+        myCPClassNameLabel = new javax.swing.JLabel();
+        myCPClassName = new javax.swing.JTextField();
+        myCPPaletteDispNameLabel = new javax.swing.JLabel();
+        myCPPaletteDispName = new javax.swing.JTextField();
+        myCPPaletteTooltipLabel = new javax.swing.JLabel();
+        myCPPaletteTooltip = new javax.swing.JTextField();
+        myCPPaletteCategoryLabel = new javax.swing.JLabel();
+        myCPPaletteCategoryCombo = new javax.swing.JComboBox();
+        myCPSmallIconPathLabel = new javax.swing.JLabel();
+        myCPSmallIconPath = new javax.swing.JTextField();
+        myCPSmallIconPathButton = new javax.swing.JButton();
+        myCPLargeIconPathLabel = new javax.swing.JLabel();
+        myCPLargeIconPath = new javax.swing.JTextField();
+        myCPLargeIconPathButton = new javax.swing.JButton();
+        myCPAddLibDepChk = new javax.swing.JCheckBox();
+        jPanel3 = new javax.swing.JPanel();
+        myCPLibNameLabel = new javax.swing.JLabel();
+        myCPLibName = new javax.swing.JTextField();
+        jPanel4 = new javax.swing.JPanel();
+        jLabel8 = new javax.swing.JLabel();
+        jSeparator2 = new javax.swing.JSeparator();
+        jPanel5 = new javax.swing.JPanel();
+        myCPValidAlwaysRadio = new javax.swing.JRadioButton();
+        myCPValidPlatformRadio = new javax.swing.JRadioButton();
+        myCPValidCustomRadio = new javax.swing.JRadioButton();
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(ComponentProducerVisualPanel.class, "LBL_CP_ComponentProducer")); // NOI18N
+
+        myCPClassNameLabel.setLabelFor(myCPClassName);
+        org.openide.awt.Mnemonics.setLocalizedText(myCPClassNameLabel, org.openide.util.NbBundle.getMessage(ComponentProducerVisualPanel.class, "LBL_CP_ClassNameLabel")); // NOI18N
+
+        myCPClassName.setToolTipText(org.openide.util.NbBundle.getMessage(ComponentProducerVisualPanel.class, "ACSD_CP_ClassNameLabel")); // NOI18N
+
+        myCPPaletteDispNameLabel.setLabelFor(myCPPaletteDispName);
+        org.openide.awt.Mnemonics.setLocalizedText(myCPPaletteDispNameLabel, org.openide.util.NbBundle.getMessage(ComponentProducerVisualPanel.class, "LBL_CP_PaletteDisplayName")); // NOI18N
+
+        myCPPaletteDispName.setToolTipText(org.openide.util.NbBundle.getMessage(ComponentProducerVisualPanel.class, "ACSD_CP_PaletteDisplayName")); // NOI18N
+
+        myCPPaletteTooltipLabel.setLabelFor(myCPPaletteTooltip);
+        org.openide.awt.Mnemonics.setLocalizedText(myCPPaletteTooltipLabel, org.openide.util.NbBundle.getMessage(ComponentProducerVisualPanel.class, "LBL_CP_PaletteTooltip")); // NOI18N
+
+        myCPPaletteTooltip.setToolTipText(org.openide.util.NbBundle.getMessage(ComponentProducerVisualPanel.class, "ACSD_CP_PaletteTooltip")); // NOI18N
+
+        myCPPaletteCategoryLabel.setLabelFor(myCPPaletteCategoryCombo);
+        org.openide.awt.Mnemonics.setLocalizedText(myCPPaletteCategoryLabel, org.openide.util.NbBundle.getMessage(ComponentProducerVisualPanel.class, "LBL_CP_PaletteCategory")); // NOI18N
+
+        myCPPaletteCategoryCombo.setToolTipText(org.openide.util.NbBundle.getMessage(ComponentProducerVisualPanel.class, "ACSD_CP_PaletteCategory")); // NOI18N
+
+        myCPSmallIconPathLabel.setLabelFor(myCPSmallIconPath);
+        org.openide.awt.Mnemonics.setLocalizedText(myCPSmallIconPathLabel, org.openide.util.NbBundle.getMessage(ComponentProducerVisualPanel.class, "LBL_CP_SmallIconPath")); // NOI18N
+
+        myCPSmallIconPath.setText(org.openide.util.NbBundle.getMessage(ComponentProducerVisualPanel.class, "TXT_NONE")); // NOI18N
+        myCPSmallIconPath.setToolTipText(org.openide.util.NbBundle.getMessage(ComponentProducerVisualPanel.class, "ACSD_CP_SmallIconPath")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(myCPSmallIconPathButton, org.openide.util.NbBundle.getMessage(ComponentProducerVisualPanel.class, "LBL_CP_SmallIconButton")); // NOI18N
+        myCPSmallIconPathButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                myCPSmallIconPathButtonActionPerformed(evt);
+            }
+        });
+
+        myCPLargeIconPathLabel.setLabelFor(myCPLargeIconPath);
+        org.openide.awt.Mnemonics.setLocalizedText(myCPLargeIconPathLabel, org.openide.util.NbBundle.getMessage(ComponentProducerVisualPanel.class, "LBL_CP_LargeIconPath")); // NOI18N
+
+        myCPLargeIconPath.setText(org.openide.util.NbBundle.getMessage(ComponentProducerVisualPanel.class, "TXT_NONE")); // NOI18N
+        myCPLargeIconPath.setToolTipText(org.openide.util.NbBundle.getMessage(ComponentProducerVisualPanel.class, "ACSD_CP_LargeIconPath")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(myCPLargeIconPathButton, org.openide.util.NbBundle.getMessage(ComponentProducerVisualPanel.class, "LBL_CP_LargeIconButton")); // NOI18N
+        myCPLargeIconPathButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                myCPLargeIconPathButtonActionPerformed(evt);
+            }
+        });
+
+        org.openide.awt.Mnemonics.setLocalizedText(myCPAddLibDepChk, org.openide.util.NbBundle.getMessage(ComponentProducerVisualPanel.class, "LBL_CP_AddLibraryChk")); // NOI18N
+
+        myCPLibNameLabel.setLabelFor(myCPLibName);
+        org.openide.awt.Mnemonics.setLocalizedText(myCPLibNameLabel, org.openide.util.NbBundle.getMessage(ComponentProducerVisualPanel.class, "LBL_CP_LibName")); // NOI18N
+
+        myCPLibName.setToolTipText(org.openide.util.NbBundle.getMessage(ComponentProducerVisualPanel.class, "ACSD_CP_LibName")); // NOI18N
+
+        org.jdesktop.layout.GroupLayout jPanel3Layout = new org.jdesktop.layout.GroupLayout(jPanel3);
+        jPanel3.setLayout(jPanel3Layout);
+        jPanel3Layout.setHorizontalGroup(
+            jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel3Layout.createSequentialGroup()
+                .add(16, 16, 16)
+                .add(myCPLibNameLabel)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(myCPLibName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 287, Short.MAX_VALUE))
+        );
+        jPanel3Layout.setVerticalGroup(
+            jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                .add(myCPLibNameLabel)
+                .add(myCPLibName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+        );
+
+        myCPLibNameLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ComponentProducerVisualPanel.class, "ACSN_CP_LibName")); // NOI18N
+        myCPLibNameLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ComponentProducerVisualPanel.class, "ACSD_CP_LibName")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel8, org.openide.util.NbBundle.getMessage(ComponentProducerVisualPanel.class, "LBL_CP_Validity")); // NOI18N
+
+        myValidButtonGroup.add(myCPValidAlwaysRadio);
+        org.openide.awt.Mnemonics.setLocalizedText(myCPValidAlwaysRadio, org.openide.util.NbBundle.getMessage(ComponentProducerVisualPanel.class, "LBL_CP_ValidAlways")); // NOI18N
+        myCPValidAlwaysRadio.setToolTipText(org.openide.util.NbBundle.getMessage(ComponentProducerVisualPanel.class, "ACSD_CP_ValidAlways")); // NOI18N
+
+        myValidButtonGroup.add(myCPValidPlatformRadio);
+        org.openide.awt.Mnemonics.setLocalizedText(myCPValidPlatformRadio, org.openide.util.NbBundle.getMessage(ComponentProducerVisualPanel.class, "LBL_CP_ValidPlatform")); // NOI18N
+        myCPValidPlatformRadio.setToolTipText(org.openide.util.NbBundle.getMessage(ComponentProducerVisualPanel.class, "ACSD_CP_ValidPlatform")); // NOI18N
+
+        myValidButtonGroup.add(myCPValidCustomRadio);
+        org.openide.awt.Mnemonics.setLocalizedText(myCPValidCustomRadio, org.openide.util.NbBundle.getMessage(ComponentProducerVisualPanel.class, "LBL_CP_ValidCustom")); // NOI18N
+        myCPValidCustomRadio.setToolTipText(org.openide.util.NbBundle.getMessage(ComponentProducerVisualPanel.class, "ACSD_CP_ValidCustom")); // NOI18N
+
+        org.jdesktop.layout.GroupLayout jPanel5Layout = new org.jdesktop.layout.GroupLayout(jPanel5);
+        jPanel5.setLayout(jPanel5Layout);
+        jPanel5Layout.setHorizontalGroup(
+            jPanel5Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel5Layout.createSequentialGroup()
+                .addContainerGap()
+                .add(jPanel5Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(myCPValidAlwaysRadio)
+                    .add(myCPValidPlatformRadio)
+                    .add(myCPValidCustomRadio))
+                .addContainerGap(229, Short.MAX_VALUE))
+        );
+        jPanel5Layout.setVerticalGroup(
+            jPanel5Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel5Layout.createSequentialGroup()
+                .addContainerGap()
+                .add(myCPValidAlwaysRadio)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(myCPValidPlatformRadio)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(myCPValidCustomRadio)
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        myCPValidAlwaysRadio.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ComponentProducerVisualPanel.class, "ACSN_CP_ValidAlways")); // NOI18N
+        myCPValidAlwaysRadio.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ComponentProducerVisualPanel.class, "ACSD_CP_ValidAlways")); // NOI18N
+        myCPValidPlatformRadio.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ComponentProducerVisualPanel.class, "ACSN_CP_ValidPlatform")); // NOI18N
+        myCPValidPlatformRadio.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ComponentProducerVisualPanel.class, "ACSD_CP_ValidPlatform")); // NOI18N
+        myCPValidCustomRadio.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ComponentProducerVisualPanel.class, "ACSN_CP_ValidCustom")); // NOI18N
+        myCPValidCustomRadio.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ComponentProducerVisualPanel.class, "ACSD_CP_ValidCustom")); // NOI18N
+
+        org.jdesktop.layout.GroupLayout jPanel4Layout = new org.jdesktop.layout.GroupLayout(jPanel4);
+        jPanel4.setLayout(jPanel4Layout);
+        jPanel4Layout.setHorizontalGroup(
+            jPanel4Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel4Layout.createSequentialGroup()
+                .add(4, 4, 4)
+                .add(jLabel8)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jSeparator2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 338, Short.MAX_VALUE))
+            .add(jPanel5, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        );
+        jPanel4Layout.setVerticalGroup(
+            jPanel4Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel4Layout.createSequentialGroup()
+                .add(jPanel4Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jLabel8)
+                    .add(jSeparator2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jPanel5, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+        );
+
+        org.jdesktop.layout.GroupLayout jPanel2Layout = new org.jdesktop.layout.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, jPanel4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, jPanel3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, jPanel2Layout.createSequentialGroup()
+                        .add(myCPClassNameLabel)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                        .add(myCPClassName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 311, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, jPanel2Layout.createSequentialGroup()
+                        .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(myCPPaletteDispNameLabel)
+                            .add(myCPPaletteTooltipLabel)
+                            .add(myCPPaletteCategoryLabel)
+                            .add(myCPSmallIconPathLabel)
+                            .add(myCPLargeIconPathLabel))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(myCPPaletteTooltip, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 271, Short.MAX_VALUE)
+                            .add(myCPPaletteDispName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 271, Short.MAX_VALUE)
+                            .add(myCPPaletteCategoryCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 182, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel2Layout.createSequentialGroup()
+                                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                                    .add(myCPLargeIconPath, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 196, Short.MAX_VALUE)
+                                    .add(myCPSmallIconPath, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 196, Short.MAX_VALUE))
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    .add(org.jdesktop.layout.GroupLayout.TRAILING, myCPSmallIconPathButton)
+                                    .add(org.jdesktop.layout.GroupLayout.TRAILING, myCPLargeIconPathButton)))))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, myCPAddLibDepChk))
+                .addContainerGap())
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(myCPClassNameLabel)
+                    .add(myCPClassName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(myCPPaletteDispNameLabel)
+                    .add(myCPPaletteDispName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(myCPPaletteTooltipLabel)
+                    .add(myCPPaletteTooltip, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(myCPPaletteCategoryLabel)
+                    .add(myCPPaletteCategoryCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(myCPSmallIconPathLabel)
+                    .add(myCPSmallIconPathButton)
+                    .add(myCPSmallIconPath, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(myCPLargeIconPathLabel)
+                    .add(myCPLargeIconPathButton)
+                    .add(myCPLargeIconPath, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(myCPAddLibDepChk)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jPanel3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(jPanel4, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(6, Short.MAX_VALUE))
+        );
+
+        myCPClassNameLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ComponentProducerVisualPanel.class, "ACSN_CP_ClassNameLabel")); // NOI18N
+        myCPClassNameLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ComponentProducerVisualPanel.class, "ACSD_CP_ClassNameLabel")); // NOI18N
+        myCPPaletteDispNameLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ComponentProducerVisualPanel.class, "ACSN_CP_PaletteDisplayName")); // NOI18N
+        myCPPaletteDispNameLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ComponentProducerVisualPanel.class, "ACSD_CP_PaletteDisplayName")); // NOI18N
+        myCPPaletteTooltipLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ComponentProducerVisualPanel.class, "ACSN_CP_PaletteTooltip")); // NOI18N
+        myCPPaletteTooltipLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ComponentProducerVisualPanel.class, "ACSD_CP_PaletteTooltip")); // NOI18N
+        myCPPaletteCategoryLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ComponentProducerVisualPanel.class, "ACSN_CP_PaletteCategory")); // NOI18N
+        myCPPaletteCategoryLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ComponentProducerVisualPanel.class, "ACSD_CP_PaletteCategory")); // NOI18N
+        myCPSmallIconPathLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ComponentProducerVisualPanel.class, "ACSN_CP_SmallIconPath")); // NOI18N
+        myCPSmallIconPathLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ComponentProducerVisualPanel.class, "ACSD_CP_SmallIconPath")); // NOI18N
+        myCPSmallIconPathButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ComponentProducerVisualPanel.class, "ACSN_CP_SmallIconButton")); // NOI18N
+        myCPSmallIconPathButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ComponentProducerVisualPanel.class, "ACSD_CP_SmallIconButton")); // NOI18N
+        myCPLargeIconPathLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ComponentProducerVisualPanel.class, "ACSN_CP_LargeIconPath")); // NOI18N
+        myCPLargeIconPathLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ComponentProducerVisualPanel.class, "ACSD_CP_LargeIconPath")); // NOI18N
+        myCPLargeIconPathButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ComponentProducerVisualPanel.class, "ACSN_CP_LargeIconButton")); // NOI18N
+        myCPLargeIconPathButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ComponentProducerVisualPanel.class, "ACSD_CP_LargeIconButton")); // NOI18N
+        myCPAddLibDepChk.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ComponentProducerVisualPanel.class, "ACSN_CP_AddLibraryChk")); // NOI18N
+        myCPAddLibDepChk.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ComponentProducerVisualPanel.class, "ACSD_CP_AddLibraryChk")); // NOI18N
+
+        org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel1Layout.createSequentialGroup()
+                .add(jLabel1)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 295, Short.MAX_VALUE))
+            .add(jPanel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel1Layout.createSequentialGroup()
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jLabel1)
+                    .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 7, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jPanel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 357, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+
+        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+        );
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ComponentProducerVisualPanel.class, "ACSN_CP_ComponentProducerPanel")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ComponentProducerVisualPanel.class, "ACSD_CP_ComponentProducerPanel")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
+
+private void myCPSmallIconPathButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_myCPSmallIconPathButtonActionPerformed
+    JFileChooser chooser = IconUtils.getIconFileChooser(myCPSmallIconPath.getText());
+    int ret = chooser.showDialog(this, getMessage(LBL_SELECT));
+    if (ret == JFileChooser.APPROVE_OPTION) {
+        File iconFile = chooser.getSelectedFile();
+
+        File secondIcon = getAnotherIconPath(iconFile);
+        if (secondIcon != null) {
+            boolean isIconSmall = IconUtils.isValidIcon(iconFile, 16, 16);
+            String small = (isIconSmall) ? iconFile.getAbsolutePath() 
+                    : secondIcon.getAbsolutePath();
+            String large = (isIconSmall) ? secondIcon.getAbsolutePath() 
+                    : iconFile.getAbsolutePath();
+            
+            myCPSmallIconPath.setText(small);
+            if (!isLargeIconUpdated) {
+                myCPLargeIconPath.setText(large);
+                isLargeIconUpdated = false;
+            }
+        } else {
+            myCPSmallIconPath.setText(iconFile.getAbsolutePath());
+        }
+    }
+
+
+}//GEN-LAST:event_myCPSmallIconPathButtonActionPerformed
+
+private void myCPLargeIconPathButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_myCPLargeIconPathButtonActionPerformed
+    JFileChooser chooser = IconUtils.getIconFileChooser(myCPLargeIconPath.getText());
+    int ret = chooser.showDialog(this, getMessage(LBL_SELECT));
+    if (ret == JFileChooser.APPROVE_OPTION) {
+        File iconFile = chooser.getSelectedFile();
+
+        File secondIcon = getAnotherIconPath(iconFile);
+        if (secondIcon != null) {
+            boolean isIconSmall = IconUtils.isValidIcon(iconFile, 16, 16);
+            String small = (isIconSmall) ? iconFile.getAbsolutePath() 
+                    : secondIcon.getAbsolutePath();
+            String large = (isIconSmall) ? secondIcon.getAbsolutePath() 
+                    : iconFile.getAbsolutePath();
+            
+            myCPLargeIconPath.setText(large);
+            if (!isSmallIconUpdated) {
+                myCPSmallIconPath.setText(small);
+                isSmallIconUpdated = false;
+            }
+        } else {
+            myCPLargeIconPath.setText(iconFile.getAbsolutePath());
+        }
+    }
+
     
+}//GEN-LAST:event_myCPLargeIconPathButtonActionPerformed
+
+    private static File getAnotherIconPath(File iconFile) {
+        Set<File> allFiles = IconUtils.getPossibleIcons(iconFile.getAbsolutePath());
+        assert allFiles.contains(iconFile);
+        
+        allFiles.remove(iconFile);
+        
+        boolean isIconSmall = IconUtils.isValidIcon(iconFile, 16, 16);
+
+        File secondIcon = null;
+        boolean isSecondIconSmall = false;
+        for (Iterator<File> it = allFiles.iterator(); it.hasNext() && !isSecondIconSmall;) {
+            File f = it.next();
+            isSecondIconSmall = (isIconSmall) 
+                    ? IconUtils.isValidIcon(f, 24, 24) 
+                    : IconUtils.isValidIcon(f, 16, 16);
+            if (isSecondIconSmall) {
+                secondIcon = f;
+                break;
+            }
+        }
+        return secondIcon;
+    }
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel8;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel3;
+    private javax.swing.JPanel jPanel4;
+    private javax.swing.JPanel jPanel5;
+    private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JSeparator jSeparator2;
+    private javax.swing.JCheckBox myCPAddLibDepChk;
+    private javax.swing.JTextField myCPClassName;
+    private javax.swing.JLabel myCPClassNameLabel;
+    private javax.swing.JTextField myCPLargeIconPath;
+    private javax.swing.JButton myCPLargeIconPathButton;
+    private javax.swing.JLabel myCPLargeIconPathLabel;
+    private javax.swing.JTextField myCPLibName;
+    private javax.swing.JLabel myCPLibNameLabel;
+    private javax.swing.JComboBox myCPPaletteCategoryCombo;
+    private javax.swing.JLabel myCPPaletteCategoryLabel;
+    private javax.swing.JTextField myCPPaletteDispName;
+    private javax.swing.JLabel myCPPaletteDispNameLabel;
+    private javax.swing.JTextField myCPPaletteTooltip;
+    private javax.swing.JLabel myCPPaletteTooltipLabel;
+    private javax.swing.JTextField myCPSmallIconPath;
+    private javax.swing.JButton myCPSmallIconPathButton;
+    private javax.swing.JLabel myCPSmallIconPathLabel;
+    private javax.swing.JRadioButton myCPValidAlwaysRadio;
+    private javax.swing.JRadioButton myCPValidCustomRadio;
+    private javax.swing.JRadioButton myCPValidPlatformRadio;
+    private javax.swing.ButtonGroup myValidButtonGroup;
     // End of variables declaration//GEN-END:variables
     
     private WizardDescriptor mySettings;
     private ComponentProducerWizardPanel myPanel;
-    
+    private boolean isSmallIconUpdated;
+    private boolean isLargeIconUpdated;
 }

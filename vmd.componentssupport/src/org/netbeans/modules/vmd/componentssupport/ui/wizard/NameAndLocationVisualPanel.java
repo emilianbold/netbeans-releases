@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.vmd.componentssupport.ui.wizard;
 
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -49,12 +48,10 @@ import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.libraries.Library;
+import org.netbeans.modules.vmd.componentssupport.ui.UIUtils;
 import org.netbeans.modules.vmd.componentssupport.ui.helpers.JavaMELibsConfigurationHelper;
 import org.netbeans.modules.vmd.componentssupport.ui.helpers.JavaMELibsPreviewHelper;
 import org.openide.WizardDescriptor;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.URLMapper;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -123,9 +120,9 @@ final class NameAndLocationVisualPanel extends JPanel {
         addBundleToList(created, modified);
 
         // publish
-            createdFilesValue.setText(generateTextAreaContent(
+            createdFilesValue.setText(UIUtils.generateTextAreaContent(
                     created.toArray(new String[]{})));
-            modifiedFilesValue.setText(generateTextAreaContent(
+            modifiedFilesValue.setText(UIUtils.generateTextAreaContent(
                     modified.toArray(new String[]{})));
 
         
@@ -337,28 +334,6 @@ final class NameAndLocationVisualPanel extends JPanel {
         checkValidity();
     }
     
-    /**
-     * Returns a string suitable for text areas respresenting content of {@link
-     * CreatedModifiedFiles} <em>paths</em>.
-     *
-     * @param relPaths should be either
-     *        {@link CreatedModifiedFiles#getCreatedPaths()} or
-     *        {@link CreatedModifiedFiles#getModifiedPaths()}.
-     */
-    private static String generateTextAreaContent(String[] relPaths) {
-        StringBuffer sb = new StringBuffer();
-        if (relPaths.length > 0) {
-            for (int i = 0; i < relPaths.length; i++) {
-                if (i > 0) {
-                    sb.append('\n'); // NOI18N
-                }
-                sb.append(relPaths[i]);
-            }
-        }
-        return sb.toString();
-    }
-    
-    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -467,6 +442,7 @@ final class NameAndLocationVisualPanel extends JPanel {
         createdFilesValue.setColumns(20);
         createdFilesValue.setEditable(false);
         createdFilesValue.setRows(5);
+        createdFilesValue.setToolTipText(org.openide.util.NbBundle.getMessage(NameAndLocationVisualPanel.class, "LBL_CreatedFilesTip")); // NOI18N
         createdFilesValue.setBorder(null);
         createdFilesValueS.setViewportView(createdFilesValue);
 
@@ -482,7 +458,7 @@ final class NameAndLocationVisualPanel extends JPanel {
         modifiedFilesValue.setColumns(20);
         modifiedFilesValue.setEditable(false);
         modifiedFilesValue.setRows(5);
-        modifiedFilesValue.setToolTipText("modifiedFilesValue");
+        modifiedFilesValue.setToolTipText(org.openide.util.NbBundle.getMessage(NameAndLocationVisualPanel.class, "LBL_ModifiedFilesTip")); // NOI18N
         modifiedFilesValue.setBorder(null);
         modifiedFilesValueS.setViewportView(modifiedFilesValue);
 

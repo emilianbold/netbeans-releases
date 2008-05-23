@@ -41,20 +41,13 @@
 
 package org.netbeans.modules.vmd.componentssupport.ui.wizard;
 
-import java.net.URL;
+import java.io.File;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import javax.swing.JPanel;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import org.netbeans.api.project.libraries.Library;
-import org.netbeans.modules.vmd.componentssupport.ui.helpers.JavaMELibsConfigurationHelper;
-import org.netbeans.modules.vmd.componentssupport.ui.helpers.JavaMELibsPreviewHelper;
+import org.netbeans.modules.vmd.componentssupport.ui.UIUtils;
+import org.netbeans.modules.vmd.componentssupport.ui.helpers.BaseHelper;
 import org.openide.WizardDescriptor;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.URLMapper;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -70,80 +63,125 @@ final class ComponentFinalVisualPanel extends JPanel {
         myPanel = panel;
         initComponents();
         
-        DocumentListener dListener = new DocumentAdapter() {
-            public void insertUpdate(DocumentEvent e) {
-                // TODO check all fields and notify panel about changes
-            }
-        };
-        //libraryNameValue.getDocument().addDocumentListener(dListener);
-        
     }
     
 
     void storeData(WizardDescriptor descriptor) {
-        // TODO store
+        // nothing to do on this step
     }
     
     void readData( WizardDescriptor descriptor) {
         mySettings = descriptor;
-        // TODO read
-        checkValidity();
+        setFilesInfoIntoTextAreas();
     }
 
-    private boolean checkValidity(){
-        // TODO add library verification ( e.g.: was not added yet )
-        //if (!isValidLibraryName()){
-        //    setError( getMessage(MSG_EMPTY_LIB_NAME) );
-        //    return false;
-        //}
-        markValid();
-        return true;
-    }
-    
-    //private boolean isValidLibraryName() {
-    //    return getLibNameValue() != null &&
-    //            getLibNameValue().trim().length() != 0;
-    //}
-
-
-    /**
-     * Set an error message and mark the panel as invalid.
-     */
-    protected final void setError(String message) {
-        assert message != null;
-        setMessage(message);
-        setValid(false);
-    }
-
-    /**
-     * Mark the panel as valid and clear any error or warning message.
-     */
-    protected final void markValid() {
-        setMessage(null);
-        setValid(true);
-    }
-    
-    private final void setMessage(String message) {
-        mySettings.putProperty(
-                CustomComponentWizardIterator.WIZARD_PANEL_ERROR_MESSAGE, 
-                message);
-    }
-
-    private final void setValid(boolean valid) {
-        myPanel.setValid(valid);
-    }
-    
     protected HelpCtx getHelp() {
         return new HelpCtx(ComponentFinalVisualPanel.class);
     }
     
-    private static String getMessage(String key, Object... args) {
-        return NbBundle.getMessage(ComponentFinalVisualPanel.class, key, args);
+    private String getCodeNameBase(){
+        return (String)mySettings.getProperty( 
+                NewComponentDescriptor.CODE_NAME_BASE);
+    }
+
+    private String getCDClassName() {
+        return (String) mySettings.getProperty(
+                NewComponentDescriptor.CD_CLASS_NAME);
+    }
+
+    private String getProducerClassName() {
+        return (String) mySettings.getProperty(
+                NewComponentDescriptor.CP_CLASS_NAME);
+    }
+
+    private String getSmallIconPath() {
+        String path = (String) mySettings.getProperty(
+                NewComponentDescriptor.CP_SMALL_ICON);
+        if (path == null || path.length() == 0){
+            return null;
+        }
+        return path;
+    }
+
+    private String getLargeIconPath() {
+        String path = (String) mySettings.getProperty(
+                NewComponentDescriptor.CP_LARGE_ICON);
+        if (path == null || path.length() == 0){
+            return null;
+        }
+        return path;
+    }
+
+    private void setFilesInfoIntoTextAreas() {
+        List<String> created = new ArrayList<String>();
+        List<String> modified = new ArrayList<String>();
+
+        addCDToList(created, modified);
+        addProducerToList(created, modified);
+        addLayerXmlToList(created, modified);
+        addIconsToList(created, modified);
+
+        // publish
+            createdFilesValue.setText(UIUtils.generateTextAreaContent(
+                    created.toArray(new String[]{})));
+            modifiedFilesValue.setText(UIUtils.generateTextAreaContent(
+                    modified.toArray(new String[]{})));
+
+        
+    }
+
+    private void addCDToList(List<String> created, List<String> modified){
+        String dotCodeNameBase = getCodeNameBase();
+        String name = getCDClassName();
+
+        String codeNameBase = dotCodeNameBase.replace('.', '/'); // NOI18N
+        
+        created.add(
+                codeNameBase + "/" + name + BaseHelper.JAVA_EXTENSION); // NOI18N
     }
     
-    public void addNotify() {
-        super.addNotify();
-        checkValidity();
+    private void addProducerToList(List<String> created, List<String> modified){
+        String dotCodeNameBase = getCodeNameBase();
+        String name = getProducerClassName();
+
+        String codeNameBase = dotCodeNameBase.replace('.', '/'); // NOI18N
+        
+        created.add(
+                codeNameBase + "/" + name + BaseHelper.JAVA_EXTENSION); // NOI18N
+    }
+    
+    private void addLayerXmlToList(List<String> created, List<String> modified){
+        String dotCodeNameBase = getCodeNameBase();
+        
+        String codeNameBase = dotCodeNameBase.replace('.', '/'); // NOI18N
+        modified.add(
+                codeNameBase + "/" + CustomComponentWizardIterator.LAYER_XML); // NOI18N
+    }
+    
+    private void addIconsToList(List<String> created, List<String> modified){
+        String small = getSmallIconPath();
+        if (small != null){
+            created.add( getFinalIconPath(small) );
+        }
+        
+        String large = getLargeIconPath();
+        if (large != null){
+            created.add( getFinalIconPath(large) );
+        }
+    }
+    
+    private String getFinalIconPath(String iconPath){
+        String dotCodeNameBase = getCodeNameBase();
+        String codeNameBase = dotCodeNameBase.replace('.', '/'); // NOI18N
+        
+        File icon = new File(iconPath);
+        String name = icon.getName();
+        
+        return codeNameBase + "/" + name;
+    }
+    
+    private static String getMessage(String key, Object... args) {
+        return NbBundle.getMessage(ComponentFinalVisualPanel.class, key, args);
     }
     
     /** This method is called from within the constructor to
@@ -153,11 +191,76 @@ final class ComponentFinalVisualPanel extends JPanel {
      */
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
+        java.awt.GridBagConstraints gridBagConstraints;
+
+        createdFiles = new javax.swing.JLabel();
+        modifiedFiles = new javax.swing.JLabel();
+        createdFilesValueS = new javax.swing.JScrollPane();
+        createdFilesValue = new javax.swing.JTextArea();
+        modifiedFilesValueS = new javax.swing.JScrollPane();
+        modifiedFilesValue = new javax.swing.JTextArea();
 
         setLayout(new java.awt.GridBagLayout());
+
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/vmd/componentssupport/ui/wizard/Bundle"); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(createdFiles, bundle.getString("LBL_F_CreatedFiles")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(36, 0, 6, 12);
+        add(createdFiles, gridBagConstraints);
+        createdFiles.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ComponentFinalVisualPanel.class, "ACSN_F_CreatedFiles")); // NOI18N
+        createdFiles.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ComponentFinalVisualPanel.class, "ACSD_F_CreatedFiles")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(modifiedFiles, bundle.getString("LBL_F_ModifiedFiles")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
+        add(modifiedFiles, gridBagConstraints);
+        modifiedFiles.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ComponentFinalVisualPanel.class, "ACSN_F_ModifiedFiles")); // NOI18N
+        modifiedFiles.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ComponentFinalVisualPanel.class, "ACSD_F_ModifiedFiles")); // NOI18N
+
+        createdFilesValue.setBackground(javax.swing.UIManager.getDefaults().getColor("Label.background"));
+        createdFilesValue.setColumns(20);
+        createdFilesValue.setEditable(false);
+        createdFilesValue.setRows(5);
+        createdFilesValue.setToolTipText(org.openide.util.NbBundle.getMessage(ComponentFinalVisualPanel.class, "ACSD_F_CreatedFiles")); // NOI18N
+        createdFilesValue.setBorder(null);
+        createdFilesValueS.setViewportView(createdFilesValue);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(36, 0, 6, 0);
+        add(createdFilesValueS, gridBagConstraints);
+
+        modifiedFilesValue.setBackground(javax.swing.UIManager.getDefaults().getColor("Label.background"));
+        modifiedFilesValue.setColumns(20);
+        modifiedFilesValue.setEditable(false);
+        modifiedFilesValue.setRows(5);
+        modifiedFilesValue.setToolTipText(org.openide.util.NbBundle.getMessage(ComponentFinalVisualPanel.class, "ACSD_F_ModifiedFiles")); // NOI18N
+        modifiedFilesValue.setBorder(null);
+        modifiedFilesValueS.setViewportView(modifiedFilesValue);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        add(modifiedFilesValueS, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel createdFiles;
+    private javax.swing.JTextArea createdFilesValue;
+    private javax.swing.JScrollPane createdFilesValueS;
+    private javax.swing.JLabel modifiedFiles;
+    private javax.swing.JTextArea modifiedFilesValue;
+    private javax.swing.JScrollPane modifiedFilesValueS;
     // End of variables declaration//GEN-END:variables
     
     private WizardDescriptor mySettings;

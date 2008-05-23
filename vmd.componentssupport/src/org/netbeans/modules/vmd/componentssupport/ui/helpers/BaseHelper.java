@@ -57,6 +57,7 @@ public class BaseHelper {
     public static final String UTF_8            = "UTF-8";                       // NOI18N
     public static final String XML_EXTENSION    = ".xml";                        // NOI18N
     public static final String ZIP_EXTENSION    = ".zip";                        // NOI18N
+    public static final String JAVA_EXTENSION   = ".java";                        // NOI18N
 
     public static final String SRC              = "src/";                        // NOI18N
     public static final String BUNDLE_PROPERTIES 
