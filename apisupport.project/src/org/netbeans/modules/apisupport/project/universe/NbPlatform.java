@@ -700,7 +700,7 @@ public final class NbPlatform {
      */
     public File getSourceLocationOfModule(File jar) {
         if (listsForSources == null) {
-            listsForSources = new ArrayList<ModuleList>();
+            List<ModuleList> _listsForSources = new ArrayList<ModuleList>();
             for (URL u : getSourceRoots()) {
                 if (!u.getProtocol().equals("file")) { // NOI18N
                     continue;
@@ -709,15 +709,16 @@ public final class NbPlatform {
                 if (dir.isDirectory()) {
                     try {
                         if (ModuleList.isNetBeansOrg(dir)) {
-                            listsForSources.add(ModuleList.findOrCreateModuleListFromNetBeansOrgSources(dir));
+                            _listsForSources.add(ModuleList.findOrCreateModuleListFromNetBeansOrgSources(dir));
                         } else {
-                            listsForSources.add(ModuleList.findOrCreateModuleListFromSuiteWithoutBinaries(dir));
+                            _listsForSources.add(ModuleList.findOrCreateModuleListFromSuiteWithoutBinaries(dir));
                         }
                     } catch (IOException e) {
                         Util.err.notify(ErrorManager.INFORMATIONAL, e);
                     }
                 }
             }
+            listsForSources = _listsForSources;
         }
         for (ModuleList l : listsForSources) {
             for (ModuleEntry entry : l.getAllEntriesSoft()) {

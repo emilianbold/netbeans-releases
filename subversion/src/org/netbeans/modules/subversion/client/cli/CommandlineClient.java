@@ -75,8 +75,10 @@ import org.netbeans.modules.subversion.client.cli.commands.StatusCommand;
 import org.netbeans.modules.subversion.client.cli.commands.StatusCommand.Status;
 import org.netbeans.modules.subversion.client.cli.commands.SwitchToCommand;
 import org.netbeans.modules.subversion.client.cli.commands.UpdateCommand;
+import org.netbeans.modules.subversion.client.cli.commands.VersionCommand;
 import org.netbeans.modules.subversion.client.parser.LocalSubversionException;
 import org.netbeans.modules.subversion.client.parser.SvnWcParser;
+import org.openide.util.Exceptions;
 import org.tigris.subversion.svnclientadapter.AbstractClientAdapter;
 import org.tigris.subversion.svnclientadapter.Annotations;
 import org.tigris.subversion.svnclientadapter.Annotations.Annotation;
@@ -117,7 +119,16 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
         wcParser = new SvnWcParser();  
         cli = new Commandline();     
     }
-        
+
+    public boolean isSupportedVersion() throws SVNClientException {
+        VersionCommand cmd = new VersionCommand();        
+        exec(cmd);
+        if(!cmd.isSupported()) {
+            throw new SVNClientException("Command line client adapter is not available " + "\n" + cmd.getOutput());               
+        }   
+        return true;
+    }
+    
     public void addNotifyListener(ISVNNotifyListener l) {
         notificationHandler.add(l);
     }
@@ -169,12 +180,34 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
         return commit(files, message, false, recurse);
     }
 
-    public long commit(File[] files, String message, boolean keep, boolean recursive) throws SVNClientException {
-        CommitCommand cmd = new CommitCommand(files, keep, recursive, message);
-        exec(cmd);
-        return cmd.getRevision();
+    public long commit(File[] files, String message, boolean keep, boolean recursive) throws SVNClientException {        
+        int retry = 0;
+        CommitCommand cmd = null;
+        while (true) {
+            try {
+                cmd = new CommitCommand(files, keep, recursive, message); // prevent cmd reuse
+                exec(cmd);
+                break;
+            } catch (SVNClientException e) {
+                if (e.getMessage().startsWith("svn: Attempted to lock an already-locked dir")) {
+                    Subversion.LOG.fine("ComandlineClient.comit() : " + e.getMessage());
+                    try {
+                        retry++;
+                        if (retry > 14) {
+                            throw e;
+                        }
+                        Thread.sleep(retry * 50);
+                    } catch (InterruptedException ex) {                        
+                        break;
+                    }
+                } else {
+                    throw e;
+                }
+            }                
+        }               
+        return cmd != null ? cmd.getRevision() : SVNRevision.SVN_INVALID_REVNUM;
     }
-
+    
     public ISVNDirEntry[] getList(SVNUrl url, SVNRevision revision, boolean recursivelly) throws SVNClientException {
         ListCommand cmd = new ListCommand(url, revision, recursivelly);
         exec(cmd);
@@ -187,15 +220,7 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
     }
 
     public ISVNInfo getInfo(File file) throws SVNClientException {
-        // XXX handle unversioned files
         return getInfoFromWorkingCopy(file);
-    }
-
-    private void config(SvnCommand cmd) {
-        cmd.setNotificationHandler(notificationHandler);
-        cmd.setConfigDir(configDir);
-        cmd.setUsername(user);
-        cmd.setPassword(psswd);
     }
 
     private ISVNInfo[] getInfo(File[] files, SVNRevision revision, SVNRevision pegging) throws SVNClientException, SVNClientException {
@@ -327,7 +352,6 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
         
         Map<File, ISVNStatus> statusMap = new HashMap<File, ISVNStatus>();
         for (Status status : statusValues) {
-            // XXX handle externals
             File file = new File(status.getPath());
             if (status == null || !isManaged(status.getWcStatus())) {
                 if (!SVNStatusKind.UNVERSIONED.equals(status.getRepoStatus())) {
@@ -391,7 +415,6 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
         
         Map<File, ISVNStatus> statusMap = new HashMap<File, ISVNStatus>();
         for (Status status : statusValues) {
-            // XXX handle externals
             File f = new File(status.getPath());
             if (status == null || !isManaged(status.getWcStatus())) {
                 if (!SVNStatusKind.UNVERSIONED.equals(status.getRepoStatus())) {
@@ -693,6 +716,13 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
         checkErrors(cmd);
     }
     
+    private void config(SvnCommand cmd) {
+        cmd.setNotificationHandler(notificationHandler);
+        cmd.setConfigDir(configDir);
+        cmd.setUsername(user);
+        cmd.setPassword(psswd);
+    }
+    
     private void checkErrors(SvnCommand cmd) throws SVNClientException {
 
         List<String> errors = cmd.getCmdError();
@@ -716,7 +746,7 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
         try {
             getInfo(url);            
         } catch (SVNClientException e) {
-            if(e.getMessage().indexOf("Not a valid URL") > -1) { // XXX are we shure this is it?
+            if(e.getMessage().indexOf("Not a valid URL") > -1) { 
                 ret.addAll(getAllNotExistingParents(url.getParent()));
                 ret.add(url);                        
             } else {

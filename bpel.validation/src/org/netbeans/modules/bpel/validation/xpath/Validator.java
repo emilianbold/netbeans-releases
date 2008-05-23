@@ -111,9 +111,9 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
       return;
     }
     String fromName = ((Named) fromType).getName();
-//out("  from name: " + fromName);
+//out("   from name: " + fromName);
     String toName = ((Named) toType).getName();
-//out("    to name: " + toName);
+//out("     to name: " + toName);
 
     if (fromName == null || toName == null) {
       return;
@@ -124,17 +124,86 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
     if (fromName.equals("anyType") || toName.equals("anyType")) { // NOI18N
       return;
     }
-//out("  from based: " + ValidationUtil.getBasedSimpleType(fromType));
-//out("    to based: " + ValidationUtil.getBasedSimpleType(toType));
+    // # 135489
+    if (fromName.startsWith("nonNegative") && toName.startsWith("negative")) { // NOI18N
+      addError("FIX_NonNegative_Negative_Copy", copy); // NOI18N
+      return;
+    }
+    if (fromName.startsWith("positive") && toName.startsWith("negative")) { // NOI18N
+      addError("FIX_Positive_Negative_Copy", copy); // NOI18N
+      return;
+    }
+    if (fromName.startsWith("positive") && toName.startsWith("nonPositive")) { // NOI18N
+      addError("FIX_Positive_NonPositive_Copy", copy); // NOI18N
+      return;
+    }
+    // # 135489
+    if (fromName.startsWith("negative") && toName.startsWith("nonNegative")) { // NOI18N
+      addError("FIX_Negative_NonNegative_Copy", copy); // NOI18N
+      return;
+    }
+    if (fromName.startsWith("negative") && toName.startsWith("positive")) { // NOI18N
+      addError("FIX_Negative_Positive_Copy", copy); // NOI18N
+      return;
+    }
+    if (fromName.startsWith("nonPositive") && toName.startsWith("positive")) { // NOI18N
+      addError("FIX_NonPositive_Positive_Copy", copy); // NOI18N
+      return;
+    }
+    if (fromName.startsWith("nonPositive") && toName.startsWith("nonNegative")) { // NOI18N
+      addWarning("FIX_NonPositive_NonNegative_Copy", copy); // NOI18N
+      return;
+    }
+    if (fromName.startsWith("nonNegative") && toName.startsWith("nonPositive")) { // NOI18N
+      addWarning("FIX_NonNegative_NonPositive_Copy", copy); // NOI18N
+      return;
+    }
+    // # 135489
+    if (isNumeric(fromName) && isNumeric(toName)) {
+      return;
+    }
+    Component fType = ValidationUtil.getBasedSimpleType(fromType);
+    Component tType = ValidationUtil.getBasedSimpleType(toType);
 
-    if (ValidationUtil.getBasedSimpleType(fromType) != ValidationUtil.getBasedSimpleType(toType)) {
-      addWarning("FIX_TYPE_IN_COPY", copy, getTypeName(fromType), getTypeName(toType)); // NOI18N
+    if (fType == tType) {
+      return;
+    }
+    String fTypeName = getTypeName(fType);
+    String tTypeName = getTypeName(tType);
+//out("  from based: " + fTypeName);
+//out("    to based: " + tTypeName);
+
+    if (fTypeName.equals("string") && tTypeName.equals("time")) { // NOI18N
+      // # 135079
+      addWarning("FIX_Time_in_copy", copy); // NOI18N
+    }
+    else {
+      addWarning("FIX_TYPE_IN_COPY", copy, fTypeName, tTypeName); // NOI18N
     }
   }
 
+  private boolean isNumeric(String value) {
+    return
+      value.equals("byte") || // NOI18N
+      value.equals("decimal") || // NOI18N
+      value.equals("double") || // NOI18N
+      value.equals("float") || // NOI18N
+      value.equals("int") || // NOI18N
+      value.equals("integer") || // NOI18N
+      value.equals("long") || // NOI18N
+      value.equals("negativeInteger") || // NOI18N
+      value.equals("nonNegativeInteger") || // NOI18N
+      value.equals("nonPositiveInteger") || // NOI18N
+      value.equals("positiveInteger") || // NOI18N
+      value.equals("short") || // NOI18N
+      value.equals("unsignedByte") || // NOI18N
+      value.equals("unsignedInt") || // NOI18N
+      value.equals("unsignedLong") || // NOI18N
+      value.equals("unsignedShort"); // NOI18N
+  }
+
   @Override
-  public void visit(To to)
-  {
+  public void visit(To to) {
     // # 125525
     checkPartnerLink(to);
     // # 131658

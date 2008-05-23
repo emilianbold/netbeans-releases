@@ -75,11 +75,13 @@ class OrigSurroundWithTryCatchFix implements Fix {
     private JavaSource javaSource;
     private List<TypeMirrorHandle> thandles;
     private TreePathHandle path;
+    private List<String> fqns;
 
-    public OrigSurroundWithTryCatchFix(JavaSource javaSource, List<TypeMirrorHandle> thandles, TreePathHandle path) {
+    public OrigSurroundWithTryCatchFix(JavaSource javaSource, List<TypeMirrorHandle> thandles, TreePathHandle path, List<String> fqns) {
         this.javaSource = javaSource;
         this.thandles = thandles;
         this.path = path;
+        this.fqns = fqns;
     }
 
     public String getText() {
@@ -210,5 +212,35 @@ class OrigSurroundWithTryCatchFix implements Fix {
         }
         
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final OrigSurroundWithTryCatchFix other = (OrigSurroundWithTryCatchFix) obj;
+        if (this.javaSource != other.javaSource && (this.javaSource == null || !this.javaSource.equals(other.javaSource))) {
+            return false;
+        }
+        if (!this.path.equals(other.path)) {
+            return false;
+        }
+        if (!this.fqns.equals(other.fqns)) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 23 * hash + (this.javaSource != null ? this.javaSource.hashCode() : 0);
+        return hash;
+    }
+    
+    
     
 }

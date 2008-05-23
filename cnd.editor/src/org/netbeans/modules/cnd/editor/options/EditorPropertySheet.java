@@ -206,6 +206,7 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
 	set.setDisplayName(getString("LBL_TabsAndIndents")); // NOI18N
         set.setShortDescription(getString("HINT_TabsAndIndents")); // NOI18N
 	set.put(new IntNodeProp(currentLanguage, preferences, EditorOptions.indentSize));
+	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.expandTabToSpaces));
 	set.put(new IntNodeProp(currentLanguage, preferences, EditorOptions.statementContinuationIndent));
 	set.put(new PreprocessorIndentProperty(currentLanguage, preferences, EditorOptions.indentPreprocessorDirectives));
 	set.put(new BooleanNodeProp(currentLanguage, preferences, EditorOptions.sharpAtStartLine));
@@ -352,9 +353,16 @@ public class EditorPropertySheet extends javax.swing.JPanel implements ActionLis
             //Because NPE in PropertySheet in 586 line: Arrays.asList(nodes)
             Logger.getLogger(PropertySheet.class.getName()).setLevel(Level.FINE);
         }
-        DummyNode[] dummyNodes = new DummyNode[1];
+        final DummyNode[] dummyNodes = new DummyNode[1];
         dummyNodes[0] = new DummyNode(sheet, "Sheet"); // NOI18N
-        holder.setNodes(dummyNodes);
+	// It seems the IDE tem cannot fix IZ#129743
+	// So do work around...
+        //holder.setNodes(dummyNodes);
+	SwingUtilities.invokeLater(new Runnable() {
+	    public void run() {
+	        holder.setNodes(dummyNodes);
+	    }
+	});
     
         preferences.addPreferenceChangeListener(this);
         lastSheetPreferences = preferences;

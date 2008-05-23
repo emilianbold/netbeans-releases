@@ -112,7 +112,7 @@ import org.openide.util.Exceptions;
  *
  * @author Tor Norbye
  */
-public class BracketCompleter implements org.netbeans.modules.gsf.api.BracketCompletion {
+public class BracketCompleter implements org.netbeans.modules.gsf.api.KeystrokeHandler {
     /** When true, automatically reflows comments that are being edited according to the rdoc
      * conventions as well as the right hand side margin
      */

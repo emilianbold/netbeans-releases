@@ -58,10 +58,10 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.groovy.editor.AstUtilities;
-import org.netbeans.modules.groovy.editor.hints.spi.EditList;
 import org.netbeans.modules.groovy.editor.lexer.LexUtilities;
 import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
 import org.netbeans.api.java.source.ui.ElementIcons;
+import org.netbeans.modules.gsf.api.EditList;
 
 /**
  *

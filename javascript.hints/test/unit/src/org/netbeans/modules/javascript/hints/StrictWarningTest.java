@@ -39,7 +39,7 @@
 
 package org.netbeans.modules.javascript.hints;
 
-import org.netbeans.modules.javascript.hints.spi.HintSeverity;
+import org.netbeans.modules.gsf.api.HintSeverity;
 
 /**
  *
@@ -61,7 +61,7 @@ public class StrictWarningTest extends HintTestBase {
             if (StrictWarning.RESERVED_KEYWORD.equals(key) || StrictWarning.TRAILING_COMMA.equals(key)) {
                 rule.setDefaultSeverity(HintSeverity.ERROR);
             }
-            findHints(this, rule, "testfiles/prototype.js", null);
+            checkHints(this, rule, "testfiles/prototype.js", null);
         }
     }
     
@@ -73,17 +73,29 @@ public class StrictWarningTest extends HintTestBase {
     
     public void testReservedKeyword() throws Exception {
         goldenfileSuffix = "";
-        findHints(this, new StrictWarning(StrictWarning.RESERVED_KEYWORD), "testfiles/reserved.js", null);
+        checkHints(this, new StrictWarning(StrictWarning.RESERVED_KEYWORD), "testfiles/reserved.js", null);
     }
 
     public void testNoFunctionSideEffects() throws Exception {
         goldenfileSuffix = "";
-        findHints(this, new StrictWarning(StrictWarning.NO_SIDE_EFFECTS), "testfiles/functions-sideeffects.js", null);
+        checkHints(this, new StrictWarning(StrictWarning.NO_SIDE_EFFECTS), "testfiles/functions-sideeffects.js", null);
+    }
+    
+    public void testSideEffects() throws Exception {
+        goldenfileSuffix = "";
+        // See 135144
+        checkHints(this, new StrictWarning(StrictWarning.NO_SIDE_EFFECTS), "testfiles/sideeffects.js", null);
+    }
+
+    // Test no false return warnings
+    public void testReturnAnalysis() throws Exception {
+        goldenfileSuffix = "";
+        checkHints(this, new StrictWarning(StrictWarning.ANON_NO_RETURN_VALUE), "testfiles/returns.js", null);
     }
     
     public void testTrailingComma() throws Exception {
         goldenfileSuffix = "";
-        findHints(this, new StrictWarning(StrictWarning.TRAILING_COMMA), "testfiles/trailingcomma.js", null);
+        checkHints(this, new StrictWarning(StrictWarning.TRAILING_COMMA), "testfiles/trailingcomma.js", null);
     }
     
     public void testFixTrailingComma() throws Exception {

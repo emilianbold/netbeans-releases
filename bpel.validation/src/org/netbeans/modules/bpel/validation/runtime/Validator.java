@@ -51,13 +51,15 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import org.netbeans.modules.bpel.model.api.references.BpelReference;
 import org.netbeans.modules.bpel.model.api.Activity;
 import org.netbeans.modules.bpel.model.api.Assign;
 import org.netbeans.modules.bpel.model.api.BpelContainer;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.Catch;
 import org.netbeans.modules.bpel.model.api.CatchAll;
+import org.netbeans.modules.bpel.model.api.Condition;
+import org.netbeans.modules.bpel.model.api.ConditionHolder;
+import org.netbeans.modules.bpel.model.api.ContentElement;
 import org.netbeans.modules.bpel.model.api.Compensate;
 import org.netbeans.modules.bpel.model.api.CompensationHandler;
 import org.netbeans.modules.bpel.model.api.Correlation;
@@ -68,11 +70,13 @@ import org.netbeans.modules.bpel.model.api.CorrelationsHolder;
 import org.netbeans.modules.bpel.model.api.CorrelationSet;
 import org.netbeans.modules.bpel.model.api.CreateInstanceActivity;
 import org.netbeans.modules.bpel.model.api.Documentation;
+import org.netbeans.modules.bpel.model.api.ElseIf;
 import org.netbeans.modules.bpel.model.api.ExtensibleAssign;
 import org.netbeans.modules.bpel.model.api.ExtensibleElements;
 import org.netbeans.modules.bpel.model.api.Flow;
 import org.netbeans.modules.bpel.model.api.ForEach;
 import org.netbeans.modules.bpel.model.api.From;
+import org.netbeans.modules.bpel.model.api.If;
 import org.netbeans.modules.bpel.model.api.Import;
 import org.netbeans.modules.bpel.model.api.Invoke;
 import org.netbeans.modules.bpel.model.api.LinkContainer;
@@ -85,6 +89,7 @@ import org.netbeans.modules.bpel.model.api.Process;
 import org.netbeans.modules.bpel.model.api.ReThrow;
 import org.netbeans.modules.bpel.model.api.Receive;
 import org.netbeans.modules.bpel.model.api.Reply;
+import org.netbeans.modules.bpel.model.api.RepeatUntil;
 import org.netbeans.modules.bpel.model.api.Scope;
 import org.netbeans.modules.bpel.model.api.SourceContainer;
 import org.netbeans.modules.bpel.model.api.TargetContainer;
@@ -92,6 +97,8 @@ import org.netbeans.modules.bpel.model.api.TerminationHandler;
 import org.netbeans.modules.bpel.model.api.To;
 import org.netbeans.modules.bpel.model.api.Validate;
 import org.netbeans.modules.bpel.model.api.Variable;
+import org.netbeans.modules.bpel.model.api.While;
+import org.netbeans.modules.bpel.model.api.references.BpelReference;
 import org.netbeans.modules.bpel.model.api.support.Initiate;
 import org.netbeans.modules.bpel.model.api.support.TBoolean;
 import org.netbeans.modules.xml.xam.Component;
@@ -111,29 +118,83 @@ public final class Validator extends BpelValidator {
   protected final SimpleBpelModelVisitor getVisitor() { return new SimpleBpelModelVisitorAdaptor() {
   
   @Override
-  public void visit(Process process) {
-      String queryLang = process.getQueryLanguage();
+  public void visit(ElseIf elseIf) {
+    checkCondition(elseIf.getCondition());
+  }
 
-      if (queryLang != null) {
-          addWarning(FIX_ATTRIBUTE, process, Process.QUERY_LANGUAGE);
+  @Override
+  public void visit(If _if) {
+    checkCondition(_if.getCondition());
+  }
+
+  @Override
+  public void visit(RepeatUntil repeatUntil) {
+    checkCondition(repeatUntil.getCondition());
+  }
+
+  @Override
+  public void visit(While _while) {
+    checkCondition(_while.getCondition());
+  }
+
+  // # 135079
+  private void checkCondition(Component condition) {
+    if ( !(condition instanceof ContentElement)) {
+      return;
+    }
+    String value = ((ContentElement) condition).getContent();
+
+    if (value == null) {
+      return;
+    }
+    if ( !containsDuration(value)) {
+      return;
+    }
+    if (
+      value.contains("<") || // NOI18N
+      value.contains(">") || // NOI18N
+      value.contains("<=") || // NOI18N
+      value.contains(">=") || // NOI18N
+      value.contains("=") || // NOI18N
+      value.contains("!=") // NOI18N
+    ) {
+      addError("FIX_Compare_Time", condition); // NOI18N
+    }
+  }
+
+  private boolean containsDuration(String value) {
+    for (int i=0; i <= 9; i++) {
+      if (value.contains("'P" + i)) { // NOI18N
+        return true;
       }
-      String expression = process.getExpressionLanguage();
-      
-      if (expression != null) {
-          addWarning(FIX_ATTRIBUTE, process, Process.EXPRESSION_LANGUAGE);
-      }
-      TBoolean value = process.getSuppressJoinFailure();
-      
-      if (value != null) {
-          addWarning(FIX_ATTRIBUTE, process, Process.SUPPRESS_JOIN_FAILURE);
-      }
-      value = process.getExitOnStandardFault();
-      
-      if (value != null) {
-          addWarning(FIX_ATTRIBUTE, process, Process.EXIT_ON_STANDART_FAULT);
-      }
-      checkValidURI(process, Process.QUERY_LANGUAGE, process.getQueryLanguage());
-      checkValidURI(process, Process.EXPRESSION_LANGUAGE, process.getExpressionLanguage());
+    }
+    return false;
+  }
+
+  @Override
+  public void visit(Process process) {
+    String queryLang = process.getQueryLanguage();
+
+    if (queryLang != null) {
+        addWarning(FIX_ATTRIBUTE, process, Process.QUERY_LANGUAGE);
+    }
+    String expression = process.getExpressionLanguage();
+    
+    if (expression != null) {
+        addWarning(FIX_ATTRIBUTE, process, Process.EXPRESSION_LANGUAGE);
+    }
+    TBoolean value = process.getSuppressJoinFailure();
+    
+    if (value != null) {
+        addWarning(FIX_ATTRIBUTE, process, Process.SUPPRESS_JOIN_FAILURE);
+    }
+    value = process.getExitOnStandardFault();
+    
+    if (value != null) {
+        addWarning(FIX_ATTRIBUTE, process, Process.EXIT_ON_STANDART_FAULT);
+    }
+    checkValidURI(process, Process.QUERY_LANGUAGE, process.getQueryLanguage());
+    checkValidURI(process, Process.EXPRESSION_LANGUAGE, process.getExpressionLanguage());
   }
   
   private void processCorrelationsHolder(CorrelationsHolder holder) {
@@ -228,23 +289,23 @@ public final class Validator extends BpelValidator {
   
   @Override
   public void visit(Invoke invoke) {
-      super.visit(invoke);
-      Catch[] catches = invoke.getCatches();
+    super.visit(invoke);
+    Catch[] catches = invoke.getCatches();
 
-      if (catches != null && catches.length > 0) {
-          addElementsInParentError(invoke, (BpelEntity[]) catches);
-      }
-      CatchAll catchAll = invoke.getCatchAll();
+    if (catches != null && catches.length > 0) {
+        addElementsInParentError(invoke, (BpelEntity[]) catches);
+    }
+    CatchAll catchAll = invoke.getCatchAll();
 
-      if (catchAll != null ) {
-          addElementsInParentError(invoke, catchAll);
-      }
-      if (invoke.getFromPartContaner() != null) {
-          addElementsInParentError(invoke, FROM_PARTS);
-      }
-      if (invoke.getToPartContaner() != null) {
-          addElementsInParentError(invoke, TO_PARTS);
-      }
+    if (catchAll != null ) {
+        addElementsInParentError(invoke, catchAll);
+    }
+    if (invoke.getFromPartContaner() != null) {
+        addElementsInParentError(invoke, FROM_PARTS);
+    }
+    if (invoke.getToPartContaner() != null) {
+        addElementsInParentError(invoke, TO_PARTS);
+    }
   }
   
   @Override
@@ -286,19 +347,19 @@ public final class Validator extends BpelValidator {
   }
   
   public void visit(To to) {
-      Documentation[] docs = to.getDocumentations();
-  
-      if (docs!= null && docs.length > 0) {
-          addElementsInParentError(to, (BpelEntity[]) docs);
-      }
-      if (to.getProperty () != null) {
-          addWarning(FIX_ATTRIBUTE, to, To.PROPERTY);
-      }
+    Documentation[] docs = to.getDocumentations();
+
+    if (docs!= null && docs.length > 0) {
+        addElementsInParentError(to, (BpelEntity[]) docs);
+    }
+    if (to.getProperty () != null) {
+        addWarning(FIX_ATTRIBUTE, to, To.PROPERTY);
+    }
 // # 123382
-//        if (to.getPartnerLink () != null) {
-//            addWarning(FIX_ATTRIBUTE, to, To.PARTNER_LINK);
-//        }
-      checkAbsenceExtensions( to );
+//  if (to.getPartnerLink () != null) {
+//      addWarning(FIX_ATTRIBUTE, to, To.PARTNER_LINK);
+//  }
+    checkAbsenceExtensions( to );
   }
   
   @Override
@@ -349,15 +410,12 @@ public final class Validator extends BpelValidator {
   
   @Override
   public void visit(Import bpelImport) {
-      
-      if( ! isAttributeValueSpecified(bpelImport.getLocation())) {
+      if ( !isAttributeValueSpecified(bpelImport.getLocation())) {
           addAttributeNeededForRuntime(bpelImport.LOCATION, bpelImport);
       }
-      
-      if( ! isAttributeValueSpecified(bpelImport.getNamespace())) {
+      if ( !isAttributeValueSpecified(bpelImport.getNamespace())) {
           addAttributeNeededForRuntime(bpelImport.NAMESPACE, bpelImport);
       }
-      
   }
   
   @Override
@@ -410,7 +468,7 @@ public final class Validator extends BpelValidator {
   
   @Override
   public void  visit(MessageExchangeContainer messageExchangeContainer) {
-          addElementError(messageExchangeContainer);
+    addElementError(messageExchangeContainer);
   }
 
   private void checkAbsenceExtensions( ExtensibleElements element ) {

@@ -39,9 +39,7 @@
 
 package org.netbeans.modules.ruby.testrunner.ui;
 
-import org.netbeans.modules.ruby.testrunner.ui.TestUnitHandlerFactory;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import junit.framework.TestCase;
 
 /**
@@ -51,7 +49,7 @@ import junit.framework.TestCase;
 public class TestUnitRecognizerTest extends TestCase {
     
     public void testTestStarted() {
-        TestUnitHandlerFactory.TestHandler handler = new TestUnitHandlerFactory.TestStartedHandler();
+        TestRecognizerHandler handler = new TestUnitHandlerFactory.TestStartedHandler();
         String output = "%TEST_STARTED% test_foo(TestFooBar)";
         Matcher matcher = handler.match(output);
         assertTrue(matcher.matches());
@@ -61,7 +59,7 @@ public class TestUnitRecognizerTest extends TestCase {
     }
 
     public void testTestFinished() {
-        TestUnitHandlerFactory.TestHandler handler = new TestUnitHandlerFactory.TestFinishedHandler();
+        TestRecognizerHandler handler = new TestUnitHandlerFactory.TestFinishedHandler();
         String output = "%TEST_FINISHED% time=0.008765 test_foo(TestFooBar)";
         Matcher matcher = handler.match(output);
         assertTrue(matcher.matches());
@@ -72,31 +70,59 @@ public class TestUnitRecognizerTest extends TestCase {
     }
 
     public void testTestFailed() {
-        TestUnitHandlerFactory.TestHandler handler = new TestUnitHandlerFactory.TestFailedHandler();
-        String output = "%TEST_FAILED% time=0.9981 Failure:test_foo(TestFooBar) [/a/path/to/somewhere/file.rb:17:]:  \"failed\"";
+        TestRecognizerHandler handler = new TestUnitHandlerFactory.TestFailedHandler();
+        String output = "%TEST_FAILED% time=0.007233 testname=test_positive_price(ProductTest) message=<false> is not true. location=./test/unit/product_test.rb:69:in `test_positive_price'";
         Matcher matcher = handler.match(output);
         assertTrue(matcher.matches());
         
-        assertEquals(4, matcher.groupCount());
-        assertEquals("0.9981", matcher.group(1));
-        assertEquals("test_foo", matcher.group(2));
-        assertEquals("TestFooBar", matcher.group(3));
+        assertEquals(5, matcher.groupCount());
+        assertEquals("0.007233", matcher.group(1));
+        assertEquals("test_positive_price", matcher.group(2));
+        assertEquals("ProductTest", matcher.group(3));
+        assertEquals("<false> is not true.", matcher.group(4));
+        assertEquals("./test/unit/product_test.rb:69:in `test_positive_price'", matcher.group(5));
     }
     
     public void testTestError() {
-        TestUnitHandlerFactory.TestHandler handler = new TestUnitHandlerFactory.TestErrorHandler();
-        String output = "%TEST_ERROR% time=0.01220 Error:test_foo(TestFooBar): RuntimeError: error ";
+        TestUnitHandlerFactory.TestErrorHandler handler = new TestUnitHandlerFactory.TestErrorHandler();
+        String output = "%TEST_ERROR% time=0.000883 testname=test_two_people_buying(DslUserStoriesTest) " +
+                "message=StandardError: No fixture with name 'ruby_book' found for table 'products' " +
+                "location=/usr/lib/ruby/gems/1.8/gems/activerecord-2.0.2/lib/active_record/fixtures.rb:894:in `products'%BR%" +
+                "/usr/lib/ruby/gems/1.8/gems/activerecord-2.0.2/lib/active_record/fixtures.rb:888:in `map'%BR%" +
+                "/usr/lib/ruby/gems/1.8/gems/activerecord-2.0.2/lib/active_record/fixtures.rb:888:in `products'%BR%" +
+                "./test/integration/dsl_user_stories_test.rb:55:in `setup_without_fixtures'%BR%" +
+                "/usr/lib/ruby/gems/1.8/gems/activerecord-2.0.2/lib/active_record/fixtures.rb:979:in `full_setup'%BR%" +
+                "/usr/lib/ruby/1.8/test/unit/testcase.rb:77:in `setup'%BR%" +
+                "/usr/lib/ruby/1.8/test/unit/testcase.rb:77:in `run'%BR%" +
+                "/usr/lib/ruby/gems/1.8/gems/actionpack-2.0.2/lib/action_controller/integration.rb:547:in `run'%BR%" +
+                "/usr/lib/ruby/1.8/test/unit/testsuite.rb:34:in `run'%BR%" +
+                "/usr/lib/ruby/1.8/test/unit/testsuite.rb:33:in `each'%BR%" +
+                "/usr/lib/ruby/1.8/test/unit/testsuite.rb:33:in `run'%BR%" +
+                "/usr/lib/ruby/1.8/test/unit/ui/testrunnermediator.rb:46:in `run_suite'%BR%" +
+                "/home/erno/work/elohopea/main-vara/ruby.testrunner/release/nb_test_mediator.rb:145:in `run_mediator'%BR%" +
+                "/home/erno/work/elohopea/main-vara/ruby.testrunner/release/nb_test_mediator.rb:140:in `each'%BR%" +
+                "/home/erno/work/elohopea/main-vara/ruby.testrunner/release/nb_test_mediator.rb:140:in `run_mediator'%BR%" +
+                "/home/erno/work/elohopea/main-vara/ruby.testrunner/release/nb_test_mediator.rb:206";
+
         Matcher matcher = handler.match(output);
         assertTrue(matcher.matches());
         
-        assertEquals(4, matcher.groupCount());
-        assertEquals("0.01220", matcher.group(1));
-        assertEquals("test_foo", matcher.group(2));
-        assertEquals("TestFooBar", matcher.group(3));
+        assertEquals(5, matcher.groupCount());
+        assertEquals("0.000883", matcher.group(1));
+        assertEquals("test_two_people_buying", matcher.group(2));
+        assertEquals("DslUserStoriesTest", matcher.group(3));
+        assertEquals("StandardError: No fixture with name 'ruby_book' found for table 'products'", matcher.group(4));
+        assertEquals("StandardError: No fixture with name 'ruby_book' found for table 'products'", matcher.group(4));
+        
+        String[] stackTrace = handler.getStackTrace();
+        assertEquals(13, stackTrace.length);
+        assertEquals("StandardError: No fixture with name 'ruby_book' found for table 'products'", stackTrace[0]);
+        assertEquals("/usr/lib/ruby/gems/1.8/gems/activerecord-2.0.2/lib/active_record/fixtures.rb:888:in `map'", stackTrace[2]);
+        assertEquals("/usr/lib/ruby/gems/1.8/gems/actionpack-2.0.2/lib/action_controller/integration.rb:547:in `run'", stackTrace[8]);
     }
     
     public void testSuiteFinished() {
-        TestUnitHandlerFactory.TestHandler handler = new TestUnitHandlerFactory.SuiteFinishedHandler();
+        TestRecognizerHandler handler = new TestUnitHandlerFactory.SuiteFinishedHandler();
         String output = "%SUITE_FINISHED% 0.124";
         Matcher matcher = handler.match(output);
         assertTrue(matcher.matches());
@@ -106,14 +132,14 @@ public class TestUnitRecognizerTest extends TestCase {
     }
     
     public void testSuiteStarted() {
-        TestUnitHandlerFactory.TestHandler handler = new TestUnitHandlerFactory.SuiteStartedHandler();
+        TestRecognizerHandler handler = new TestUnitHandlerFactory.SuiteStartedHandler();
         String output = "%SUITE_STARTED% 0 tests, 0 assertions, 0 failures, 0 errors";
         Matcher matcher = handler.match(output);
         assertTrue(matcher.matches());
     }
     
     public void testSuiteStarting() throws InterruptedException {
-        TestUnitHandlerFactory.TestHandler handler = new TestUnitHandlerFactory.SuiteStartingHandler();
+        TestRecognizerHandler handler = new TestUnitHandlerFactory.SuiteStartingHandler();
         String output = "%SUITE_STARTING% TestMe";
         Matcher matcher = handler.match(output);
         assertTrue(matcher.matches());

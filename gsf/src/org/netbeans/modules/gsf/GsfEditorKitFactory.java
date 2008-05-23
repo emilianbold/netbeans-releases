@@ -57,7 +57,7 @@ import javax.swing.text.Keymap;
 import javax.swing.text.TextAction;
 import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.fold.FoldUtilities;
-import org.netbeans.modules.gsf.api.BracketCompletion;
+import org.netbeans.modules.gsf.api.KeystrokeHandler;
 import org.netbeans.modules.gsf.api.EditorAction;
 import org.netbeans.modules.gsf.api.GsfLanguage;
 import org.netbeans.modules.gsf.api.OffsetRange;
@@ -131,7 +131,7 @@ public class GsfEditorKitFactory {
         return null;
     }
 
-    static BracketCompletion getBracketCompletion(Document doc, int offset) {
+    static KeystrokeHandler getBracketCompletion(Document doc, int offset) {
         BaseDocument baseDoc = (BaseDocument)doc;
         List<Language> list = LanguageRegistry.getInstance().getEmbeddedLanguages(baseDoc, offset);
         for (Language l : list) {
@@ -192,7 +192,7 @@ public class GsfEditorKitFactory {
                 public int[] findMatchingBlock(int offset, boolean simpleSearch)
                         throws BadLocationException {
                     // Do parenthesis matching, if applicable
-                    BracketCompletion bracketCompletion = getBracketCompletion(doc, offset);
+                    KeystrokeHandler bracketCompletion = getBracketCompletion(doc, offset);
                     if (bracketCompletion != null) {
                         OffsetRange range = bracketCompletion.findMatching(getDocument(), offset/*, simpleSearch*/);
                         if (range == OffsetRange.NONE) {
@@ -245,7 +245,9 @@ public class GsfEditorKitFactory {
 
             Collection<? extends EditorAction> extraActions = Lookup.getDefault().lookupAll(EditorAction.class);
             for (EditorAction action : extraActions) {
-                actions.add(new EditorActionWrapper(action));
+                if (action.appliesTo(mimeType)) {
+                    actions.add(new EditorActionWrapper(action));
+                }
             }
             
             actions.add(new InstantRenameAction());
@@ -280,7 +282,7 @@ public class GsfEditorKitFactory {
             protected void insertString(BaseDocument doc, int dotPos, Caret caret, String str,
                 boolean overwrite) throws BadLocationException {
                 if (completionSettingEnabled()) {
-                    BracketCompletion bracketCompletion = getBracketCompletion(doc, dotPos);
+                    KeystrokeHandler bracketCompletion = getBracketCompletion(doc, dotPos);
 
                     if (bracketCompletion != null) {
                         // TODO - check if we're in a comment etc. and if so, do nothing
@@ -311,7 +313,7 @@ public class GsfEditorKitFactory {
                     BaseDocument doc = (BaseDocument)document;
 
                     if (completionSettingEnabled()) {
-                        BracketCompletion bracketCompletion = getBracketCompletion(doc, dotPos);
+                        KeystrokeHandler bracketCompletion = getBracketCompletion(doc, dotPos);
 
                         if (bracketCompletion != null) {
                             try {
@@ -355,7 +357,7 @@ public class GsfEditorKitFactory {
             @Override
             protected Object beforeBreak(JTextComponent target, BaseDocument doc, Caret caret) {
                 if (completionSettingEnabled()) {
-                    BracketCompletion bracketCompletion = getBracketCompletion(doc, caret.getDot());
+                    KeystrokeHandler bracketCompletion = getBracketCompletion(doc, caret.getDot());
 
                     if (bracketCompletion != null) {
                         try {
@@ -412,7 +414,7 @@ public class GsfEditorKitFactory {
             protected void charBackspaced(BaseDocument doc, int dotPos, Caret caret, char ch)
                 throws BadLocationException {
                 if (completionSettingEnabled()) {
-                    BracketCompletion bracketCompletion = getBracketCompletion(doc, dotPos);
+                    KeystrokeHandler bracketCompletion = getBracketCompletion(doc, dotPos);
 
                     if (bracketCompletion != null) {
                         boolean success = bracketCompletion.charBackspaced(doc, dotPos, currentTarget, ch);
