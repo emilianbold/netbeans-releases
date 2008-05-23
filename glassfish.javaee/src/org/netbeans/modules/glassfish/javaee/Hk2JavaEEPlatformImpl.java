@@ -147,9 +147,10 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
                 return true;
             }
             if (TOOL_JSR109.equals(toolName)) {        //NOI18N
-                if ((jsr109lib != null) && (jsr109lib.exists())) {
-                    return true;
-                }
+                // FIXME ---> jsr109 is not supported currently
+//                if ((jsr109lib != null) && (jsr109lib.exists())) {
+//                    return true;
+//                }
                 return false;
             }
             if (TOOL_KEYSTORE.equals(toolName)) {      //NOI18N
