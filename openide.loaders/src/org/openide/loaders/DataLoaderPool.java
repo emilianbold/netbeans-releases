@@ -95,6 +95,7 @@ implements java.io.Serializable {
     private transient DataLoader[] loaderArray;
     /** cache of loaders for allLoaders method */
     private transient List<DataLoader> allLoaders;
+    private transient List<DataLoader> prefLoaders;
     /** counts number of changes in the loaders pool */
     private transient int cntchanges;
     
@@ -156,6 +157,7 @@ implements java.io.Serializable {
             cntchanges++;
             loaderArray = null;
             allLoaders = null;
+            prefLoaders = null;
 
             if (listeners == null) return;            
             list = listeners.getListenerList();
@@ -257,10 +259,16 @@ implements java.io.Serializable {
      * @return enumeration of loaders
      */
     public final Enumeration<DataLoader> allLoaders () {
+        return computeLoaders(true);
+    }
+    
+    final Enumeration<DataLoader> computeLoaders(boolean computeAll) {
         List<DataLoader> all;
+        List<DataLoader> pref;
         int oldcnt;
         synchronized (this) {
             all = this.allLoaders;
+            pref = this.prefLoaders;
             oldcnt = this.cntchanges;
         }
         
@@ -274,16 +282,18 @@ implements java.io.Serializable {
             while(en.hasMoreElements()) {
                 all.add(en.nextElement());
             }
+            pref = new ArrayList<DataLoader>(all);
             all.addAll(Arrays.asList(getDefaultLoaders()));
             
             synchronized (this) {
                 if (oldcnt == this.cntchanges) {
                     this.allLoaders = all;
+                    this.prefLoaders = pref;
                 }
             }
         }
         
-        return Collections.enumeration(all);
+        return Collections.enumeration(computeAll ? all : pref);
     }
     
     final Enumeration<DataObject.Factory> allLoaders(FileObject fo) {
@@ -317,27 +327,24 @@ implements java.io.Serializable {
         String mime = fo.getMIMEType();
         Enumeration<DataObject.Factory> mimeLoaders = new MimeEnum(mime);
         mimeLoaders = Enumerations.concat(mimeLoaders, new MimeEnum("content/unknown")); // NOI18N
+        
+        Enumeration<DataLoader> first = computeLoaders(false);
         try {
-            if (!fo.getFileSystem().isDefault()) {
-                return Enumerations.concat(mimeLoaders, allLoaders());
+            if (fo.getFileSystem().isDefault()) {
+                first = Enumerations.concat(
+                    first, 
+                    Enumerations.singleton(getFolderLoader())
+                );
             }
         } catch (FileStateInvalidException ex) {
             // OK
         }
 
-
-        ArrayList<DataLoader> all = new ArrayList<DataLoader>();
-        if (preferredLoader != null) {
-            all.add(preferredLoader);
-        }
-        all.addAll(Arrays.asList(getSystemLoaders()));
-        all.add(getFolderLoader());
-        
         return Enumerations.concat(
-            Collections.enumeration(all),
+            first,
             Enumerations.concat(
                 mimeLoaders, 
-                allLoaders()
+                Enumerations.array(getDefaultLoaders())
             )
         );
     }

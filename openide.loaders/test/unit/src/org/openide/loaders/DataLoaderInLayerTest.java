@@ -205,6 +205,26 @@ public class DataLoaderInLayerTest extends NbTestCase {
         }
     }
     
+    public void testManifestRegistrationsTakePreceedence() throws Exception {
+        DataLoader l1 = DataLoader.getLoader(SimpleUniFileLoader.class);
+        DataLoader l2 = DataLoader.getLoader(AntUniFileLoader.class);
+        DataLoader l3 = DataLoader.getLoader(XMLUniFileLoader.class);
+        addRemoveLoader(l1, true);
+        addRemoveLoader("text/ant+xml", l2, true);
+        AddLoaderManuallyHid.addRemoveLoader(l3, true);
+        try {
+            FileSystem lfs = createFS("folder4/file.ant");
+            FileObject fo = lfs.findResource("folder4/file.ant");
+            assertNotNull(fo);
+            DataObject dob = DataObject.find(fo);
+            assertEquals("Old registration of l3 takes preceedence", l3, dob.getLoader());
+        } finally {
+            addRemoveLoader(l1, false);
+            addRemoveLoader("text/ant+xml", l2, false);
+            AddLoaderManuallyHid.addRemoveLoader(l3, false);
+        }
+    }
+    
     public static final class XMLUniFileLoader extends SimpleUniFileLoader {
         @Override
         protected void initialize() {
