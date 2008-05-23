@@ -3,7 +3,6 @@
  *
  * Created on October 29, 2003, 4:06 PM
  */
-
 package org.netbeans.i18n.test.internationalize;
 
 import java.io.File;
@@ -23,23 +22,23 @@ import org.openide.filesystems.Repository;
  * @author  eh103527
  */
 public class Internationalize extends JellyTestCase {
-    
-    String TEST_PACKAGE="data";
-    String FILE_NAME="TestFrame";
-    
+
+    String TEST_PACKAGE = "data";
+    String FILE_NAME = "TestFrame";
+
     /**
      * Constructor - Creates new instance of this class
      */
-    public Internationalize() {
-        super("testInternationalize");
+    public Internationalize(String name) {
+        super(name);
     }
-    
+
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new Internationalize());
+        suite.addTest(new Internationalize("testInternationalize"));
         return suite;
     }
-    
+
     /**
      * This method contains body of test
      * @return void
@@ -51,34 +50,33 @@ public class Internationalize extends JellyTestCase {
         System.out.println("=   See testspec of i18n module:                                                  =");
         System.out.println("=   http://beetle.czech/modules/i18n/                                             =");
         System.out.println("===================================================================================");
-        
+
         FileSystem[] fileSystems = Repository.getDefault().toArray();
         String fileSystemName = null;
-        
-        for ( int ii = 0; ii < fileSystems.length; ii++ ) {
+
+        for (int ii = 0; ii < fileSystems.length; ii++) {
             FileObject file = fileSystems[ii].findResource(TEST_PACKAGE);
             if (file != null) {
-                System.out.println("> Used Filesystem = "+fileSystems[ii].getDisplayName());
+                System.out.println("> Used Filesystem = " + fileSystems[ii].getDisplayName());
                 fileSystemName = fileSystems[ii].getDisplayName();
             }
         }
-        
-        if ( fileSystemName == null )
-            throw new Exception("Must be mounted .../"+TEST_PACKAGE+" repository in explorer !");
-        
-        String path = fileSystemName.concat("|"+TEST_PACKAGE+"|"+FILE_NAME);
-        new Action("Tools","Tools|Internationalization|Internationalize").performPopup(new FilesystemNode(path));
+
+        if (fileSystemName == null) {
+            throw new Exception("Must be mounted .../" + TEST_PACKAGE + " repository in explorer !");
+        }
+
+        String path = fileSystemName.concat("|" + TEST_PACKAGE + "|" + FILE_NAME);
+        new Action("Tools", "Tools|Internationalization|Internationalize").performPopup(new FilesystemNode(path));
         new EventTool().waitNoEvent(2500);
         InternationalizeOperator io = new InternationalizeOperator();
 
     }
-    
+
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        NbTestSuite nbTestSuite = new NbTestSuite();
-        nbTestSuite.addTest(new Internationalize());
-        junit.textui.TestRunner.run(nbTestSuite);
+        junit.textui.TestRunner.run(suite);
     }
 }
