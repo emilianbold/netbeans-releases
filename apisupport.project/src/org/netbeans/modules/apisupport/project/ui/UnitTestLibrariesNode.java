@@ -88,7 +88,6 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
@@ -105,18 +104,14 @@ import org.openide.util.lookup.ProxyLookup;
  */
 final class UnitTestLibrariesNode extends AbstractNode {
     
-    static final String UNIT_TEST_LIBRARIES_NAME = "unit libraries"; // NOI18N
-    
-    private static final String DISPLAY_NAME = getMessage("LBL_unit_test_libraries");
-    
     private final Action[] actions;
     
-    public UnitTestLibrariesNode(final NbModuleProject project) {
-        super(new LibrariesChildren(project));
-        setName(UNIT_TEST_LIBRARIES_NAME);
-        setDisplayName(DISPLAY_NAME);
+    public UnitTestLibrariesNode(String testType, final NbModuleProject project) {
+        super(new LibrariesChildren(testType, project));
+        setName(testType);
+        setDisplayName(getMessage("LBL_" + testType + "_test_libraries"));
         actions = new Action[] {
-            new AddUnitTestDependencyAction(project)
+            new AddUnitTestDependencyAction(testType, project)
         };
     }
     
@@ -157,26 +152,20 @@ final class UnitTestLibrariesNode extends AbstractNode {
     }
     
     
-    private static final class LibrariesChildren extends Children.Keys<Object> implements AntProjectListener {
-        
-        private static final String JUNIT = "junit"; //NOI18N
-        
-        private static final String JUNIT_CNB = "org.netbeans.modules.junit";
-        
-        private static final String NBJUNIT = "nbjunit"; //NOI18N
-        
-        private static final String NBJUNIT_CNB = "org.netbeans.modules.nbjunit";
+    private static final class LibrariesChildren extends Children.Keys<TestModuleDependency> implements AntProjectListener {
         
         private static final String LIBRARIES_ICON =
                 "org/netbeans/modules/apisupport/project/ui/resources/libraries.gif"; // NOI18N
         
         static final Action REMOVE_DEPENDENCY_ACTION = new RemoveDependencyAction();
         
+        private final String testType;
         private final NbModuleProject project;
         
         private ImageIcon librariesIcon;
         
-        LibrariesChildren(final NbModuleProject project) {
+        LibrariesChildren(String testType, final NbModuleProject project) {
+            this.testType = testType;
             this.project = project;
         }
         
@@ -187,7 +176,7 @@ final class UnitTestLibrariesNode extends AbstractNode {
         }
         
         protected void removeNotify() {
-            setKeys(Collections.emptySet());
+            setKeys(Collections.<TestModuleDependency>emptySet());
             project.getHelper().removeAntProjectListener(this);
             super.removeNotify();
         }
@@ -197,16 +186,10 @@ final class UnitTestLibrariesNode extends AbstractNode {
                 ProjectManager.mutex().readAccess(new Mutex.ExceptionAction<Object>() {
                     public Object run() throws Exception {
                         ProjectXMLManager pxm = new ProjectXMLManager(project);
-                        final List<Object> keys = new ArrayList<Object>();
-                        if(isModuleInModuleList(JUNIT_CNB)) {
-                            keys.add(JUNIT);
-                        }
-                        if(isModuleInModuleList(NBJUNIT_CNB)) {
-                            keys.add(NBJUNIT);
-                        }
+                        final List<TestModuleDependency> keys = new ArrayList<TestModuleDependency>();
                         SortedSet<TestModuleDependency> deps = new TreeSet<TestModuleDependency>(TestModuleDependency.CNB_COMPARATOR);
                         Set<TestModuleDependency> d =  pxm.getTestDependencies(
-                                project.getModuleList()).get(TestModuleDependency.UNIT);
+                                project.getModuleList()).get(testType);
                         //draw only compile time deps
                         if(d != null){
                             for (TestModuleDependency tmd : d) {
@@ -234,69 +217,25 @@ final class UnitTestLibrariesNode extends AbstractNode {
             }
         }
         
-        private boolean isModuleInModuleList(String cnb){
-            ModuleEntry me = null;
-            boolean result = false;
-            try {
-                me = project.getModuleList().getEntry(cnb);
-                if(me != null) {
-                    File moduleJar = me.getJarLocation();
-                    result = moduleJar.exists();
-                    
-                }
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-            return result;
-        }
-        
-        
-        protected Node[] createNodes(Object key) {
+        protected Node[] createNodes(TestModuleDependency dep) {
             Node node = null;
-            //special nodes - junit, nbjunit
-            if (JUNIT.equals(key) || NBJUNIT.equals(key)) {
-                String cnb = null;
-                if (JUNIT.equals(key)) {
-                    cnb = JUNIT_CNB;
-                } else {
-                    cnb = NBJUNIT_CNB;
-                }
-                try {
-                    ModuleEntry me = project.getModuleList().getEntry(cnb);
-                    Icon icon = getLibrariesIcon(); // TODO a better icon for JUNIT
-                    File junitJar = me.getJarLocation();
-                    URL junitURL = FileUtil.urlForArchiveOrDir(junitJar);
-                    assert junitURL != null;
-                    FileObject junitFO = URLMapper.findFileObject(junitURL);
-                    String name = me.getLocalizedName();
-                    node = ActionFilterNode.create(
-                            PackageView.createPackageView(new LibrariesSourceGroup(junitFO, name, icon, icon)));
-                    node.setName(name); //node does not have a name by default
-                } catch (IOException ex) {
-                    ex.printStackTrace();
-                }
+            File srcF = dep.getModule().getSourceLocation();
+            if (srcF == null) {
+                File jarF = dep.getModule().getJarLocation();
+                URL jarRootURL = FileUtil.urlForArchiveOrDir(jarF);
+                assert jarRootURL != null;
+                FileObject root = URLMapper.findFileObject(jarRootURL);
+                ModuleEntry me = dep.getModule();
+                String name = me.getLocalizedName() + " - " + me.getCodeNameBase(); // NOI18N
+                Icon icon = getLibrariesIcon();
+                Node pvNode = ActionFilterNode.create(
+                        PackageView.createPackageView(new LibrariesSourceGroup(root, name, icon, icon)));
+                node = new LibraryDependencyNode(dep, testType, project, pvNode);
+                node.setName(me.getLocalizedName());
             } else {
-                TestModuleDependency dep = (TestModuleDependency) key;
-                File srcF = dep.getModule().getSourceLocation();
-                if (srcF == null) {
-                    File jarF = dep.getModule().getJarLocation();
-                    URL jarRootURL = FileUtil.urlForArchiveOrDir(jarF);
-                    assert jarRootURL != null;
-                    FileObject root = URLMapper.findFileObject(jarRootURL);
-                    ModuleEntry me = dep.getModule();
-                    String name = me.getLocalizedName() + " - " + me.getCodeNameBase(); // NOI18N
-                    Icon icon = getLibrariesIcon();
-                    Node pvNode = ActionFilterNode.create(
-                            PackageView.createPackageView(new LibrariesSourceGroup(root, name, icon, icon)));
-                    node = new LibraryDependencyNode(dep, project, pvNode);
-                    node.setName(me.getLocalizedName());
-                } else {
-                    node = new ProjectDependencyNode(dep, project);
-                    node.setName(dep.getModule().getLocalizedName());
-                }
-                
+                node = new ProjectDependencyNode(dep, testType, project);
+                node.setName(dep.getModule().getLocalizedName());
             }
-            
             assert node != null;
             return new Node[] { node };
         }
@@ -326,12 +265,14 @@ final class UnitTestLibrariesNode extends AbstractNode {
     private static final class ProjectDependencyNode extends AbstractNode {
         
         private final TestModuleDependency dep;
+        private final String testType;
         private final NbModuleProject project;
         private Action[] actions;
         
-        ProjectDependencyNode(final TestModuleDependency dep, final NbModuleProject project) {
+        ProjectDependencyNode(final TestModuleDependency dep, String testType, final NbModuleProject project) {
             super(Children.LEAF, Lookups.fixed(new Object[] { dep, project, dep.getModule()}));
             this.dep = dep;
+            this.testType = testType;
             this.project = project;
             ModuleEntry me = dep.getModule();
             setIconBaseWithExtension(NbModuleProject.NB_PROJECT_ICON_PATH);
@@ -346,7 +287,7 @@ final class UnitTestLibrariesNode extends AbstractNode {
                 // Open project action
                 result.add(SystemAction.get(LibrariesNode.OpenProjectAction.class));
                 // Edit dependency action
-                result.add(new EditTestDependencyAction(dep, project));
+                result.add(new EditTestDependencyAction(dep, testType, project));
                 // Remove dependency
                 result.add(LibrariesChildren.REMOVE_DEPENDENCY_ACTION);
                 actions = result.toArray(new Action[result.size()]);
@@ -363,16 +304,19 @@ final class UnitTestLibrariesNode extends AbstractNode {
     private static final class LibraryDependencyNode extends FilterNode {
         
         private final TestModuleDependency dep;
+        private final String testType;
         private final NbModuleProject project;
         private Action[] actions;
         
         LibraryDependencyNode(final TestModuleDependency dep,
+                String testType,
                 final NbModuleProject project, final Node original) {
             super(original, null, new ProxyLookup(new Lookup[] {
                 original.getLookup(),
                 Lookups.fixed(new Object[] { dep, project })
             }));
             this.dep = dep;
+            this.testType = testType;
             this.project = project;
             setShortDescription(UnitTestLibrariesNode.createHtmlDescription(dep));
         }
@@ -380,7 +324,7 @@ final class UnitTestLibrariesNode extends AbstractNode {
         public Action[] getActions(boolean context) {
             if (actions == null) {
                 Set<Action> result = new LinkedHashSet<Action>();
-                result.add(new EditTestDependencyAction(dep, project));
+                result.add(new EditTestDependencyAction(dep, testType, project));
                 Action[] superActions = super.getActions(false);
                 for (int i = 0; i < superActions.length; i++) {
                     if (superActions[i] instanceof FindAction) {
@@ -401,10 +345,12 @@ final class UnitTestLibrariesNode extends AbstractNode {
     
     static final class AddUnitTestDependencyAction extends AbstractAction {
         
+        private final String testType;
         private final NbModuleProject project;
         
-        AddUnitTestDependencyAction(final NbModuleProject project) {
-            super(getMessage("CTL_AddTestDependency"));
+        AddUnitTestDependencyAction(String testType, final NbModuleProject project) {
+            super(getMessage("CTL_AddTestDependency_" + testType));
+            this.testType = testType;
             this.project = project;
         }
         
@@ -413,7 +359,7 @@ final class UnitTestLibrariesNode extends AbstractNode {
             SingleModuleProperties props = SingleModuleProperties.getInstance(project);
             final AddModulePanel addPanel = new AddModulePanel(props);
             final DialogDescriptor descriptor = new DialogDescriptor(addPanel,
-                    getMessage("CTL_AddTestDependency"));
+                    getMessage("CTL_AddTestDependency_" + testType));
             descriptor.setHelpCtx(new HelpCtx(AddModulePanel.class));
             descriptor.setClosingOptions(new Object[0]);
             final Dialog d = DialogDisplayer.getDefault().createDialog(descriptor);
@@ -435,7 +381,7 @@ final class UnitTestLibrariesNode extends AbstractNode {
                 try {
                     for (int i = 0; i < newDeps.length; i++) {
                         // by default, add compile-time dependency
-                        pxm.addTestDependency(TestModuleDependency.UNIT
+                        pxm.addTestDependency(testType
                                 ,new TestModuleDependency(newDeps[i].getModuleEntry(), false, false, true));
                         ProjectManager.getDefault().saveProject(project);
                     }
@@ -474,7 +420,9 @@ final class UnitTestLibrariesNode extends AbstractNode {
                 ProjectXMLManager pxm = new ProjectXMLManager(project);
                 //remove dep one by one
                 for (TestModuleDependency rem : me.getValue()) {
+                    // XXX fix - should know what test type it is
                     pxm.removeTestDependency(TestModuleDependency.UNIT, rem.getModule().getCodeNameBase());
+                    pxm.removeTestDependency(TestModuleDependency.QA_FUNCTIONAL, rem.getModule().getCodeNameBase());
                 }
                 try {
                     ProjectManager.getDefault().saveProject(project);
@@ -513,11 +461,13 @@ final class UnitTestLibrariesNode extends AbstractNode {
     static final class EditTestDependencyAction extends AbstractAction {
         
         private final TestModuleDependency testDep;
+        private final String testType;
         private final NbModuleProject project;
         
-        EditTestDependencyAction(final TestModuleDependency testDep, final NbModuleProject project) {
+        EditTestDependencyAction(final TestModuleDependency testDep, String testType, final NbModuleProject project) {
             super(getMessage("CTL_EditDependency"));
             this.testDep = testDep;
+            this.testType = testType;
             this.project = project;
         }
         
@@ -534,9 +484,8 @@ final class UnitTestLibrariesNode extends AbstractNode {
                 TestModuleDependency editedDep = editTestPanel.getEditedDependency();
                 try {
                     ProjectXMLManager pxm = new ProjectXMLManager(project);
-                    final String UNIT = TestModuleDependency.UNIT;
-                    pxm.removeTestDependency(UNIT, testDep.getModule().getCodeNameBase());
-                    pxm.addTestDependency(UNIT, editedDep);
+                    pxm.removeTestDependency(testType, testDep.getModule().getCodeNameBase());
+                    pxm.addTestDependency(testType, editedDep);
                     ProjectManager.getDefault().saveProject(project);
                     
                     

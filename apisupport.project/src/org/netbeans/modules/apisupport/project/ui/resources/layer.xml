@@ -278,6 +278,9 @@ made subject to such option by the copyright holder.
                 <file name="org-netbeans-modules-apisupport-project-ui-SourcesNodeFactory.instance">
                     <attr name="position" intvalue="100"/>
                 </file>
+                <file name="org-netbeans-modules-apisupport-project-ui-TestDataDirsNodeFactory.instance">
+                    <attr name="position" intvalue="150"/>
+                </file>
                 <file name="org-netbeans-modules-apisupport-project-ui-ImportantFilesNodeFactory.instance">
                     <attr name="position" intvalue="200"/>
                 </file>
@@ -372,5 +375,4 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
-    
 </filesystem>

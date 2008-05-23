@@ -62,10 +62,9 @@ import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JLabelOperator;
-import org.netbeans.jemmy.operators.JRadioButtonOperator;
 import org.netbeans.jemmy.operators.JTabbedPaneOperator;
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.ide.ProjectSupport;
+import org.netbeans.test.ide.WatchProjects;
 
 /** Validation test of profiler.
  *
@@ -194,7 +193,7 @@ public class ProfilerValidation extends JellyTestCase {
         // wait project appear in projects view
         ProjectRootNode projectNode = new ProjectsTabOperator().getProjectRootNode(SAMPLE_PROJECT_NAME);
         // wait classpath scanning finished
-        ProjectSupport.waitScanFinished();
+        WatchProjects.waitScanFinished();
         projectNode.buildProject();
         MainWindowOperator.getDefault().waitStatusText("Finished Building");
         
