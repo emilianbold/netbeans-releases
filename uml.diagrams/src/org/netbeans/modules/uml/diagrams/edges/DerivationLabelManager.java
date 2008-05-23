@@ -45,9 +45,8 @@ import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IDerivation;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IUMLBinding;
-import org.netbeans.modules.uml.diagrams.nodes.EditableCompartmentWidget;
 import org.netbeans.modules.uml.drawingarea.LabelManager.LabelType;
-import org.netbeans.modules.uml.drawingarea.support.ModelElementBridge;
+import org.netbeans.modules.uml.drawingarea.view.UMLLabelWidget;
 
 
 /**
@@ -77,6 +76,7 @@ public class DerivationLabelManager extends BasicUMLLabelManager
         }
     }
 
+    @Override
     protected Widget createLabel(String name, LabelType type)
     {
         String text = "";
@@ -84,7 +84,7 @@ public class DerivationLabelManager extends BasicUMLLabelManager
         
         if(name.equals(BINDING) == true)
         {
-            LabelWidget label = new LabelWidget(getScene());
+            LabelWidget label = new UMLLabelWidget(getScene());
             
             label.setLabel(buildBindingLabel());
             retVal = label;

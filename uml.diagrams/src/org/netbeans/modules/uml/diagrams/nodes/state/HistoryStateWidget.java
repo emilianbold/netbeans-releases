@@ -45,6 +45,7 @@ import org.netbeans.api.visual.layout.LayoutFactory.SerialAlignment;
 import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.modules.uml.drawingarea.view.UMLLabelWidget;
 
 /**
  *
@@ -56,7 +57,7 @@ public class HistoryStateWidget extends CircleWidget
     {
         super(scene, radius, widgetID, displayName);
         
-        LabelWidget labelWidget = new LabelWidget(scene, label);
+        LabelWidget labelWidget = new UMLLabelWidget(scene, label);
         labelWidget.setForeground(null);
         setLayout(LayoutFactory.createHorizontalFlowLayout(SerialAlignment.CENTER, 0));
         Widget layer = new Widget(scene);

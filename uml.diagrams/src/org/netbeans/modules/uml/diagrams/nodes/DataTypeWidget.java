@@ -54,6 +54,7 @@ import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.core.constructs.IDataType;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.drawingarea.view.ResourceValue;
+import org.netbeans.modules.uml.drawingarea.view.UMLLabelWidget;
 import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
 
 /**
@@ -94,7 +95,7 @@ public class DataTypeWidget extends UMLNodeWidget implements PropertyChangeListe
         
         retVal.setLayout(LayoutFactory.createVerticalFlowLayout());
         
-        LabelWidget keywordWidget = new LabelWidget(getScene());
+        LabelWidget keywordWidget = new UMLLabelWidget(getScene());
         keywordWidget.setBackground((Paint)null); 
         keywordWidget.setForeground((Color)null);
         keywordWidget.setLabel("<<datatype>>"); //NOI18N

@@ -46,6 +46,7 @@ import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.drawingarea.LabelManager.LabelType;
 import org.netbeans.modules.uml.drawingarea.support.ModelElementBridge;
+import org.netbeans.modules.uml.drawingarea.view.UMLLabelWidget;
 
 
 /**
@@ -89,7 +90,7 @@ public class KeywordLabelManager extends BasicUMLLabelManager
         
         if(name.equals(KEYWORD) == true)
         {
-            retVal = new LabelWidget(getScene(), getKeyword());
+            retVal = new UMLLabelWidget(getScene(), getKeyword());
         }
         else
         {

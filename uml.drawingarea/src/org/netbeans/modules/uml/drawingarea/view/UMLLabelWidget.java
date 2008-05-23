@@ -62,6 +62,14 @@ public class UMLLabelWidget extends LabelWidget implements DiagramEdgeWriter, Di
         ResourceType.FONT,
         ResourceType.FOREGROUND }; 
 
+    public UMLLabelWidget(Scene scene) {
+        super(scene);
+    }
+    
+    public UMLLabelWidget(Scene scene, String label) {
+        super(scene, label);
+    }
+    
     public UMLLabelWidget(Scene scene, String propertyID, String displayName) {
         super(scene);
         init(propertyID, displayName);
@@ -72,6 +80,8 @@ public class UMLLabelWidget extends LabelWidget implements DiagramEdgeWriter, Di
         super(scene, label);
         init(propertyID, displayName);
     }
+     
+     
     
      private void init(String propertyID, String displayName)
      {
