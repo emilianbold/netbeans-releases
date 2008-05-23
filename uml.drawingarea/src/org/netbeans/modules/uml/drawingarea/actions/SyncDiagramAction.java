@@ -70,14 +70,25 @@ public class SyncDiagramAction extends AbstractAction
 
     public void actionPerformed(ActionEvent e)
     {
-        Set<IPresentationElement> elements = (Set<IPresentationElement>) scene.getObjects();
-        HashSet<IPresentationElement> set = new HashSet<IPresentationElement>(elements);
-        for (IPresentationElement pe : set)
+        // Since an object seen is only concerned about objects, we use a light
+        // weight bridge class to map labels to the associated object.  
+        // Therefore we can not assume all objects are presentation elements.
+        Set<Object> elements = (Set<Object>) scene.getObjects();
+        
+        // You have to use the tempSet in order to avoid a Concurrent
+        // Modification Exception
+        Set < Object > tempSet = new HashSet < Object > (elements);
+        for (Object obj : tempSet)
         {
-            Widget w = scene.findWidget(pe);
-            if (w instanceof UMLWidget)
+            if (obj instanceof IPresentationElement)
             {
-                ((UMLWidget) w).refresh();
+                IPresentationElement pe = (IPresentationElement) obj;
+                
+                Widget w = scene.findWidget(pe);
+                if (w instanceof UMLWidget)
+                {
+                    ((UMLWidget) w).refresh();
+                }
             }
         }
     }
