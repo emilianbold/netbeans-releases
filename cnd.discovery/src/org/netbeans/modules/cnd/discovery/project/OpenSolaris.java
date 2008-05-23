@@ -203,7 +203,7 @@ public class OpenSolaris extends KnownProject {
     private boolean createImpl() throws IOException{
         File proto = new File(root+"/proto"); // NOI18N
         if (!proto.exists()) {
-            if (TRACE) System.out.println("Iinstalling proto..."); //NOI18N
+            if (TRACE) System.out.println("Installing proto..."); //NOI18N
             for(InstallLine il : copyHeader){
                 il.install();
             }
@@ -605,9 +605,15 @@ public class OpenSolaris extends KnownProject {
 
                 private List<SourceFileProperties> getSourceFileProperties() {
                     List<SourceFileProperties> res = new ArrayList<SourceFileProperties>();
+                    HashSet<String> set = new HashSet<String>();
                     for (SourceFileProperties s : sources){
                         if (s.getCompilePath().startsWith(root)) {
-                            res.add(s);
+                            File file = new File(s.getItemPath());
+                            String p = FileUtil.normalizeFile(file).getAbsolutePath();
+                            if (!set.contains(p)) {
+                                res.add(s);
+                                set.add(p);
+                            }
                         }
                     }
                     return res;

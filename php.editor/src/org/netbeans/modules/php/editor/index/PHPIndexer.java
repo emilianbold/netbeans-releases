@@ -172,7 +172,7 @@ public class PHPIndexer implements Indexer {
     }
     
     public String getIndexVersion() {
-        return "0.4.1"; // NOI18N
+        return "0.4.2"; // NOI18N
     }
 
     public String getIndexerName() {
@@ -327,7 +327,7 @@ public class PHPIndexer implements Indexer {
                     Identifier id = (Identifier) invocation.getFunctionName().getName();
 
                     if ("define".equals(id.getName())) {
-                        if (invocation.getParameters().size() == 2) {
+                        if (invocation.getParameters().size() >= 2) {
                             Expression paramExpr = invocation.getParameters().get(0);
 
                             if (paramExpr instanceof Scalar) {

@@ -317,52 +317,59 @@ public class SchemaMultiViewSupport implements ViewComponentCookie, ShowCookie {
     }
     
     public boolean canView(View view, Component component) {
-        if(view!=null) {
-            switch(view) {
-                case SOURCE:
-                    if(!SchemaSourceMultiViewDesc.PREFERRED_ID.equals(
-                            getMultiviewActive()) ||
-                            !getActiveComponents().contains(component)) {
-                        if(component instanceof AXIComponent)
-                            return ((AXIComponent)component).getPeer()!=null;
-                        return true;
-                    } else return false;
-                case STRUCTURE:
-                    if(!(component instanceof SchemaComponent ||
-                            component instanceof AXIComponent))
-                        return false;
-                    if(component instanceof AXIComponent &&
-                            ((AXIComponent)component).getPeer()==null)
-                        return false;
-                    if(SchemaColumnViewMultiViewDesc.PREFERRED_ID.equals(
-                            getMultiviewActive()) &&
-                            getActiveComponents().contains(component)) {
-                        TopComponent activeTC = TopComponent.getRegistry().getActivated();
-                        SchemaDataObject sdobj = activeTC.getLookup().
-                                lookup(SchemaDataObject.class);
-                        return sdobj!=dobj;
-                    } else return true;
-                case DESIGN:
-                    if(SchemaABEViewMultiViewDesc.PREFERRED_ID.equals(
-                            getMultiviewActive()))
-                        return false;
-                    AXIModel axiModel = null;
-                    if(component instanceof AXIComponent) {
-                        axiModel = ((AXIComponent)component).getModel();
-                    } else if(component instanceof SchemaComponent) {
-                        axiModel = AXIModelFactory.getDefault().getModel(
-                                ((SchemaComponent)component).getModel());
-                        if(!axiModel.canView((SchemaComponent)component))
-                            return false;
-                    }
-                    if(axiModel!=null&&axiModel.getState()==AXIModel.State.VALID) {
-                        return true;
-                    }
-                    return false;
-                case SUPER:
+        if(view == null)
+            return false;
+        
+        //if there is no component, just switch the view.
+        //see http://www.netbeans.org/issues/show_bug.cgi?id=135537
+        if(component == null)
+            return true;
+        
+        switch(view) {
+            case SOURCE:
+                if(!SchemaSourceMultiViewDesc.PREFERRED_ID.equals(
+                        getMultiviewActive()) ||
+                        !getActiveComponents().contains(component)) {
+                    if(component instanceof AXIComponent)
+                        return ((AXIComponent)component).getPeer()!=null;
                     return true;
-            }
+                } else return false;
+            case STRUCTURE:
+                if(!(component instanceof SchemaComponent ||
+                        component instanceof AXIComponent))
+                    return false;
+                if(component instanceof AXIComponent &&
+                        ((AXIComponent)component).getPeer()==null)
+                    return false;
+                if(SchemaColumnViewMultiViewDesc.PREFERRED_ID.equals(
+                        getMultiviewActive()) &&
+                        getActiveComponents().contains(component)) {
+                    TopComponent activeTC = TopComponent.getRegistry().getActivated();
+                    SchemaDataObject sdobj = activeTC.getLookup().
+                            lookup(SchemaDataObject.class);
+                    return sdobj!=dobj;
+                } else return true;
+            case DESIGN:
+                if(SchemaABEViewMultiViewDesc.PREFERRED_ID.equals(
+                        getMultiviewActive()))
+                    return false;
+                AXIModel axiModel = null;
+                if(component instanceof AXIComponent) {
+                    axiModel = ((AXIComponent)component).getModel();
+                } else if(component instanceof SchemaComponent) {
+                    axiModel = AXIModelFactory.getDefault().getModel(
+                            ((SchemaComponent)component).getModel());
+                    if(!axiModel.canView((SchemaComponent)component))
+                        return false;
+                }
+                if(axiModel!=null&&axiModel.getState()==AXIModel.State.VALID) {
+                    return true;
+                }
+                return false;
+            case SUPER:
+                return true;
         }
         return false;
     }
+    
 }

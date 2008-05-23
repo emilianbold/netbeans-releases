@@ -305,6 +305,7 @@
                     if ( context == currentFirebugContext && currentFirebugContext ) {
                         releaseFirebugContext = true;
                         netBeansDebugger.onDestroy(netBeansDebugger);
+                        NetBeans.NetMonitor.destroyMonitor(context, browser);
                     }
                 },
 
@@ -315,6 +316,7 @@
                         currentFirebugContext = context;
                         releaseFirebugContext = false;
                         netBeansDebugger.onInit(netBeansDebugger);
+                        NetBeans.NetMonitor.initMonitor(context, browser);
                     }
                 },
 
