@@ -53,7 +53,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.RandomAccess;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.gsf.api.EmbeddingModel;
@@ -103,6 +102,7 @@ public class LanguageRegistry implements Iterable<Language> {
     /** Location in the system file system where languages are registered */
     private static final String FOLDER = "GsfPlugins";
     private List<Language> languages;
+    private Map<String,Language> mimeToLanguage;
     private boolean languagesInitialized;
     private Collection<? extends EmbeddingModel> embeddingModels;
 
@@ -135,21 +135,11 @@ public class LanguageRegistry implements Iterable<Language> {
      * or null if no such language is supported
      */
     public Language getLanguageByMimeType(@NonNull String mimeType) {
-        if (languages == null) {
+        if (mimeToLanguage == null) {
             return null;
         }
 
-        assert mimeType.equals(mimeType.toLowerCase()) : mimeType;
-        assert languages instanceof RandomAccess;
-
-        for (int i = 0, n = languages.size(); i < n; i++) {
-            Language language = languages.get(i);
-            if (language.getMimeType().equals(mimeType)) {
-                return language;
-            }
-        }
-
-        return null;
+        return mimeToLanguage.get(mimeType);
     }
 
     @CheckForNull
@@ -346,7 +336,7 @@ public class LanguageRegistry implements Iterable<Language> {
 
         String mimeType = (String) doc.getProperty("mimeType"); // NOI18N
         if (mimeType != null) {
-            Language language = LanguageRegistry.getInstance().getLanguageByMimeType(mimeType);
+            Language language = getLanguageByMimeType(mimeType);
             if (language != null && (result.size() == 0 || result.get(result.size()-1) != language))  {
                 result.add(language);
             }
@@ -363,13 +353,8 @@ public class LanguageRegistry implements Iterable<Language> {
         if (mimeType == null) {
             return false;
         }
-        for (Language language : this) {
-            if (mimeType.equals(language.getMimeType())) {
-                return true;
-            }
-        }
-
-        return false;
+        
+        return getLanguageByMimeType(mimeType) != null;
     }
     
     public String getLanguagesDisplayName() {
@@ -407,6 +392,15 @@ public class LanguageRegistry implements Iterable<Language> {
     private synchronized void initialize() {
         if (languages == null) {
             readSfs();
+            
+            if (languages != null) {
+                mimeToLanguage = new HashMap<String,Language>(2*languages.size());
+                for (Language language : languages) {
+                    String mimeType = language.getMimeType();
+                    assert mimeType.equals(mimeType.toLowerCase()) : mimeType;
+                    mimeToLanguage.put( mimeType,language);
+                }
+            }
 
             initializeLanguages();
         }
