@@ -40,43 +40,83 @@
 package org.netbeans.modules.soa.mappercore;
 
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import javax.swing.ActionMap;
-import javax.swing.InputMap;
-import javax.swing.JComponent;
+import javax.swing.Action;
 import javax.swing.KeyStroke;
+import javax.swing.text.DefaultEditorKit.CopyAction;
 import javax.swing.tree.TreePath;
+import org.netbeans.modules.soa.mappercore.model.Graph;
 import org.netbeans.modules.soa.mappercore.model.GraphSubset;
+import org.netbeans.modules.soa.mappercore.model.MapperModel;
+import org.netbeans.modules.soa.mappercore.model.Vertex;
+import org.openide.actions.PasteAction;
+import org.openide.util.actions.CallbackSystemAction;
+import org.openide.util.actions.SystemAction;
 
 /**
  *
  * @author AlexanderPermyakov
  */
-public class CopyCanvasAction extends MapperKeyboardAction {
-    CopyCanvasAction(Canvas canvas) {
-        super(canvas); 
+public class PasteMapperAction extends MapperKeyboardAction {
+        
+    PasteMapperAction(Canvas canvas) {
+        super(canvas);
+        putValue(NAME, "Paste");
+        putValue(ACCELERATOR_KEY, 
+                KeyStroke.getKeyStroke(KeyEvent.VK_V, KeyEvent.CTRL_DOWN_MASK));
+        
     }
     
     @Override
     public String getActionKey() {
-        return "Copy-Action";
+        return ((CallbackSystemAction)SystemAction.get(PasteAction.class)).getActionMapKey().toString();
     }
 
     @Override
     public KeyStroke[] getShortcuts() {
         return new KeyStroke[] {
-          KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.CTRL_DOWN_MASK),
-          KeyStroke.getKeyStroke(KeyEvent.VK_INSERT, KeyEvent.CTRL_DOWN_MASK),
-          KeyStroke.getKeyStroke(KeyEvent.VK_COPY, 0)
+          KeyStroke.getKeyStroke(KeyEvent.VK_V, KeyEvent.CTRL_DOWN_MASK),  
+          KeyStroke.getKeyStroke(KeyEvent.VK_INSERT, KeyEvent.SHIFT_DOWN_MASK),
+          KeyStroke.getKeyStroke(KeyEvent.VK_PASTE, 0)
         };
     }
 
     public void actionPerformed(ActionEvent e) {
+        GraphSubset graphSubset = canvas.getBufferCopyPaste();
+        if (graphSubset == null) { return; }
+        if (graphSubset.getVertexCount() < 1) { return; }
+        
         SelectionModel selectionModel = canvas.getSelectionModel();
         TreePath treePath = selectionModel.getSelectedPath();
         if (treePath == null) { return; }
         
-        canvas.setBufferCopyPaste(selectionModel.getSelectedSubset());
+        MapperModel model = canvas.getMapperModel();
+        Graph graph = selectionModel.getSelectedGraph();
+        
+        Vertex vertex = graph.getPrevVertex(null);
+        
+        int step = canvas.getStep();
+        int x;
+        int y;
+        
+        if (vertex == null) {
+            x = canvas.toGraph(canvas.getRendererContext().getCanvasVisibleMinX());
+            x = (int) (Math.round(((double) (x)) / step)) + 2;
+            y = 0;
+        } else {
+            x = vertex.getX() + vertex.getWidth() + 3;
+            y = 0;
+        }
+        
+        x = x + graphSubset.getMinYVertex().getX() - graphSubset.getMinXVertex().getX();
+                
+        graphSubset = model.copy(treePath, graphSubset, x, y);
+
+        if (graphSubset != null && !graphSubset.isEmpty()) {
+            selectionModel.setSelected(treePath, graphSubset);
+        }
+        
+        //canvas.setBufferCopyPaste(null);
     }
+
 }

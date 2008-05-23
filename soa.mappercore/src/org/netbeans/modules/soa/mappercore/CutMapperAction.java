@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -42,34 +42,48 @@ package org.netbeans.modules.soa.mappercore;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import javax.swing.KeyStroke;
+import javax.swing.tree.TreePath;
+import org.netbeans.modules.soa.mappercore.model.GraphSubset;
+import org.netbeans.modules.soa.mappercore.model.MapperModel;
 
 /**
  *
- * @author AlexanderPermyacov
+ * @author AlexanderPermyakov
  */
-public class LinkConnectDone extends MapperKeyboardAction {
+public class CutMapperAction extends MapperKeyboardAction {
     
-    LinkConnectDone(Canvas canvas) {
+    public CutMapperAction(Canvas canvas) {
         super(canvas);
+        putValue(NAME, "Cut");
+        putValue(ACCELERATOR_KEY, 
+                KeyStroke.getKeyStroke(KeyEvent.VK_X, KeyEvent.CTRL_DOWN_MASK));
     }
-    
     @Override
     public String getActionKey() {
-        return "link-connect-done";
+        return "Cut-Action";
     }
 
     @Override
     public KeyStroke[] getShortcuts() {
-        return new KeyStroke[] {KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0)};
+        return new KeyStroke[] {
+          KeyStroke.getKeyStroke(KeyEvent.VK_X, KeyEvent.CTRL_DOWN_MASK),
+          KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, KeyEvent.SHIFT_DOWN_MASK),
+          KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, KeyEvent.META_DOWN_MASK)
+        };
     }
-    
+
     public void actionPerformed(ActionEvent e) {
-        LinkTool linkTool = canvas.getLinkTool();
-        if (linkTool == null || !linkTool.isActive()) {
-            canvas.getRightTree().getActionEscape().actionPerformed(e);
-            return; 
-        }
-        linkTool.done();
+        SelectionModel selectionModel = canvas.getSelectionModel();
+        TreePath treePath = selectionModel.getSelectedPath();
+        if (treePath == null) { return; }
+        
+        
+        MapperModel model = canvas.getMapperModel();
+        GraphSubset graphSubset = selectionModel.getSelectedSubset();
+        if (graphSubset != null) {
+            canvas.setBufferCopyPaste(selectionModel.getSelectedSubset());
+            model.delete(treePath, graphSubset);
+        }    
     }
 
 }
