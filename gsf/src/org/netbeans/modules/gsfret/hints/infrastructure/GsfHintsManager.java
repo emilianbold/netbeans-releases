@@ -89,9 +89,11 @@ import org.openide.util.Exceptions;
  * @author Tor Norbye
  */
 public class GsfHintsManager extends HintsProvider.HintsManager {
-    public GsfHintsManager(String mimeType, HintsProvider provider) {
+    public GsfHintsManager(String mimeType, HintsProvider provider, Language language) {
         this.mimeType = mimeType;
         this.provider = provider;
+
+        this.id = language.getMimeType().replace('/', '_') + '_';
         
         // XXX Start listening on the rules forder. To handle module set changes.
         initErrors();
@@ -103,7 +105,7 @@ public class GsfHintsManager extends HintsProvider.HintsManager {
 
     @Override
     public boolean isEnabled(UserConfigurableRule rule) {
-        return HintsSettings.isEnabled(rule);
+        return HintsSettings.isEnabled(this, rule);
     }
 
     // The logger
@@ -122,9 +124,9 @@ public class GsfHintsManager extends HintsProvider.HintsManager {
     private static final String SELECTION = "/selection"; // NOI18N
 
     // Maps of registered rules
-    private Map<? extends Object,List<? extends ErrorRule>> errors = new HashMap<Object, List<? extends ErrorRule>>();
-    private Map<? extends Object,List<? extends AstRule>> hints = new HashMap<Object,List<? extends AstRule>>();
-    private Map<? extends Object,List<? extends AstRule>> suggestions = new HashMap<Object, List<? extends AstRule>>();
+    private Map<?,List<? extends ErrorRule>> errors = new HashMap<Object, List<? extends ErrorRule>>();
+    private Map<?,List<? extends AstRule>> hints = new HashMap<Object,List<? extends AstRule>>();
+    private Map<?,List<? extends AstRule>> suggestions = new HashMap<Object, List<? extends AstRule>>();
     private List<SelectionRule> selectionHints = new ArrayList<SelectionRule>();
 
     // Tree models for the settings GUI
@@ -134,13 +136,14 @@ public class GsfHintsManager extends HintsProvider.HintsManager {
     
     private String mimeType;
     private HintsProvider provider;
+    private String id;
 
 
-    public Map<? extends Object,List<? extends ErrorRule>> getErrors() {
+    public Map<?,List<? extends ErrorRule>> getErrors() {
         return errors;
     }
 
-    public Map<? extends Object,List<? extends AstRule>> getHints() {
+    public Map<?,List<? extends AstRule>> getHints() {
         return hints;
     }
 
@@ -148,14 +151,14 @@ public class GsfHintsManager extends HintsProvider.HintsManager {
         return selectionHints;
     }
 
-    public Map<? extends Object,List<? extends AstRule>> getHints(boolean onLine, RuleContext context) {
+    public Map<?,List<? extends AstRule>> getHints(boolean onLine, RuleContext context) {
         Map<Object, List<? extends AstRule>> result = new HashMap<Object, List<? extends AstRule>>();
         
-        for (Entry<? extends Object, List<? extends AstRule>> e : getHints().entrySet()) {
+        for (Entry<?, List<? extends AstRule>> e : getHints().entrySet()) {
             List<AstRule> nueRules = new LinkedList<AstRule>();
             
             for (AstRule r : e.getValue()) {
-                Preferences p = HintsSettings.getPreferences(r, null);
+                Preferences p = HintsSettings.getPreferences(this, r, null);
                 
                 if (p == null) {
                     if (!onLine) {
@@ -167,7 +170,7 @@ public class GsfHintsManager extends HintsProvider.HintsManager {
                     continue;
                 }
                 
-                if (HintsSettings.getSeverity(r) == HintSeverity.CURRENT_LINE_WARNING) {
+                if (HintsSettings.getSeverity(this, r) == HintSeverity.CURRENT_LINE_WARNING) {
                     if (onLine) {
                         if (!r.appliesTo(context)) {
                             continue;
@@ -192,7 +195,7 @@ public class GsfHintsManager extends HintsProvider.HintsManager {
         return result;
     }
     
-    public Map<? extends Object,List<? extends AstRule>> getSuggestions() {
+    public Map<?,List<? extends AstRule>> getSuggestions() {
         return suggestions;
     }
 
@@ -202,6 +205,10 @@ public class GsfHintsManager extends HintsProvider.HintsManager {
 
     public TreeModel getHintsTreeModel() {
         return hintsTreeModel;
+    }
+
+    public String getId() {
+        return id;
     }
 
     TreeModel getSuggestionsTreeModel() {
@@ -314,7 +321,7 @@ public class GsfHintsManager extends HintsProvider.HintsManager {
     }
 
     private static void categorizeErrorRules(List<Pair<Rule,FileObject>> rules,
-                                             Map<? extends Object,List<? extends ErrorRule>> dest,
+                                             Map<?,List<? extends ErrorRule>> dest,
                                              FileObject rootFolder,
                                              DefaultMutableTreeNode rootNode ) {
 
@@ -343,7 +350,7 @@ public class GsfHintsManager extends HintsProvider.HintsManager {
     }
 
     private static void categorizeAstRules( List<Pair<Rule,FileObject>> rules,
-                                             Map<? extends Object,List<? extends AstRule>> dest,
+                                             Map<?,List<? extends AstRule>> dest,
                                              FileObject rootFolder,
                                              DefaultMutableTreeNode rootNode ) {
 
@@ -467,7 +474,7 @@ public class GsfHintsManager extends HintsProvider.HintsManager {
         Rule rule = desc.getRule();
         HintSeverity severity;
         if (rule instanceof UserConfigurableRule) {
-            severity = HintsSettings.getSeverity((UserConfigurableRule)rule);
+            severity = HintsSettings.getSeverity(this, (UserConfigurableRule)rule);
         } else {
             severity = rule.getDefaultSeverity();
         }
@@ -579,9 +586,9 @@ public class GsfHintsManager extends HintsProvider.HintsManager {
     }
     
     /** For testing purposes only! */
-    public void setTestingRules(Map<? extends Object,List<? extends ErrorRule>> errors,
-            Map<? extends Object,List<? extends AstRule>> hints,
-            Map<? extends Object,List<? extends AstRule>> suggestions,
+    public void setTestingRules(Map<?,List<? extends ErrorRule>> errors,
+            Map<?,List<? extends AstRule>> hints,
+            Map<?,List<? extends AstRule>> suggestions,
             List<SelectionRule> selectionHints) {
         this.errors = errors;
         this.hints = hints;
