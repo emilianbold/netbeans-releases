@@ -46,14 +46,20 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import javax.swing.event.ChangeListener;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 
 /**
+ * Configuration manager which is able to maintain any number of sets of key-value pairs.
+ * Caller has to provide the config map (one can use {@link #createEmptyConfigs()} method).
+ * It is caller's responsibility to save configurations.
+ * <p>
+ * Deleted {@link Configuration} remains in map with the value equals to <code>null</code>.
  * @author Radek Matous, Tomas Mysik
  */
-public class ConfigManager {
+public final class ConfigManager {
     private static final String PROP_DISPLAY_NAME = "$label"; // NOI18N
 
     private final Map<String/*|null*/, Map<String, String/*|null*/>/*|null*/> configs;
@@ -73,6 +79,26 @@ public class ConfigManager {
         propertyNames = tmp.toArray(new String[tmp.size()]);
     }
 
+    /**
+     * Suitable for creating new, empty map for configurations. The default configuration is already present.
+     * @return empty map for configurations.
+     */
+    public static Map<String, Map<String, String>> createEmptyConfigs() {
+        Map<String, Map<String, String>> configs = new TreeMap<String, Map<String, String>>(new Comparator<String>() {
+            public int compare(String s1, String s2) {
+                return s1 != null ? (s2 != null ? s1.compareTo(s2) : 1) : (s2 != null ? -1 : 0);
+            }
+        });
+        // the default config has to be there even if it is not used
+        configs.put(null, null);
+        return configs;
+    }
+
+    /**
+     * {@link Comparator} suitable for {@link Configuration configuration} ordering according to
+     * the display name (locale-sensitive string comparison).
+     * @return {@link Comparator} for {@link Configuration configuration} ordering.
+     */
     public static Comparator<Configuration> getConfigurationComparator() {
         return new Comparator<Configuration>() {
             Collator coll = Collator.getInstance();
@@ -168,9 +194,11 @@ public class ConfigManager {
 
         public void delete() {
             synchronized (ConfigManager.this) {
+                // just "mark as deleted" (null) to be able to remove property file etc.
+                //configs.remove(getName());
+                //configErrors.remove(getName());
                 configs.put(getName(), null);
                 configErrors.put(getName(), null);
-                //configs.remove(getName());
                 markAsCurrentConfiguration(null);
             }
         }
