@@ -63,9 +63,11 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
     private DefaultTreeCellRenderer dr = new DefaultTreeCellRenderer();
     private JCheckBox renderer = new JCheckBox();
     private HintsPanelLogic logic;
+    private GsfHintsManager manager;
        
       
-    public HintsPanel(javax.swing.tree.TreeModel treeModel) {        
+    public HintsPanel(javax.swing.tree.TreeModel treeModel, GsfHintsManager manager) {        
+        this.manager = manager;
         initComponents();
         
         descriptionTextArea.setContentType("text/html"); // NOI18N
@@ -244,7 +246,7 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
         if ( logic != null ) {
             logic.disconnect();
         }
-        logic = new HintsPanelLogic();
+        logic = new HintsPanelLogic(manager);
         logic.connect(errorTree, severityComboBox, toProblemCheckBox, customizerPanel, descriptionTextArea);
     }
     
@@ -284,7 +286,7 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
             renderer.setText( treeRule.getDisplayName() );            
             
             Preferences node = logic.getCurrentPrefernces(treeRule);                        
-            renderer.setSelected( HintsSettings.isEnabled(treeRule, node));
+            renderer.setSelected( HintsSettings.isEnabled(manager, treeRule, node));
         }
         else {
             renderer.setText( value.toString() );
