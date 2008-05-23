@@ -64,6 +64,7 @@ import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.client.PropertiesClient;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.options.AnnotationExpression;
+import org.netbeans.modules.subversion.ui.diff.Setup;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.modules.versioning.util.Utils;
@@ -918,4 +919,16 @@ public class SvnUtils {
         }
         return nodes;
     }
+    
+    public static SVNRevision toSvnRevision(String revision) {
+        SVNRevision svnrevision;
+        if (Setup.REVISION_HEAD.equals(revision)) {
+            svnrevision = SVNRevision.HEAD;
+        } else {
+            svnrevision = new SVNRevision.Number(Long.parseLong(revision));
+        }
+        return svnrevision;
+    }
+            
+            
 }
