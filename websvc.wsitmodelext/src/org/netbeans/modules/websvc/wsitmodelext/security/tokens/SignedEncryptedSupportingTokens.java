@@ -39,30 +39,13 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.websvc.wsitconf.ui.nodes;
+package org.netbeans.modules.websvc.wsitmodelext.security.tokens;
 
-import org.netbeans.modules.xml.wsdl.model.Binding;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
+import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
 
 /**
  *
- * @author MartinG
+ * @author Martin Grebac
  */
-public class ServiceNode extends org.openide.nodes.AbstractNode {
-    
-    public ServiceNode( Binding binding) {
-        super(org.openide.nodes.Children.LEAF);
-        setDisplayName(NbBundle.getMessage(ServiceNode.class, "LBL_Section_Service", binding.getName()));
-    }
-
-    @Override
-    public HelpCtx getHelpCtx() {
-        return new HelpCtx(ServiceNode.class); //NOI18N
-    }
-    
-    public String getPanelId() {
-        return "service"; //NOI18N
-    }
-
-}    
+public interface SignedEncryptedSupportingTokens  extends ExtensibilityElement {
+}

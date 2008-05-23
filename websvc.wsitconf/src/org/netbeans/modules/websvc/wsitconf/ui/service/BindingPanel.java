@@ -59,9 +59,7 @@ import org.netbeans.modules.websvc.wsitconf.util.UndoCounter;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProprietarySecurityPolicyModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.TransportModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProfilesModelHelper;
-import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.RMMSModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.RMModelHelper;
-import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.RMSunModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityPolicyModelHelper;
 import org.netbeans.modules.xml.multiview.ui.SectionInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionView;
@@ -78,15 +76,18 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.websvc.wsitconf.spi.SecurityCheckerRegistry;
 import org.netbeans.modules.websvc.wsitconf.ui.service.subpanels.AdvancedSecurityPanel;
+import org.netbeans.modules.websvc.wsitconf.ui.service.subpanels.KerberosConfigPanel;
 import org.netbeans.modules.websvc.wsitconf.util.Util;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.PolicyModelHelper;
+import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.RMSequenceBinding;
+import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author Martin Grebac
  */
-public class ServicePanel extends SectionInnerPanel {
+public class BindingPanel extends SectionInnerPanel {
 
     private WSDLModel model;
     private Node node;
@@ -95,7 +96,7 @@ public class ServicePanel extends SectionInnerPanel {
     private Project project;
     private Service service;
     private JaxWsModel jaxwsmodel;
-
+    
     private String oldProfile;
 
     private boolean doNotSync = false;
@@ -108,7 +109,7 @@ public class ServicePanel extends SectionInnerPanel {
 
     private boolean updateServiceUrl = true;
     
-    public ServicePanel(SectionView view, Node node, Project p, Binding binding, UndoManager undoManager, JaxWsModel jaxwsmodel) {
+    public BindingPanel(SectionView view, Node node, Project p, Binding binding, UndoManager undoManager, JaxWsModel jaxwsmodel) {
         super(view);
         this.model = binding.getModel();
         this.project = p;
@@ -117,7 +118,7 @@ public class ServicePanel extends SectionInnerPanel {
         this.binding = binding;
         this.jaxwsmodel = jaxwsmodel;
         initComponents();
-
+        
         REGULAR = profileInfoField.getForeground();
         
         if (node != null) {
@@ -131,13 +132,7 @@ public class ServicePanel extends SectionInnerPanel {
         } else {
             isFromJava = false;
         }
-        
-        if ((!isFromJava) && 
-            (PolicyModelHelper.getPolicyUriForElement(binding) == null) &&
-            (ProfilesModelHelper.isServiceUrlHttps(binding))) {
-                updateServiceUrl = false; 
-        }
-        
+                
         mtomChBox.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         rmChBox.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         orderedChBox.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
@@ -153,7 +148,17 @@ public class ServicePanel extends SectionInnerPanel {
         jSeparator1.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         jSeparator2.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         jSeparator3.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
-
+        jSeparator4.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
+        cfgVersionLabel.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
+        cfgVersionCombo.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
+        
+        inSync = true;
+        for (ConfigVersion cfgVersion : ConfigVersion.values()) {
+            cfgVersionCombo.addItem(cfgVersion);
+        }
+        inSync = false;
+        
+        addImmediateModifier(cfgVersionCombo);
         addImmediateModifier(mtomChBox);
         addImmediateModifier(rmChBox);
         addImmediateModifier(orderedChBox);
@@ -165,6 +170,12 @@ public class ServicePanel extends SectionInnerPanel {
         addImmediateModifier(devDefaultsChBox);
 
         sync();
+
+        if ((!isFromJava) && 
+            (PolicyModelHelper.getPolicyUriForElement(binding) == null) &&
+            (ProfilesModelHelper.isServiceUrlHttps(binding))) {
+                updateServiceUrl = false; 
+        }
 
         model.addComponentListener(new ComponentListener() {
             public void valueChanged(ComponentEvent evt) {
@@ -194,10 +205,17 @@ public class ServicePanel extends SectionInnerPanel {
             }
         }
     }
+
+    private ConfigVersion getUserExpectedConfigVersion() {
+        return (ConfigVersion) cfgVersionCombo.getSelectedItem();
+    }
     
     private void sync() {
         inSync = true;
         
+        ConfigVersion configVersion = PolicyModelHelper.getConfigVersion(binding);
+        cfgVersionCombo.setSelectedItem(configVersion);
+                
         boolean mtomEnabled = TransportModelHelper.isMtomEnabled(binding);
         setChBox(mtomChBox, mtomEnabled);
         
@@ -207,9 +225,9 @@ public class ServicePanel extends SectionInnerPanel {
         boolean tcpEnabled = TransportModelHelper.isTCPEnabled(binding);
         setChBox(tcpChBox, tcpEnabled);
 
-        boolean rmEnabled = RMModelHelper.isRMEnabled(binding);
+        boolean rmEnabled = RMModelHelper.getInstance(configVersion).isRMEnabled(binding);
         setChBox(rmChBox, rmEnabled);        
-        setChBox(orderedChBox, RMSunModelHelper.isOrderedEnabled(binding));
+        setChBox(orderedChBox, RMModelHelper.getInstance(configVersion).isOrderedEnabled(binding));
 
         boolean stsEnabled = ProprietarySecurityPolicyModelHelper.isSTSEnabled(binding);
         setChBox(stsChBox, stsEnabled);
@@ -236,72 +254,60 @@ public class ServicePanel extends SectionInnerPanel {
     @Override
     public void setValue(javax.swing.JComponent source, Object value) {
         if (inSync) return;
+
+        ConfigVersion userExpectedCfgVersion = getUserExpectedConfigVersion();
+        if (source.equals(cfgVersionCombo)) {
+            PolicyModelHelper.setConfigVersion(binding, userExpectedCfgVersion);
+        }
         
+        RMModelHelper rmh = RMModelHelper.getInstance(userExpectedCfgVersion);
+
         if (source.equals(rmChBox)) {
-            if (rmChBox.isSelected()) {
-                if (!(RMModelHelper.isRMEnabled(binding))) {
-                    RMModelHelper.enableRM(binding);
-                    if (securityChBox.isSelected() && !ProfilesModelHelper.isSCEnabled(binding)) {
-                        ProfilesModelHelper.enableSecureConversation(binding, true);
+            boolean rm = rmh.isRMEnabled(binding);
+            if (rmChBox.isSelected() != rm) {
+                rmh.enableRM(binding, rmChBox.isSelected());
+                if (securityChBox.isSelected()) {
+                    if (!ProfilesModelHelper.isSCEnabled(binding)) {
+                        ProfilesModelHelper.getInstance(userExpectedCfgVersion).enableSecureConversation(binding, true);
                     }
-                }
-            } else {
-                if (RMModelHelper.isRMEnabled(binding)) {
-                    RMModelHelper.disableRM(binding);
-                    RMMSModelHelper.disableFlowControl(binding);
-                    RMSunModelHelper.disableOrdered(binding);
-                    RMModelHelper.setInactivityTimeout(binding, null);
-                    RMMSModelHelper.setMaxReceiveBufferSize(binding, null);
+                    if (ConfigVersion.CONFIG_1_2.equals(userExpectedCfgVersion) && rmChBox.isSelected()) {
+                        String profile = ProfilesModelHelper.getSecurityProfile(binding);
+                        if (ProfilesModelHelper.isSSLProfile(profile)) {
+                            RMSequenceBinding.SECURED_TRANSPORT.set(userExpectedCfgVersion, binding);
+                        } else {
+                            RMSequenceBinding.SECURED_TOKEN.set(userExpectedCfgVersion, binding);
+                        }
+                    }
                 }
             }
         }
 
         if (source.equals(orderedChBox)) {
-            if (orderedChBox.isSelected()) {
-                if (!(RMSunModelHelper.isOrderedEnabled(binding))) {
-                    RMSunModelHelper.enableOrdered(binding);
-                }
-            } else {
-                if (RMSunModelHelper.isOrderedEnabled(binding)) {
-                    RMSunModelHelper.disableOrdered(binding);
-                }
+            boolean ordered = rmh.isOrderedEnabled(binding);
+            if (orderedChBox.isSelected() != ordered) {
+                rmh.enableOrdered(binding, orderedChBox.isSelected());
             }
         }
 
         if (source.equals(mtomChBox)) {
-            if (mtomChBox.isSelected()) {
-                if (!(TransportModelHelper.isMtomEnabled(binding))) {
-                    TransportModelHelper.enableMtom(binding);
-                }
-            } else {
-                if (TransportModelHelper.isMtomEnabled(binding)) {
-                    TransportModelHelper.disableMtom(binding);
-                }
+            boolean mtom = TransportModelHelper.isMtomEnabled(binding);
+            if (mtomChBox.isSelected() != mtom) {
+                TransportModelHelper.enableMtom(binding, mtomChBox.isSelected());
             }            
         }
 
         if (source.equals(fiChBox)) {
-            if (!fiChBox.isSelected()) {
-                if (!(TransportModelHelper.isFIEnabled(binding))) {
-                    TransportModelHelper.enableFI(binding, true);
-                }
-            } else {
-                if (TransportModelHelper.isFIEnabled(binding)) {
-                    TransportModelHelper.enableFI(binding, false);
-                }
+            boolean fi = TransportModelHelper.isFIEnabled(binding);
+            if (fiChBox.isSelected() != fi) {
+                TransportModelHelper.enableFI(binding, fiChBox.isSelected());
             }
         }
         
         if (source.equals(tcpChBox)) {
-            boolean jsr109 = isJsr109Supported();
-            if (tcpChBox.isSelected()) {
-                if (!(TransportModelHelper.isTCPEnabled(binding))) {
-                    TransportModelHelper.enableTCP(service, isFromJava, binding, project, true, jsr109);
-                }
-            } else {
-                if (TransportModelHelper.isTCPEnabled(binding)) {
-                    TransportModelHelper.enableTCP(service, isFromJava, binding, project, false, jsr109);
-                }
+            boolean tcp = TransportModelHelper.isTCPEnabled(binding);
+            if (tcpChBox.isSelected() != tcp) {
+                boolean jsr109 = isJsr109Supported();
+                TransportModelHelper.enableTCP(service, isFromJava, binding, project, tcpChBox.isSelected(), jsr109);
             }
         }
         
@@ -323,7 +329,8 @@ public class ServicePanel extends SectionInnerPanel {
                     }
                 }
                 Util.unfillDefaults(project);
-                SecurityPolicyModelHelper.disableSecurity(binding, true);
+                SecurityPolicyModelHelper spmh = SecurityPolicyModelHelper.getInstance(getUserExpectedConfigVersion());
+                spmh.disableSecurity(binding, true);
             }
             oldProfile = profile;
         }
@@ -338,12 +345,9 @@ public class ServicePanel extends SectionInnerPanel {
         }
         
         if (source.equals(stsChBox)) {
-            if (stsChBox.isSelected()) {
-                ProprietarySecurityPolicyModelHelper.enableSTS(binding);
+            if (stsChBox.isSelected() != ProprietarySecurityPolicyModelHelper.isSTSEnabled(binding)) {
+                ProprietarySecurityPolicyModelHelper.enableSTS(binding, stsChBox.isSelected());
                 inSync = true; fillProfileCombo(true); inSync = false;
-            } else {
-                ProprietarySecurityPolicyModelHelper.disableSTS(binding);
-                inSync = true; fillProfileCombo(false); inSync = false;
             }
         }
 
@@ -351,7 +355,7 @@ public class ServicePanel extends SectionInnerPanel {
             doNotSync = true;
             try {
                 String profile = (String) profileCombo.getSelectedItem();
-                ProfilesModelHelper.setSecurityProfile(binding, profile, oldProfile, updateServiceUrl);
+                ProfilesModelHelper.getInstance(getUserExpectedConfigVersion()).setSecurityProfile(binding, profile, oldProfile, updateServiceUrl);
                 if (devDefaultsChBox.isSelected()) {
                     ProfilesModelHelper.setServiceDefaults(profile, binding, project);
                     if (ProfilesModelHelper.isSSLProfile(profile) && !ProfilesModelHelper.isSSLProfile(oldProfile)) {
@@ -441,14 +445,17 @@ public class ServicePanel extends SectionInnerPanel {
             profileComboLabel.setEnabled(secSelected);
             profileCombo.setEnabled(secSelected);
             profileInfoField.setEnabled(secSelected);
-            profConfigButton.setEnabled(secSelected);
 
             boolean keyStoreConfigRequired = true;
             boolean trustStoreConfigRequired = true;
+            boolean kerberosConfigRequired = false;
+            
             boolean validatorsRequired = true;
             boolean stsAllowed = true;
             
             boolean defaults = devDefaultsChBox.isSelected();
+
+            profConfigButton.setEnabled(secSelected && !defaults);
             
             if (secSelected) {                
 
@@ -459,18 +466,25 @@ public class ServicePanel extends SectionInnerPanel {
                 devDefaultsChBox.setEnabled(defaultsSupported);
                 
                 boolean isSSL = ProfilesModelHelper.isSSLProfile(secProfile);
-                if ((isSSL) || ComboConstants.PROF_KERBEROS.equals(secProfile)) {
+                if (isSSL) {
                     keyStoreConfigRequired = false;
                     trustStoreConfigRequired = false;
                 }
-
-                if (ComboConstants.PROF_SAMLHOLDER.equals(secProfile) || 
-                    ComboConstants.PROF_SAMLSENDER.equals(secProfile) ||
-                    ComboConstants.PROF_SAMLSSL.equals(secProfile)) {
-                        stsAllowed = false;
+                if (ComboConstants.PROF_KERBEROS.equals(secProfile)) {
+                    keyStoreConfigRequired = false;
+                    trustStoreConfigRequired = false;
+                    kerberosConfigRequired = true;
                 }
                 
-                if (gf) {
+                if (stsAllowed) {
+                    if (ComboConstants.PROF_SAMLHOLDER.equals(secProfile) || 
+                        ComboConstants.PROF_SAMLSENDER.equals(secProfile) ||
+                        ComboConstants.PROF_SAMLSSL.equals(secProfile)) {
+                            stsAllowed = false;
+                    }
+                }
+                
+                if (trustStoreConfigRequired && gf) {
                     if (ComboConstants.PROF_USERNAME.equals(secProfile) || 
                         ComboConstants.PROF_MUTUALCERT.equals(secProfile) ||
                         ComboConstants.PROF_ENDORSCERT.equals(secProfile) ||
@@ -483,14 +497,13 @@ public class ServicePanel extends SectionInnerPanel {
                         ) {
                             trustStoreConfigRequired = false;
                     }
+                }
                 
-                    if (!(ComboConstants.PROF_STSISSUED.equals(secProfile) || 
-                          ComboConstants.PROF_STSISSUEDCERT.equals(secProfile) ||
-                          ComboConstants.PROF_STSISSUEDENDORSE.equals(secProfile) ||
-                          ComboConstants.PROF_STSISSUEDSUPPORTING.equals(secProfile) ||
-                          ComboConstants.PROF_SAMLSSL.equals(secProfile) ||
-                          ComboConstants.PROF_SAMLHOLDER.equals(secProfile) ||
-                          ComboConstants.PROF_SAMLSENDER.equals(secProfile))) {
+                if (validatorsRequired) {
+                    if (ComboConstants.PROF_STSISSUED.equals(secProfile) || 
+                        ComboConstants.PROF_STSISSUEDCERT.equals(secProfile) ||
+                        ComboConstants.PROF_STSISSUEDSUPPORTING.equals(secProfile) ||
+                        ComboConstants.PROF_STSISSUEDENDORSE.equals(secProfile)) {
                             validatorsRequired = false;
                     }
                 }
@@ -511,9 +524,11 @@ public class ServicePanel extends SectionInnerPanel {
                 validatorsRequired = true;
             }
             
-            validatorsButton.setEnabled(secSelected && !defaults && validatorsRequired);
+            validatorsButton.setEnabled(secSelected && !gf && !defaults && validatorsRequired);
             keyButton.setEnabled(secSelected && keyStoreConfigRequired && !defaults);
             trustButton.setEnabled(secSelected && trustStoreConfigRequired && !defaults);
+            kerberosCfgButton.setEnabled(secSelected && kerberosConfigRequired && !defaults);
+            
         } else { // no wsit fun, there's access manager security selected
             profileComboLabel.setEnabled(false);
             profileCombo.setEnabled(false);
@@ -528,7 +543,7 @@ public class ServicePanel extends SectionInnerPanel {
             trustButton.setEnabled(false);
             profileInfoField.setEnabled(true);
             profileInfoField.setForeground(RED);
-            profileInfoField.setText(NbBundle.getMessage(ServicePanel.class, "TXT_AMSecSelected"));
+            profileInfoField.setText(NbBundle.getMessage(BindingPanel.class, "TXT_AMSecSelected"));
         }
     }
 
@@ -571,6 +586,10 @@ public class ServicePanel extends SectionInnerPanel {
         validatorsButton = new javax.swing.JButton();
         devDefaultsChBox = new javax.swing.JCheckBox();
         secAdvancedButton = new javax.swing.JButton();
+        kerberosCfgButton = new javax.swing.JButton();
+        cfgVersionLabel = new javax.swing.JLabel();
+        cfgVersionCombo = new javax.swing.JComboBox();
+        jSeparator4 = new javax.swing.JSeparator();
 
         addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
@@ -587,59 +606,59 @@ public class ServicePanel extends SectionInnerPanel {
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(mtomChBox, org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_Section_Service_mtomChBox")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(mtomChBox, org.openide.util.NbBundle.getMessage(BindingPanel.class, "LBL_Section_Service_mtomChBox")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(rmChBox, org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_Section_Service_rmChBox")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(rmChBox, org.openide.util.NbBundle.getMessage(BindingPanel.class, "LBL_Section_Service_rmChBox")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(securityChBox, org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_Section_Service_securityChBox")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(securityChBox, org.openide.util.NbBundle.getMessage(BindingPanel.class, "LBL_Section_Service_securityChBox")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(orderedChBox, org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_Section_Service_OrderedChBox")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(orderedChBox, org.openide.util.NbBundle.getMessage(BindingPanel.class, "LBL_Section_Service_OrderedChBox")); // NOI18N
 
         profileComboLabel.setLabelFor(profileCombo);
-        org.openide.awt.Mnemonics.setLocalizedText(profileComboLabel, org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_profileComboLabel")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(profileComboLabel, org.openide.util.NbBundle.getMessage(BindingPanel.class, "LBL_profileComboLabel")); // NOI18N
 
         profileCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "SAML Sender Vouches With Certificates", "Anonymous with Bilateral Certificates" }));
 
-        org.openide.awt.Mnemonics.setLocalizedText(rmAdvanced, org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_Section_Service_Advanced")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(rmAdvanced, org.openide.util.NbBundle.getMessage(BindingPanel.class, "LBL_Section_Service_Advanced")); // NOI18N
         rmAdvanced.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 rmAdvancedActionPerformed(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(stsChBox, org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_Section_Service_stsChBox")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(stsChBox, org.openide.util.NbBundle.getMessage(BindingPanel.class, "LBL_Section_Service_stsChBox")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(tcpChBox, org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_Section_Service_tcpChBox")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(tcpChBox, org.openide.util.NbBundle.getMessage(BindingPanel.class, "LBL_Section_Service_tcpChBox")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(keyButton, org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_keystoreButton")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(keyButton, org.openide.util.NbBundle.getMessage(BindingPanel.class, "LBL_keystoreButton")); // NOI18N
         keyButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 keyButtonActionPerformed(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(trustButton, org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_truststoreButton")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(trustButton, org.openide.util.NbBundle.getMessage(BindingPanel.class, "LBL_truststoreButton")); // NOI18N
         trustButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 trustButtonActionPerformed(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(stsConfigButton, org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_Section_Service_stsConfigButton")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(stsConfigButton, org.openide.util.NbBundle.getMessage(BindingPanel.class, "LBL_Section_Service_stsConfigButton")); // NOI18N
         stsConfigButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 stsConfigButtonActionPerformed(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(profConfigButton, org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_keyConfigButton")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(profConfigButton, org.openide.util.NbBundle.getMessage(BindingPanel.class, "LBL_keyConfigButton")); // NOI18N
         profConfigButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 profConfigButtonActionPerformed(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(fiChBox, org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_Section_Service_fiChBox")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(fiChBox, org.openide.util.NbBundle.getMessage(BindingPanel.class, "LBL_Section_Service_fiChBox")); // NOI18N
 
         profileInfoField.setEditable(false);
         profileInfoField.setLineWrap(true);
@@ -648,8 +667,6 @@ public class ServicePanel extends SectionInnerPanel {
         profileInfoField.setAutoscrolls(false);
         profileInfoField.setOpaque(false);
         jScrollPane1.setViewportView(profileInfoField);
-        profileInfoField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_Section_Service_ProfileDesc_ACSN")); // NOI18N
-        profileInfoField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_Section_Service_ProfileDesc_ACSD")); // NOI18N
 
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/websvc/wsitconf/ui/service/Bundle"); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(validatorsButton, bundle.getString("LBL_validatorsButton")); // NOI18N
@@ -659,7 +676,7 @@ public class ServicePanel extends SectionInnerPanel {
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(devDefaultsChBox, org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_Section_Service_Defaults")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(devDefaultsChBox, org.openide.util.NbBundle.getMessage(BindingPanel.class, "LBL_Section_Service_Defaults")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(secAdvancedButton, bundle.getString("LBL_Section_Service_Advanced")); // NOI18N
         secAdvancedButton.addActionListener(new java.awt.event.ActionListener() {
@@ -668,6 +685,15 @@ public class ServicePanel extends SectionInnerPanel {
             }
         });
 
+        org.openide.awt.Mnemonics.setLocalizedText(kerberosCfgButton, org.openide.util.NbBundle.getMessage(BindingPanel.class, "LBL_kerberosCfgButton")); // NOI18N
+        kerberosCfgButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                kerberosCfgButtonActionPerformed(evt);
+            }
+        });
+
+        org.openide.awt.Mnemonics.setLocalizedText(cfgVersionLabel, org.openide.util.NbBundle.getMessage(BindingPanel.class, "LBL_Section_Service_versionChBox")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -675,8 +701,13 @@ public class ServicePanel extends SectionInnerPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 486, Short.MAX_VALUE)
-                    .add(jSeparator2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 486, Short.MAX_VALUE)
+                    .add(jSeparator4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 489, Short.MAX_VALUE)
+                    .add(layout.createSequentialGroup()
+                        .add(cfgVersionLabel)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(cfgVersionCombo, 0, 344, Short.MAX_VALUE))
+                    .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 489, Short.MAX_VALUE)
+                    .add(jSeparator2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 489, Short.MAX_VALUE)
                     .add(mtomChBox)
                     .add(rmChBox)
                     .add(layout.createSequentialGroup()
@@ -695,34 +726,49 @@ public class ServicePanel extends SectionInnerPanel {
                             .add(layout.createSequentialGroup()
                                 .add(profileComboLabel)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(profileCombo, 0, 215, Short.MAX_VALUE)
-                                .add(6, 6, 6)
-                                .add(profConfigButton))))
+                                .add(profileCombo, 0, 234, Short.MAX_VALUE)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(profConfigButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 98, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
                     .add(layout.createSequentialGroup()
                         .add(17, 17, 17)
                         .add(devDefaultsChBox))
-                    .add(jSeparator3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 486, Short.MAX_VALUE)
+                    .add(layout.createSequentialGroup()
+                        .add(17, 17, 17)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(layout.createSequentialGroup()
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(validatorsButton)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(secAdvancedButton))
+                            .add(layout.createSequentialGroup()
+                                .add(keyButton)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(trustButton)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(kerberosCfgButton)))
+                        .add(109, 109, 109))
+                    .add(jSeparator3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 489, Short.MAX_VALUE)
+                    .add(tcpChBox)
                     .add(layout.createSequentialGroup()
                         .add(stsChBox)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(stsConfigButton))
-                    .add(tcpChBox)
-                    .add(fiChBox)
-                    .add(layout.createSequentialGroup()
-                        .add(17, 17, 17)
-                        .add(keyButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(trustButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(validatorsButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(secAdvancedButton)))
+                    .add(fiChBox))
                 .addContainerGap())
         );
+
+        layout.linkSize(new java.awt.Component[] {kerberosCfgButton, keyButton, secAdvancedButton, trustButton, validatorsButton}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
+
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(cfgVersionLabel)
+                    .add(cfgVersionCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jSeparator4, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(mtomChBox)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
@@ -749,8 +795,11 @@ public class ServicePanel extends SectionInnerPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(trustButton)
                     .add(keyButton)
-                    .add(validatorsButton)
-                    .add(secAdvancedButton))
+                    .add(kerberosCfgButton))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(secAdvancedButton)
+                    .add(validatorsButton))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(stsChBox)
@@ -764,42 +813,41 @@ public class ServicePanel extends SectionInnerPanel {
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        mtomChBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_Section_Service_mtomChBox_ACSN")); // NOI18N
-        mtomChBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_Section_Service_mtomChBox_ACSD")); // NOI18N
-        rmChBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_Section_Service_rmChBox_ACSN")); // NOI18N
-        rmChBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_Section_Service_rmChBox_ACSD")); // NOI18N
-        securityChBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_Section_Service_securityChBox_ACSN")); // NOI18N
-        securityChBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_Section_Service_securityChBox_ACSD")); // NOI18N
-        orderedChBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_Section_Service_OrderedChBox_ACSN")); // NOI18N
-        orderedChBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_Section_Service_OrderedChBox_ACSD")); // NOI18N
-        profileComboLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_profileComboLabel_ACSN")); // NOI18N
-        profileComboLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_profileComboLabel_ACSD")); // NOI18N
-        profileCombo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_Section_Service_ProfileCombo_ACSN")); // NOI18N
-        profileCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_Section_Service_ProfileCombo_ACSD")); // NOI18N
-        rmAdvanced.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_Section_Service_Advanced_ACSN")); // NOI18N
-        rmAdvanced.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_Section_Service_Advanced_ACSD")); // NOI18N
-        stsChBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_Section_Service_stsChBox_ACSN")); // NOI18N
-        stsChBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_Section_Service_stsChBox_ACSD")); // NOI18N
-        tcpChBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_Section_Service_tcpChBox_ACSN")); // NOI18N
-        tcpChBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_Section_Service_tcpChBox_ACSD")); // NOI18N
-        keyButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_keystoreButton_ACSN")); // NOI18N
-        keyButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_keystoreButton_ACSD")); // NOI18N
-        trustButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_truststoreButton_ACSN")); // NOI18N
-        trustButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_truststoreButton_ACSD")); // NOI18N
-        stsConfigButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_Section_Service_stsConfigButton_ACSN")); // NOI18N
-        stsConfigButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_Section_Service_stsConfigButton_ACSD")); // NOI18N
-        profConfigButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_keyConfigButton_ACSN")); // NOI18N
-        profConfigButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_keyConfigButton_ACSD")); // NOI18N
-        fiChBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_Section_Service_fiChBox_ACSN")); // NOI18N
-        fiChBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_Section_Service_fiChBox_ACSD")); // NOI18N
-        validatorsButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_validatorsButton_ACSN")); // NOI18N
-        validatorsButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_validatorsButton_ACSD")); // NOI18N
-        devDefaultsChBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_Section_Service_Defaults_ACSN")); // NOI18N
-        devDefaultsChBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_Section_Service_Defaults_ACSD")); // NOI18N
-        secAdvancedButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_Section_Service_Advanced_Security_ACSD")); // NOI18N
+        layout.linkSize(new java.awt.Component[] {kerberosCfgButton, keyButton, secAdvancedButton, trustButton, validatorsButton}, org.jdesktop.layout.GroupLayout.VERTICAL);
 
-        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ServicePanel.class, "Panel_ACSN")); // NOI18N
-        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServicePanel.class, "Panel_ACSD")); // NOI18N
+        mtomChBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(BindingPanel.class, "LBL_Section_Service_mtomChBox_ACSN")); // NOI18N
+        mtomChBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BindingPanel.class, "LBL_Section_Service_mtomChBox_ACSD")); // NOI18N
+        rmChBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(BindingPanel.class, "LBL_Section_Service_rmChBox_ACSN")); // NOI18N
+        rmChBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BindingPanel.class, "LBL_Section_Service_rmChBox_ACSD")); // NOI18N
+        securityChBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(BindingPanel.class, "LBL_Section_Service_securityChBox_ACSN")); // NOI18N
+        securityChBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BindingPanel.class, "LBL_Section_Service_securityChBox_ACSD")); // NOI18N
+        orderedChBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(BindingPanel.class, "LBL_Section_Service_OrderedChBox_ACSN")); // NOI18N
+        orderedChBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BindingPanel.class, "LBL_Section_Service_OrderedChBox_ACSD")); // NOI18N
+        profileComboLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(BindingPanel.class, "LBL_profileComboLabel_ACSN")); // NOI18N
+        profileComboLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BindingPanel.class, "LBL_profileComboLabel_ACSD")); // NOI18N
+        rmAdvanced.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(BindingPanel.class, "LBL_Section_Service_Advanced_ACSN")); // NOI18N
+        rmAdvanced.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BindingPanel.class, "LBL_Section_Service_Advanced_ACSD")); // NOI18N
+        stsChBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(BindingPanel.class, "LBL_Section_Service_stsChBox_ACSN")); // NOI18N
+        stsChBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BindingPanel.class, "LBL_Section_Service_stsChBox_ACSD")); // NOI18N
+        tcpChBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(BindingPanel.class, "LBL_Section_Service_tcpChBox_ACSN")); // NOI18N
+        tcpChBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BindingPanel.class, "LBL_Section_Service_tcpChBox_ACSD")); // NOI18N
+        keyButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(BindingPanel.class, "LBL_keystoreButton_ACSN")); // NOI18N
+        keyButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BindingPanel.class, "LBL_keystoreButton_ACSD")); // NOI18N
+        trustButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(BindingPanel.class, "LBL_truststoreButton_ACSN")); // NOI18N
+        trustButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BindingPanel.class, "LBL_truststoreButton_ACSD")); // NOI18N
+        stsConfigButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(BindingPanel.class, "LBL_Section_Service_stsConfigButton_ACSN")); // NOI18N
+        stsConfigButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BindingPanel.class, "LBL_Section_Service_stsConfigButton_ACSD")); // NOI18N
+        profConfigButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(BindingPanel.class, "LBL_keyConfigButton_ACSN")); // NOI18N
+        profConfigButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BindingPanel.class, "LBL_keyConfigButton_ACSD")); // NOI18N
+        fiChBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(BindingPanel.class, "LBL_Section_Service_fiChBox_ACSN")); // NOI18N
+        fiChBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BindingPanel.class, "LBL_Section_Service_fiChBox_ACSD")); // NOI18N
+        validatorsButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(BindingPanel.class, "LBL_validatorsButton_ACSN")); // NOI18N
+        validatorsButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BindingPanel.class, "LBL_validatorsButton_ACSD")); // NOI18N
+        devDefaultsChBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(BindingPanel.class, "LBL_Section_Service_Defaults_ACSN")); // NOI18N
+        devDefaultsChBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BindingPanel.class, "LBL_Section_Service_Defaults_ACSD")); // NOI18N
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(BindingPanel.class, "Panel_ACSN")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BindingPanel.class, "Panel_ACSD")); // NOI18N
         getAccessibleContext().setAccessibleParent(this);
     }// </editor-fold>//GEN-END:initComponents
 
@@ -813,9 +861,9 @@ private void formAncestorAdded(javax.swing.event.AncestorEvent evt) {//GEN-FIRST
 
     private void validatorsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_validatorsButtonActionPerformed
         String profile = (String) profileCombo.getSelectedItem();
-        ValidatorsPanel vPanel = new ValidatorsPanel(binding, project, profile); //NOI18N
+        ValidatorsPanel vPanel = new ValidatorsPanel(binding, project, profile, getUserExpectedConfigVersion()); //NOI18N
         DialogDescriptor dlgDesc = new DialogDescriptor(vPanel, 
-                NbBundle.getMessage(ServicePanel.class, "LBL_Validators_Panel_Title")); //NOI18N
+                NbBundle.getMessage(BindingPanel.class, "LBL_Validators_Panel_Title")); //NOI18N
         Dialog dlg = DialogDisplayer.getDefault().createDialog(dlgDesc);
         
         dlg.setVisible(true); 
@@ -836,9 +884,9 @@ private void formAncestorAdded(javax.swing.event.AncestorEvent evt) {//GEN-FIRST
         UndoCounter undoCounter = new UndoCounter();
         model.addUndoableEditListener(undoCounter);
 
-        STSConfigServicePanel stsConfigPanel = new STSConfigServicePanel(project, binding);
+        STSConfigServicePanel stsConfigPanel = new STSConfigServicePanel(project, binding, getUserExpectedConfigVersion());
         DialogDescriptor dlgDesc = new DialogDescriptor(stsConfigPanel, 
-                NbBundle.getMessage(ServicePanel.class, "LBL_STSConfig_Panel_Title")); //NOI18N
+                NbBundle.getMessage(BindingPanel.class, "LBL_STSConfig_Panel_Title")); //NOI18N
         Dialog dlg = DialogDisplayer.getDefault().createDialog(dlgDesc);
         
         dlg.setVisible(true); 
@@ -856,9 +904,9 @@ private void formAncestorAdded(javax.swing.event.AncestorEvent evt) {//GEN-FIRST
     private void trustButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_trustButtonActionPerformed
         boolean jsr109 = isJsr109Supported();
         String profile = (String) profileCombo.getSelectedItem();
-        TruststorePanel storePanel = new TruststorePanel(binding, project, jsr109, profile, false);
+        TruststorePanel storePanel = new TruststorePanel(binding, project, jsr109, profile, false, getUserExpectedConfigVersion());
         DialogDescriptor dlgDesc = new DialogDescriptor(storePanel, 
-                NbBundle.getMessage(ServicePanel.class, "LBL_Truststore_Panel_Title")); //NOI18N
+                NbBundle.getMessage(BindingPanel.class, "LBL_Truststore_Panel_Title")); //NOI18N
         Dialog dlg = DialogDisplayer.getDefault().createDialog(dlgDesc);
         
         dlg.setVisible(true); 
@@ -869,9 +917,9 @@ private void formAncestorAdded(javax.swing.event.AncestorEvent evt) {//GEN-FIRST
 
     private void keyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_keyButtonActionPerformed
         boolean jsr109 = isJsr109Supported();
-        KeystorePanel storePanel = new KeystorePanel(binding, project, jsr109, false);
+        KeystorePanel storePanel = new KeystorePanel(binding, project, jsr109, false, getUserExpectedConfigVersion());
         DialogDescriptor dlgDesc = new DialogDescriptor(storePanel, 
-                NbBundle.getMessage(ServicePanel.class, "LBL_Keystore_Panel_Title")); //NOI18N
+                NbBundle.getMessage(BindingPanel.class, "LBL_Keystore_Panel_Title")); //NOI18N
         Dialog dlg = DialogDisplayer.getDefault().createDialog(dlgDesc);
         
         dlg.setVisible(true); 
@@ -882,9 +930,9 @@ private void formAncestorAdded(javax.swing.event.AncestorEvent evt) {//GEN-FIRST
     }//GEN-LAST:event_keyButtonActionPerformed
 
     private void rmAdvancedActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rmAdvancedActionPerformed
-        AdvancedRMPanel advancedRMPanel = new AdvancedRMPanel(binding); //NOI18N
+        AdvancedRMPanel advancedRMPanel = new AdvancedRMPanel(binding, getUserExpectedConfigVersion()); //NOI18N
         DialogDescriptor dlgDesc = new DialogDescriptor(advancedRMPanel, 
-                NbBundle.getMessage(ServicePanel.class, "LBL_AdvancedRM_Title")); //NOI18N
+                NbBundle.getMessage(BindingPanel.class, "LBL_AdvancedRM_Title")); //NOI18N
         Dialog dlg = DialogDisplayer.getDefault().createDialog(dlgDesc);
         
         dlg.setVisible(true); 
@@ -895,9 +943,9 @@ private void formAncestorAdded(javax.swing.event.AncestorEvent evt) {//GEN-FIRST
     }//GEN-LAST:event_rmAdvancedActionPerformed
 
     private void secAdvancedButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_secAdvancedButtonActionPerformed
-        AdvancedSecurityPanel advancedSecPanel = new AdvancedSecurityPanel(binding); //NOI18N
+        AdvancedSecurityPanel advancedSecPanel = new AdvancedSecurityPanel(binding, getUserExpectedConfigVersion()); //NOI18N
         DialogDescriptor dlgDesc = new DialogDescriptor(advancedSecPanel, 
-                NbBundle.getMessage(ServicePanel.class, "LBL_AdvancedSec_Title")); //NOI18N
+                NbBundle.getMessage(BindingPanel.class, "LBL_AdvancedSec_Title")); //NOI18N
         Dialog dlg = DialogDisplayer.getDefault().createDialog(dlgDesc);
         
         dlg.setVisible(true); 
@@ -906,14 +954,30 @@ private void formAncestorAdded(javax.swing.event.AncestorEvent evt) {//GEN-FIRST
             advancedSecPanel.storeState();
         }
 }//GEN-LAST:event_secAdvancedButtonActionPerformed
+
+    private void kerberosCfgButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_kerberosCfgButtonActionPerformed
+        KerberosConfigPanel panel = new KerberosConfigPanel(binding, project, getUserExpectedConfigVersion());
+        DialogDescriptor dlgDesc = new DialogDescriptor(panel, 
+                NbBundle.getMessage(BindingPanel.class, "LBL_KerberosConfig_Panel_Title")); //NOI18N
+        Dialog dlg = DialogDisplayer.getDefault().createDialog(dlgDesc);
+        
+        dlg.setVisible(true); 
+        if (dlgDesc.getValue() == DialogDescriptor.OK_OPTION) {
+            panel.storeState();
+        }
+}//GEN-LAST:event_kerberosCfgButtonActionPerformed
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JComboBox cfgVersionCombo;
+    private javax.swing.JLabel cfgVersionLabel;
     private javax.swing.JCheckBox devDefaultsChBox;
     private javax.swing.JCheckBox fiChBox;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JSeparator jSeparator3;
+    private javax.swing.JSeparator jSeparator4;
+    private javax.swing.JButton kerberosCfgButton;
     private javax.swing.JButton keyButton;
     private javax.swing.JCheckBox mtomChBox;
     private javax.swing.JCheckBox orderedChBox;
@@ -931,5 +995,4 @@ private void formAncestorAdded(javax.swing.event.AncestorEvent evt) {//GEN-FIRST
     private javax.swing.JButton trustButton;
     private javax.swing.JButton validatorsButton;
     // End of variables declaration//GEN-END:variables
-    
 }

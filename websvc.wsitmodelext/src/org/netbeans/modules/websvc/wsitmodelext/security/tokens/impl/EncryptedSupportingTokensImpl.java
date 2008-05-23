@@ -39,20 +39,24 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.websvc.wsitmodelext.policy;
+package org.netbeans.modules.websvc.wsitmodelext.security.tokens.impl;
 
-import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
+import org.netbeans.modules.websvc.wsitmodelext.security.impl.SecurityPolicyComponentImpl;
+import org.netbeans.modules.websvc.wsitmodelext.security.tokens.EncryptedSupportingTokens;
+import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.w3c.dom.Element;
 
 /**
  *
  * @author Martin Grebac
  */
-public interface NestedPolicyAllowed extends ExtensibilityElement {
-
-    public static final String POLICY_PROPERTY = "POLICY";     //NOI18N
+public class EncryptedSupportingTokensImpl extends SecurityPolicyComponentImpl implements EncryptedSupportingTokens {
     
-    Policy getPolicy();
-    void setPolicy(Policy policy);
-    void removePolicy(Policy policy);
-
+    /**
+     * Creates a new instance of EncryptedSupportingTokens
+     */
+    public EncryptedSupportingTokensImpl(WSDLModel model, Element e) {
+        super(model, e);
+    }
+    
 }

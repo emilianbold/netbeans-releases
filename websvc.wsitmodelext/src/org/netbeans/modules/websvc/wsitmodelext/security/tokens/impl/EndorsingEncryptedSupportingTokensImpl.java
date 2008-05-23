@@ -39,41 +39,24 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.websvc.wsitmodelext.rm.impl;
+package org.netbeans.modules.websvc.wsitmodelext.security.tokens.impl;
 
-import org.netbeans.modules.websvc.wsitmodelext.rm.BaseRetransmissionInterval;
-import org.netbeans.modules.websvc.wsitmodelext.rm.RMQName;
+import org.netbeans.modules.websvc.wsitmodelext.security.impl.SecurityPolicyComponentImpl;
+import org.netbeans.modules.websvc.wsitmodelext.security.tokens.EndorsingEncryptedSupportingTokens;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
 import org.w3c.dom.Element;
 
 /**
  *
  * @author Martin Grebac
  */
-public class BaseRetransmissionIntervalImpl extends RMComponentImpl implements BaseRetransmissionInterval {
+public class EndorsingEncryptedSupportingTokensImpl extends SecurityPolicyComponentImpl implements EndorsingEncryptedSupportingTokens {
     
     /**
-     * Creates a new instance of BaseRetransmissionIntervalImpl
+     * Creates a new instance of EndorsingEncryptedSupportingTokensImpl
      */
-    public BaseRetransmissionIntervalImpl(WSDLModel model, Element e) {
+    public EndorsingEncryptedSupportingTokensImpl(WSDLModel model, Element e) {
         super(model, e);
     }
     
-    public BaseRetransmissionIntervalImpl(WSDLModel model){
-        this(model, createPrefixedElement(RMQName.BASERETRANSMISSIONINTERVAL.getQName(), model));
-    }
-
-    @Override
-    public void accept(WSDLVisitor visitor) {
-        visitor.visit(this);
-    }
-
-    public void setMilliseconds(String milliseconds) {
-        setAttribute(MILLISECONDS_PROPERTY, RMAttribute.MILLISECONDS, milliseconds);        
-    }
-
-    public String getMilliseconds() {
-        return getAttribute(RMAttribute.MILLISECONDS);
-    }
 }

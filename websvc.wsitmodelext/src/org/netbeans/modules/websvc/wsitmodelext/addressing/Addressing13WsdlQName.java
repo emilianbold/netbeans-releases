@@ -39,33 +39,62 @@
  * made subject to such option by the copyright holder.
  */
 
+
 package org.netbeans.modules.websvc.wsitmodelext.addressing;
 
-import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
-import org.netbeans.modules.xml.wsdl.model.spi.ElementFactory;
-import org.w3c.dom.Element;
-
 import javax.xml.namespace.QName;
-import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
-import org.netbeans.modules.websvc.wsitmodelext.addressing.impl.Addressing10WsdlUsingAddressingImpl;
+import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
 
+/**
+ *
+ * @author Martin Grebac
+ */
+public enum Addressing13WsdlQName {
+    ADDRESSING(createAddressingQName("Addressing")),                              //NOI18N
+    ANONYMOUSRESPONSES(createAddressingQName("AnonymousResponses"));                //NOI18N
 
-public class Addressing10WsdlFactories {
+    static final String A_NS_URI = 
+            "http://www.w3.org/2007/05/addressing/metadata";      //NOI18N
+    private static final String A_NS_PREFIX = "wsam";        //NOI18N
 
-    public static class UsingAddressingFactory extends ElementFactory {
-        @Override
-        public Set<QName> getElementQNames() {
-            return Collections.singleton(Addressing10WsdlQName.USINGADDRESSING.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new Addressing10WsdlUsingAddressingImpl(context.getModel()));
-        }
-
-        @Override
-        public WSDLComponent create(WSDLComponent context, Element element) {
-            return new Addressing10WsdlUsingAddressingImpl(context.getModel(), element);
-        }
+    static QName createAddressingQName(String localName){
+        return new QName(A_NS_URI, localName, A_NS_PREFIX);
     }
+    
+    Addressing13WsdlQName(QName name) {
+        qName = name;
+    }
+
+    public QName getQName(ConfigVersion cfgVersion) {
+        return new QName(getNamespaceUri(cfgVersion), qName.getLocalPart(), qName.getPrefix());
+    }
+
+    public static String getNamespaceUri(ConfigVersion cfgVersion) {
+        switch (cfgVersion) {
+            case CONFIG_1_0 : return A_NS_URI;
+        }
+        return null;
+    }
+    
+    public static ConfigVersion getConfigVersion(QName q) {
+        for (ConfigVersion cfgVersion : ConfigVersion.values()) {
+            if (getQNames(cfgVersion).contains(q)) {
+                return cfgVersion;
+            }
+        }
+        System.err.println("Not found config version for: " + q);
+        return null;
+    }
+    
+    public static Set<QName> getQNames(ConfigVersion cfgVersion) {
+        Set<QName> qnames = new HashSet<QName>();
+        for (Addressing13WsdlQName wq : values()) {
+            qnames.add(wq.getQName(cfgVersion));
+        }
+        return qnames;
+    }    
+    private final QName qName;
 
 }

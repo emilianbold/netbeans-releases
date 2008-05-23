@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.websvc.wsitmodelext.rm;
+package org.netbeans.modules.websvc.wsitmodelext.security.tokens;
 
 import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
 
@@ -47,5 +47,5 @@ import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
  *
  * @author Martin Grebac
  */
-public interface ExponentialBackoff extends ExtensibilityElement {
+public interface EndorsingEncryptedSupportingTokens  extends ExtensibilityElement {
 }

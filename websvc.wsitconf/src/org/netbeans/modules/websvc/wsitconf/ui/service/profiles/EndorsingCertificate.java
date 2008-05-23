@@ -41,13 +41,11 @@
 
 package org.netbeans.modules.websvc.wsitconf.ui.service.profiles;
 
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
 import org.netbeans.modules.websvc.wsitconf.spi.SecurityProfile;
 import org.netbeans.modules.websvc.wsitconf.spi.features.SecureConversationFeature;
-import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.AlgoSuiteModelHelper;
-import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProfilesModelHelper;
+import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
+import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.PolicyModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityPolicyModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityTokensModelHelper;
 import org.netbeans.modules.websvc.wsitmodelext.policy.Policy;
@@ -60,53 +58,24 @@ import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
  *
  * @author  Martin Grebac
  */
-public class EndorsingCertificate extends javax.swing.JPanel {
+public class EndorsingCertificate extends ProfileBaseForm {
 
-    private boolean inSync = false;
-
-    private WSDLComponent comp;
-    private SecurityProfile secProfile = null;
-    
     /**
      * Creates new form EndorsingCertificate
      */
     public EndorsingCertificate(WSDLComponent comp, SecurityProfile secProfile) {
-        super();
+        super(comp, secProfile);
         initComponents();
-        this.comp = comp;
-        this.secProfile = secProfile;
 
         inSync = true;
-        layoutCombo.removeAllItems();
-        layoutCombo.addItem(ComboConstants.STRICT);
-        layoutCombo.addItem(ComboConstants.LAX);
-        layoutCombo.addItem(ComboConstants.LAXTSFIRST);
-        layoutCombo.addItem(ComboConstants.LAXTSLAST);
-        
-        algoSuiteCombo.removeAllItems();
-        algoSuiteCombo.addItem(ComboConstants.BASIC256);
-        algoSuiteCombo.addItem(ComboConstants.BASIC192);
-        algoSuiteCombo.addItem(ComboConstants.BASIC128);
-        algoSuiteCombo.addItem(ComboConstants.TRIPLEDES);
-        algoSuiteCombo.addItem(ComboConstants.BASIC256RSA15);
-        algoSuiteCombo.addItem(ComboConstants.BASIC192RSA15);
-        algoSuiteCombo.addItem(ComboConstants.BASIC128RSA15);
-        algoSuiteCombo.addItem(ComboConstants.TRIPLEDESRSA15);
-        algoSuiteCombo.addItem(ComboConstants.BASIC256SHA256);
-        algoSuiteCombo.addItem(ComboConstants.BASIC192SHA256);
-        algoSuiteCombo.addItem(ComboConstants.BASIC128SHA256);
-        algoSuiteCombo.addItem(ComboConstants.TRIPLEDESSHA256);
-        algoSuiteCombo.addItem(ComboConstants.BASIC256SHA256RSA15);
-        algoSuiteCombo.addItem(ComboConstants.BASIC192SHA256RSA15);
-        algoSuiteCombo.addItem(ComboConstants.BASIC128SHA256RSA15);
-        algoSuiteCombo.addItem(ComboConstants.TRIPLEDESSHA256RSA15);
-        
+        fillLayoutCombo(layoutCombo);
+        fillAlgoSuiteCombo(algoSuiteCombo);       
         inSync = false;
         
         sync();
     }
     
-    private void sync() {
+    protected void sync() {
         inSync = true;
 
         WSDLComponent secBinding = null;
@@ -141,7 +110,7 @@ public class EndorsingCertificate extends javax.swing.JPanel {
         inSync = false;
     }
 
-    public void setValue(javax.swing.JComponent source) {
+    protected void setValue(javax.swing.JComponent source) {
 
         if (inSync) return;
 
@@ -157,71 +126,58 @@ public class EndorsingCertificate extends javax.swing.JPanel {
             sync();
         }
 
+        ConfigVersion configVersion = PolicyModelHelper.getConfigVersion(comp);
+        SecurityPolicyModelHelper spmh = SecurityPolicyModelHelper.getInstance(configVersion);
+        AlgoSuiteModelHelper asmh = AlgoSuiteModelHelper.getInstance(configVersion);
         if (secConv) {
             WSDLComponent bootPolicy = SecurityTokensModelHelper.getTokenElement(protToken, BootstrapPolicy.class);
             secBinding = SecurityPolicyModelHelper.getSecurityBindingTypeElement(bootPolicy);
             Policy p = (Policy) secBinding.getParent();
             if (source.equals(reqSigConfChBox)) {
-                SecurityPolicyModelHelper.enableRequireSignatureConfirmation(
+                spmh.enableRequireSignatureConfirmation(
                         SecurityPolicyModelHelper.getWss11(p), reqSigConfChBox.isSelected());
             }
             if (source.equals(derivedKeysChBox)) {
-                SecurityPolicyModelHelper.enableRequireDerivedKeys(protToken, derivedKeysChBox.isSelected());
+                spmh.enableRequireDerivedKeys(protToken, derivedKeysChBox.isSelected());
             }
         } else {
             secBinding = SecurityPolicyModelHelper.getSecurityBindingTypeElement(comp);
             if (source.equals(reqSigConfChBox)) {
-                SecurityPolicyModelHelper.enableRequireSignatureConfirmation(SecurityPolicyModelHelper.getWss11(comp), reqSigConfChBox.isSelected());
+                spmh.enableRequireSignatureConfirmation(SecurityPolicyModelHelper.getWss11(comp), reqSigConfChBox.isSelected());
             }
         }
         
         if (source.equals(encryptSignatureChBox)) {
-            SecurityPolicyModelHelper.enableEncryptSignature(secBinding, encryptSignatureChBox.isSelected());
+            spmh.enableEncryptSignature(secBinding, encryptSignatureChBox.isSelected());
             if (secConv) {
-                SecurityPolicyModelHelper.enableEncryptSignature(topSecBinding, encryptSignatureChBox.isSelected());
+                spmh.enableEncryptSignature(topSecBinding, encryptSignatureChBox.isSelected());
             }
         }
         if (source.equals(encryptOrderChBox)) {
-            SecurityPolicyModelHelper.enableEncryptBeforeSigning(secBinding, encryptOrderChBox.isSelected());
+            spmh.enableEncryptBeforeSigning(secBinding, encryptOrderChBox.isSelected());
             if (secConv) {
-                SecurityPolicyModelHelper.enableEncryptBeforeSigning(topSecBinding, encryptOrderChBox.isSelected());
+                spmh.enableEncryptBeforeSigning(topSecBinding, encryptOrderChBox.isSelected());
             }
         }
         if (source.equals(layoutCombo)) {
-            SecurityPolicyModelHelper.setLayout(secBinding, (String) layoutCombo.getSelectedItem());
+            spmh.setLayout(secBinding, (String) layoutCombo.getSelectedItem());
             if (secConv) {
-                SecurityPolicyModelHelper.setLayout(topSecBinding, (String) layoutCombo.getSelectedItem());
+                spmh.setLayout(topSecBinding, (String) layoutCombo.getSelectedItem());
             }
         }
         if (source.equals(algoSuiteCombo)) {
-            AlgoSuiteModelHelper.setAlgorithmSuite(secBinding, (String) algoSuiteCombo.getSelectedItem());
+            asmh.setAlgorithmSuite(secBinding, (String) algoSuiteCombo.getSelectedItem());
             if (secConv) {
-                AlgoSuiteModelHelper.setAlgorithmSuite(topSecBinding, (String) algoSuiteCombo.getSelectedItem());
+                asmh.setAlgorithmSuite(topSecBinding, (String) algoSuiteCombo.getSelectedItem());
             }
         }
         
         enableDisable();
     }
 
-    private void enableDisable() {
+    protected void enableDisable() {
         boolean secConvEnabled = secConvChBox.isSelected();
         derivedKeysChBox.setEnabled(secConvEnabled);
-    }
-    
-    private void setCombo(JComboBox combo, String item) {
-        if (item == null) {
-            combo.setSelectedIndex(0);
-        } else {
-            combo.setSelectedItem(item);
-        }
-    }
-
-    private void setChBox(JCheckBox chBox, Boolean enable) {
-        if (enable == null) {
-            chBox.setSelected(false);
-        } else {
-            chBox.setSelected(enable);
-        }
     }
     
     /** This method is called from within the constructor to

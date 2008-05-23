@@ -39,42 +39,56 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.websvc.wsitmodelext.security.algosuite.impl;
+package org.netbeans.modules.websvc.wsitmodelext.security.proprietary.impl;
 
-import org.netbeans.modules.websvc.wsitmodelext.security.algosuite.AlgorithmSuiteQName;
+import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.KerberosConfig;
+import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.ProprietaryPolicyQName;
+import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.ProprietarySecurityPolicyAttribute;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.wsdl.model.spi.GenericExtensibilityElement;
-import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
 import org.w3c.dom.Element;
 
 /**
  *
- * @author MartinGrebac
+ * @author Martin Grebac
  */
-public abstract class AlgorithmSuiteComponentImpl extends GenericExtensibilityElement {
+public class KerberosConfigImpl extends ProprietarySecurityPolicyComponentImpl implements KerberosConfig {
     
     /**
-     * Creates a new instance of AlgorithmSuiteComponentImpl
+     * Creates a new instance of KerberosConfigImpl
      */
-    public AlgorithmSuiteComponentImpl(WSDLModel model, Element e) {
+    public KerberosConfigImpl(WSDLModel model, Element e) {
         super(model, e);
     }
-
-    @Override
-    public abstract void accept(WSDLVisitor visitor);
     
-     @Override
-     protected String getNamespaceURI() {
-        return AlgorithmSuiteQName.SECPOLICY_UTILITY;
+    public void setVisibility(String vis) {
+        setAnyAttribute(ProprietaryPolicyQName.VISIBILITY.getQName(), vis);
     }
 
-    @Override
-    public String getAttribute(String attribute) {
-        throw new UnsupportedOperationException();
+    public String getVisibility() {
+        return getAnyAttribute(ProprietaryPolicyQName.VISIBILITY.getQName());
     }
     
-    @Override
-    public void setAttribute(String attribute, String value) {
-        throw new UnsupportedOperationException();
-    }    
+    public void setLoginModule(String loginModule) {
+        setAttribute(LOGINMODULE, ProprietarySecurityPolicyAttribute.LOGINMODULE, loginModule);
+    }
+
+    public String getLoginModule() {
+        return getAttribute(ProprietarySecurityPolicyAttribute.LOGINMODULE);
+    }
+
+    public void setServicePrincipal(String principal) {
+        setAttribute(SERVICEPRINCIPAL, ProprietarySecurityPolicyAttribute.SERVICEPRINCIPAL, principal);
+    }
+
+    public String getServicePrincipal() {
+        return getAttribute(ProprietarySecurityPolicyAttribute.SERVICEPRINCIPAL);
+    }
+
+    public void setCredentialDelegation(boolean credDelegation) {
+        setAttribute(CREDENTIALDELEGATION, ProprietarySecurityPolicyAttribute.CREDENTIALDELEGATION, Boolean.toString(credDelegation));
+    }
+
+    public boolean isCredentialDelegation() {
+        return Boolean.parseBoolean(getAttribute(ProprietarySecurityPolicyAttribute.CREDENTIALDELEGATION));
+    }
 }

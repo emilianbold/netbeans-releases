@@ -38,59 +38,22 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.websvc.wsitmodelext.rm.impl;
 
-package org.netbeans.modules.websvc.wsitmodelext.security.tokens.impl;
-
-import java.util.Collections;
-import org.netbeans.modules.websvc.wsitmodelext.policy.Policy;
-import org.netbeans.modules.websvc.wsitmodelext.security.tokens.TokensQName;
-import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
+import org.netbeans.modules.websvc.wsitmodelext.rm.DeliveryAssurance;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.wsdl.model.spi.GenericExtensibilityElement;
-import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
 import org.w3c.dom.Element;
 
 /**
  *
- * @author MartinGrebac
+ * @author Martin Grebac
  */
-public abstract class TokensComponentImpl extends GenericExtensibilityElement {
-    
+public class DeliveryAssuranceImpl extends RMComponentImpl implements DeliveryAssurance {
+
     /**
-     * Creates a new instance of TokensComponentImpl
+     * Creates a new instance of DeliveryAssuranceImpl
      */
-    public TokensComponentImpl(WSDLModel model, Element e) {
+    public DeliveryAssuranceImpl(WSDLModel model, Element e) {
         super(model, e);
-    }
-
-    @Override
-    public abstract void accept(WSDLVisitor visitor);
-    
-     @Override
-     protected String getNamespaceURI() {
-        return TokensQName.SECPOLICY_UTILITY;
-    }
-
-    @Override
-    public String getAttribute(String attribute) {
-        throw new UnsupportedOperationException();
-    }
-    
-    @Override
-    public void setAttribute(String attribute, String value) {
-        throw new UnsupportedOperationException();
-    }    
-
-    public void setPolicy(Policy policy) {
-        java.util.List<Class<? extends WSDLComponent>> classes = Collections.emptyList();
-        setChild(Policy.class, Policy.POLICY_PROPERTY, policy, classes);
-    }
-
-    public Policy getPolicy() {
-        return getChild(Policy.class);
-    }
-
-    public void removePolicy(Policy policy) {
-        removeChild(Policy.POLICY_PROPERTY, policy);
     }
 }

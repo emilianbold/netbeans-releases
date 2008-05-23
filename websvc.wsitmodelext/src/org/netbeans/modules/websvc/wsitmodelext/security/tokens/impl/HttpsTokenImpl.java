@@ -42,17 +42,16 @@
 package org.netbeans.modules.websvc.wsitmodelext.security.tokens.impl;
 
 import org.netbeans.modules.websvc.wsitmodelext.security.SecurityPolicyAttribute;
+import org.netbeans.modules.websvc.wsitmodelext.security.impl.SecurityPolicyComponentImpl;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.HttpsToken;
-import org.netbeans.modules.websvc.wsitmodelext.security.tokens.TokensQName;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
 import org.w3c.dom.Element;
 
 /**
  *
  * @author Martin Grebac
  */
-public class HttpsTokenImpl extends TokensComponentImpl implements HttpsToken {
+public class HttpsTokenImpl extends SecurityPolicyComponentImpl implements HttpsToken {
     
     /**
      * Creates a new instance of HttpsTokenImpl
@@ -61,15 +60,6 @@ public class HttpsTokenImpl extends TokensComponentImpl implements HttpsToken {
         super(model, e);
     }
     
-    public HttpsTokenImpl(WSDLModel model){
-        this(model, createPrefixedElement(TokensQName.HTTPSTOKEN.getQName(), model));
-    }
-
-    @Override
-    public void accept(WSDLVisitor visitor) {
-        visitor.visit(this);
-    }
-
     public void setRequireClientCertificate(boolean require) {
         setAttribute(REQUIRECLIENTCERTIFICATE, SecurityPolicyAttribute.REQUIRECLIENTCERTIFICATE, Boolean.toString(require));        
     }

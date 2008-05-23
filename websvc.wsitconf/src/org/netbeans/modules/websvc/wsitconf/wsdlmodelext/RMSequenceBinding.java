@@ -39,61 +39,61 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.websvc.wsitconf.ui.service;
+package org.netbeans.modules.websvc.wsitconf.wsdlmodelext;
 
-import javax.swing.undo.UndoManager;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
-import org.netbeans.modules.xml.multiview.ui.SectionInnerPanel;
-import org.netbeans.modules.xml.multiview.ui.SectionView;
-import org.netbeans.modules.xml.multiview.ui.ToolBarDesignEditor;
+import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
+import javax.xml.namespace.QName;
+import org.netbeans.modules.websvc.wsitmodelext.rm.RMQName;
+import org.netbeans.modules.websvc.wsitmodelext.rm.SequenceSTR;
+import org.netbeans.modules.websvc.wsitmodelext.rm.SequenceTransportSecurity;
 import org.netbeans.modules.xml.wsdl.model.Binding;
-import org.netbeans.modules.xml.wsdl.model.BindingFault;
-import org.netbeans.modules.xml.wsdl.model.BindingInput;
-import org.netbeans.modules.xml.wsdl.model.BindingOperation;
-import org.netbeans.modules.xml.wsdl.model.BindingOutput;
-import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
-import org.openide.nodes.Node;
-
-/**
- *
- * @author Martin Grebac
- */
-public class ServicePanelFactory implements org.netbeans.modules.xml.multiview.ui.InnerPanelFactory {
+import org.openide.util.NbBundle;
+ 
+public enum RMSequenceBinding {
+    SECURED_TRANSPORT {
+        public QName getQName() {
+            return RMQName.SEQUENCETRANSPORTSECURITY.getQName(ConfigVersion.CONFIG_1_2);
+        }
+        public Class getAssertionClass() {
+            return SequenceTransportSecurity.class;
+        }
+    },
+    SECURED_TOKEN {
+        public QName getQName() {
+            return RMQName.SEQUENCESTR.getQName(ConfigVersion.CONFIG_1_2);
+        }
+        public Class getAssertionClass() {
+            return SequenceSTR.class;
+        }
+    };
     
-    private ToolBarDesignEditor editor;
-    private Node node;
-    private UndoManager undoManager;
-    private Project project;
-    private JaxWsModel jaxwsmodel;
-    
-    /**
-     * Creates a new instance of ServicePanelFactory
-     */
-    ServicePanelFactory(ToolBarDesignEditor editor, Node node, UndoManager undoManager, Project p, JaxWsModel jxwsmodel) {
-        this.editor=editor;
-        this.node = node;
-        this.project = p;
-        this.jaxwsmodel = jxwsmodel;
-        this.undoManager = undoManager;
+    public final static RMSequenceBinding getDefault() {
+        return SECURED_TOKEN;
     }
 
-    public SectionInnerPanel createInnerPanel(Object key) {
-        if (key instanceof Binding) {
-            Binding b = (Binding)key;
-            return new ServicePanel((SectionView) editor.getContentView(), node, project, b, undoManager, jaxwsmodel);
-        }
-        if (key instanceof BindingOperation) {
-            BindingOperation o = (BindingOperation)key;
-            return new OperationPanel((SectionView) editor.getContentView(), node, project, o);
-        }
-        if (key instanceof BindingInput) {
-            BindingInput i = (BindingInput)key;
-            return new InputPanel((SectionView) editor.getContentView(), i, undoManager);
-        }
-        if ((key instanceof BindingOutput) || (key instanceof BindingFault)) {
-            return new GenericElementPanel((SectionView) editor.getContentView(),(WSDLComponent) key, undoManager);
+    public final static RMSequenceBinding getValue(ConfigVersion cfgVersion, Binding b) {
+        if (ConfigVersion.CONFIG_1_2.equals(cfgVersion)) {
+            if (RMModelHelper.getInstance(cfgVersion).isSequenceBinding(b, SECURED_TRANSPORT)) {
+                return SECURED_TRANSPORT;
+            }
+            if (RMModelHelper.getInstance(cfgVersion).isSequenceBinding(b, SECURED_TOKEN)) {
+                return SECURED_TOKEN;
+            }
         }
         return null;
     }
+    
+    @Override
+    public String toString() {
+        return NbBundle.getMessage(RMSequenceBinding.class, this.name());
+    }
+    
+    public void set(ConfigVersion cfgVersion, Binding binding) {
+        RMModelHelper.getInstance(cfgVersion).setSequenceBinding(binding, this);
+    }
+        
+    public abstract QName getQName();
+    
+    public abstract Class getAssertionClass();
+    
 }

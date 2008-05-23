@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.websvc.wsitmodelext.rm;
+package org.netbeans.modules.websvc.wsitmodelext.security.tokens;
 
 import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
 
@@ -47,10 +47,5 @@ import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
  *
  * @author Martin Grebac
  */
-public interface BaseRetransmissionInterval extends ExtensibilityElement {
-    public static final String MILLISECONDS_PROPERTY = "BaseMilliseconds";     //NOI18N
-    
-    void setMilliseconds(String milliseconds);
-    String getMilliseconds();
-
+public interface EncryptedSupportingTokens  extends ExtensibilityElement {
 }
