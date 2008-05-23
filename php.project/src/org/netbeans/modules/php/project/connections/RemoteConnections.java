@@ -69,6 +69,9 @@ import org.openide.util.NbPreferences;
  */
 public final class RemoteConnections {
 
+    // XXX temporary
+    public static final String DEBUG_PROPERTY = "remote.connections"; // NOI18N
+
     public static enum ConnectionType {
         FTP ("LBL_Ftp"); // NOI18N
 

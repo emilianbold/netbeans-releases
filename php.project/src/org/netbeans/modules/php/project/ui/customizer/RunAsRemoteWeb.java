@@ -53,6 +53,8 @@ import org.netbeans.modules.php.project.connections.RemoteConnections;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAsType;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.UploadFiles;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
 /**
@@ -322,6 +324,17 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void manageRemoteConnectionButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_manageRemoteConnectionButtonActionPerformed
+        if (!Boolean.getBoolean(RemoteConnections.DEBUG_PROPERTY)) {
+            NotifyDescriptor notifyDescriptor = new NotifyDescriptor(
+                    "Not implemented yet.", // NOI18N
+                    "TODO", // NOI18N
+                    NotifyDescriptor.OK_CANCEL_OPTION,
+                    NotifyDescriptor.INFORMATION_MESSAGE,
+                    new Object[] {NotifyDescriptor.OK_OPTION},
+                    NotifyDescriptor.OK_OPTION);
+            DialogDisplayer.getDefault().notify(notifyDescriptor);
+            return;
+        }
         RemoteConnections.get().openManager();
     }//GEN-LAST:event_manageRemoteConnectionButtonActionPerformed
 
