@@ -43,10 +43,8 @@ import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -98,7 +96,6 @@ public final class RemoteConnections {
     static final String PORT = "port"; // NOI18N
     static final String USER = "user"; // NOI18N
     static final String PASSWORD = "password"; // NOI18N
-    static final String REMEMBER_PASSWORD = "rememberPassword"; // NOI18N
     static final String ANONYMOUS_LOGIN = "anonymousLogin"; // NOI18N
     static final String INITIAL_DIRECTORY = "initialDirectory"; // NOI18N
     static final String TIMEOUT = "timeout"; // NOI18N
@@ -109,7 +106,6 @@ public final class RemoteConnections {
         PORT,
         USER,
         PASSWORD,
-        REMEMBER_PASSWORD,
         ANONYMOUS_LOGIN,
         INITIAL_DIRECTORY,
         TIMEOUT,
@@ -118,7 +114,7 @@ public final class RemoteConnections {
     private final ConfigManager configManager;
     private final ConfigManager.ConfigProvider configProvider = new DefaultConfigProvider();
     private final ChangeListener defaultChangeListener = new DefaultChangeListener();
-    private RemoteConnectionsPanel panel = null;
+    RemoteConnectionsPanel panel = null;
     private DialogDescriptor descriptor = null;
 
     public static RemoteConnections get() {
@@ -135,7 +131,7 @@ public final class RemoteConnections {
         }
         panel = new RemoteConnectionsPanel();
         // data
-        panel.setConfigurations(getConfigurations());
+        panel.setConnections(getConfigurations());
 
         // listeners
         panel.addChangeListener(defaultChangeListener);
@@ -165,9 +161,12 @@ public final class RemoteConnections {
             // XXX probably not the best solution
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    if (panel.getConfigurations().isEmpty()) {
+                    if (panel.getConnections().isEmpty()) {
                         // no config available => show add config dialog
                         addConfig();
+                    } else {
+                        // XXX allow caller to select custom connection
+                        panel.selectConnection(0);
                     }
                 }
             });
@@ -246,7 +245,6 @@ public final class RemoteConnections {
             panel.setPort(cfg.getValue(PORT));
             panel.setUserName(cfg.getValue(USER));
             panel.setPassword(cfg.getValue(PASSWORD));
-            panel.setRememberPassword(resolveBoolean(cfg.getValue(REMEMBER_PASSWORD)));
             panel.setAnonymousLogin(resolveBoolean(cfg.getValue(ANONYMOUS_LOGIN)));
             panel.setInitialDirectory(cfg.getValue(INITIAL_DIRECTORY));
             panel.setTimeout(cfg.getValue(TIMEOUT));
@@ -263,6 +261,12 @@ public final class RemoteConnections {
     }
 
     void validate() {
+        // remember password is dangerous
+        // just warning - do it every time
+        if (validateRememberPassword()) {
+            setWarning(null);
+        }
+
         if (!validateHost()) {
             return;
         }
@@ -276,11 +280,6 @@ public final class RemoteConnections {
         }
 
         if (!validateTimeout()) {
-            return;
-        }
-
-        // remember password is dangerous
-        if (!validateRememberPassword()) {
             return;
         }
 
@@ -339,7 +338,7 @@ public final class RemoteConnections {
     }
 
     private boolean validateRememberPassword() {
-        if (panel.isRememberPassword()) {
+        if (panel.getPassword().length() > 0) {
             setWarning("MSG_PasswordRememberDangerous"); // NOI18N
             return false;
         }
@@ -347,7 +346,7 @@ public final class RemoteConnections {
     }
 
     private void checkAllTheConfigs() {
-        for (Configuration cfg : panel.getConfigurations()) {
+        for (Configuration cfg : panel.getConnections()) {
             assert cfg != null;
             if (!cfg.isValid()) {
                 panel.setError(NbBundle.getMessage(RemoteConnections.class, "MSG_InvalidConfiguration", cfg.getDisplayName()));
@@ -368,9 +367,7 @@ public final class RemoteConnections {
     }
 
     private void setWarning(String errorKey) {
-        // first clean error from configuration if any
-        setError(null);
-        panel.setWarning(NbBundle.getMessage(RemoteConnections.class, errorKey));
+        panel.setWarning(errorKey != null ? NbBundle.getMessage(RemoteConnections.class, errorKey) : null);
     }
 
     private void updateActiveConfig() {
@@ -384,7 +381,6 @@ public final class RemoteConnections {
         cfg.putValue(PORT, panel.getPort());
         cfg.putValue(USER, panel.getUserName());
         cfg.putValue(PASSWORD, panel.getPassword());
-        cfg.putValue(REMEMBER_PASSWORD, String.valueOf(panel.isRememberPassword()));
         cfg.putValue(ANONYMOUS_LOGIN, String.valueOf(panel.isAnonymousLogin()));
         cfg.putValue(INITIAL_DIRECTORY, panel.getInitialDirectory());
         cfg.putValue(TIMEOUT, panel.getTimeout());
@@ -392,31 +388,26 @@ public final class RemoteConnections {
 
     private void saveRemoteConnections() {
         Preferences remoteConnections = NbPreferences.forModule(RemoteConnections.class).node(PREFERENCES_PATH);
-        // remove unused configs first
-        try {
-            List<String> active = new ArrayList<String>(configManager.configurationNames());
-            List<String> toRemove = new ArrayList<String>(Arrays.asList(remoteConnections.childrenNames()));
-            toRemove.removeAll(active);
-            for (String name : toRemove) {
-                remoteConnections.node(name).removeNode();
-            }
-        } catch (BackingStoreException bse) {
-            LOGGER.log(Level.INFO, "Error while removing unused remote connections", bse);
-        }
-
-        // add/update active configs
         for (Map.Entry<String, Map<String, String>> entry : configProvider.getConfigs().entrySet()) {
             String config = entry.getKey();
             if (config == null) {
+                // no default config
                 continue;
             }
-            Preferences node = remoteConnections.node(config);
-            Map<String, String> c = entry.getValue();
-            assert c != null;
-            for (Map.Entry<String, String> entry2 : c.entrySet()) {
-                String prop = entry2.getKey();
-                String v = entry2.getValue();
-                node.put(prop, v);
+            Map<String, String> cfg = entry.getValue();
+            if (cfg == null) {
+                // config was deleted
+                try {
+                    remoteConnections.node(config).removeNode();
+                } catch (BackingStoreException bse) {
+                    LOGGER.log(Level.INFO, "Error while removing unused remote connection: " + config, bse);
+                }
+            } else {
+                // add/update
+                Preferences node = remoteConnections.node(config);
+                for (Map.Entry<String, String> cfgEntry : cfg.entrySet()) {
+                    node.put(cfgEntry.getKey(), cfgEntry.getValue());
+                }
             }
         }
     }
@@ -442,11 +433,7 @@ public final class RemoteConnections {
         final Map<String, Map<String, String>> configs;
 
         public DefaultConfigProvider() {
-            configs = new TreeMap<String, Map<String, String>>(new Comparator<String>() {
-                public int compare(String s1, String s2) {
-                    return s1 != null ? (s2 != null ? s1.compareTo(s2) : 1) : (s2 != null ? -1 : 0);
-                }
-            });
+            configs = ConfigManager.createEmptyConfigs();
             readConfig();
         }
 
@@ -466,9 +453,6 @@ public final class RemoteConnections {
         }
 
         private void readConfig() {
-            // default config has to be there although unused
-            configs.put(null, null);
-            // existing configs
             Preferences remoteConnections = NbPreferences.forModule(RemoteConnections.class).node(PREFERENCES_PATH);
             try {
                 for (String name : remoteConnections.childrenNames()) {

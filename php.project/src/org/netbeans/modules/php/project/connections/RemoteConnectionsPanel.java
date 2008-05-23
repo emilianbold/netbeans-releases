@@ -76,6 +76,7 @@ class RemoteConnectionsPanel extends JPanel {
     RemoteConnectionsPanel() {
         initComponents();
         errorLabel.setText(" "); // NOI18N
+        warningLabel.setText(" "); // NOI18N
 
         // init
         configList.setModel(configListModel);
@@ -138,16 +139,24 @@ class RemoteConnectionsPanel extends JPanel {
         }
     }
 
+    public void selectConnection(int index) {
+        configList.setSelectedIndex(index);
+    }
+
+    public void selectConnection(Configuration connection) {
+        configList.setSelectedValue(connection, true);
+    }
+
     public ConfigManager.Configuration getSelectedConnection() {
         return (Configuration) configList.getSelectedValue();
     }
 
-    public List<Configuration> getConfigurations() {
+    public List<Configuration> getConnections() {
         return configListModel.getElements();
     }
 
-    public void setConfigurations(List<Configuration> configurations) {
-        configListModel.setElements(configurations);
+    public void setConnections(List<Configuration> connections) {
+        configListModel.setElements(connections);
     }
 
     public void removeConnection(ConfigManager.Configuration connection) {
@@ -174,7 +183,6 @@ class RemoteConnectionsPanel extends JPanel {
         portTextField.setEnabled(enabled);
         userTextField.setEnabled(enabled);
         passwordTextField.setEnabled(enabled);
-        rememberPasswordCheckBox.setEnabled(enabled);
         anonymousCheckBox.setEnabled(enabled);
         initialDirectoryTextField.setEnabled(enabled);
         timeoutTextField.setEnabled(enabled);
@@ -186,11 +194,11 @@ class RemoteConnectionsPanel extends JPanel {
         portTextField.setText(null);
         userTextField.setText(null);
         passwordTextField.setText(null);
-        rememberPasswordCheckBox.setSelected(false);
         anonymousCheckBox.setSelected(false);
         initialDirectoryTextField.setText(null);
         timeoutTextField.setText(null);
-        // reset error as well
+        // reset error and warning as well
+        setWarning(null);
         setError(null);
     }
 
@@ -201,9 +209,9 @@ class RemoteConnectionsPanel extends JPanel {
     }
 
     public void setWarning(String msg) {
-        errorLabel.setText(" "); // NOI18N
-        errorLabel.setForeground(UIManager.getColor("nb.warningForeground")); // NOI18N
-        errorLabel.setText(msg);
+        warningLabel.setText(" "); // NOI18N
+        warningLabel.setForeground(UIManager.getColor("nb.warningForeground")); // NOI18N
+        warningLabel.setText(msg);
     }
 
     private void registerListeners() {
@@ -214,7 +222,6 @@ class RemoteConnectionsPanel extends JPanel {
         portTextField.getDocument().addDocumentListener(documentListener);
         userTextField.getDocument().addDocumentListener(documentListener);
         passwordTextField.getDocument().addDocumentListener(documentListener);
-        rememberPasswordCheckBox.addActionListener(actionListener);
         anonymousCheckBox.addActionListener(actionListener);
         initialDirectoryTextField.getDocument().addDocumentListener(documentListener);
         timeoutTextField.getDocument().addDocumentListener(documentListener);
@@ -257,7 +264,6 @@ class RemoteConnectionsPanel extends JPanel {
     private void setEnabledLoginCredentials(boolean enabled) {
         userTextField.setEnabled(enabled);
         passwordTextField.setEnabled(enabled);
-        rememberPasswordCheckBox.setEnabled(enabled);
     }
 
     /** This method is called from within the constructor to
@@ -287,12 +293,12 @@ class RemoteConnectionsPanel extends JPanel {
         anonymousCheckBox = new javax.swing.JCheckBox();
         passwordLabel = new javax.swing.JLabel();
         passwordTextField = new javax.swing.JPasswordField();
-        rememberPasswordCheckBox = new javax.swing.JCheckBox();
         initialDirectoryLabel = new javax.swing.JLabel();
         initialDirectoryTextField = new javax.swing.JTextField();
         timeoutLabel = new javax.swing.JLabel();
         timeoutTextField = new javax.swing.JTextField();
         separator = new javax.swing.JSeparator();
+        warningLabel = new javax.swing.JLabel();
         errorLabel = new javax.swing.JLabel();
 
         configList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
@@ -323,13 +329,13 @@ class RemoteConnectionsPanel extends JPanel {
         passwordLabel.setLabelFor(passwordTextField);
         org.openide.awt.Mnemonics.setLocalizedText(passwordLabel, org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "LBL_Password")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(rememberPasswordCheckBox, org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "LBL_RememberPassword")); // NOI18N
-
         initialDirectoryLabel.setLabelFor(initialDirectoryTextField);
         org.openide.awt.Mnemonics.setLocalizedText(initialDirectoryLabel, org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "LBL_InitialDirectory")); // NOI18N
 
         timeoutLabel.setLabelFor(timeoutTextField);
         org.openide.awt.Mnemonics.setLocalizedText(timeoutLabel, org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "LBL_Timeout")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(warningLabel, "warning"); // NOI18N
 
         org.jdesktop.layout.GroupLayout detailsPanelLayout = new org.jdesktop.layout.GroupLayout(detailsPanel);
         detailsPanel.setLayout(detailsPanelLayout);
@@ -338,7 +344,7 @@ class RemoteConnectionsPanel extends JPanel {
             .add(detailsPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(detailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(separator, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 427, Short.MAX_VALUE)
+                    .add(separator, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 428, Short.MAX_VALUE)
                     .add(detailsPanelLayout.createSequentialGroup()
                         .add(detailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(connectionLabel)
@@ -349,32 +355,26 @@ class RemoteConnectionsPanel extends JPanel {
                             .add(initialDirectoryLabel))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(detailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(typeComboBox, 0, 302, Short.MAX_VALUE)
-                            .add(connectionTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 302, Short.MAX_VALUE)
+                            .add(typeComboBox, 0, 303, Short.MAX_VALUE)
+                            .add(connectionTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 303, Short.MAX_VALUE)
                             .add(org.jdesktop.layout.GroupLayout.TRAILING, detailsPanelLayout.createSequentialGroup()
                                 .add(detailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(initialDirectoryTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 135, Short.MAX_VALUE)
-                                    .add(userTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 135, Short.MAX_VALUE)
-                                    .add(hostTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 135, Short.MAX_VALUE)
-                                    .add(passwordTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 135, Short.MAX_VALUE))
+                                    .add(userTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 152, Short.MAX_VALUE)
+                                    .add(hostTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 152, Short.MAX_VALUE)
+                                    .add(passwordTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 152, Short.MAX_VALUE)
+                                    .add(initialDirectoryTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 152, Short.MAX_VALUE))
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(detailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(detailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                                        .add(detailsPanelLayout.createSequentialGroup()
-                                            .add(portLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 28, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                            .add(portTextField))
-                                        .add(org.jdesktop.layout.GroupLayout.TRAILING, detailsPanelLayout.createSequentialGroup()
-                                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                            .add(detailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                                                .add(rememberPasswordCheckBox)
-                                                .add(detailsPanelLayout.createSequentialGroup()
-                                                    .add(timeoutLabel)
-                                                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                                    .add(timeoutTextField)))))
+                                .add(detailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
                                     .add(detailsPanelLayout.createSequentialGroup()
+                                        .add(portLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 28, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                        .add(anonymousCheckBox)))))))
+                                        .add(portTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 99, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                                    .add(detailsPanelLayout.createSequentialGroup()
+                                        .add(timeoutLabel)
+                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                        .add(timeoutTextField))
+                                    .add(anonymousCheckBox)))))
+                    .add(warningLabel))
                 .addContainerGap())
         );
         detailsPanelLayout.setVerticalGroup(
@@ -404,7 +404,6 @@ class RemoteConnectionsPanel extends JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(detailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(passwordLabel)
-                    .add(rememberPasswordCheckBox)
                     .add(passwordTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(detailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
@@ -412,10 +411,12 @@ class RemoteConnectionsPanel extends JPanel {
                     .add(timeoutLabel)
                     .add(initialDirectoryTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(timeoutTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(36, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 9, Short.MAX_VALUE)
+                .add(warningLabel)
+                .addContainerGap())
         );
 
-        org.openide.awt.Mnemonics.setLocalizedText(errorLabel, "dummy"); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(errorLabel, "error"); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -474,7 +475,6 @@ class RemoteConnectionsPanel extends JPanel {
     private javax.swing.JPasswordField passwordTextField;
     private javax.swing.JLabel portLabel;
     private javax.swing.JTextField portTextField;
-    private javax.swing.JCheckBox rememberPasswordCheckBox;
     private javax.swing.JButton removeButton;
     private javax.swing.JSeparator separator;
     private javax.swing.JLabel timeoutLabel;
@@ -483,6 +483,7 @@ class RemoteConnectionsPanel extends JPanel {
     private javax.swing.JLabel typeLabel;
     private javax.swing.JLabel userLabel;
     private javax.swing.JTextField userTextField;
+    private javax.swing.JLabel warningLabel;
     // End of variables declaration//GEN-END:variables
 
     public String getConnectionName() {
@@ -531,14 +532,6 @@ class RemoteConnectionsPanel extends JPanel {
 
     public void setPassword(String password) {
         passwordTextField.setText(password);
-    }
-
-    public boolean isRememberPassword() {
-        return rememberPasswordCheckBox.isSelected();
-    }
-
-    public void setRememberPassword(boolean rememberPassword) {
-        rememberPasswordCheckBox.setSelected(rememberPassword);
     }
 
     public boolean isAnonymousLogin() {
