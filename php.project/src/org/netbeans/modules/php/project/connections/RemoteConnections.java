@@ -42,8 +42,18 @@ package org.netbeans.modules.php.project.connections;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -54,14 +64,13 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 
 /**
  * @author Tomas Mysik
  */
 public final class RemoteConnections {
 
-    public static final int DEFAULT_PORT = 21;
-    public static final int DEFAULT_TIMEOUT = 30;
     public static enum ConnectionType {
         FTP ("LBL_Ftp"); // NOI18N
 
@@ -75,6 +84,14 @@ public final class RemoteConnections {
             return label;
         }
     }
+
+    static final Logger LOGGER = Logger.getLogger(RemoteConnections.class.getName());
+
+    private static final String PREFERENCES_PATH = "RemoteConnections"; // NOI18N
+
+    private static final ConnectionType DEFAULT_TYPE = ConnectionType.FTP;
+    private static final int DEFAULT_PORT = 21;
+    private static final int DEFAULT_TIMEOUT = 30;
 
     static final String TYPE = "type"; // NOI18N
     static final String HOST = "host"; // NOI18N
@@ -100,6 +117,7 @@ public final class RemoteConnections {
 
     private final RemoteConnectionsPanel panel;
     private final ConfigManager configManager;
+    private final ConfigManager.ConfigProvider configProvider = new DefaultConfigProvider();
     private final ChangeListener defaultChangeListener = new DefaultChangeListener();
     private DialogDescriptor descriptor = null;
 
@@ -109,8 +127,12 @@ public final class RemoteConnections {
 
     private RemoteConnections() {
         panel = new RemoteConnectionsPanel();
-        configManager = new ConfigManager(new DefaultConfigProvider());
+        configManager = new ConfigManager(configProvider);
 
+        // data
+        panel.setConfigurations(getConfigurations());
+
+        // listeners
         panel.addChangeListener(defaultChangeListener);
         panel.addAddButtonActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -137,7 +159,7 @@ public final class RemoteConnections {
             // XXX probably not the best solution
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    if (configManager.configurationNames().size() == 1) {
+                    if (panel.getConfigurations().isEmpty()) {
                         // no config available => show add config dialog
                         addConfig();
                     }
@@ -150,6 +172,21 @@ public final class RemoteConnections {
         if (descriptor.getValue() == NotifyDescriptor.OK_OPTION) {
             saveRemoteConnections();
         }
+    }
+
+    public List<Configuration> getConfigurations() {
+        Collection<String> cfgNames = configManager.configurationNames();
+        List<Configuration> configs = new ArrayList<Configuration>(cfgNames.size() - 1); // without default config
+
+        for (String name : cfgNames) {
+            if (name == null) {
+                // default config
+                continue;
+            }
+            configs.add(configManager.configurationFor(name));
+        }
+        Collections.sort(configs, ConfigManager.getConfigurationComparator());
+        return Collections.unmodifiableList(configs);
     }
 
     void addConfig() {
@@ -304,7 +341,7 @@ public final class RemoteConnections {
     }
 
     private void checkAllTheConfigs() {
-        for (Configuration cfg : panel.getAllConfigurations()) {
+        for (Configuration cfg : panel.getConfigurations()) {
             assert cfg != null;
             if (!cfg.isValid()) {
                 panel.setError(NbBundle.getMessage(RemoteConnections.class, "MSG_InvalidConfiguration", cfg.getDisplayName()));
@@ -348,18 +385,45 @@ public final class RemoteConnections {
     }
 
     private void saveRemoteConnections() {
-        // XXX save configs (files)
+        Preferences remoteConnections = NbPreferences.forModule(RemoteConnections.class).node(PREFERENCES_PATH);
+        // remove unused configs first
+        try {
+            List<String> active = new ArrayList<String>(configManager.configurationNames());
+            List<String> toRemove = new ArrayList<String>(Arrays.asList(remoteConnections.childrenNames()));
+            toRemove.removeAll(active);
+            for (String name : toRemove) {
+                remoteConnections.node(name).removeNode();
+            }
+        } catch (BackingStoreException bse) {
+            LOGGER.log(Level.INFO, "Error while removing unused remote connections", bse);
+        }
+
+        // add/update active configs
+        for (Map.Entry<String, Map<String, String>> entry : configProvider.getConfigs().entrySet()) {
+            String config = entry.getKey();
+            if (config == null) {
+                continue;
+            }
+            Preferences node = remoteConnections.node(config);
+            Map<String, String> c = entry.getValue();
+            assert c != null;
+            for (Map.Entry<String, String> entry2 : c.entrySet()) {
+                String prop = entry2.getKey();
+                String v = entry2.getValue();
+                node.put(prop, v);
+            }
+        }
     }
 
     private ConnectionType resolveType(String type) {
         if (type == null) {
-            return ConnectionType.FTP;
+            return DEFAULT_TYPE;
         }
         ConnectionType connectionType = null;
         try {
             connectionType = ConnectionType.valueOf(type);
         } catch (IllegalArgumentException iae) {
-            connectionType = ConnectionType.FTP;
+            connectionType = DEFAULT_TYPE;
         }
         return connectionType;
     }
@@ -369,15 +433,23 @@ public final class RemoteConnections {
     }
 
     private class DefaultConfigProvider implements ConfigManager.ConfigProvider {
+        final Map<String, Map<String, String>> configs;
+
+        public DefaultConfigProvider() {
+            configs = new TreeMap<String, Map<String, String>>(new Comparator<String>() {
+                public int compare(String s1, String s2) {
+                    return s1 != null ? (s2 != null ? s1.compareTo(s2) : 1) : (s2 != null ? -1 : 0);
+                }
+            });
+            readConfig();
+        }
+
         public String[] getConfigProperties() {
             return PROPERTIES;
         }
 
         public Map<String, Map<String, String>> getConfigs() {
-            // XXX
-            Map<String, Map<String, String>> config = new HashMap<String, Map<String, String>>();
-            config.put(null, null);
-            return config;
+            return configs;
         }
 
         public String getActiveConfig() {
@@ -385,6 +457,25 @@ public final class RemoteConnections {
         }
 
         public void setActiveConfig(String configName) {
+        }
+
+        private void readConfig() {
+            // default config has to be there although unused
+            configs.put(null, null);
+            // existing configs
+            Preferences remoteConnections = NbPreferences.forModule(RemoteConnections.class).node(PREFERENCES_PATH);
+            try {
+                for (String name : remoteConnections.childrenNames()) {
+                    Preferences node = remoteConnections.node(name);
+                    Map<String, String> value = new TreeMap<String, String>();
+                    for (String key : node.keys()) {
+                        value.put(key, node.get(key, null));
+                    }
+                    configs.put(name, value);
+                }
+            } catch (BackingStoreException bse) {
+                LOGGER.log(Level.INFO, "Error while reading existing remote connections", bse);
+            }
         }
     }
 

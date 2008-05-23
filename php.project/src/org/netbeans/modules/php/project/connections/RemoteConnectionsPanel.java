@@ -142,8 +142,12 @@ class RemoteConnectionsPanel extends JPanel {
         return (Configuration) configList.getSelectedValue();
     }
 
-    public List<Configuration> getAllConfigurations() {
-        return configListModel.getAllElements();
+    public List<Configuration> getConfigurations() {
+        return configListModel.getElements();
+    }
+
+    public void setConfigurations(List<Configuration> configurations) {
+        configListModel.setElements(configurations);
     }
 
     public void removeConnection(ConfigManager.Configuration connection) {
@@ -653,8 +657,21 @@ class RemoteConnectionsPanel extends JPanel {
             return true;
         }
 
-        public List<Configuration> getAllElements() {
+        public List<Configuration> getElements() {
             return Collections.unmodifiableList(data);
+        }
+
+        public void setElements(List<Configuration> configurations) {
+            int size = data.size();
+            data.clear();
+            if (size > 0) {
+                fireIntervalRemoved(this, 0, size - 1);
+            }
+            if (configurations.size() > 0) {
+                data.addAll(configurations);
+                Collections.sort(data, ConfigManager.getConfigurationComparator());
+                fireIntervalAdded(this, 0, data.size() - 1);
+            }
         }
     }
 }
