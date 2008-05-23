@@ -354,6 +354,21 @@ public class ContainerWidget extends Widget
         return true;
     }
     
+    /**
+     * Test if a widget is fully with in the bounds of the container widget.
+     * 
+     * @param widget The widget to test
+     * @return True if the widget is in the containers bounds.
+     */
+    protected boolean isFullyContained(Widget widget)
+    {
+        Rectangle area = widget.getClientArea();
+        Rectangle sceneArea = widget.convertLocalToScene(area);
+        
+        Rectangle localArea = convertSceneToLocal(sceneArea);
+        return getClientArea().contains(localArea);
+    }
+    
     public class ContainerAcceptProvider extends SceneAcceptProvider
     {
         public ContainerAcceptProvider()
@@ -366,23 +381,6 @@ public class ContainerWidget extends Widget
         {
             return allowed(elements);
         }
-
-//        @Override
-//        public ConnectorState isAcceptable(Widget widget, Point point, Transferable transferable)
-//        {
-//            ConnectorState retVal = super.isAcceptable(widget, point, transferable);
-//            
-//            if(retVal != ConnectorState.ACCEPT)
-//            {
-//                if(isWidgetMove(transferable) == true)
-//                {
-//                    retVal = ConnectorState.ACCEPT;
-//                }
-//            }
-//            
-//            return retVal;
-//        }
-
         
         @Override
         public void accept(Widget widget, Point point, Transferable transferable)
@@ -426,6 +424,13 @@ public class ContainerWidget extends Widget
             
             for(Widget curWidget : target)
             {
+                // Only add the node to the container if it is fully contained
+                // by the container.
+                if(isFullyContained(curWidget) == false)
+                {
+                    break;
+                }
+                
                 if(curWidget.getParentWidget() != null)
                 {
                     curWidget.getParentWidget().removeChild(curWidget);
