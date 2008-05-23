@@ -102,10 +102,14 @@ public class CSSGSFParser implements Parser, PositionManager {
                     job.listener.error(error);
                 }
 
-                //do some semantic checking of the parse tree
-                List<Error> semanticErrors = new CssAnalyser(result).checkForErrors(css_result.root());
-                for (Error err : semanticErrors) {
-                    job.listener.error(err);
+                SimpleNode root = css_result.root();
+                //test if the parsing succeeded
+                if(root != null) {
+                    //do some semantic checking of the parse tree
+                    List<Error> semanticErrors = new CssAnalyser(result).checkForErrors(root);
+                    for (Error err : semanticErrors) {
+                        job.listener.error(err);
+                    }
                 }
 
             } catch (IOException ioe) {

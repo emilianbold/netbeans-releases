@@ -81,6 +81,11 @@ public class ListPropertiesCommand extends SvnCommand {
     }
     
     @Override
+    protected boolean notifyOutput() {
+        return false;
+    }    
+    
+    @Override
     protected int getCommand() {
         return ISVNNotifyListener.Command.PROPLIST;
     }

@@ -294,7 +294,7 @@ public final class Iterator implements TemplateWizard.Iterator {
         FileObject xslFo = null;
 
         if (dirFo != null) {
-            xslFo = dirFo.getFileObject(file);
+            xslFo = dirFo.getFileObject(file, XSL);
             if (xslFo == null) {
                 xslFo = PanelUtil.copyFile(dirFo, 
                     TEMPLATES_PATH, XSLT_SERVICE,

@@ -53,15 +53,16 @@ import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.gsf.api.Hint;
+import org.netbeans.modules.gsf.api.EditList;
+import org.netbeans.modules.gsf.api.HintFix;
+import org.netbeans.modules.gsf.api.HintSeverity;
+import org.netbeans.modules.gsf.api.PreviewableFix;
+import org.netbeans.modules.gsf.api.RuleContext;
 import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.ruby.RubyUtils;
-import org.netbeans.modules.ruby.hints.spi.AstRule;
-import org.netbeans.modules.ruby.hints.spi.Description;
-import org.netbeans.modules.ruby.hints.spi.EditList;
-import org.netbeans.modules.ruby.hints.spi.Fix;
-import org.netbeans.modules.ruby.hints.spi.HintSeverity;
-import org.netbeans.modules.ruby.hints.spi.PreviewableFix;
-import org.netbeans.modules.ruby.hints.spi.RuleContext;
+import org.netbeans.modules.ruby.hints.infrastructure.RubyAstRule;
+import org.netbeans.modules.ruby.hints.infrastructure.RubyRuleContext;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -74,13 +75,13 @@ import org.openide.util.NbBundle;
  * 
  * @author Tor Norbye
  */
-public class ConvertConditionals implements AstRule {
+public class ConvertConditionals extends RubyAstRule {
 
     public Set<NodeType> getKinds() {
         return Collections.singleton(NodeType.IFNODE);
     }
 
-    public void run(RuleContext context, List<Description> result) {
+    public void run(RubyRuleContext context, List<Hint> result) {
         Node node = context.node;
         CompilationInfo info = context.compilationInfo;
 
@@ -180,10 +181,10 @@ public class ConvertConditionals implements AstRule {
             return;
         }
 
-        List<Fix> fixes = Collections.<Fix>singletonList(fix);
+        List<HintFix> fixes = Collections.<HintFix>singletonList(fix);
 
         String displayName = NbBundle.getMessage(ConvertConditionals.class, "ConvertConditionals");
-        Description desc = new Description(this, displayName, info.getFileObject(), range,
+        Hint desc = new Hint(this, displayName, info.getFileObject(), range,
                 fixes, 500);
         result.add(desc);
     }
@@ -204,7 +205,7 @@ public class ConvertConditionals implements AstRule {
         return null;
     }
 
-    public boolean appliesTo(CompilationInfo info) {
+    public boolean appliesTo(RuleContext context) {
         return true;
     }
 

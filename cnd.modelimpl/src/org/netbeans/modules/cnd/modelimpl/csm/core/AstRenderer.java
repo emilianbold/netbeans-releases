@@ -787,7 +787,8 @@ public class AstRenderer {
 //                            namePart.getType() == CPPTokenTypes.COMMA) ) {
 //			new Exception("Unexpected token type " + namePart).printStackTrace(System.err);
 //		    }
-                    if (namePart.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN) {
+                    if (namePart.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN ||
+                        namePart.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND) {
                         AST builtInType = namePart.getFirstChild();
                         sb.append(builtInType != null ? builtInType.getText() : "");
                     } else {

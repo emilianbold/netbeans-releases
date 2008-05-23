@@ -142,7 +142,7 @@ public class HgCommand {
     private static final String HG_LOG_NO_MERGES_CMD = "-M";
     private static final String HG_LOG_DEBUG_CMD = "--debug";  
     private static final String HG_LOG_TEMPLATE_HISTORY_CMD = 
-            "--template=rev:{rev}\\nauth:{author}\\ndesc:{desc}\\ndate:{date|hgdate}\\nid:{node|short}\\n" + // NOI18N
+            "--template=rev:{rev}\\nauth:{author}\\ndesc:{desc}\\ndate:{date|hgdate}\\nid:{node|short}\\nparents:{parents}\\n" + // NOI18N
             "file_mods:{files}\\nfile_adds:{file_adds}\\nfile_dels:{file_dels}\\nfile_copies:\\nendCS:\\n"; // NOI18N
     private static final String HG_LOG_TEMPLATE_HISTORY_NO_FILEINFO_CMD = 
             "--template=rev:{rev}\\nauth:{author}\\ndesc:{desc}\\ndate:{date|hgdate}\\nid:{node|short}\\n" + // NOI18N
@@ -153,6 +153,7 @@ public class HgCommand {
     private static final String HG_LOG_DESCRIPTION_OUT = "desc:"; // NOI18N
     private static final String HG_LOG_DATE_OUT = "date:"; // NOI18N
     private static final String HG_LOG_ID_OUT = "id:"; // NOI18N
+    private static final String HG_LOG_PARENTS_OUT = "parents:"; // NOI18N
     private static final String HG_LOG_FILEMODS_OUT = "file_mods:"; // NOI18N
     private static final String HG_LOG_FILEADDS_OUT = "file_adds:"; // NOI18N
     private static final String HG_LOG_FILEDELS_OUT = "file_dels:"; // NOI18N
@@ -170,6 +171,8 @@ public class HgCommand {
     private static final String HG_CAT_CMD = "cat"; // NOI18N
     private static final String HG_FLAG_OUTPUT_CMD = "--output"; // NOI18N
     
+    private static final String HG_COMMONANCESTOR_CMD = "debugancestor"; // NOI18N
+    
     private static final String HG_ANNOTATE_CMD = "annotate"; // NOI18N
     private static final String HG_ANNOTATE_FLAGN_CMD = "--number"; // NOI18N
     private static final String HG_ANNOTATE_FLAGU_CMD = "--user"; // NOI18N
@@ -179,9 +182,6 @@ public class HgCommand {
 
     private static final String HG_RENAME_CMD = "rename"; // NOI18N
     private static final String HG_RENAME_AFTER_CMD = "-A"; // NOI18N
-    private static final String HG_PATH_DEFAULT_CMD = "paths"; // NOI18N
-    private static final String HG_PATH_DEFAULT_OPT = "default"; // NOI18N
-    private static final String HG_PATH_DEFAULT_PUSH_OPT = "default-push"; // NOI18N
  
     
     // TODO: replace this hack 
@@ -822,10 +822,20 @@ public class HgCommand {
         return list;
     }
     
-    private static List<HgLogMessage> processLogMessages(List<String> list, final List<HgLogMessage> messages) {
-        String rev, author, desc, date, id, fm, fa, fd, fc;
+    private static List<HgLogMessage> processLogMessages(String rootURL, List<File> files, List<String> list, final List<HgLogMessage> messages) {
+        String rev, author, desc, date, id, parents, fm, fa, fd, fc;
+        List<String> filesShortPaths = new ArrayList<String>();
+        
         if (list != null && !list.isEmpty()) {
-            rev = author = desc = date = id = fm = fa = fd = fc = null;
+            if(files != null){
+                for(File f: files){
+                    String shortPath = f.getAbsolutePath();
+                    if(shortPath.startsWith(rootURL) && shortPath.length() > rootURL.length()) {
+                        filesShortPaths.add(shortPath.substring(rootURL.length()+1));
+                    }
+                }
+            }
+            rev = author = desc = date = id = parents = fm = fa = fd = fc = null;
             boolean bEnd = false;
             for (String s : list) {
                 if (s.indexOf(HG_LOG_REVISION_OUT) == 0) {
@@ -838,6 +848,8 @@ public class HgCommand {
                     date = s.substring(HG_LOG_DATE_OUT.length()).trim();
                 } else if (s.indexOf(HG_LOG_ID_OUT) == 0) {
                     id = s.substring(HG_LOG_ID_OUT.length()).trim();
+                } else if (s.indexOf(HG_LOG_PARENTS_OUT) == 0) {
+                    parents = s.substring(HG_LOG_PARENTS_OUT.length()).trim();
                 } else if (s.indexOf(HG_LOG_FILEMODS_OUT) == 0) {
                     fm = s.substring(HG_LOG_FILEMODS_OUT.length()).trim();
                 } else if (s.indexOf(HG_LOG_FILEADDS_OUT) == 0) {
@@ -853,8 +865,8 @@ public class HgCommand {
                 }
 
                 if (rev != null & bEnd) {
-                    messages.add(new HgLogMessage(rev, author, desc, date, id, fm, fa, fd, fc));
-                    rev = author = desc = date = id = fm = fa = fd = fc = null;
+                    messages.add(new HgLogMessage(rootURL, filesShortPaths, rev, author, desc, date, id, parents, fm, fa, fd, fc));
+                    rev = author = desc = date = id = parents = fm = fa = fd = fc = null;
                     bEnd = false;
                 }
             }
@@ -870,7 +882,7 @@ public class HgCommand {
 
             List<String> list = new LinkedList<String>();
             list = HgCommand.doIncomingForSearch(root, toRevision, bShowMerges, logger);
-            processLogMessages(list, messages);
+            processLogMessages(rootUrl, null, list, messages);
 
         } catch (HgException ex) {
             NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
@@ -890,7 +902,7 @@ public class HgCommand {
 
             List<String> list = new LinkedList<String>();
             list = HgCommand.doOutForSearch(root, toRevision, bShowMerges, logger);
-            processLogMessages(list, messages);
+            processLogMessages(rootUrl, null, list, messages);
 
         } catch (HgException ex) {
             NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
@@ -945,10 +957,11 @@ public class HgCommand {
             }
 
             List<String> list = new LinkedList<String>();
+            List<File> filesList = files != null ? new ArrayList<File>(files) : null;
             list = HgCommand.doLogForHistory(root, 
-                    files != null ? new ArrayList<File>(files) : null,
-                    fromRevision, toRevision, headRev, bShowMerges, bGetFileInfo, limit, logger);
-            processLogMessages(list, messages);
+                    filesList,
+                    fromRevision, toRevision, headRev, bShowMerges, bGetFileInfo, limit, logger);            
+            processLogMessages(rootUrl, filesList, list, messages);
         } catch (HgException ex) {
             NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
             DialogDisplayer.getDefault().notifyLater(e);
@@ -1562,6 +1575,56 @@ public class HgCommand {
     }
     
     /**
+     * Get common ancestor for two provided revisions.
+     *
+     * @param root for the mercurial repository
+     * @param first rev to get ancestor for
+     * @param second rev to get ancestor for
+     * @param output logger
+     * @return void
+     * @throws org.netbeans.modules.mercurial.HgException
+     */
+    public static String getCommonAncestor(String rootURL, String rev1, String rev2, OutputLogger logger) throws HgException {
+        String res = getCommonAncestor(rootURL, rev1, rev2, false, logger);
+        if( res == null){
+            res = getCommonAncestor(rootURL, rev1, rev2, true, logger);
+        }
+        return res;
+    }
+
+    private static String getCommonAncestor(String rootURL, String rev1, String rev2, boolean bUseIndex, OutputLogger logger) throws HgException {
+        if (rootURL == null ) return null;
+        List<String> command = new ArrayList<String>();
+        
+        command.add(getHgCommand());
+        command.add(HG_COMMONANCESTOR_CMD);
+        if(bUseIndex){
+            command.add(".hg/store/00changelog.i"); //NOI18N
+        }
+        command.add(rev1);
+        command.add(rev2);
+        command.add(HG_OPT_REPOSITORY);
+        command.add(rootURL);
+        command.add(HG_OPT_CWD_CMD);
+        command.add(rootURL);
+
+        List<String> list = exec(command);
+        if (!list.isEmpty()){
+            String splits[] = list.get(0).split(":"); // NOI18N
+            String tmp = splits != null && splits.length >= 1 ? splits[0]: null;
+            int tmpRev = -1;
+            try{
+                tmpRev = Integer.parseInt(tmp);
+            }catch(NumberFormatException ex){
+                // Ignore
+            }
+            return tmpRev > -1? tmp: null; 
+        }else{
+            return null;
+        }
+    }
+    
+    /**
      * Initialize a new repository in the given directory.  If the given
      * directory does not exist, it is created. Will throw a HgException
      * if the repository already exists.
@@ -1737,6 +1800,7 @@ public class HgCommand {
             if (!list.isEmpty()
                     && (isErrorNotTracked(list.get(0)) || 
                     isErrorCannotReadCommitMsg(list.get(0)) ||
+                    isErrorAbort(list.get(list.size() -1)) ||
                     isErrorAbort(list.get(0))))
                 handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_COMMIT_FAILED"), logger);
             
@@ -2001,53 +2065,6 @@ public class HgCommand {
     public static List<String> getRevisions(File repository, int limit) {
         if (repository == null) return null;
         return getRevisionsForFile(repository, null, limit);
-    }
-    
-    /**
-     * Get the pull default for the specified repository, i.e. the default
-     * destination for hg pull commmands.
-     *
-     * @param File repository of the mercurial repository's root directory
-     * @return String for pull default
-     */
-    public static String getPullDefault(File repository) {
-        return getPathDefault(repository, HG_PATH_DEFAULT_OPT);
-    }
-
-    /**
-     * Get the push default for the specified repository, i.e. the default
-     * destination for hg push commmands.
-     *
-     * @param File repository of the mercurial repository's root directory
-     * @return String for push default
-     */
-    public static String getPushDefault(File repository) {
-        return getPathDefault(repository, HG_PATH_DEFAULT_PUSH_OPT);
-    }
-
-    private static String getPathDefault(File repository, String type) {
-        if (repository == null) return null;
-        List<String> command = new ArrayList<String>();
-
-        command.add(getHgCommand());
-        command.add(HG_PATH_DEFAULT_CMD);
-        command.add(HG_OPT_REPOSITORY);
-        command.add(repository.getAbsolutePath());
-        command.add(type);
-
-        String res = null;
-        
-        List<String> list = new LinkedList<String>();
-        try {
-            list = exec(command);
-        } catch (HgException ex) {
-            // Ignore Exception
-        }
-        if( !list.isEmpty()
-                    && (!isErrorNotFound(list.get(0)))) {
-            res = list.get(0);
-        }
-        return res;
     }
     
     /**

@@ -97,7 +97,7 @@ public class Utils {
             
     private static Object currentLine;
     
-    static void markCurrent (final Object line) {
+    static synchronized void markCurrent (final Object line) {
         unmarkCurrent ();
         
         Annotatable[] annotatables = (Annotatable[]) line;
@@ -133,7 +133,7 @@ public class Utils {
         showLine (line);
     }
     
-    static void unmarkCurrent () {
+    static synchronized void unmarkCurrent () {
         if (currentLine != null) {
             
 //            ((DebuggerAnnotation) currentLine).detach ();
