@@ -78,11 +78,14 @@ public class DataLoaderInLayerTest extends NbTestCase {
         addRemoveLoader("text/plain", l, add);
     }
     private static void addRemoveLoader(String mime, DataLoader l, boolean add) throws IOException {
-        String res = "Loaders/" + mime + "/Factories/" + l.getClass().getSimpleName().replace('.', '-') + ".instance";
+        addRemove(mime, l.getClass(), add);
+    }
+    private static <F extends DataObject.Factory> void addRemove(String mime, Class<F> clazz, boolean add) throws IOException {
+        String res = "Loaders/" + mime + "/Factories/" + clazz.getSimpleName().replace('.', '-') + ".instance";
         FileObject root = Repository.getDefault().getDefaultFileSystem().getRoot();
         if (add) {
             FileObject fo = FileUtil.createData(root, res);
-            fo.setAttribute("instanceCreate", l);
+            fo.setAttribute("instanceClass", clazz.getName());
         } else {
             FileObject fo = root.getFileObject(res);
             if (fo != null) {
@@ -104,6 +107,21 @@ public class DataLoaderInLayerTest extends NbTestCase {
             assertEquals(SimpleDataObject.class, dob.getClass());
         } finally {
             addRemoveLoader(l, false);
+        }
+    }
+
+    public void testFactoryRegistrationWorksAsWell() throws Exception {
+        addRemove("text/plain", SimpleFactory.class, true);
+        try {
+            FileSystem lfs = createFS("folderF/file.simple");
+            FileObject fo = lfs.findResource("folderF");
+            DataFolder df = DataFolder.findFolder(fo);
+            DataObject[] arr = df.getChildren();
+            assertEquals("One object", 1, arr.length);
+            DataObject dob = arr[0];
+            assertEquals(SimpleDataObject.class, dob.getClass());
+        } finally {
+            addRemove("text/plain", SimpleFactory.class, false);
         }
     }
 
@@ -255,6 +273,12 @@ public class DataLoaderInLayerTest extends NbTestCase {
             return new SimpleDataObject(pf, this);
         }
     }
+    public static final class SimpleFactory implements DataObject.Factory {
+        public DataObject findDataObject(FileObject fo, Set<? super FileObject> recognized) throws IOException {
+            return SimpleUniFileLoader.findObject(SimpleUniFileLoader.class).findDataObject(fo, recognized);
+        }
+    }
+    
     public static final class SimpleDataObject extends MultiDataObject {
         private ArrayList supp = new ArrayList ();
         
