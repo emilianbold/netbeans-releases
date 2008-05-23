@@ -323,8 +323,6 @@ public class SceneAcceptAction extends WidgetAction.Adapter
     
     protected INamespace getNamespace()
     {
-        if (sceneNamespace instanceof StateMachine)
-            return ((StateMachine)sceneNamespace).getFirstRegion();
         return sceneNamespace;
     }
 

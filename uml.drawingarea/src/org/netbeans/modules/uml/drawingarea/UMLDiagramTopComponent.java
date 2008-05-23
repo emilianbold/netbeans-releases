@@ -1143,7 +1143,7 @@ public class UMLDiagramTopComponent extends TopComponent
     {
         if (provider == null)
         {
-            provider = new SceneAcceptProvider(scene.getDiagram().getNamespace());
+            provider = new SceneAcceptProvider(scene.getDiagram().getNamespaceForCreatedElements());
         }
         return provider;
     }

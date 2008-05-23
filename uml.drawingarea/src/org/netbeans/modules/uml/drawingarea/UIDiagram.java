@@ -43,11 +43,10 @@ package org.netbeans.modules.uml.drawingarea;
 
 import java.awt.Rectangle;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.TreeSet;
 import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.IStateMachine;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
@@ -62,7 +61,6 @@ import org.netbeans.modules.uml.core.metamodel.diagrams.IProxyDiagram;
 import org.netbeans.modules.uml.core.metamodel.structure.IProject;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.drawingarea.dataobject.UMLDiagramDataObject;
-import org.netbeans.modules.uml.drawingarea.engines.DiagramEngine;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.netbeans.modules.uml.ui.support.ProductHelper;
 import org.openide.cookies.SaveCookie;
@@ -331,9 +329,18 @@ public class UIDiagram extends Diagram {
     }
     
     public INamespace getNamespaceForCreatedElements() {
-        INamespace retVal = space;
-        
-        return retVal;
+//        INamespace retVal = space;
+//        
+//        return retVal;
+        if (this.getDiagramKind() == IDiagram.DK_STATE_DIAGRAM)
+        {
+            IElement owner = getOwner();
+            if (owner instanceof IStateMachine)
+            {
+                return ((IStateMachine)owner).getFirstRegion();
+            }
+        }
+        return space;
     }
     
     /**
