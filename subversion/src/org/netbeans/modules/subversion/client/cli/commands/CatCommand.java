@@ -43,6 +43,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 import org.netbeans.modules.subversion.client.cli.SvnCommand;
 import org.tigris.subversion.svnclientadapter.ISVNNotifyListener;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
@@ -85,6 +86,11 @@ public class CatCommand extends SvnCommand {
         return new ByteArrayInputStream(bytes == null ? new byte[] {} : bytes);
     }
 
+    @Override
+    public List<String> getCmdError() {
+        return null; // XXX don't throw errors to emulate svnCA behavior
+    }
+    
     @Override
     protected boolean hasBinaryOutput() {
         return true;

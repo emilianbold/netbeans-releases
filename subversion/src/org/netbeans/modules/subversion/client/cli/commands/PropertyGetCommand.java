@@ -41,6 +41,7 @@ package org.netbeans.modules.subversion.client.cli.commands;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import org.netbeans.modules.subversion.client.cli.SvnCommand;
 import org.tigris.subversion.svnclientadapter.ISVNNotifyListener;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
@@ -96,7 +97,12 @@ public class PropertyGetCommand extends SvnCommand {
     @Override
     protected boolean hasBinaryOutput() {
         return true;
-    }    
+    }
+
+    @Override
+    public List<String> getCmdError() {
+        return null;  // XXX don't throw errors to emulate svnCA behavior
+    }
     
     @Override
     public void output(byte[] bytes) {
