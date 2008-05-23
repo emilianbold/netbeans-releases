@@ -107,7 +107,7 @@ public final class Validator extends BpelValidator {
         VariableDeclaration variable = getCommonVariable(list.get(i), list.get(j));
 
         if (variable != null) {
-          addError("FIX_Variable_in_Flow", flow, flow.getName(), getName(variable));
+          addWarning("FIX_Variable_in_Flow", flow, flow.getName(), getName(variable));
           break;
         }
       }
