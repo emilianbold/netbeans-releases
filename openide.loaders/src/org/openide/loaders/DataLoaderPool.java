@@ -286,20 +286,22 @@ implements java.io.Serializable {
         return Collections.enumeration(all);
     }
     
-    final Enumeration<DataLoader> allLoaders(FileObject fo) {
-        class MimeEnum implements Enumeration<DataLoader> {
+    final Enumeration<DataObject.Factory> allLoaders(FileObject fo) {
+        class MimeEnum implements Enumeration<DataObject.Factory> {
             final String mime;
 
             public MimeEnum(String mime) {
                 this.mime = mime;
             }
             
-            Enumeration<? extends DataLoader> delegate;
+            Enumeration<? extends DataObject.Factory> delegate;
             
-            private Enumeration<? extends DataLoader> delegate() {
+            private Enumeration<? extends DataObject.Factory> delegate() {
                 if (delegate == null) {
                     String path = "Loaders/" + mime + "/Factories"; // NOI18N
-                    delegate = Collections.enumeration(Lookups.forPath(path).lookupAll(DataLoader.class));
+                    delegate = Collections.enumeration(Lookups.forPath(path).lookupAll(
+                        DataObject.Factory.class
+                    ));
                 }
                 return delegate;
             }
@@ -308,12 +310,12 @@ implements java.io.Serializable {
                 return delegate().hasMoreElements();
             }
 
-            public DataLoader nextElement() {
+            public DataObject.Factory nextElement() {
                 return delegate().nextElement();
             }
         }
         String mime = fo.getMIMEType();
-        Enumeration<DataLoader> mimeLoaders = new MimeEnum(mime);
+        Enumeration<DataObject.Factory> mimeLoaders = new MimeEnum(mime);
         if (mime.startsWith("text/") && mime.endsWith("+xml")) { // NOI18N
             mimeLoaders = Enumerations.concat(mimeLoaders, new MimeEnum("text/xml")); // NOI18N
         }
@@ -464,13 +466,19 @@ implements java.io.Serializable {
                 return obj;
             }
         }
-        
+
+        HashSet<FileObject> recognized = new HashSet<FileObject>();
         // scan through loaders
-        java.util.Enumeration en = allLoaders (fo);
+        Enumeration<? extends DataObject.Factory> en = allLoaders (fo);
         while (en.hasMoreElements ()) {
-            DataLoader l = (DataLoader)en.nextElement ();
-    
-            DataObject obj = l.findDataObject (fo, r);
+            DataObject.Factory l = en.nextElement ();
+            DataObject obj = l.findDataObject (fo, recognized);
+            if (!recognized.isEmpty()) {
+                for (FileObject f : recognized) {
+                    r.markRecognized(f);
+                }
+                recognized.clear();
+            }
             if (obj != null) {
                 return obj;
             }

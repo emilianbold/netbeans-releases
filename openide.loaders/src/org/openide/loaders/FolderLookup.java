@@ -400,7 +400,7 @@ public class FolderLookup extends FolderInstance {
                 if (
                     fl.folder != null &&
                     fl.folder.getName().equals("Factories") &&
-                    template.getType().isAssignableFrom(DataLoader.class)
+                    template.getType().isAssignableFrom(DataObject.Factory.class)
                 ) {
                     fl.waitFinished();
                 }

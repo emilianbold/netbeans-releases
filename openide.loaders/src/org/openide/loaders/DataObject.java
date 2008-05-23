@@ -1075,6 +1075,30 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
         return NbBundle.getMessage (DataObject.class, name);
     }
     
+    /** Factory interface for converting file object to data objects.
+     * @since 7.0
+     */
+    public static interface Factory {
+        /** Find a data object appropriate to the given file object--the meat of this class.
+        * The loader can add all files it has recognized into the <CODE>recognized</CODE>
+        * buffer. Then all these files will be excluded from further processing.
+        *
+        * @param fo file object to recognize
+        * @param recognized recognized file buffer
+        * @exception DataObjectExistsException if the data object for the
+        *    primary file already exists
+        * @exception IOException if the object is recognized but cannot be created
+        * @exception InvalidClassException if the class is not instance of
+        *    {@link #getRepresentationClass}
+        *
+        * @return suitable data object or <CODE>null</CODE> if the handler cannot
+        *   recognize this object (or its group)
+        * @see DataLoader
+        */
+        public DataObject findDataObject(FileObject fo, Set<? super FileObject> recognized)
+        throws IOException;
+    }
+    
     /** Interface for objects that can contain other data objects.
      * For example DataFolder and DataShadow implement this interface
      * to allow others to access the contained objects in uniform maner
