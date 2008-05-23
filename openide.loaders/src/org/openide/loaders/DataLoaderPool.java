@@ -51,6 +51,7 @@ import org.openide.modules.ModuleInfo;
 import org.openide.nodes.*;
 import org.openide.util.*;
 import org.openide.util.actions.SystemAction;
+import org.openide.util.lookup.Lookups;
 
 /** Pool of data loaders.
  * Provides access to set of registered
@@ -285,6 +286,63 @@ implements java.io.Serializable {
         return Collections.enumeration(all);
     }
     
+    final Enumeration<DataLoader> allLoaders(FileObject fo) {
+        class MimeEnum implements Enumeration<DataLoader> {
+            final String mime;
+
+            public MimeEnum(String mime) {
+                this.mime = mime;
+            }
+            
+            Enumeration<? extends DataLoader> delegate;
+            
+            private Enumeration<? extends DataLoader> delegate() {
+                if (delegate == null) {
+                    String path = "Loaders/" + mime + "/Factories"; // NOI18N
+                    delegate = Collections.enumeration(Lookups.forPath(path).lookupAll(DataLoader.class));
+                }
+                return delegate;
+            }
+            
+            public boolean hasMoreElements() {
+                return delegate().hasMoreElements();
+            }
+
+            public DataLoader nextElement() {
+                return delegate().nextElement();
+            }
+        }
+        String mime = fo.getMIMEType();
+        Enumeration<DataLoader> mimeLoaders = new MimeEnum(mime);
+        if (mime.startsWith("text/") && mime.endsWith("+xml")) { // NOI18N
+            mimeLoaders = Enumerations.concat(mimeLoaders, new MimeEnum("text/xml")); // NOI18N
+        }
+        mimeLoaders = Enumerations.concat(mimeLoaders, new MimeEnum("content/unknown")); // NOI18N
+        try {
+            if (!fo.getFileSystem().isDefault()) {
+                return Enumerations.concat(mimeLoaders, allLoaders());
+            }
+        } catch (FileStateInvalidException ex) {
+            // OK
+        }
+
+
+        ArrayList<DataLoader> all = new ArrayList<DataLoader>();
+        if (preferredLoader != null) {
+            all.add(preferredLoader);
+        }
+        all.addAll(Arrays.asList(getSystemLoaders()));
+        all.add(getFolderLoader());
+        
+        return Enumerations.concat(
+            Collections.enumeration(all),
+            Enumerations.concat(
+                mimeLoaders, 
+                allLoaders()
+            )
+        );
+    }
+    
     /** Get an array of loaders that are currently registered.
      * Does not include special system loaders, etc.
      * @return array of loaders
@@ -408,7 +466,7 @@ implements java.io.Serializable {
         }
         
         // scan through loaders
-        java.util.Enumeration en = allLoaders ();
+        java.util.Enumeration en = allLoaders (fo);
         while (en.hasMoreElements ()) {
             DataLoader l = (DataLoader)en.nextElement ();
     

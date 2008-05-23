@@ -42,17 +42,15 @@
 package org.openide.loaders;
 
 import java.io.IOException;
-import java.util.Enumeration;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.junit.Log;
-import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
 import org.openide.nodes.CookieSet;
-import org.openide.util.Enumerations;
 import org.openide.util.NbBundle;
-import org.openide.util.io.NbMarshalledObject;
+import org.openide.util.lookup.Lookups;
 
 
 /**
@@ -60,7 +58,7 @@ import org.openide.util.io.NbMarshalledObject;
  *
  * @author Jaroslav Tulach
  */
-public class FightWithWrongOrderOfLoadersTest extends LoggingTestCaseHid
+public class FightWithWrongOrderInPathsTest extends LoggingTestCaseHid
 implements DataLoader.RecognizedFiles {
 
     private CharSequence log;
@@ -69,23 +67,34 @@ implements DataLoader.RecognizedFiles {
     private FileObject f2;
     private FileObject root;
     
-    public FightWithWrongOrderOfLoadersTest(String testName) {
+    public FightWithWrongOrderInPathsTest(String testName) {
         super(testName);
     }
 
     protected void setUp() throws Exception {
         log = Log.enable("org.openide.loaders", Level.SEVERE);
 
-        registerIntoLookup(new Pool());
+        init();
+        
+        AddLoaderManuallyHid.addRemoveLoader(FormKitDataLoader.getLoader(FormKitDataLoader.class), true);
+        FileUtil.setMIMEType("java", "text/x-java");
 
         root = FileUtil.createFolder(FileUtil.createMemoryFileSystem().getRoot(), "test");
 
         f0 = FileUtil.createData(root, "j1.java");
         f1 = FileUtil.createData(root, "f.formKit");
         f2 = FileUtil.createData(root, "f.java");
-
+        
+        assertEquals("Right mime type", "text/x-java", f2.getMIMEType());
         FormKitDataLoader.cnt = 0;
     }
+
+    @Override
+    protected void tearDown() throws Exception {
+        AddLoaderManuallyHid.addRemoveLoader(FormKitDataLoader.getLoader(FormKitDataLoader.class), false);
+    }
+    
+    
 
     protected Level logLevel() {
         return Level.INFO;
@@ -103,11 +112,11 @@ implements DataLoader.RecognizedFiles {
         if (obj1 == obj2) {
             fail("They should be different: " + obj1);
         }
+
+        assertEquals("It is default loader", obj1.getLoader(), DataLoaderPool.getDefaultFileLoader());
         if (FormKitDataLoader.cnt == 0) {
             fail("Form loader shall be consulted");
         }
-
-        assertEquals("It is default loader", obj1.getLoader(), DataLoaderPool.getDefaultFileLoader());
     }
 
     public void testRecognizeJavaFirstFormKitLater() throws Exception {
@@ -121,11 +130,11 @@ implements DataLoader.RecognizedFiles {
         if (obj1 == obj2) {
             fail("They should be different: " + obj1);
         }
+
+        assertEquals("It is default loader", obj1.getLoader(), DataLoaderPool.getDefaultFileLoader());
         if (FormKitDataLoader.cnt == 0) {
             fail("Form loader shall be consulted");
         }
-
-        assertEquals("It is default loader", obj1.getLoader(), DataLoaderPool.getDefaultFileLoader());
     }
     
     public void testGetFolderChildren() throws Exception {
@@ -136,10 +145,10 @@ implements DataLoader.RecognizedFiles {
         assertEquals("1st", f2, arr[0].getPrimaryFile());
         assertEquals("2nd", f1, arr[1].getPrimaryFile());
         assertEquals("3rd", f0, arr[2].getPrimaryFile());
-        
         if (FormKitDataLoader.cnt == 0) {
             fail("Form loader shall be consulted");
         }
+        
     }
 
 
@@ -148,17 +157,17 @@ implements DataLoader.RecognizedFiles {
     }
 
 
-    private static final class Pool extends DataLoaderPool {
-        private static DataLoader[] ARR = {
-            JavaDataLoader.getLoader(JavaDataLoader.class),
-            FormKitDataLoader.getLoader(FormKitDataLoader.class),
-        };
+    static void init() throws IOException {
+        FileObject fo = Repository.getDefault().getDefaultFileSystem().getRoot();
+        FileObject data = FileUtil.createData(fo, 
+            "Loaders/text/x-java/Factories/" + 
+            JavaDataLoader.class.getName().replace('.', '-') + ".instance"
+        );
 
-
-        protected Enumeration loaders() {
-            return Enumerations.array(ARR);
-        }
+        Object obj = Lookups.forPath("Loaders/text/x-java").lookup(JavaDataLoader.class);
+        assertNotNull("lookup registered", obj);
     }
+
 
     public static class JavaDataLoader extends MultiFileLoader {
 
@@ -228,7 +237,7 @@ implements DataLoader.RecognizedFiles {
         {
             LOG.info("FormKitDataLoader.findPrimaryFile(): " + fo.getNameExt());
             cnt++;
-
+            
             String ext = fo.getExt();
             if (ext.equals(FORM_EXTENSION))
             {

@@ -47,6 +47,7 @@ import java.util.Map;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import org.openide.util.Exceptions;
 
 /**
  * A special DocumentBuilderFactory that delegates to other factories till
@@ -55,7 +56,16 @@ import javax.xml.parsers.ParserConfigurationException;
  * @author Petr Nejedly
  */
 public class DOMFactoryImpl extends DocumentBuilderFactory {
-    private static Class<? extends DocumentBuilderFactory> first;
+
+    private static Class getFirst() {
+        try {
+            String name = System.getProperty("nb.backup." + Factory_PROP); // NOI18N
+            return name == null ? null : Class.forName(name);
+        } catch (ClassNotFoundException ex) {
+            Exceptions.printStackTrace(ex);
+            return null;
+        }
+    }
 
     private Map<String,Object> attributes = new LinkedHashMap<String,Object>();
     private Map<String,Boolean> features = new LinkedHashMap<String,Boolean>();
@@ -70,13 +80,15 @@ public class DOMFactoryImpl extends DocumentBuilderFactory {
     }
 
     static {
-        ClassLoader orig = Thread.currentThread().getContextClassLoader();
-        // Not app class loader. only ext and bootstrap
-        try {
-           Thread.currentThread().setContextClassLoader(ClassLoader.getSystemClassLoader().getParent());
-           first = DocumentBuilderFactory.newInstance().getClass();
-        } finally {
-           Thread.currentThread().setContextClassLoader(orig);            
+        if (getFirst() == null) {
+            ClassLoader orig = Thread.currentThread().getContextClassLoader();
+            // Not app class loader. only ext and bootstrap
+            try {
+               Thread.currentThread().setContextClassLoader(ClassLoader.getSystemClassLoader().getParent());
+               System.setProperty("nb.backup." + Factory_PROP, DocumentBuilderFactory.newInstance().getClass().getName()); // NOI18N
+            } finally {
+               Thread.currentThread().setContextClassLoader(orig);            
+            }
         }
         
         DOMFactoryImpl.install();
@@ -126,7 +138,7 @@ public class DOMFactoryImpl extends DocumentBuilderFactory {
     }
     
     private DocumentBuilder tryCreate() throws ParserConfigurationException, IllegalArgumentException {
-        for (Iterator<Class<? extends DocumentBuilderFactory>> it = new LazyIterator<DocumentBuilderFactory>(first, DocumentBuilderFactory.class, DOMFactoryImpl.class); it.hasNext(); ) {
+        for (Iterator it = new LazyIterator(getFirst(), DocumentBuilderFactory.class, DOMFactoryImpl.class); it.hasNext(); ) {
             try {
                 DocumentBuilder builder = tryCreate(it.next());
                 return builder;
