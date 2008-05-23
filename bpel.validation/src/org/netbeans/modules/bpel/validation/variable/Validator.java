@@ -44,11 +44,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.LinkedList;
 
 import org.netbeans.modules.bpel.model.api.Assign;
+import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.Copy;
 import org.netbeans.modules.bpel.model.api.To;
 import org.netbeans.modules.bpel.model.api.From;
+import org.netbeans.modules.bpel.model.api.Flow;
 import org.netbeans.modules.bpel.model.api.ContentElement;
 import org.netbeans.modules.bpel.model.api.OnMessage;
 import org.netbeans.modules.bpel.model.api.OperationReference;
@@ -82,6 +85,71 @@ public final class Validator extends BpelValidator {
 
   @Override
   protected SimpleBpelModelVisitor getVisitor() { return new SimpleBpelModelVisitorAdaptor() {
+
+  // # 83632
+  @Override
+  public void visit(Flow flow) {
+//out();
+//out("Flow: " + flow);
+    List<List<VariableDeclaration>> list = new ArrayList<List<VariableDeclaration>>();
+    Collection<BpelEntity> children = flow.getChildren();
+
+    for (BpelEntity child : children) {
+      List<VariableDeclaration> variables = new LinkedList<VariableDeclaration>();
+      findVariables(child, variables);
+
+      if ( !variables.isEmpty()) {
+        list.add(variables);
+      }
+    }
+    for (int i=0; i < list.size(); i++) {
+      for (int j=i+1; j < list.size(); j++) {
+        VariableDeclaration variable = getCommonVariable(list.get(i), list.get(j));
+
+        if (variable != null) {
+          addError("FIX_Variable_in_Flow", flow, flow.getName(), getName(variable));
+          break;
+        }
+      }
+    }
+  }
+
+  private VariableDeclaration getCommonVariable(List<VariableDeclaration> variables1, List<VariableDeclaration> variables2) {
+    for (VariableDeclaration variable : variables1) {
+      if (variables2.contains(variable)) {
+        return variable;
+      }
+    }
+    return null;
+  }
+
+  private void findVariables(BpelEntity entity, List<VariableDeclaration> variables) {
+    if (entity instanceof Assign) {
+      findVariablesInAssign((Assign) entity, variables);
+    }
+    Collection<BpelEntity> children = entity.getChildren();
+
+    for (BpelEntity child : children) {
+      findVariables(child, variables);
+    }
+  }
+
+  private void findVariablesInAssign(Assign assign, List<VariableDeclaration> variables) {
+    Collection<Copy> copies = assign.getChildren(Copy.class);
+
+    for (Copy copy : copies) {
+      BpelReference<VariableDeclaration> ref = copy.getTo().getVariable();
+
+      if (ref == null) {
+        continue;
+      }
+      VariableDeclaration variable = ref.get();
+
+      if (variable != null) {
+        variables.add(variable);
+      }
+    }
+  }
 
   // # 135160
   @Override
