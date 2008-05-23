@@ -50,7 +50,6 @@ import org.netbeans.modules.bpel.model.api.Copy;
 import org.netbeans.modules.bpel.model.api.To;
 import org.netbeans.modules.bpel.model.api.From;
 import org.netbeans.modules.bpel.model.api.ContentElement;
-import org.netbeans.modules.bpel.model.api.OnEvent;
 import org.netbeans.modules.bpel.model.api.OnMessage;
 import org.netbeans.modules.bpel.model.api.OperationReference;
 import org.netbeans.modules.bpel.model.api.PartReference;
@@ -63,14 +62,10 @@ import org.netbeans.modules.bpel.model.api.VariableReference;
 import org.netbeans.modules.bpel.model.api.references.BpelReference;
 import org.netbeans.modules.bpel.model.api.references.WSDLReference;
 
-import org.netbeans.modules.xml.wsdl.model.Input;
 import org.netbeans.modules.xml.wsdl.model.Message;
 import org.netbeans.modules.xml.wsdl.model.Operation;
 import org.netbeans.modules.xml.wsdl.model.OperationParameter;
 import org.netbeans.modules.xml.wsdl.model.Part;
-import org.netbeans.modules.xml.wsdl.model.PortType;
-import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
-import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PartnerLinkType;
 
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
@@ -86,7 +81,7 @@ import static org.netbeans.modules.xml.ui.UI.*;
 public final class Validator extends BpelValidator {
 
   @Override
-  protected final SimpleBpelModelVisitor getVisitor() { return new SimpleBpelModelVisitorAdaptor() {
+  protected SimpleBpelModelVisitor getVisitor() { return new SimpleBpelModelVisitorAdaptor() {
 
   // # 135160
   @Override
@@ -301,7 +296,7 @@ public final class Validator extends BpelValidator {
 //out("SIZE: " + parts.size());
 //out();
     if (parts.size() != 0) {
-      addError("FIX_WSDL_message_variable", (Component) variableReference);
+      addError("FIX_WSDL_message_variable", (Component) variableReference); // NOI18N
     }
   }
 

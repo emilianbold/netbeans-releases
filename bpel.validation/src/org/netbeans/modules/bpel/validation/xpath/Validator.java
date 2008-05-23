@@ -96,7 +96,7 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
   }
 
   @Override
-  protected final SimpleBpelModelVisitor getVisitor() { return new SimpleBpelModelVisitorAdaptor() {
+  protected SimpleBpelModelVisitor getVisitor() { return new SimpleBpelModelVisitorAdaptor() {
 
   @Override
   public void visit(Copy copy) {
@@ -224,7 +224,7 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
     WSDLReference<Role> ref1 = partnerLink.getPartnerRole();
 
     if (ref1 == null || ref1.get() == null) {
-      addError("FIX_To_PartnerLink", to);
+      addError("FIX_To_PartnerLink", to); // NOI18N
     }
   }
 
@@ -422,7 +422,9 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
         addError("FIX_Negative_RepeatEvery", repeatEvery); // NOI18N
       }
     }
-    catch (IllegalArgumentException e) {}
+    catch (IllegalArgumentException e) {
+      return;
+    }
   }
 
   private boolean isZero(Duration duration) {

@@ -40,9 +40,6 @@
  */
 package org.netbeans.modules.bpel.validation.statics;
 
-import java.io.File;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -59,7 +56,6 @@ import javax.xml.namespace.QName;
 
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Lookup;
 import org.netbeans.modules.bpel.model.api.BaseScope;
 import org.netbeans.modules.bpel.model.api.BpelContainer;
 import org.netbeans.modules.bpel.model.api.BpelModel;
@@ -131,25 +127,14 @@ import org.netbeans.modules.xml.wsdl.model.PortType;
 import org.netbeans.modules.xml.wsdl.model.RequestResponseOperation;
 import org.netbeans.modules.xml.wsdl.model.SolicitResponseOperation;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.wsdl.model.WSDLModelFactory;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.CorrelationProperty;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PropertyAlias;
-import org.netbeans.modules.xml.wsdl.model.Message;
-import org.netbeans.modules.xml.wsdl.model.OneWayOperation;
-import org.netbeans.modules.xml.wsdl.model.Operation;
-import org.netbeans.modules.xml.wsdl.model.RequestResponseOperation;
-import org.netbeans.modules.xml.wsdl.model.extensions.bpel.CorrelationProperty;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.xml.xam.Model;
-import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
-import org.netbeans.modules.xml.xam.locator.CatalogModelException;
-import org.netbeans.modules.xml.xam.locator.CatalogModelFactory;
 import org.netbeans.modules.xml.schema.model.Schema;
-import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
-import org.netbeans.modules.xml.schema.model.SchemaModelFactory;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.Activity;
 import org.netbeans.modules.xml.xam.Model.State;
@@ -182,7 +167,7 @@ import static org.netbeans.modules.xml.ui.UI.*;
 public final class Validator extends BpelValidator {
     
   @Override
-  protected final SimpleBpelModelVisitor getVisitor() { return new SimpleBpelModelVisitorAdaptor() {
+  protected SimpleBpelModelVisitor getVisitor() { return new SimpleBpelModelVisitorAdaptor() {
 
   // # 86958 SA00014
   private void checkDuplicate(Process process) {
@@ -434,11 +419,8 @@ public final class Validator extends BpelValidator {
       }
       // Rule: The initializePartnerRole attribute MUST NOT be used on a partnerLink
       // that does not have a partner role; this restriction MUST be statically enforced.
-      if( p.getPartnerRole() == null || p.getPartnerRole().equals("")) {
-          if((p.getInitializePartnerRole() != null) &&
-                  (!p.getInitializePartnerRole().equals(
-                  TBoolean.INVALID))) 
-          {
+      if (p.getPartnerRole() == null || p.getPartnerRole().equals("")) {
+          if ((p.getInitializePartnerRole() != null) && (!p.getInitializePartnerRole().equals(TBoolean.INVALID))) {
               addError(FIX_INITIALISE_PARTNER_ROLE, p);
           }
       }
@@ -841,10 +823,7 @@ public final class Validator extends BpelValidator {
   
   @Override
   public void visit( OnEvent onEvent ) {
-      if  ( onEvent.getVariable()!= null &&
-               onEvent.getMessageType() == null && 
-               onEvent.getElement() == null )
-      {
+      if (onEvent.getVariable()!= null && onEvent.getMessageType() == null && onEvent.getElement() == null) {
           addError(FIX_ON_EVENT_VARAIBLE, onEvent);
       }
       
@@ -905,8 +884,7 @@ public final class Validator extends BpelValidator {
   }
 
   @Override
-  public void visit( Catch catc )
-  {
+  public void visit(Catch catc) {
       /*
        * Rule : For the <catch> construct; to have a defined type 
        * associated with the fault variable, the faultVariable 
@@ -1011,11 +989,8 @@ public final class Validator extends BpelValidator {
 
   @Override
   public void visit( Pick pick ) {
-      if ( TBoolean.YES.equals( pick.getCreateInstance()) && 
-              pick.sizeOfOnAlarms() != 0 )
-      {
-              Collection<Component> collection = 
-                  Arrays.asList( (Component[])pick.getOnAlarms());
+      if (TBoolean.YES.equals( pick.getCreateInstance()) && pick.sizeOfOnAlarms() != 0) {
+              Collection<Component> collection = Arrays.asList( (Component[])pick.getOnAlarms());
               
               for (Component component : collection) {
                 addError(FIX_PICK_MESSAGES, component);
@@ -1094,9 +1069,8 @@ public final class Validator extends BpelValidator {
           // if it null then reference validator will report about error
           if ( property!= null ) {
               NamedComponentReference<GlobalType> typeRef = property.getType();
-              if ( typeRef == null || 
-                      !(typeRef.get() instanceof GlobalSimpleType)) 
-              {
+
+              if (typeRef == null || !(typeRef.get() instanceof GlobalSimpleType)) {
                   addError( FIX_BAD_CORRELATION_PROPERTY_TYPE , set );
               }
           }
@@ -1145,15 +1119,12 @@ public final class Validator extends BpelValidator {
        * in any WSDL definitions directly imported by the WS-BPEL process.
        */
       BpelContainer parent = container.getParent();
-      if (parent instanceof OperationReference && parent instanceof Responder)
-      {
-          checkPropertyUsageInInputMessage(
-                  (OperationReference) parent, container.getCorrelations());
+    
+      if (parent instanceof OperationReference && parent instanceof Responder) {
+          checkPropertyUsageInInputMessage((OperationReference) parent, container.getCorrelations());
       }
-      if (parent instanceof OperationReference && parent instanceof Requester)
-      {
-          checkPropertyUsageInOutputMessage(
-                  (OperationReference) parent, container.getCorrelations());
+      if (parent instanceof OperationReference && parent instanceof Requester) {
+          checkPropertyUsageInOutputMessage((OperationReference) parent, container.getCorrelations());
       }
   }
   
@@ -1165,22 +1136,17 @@ public final class Validator extends BpelValidator {
        * in any WSDL definitions directly imported by the WS-BPEL process.
        */
       BpelContainer parent = container.getParent();
-      if ( parent instanceof OperationReference && parent instanceof Responder ) {
-          checkPropertyUsageInInputMessage( 
-                  (OperationReference) parent , 
-                  container.getPatternedCorrelations() );
+    
+      if (parent instanceof OperationReference && parent instanceof Responder) {
+          checkPropertyUsageInInputMessage((OperationReference) parent, container.getPatternedCorrelations());
       }
-      if (parent instanceof OperationReference && parent instanceof Requester)
-      {
-          checkPropertyUsageInOutputMessage(
-                  (OperationReference) parent, 
-                  container.getPatternedCorrelations());
+      if (parent instanceof OperationReference && parent instanceof Requester) {
+          checkPropertyUsageInOutputMessage((OperationReference) parent, container.getPatternedCorrelations());
       }
   }
   
   @Override
-  public void visit( CorrelationSetContainer container )
-  {
+  public void visit(CorrelationSetContainer container) {
       /*
        *  The name of a <correlationSet> MUST be unique amongst the names of 
        *  all <correlationSet> defined within the same immediately 
@@ -1199,15 +1165,15 @@ public final class Validator extends BpelValidator {
   }
   
   @Override
-  public void visit( PartnerLinkContainer container )
-  {
+  public void visit(PartnerLinkContainer container) {
       /*
        * The name of a partnerLink MUST be unique amongst the names of all 
        * partnerLinks defined within the same immediately enclosing scope. 
        * This requirement MUST be statically enforced.
        */
       PartnerLink[] links = container.getPartnerLinks();
-      if ( links == null ){
+
+      if (links == null) {
           return;
       }
       Map<String,Collection<Component>> map = new HashMap<String, Collection<Component>>();
@@ -1219,8 +1185,7 @@ public final class Validator extends BpelValidator {
   }
   
   @Override
-  public void visit( Extension extension )
-  {
+  public void visit(Extension extension) {
       /*
        * Rule : In the case of mandatory extensions declared in the
        * <extensions> element not supported by a WS-BPEL implementation, the
@@ -1286,9 +1251,9 @@ public final class Validator extends BpelValidator {
   
   public void checkOverloadedPortTypeOperation( BpelEntity bpelEntity,
           WSDLReference<PortType> portType) {
-      if(portType == null || portType.get()==null)
+      if (portType == null || portType.get() == null) {
           return;
-      
+      }
       Collection<Operation> operations = portType.get().getOperations();
       Set<String> operationsSet = new HashSet<String>();
       
@@ -1302,28 +1267,24 @@ public final class Validator extends BpelValidator {
   }
   
   public void checkInputVariableToPartCombination(Invoke invoke) {
-      if(invoke.getInputVariable() != null)
-          if(invoke.getToPartContaner()!=null && 
-                  invoke.getToPartContaner().sizeOfToParts()!=0) 
-          {
-              addError( FIX_INPUTVARIABLE_TOPART_COMBINATION , invoke );
+      if (invoke.getInputVariable() != null) {
+          if (invoke.getToPartContaner() != null && invoke.getToPartContaner().sizeOfToParts() != 0) {
+              addError(FIX_INPUTVARIABLE_TOPART_COMBINATION, invoke);
           }
+      }
   }
   
   public void checkOutputVariableFromPartCombination(Invoke invoke) {
-      if(invoke.getOutputVariable() != null)
-          if(invoke.getFromPartContaner()!=null && 
-                  invoke.getFromPartContaner().sizeOfFromParts()!=0) 
-          {
-              addError( FIX_OUTPUTVARIABLE_FROMPART_COMBINATION, invoke );
+      if (invoke.getOutputVariable() != null) {
+          if (invoke.getFromPartContaner() != null && invoke.getFromPartContaner().sizeOfFromParts() != 0) {
+              addError(FIX_OUTPUTVARIABLE_FROMPART_COMBINATION, invoke);
           }
+      }
   }
   
   public void checkValidPartAttributeFromPartElement(Invoke invoke) {
       // Only if one or more <fromPart> elements is defined.
-      if(invoke.getFromPartContaner()!=null && 
-              invoke.getFromPartContaner().sizeOfFromParts()!=0) 
-      {
+      if(invoke.getFromPartContaner()!=null && invoke.getFromPartContaner().sizeOfFromParts()!=0) {
           // For each <fromPart> element.
           FromPart[] fromParts = invoke.getFromPartContaner().getFromParts();
           for (FromPart fromPart : fromParts) {
@@ -1338,21 +1299,16 @@ public final class Validator extends BpelValidator {
               
               if(partRef != null) {
                   // This will be handled by another rule.
-                  if(invoke.getOperation()==null || 
+                  if (invoke.getOperation()==null || 
                           invoke.getOperation().get() ==null ||
                           invoke.getOperation().get().getOutput()==null ||
-                          invoke.getOperation().get().getOutput().
-                              getMessage() == null ||
-                          invoke.getOperation().get().getOutput().
-                              getMessage().get() == null ||
-                          invoke.getOperation().get().getOutput().getMessage().
-                              get().getParts() == null  )
-                  {
+                          invoke.getOperation().get().getOutput().getMessage() == null ||
+                          invoke.getOperation().get().getOutput().getMessage().get() == null ||
+                          invoke.getOperation().get().getOutput().getMessage().get().getParts() == null
+                  ) {
                       return;
                   }
-                  for(Part wsdlPart: invoke.getOperation().get().getOutput().
-                          getMessage().get().getParts()) 
-                  {
+                  for(Part wsdlPart: invoke.getOperation().get().getOutput().getMessage().get().getParts()) {
                       if(wsdlPart.equals(partRef)) {
                           valid = true;
                           break;
@@ -1369,9 +1325,7 @@ public final class Validator extends BpelValidator {
   
   public void checkValidPartAttributeToPartElement(Invoke invoke) {
       // Only if one or more <toPart> elements is defined.
-      if(invoke.getToPartContaner()!=null && 
-              invoke.getToPartContaner().sizeOfToParts()!=0) 
-      {
+      if(invoke.getToPartContaner()!=null && invoke.getToPartContaner().sizeOfToParts()!=0) {
           // For each <toPart> element.
           ToPart[] toParts = invoke.getToPartContaner().getToParts();
           for (ToPart toPart : toParts) {
@@ -1385,21 +1339,16 @@ public final class Validator extends BpelValidator {
               Part partRef = part.get();
               if(partRef != null) {
                   // This will be handled by another rule.
-                  if(invoke.getOperation()==null || invoke.getOperation().
+                  if (invoke.getOperation()==null || invoke.getOperation().
                           get() ==null ||
                           invoke.getOperation().get().getInput()==null ||
-                          invoke.getOperation().get().getInput().
-                              getMessage() == null ||
-                          invoke.getOperation().get().getInput().getMessage().
-                              get() == null ||
-                          invoke.getOperation().get().getInput().getMessage().
-                              get().getParts() == null  )
-                  {
+                          invoke.getOperation().get().getInput().getMessage() == null ||
+                          invoke.getOperation().get().getInput().getMessage().get() == null ||
+                          invoke.getOperation().get().getInput().getMessage().get().getParts() == null
+                  ) {
                       return;
                   }
-                  for(Part wsdlPart: invoke.getOperation().get().getInput().
-                          getMessage().get().getParts()) 
-                  {
+                  for (Part wsdlPart: invoke.getOperation().get().getInput().getMessage().get().getParts()) {
                       if(wsdlPart.equals(partRef)) {
                           valid = true;
                           break;
@@ -1421,24 +1370,20 @@ public final class Validator extends BpelValidator {
   public void checkAnyMissingToPartElementInInvoke(Invoke invoke) {
       
       // This will be handled by another rule.
-      if(invoke.getOperation()==null || invoke.getOperation().get() ==null ||
+      if (invoke.getOperation()==null || invoke.getOperation().get() ==null ||
               invoke.getOperation().get().getInput()==null ||
               invoke.getOperation().get().getInput().getMessage() == null ||
               invoke.getOperation().get().getInput().getMessage().get() == null ||
               invoke.getOperation().get().getInput().getMessage().get().
-              getParts() == null  ) 
-      {
+              getParts() == null
+      ) {
           return;
-      } else {
-          if(invoke.getToPartContaner()==null || 
-                  invoke.getToPartContaner().sizeOfToParts()==0) 
-          {
+      } 
+      else {
+          if (invoke.getToPartContaner() == null || invoke.getToPartContaner().sizeOfToParts() == 0) {
               return;
           }
-          
-          for(Part wsdlPart: invoke.getOperation().get().getInput().getMessage().
-                  get().getParts()) 
-          {
+          for (Part wsdlPart: invoke.getOperation().get().getInput().getMessage().get().getParts()) {
               // Each part in the wsdl message must be assigned via a <toPart>
               boolean assigned = false;
               ToPart[] toParts = invoke.getToPartContaner().getToParts();
@@ -1463,24 +1408,19 @@ public final class Validator extends BpelValidator {
   }
   
   public void checkAnyMissingToPartElementInReply(Reply reply) {
-      if(reply.getOperation()==null || reply.getOperation().get() ==null ||
+      if (reply.getOperation()==null || reply.getOperation().get() ==null ||
               reply.getOperation().get().getOutput()==null ||
               reply.getOperation().get().getOutput().getMessage() == null ||
               reply.getOperation().get().getOutput().getMessage().get() == null ||
-              reply.getOperation().get().getOutput().getMessage().get().
-                  getParts() == null  ) 
-      {
+              reply.getOperation().get().getOutput().getMessage().get().getParts() == null
+      ) {
           return;
-      } else {
-          if(reply.getToPartContaner()==null || 
-                  reply.getToPartContaner().sizeOfToParts()==0)
-          {
+      }
+      else {
+          if (reply.getToPartContaner() == null || reply.getToPartContaner().sizeOfToParts() == 0) {
               return;
           }
-          
-          for(Part wsdlPart: reply.getOperation().get().getOutput().getMessage().
-                  get().getParts()) 
-          {
+          for (Part wsdlPart: reply.getOperation().get().getOutput().getMessage().get().getParts()) {
               // Each part in the wsdl message must be assigned via a <toPart>
               boolean assigned = false;
               ToPart[] toParts = reply.getToPartContaner().getToParts();
@@ -1491,12 +1431,12 @@ public final class Validator extends BpelValidator {
                       continue;
                   }
                   Part part =  partRef.get();
-                  if(part != null && wsdlPart.equals(part)){
+                  if (part != null && wsdlPart.equals(part)){
                       assigned = true;
                       break;
                   }
               }
-              if(!assigned) {
+              if ( !assigned) {
                   addError( FIX_WSDL_MESSAGE_NOT_COMPLETELY_INITIALISED, reply);
                   break;
               }
@@ -1509,9 +1449,7 @@ public final class Validator extends BpelValidator {
           return;
       }
       if (receive.getVariable() != null) {
-          if(receive.getFromPartContaner() != null && 
-                  receive.getFromPartContaner().sizeOfFromParts() != 0) 
-          {
+          if (receive.getFromPartContaner() != null && receive.getFromPartContaner().sizeOfFromParts() != 0) {
               addError(FIX_RECEIVE_VARIABLE_FROMPART_COMBINATION, receive);
           }
       }
@@ -1532,27 +1470,22 @@ public final class Validator extends BpelValidator {
   }
   
   public void checkOnMessageVariableFromPartCombination(OnMessage onMessage) {
-      if(onMessage == null) {
+      if (onMessage == null) {
           return;
       }
-      
-      if(onMessage.getVariable() != null) {
-          if(onMessage.getFromPartContaner()!=null && 
-                  onMessage.getFromPartContaner().sizeOfFromParts()!=0) 
-          {
+      if (onMessage.getVariable() != null) {
+          if (onMessage.getFromPartContaner() != null && onMessage.getFromPartContaner().sizeOfFromParts() != 0) {
               addError( FIX_ONMESSAGE_VARIABLE_FROMPART_COMBINATION, onMessage );
           }
       }
   }    
   
   public void checkReplyVariableToPartCombination(Reply reply) {
-      if(reply == null) {
+      if (reply == null) {
           return;
       }
-      if(reply.getVariable() != null) {
-          if(reply.getToPartContaner()!=null && 
-                  reply.getToPartContaner().sizeOfToParts()!=0)
-          {
+      if (reply.getVariable() != null) {
+          if (reply.getToPartContaner() != null && reply.getToPartContaner().sizeOfToParts() != 0) {
               addError( FIX_REPLY_VARIABLE_TOPART_COMBINATION , reply );
           }
       }
@@ -1682,8 +1615,7 @@ public final class Validator extends BpelValidator {
   }
 
   private void checkOrderOfActivities( CreateInstanceActivity activity ) {
-      if ( TBoolean.YES.equals( activity.getCreateInstance())  )
-      {
+      if ( TBoolean.YES.equals( activity.getCreateInstance())) {
           /* 
            * I will put into this set visited container ( sequence and flow )
            * for avoiding visiting them one more time while following up of tree.
@@ -1862,11 +1794,8 @@ public final class Validator extends BpelValidator {
               checkOutputVariable( invoke , operation );
           }
       }
-      else if (operation instanceof OneWayOperation)
-      {
-          if (invoke.getOutputVariable() != null ||
-           (invoke.getFromPartContaner() != null && invoke.getFromPartContaner().sizeOfFromParts() > 0))
-          {
+      else if (operation instanceof OneWayOperation) {
+          if (invoke.getOutputVariable() != null || (invoke.getFromPartContaner() != null && invoke.getFromPartContaner().sizeOfFromParts() > 0)) {
               addError(FIX_OUTPUT_VARIABLE_FOR_ONE_WAY_OP, invoke);
           }           
           if (isAbsentInputVaribale(invoke, operation)) {
@@ -2061,18 +1990,14 @@ public final class Validator extends BpelValidator {
       }
   }
 
-  private void checEmptySet( Set<CorrelationSet> sharedCorrelations, 
-          Collection<Component> components ) 
-  {
+  private void checEmptySet(Set<CorrelationSet> sharedCorrelations, Collection<Component> components) {
       if ( sharedCorrelations.size() ==0 ) {
           addErrorCollection(FIX_ABSENT_SHARED_JOINED_CORRELATION_SET, components);
       }
   }
 
-  @SuppressWarnings("unchecked")
-  private Collection<CorrelationSet> getJoinedCorrelationSets( 
-          Activity activity )
-  {
+  @SuppressWarnings("unchecked") // NOI18N
+  private Collection<CorrelationSet> getJoinedCorrelationSets(Activity activity) {
       if ( activity.getElementType().equals( Receive.class )) {
           Receive receive = (Receive)activity;
           return getJoinedCorrelationSets(receive.getCorrelationContainer());
@@ -2128,7 +2053,7 @@ public final class Validator extends BpelValidator {
       }
   }
 
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("unchecked") // NOI18N
   private Set<PropertyAlias> getPropertyAliases(QName name, Message message, BpelModel model) {
       Import[] imports = model.getProcess().getImports();
       if ( imports.length == 0 ) {
@@ -2177,10 +2102,8 @@ public final class Validator extends BpelValidator {
       }
   }
 
-  @SuppressWarnings("unchecked")
-  private Collection<CorrelationSet> getJoinedCorrelationSets( 
-          CorrelationContainer container ) 
-  {
+  @SuppressWarnings("unchecked") // NOI18N
+  private Collection<CorrelationSet> getJoinedCorrelationSets(CorrelationContainer container) {
       Collection<CorrelationSet> collection = new LinkedList<CorrelationSet>();
       if ( container == null ) {
           return Collections.EMPTY_LIST;
@@ -2233,9 +2156,7 @@ public final class Validator extends BpelValidator {
       checkVariable(invoke, varRef, message);
   }
   
-  private void checkVariable( Invoke invoke, 
-          BpelReference<VariableDeclaration> varRef , Message message ) 
-  {
+  private void checkVariable(Invoke invoke, BpelReference<VariableDeclaration> varRef, Message message) {
       if ( varRef == null ) {
           return;
       }
@@ -2252,18 +2173,16 @@ public final class Validator extends BpelValidator {
               addError( FIX_BAD_VARIABLE_MESSAGE_TYPE , invoke );
           }
       }
-      else if ( variable.getElement()!= null )
-      {
+      else if ( variable.getElement()!= null) {
           SchemaReference<GlobalElement> varElement = variable.getElement();
+
           if ( !checkElementType(message, varElement) ) {
               addError( FIX_BAD_VARIABLE_ELEMENT_TYPE , invoke );
           }
       }
   }
 
-  private boolean checkElementType( Message message, 
-          SchemaReference<GlobalElement> varElement ) 
-  {
+  private boolean checkElementType( Message message, SchemaReference<GlobalElement> varElement) {
       if (message.getParts().size() != 1) {
           return false;
       }
@@ -2293,16 +2212,11 @@ public final class Validator extends BpelValidator {
         addWarning("FIX_MentionedInputVariableForOneWayOp", invoke); // NOI18N
         return false;
       }
-      if (message.getParts().size() != 0 &&
-           invoke.getInputVariable() == null &&
-          (invoke.getToPartContaner() == null ||
-           invoke.getToPartContaner().sizeOfToParts() == 0))
-      {
+      if (message.getParts().size() != 0 && invoke.getInputVariable() == null && (invoke.getToPartContaner() == null || invoke.getToPartContaner().sizeOfToParts() == 0)) {
           return true;
       }
       else if ( message.getParts().size() == 0 ) {
-          return invoke.getToPartContaner() == null || 
-              invoke.getToPartContaner().sizeOfToParts() == 0;
+          return invoke.getToPartContaner() == null || invoke.getToPartContaner().sizeOfToParts() == 0;
       }
       return false;
   }
@@ -2318,16 +2232,11 @@ public final class Validator extends BpelValidator {
         addWarning("FIX_MentionedInputVariable", reply); // NOI18N
         return false;
       }
-      if (message.getParts().size() != 0 &&
-            reply.getVariable() == null &&
-           (reply.getToPartContaner() == null ||
-            reply.getToPartContaner().sizeOfToParts() == 0))
-      {
+      if (message.getParts().size() != 0 && reply.getVariable() == null && (reply.getToPartContaner() == null || reply.getToPartContaner().sizeOfToParts() == 0)) {
           return true;
       }
       else if ( message.getParts().size() == 0 ) {
-          return reply.getToPartContaner() == null || 
-                  reply.getToPartContaner().sizeOfToParts() == 0;
+          return reply.getToPartContaner() == null || reply.getToPartContaner().sizeOfToParts() == 0;
       }
       return false;
   }
@@ -2343,16 +2252,11 @@ public final class Validator extends BpelValidator {
         addWarning("FIX_MentionedInputOutputVariables", invoke); // NOI18N
         return false;
       }
-      if (message.getParts().size() != 0 &&
-           invoke.getOutputVariable() == null &&
-          (invoke.getFromPartContaner() == null ||
-           invoke.getFromPartContaner().sizeOfFromParts() == 0))
-      {
+      if (message.getParts().size() != 0 && invoke.getOutputVariable() == null && (invoke.getFromPartContaner() == null || invoke.getFromPartContaner().sizeOfFromParts() == 0)) {
           return true;
       }
       else if ( message.getParts().size() == 0 ) {
-          return  invoke.getFromPartContaner() == null ||
-              invoke.getFromPartContaner().sizeOfFromParts() == 0;
+          return  invoke.getFromPartContaner() == null || invoke.getFromPartContaner().sizeOfFromParts() == 0;
       }
       return false;
   }
@@ -2368,16 +2272,11 @@ public final class Validator extends BpelValidator {
         addWarning("FIX_MentionedOutputVariable", receive); // NOI18N
         return false;
       }
-      if (message.getParts().size() != 0 &&
-          receive.getVariable() == null &&
-         (receive.getFromPartContaner() == null ||
-          receive.getFromPartContaner().sizeOfFromParts() == 0))
-      {
+      if (message.getParts().size() != 0 && receive.getVariable() == null && (receive.getFromPartContaner() == null || receive.getFromPartContaner().sizeOfFromParts() == 0)) {
           return true;
       }
       else if (message.getParts().size() == 0) {
-          return receive.getFromPartContaner() == null ||
-                 receive.getFromPartContaner().sizeOfFromParts() == 0;
+          return receive.getFromPartContaner() == null || receive.getFromPartContaner().sizeOfFromParts() == 0;
       }
       return false;
   }
@@ -2575,7 +2474,7 @@ public final class Validator extends BpelValidator {
       };
       boolean targetInside = getContainer( target , flow , containers ) != null;
       boolean sourceInside = getContainer( source , flow, containers ) != null;
-      Collection<Component> collection = new ArrayList<Component>(3);
+      Collection<Component> collection = new ArrayList<Component>();
       if ( targetInside ){
           collection.add( target );
       }
@@ -2619,7 +2518,7 @@ public final class Validator extends BpelValidator {
           }
       }
       if (badHandlersBoundaries) {
-          Collection<Component> collection = new ArrayList<Component>(3);
+          Collection<Component> collection = new ArrayList<Component>();
           collection.add(target);
           collection.add(source);
           collection.add(link);
@@ -2627,11 +2526,11 @@ public final class Validator extends BpelValidator {
       }
   }
   
-  @SuppressWarnings("unchecked")
-  private BpelContainer getContainer( BpelEntity child, BpelContainer parent,
-          Class...classes ) {
+  @SuppressWarnings("unchecked") // NOI18N
+  private BpelContainer getContainer( BpelEntity child, BpelContainer parent, Class...classes) {
       BpelContainer container = child.getParent();
-      while( container!= null && !container.equals( parent) ){
+
+      while (container != null && !container.equals(parent)) {
           for (Class clazz : classes) {
               if ( clazz.isAssignableFrom( container.getClass())){
                   return container;
@@ -2654,10 +2553,7 @@ public final class Validator extends BpelValidator {
       return false;
   }
 
-  private ExtendableActivity findPreviouslyPerformedActivities( 
-          ExtendableActivity activity , Set<CompositeActivity> set ) 
-  {
-
+  private ExtendableActivity findPreviouslyPerformedActivities(ExtendableActivity activity, Set<CompositeActivity> set) {
       if ( !isAcceptableActivity(activity) ) {
           return activity;
       }
@@ -2710,9 +2606,7 @@ public final class Validator extends BpelValidator {
       return getUntargetedUnacceptableActivity( flow , compositeActivities );
   }
 
-  private ExtendableActivity getUntargetedUnacceptableActivity( 
-          Activity activity , Set<CompositeActivity> set ) 
-  {
+  private ExtendableActivity getUntargetedUnacceptableActivity(Activity activity, Set<CompositeActivity> set) {
       /*
        * We are trying to find here unacceptable activity inside flow that 
        * do not have target at all.
@@ -2744,9 +2638,7 @@ public final class Validator extends BpelValidator {
       return null;
   }
 
-  private ExtendableActivity findDescendantActivity( 
-          Set<ExtendableActivity> set ) 
-  {
+  private ExtendableActivity findDescendantActivity(Set<ExtendableActivity> set) {
       for (ExtendableActivity preceding : set) {
           ExtendableActivity found = findDescendantActivity( preceding );
           if ( found != null) {
@@ -2756,7 +2648,7 @@ public final class Validator extends BpelValidator {
       return null;
   }
 
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("unchecked") // NOI18N
   private Set<ExtendableActivity> getLogicallyPreceding(ExtendableActivity activity) {
       /*
        * This method collect all preceding activities for activity.
@@ -2773,9 +2665,7 @@ public final class Validator extends BpelValidator {
       return set;
   }
 
-  private void collectPreceding( Activity activity , 
-          Set<ExtendableActivity> set) 
-  {
+  private void collectPreceding(Activity activity, Set<ExtendableActivity> set) {
       if ( set.contains(activity)) {
           return;
       }
@@ -2858,17 +2748,15 @@ public final class Validator extends BpelValidator {
       return null;
   }
   
-  private boolean isAcceptableActivity( ExtendableActivity activity ) {
-      if ( activity instanceof CreateInstanceActivity ) {
-          if ( TBoolean.YES.equals(
-                  ((CreateInstanceActivity) activity).getCreateInstance()) )
-          {
+  private boolean isAcceptableActivity(ExtendableActivity activity) {
+      if (activity instanceof CreateInstanceActivity) {
+          if (TBoolean.YES.equals(((CreateInstanceActivity) activity).getCreateInstance())) {
               return true;
           }
       }
       Class clazz = activity.getElementType();
-      return clazz.equals( Scope.class ) || clazz.equals( Flow.class ) ||
-          clazz.equals( Sequence.class ) || clazz.equals( Empty.class );
+
+      return clazz.equals( Scope.class ) || clazz.equals( Flow.class ) || clazz.equals( Sequence.class ) || clazz.equals( Empty.class );
   }
   
   };}
@@ -2886,8 +2774,7 @@ public final class Validator extends BpelValidator {
   
   private static final class LazyHolder {
       
-      static final NameAccess SOURCE_LINK_NAME_ACCESS = new NameAccess() 
-      {
+      static final NameAccess SOURCE_LINK_NAME_ACCESS = new NameAccess() {
           public String getName( BpelEntity entity ) {
               if ( entity instanceof Source ) {
                   BpelReference<Link> ref = ((Source)entity).getLink();
@@ -2927,66 +2814,66 @@ public final class Validator extends BpelValidator {
   
   private static final DefaultNameAccess DEFAULT_NAME_ACESS = new DefaultNameAccess();
 
-  private static final String FIX_PORT_TYPE_OVERLOADED_OPERATION_NAME = "FIX_PortTypeOverloadedOperationName";                          // NOI18N
-  private static final String FIX_WSDLOPERATION_SOLICIT_RESPONSE_NOTIFICATION = "FIX_WSDLOperationSolicitResponseNotification";                 // NOI18N
-  private static final String FIX_INPUTVARIABLE_TOPART_COMBINATION = "FIX_InputVariableToPartCombination";                           // NOI18N
-  private static final String FIX_OUTPUTVARIABLE_FROMPART_COMBINATION = "FIX_OutputVariableFromPartCombination";                        // NOI18N
-  private static final String FIX_INVALID_FROMPART_PARTATTR = "FIX_InvalidFromPartPartAttribute";                             // NOI18N
-  private static final String FIX_INVALID_TOPART_PARTATTR = "FIX_InvalidToPartPartAttribute";                               // NOI18N
-  private static final String FIX_RECEIVE_VARIABLE_FROMPART_COMBINATION = "FIX_ReceiveVariableFromPartCombination";                       // NOI18N
-  private static final String FIX_REPLY_VARIABLE_TOPART_COMBINATION = "FIX_ReplyVariableToPartCombination";                           // NOI18N
-  private static final String FIX_COMPENSATE_OCCURANCE = "FIX_CompensateOccurance";                                      // NOI18N
-  private static final String FIX_MULTIPLE_NAMED_ACTIVITIES = "FIX_MultipleNamedActivities";                                  // NOI18N
-  private static final String FIX_EXIT_ON_STANDART_FAULT = "FIX_ExitOnStandartFault";                                      // NOI18N
-  private static final String FIX_BAD_IMPORT_TYPE = "FIX_BadImportType";                                            // NOI18N
-  private static final String FIX_NO_PICK_OR_RECEIVE_WITH_CREATE_INSTANCE = "FIX_NoPickReceiveWithCreateInstance";                          // NOI18N
-  private static final String FIX_MILTIPLE_LINK_SOURCE = "FIX_MultipleLinkSource";                                       // NOI18N
-  private static final String FIX_MILTIPLE_LINK_TARGET = "FIX_MultipleLinkTarget";                                       // NOI18N
-  private static final String FIX_LINK_IS_NOT_USED = "FIX_LinkIsNotUsed";                                            // NOI18N
-  private static final String FIX_MULTIPLE_LINKS_WITH_SAME_SOURCE_AND_TARGET = "FIX_MultipleLinksWithSameSourceAndTarget";                     // NOI18N
-  private static final String FIX_SCOPE_INSIDE_FCT_CONTAINS_COMPENSATION_HANDLER = "FIX_ScopeWithCompenstationHandlerInsideFCT";                   // NOI18N
-  private static final String FIX_MESSAGE_TYPE_IN_ON_EVENT = "FIX_MessageTypeInOnEvent";                                     // NOI18N
-  private static final String FIX_ELEMENT_IN_ON_EVENT = "FIX_ElementInOnEvent";                                         // NOI18N
-  private static final String FIX_LINK_CROSS_BOUNDARY_REPEATABLE_CONSTRUCT = "FIX_LinkCrossBoundaryRepeatableConstract";                     // NOI18N
-  private static final String FIX_BAD_HANDLERS_LINK_BOUNDARIES = "FIX_BadHandlersLinkBoundaries";                                // NOI18N
-  private static final String FIX_WSDL_MESSAGE_NOT_COMPLETELY_INITIALISED = "FIX_WSDL_Message_Not_Completely_Initialised";                  // NOI18N
-  private static final String FIX_ONMESSAGE_VARIABLE_FROMPART_COMBINATION = "FIX_OnMessage_Variable_FromPart_Combination";                  // NOI18N
-  private static final String FIX_OUTPUT_VARIABLE_FOR_ONE_WAY_OP = "FIX_OutputVariableForOneWayOperation";                             // NOI18N
-  private static final String FIX_ABSENT_INPUT_VARIABLE_FOR_ONE_WAY_OP = "FIX_AbsentInputVariableForOneWayOp";                               // NOI18N
-  private static final String FIX_ABSENT_INPUT_OUTPUT_VARIABLES = "FIX_AbsentInputOutputVariables";                                   // NOI18N
-  private static final String FIX_BAD_VARIABLE_MESSAGE_TYPE = "FIX_BadVariableMessageType";                                       // NOI18N
-  private static final String FIX_BAD_VARIABLE_ELEMENT_TYPE = "FIX_BadVariableElementType";                                       // NOI18N
-  private static final String FIX_START_ACTIVITY_IS_NOT_FIRST_EXECUTED = "FIX_StartActivityHasPreceding";                                    // NOI18N
-  private static final String FIX_ABSENT_SHARED_JOINED_CORRELATION_SET = "FIX_AbsentSharedJoinedCorrelationSet";                             // NOI18N
-  private static final String FIX_MULTIPLE_PROPERTY_ALIAS_FOR_PROPERTY = "FIX_MultiplePropertyAliasForProperty";                             // NOI18N
-  private static final String FIX_ABSENT_OUTPUT_VARIABLE = "FIX_AbsentOutputVariable";                                         // NOI18N
-  private static final String FIX_ABSENT_INPUT_VARIABLE = "FIX_AbsentInputVariable";                                          // NOI18N
-  private static final String FIX_DUPLICATE_VARIABLE_NAME = "FIX_DUPLICATE_VARIABLE_NAME";                                   // NOI18N
-  private static final String FIX_DUPLICATE_VARIABLE_NAME_ON_EVENT = "FIX_DuplicateVariableNameOnEvent";                              // NOI18N
-  private static final String SUPPORTED_LANGAGE = "urn:oasis:names:tc:wsbpel:2.0:sublang:xpath1.0";
-  private static final String FIX_INITIALISE_PARTNER_ROLE = "FIX_InitialisePartnerRole";
-  private static final String FIX_PARTNER_LINK_ERROR = "FIX_PartnerLinkError";
-  private static final String FIX_RETHROW_OCCURANCE = "FIX_RethrowOccurance";
-  private static final String FIX_ENDPOINT_REFRENCE = "FIX_EndpointReference";
-  private static final String FIX_MULTIPLE_NAMED_LINKS = "FIX_MultipleNamedLinks";
-  private static final String FIX_MULTIPLE_SOURCE_LINK_REFERENCES = "FIX_MultipleSourceLinkReferences";
-  private static final String FIX_MULTIPLE_TARGET_LINK_REFERENCES = "FIX_MultipleTargetLinkReferences";
-  private static final String FIX_DUPLICATE_COUNTER_NAME = "FIX_DuplicateCounterName";
-  private static final String FIX_ISOLATED_SCOPES = "FIX_IsolatedScopes";
-  private static final String FIX_ON_EVENT_VARAIBLE = "FIX_OnEventVariable";
-  private static final String FIX_EVENT_HANDLERS = "FIX_EventHandlers";
-  private static final String FIX_FAULT_VARIABLE_TYPE = "FIX_FaultVariableType";
-  private static final String FIX_ODD_FAULT_TYPE = "FIX_OddFaultType";
-  private static final String FIX_FAULT_HANDLERS = "FIX_FaultHandlers";
-  private static final String FIX_ABSENT_NAMESPACE_IN_IMPORT = "FIX_AbsentNamespaceInImport";
-  private static final String FIX_BAD_NAMESPACE_IN_IMPORT = "FIX_BadNamespaceInImport";
-  private static final String FIX_BAD_VARIABLE_NAME = "FIX_BadVariableName";
-  private static final String FIX_PICK_MESSAGES = "FIX_PickMessages";
-  private static final String FIX_BAD_CORRELATION_PROPERTY_TYPE = "FIX_BadCorrelationPropertyType";
-  private static final String FIX_BAD_USAGE_PATTERN_ATTRIBUTE = "FIX_BadUsagePatternAttribute";
-  private static final String FIX_DUPLICATE_CORRELATION_SET_NAME = "FIX_DuplicateCorrelationSetName";
-  private static final String FIX_DUPLICATE_PARTNER_LINK_NAME = "FIX_DuplicatePartnerLinkName";
-  private static final String FIX_VARIABLE_TYPES = "FIX_VariableTypes";
-  private static final String FIX_SUPPORTED_LANGUAGE ="FIX_SupportedLanguage";
-  private static final String FIX_UNSUPPORTED_EXTENSION = "FIX_UnsupportedExtension";
+  private static final String FIX_PORT_TYPE_OVERLOADED_OPERATION_NAME = "FIX_PortTypeOverloadedOperationName"; // NOI18N
+  private static final String FIX_WSDLOPERATION_SOLICIT_RESPONSE_NOTIFICATION = "FIX_WSDLOperationSolicitResponseNotification"; // NOI18N
+  private static final String FIX_INPUTVARIABLE_TOPART_COMBINATION = "FIX_InputVariableToPartCombination"; // NOI18N
+  private static final String FIX_OUTPUTVARIABLE_FROMPART_COMBINATION = "FIX_OutputVariableFromPartCombination"; // NOI18N
+  private static final String FIX_INVALID_FROMPART_PARTATTR = "FIX_InvalidFromPartPartAttribute"; // NOI18N
+  private static final String FIX_INVALID_TOPART_PARTATTR = "FIX_InvalidToPartPartAttribute"; // NOI18N
+  private static final String FIX_RECEIVE_VARIABLE_FROMPART_COMBINATION = "FIX_ReceiveVariableFromPartCombination"; // NOI18N
+  private static final String FIX_REPLY_VARIABLE_TOPART_COMBINATION = "FIX_ReplyVariableToPartCombination"; // NOI18N
+  private static final String FIX_COMPENSATE_OCCURANCE = "FIX_CompensateOccurance"; // NOI18N
+  private static final String FIX_MULTIPLE_NAMED_ACTIVITIES = "FIX_MultipleNamedActivities"; // NOI18N
+  private static final String FIX_EXIT_ON_STANDART_FAULT = "FIX_ExitOnStandartFault"; // NOI18N
+  private static final String FIX_BAD_IMPORT_TYPE = "FIX_BadImportType"; // NOI18N
+  private static final String FIX_NO_PICK_OR_RECEIVE_WITH_CREATE_INSTANCE = "FIX_NoPickReceiveWithCreateInstance"; // NOI18N
+  private static final String FIX_MILTIPLE_LINK_SOURCE = "FIX_MultipleLinkSource"; // NOI18N
+  private static final String FIX_MILTIPLE_LINK_TARGET = "FIX_MultipleLinkTarget"; // NOI18N
+  private static final String FIX_LINK_IS_NOT_USED = "FIX_LinkIsNotUsed"; // NOI18N
+  private static final String FIX_MULTIPLE_LINKS_WITH_SAME_SOURCE_AND_TARGET = "FIX_MultipleLinksWithSameSourceAndTarget"; // NOI18N
+  private static final String FIX_SCOPE_INSIDE_FCT_CONTAINS_COMPENSATION_HANDLER = "FIX_ScopeWithCompenstationHandlerInsideFCT"; // NOI18N
+  private static final String FIX_MESSAGE_TYPE_IN_ON_EVENT = "FIX_MessageTypeInOnEvent"; // NOI18N
+  private static final String FIX_ELEMENT_IN_ON_EVENT = "FIX_ElementInOnEvent"; // NOI18N
+  private static final String FIX_LINK_CROSS_BOUNDARY_REPEATABLE_CONSTRUCT = "FIX_LinkCrossBoundaryRepeatableConstract"; // NOI18N
+  private static final String FIX_BAD_HANDLERS_LINK_BOUNDARIES = "FIX_BadHandlersLinkBoundaries"; // NOI18N
+  private static final String FIX_WSDL_MESSAGE_NOT_COMPLETELY_INITIALISED = "FIX_WSDL_Message_Not_Completely_Initialised"; // NOI18N
+  private static final String FIX_ONMESSAGE_VARIABLE_FROMPART_COMBINATION = "FIX_OnMessage_Variable_FromPart_Combination"; // NOI18N
+  private static final String FIX_OUTPUT_VARIABLE_FOR_ONE_WAY_OP = "FIX_OutputVariableForOneWayOperation"; // NOI18N
+  private static final String FIX_ABSENT_INPUT_VARIABLE_FOR_ONE_WAY_OP = "FIX_AbsentInputVariableForOneWayOp"; // NOI18N
+  private static final String FIX_ABSENT_INPUT_OUTPUT_VARIABLES = "FIX_AbsentInputOutputVariables"; // NOI18N
+  private static final String FIX_BAD_VARIABLE_MESSAGE_TYPE = "FIX_BadVariableMessageType"; // NOI18N
+  private static final String FIX_BAD_VARIABLE_ELEMENT_TYPE = "FIX_BadVariableElementType"; // NOI18N
+  private static final String FIX_START_ACTIVITY_IS_NOT_FIRST_EXECUTED = "FIX_StartActivityHasPreceding"; // NOI18N
+  private static final String FIX_ABSENT_SHARED_JOINED_CORRELATION_SET = "FIX_AbsentSharedJoinedCorrelationSet"; // NOI18N
+  private static final String FIX_MULTIPLE_PROPERTY_ALIAS_FOR_PROPERTY = "FIX_MultiplePropertyAliasForProperty"; // NOI18N
+  private static final String FIX_ABSENT_OUTPUT_VARIABLE = "FIX_AbsentOutputVariable"; // NOI18N
+  private static final String FIX_ABSENT_INPUT_VARIABLE = "FIX_AbsentInputVariable"; // NOI18N
+  private static final String FIX_DUPLICATE_VARIABLE_NAME = "FIX_DUPLICATE_VARIABLE_NAME"; // NOI18N
+  private static final String FIX_DUPLICATE_VARIABLE_NAME_ON_EVENT = "FIX_DuplicateVariableNameOnEvent"; // NOI18N
+  private static final String SUPPORTED_LANGAGE = "urn:oasis:names:tc:wsbpel:2.0:sublang:xpath1.0"; // NOI18N
+  private static final String FIX_INITIALISE_PARTNER_ROLE = "FIX_InitialisePartnerRole"; // NOI18N
+  private static final String FIX_PARTNER_LINK_ERROR = "FIX_PartnerLinkError"; // NOI18N
+  private static final String FIX_RETHROW_OCCURANCE = "FIX_RethrowOccurance"; // NOI18N
+  private static final String FIX_ENDPOINT_REFRENCE = "FIX_EndpointReference"; // NOI18N
+  private static final String FIX_MULTIPLE_NAMED_LINKS = "FIX_MultipleNamedLinks"; // NOI18N
+  private static final String FIX_MULTIPLE_SOURCE_LINK_REFERENCES = "FIX_MultipleSourceLinkReferences"; // NOI18N
+  private static final String FIX_MULTIPLE_TARGET_LINK_REFERENCES = "FIX_MultipleTargetLinkReferences"; // NOI18N
+  private static final String FIX_DUPLICATE_COUNTER_NAME = "FIX_DuplicateCounterName"; // NOI18N
+  private static final String FIX_ISOLATED_SCOPES = "FIX_IsolatedScopes"; // NOI18N
+  private static final String FIX_ON_EVENT_VARAIBLE = "FIX_OnEventVariable"; // NOI18N
+  private static final String FIX_EVENT_HANDLERS = "FIX_EventHandlers"; // NOI18N
+  private static final String FIX_FAULT_VARIABLE_TYPE = "FIX_FaultVariableType"; // NOI18N
+  private static final String FIX_ODD_FAULT_TYPE = "FIX_OddFaultType"; // NOI18N
+  private static final String FIX_FAULT_HANDLERS = "FIX_FaultHandlers"; // NOI18N
+  private static final String FIX_ABSENT_NAMESPACE_IN_IMPORT = "FIX_AbsentNamespaceInImport"; // NOI18N
+  private static final String FIX_BAD_NAMESPACE_IN_IMPORT = "FIX_BadNamespaceInImport"; // NOI18N
+  private static final String FIX_BAD_VARIABLE_NAME = "FIX_BadVariableName"; // NOI18N
+  private static final String FIX_PICK_MESSAGES = "FIX_PickMessages"; // NOI18N
+  private static final String FIX_BAD_CORRELATION_PROPERTY_TYPE = "FIX_BadCorrelationPropertyType"; // NOI18N
+  private static final String FIX_BAD_USAGE_PATTERN_ATTRIBUTE = "FIX_BadUsagePatternAttribute"; // NOI18N
+  private static final String FIX_DUPLICATE_CORRELATION_SET_NAME = "FIX_DuplicateCorrelationSetName"; // NOI18N
+  private static final String FIX_DUPLICATE_PARTNER_LINK_NAME = "FIX_DuplicatePartnerLinkName"; // NOI18N
+  private static final String FIX_VARIABLE_TYPES = "FIX_VariableTypes"; // NOI18N
+  private static final String FIX_SUPPORTED_LANGUAGE ="FIX_SupportedLanguage"; // NOI18N
+  private static final String FIX_UNSUPPORTED_EXTENSION = "FIX_UnsupportedExtension"; // NOI18N
 }
