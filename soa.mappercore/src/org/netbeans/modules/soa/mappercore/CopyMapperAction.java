@@ -43,71 +43,59 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import javax.swing.KeyStroke;
 import javax.swing.tree.TreePath;
-import org.netbeans.modules.soa.mappercore.model.Graph;
 import org.netbeans.modules.soa.mappercore.model.GraphSubset;
-import org.netbeans.modules.soa.mappercore.model.MapperModel;
-import org.netbeans.modules.soa.mappercore.model.Vertex;
 
 /**
  *
  * @author AlexanderPermyakov
  */
-public class PasteCanvasAction extends MapperKeyboardAction {
+public class CopyMapperAction extends MapperKeyboardAction {
     
-    PasteCanvasAction(Canvas canvas) {
+    CopyMapperAction(Canvas canvas) {
         super(canvas);
+        putValue(NAME, "Copy");
+        putValue(ACCELERATOR_KEY, 
+                KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.CTRL_DOWN_MASK));
     }
     
     @Override
     public String getActionKey() {
-        return "Paste-Action";
+        return "Copy-Action";
     }
 
     @Override
     public KeyStroke[] getShortcuts() {
         return new KeyStroke[] {
-          KeyStroke.getKeyStroke(KeyEvent.VK_V, KeyEvent.CTRL_DOWN_MASK),  
-          KeyStroke.getKeyStroke(KeyEvent.VK_INSERT, KeyEvent.SHIFT_DOWN_MASK),
-          KeyStroke.getKeyStroke(KeyEvent.VK_PASTE, 0)
+          KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.CTRL_DOWN_MASK),
+          KeyStroke.getKeyStroke(KeyEvent.VK_INSERT, KeyEvent.CTRL_DOWN_MASK),
+          KeyStroke.getKeyStroke(KeyEvent.VK_COPY, 0)
         };
     }
 
     public void actionPerformed(ActionEvent e) {
-        GraphSubset graphSubset = canvas.getBufferCopyPaste();
-        if (graphSubset == null) { return; }
-        if (graphSubset.getVertexCount() < 1) { return; }
-        
         SelectionModel selectionModel = canvas.getSelectionModel();
         TreePath treePath = selectionModel.getSelectedPath();
         if (treePath == null) { return; }
         
-        MapperModel model = canvas.getMapperModel();
-        Graph graph = selectionModel.getSelectedGraph();
-        
-        Vertex vertex = graph.getPrevVertex(null);
-        
-        int step = canvas.getStep();
-        int x;
-        int y;
-        
-        if (vertex == null) {
-            x = canvas.toGraph(canvas.getRendererContext().getCanvasVisibleMinX());
-            x = (int) (Math.round(((double) (x)) / step)) + 2;
-            y = 0;
-        } else {
-            x = vertex.getX() + vertex.getWidth() + 3;
-            y = 0;
+        GraphSubset graphSubset = selectionModel.getSelectedSubset();
+        if (graphSubset != null) {
+            canvas.setBufferCopyPaste(selectionModel.getSelectedSubset());
         }
-        
-        x = x + graphSubset.getMinYVertex().getX() - graphSubset.getMinXVertex().getX();
-                
-        graphSubset = model.copy(treePath, graphSubset, x, y);
-
-        if (graphSubset != null && !graphSubset.isEmpty()) {
-            selectionModel.setSelected(treePath, graphSubset);
-        }
-        
-        //canvas.setBufferCopyPaste(null);
     }
-
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
