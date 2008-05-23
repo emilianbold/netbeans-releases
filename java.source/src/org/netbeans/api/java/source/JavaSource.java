@@ -69,8 +69,6 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ModificationResult.Difference;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
-import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
-import org.netbeans.modules.java.preprocessorbridge.spi.JavaSourceProvider;
 import org.netbeans.modules.java.source.parsing.ClasspathInfoTask;
 import org.netbeans.modules.java.source.parsing.CompilationInfoImpl;
 import org.netbeans.modules.java.source.parsing.JavacParser;
@@ -385,6 +383,7 @@ public final class JavaSource {
                         }
                         final CompilationController cc = new CompilationController(cachedCi);
                         try {
+                            cc.setJavaSource(JavaSource.this);
                             task.run(cc);
                         } finally {
                             cc.invalidate();
@@ -418,6 +417,7 @@ public final class JavaSource {
                                 Parser.Result result = resultIterator.getParserResult();
                                 final CompilationController cc = CompilationController.get(result);
                                 assert cc != null;
+                                cc.setJavaSource(JavaSource.this);
                                 task.run (cc);
                                 final JavacTaskImpl jt = cc.impl.getJavacTask();
                                 Log.instance(jt.getContext()).nerrors = 0;
@@ -430,6 +430,7 @@ public final class JavaSource {
                                 }
                                 final CompilationController cc = CompilationController.get(result);
                                 assert cc != null;
+                                cc.setJavaSource(JavaSource.this);
                                 task.run (cc);
                                 final JavacTaskImpl jt = cc.impl.getJavacTask();
                                 Log.instance(jt.getContext()).nerrors = 0;
@@ -536,6 +537,7 @@ public final class JavaSource {
                             final CompilationController cc = CompilationController.get(parserResult);
                             assert cc != null;
                             final WorkingCopy copy = new WorkingCopy (cc.impl);
+                            copy.setJavaSource(JavaSource.this);
                             task.run (copy);
                             final JavacTaskImpl jt = copy.impl.getJavacTask();
                             Log.instance(jt.getContext()).nerrors = 0;
@@ -702,7 +704,15 @@ public final class JavaSource {
 
         @Override
         public Collection<Source> getSources(JavaSource js) {
+            assert js != null;
             return js.sources;
+        }
+
+        @Override
+        public void setJavaSource(final CompilationInfo info, final JavaSource js) {
+            assert info != null;
+            assert js != null;
+            info.setJavaSource(js);
         }
     }
     

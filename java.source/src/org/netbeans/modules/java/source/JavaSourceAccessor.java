@@ -172,7 +172,7 @@ public abstract class JavaSourceAccessor {
         assert sources.size() == 1;
         final int pp = translatePriority(priority);
         assert !tasks.keySet().contains(task);
-        final ParserResultTask<?> hanz = new CancelableTaskWrapper(task, pp, phase);
+        final ParserResultTask<?> hanz = new CancelableTaskWrapper(task, pp, phase, js);
         tasks.put(task, hanz);
         Utilities.addParserResultTask(hanz, sources.iterator().next());
     }
@@ -195,7 +195,9 @@ public abstract class JavaSourceAccessor {
         Utilities.rescheduleTask(hanz, sources.iterator().next());
     }
     
-    public abstract Collection<Source> getSources(final JavaSource js);              
+    public abstract Collection<Source> getSources(final JavaSource js);
+    
+    public abstract void setJavaSource (final CompilationInfo info, final JavaSource js);
         
     /**
      * Returns the JavacTaskImpl associated with given {@link CompilationInfo},
@@ -233,17 +235,21 @@ public abstract class JavaSourceAccessor {
     
     private static class CancelableTaskWrapper extends JavaParserResultTask {
         
+        private final JavaSource javaSource;
         private final int priority;
         private final Phase phase;
         private final CancellableTask<CompilationInfo> task;
         
         public CancelableTaskWrapper (final CancellableTask<CompilationInfo> task,
-                final int priority, final Phase phase) {
+                final int priority, final Phase phase,
+                final JavaSource javaSource) {
             assert task != null;
             assert phase != null;
+            assert javaSource != null;
             this.task = task;
             this.phase = phase;
             this.priority = priority;
+            this.javaSource = javaSource;
         }
 
         @Override
@@ -266,6 +272,7 @@ public abstract class JavaSourceAccessor {
             final CompilationInfo info = CompilationInfo.get(result);
             assert info != null;
             try {
+                JavaSourceAccessor.getINSTANCE().setJavaSource(info, javaSource);
                 this.task.run(info);
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
