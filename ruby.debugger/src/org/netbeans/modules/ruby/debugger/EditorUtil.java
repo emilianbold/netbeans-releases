@@ -151,7 +151,7 @@ public final class EditorUtil {
         }
         EventQueue.invokeLater(new Runnable() {
             public void run() {
-//                lineToShow.show(toFront ? Line.SHOW_TOFRONT : Line.SHOW_GOTO);
+                lineToShow.show(toFront ? Line.SHOW_TOFRONT : Line.SHOW_GOTO);
             }
         });
     }
