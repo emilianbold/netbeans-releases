@@ -60,10 +60,10 @@ import org.xml.sax.SAXNotSupportedException;
  */
 public class SAXFactoryImpl extends SAXParserFactory {
 
-    private static Class getFirst() {
+    private static Class<? extends SAXParserFactory> getFirst() {
         try {
             String name = System.getProperty("nb.backup." + SAXParserFactory_PROP); // NOI18N
-            return name == null ? null : Class.forName(name);
+            return name == null ? null : Class.forName(name).asSubclass(SAXParserFactory.class);
         } catch (ClassNotFoundException ex) {
             Exceptions.printStackTrace(ex);
             return null;
@@ -111,7 +111,10 @@ public class SAXFactoryImpl extends SAXParserFactory {
     }
 
     private SAXParser tryCreate() throws ParserConfigurationException, SAXNotRecognizedException, SAXNotSupportedException {
-        for (Iterator it = new LazyIterator(getFirst(), SAXParserFactory.class, SAXFactoryImpl.class); it.hasNext(); ) {
+        for (Iterator<Class<? extends SAXParserFactory>> it = 
+            new LazyIterator(getFirst(), SAXParserFactory.class, SAXFactoryImpl.class); 
+            it.hasNext(); 
+        ) {
             try {
                 SAXParser parser = tryCreate(it.next());
                 return parser;
