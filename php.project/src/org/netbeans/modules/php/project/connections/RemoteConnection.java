@@ -73,6 +73,19 @@ public final class RemoteConnection {
     private final String initialDirectory;
     private final int timeout;
 
+    public RemoteConnection(String displayName, String name, ConnectionType connectionType, String host, int port, String userName,
+            boolean anonymousLogin, String initialDirectory, int timeout) {
+        this.displayName = displayName;
+        this.name = name;
+        this.connectionType = connectionType;
+        this.host = host;
+        this.port = port;
+        this.userName = userName;
+        this.anonymousLogin = anonymousLogin;
+        this.initialDirectory = initialDirectory;
+        this.timeout = timeout;
+    }
+
     RemoteConnection(final ConfigManager.Configuration cfg) {
         displayName = cfg.getDisplayName();
         name = cfg.getName();

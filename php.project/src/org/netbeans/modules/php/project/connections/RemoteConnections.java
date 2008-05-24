@@ -145,8 +145,9 @@ public final class RemoteConnections {
     /**
      * Open the UI manager for {@link RemoteConnection remote connections}. One can easily add,
      * remove and edit remote connections.
+     * @return <code>true</code> if there are changes in remote connections.
      */
-    public void openManager() {
+    public boolean openManager() {
         initPanel();
         String title = NbBundle.getMessage(RemoteConnectionsPanel.class, "LBL_ManageRemoteConnections");
         descriptor = new DialogDescriptor(panel, title, true, null);
@@ -168,9 +169,11 @@ public final class RemoteConnections {
         } finally {
             dialog.dispose();
         }
-        if (descriptor.getValue() == NotifyDescriptor.OK_OPTION) {
+        boolean changed = descriptor.getValue() == NotifyDescriptor.OK_OPTION;
+        if (changed) {
             saveRemoteConnections();
         }
+        return changed;
     }
 
     /**
