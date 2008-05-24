@@ -98,7 +98,9 @@ public class RspecRunner implements TestRunner {
         List<String> specs = new ArrayList<String>();
         while (children.hasMoreElements()) {
             FileObject each = children.nextElement();
-            if ("rb".equals(each.getExt())) {
+            if (!each.isFolder() 
+                    && "rb".equals(each.getExt()) 
+                    && each.getName().endsWith("spec")) { //NOI18N
                 specs.add(FileUtil.toFile(each).getAbsolutePath());
             }
         }
