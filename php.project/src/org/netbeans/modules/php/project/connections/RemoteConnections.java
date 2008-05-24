@@ -237,6 +237,7 @@ public final class RemoteConnections {
     }
 
     void removeConfig() {
+        assert panel != null;
         Configuration cfg = panel.getSelectedConnection();
         assert cfg != null;
         configManager.configurationFor(cfg.getName()).delete();
@@ -244,6 +245,7 @@ public final class RemoteConnections {
     }
 
     void selectCurrentConfig() {
+        assert panel != null;
         Configuration cfg = panel.getSelectedConnection();
 
         // unregister default listener (validate() would be called soooo many times)
@@ -277,6 +279,7 @@ public final class RemoteConnections {
     }
 
     void validate() {
+        assert panel != null;
         // remember password is dangerous
         // just warning - do it every time
         if (validateRememberPassword()) {
@@ -374,6 +377,7 @@ public final class RemoteConnections {
     }
 
     private void setError(String errorKey) {
+        assert panel != null;
         Configuration cfg = panel.getSelectedConnection();
         String err = errorKey != null ? NbBundle.getMessage(RemoteConnections.class, errorKey) : null;
         cfg.setErrorMessage(err);
@@ -383,10 +387,12 @@ public final class RemoteConnections {
     }
 
     private void setWarning(String errorKey) {
+        assert panel != null;
         panel.setWarning(errorKey != null ? NbBundle.getMessage(RemoteConnections.class, errorKey) : null);
     }
 
     private void updateActiveConfig() {
+        assert panel != null;
         Configuration cfg = panel.getSelectedConnection();
         if (cfg == null) {
             // no config selected
@@ -450,7 +456,7 @@ public final class RemoteConnections {
 
         public DefaultConfigProvider() {
             configs = ConfigManager.createEmptyConfigs();
-            readConfig();
+            readConfigs();
         }
 
         public String[] getConfigProperties() {
@@ -468,7 +474,7 @@ public final class RemoteConnections {
         public void setActiveConfig(String configName) {
         }
 
-        private void readConfig() {
+        private void readConfigs() {
             Preferences remoteConnections = NbPreferences.forModule(RemoteConnections.class).node(PREFERENCES_PATH);
             try {
                 for (String name : remoteConnections.childrenNames()) {
