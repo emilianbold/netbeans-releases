@@ -67,7 +67,7 @@ import org.openide.modules.InstalledFileLocator;
 public class RspecRunner implements TestRunner {
 
     private static final TestRunner INSTANCE = new RspecRunner();
-    private static final String RSPEC_MEDIATOR_SCRIPT = "nb_rspec_mediator.rb";
+    public static final String RSPEC_MEDIATOR_SCRIPT = "nb_rspec_mediator.rb"; //NOI18N
 
     public TestRunner getInstance() {
         return INSTANCE;

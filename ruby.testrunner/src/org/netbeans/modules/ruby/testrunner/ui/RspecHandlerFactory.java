@@ -42,6 +42,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.ruby.platform.execution.OutputRecognizer.FilteredOutput;
 import org.netbeans.modules.ruby.platform.execution.OutputRecognizer.RecognizedOutput;
+import org.netbeans.modules.ruby.testrunner.RspecRunner;
 
 /**
  * An output recognizer for parsing output of the rspec runner script, 
@@ -60,13 +61,14 @@ public class RspecHandlerFactory {
         result.add(new TestFailedHandler());
         result.add(new TestPendingHandler());
         result.add(new TestFinishedHandler());
+        result.add(new StackTraceFilterHandler());
         return result;
     }
 
     static class TestFailedHandler extends TestRecognizerHandler {
 
         public TestFailedHandler() {
-            super(".*%TEST_FAILED%\\s(.*)\\stime=(\\d+\\.\\d+)\\s(.*)"); //NOI18N
+            super(".*%TEST_FAILED%\\s(.*)\\stime=(\\d+\\.\\d+)\\smessage=(.*)\\slocation=(.*)"); //NOI18N
         }
 
         @Override
@@ -76,14 +78,26 @@ public class RspecHandlerFactory {
             testcase.className = matcher.group(1);
             testcase.name = matcher.group(1);
             testcase.trouble = new Report.Trouble(false);
-            testcase.trouble.stackTrace = new String[]{matcher.group(3)};
+            testcase.trouble.stackTrace = filterStackTrace(matcher.group(3), matcher.group(4));
             session.addTestCase(testcase);
-            manager.displayOutput(session, matcher.group(3), false);
+            for (String line : testcase.trouble.stackTrace) {
+                manager.displayOutput(session, line, false);
+            }
         }
 
         @Override
         RecognizedOutput getRecognizedOutput() {
-            return new FilteredOutput(matcher.group(3));
+            return new FilteredOutput(matcher.group(3), matcher.group(4));
+        }
+        
+        private String[] filterStackTrace(String... stackTrace) {
+            List<String> result = new ArrayList<String>();
+            for (String location : stackTrace) {
+                if (!location.contains(RspecRunner.RSPEC_MEDIATOR_SCRIPT)) {
+                    result.add(location);
+                }
+            }
+            return result.toArray(new String[result.size()]);
         }
         
     }
@@ -171,6 +185,17 @@ public class RspecHandlerFactory {
             String suiteName = matcher.group(1);
             session.setSuiteName(suiteName);
             manager.displaySuiteRunning(session, suiteName);
+        }
+    }
+
+    static class StackTraceFilterHandler extends TestRecognizerHandler {
+
+        public StackTraceFilterHandler() {
+            super(".*" + RspecRunner.RSPEC_MEDIATOR_SCRIPT + ".*");
+        }
+
+        @Override
+        void updateUI( Manager manager, TestSession session) {
         }
     }
 }
