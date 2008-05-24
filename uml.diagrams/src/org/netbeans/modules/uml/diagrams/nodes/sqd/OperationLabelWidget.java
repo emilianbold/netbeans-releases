@@ -44,6 +44,7 @@ import java.awt.Dimension;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.UIManager;
+import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.model.ObjectState;
@@ -61,6 +62,7 @@ import org.netbeans.modules.uml.diagrams.nodes.EditableCompartmentWidget;
 import org.netbeans.modules.uml.diagrams.nodes.FeatureWidget;
 import org.netbeans.modules.uml.drawingarea.persistence.NodeWriter;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
+import org.netbeans.modules.uml.drawingarea.view.DesignerTools;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -77,6 +79,8 @@ public class OperationLabelWidget extends FeatureWidget implements PropertyChang
     private Lookup lookup = new AbstractLookup(lookupContent);
     public OperationLabelWidget(Scene scene, IOperation oper, MessageLabelManager manager) {
         super(scene);
+        WidgetAction.Chain chain = createActions(DesignerTools.SELECT);
+        for(int i=chain.getActions().size()-1;i>=0;i--)chain.removeAction(i);//remove default feature widget actions
         this.oper=oper;
         lm=manager;
         initialize(oper);
