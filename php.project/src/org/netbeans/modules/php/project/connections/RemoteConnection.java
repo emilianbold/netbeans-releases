@@ -73,7 +73,7 @@ public final class RemoteConnection {
     private final String initialDirectory;
     private final int timeout;
 
-    public RemoteConnection(final ConfigManager.Configuration cfg) {
+    RemoteConnection(final ConfigManager.Configuration cfg) {
         displayName = cfg.getDisplayName();
         name = cfg.getName();
         connectionType = ConnectionType.valueOf(cfg.getValue(RemoteConnections.TYPE));
@@ -119,5 +119,31 @@ public final class RemoteConnection {
 
     public String getUserName() {
         return userName;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder(200);
+        sb.append(getClass().getName());
+        sb.append(" [displayName: "); // NOI18N
+        sb.append(displayName);
+        sb.append(", name: "); // NOI18N
+        sb.append(name);
+        sb.append(", connectionType: "); // NOI18N
+        sb.append(connectionType);
+        sb.append(", host: "); // NOI18N
+        sb.append(host);
+        sb.append(", port: "); // NOI18N
+        sb.append(port);
+        sb.append(", userName: "); // NOI18N
+        sb.append(userName);
+        sb.append(", anonymousLogin: "); // NOI18N
+        sb.append(anonymousLogin);
+        sb.append(", initialDirectory: "); // NOI18N
+        sb.append(initialDirectory);
+        sb.append(", timeout: "); // NOI18N
+        sb.append(timeout);
+        sb.append("]"); // NOI18N
+        return sb.toString();
     }
 }
