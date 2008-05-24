@@ -134,7 +134,7 @@ public final class RemoteConnections {
         }
         panel = new RemoteConnectionsPanel();
         // data
-        panel.setConnections(getConfigurations());
+        panel.setConnections(getConnections());
 
         // listeners
         panel.addChangeListener(defaultChangeListener);
@@ -155,6 +155,9 @@ public final class RemoteConnections {
         });
     }
 
+    /**
+     * Open the UI manager for remote connections. One can easily add, remove and edit remote connections.
+     */
     public void openManager() {
         initPanel();
         String title = NbBundle.getMessage(RemoteConnectionsPanel.class, "LBL_ManageRemoteConnections");
@@ -168,7 +171,7 @@ public final class RemoteConnections {
                         // no config available => show add config dialog
                         addConfig();
                     } else {
-                        // XXX allow caller to select custom connection
+                        // XXX allow caller to select custom connection?
                         panel.selectConnection(0);
                     }
                 }
@@ -182,7 +185,12 @@ public final class RemoteConnections {
         }
     }
 
-    public List<Configuration> getConfigurations() {
+    /**
+     * Get the ordered list of connections. The list is order according to connection's display
+     * name (locale-sensitive string comparison).
+     * @return the ordered list of connections.
+     */
+    public List<Configuration> getConnections() {
         Collection<String> cfgNames = configManager.configurationNames();
         List<Configuration> configs = new ArrayList<Configuration>(cfgNames.size() - 1); // without default config
 
