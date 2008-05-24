@@ -191,7 +191,12 @@ public final class RemoteConnections {
                 // default config
                 continue;
             }
-            configs.add(configManager.configurationFor(name));
+            Configuration cfg = configManager.configurationFor(name);
+            if (cfg == null) {
+                // deleted configuration
+                continue;
+            }
+            configs.add(cfg);
         }
         Collections.sort(configs, ConfigManager.getConfigurationComparator());
         return Collections.unmodifiableList(configs);
