@@ -71,13 +71,15 @@ implements DataLoader.RecognizedFiles {
         super(testName);
     }
 
+    @Override
     protected void setUp() throws Exception {
         log = Log.enable("org.openide.loaders", Level.SEVERE);
 
         init();
         
-        AddLoaderManuallyHid.addRemoveLoader(FormKitDataLoader.getLoader(FormKitDataLoader.class), true);
+        AddLoaderManuallyHid.addRemoveLoader(JavaDataLoader.getLoader(JavaDataLoader.class), true);
         FileUtil.setMIMEType("java", "text/x-java");
+        FileUtil.setMIMEType("formKit", "application/x-form");
 
         root = FileUtil.createFolder(FileUtil.createMemoryFileSystem().getRoot(), "test");
 
@@ -91,11 +93,30 @@ implements DataLoader.RecognizedFiles {
 
     @Override
     protected void tearDown() throws Exception {
-        AddLoaderManuallyHid.addRemoveLoader(FormKitDataLoader.getLoader(FormKitDataLoader.class), false);
+        AddLoaderManuallyHid.addRemoveLoader(JavaDataLoader.getLoader(JavaDataLoader.class), false);
+    }
+
+
+    static void init() throws IOException {
+        FileObject fo = Repository.getDefault().getDefaultFileSystem().getRoot();
+        FileObject data = FileUtil.createData(fo, 
+            "Loaders/text/x-java/Factories/" + 
+            FormKitDataLoader.class.getName().replace('.', '-') + ".instance"
+        );
+        FileObject data2 = FileUtil.createData(fo, 
+            "Loaders/application/x-form/Factories/" + 
+            FormKitDataLoader.class.getName().replace('.', '-') + ".instance"
+        );
+
+        Object obj = Lookups.forPath("Loaders/text/x-java").lookup(FormKitDataLoader.class);
+        assertNotNull("lookup registered", obj);
+
+        obj = Lookups.forPath("Loaders/application/x-form").lookup(FormKitDataLoader.class);
+        assertNotNull("lookup registered", obj);
     }
     
     
-
+    @Override
     protected Level logLevel() {
         return Level.INFO;
     }
@@ -157,18 +178,6 @@ implements DataLoader.RecognizedFiles {
     }
 
 
-    static void init() throws IOException {
-        FileObject fo = Repository.getDefault().getDefaultFileSystem().getRoot();
-        FileObject data = FileUtil.createData(fo, 
-            "Loaders/text/x-java/Factories/" + 
-            JavaDataLoader.class.getName().replace('.', '-') + ".instance"
-        );
-
-        Object obj = Lookups.forPath("Loaders/text/x-java").lookup(JavaDataLoader.class);
-        assertNotNull("lookup registered", obj);
-    }
-
-
     public static class JavaDataLoader extends MultiFileLoader {
 
         public static final String JAVA_EXTENSION = "java";
@@ -223,16 +232,19 @@ implements DataLoader.RecognizedFiles {
             super(FormKitDataObject.class.getName());
         }
 
+        @Override
         protected String defaultDisplayName()
         {
             return NbBundle.getMessage(FormKitDataLoader.class, "LBL_FormKit_loader_name");
         }
 
+        @Override
         protected String actionsContext()
         {
             return "Loaders/" + REQUIRED_MIME + "/Actions";
         }
 
+        @Override
         protected FileObject findPrimaryFile(FileObject fo)
         {
             LOG.info("FormKitDataLoader.findPrimaryFile(): " + fo.getNameExt());
@@ -250,6 +262,7 @@ implements DataLoader.RecognizedFiles {
             return null;
         }
 
+        @Override
         protected MultiDataObject createMultiObject(FileObject primaryFile) throws DataObjectExistsException, java.io.IOException
         {
             LOG.info("FormKitDataLoader.createMultiObject(): " + primaryFile.getNameExt());
@@ -259,6 +272,7 @@ implements DataLoader.RecognizedFiles {
                     this);
         }
 
+        @Override
         protected MultiDataObject.Entry createSecondaryEntry(MultiDataObject multiDataObject, FileObject fileObject)
         {
             if (fileObject.getExt().equals(FORM_EXTENSION))
@@ -269,7 +283,7 @@ implements DataLoader.RecognizedFiles {
             return super.createSecondaryEntry(multiDataObject, fileObject);
         }
 
-        public final class FormKitDataObject extends JavaDO {
+        final class FormKitDataObject extends JavaDO {
             FileEntry formEntry;
 
             public FormKitDataObject(FileObject ffo, FileObject jfo, FormKitDataLoader loader) throws DataObjectExistsException, IOException
