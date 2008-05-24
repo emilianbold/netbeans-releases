@@ -127,43 +127,43 @@ class RemoteConnectionsPanel extends JPanel {
         configList.removeListSelectionListener(listener);
     }
 
-    public void addConnection(ConfigManager.Configuration connection) {
-        addConnection(connection, true);
+    public void addConfiguration(ConfigManager.Configuration configuration) {
+        addConfiguration(configuration, true);
     }
 
-    public void addConnection(ConfigManager.Configuration connection, boolean select) {
-        assert configListModel.indexOf(connection) == -1 : "Connection already in the list: " + connection;
-        configListModel.addElement(connection);
+    public void addConfiguration(ConfigManager.Configuration configuration, boolean select) {
+        assert configListModel.indexOf(configuration) == -1 : "Configuration already in the list: " + configuration;
+        configListModel.addElement(configuration);
         if (select) {
-            configList.setSelectedValue(connection, true);
+            configList.setSelectedValue(configuration, true);
         }
     }
 
-    public void selectConnection(int index) {
+    public void selectConfiguration(int index) {
         configList.setSelectedIndex(index);
     }
 
-    public void selectConnection(Configuration connection) {
-        configList.setSelectedValue(connection, true);
+    public void selectConfiguration(Configuration configuration) {
+        configList.setSelectedValue(configuration, true);
     }
 
-    public ConfigManager.Configuration getSelectedConnection() {
+    public ConfigManager.Configuration getSelectedConfiguration() {
         return (Configuration) configList.getSelectedValue();
     }
 
-    public List<Configuration> getConnections() {
+    public List<Configuration> getConfigurations() {
         return configListModel.getElements();
     }
 
-    public void setConnections(List<Configuration> connections) {
-        configListModel.setElements(connections);
+    public void setConfigurations(List<Configuration> configurations) {
+        configListModel.setElements(configurations);
     }
 
-    public void removeConnection(ConfigManager.Configuration connection) {
-        assert configListModel.indexOf(connection) != -1 : "Connection not in the list: " + connection;
+    public void removeConfiguration(ConfigManager.Configuration configuration) {
+        assert configListModel.indexOf(configuration) != -1 : "Configuration not in the list: " + configuration;
         // select another config if possible
         int toSelect = -1;
-        int idx = configListModel.indexOf(connection);
+        int idx = configListModel.indexOf(configuration);
         if (idx + 1 < configListModel.getSize()) {
             // select the next element
             toSelect = idx;
@@ -171,7 +171,7 @@ class RemoteConnectionsPanel extends JPanel {
             // select the previous element
             toSelect = idx - 1;
         }
-        configListModel.removeElement(connection);
+        configListModel.removeElement(configuration);
         if (toSelect != -1) {
             configList.setSelectedIndex(toSelect);
         }
@@ -624,27 +624,27 @@ class RemoteConnectionsPanel extends JPanel {
             return data.get(index);
         }
 
-        public boolean addElement(Configuration connection) {
-            assert connection != null;
-            if (!data.add(connection)) {
+        public boolean addElement(Configuration configuration) {
+            assert configuration != null;
+            if (!data.add(configuration)) {
                 return false;
             }
             Collections.sort(data, ConfigManager.getConfigurationComparator());
-            int idx = indexOf(connection);
+            int idx = indexOf(configuration);
             fireIntervalAdded(this, idx, idx);
             return true;
         }
 
-        public int indexOf(Configuration connection) {
-            return data.indexOf(connection);
+        public int indexOf(Configuration configuration) {
+            return data.indexOf(configuration);
         }
 
-        public boolean removeElement(Configuration connection) {
-            int idx = indexOf(connection);
+        public boolean removeElement(Configuration configuration) {
+            int idx = indexOf(configuration);
             if (idx == -1) {
                 return false;
             }
-            boolean result = data.remove(connection);
+            boolean result = data.remove(configuration);
             assert result;
             fireIntervalRemoved(this, idx, idx);
             return true;

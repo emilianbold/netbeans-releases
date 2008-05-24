@@ -121,7 +121,7 @@ public final class RemoteConnections {
         }
         panel = new RemoteConnectionsPanel();
         // data
-        panel.setConnections(getConfigurations());
+        panel.setConfigurations(getConfigurations());
 
         // listeners
         panel.addChangeListener(defaultChangeListener);
@@ -155,12 +155,12 @@ public final class RemoteConnections {
             // XXX probably not the best solution
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    if (panel.getConnections().isEmpty()) {
+                    if (panel.getConfigurations().isEmpty()) {
                         // no config available => show add config dialog
                         addConfig();
                     } else {
                         // XXX allow caller to select custom connection?
-                        panel.selectConnection(0);
+                        panel.selectConfiguration(0);
                     }
                 }
             });
@@ -232,22 +232,22 @@ public final class RemoteConnections {
             Configuration cfg = configManager.createNew(config, name);
             cfg.putValue(PORT, String.valueOf(DEFAULT_PORT));
             cfg.putValue(TIMEOUT, String.valueOf(DEFAULT_TIMEOUT));
-            panel.addConnection(cfg);
+            panel.addConfiguration(cfg);
             configManager.markAsCurrentConfiguration(config);
         }
     }
 
     void removeConfig() {
         assert panel != null;
-        Configuration cfg = panel.getSelectedConnection();
+        Configuration cfg = panel.getSelectedConfiguration();
         assert cfg != null;
         configManager.configurationFor(cfg.getName()).delete();
-        panel.removeConnection(cfg); // this will change the current selection in the list => selectCurrentConfig() is called
+        panel.removeConfiguration(cfg); // this will change the current selection in the list => selectCurrentConfig() is called
     }
 
     void selectCurrentConfig() {
         assert panel != null;
-        Configuration cfg = panel.getSelectedConnection();
+        Configuration cfg = panel.getSelectedConfiguration();
 
         // unregister default listener (validate() would be called soooo many times)
         panel.removeChangeListener(defaultChangeListener);
@@ -366,7 +366,7 @@ public final class RemoteConnections {
     }
 
     private void checkAllTheConfigs() {
-        for (Configuration cfg : panel.getConnections()) {
+        for (Configuration cfg : panel.getConfigurations()) {
             assert cfg != null;
             if (!cfg.isValid()) {
                 panel.setError(NbBundle.getMessage(RemoteConnections.class, "MSG_InvalidConfiguration", cfg.getDisplayName()));
@@ -379,7 +379,7 @@ public final class RemoteConnections {
 
     private void setError(String errorKey) {
         assert panel != null;
-        Configuration cfg = panel.getSelectedConnection();
+        Configuration cfg = panel.getSelectedConfiguration();
         String err = errorKey != null ? NbBundle.getMessage(RemoteConnections.class, errorKey) : null;
         cfg.setErrorMessage(err);
         panel.setError(err);
@@ -394,7 +394,7 @@ public final class RemoteConnections {
 
     private void updateActiveConfig() {
         assert panel != null;
-        Configuration cfg = panel.getSelectedConnection();
+        Configuration cfg = panel.getSelectedConfiguration();
         if (cfg == null) {
             // no config selected
             return;
