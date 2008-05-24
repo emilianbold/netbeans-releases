@@ -47,6 +47,7 @@ made subject to such option by the copyright holder.
         <folder name="MIMEResolver">
             <file name="XResolver.xml" url="XResolver.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.sun.appsrvapi.Bundle"/>
+                <attr name="position" intvalue="890"/>
             </file>
         </folder>
     </folder>
