@@ -2400,8 +2400,8 @@ public abstract class GsfTestBase extends NbTestCase {
         throw new RuntimeException("You must override getHintsProvider before runnign hints tests!");
     }
 
-    private GsfHintsManager getHintsManager() {
-        return new GsfHintsManager(getPreferredMimeType(), getHintsProvider());
+    private GsfHintsManager getHintsManager(org.netbeans.modules.gsf.Language language) {
+        return new GsfHintsManager(getPreferredMimeType(), getHintsProvider(), language);
     }
     
     protected String annotateHints(BaseDocument doc, List<Hint> result, int caretOffset) throws Exception {
@@ -2510,9 +2510,15 @@ public abstract class GsfTestBase extends NbTestCase {
             ucr = (UserConfigurableRule)hint;
         }
 
+        initializeRegistry();
+        org.netbeans.modules.gsf.Language language = LanguageRegistry.getInstance().getLanguageByMimeType(getPreferredMimeType());
+
+        HintsProvider provider = getHintsProvider();
+        GsfHintsManager manager = getHintsManager(language);
+
         // Make sure the hint is enabled
-        if (ucr != null && !HintsSettings.isEnabled(ucr)) {
-            Preferences p = HintsSettings.getPreferences(ucr, HintsSettings.getCurrentProfileId());
+        if (ucr != null && !HintsSettings.isEnabled(manager, ucr)) {
+            Preferences p = HintsSettings.getPreferences(manager, ucr, HintsSettings.getCurrentProfileId());
             HintsSettings.setEnabled(p, true);
         }
         
@@ -2541,12 +2547,6 @@ public abstract class GsfTestBase extends NbTestCase {
 
             caretOffset = lineOffset + caretDelta;
         }
-
-        HintsProvider provider = getHintsProvider();
-        GsfHintsManager manager = getHintsManager();
-
-        initializeRegistry();
-        org.netbeans.modules.gsf.Language language = LanguageRegistry.getInstance().getLanguageByMimeType(getPreferredMimeType());
 
         List<Hint> hints = new ArrayList<Hint>();
         if (hint instanceof ErrorRule) {
@@ -2588,7 +2588,7 @@ public abstract class GsfTestBase extends NbTestCase {
                     testHints.put(nodeId, Collections.singletonList(AstRule));
                 }
             }
-            if (HintsSettings.getSeverity(ucr) == HintSeverity.CURRENT_LINE_WARNING) {
+            if (HintsSettings.getSeverity(manager, ucr) == HintSeverity.CURRENT_LINE_WARNING) {
                 manager.setTestingRules(null, Collections.EMPTY_MAP, testHints, null);
                 provider.computeSuggestions(manager, context, hints, caretOffset);
             } else {

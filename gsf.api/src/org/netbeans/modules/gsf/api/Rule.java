@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.gsf.api;
 
-import java.util.List;
 import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
@@ -116,12 +115,7 @@ public interface Rule {
         /** 
          * Get the types of ast nodes that this rule applies to.
          */
-        public Set<? extends Object> getKinds();//    /**
-        
-        //     * Run the test on given CompilationUnit and return list of Errors or
-        //     * warrnings to be shown in the editor.
-        //     */
-        //    public void run(RuleContext context, List<Description> result);
+        public Set<?> getKinds();
     }
 
     /** 
@@ -137,9 +131,7 @@ public interface Rule {
 
         /** Get the diagnostic codes this rule should run on
          */
-        public Set<? extends Object> getCodes();
-        /** Return possible fixes for a given diagnostic report.
-         */
+        public Set<?> getCodes();
     }
 
     /**
