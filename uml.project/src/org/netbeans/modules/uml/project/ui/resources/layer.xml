@@ -160,5 +160,14 @@ made subject to such option by the copyright holder.
 	    </folder>
 	</folder>
     </folder>
-    
+
+    <folder name="Loaders">
+        <folder name="content">
+            <folder name="unknown">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-uml-project-UMLProjectDataObject$Loader.instance"/>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
 </filesystem>

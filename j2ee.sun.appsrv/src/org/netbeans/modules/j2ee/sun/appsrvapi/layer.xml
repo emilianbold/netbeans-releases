@@ -43,8 +43,15 @@ made subject to such option by the copyright holder.
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
 <filesystem>
 
-  <folder name="Templates">
-    <folder name="SunResources">
+  <folder name="Services">
+        <folder name="MIMEResolver">
+            <file name="XResolver.xml" url="XResolver.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.sun.appsrvapi.Bundle"/>
+            </file>
+        </folder>
+    </folder>
+    <folder name="Templates">
+        <folder name="SunResources">
       <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.sun.ide.sunresources.wizards.Bundle"/>
       <attr name="position" intvalue="1800"/>
             <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/sun/ide/sunresources/wizards/WizardInformation.html"/>
@@ -87,6 +94,9 @@ made subject to such option by the copyright holder.
   <folder name="Loaders">
         <folder name="xml">
             <folder name="sun-resource">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-j2ee-sun-ide-sunresources-resourcesloader-SunResourceDataLoader.instance"/>
+                </folder>
               <folder name="Actions">
               <file name="OpenAction.instance">
                 <attr name="instanceClass" stringvalue="org.openide.actions.OpenAction"/>

@@ -253,6 +253,16 @@ made subject to such option by the copyright holder.
             <file name="cdc-ant-utils.xml" url="Utils.xml"/>
         </folder>
     </folder>
+     <folder name="Loaders">
+        <folder name="content">
+            <folder name="unknown">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-j2me-cdc-project-mbm-MBMDataLoader.instance"/>
+                </folder>
+            </folder>
+        </folder>
+     </folder>
+            
 <!--    
      <folder name="Loaders">
         <folder name="image">

@@ -142,8 +142,32 @@ made subject to such option by the copyright holder.
     </folder>
     
     <folder name="Loaders">
+        <folder name="content">
+            <folder name="unknown">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-xml-XMLDataLoader.instance"/>
+                    <file name="org-netbeans-modules-xml-EntityDataLoader.instance"/>
+                </folder>
+            </folder>
+        </folder>
+        <folder name="application">
+            <folder name="xml">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-xml-XMLDataLoader.instance"/>
+                </folder>
+            </folder>
+        </folder>
         <folder name="text">
+            <folder name="xml">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-xml-XMLDataLoader.instance"/>
+                </folder>
+            </folder>
+            
             <folder name="x-dtd">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-xml-DTDDataLoader.instance"/>
+                </folder>
                 <folder name="Actions">
                     <file name="org-openide-actions-EditAction.instance">
                         <attr name="position" intvalue="100"/>
@@ -267,6 +291,9 @@ made subject to such option by the copyright holder.
                 </folder>
             </folder>
             <folder name="xml-external-parsed-entity">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-xml-EntityDataLoader.instance"/>
+                </folder>
                 <folder name="Actions">
                     <file name="org-openide-actions-EditAction.instance">
                         <attr name="position" intvalue="100"/>

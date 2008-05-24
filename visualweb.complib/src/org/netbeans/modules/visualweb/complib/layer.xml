@@ -63,4 +63,14 @@ made subject to such option by the copyright holder.
         </folder>
     </folder>
     -->
+    <folder name="Loaders">
+        <folder name="content">
+            <folder name="unknown">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-visualweb-complib-ComplibPaletteItemDataObject$PaletteItemDataLoader.instance"/>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+    
 </filesystem>
