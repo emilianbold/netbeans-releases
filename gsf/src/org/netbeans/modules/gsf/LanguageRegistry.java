@@ -120,6 +120,13 @@ public class LanguageRegistry implements Iterable<Language> {
         }
 
         this.languages = newLanguages;
+        
+        mimeToLanguage = new HashMap<String,Language>(2*languages.size());
+        for (Language language : languages) {
+            String mimeType = language.getMimeType();
+            assert mimeType.equals(mimeType.toLowerCase()) : mimeType;
+            mimeToLanguage.put( mimeType,language);
+        }
     }
 
     public static synchronized LanguageRegistry getInstance() {
