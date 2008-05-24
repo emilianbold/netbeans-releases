@@ -42,7 +42,6 @@
 package org.netbeans.modules.autoupdate.ui.actions;
 
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
@@ -57,7 +56,6 @@ import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
-import javax.swing.Timer;
 import javax.swing.ToolTipManager;
 import org.netbeans.api.autoupdate.InstallSupport;
 import org.netbeans.api.autoupdate.OperationContainer;
@@ -93,6 +91,8 @@ public class AutoupdateCheckScheduler {
     private static final RequestProcessor REGULARLY_CHECK_TIMER = 
         new RequestProcessor("auto-checker-reqularly-timer", 1, true); // NOI18N
     private static final Logger err = Logger.getLogger (AutoupdateCheckScheduler.class.getName ());
+    
+    private static boolean wasRealCheckUpdateCenters = false;
 
     private AutoupdateCheckScheduler () {
     }
@@ -349,6 +349,7 @@ public class AutoupdateCheckScheduler {
             }
             if (timeToCheck ()) {
                 scheduleRefreshProviders ();
+                wasRealCheckUpdateCenters = true;
                 if (getWaitPeriod () > 0 && regularlyCheck != null && regularlyCheck.getDelay () <= 0) {
                     regularlyCheck = REGULARLY_CHECK_TIMER.post (doCheck, getWaitPeriod (), Thread.MIN_PRIORITY);
                 }
@@ -430,8 +431,6 @@ public class AutoupdateCheckScheduler {
                         }
                         BalloonManager.dismiss ();
                         RequestProcessor.getDefault ().post (doCheckAvailableUpdates);
-                    } else {
-                        // notify available plugins/updates in the future
                     }
                 }
             }
@@ -455,31 +454,40 @@ public class AutoupdateCheckScheduler {
             }
         };
         if (! wasFlashing) {
-            SwingUtilities.invokeLater( showBalloon );
+            if (canShowBalloon ()) {
+                SwingUtilities.invokeLater( showBalloon );
+            }
             flasher.addMouseListener( new MouseAdapter() {
-                    Timer t;
+                    RequestProcessor.Task t = null;
+                    private RequestProcessor RP = new RequestProcessor ("balloon-manager"); // NOI18N
+                    
                     @Override
                     public void mouseEntered(MouseEvent e) {
-                        if( null != t ) {
-                            t.stop();
-                        }
-                        t = new Timer( ToolTipManager.sharedInstance().getInitialDelay(), new ActionListener() {
-                            public void actionPerformed(ActionEvent e) {
-                                showBalloon.run();
+                        t = RP.post (new Runnable () {
+                            public void run () {
+                                showBalloon.run ();
+                                BalloonManager.stopDismissSlowly ();
                             }
-                        });
-                        t.start();
+                        }, ToolTipManager.sharedInstance ().getInitialDelay ());
                     }
+                    
                     @Override
                     public void mouseExited(MouseEvent e) {
                         if( null != t ) {
-                            t.stop();
+                            t.cancel ();
                             t = null;
+                            BalloonManager.dismissSlowly ();
                         }
                     }
-                }    
-            );
+            });
         }
+    }
+    
+    private static boolean canShowBalloon () {
+        if (Utilities.allowShowingBalloon () != null) {
+            return Utilities.allowShowingBalloon ();
+        }
+        return wasRealCheckUpdateCenters;
     }
     
 }
