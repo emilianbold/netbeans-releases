@@ -58,6 +58,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.modules.php.project.connections.ConfigManager.Configuration;
+import org.netbeans.modules.php.project.connections.RemoteConnection.ConnectionType;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -71,20 +72,6 @@ public final class RemoteConnections {
 
     // XXX temporary
     public static final String DEBUG_PROPERTY = "remote.connections"; // NOI18N
-
-    public static enum ConnectionType {
-        FTP ("LBL_Ftp"); // NOI18N
-
-        private final String label;
-
-        private ConnectionType(String labelKey) {
-            label = NbBundle.getMessage(RemoteConnections.class, labelKey);
-        }
-
-        public String getLabel() {
-            return label;
-        }
-    }
 
     static final Logger LOGGER = Logger.getLogger(RemoteConnections.class.getName());
 
@@ -134,7 +121,7 @@ public final class RemoteConnections {
         }
         panel = new RemoteConnectionsPanel();
         // data
-        panel.setConnections(getConnections());
+        panel.setConnections(getConfigurations());
 
         // listeners
         panel.addChangeListener(defaultChangeListener);
@@ -156,7 +143,8 @@ public final class RemoteConnections {
     }
 
     /**
-     * Open the UI manager for remote connections. One can easily add, remove and edit remote connections.
+     * Open the UI manager for {@link RemoteConnection remote connections}. One can easily add,
+     * remove and edit remote connections.
      */
     public void openManager() {
         initPanel();
@@ -186,11 +174,24 @@ public final class RemoteConnections {
     }
 
     /**
-     * Get the ordered list of connections. The list is order according to connection's display
+     * Get the ordered list of {@link RemoteConnection remote connections}. The list is order according to connection's display
      * name (locale-sensitive string comparison).
      * @return the ordered list of connections.
+     * @see RemoteConnection
      */
-    public List<Configuration> getConnections() {
+    public List<RemoteConnection> getConnections() {
+        // get all the configs
+        List<Configuration> configs = getConfigurations();
+
+        // convert them to remote connections
+        List<RemoteConnection> remoteConnections = new ArrayList<RemoteConnection>(configs.size());
+        for (Configuration cfg : configs) {
+            remoteConnections.add(new RemoteConnection(cfg));
+        }
+        return Collections.unmodifiableList(remoteConnections);
+    }
+
+    private List<Configuration> getConfigurations() {
         Collection<String> cfgNames = configManager.configurationNames();
         List<Configuration> configs = new ArrayList<Configuration>(cfgNames.size() - 1); // without default config
 
@@ -207,7 +208,7 @@ public final class RemoteConnections {
             configs.add(cfg);
         }
         Collections.sort(configs, ConfigManager.getConfigurationComparator());
-        return Collections.unmodifiableList(configs);
+        return configs;
     }
 
     void addConfig() {
