@@ -44,6 +44,7 @@ import org.netbeans.modules.php.project.connections.ConfigManager;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Arrays;
 import java.util.Vector;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
@@ -68,6 +69,8 @@ import org.openide.util.NbBundle;
  */
 public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
     private static final long serialVersionUID = -559348988746891271L;
+    private static final RemoteConnection NO_REMOTE_CONNECTION = new RemoteConnection(
+            NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_NoRemoteConnection"), "", null, null, 0, null, false, null, 0); // NOI18N
     private static final RemoteConnection MISSING_REMOTE_CONNECTION = new RemoteConnection(
             NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_MissingRemoteConnection"), "", null, null, 0, null, false, null, 0); // NOI18N
     private static final UploadFiles DEFAULT_UPLOAD_FILES = UploadFiles.ON_RUN;
@@ -195,10 +198,12 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
             return;
         }
 
-        if (remoteConnectionComboBox.getSelectedItem() == null) {
+        RemoteConnection selected = (RemoteConnection) remoteConnectionComboBox.getSelectedItem();
+        assert selected != null;
+        if (selected == NO_REMOTE_CONNECTION) {
             validateCategory(NbBundle.getMessage(RunAsRemoteWeb.class, "MSG_NoConnectionSelected"));
             return;
-        } else if (remoteConnectionComboBox.getSelectedItem() == MISSING_REMOTE_CONNECTION) {
+        } else if (selected == MISSING_REMOTE_CONNECTION) {
             validateCategory(NbBundle.getMessage(RunAsRemoteWeb.class, "MSG_NonExistingConnectionSelected"));
             return;
         }
@@ -211,16 +216,23 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
     }
 
     private void populateRemoteConnectionComboBox() {
-        if (Boolean.getBoolean(RemoteConnections.DEBUG_PROPERTY)) {
-            List<RemoteConnection> connections = RemoteConnections.get().getConnections();
-            DefaultComboBoxModel model = new DefaultComboBoxModel(new Vector<RemoteConnection>(connections));
-            remoteConnectionComboBox.setModel(model);
+        if (!Boolean.getBoolean(RemoteConnections.DEBUG_PROPERTY)) {
+            remoteConnectionComboBox.addItem(NO_REMOTE_CONNECTION);
+            return;
         }
+        List<RemoteConnection> connections = RemoteConnections.get().getConnections();
+        if (connections.isEmpty()) {
+            // no connections defined
+            connections = Arrays.asList(NO_REMOTE_CONNECTION);
+        }
+        DefaultComboBoxModel model = new DefaultComboBoxModel(new Vector<RemoteConnection>(connections));
+        remoteConnectionComboBox.setModel(model);
     }
 
     private void selectRemoteConnection() {
         String remoteConnection = getValue(PhpProjectProperties.REMOTE_CONNECTION);
         if (remoteConnection == null) {
+            remoteConnectionComboBox.setSelectedItem(NO_REMOTE_CONNECTION);
             return;
         }
         int size = remoteConnectionComboBox.getModel().getSize();
@@ -473,7 +485,8 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         }
 
         private Color getForeground(RemoteConnection remoteConnection, JList list, boolean isSelected) {
-            if (remoteConnection == MISSING_REMOTE_CONNECTION) {
+            if (remoteConnection == MISSING_REMOTE_CONNECTION
+                    || remoteConnection == NO_REMOTE_CONNECTION) {
                 return UIManager.getColor("nb.errorForeground"); // NOI18N
             }
             return isSelected ? list.getSelectionForeground() : list.getForeground();
