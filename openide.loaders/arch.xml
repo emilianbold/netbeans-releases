@@ -853,7 +853,7 @@ No.
 Yes, module creates the folders in layer <samp>org/netbeans/core/ui/resources/layer.xml</samp>
 in <samp>core-ui.jar</samp>. The folders are instrumental to store information
 about used templates.
-<b>Provided folderes: </b>
+<b>Provided folders: </b>
 <ul>
 <li>
     <api name="PrivilegedTemplates" group="layer" type="export" category="devel">
