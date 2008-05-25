@@ -96,6 +96,7 @@ public class CPPParserEx extends CPPParser {
 	    super(tokenTypeToClassMap);
 	}
 
+        @Override
         public final AST create(Token tok) {
             AST t = createTokenASTByType(tok.getType());
             if (t == null) {
@@ -114,6 +115,7 @@ public class CPPParserEx extends CPPParser {
         super(stream);
     }    
     
+    @Override
     protected final boolean isLazyCompound() {
         return lazyCompound;
     }
@@ -132,6 +134,7 @@ public class CPPParserEx extends CPPParser {
     }    
 
     
+    @Override
     protected final void init(String filename, int flags) {
         /*if( trace ) {
             flags |= CPPParser.CPP_STATEMENT_TRACE;
@@ -146,6 +149,7 @@ public class CPPParserEx extends CPPParser {
     }
     
     // Shorthand for a string of (qualifiedItemIs()==xxx||...)
+    @Override
     protected final boolean qualifiedItemIsOneOf(/*QualifiedItem*/int qiFlags, int lookahead_offset) { 
 	/*QualifiedItem*/int qi = qualifiedItemIs(lookahead_offset); 
 	return (qi & qiFlags) != 0; 
@@ -179,6 +183,7 @@ public class CPPParserEx extends CPPParser {
     // ::*, * yields qiInvalid
     // ::~T, ~T, A::~T yield qiDtor
     // ~a, ~A::a, A::~T::, ~T:: yield qiInvalid
+    @Override
     protected final /*QualifiedItem*/int qualifiedItemIs(int lookahead_offset) { 
         try {
             return _qualifiedItemIs(lookahead_offset);
@@ -433,6 +438,7 @@ public class CPPParserEx extends CPPParser {
     }
 
     // Return true if "::blah" or "fu::bar<args>::..." found.
+    @Override
     protected final boolean scopedItem(int tmp_k)  { 
         try {
 	//printf("support.cpp scopedItem tmp_k %d\n",tmp_k);
@@ -472,6 +478,7 @@ public class CPPParserEx extends CPPParser {
 	return (tok == null) ? 0 : tok.getType();
     }
   
+    @Override
     protected final boolean isTypeName(String s) { 
         return isValidIdentifier(s);
         /* TODO: revive the original code:
@@ -574,6 +581,7 @@ public class CPPParserEx extends CPPParser {
 	//functionDefinition = 0;
    // }
 
+    @Override
     protected final void declarationSpecifier(boolean td, boolean fd, StorageClass sc, TypeQualifier tq,
                          /*TypeSpecifier*/int ts, DeclSpecifier ds) {
 	//printf("support.cpp declarationSpecifier td %d, fd %d, sc %d, tq, "
@@ -592,6 +600,7 @@ public class CPPParserEx extends CPPParser {
      * The symbol is added to whatever the current scope is in the symbol table. 
      * See list of object types below.
      */
+    @Override
     protected final void declaratorID(String id, /*QualifiedItem*/int qi) {	// stores new symbol with type
         
 	CPPSymbol c;
@@ -724,6 +733,7 @@ public class CPPParserEx extends CPPParser {
          */
     //}
     
+    @Override
     protected final void classForwardDeclaration(/*TypeSpecifier*/int ts, DeclSpecifier ds, String tag) {
 
         CPPSymbol c = null;
@@ -785,6 +795,7 @@ public class CPPParserEx extends CPPParser {
     }
     
     
+    @Override
     protected final void beginClassDefinition(/*TypeSpecifier*/int ts, String tag) {
 	CPPSymbol c;
 
@@ -842,6 +853,7 @@ public class CPPParserEx extends CPPParser {
          */
     }
     
+    @Override
     protected final void endClassDefinition() {
         /* TODO: revive the original code:
 	symbols->dumpScope(stdout);
@@ -868,6 +880,7 @@ public class CPPParserEx extends CPPParser {
         //super.endClassDefinition();
     }
 
+    @Override
     protected final void beginEnumDefinition(String e) {
 	// DW 26/3/97 Set flag for new class
 	    
@@ -884,9 +897,11 @@ public class CPPParserEx extends CPPParser {
 	}
     }
     
+    @Override
     protected final void endEnumDefinition() {
     }
     
+    @Override
     protected final void templateTypeParameter(String t) {
 	//DW 11/06/03 Symbol saved in templateParameterScope (0)
 	//  as a temporary measure until scope is implemented fully
@@ -999,26 +1014,32 @@ public class CPPParserEx extends CPPParser {
     }
     
     
+    @Override
     protected final void printf(String pattern, int i) { 
         Printf.printf(pattern, new Object[] { new Integer(i) });
     }
     
+    @Override
     protected final void printf(String pattern, Object o) { 
         Printf.printf(pattern, new Object[] { o });
     }
     
+    @Override
     protected final void printf(String pattern, int i, Object o) { 
         Printf.printf(pattern, new Object[] { new Integer(i), o });
     }
     
+    @Override
     protected final void printf(String pattern, int i, Object o1, Object o2) { 
         Printf.printf(pattern, new Object[] { new Integer(i), o1, o2 });
     }
     
+    @Override
     protected final void printf(String pattern, int i1, int i2, boolean b1, Object o) { 
         Printf.printf(pattern, new Object[] { new Integer(i1), new Integer(i2), Boolean.valueOf(b1), o });
     }
     
+    @Override
     protected final void printf (String pattern, int i1, Object o1, int i2, Object o2) {
         Printf.printf(pattern, new Object[] { new Integer(i1), o1, new Integer(i2), o2 });
     }
@@ -1027,10 +1048,12 @@ public class CPPParserEx extends CPPParser {
         Printf.printf(pattern, new Object[] { new Integer(i1), new Integer(i2), new Integer(i3), o });
     }
     
+    @Override
     protected final void printf (String pattern, int i1, int i2, int i3, String s) {
         Printf.printf(pattern, new Object[] { new Integer(i1), new Integer(i2), new Integer(i3), s });
     }
     
+    @Override
     protected final void printf(String pattern, int i1, int i2) {
         Printf.printf(pattern, new Object[] { new Integer(i1), new Integer(i2) });
     }
@@ -1042,6 +1065,7 @@ public class CPPParserEx extends CPPParser {
     
     
     /** overrides base implementation to make indentation 2 instead of 1 */
+    @Override
     public final void traceIndent() {
         for (int i = 0; i < traceDepth; i++)
             System.out.print("  "); // NOI18N
@@ -1053,6 +1077,7 @@ public class CPPParserEx extends CPPParser {
      *
      * TODO: make it (optionally?) build AST. For now AST isn't built.
      */
+    @Override
     protected final void balanceBraces(int left, int right) throws RecognitionException, TokenStreamException { 
 	int depth = 0;
 	while( LA(1) != Token.EOF_TYPE ) { // && LA(1) != CPPTokenTypes.RPAREN ) {
@@ -1080,6 +1105,7 @@ public class CPPParserEx extends CPPParser {
      * This is made for analyzing time spent in guessing.
      * If we use an ordinary ANTLR (as in official CND), this code never works
      */
+    @Override
     protected final void syntacticPredicateStarted(int idx, int nestingLevel, int line) {
         if( guessingCount[idx] == 0 ) {
             // first time - let's find a name
@@ -1096,6 +1122,7 @@ public class CPPParserEx extends CPPParser {
     }
 
     /** see syntacticPredicateFailed description */
+    @Override
     protected final void syntacticPredicateFailed(int idx, int nestingLevel) {
 	if( nestingLevel ==0 ) {
 	    guessingTimes[idx] += System.currentTimeMillis();
@@ -1104,6 +1131,7 @@ public class CPPParserEx extends CPPParser {
     }
 
     /** see syntacticPredicateStarted description */
+    @Override
     protected final void syntacticPredicateSucceeded(int idx, int nestingLevel) {
 	if( nestingLevel ==0 ) {
 	    guessingTimes[idx] += System.currentTimeMillis();
