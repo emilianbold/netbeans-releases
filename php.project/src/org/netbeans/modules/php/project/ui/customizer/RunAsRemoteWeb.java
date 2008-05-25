@@ -238,7 +238,9 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         int size = remoteConnectionComboBox.getModel().getSize();
         for (int i = 0; i < size; ++i) {
             RemoteConnection rc = (RemoteConnection) remoteConnectionComboBox.getItemAt(i);
-            if (remoteConnection.equals(rc.getName())) {
+            if (remoteConnection.equals(rc.getName())
+                    || "".equals(remoteConnection)) { // NOI18N
+                // select existing or no connection formerly existed and now some were created => so select it
                 remoteConnectionComboBox.setSelectedItem(rc);
                 return;
             }
