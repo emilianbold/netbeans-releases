@@ -79,6 +79,7 @@ public final class RemoteConnections {
 
     private static final ConnectionType DEFAULT_TYPE = ConnectionType.FTP;
     private static final int DEFAULT_PORT = 21;
+    private static final String DEFAULT_INITIAL_DIRECTORY = "/"; // NOI18N
     private static final int DEFAULT_TIMEOUT = 30;
 
     static final String TYPE = "type"; // NOI18N
@@ -234,6 +235,7 @@ public final class RemoteConnections {
             }
             Configuration cfg = configManager.createNew(config, name);
             cfg.putValue(PORT, String.valueOf(DEFAULT_PORT));
+            cfg.putValue(INITIAL_DIRECTORY, DEFAULT_INITIAL_DIRECTORY);
             cfg.putValue(TIMEOUT, String.valueOf(DEFAULT_TIMEOUT));
             panel.addConfiguration(cfg);
             configManager.markAsCurrentConfiguration(config);
