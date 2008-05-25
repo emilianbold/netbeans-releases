@@ -116,7 +116,7 @@ public class RspecHandlerFactory {
     static class TestFinishedHandler extends TestRecognizerHandler {
 
         public TestFinishedHandler() {
-            super(".*%TEST_FINISHED%\\s(.*)\\stime=(\\d+\\.\\d+)"); //NOI18N
+            super(".*%TEST_FINISHED%\\s(.*)\\stime=(.+)"); //NOI18N
         }
 
         @Override
@@ -132,7 +132,7 @@ public class RspecHandlerFactory {
     static class TestPendingHandler extends TestRecognizerHandler {
 
         public TestPendingHandler() {
-            super(".*%TEST_PENDING%\\s(.*)\\stime=(\\d+\\.\\d+)\\s(.*)");
+            super(".*%TEST_PENDING%\\s(.*)\\stime=(.+)\\s(.*)"); //NOI18N
         }
 
         @Override
@@ -151,7 +151,7 @@ public class RspecHandlerFactory {
     static class SuiteFinishedHandler extends TestRecognizerHandler {
 
         public SuiteFinishedHandler() {
-            super(".*%SUITE_FINISHED%\\s(\\w+)\\stime=(\\d+\\.\\d+)");
+            super(".*%SUITE_FINISHED%\\s(.+)\\stime=(.+)"); //NOI18N
         }
 
         @Override
@@ -166,7 +166,7 @@ public class RspecHandlerFactory {
     static class SuiteStartedHandler extends TestRecognizerHandler {
 
         public SuiteStartedHandler() {
-            super(".*%SUITE_STARTED%\\s.*");
+            super(".*%SUITE_STARTED%\\s.*"); //NOI18N
         }
 
         @Override
@@ -177,7 +177,7 @@ public class RspecHandlerFactory {
     static class SuiteStartingHandler extends TestRecognizerHandler {
 
         public SuiteStartingHandler() {
-            super(".*%SUITE_STARTING%\\s(\\w+)");
+            super(".*%SUITE_STARTING%\\s(.+)"); //NOI18N
         }
 
         @Override
@@ -191,7 +191,7 @@ public class RspecHandlerFactory {
     static class StackTraceFilterHandler extends TestRecognizerHandler {
 
         public StackTraceFilterHandler() {
-            super(".*" + RspecRunner.RSPEC_MEDIATOR_SCRIPT + ".*");
+            super(".*" + RspecRunner.RSPEC_MEDIATOR_SCRIPT + ".*"); //NOI18N
         }
 
         @Override
