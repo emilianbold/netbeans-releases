@@ -850,10 +850,19 @@ No.
         </question>
 -->
 <answer id="resources-layer">
+    <p>
+    <api name="Loaders-mime-type-Factories" group="layer" type="export" category="stable"
+       url="@TOP@/org/openide/loaders/doc-files/api.html#register"
+    >
+        Loaders are registered in the layer in folder <code>Loaders/mime/type/Factories</code>.
+    </api>
+    </p>
+    <p>
 Yes, module creates the folders in layer <samp>org/netbeans/core/ui/resources/layer.xml</samp>
 in <samp>core-ui.jar</samp>. The folders are instrumental to store information
 about used templates.
 <b>Provided folders: </b>
+</p>
 <ul>
 <li>
     <api name="PrivilegedTemplates" group="layer" type="export" category="devel">
@@ -866,7 +875,9 @@ about used templates.
     </api><p></p>
 </li>
 </ul>
+<p>
 None of them is forced to found.
+    </p>
 </answer>
 
 <!-- Question: resources-mask

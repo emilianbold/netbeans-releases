@@ -1075,7 +1075,9 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
         return NbBundle.getMessage (DataObject.class, name);
     }
     
-    /** Factory interface for converting file object to data objects.
+    /** Factory interface for converting file object to data objects. Read
+     * more about the layer based registrations in 
+     * <a href="@TOP@/org/openide/loaders/doc-files/api.html#register"/>separate document</a>.
      * @since 7.0
      */
     public static interface Factory {
