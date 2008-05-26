@@ -66,7 +66,7 @@ function main() {
         echo "pp and ccparse $1"
         fileName="`basename $1`"
         relPath=${1#$mainPath/}
-        fileDir="`dirname $fileName`"
+        fileDir="`dirname $relPath`"
 
         mkdir -p pptemp/$fileDir
         mkdir -p elsatemp/$fileDir

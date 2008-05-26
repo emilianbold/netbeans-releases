@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package codecompletiontestresultanalyzer;
 
 import java.io.BufferedReader;
@@ -50,6 +49,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
@@ -57,15 +57,32 @@ import org.xml.sax.helpers.XMLReaderFactory;
 import org.xml.sax.helpers.DefaultHandler;
 
 /**
- *
- * @author nk220367
+ * Code completion test result analyzer
+ * 
+ * @author Nick Krasilnikov
  */
-public class Main extends DefaultHandler {
+public class MyHandler extends DefaultHandler {
 
-    Map<String, Integer> errorStatistic = new HashMap<String, Integer>();
-    static String projDir;
-    static String indexDir;
+    private static String projDir;
+    private static String indexDir;
 
+    
+    private Map<String, Integer> errorStatistic = new HashMap<String, Integer>();
+
+    private String currentFileName;
+    private boolean currentCheckPointIsFailed = false;
+    private String currentTokenName = "";
+    private int currentTokenLine;
+    private boolean currentTokenNotFound = false;
+    
+    private boolean textTag = false;
+
+    /**
+     * Main function
+     * Collects definitions, declarations and usages and then dumps them as golden data
+     * 
+     * @param args the command line arguments. There should be project dir, index dir and xml files
+     */    
     public static void main(String args[])
             throws Exception {
 
@@ -75,7 +92,7 @@ public class Main extends DefaultHandler {
 //        System.out.println("Index dir: " + indexDir);
 
         XMLReader xr = XMLReaderFactory.createXMLReader();
-        Main handler = new Main();
+        MyHandler handler = new MyHandler();
         xr.setContentHandler(handler);
         xr.setErrorHandler(handler);
 
@@ -84,21 +101,34 @@ public class Main extends DefaultHandler {
             xr.parse(new InputSource(r));
         }
 
-        Iterator<String> it = handler.errorStatistic.keySet().iterator();
-        while (it.hasNext()) 
-        {
-            String key = it.next();
-            System.out.println(key + " " + handler.errorStatistic.get(key));
-        }
+        handler.printStatisticInHtml();
     }
 
-    public Main() {
+    /**
+     * Prints result
+     */
+    void printStatisticInHtml() {
+        System.out.println("<html>");
+        System.out.println("<head><title>Detailed statistics</title></head>");
+        System.out.println("<body>");
+
+        Iterator<String> it = errorStatistic.keySet().iterator();
+        while (it.hasNext()) {
+            String key = it.next();
+            System.out.println(key + " " + errorStatistic.get(key) + "<br>");
+        }
+
+        System.out.println("</body>");
+        System.out.println("</html>");
+    }
+
+    /**
+     * Constructor
+     */
+    public MyHandler() {
         super();
     }
-
-    String currentFileName;
-    boolean currentCheckPointIsFailed = false;
-
+    
     @Override
     public void startElement(String uri, String name,
             String qName, Attributes atts) {
@@ -112,6 +142,8 @@ public class Main extends DefaultHandler {
         }
 
         if (currentFileName != null && name.equals("checkpoint")) {
+            currentTokenNotFound = false;
+            currentTokenName = "";
             for (int i = 0; i < atts.getLength(); i++) {
                 if (atts.getLocalName(i).equals("resultFull")) {
                     currentCheckPointIsFailed = atts.getValue(i).equals("false");
@@ -132,10 +164,12 @@ public class Main extends DefaultHandler {
             }
             if (lineNumber > 0 && columnNumber > 0) {
                 String desc = getTokenDescriptionFromIndex(currentFileName, lineNumber, columnNumber);
-                
-//                if(desc.equals("unknown")) {
-//                    System.out.println(currentFileName + " " + lineNumber + " " + columnNumber);                    
-//                }
+
+                if (desc == null) {
+                    currentTokenLine = lineNumber;
+                    currentTokenNotFound = true;
+                    return;
+                }
 
                 if (errorStatistic.containsKey(desc)) {
                     errorStatistic.put(desc, errorStatistic.get(desc).intValue() + 1);
@@ -144,10 +178,54 @@ public class Main extends DefaultHandler {
                 }
             }
         }
+        if (name.equals("text")) {
+            textTag = true;
+        }
     }
 
-    public String getTokenDescriptionFromIndex(String file, int line, int col) {
+    @Override
+    public void endElement(String uri, String localName, String qName) throws SAXException {
+        if (localName.equals("text")) {
+            textTag = false;
+        }
 
+        if (currentTokenNotFound && localName.equals("checkpoint")) {
+            String desc = getTokenDescriptionFromIndex(currentFileName, currentTokenLine, currentTokenName);
+
+            if (desc == null) {
+                desc = "unknown";
+            }
+            
+            if (errorStatistic.containsKey(desc)) {
+                errorStatistic.put(desc, errorStatistic.get(desc).intValue() + 1);
+            } else {
+                errorStatistic.put(desc, 1);
+            }
+
+            currentTokenName = "";
+            currentTokenNotFound = false;
+        }
+    }
+
+    @Override
+    public void characters(char[] ch, int start, int length) throws SAXException {
+        if (currentTokenNotFound && textTag) {
+            for (int i = 0; i < length; i++) {
+                char c = ch[start + i];
+                currentTokenName += c;
+            }
+        }
+    }
+
+    /**
+     * Gets token description from index
+     * 
+     * @param file - file name
+     * @param line - line number
+     * @param col - column number
+     * @return description of token
+     */
+    public String getTokenDescriptionFromIndex(String file, int line, int col) {
         String relFileName = file.substring(projDir.length() + 1);
         try {
             BufferedReader in = new BufferedReader(new FileReader(indexDir + "/" + relFileName.replaceAll("/", ".")));
@@ -160,9 +238,36 @@ public class Main extends DefaultHandler {
                 s = in.readLine();
             }
         } catch (IOException ex) {
-            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(MyHandler.class.getName()).log(Level.SEVERE, null, ex);
         }
 
-        return "unknown";
+        return null;
+    }
+
+    /**
+     * Gets token description from index
+     * 
+     * @param file - file name
+     * @param line - line number
+     * @param name - token name
+     * @return description of token
+     */
+    public String getTokenDescriptionFromIndex(String file, int line, String name) {
+        String relFileName = file.substring(projDir.length() + 1);
+        try {
+            BufferedReader in = new BufferedReader(new FileReader(indexDir + "/" + relFileName.replaceAll("/", ".")));
+
+            String s = in.readLine();
+            while (s != null) {
+                if (s.matches(line + ":.* " + name + " .*")) {
+                    return s.replaceAll(".* ", "") + "-in-line-with-macro";
+                }
+                s = in.readLine();
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(MyHandler.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        return null;
     }
 }
