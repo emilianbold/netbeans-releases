@@ -41,9 +41,12 @@
 package org.openide.nodes;
 
 import java.lang.ref.Reference;
-import java.util.*;
+import java.util.Collection;
+import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.openide.nodes.EntrySupport.Default.Info;
 
 
 /** Holder of nodes for a children object. Communicates
@@ -52,13 +55,14 @@ import java.util.logging.Logger;
 * @author Jaroslav Tulach
 */
 final class ChildrenArray extends NodeAdapter {
-    /** children */
-    public Children children;
+    /** children's EntrySupport */
+    public  EntrySupport entrySupport;
 
     /** nodes associated */
     private Node[] nodes;
 
-    private Map<Children.Info,Collection<Node>> map;
+    private Map<Info, Collection<Node>> map;
+
     /** the reference that points to us */
     private Reference<ChildrenArray> ref;
 
@@ -70,13 +74,14 @@ final class ChildrenArray extends NodeAdapter {
     }
 
     public Children getChildren() {
-        return children;
+        return entrySupport == null ? null : entrySupport.children;
     }
 
     /** When finalized notify the children.
     */
+    @Override
     protected void finalize() {
-        children.finalizedChildrenArray(ref);
+        entrySupport.finalizedChildrenArray(ref);
     }
     
     /** Now points to me */
@@ -87,29 +92,27 @@ final class ChildrenArray extends NodeAdapter {
     /** Getter method to receive a set of computed nodes.
     */
     public Node[] nodes() {
-        if (children == null) {
+        if (entrySupport == null) {
             // not fully initialize
             return null;
         }
 
         if (nodes == null) {
-            nodes = children.justComputeNodes();
+            nodes = entrySupport.justComputeNodes();
 
             for (int i = 0; i < nodes.length; i++) {
                 // keeps a hard reference from the children node to this
                 // so we can be GCed only when child nodes are gone
-                nodes[i].reassignTo(children, this);
+                nodes[i].reassignTo(entrySupport.children, this);
             }
 
             // if at least one node => be weak
-            children.registerChildrenArray(this, nodes.length > 0);
+            entrySupport.registerChildrenArray(this, nodes.length > 0);
         }
-
         return nodes;
     }
 
-    /** Clears the array of nodes.
-    */
+    /** Clears the array of nodes. */
     public void clear() {
         if (nodes != null) {
             nodes = null;
@@ -117,17 +120,16 @@ final class ChildrenArray extends NodeAdapter {
             // register in the childrens to be hold by hard reference
             // because we keep no reference to nodes, we can be
             // hard holded by children
-            children.registerChildrenArray(this, false);
+            entrySupport.registerChildrenArray(this, false);
         }
     }
 
     /** Finalizes nodes by calling get on weak hash map,
-    * all references stored in the map, that are finalized
-    * will be cleared.
-    */
+     * all references stored in the map, that are finalized
+     * will be cleared.
+     */
     public void finalizeNodes() {
         Map m = map;
-
         if (m != null) {
             // processes the queue of garbage
             // collected keys
@@ -135,13 +137,12 @@ final class ChildrenArray extends NodeAdapter {
         }
     }
 
-    /** Initilized if has some nodes.
-    */
+    /** Initilized if has some nodes. */
     public boolean isInitialized() {
         return nodes != null;
     }
 
-    private String logInfo(Children.Info info) {
+    private String logInfo(Info info) {
         return info.toString() + '[' + Integer.toHexString(System.identityHashCode(info)) + ']';
     }
 
@@ -149,13 +150,13 @@ final class ChildrenArray extends NodeAdapter {
     * @param info the info
     * @return the nodes
     */
-    public synchronized Collection<Node> nodesFor(Children.Info info) {
+    public synchronized Collection<Node> nodesFor(Info info) {
         final boolean IS_LOG = LOG_NODES_FOR.isLoggable(Level.FINE);
         if (IS_LOG) {
             LOG_NODES_FOR.fine("nodesFor(" +logInfo(info) + ") on " + Thread.currentThread()); // NOI18N
         }
         if (map == null) {
-            map = new WeakHashMap<Children.Info,Collection<Node>>(7);
+            map = new WeakHashMap<Info, Collection<Node>>(7);
         }
         Collection<Node> nodes = map.get(info);
 
@@ -182,16 +183,15 @@ final class ChildrenArray extends NodeAdapter {
     * @param info the info
     * @return the nodes
     */
-    public synchronized void useNodes(Children.Info info, Collection<Node> list) {
+    public synchronized void useNodes(Info info, Collection<Node> list) {
         if (map == null) {
-            map = new WeakHashMap<Children.Info,Collection<Node>>(7);
+            map = new WeakHashMap<Info, Collection<Node>>(7);
         }
-        
         info.length = list.size();
-
         map.put(info, list);
     }
 
+    @Override
     public String toString() {
         return super.toString() + "  " + getChildren(); //NOI18N
     }
