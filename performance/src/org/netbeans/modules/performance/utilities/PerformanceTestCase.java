@@ -131,8 +131,9 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
     public double HEURISTIC_FACTOR = 1.25;
 
     /** Count of repeats */
-    protected static int repeat = Integer.getInteger("org.netbeans.performance.repeat", 1).intValue();
-
+    //protected static int repeat = Integer.getInteger("org.netbeans.performance.repeat", 1).intValue();
+protected static int repeat = 4
+        ;
     /** Count of repeats for measure memory usage */
     protected static int repeat_memory = Integer.getInteger("org.netbeans.performance.memory.repeat", -1).intValue();
 
@@ -213,18 +214,18 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
      * SetUp test cases: redirect log/ref, initialize performance data.
      */
     public void setUp() {
-        checkScanFinished();
+        //checkScanFinished();
 // has to be resolved in new test model execution        
 // doesn't work now      
  //       checkWarmup();
-            for (int i=20; i>0; i--) {
+ /*           for (int i=20; i>0; i--) {
                 try {
                     log("checkWarmup - waiting");
                     Thread.sleep(1000);
                 } catch (InterruptedException ie) {
                     ie.printStackTrace(System.err);
                 }
-            }        
+            }        */
         data = new java.util.ArrayList<NbPerformanceTest.PerformanceData>();
     }
 
@@ -305,7 +306,6 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
                 ", logMemory="+logMemory);
 
         checkScanFinished(); // just to be sure, that during measurement we will not wait for scanning dialog
-
         try {
             initialize();
 
@@ -406,7 +406,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
         if(exceptionDuringMeasurement!=null)
             throw new RuntimeException("Exception {" + exceptionDuringMeasurement + "} rises during measurement.", exceptionDuringMeasurement);
 
-        compare(measuredTime);
+       compare(performanceDataName, measuredTime);
 
     }
 
@@ -758,7 +758,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
      *  Test fails if more than one of the measured value is bigger than expected one.
      * @param measuredValues array of measured values
      */
-    public void compare(long[] measuredValues){
+    public void compare(String performanceDataName, long[] measuredValues){
         boolean firstTimeUsageFail = false;
         int numberOfFails = 0;
         final int NUMBER_OF_FAILS_THRESHOLD = 1;
@@ -779,11 +779,13 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
         }
 
         if (numberOfFails > NUMBER_OF_FAILS_THRESHOLD || firstTimeUsageFail) {
+            CommonUtilities.xmlTestResults(this.getWorkDirPath(), performanceDataName, "ms", "failed", expectedTime ,measuredValues, repeat);
             captureScreen = false;
             fail(numberOfFails + " of the measuredTime(s) [" + measuredValuesString 
                     + " ] > expectedTime[" + expectedTime 
                     + "] - performance issue (it's ok if the first usage is in boundary of 0 to 2*expectedTime) .");
         } 
+        CommonUtilities.xmlTestResults(this.getWorkDirPath(), performanceDataName, "ms", "passed", expectedTime ,measuredValues, repeat);
     }
 
     /**

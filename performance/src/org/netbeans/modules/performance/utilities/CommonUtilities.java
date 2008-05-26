@@ -42,6 +42,13 @@
 package org.netbeans.modules.performance.utilities;
 
 import java.io.PrintStream;
+import java.io.FileOutputStream;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.tree.TreePath;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -536,7 +543,7 @@ public class CommonUtilities {
 //        rto.setComparator(comparator);
         JTreeOperator runtimeTree = rto.tree();
         long oldTimeout = runtimeTree.getTimeouts().getTimeout("JTreeOperator.WaitNextNodeTimeout");
-        runtimeTree.getTimeouts().setTimeout("JTreeOperator.WaitNextNodeTimeout", 60000);
+        runtimeTree.getTimeouts().setTimeout("JTreeOperator.WaitNextNodeTimeout", 6000);
         try {
             log("Looking path = Servers");
             path = runtimeTree.findPath("Servers");
@@ -566,6 +573,41 @@ public class CommonUtilities {
         return node;
     }
     
+        public static void addTomcatServer() {
+
+        String appServerPath = System.getProperty("tomcat.installRoot");
+        String addServerMenuItem = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.actions.Bundle", "LBL_Add_Server_Instance"); // Add Server...
+        String addServerInstanceDialogTitle = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.wizard.Bundle", "LBL_ASIW_Title"); //"Add Server Instance"
+        String serverItem = "Tomcat 6.0";
+        String nextButtonCaption = Bundle.getStringTrimmed("org.openide.Bundle", "CTL_NEXT");
+        String finishButtonCaption = Bundle.getStringTrimmed("org.openide.Bundle", "CTL_FINISH");
+
+        RuntimeTabOperator rto = RuntimeTabOperator.invoke();        
+        JTreeOperator runtimeTree = rto.tree();
+        
+        long oldTimeout = runtimeTree.getTimeouts().getTimeout("JTreeOperator.WaitNextNodeTimeout");
+        runtimeTree.getTimeouts().setTimeout("JTreeOperator.WaitNextNodeTimeout", 6000);
+        
+        TreePath path = runtimeTree.findPath("Servers");
+        runtimeTree.selectPath(path);
+        
+        try {
+            runtimeTree.findPath("Servers|Tomcat 6.0");
+        } catch (TimeoutExpiredException tee) {
+            
+            new JPopupMenuOperator(runtimeTree.callPopupOnPath(path)).pushMenuNoBlock(addServerMenuItem);
+            NbDialogOperator addServerInstanceDialog = new NbDialogOperator(addServerInstanceDialogTitle);
+            new JListOperator(addServerInstanceDialog,1).selectItem(serverItem);
+            new JButtonOperator(addServerInstanceDialog,nextButtonCaption).push();
+            new JTextFieldOperator(addServerInstanceDialog).enterText(appServerPath);
+            new JCheckBoxOperator(addServerInstanceDialog,1).changeSelection(false);
+            new JButtonOperator(addServerInstanceDialog,finishButtonCaption).push();
+        }
+        
+        runtimeTree.getTimeouts().setTimeout("JTreeOperator.WaitNextNodeTimeout", oldTimeout);
+
+    }
+
     /**
      * Invoke action on Application server node (start/stop/...)
      * @param action Action to be invoked on the Application server node
@@ -711,5 +753,30 @@ public class CommonUtilities {
         node.select();
         node.performPopupAction("Terminate Process");
     }
+    
+    public static void xmlTestResults(String path, String name, String unit, String pass, long threshold, long[] results, int repeat) {
+    
+        File resLocal=new File(path+File.separator+"performance.xml");
+        PrintStream ps=null;
+        try {
+            ps=new PrintStream(resLocal); 
+            ps.println("<TestResults>");
+            ps.println("   <Test name=\""+name+"\" unit=\""+unit+"\""+" results=\""+pass+"\""+" threshold=\""+threshold+"\">");
+            ps.println("      <PerformanceData runOrder=\"1\" value=\""+results[1]+"\"/>");
+            for (int i=2;i<=repeat;i++) 
+                ps.println("      <PerformanceData runOrder=\"2\" value=\""+results[i]+"\"/>");
+            ps.println("   </Test>");
+            ps.println("</TestResults>");
+            ps.close();
+        } catch (IOException ioe)  
+        {
+            ps.close();
+        }
+        
+      
+               
+    }
+    
+
     
 }

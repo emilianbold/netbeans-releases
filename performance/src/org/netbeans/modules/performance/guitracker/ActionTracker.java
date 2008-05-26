@@ -748,21 +748,9 @@ public class ActionTracker {
     private static String getPathToXsl(File file) {
         StringBuilder pathToXsl = new StringBuilder();
         
-        //skip the file name - go to folder
-        if (file.isFile())
-            file = file.getParentFile();
-        
-        // find the relative path to "work"
-        while(file != null && !file.getName().equalsIgnoreCase("work")) {
-            pathToXsl.append("../");
-            file = file.getParentFile();
-        }
-        
-        // move up over "testbag_XX" folder
-        pathToXsl.append("../");
-        
-        // add ActionTracker.xsl
-        pathToXsl.append("ActionTracker.xsl");
+            String workdir=System.getProperty("nbjunit.workdir");
+            pathToXsl.append(workdir);
+            pathToXsl.append("../../../../../src/org/netbeans/modules/performance/resources");
         
         return pathToXsl.toString();
     }
