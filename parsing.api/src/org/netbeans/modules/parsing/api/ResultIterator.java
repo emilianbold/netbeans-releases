@@ -42,6 +42,7 @@ package org.netbeans.modules.parsing.api;
 import java.util.Collections;
 import java.util.Iterator;
 
+import org.netbeans.modules.parsing.impl.ParserManagerImpl;
 import org.netbeans.modules.parsing.impl.SourceAccessor;
 import org.netbeans.modules.parsing.spi.EmbeddingProvider;
 import org.netbeans.modules.parsing.spi.ParseException;
@@ -88,17 +89,7 @@ public final class ResultIterator {
      * @return              parse {@link Result} for current source.
      */
     public Result getParserResult () throws ParseException {
-        String mimeType = snapshot.getMimeType ();
-        Parser parser = null;
-        if (mimeType.equals (snapshot.getSource ().getMimeType ()))
-            parser = SourceAccessor.getINSTANCE ().getParser (snapshot.getSource ());
-        if (parser == null) {
-            Lookup lookup = new ProxyLookup (
-                Lookups.forPath ("Editors/text/base"),
-                Lookups.forPath ("Editors" + mimeType)
-            );
-            parser = lookup.lookup (Parser.class);
-        }
+        final Parser parser = ParserManagerImpl.getParser(snapshot);
         parser.parse (snapshot, task);
         return parser.getResult (task);
     }

@@ -70,15 +70,7 @@ public class ParserManagerImpl {
         }
         if (parser == null) {
             String mimeType = source.getMimeType ();
-            Lookup lookup = getLookup (mimeType);
-            final Collection <? extends ParserFactory> parserFactories = lookup.lookupAll(ParserFactory.class);
-            final Collection<Snapshot> _tmp = Collections.singleton (source.createSnapshot());
-            for (final ParserFactory parserFactory : parserFactories) {
-                parser = parserFactory.createParser (_tmp);
-                if (parser != null) {
-                    break;
-                }
-            }           
+            parser = lookupParser(mimeType, source.createSnapshot());
             assert parser != null : "No parser found for: " + source;   //NOI18N
         }
         synchronized (source) {
@@ -87,6 +79,34 @@ public class ParserManagerImpl {
             }
         }
         return parser;
+    }
+    
+    
+    public static Parser getParser (final Snapshot snapshot) {
+        assert snapshot != null;
+        final String mimeType = snapshot.getMimeType();
+        Parser parser;
+        if (mimeType.equals (snapshot.getSource ().getMimeType ())) {
+            parser = getParser (snapshot.getSource ());
+        }
+        else {
+            parser = lookupParser(mimeType, snapshot);
+            assert parser != null : "No parser found for: " + snapshot;   //NOI18N
+        }        
+        return parser;
+    }
+    
+    private static Parser lookupParser (final String mimeType, final Snapshot snapshot) {
+        Lookup lookup = getLookup (mimeType);
+        final Collection <? extends ParserFactory> parserFactories = lookup.lookupAll(ParserFactory.class);
+        final Collection<Snapshot> _tmp = Collections.singleton (snapshot);
+        for (final ParserFactory parserFactory : parserFactories) {
+            Parser parser = parserFactory.createParser (_tmp);
+            if (parser != null) {
+                return parser;
+            }
+        }
+        return null;
     }
     
     private static Lookup getLookup (String mimeType) {
