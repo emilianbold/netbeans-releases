@@ -209,7 +209,7 @@ public class Mercurial {
 
                 OutputLogger logger = getLogger(Mercurial.MERCURIAL_OUTPUT_TAB_TITLE);
                 prefs.put(HgModuleConfig.PROP_RUN_VERSION, version);
-                logger.outputInRed(NbBundle.getMessage(Mercurial.class, "MSG_USING_UNSUPPORTED_VERSION_MSG", version)); // NOI18N);
+                logger.outputInRed(NbBundle.getMessage(Mercurial.class, "MSG_USING_UNRECOGNIZED_VERSION_MSG", version)); // NOI18N);
                 logger.closeLog();
             }
             goodVersion = true;         

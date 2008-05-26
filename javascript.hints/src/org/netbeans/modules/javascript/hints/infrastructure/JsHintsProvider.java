@@ -102,7 +102,7 @@ public class JsHintsProvider implements HintsProvider {
         }
 
         @SuppressWarnings("unchecked")
-        List<JsSelectionRule> hints = (List)manager.getSelectionHints();
+        List<JsSelectionRule> hints = (List<JsSelectionRule>) manager.getSelectionHints();
 
         if (hints.isEmpty()) {
             return;
@@ -253,7 +253,6 @@ public class JsHintsProvider implements HintsProvider {
 
     private void applySelectionRules(HintsManager manager, RuleContext context, List<JsSelectionRule> rules,
             List<Hint> result) {
-        CompilationInfo info = context.compilationInfo;
         
         for (JsSelectionRule rule : rules) {
             if (!rule.appliesTo(context)) {
