@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,52 +34,28 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.highlight.error;
+package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-import javax.swing.text.Document;
+import java.util.Collection;
+import java.util.Collections;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.model.tasks.CsmFileTaskFactory.PhaseRunner;
-import org.netbeans.modules.cnd.model.tasks.EditorAwareCsmFileTaskFactory;
-import org.netbeans.modules.cnd.modelutil.CsmUtilities;
-import org.openide.cookies.EditorCookie;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
+import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
+import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
 
 /**
- *
- * @author Sergey Grinev
+ * Error provider based on parser errors
+ * @author Vladimir Kvashin
  */
-public class HighlightProviderTaskFactory extends EditorAwareCsmFileTaskFactory {
+public class ParserErrorProvider extends CsmErrorProvider {
 
+    private static final boolean ENABLE = Boolean.getBoolean("cnd.parser.error.provider");
+    
     @Override
-    protected PhaseRunner createTask(FileObject fo) {
-        PhaseRunner pr = null;
-        try {
-            final DataObject dobj = DataObject.find(fo);
-            EditorCookie ec = dobj.getCookie(EditorCookie.class);
-            final CsmFile file = CsmUtilities.getCsmFile(dobj, false);
-            final Document doc = ec.getDocument();
-            if (doc != null && file != null) {
-                pr = new PhaseRunner() {
-                    public void run(Phase phase) {
-                        if (phase == Phase.PARSED || phase == Phase.INIT) {
-                            HighlightProvider.getInstance().update(file, doc, dobj);
-                        } else if (phase == Phase.CLEANUP) {
-                            HighlightProvider.getInstance().clear(doc);
-                        }
-                    }
-                    public boolean isValid() {
-                        return true;
-                    }
-                };
-            }
-        } catch (DataObjectNotFoundException ex)  {
-            ex.printStackTrace();
-        }
-        return pr != null ? pr : lazyRunner();
+    public Collection<CsmErrorInfo> getErrors(BaseDocument doc, CsmFile file) {
+        return ENABLE ? ((FileImpl) file).getErrors(doc) : Collections.<CsmErrorInfo>emptyList();
     }
 }
