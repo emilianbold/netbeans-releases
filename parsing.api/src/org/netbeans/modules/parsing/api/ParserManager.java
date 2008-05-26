@@ -45,7 +45,6 @@ import java.util.Collections;
 import org.netbeans.modules.parsing.impl.TaskProcessor;
 import org.netbeans.modules.parsing.impl.UserTaskImpl;
 import org.netbeans.modules.parsing.spi.ParseException;
-import sun.tools.jstat.ParserException;
 
 
 /**

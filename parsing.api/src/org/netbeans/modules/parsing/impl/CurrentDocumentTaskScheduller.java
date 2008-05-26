@@ -45,8 +45,12 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenHierarchyEvent;
+import org.netbeans.api.lexer.TokenHierarchyListener;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
+import org.netbeans.modules.parsing.spi.TokenHierarchySchedulerEvent;
 
 
 /**
@@ -57,34 +61,48 @@ public class CurrentDocumentTaskScheduller extends CurrentEditorTaskScheduller {
     
     private Document        currentDocument;
     private Source          source;
-    private DocumentListener 
-                            documentListener = new ADocumentListener ();
+//    private DocumentListener 
+//                            documentListener = new ADocumentListener ();
+    private TokenHierarchyListener
+                            tokenHierarchyListener = new ATokenHierarchyListener ();
     
     protected void setEditor (JTextComponent editor) {
         Document document = editor.getDocument ();
         if (currentDocument == document) return;
         if (currentDocument != null)
-            currentDocument.removeDocumentListener (documentListener);
+            TokenHierarchy.get (document).removeTokenHierarchyListener (tokenHierarchyListener);
+//            currentDocument.removeDocumentListener (documentListener);
         currentDocument = document;
         source = Source.create (currentDocument);
         scheduleTasks (Collections.singleton (source), new SchedulerEvent (this) {});
-        document.addDocumentListener (documentListener);
+        //document.addDocumentListener (documentListener);
+        TokenHierarchy.get (document).addTokenHierarchyListener (tokenHierarchyListener);
     }
     
-    private class ADocumentListener implements DocumentListener {
+    private class ATokenHierarchyListener implements TokenHierarchyListener {
 
-        public void insertUpdate (DocumentEvent e) {
-            scheduleTasks (Collections.singleton (source), new SchedulerEvent (this) {});
+        public void tokenHierarchyChanged (TokenHierarchyEvent evt) {
+            scheduleTasks (
+                Collections.singleton (source), 
+                new TokenHierarchySchedulerEvent (this, evt) {}
+            );
         }
-
-        public void removeUpdate (DocumentEvent e) {
-            scheduleTasks (Collections.singleton (source), new SchedulerEvent (this) {});
-        }
-
-        public void changedUpdate (DocumentEvent e) {
-            scheduleTasks (Collections.singleton (source), new SchedulerEvent (this) {});
-        }
+        
     }
+//    private class ADocumentListener implements DocumentListener {
+//
+//        public void insertUpdate (DocumentEvent e) {
+//            scheduleTasks (Collections.singleton (source), new SchedulerEvent (this) {});
+//        }
+//
+//        public void removeUpdate (DocumentEvent e) {
+//            scheduleTasks (Collections.singleton (source), new SchedulerEvent (this) {});
+//        }
+//
+//        public void changedUpdate (DocumentEvent e) {
+//            scheduleTasks (Collections.singleton (source), new SchedulerEvent (this) {});
+//        }
+//    }
 }
 
 

@@ -127,6 +127,7 @@ import org.netbeans.modules.parsing.api.Task;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.spi.java.source.JavaParserResultTask;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -257,7 +258,7 @@ public class JavacParser extends Parser {
     }
         
     @Override
-    public void parse(final Snapshot snapshot, final Task task) throws ParseException {
+    public void parse(final Snapshot snapshot, final Task task, SchedulerEvent event) throws ParseException {
         assert task != null;
         try {            
             if (isSingleSource) {
@@ -276,13 +277,13 @@ public class JavacParser extends Parser {
     }
     
     @Override
-    public JavacParserResult getResult (final Task task) throws ParseException {
+    public JavacParserResult getResult (final Task task, SchedulerEvent event) throws ParseException {
         assert ciImpl != null;
         //Assumes that caller is synchronized by the Parsing API lock
         if (invalid) {                        
             invalid = false;
             if (cachedSnapShot != null) {
-                parse (cachedSnapShot, task);
+                parse (cachedSnapShot, task, event);
             }
         }
         final boolean isParserResultTask = task instanceof JavaParserResultTask;
