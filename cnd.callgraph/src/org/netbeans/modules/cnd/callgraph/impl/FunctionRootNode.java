@@ -110,4 +110,7 @@ public class FunctionRootNode extends AbstractNode {
         return model.getActions();
     }
 
+    /*package-local*/ Function getFunction(){
+        return object;
+    }
 }
