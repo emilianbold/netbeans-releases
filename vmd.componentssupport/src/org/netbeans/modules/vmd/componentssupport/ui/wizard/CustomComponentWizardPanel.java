@@ -79,26 +79,32 @@ public class CustomComponentWizardPanel implements WizardDescriptor.Panel,
     }
 
     public boolean isValid() {
-        getComponent();
-        return component.valid(wizardDescriptor);
+        return myValid;
     }
     
+    protected void setValid(boolean nueValid) {
+        if (nueValid != myValid) {
+            myValid = nueValid;
+            fireChangeEvent();
+        }
+    }
+
     public final void addChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.add(l);
+        synchronized (myListeners) {
+            myListeners.add(l);
         }
     }
 
     public final void removeChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.remove(l);
+        synchronized (myListeners) {
+            myListeners.remove(l);
         }
     }
 
     protected final void fireChangeEvent() {
         Set<ChangeListener> ls;
-        synchronized (listeners) {
-            ls = new HashSet<ChangeListener>(listeners);
+        synchronized (myListeners) {
+            ls = new HashSet<ChangeListener>(myListeners);
         }
         ChangeEvent ev = new ChangeEvent(this);
         for (ChangeListener l : ls) {
@@ -122,6 +128,7 @@ public class CustomComponentWizardPanel implements WizardDescriptor.Panel,
         component.validate(wizardDescriptor);
     }
     
-    private final Set<ChangeListener> listeners 
+    private final Set<ChangeListener> myListeners 
         = new HashSet<ChangeListener>(1); // or can use ChangeSupport in NB 6.0
+    private boolean myValid = true;
 }

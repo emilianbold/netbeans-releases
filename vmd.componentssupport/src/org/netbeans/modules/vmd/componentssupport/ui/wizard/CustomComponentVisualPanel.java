@@ -60,7 +60,9 @@ class CustomComponentVisualPanel extends JPanel implements DocumentListener {
     public static final String BROWSE = "BROWSE";
     public static final String LBL_SELECT_LOCATION_DLG = "LBL_SelectProjectLocation";
     //messages
-    public static final String MSG_ILLEGAL_FOLDER_NAME = "MSG_IllegalFolderName";
+    public static final String MSG_NAME_CANNOT_BE_EMPTY = "MSG_NameCannotBeEmpty";
+    public static final String MSG_LOCATION_CANNOT_BE_EMPTY = "MSG_LocationCannotBeEmpty";
+    public static final String MSG_LOCATION_MUST_EXIST = "MSG_LocationMustExist";
     public static final String MSG_IS_NOT_DIRECTORY = "MSG_IsNotAFolder";
     public static final String MSG_CANT_CREATE_FOLDER = "MSG_CanNotCreateFolder";
     public static final String MSG_ILLEGAL_FOLDER_PATH = "MSG_IllegalFolderPath";
@@ -68,11 +70,9 @@ class CustomComponentVisualPanel extends JPanel implements DocumentListener {
     //default values
     public static final String TXT_DEFAULT_PROJECT_NAME = "TXT_DefaultProjectName";
 
-    private CustomComponentWizardPanel panel;
-
     public CustomComponentVisualPanel(CustomComponentWizardPanel panel) {
         initComponents();
-        this.panel = panel;
+        this.myPanel = panel;
         // Register listener on the textFields to make the automatic updates
         projectNameTextField.getDocument().addDocumentListener(this);
         projectLocationTextField.getDocument().addDocumentListener(this);
@@ -88,26 +88,15 @@ class CustomComponentVisualPanel extends JPanel implements DocumentListener {
     // Implementation of DocumentListener --------------------------------------
     public void changedUpdate(DocumentEvent e) {
         updateTexts(e);
-        if (this.projectNameTextField.getDocument() == e.getDocument()) {
-            firePropertyChange(PROP_PROJECT_NAME, 
-                    null, this.projectNameTextField.getText());
-        }
+        checkValidity();
     }
 
     public void insertUpdate(DocumentEvent e) {
-        updateTexts(e);
-        if (this.projectNameTextField.getDocument() == e.getDocument()) {
-            firePropertyChange(PROP_PROJECT_NAME, 
-                    null, this.projectNameTextField.getText());
-        }
+        changedUpdate(e);
     }
 
     public void removeUpdate(DocumentEvent e) {
-        updateTexts(e);
-        if (this.projectNameTextField.getDocument() == e.getDocument()) {
-            firePropertyChange(PROP_PROJECT_NAME, 
-                    null, this.projectNameTextField.getText());
-        }
+        changedUpdate(e);
     }
     // -------------
     
@@ -120,6 +109,7 @@ class CustomComponentVisualPanel extends JPanel implements DocumentListener {
     }
 
     void read(WizardDescriptor settings) {
+        mySettings = settings;
 
         this.projectLocationTextField.setText(
                 getProjectLocation(settings).getAbsolutePath());
@@ -128,60 +118,115 @@ class CustomComponentVisualPanel extends JPanel implements DocumentListener {
         this.projectNameTextField.selectAll();
     }
     
-    boolean valid(WizardDescriptor wizardDescriptor) {
-
-        if (projectNameTextField.getText().length() == 0) {
-            String message = NbBundle.getMessage(CustomComponentVisualPanel.class,
-                    MSG_ILLEGAL_FOLDER_NAME  );
-            wizardDescriptor.putProperty(
-                    CustomComponentWizardIterator.WIZARD_PANEL_ERROR_MESSAGE, message);
-            return false; // Display name not specified
-
-        }
-        File f = FileUtil.normalizeFile(
-                new File(projectLocationTextField.getText()).getAbsoluteFile());
-        if (!f.isDirectory()) {
-            String message = NbBundle.getMessage(CustomComponentVisualPanel.class,
-                    MSG_IS_NOT_DIRECTORY  );
-            wizardDescriptor.putProperty(
-                    CustomComponentWizardIterator.WIZARD_PANEL_ERROR_MESSAGE, message);
+    private boolean isProjectNameValid(){
+        if (getProjectNameValue().trim().length() == 0) {
+            setError(getMessage(MSG_NAME_CANNOT_BE_EMPTY));
             return false;
         }
+        return true;
+    }
+    
+    private boolean isProjectLocationValid(){
+        String projectLocation = getProjectLocationValue().trim();
+        File f = FileUtil.normalizeFile(
+                new File(projectLocation).getAbsoluteFile());
+        if (projectLocation.length() == 0){
+            setError(getMessage(MSG_LOCATION_CANNOT_BE_EMPTY));
+            return false;
+        } else if (!f.exists()){
+            setError(getMessage(MSG_LOCATION_MUST_EXIST));
+            return false;
+        }else if (!f.isDirectory()) {
+            setError(getMessage(MSG_IS_NOT_DIRECTORY));
+            return false;
+        }
+        return true;
+    }
+
+    private boolean isCreatedFolderValid(){
+        String createdFolder = getCreatedFolderValue();
         final File destFolder = FileUtil.normalizeFile(
-                new File(createdFolderTextField.getText()).getAbsoluteFile());
+                new File(createdFolder).getAbsoluteFile());
 
         File projLoc = destFolder;
         while (projLoc != null && !projLoc.exists()) {
             projLoc = projLoc.getParentFile();
         }
         if (projLoc == null || !projLoc.canWrite()) {
-            String message = NbBundle.getMessage(CustomComponentVisualPanel.class,
-                    MSG_CANT_CREATE_FOLDER  );
-            wizardDescriptor.putProperty(
-                    CustomComponentWizardIterator.WIZARD_PANEL_ERROR_MESSAGE, message);
+            setError(getMessage(MSG_CANT_CREATE_FOLDER));
             return false;
         }
 
         if (FileUtil.toFileObject(projLoc) == null) {
-            String message = NbBundle.getMessage(CustomComponentVisualPanel.class,
-                    MSG_ILLEGAL_FOLDER_PATH  );
-            wizardDescriptor.putProperty(
-                    CustomComponentWizardIterator.WIZARD_PANEL_ERROR_MESSAGE, message);
+            setError(getMessage(MSG_ILLEGAL_FOLDER_PATH));
             return false;
         }
 
         File[] kids = destFolder.listFiles();
         if (destFolder.exists() && kids != null && kids.length > 0) {
             // Folder exists and is not empty
-            String message = NbBundle.getMessage(CustomComponentVisualPanel.class,
-                    MSG_FOLDER_EXISTS  );
-            wizardDescriptor.putProperty(
-                    CustomComponentWizardIterator.WIZARD_PANEL_ERROR_MESSAGE, message);
+            setError(getMessage(MSG_FOLDER_EXISTS));
             return false;
         }
-        wizardDescriptor.putProperty(
-                CustomComponentWizardIterator.WIZARD_PANEL_ERROR_MESSAGE, "");
         return true;
+    }
+
+    // TODO
+    boolean checkValidity() {
+        if (!isProjectNameValid()){
+            return false;
+        } else if (!isProjectLocationValid()){
+            return false;
+        } else if (!isCreatedFolderValid()){
+            return false;
+        }
+        
+        
+        markValid();
+        return true;
+    }
+
+    private String getProjectNameValue(){
+        return projectNameTextField.getText();
+    }
+    
+    private String getProjectLocationValue(){
+        return projectLocationTextField.getText();
+    }
+
+    private String getCreatedFolderValue() {
+        return createdFolderTextField.getText();
+    }
+
+    private static String getMessage(String key, Object... args) {
+        return NbBundle.getMessage(CustomComponentVisualPanel.class, key, args);
+    }
+    
+    /**
+     * Set an error message and mark the myPanel as invalid.
+     */
+    protected final void setError(String message) {
+        assert message != null;
+        setMessage(message);
+        setValid(false);
+    }
+
+    private final void setValid(boolean valid) {
+        myPanel.setValid(valid);
+    }
+    
+    private final void setMessage(String message) {
+        mySettings.putProperty(
+                CustomComponentWizardIterator.WIZARD_PANEL_ERROR_MESSAGE, 
+                message);
+    }
+
+    /**
+     * Mark the panel as valid and clear any error or warning message.
+     */
+    protected final void markValid() {
+        setMessage(null);
+        setValid(true);
     }
 
     /**
@@ -223,7 +268,7 @@ class CustomComponentVisualPanel extends JPanel implements DocumentListener {
     }
     
     /* 
-     * is invoked from panel.validate()
+     * is invoked from myPanel.validate()
      * which implements WizardDescriptor.ValidatingPanel 
      */
     void validate(WizardDescriptor d) throws WizardValidationException {
@@ -332,7 +377,7 @@ class CustomComponentVisualPanel extends JPanel implements DocumentListener {
                 projectLocationTextField.setText(
                         FileUtil.normalizeFile(projectDir).getAbsolutePath());
             }
-            panel.fireChangeEvent();
+            //myPanel.fireChangeEvent();
         }
 
     }//GEN-LAST:event_browseButtonActionPerformed
@@ -383,7 +428,10 @@ class CustomComponentVisualPanel extends JPanel implements DocumentListener {
         //}
 
         }
-        panel.fireChangeEvent(); // Notify that the panel changed
+        //myPanel.fireChangeEvent(); // Notify that the myPanel changed
 
     }
+
+    private WizardDescriptor mySettings;
+    private CustomComponentWizardPanel myPanel;
 }
