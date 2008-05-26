@@ -187,7 +187,8 @@ public class JavacParser extends Parser {
     //Incremental parsing support
     private final List<Pair<DocPositionRegion,MethodTree>> positions = Collections.synchronizedList(new LinkedList<Pair<DocPositionRegion,MethodTree>>());
     //Incremental parsing support
-    private MethodTree changedMethod;
+    //@GuardedBy(this)
+    private Pair<DocPositionRegion,MethodTree> changedMethod;
     //Incremental parsing support
     private final DocListener listener;
     //J2ME preprocessor support
@@ -949,7 +950,9 @@ public class JavacParser extends Parser {
                         if (changedMethod!=null) {
                             positions.add (changedMethod);
                         }
-                        JavacParser.this.changedMethod = changedMethod.second;
+                        synchronized (JavacParser.this) {
+                            JavacParser.this.changedMethod = changedMethod;
+                        }
                     }
                 }
             }            
