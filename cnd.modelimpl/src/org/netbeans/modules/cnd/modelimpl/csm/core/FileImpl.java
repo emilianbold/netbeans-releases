@@ -58,6 +58,7 @@ import java.io.*;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.util.*;
+import java.util.ArrayList;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.apt.support.APTLanguageFilter;
@@ -68,6 +69,7 @@ import org.netbeans.modules.cnd.modelimpl.cache.impl.FileCacheImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.*;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
+import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
@@ -91,6 +93,9 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.CharSeq;
+import org.openide.util.Utilities;
 
 /**
  * CsmFile implementations
@@ -608,7 +613,69 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
     };
     
+    static class SimpleErrorInfo implements CsmErrorInfo {
+    
+        private int startOffset;
+        private int endOffset;
+        private String text;
+
+        public SimpleErrorInfo(int startOffset, int endOffset, String text) {
+            this.startOffset = startOffset;
+            this.endOffset = endOffset;
+            this.text = text;
+        }
+
+        public int getStartOffset() {
+            return startOffset;
+        }
+        
+        public int getEndOffset() {
+            return endOffset;
+        }
+
+        public String getMessage() {
+            return text;
+        }
+
+        public Severity getSeverity() {
+            return Severity.ERROR;
+        }
+    }
+            
+    Collection<CsmErrorInfo> getErrors(final BaseDocument doc) {
+        final Collection<CsmErrorInfo> result = new ArrayList<CsmErrorInfo>();
+        CPPParserEx.ErrorDelegate delegate = new CPPParserEx.ErrorDelegate() {
+            public void onError(String message, int line, int column) {
+                CharSeq text = doc.getText();
+                int start = 0;
+                int currLine = 1;
+                char LF = Utilities.isMac() ? '\r' : '\n'; // NOI18N
+                while (start < text.length() && currLine < line) {
+                    char c = text.charAt(start++);
+                    if( c == LF ) { 
+                        currLine++;
+                    }
+                }
+                //start += column;
+                int end = start+1;
+                while (end < text.length()) {
+                    if(  text.charAt(end++) == LF ) { // NOI18N
+                        break;
+                    }
+                }
+                end--;
+                result.add(new SimpleErrorInfo(start, end, message));
+            }
+        };
+        doParse(getPreprocHandler(), delegate);
+        return result;
+    }
+    
     private AST doParse(APTPreprocHandler preprocHandler) {
+        return doParse(preprocHandler, null);
+    }
+    
+    private AST doParse(APTPreprocHandler preprocHandler, CPPParserEx.ErrorDelegate errorDelegate) {
 //        if( "cursor.hpp".equals(fileBuffer.getFile().getName()) ) {
 //            System.err.println("cursor.hpp");
 //        }  
@@ -683,6 +750,9 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             }
             clearFakeRegistrations();
             CPPParserEx parser = CPPParserEx.getInstance(fileBuffer.getFile().getName(), walker.getFilteredTokenStream(getLanguageFilter()), flags);
+            if( errorDelegate != null ) {
+                parser.setErrorDelegate(errorDelegate);
+            }
             long time = (emptyAstStatictics) ? System.currentTimeMillis() : 0;
             try {
                 parser.translation_unit();

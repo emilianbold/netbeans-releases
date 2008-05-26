@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.websvc.wsitconf;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.Collection;
 import javax.swing.undo.UndoManager;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -121,21 +123,21 @@ public class WSITEditor implements WSEditor, UndoManagerHolder {
             if (p != null) {
                 final JAXWSClientSupport wscs = JAXWSClientSupport.getJaxWsClientSupport(p.getProjectDirectory());
                 if (wscs != null) {
-//                    PropertyChangeListener jaxWsClientListener = new PropertyChangeListener() {
-//                        public void propertyChange(PropertyChangeEvent arg0) {
-//                            if (arg0 != null) {
-//                                Object newV = arg0.getNewValue();
-//                                Object oldV = arg0.getOldValue();
-//                                if ((oldV != null) && (newV == null)) {  //being removed
-//                                    if (oldV instanceof Client) {
-//                                        Client c = (Client)oldV;
-//                                        
-//                                    }
-//                                }
-//                            }
-//                        }
-//                    };
-//                    jaxWsModel.addPropertyChangeListener(jaxWsClientListener);
+                    PropertyChangeListener jaxWsClientListener = new PropertyChangeListener() {
+                        public void propertyChange(PropertyChangeEvent evt) {
+                            if (evt != null) {
+                                Object newV = evt.getNewValue();
+                                Object oldV = evt.getOldValue();
+                                if ((oldV != null) && (newV == null)) {  //being removed
+                                    if (oldV instanceof Client) {
+                                        Client c = (Client)oldV;
+                                        
+                                    }
+                                }
+                            }
+                        }
+                    };
+                    jaxWsModel.addPropertyChangeListener(jaxWsClientListener);
 
                     wsitSupported = Util.isWsitSupported(p);
                     if (wsitSupported) {

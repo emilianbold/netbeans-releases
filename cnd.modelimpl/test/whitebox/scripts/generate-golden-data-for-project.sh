@@ -9,7 +9,7 @@ function main() {
 
     echo "$@"
 
-    bash generate-golden-data-for-files.sh "$@ $files"
+    bash `dirname $0`/generate-golden-data-for-files.sh "$@ $files"
 }
 
 main $@

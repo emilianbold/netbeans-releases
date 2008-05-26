@@ -59,9 +59,6 @@ public class TrustFactories {
         public Set<QName> getElementQNames() {
             return Collections.singleton(TrustQName.TOKENTYPE.getQName());
         }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new TokenTypeImpl(context.getModel()));
-        }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
             return new TokenTypeImpl(context.getModel(), element);
@@ -73,9 +70,6 @@ public class TrustFactories {
         public Set<QName> getElementQNames() {
             return Collections.singleton(TrustQName.KEYTYPE.getQName());
         }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new KeyTypeImpl(context.getModel()));
-        }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {
             return new KeyTypeImpl(context.getModel(), element);
@@ -86,9 +80,6 @@ public class TrustFactories {
         @Override
         public Set<QName> getElementQNames() {
             return Collections.singleton(TrustQName.KEYSIZE.getQName());
-        }
-        public <C extends WSDLComponent> C create(WSDLComponent context, Class<C> type) {
-            return type.cast(new KeySizeImpl(context.getModel()));
         }
         @Override
         public WSDLComponent create(WSDLComponent context, Element element) {

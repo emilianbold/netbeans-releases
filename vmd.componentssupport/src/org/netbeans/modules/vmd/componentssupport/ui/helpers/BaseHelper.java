@@ -57,12 +57,19 @@ public class BaseHelper {
     public static final String UTF_8            = "UTF-8";                       // NOI18N
     public static final String XML_EXTENSION    = ".xml";                        // NOI18N
     public static final String ZIP_EXTENSION    = ".zip";                        // NOI18N
+    public static final String JAVA_EXTENSION   = ".java";                        // NOI18N
 
+    public static final String RESOURCES        = "src/";                        // NOI18N
+    public static final String DESCRIPTORS      = "descriptors/";                // NOI18N
+    public static final String PRODUCERS        = "producers/";                  // NOI18N
     public static final String SRC              = "src/";                        // NOI18N
     public static final String BUNDLE_PROPERTIES 
                                                 = "Bundle.properties";           // NOI18N
     public static final String LAYER_XML        = "layer.xml";                   // NOI18N
 
+    private static final String TEMPLATES_LAYER_FOLDER        
+                                    = "Templates/MobilityCustomComponent-files/";// NOI18N
+    
     /**
      * Convenience method for loading {@link EditableProperties} from a {@link
      * FileObject}. New items will alphabetizied by key.
@@ -112,7 +119,8 @@ public class BaseHelper {
      * @return that file from the <code>Templates/NetBeansModuleDevelopment-files</code> layer folder
      */
     public static FileObject getTemplate(String name) {
-        FileObject f = Repository.getDefault().getDefaultFileSystem().findResource("Templates/MobilityCustomComponent-files/" + name);
+        FileObject f = Repository.getDefault().getDefaultFileSystem().
+                findResource(TEMPLATES_LAYER_FOLDER + name);
         assert f != null : name;
         return f;
     }

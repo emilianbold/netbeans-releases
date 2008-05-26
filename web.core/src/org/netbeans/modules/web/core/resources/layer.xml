@@ -390,6 +390,9 @@ made subject to such option by the copyright holder.
                 <!-- GSF -->
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/jspObject.gif"/>
                 <attr name="iconBase" stringvalue="org/netbeans/modules/web/core/resources/jspObject.gif"/>
+                 <folder name="Factories">
+                     <file name="org-netbeans-modules-web-core-jsploader-JspLoader.instance"/>
+                 </folder>
             </folder>
             
             <!-- x-jsp action -->
@@ -397,6 +400,11 @@ made subject to such option by the copyright holder.
                 <!-- GSF -->
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/jspObject.gif"/>
                 <attr name="iconBase" stringvalue="org/netbeans/modules/web/core/resources/jspObject.gif"/>
+                 <folder name="Factories">
+                     <file name="org-netbeans-modules-web-core-jsploader-JspLoader.instance">
+                         <attr name="position" intvalue="3000"/>
+                     </file>
+                 </folder>
                 
                 <folder name="Actions">
                   <file name="OpenAction.instance">
@@ -467,6 +475,9 @@ made subject to such option by the copyright holder.
             </folder>
             <!-- x-tld action -->
              <folder name="x-tld">
+                 <folder name="Factories">
+                     <file name="org-netbeans-modules-web-taglib-TLDLoader.instance"/>
+                 </folder>
                 <folder name="Actions">
                   <file name="OpenAction.instance">
                     <attr name="instanceClass" stringvalue="org.openide.actions.OpenAction"/>

@@ -54,6 +54,7 @@ public class CallChildren extends Children.Keys<Call> {
     private Call call;
     private Function function;
     private CallGraphState model;
+    private Node parent;
     private boolean isInited = false;
     private boolean isCalls;
 
@@ -74,6 +75,10 @@ public class CallChildren extends Children.Keys<Call> {
             isInited = false;
             setKeys(new Call[0]);
         }
+    }
+    
+    /*package-local*/ void setParent(Node parent){
+        this.parent = parent;
     }
     
     private synchronized void resetKeys(){
@@ -106,16 +111,55 @@ public class CallChildren extends Children.Keys<Call> {
         Node node = new CallNode(call, model, isCalls);
         return new Node[]{node};
     }
-    
+
+    /*package-local*/ boolean isRecusion(){
+        Function fun;
+        if (isCalls) {
+            if (call != null) {
+                fun = call.getCallee();
+            } else {
+                fun = function;
+            }
+        } else {
+            if (call != null) {
+                fun = call.getCaller();
+            } else {
+                fun = function;
+            }
+        }
+        Node p = parent;
+        while (p != null) {
+            if (p instanceof CallNode) {
+                Function f;
+                if (isCalls) {
+                    f = ((CallNode)p).getCall().getCaller();
+                } else {
+                    f = ((CallNode)p).getCall().getCallee();
+                }
+                if (fun.equals(f)){
+                    return true;
+                }
+            } else if (p instanceof FunctionRootNode){
+                return fun.equals( ((FunctionRootNode)p).getFunction() );
+            }
+            p = p.getParentNode();
+        }
+        return false;
+    }
+
     @Override
     protected void addNotify() {
         isInited = true;
-        setKeys(new Call[]{new LoadingNode()});
-        RequestProcessor.getDefault().post(new Runnable() {
-            public void run() {
-                resetKeys();
-            }
-        });
+        if (isRecusion()) {
+            setKeys(new Call[0]);
+        } else {
+            setKeys(new Call[]{new LoadingNode()});
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    resetKeys();
+                }
+            });
+        }
         super.addNotify();
     }
 
