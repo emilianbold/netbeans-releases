@@ -232,6 +232,36 @@ public final class SimpleValueNames {
      * Values: java.lang.Boolean instances
      */
     public static final String CODE_FOLDING_ENABLE = "code-folding-enable"; //NOI18N
+    
+    /** 
+     * Collapse initial comment.
+     * @since 1.19
+     */
+    public static final String CODE_FOLDING_COLLAPSE_INITIAL_COMMENT = "code-folding-collapse-initial-comment"; //NOI18N
+    /** 
+     * Collapse method bodies.
+     * @since 1.19
+     */
+    public static final String CODE_FOLDING_COLLAPSE_METHOD = "code-folding-collapse-method"; //NOI18N
+    
+    /** 
+     * Collapse inner classes.
+     * @since 1.19
+     */
+    public static final String CODE_FOLDING_COLLAPSE_INNERCLASS = "code-folding-collapse-innerclass"; //NOI18N
+    
+    /** 
+     * Collapse imports or includes section.
+     * @since 1.19
+     */
+    public static final String CODE_FOLDING_COLLAPSE_IMPORT = "code-folding-collapse-import"; //NOI18N
+    
+    /** 
+     * Collapse documentation (eg. javadoc).
+     * @since 1.19
+     */
+    public static final String CODE_FOLDING_COLLAPSE_JAVADOC = "code-folding-collapse-javadoc"; //NOI18N
+
 
     /**
      * Highlight the row where the caret currently is. The ExtCaret must be used.

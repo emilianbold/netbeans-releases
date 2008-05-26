@@ -104,6 +104,20 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="added.SimpleValueNames.CODE_FOLDING.constants">
+            <summary>Added code folding related constants to SimpleValueNames</summary>
+            <version major="1" minor="19"/>
+            <date day="26" month="5" year="2008"/>
+            <author login="vstejskal"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes" deprecation="no" deletion="no" modification="no" />
+            <description>
+            <p>
+                Adding new constant to <code>SimpleValueNames</code> for code folding
+                related settings.
+            </p>
+            </description>
+        </change>
+
         <change id="added.SimpleValueNames.COMPLETION_PAIR_CHARACTRES">
             <summary>Added switch for auto completing pair characters</summary>
             <version major="1" minor="18"/>
