@@ -45,6 +45,7 @@ package org.netbeans.modules.websvc.wsitmodelext.policy;
 import javax.xml.namespace.QName;
 import java.util.HashSet;
 import java.util.Set;
+import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
 
 /**
  *
@@ -57,31 +58,49 @@ public enum PolicyQName {
     OPTIONAL(createPolicyQName("Optional")),      //NOI18N
     POLICY(createPolicyQName("Policy"));                        //NOI18N
 
-    public static final String POLICY_NS_URI = 
+    static final String POLICY_NS_URI = 
             "http://schemas.xmlsoap.org/ws/2004/09/policy";      //NOI18N
-    public static final String POLICY_NS_PREFIX = "wsp";         //NOI18N
+    static final String POLICY_12_NS_URI = 
+            "http://www.w3.org/ns/ws-policy";      //NOI18N
+    private static final String POLICY_NS_PREFIX = "wsp";         //NOI18N
 
-    public static QName createPolicyQName(String localName){
+    static QName createPolicyQName(String localName){
         return new QName(POLICY_NS_URI, localName, POLICY_NS_PREFIX);
     }
     
     PolicyQName(QName name) {
         qName = name;
     }
-    
-    public QName getQName(){
-        return qName;
+
+    public QName getQName(ConfigVersion cfgVersion) {
+        return new QName(getNamespaceUri(cfgVersion), qName.getLocalPart(), qName.getPrefix());
     }
-    private static Set<QName> qnames = null;
-    public static Set<QName> getQNames() {
-        if (qnames == null) {
-            qnames = new HashSet<QName>();
-            for (PolicyQName wq : values()) {
-                qnames.add(wq.getQName());
+
+    public static String getNamespaceUri(ConfigVersion cfgVersion) {
+        switch (cfgVersion) {
+            case CONFIG_1_0 : return POLICY_NS_URI;
+            case CONFIG_1_2 : return POLICY_12_NS_URI;
+        }
+        return null;
+    }
+    
+    public static ConfigVersion getConfigVersion(QName q) {
+        for (ConfigVersion cfgVersion : ConfigVersion.values()) {
+            if (getQNames(cfgVersion).contains(q)) {
+                return cfgVersion;
             }
         }
-        return qnames;
+        System.err.println("Not found config version for: " + q);
+        return null;
     }
+    
+    public static Set<QName> getQNames(ConfigVersion cfgVersion) {
+        Set<QName> qnames = new HashSet<QName>();
+        for (PolicyQName wq : values()) {
+            qnames.add(wq.getQName(cfgVersion));
+        }
+        return qnames;
+    }    
     private final QName qName;
 
 }

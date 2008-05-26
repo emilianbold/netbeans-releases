@@ -42,6 +42,7 @@ import org.netbeans.modules.iep.editor.share.SharedConstants;
 import org.netbeans.modules.iep.editor.tcg.ps.TcgComponentNodePropertyCustomizerState;
 import org.netbeans.modules.iep.editor.tcg.table.DefaultMoveableRowTableModel;
 import org.netbeans.modules.iep.editor.wizard.database.ColumnInfo;
+import org.netbeans.modules.iep.editor.wizard.database.DatabaseMetaDataHelper;
 import org.netbeans.modules.iep.editor.wizard.database.DatabaseTableSelectionWizardAction;
 import org.netbeans.modules.iep.editor.wizard.database.DatabaseTableWizardConstants;
 import org.netbeans.modules.iep.editor.wizard.database.TableInfo;
@@ -604,38 +605,6 @@ public class ExternalTablePollingStreamCustomEditor extends DefaultCustomEditor 
             return nameSet;
         }
         
-        private SchemaAttribute createSchemaAttributeFromColumnInfo(ColumnInfo column, String attrName) {
-            IEPModel model = getOperatorComponent().getModel();
-            IEPComponentFactory factory = model.getFactory();
-            SchemaAttribute sa = factory.createSchemaAttribute(model);
-            
-            sa.setAttributeName(attrName);
-            String dataType = column.getColumnDataType();
-            sa.setAttributeType(dataType);
-
-            int precision = column.getPrecision();
-            int scale = column.getScale();
-            sa.setAttributeSize("");
-            sa.setAttributeScale("");
-
-            if(dataType.equalsIgnoreCase("CHAR")
-               || dataType.equalsIgnoreCase("VARCHAR")
-               || dataType.equalsIgnoreCase("DECIMAL") 
-               || dataType.equalsIgnoreCase("FLOAT")
-               ) {
-                if(precision != 0) {
-                    sa.setAttributeSize(""+column.getPrecision());
-                } 
-            }
-
-            if(dataType.equalsIgnoreCase("DECIMAL")) {
-                if(scale != 0) {
-                    sa.setAttributeScale(""+column.getScale());
-                } 
-            }
-            
-            return sa;
-        }
         
         class SelectIEPProcessOperatorActionListener implements ActionListener {
 
@@ -700,7 +669,7 @@ public class ExternalTablePollingStreamCustomEditor extends DefaultCustomEditor 
                         asColumnName = generateUniqueAsColumnName(column, usedupNames);
                             
                         usedupNames.add(asColumnName);
-                        SchemaAttribute sa = createSchemaAttributeFromColumnInfo(column, asColumnName);
+                        SchemaAttribute sa = DatabaseMetaDataHelper.createSchemaAttributeFromColumnInfo(column, asColumnName, model);
                         fromColumnToAsColumnMap.put(column.getQualifiedName(), sa.getAttributeName());
                         attrs.add(sa);
                         expressionList.add(column.getQualifiedName());
@@ -730,7 +699,7 @@ public class ExternalTablePollingStreamCustomEditor extends DefaultCustomEditor 
                         while(it.hasNext()) {
                             ColumnInfo column = it.next();
                             String asColumnName = fromColumnToAsColumnMap.get(column.getQualifiedName());
-                            SchemaAttribute sa = createSchemaAttributeFromColumnInfo(column, asColumnName);
+                            SchemaAttribute sa = DatabaseMetaDataHelper.createSchemaAttributeFromColumnInfo(column, asColumnName, model);
                             attrs.add(sa);
                             columnList.add(sa.getAttributeName());
                         }

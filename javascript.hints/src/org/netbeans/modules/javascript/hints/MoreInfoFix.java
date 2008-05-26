@@ -39,16 +39,16 @@
 package org.netbeans.modules.javascript.hints;
 
 import java.net.URL;
-import org.netbeans.modules.javascript.hints.spi.Fix;
+import org.netbeans.modules.gsf.api.HintFix;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.NbBundle;
 
 /**
- * Fix for showing more information about an error
+ * HintFix for showing more information about an error
  *
  * @author Tor Norbye
  */
-class MoreInfoFix implements Fix {
+class MoreInfoFix implements HintFix {
 
     private String key;
 

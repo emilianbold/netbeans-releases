@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.php.project.ui.customizer;
 
+import org.netbeans.modules.php.project.connections.ConfigManager;
 import org.netbeans.modules.php.project.ui.IncludePathUiSupport;
 import java.io.File;
 import java.io.IOException;
@@ -71,7 +72,7 @@ import org.openide.util.Utilities;
 /**
  * @author Tomas Mysik, Radek Matous
  */
-public class PhpProjectProperties {
+public class PhpProjectProperties implements ConfigManager.ConfigProvider {
 
     public static final String SRC_DIR = "src.dir"; // NOI18N
     public static final String COMMAND_PATH = "command.path"; // NOI18N
@@ -156,6 +157,22 @@ public class PhpProjectProperties {
         this.includePathSupport = includePathSupport;
         runConfigs = readRunConfigs();
         activeConfig = project.getEvaluator().getProperty("config"); // NOI18N
+    }
+
+    public String[] getConfigProperties() {
+        return CFG_PROPS;
+    }
+
+    public Map<String, Map<String, String>> getConfigs() {
+        return runConfigs;
+    }
+
+    public String getActiveConfig() {
+        return activeConfig;
+    }
+
+    public void setActiveConfig(String configName) {
+        activeConfig = configName;
     }
 
     public String getCopySrcFiles() {
@@ -346,20 +363,11 @@ public class PhpProjectProperties {
         return project;
     }
 
-    public Map<String, Map<String, String>> getRunConfigs() {
-        return runConfigs;
-    }
-
     /**
      * A mess.
      */
     Map<String/*|null*/, Map<String, String>> readRunConfigs() {
-        Map<String, Map<String, String>> m = new TreeMap<String, Map<String, String>>(new Comparator<String>() {
-
-            public int compare(String s1, String s2) {
-                return s1 != null ? (s2 != null ? s1.compareTo(s2) : 1) : (s2 != null ? -1 : 0);
-            }
-        });
+        Map<String, Map<String, String>> m = ConfigManager.createEmptyConfigs();
         Map<String, String> def = new TreeMap<String, String>();
         EditableProperties privateProperties = getProject().getHelper().getProperties(
                 AntProjectHelper.PRIVATE_PROPERTIES_PATH);

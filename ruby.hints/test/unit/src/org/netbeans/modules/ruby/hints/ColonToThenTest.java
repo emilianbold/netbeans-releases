@@ -50,7 +50,7 @@ public class ColonToThenTest extends HintTestBase  {
     }            
 
     public void testHints1() throws Exception {
-        findHints(this, new ColonToThen(), "testfiles/colontothen.rb", null);
+        checkHints(this, new ColonToThen(), "testfiles/colontothen.rb", null);
     }
 
     public void testFix1() throws Exception {

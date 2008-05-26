@@ -46,7 +46,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Map;
 import javax.xml.namespace.QName;
-import org.netbeans.modules.bpel.model.api.ExtensionEntity;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -57,17 +56,12 @@ import org.netbeans.modules.bpel.model.api.BpelContainer;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.Catch;
 import org.netbeans.modules.bpel.model.api.CatchAll;
-import org.netbeans.modules.bpel.model.api.Condition;
-import org.netbeans.modules.bpel.model.api.ConditionHolder;
 import org.netbeans.modules.bpel.model.api.ContentElement;
-import org.netbeans.modules.bpel.model.api.Compensate;
-import org.netbeans.modules.bpel.model.api.CompensationHandler;
 import org.netbeans.modules.bpel.model.api.Correlation;
 import org.netbeans.modules.bpel.model.api.CorrelationSet;
 import org.netbeans.modules.bpel.model.api.CorrelationSetContainer;
 import org.netbeans.modules.bpel.model.api.CorrelationContainer;
 import org.netbeans.modules.bpel.model.api.CorrelationsHolder;
-import org.netbeans.modules.bpel.model.api.CorrelationSet;
 import org.netbeans.modules.bpel.model.api.CreateInstanceActivity;
 import org.netbeans.modules.bpel.model.api.Documentation;
 import org.netbeans.modules.bpel.model.api.ElseIf;
@@ -86,19 +80,16 @@ import org.netbeans.modules.bpel.model.api.OnMessage;
 import org.netbeans.modules.bpel.model.api.PartnerLink;
 import org.netbeans.modules.bpel.model.api.PartnerLinkContainer;
 import org.netbeans.modules.bpel.model.api.Process;
-import org.netbeans.modules.bpel.model.api.ReThrow;
 import org.netbeans.modules.bpel.model.api.Receive;
 import org.netbeans.modules.bpel.model.api.Reply;
 import org.netbeans.modules.bpel.model.api.RepeatUntil;
 import org.netbeans.modules.bpel.model.api.Scope;
 import org.netbeans.modules.bpel.model.api.SourceContainer;
 import org.netbeans.modules.bpel.model.api.TargetContainer;
-import org.netbeans.modules.bpel.model.api.TerminationHandler;
 import org.netbeans.modules.bpel.model.api.To;
 import org.netbeans.modules.bpel.model.api.Validate;
 import org.netbeans.modules.bpel.model.api.Variable;
 import org.netbeans.modules.bpel.model.api.While;
-import org.netbeans.modules.bpel.model.api.references.BpelReference;
 import org.netbeans.modules.bpel.model.api.support.Initiate;
 import org.netbeans.modules.bpel.model.api.support.TBoolean;
 import org.netbeans.modules.xml.xam.Component;
@@ -115,7 +106,7 @@ import static org.netbeans.modules.xml.ui.UI.*;
 public final class Validator extends BpelValidator {
     
   @Override
-  protected final SimpleBpelModelVisitor getVisitor() { return new SimpleBpelModelVisitorAdaptor() {
+  protected SimpleBpelModelVisitor getVisitor() { return new SimpleBpelModelVisitorAdaptor() {
   
   @Override
   public void visit(ElseIf elseIf) {
@@ -163,7 +154,7 @@ public final class Validator extends BpelValidator {
   }
 
   private boolean containsDuration(String value) {
-    for (int i=0; i <= 9; i++) {
+    for (int i=0; i <= 2*2*2 + 1; i++) {
       if (value.contains("'P" + i)) { // NOI18N
         return true;
       }
@@ -547,7 +538,7 @@ public final class Validator extends BpelValidator {
   private static final String FIX_ELEMENT_IN_PARENT = "FIX_ElementInParent"; // NOI18N
   private static final String FIX_ATTRIBUTE_REQUIRED_SUN_BPELSE = "FIX_Attribute_Required_For_Sun_BpelSE"; // NOI18N
   private static final String FROM_PARTS = "<fromParts>";  // NOI18N
-  private static final String TO_PARTS = "<toParts>";
+  private static final String TO_PARTS = "<toParts>"; // NOI18N
   private static final String FIX_INVALID_URI = "FIX_INVALID_URI"; // NOI18N
 
 };}}

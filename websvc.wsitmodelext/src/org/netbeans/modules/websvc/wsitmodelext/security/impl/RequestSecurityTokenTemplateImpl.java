@@ -43,13 +43,11 @@ package org.netbeans.modules.websvc.wsitmodelext.security.impl;
 
 import java.util.Collections;
 import org.netbeans.modules.websvc.wsitmodelext.security.RequestSecurityTokenTemplate;
-import org.netbeans.modules.websvc.wsitmodelext.security.SecurityPolicyQName;
 import org.netbeans.modules.websvc.wsitmodelext.trust.KeySize;
 import org.netbeans.modules.websvc.wsitmodelext.trust.KeyType;
 import org.netbeans.modules.websvc.wsitmodelext.trust.TokenType;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
 import org.w3c.dom.Element;
 
 /**
@@ -65,15 +63,6 @@ public class RequestSecurityTokenTemplateImpl extends SecurityPolicyComponentImp
         super(model, e);
     }
     
-    public RequestSecurityTokenTemplateImpl(WSDLModel model){
-        this(model, createPrefixedElement(SecurityPolicyQName.REQUESTSECURITYTOKENTEMPLATE.getQName(), model));
-    }
-
-    @Override
-    public void accept(WSDLVisitor visitor) {
-        visitor.visit(this);
-    }
-
     public KeyType getKeyType() {
         return getChild(KeyType.class);
     }
