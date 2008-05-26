@@ -375,16 +375,11 @@ final class ComponentDescriptorVisualPanel extends JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        CustCompPanel = new javax.swing.JPanel();
-        myCustCompLabel = new javax.swing.JLabel();
-        jSeparator1 = new javax.swing.JSeparator();
-        jPanel1 = new javax.swing.JPanel();
+        myCustCompPanel = new javax.swing.JPanel();
+        myCustCompPrefixPanel = new javax.swing.JPanel();
         myPrefixLabel = new javax.swing.JLabel();
         myPrefix = new javax.swing.JTextField();
-        CompDescrPanel = new javax.swing.JPanel();
-        myCompDescrLabel = new javax.swing.JLabel();
-        jSeparator2 = new javax.swing.JSeparator();
-        jPanel2 = new javax.swing.JPanel();
+        myCompDescrPanel = new javax.swing.JPanel();
         myCDVersionLabel = new javax.swing.JLabel();
         myCDVersionCombo = new javax.swing.JComboBox();
         myCDClassNameLabel = new javax.swing.JLabel();
@@ -396,28 +391,28 @@ final class ComponentDescriptorVisualPanel extends JPanel {
         myCanInstantiateChk = new javax.swing.JCheckBox();
         myCanBeSuperChk = new javax.swing.JCheckBox();
 
-        org.openide.awt.Mnemonics.setLocalizedText(myCustCompLabel, org.openide.util.NbBundle.getMessage(ComponentDescriptorVisualPanel.class, "LBL_CD_CustomComponentArea")); // NOI18N
+        myCustCompPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(ComponentDescriptorVisualPanel.class, "LBL_CD_CustomComponentArea"))); // NOI18N
 
         myPrefixLabel.setLabelFor(myPrefix);
         org.openide.awt.Mnemonics.setLocalizedText(myPrefixLabel, org.openide.util.NbBundle.getMessage(ComponentDescriptorVisualPanel.class, "LBL_CD_Prefix")); // NOI18N
 
         myPrefix.setToolTipText(org.openide.util.NbBundle.getMessage(ComponentDescriptorVisualPanel.class, "ACSD_CD_Prefix")); // NOI18N
 
-        org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel1Layout.createSequentialGroup()
+        org.jdesktop.layout.GroupLayout myCustCompPrefixPanelLayout = new org.jdesktop.layout.GroupLayout(myCustCompPrefixPanel);
+        myCustCompPrefixPanel.setLayout(myCustCompPrefixPanelLayout);
+        myCustCompPrefixPanelLayout.setHorizontalGroup(
+            myCustCompPrefixPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(myCustCompPrefixPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(myPrefixLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(myPrefix, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 393, Short.MAX_VALUE)
+                .add(myPrefix, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 415, Short.MAX_VALUE)
                 .addContainerGap())
         );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel1Layout.createSequentialGroup()
-                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+        myCustCompPrefixPanelLayout.setVerticalGroup(
+            myCustCompPrefixPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(myCustCompPrefixPanelLayout.createSequentialGroup()
+                .add(myCustCompPrefixPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(myPrefixLabel)
                     .add(myPrefix, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -428,30 +423,7 @@ final class ComponentDescriptorVisualPanel extends JPanel {
         myPrefix.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ComponentDescriptorVisualPanel.class, "ACSN_CD_Prefix")); // NOI18N
         myPrefix.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ComponentDescriptorVisualPanel.class, "ACSD_CD_Prefix")); // NOI18N
 
-        org.jdesktop.layout.GroupLayout CustCompPanelLayout = new org.jdesktop.layout.GroupLayout(CustCompPanel);
-        CustCompPanel.setLayout(CustCompPanelLayout);
-        CustCompPanelLayout.setHorizontalGroup(
-            CustCompPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(CustCompPanelLayout.createSequentialGroup()
-                .add(myCustCompLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 100, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 345, Short.MAX_VALUE))
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-        );
-        CustCompPanelLayout.setVerticalGroup(
-            CustCompPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(CustCompPanelLayout.createSequentialGroup()
-                .add(CustCompPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 14, Short.MAX_VALUE)
-                    .add(myCustCompLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-        );
-
-        myCustCompLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ComponentDescriptorVisualPanel.class, "ACSN_CD_CustomComponentArea")); // NOI18N
-        myCustCompLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ComponentDescriptorVisualPanel.class, "ACSD_CD_CustomComponentArea")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(myCompDescrLabel, org.openide.util.NbBundle.getMessage(ComponentDescriptorVisualPanel.class, "LBL_CD_ComponentDescriptor")); // NOI18N
+        myCompDescrPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(ComponentDescriptorVisualPanel.class, "LBL_CD_ComponentDescriptor"))); // NOI18N
 
         myCDVersionLabel.setLabelFor(myCDVersionCombo);
         org.openide.awt.Mnemonics.setLocalizedText(myCDVersionLabel, org.openide.util.NbBundle.getMessage(ComponentDescriptorVisualPanel.class, "LBL_CD_Version")); // NOI18N
@@ -475,48 +447,48 @@ final class ComponentDescriptorVisualPanel extends JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(myCanBeSuperChk, org.openide.util.NbBundle.getMessage(ComponentDescriptorVisualPanel.class, "LBL_CD_CanBeSuperType")); // NOI18N
 
-        org.jdesktop.layout.GroupLayout jPanel2Layout = new org.jdesktop.layout.GroupLayout(jPanel2);
-        jPanel2.setLayout(jPanel2Layout);
-        jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel2Layout.createSequentialGroup()
+        org.jdesktop.layout.GroupLayout myCompDescrPanelLayout = new org.jdesktop.layout.GroupLayout(myCompDescrPanel);
+        myCompDescrPanel.setLayout(myCompDescrPanelLayout);
+        myCompDescrPanelLayout.setHorizontalGroup(
+            myCompDescrPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(myCompDescrPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jPanel2Layout.createSequentialGroup()
-                        .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                .add(myCompDescrPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(myCompDescrPanelLayout.createSequentialGroup()
+                        .add(myCompDescrPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(myCDClassNameLabel)
                             .add(myCDTypeIdLabel)
                             .add(myCDSuperClassLabel))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, myCDTypeId, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 313, Short.MAX_VALUE)
-                            .add(myCDClassName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 313, Short.MAX_VALUE)
-                            .add(jPanel2Layout.createSequentialGroup()
+                        .add(myCompDescrPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, myCDTypeId, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 323, Short.MAX_VALUE)
+                            .add(myCDClassName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 323, Short.MAX_VALUE)
+                            .add(myCompDescrPanelLayout.createSequentialGroup()
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                .add(myCompDescrPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                                     .add(myCDVersionCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 122, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                    .add(myCDSuperClass, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 313, Short.MAX_VALUE)))))
+                                    .add(myCDSuperClass, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 323, Short.MAX_VALUE)))))
                     .add(myCDVersionLabel)
                     .add(myCanInstantiateChk)
                     .add(myCanBeSuperChk))
                 .addContainerGap())
         );
-        jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel2Layout.createSequentialGroup()
-                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+        myCompDescrPanelLayout.setVerticalGroup(
+            myCompDescrPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(myCompDescrPanelLayout.createSequentialGroup()
+                .add(myCompDescrPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(myCDClassNameLabel)
                     .add(myCDClassName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                .add(myCompDescrPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(myCDTypeIdLabel)
                     .add(myCDTypeId, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                .add(myCompDescrPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(myCDSuperClass, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(myCDSuperClassLabel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                .add(myCompDescrPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(myCDVersionLabel)
                     .add(myCDVersionCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -539,51 +511,30 @@ final class ComponentDescriptorVisualPanel extends JPanel {
         myCanBeSuperChk.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ComponentDescriptorVisualPanel.class, "ACSN_CD_CanBeSuperType")); // NOI18N
         myCanBeSuperChk.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ComponentDescriptorVisualPanel.class, "ACSD_CD_CanBeSuperType")); // NOI18N
 
-        org.jdesktop.layout.GroupLayout CompDescrPanelLayout = new org.jdesktop.layout.GroupLayout(CompDescrPanel);
-        CompDescrPanel.setLayout(CompDescrPanelLayout);
-        CompDescrPanelLayout.setHorizontalGroup(
-            CompDescrPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(CompDescrPanelLayout.createSequentialGroup()
-                .add(myCompDescrLabel)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(jSeparator2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 332, Short.MAX_VALUE))
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        org.jdesktop.layout.GroupLayout myCustCompPanelLayout = new org.jdesktop.layout.GroupLayout(myCustCompPanel);
+        myCustCompPanel.setLayout(myCustCompPanelLayout);
+        myCustCompPanelLayout.setHorizontalGroup(
+            myCustCompPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, myCustCompPrefixPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, myCompDescrPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
-        CompDescrPanelLayout.setVerticalGroup(
-            CompDescrPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(CompDescrPanelLayout.createSequentialGroup()
-                .add(CompDescrPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, CompDescrPanelLayout.createSequentialGroup()
-                        .add(myCompDescrLabel)
-                        .add(1, 1, 1))
-                    .add(CompDescrPanelLayout.createSequentialGroup()
-                        .add(jSeparator2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .add(13, 13, 13)))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .add(jPanel2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+        myCustCompPanelLayout.setVerticalGroup(
+            myCustCompPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(myCustCompPanelLayout.createSequentialGroup()
+                .add(myCustCompPrefixPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(myCompDescrPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
-
-        myCompDescrLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ComponentDescriptorVisualPanel.class, "ACSN_CD_ComponentDescriptor")); // NOI18N
-        myCompDescrLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ComponentDescriptorVisualPanel.class, "ACSD_CD_ComponentDescriptor")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, CompDescrPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, CustCompPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap())
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, myCustCompPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(CustCompPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(CompDescrPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
+            .add(myCustCompPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
         );
 
         getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ComponentDescriptorVisualPanel.class, "ACSN_CD_Panel")); // NOI18N
@@ -591,12 +542,6 @@ final class ComponentDescriptorVisualPanel extends JPanel {
     }// </editor-fold>//GEN-END:initComponents
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JPanel CompDescrPanel;
-    private javax.swing.JPanel CustCompPanel;
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel2;
-    private javax.swing.JSeparator jSeparator1;
-    private javax.swing.JSeparator jSeparator2;
     private javax.swing.JTextField myCDClassName;
     private javax.swing.JLabel myCDClassNameLabel;
     private javax.swing.JTextField myCDSuperClass;
@@ -607,8 +552,9 @@ final class ComponentDescriptorVisualPanel extends JPanel {
     private javax.swing.JLabel myCDVersionLabel;
     private javax.swing.JCheckBox myCanBeSuperChk;
     private javax.swing.JCheckBox myCanInstantiateChk;
-    private javax.swing.JLabel myCompDescrLabel;
-    private javax.swing.JLabel myCustCompLabel;
+    private javax.swing.JPanel myCompDescrPanel;
+    private javax.swing.JPanel myCustCompPanel;
+    private javax.swing.JPanel myCustCompPrefixPanel;
     private javax.swing.JTextField myPrefix;
     private javax.swing.JLabel myPrefixLabel;
     // End of variables declaration//GEN-END:variables
