@@ -77,6 +77,7 @@ import org.netbeans.modules.uml.core.metamodel.structure.IProject;
 import org.netbeans.modules.uml.core.support.umlsupport.FileExtensions;
 import org.netbeans.modules.uml.core.support.umlutils.ElementLocator;
 import org.netbeans.modules.uml.core.support.umlutils.IElementLocator;
+import org.netbeans.modules.uml.drawingarea.AbstractLabelManager;
 import org.netbeans.modules.uml.drawingarea.SQDDiagramTopComponent;
 import org.netbeans.modules.uml.drawingarea.UMLDiagramTopComponent;
 import org.netbeans.modules.uml.drawingarea.actions.ActionProvider;
@@ -1012,13 +1013,13 @@ public class TSDiagramConverter
             System.out.println("LABEL TS KIND: "+tsType);
             switch(tsType)
             {
-                case 1://for smth on all diagrams
-                case 12://for smth on all diagrams
+                case 1://for names of smth on all diagrams
+                case 12://for names of smth on all diagrams
                 case 7://for sqd message
-                    typeInfo="NAME";
+                    typeInfo=AbstractLabelManager.NAME;
                     break;
                 case 6:
-                    typeInfo="STEREOTYPE";
+                    typeInfo=AbstractLabelManager.STEREOTYPE;
                     break;
                 case 13:
                     //derivation specification

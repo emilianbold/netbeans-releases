@@ -70,15 +70,6 @@ import org.openide.util.NbBundle;
  */
 public class BasicUMLLabelManager extends AbstractLabelManager
 {
-    /**
-     * The name of stereotype labels.
-     */
-    public static final String STEREOTYPE = "Stereotype"; //NOI18N
-    
-    /**
-     * The name of Name labels.
-     */
-    public static final String NAME = "Name"; //NOI18N
     
     public BasicUMLLabelManager(ConnectionWidget widget)
     {

@@ -81,6 +81,17 @@ public abstract class AbstractLabelManager implements LabelManager
     private HashMap < String, Widget > labelMap = new HashMap < String, Widget >();
     
     /**
+     * The name of stereotype labels.
+     */
+    public static final String STEREOTYPE = "Stereotype"; //NOI18N
+    
+    /**
+     * The name of Name labels.
+     */
+    public static final String NAME = "Name"; //NOI18N
+    
+    
+    /**
      * Creates an AbstractLabelManager and associates it to a connection 
      * widget.
      * @param widget
@@ -109,6 +120,7 @@ public abstract class AbstractLabelManager implements LabelManager
             
             
             label = createLabel(name, type);
+            if(label==null)throw new IllegalArgumentException("Unsupported label name-type combination, can't create label. name=\""+name+"\"; type=\""+type+"\".");
             ConnectionLabelWidget child = new ConnectionLabelWidget(scene, label);
             Object data = createAttachedData(name, type);
             if(data == null)
