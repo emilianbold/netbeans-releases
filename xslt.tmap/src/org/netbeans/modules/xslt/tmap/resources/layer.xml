@@ -4,6 +4,9 @@
     <folder name="Loaders">
         <folder name="text">
             <folder name="x-tmap+xml">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-xslt-tmap-TMapDataLoader.instance"/>
+                </folder>
                 <folder name="Actions">
                     <file name="org-openide-actions-EditAction.instance_hidden"/>
                     <file name="org-netbeans-modules-xslt-tmap-multiview-TMapTreeViewOpenAction.instance">
