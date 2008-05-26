@@ -56,6 +56,9 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 
 import java.util.*;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
+import java.util.prefs.Preferences;
 import java.util.regex.Pattern;
 
 import javax.lang.model.element.*;
@@ -66,17 +69,14 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 
 import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.editor.*;
-import org.netbeans.editor.ext.ExtSettingsDefaults;
-import org.netbeans.editor.ext.ExtSettingsNames;
 import org.netbeans.editor.ext.java.JavaTokenContext;
-import org.netbeans.modules.java.editor.options.JavaOptions;
-import org.openide.util.Lookup;
+import org.openide.util.WeakListeners;
 
 /**
  *
@@ -91,8 +91,19 @@ public class Utilities {
     private static boolean caseSensitive = true;
     private static boolean showDeprecatedMembers = true;
     
-    private static SettingsChangeListener settingsListener = new SettingsListener();
     private static boolean inited;
+    private static Preferences preferences;
+    private static final PreferenceChangeListener preferencesTracker = new PreferenceChangeListener() {
+        public void preferenceChange(PreferenceChangeEvent evt) {
+            String settingName = evt == null ? null : evt.getKey();
+            if (settingName == null || SimpleValueNames.COMPLETION_CASE_SENSITIVE.equals(settingName)) {
+                setCaseSensitive(preferences.getBoolean(SimpleValueNames.COMPLETION_CASE_SENSITIVE, false));
+            }
+            if (settingName == null || SimpleValueNames.SHOW_DEPRECATED_MEMBERS.equals(settingName)) {
+                setShowDeprecatedMembers(preferences.getBoolean(SimpleValueNames.SHOW_DEPRECATED_MEMBERS, true));
+            }
+        }
+    };
     
     private static String cachedPrefix = null;
     private static Pattern cachedPattern = null;
@@ -155,27 +166,21 @@ public class Utilities {
     }
 
     public static boolean guessMethodArguments() {
-        Lookup lkp = MimeLookup.getLookup("text/x-java"); //NOI18N
-        JavaOptions opt = lkp != null ? lkp.lookup(JavaOptions.class) : null;
-        return opt.getGuessMethodArguments();
+      Preferences prefs = MimeLookup.getLookup(JavaKit.JAVA_MIME_TYPE).lookup(Preferences.class);
+      return prefs.getBoolean("guessMethodArguments", false); //NOI18N
     }
 
     public static boolean pairCharactersCompletion() {
-        Lookup lkp = MimeLookup.getLookup("text/x-java"); //NOI18N
-        JavaOptions opt = lkp != null ? lkp.lookup(JavaOptions.class) : null;
-        return opt.getPairCharactersCompletion();
+      Preferences prefs = MimeLookup.getLookup(JavaKit.JAVA_MIME_TYPE).lookup(Preferences.class);
+      return prefs.getBoolean(SimpleValueNames.COMPLETION_PAIR_CHARACTERS, false);
     }
 
     private static void lazyInit() {
         if (!inited) {
             inited = true;
-            Settings.addSettingsChangeListener(settingsListener);
-            setCaseSensitive(SettingsUtil.getBoolean(JavaKit.class,
-                    ExtSettingsNames.COMPLETION_CASE_SENSITIVE,
-                    ExtSettingsDefaults.defaultCompletionCaseSensitive));
-            setShowDeprecatedMembers(SettingsUtil.getBoolean(JavaKit.class,
-                    ExtSettingsNames.SHOW_DEPRECATED_MEMBERS,
-                    ExtSettingsDefaults.defaultShowDeprecatedMembers));
+            preferences = MimeLookup.getLookup(JavaKit.JAVA_MIME_TYPE).lookup(Preferences.class);
+            preferences.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, preferencesTracker, preferences));
+            preferencesTracker.preferenceChange(null);
         }
     }
 
@@ -479,18 +484,6 @@ public class Utilities {
         return false;
     }
     
-    private static class SettingsListener implements SettingsChangeListener {
-
-        public void settingsChange(SettingsChangeEvent evt) {
-            setCaseSensitive(SettingsUtil.getBoolean(JavaKit.class,
-                    ExtSettingsNames.COMPLETION_CASE_SENSITIVE,
-                    ExtSettingsDefaults.defaultCompletionCaseSensitive));
-            setShowDeprecatedMembers(SettingsUtil.getBoolean(JavaKit.class,
-                    ExtSettingsNames.SHOW_DEPRECATED_MEMBERS,
-                    ExtSettingsDefaults.defaultShowDeprecatedMembers));
-        }
-    }
-
     private static class TypeNameVisitor extends SimpleTypeVisitor6<StringBuilder,Boolean> {
         
         private boolean varArg;

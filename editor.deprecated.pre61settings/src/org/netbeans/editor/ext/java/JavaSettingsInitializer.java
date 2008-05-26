@@ -39,87 +39,42 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.java.editor.options;
+package org.netbeans.editor.ext.java;
 
-import java.beans.PropertyEditorSupport;
-import java.util.HashMap;
 import java.util.Map;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
+import org.netbeans.editor.Settings;
 
 /**
- *
- * @author  Martin Roskanin
- */
-public class CodeFoldingEditor extends PropertyEditorSupport{
+* Extended settings for Java.
+*
+* @author Miloslav Metelka
+* @version 1.00
+*/
 
-    protected HelpCtx getHelpCtx () {
-        return HelpCtx.DEFAULT_HELP;
+public class JavaSettingsInitializer extends Settings.AbstractInitializer {
+
+    /** Name assigned to initializer */
+    public static final String NAME = "java-settings-initializer"; // NOI18N
+
+    private Class javaKitClass;
+
+    /** Construct new java-settings-initializer.
+    * @param javaKitClass the real kit class for which the settings are created.
+    *   It's unknown here so it must be passed to this constructor.
+    */
+    public JavaSettingsInitializer(Class javaKitClass) {
+        super(NAME);
+        this.javaKitClass = javaKitClass;
     }
 
-    /** Creates a new instance of CodeFoldingEditor */
-    public CodeFoldingEditor() {
+    /** Update map filled with the settings.
+    * @param kitClass kit class for which the settings are being updated.
+    *   It is always non-null value.
+    * @param settingsMap map holding [setting-name, setting-value] pairs.
+    *   The map can be empty if this is the first initializer
+    *   that updates it or if no previous initializers updated it.
+    */
+    public void updateSettingsMap(Class kitClass, Map settingsMap) {
     }
 
-    public boolean supportsCustomEditor() {
-        return true;
-    }
-
-    
-    private CodeFoldingEditorPanel editorPanel;
-    
-    /**
-     * Create custom editor tightly coupled with this editor
-     */
-    public java.awt.Component getCustomEditor() {
-        if( editorPanel == null ) {
-            editorPanel = new CodeFoldingEditorPanel( this );
-            HelpCtx.setHelpIDString( editorPanel, getHelpCtx().getHelpID() );
-            refreshEditorPanel();
-        }
-        return editorPanel;
-    }
-
-    private void refreshEditorPanel() {
-        if( editorPanel != null ) {
-            editorPanel.setValue( (Map)getValue() );
-        }
-    }
-
-    /**
-     *  Sets the value for editor / customEditor
-     */
-    public void setValue( Object obj ) {
-        Object oldValue = getValue();
-        if( (obj != null) && (! obj.equals( oldValue ) ) ) {
-            super.setValue( obj );
-            if( ( editorPanel != null ) && (! editorPanel.getValue().equals( getValue() ) ) ) {
-                refreshEditorPanel();
-            }
-        }
-    }
-
-    /**
-     * The way our customEditor notifies us when user changes something.
-     */
-    protected void customEditorChange() {
-        // forward it to parent, which will fire propertyChange
-        super.setValue( new HashMap( editorPanel.getValue() ) );
-    }
-
-    /**
-     * Return the label to be shown in the PropertySheet
-     */
-    public String getAsText() {
-        return NbBundle.getBundle( CodeFoldingEditor.class ).getString( "PROP_CodeFolding" ); // NOI18N
-    }
-
-    /**
-     * Don't bother if the user tried to edit our label in the PropertySheet
-     */
-    public void setAsText( String s ) {
-    }
-    
-    
 }
-

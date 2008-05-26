@@ -155,7 +155,6 @@ public class JavaKit extends NbEditorKit {
     
 
     public JavaKit(){
-        org.netbeans.modules.java.editor.JavaEditorModule.init();
     }
     
     public String getContentType() {

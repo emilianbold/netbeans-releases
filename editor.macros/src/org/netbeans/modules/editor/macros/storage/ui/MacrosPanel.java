@@ -290,7 +290,7 @@ public class MacrosPanel extends JPanel {
             MacrosModel.Macro macro = model.getMacroByIndex(selectedRow);
             macro.setShortcut(shortcut);
             shortcutsFinder.setShortcuts(macro, Collections.singleton(shortcut));
-	    shortcutsFinder.apply();
+//	    shortcutsFinder.apply();
 //                StorageSupport.keyStrokesToString(Arrays.asList(StorageSupport.stringToKeyStrokes(shortcut, true)), false)));
         }
     }//GEN-LAST:event_bSetShortcutActionPerformed

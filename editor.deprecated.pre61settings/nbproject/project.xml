@@ -265,6 +265,7 @@ made subject to such option by the copyright holder.
             <public-packages>
                 <package>org.netbeans.editor</package>
                 <package>org.netbeans.editor.ext</package>
+                <package>org.netbeans.editor.ext.java</package>
                 <package>org.netbeans.modules.editor.options</package>
             </public-packages>
         </data>

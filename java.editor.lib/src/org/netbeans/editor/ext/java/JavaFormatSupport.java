@@ -643,7 +643,7 @@ public class JavaFormatSupport extends ExtFormatSupport {
                 case JavaTokenContext.DEFAULT_ID:
                     TokenItem swss = findSwitch(token);
                     if (swss != null) {
-                        indent = shiftSwitch() ? (getTokenIndent(swss) + getShiftWidth()) : getTokenIndent(swss);
+                        indent = getFormatOptionBoolean("indentCasesFromSwitch", true) ? (getTokenIndent(swss) + getShiftWidth()) : getTokenIndent(swss);
                     }
                     break;
 
@@ -1135,58 +1135,80 @@ public class JavaFormatSupport extends ExtFormatSupport {
     }
 
     public boolean getFormatSpaceBeforeParenthesis() {
-        return getSettingBoolean(JavaSettingsNames.JAVA_FORMAT_SPACE_BEFORE_PARENTHESIS,
-                                 JavaSettingsDefaults.defaultJavaFormatSpaceBeforeParenthesis);
+        return getFormatOptionBoolean("spaceBeforeMethodDeclParen", false); //NOI18N
     }
 
     public boolean getFormatSpaceAfterComma() {
-        return getSettingBoolean(JavaSettingsNames.JAVA_FORMAT_SPACE_AFTER_COMMA,
-                                 JavaSettingsDefaults.defaultJavaFormatSpaceAfterComma);
+        return getFormatOptionBoolean("spaceAfterComma", true); //NOI18N
     }
 
     public boolean getFormatNewlineBeforeBrace() {
-        return getSettingBoolean(JavaSettingsNames.JAVA_FORMAT_NEWLINE_BEFORE_BRACE,
-                                 JavaSettingsDefaults.defaultJavaFormatNewlineBeforeBrace);
+        Preferences p = getFormatOptions();
+        String s = p == null ? null : p.get("methodDeclBracePlacement", null); //NOI18N
+        if (s != null && s.equals("NEW_LINE")) { //NOI18N
+            return true;
+        } else {
+            return false;
+        }
     }
 
     public boolean getFormatLeadingSpaceInComment() {
-        return getSettingBoolean(JavaSettingsNames.JAVA_FORMAT_LEADING_SPACE_IN_COMMENT,
-                                 JavaSettingsDefaults.defaultJavaFormatLeadingSpaceInComment);
+        // XXX: add this to FmtOptions
+        return false;
     }
 
     public boolean getFormatLeadingStarInComment() {
-        return getSettingBoolean(JavaSettingsNames.JAVA_FORMAT_LEADING_STAR_IN_COMMENT,
-                                 JavaSettingsDefaults.defaultJavaFormatLeadingStarInComment);
+        // XXX: add this to FmtOptions
+        return true;
     }
 
     private int getFormatStatementContinuationIndent() {
-        int def = getSettingInteger(JavaSettingsNames.JAVA_FORMAT_STATEMENT_CONTINUATION_INDENT,
-                                 JavaSettingsDefaults.defaultJavaFormatStatementContinuationIndent);
+        return getFormatOptionInt("continuationIndentSize", 8); //NOI18N
+    }
+    
+    private boolean getFormatOptionBoolean(String optionName, boolean def) {
+        Preferences p = getFormatOptions();
+        if (p == null) {
+            return def;
+        } else {
+            return p.getBoolean(optionName, def);
+        }
+    }
+    
+    private int getFormatOptionInt(String optionName, int def) {
+        Preferences p = getFormatOptions();
+        if (p == null) {
+            return def;
+        } else {
+            return p.getInt(optionName, def);
+        }
+    }
+
+    private Preferences getFormatOptions() {
         try {
             ClassLoader cl = (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class);
             Class accpClass = cl.loadClass("org.netbeans.modules.java.ui.FmtOptions"); // NOI18N
             if (accpClass == null) {
-                return def;
+                return null;
             }
             Preferences p = NbPreferences.forModule(accpClass);
             if (p == null) {
-                return def;
+                return null;
             }
             p = p.node("CodeStyle"); // NOI18N
             if (p == null) {
-                return def;
+                return null;
             }        
             p = p.node("default"); // NOI18N
             if (p == null) {
-                return def;
+                return null;
             }        
-            return p.getInt("continuationIndentSize", def); // NOI18N
+            return p;
             
         } catch (ClassNotFoundException ex) {
-            return def;
+            return null;
         }
     }
-
 
     /*   this is fix for bugs: 7980 and 9111. if user enters
      *        {   foo();
@@ -1224,32 +1246,6 @@ public class JavaFormatSupport extends ExtFormatSupport {
             return ftp2;
         else
             return ftp;
-    }
-
-    private boolean shiftSwitch() {
-        try {
-            ClassLoader cl = (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class);
-            Class accpClass = cl.loadClass("org.netbeans.modules.java.ui.FmtOptions"); // NOI18N
-            if (accpClass == null) {
-                return true;
-            }
-            Preferences p = NbPreferences.forModule(accpClass);
-            if (p == null) {
-                return true;
-            }
-            p = p.node("CodeStyle");
-            if (p == null) {
-                return true;
-            }        
-            p = p.node("default");
-            if (p == null) {
-                return true;
-            }        
-            return p.getBoolean("indentCasesFromSwitch", true);
-            
-        } catch (ClassNotFoundException ex) {
-            return true;
-        }
     }
 
 }

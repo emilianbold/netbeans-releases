@@ -42,8 +42,11 @@
 package org.netbeans.modules.java.navigation;
 
 import java.awt.event.*;
-import java.applet.*;
 import java.awt.*;
+import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
 import javax.swing.InputMap;
@@ -57,10 +60,9 @@ import javax.swing.Popup;
 import javax.swing.PopupFactory;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
-import javax.swing.UIManager;
-import org.netbeans.editor.Settings;
-import org.netbeans.editor.ext.ExtSettingsDefaults;
-import org.netbeans.editor.ext.ExtSettingsNames;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -71,6 +73,9 @@ import org.openide.util.Utilities;
  * @author S. Aubrecht
  */
 final class ToolTipManagerEx extends MouseAdapter implements MouseMotionListener  {
+    
+    private static final Logger LOG = Logger.getLogger(ToolTipManagerEx.class.getName());
+    
     private Timer enterTimer;
     private Timer  exitTimer;
     private String toolTipText;
@@ -355,7 +360,7 @@ final class ToolTipManagerEx extends MouseAdapter implements MouseMotionListener
      *
      *  @param event  the event in question
      */
-    public void mouseEntered(MouseEvent event) {
+    public @Override void mouseEntered(MouseEvent event) {
         initiateToolTip(event);
     }
 
@@ -394,7 +399,7 @@ final class ToolTipManagerEx extends MouseAdapter implements MouseMotionListener
             if (showImmediately) {
                 Rectangle rect = provider.getToolTipSourceBounds( event.getPoint() );
                 if( null != rect ) {
-                    String newToolTipText = startToolTipCalculation( rect, event.getPoint() );;
+                    String newToolTipText = startToolTipCalculation( rect, event.getPoint() );
 
                     if (!sameComponent || !toolTipText.equals(newToolTipText) /*|| 
                              !sameLoc*/) {
@@ -415,7 +420,7 @@ final class ToolTipManagerEx extends MouseAdapter implements MouseMotionListener
      *
      *  @param event  the event in question
      */
-    public void mouseExited(MouseEvent event) {
+    public @Override void mouseExited(MouseEvent event) {
         boolean shouldHide = true;
         if (insideComponent == null) {
             // Drag exit
@@ -483,7 +488,7 @@ final class ToolTipManagerEx extends MouseAdapter implements MouseMotionListener
      *
      *  @param event  the event in question
      */
-    public void mousePressed(MouseEvent event) {
+    public @Override void mousePressed(MouseEvent event) {
         hideTipWindow();
         enterTimer.stop();
         showImmediately = false;
@@ -516,7 +521,7 @@ final class ToolTipManagerEx extends MouseAdapter implements MouseMotionListener
             Rectangle rect = provider.getToolTipSourceBounds( event.getPoint() );
             if( null != rect ) {
                 JComponent component = (JComponent)event.getSource();
-                toolTipText = startToolTipCalculation(rect, event.getPoint());;
+                toolTipText = startToolTipCalculation(rect, event.getPoint());
                 if (toolTipText != null) {
                     mouseEvent = event;
                     insideComponent = component;
@@ -575,7 +580,7 @@ final class ToolTipManagerEx extends MouseAdapter implements MouseMotionListener
                 if (toolTipText == null && mouseEvent != null) {
                     Rectangle rect = provider.getToolTipSourceBounds( mouseEvent.getPoint() );
                     if( null != rect ) {
-                        toolTipText = startToolTipCalculation(rect, mouseEvent.getPoint());;
+                        toolTipText = startToolTipCalculation(rect, mouseEvent.getPoint());
                     }
                 }
                 if(toolTipText != null) {
@@ -607,7 +612,7 @@ final class ToolTipManagerEx extends MouseAdapter implements MouseMotionListener
    * solely on mouse-entered to initiate the tooltip.
    */
     private class MoveBeforeEnterListener extends MouseMotionAdapter {
-        public void mouseMoved(MouseEvent e) {
+        public @Override void mouseMoved(MouseEvent e) {
 	    initiateToolTip(e);
 	}
     }
@@ -706,26 +711,33 @@ final class ToolTipManagerEx extends MouseAdapter implements MouseMotionListener
     }
     
     private Dimension getDefaultToolTipSize() {
-        Object val = Settings.getValue(null, ExtSettingsNames.JAVADOC_PREFERRED_SIZE);
-        if( !(val instanceof Dimension) ) {
-            val = ExtSettingsDefaults.defaultJavaDocPreferredSize;
-        }
-        if( val instanceof Dimension ) {
-            return (Dimension)val;
-        } else {
-            return new Dimension(500,300);
-        }
+        Preferences prefs = MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class);
+        String size = prefs.get(SimpleValueNames.JAVADOC_PREFERRED_SIZE, null);
+        Dimension dim = size == null ? null : parseDimension(size);
+        return dim != null ? dim : new Dimension(500,300);
     }
     
-    private Color getDefaultToolTipBackground() {
-        Object val = Settings.getValue( null, ExtSettingsNames.JAVADOC_BG_COLOR );
-        if( !(val instanceof Color) ) {
-            val = ExtSettingsDefaults.defaultJavaDocBGColor;
+    private static Dimension parseDimension(String s) {
+        StringTokenizer st = new StringTokenizer(s, ","); // NOI18N
+
+        int arr[] = new int[2];
+        int i = 0;
+        while (st.hasMoreElements()) {
+            if (i > 1) {
+                return null;
+            }
+            try {
+                arr[i] = Integer.parseInt(st.nextToken());
+            } catch (NumberFormatException nfe) {
+                LOG.log(Level.WARNING, null, nfe);
+                return null;
+            }
+            i++;
         }
-        if( val instanceof Color ) {
-            return (Color)val;
+        if (i != 2) {
+            return null;
         } else {
-            return UIManager.getColor("Table.background"); //NOI18N
+            return new Dimension(arr[0], arr[1]);
         }
     }
     

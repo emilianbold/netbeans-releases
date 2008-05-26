@@ -63,8 +63,6 @@ import javax.swing.text.html.HTMLDocument;
 import org.netbeans.api.java.source.ui.ElementJavadoc;
 
 import org.netbeans.editor.*;
-import org.netbeans.editor.ext.ExtSettingsDefaults;
-import org.netbeans.editor.ext.ExtSettingsNames;
 
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.StatusDisplayer;
@@ -295,10 +293,10 @@ public class DocumentationScrollPane extends JScrollPane {
         // #25715 - Attempt to search keymap for the keybinding that logically corresponds to the action
         KeyStroke[] ret = new KeyStroke[] { defaultKey };
         if (component != null) {
-            TextUI ui = component.getUI();
+            TextUI componentUI = component.getUI();
             Keymap km = component.getKeymap();
-            if (ui != null && km != null) {
-                EditorKit kit = ui.getEditorKit(component);
+            if (componentUI != null && km != null) {
+                EditorKit kit = componentUI.getEditorKit(component);
                 if (kit instanceof BaseKit) {
                     Action a = ((BaseKit)kit).getActionByName(editorActionName);
                     if (a != null) {
@@ -363,21 +361,11 @@ public class DocumentationScrollPane extends JScrollPane {
     }
     
     private Color getDefaultBackground() {
-        Object val = Settings.getValue( null, ExtSettingsNames.JAVADOC_BG_COLOR );
-        if( !(val instanceof Color) ) {
-            val = ExtSettingsDefaults.defaultJavaDocBGColor;
-        }
-        
-        Color bgColor = (Color)val;
-        // XXX Workaround. If the option is set to default use system settings.
-        // The bg color oprion should die.
-        if (ExtSettingsDefaults.defaultJavaDocBGColor.equals(val)) {
-            bgColor = new JEditorPane().getBackground();
-            bgColor = new Color(
-                    Math.max(bgColor.getRed() - 8, 0 ), 
-                    Math.max(bgColor.getGreen() - 8, 0 ), 
-                    bgColor.getBlue());
-        }
+        Color bgColor = new JEditorPane().getBackground();
+        bgColor = new Color(
+                Math.max(bgColor.getRed() - 8, 0 ), 
+                Math.max(bgColor.getGreen() - 8, 0 ), 
+                bgColor.getBlue());
         
         return bgColor;
     }
@@ -400,7 +388,7 @@ public class DocumentationScrollPane extends JScrollPane {
             setFocusPainted(false);
         }
 
-        public void setEnabled(boolean b) {
+        public @Override void setEnabled(boolean b) {
             super.setEnabled(b);
         }
         
@@ -414,18 +402,18 @@ public class DocumentationScrollPane extends JScrollPane {
             this.button = button;
         }
         
-        public void mouseEntered(MouseEvent ev) {
+        public @Override void mouseEntered(MouseEvent ev) {
             if (button.isEnabled()){
                 button.setContentAreaFilled(true);
                 button.setBorderPainted(true);
             }
         }
-        public void mouseExited(MouseEvent ev) {
+        public @Override void mouseExited(MouseEvent ev) {
             button.setContentAreaFilled(false);
             button.setBorderPainted(false);
         }
         
-        public void mouseClicked(MouseEvent evt) {
+        public @Override void mouseClicked(MouseEvent evt) {
             if (button.equals(bBack)){
                 backHistory();
             }else if(button.equals(bForward)){

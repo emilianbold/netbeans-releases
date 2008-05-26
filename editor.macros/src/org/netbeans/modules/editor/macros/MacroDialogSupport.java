@@ -46,17 +46,21 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
+import javax.swing.KeyStroke;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.settings.MultiKeyBinding;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseKit;
@@ -66,6 +70,7 @@ import org.netbeans.modules.editor.macros.storage.MacroDescription;
 import org.netbeans.modules.editor.macros.storage.MacrosStorage;
 import org.netbeans.modules.editor.macros.storage.ui.MacrosPanel;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettingsStorage;
+import org.netbeans.modules.editor.settings.storage.spi.support.StorageSupport;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -85,14 +90,15 @@ public final class MacroDialogSupport {
         // no-op
     }
     
-    public static MacroDescription findMacro(MimePath mimeType, String macroName) {
+    public static MacroDescription findMacro(MimePath mimeType, KeyStroke shortcut) {
         EditorSettingsStorage<String, MacroDescription> ess = EditorSettingsStorage.<String, MacroDescription>get(MacrosStorage.ID);
         
         MacroDescription macro = null;
         
         // try 'mimeType' specific macros
         try {
-            macro = ess.load(mimeType, null, false).get(macroName);
+            Map<String, MacroDescription> macros = ess.load(mimeType, null, false);
+            macro = findByShortcut(macros, shortcut);
         } catch (IOException ioe) {
             LOG.log(Level.WARNING, null, ioe);
         }
@@ -100,13 +106,25 @@ public final class MacroDialogSupport {
         if (macro == null) {
             // try 'all languages' macros
             try {
-                macro = ess.load(MimePath.EMPTY, null, false).get(macroName);
+                Map<String, MacroDescription> macros = ess.load(MimePath.EMPTY, null, false);
+                macro = findByShortcut(macros, shortcut);
             } catch (IOException ioe) {
                 LOG.log(Level.WARNING, null, ioe);
             }
         }
         
         return macro;
+    }
+    
+    private static final MacroDescription findByShortcut(Map<String, MacroDescription> macros, KeyStroke shortcut) {
+        for(MacroDescription m : macros.values()) {
+            for(MultiKeyBinding mkb : m.getShortcuts()) {
+                if (mkb.getKeyStrokeCount() > 0 && mkb.getKeyStroke(0).equals(shortcut)) {
+                    return m;
+                }
+            }
+        }
+        return null;
     }
     
     public static class StartMacroRecordingAction extends BaseAction {
@@ -221,30 +239,38 @@ public final class MacroDialogSupport {
 
         static final long serialVersionUID = 1L;
         static HashSet<String> runningActions = new HashSet<String>();
-        private String macroName;
 
-        public RunMacroAction(String name) {
-            super(BaseKit.macroActionPrefix + name);
-            this.macroName = name;
+        public static final String runMacroAction = "run-macro"; //NOI18N
+        
+        public RunMacroAction() {
+            super(runMacroAction, NO_RECORDING); //NOI18N
         }
-
+        
         protected void error(JTextComponent target, String messageKey, Object... params) {
             String message;
             try {
                 message = NbBundle.getMessage(RunMacroAction.class, messageKey, params);
             } catch (MissingResourceException e) {
-                message = "Error in macro: " + messageKey + "; macroName = '" + macroName + "'"; //NOI18N
+                message = "Error in macro: " + messageKey; //NOI18N
             }
             
-            NotifyDescriptor descriptor = new NotifyDescriptor.Message(NbBundle.getMessage(MacroDialogSupport.class,
-                    "MSG_InvalidMacro", macroName)); // NOI18N
+            NotifyDescriptor descriptor = new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE); // NOI18N
 
             Toolkit.getDefaultToolkit().beep();
             DialogDisplayer.getDefault().notify(descriptor);
-//            LOG.log(Level.WARNING, null, new Throwable(message));
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.log(Level.FINE, null, new Throwable(message));
+            }
         }
         
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("actionCommand='" + evt.getActionCommand() //NOI18N
+                        + "', modifiers=" + evt.getModifiers() //NOI18N
+                        + ", when=" + evt.getWhen() //NOI18N
+                        + ", paramString='" + evt.paramString() + "'"); //NOI18N
+            }
+            
             if (target == null) {
                 return;
             }
@@ -259,27 +285,32 @@ public final class MacroDialogSupport {
                 return;
             }
 
+            if (evt.getActionCommand() == null || evt.getActionCommand().length() != 1) {
+                return;
+            }
+            
+            KeyStroke keyStroke = KeyStroke.getKeyStroke(evt.getActionCommand().charAt(0), evt.getModifiers());
             MimePath mimeType = MimePath.parse(NbEditorUtilities.getMimeType(target));
-            MacroDescription macro = findMacro(mimeType, macroName);
+            MacroDescription macro = findMacro(mimeType, keyStroke);
             if (macro == null) {
-                error(target, "macro-not-found", macroName); // NOI18N
+                error(target, "macro-not-found", StorageSupport.keyStrokesToString(Collections.singleton(keyStroke), false)); // NOI18N
                 return;
             }
 
-            if (!runningActions.add(macroName)) { // this macro is already running, beware of loops
-                error(target, "loop", macroName); // NOI18N
+            if (!runningActions.add(macro.getName())) { // this macro is already running, beware of loops
+                error(target, "macro-loop", macro.getName()); // NOI18N
                 return;
             }
             try {
-                runMacro(target, doc, kit, macro.getCode());
+                runMacro(target, doc, kit, macro);
             } finally {
-                runningActions.remove(macroName);
+                runningActions.remove(macro.getName());
             }
         }
 
-        private void runMacro(JTextComponent component, BaseDocument doc, BaseKit kit, String commandString) {
+        private void runMacro(JTextComponent component, BaseDocument doc, BaseKit kit, MacroDescription macro) {
             StringBuffer actionName = new StringBuffer();
-            char[] command = commandString.toCharArray();
+            char[] command = macro.getCode().toCharArray();
             int len = command.length;
 
             doc.atomicLock();
@@ -293,12 +324,12 @@ public final class MacroDialogSupport {
                             char ch = command[i];
                             if (ch == '\\') { //NOI18N
                                 if (++i >= len) { // '\' at the end
-                                    error(component, "macro-malformed", macroName); // NOI18N
+                                    error(component, "macro-malformed", macro.getName()); // NOI18N
                                     return;
                                 }
                                 ch = command[i];
                                 if (ch != '"' && ch != '\\') { // neither \\ nor \" // NOI18N
-                                    error(component, "macro-malformed", macroName); // NOI18N
+                                    error(component, "macro-malformed", macro.getName()); // NOI18N
                                     return;
                                 } // else fall through
                             }
@@ -320,12 +351,12 @@ public final class MacroDialogSupport {
                             char ch = command[i++];
                             if (ch == '\\') { //NOI18N
                                 if (i >= len) { // macro ending with single '\'
-                                    error(component, "macro-malformed", macroName); // NOI18N
+                                    error(component, "macro-malformed", macro.getName()); // NOI18N
                                     return;
                                 }
                                 ch = command[i++];
                                 if (ch != '\\' && !Character.isWhitespace(ch)) { //NOI18N
-                                    error(component, "macro-malformed", macroName); // neither "\\" nor "\ " // NOI18N
+                                    error(component, "macro-malformed", macro.getName()); // neither "\\" nor "\ " // NOI18N
                                     return;
                                 } // else fall through
                             }
@@ -352,7 +383,7 @@ public final class MacroDialogSupport {
                                 }
                             }
                         } else {
-                            error(component, "macro-unknown-action", macroName, actionName.toString()); // NOI18N
+                            error(component, "macro-unknown-action", macro.getName(), actionName.toString()); // NOI18N
                             return;
                         }
                     }
@@ -360,10 +391,6 @@ public final class MacroDialogSupport {
             } finally {
                 doc.atomicUnlock();
             }
-        }
-        
-        public @Override String toString() {
-            return super.toString() + "[" + macroName;
         }
     } // End of RunMacroAction class
 }
