@@ -216,7 +216,7 @@ public class ProjectClassPathModifier {
                 return result;
             }
         }
-        throw new UnsupportedOperationException ();
+        throw new UnsupportedOperationException("No classpath extensibility of type " + classPathType + " found for " + FileUtil.getFileDisplayName(projectArtifact)); // NOI18N
     }
     
     /**

@@ -186,8 +186,8 @@ type CDATA #REQUIRED
                 <property name="inputSchemaIdList" access="" />
                 <property name="inputType" access="" />
                 <property name="inputMaxCount" access="" />
-	            <property name="inputIdList" access="" />
-	            <property name="staticInputMaxCount" access="" />
+                <property name="inputIdList" access="" />
+                <property name="staticInputMaxCount" access="" />
     	        <property name="staticInputIdList" access="" />
                 <property name="type" default="i18n.IEP.Input.TableInput.title"/>
                 <property name="outputType" default="i18n.IEP.IOType.table"/>
@@ -197,6 +197,9 @@ type CDATA #REQUIRED
                 <property name="isGlobal" default="true" access="&R;"/>
                 <property name="palette" default="input"/>
                 <property name="helpID" default="iep_tableinput_propedit"/>
+                 <property transient="false" category="IEP.Category.main" name="externalTableName" title="IEP.Operator.StreamProjectionAndFilter.toColumnList.title" description="IEP.Operator.StreamProjectionAndFilter.toColumnList.description" required="false" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.TextAreaEditor" default="" renderer="string" access="" multiple="false" />
+                 <property transient="false" category="IEP.Category.main" name="databaseJndiName" title="IEP.Operator.StreamProjectionAndFilter.toColumnList.title" description="IEP.Operator.StreamProjectionAndFilter.toColumnList.description" required="false" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.TextAreaEditor" default="" renderer="string" access="" multiple="false" />
+                 
             </property_group>
             <code type="xml" file="vm/iep/input/relationInput.xml"/>
         </component_type>

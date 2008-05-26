@@ -96,7 +96,7 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
   }
 
   @Override
-  protected final SimpleBpelModelVisitor getVisitor() { return new SimpleBpelModelVisitorAdaptor() {
+  protected SimpleBpelModelVisitor getVisitor() { return new SimpleBpelModelVisitorAdaptor() {
 
   @Override
   public void visit(Copy copy) {
@@ -125,13 +125,37 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
       return;
     }
     // # 135489
-    if (isPositive(fromName) && isNegative(toName)) {
-      addError("FIX_Positive_Negative_Copy", copy);
+    if (fromName.startsWith("nonNegative") && toName.startsWith("negative")) { // NOI18N
+      addError("FIX_NonNegative_Negative_Copy", copy); // NOI18N
+      return;
+    }
+    if (fromName.startsWith("positive") && toName.startsWith("negative")) { // NOI18N
+      addError("FIX_Positive_Negative_Copy", copy); // NOI18N
+      return;
+    }
+    if (fromName.startsWith("positive") && toName.startsWith("nonPositive")) { // NOI18N
+      addError("FIX_Positive_NonPositive_Copy", copy); // NOI18N
       return;
     }
     // # 135489
-    if (isNegative(fromName) && isPositive(toName)) {
-      addError("FIX_Negative_Positive_Copy", copy);
+    if (fromName.startsWith("negative") && toName.startsWith("nonNegative")) { // NOI18N
+      addError("FIX_Negative_NonNegative_Copy", copy); // NOI18N
+      return;
+    }
+    if (fromName.startsWith("negative") && toName.startsWith("positive")) { // NOI18N
+      addError("FIX_Negative_Positive_Copy", copy); // NOI18N
+      return;
+    }
+    if (fromName.startsWith("nonPositive") && toName.startsWith("positive")) { // NOI18N
+      addError("FIX_NonPositive_Positive_Copy", copy); // NOI18N
+      return;
+    }
+    if (fromName.startsWith("nonPositive") && toName.startsWith("nonNegative")) { // NOI18N
+      addWarning("FIX_NonPositive_NonNegative_Copy", copy); // NOI18N
+      return;
+    }
+    if (fromName.startsWith("nonNegative") && toName.startsWith("nonPositive")) { // NOI18N
+      addWarning("FIX_NonNegative_NonPositive_Copy", copy); // NOI18N
       return;
     }
     // # 135489
@@ -156,14 +180,6 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
     else {
       addWarning("FIX_TYPE_IN_COPY", copy, fTypeName, tTypeName); // NOI18N
     }
-  }
-
-  private boolean isPositive(String value) {
-    return value.startsWith("positive") || value.startsWith("nonNegative"); // NOI18N
-  }
-
-  private boolean isNegative(String value) {
-    return value.startsWith("negative") || value.startsWith("nonPositive"); // NOI18N
   }
 
   private boolean isNumeric(String value) {
@@ -208,7 +224,7 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
     WSDLReference<Role> ref1 = partnerLink.getPartnerRole();
 
     if (ref1 == null || ref1.get() == null) {
-      addError("FIX_To_PartnerLink", to);
+      addError("FIX_To_PartnerLink", to); // NOI18N
     }
   }
 
@@ -406,7 +422,9 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
         addError("FIX_Negative_RepeatEvery", repeatEvery); // NOI18N
       }
     }
-    catch (IllegalArgumentException e) {}
+    catch (IllegalArgumentException e) {
+      return;
+    }
   }
 
   private boolean isZero(Duration duration) {

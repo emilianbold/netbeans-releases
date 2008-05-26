@@ -54,6 +54,7 @@ public abstract class CallGraphModelFactory {
     }
 
     public abstract CallModel getModel(Node[] activatedNodes);
+    public abstract CallGraphUI getUI(CallModel model);
     
     public static CallGraphModelFactory getDefault() {
         return DEFAULT;
@@ -76,5 +77,17 @@ public abstract class CallGraphModelFactory {
             }
             return null;
         }
+
+        @Override
+        public CallGraphUI getUI(CallModel model) {
+            for (CallGraphModelFactory resolver : res.allInstances()) {
+                CallGraphUI out = resolver.getUI(model);
+                if (out != null) {
+                    return out;
+                }
+            }
+            return null;
+        }
+
     }    
 }

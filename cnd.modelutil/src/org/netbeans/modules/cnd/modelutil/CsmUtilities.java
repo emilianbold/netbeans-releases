@@ -617,7 +617,10 @@ public class CsmUtilities {
                                             boolean delayProcessing, final boolean jumpLineStart) {
         //final Cursor editCursor = pane.getCursor();
         //pane.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-        if (delayProcessing) {
+        if (false && delayProcessing) {
+            // [AS] Comment branch because it does not work when 
+            // method is called from action in undock view.
+            // See IZ#135610:*CallGraph*: GoTo Caller works incorrectly in undock window
             // [dafe] I don't know why, but editor guys are waiting for focus
             // in delay processing, so I will do the same
             pane.addFocusListener(new FocusAdapter() {
