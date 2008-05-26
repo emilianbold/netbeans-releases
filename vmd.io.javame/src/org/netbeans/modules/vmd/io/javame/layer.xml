@@ -11,5 +11,14 @@
                 </folder>
             </folder>
         </folder>
+        <folder name="content">
+            <folder name="unknown">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-vmd-io-javame-MEDesignDataLoader.instance">
+                        <attr name="position" intvalue="139"/>
+                    </file>
+                </folder>
+            </folder>
+        </folder>
     </folder>
 </filesystem>
