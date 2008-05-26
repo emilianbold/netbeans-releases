@@ -38,6 +38,8 @@
  */
 
 package org.netbeans.modules.java.source.runner;
+
+import java.awt.event.ActionEvent;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -47,21 +49,30 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.ImageIcon;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.ClassPath.Entry;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.queries.BinaryForSourceQuery;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.source.BuildArtifactMapper;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.spi.java.project.runner.ProjectRunnerImplementation;
 import org.openide.LifecycleManager;
+import org.openide.execution.ExecutionEngine;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputWriter;
@@ -74,70 +85,26 @@ public class ProjectRunnerImpl implements ProjectRunnerImplementation {
     
     private static final Logger LOG = Logger.getLogger(ProjectRunnerImpl.class.getName());
 
+    private static final Map<InputOutput, ReRunAction> rerunActions = new WeakHashMap<InputOutput, ReRunAction>();
+    private static final Map<InputOutput, String> freeTabs = new WeakHashMap<InputOutput, String>();
+    
     public void run(JavaPlatform p, Properties props, FileObject toRun) throws IOException {
-        LifecycleManager.getDefault().saveAll();
-        File javaFile = findJavaTool(p);
-        
-        String jvmArgs = props.getProperty("run.jvmargs");
-        String args = props.getProperty("application.args");
-        
-        ClassPath exec = ClassPath.getClassPath(toRun, ClassPath.EXECUTE);
-        ClassPath source = ClassPath.getClassPath(toRun, ClassPath.SOURCE);
-        
-        LOG.log(Level.FINE, "execute classpath={0}", exec);
-        
-        String cp = translate(exec);
-        
-        List<String> params = new LinkedList<String>();
-        
-        params.add(javaFile.getAbsolutePath());
-        if (jvmArgs != null)
-            params.addAll(Arrays.asList(jvmArgs.split(" ")));//TODO: correct spliting
-        params.add("-classpath");
-        params.add(cp);
-        params.add(source.getResourceName(toRun, '.', false));
-        if (args != null)
-            params.addAll(Arrays.asList(args.split(" ")));//TODO: correct spliting
-        
-        execute(toRun.getNameExt(), params);
+        Builder b = new RunBuilder(p, props, toRun);
+
+        execute(b);
     }
-
-
+    
     public void test(JavaPlatform p, List<FileObject> toRun) throws IOException {
         if (toRun.isEmpty()) {
             throw new IllegalArgumentException();
         }
-        
-        LifecycleManager.getDefault().saveAll();
-        File javaFile = findJavaTool(p);
-        
-        FileObject firstFile = toRun.iterator().next();
-        ClassPath exec = ClassPath.getClassPath(firstFile, ClassPath.EXECUTE);
-        ClassPath source = ClassPath.getClassPath(firstFile, ClassPath.SOURCE);
-        
-        LOG.log(Level.FINE, "execute classpath={0}", exec);
-        
-        String cp = translate(exec);
-        
-        List<String> params = new LinkedList<String>();
 
-        params.add(javaFile.getAbsolutePath());
-        params.add("-classpath");
-        params.add(cp);
-        params.add("junit.textui.TestRunner");
-        //XXX: should run all the files:
-        params.add(source.getResourceName(firstFile, '.', false));
-        
-        execute("Test", params);
+        Builder b = new TestBuilder(p, toRun);
+
+        execute(b);
     }
-
-    private void execute(String name, List<String> params) throws IOException {
-        //TODO: correct spliting
-        InputOutput io = IOProvider.getDefault().getIO("Run " + name, false);
-
-        io.getOut().reset();
-        io.select();
-
+    
+    private static void execute(InputOutput io, List<String> params) throws IOException {
         LOG.log(Level.FINE, "arguments={0}", params);
 
         Process process = Runtime.getRuntime().exec(params.toArray(new String[0]));
@@ -145,9 +112,15 @@ public class ProjectRunnerImpl implements ProjectRunnerImplementation {
         new StreamCopier(new InputStreamReader(process.getInputStream()), io.getOut()).start();
         new StreamCopier(new InputStreamReader(process.getErrorStream()), io.getErr()).start();
 //        new StreamCopier(io.getIn(), new OutputStreamWriter(process.getOutputStream())).start();
+        
+        try {
+            process.waitFor();
+        } catch (InterruptedException ex) {
+            throw (IOException) new IOException(ex.getMessage()).initCause(ex);
+        }
     }
 
-    private File findJavaTool(JavaPlatform p) throws IOException {
+    private static File findJavaTool(JavaPlatform p) throws IOException {
         FileObject java = p.findTool("java");
         File javaFile = java != null ? FileUtil.toFile(java) : null;
 
@@ -158,7 +131,7 @@ public class ProjectRunnerImpl implements ProjectRunnerImplementation {
         return javaFile;
     }
 
-    private String translate(ClassPath exec) {
+    private static String translate(ClassPath exec) {
         StringBuilder cp = new StringBuilder();
         boolean first = true;
 
@@ -184,7 +157,7 @@ public class ProjectRunnerImpl implements ProjectRunnerImplementation {
         return cp.toString();
     }
     
-    private File[] translate(URL entry) {
+    private static File[] translate(URL entry) {
         try {
             if (FileUtil.isArchiveFile(entry)) {
                 entry = FileUtil.getArchiveRoot(entry);
@@ -259,5 +232,179 @@ public class ProjectRunnerImpl implements ProjectRunnerImplementation {
             out.close();
         }
         
+    }
+    
+    private static final class ReRunAction extends AbstractAction {
+
+        private String name;
+        private InputOutput inout;
+        private Builder b;
+
+        public ReRunAction() {
+            putValue(NAME, "ReRun");
+            putValue(SMALL_ICON, new ImageIcon(Utilities.loadImage("/org/netbeans/modules/java/resources/rerun.png")));
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            final ProgressHandle handle = ProgressHandleFactory.createHandle("Building");
+            
+            handle.start();
+            
+            class Exec implements Runnable {
+                public void run() {
+                    try {
+                        inout.getOut().reset();
+                        inout.select();
+
+                        b.build(inout);
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } finally {
+                        handle.finish();
+                        synchronized (ProjectRunnerImpl.class) {
+                            setEnabled(true);
+                            freeTabs.put(inout, name);
+                        }
+                    }
+                }
+            }
+            
+            ExecutionEngine.getDefault().execute(name, new Exec(), inout);
+        }
+
+        void runAndRemember(String name, InputOutput inout, Builder b) {
+            this.name = name;
+            this.inout = inout;
+            this.b = b;
+            
+            actionPerformed(null);
+        }
+
+    }
+    
+    private static interface Builder {
+        public String getName();
+        public void build(InputOutput io) throws IOException;
+    }
+    
+    private static final class RunBuilder implements Builder {
+
+        private final JavaPlatform p;
+        private final Properties props;
+        private final FileObject toRun;
+
+        public RunBuilder(JavaPlatform p, Properties props, FileObject toRun) {
+            this.p = p;
+            this.props = props;
+            this.toRun = toRun;
+        }
+        
+        public String getName() {
+            return "Run " + toRun.getNameExt();
+        }
+
+        public void build(InputOutput io) throws IOException {
+            io.getOut().println("Building");
+            
+            LifecycleManager.getDefault().saveAll();
+            File javaFile = findJavaTool(p);
+
+            String jvmArgs = props.getProperty("run.jvmargs");
+            String args = props.getProperty("application.args");
+
+            ClassPath exec = ClassPath.getClassPath(toRun, ClassPath.EXECUTE);
+            ClassPath source = ClassPath.getClassPath(toRun, ClassPath.SOURCE);
+
+            LOG.log(Level.FINE, "execute classpath={0}", exec);
+
+            String cp = translate(exec);
+
+            List<String> params = new LinkedList<String>();
+
+            params.add(javaFile.getAbsolutePath());
+            if (jvmArgs != null)
+                params.addAll(Arrays.asList(jvmArgs.split(" ")));//TODO: correct spliting
+            params.add("-classpath");
+            params.add(cp);
+            params.add(source.getResourceName(toRun, '.', false));
+            if (args != null)
+                params.addAll(Arrays.asList(args.split(" ")));//TODO: correct spliting
+
+            io.getOut().println("Running");
+            
+            execute(io, params);
+        }
+        
+    }
+    
+    private static final class TestBuilder implements Builder {
+
+        private JavaPlatform p;
+        private List<FileObject> toRun;
+
+        public TestBuilder(JavaPlatform p, List<FileObject> toRun) {
+            this.p = p;
+            this.toRun = toRun;
+        }
+        
+        public String getName() {
+            return "Test";
+        }
+
+        public void build(InputOutput io) throws IOException {
+            io.getOut().println("Building");
+            
+            LifecycleManager.getDefault().saveAll();
+            File javaFile = findJavaTool(p);
+
+            FileObject firstFile = toRun.iterator().next();
+            ClassPath exec = ClassPath.getClassPath(firstFile, ClassPath.EXECUTE);
+            ClassPath source = ClassPath.getClassPath(firstFile, ClassPath.SOURCE);
+
+            LOG.log(Level.FINE, "execute classpath={0}", exec);
+
+            String cp = translate(exec);
+
+            List<String> params = new LinkedList<String>();
+
+            params.add(javaFile.getAbsolutePath());
+            params.add("-classpath");
+            params.add(cp);
+            params.add("junit.textui.TestRunner");
+            //XXX: should run all the files:
+            params.add(source.getResourceName(firstFile, '.', false));
+
+            io.getOut().println("Running");
+            
+            execute(io, params);
+        }
+        
+    }
+
+    private void execute(Builder b) {
+        ReRunAction rerunAction = null;
+        InputOutput inout = null;
+        String name = b.getName();
+
+        synchronized (ProjectRunnerImpl.class) {
+            for (Map.Entry<InputOutput, String> tab : freeTabs.entrySet()) {
+                if (name.equals(tab.getValue())) {
+                    inout = tab.getKey();
+                    rerunAction = rerunActions.get(inout);
+                    freeTabs.remove(inout);
+                    break;
+                }
+            }
+
+            if (inout == null) {
+                rerunAction = new ReRunAction();
+                inout = IOProvider.getDefault().getIO(name, new Action[]{rerunAction});
+                rerunActions.put(inout, rerunAction);
+            }
+            
+            rerunAction.setEnabled(false);
+        }
+
+        rerunAction.runAndRemember(name, inout, b);
     }
 }
