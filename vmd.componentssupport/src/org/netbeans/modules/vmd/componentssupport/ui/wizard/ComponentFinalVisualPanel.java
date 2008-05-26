@@ -137,7 +137,8 @@ final class ComponentFinalVisualPanel extends JPanel {
         String codeNameBase = dotCodeNameBase.replace('.', '/'); // NOI18N
         
         created.add(
-                codeNameBase + "/" + name + BaseHelper.JAVA_EXTENSION); // NOI18N
+                codeNameBase + "/" + BaseHelper.DESCRIPTORS + 
+                name + BaseHelper.JAVA_EXTENSION); // NOI18N
     }
     
     private void addProducerToList(List<String> created, List<String> modified){
@@ -147,7 +148,8 @@ final class ComponentFinalVisualPanel extends JPanel {
         String codeNameBase = dotCodeNameBase.replace('.', '/'); // NOI18N
         
         created.add(
-                codeNameBase + "/" + name + BaseHelper.JAVA_EXTENSION); // NOI18N
+                codeNameBase + "/" + BaseHelper.PRODUCERS + 
+                name + BaseHelper.JAVA_EXTENSION); // NOI18N
     }
     
     private void addLayerXmlToList(List<String> created, List<String> modified){
@@ -177,7 +179,7 @@ final class ComponentFinalVisualPanel extends JPanel {
         File icon = new File(iconPath);
         String name = icon.getName();
         
-        return codeNameBase + "/" + name;
+        return codeNameBase + "/" + BaseHelper.RESOURCES + name;
     }
     
     private static String getMessage(String key, Object... args) {

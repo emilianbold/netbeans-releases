@@ -59,6 +59,9 @@ public class BaseHelper {
     public static final String ZIP_EXTENSION    = ".zip";                        // NOI18N
     public static final String JAVA_EXTENSION   = ".java";                        // NOI18N
 
+    public static final String RESOURCES        = "src/";                        // NOI18N
+    public static final String DESCRIPTORS      = "descriptors/";                // NOI18N
+    public static final String PRODUCERS        = "producers/";                  // NOI18N
     public static final String SRC              = "src/";                        // NOI18N
     public static final String BUNDLE_PROPERTIES 
                                                 = "Bundle.properties";           // NOI18N
