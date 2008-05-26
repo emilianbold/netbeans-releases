@@ -124,21 +124,34 @@ public final class StorageImpl <K extends Object, V extends Object> {
         } else {
             assert profile == null : "The '" + storageDescription.getId() + "' settings type does not use profiles."; //NOI18N
         }
-        
+
         synchronized (lock) {
+            CacheKey cacheKey = null;
             Map<CacheKey, Map<K, V>> profilesData = profilesCache.get(mimePath);
             if (profilesData == null) {
                 profilesData = new HashMap<CacheKey, Map<K, V>>();
                 profilesCache.put(mimePath, profilesData);
+            } else {
+                cacheKey = cacheKey(profile, defaults);
+                Map<K, V> cacheData = profilesData.get(cacheKey);
+                if (cacheData != null && !Utils.quickDiff(cacheData, data)) {
+                    // no differences, no need to save or update the cache
+                    return;
+                }
             }
 
             Map<K, V> dataForSave = new HashMap<K, V>(data);
             filterBeforeSave(dataForSave, mimePath, profile, defaults);
             boolean resetCache = _save(mimePath, profile, defaults, dataForSave);
+            
+            if (cacheKey == null) {
+                cacheKey = cacheKey(profile, defaults);
+            }
+            
             if (!resetCache) {
-                profilesData.put(cacheKey(profile, defaults), Collections.unmodifiableMap(new HashMap<K, V>(data)));
+                profilesData.put(cacheKey, Collections.unmodifiableMap(new HashMap<K, V>(data)));
             } else {
-                profilesData.remove(cacheKey(profile, defaults));
+                profilesData.remove(cacheKey);
             }
         }
     }
@@ -329,7 +342,7 @@ public final class StorageImpl <K extends Object, V extends Object> {
                     }
                 }
             });
-            
+    
             return false;
         }
     }

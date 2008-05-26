@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.editor.settings.storage.spi;
 
+import org.openide.util.Utilities;
+
 /**
  *
  * @author vita
@@ -72,5 +74,29 @@ public final class TypedValue {
 
     public String getValue() {
         return value;
+    }
+
+    public @Override boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final TypedValue other = (TypedValue) obj;
+        if (!Utilities.compareObjects(this.value, other.value)) {
+            return false;
+        }
+        if (!Utilities.compareObjects(this.javaType, other.javaType)) {
+            return false;
+        }
+        return true;
+    }
+
+    public @Override int hashCode() {
+        int hash = 7;
+        hash = 37 * hash + (value != null ? value.hashCode() : 0);
+        hash = 37 * hash + (javaType != null ? javaType.hashCode() : 0);
+        return hash;
     }
 } // End of TypedValue class
