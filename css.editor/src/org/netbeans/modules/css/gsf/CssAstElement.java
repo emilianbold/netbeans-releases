@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -36,76 +36,43 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.css.gsf;
 
-import java.util.Collections;
-import java.util.Set;
 import org.netbeans.modules.css.editor.Css;
 import org.netbeans.modules.css.parser.SimpleNode;
 import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.ElementHandle;
-import org.netbeans.modules.gsf.api.ElementKind;
-import org.netbeans.modules.gsf.api.Modifier;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.gsf.api.ParserResult;
+import org.netbeans.modules.gsf.api.TranslatedSource;
 
 /**
  *
- * @author marek
+ * @author marekfukala
  */
-public class CssElementHandle implements ElementHandle {
+public class CssAstElement extends CSSElement {
 
-    private String selectorListText;
-    private int elementAstStartOffset, elementAstEndOffset;
     private CompilationInfo ci;
+    private SimpleNode node;
+
+    public static CssAstElement getElement(CompilationInfo ci, SimpleNode node) {
+        return new CssAstElement(ci, node);
+    }
     
-    CssElementHandle(SimpleNode ruleNode, SimpleNode selectorListNode, CompilationInfo ci) {
+    CssAstElement(CompilationInfo ci, SimpleNode node) {
+        super(node.image());
         this.ci = ci;
-        this.selectorListText = selectorListNode.image();
-        this.elementAstStartOffset = ruleNode.startOffset();
-        this.elementAstEndOffset = ruleNode.endOffset();
-    }
-    
-    public FileObject getFileObject() {
-        return ci.getFileObject();
+        this.node = node;
     }
 
-    public String getMimeType() {
-        return Css.CSS_MIME_TYPE;
+    public SimpleNode node() {
+        return node;
     }
 
-    public String getName() {
-        return selectorListText;
-    }
-
-    //XXX what's that????
-    public String getIn() {
-        return null;
-    }
-
-    public ElementKind getKind() {
-        return ElementKind.FIELD;
-    }
-
-    public Set<Modifier> getModifiers() {
-        return Collections.emptySet();
-    }
-
-    public boolean signatureEquals(ElementHandle handle) {
-        //TODO implement
-        return false;
-    }
-
-    public int elementAstStartOffset() {
-        return elementAstStartOffset;
-    }
-    
-    public int elementAstEndOffset() {
-        return elementAstEndOffset;
-    }
-    
     public CompilationInfo compilationInfo() {
         return ci;
     }
-    
+
+    public TranslatedSource translatedSource() {
+        ParserResult presult = ci.getEmbeddedResults(Css.CSS_MIME_TYPE).iterator().next();
+        return presult.getTranslatedSource();
+    }
 }
