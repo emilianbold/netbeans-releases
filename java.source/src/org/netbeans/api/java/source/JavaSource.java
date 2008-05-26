@@ -162,7 +162,10 @@ public final class JavaSource {
     //Cached parser for case when JavaSource was constructed without sources => special case no parsing API support
     private CompilationInfoImpl cachedCi;
     //Classpath info when explicitely given, may be null
-    private final ClasspathInfo classpathInfo;    
+    private final ClasspathInfo classpathInfo;
+    //Cached classpath info
+    //@GuardedBy(this)
+    private ClasspathInfo cachedCpInfo;
     
     private static final Logger LOGGER = Logger.getLogger(JavaSource.class.getName());
                 
@@ -589,7 +592,22 @@ public final class JavaSource {
      * @return {@link ClasspathInfo}, never returns null.
      */
     public ClasspathInfo getClasspathInfo() {
-	return classpathInfo;
+        synchronized (this) {
+            if (this.cachedCpInfo != null) {
+                return this.cachedCpInfo;
+            }
+        }
+        ClasspathInfo _tmp = this.classpathInfo;
+        if (_tmp == null) {
+            assert ! this.files.isEmpty();
+            _tmp = ClasspathInfo.create(this.files.iterator().next());
+        }
+        synchronized (this) {
+            if (this.cachedCpInfo == null) {
+                this.cachedCpInfo = _tmp;
+            }
+            return this.cachedCpInfo;
+        }	
     }
     
     /**

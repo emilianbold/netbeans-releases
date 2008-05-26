@@ -53,13 +53,14 @@ import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.parsing.impl.SourceAccessor;
 import org.netbeans.modules.parsing.impl.SourceFlags;
+import org.netbeans.modules.parsing.spi.EmbeddingProvider;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.openide.cookies.EditorCookie;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -218,14 +219,12 @@ public final class Source {
             }
         }
         FileObject fileObject = getFileObject ();
-        FileLock lock = null;
         try {
-            lock = fileObject.lock ();
-            BufferedReader bufferedReader = new BufferedReader (new InputStreamReader (fileObject.getInputStream ()));
+            BufferedReader bufferedReader = new BufferedReader (new InputStreamReader (fileObject.getInputStream (),FileEncodingQuery.getEncoding(fileObject)));
             CharBuffer charBuffer = CharBuffer.allocate (4096);
             StringBuilder sb = new StringBuilder ();
             int i = bufferedReader.read (charBuffer);
-            while (i >= 0) {
+            while (i > 0) {
                 sb.append (charBuffer);
                 i = bufferedReader.read (charBuffer);
             }
@@ -237,9 +236,6 @@ public final class Source {
             return new Snapshot (
                 "", this, mimeType, new int[][] {new int[] {0, 0}}
             );
-        } finally {
-            if (lock != null)
-                lock.releaseLock ();
         }
     }
     
