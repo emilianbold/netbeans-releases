@@ -4,6 +4,9 @@
     <folder name="Loaders">
         <folder name="application">
             <folder name="x-httpd-eruby">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-ruby-rhtml-loaders-RhtmlDataLoader.instance"/>
+                </folder>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/ruby/rhtml/resources/rhtml16.gif"/>
                 <attr name="iconBase" stringvalue="org/netbeans/modules/ruby/rhtml/resources/rhtml16.gif"/>
                 <folder name="Actions">
