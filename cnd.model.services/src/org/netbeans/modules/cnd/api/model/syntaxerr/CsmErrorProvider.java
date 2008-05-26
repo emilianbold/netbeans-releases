@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,52 +34,48 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.highlight.error;
+package org.netbeans.modules.cnd.api.model.syntaxerr;
 
-import javax.swing.text.Document;
+import java.util.ArrayList;
+import java.util.Collection;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.model.tasks.CsmFileTaskFactory.PhaseRunner;
-import org.netbeans.modules.cnd.model.tasks.EditorAwareCsmFileTaskFactory;
-import org.netbeans.modules.cnd.modelutil.CsmUtilities;
-import org.openide.cookies.EditorCookie;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Lookup;
+import org.netbeans.editor.BaseDocument;
 
 /**
- *
- * @author Sergey Grinev
+ * An abstract error provider.
+ * @author Vladimir Kvashin
  */
-public class HighlightProviderTaskFactory extends EditorAwareCsmFileTaskFactory {
+public abstract class CsmErrorProvider {
 
-    @Override
-    protected PhaseRunner createTask(FileObject fo) {
-        PhaseRunner pr = null;
-        try {
-            final DataObject dobj = DataObject.find(fo);
-            EditorCookie ec = dobj.getCookie(EditorCookie.class);
-            final CsmFile file = CsmUtilities.getCsmFile(dobj, false);
-            final Document doc = ec.getDocument();
-            if (doc != null && file != null) {
-                pr = new PhaseRunner() {
-                    public void run(Phase phase) {
-                        if (phase == Phase.PARSED || phase == Phase.INIT) {
-                            HighlightProvider.getInstance().update(file, doc, dobj);
-                        } else if (phase == Phase.CLEANUP) {
-                            HighlightProvider.getInstance().clear(doc);
-                        }
-                    }
-                    public boolean isValid() {
-                        return true;
-                    }
-                };
-            }
-        } catch (DataObjectNotFoundException ex)  {
-            ex.printStackTrace();
+    private static class Merger extends CsmErrorProvider {
+        
+        private final Lookup.Result<CsmErrorProvider> res;
+        
+        private Merger() {
+            res = Lookup.getDefault().lookupResult(CsmErrorProvider.class);
         }
-        return pr != null ? pr : lazyRunner();
+
+        @Override
+        public Collection<CsmErrorInfo> getErrors(BaseDocument doc, CsmFile file) {
+            Collection<CsmErrorInfo> result = new ArrayList<CsmErrorInfo>();
+            for( CsmErrorProvider provider : res.allInstances() ) {
+                result.addAll(provider.getErrors(doc, file));
+            }
+            return result;
+        }
     }
+    
+    /** default instance */
+    private static CsmErrorProvider DEFAULT = new Merger();
+    
+    public static final synchronized  CsmErrorProvider getDefault() {
+        return DEFAULT;
+    }
+
+    public abstract Collection<CsmErrorInfo> getErrors(BaseDocument doc, CsmFile file);
+    
 }
