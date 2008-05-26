@@ -120,6 +120,7 @@ import org.netbeans.modules.java.source.usages.SymbolClassReader;
 import org.netbeans.modules.java.source.util.LowMemoryEvent;
 import org.netbeans.modules.java.source.util.LowMemoryListener;
 import org.netbeans.modules.java.source.util.LowMemoryNotifier;
+import org.netbeans.modules.parsing.api.MultiLanguageUserTask;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.Task;
@@ -285,7 +286,7 @@ public class JavacParser extends Parser {
             }
         }
         final boolean isParserResultTask = task instanceof JavaParserResultTask;
-        final boolean isUserTask = task instanceof UserTask;
+        final boolean isUserTask = task instanceof MultiLanguageUserTask || task instanceof UserTask;
         JavacParserResult result = null;
         if (isParserResultTask) {
             final Phase requiredPhase = ((JavaParserResultTask)task).getPhase();
