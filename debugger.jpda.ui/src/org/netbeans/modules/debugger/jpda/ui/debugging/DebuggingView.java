@@ -94,6 +94,9 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
     private Session session;
     private JPDADebugger previousDebugger;
     
+    private JPanel leftPanel;
+    private JPanel rightPanel;
+    
     private ThreadsListener threadsListener;
     
     /**
@@ -111,8 +114,6 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         
         initComponents();
     
-        setSuspendTableVisible(preferences.getBoolean(FiltersDescriptor.SHOW_SUSPEND_TABLE, true));
-        
         threadsListener = ThreadsListener.getDefault();
         threadsListener.setDebuggingView(this);
         
@@ -129,6 +130,14 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         treeView.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
 
         mainPanel.add(treeView, BorderLayout.CENTER);
+        
+        leftPanel = new ZebraPanel(treeView, 8);
+        leftPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 0, 0));
+        rightPanel = new ZebraPanel(treeView, 24);
+        rightPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 0));
+        
+        mainPanel.add(leftPanel, BorderLayout.WEST);
+        mainPanel.add(rightPanel, BorderLayout.EAST);
         
         tapPanel = new TapPanel();
         tapPanel.setOrientation(TapPanel.DOWN);
@@ -151,6 +160,8 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         
         prefListener = new DebuggingPreferenceChangeListener();
         preferences.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, prefListener, preferences));
+
+        setSuspendTableVisible(preferences.getBoolean(FiltersDescriptor.SHOW_SUSPEND_TABLE, true));
         
         // [TODO] do not hardcode component sizes
     }
@@ -167,8 +178,6 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         sessionComboBox = new javax.swing.JComboBox();
         mainScrollPane = new javax.swing.JScrollPane();
         mainPanel = new javax.swing.JPanel();
-        leftPanel = new javax.swing.JPanel();
-        rightPanel = new javax.swing.JPanel();
         scrollBarPanel = new javax.swing.JPanel();
         treeScrollBar = new javax.swing.JScrollBar();
         leftPanel1 = new javax.swing.JPanel();
@@ -186,17 +195,6 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         mainScrollPane.setPreferredSize(new java.awt.Dimension(32, 10));
 
         mainPanel.setLayout(new java.awt.BorderLayout());
-
-        leftPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("Tree.background"));
-        leftPanel.setPreferredSize(new java.awt.Dimension(8, 0));
-        leftPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 0, 0));
-        mainPanel.add(leftPanel, java.awt.BorderLayout.WEST);
-
-        rightPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("Tree.background"));
-        rightPanel.setPreferredSize(new java.awt.Dimension(24, 0));
-        rightPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 0));
-        mainPanel.add(rightPanel, java.awt.BorderLayout.EAST);
-
         mainScrollPane.setViewportView(mainPanel);
 
         add(mainScrollPane, java.awt.BorderLayout.CENTER);
@@ -222,11 +220,9 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JPanel leftPanel;
     private javax.swing.JPanel leftPanel1;
     private javax.swing.JPanel mainPanel;
     private javax.swing.JScrollPane mainScrollPane;
-    private javax.swing.JPanel rightPanel;
     private javax.swing.JPanel rightPanel1;
     private javax.swing.JPanel scrollBarPanel;
     private javax.swing.JComboBox sessionComboBox;

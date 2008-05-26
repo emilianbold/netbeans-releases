@@ -39,73 +39,39 @@
 
 package org.netbeans.modules.debugger.jpda.ui.debugging;
 
-import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Graphics;
-import java.awt.Rectangle;
 import javax.swing.JPanel;
+import javax.swing.event.TreeExpansionEvent;
+import javax.swing.event.TreeExpansionListener;
 
 /**
  *
  * @author Dan
  */
-public class ZebraPanel extends JPanel {
+public class ZebraPanel extends JPanel implements TreeExpansionListener {
     
-    private int thickness;
-    private int stripesCount;
+    private DebugTreeView treeView;
     
-    ZebraPanel(int thickness, int stripesCount) {
-        this.thickness = thickness;
-        this.stripesCount = stripesCount; // [TODO] not used yet
+    ZebraPanel(DebugTreeView treeView, int width) {
+        this.treeView = treeView;
+        setLayout(new FlowLayout());
+        setPreferredSize(new Dimension(width, 0));
     }
     
     @Override
     protected void paintComponent(Graphics g) {
-        
-        //super.paintComponent(g);
-        
-        int width = getWidth();
-        int height = getHeight();
-        
-        if ((width <= 0) || (height <= 0)) {
-            return;
-        }
+        super.paintComponent(g);
+        treeView.paintStripes(g, this);
+    }
 
-        Rectangle clipRect = g.getClipBounds();
-        int clipX;
-        int clipY;
-        int clipW;
-        int clipH;
-        if (clipRect == null) {
-            clipX = clipY = 0;
-            clipW = width;
-            clipH = height;
-        }
-        else {
-            clipX = clipRect.x;
-            clipY = clipRect.y;
-            clipW = clipRect.width;
-            clipH = clipRect.height;
-        }
+    public void treeExpanded(TreeExpansionEvent event) {
+        repaint();
+    }
 
-        if(clipW > width) {
-            clipW = width;
-        }
-        if(clipH > height) {
-            clipH = height;
-        }
-
-        Color origColor = g.getColor();
-        int sy = (clipY / thickness) * thickness;
-        boolean isWhite = (clipY / thickness) % 2 == 0;
-        while (sy < clipY + clipH - 1) {
-            int y1 = Math.max(sy, clipY);
-            int y2 = Math.min(clipY + clipH, y1 + thickness) ;
-            g.setColor(isWhite ? Color.WHITE : Color.LIGHT_GRAY);
-            isWhite = !isWhite;
-            g.fillRect(clipX, y1, clipW, y2 - y1);
-            sy += thickness;
-        }
-        g.setColor(origColor);
+    public void treeCollapsed(TreeExpansionEvent event) {
+        repaint();
     }
     
 }

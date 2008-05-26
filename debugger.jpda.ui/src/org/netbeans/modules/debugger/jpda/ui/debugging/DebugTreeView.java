@@ -40,18 +40,18 @@
 package org.netbeans.modules.debugger.jpda.ui.debugging;
 
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
+import javax.swing.JComponent;
 import javax.swing.JTree;
-import javax.swing.Renderer;
+import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
-import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreePath;
 
-import org.netbeans.spi.viewmodel.Models.TreeFeatures;
 import org.netbeans.spi.viewmodel.TreeExpansionModel;
 
 import org.openide.explorer.view.BeanTreeView;
@@ -60,9 +60,11 @@ import org.openide.explorer.view.BeanTreeView;
  *
  * @author Dan
  */
-public class DebugTreeView extends BeanTreeView implements TreeCellRenderer {
+public class DebugTreeView extends BeanTreeView implements TreeExpansionListener {
 
-    private TreeCellRenderer origCellRenderer;
+    private int thickness = 18; // [TODO] compute thickness
+    private Color zebraColor = new Color(234, 234, 250);
+    private Color whiteColor = javax.swing.UIManager.getDefaults().getColor("Tree.background"); // NOI18N
     
     DebugTreeView() {
         super();
@@ -70,11 +72,8 @@ public class DebugTreeView extends BeanTreeView implements TreeCellRenderer {
         tree.setMinimumSize(new Dimension(5, 5));
         setPreferredSize(new Dimension(5, 5));
         setMinimumSize(new Dimension(5, 5));
-//        tree.setOpaque(true);
-//        setOpaque(true);
-        
-        origCellRenderer = tree.getCellRenderer();
-        // tree.setCellRenderer(this);
+        tree.setOpaque(false);
+        ((JComponent)tree.getParent()).setOpaque(false);
     }
     
     public JTree getTree() {
@@ -105,9 +104,70 @@ public class DebugTreeView extends BeanTreeView implements TreeCellRenderer {
     }
 
     void setExpansionModel(TreeExpansionModel model) {
-        
+        // [TODO] ???
     }
 
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        paintStripes(g, this);
+    }
+
+    void paintStripes(Graphics g, JComponent comp) {
+        List<TreePath> paths = getVisiblePaths();
+        int linesNumber = paths.size();
+        int zebraHeight = linesNumber * thickness;
+        
+        int width = getWidth();
+        int height = getHeight();
+        
+        if ((width <= 0) || (height <= 0)) {
+            return;
+        }
+
+        Rectangle clipRect = g.getClipBounds();
+        int clipX;
+        int clipY;
+        int clipW;
+        int clipH;
+        if (clipRect == null) {
+            clipX = clipY = 0;
+            clipW = width;
+            clipH = height;
+        }
+        else {
+            clipX = clipRect.x;
+            clipY = clipRect.y;
+            clipW = clipRect.width;
+            clipH = clipRect.height;
+        }
+
+        if(clipW > width) {
+            clipW = width;
+        }
+        if(clipH > height) {
+            clipH = height;
+        }
+
+        Color origColor = g.getColor();
+        int sy = (clipY / thickness) * thickness;
+        boolean isWhite = (clipY / thickness) % 2 == 0;
+        int limit = Math.min(clipY + clipH - 1, zebraHeight);
+        while (sy < limit) {
+            int y1 = Math.max(sy, clipY);
+            int y2 = Math.min(clipY + clipH, y1 + thickness) ;
+            g.setColor(isWhite ? whiteColor : zebraColor);
+            isWhite = !isWhite;
+            g.fillRect(clipX, y1, clipW, y2 - y1);
+            sy += thickness;
+        }
+        if (sy < clipY + clipH - 1) {
+            g.setColor(whiteColor);
+            g.fillRect(clipX, sy, clipW, clipH + clipY - sy);
+        }
+        g.setColor(origColor);
+    }
+    
     private void collectVisiblePaths(List<TreePath> result, TreePath path) {
         result.add(path);
         Enumeration<TreePath> paths = tree.getExpandedDescendants(path);
@@ -119,14 +179,12 @@ public class DebugTreeView extends BeanTreeView implements TreeCellRenderer {
         }
     }
 
-    public Component getTreeCellRendererComponent(JTree tree, Object value,
-            boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
-        Component comp = origCellRenderer.getTreeCellRendererComponent(
-                tree, value, selected, expanded, leaf, row, hasFocus);
-        if (row % 2 == 0 && comp instanceof Renderer) {
-            comp.setBackground(Color.LIGHT_GRAY);
-        }
-        return comp;
+    public void treeExpanded(TreeExpansionEvent event) {
+        repaint();
+    }
+
+    public void treeCollapsed(TreeExpansionEvent event) {
+        repaint();
     }
     
 }
