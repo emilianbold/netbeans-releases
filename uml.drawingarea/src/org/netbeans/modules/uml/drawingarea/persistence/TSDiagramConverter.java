@@ -1023,6 +1023,7 @@ public class TSDiagramConverter
                     break;
                 case 13:
                     //derivation specification
+                    typeInfo=AbstractLabelManager.BINDING;
                     break;
                 case 4:
                     //target association name
@@ -1038,6 +1039,7 @@ public class TSDiagramConverter
                     break;
                 case 10:
                     //guard condition(activity)
+                    typeInfo=AbstractLabelManager.GUARD_CONDITION;
                     break;
                 case 16:
                     //pre consition(state)
