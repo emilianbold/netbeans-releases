@@ -60,10 +60,10 @@ import org.openide.util.NbBundle;
  * @author ads
  *
  */
-class LibNameAndLocationPanel implements Panel, FinishablePanel,
+class ComponentPresentersWizardPanel implements Panel, FinishablePanel,
         ValidatingPanel
 {
-    LibNameAndLocationPanel() {
+    ComponentPresentersWizardPanel() {
         myListeners = new CopyOnWriteArrayList<ChangeListener>();   
     }
     
@@ -72,10 +72,10 @@ class LibNameAndLocationPanel implements Panel, FinishablePanel,
      */
     public Component getComponent() {
         if (myComponent == null) {
-            myComponent = new NameAndLocationVisualPanel( this );
+            myComponent = new ComponentPresentersVisualPanel( this );
             myComponent.setName(
-                    NbBundle.getMessage(NewLibraryDescriptor.class, 
-                            NewLibraryDescriptor.NAME_LOCATION_STEP));
+                    NbBundle.getMessage(NewComponentDescriptor.class, 
+                            NewComponentDescriptor.PRESENTERS_STEP));
         }
         return myComponent;    
     }
@@ -84,7 +84,7 @@ class LibNameAndLocationPanel implements Panel, FinishablePanel,
      * @see org.openide.WizardDescriptor.Panel#getHelp()
      */
     public HelpCtx getHelp() {
-        return new HelpCtx( LibNameAndLocationPanel.class);
+        return new HelpCtx( ComponentPresentersWizardPanel.class);
     }
 
     /* (non-Javadoc)
@@ -159,8 +159,7 @@ class LibNameAndLocationPanel implements Panel, FinishablePanel,
     }
     
     private List<ChangeListener> myListeners; 
-    private WizardDescriptor myWizardDescriptor;
-    private NameAndLocationVisualPanel myComponent;
+    private ComponentPresentersVisualPanel myComponent;
     private boolean myValid = true;
 
 }

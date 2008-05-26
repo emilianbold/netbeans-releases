@@ -60,46 +60,31 @@ import org.openide.util.NbBundle;
  * @author ads
  *
  */
-class BasicModuleConfWizardPanel implements Panel, ValidatingPanel,
-        FinishablePanel
+class ComponentProducerWizardPanel implements Panel, FinishablePanel,
+        ValidatingPanel
 {
-
-    BasicModuleConfWizardPanel() {
-        myListeners = new CopyOnWriteArrayList<ChangeListener>();
+    ComponentProducerWizardPanel() {
+        myListeners = new CopyOnWriteArrayList<ChangeListener>();   
     }
     
-    /* (non-Javadoc)
-     * @see org.openide.WizardDescriptor.Panel#addChangeListener(javax.swing.event.ChangeListener)
-     */
-    public void addChangeListener( ChangeListener listener ) {
-        myListeners.add( listener );
-    }
-
-    /* (non-Javadoc)
-     * @see org.openide.WizardDescriptor.Panel#removeChangeListener(javax.swing.event.ChangeListener)
-     */
-    public void removeChangeListener( ChangeListener listener ) {
-        myListeners.remove( listener );
-    }
-
     /* (non-Javadoc)
      * @see org.openide.WizardDescriptor.Panel#getComponent()
      */
     public Component getComponent() {
         if (myComponent == null) {
-            myComponent = new BasicModuleConfVisualPanel( this );
+            myComponent = new ComponentProducerVisualPanel( this );
             myComponent.setName(
-                    NbBundle.getMessage(BasicModuleConfWizardPanel.class, 
-                    CustomComponentWizardIterator.FINAL_STEP));
+                    NbBundle.getMessage(NewComponentDescriptor.class, 
+                            NewComponentDescriptor.COMPONENT_PRODUCER_STEP));
         }
-        return myComponent;
+        return myComponent;    
     }
 
     /* (non-Javadoc)
      * @see org.openide.WizardDescriptor.Panel#getHelp()
      */
     public HelpCtx getHelp() {
-        return new HelpCtx(BasicModuleConfWizardPanel.class);
+        return new HelpCtx( ComponentProducerWizardPanel.class);
     }
 
     /* (non-Javadoc)
@@ -132,16 +117,37 @@ class BasicModuleConfWizardPanel implements Panel, ValidatingPanel,
      * @see org.openide.WizardDescriptor.Panel#readSettings(java.lang.Object)
      */
     public void readSettings( Object settings ) {
-        WizardDescriptor descriptor = (WizardDescriptor) settings;
-        myComponent.refreshData( descriptor );
+        WizardDescriptor descriptor = (WizardDescriptor)settings;
+        myComponent.readData( descriptor );
+    }
+
+    /* (non-Javadoc)
+     * @see org.openide.WizardDescriptor.Panel#removeChangeListener(javax.swing.event.ChangeListener)
+     */
+    public void removeChangeListener( ChangeListener listener ) {
+        myListeners.remove( listener );
+    }
+    
+    /* (non-Javadoc)
+     * @see org.openide.WizardDescriptor.Panel#addChangeListener(javax.swing.event.ChangeListener)
+     */
+    public void addChangeListener( ChangeListener listener ) {
+        myListeners.add( listener );
     }
 
     /* (non-Javadoc)
      * @see org.openide.WizardDescriptor.Panel#storeSettings(java.lang.Object)
      */
     public void storeSettings( Object settings ) {
-        WizardDescriptor descriptor = (WizardDescriptor) settings;
-        myComponent.storeData(descriptor);
+        WizardDescriptor descriptor = (WizardDescriptor)settings;
+        myComponent.storeData( descriptor );
+    }
+
+    /* (non-Javadoc)
+     * @see org.openide.WizardDescriptor.FinishablePanel#isFinishPanel()
+     */
+    public boolean isFinishPanel() {
+        return true;
     }
 
     /* (non-Javadoc)
@@ -151,18 +157,9 @@ class BasicModuleConfWizardPanel implements Panel, ValidatingPanel,
         // TODO Auto-generated method stub
 
     }
-
-    /* (non-Javadoc)
-     * @see org.openide.WizardDescriptor.FinishablePanel#isFinishPanel()
-     */
-    public boolean isFinishPanel() {
-        return true;
-    }
-    
     
     private List<ChangeListener> myListeners; 
-    private WizardDescriptor myWizardDescriptor;
-    private BasicModuleConfVisualPanel myComponent;
+    private ComponentProducerVisualPanel myComponent;
     private boolean myValid = true;
 
 }

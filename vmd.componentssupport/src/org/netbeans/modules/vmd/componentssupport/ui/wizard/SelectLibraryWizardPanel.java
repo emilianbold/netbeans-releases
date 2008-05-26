@@ -48,10 +48,9 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import org.openide.WizardDescriptor;
-import org.openide.WizardValidationException;
-import org.openide.WizardDescriptor.FinishablePanel;
 import org.openide.WizardDescriptor.Panel;
 import org.openide.WizardDescriptor.ValidatingPanel;
+import org.openide.WizardValidationException;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -60,14 +59,12 @@ import org.openide.util.NbBundle;
  * @author ads
  *
  */
-class BasicModuleConfWizardPanel implements Panel, ValidatingPanel,
-        FinishablePanel
-{
-
-    BasicModuleConfWizardPanel() {
-        myListeners = new CopyOnWriteArrayList<ChangeListener>();
+class SelectLibraryWizardPanel implements Panel, ValidatingPanel {
+        
+    public SelectLibraryWizardPanel() {
+        myListeners = new CopyOnWriteArrayList<ChangeListener>();    
     }
-    
+
     /* (non-Javadoc)
      * @see org.openide.WizardDescriptor.Panel#addChangeListener(javax.swing.event.ChangeListener)
      */
@@ -80,33 +77,6 @@ class BasicModuleConfWizardPanel implements Panel, ValidatingPanel,
      */
     public void removeChangeListener( ChangeListener listener ) {
         myListeners.remove( listener );
-    }
-
-    /* (non-Javadoc)
-     * @see org.openide.WizardDescriptor.Panel#getComponent()
-     */
-    public Component getComponent() {
-        if (myComponent == null) {
-            myComponent = new BasicModuleConfVisualPanel( this );
-            myComponent.setName(
-                    NbBundle.getMessage(BasicModuleConfWizardPanel.class, 
-                    CustomComponentWizardIterator.FINAL_STEP));
-        }
-        return myComponent;
-    }
-
-    /* (non-Javadoc)
-     * @see org.openide.WizardDescriptor.Panel#getHelp()
-     */
-    public HelpCtx getHelp() {
-        return new HelpCtx(BasicModuleConfWizardPanel.class);
-    }
-
-    /* (non-Javadoc)
-     * @see org.openide.WizardDescriptor.Panel#isValid()
-     */
-    public boolean isValid() {
-        return myValid;
     }
 
     protected void setValid(boolean nueValid) {
@@ -129,19 +99,46 @@ class BasicModuleConfWizardPanel implements Panel, ValidatingPanel,
     }
     
     /* (non-Javadoc)
+     * @see org.openide.WizardDescriptor.Panel#getComponent()
+     */
+    public Component getComponent() {
+        if (myComponent == null) {
+            myComponent = new SelectLibraryVisualPanel( this );
+            myComponent.setName(
+                    NbBundle.getMessage(NewLibraryDescriptor.class, 
+                            NewLibraryDescriptor.LIBRARY_STEP));
+        }
+        return myComponent;
+    }
+
+    /* (non-Javadoc)
+     * @see org.openide.WizardDescriptor.Panel#getHelp()
+     */
+    public HelpCtx getHelp() {
+        return new HelpCtx(SelectLibraryWizardPanel.class);
+    }
+
+    /* (non-Javadoc)
+     * @see org.openide.WizardDescriptor.Panel#isValid()
+     */
+    public boolean isValid() {
+        // TODO this is not updated correctly
+        return myValid;
+    }
+
+    /* (non-Javadoc)
      * @see org.openide.WizardDescriptor.Panel#readSettings(java.lang.Object)
      */
     public void readSettings( Object settings ) {
-        WizardDescriptor descriptor = (WizardDescriptor) settings;
-        myComponent.refreshData( descriptor );
+        WizardDescriptor desc = (WizardDescriptor) settings;
+        myComponent.readData( desc );
     }
 
     /* (non-Javadoc)
      * @see org.openide.WizardDescriptor.Panel#storeSettings(java.lang.Object)
      */
     public void storeSettings( Object settings ) {
-        WizardDescriptor descriptor = (WizardDescriptor) settings;
-        myComponent.storeData(descriptor);
+        myComponent.storeData();
     }
 
     /* (non-Javadoc)
@@ -151,18 +148,10 @@ class BasicModuleConfWizardPanel implements Panel, ValidatingPanel,
         // TODO Auto-generated method stub
 
     }
-
-    /* (non-Javadoc)
-     * @see org.openide.WizardDescriptor.FinishablePanel#isFinishPanel()
-     */
-    public boolean isFinishPanel() {
-        return true;
-    }
-    
     
     private List<ChangeListener> myListeners; 
     private WizardDescriptor myWizardDescriptor;
-    private BasicModuleConfVisualPanel myComponent;
+    private SelectLibraryVisualPanel myComponent;
     private boolean myValid = true;
 
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,68 +34,36 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.callgraph.cndimpl;
-
-import org.netbeans.modules.cnd.api.model.CsmFunction;
-import org.netbeans.modules.cnd.api.model.xref.CsmReference;
-import org.netbeans.modules.cnd.callgraph.api.Call;
-import org.netbeans.modules.cnd.callgraph.api.Function;
-import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+package org.netbeans.modules.vmd.componentssupport.ui;
 
 /**
  *
- * @author Alexander Simon
+ * @author avk
  */
-public class CallImpl implements Call {
+public class UIUtils {
 
-    private Function owner;
-    private CsmReference reference;
-    private Function function;
-    private boolean nameOrder;
+    /**
+     * Returns a string suitable for text areas respresenting content of {@link
+     * CreatedModifiedFiles} <em>paths</em>.
+     *
+     * @param relPaths should be either
+     *        {@link CreatedModifiedFiles#getCreatedPaths()} or
+     *        {@link CreatedModifiedFiles#getModifiedPaths()}.
+     */
+    public static String generateTextAreaContent(String[] relPaths) {
+        StringBuffer sb = new StringBuffer();
+        if (relPaths.length > 0) {
+            for (int i = 0; i < relPaths.length; i++) {
+                if (i > 0) {
+                    sb.append('\n'); // NOI18N
+                }
+                sb.append(relPaths[i]);
+            }
+        }
+        return sb.toString();
+    }
     
-    public CallImpl(CsmFunction owner, CsmReference reference, CsmFunction function, boolean nameOrder){
-        this.owner = new FunctionImpl(owner);
-        this.reference = reference;
-        this.function = new FunctionImpl(function);
-        this.nameOrder = nameOrder;
-    }
-
-    public Object getReferencedCall() {
-        return reference;
-    }
-
-    public void open() {
-        CsmUtilities.openSource(reference);
-    }
-
-    public Function getCallee() {
-        return function;
-    }
-
-    public Function getCaller() {
-        return owner;
-    }
-
-    public int compareTo(Call o) {
-        if (nameOrder) {
-            return getCaller().getName().compareTo(o.getCaller().getName());
-        }
-        int diff = reference.getStartOffset() - ((CallImpl)o).reference.getStartOffset();
-        if (diff == 0) {
-             return getCallee().getName().compareTo(o.getCallee().getName());
-       }
-        return diff;
-    }
-
-    @Override
-    public String toString() {
-        if (nameOrder) {
-            return getCallee().getName()+"<-"+getCaller().getName();
-        } else {
-            return getCaller().getName()+"->"+getCallee().getName();
-        }
-    }
 }

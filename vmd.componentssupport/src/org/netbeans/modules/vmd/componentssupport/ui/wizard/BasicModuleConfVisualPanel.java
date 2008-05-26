@@ -56,7 +56,7 @@ import org.openide.util.Utilities;
  *
  * @author ads
  */
-final class BasicConfVisualPanel extends JPanel {
+final class BasicModuleConfVisualPanel extends JPanel {
 
     private static final String BASIC_CONF_ERR_PREFIX 
                                               = "BasicConfVisualPanel_err_";// NOI18N 
@@ -83,7 +83,7 @@ final class BasicConfVisualPanel extends JPanel {
     
     // TODO should perform all checks together on any change. current code (copied)
     // allows incorrect behavior in some cases.
-    public BasicConfVisualPanel( BasicModuleConfWizardPanel panel) {
+    public BasicModuleConfVisualPanel( BasicModuleConfWizardPanel panel) {
         myPanel = panel;
         initComponents();
         initAccessibility();
@@ -214,17 +214,17 @@ final class BasicConfVisualPanel extends JPanel {
     /** Used for Layer and Bundle entries. */
     private void checkEntry(String path, String resName, String extension) {
         if (path.length() == 0) {
-            setError(NbBundle.getMessage(BasicConfVisualPanel.class, 
+            setError(NbBundle.getMessage(BasicModuleConfVisualPanel.class, 
                     BASIC_CONF_ERR_PREFIX + resName + "_empty"));
             return;
         }
         if (path.indexOf('/') == -1) {
-            setError(NbBundle.getMessage(BasicConfVisualPanel.class, 
+            setError(NbBundle.getMessage(BasicModuleConfVisualPanel.class, 
                     BASIC_CONF_ERR_PREFIX + resName + "_def_pkg"));
             return;
         }
         if (!path.endsWith(extension)) {
-            setError(NbBundle.getMessage(BasicConfVisualPanel.class, 
+            setError(NbBundle.getMessage(BasicModuleConfVisualPanel.class, 
                     BASIC_CONF_ERR_PREFIX + resName + "_ext", extension));
             return;
         }
@@ -346,7 +346,7 @@ final class BasicConfVisualPanel extends JPanel {
     }
     
     private static String getMessage(String key) {
-        return NbBundle.getMessage(BasicConfVisualPanel.class, key);
+        return NbBundle.getMessage(BasicModuleConfVisualPanel.class, key);
     }
     
     /** This method is called from within the constructor to
@@ -374,14 +374,14 @@ final class BasicConfVisualPanel extends JPanel {
         confPanel.setLayout(new java.awt.GridBagLayout());
 
         codeNameBase.setLabelFor(codeNameBaseValue);
-        org.openide.awt.Mnemonics.setLocalizedText(codeNameBase, org.openide.util.NbBundle.getMessage(BasicConfVisualPanel.class, "LBL_CodeNameBase")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(codeNameBase, org.openide.util.NbBundle.getMessage(BasicModuleConfVisualPanel.class, "LBL_CodeNameBase")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(1, 0, 6, 12);
         confPanel.add(codeNameBase, gridBagConstraints);
 
         displayName.setLabelFor(displayNameValue);
-        org.openide.awt.Mnemonics.setLocalizedText(displayName, org.openide.util.NbBundle.getMessage(BasicConfVisualPanel.class, "LBL_ModuleDisplayName")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(displayName, org.openide.util.NbBundle.getMessage(BasicModuleConfVisualPanel.class, "LBL_ModuleDisplayName")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -390,7 +390,7 @@ final class BasicConfVisualPanel extends JPanel {
         confPanel.add(displayName, gridBagConstraints);
 
         bundle.setLabelFor(bundleValue);
-        org.openide.awt.Mnemonics.setLocalizedText(bundle, org.openide.util.NbBundle.getMessage(BasicConfVisualPanel.class, "LBL_LocalizingBundle")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(bundle, org.openide.util.NbBundle.getMessage(BasicModuleConfVisualPanel.class, "LBL_LocalizingBundle")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -399,7 +399,7 @@ final class BasicConfVisualPanel extends JPanel {
         confPanel.add(bundle, gridBagConstraints);
 
         layer.setLabelFor(layerValue);
-        org.openide.awt.Mnemonics.setLocalizedText(layer, org.openide.util.NbBundle.getMessage(BasicConfVisualPanel.class, "LBL_XMLLayer")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(layer, org.openide.util.NbBundle.getMessage(BasicModuleConfVisualPanel.class, "LBL_XMLLayer")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
