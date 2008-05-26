@@ -55,6 +55,8 @@ import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.concurrent.Callable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
@@ -86,6 +88,7 @@ import org.netbeans.editor.ext.ExtSettingsNames;
 import org.netbeans.modules.editor.codegen.NbGenerateCodeAction;
 import org.netbeans.modules.editor.impl.ActionsList;
 import org.netbeans.modules.editor.impl.CustomizableSideBar;
+import org.netbeans.modules.editor.impl.EditorActionsProvider;
 import org.netbeans.modules.editor.impl.SearchBar;
 import org.netbeans.modules.editor.impl.PopupMenuActionsProvider;
 import org.netbeans.modules.editor.impl.ToolbarActionsProvider;
@@ -115,6 +118,8 @@ import org.openide.util.NbBundle;
 
 public class NbEditorKit extends ExtKit implements Callable {
 
+    private static final Logger LOG = Logger.getLogger(NbEditorKit.class.getName());
+    
     /** Action property that stores the name of the corresponding nb-system-action */
     public static final String SYSTEM_ACTION_CLASS_NAME_PROPERTY = "systemActionClassName"; // NOI18N
 
@@ -202,6 +207,28 @@ public class NbEditorKit extends ExtKit implements Callable {
         return TextAction.augmentList(super.createActions(), nbEditorActions);
     }
 
+    protected @Override Action[] getCustomActions() {
+        List<Action> actions = EditorActionsProvider.getEditorActions(getContentType());
+        
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("Custom layer actions for '" + getContentType() + "' {"); //NOI18N
+            for(Action a : actions) {
+                LOG.fine("    " + a); //NOI18N
+            }
+            LOG.fine("} End of custom layer actions for '" + getContentType() + "'"); //NOI18N
+        }
+        
+        if (!actions.isEmpty()) {
+            Action [] superActions = super.getCustomActions();
+            if (superActions == null || superActions.length == 0) {
+                return actions.toArray(new Action[actions.size()]);
+            } else {
+                return TextAction.augmentList(superActions, actions.toArray(new Action[actions.size()]));
+            }
+        } else {
+            return super.getCustomActions();
+        }
+    }
         
     protected void addSystemActionMapping(String editorActionName, Class systemActionClass) {
         Action a = getActionByName(editorActionName);

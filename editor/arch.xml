@@ -925,6 +925,26 @@ No.
             </pre>
         </li>
 
+        <li>
+            <p>
+            <b>Since version 1.39</b> the editor actions, ie the actions that are installed
+            to every JEditorPane that acts as a Netbeans editor,
+            can be registered in the <code>Actions</code> subfolder.
+            </p>
+            
+            <pre>
+&lt;folder name="Editors"&gt;
+  &lt;folder name="text"&gt;
+    &lt;folder name="x-java"&gt;
+      &lt;folder name="Actions"&gt;
+        &lt;file name="org-netbeans-modules-java-editor-imports-FastImportAction.instance" /&gt;
+      &lt;/folder&gt;
+    &lt;/folder&gt;
+  &lt;/folder&gt;
+&lt;/folder&gt;
+            </pre>
+        </li>
+            
         <li>Side bar components can be registered in the <code>SideBar</code> subfolder.
             Their appearance can be specified using two optional attributes - <code>location</code>
 	    (accepting values <code>"North"</code>, <code>"South"</code>, <code>"East"</code> and
