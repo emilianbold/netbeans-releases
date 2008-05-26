@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,47 +31,48 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.css.gsf;
 
-/*
- * File CustomizingPropertiesFile.java
- *
- * Created on 19. brezen 2002, 14:50
- *
- * Description :
- *
- * This class is userd for starting test suite in IDE. Test have been
- * writed in Jelly2 ( see testtools.netbeans.org )
- *
- */
-
-package org.netbeans.i18n.test;
-
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.modules.css.editor.Css;
+import org.netbeans.modules.css.parser.SimpleNode;
+import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.ParserResult;
+import org.netbeans.modules.gsf.api.TranslatedSource;
 
 /**
  *
- * @author  Petr Felenda - QA Engineer ( petr.felenda@sun.com )
+ * @author marekfukala
  */
-public class InternationalizeSuite {
+public class CssAstElement extends CSSElement {
 
-    /** Creates a new instance of EditingFileSuite class */
-    public InternationalizeSuite() {
-    }
+    private CompilationInfo ci;
+    private SimpleNode node;
 
-    /** Return test suite */
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.setName("Internationalize");
-        suite.addTest(new org.netbeans.i18n.test.internationalize.Internationalize());
-        return suite;
+    public static CssAstElement getElement(CompilationInfo ci, SimpleNode node) {
+        return new CssAstElement(ci, node);
     }
     
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String[] args) {
-        junit.textui.TestRunner.run(suite());
+    CssAstElement(CompilationInfo ci, SimpleNode node) {
+        super(node.image());
+        this.ci = ci;
+        this.node = node;
     }
-    
+
+    public SimpleNode node() {
+        return node;
+    }
+
+    public CompilationInfo compilationInfo() {
+        return ci;
+    }
+
+    public TranslatedSource translatedSource() {
+        ParserResult presult = ci.getEmbeddedResults(Css.CSS_MIME_TYPE).iterator().next();
+        return presult.getTranslatedSource();
+    }
 }

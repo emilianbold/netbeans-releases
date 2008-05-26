@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -37,75 +37,48 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.css.gsf;
+package lib;
 
-import java.util.Collections;
-import java.util.Set;
-import org.netbeans.modules.css.editor.Css;
-import org.netbeans.modules.css.parser.SimpleNode;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.ElementHandle;
-import org.netbeans.modules.gsf.api.ElementKind;
-import org.netbeans.modules.gsf.api.Modifier;
-import org.openide.filesystems.FileObject;
+import java.io.File;
+import org.netbeans.jellytools.JellyTestCase;
+import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.nodes.ProjectRootNode;
+import org.netbeans.junit.ide.ProjectSupport;
 
 /**
  *
- * @author marek
+ * @author Jana Maleckova
  */
-public class CssElementHandle implements ElementHandle {
+public class InternationalizationTestCase extends JellyTestCase {
 
-    private String selectorListText;
-    private int elementAstStartOffset, elementAstEndOffset;
-    private CompilationInfo ci;
+    //Variables
+    public String DEFAULT_PROJECT_NAME = "ProjectI18n";
+    public ProjectsTabOperator pto;
     
-    CssElementHandle(SimpleNode ruleNode, SimpleNode selectorListNode, CompilationInfo ci) {
-        this.ci = ci;
-        this.selectorListText = selectorListNode.image();
-        this.elementAstStartOffset = ruleNode.startOffset();
-        this.elementAstEndOffset = ruleNode.endOffset();
+    /** This constructor only creates operator's object and then does nothing. */
+    public InternationalizationTestCase(String testMethodName) {
+        super(testMethodName);
     }
     
-    public FileObject getFileObject() {
-        return ci.getFileObject();
+    public void openProject(String projectName){
+        this.DEFAULT_PROJECT_NAME = projectName;
+        File projectPath = new File(this.getDataDir() + "/projects/" + projectName);
+        
+        //Check if project is not already opened
+        pto.invoke();
+        int nodeCount = pto.tree().getChildCount(pto.tree());
+        for (int i = 0; i <= nodeCount; i++) {
+            String testNode = pto.tree().getChild(pto.tree(), i).toString();
+            if (testNode.equals(projectName)) {
+                log("project " + projectName + "has been already opened but should not be");
+                return;
+            }
+        }
+        
+        //Open project
+        Object prj = ProjectSupport.openProject(projectName);
+        log("Project "+ projectName + "was opened");
+        
     }
 
-    public String getMimeType() {
-        return Css.CSS_MIME_TYPE;
-    }
-
-    public String getName() {
-        return selectorListText;
-    }
-
-    //XXX what's that????
-    public String getIn() {
-        return null;
-    }
-
-    public ElementKind getKind() {
-        return ElementKind.FIELD;
-    }
-
-    public Set<Modifier> getModifiers() {
-        return Collections.emptySet();
-    }
-
-    public boolean signatureEquals(ElementHandle handle) {
-        //TODO implement
-        return false;
-    }
-
-    public int elementAstStartOffset() {
-        return elementAstStartOffset;
-    }
-    
-    public int elementAstEndOffset() {
-        return elementAstEndOffset;
-    }
-    
-    public CompilationInfo compilationInfo() {
-        return ci;
-    }
-    
 }
