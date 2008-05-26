@@ -87,6 +87,8 @@ public class CompilationInfo {
     private TreeUtilities treeUtilities;
     //@GuarderBy(this)
     private TypeUtilities typeUtilities;
+    //@NotThreadSafe
+    private JavaSource javaSource;
     
     
     CompilationInfo (final CompilationInfoImpl impl)  {
@@ -262,8 +264,11 @@ public class CompilationInfo {
      */
     public JavaSource getJavaSource() {
         checkConfinement();
-        //todo: fixme
-        throw new UnsupportedOperationException("Not yet supported");
+        return javaSource;
+    }
+    
+    void setJavaSource (final JavaSource javaSource) {
+        this.javaSource = javaSource;
     }
     
     /**
