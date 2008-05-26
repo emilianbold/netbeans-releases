@@ -73,10 +73,6 @@ import org.openide.util.NbBundle;
  */
 public class MessageLabelManager extends AbstractLabelManager
 {
-    public static final String NAME = "Name"; //NOI18N
-    public static final String OPERATION = "Operation"; //NOI18N
-    public static final String NUMBER = "Number"; //NOI18N
-    
     public MessageLabelManager(MessageWidget widget)
     {
         super(widget);
@@ -101,7 +97,6 @@ public class MessageLabelManager extends AbstractLabelManager
             {
                 createOperationMessageLabel(msgE, false);
             }
-            createNumberMessageLabel(msgE, false);
         }
     }
 
@@ -281,18 +276,13 @@ public class MessageLabelManager extends AbstractLabelManager
             showLabel(OPERATION);
         }
     }
-    private void createNumberMessageLabel(IMessage msg, boolean assignDefaultName)
-    {
-        showLabel(NUMBER);
-    }
-
     
     @Override
     public void showLabel(String name, LabelType type)
     {
          super.showLabel(name, type);
-         if(!NAME.equals(name) && !NUMBER.equals(name))hideLabel(NAME);
-         if(!OPERATION.equals(name) && !NUMBER.equals(name))hideLabel(OPERATION);
+         if(!NAME.equals(name))hideLabel(NAME);
+         if(!OPERATION.equals(name))hideLabel(OPERATION);
     }
 
     

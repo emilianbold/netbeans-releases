@@ -90,6 +90,15 @@ public abstract class AbstractLabelManager implements LabelManager
      */
     public static final String NAME = "Name"; //NOI18N
     
+    public static final String OPERATION = "Operation"; //NOI18N
+    
+    public static final String BINDING = "Binding"; //NOI18N
+    
+    public static final String GUARD_CONDITION = "GuardCondition"; //NOI18N
+    
+    public static final String MULTIPLICITY = "Multiplicity"; //NOI18N
+    
+    public static final String END_NAME = "End Name"; //NOI18N
     
     /**
      * Creates an AbstractLabelManager and associates it to a connection 

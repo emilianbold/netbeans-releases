@@ -55,8 +55,6 @@ import org.netbeans.modules.uml.drawingarea.view.UMLLabelWidget;
  */
 public class DerivationLabelManager extends BasicUMLLabelManager
 {
-    private static final String BINDING = "Binding"; //NOI18N
-    
     public DerivationLabelManager(ConnectionWidget widget)
     {
         super(widget);

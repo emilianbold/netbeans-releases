@@ -69,8 +69,6 @@ import org.openide.util.NbBundle;
  */
 public class AssociationLabelManager extends BasicUMLLabelManager
 {
-    private static final String MULTIPLICITY = "Multiplicity"; //NOI18N
-    private static final String END_NAME = "End Name"; //NOI18N
     
     public AssociationLabelManager(AssociationConnector widget)
     {

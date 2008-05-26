@@ -64,7 +64,6 @@ import org.openide.util.NbBundle;
  */
 public class ActivityEdgeLabelManager extends BasicUMLLabelManager
 {
-    private static final String GUARD_CONDITION = "GuardCondition"; //NOI18N
     ResourceBundle bundle = NbBundle.getBundle(ActivityEdgeLabelManager.class);
 
     public ActivityEdgeLabelManager(ConnectionWidget widget)
