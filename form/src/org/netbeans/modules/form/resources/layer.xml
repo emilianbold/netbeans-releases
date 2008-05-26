@@ -63,6 +63,9 @@ made subject to such option by the copyright holder.
     <folder name="content">
         <folder name="unknown">
             <folder name="Factories">
+                <file name="org-netbeans-modules-form-FormDataLoader.instance">
+                    <attr name="position" intvalue="137"/>
+                </file>
                 <file name="org-netbeans-modules-form-palette-PaletteItemDataObject$PaletteItemDataLoader.instance">
                     <attr name="position" intvalue="50037"/>
                 </file>
