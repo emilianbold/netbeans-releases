@@ -96,7 +96,7 @@ public class ManifestHyperlinkProvider implements HyperlinkProviderExt {
     }
     
     private EditCookie getEditorCookie(Document doc, int offset) {
-        TokenHierarchy th = TokenHierarchy.get(doc);
+        TokenHierarchy<?> th = TokenHierarchy.get(doc);
         
         TokenSequence ts = th.tokenSequence(Language.find("text/x-manifest"));
         if (ts == null)
@@ -150,7 +150,7 @@ public class ManifestHyperlinkProvider implements HyperlinkProviderExt {
             return null;
         }
         
-        TokenHierarchy th = TokenHierarchy.get(doc);
+        TokenHierarchy<?> th = TokenHierarchy.get(doc);
         TokenSequence ts = th.tokenSequence(Language.find("text/x-manifest"));
         if (ts == null)
             return null;

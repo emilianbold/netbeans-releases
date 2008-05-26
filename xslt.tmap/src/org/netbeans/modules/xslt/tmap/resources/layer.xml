@@ -5,9 +5,16 @@
         <folder name="text">
             <folder name="x-tmap+xml">
                 <folder name="Actions">
-                    <file name="org-openide-actions-OpenAction.instance">
+                    <file name="org-openide-actions-EditAction.instance_hidden"/>
+                    <file name="org-netbeans-modules-xslt-tmap-multiview-TMapTreeViewOpenAction.instance">
                         <attr name="position" intvalue="100"/>
+                    </file>                 
+                    <file name="org-netbeans-modules-xslt-tmap-multiview-TMapSourceViewOpenAction.instance">
+                        <attr name="position" intvalue="150"/>
                     </file>
+                    <!--file name="org-openide-actions-OpenAction.instance">
+                        <attr name="position" intvalue="100"/>
+                    </file-->
                     <file name="sep-1a.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="200"/>

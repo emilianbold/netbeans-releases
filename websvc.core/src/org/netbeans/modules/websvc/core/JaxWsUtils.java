@@ -294,10 +294,10 @@ public class JaxWsUtils {
         //open in editor
 
         DataObject dobj = DataObject.find(implClassFo);
-        List<Service> services = jaxWsSupport.getServices();
+        List services = jaxWsSupport.getServices();
         if (serviceID != null) {
-            for (Service serv : services) {
-                if (serviceID.equals(serv.getName())) {
+            for (Object serv : services) {
+                if (serviceID.equals(((Service)serv).getName())) {
 
                     final EditCookie editCookie = dobj.getCookie(EditCookie.class);
                     if (editCookie != null) {

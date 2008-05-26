@@ -27,17 +27,17 @@
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" attributes="0">
                               <Group type="103" groupAlignment="1" attributes="0">
-                                  <Component id="keyAliasCombo" alignment="0" pref="218" max="32767" attributes="1"/>
-                                  <Component id="storePasswordField" alignment="1" pref="218" max="32767" attributes="1"/>
+                                  <Component id="keyAliasCombo" alignment="0" pref="164" max="32767" attributes="1"/>
+                                  <Component id="storePasswordField" alignment="1" pref="164" max="32767" attributes="1"/>
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="loadkeysButton" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace pref="137" max="32767" attributes="0"/>
+                              <EmptySpace pref="84" max="32767" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="1" attributes="0">
                               <Group type="103" groupAlignment="1" attributes="0">
-                                  <Component id="certSelectorField" alignment="0" pref="462" max="32767" attributes="2"/>
-                                  <Component id="storeLocationTextField" alignment="1" pref="462" max="32767" attributes="1"/>
+                                  <Component id="certSelectorField" alignment="0" pref="355" max="32767" attributes="2"/>
+                                  <Component id="storeLocationTextField" alignment="1" pref="355" max="32767" attributes="1"/>
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
                           </Group>

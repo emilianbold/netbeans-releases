@@ -90,6 +90,11 @@ public class StatusCommand extends SvnCommand {
     }
     
     @Override
+    protected boolean notifyOutput() {
+        return false;
+    }    
+    
+    @Override
     protected int getCommand() {
         return ISVNNotifyListener.Command.STATUS;
     }

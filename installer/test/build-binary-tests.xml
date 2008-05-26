@@ -57,7 +57,10 @@
             <fileset dir="${xtest.workdir}/user" includes="**/uninstall/*"/>
         </delete>
     </target>
-    
+
+    <target name="run-binary-tests">
+	<echo>Binary test run</echo>
+    </target>
 </project>
 
 

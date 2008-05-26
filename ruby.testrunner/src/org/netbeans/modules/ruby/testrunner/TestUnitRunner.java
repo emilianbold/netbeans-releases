@@ -66,7 +66,7 @@ import org.openide.modules.InstalledFileLocator;
 public final class TestUnitRunner implements TestRunner {
 
     private static final Logger LOGGER = Logger.getLogger(TestUnitRunner.class.getName());
-    private static final String MEDIATOR_SCRIPT = "nb_test_mediator.rb";
+    public static final String MEDIATOR_SCRIPT_NAME = "nb_test_mediator.rb";  //NOI18N
     private static final TestRunner INSTANCE = new TestUnitRunner();
 
     public TestRunner getInstance() {
@@ -88,10 +88,10 @@ public final class TestUnitRunner implements TestRunner {
 
     static File getMediatorScript() {
         File mediatorScript = InstalledFileLocator.getDefault().locate(
-                MEDIATOR_SCRIPT, "org.netbeans.modules.ruby.testrunner", false);  // NOI18N
+                MEDIATOR_SCRIPT_NAME, "org.netbeans.modules.ruby.testrunner", false);  // NOI18N
 
         if (mediatorScript == null) {
-            throw new IllegalStateException("Could not locate " + MEDIATOR_SCRIPT); // NOI18N
+            throw new IllegalStateException("Could not locate " + MEDIATOR_SCRIPT_NAME); // NOI18N
 
         }
         return mediatorScript;

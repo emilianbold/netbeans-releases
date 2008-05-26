@@ -42,8 +42,6 @@
 package org.netbeans.modules.web.jsf.refactoring;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -56,6 +54,7 @@ import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
 import org.netbeans.modules.web.jsf.api.facesmodel.Converter;
 import org.netbeans.modules.web.jsf.editor.JSFEditorUtilities;
 import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
+import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigComponent;
 import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -64,11 +63,10 @@ import org.openide.text.CloneableEditorSupport;
 import org.openide.text.PositionBounds;
 import org.openide.text.PositionRef;
 import org.openide.util.NbBundle;
-import org.w3c.dom.NodeList;
 
 /**
  * These classes represents an occurence in a faces configuration file.
- * @author Petr Pisl
+ * @author Petr Pisl, Po-Ting Wu
  */
 public class Occurrences {
     
@@ -78,15 +76,21 @@ public class Occurrences {
         // the faces configuration file
         protected FileObject config;
         
+        protected JSFConfigComponent component;
+        // needed for undo
+        protected JSFConfigComponent copy;
+        
         protected String oldValue;
-        
         protected String newValue;
+        protected String name;
         
-        
-        public OccurrenceItem(FileObject config, String newValue, String oldValue){
+        public OccurrenceItem(FileObject config, JSFConfigComponent component, String newValue, String oldValue, String name) {
             this.config = config;
+            this.component = component;
+            this.copy = (JSFConfigComponent) component.copy(component.getParent());
             this.newValue = newValue;
             this.oldValue = oldValue;
+            this.name = name;
         }
         
         public String getNewValue(){
@@ -112,93 +116,109 @@ public class Occurrences {
         
         protected abstract String getXMLElementName();
         
-        //for changes like rename, move, change package...
-        public abstract void performChange();
-        public abstract void undoChange();
-        public abstract String getChangeMessage();
-        
-        
         public String getRenamePackageMessage(){
             return NbBundle.getMessage(Occurrences.class, "MSG_Package_Rename",  //NOI18N
                     new Object[] {getElementText()});
         }
         
-        // save delete
-        public abstract void performSafeDelete();
-        public abstract void undoSafeDelete();
-        public abstract String getSafeDeleteMessage();
-        
         // usages 
         public abstract String getWhereUsedMessage();
         
-        protected PositionBounds createPosition(int startOffset, int endOffset) {
+        //for changes like rename, move, change package...
+        public abstract String getChangeMessage();
+        public abstract void performChange();
+        public abstract void undoChange();
+        
+        // save delete
+        public abstract String getSafeDeleteMessage();
+        public abstract void performSafeDelete();
+        public abstract void undoSafeDelete();
+        
+        public PositionBounds getChangePosition() {
             try{
                 DataObject dataObject = DataObject.find(config);
-                if (dataObject instanceof JSFConfigDataObject){
-                    CloneableEditorSupport editor
-                            = JSFEditorUtilities.findCloneableEditorSupport((JSFConfigDataObject)dataObject);
-                    if (editor != null){
-                        PositionRef start=editor.createPositionRef(startOffset, Bias.Forward);
-                        PositionRef end=editor.createPositionRef(endOffset, Bias.Backward);
-                        return new PositionBounds(start,end);
-                    }
+                if (!(dataObject instanceof JSFConfigDataObject)) {
+                    return null;
                 }
-            } catch (DataObjectNotFoundException ex) {
-                LOGGER.log(Level.SEVERE, ex.getMessage(), ex);
+                
+                BaseDocument document = JSFEditorUtilities.getBaseDocument(dataObject);
+                int start = component.findPosition();
+                String text = document.getText(start, document.getLength()-start);
+                int startOffset = text.indexOf(getXMLElementName());
+                startOffset = start + text.indexOf(oldValue, startOffset);
+                int endOffset = startOffset + oldValue.length();
+                
+                CloneableEditorSupport editor
+                        = JSFEditorUtilities.findCloneableEditorSupport((JSFConfigDataObject)dataObject);
+                if (editor != null){
+                    PositionRef bgn = editor.createPositionRef(startOffset, Bias.Forward);
+                    PositionRef end = editor.createPositionRef(endOffset, Bias.Backward);
+                    return new PositionBounds(bgn, end);
+                }
+            } catch (BadLocationException exception) {
+                LOGGER.log(Level.SEVERE, exception.getMessage(), exception);
+            } catch (DataObjectNotFoundException exception) {
+                LOGGER.log(Level.SEVERE, exception.getMessage(), exception);
             }
+            
             return null;
         }
-        
-        public abstract PositionBounds getChangePosition();
-        
-        
     }
     
     /**
      * Implementation for ManagedBean
      */
     public static class ManagedBeanClassItem extends OccurrenceItem{
-        private final ManagedBean bean;
-        // needed for undo
-        private final ManagedBean copy;
-        
-        public ManagedBeanClassItem(FileObject config, ManagedBean bean, String newValue){
-            super(config, newValue, bean.getManagedBeanClass());
-            this.bean = bean;
-            this.copy = (ManagedBean) bean.copy(bean.getParent());
+        public ManagedBeanClassItem(FileObject config, ManagedBean bean, String newValue) {
+            super(config, bean, newValue, bean.getManagedBeanClass(), bean.getManagedBeanName());
         }
         
         protected String getXMLElementName(){
             return "managed-bean-class"; //NOI18N
         }
         
-        public void performChange(){
-            changeBeanClass(newValue);
-        }
-        
-        public void undoChange(){
-            changeBeanClass(oldValue);
-        }
-        
         public String getWhereUsedMessage(){
             return NbBundle.getMessage(Occurrences.class, "MSG_ManagedBeanClass_WhereUsed", //NOI18N
-                    new Object[] { bean.getManagedBeanName(), getElementText()});
+                    new Object[] { name, getElementText()});
         }
         
         public String getChangeMessage(){
             return NbBundle.getMessage(Occurrences.class, "MSG_ManagedBeanClass_Rename",  //NOI18N
-                    new Object[] { bean.getManagedBeanName(), getElementText()});
+                    new Object[] { name, getElementText()});
+        }
+        
+        public void performChange(){
+            changeBeanClass(oldValue, newValue);
+        }
+        
+        public void undoChange(){
+            changeBeanClass(newValue, oldValue);
+        }
+        
+        private void changeBeanClass(String oldClass, String newClass){
+            FacesConfig facesConfig = ConfigurationUtils.getConfigModel(config, true).getRootComponent();
+            for (ManagedBean managedBean : facesConfig.getManagedBeans()) {
+                if (oldClass.equals(managedBean.getManagedBeanClass())){
+                    facesConfig.getModel().startTransaction();
+                    managedBean.setManagedBeanClass(newClass);
+                    facesConfig.getModel().endTransaction();
+                    break;
+                }
+            }
+        }
+        
+        public String getSafeDeleteMessage() {
+            return NbBundle.getMessage(Occurrences.class, "MSG_ManagedBeanClass_SafeDelete",  //NOI18N
+                    new Object[] { name, getElementText()});
         }
         
         public void performSafeDelete() {
-            FacesConfig faces = ConfigurationUtils.getConfigModel(config, true).getRootComponent();
-            Collection<ManagedBean> beans = faces.getManagedBeans();
-            for (Iterator<ManagedBean> it = beans.iterator(); it.hasNext();) {
-                ManagedBean managedBean = it.next();
-                if (bean.getManagedBeanName().equals(managedBean.getManagedBeanName())){
-                    faces.getModel().startTransaction();
-                    faces.removeManagedBean(managedBean);
-                    faces.getModel().endTransaction();
+            FacesConfig facesConfig = ConfigurationUtils.getConfigModel(config, true).getRootComponent();
+            for (ManagedBean managedBean : facesConfig.getManagedBeans()) {
+                if (oldValue.equals(managedBean.getManagedBeanClass())){
+                    facesConfig.getModel().startTransaction();
+                    facesConfig.removeManagedBean(managedBean);
+                    facesConfig.getModel().endTransaction();
                     break;
                 }
             }
@@ -207,63 +227,28 @@ public class Occurrences {
         public void undoSafeDelete() {
             FacesConfig facesConfig = ConfigurationUtils.getConfigModel(config, true).getRootComponent();
             facesConfig.getModel().startTransaction();
-            facesConfig.addManagedBean(copy);
+            facesConfig.addManagedBean((ManagedBean) copy);
             facesConfig.getModel().endTransaction();
         }
-        
-        public String getSafeDeleteMessage() {
-            return NbBundle.getMessage(Occurrences.class, "MSG_ManagedBeanClass_SafeDelete",  //NOI18N
-                    new Object[] { bean.getManagedBeanName(), getElementText()});
-        }
-        
-        private void changeBeanClass(String className){
-            FacesConfig facesConfig = ConfigurationUtils.getConfigModel(config, true).getRootComponent();
-            List <ManagedBean> beans = facesConfig.getManagedBeans();
-            for (Iterator<ManagedBean> it = beans.iterator(); it.hasNext();) {
-                ManagedBean managedBean = it.next();
-                if (bean.getManagedBeanName().equals(managedBean.getManagedBeanName())){
-                    facesConfig.getModel().startTransaction();
-                    managedBean.setManagedBeanClass(className);
-                    facesConfig.getModel().endTransaction();
-                    continue;
-                }
-                
-            }
-        }
-        
-        public PositionBounds getChangePosition() {
-            PositionBounds position = null;
-            try{
-                DataObject dataObject = DataObject.find(config);
-                BaseDocument document = JSFEditorUtilities.getBaseDocument(dataObject);
-                int [] offsets = JSFEditorUtilities.getManagedBeanDefinition(document, bean.getManagedBeanName());
-                String text = document.getText(offsets);
-                int offset = offsets[0] + text.indexOf(oldValue);
-                position =  createPosition(offset, offset + oldValue.length());
-            } catch (BadLocationException exception) {
-                LOGGER.log(Level.SEVERE, exception.getMessage(), exception);
-            } catch (DataObjectNotFoundException exception) {
-                LOGGER.log(Level.SEVERE, exception.getMessage(), exception);
-            }
-            return position;
-        };
-        
     }
     
-    
     public static class ConverterClassItem extends OccurrenceItem {
-        private final Converter converter;
-        // needed for undo
-        private final Converter copy;
-        
         public ConverterClassItem(FileObject config, Converter converter, String newValue){
-            super(config, newValue, converter.getConverterClass());
-            this.converter = converter;
-            this.copy = (Converter) converter.copy(converter.getParent());
+            super(config, converter, newValue, converter.getConverterClass(), converter.getConverterId());
         }
         
         protected String getXMLElementName(){
             return "converter-class"; //NOI18N
+        }
+        
+        public String getWhereUsedMessage(){
+            return NbBundle.getMessage(Occurrences.class, "MSG_ConverterClass_WhereUsed", //NOI18N
+                    new Object[] { name, getElementText()});
+        }
+        
+        public String getChangeMessage(){
+            return NbBundle.getMessage(Occurrences.class, "MSG_ConverterClass_Rename", //NOI18N
+                    new Object[] { name, getElementText()});
         }
         
         public void performChange(){
@@ -274,19 +259,26 @@ public class Occurrences {
             changeConverterClass(newValue, oldValue);
         }
         
-        public String getWhereUsedMessage(){
-            return NbBundle.getMessage(Occurrences.class, "MSG_ConverterClass_WhereUsed", getElementText()); //NOI18N
+        private void changeConverterClass(String oldClass, String newClass){
+            FacesConfig facesConfig = ConfigurationUtils.getConfigModel(config, true).getRootComponent();
+            for (Converter converter : facesConfig.getConverters()) {
+                if (oldClass.equals(converter.getConverterClass())){
+                    converter.getModel().startTransaction();
+                    converter.setConverterClass(newClass);
+                    converter.getModel().endTransaction();
+                    break;
+                }
+            }
         }
         
-        public String getChangeMessage(){
-            return NbBundle.getMessage(Occurrences.class, "MSG_ConverterClass_Rename", getElementText()); //NOI18N
+        public String getSafeDeleteMessage() {
+            return NbBundle.getMessage(Occurrences.class, "MSG_Converter_SafeDelete", //NOI18N
+                    new Object[] { name, getElementText()});
         }
         
         public void performSafeDelete() {
             FacesConfig facesConfig = ConfigurationUtils.getConfigModel(config, true).getRootComponent();
-            List <Converter> converters = facesConfig.getConverters();
-            for (Iterator<Converter> it = converters.iterator(); it.hasNext();) {
-                Converter converter = it.next();
+            for (Converter converter : facesConfig.getConverters()) {
                 if (oldValue.equals(converter.getConverterClass())){
                     facesConfig.getModel().startTransaction();
                     facesConfig.removeConverter(converter);
@@ -299,63 +291,28 @@ public class Occurrences {
         public void undoSafeDelete() {
             FacesConfig facesConfig = ConfigurationUtils.getConfigModel(config, true).getRootComponent();
             facesConfig.getModel().startTransaction();
-            facesConfig.addConverter(copy);
+            facesConfig.addConverter((Converter) copy);
             facesConfig.getModel().endTransaction();
         }
-        
-        public String getSafeDeleteMessage() {
-            return NbBundle.getMessage(Occurrences.class, "MSG_Converter_SafeDelete",  //NOI18N
-                    new Object[] { getElementText()});
-        }
-        
-        private void changeConverterClass(String oldClass, String newClass){
-            FacesConfig facesConfig = ConfigurationUtils.getConfigModel(config, true).getRootComponent();
-            List <Converter> converters = facesConfig.getConverters();
-            for (Iterator<Converter> it = converters.iterator(); it.hasNext();) {
-                Converter converter = it.next();
-                if (oldClass.equals(converter.getConverterClass())){
-                    converter.getModel().startTransaction();
-                    converter.setConverterClass(newClass);
-                    converter.getModel().endTransaction();
-                    break;
-                }
-            }
-        }
-        
-        public PositionBounds getChangePosition() {
-            PositionBounds position = null;
-            try{
-                DataObject dataObject = DataObject.find(config);
-                BaseDocument document = JSFEditorUtilities.getBaseDocument(dataObject);
-                int [] offsets = JSFEditorUtilities.getConverterDefinition(document, "converter-class", converter.getConverterClass()); //NOI18N
-                 
-                String text = document.getText(offsets);
-                int offset = offsets[0] + text.indexOf(oldValue);
-                position =  createPosition(offset, offset + oldValue.length());
-            } catch (BadLocationException exception) {
-                LOGGER.log(Level.SEVERE, exception.getMessage(), exception);
-            } catch (DataObjectNotFoundException exception) {
-                LOGGER.log(Level.SEVERE, exception.getMessage(), exception);
-            }
-            return position;
-        };
-        
     }
     
     public static class ConverterForClassItem extends OccurrenceItem {
-        private final Converter converter;
-        //needed for undo
-        private final Converter copy;
-
         public ConverterForClassItem(FileObject config, Converter converter, String newValue){
-            super(config, newValue, converter.getConverterForClass());
-            this.converter = converter;
-            this.copy = (Converter) converter.copy(converter.getParent());
-
+            super(config, converter, newValue, converter.getConverterForClass(), converter.getConverterId());
         }
         
         protected String getXMLElementName(){
             return "converter-for-class"; //NOI18N
+        }
+        
+        public String getWhereUsedMessage(){
+            return NbBundle.getMessage(Occurrences.class, "MSG_ConverterForClass_WhereUsed", //NOI18N
+                    new Object[] { name, getElementText()});
+        }
+        
+        public String getChangeMessage(){
+            return NbBundle.getMessage(Occurrences.class, "MSG_ConverterForClass_Rename", //NOI18N
+                    new Object[] { name, getElementText()});
         }
         
         public void performChange(){
@@ -366,19 +323,26 @@ public class Occurrences {
             changeConverterForClass(newValue, oldValue);
         }
         
-        public String getWhereUsedMessage(){
-            return NbBundle.getMessage(Occurrences.class, "MSG_ConverterForClass_WhereUsed", getElementText()); //NOI18N
+        private void changeConverterForClass(String oldClass, String newClass){
+            FacesConfig facesConfig = ConfigurationUtils.getConfigModel(config, true).getRootComponent();
+            for (Converter converter : facesConfig.getConverters()) {
+                if (oldClass.equals(converter.getConverterForClass())){
+                    converter.getModel().startTransaction();
+                    converter.setConverterForClass(newClass);
+                    converter.getModel().endTransaction();
+                    break;
+                }
+            }
         }
         
-        public String getChangeMessage(){
-            return NbBundle.getMessage(Occurrences.class, "MSG_ConverterForClass_Rename", getElementText()); //NOI18N
+        public String getSafeDeleteMessage() {
+            return NbBundle.getMessage(Occurrences.class, "MSG_Converter_SafeDelete", //NOI18N
+                    new Object[] { name, getElementText()});
         }
         
         public void performSafeDelete() {
             FacesConfig facesConfig = ConfigurationUtils.getConfigModel(config, true).getRootComponent();
-            List <Converter> converters = facesConfig.getConverters();
-            for (Iterator<Converter> it = converters.iterator(); it.hasNext();) {
-                Converter converter = it.next();
+            for (Converter converter : facesConfig.getConverters()) {
                 if (oldValue.equals(converter.getConverterClass())){
                     facesConfig.getModel().startTransaction();
                     facesConfig.removeConverter(converter);
@@ -391,47 +355,9 @@ public class Occurrences {
         public void undoSafeDelete() {
             FacesConfig facesConfig = ConfigurationUtils.getConfigModel(config, true).getRootComponent();
             facesConfig.getModel().startTransaction();
-            facesConfig.addConverter(copy);
-            // XXX why this is twice here?
-            //facesConfig.addConverter(converter);
+            facesConfig.addConverter((Converter) copy);
             facesConfig.getModel().endTransaction();
         }
-        
-        public String getSafeDeleteMessage() {
-            return NbBundle.getMessage(Occurrences.class, "MSG_Converter_SafeDelete",  //NOI18N
-                    new Object[] { getElementText()});
-        }
-        
-        private void changeConverterForClass(String oldClass, String newClass){
-            FacesConfig facesConfig = ConfigurationUtils.getConfigModel(config, true).getRootComponent();
-            List<Converter> converters = facesConfig.getConverters();
-            for (Iterator<Converter> it = converters.iterator(); it.hasNext();) {
-                Converter converter = it.next();
-                if (oldClass.equals(converter.getConverterForClass())){
-                    converter.getModel().startTransaction();
-                    converter.setConverterForClass(newClass);
-                    converter.getModel().endTransaction();
-                    break;
-                }
-            }
-        }
-        
-        public PositionBounds getChangePosition() {
-            PositionBounds position = null;
-            try{
-                DataObject dataObject = DataObject.find(config);
-                BaseDocument document = JSFEditorUtilities.getBaseDocument(dataObject);
-                int [] offsets = JSFEditorUtilities.getConverterDefinition(document, "converter-for-class", converter.getConverterForClass());
-                String text = document.getText(offsets);
-                int offset = offsets[0] + text.indexOf(oldValue);
-                position =  createPosition(offset, offset + oldValue.length());
-            } catch (BadLocationException exception) {
-                LOGGER.log(Level.SEVERE, exception.getMessage(), exception);
-            } catch (DataObjectNotFoundException exception) {
-                LOGGER.log(Level.SEVERE, exception.getMessage(), exception);
-            }
-            return position;
-        };
     }
     
     public static List <OccurrenceItem> getAllOccurrences(WebModule webModule, String oldName, String newName){
@@ -445,24 +371,18 @@ public class Occurrences {
             FileObject[] configs = ConfigurationUtils.getFacesConfigFiles(webModule);
             
             if (configs != null){
-                for (int i = 0; i < configs.length; i++) {
-                    FacesConfig facesConfig = ConfigurationUtils.getConfigModel(configs[i], true).getRootComponent();
-                    List <Converter> converters = facesConfig.getConverters();
-                    for (Iterator<Converter> it = converters.iterator(); it.hasNext();) {
-                        Converter converter = it.next();
+                for (FileObject config : configs) {
+                    FacesConfig facesConfig = ConfigurationUtils.getConfigModel(config, true).getRootComponent();
+                    for (Converter converter : facesConfig.getConverters()) {
                         if (oldName.equals(converter.getConverterClass()))
-                            result.add(new ConverterClassItem(configs[i], converter, newName));
+                            result.add(new ConverterClassItem(config, converter, newName));
                         else if (oldName.equals(converter.getConverterForClass()))
-                            result.add(new ConverterForClassItem(configs[i], converter, newName));
+                            result.add(new ConverterForClassItem(config, converter, newName));
                     }
-                    List<ManagedBean> managedBeans = facesConfig.getManagedBeans();
-                    for (Iterator<ManagedBean> it = managedBeans.iterator(); it.hasNext();) {
-                        ManagedBean managedBean = it.next();
+                    for (ManagedBean managedBean : facesConfig.getManagedBeans()) {
                         if (oldName.equals(managedBean.getManagedBeanClass()))
-                            result.add(new ManagedBeanClassItem(configs[i], managedBean, newName));
-                        
+                            result.add(new ManagedBeanClassItem(config, managedBean, newName));
                     }
-                    
                 }
             }
         }
@@ -480,31 +400,25 @@ public class Occurrences {
             FileObject[] configs = ConfigurationUtils.getFacesConfigFiles(webModule);
             
             if (configs != null){
-                for (int i = 0; i < configs.length; i++) {
-                    FacesConfig facesConfig = ConfigurationUtils.getConfigModel(configs[i], true).getRootComponent();
-                    List <Converter> converters = facesConfig.getConverters();
-                    for (Iterator<Converter> it = converters.iterator(); it.hasNext();) {
-                        Converter converter = it.next();
+                for (FileObject config : configs) {
+                    FacesConfig facesConfig = ConfigurationUtils.getConfigModel(config, true).getRootComponent();
+                    for (Converter converter : facesConfig.getConverters()) {
                         if (JSFRefactoringUtils.containsRenamingPackage(converter.getConverterClass(), oldPackageName, renameSubpackages))
-                            result.add(new ConverterClassItem(configs[i], converter, 
+                            result.add(new ConverterClassItem(config, converter, 
                                     getNewFQCN(newPackageName, oldPackageName, converter.getConverterClass())));
                         if (JSFRefactoringUtils.containsRenamingPackage(converter.getConverterForClass(), oldPackageName, renameSubpackages))
-                            result.add(new ConverterForClassItem(configs[i], converter,
+                            result.add(new ConverterForClassItem(config, converter,
                                     getNewFQCN(newPackageName, oldPackageName, converter.getConverterForClass())));
                     }
-                    List<ManagedBean> managedBeans = facesConfig.getManagedBeans();
-                    for (Iterator<ManagedBean> it = managedBeans.iterator(); it.hasNext();) {
-                        ManagedBean managedBean = it.next();
+                    for (ManagedBean managedBean : facesConfig.getManagedBeans()) {
                         if (JSFRefactoringUtils.containsRenamingPackage(managedBean.getManagedBeanClass(), oldPackageName, renameSubpackages))
-                            result.add(new ManagedBeanClassItem(configs[i], managedBean,
+                            result.add(new ManagedBeanClassItem(config, managedBean,
                                     getNewFQCN(newPackageName, oldPackageName, managedBean.getManagedBeanClass())));
                     }
-                    
                 }
             }
         }
         return result;
-        
     }
     
     /**

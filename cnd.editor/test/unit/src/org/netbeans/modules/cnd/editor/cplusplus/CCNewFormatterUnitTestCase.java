@@ -3047,7 +3047,7 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
             "    if (strm->zalloc == ( alloc_func ) 0) return;\n" +
             "    stream.zalloc = ( alloc_func ) 0;\n" +
             "    put_short(s, ( ush ) len);\n" +
-            "    put_short(s, ( ush )~len);\n" +
+            "    put_short(s, ( ush ) ~len);\n" +
             "}\n"
         );
     }
@@ -3977,7 +3977,7 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
             "{\n" +
             "    int i = 0;\n" +
             "    i = - i;\n" +
-            "    i = ( - i);\n" +
+            "    i = (- i);\n" +
             "    return (0);\n" +
             "}\n"
             );

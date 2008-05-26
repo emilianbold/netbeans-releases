@@ -328,6 +328,49 @@ public class ContextDetector extends ExtendedTokenSequence {
         }
         return false;
     }
+
+    /*package local*/ boolean isPrefixOperator(Token<CppTokenId> current){
+        Token<CppTokenId> previous = lookPreviousImportant();
+        if (previous != null) {
+            String prevCategory = previous.id().primaryCategory();
+            if (OPERATOR_CATEGORY.equals(prevCategory)) {
+                return true;
+            }
+            switch(previous.id()){
+                case RBRACE:
+                case LBRACE:
+                case LPAREN:
+                case LBRACKET:
+                case SEMICOLON:
+                case COMMA:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+        return true;
+    }
+
+    /*package local*/ boolean isPostfixOperator(Token<CppTokenId> current){
+        Token<CppTokenId> next = lookNextImportant();
+        if (next != null) {
+            String nextCategory = next.id().primaryCategory();
+            if (OPERATOR_CATEGORY.equals(nextCategory)) {
+                return true;
+            }
+            switch(next.id()){
+                case RBRACE:
+                case RPAREN:
+                case RBRACKET:
+                case SEMICOLON:
+                case COMMA:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+        return true;
+    }
     
     /*package local*/ OperatorKind getOperatorKind(Token<CppTokenId> current){
         Token<CppTokenId> previous = lookPreviousImportant();

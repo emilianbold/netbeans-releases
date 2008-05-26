@@ -40,6 +40,8 @@
 package org.netbeans.modules.subversion.client.cli;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.Date;
 import org.tigris.subversion.svnclientadapter.ISVNAnnotations;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
@@ -52,7 +54,6 @@ import org.tigris.subversion.svnclientadapter.SVNRevision.Number;
  *
  * @author tomas
  */
-// XXX add referenceclient
 public class BlameTest extends AbstractCLITest {
     
     public BlameTest(String testName) throws Exception {
@@ -160,27 +161,29 @@ public class BlameTest extends AbstractCLITest {
         Date date3 = info.getLastChangedDate();
         Number rev3 = info.getRevision();
         
-        ISVNAnnotations a = annotator.annotate(file, null, null);
+        ISVNAnnotations a1 = annotator.annotate(getNbClient(), file, null, null);
+        ISVNAnnotations a2 = annotator.annotate(getReferenceClient(), file, null, null);
         
         // test 
-        assertEquals(3, a.numberOfLines());
-        // XXX a.getInputStream()
+        assertEquals(3, a1.numberOfLines());
         
-        assertEquals("a", a.getLine(0));
-        assertEquals("b", a.getLine(1));
-        assertEquals("c", a.getLine(2));
+        assertEquals("a", a1.getLine(0));
+        assertEquals("b", a1.getLine(1));
+        assertEquals("c", a1.getLine(2));
         
-        assertEquals(author1, a.getAuthor(0));
-        assertEquals(author2, a.getAuthor(1));
-        assertEquals(author3, a.getAuthor(2));
+        assertEquals(author1, a1.getAuthor(0));
+        assertEquals(author2, a1.getAuthor(1));
+        assertEquals(author3, a1.getAuthor(2));
         
-        assertEquals(date1, a.getChanged(0));
-        assertEquals(date2, a.getChanged(1));
-        assertEquals(date3, a.getChanged(2));
+        assertEquals(date1, a1.getChanged(0));
+        assertEquals(date2, a1.getChanged(1));
+        assertEquals(date3, a1.getChanged(2));
 
-        assertEquals(rev1.getNumber(), a.getRevision(0));
-        assertEquals(rev2.getNumber(), a.getRevision(1));
-        assertEquals(rev3.getNumber(), a.getRevision(2));        
+        assertEquals(rev1.getNumber(), a1.getRevision(0));
+        assertEquals(rev2.getNumber(), a1.getRevision(1));
+        assertEquals(rev3.getNumber(), a1.getRevision(2));        
+        
+        assertAnnotations(a2, a1);
     }
     
     public void testBlameCopied() throws Exception {                                
@@ -215,27 +218,29 @@ public class BlameTest extends AbstractCLITest {
                
         ISVNClientAdapter c = getNbClient();
         copy(file, copy);
-        ISVNAnnotations a = c.annotate(copy, null, null);
+        ISVNAnnotations a1 = c.annotate(copy, null, null);
+        ISVNAnnotations a2 = getReferenceClient().annotate(copy, null, null);
         
         // test 
-        assertEquals(3, a.numberOfLines());
-        // XXX a.getInputStream()
+        assertEquals(3, a1.numberOfLines());
         
-        assertEquals("a", a.getLine(0));
-        assertEquals("b", a.getLine(1));
-        assertEquals("c", a.getLine(2));
+        assertEquals("a", a1.getLine(0));
+        assertEquals("b", a1.getLine(1));
+        assertEquals("c", a1.getLine(2));
         
-        assertEquals(author1, a.getAuthor(0));
-        assertEquals(author2, a.getAuthor(1));
-        assertEquals(author3, a.getAuthor(2));
+        assertEquals(author1, a1.getAuthor(0));
+        assertEquals(author2, a1.getAuthor(1));
+        assertEquals(author3, a1.getAuthor(2));
         
-        assertEquals(date1, a.getChanged(0));
-        assertEquals(date2, a.getChanged(1));
-        assertEquals(date3, a.getChanged(2));
+        assertEquals(date1, a1.getChanged(0));
+        assertEquals(date2, a1.getChanged(1));
+        assertEquals(date3, a1.getChanged(2));
 
-        assertEquals(rev1.getNumber(), a.getRevision(0));
-        assertEquals(rev2.getNumber(), a.getRevision(1));
-        assertEquals(rev3.getNumber(), a.getRevision(2));        
+        assertEquals(rev1.getNumber(), a1.getRevision(0));
+        assertEquals(rev2.getNumber(), a1.getRevision(1));
+        assertEquals(rev3.getNumber(), a1.getRevision(2));        
+        
+        assertAnnotations(a2, a1);
     }
     
     public void testBlameFileStartRevEndRev() throws Exception {                                
@@ -271,22 +276,25 @@ public class BlameTest extends AbstractCLITest {
         commit(file);
         info = getInfo(file);                
         
-        ISVNAnnotations a = annotator.annotate(file, rev1, rev2);
+        ISVNAnnotations a1 = annotator.annotate(getNbClient(), file, rev1, rev2);
+        ISVNAnnotations a2 = annotator.annotate(getReferenceClient(), file, rev1, rev2);
         
         // test 
-        assertEquals(2, a.numberOfLines());
+        assertEquals(2, a1.numberOfLines());
         
-        assertEquals("a", a.getLine(0));
-        assertEquals("b", a.getLine(1));
+        assertEquals("a", a1.getLine(0));
+        assertEquals("b", a1.getLine(1));
         
-        assertEquals(author1, a.getAuthor(0));
-        assertEquals(author2, a.getAuthor(1));
+        assertEquals(author1, a1.getAuthor(0));
+        assertEquals(author2, a1.getAuthor(1));
         
-        assertEquals(date1, a.getChanged(0));
-        assertEquals(date2, a.getChanged(1));
+        assertEquals(date1, a1.getChanged(0));
+        assertEquals(date2, a1.getChanged(1));
 
-        assertEquals(rev1.getNumber(), a.getRevision(0));
-        assertEquals(rev2.getNumber(), a.getRevision(1));
+        assertEquals(rev1.getNumber(), a1.getRevision(0));
+        assertEquals(rev2.getNumber(), a1.getRevision(1));
+        
+        assertAnnotations(a2, a1);        
     }
     
     public void testBlameFileNullAuthor() throws Exception {                                
@@ -309,30 +317,45 @@ public class BlameTest extends AbstractCLITest {
         ISVNInfo info = getInfo(file);
         Number rev1 = info.getRevision();
 
-        ISVNAnnotations a = annotator.annotate(file, null, null);
+        ISVNAnnotations a1 = annotator.annotate(getNbClient(), file, null, null);
+        ISVNAnnotations a2 = annotator.annotate(getReferenceClient(), file, null, null);
         
         // test 
-        assertEquals(1, a.numberOfLines());        
-        assertEquals("a", a.getLine(0));        
-        assertNull(a.getAuthor(0));
+        assertEquals(1, a1.numberOfLines());        
+        assertEquals("a", a1.getLine(0));        
+        assertNull(a1.getAuthor(0));
         // assertNull(a.getChanged(0)); is null only for svnClientAdapter
-        assertEquals(rev1.getNumber(), a.getRevision(0));
+        assertEquals(rev1.getNumber(), a1.getRevision(0));
+        
+        assertAnnotations(a2, a1, true); // true -> ignore date - is null only for svnClientAdapter
     }
 
     private abstract class Annotator {
-        protected abstract ISVNAnnotations annotate(File file, SVNRevision revStart, SVNRevision revEnd) throws Exception;
+        protected abstract ISVNAnnotations annotate(ISVNClientAdapter c, File file, SVNRevision revStart, SVNRevision revEnd) throws Exception;
     }
     private Annotator fileAnnotator = new Annotator() {
-        public ISVNAnnotations annotate(File file, SVNRevision revStart, SVNRevision revEnd) throws Exception {
-            ISVNClientAdapter c = getNbClient();            
+        public ISVNAnnotations annotate(ISVNClientAdapter c, File file, SVNRevision revStart, SVNRevision revEnd) throws Exception {
             return c.annotate(file, revStart, revEnd);
         }        
     };
     private Annotator urlAnnotator = new Annotator() {
-        public ISVNAnnotations annotate(File file, SVNRevision revStart, SVNRevision revEnd) throws Exception {
-            ISVNClientAdapter c = getNbClient();            
+        public ISVNAnnotations annotate(ISVNClientAdapter c, File file, SVNRevision revStart, SVNRevision revEnd) throws Exception {
             return c.annotate(getFileUrl(file), revStart, revEnd);
         }        
     };    
+
+    private void assertAnnotations(ISVNAnnotations ref, ISVNAnnotations a) throws IOException {
+        assertAnnotations(ref, a, false);
+    }    
     
+    private void assertAnnotations(ISVNAnnotations ref, ISVNAnnotations a, boolean ignoreDate) throws IOException {
+        assertEquals(ref.numberOfLines(), a.numberOfLines());
+        for (int i = 0; i < ref.numberOfLines(); i++) {
+            assertEquals(ref.getLine(i), a.getLine(i));            
+            assertEquals(ref.getAuthor(i), a.getAuthor(i));
+            if(!ignoreDate) assertEquals(ref.getChanged(i), a.getChanged(i));
+            assertEquals(ref.getRevision(i), a.getRevision(i));
+        }
+        assertInputStreams(ref.getInputStream(), a.getInputStream());                
+    }    
 }

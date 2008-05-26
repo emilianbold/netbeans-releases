@@ -210,7 +210,11 @@ public abstract class AbstractSvnTest extends NbTestCase {
     }    
     
     protected void update(File file) throws SVNClientException {
-        getClient().update(file, SVNRevision.HEAD, true);
+        update(file, SVNRevision.HEAD);
+    }
+    
+    protected void update(File file, SVNRevision rev) throws SVNClientException {
+        getClient().update(file, rev, true);
     }    
     
     protected void cleanUpRepo() throws SVNClientException {

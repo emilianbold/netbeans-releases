@@ -196,14 +196,6 @@ made subject to such option by the copyright holder.
 ]]>
         </code>
     </codetemplate>
-    <codetemplate abbreviation="dowhile" contexts="BLOCK,CASE">
-        <code>
-<![CDATA[do { 
-   ${selection line}${cursor} 
-} while (${EXP instanceof="java.lang.Boolean" default="exp"});
-]]>
-        </code>
-    </codetemplate>
     <codetemplate abbreviation="runn" contexts="BLOCK,CASE">
         <code>
 <![CDATA[${RUNN_TYPE type="java.lang.Runnable" default="Runnable" editable=false} ${RUNN newVarName default="r"} = new ${RUNN_TYPE}() {
