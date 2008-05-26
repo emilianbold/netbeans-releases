@@ -92,12 +92,12 @@ public final class Validator extends BpelValidator {
   public void visit(Flow flow) {
 //out();
 //out("Flow: " + flow);
-    List<List<VariableDeclaration>> list = new ArrayList<List<VariableDeclaration>>();
+    List<List<VariablePart>> list = new ArrayList<List<VariablePart>>();
     Collection<BpelEntity> children = flow.getChildren();
 
     for (BpelEntity child : children) {
-      List<VariableDeclaration> variables = new LinkedList<VariableDeclaration>();
-      findVariables(child, variables);
+      List<VariablePart> variables = new LinkedList<VariablePart>();
+      findVariableParts(child, variables);
 
       if ( !variables.isEmpty()) {
         list.add(variables);
@@ -105,18 +105,18 @@ public final class Validator extends BpelValidator {
     }
     for (int i=0; i < list.size(); i++) {
       for (int j=i+1; j < list.size(); j++) {
-        VariableDeclaration variable = getCommonVariable(list.get(i), list.get(j));
+        VariablePart variablePart = getCommonVariable(list.get(i), list.get(j));
 
-        if (variable != null) {
-          addError("FIX_Variable_in_Flow", flow, flow.getName(), getName(variable));
+        if (variablePart != null) {
+          addError("FIX_Variable_in_Flow", flow, flow.getName(), variablePart.toString()); // NOI18N
           break;
         }
       }
     }
   }
 
-  private VariableDeclaration getCommonVariable(List<VariableDeclaration> variables1, List<VariableDeclaration> variables2) {
-    for (VariableDeclaration variable : variables1) {
+  private VariablePart getCommonVariable(List<VariablePart> variables1, List<VariablePart> variables2) {
+    for (VariablePart variable : variables1) {
       if (variables2.contains(variable)) {
         return variable;
       }
@@ -124,35 +124,46 @@ public final class Validator extends BpelValidator {
     return null;
   }
 
-  private void findVariables(BpelEntity entity, List<VariableDeclaration> variables) {
+  private void findVariableParts(BpelEntity entity, List<VariablePart> variables) {
     if (entity instanceof Scope) {
       return;
     }
     if (entity instanceof Assign) {
-      findVariablesInAssign((Assign) entity, variables);
+      findVariablePartsInAssign((Assign) entity, variables);
     }
     Collection<BpelEntity> children = entity.getChildren();
 
     for (BpelEntity child : children) {
-      findVariables(child, variables);
+      findVariableParts(child, variables);
     }
   }
 
-  private void findVariablesInAssign(Assign assign, List<VariableDeclaration> variables) {
+  private void findVariablePartsInAssign(Assign assign, List<VariablePart> variables) {
     Collection<Copy> copies = assign.getChildren(Copy.class);
 
     for (Copy copy : copies) {
-      BpelReference<VariableDeclaration> ref = copy.getTo().getVariable();
+      To to = copy.getTo();
+      BpelReference<VariableDeclaration> ref = to.getVariable();
 
       if (ref == null) {
         continue;
       }
       VariableDeclaration variable = ref.get();
 
-      if (variable != null) {
-        variables.add(variable);
+      if (variable == null) {
+        continue;
       }
+      variables.add(new VariablePart(variable, getPart(to)));
     }
+  }
+
+  private Part getPart(To to) {
+    WSDLReference<Part> ref = to.getPart();
+
+    if (ref == null) {
+      return null;
+    }
+    return ref.get();
   }
 
   // # 135160
@@ -370,6 +381,46 @@ public final class Validator extends BpelValidator {
     if (parts.size() != 0) {
       addError("FIX_WSDL_message_variable", (Component) variableReference); // NOI18N
     }
-  }
+  }};}
 
-};}}
+  // -------------------------
+  private class VariablePart {
+    VariablePart(VariableDeclaration variable, Part part) {
+      myVariable = variable;
+      myPart = part;
+    }
+
+    @Override
+    public boolean equals(Object object) {
+      if ( !(object instanceof VariablePart)) {
+        return false;
+      }
+      VariablePart variablePart = (VariablePart) object;
+
+      return variablePart.myVariable == myVariable && variablePart.myPart == myPart;
+    }
+
+    @Override
+    public int hashCode() {
+      if (myPart == null) {
+        return myVariable.hashCode();
+      }
+      else {
+        return myVariable.hashCode() * myPart.hashCode();
+      }
+    }
+
+    @Override
+    public String toString() {
+      if (myPart == null) {
+        return getName(myVariable);
+      }
+      else {
+        return getName(myVariable) + "." + myPart.getName(); // NOI18N
+      }
+    }
+
+    private VariableDeclaration myVariable;
+    private Part myPart;
+  }
+}
