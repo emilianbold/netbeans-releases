@@ -48,7 +48,7 @@ import org.netbeans.modules.parsing.api.Task;
 /**
  * Represents implementation of parser for one or more languages. 
  * Parser is always created by {@link ParserFactory}.
- * Parser fires change when some conditions are changed and all sources 
+ * Parser fires change when some conditions are changed and sources 
  * should be reparsed.
  * 
  * @author Jan Jancura
@@ -61,7 +61,7 @@ public abstract class Parser {
      * 
      * @param snapshot      A snapshot that should be parsed.
      * @param task          A task asking for parsing result.
-     * @return              Result of parsing or null.
+     * @param event         A scheduler event.
      */
     public abstract void parse (
         Snapshot            snapshot,
@@ -70,9 +70,7 @@ public abstract class Parser {
     ) throws ParseException;
     
     /**
-     * Called when some client needs some result of parsing. Parser must parse
-     * source based on {@link Source#getText()} method call. 
-     * Original document is there for various registration purposes only.
+     * Called when some client needs some result of parsing.
      * 
      * @param task          A task asking for parsing result.
      * @return              Result of parsing or null.

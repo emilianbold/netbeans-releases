@@ -53,14 +53,13 @@ import java.util.List;
 public final class Embedding {
     
     /**
-     * Creates source from a parts of this source. New source contains one 
-     * or more blocks of text from this source. All sources must have the same
-     * DataObject and Document like this document. All sources must have the
-     * same mime type, but this mime type have to be different than current
-     * source mime type.
+     * Creates {@link Embedding} from a list of embeddings. All embeddings 
+     * must have the same DataObject and Document like this document. 
+     * All embeddings must have the same mime type, but this mime type have 
+     * to be different than current embedding mime types.
      * 
-     * @param sources       A list of some sources created from this source.
-     * @return              A new source compound from given pieces.
+     * @param embeddings    A list of some embeddings created from one source.
+     * @return              A new embedding compound from given pieces.
      */
     public static Embedding create (
         List<Embedding>        embeddings
@@ -112,9 +111,9 @@ public final class Embedding {
     }
     
     /**
-     * Returns {@link Source} for embedded block of code.
+     * Returns {@link Snapshot} for embedded block of code.
      * 
-     * @return              A {@link Source} for embedded block of code..
+     * @return              A {@link Snapshot} for embedded block of code..
      */
     public final Snapshot getSnapshot () {
         return snapshot;
@@ -132,7 +131,8 @@ public final class Embedding {
     /**
      * Returns <code>true</code> if embeddid source contains given offset.
      * 
-     * @param offset        A offset.
+     * @param originalOffset
+     *                      A offset in original source.
      * @return              <code>true</code> if embeddid source contains given offset.
      */
     public final boolean containsOriginalOffset (int originalOffset) {

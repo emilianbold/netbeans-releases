@@ -39,14 +39,12 @@
 
 package org.netbeans.modules.parsing.api;
 
-import org.netbeans.modules.parsing.spi.ParseException;
-import org.netbeans.modules.parsing.spi.Parser;
-
 
 /**
  * MultiLanguageUserTask allows controll process of parsing of {@link Source} 
  * containing blocks of embedded languages, and do some computations based on 
- * all (or some) parser {@link Result}s. It is usefull
+ * all (or some) parser {@link org.netbeans.modules.parsing.spi.Parser.Result}s. 
+ * It is usefull
  * when you need to implement code completion based on results of more 
  * embedded languages, or if you want to implement refactoring of some 
  * blocks of code embedded in some other blocks of other code, etc...
@@ -60,7 +58,8 @@ public abstract class MultiLanguageUserTask extends Task {
      * 
      * @param resultIterator
      *                      A {@link ResultIterator} instance.
-     * @throws Exception rethrown by the infrastructure as a {@link ParseException}.
+     * @throws Exception rethrown by the infrastructure as a 
+     *                      {@link org.netbeans.modules.parsing.spi.ParseException}.
      */
     public abstract void run (ResultIterator resultIterator) throws Exception;
 }

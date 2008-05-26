@@ -41,7 +41,6 @@ package org.netbeans.modules.parsing.spi;
 
 import java.util.Collection;
 import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.parsing.api.Source;
 
 
 /**

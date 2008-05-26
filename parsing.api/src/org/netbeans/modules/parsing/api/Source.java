@@ -79,7 +79,7 @@ import org.openide.util.Parameters;
  *
  * Following example shows how to create Source for block of code 
  * embedded in other source:
- * {@link EmbeddingProvider}:
+ * {@link org.netbeans.modules.parsing.spi.EmbeddingProvider}:
  * 
  * <pre> 
  *           int start = findStartJavaOffset (source);

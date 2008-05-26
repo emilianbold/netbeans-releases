@@ -59,10 +59,13 @@ public abstract class ParserBasedEmbeddingProvider<T extends Parser.Result> exte
      * Returns list of {@link Embedding}s based on parser results.
      * 
      * @param result        A parser result.
-     * @param source        A source that should be scanned for embeddings.
+     * @param snapshot      A snapshot that should be scanned for embeddings.
      * @return              List of embedded sources.
      */
-    public abstract List<Embedding> getSources (T result, Snapshot snapshot);
+    public abstract List<Embedding> getEmbeddings (
+        T                   result, 
+        Snapshot            snapshot
+    );
     
     /**
      * Returns priority of this source provider.

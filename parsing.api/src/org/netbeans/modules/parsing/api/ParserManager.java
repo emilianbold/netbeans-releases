@@ -125,7 +125,7 @@ public final class ParserManager {
     /**
      * Runs given task in parser thread.
      * 
-     * @param run
+     * @param userTask      a user task
      * @throws ParseException encapsulating the user exception
      */
     public static void run (

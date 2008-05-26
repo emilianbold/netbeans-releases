@@ -40,13 +40,16 @@
 package org.netbeans.modules.parsing.api;
 
 /**
+ * Generic user task.
  *
  * @author Tomas Zezula
  */
 public abstract class GenericUserTask {
+    
     /**
      * Called under source infrastrucure lock.
-     * @throws Exception rethrown by the infrastructure as a {@link ParseException}.
+     * 
+     * @throws Exception rethrown by the infrastructure as a {@link Exception}.
      */
     public abstract void run () throws Exception;
 }
