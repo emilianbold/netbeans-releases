@@ -108,6 +108,8 @@ public class Utilities {
     private static final String FIRST_CLASS_MODULES = "org.netbeans.modules.autoupdate.services, org.netbeans.modules.autoupdate.ui"; // NOI18N
     private static final String PLUGIN_MANAGER_FIRST_CLASS_MODULES = "plugin.manager.first.class.modules"; // NOI18N
     
+    private static final String ALLOW_SHOWING_BALLOON = "plugin.manager.allow.showing.balloon"; // NOI18N
+    
     private static Collection<String> first_class_modules = null;
     
     @SuppressWarnings ("deprecation")
@@ -381,7 +383,8 @@ public class Utilities {
                         runnableCode.run ();
                     } else {
                         assert estimatedTime > 0 : "Estimated time " + estimatedTime;
-                        handle.start ((int) estimatedTime * 10, estimatedTime); 
+                        final long friendlyEstimatedTime = estimatedTime + 2/*friendly constant*/;
+                        handle.start ((int) friendlyEstimatedTime * 10, friendlyEstimatedTime); 
                         handle.progress (progressDisplayName, 0);
                         final RequestProcessor.Task runnableTask = RequestProcessor.getDefault ().post (runnableCode);
                         RequestProcessor.getDefault ().post (new Runnable () {
@@ -389,7 +392,13 @@ public class Utilities {
                                 int i = 0;
                                 while (! runnableTask.isFinished ()) {
                                     try {
-                                        handle.progress (progressDisplayName, (int) (estimatedTime * 10 > i++ ? i : estimatedTime * 10));
+                                        if (friendlyEstimatedTime * 10 > i++) {
+                                            handle.progress (progressDisplayName, i);
+                                        } else {
+                                            handle.switchToIndeterminate ();
+                                            handle.progress (progressDisplayName);
+                                            return ;
+                                        }
                                         Thread.sleep (100);
                                     } catch (InterruptedException ex) {
                                         // no worries
@@ -482,6 +491,11 @@ public class Utilities {
             first_class_modules.add (en.nextToken ().trim ());
         }
         return first_class_modules;
+    }
+    
+    public static Boolean allowShowingBalloon () {
+        String allowShowing = System.getProperty (ALLOW_SHOWING_BALLOON);
+        return allowShowing == null ? null : Boolean.valueOf (allowShowing);
     }
 
     /** Do auto-check for available new plugins a while after startup.
