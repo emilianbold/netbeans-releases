@@ -1,0 +1,65 @@
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt">
+
+<#if package?? && package != "">
+package ${package};
+
+</#if>
+/**
+ *
+ * @author ${user}
+ */
+public class ${name}Producer extends MidpComponentProducer {
+
+    private static final String ICON_PATH_SMALL = "${icon_path_small}"; 
+    private static final String ICON_PATH_BIG = "${icon_path_large}"; 
+    
+
+    public ${name}Producer() {
+        super(${name}CD.TYPEID, new PaletteDescriptor(
+                MidpPaletteProvider.${palette_category}, // Palette category
+                "${palette_display_name}", // Palette display name
+                "${palette_tooltip}", // Palette tooltip
+                ICON_PATH_SMALL, // Small icon
+                ICON_PATH_BIG) // Large icon
+                );
+    }
+    
+    /**
+     * Called for checking validity or availability of the producer for a specified document.
+     * Usually it check whether the main component is in registry and the class in target language is
+     * available on the class of a project where the document belongs.
+     * 
+     * @param document the document where the producer could be used (and therefore checked against)
+     * @param useCachedValue use value from cache
+     * @return the result checking; true if the producer is valid, false is not valid and null if unresolved yet
+     */
+    @Override
+    public Boolean checkValidity(DesignDocument document, boolean useCachedValue) {
+<#if validity == "always">
+        return true;
+<#elseif validity == "depends">
+        if (useCachedValue) {
+            return MidpJavaSupport.getCache(document).checkValidityCached(${name}CD.TYPEID);
+        }
+        return MidpJavaSupport.checkValidity(document, ${name}CD.TYPEID);
+<#elseif validity == "custom">
+       throw new UnsupportedOperationException("Custom code needed"); 
+</#if>
+    }
+
+    /**
+     * Creates or finds a main component of the producer for a document.
+     * @param document the docuemnt
+     * @return created or found non-null main component
+     */
+    @Override
+    protected DesignComponent createMainComponent(DesignDocument document) {
+<#if add_library?? && add_library == "true">
+        MidpProjectSupport.addLibraryToProject(document, "${library_name}"); // Library is added to the Mobility Project Resources
+</#if>
+        return super.createMainComponent(document);
+    }
+}

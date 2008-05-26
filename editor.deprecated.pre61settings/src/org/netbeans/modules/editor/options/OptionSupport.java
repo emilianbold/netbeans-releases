@@ -171,7 +171,7 @@ public class OptionSupport extends SystemOption {
     /** Helper method for merging string arrays without searching
      * for the same strings.
      * @param a1 array that will be at the begining of the resulting array
-     * @param a1 array that will be at the end of the resulting array
+     * @param a2 array that will be at the end of the resulting array
      */
     public static String[] mergeStringArrays(String[] a1, String[] a2) {
         return NbEditorUtilities.mergeStringArrays(a1, a2);

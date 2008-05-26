@@ -58,7 +58,7 @@ import org.openide.util.WeakListeners;
  *
  *  @author  Martin Roskanin
  *  @since 08/2001
- *  @deprecate If you think you need this class you are doing something wrong. It should've never been made public.
+ *  @deprecated If you think you need this class you are doing something wrong. It should've never been made public.
  */
 public class AllOptionsNode extends FilterNode {
     

@@ -108,8 +108,8 @@ is the proper place.
         <change id="NbBaseDocument-kitClass-deprecations">
             <api name="editor"/>
             <summary>Deprecating kit class related API in NbEditorDocument</summary>
-            <version major="1" minor="37"/>
-            <date day="16" month="1" year="2008"/>
+            <version major="1" minor="40"/>
+            <date day="26" month="5" year="2008"/>
             <author login="vstejskal"/>
             <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes" deprecation="yes" modification="yes"/>
             <description>
@@ -129,6 +129,25 @@ is the proper place.
                 </p>
             </description>
             <issue number="114747"/>
+        </change>
+
+        <change id="editor.actions.from.folder">
+            <api name="editor"/>
+            <summary>Editor Actions can be supplied in 'Actions' folder</summary>
+            <version major="1" minor="39"/>
+            <date day="21" month="5" year="2008"/>
+            <author login="vstejskal"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes" deprecation="no" modification="no"/>
+            <description>
+                <p>
+                    The editor actions (ie. actions that are installed in <code>JEditorPane</code>s
+                    for Netbeans editors) can now be registered in XML layers under
+                    the <code>Actions</code> subfolder. For example adding an action to the java editor
+                    can be achieved by adding <code>.instance</code> file to
+                    <code>Editors/text/x-java/Actions</code> folder.
+                </p>
+            </description>
+            <issue number="85442"/>
         </change>
 
         <change id="SideBar.location">

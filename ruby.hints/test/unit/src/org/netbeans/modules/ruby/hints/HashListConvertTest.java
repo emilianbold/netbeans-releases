@@ -53,7 +53,7 @@ public class HashListConvertTest extends HintTestBase  {
     }            
 
     public void testHints1() throws Exception {
-        findHints(this, new HashListConvert(), "testfiles/hashlist.rb", null);
+        checkHints(this, new HashListConvert(), "testfiles/hashlist.rb", null);
     }
 
     public void testFix1() throws Exception {

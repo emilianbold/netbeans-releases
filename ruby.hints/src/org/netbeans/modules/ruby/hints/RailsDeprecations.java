@@ -43,13 +43,14 @@ import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.gsf.api.Hint;
+import org.netbeans.modules.gsf.api.HintFix;
+import org.netbeans.modules.gsf.api.HintSeverity;
+import org.netbeans.modules.gsf.api.RuleContext;
 import org.netbeans.modules.ruby.AstPath;
 import org.netbeans.modules.ruby.AstUtilities;
-import org.netbeans.modules.ruby.hints.spi.AstRule;
-import org.netbeans.modules.ruby.hints.spi.Description;
-import org.netbeans.modules.ruby.hints.spi.Fix;
-import org.netbeans.modules.ruby.hints.spi.HintSeverity;
-import org.netbeans.modules.ruby.hints.spi.RuleContext;
+import org.netbeans.modules.ruby.hints.infrastructure.RubyAstRule;
+import org.netbeans.modules.ruby.hints.infrastructure.RubyRuleContext;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.openide.util.NbBundle;
 
@@ -79,7 +80,7 @@ import org.openide.util.NbBundle;
  *
  * @author Tor Norbye
  */
-public class RailsDeprecations implements AstRule {
+public class RailsDeprecations extends RubyAstRule {
     static Set<String> deprecatedFields = new HashSet<String>();
     static Map<String,String> deprecatedMethods = new HashMap<String,String>();
     static {
@@ -117,7 +118,8 @@ public class RailsDeprecations implements AstRule {
     public RailsDeprecations() {
     }
 
-    public boolean appliesTo(CompilationInfo info) {
+    public boolean appliesTo(RuleContext context) {
+        CompilationInfo info = context.compilationInfo;
         // Only perform these checks in Rails projects
         Project project = FileOwnerQuery.getOwner(info.getFileObject());
         // Ugly!!
@@ -132,7 +134,7 @@ public class RailsDeprecations implements AstRule {
         return Collections.singleton(NodeType.ROOTNODE);
     }
 
-    public void run(RuleContext context, List<Description> result) {
+    public void run(RubyRuleContext context, List<Hint> result) {
         Node root = context.node;
         CompilationInfo info = context.compilationInfo;
         AstPath path = context.path;
@@ -163,7 +165,7 @@ public class RailsDeprecations implements AstRule {
         return NbBundle.getMessage(RailsDeprecations.class, "RailsDeprecationDesc");
     }
 
-    private void scan(CompilationInfo info, Node node, List<Description> result) {
+    private void scan(CompilationInfo info, Node node, List<Hint> result) {
         // Look for use of deprecated fields
         if (node.nodeId == NodeType.INSTVARNODE || node.nodeId == NodeType.INSTASGNNODE) {
             String name = ((INameNode)node).getName();
@@ -221,12 +223,12 @@ public class RailsDeprecations implements AstRule {
         }
     }
 
-    private void addFix(CompilationInfo info, Node node, List<Description> result, String displayName) {
+    private void addFix(CompilationInfo info, Node node, List<Hint> result, String displayName) {
         OffsetRange range = AstUtilities.getNameRange(node);
 
         range = LexUtilities.getLexerOffsets(info, range);
         if (range != OffsetRange.NONE) {
-            Description desc = new Description(this, displayName, info.getFileObject(), range, Collections.<Fix>emptyList(), 100);
+            Hint desc = new Hint(this, displayName, info.getFileObject(), range, Collections.<HintFix>emptyList(), 100);
             result.add(desc);
         }
     }

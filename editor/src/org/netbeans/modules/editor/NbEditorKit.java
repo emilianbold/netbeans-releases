@@ -57,6 +57,8 @@ import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 import java.util.prefs.Preferences;
 import java.util.concurrent.Callable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
@@ -89,6 +91,7 @@ import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.codegen.NbGenerateCodeAction;
 import org.netbeans.modules.editor.impl.ActionsList;
 import org.netbeans.modules.editor.impl.CustomizableSideBar;
+import org.netbeans.modules.editor.impl.EditorActionsProvider;
 import org.netbeans.modules.editor.impl.SearchBar;
 import org.netbeans.modules.editor.impl.PopupMenuActionsProvider;
 import org.netbeans.modules.editor.impl.ToolbarActionsProvider;
@@ -114,6 +117,8 @@ import org.openide.util.NbBundle;
 
 public class NbEditorKit extends ExtKit implements Callable {
 
+    private static final Logger LOG = Logger.getLogger(NbEditorKit.class.getName());
+    
     /** Action property that stores the name of the corresponding nb-system-action */
     public static final String SYSTEM_ACTION_CLASS_NAME_PROPERTY = "systemActionClassName"; // NOI18N
 
@@ -158,7 +163,7 @@ public class NbEditorKit extends ExtKit implements Callable {
     /**
      * Do any locking necessary prior evaluation of tooltip annotations.
      * <br>
-     * This method will always be followed by {@link #toolTipAnnotationsUnlock()}
+     * This method will always be followed by {@link #toolTipAnnotationsUnlock(Document)}
      * by using <code>try ... finally</code>.
      * <br>
      * This method is called prior read locking of the document.
@@ -167,7 +172,7 @@ public class NbEditorKit extends ExtKit implements Callable {
     }
 
     /**
-     * Release any locking requested previously by {@link #toolTipAnnotationsLock()}.
+     * Release any locking requested previously by {@link #toolTipAnnotationsLock(Document)}.
      * <br>
      * This method is called after read unlocking of the document.
      */
@@ -198,7 +203,29 @@ public class NbEditorKit extends ExtKit implements Callable {
         return TextAction.augmentList(super.createActions(), nbEditorActions);
     }
 
-
+    protected @Override Action[] getCustomActions() {
+        List<Action> actions = EditorActionsProvider.getEditorActions(getContentType());
+        
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("Custom layer actions for '" + getContentType() + "' {"); //NOI18N
+            for(Action a : actions) {
+                LOG.fine("    " + a); //NOI18N
+            }
+            LOG.fine("} End of custom layer actions for '" + getContentType() + "'"); //NOI18N
+        }
+        
+        if (!actions.isEmpty()) {
+            Action [] superActions = super.getCustomActions();
+            if (superActions == null || superActions.length == 0) {
+                return actions.toArray(new Action[actions.size()]);
+            } else {
+                return TextAction.augmentList(superActions, actions.toArray(new Action[actions.size()]));
+            }
+        } else {
+            return super.getCustomActions();
+        }
+    }
+        
     protected void addSystemActionMapping(String editorActionName, Class systemActionClass) {
         Action a = getActionByName(editorActionName);
         if (a != null) {

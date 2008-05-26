@@ -84,6 +84,8 @@ import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.gsf.api.SourceFileReader;
 import org.netbeans.modules.gsf.api.TranslatedSource;
 import org.netbeans.modules.gsf.spi.DefaultParseListener;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 /**
  *
@@ -389,6 +391,11 @@ public class AstUtilities {
     
     public static ASTNode findVariableScope(Variable variable, AstPath path, ModuleNode moduleNode) {
         
+//        final Logger LOG = Logger.getLogger(AstUtilities.class.getName());
+//        LOG.setLevel(Level.FINEST);
+//        
+//        LOG.log(Level.FINEST, "findVariableScope(...)"); //NOI18N
+        
         String name = variable.getName();
         VariableScopeVisitor scopeVisitor = new VariableScopeVisitor(moduleNode, name);
         
@@ -406,10 +413,20 @@ public class AstUtilities {
                     return current;
                 }
             } else if (current instanceof FieldNode) {
-                scopeVisitor.visitField((FieldNode)current);
-                if (scopeVisitor.isDeclaring()) {
-                    return current;
+                // if we are dealing with a FieldNode the scope is the surrounding
+                // class. So go and find it:
+                
+                while (it.hasNext()) {
+                    current = it.next();
+                    if (current instanceof ClassNode) {
+                        return current;
+                    }
                 }
+                
+//                scopeVisitor.visitField((FieldNode)current);
+//                if (scopeVisitor.isDeclaring()) {
+//                    return current;
+//                }
             } else if (current instanceof ClassNode) {
                 scopeVisitor.visitClass((ClassNode)current);
                 if (scopeVisitor.isDeclaring()) {
@@ -423,8 +440,9 @@ public class AstUtilities {
             } else if (current instanceof DeclarationExpression) {
                 DeclarationExpression declarationExpression = (DeclarationExpression) current;
                 if (name.equals(declarationExpression.getVariableExpression().getName())) {
-                    // ok, the variable i'm searching for (name) gets declared here
-                    // if it's not a field it's scope is the next method up the path:
+                    // ok, the variable i'm searching for (name) gets declared here.
+                    // It's either a file and i have to stop on the surrounding class or
+                    // it's a local-var and we need to stop on the method
                     
                     while (it.hasNext()){
                         current = it.next();

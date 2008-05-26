@@ -339,6 +339,7 @@ public class HgCommand {
 
         command.add(getHgCommand());
         command.add(HG_UPDATE_ALL_CMD);
+        command.add(HG_VERBOSE_CMD);
         if (bForce) command.add(HG_UPDATE_FORCE_ALL_CMD);
         command.add(HG_OPT_REPOSITORY);
         command.add(repository.getAbsolutePath());
@@ -1800,6 +1801,7 @@ public class HgCommand {
             if (!list.isEmpty()
                     && (isErrorNotTracked(list.get(0)) || 
                     isErrorCannotReadCommitMsg(list.get(0)) ||
+                    isErrorAbort(list.get(list.size() -1)) ||
                     isErrorAbort(list.get(0))))
                 handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_COMMIT_FAILED"), logger);
             

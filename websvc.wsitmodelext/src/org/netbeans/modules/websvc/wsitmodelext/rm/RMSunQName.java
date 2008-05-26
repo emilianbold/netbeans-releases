@@ -50,10 +50,11 @@ import java.util.Set;
  * @author Martin Grebac
  */
 public enum RMSunQName {
-    ORDERED(createRMSunQName("Ordered"));                   //NOI18N
+    ORDERED(createRMSunQName("Ordered")),                   //NOI18N
+    ALLOWDUPLICATES(createRMSunQName("AllowDuplicates"));   //NOI18N
 
     public static final String RMSUN_NS_URI = "http://sun.com/2006/03/rm";  //NOI18N
-    public static final String RMSUN_NS_PREFIX = "sunrm";                                              //NOI18N
+    public static final String RMSUN_NS_PREFIX = "sunrm";                   //NOI18N
     
     public static QName createRMSunQName(String localName){
         return new QName(RMSUN_NS_URI, localName, RMSUN_NS_PREFIX);

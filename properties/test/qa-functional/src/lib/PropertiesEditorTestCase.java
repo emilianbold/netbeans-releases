@@ -1095,13 +1095,13 @@ public class PropertiesEditorTestCase extends JellyTestCase {
     //Fill key, value and comments in dialog New Property
     public void fillNewKeyValue(String key, String value, String comments) {
         NbDialogOperator nbdo = new NbDialogOperator(BUTTON_NEW_PROPERTY);
-        KEY = new JTextFieldOperator(nbdo, 2);
+        KEY = new JTextFieldOperator(nbdo, 0);
         KEY.typeText(key);
 
         VALUE = new JTextFieldOperator(nbdo, 1);
         VALUE.typeText(value);
 
-        COMMENTS = new JTextFieldOperator(nbdo, 0);
+        COMMENTS = new JTextFieldOperator(nbdo, 2);
         COMMENTS.typeText(comments);
 
         new EventTool().waitNoEvent(1000);

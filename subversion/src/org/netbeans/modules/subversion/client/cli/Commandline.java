@@ -144,8 +144,7 @@ class Commandline {
             try {
                 cli.waitFor();
             } catch (InterruptedException ex) {
-                Logger.getLogger(Commandline.class.getName()).log(Level.WARNING, null, ex);
-                throw new IOException(ex.getMessage());
+                // ignore
             }
             
         } finally {

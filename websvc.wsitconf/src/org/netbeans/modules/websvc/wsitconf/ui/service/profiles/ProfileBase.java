@@ -40,6 +40,7 @@
 package org.netbeans.modules.websvc.wsitconf.ui.service.profiles;
 
 import org.netbeans.modules.websvc.wsitconf.spi.SecurityProfile;
+import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProfilesModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.RMModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityPolicyModelHelper;
@@ -51,15 +52,17 @@ import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
  */
 public abstract class ProfileBase extends SecurityProfile {
 
-    public void profileDeselected(WSDLComponent component) {
-        SecurityPolicyModelHelper.disableSecurity(component, false);
+    public void profileDeselected(WSDLComponent component, ConfigVersion configVersion) {
+        SecurityPolicyModelHelper.getInstance(configVersion).disableSecurity(component, false);
     }
 
-    public void profileSelected(WSDLComponent component, boolean updateServiceUrl) {
-        ProfilesModelHelper.setSecurityProfile(component, getDisplayName(), updateServiceUrl);
-        boolean isRM = RMModelHelper.isRMEnabled(component);
+    public void profileSelected(WSDLComponent component, boolean updateServiceUrl, ConfigVersion configVersion) {
+        ProfilesModelHelper pmh = ProfilesModelHelper.getInstance(configVersion);
+        RMModelHelper rmh = RMModelHelper.getInstance(configVersion);
+        pmh.setSecurityProfile(component, getDisplayName(), updateServiceUrl);
+        boolean isRM = rmh.isRMEnabled(component);
         if (isRM) {
-            ProfilesModelHelper.enableSecureConversation(component, true);
+            pmh.enableSecureConversation(component, true);
         }
     }
 

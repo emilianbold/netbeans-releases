@@ -82,6 +82,9 @@ public class EditorOptions {
     public static final String indentSize = "indentSize"; // NOI18N 
     public static final int indentSizeDefault = 4;
 
+    public static final String expandTabToSpaces = "expandTabToSpaces"; // NOI18N 
+    public static final boolean expandTabToSpacesDefault = true;
+
     /**
      * Whether to indent preprocessors positioned at start of line.
      * Those not starting at column 0 of the line will automatically be indented.
@@ -311,6 +314,7 @@ public class EditorOptions {
         defaults = new HashMap<String,Object>();
         // Indents
         defaults.put(indentSize, indentSizeDefault);
+        defaults.put(expandTabToSpaces, expandTabToSpacesDefault);
         defaults.put(statementContinuationIndent,statementContinuationIndentDefault);
         defaults.put(indentPreprocessorDirectives,indentPreprocessorDirectivesDefault);
         defaults.put(sharpAtStartLine, sharpAtStartLineDefault);

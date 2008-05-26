@@ -48,8 +48,6 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dialog;
 import java.awt.EventQueue;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -567,12 +565,6 @@ final class TestStringWizardPanel extends JPanel {
                     NbBundle.getMessage(TestStringWizardPanel.class,
                                         "TXT_FoundMissingResource"));   //NOI18N
             panel.setPreferredSize(I18nWizardDescriptor.PREFERRED_DIMENSION);                    
-            panel.setLayout(new GridBagLayout());
-            GridBagConstraints constraints = new GridBagConstraints();
-            constraints.weightx = 1.0;
-            constraints.weighty = 1.0;
-            constraints.fill = GridBagConstraints.BOTH;
-            panel.add(getUI(), constraints);
             return panel;
         }
 

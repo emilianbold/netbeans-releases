@@ -29,17 +29,13 @@
 package org.netbeans.modules.ruby.rhtml;
 
 import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.CompletionProposal;
-import org.netbeans.modules.gsf.api.HtmlFormatter;
-import org.netbeans.modules.gsf.api.NameKind;
-import org.netbeans.modules.gsf.api.annotations.NonNull;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.gsf.api.CodeCompletionContext;
+import org.netbeans.modules.gsf.api.CodeCompletionResult;
 import org.netbeans.modules.ruby.CodeCompleter;
 import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
 import org.openide.util.Exceptions;
@@ -55,17 +51,18 @@ public class RhtmlCompleter extends CodeCompleter {
      *  @todo Pass in the line offsets? Nah, just make the completion provider figure those out.
      */
     @Override
-    public List<CompletionProposal> complete(@NonNull CompilationInfo info, int caretOffset, String prefix,
-        NameKind kind, QueryType queryType, boolean caseSensitive, HtmlFormatter formatter) {
+    public CodeCompletionResult complete(CodeCompletionContext context) {
+        CompilationInfo info = context.getInfo();
+        int caretOffset = context.getCaretOffset();
         try {
             Document doc = info.getDocument();
             if (isWithinRuby(doc, caretOffset)) {
-                return super.complete(info, caretOffset, prefix, kind, queryType, caseSensitive, formatter);
+                return super.complete(context);
             }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
-        return Collections.emptyList();
+        return CodeCompletionResult.NONE;
     }
 
     /**

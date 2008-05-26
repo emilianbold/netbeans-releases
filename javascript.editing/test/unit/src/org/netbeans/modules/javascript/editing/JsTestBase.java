@@ -53,7 +53,6 @@ import org.netbeans.modules.gsf.api.ParseListener;
 import org.netbeans.modules.gsf.api.ParserFile;
 import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.gsf.api.TranslatedSource;
-import org.netbeans.modules.gsf.DefaultLanguage;
 import org.netbeans.modules.gsf.GsfTestBase;
 import org.netbeans.modules.gsf.GsfTestCompilationInfo;
 import org.netbeans.modules.gsf.Language;
@@ -125,9 +124,9 @@ public abstract class JsTestBase extends GsfTestBase {
     protected void initializeRegistry() {
         super.initializeRegistry();
         LanguageRegistry registry = LanguageRegistry.getInstance();
-        List<Action> actions = Collections.emptyList();
         if (!LanguageRegistry.getInstance().isSupported(JsTokenId.JAVASCRIPT_MIME_TYPE)) {
-            org.netbeans.modules.gsf.Language dl = new DefaultLanguage("org/netbeans/modules/javascript/editing/javascript.png", JsTokenId.JAVASCRIPT_MIME_TYPE, actions, new JsLanguage(), new JsParser(), new JsCodeCompletion(), null, new JsDeclarationFinder(), new JsFormatter(), new JsBracketCompleter(), new JsIndexer(), new JsAnalyzer(), null, false);
+            List<Action> actions = Collections.emptyList();
+            org.netbeans.modules.gsf.Language dl = new Language("org/netbeans/modules/javascript/editing/javascript.png", JsTokenId.JAVASCRIPT_MIME_TYPE, actions, new JsLanguage(), new JsParser(), new JsCodeCompletion(), null, new JsDeclarationFinder(), new JsFormatter(), new JsBracketCompleter(), new JsIndexer(), new JsAnalyzer(), null, false);
             List<org.netbeans.modules.gsf.Language> languages = new ArrayList<org.netbeans.modules.gsf.Language>();
             languages.add(dl);
             registry.addLanguages(languages);

@@ -57,7 +57,6 @@ import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProprietarySecurityPoli
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.RMModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityPolicyModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityTokensModelHelper;
-import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityTokensModelHelper;
 import org.netbeans.modules.websvc.wsitmodelext.policy.Policy;
 import org.netbeans.modules.websvc.wsitmodelext.policy.PolicyQName;
 import org.netbeans.modules.websvc.wsitmodelext.security.BootstrapPolicy;
@@ -66,6 +65,7 @@ import org.netbeans.modules.websvc.wsitmodelext.security.TransportBinding;
 import org.netbeans.modules.websvc.wsitmodelext.security.TrustElement;
 import org.netbeans.modules.websvc.wsitmodelext.security.WssElement;
 import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.CallbackHandler;
+import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
@@ -126,13 +126,11 @@ public class MessageAuthenticationProfile extends ProfileBase
     }
     
     public void setServiceDefaults(WSDLComponent component, Project p) {
-//        ProprietarySecurityPolicyModelHelper pmh = ProprietarySecurityPolicyModelHelper.getInstance(cfgVersion);
         ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, false, false);
         ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, true, false);
     }
  
     public void setClientDefaults(WSDLComponent component, WSDLComponent serviceBinding, Project p) {
-//        ProprietarySecurityPolicyModelHelper pmh = ProprietarySecurityPolicyModelHelper.getInstance(cfgVersion);
         ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, false, true);
         ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, true, true);
         ProprietarySecurityPolicyModelHelper.removeCallbackHandlerConfiguration((Binding) component);
@@ -180,7 +178,8 @@ public class MessageAuthenticationProfile extends ProfileBase
     }
 
     public void enableSecureConversation(WSDLComponent component, boolean enable) {
-//        SecurityTokensModelHelper stmh = SecurityTokensModelHelper.getInstance(cfgVersion);
+        ConfigVersion cfgVersion = PolicyModelHelper.getConfigVersion(component);
+        SecurityTokensModelHelper stmh = SecurityTokensModelHelper.getInstance(cfgVersion);
         if (enable) {
             WSDLModel model = component.getModel();
 
@@ -190,42 +189,42 @@ public class MessageAuthenticationProfile extends ProfileBase
             }
 
             try {
-//                SecurityPolicyModelHelper spmh = SecurityPolicyModelHelper.getInstance(cfgVersion);
-//                AlgoSuiteModelHelper asmh = AlgoSuiteModelHelper.getInstance(cfgVersion);
-//                RMModelHelper rmh = RMModelHelper.getInstance(cfgVersion);
-//                PolicyModelHelper pmh = PolicyModelHelper.getInstance(cfgVersion);
+                SecurityPolicyModelHelper securityPolicyModelHelper = SecurityPolicyModelHelper.getInstance(cfgVersion);
+                AlgoSuiteModelHelper asmh = AlgoSuiteModelHelper.getInstance(cfgVersion);
+                RMModelHelper rmh = RMModelHelper.getInstance(cfgVersion);
+                PolicyModelHelper ProprietarySecurityPolicyModelHelper = PolicyModelHelper.getInstance(cfgVersion);
                 
-                SecurityPolicyModelHelper.enableTrust10(component);
+                securityPolicyModelHelper.enableTrust(component, cfgVersion);
                 SecurityTokensModelHelper.removeSupportingTokens(component);
                 
-                WSDLComponent suppToken = SecurityTokensModelHelper.setSupportingTokens(component, 
+                WSDLComponent suppToken = stmh.setSupportingTokens(component, 
                         ComboConstants.SECURECONVERSATION, SecurityTokensModelHelper.ENDORSING);
-                Policy p = PolicyModelHelper.createElement(suppToken, PolicyQName.POLICY.getQName(), Policy.class, false);
-                BootstrapPolicy bp = PolicyModelHelper.createElement(p, SecurityPolicyQName.BOOTSTRAPPOLICY.getQName(), BootstrapPolicy.class, false);
-                p = PolicyModelHelper.createElement(bp, PolicyQName.POLICY.getQName(), Policy.class, false);
-                TransportBinding tb = PolicyModelHelper.createElement(p, SecurityPolicyQName.TRANSPORTBINDING.getQName(), TransportBinding.class, false);
+                Policy p = ProprietarySecurityPolicyModelHelper.createElement(suppToken, PolicyQName.POLICY.getQName(cfgVersion), Policy.class, false);
+                BootstrapPolicy bp = ProprietarySecurityPolicyModelHelper.createElement(p, SecurityPolicyQName.BOOTSTRAPPOLICY.getQName(cfgVersion), BootstrapPolicy.class, false);
+                p = ProprietarySecurityPolicyModelHelper.createElement(bp, PolicyQName.POLICY.getQName(cfgVersion), Policy.class, false);
+                TransportBinding tb = ProprietarySecurityPolicyModelHelper.createElement(p, SecurityPolicyQName.TRANSPORTBINDING.getQName(cfgVersion), TransportBinding.class, false);
 
-                boolean rm = RMModelHelper.isRMEnabled(component);
-                SecurityPolicyModelHelper.setDefaultTargets(p, true, rm);
+                boolean rm = rmh.isRMEnabled(component);
+                securityPolicyModelHelper.setDefaultTargets(p, true, rm);
                 
-                SecurityTokensModelHelper.setTokenType(tb, ComboConstants.TRANSPORT, ComboConstants.HTTPS);
-                SecurityPolicyModelHelper.setLayout(tb, ComboConstants.STRICT);
-                SecurityPolicyModelHelper.enableIncludeTimestamp(tb, true);
-                AlgoSuiteModelHelper.setAlgorithmSuite(tb, ComboConstants.BASIC128);
+                stmh.setTokenType(tb, ComboConstants.TRANSPORT, ComboConstants.HTTPS);
+                securityPolicyModelHelper.setLayout(tb, ComboConstants.STRICT);
+                securityPolicyModelHelper.enableIncludeTimestamp(tb, true);
+                asmh.setAlgorithmSuite(tb, ComboConstants.BASIC128);
 
-                SecurityTokensModelHelper.setSupportingTokens(p, 
+                stmh.setSupportingTokens(p, 
                         ComboConstants.USERNAME, SecurityTokensModelHelper.SIGNED_SUPPORTING);
                 
-                WssElement wss = SecurityPolicyModelHelper.enableWss(bp, true);
-                SecurityPolicyModelHelper.enableMustSupportRefKeyIdentifier(wss, true);
-                SecurityPolicyModelHelper.enableMustSupportRefIssuerSerial(wss, true);
-                SecurityPolicyModelHelper.enableMustSupportRefThumbprint(wss, true);
-                SecurityPolicyModelHelper.enableMustSupportRefEncryptedKey(wss, true);
+                WssElement wss = securityPolicyModelHelper.enableWss(bp, true);
+//                securityPolicyModelHelper.enableMustSupportRefKeyIdentifier(wss, true);
+                securityPolicyModelHelper.enableMustSupportRefIssuerSerial(wss, true);
+                securityPolicyModelHelper.enableMustSupportRefThumbprint(wss, true);
+                securityPolicyModelHelper.enableMustSupportRefEncryptedKey(wss, true);
 
-                TrustElement trust = SecurityPolicyModelHelper.enableTrust10(bp);
-                SecurityPolicyModelHelper.enableMustSupportIssuedTokens(trust, true);
-                SecurityPolicyModelHelper.enableRequireClientEntropy(trust, true);
-                SecurityPolicyModelHelper.enableRequireServerEntropy(trust, true);
+                TrustElement trust = securityPolicyModelHelper.enableTrust(bp, cfgVersion);
+                securityPolicyModelHelper.enableMustSupportIssuedTokens(trust, true);
+                securityPolicyModelHelper.enableRequireClientEntropy(trust, true);
+                securityPolicyModelHelper.enableRequireServerEntropy(trust, true);
                 
             } finally {
                 if (!isTransaction) {
@@ -234,7 +233,7 @@ public class MessageAuthenticationProfile extends ProfileBase
             }
         } else {
             SecurityTokensModelHelper.removeSupportingTokens(component);
-            SecurityTokensModelHelper.setSupportingTokens(component, ComboConstants.USERNAME, SecurityTokensModelHelper.SIGNED_SUPPORTING);            
+            stmh.setSupportingTokens(component, ComboConstants.USERNAME, SecurityTokensModelHelper.SIGNED_SUPPORTING);            
         }
     }
     

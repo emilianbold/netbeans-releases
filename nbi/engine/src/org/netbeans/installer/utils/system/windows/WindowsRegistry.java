@@ -42,7 +42,6 @@ import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.exceptions.NativeException;
-import static org.netbeans.installer.utils.StringUtils.EMPTY_STRING;
 
 /**
  *
@@ -50,6 +49,8 @@ import static org.netbeans.installer.utils.StringUtils.EMPTY_STRING;
  * @author Kirill Sorokin
  */
 public class WindowsRegistry {
+    private int mode;
+    private Boolean wow64process;
     /////////////////////////////////////////////////////////////////////////////
     // Instance
     
@@ -58,7 +59,7 @@ public class WindowsRegistry {
      *
      */
     public WindowsRegistry() {
-        // does nothing
+        setMode(MODE_DEFAULT);        
     }
     
     // queries //////////////////////////////////////////////////////////////////////
@@ -74,7 +75,7 @@ public class WindowsRegistry {
         validateKey(key);
         
         try {
-            return checkKeyAccess0(section, key, KEY_READ_LEVEL);
+            return checkKeyAccess0(mode,section, key, KEY_READ_LEVEL);
         } catch (UnsatisfiedLinkError e) {
             throw new NativeException(ERROR_CANNOT_ACCESS_NATIVE_METHOD_STRING, e);
         }
@@ -108,7 +109,7 @@ public class WindowsRegistry {
         
         if (keyExists(section, key)) {
             try {
-                return valueExists0(section, key, name);
+                return valueExists0(mode,section, key, name);
             } catch (UnsatisfiedLinkError e) {
                 throw new NativeException(ERROR_CANNOT_ACCESS_NATIVE_METHOD_STRING, e);
             }
@@ -131,7 +132,7 @@ public class WindowsRegistry {
         
         if (keyExists(section, key)) {
             try {
-                return keyEmpty0(section, key);
+                return keyEmpty0(mode,section, key);
             } catch (UnsatisfiedLinkError e) {
                 throw new NativeException(ERROR_CANNOT_ACCESS_NATIVE_METHOD_STRING, e);
             }
@@ -154,7 +155,7 @@ public class WindowsRegistry {
         
         if (keyExists(section, key)) {
             try {
-                return countSubKeys0(section, key);
+                return countSubKeys0(mode,section, key);
             } catch (UnsatisfiedLinkError e) {
                 throw new NativeException(ERROR_CANNOT_ACCESS_NATIVE_METHOD_STRING, e);
             }
@@ -175,7 +176,7 @@ public class WindowsRegistry {
         
         if (keyExists(section, key)) {
             try {
-                return countValues0(section, key);
+                return countValues0(mode,section, key);
             } catch (UnsatisfiedLinkError e) {
                 throw new NativeException(ERROR_CANNOT_ACCESS_NATIVE_METHOD_STRING, e);
             }
@@ -210,7 +211,7 @@ public class WindowsRegistry {
         
         if (keyExists(section, key)) {
             try {
-                return getSubkeyNames0(section, key);
+                return getSubkeyNames0(mode,section, key);
             } catch (UnsatisfiedLinkError e) {
                 throw new NativeException(ERROR_CANNOT_ACCESS_NATIVE_METHOD_STRING, e);
             }
@@ -231,7 +232,7 @@ public class WindowsRegistry {
         
         if (keyExists(section, key)) {
             try {
-                return getValueNames0(section, key);
+                return getValueNames0(mode,section, key);
             } catch (UnsatisfiedLinkError e) {
                 throw new NativeException(ERROR_CANNOT_ACCESS_NATIVE_METHOD_STRING, e);
             }
@@ -270,7 +271,7 @@ public class WindowsRegistry {
         if (keyExists(section, key)) {
             if (valueExists(section, key, name)) {
                 try {
-                    return getValueType0(section, key, name);
+                    return getValueType0(mode,section, key, name);
                 } catch (UnsatisfiedLinkError e) {
                     throw new NativeException(ERROR_CANNOT_ACCESS_NATIVE_METHOD_STRING, e);
                 }
@@ -316,7 +317,7 @@ public class WindowsRegistry {
             }
             
             try {
-                createKey0(section, parent, child);
+                createKey0(mode,section, parent, child);
             } catch (UnsatisfiedLinkError e) {
                 throw new NativeException(ERROR_CANNOT_ACCESS_NATIVE_METHOD_STRING, e);
             }
@@ -351,7 +352,7 @@ public class WindowsRegistry {
         
         if (keyExists(section, parent, child)) {
             try {
-                deleteKey0(section, parent, child);
+                deleteKey0(mode,section, parent, child);
             } catch (UnsatisfiedLinkError e) {
                 throw new NativeException(ERROR_CANNOT_ACCESS_NATIVE_METHOD_STRING, e);
             }
@@ -375,7 +376,7 @@ public class WindowsRegistry {
         if (keyExists(section, key)) {
             if (valueExists(section, key, name)) {
                 try {
-                    deleteValue0(section, key, name);
+                    deleteValue0(mode,section, key, name);
                 } catch (UnsatisfiedLinkError e) {
                     throw new NativeException(ERROR_CANNOT_ACCESS_NATIVE_METHOD_STRING, e);
                 }
@@ -413,7 +414,7 @@ public class WindowsRegistry {
         if (keyExists(section, key)) {
             if (valueExists(section, key, name)) {
                 try {
-                    return getStringValue0(section, key, name, expand);
+                    return getStringValue0(mode,section, key, name, expand);
                 } catch (UnsatisfiedLinkError e) {
                     throw new NativeException(ERROR_CANNOT_ACCESS_NATIVE_METHOD_STRING, e);
                 }
@@ -459,7 +460,7 @@ public class WindowsRegistry {
         
         if (keyExists(section, key)) {
             try {
-                setStringValue0(section, key, name, value, expandable);
+                setStringValue0(mode,section, key, name, value, expandable);
             } catch (UnsatisfiedLinkError e) {
                 throw new NativeException(ERROR_CANNOT_ACCESS_NATIVE_METHOD_STRING, e);
             }
@@ -482,7 +483,7 @@ public class WindowsRegistry {
         if (keyExists(section, key)) {
             if (valueExists(section, key, name)) {
                 try {
-                    return get32BitValue0(section, key, name);
+                    return get32BitValue0(mode,section, key, name);
                 } catch (UnsatisfiedLinkError e) {
                     throw new NativeException(ERROR_CANNOT_ACCESS_NATIVE_METHOD_STRING, e);
                 }
@@ -510,7 +511,7 @@ public class WindowsRegistry {
         
         if (keyExists(section, key)) {
             try {
-                set32BitValue0(section, key, name, value);
+                set32BitValue0(mode,section, key, name, value);
             } catch (UnsatisfiedLinkError e) {
                 throw new NativeException(ERROR_CANNOT_ACCESS_NATIVE_METHOD_STRING, e);
             }
@@ -533,7 +534,7 @@ public class WindowsRegistry {
         if (keyExists(section, key)) {
             if (valueExists(section, key, name)) {
                 try {
-                    return getMultiStringValue0(section, key, name);
+                    return getMultiStringValue0(mode,section, key, name);
                 } catch (UnsatisfiedLinkError e) {
                     throw new NativeException(ERROR_CANNOT_ACCESS_NATIVE_METHOD_STRING, e);
                 }
@@ -561,7 +562,7 @@ public class WindowsRegistry {
         
         if (keyExists(section, key)) {
             try {
-                setMultiStringValue0(section, key, name, value);
+                setMultiStringValue0(mode,section, key, name, value);
             } catch (UnsatisfiedLinkError e) {
                 throw new NativeException(ERROR_CANNOT_ACCESS_NATIVE_METHOD_STRING, e);
             }
@@ -586,7 +587,7 @@ public class WindowsRegistry {
         if (keyExists(section, key)) {
             if (valueExists(section, key, name)) {
                 try {
-                    return getBinaryValue0(section, key, name);
+                    return getBinaryValue0(mode,section, key, name);
                 } catch (UnsatisfiedLinkError e) {
                     throw new NativeException(ERROR_CANNOT_ACCESS_NATIVE_METHOD_STRING, e);
                 }
@@ -614,7 +615,7 @@ public class WindowsRegistry {
         
         if (keyExists(section, key)) {
             try {
-                setBinaryValue0(section, key, name, value);
+                setBinaryValue0(mode,section, key, name, value);
             } catch (UnsatisfiedLinkError e) {
                 throw new NativeException(ERROR_CANNOT_ACCESS_NATIVE_METHOD_STRING, e);
             }
@@ -637,7 +638,7 @@ public class WindowsRegistry {
         
         if (keyExists(section, key)) {
             try {
-                setNoneValue0(section, key, name, bytes);
+                setNoneValue0(mode,section, key, name, bytes);
             } catch (UnsatisfiedLinkError e) {
                 throw new NativeException(ERROR_CANNOT_ACCESS_NATIVE_METHOD_STRING, e);
             }
@@ -698,15 +699,15 @@ public class WindowsRegistry {
         //validateKey(key);
         try {
             if(keyExists(section,key)) {
-                boolean check = checkKeyAccess0(section, key, KEY_MODIFY_LEVEL);
+                boolean check = checkKeyAccess0(mode,section, key, KEY_MODIFY_LEVEL);
                 
                 if(check) { 
                     // try to create/delete new sub key to be sure that we can modify the parent
                     // this will require in most cases of vista with UAC enabled
                     String randomKey = "rndkey" + new Random().nextLong();
                     try {
-                        createKey0(section, key, randomKey);
-                        deleteKey0(section, key, randomKey);
+                        createKey0(mode,section, key, randomKey);
+                        deleteKey0(mode,section, key, randomKey);
                     } catch (NativeException ex) {
                         check = false;
                     }
@@ -768,7 +769,72 @@ public class WindowsRegistry {
         }
     }
     
+    
+    public void setMode(int m) {
+        if(isModeSupported(m)) {            
+            mode = m;
+        }
+    }
+    
+    public boolean isAlternativeModeSupported() {
+        return (IsWow64Process() || System.getProperty("os.arch").equals("amd64"));                 
+    }    
+    
+    public void setMode(Boolean modeChange) {
+        setMode(modeBooleanToInteger(modeChange));
+    }
+    public boolean isModeSupported(int mode) {
+        switch (mode) {
+            case MODE_DEFAULT:
+                return true;
+            case MODE_64BIT:
+            case MODE_32BIT:
+                return isAlternativeModeSupported();
+            default:
+                return false;
+        }        
+    }    
+    
+    public int getMode() {        
+        return mode;        
+    }
+    public Boolean isAlternativeMode() {        
+        return modeIntegerToBoolean(mode);        
+    }
+    public boolean IsWow64Process() {
+        if(wow64process == null) {
+            wow64process = new Boolean(IsWow64Process0());
+        }
+        return wow64process.booleanValue();
+    }
+    
     // private //////////////////////////////////////////////////////////////////////
+    private Boolean modeIntegerToBoolean(int im) {
+        if(im==MODE_DEFAULT) {
+            return null;
+        } else if(im==MODE_32BIT) {
+            return new Boolean(System.getProperty("os.arch").equals("amd64"));
+        } else if(im==MODE_64BIT) {
+            return new Boolean(IsWow64Process());
+        } else {
+            return null;
+        }
+    }
+    private int modeBooleanToInteger(Boolean bm) {
+        if(bm == null) { 
+            return MODE_DEFAULT;
+        }
+        //running 32-bit application in Windows x64
+        if(IsWow64Process()) {
+            return bm.booleanValue() ? MODE_64BIT : MODE_32BIT;
+        }
+        //running 64-bit application in Windows x64
+        if(System.getProperty("os.arch").equals("amd64")) {
+            return !bm.booleanValue() ? MODE_64BIT : MODE_32BIT;
+        }
+        return MODE_DEFAULT;
+    }
+    
     private void validateSection(int section) throws NativeException {
         if ((section < HKEY_CLASSES_ROOT) || (section > HKEY_PERFORMANCE_TEXT)) {
             throw new NativeException("Section \"" + section + "\" is " +
@@ -824,48 +890,49 @@ public class WindowsRegistry {
     }
     
     // native declarations //////////////////////////////////////////////////////
-    private native boolean keyExists0(int section, String key) throws NativeException;
+    private native boolean keyExists0(int mode, int section, String key) throws NativeException;
     
-    private native boolean valueExists0(int section, String key, String value) throws NativeException;
+    private native boolean valueExists0(int mode, int section, String key, String value) throws NativeException;
     
-    private native boolean keyEmpty0(int section, String key) throws NativeException;
+    private native boolean keyEmpty0(int mode, int section, String key) throws NativeException;
     
-    private native int countSubKeys0(int section, String key) throws NativeException;
+    private native int countSubKeys0(int mode, int section, String key) throws NativeException;
     
-    private native int countValues0(int section, String key) throws NativeException;
+    private native int countValues0(int mode, int section, String key) throws NativeException;
     
-    private native String[] getSubkeyNames0(int section, String key) throws NativeException;
+    private native String[] getSubkeyNames0(int mode, int section, String key) throws NativeException;
     
-    private native String[] getValueNames0  (int section, String key) throws NativeException;
+    private native String[] getValueNames0(int mode, int section, String key) throws NativeException;
     
-    private native int getValueType0(int section, String key, String value) throws NativeException;
+    private native int getValueType0(int mode, int section, String key, String value) throws NativeException;
     
-    private native void createKey0(int section, String parent, String child) throws NativeException;
+    private native void createKey0(int mode, int section, String parent, String child) throws NativeException;
     
-    private native void deleteKey0(int section, String parent, String child) throws NativeException;
+    private native void deleteKey0(int mode, int section, String parent, String child) throws NativeException;
     
-    private native void deleteValue0(int section, String key, String value) throws NativeException;
+    private native void deleteValue0(int mode, int section, String key, String value) throws NativeException;
     
-    private native String getStringValue0(int section, String key, String name, boolean expand) throws NativeException;
+    private native String getStringValue0(int mode, int section, String key, String name, boolean expand) throws NativeException;
     
-    private native void setStringValue0(int section, String key, String name, String value, boolean expandable);
+    private native void setStringValue0(int mode, int section, String key, String name, String value, boolean expandable);
     
-    private native int get32BitValue0(int section, String key, String name) throws NativeException;
+    private native int get32BitValue0(int mode, int section, String key, String name) throws NativeException;
     
-    private native void set32BitValue0(int section, String key, String name, int value) throws NativeException;
+    private native void set32BitValue0(int mode, int section, String key, String name, int value) throws NativeException;
     
-    private native String[] getMultiStringValue0(int section, String key, String name) throws NativeException;
+    private native String[] getMultiStringValue0(int mode, int section, String key, String name) throws NativeException;
     
-    private native void setMultiStringValue0(int section, String key, String name, String[] value) throws NativeException;
+    private native void setMultiStringValue0(int mode, int section, String key, String name, String[] value) throws NativeException;
     
-    private native byte[] getBinaryValue0(int section, String key, String name) throws NativeException;
+    private native byte[] getBinaryValue0(int mode, int section, String key, String name) throws NativeException;
     
-    private native void setBinaryValue0(int section, String key, String name, byte[] value) throws NativeException;
+    private native void setBinaryValue0(int mode, int section, String key, String name, byte[] value) throws NativeException;
     
-    private native void setNoneValue0(int section, String key, String name, Object value) throws NativeException;
+    private native void setNoneValue0(int mode, int section, String key, String name, Object value) throws NativeException;
     
-    private native boolean checkKeyAccess0(int section, String key, int level) throws NativeException;
+    private native boolean checkKeyAccess0(int mode, int section, String key, int level) throws NativeException;
     
+    private native boolean IsWow64Process0();
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
     public static final int HKEY_CLASSES_ROOT              = 0;
@@ -897,6 +964,10 @@ public class WindowsRegistry {
     public static final int REG_RESOURCE_REQUIREMENTS_LIST = 10;
     public static final int REG_QWORD_LITTLE_ENDIAN        = 11;
     public static final int REG_QWORD                      = 11;
+    
+    public static final int MODE_DEFAULT                   = 0;
+    public static final int MODE_32BIT                     = 1;
+    public static final int MODE_64BIT                     = 2;
     
     public static final String SEPARATOR = "\\";
     

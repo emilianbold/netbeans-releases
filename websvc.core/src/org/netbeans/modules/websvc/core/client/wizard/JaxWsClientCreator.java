@@ -153,10 +153,10 @@ public class JaxWsClientCreator implements ClientCreator {
         if (packageName!=null && packageName.length()==0) packageName=null;
         String clientName = jaxWsClientSupport.addServiceClient(getWsdlName(wsdlUrl),wsdlUrl,packageName, isJsr109Platform); 
         if (useDispatch) {
-            List<Client> clients = jaxWsClientSupport.getServiceClients();
-            for (Client c : clients) {
-                if (c.getName().equals(clientName)) {
-                    c.setUseDispatch(useDispatch);
+            List clients = jaxWsClientSupport.getServiceClients();
+            for (Object c : clients) {
+                if (((Client)c).getName().equals(clientName)) {
+                    ((Client)c).setUseDispatch(useDispatch);
                 }
             }
             JaxWsModel jaxWsModel = (JaxWsModel) project.getLookup().lookup(JaxWsModel.class);

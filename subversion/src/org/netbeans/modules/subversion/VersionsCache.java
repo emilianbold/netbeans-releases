@@ -117,12 +117,7 @@ public class VersionsCache {
         } else if (Setup.REVISION_CURRENT.equals(revision)) {
             return base;
         } else {
-            SVNRevision svnrevision;
-            if (Setup.REVISION_HEAD.equals(revision)) {
-                svnrevision = SVNRevision.HEAD;
-            } else {
-                svnrevision = new SVNRevision.Number(Long.parseLong(revision));
-            }
+            SVNRevision svnrevision = SvnUtils.toSvnRevision(revision);
             try {
                 SvnClient client = Subversion.getInstance().getClient(base);
                 FileStatusCache cache = Subversion.getInstance().getStatusCache();
@@ -151,7 +146,7 @@ public class VersionsCache {
             }
         }
     }
-
+    
     private File getMetadataDir(File dir) {
         File svnDir = new File(dir, ".svn");  // NOI18N
         if (!svnDir.isDirectory()) {

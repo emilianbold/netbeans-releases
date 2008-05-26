@@ -386,7 +386,7 @@ public class AllOptionsFolder{
      * 
      * @param kitClass The editor kit class you want to load options for.
      * 
-     * @deprecated See {@link loadMimeOption(Class, boolean)} for details.
+     * @deprecated See {@link #loadMIMEOption(Class, boolean)} for details.
      */
     public void loadMIMEOption(Class kitClass){
         loadMIMEOption(kitClass, true);
@@ -397,7 +397,7 @@ public class AllOptionsFolder{
      * for this option will be processed.
      * 
      * @param kitClass The editor kit class you want to load options for.
-     * @param processOldTypeOptions Internal magic, if you really want to call
+     * @param processOldTypeOption Internal magic, if you really want to call
      *   this method, you should probably set this to <code>true</code>.
      * 
      * @deprecated There is no reason you should call this method. It should have

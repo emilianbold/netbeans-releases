@@ -53,3 +53,4 @@ NetBeans.Utils = function(){};
 NetBeans.SocketUtils = function(){};
 NetBeans.DebuggerLauncher = function(){};
 NetBeans.Debugger = function(){};
+NetBeans.NetMonitor = function(){};
