@@ -260,7 +260,7 @@ public class FmtOptions {
     
     public static int getGlobalIndentSize() {
         Preferences prefs = MimeLookup.getLookup(JAVA).lookup(Preferences.class);
-        return prefs.getInt(SimpleValueNames.INDENT_SHIFT_WIDTH, getDefaultAsInt(indentSize));
+        return prefs.getInt(SimpleValueNames.SPACES_PER_TAB, getDefaultAsInt(indentSize));
     }
     
     public static int getGlobalRightMargin() {
