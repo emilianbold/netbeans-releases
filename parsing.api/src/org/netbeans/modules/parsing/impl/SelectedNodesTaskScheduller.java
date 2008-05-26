@@ -44,6 +44,7 @@ import java.beans.PropertyChangeListener;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
@@ -73,7 +74,7 @@ public class SelectedNodesTaskScheduller extends FileObjectsTaskScheduller {
                 sources.add (source);
             }
         }
-        scheduleTasks (sources);
+        scheduleTasks (sources, new SchedulerEvent (this) {});
     }
     
     private class AListener implements PropertyChangeListener {

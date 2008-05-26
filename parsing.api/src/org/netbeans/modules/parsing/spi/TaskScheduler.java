@@ -110,8 +110,10 @@ public abstract class TaskScheduler {
      * Reschedule all tasks registered for <code>this</code> TaskScheduler (see
      * {@link ParserResultTask#getScheduler()}.
      */
-    public final void scheduleTasks () {
-        scheduleTasks (sources);
+    protected final void scheduleTasks (
+        SchedulerEvent      event
+    ) {
+        scheduleTasks (sources, event);
     }
 
     private RequestProcessor 
@@ -124,8 +126,10 @@ public abstract class TaskScheduler {
      * 
      * @param sources       A collection of {@link Source}s.
      */
-    public final synchronized void scheduleTasks (
-        Collection<Source>  sources
+    protected final synchronized void scheduleTasks (
+        Collection<Source>  sources,
+        final SchedulerEvent
+                            event
     ) {
         if (task != null)
             task.cancel ();
@@ -135,7 +139,7 @@ public abstract class TaskScheduler {
                 requestProcessor = new RequestProcessor ();
             task = requestProcessor.create (new Runnable () {
                 public void run () {
-                    Scheduler.schedule (TaskScheduler.this, TaskScheduler.this.sources);
+                    Scheduler.schedule (TaskScheduler.this, TaskScheduler.this.sources, event);
                 }
             });
         }

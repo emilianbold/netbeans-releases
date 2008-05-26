@@ -41,6 +41,7 @@ package org.netbeans.modules.parsing.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -49,6 +50,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.netbeans.modules.parsing.spi.TaskFactory;
 import org.netbeans.modules.parsing.spi.TaskScheduler;
@@ -71,18 +73,16 @@ public class Scheduler {
     
     private static Map<TaskScheduler,Map<Source,Collection<SchedulerTask>>> tasks = new HashMap<TaskScheduler, Map<Source, Collection<SchedulerTask>>> (); 
     
-    
-    static Collection<? extends TaskScheduler> getTaskScheduledsForSource (final Source source) {        
-        final Collection<TaskScheduler> result = new LinkedList<TaskScheduler>();
+    static void revalidate (final Source source) {
+        assert source != null;
         synchronized (tasks) {
-            for (final TaskScheduler schedulter : taskSchedulers) {
-                final Map<Source,?> value = tasks.get(schedulter);
-                if (value != null && value.keySet().contains(source)) {
-                    result.add(schedulter);
-                }
+            for (TaskScheduler scheduler : tasks.keySet ()) {
+                Collection<SchedulerTask> schedulerTasks = tasks.get (scheduler).get (source);
+                if (schedulerTasks != null)
+                    for (SchedulerTask schedulerTask : schedulerTasks)
+                        TaskProcessor.rescheduleTask (schedulerTask, source, null);
             }
         }
-        return result;
     }
     
     //tzezula: Live fast, die young.
@@ -92,7 +92,8 @@ public class Scheduler {
     //Shouldn't it reset {@link SourceFlags.CHANGE+EXPECTED}?
     public static void schedule (
         TaskScheduler       taskScheduler,
-        Collection<Source>  sources
+        Collection<Source>  sources,
+        SchedulerEvent      event
     ) {
         Map<Source,Collection<SchedulerTask>> sourceToTasks = tasks.get (taskScheduler);
         if (sourceToTasks == null) {
@@ -107,10 +108,10 @@ public class Scheduler {
                 tasks = createTasks (source, taskScheduler);
                 sourceToTasks.put (source, tasks);
                 for (SchedulerTask task : tasks)
-                    TaskProcessor.addPhaseCompletionTask (task, source);
+                    TaskProcessor.addPhaseCompletionTask (task, source, event);
             } else
                 for (SchedulerTask task : tasks)
-                    TaskProcessor.rescheduleTask (task, source);
+                    TaskProcessor.rescheduleTask (task, source, event);
             oldSources.remove (source);
         }
         for (Source source : oldSources) {

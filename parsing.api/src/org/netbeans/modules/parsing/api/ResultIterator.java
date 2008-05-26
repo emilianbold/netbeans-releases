@@ -99,8 +99,8 @@ public final class ResultIterator {
             );
             parser = lookup.lookup (Parser.class);
         }
-        parser.parse (snapshot, task);
-        return parser.getResult (task);
+        parser.parse (snapshot, task, null);
+        return parser.getResult (task, null);
     }
     
     /**

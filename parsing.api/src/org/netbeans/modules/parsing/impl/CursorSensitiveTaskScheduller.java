@@ -46,6 +46,7 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 
 import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.spi.SchedulerEvent;
 
 
 /**
@@ -72,13 +73,13 @@ public class CursorSensitiveTaskScheduller extends CurrentEditorTaskScheduller {
         if (currentDocument == document) return;
         currentDocument = document;
         Source source = Source.create (currentDocument);
-        scheduleTasks (Collections.singleton (source));
+        scheduleTasks (Collections.singleton (source), new SchedulerEvent (this) {});
     }
     
     private class ACaretListener implements CaretListener {
 
         public void caretUpdate (CaretEvent e) {
-            scheduleTasks ();
+            scheduleTasks (new SchedulerEvent (this) {});
         }
     }
 }

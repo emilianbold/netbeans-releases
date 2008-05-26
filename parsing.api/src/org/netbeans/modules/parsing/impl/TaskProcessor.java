@@ -73,6 +73,7 @@ import org.netbeans.modules.parsing.spi.EmbeddingProvider;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
+import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -180,14 +181,14 @@ public class TaskProcessor {
                 synchronized (source) { //tzezula: rough grained lock - may cause deadlock, but Hanz doesn't want the parsing API to do caching of results
                     final Set<SourceFlags> flags = SourceAccessor.getINSTANCE().getFlags(source);
                     if (!flags.contains(SourceFlags.INVALID)) {
-                        currentResult = parser.getResult(userTask);
+                        currentResult = parser.getResult(userTask, null);
                         if (!shared) {
                             flags.add(SourceFlags.INVALID);
                         }
                     }                                                                            
                     if (currentResult == null) {                                        
-                        parser.parse(source.createSnapshot(), userTask);
-                        currentResult = parser.getResult(userTask);
+                        parser.parse(source.createSnapshot(), userTask, null);
+                        currentResult = parser.getResult(userTask, null);
                         if (shared) {
                             flags.remove(SourceFlags.INVALID);
                         }
@@ -260,7 +261,7 @@ public class TaskProcessor {
      * @task The task to run.
      * @source The source on which the task operates
      */
-    public static void addPhaseCompletionTask(final SchedulerTask task, final Source source) {
+    public static void addPhaseCompletionTask(final SchedulerTask task, final Source source, SchedulerEvent event) {
         Parameters.notNull("task", task);   //NOI18N
         Parameters.notNull("source", source);   //NOI18N
         final String taskClassName = task.getClass().getName();
@@ -305,7 +306,7 @@ public class TaskProcessor {
      * @param task to reschedule
      * @param source to which the task it bound
      */
-    public static void rescheduleTask(final SchedulerTask task, final Source source) {
+    public static void rescheduleTask(final SchedulerTask task, final Source source, SchedulerEvent event) {
         Parameters.notNull("task", task);
         Parameters.notNull("source", source);
         synchronized (INTERNAL_LOCK) {
@@ -500,14 +501,15 @@ public class TaskProcessor {
                                         final Parser parser = ParserManagerImpl.getParser(source);
                                         assert parser != null;
                                         Parser.Result currentResult = null;
+                                        SchedulerEvent event = SourceAccessor.getINSTANCE().getEvent (source);
                                         synchronized (source) { //tzezula: rough grained lock - may cause deadlock, but Hanz doesn't want the parsing API to do caching of results
                                             final Set<SourceFlags> flags = SourceAccessor.getINSTANCE().getFlags(source);
                                             if (!flags.contains(SourceFlags.INVALID)) {
-                                                currentResult = parser.getResult(r.task);
+                                                currentResult = parser.getResult(r.task, event);
                                             }                                        
                                             if (currentResult == null) {
-                                                parser.parse(source.createSnapshot(), r.task);
-                                                currentResult = parser.getResult(r.task);
+                                                parser.parse(source.createSnapshot(), r.task, event);
+                                                currentResult = parser.getResult(r.task, event);
                                                 flags.remove(SourceFlags.INVALID);
                                             }
                                         }

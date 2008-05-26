@@ -46,6 +46,7 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 
 import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.spi.SchedulerEvent;
 
 
 /**
@@ -66,22 +67,22 @@ public class CurrentDocumentTaskScheduller extends CurrentEditorTaskScheduller {
             currentDocument.removeDocumentListener (documentListener);
         currentDocument = document;
         source = Source.create (currentDocument);
-        scheduleTasks (Collections.singleton (source));
+        scheduleTasks (Collections.singleton (source), new SchedulerEvent (this) {});
         document.addDocumentListener (documentListener);
     }
     
     private class ADocumentListener implements DocumentListener {
 
         public void insertUpdate (DocumentEvent e) {
-            scheduleTasks (Collections.singleton (source));
+            scheduleTasks (Collections.singleton (source), new SchedulerEvent (this) {});
         }
 
         public void removeUpdate (DocumentEvent e) {
-            scheduleTasks (Collections.singleton (source));
+            scheduleTasks (Collections.singleton (source), new SchedulerEvent (this) {});
         }
 
         public void changedUpdate (DocumentEvent e) {
-            scheduleTasks (Collections.singleton (source));
+            scheduleTasks (Collections.singleton (source), new SchedulerEvent (this) {});
         }
     }
 }

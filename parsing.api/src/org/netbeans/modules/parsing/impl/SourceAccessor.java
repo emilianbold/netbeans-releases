@@ -42,6 +42,7 @@ package org.netbeans.modules.parsing.impl;
 import java.util.Set;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.openide.util.Exceptions;
 
 /**
@@ -75,7 +76,12 @@ public abstract class SourceAccessor {
      * @return
      */
     public abstract Set<SourceFlags> getFlags (Source source);
-                       
+       
+    
+    public abstract void setEvent (Source source, SchedulerEvent event);
+    
+    public abstract SchedulerEvent getEvent (Source source);
+    
     /**
      * Returns cached {@link Parser} when available
      * @param source for which the parser should be obtained

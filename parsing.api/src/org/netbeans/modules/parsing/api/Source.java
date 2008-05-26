@@ -57,6 +57,7 @@ import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.parsing.impl.SourceAccessor;
 import org.netbeans.modules.parsing.impl.SourceFlags;
 import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -96,16 +97,9 @@ public final class Source {
     
     private static Map<FileObject,Reference<Source>> instances = new WeakHashMap<FileObject,Reference<Source>>();
     
-    static {
-        SourceAccessor.setINSTANCE(new MySourceAccessor());
-    }
-    
     private String          mimeType;
     private Document        document;
     private FileObject      fileObject;
-    private final Set<SourceFlags> 
-                            flags = EnumSet.of(SourceFlags.INVALID);
-    private volatile Parser          cachedParser;
     
    
     Source (
@@ -249,6 +243,19 @@ public final class Source {
         }
     }
     
+    
+    // accessor ................................................................
+    
+    static {
+        SourceAccessor.setINSTANCE(new MySourceAccessor());
+    }
+    
+    private final Set<SourceFlags> 
+                            flags = EnumSet.of(SourceFlags.INVALID);
+    private volatile Parser cachedParser;
+    private SchedulerEvent  schedulerEvent;
+    
+    
     private static class MySourceAccessor extends SourceAccessor {
 
         @Override
@@ -273,6 +280,23 @@ public final class Source {
                 }
                 source.cachedParser = parser;
             }
+        }
+
+        @Override
+        public void setEvent (Source source, SchedulerEvent event) {
+            assert source != null;
+            assert event != null;
+            synchronized (source) {
+                if (event != null) {
+                    throw new IllegalStateException();
+                }
+                source.schedulerEvent = event;
+            }
+        }
+
+        @Override
+        public SchedulerEvent getEvent(Source source) {
+            return source.schedulerEvent;
         }
     }
 }

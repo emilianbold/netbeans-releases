@@ -83,18 +83,13 @@ public class Utilities {
     }
     
     public static void revalidate (final Source source) {
-        assert source != null;
-        final Collection<? extends TaskScheduler> schedulers = Scheduler.getTaskScheduledsForSource(source);
-        final Collection<Source> sources = Collections.<Source>singleton(source);
-        for (TaskScheduler scheduler : schedulers) {
-            scheduler.scheduleTasks(sources);
-        }
+        Scheduler.revalidate (source);
     }
     
     public static void addParserResultTask (final ParserResultTask<?> task, final Source source) {
         assert task != null;
         assert source != null;
-        TaskProcessor.addPhaseCompletionTask(task, source);
+        TaskProcessor.addPhaseCompletionTask(task, source, null);
     }
     
     public static void removeParserResultTask (final ParserResultTask<?> task, final Source source) {
@@ -106,6 +101,6 @@ public class Utilities {
     public static void rescheduleTask (final ParserResultTask<?> task, final Source source) {
         assert task != null;
         assert source != null;
-        TaskProcessor.rescheduleTask(task, source);
+        TaskProcessor.rescheduleTask(task, source, null);
     }
 }

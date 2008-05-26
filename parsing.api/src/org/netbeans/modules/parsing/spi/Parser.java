@@ -65,7 +65,8 @@ public abstract class Parser {
      */
     public abstract void parse (
         Snapshot            snapshot,
-        Task                task
+        Task                task,
+        SchedulerEvent      event
     ) throws ParseException;
     
     /**
@@ -77,7 +78,8 @@ public abstract class Parser {
      * @return              Result of parsing or null.
      */
     public abstract Result getResult (
-        Task                task
+        Task                task,
+        SchedulerEvent      event
     ) throws ParseException;
         
     
