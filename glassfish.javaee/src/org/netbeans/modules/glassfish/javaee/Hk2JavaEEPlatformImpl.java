@@ -51,9 +51,8 @@ import org.netbeans.modules.glassfish.javaee.ide.Hk2PluginProperties;
 import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl;
+import org.netbeans.spi.glassfish.ServerUtilities;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -177,45 +176,25 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
     }
     
     /**
-     * With maven, the naming of jars and their versions is different with extensions like '1.2-SNAPSHOT'.
-     * This method tries to locate jar which name starts with a specific string
-     * 
-     * You may call the method like this:
-     * <br>
-     * <code>locate('webservices-rt')</code> <br>
-     * <code>locate('webservices-rt-1.2')</code> - if you care about the specific version
-     * @return File - jar file which name starts with specified string
-     */
-    private File locate(String fileName) {
-        FileObject gfRoot = FileUtil.toFileObject(new File(properties.getGlassfishRoot() + "/modules"));
-        FileObject[] jars = gfRoot.getChildren();
-        for (FileObject f : jars) {
-            if (f.getName().startsWith(fileName)) {
-                return FileUtil.toFile(f);
-            }
-        }
-        return null;
-    }
-    
-    /**
      * 
      * @param toolName 
      * @return 
      */
     public File[] getToolClasspathEntries(String toolName) {
 
+        String gfRootStr = properties.getGlassfishRoot();
         if (TOOL_WSGEN.equals(toolName) || TOOL_WSIMPORT.equals(toolName)) {
             return new File[] {
-                locate("activation"),           //NOI18N
-                locate("webservices-api"),      //NOI18N
-                locate("webservices-rt"),       //NOI18N
-                locate("webservices-tools"),    //NOI18N
-                locate("jsr109-impl")
+                ServerUtilities.getJarName(gfRootStr, "activation"),           //NOI18N
+                ServerUtilities.getJarName(gfRootStr, "webservices-api"),      //NOI18N
+                ServerUtilities.getJarName(gfRootStr, "webservices-rt"),       //NOI18N
+                ServerUtilities.getJarName(gfRootStr, "webservices-tools"),    //NOI18N
+                ServerUtilities.getJarName(gfRootStr, "jsr109-impl")
             };
         }
 
         File domainDir = null;
-        File gfRoot = new File(properties.getGlassfishRoot());
+        File gfRoot = new File(gfRootStr);
         if ((gfRoot != null) && (gfRoot.exists())) {
             domainDir = new File(gfRoot, "/domains/domain1"); // TODO - find domain correctly
         }

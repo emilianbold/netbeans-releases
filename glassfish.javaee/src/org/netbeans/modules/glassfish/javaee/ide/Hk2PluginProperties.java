@@ -51,8 +51,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
-import java.util.jar.JarFile;
-import java.util.jar.Manifest;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
@@ -145,18 +143,24 @@ public class Hk2PluginProperties {
      * @return
      */
     public List<URL> getClasses() {
+        
+        List<String> jars = new ArrayList();
+        jars.add("javax.javaee-10.0");
+        jars.add("webservices-api");        
+        jars.add("webservices-rt");
+
         List<URL> list = new ArrayList<URL>();
         File serverDir = new File(getGlassfishRoot());
         try {
 
-            File jar = ServerUtilities.getJarName(serverDir.getAbsolutePath(), "javax.javaee-10.0");
-            if (jar == null) {
-                return list;
+            for (String jarStr : jars) {
+                File jar = ServerUtilities.getJarName(serverDir.getAbsolutePath(), jarStr);
+                if ((jar != null) && (jar.exists()))  {
+                    list.add(fileToUrl(jar));
+                }
             }
-            if (jar.exists()) {
-                list.add(fileToUrl(jar));
-                return list;
-            }
+
+            return list;
 
         } catch (MalformedURLException ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
