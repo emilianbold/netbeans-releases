@@ -36,72 +36,92 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.php.editor.verification;
 
-import java.util.Collections;
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.Error;
 import org.netbeans.modules.gsf.api.Hint;
-import org.netbeans.modules.gsf.api.HintsProvider;
-import org.netbeans.modules.gsf.api.Rule;
-import org.netbeans.modules.gsf.api.RuleContext;
-import org.netbeans.modules.php.editor.PHPLanguage;
-import org.netbeans.modules.php.editor.parser.PHPParseResult;
+import org.netbeans.modules.php.editor.parser.astnodes.DoStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.ForStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.IfStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.WhileStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 
 /**
  *
  * @author Tomasz.Slota@Sun.COM
  */
-public class PHPHintsProvider implements HintsProvider {
+class PHPVerificationVisitor extends DefaultVisitor {
 
-    public void computeHints(HintsManager manager, RuleContext context, List<Hint> hints) {
-        Map<Integer, List<PHPRule>> allHints = (Map) manager.getHints(false, context);
-        CompilationInfo info = context.compilationInfo;
+    private PHPRuleContext context;
+    private Collection<PHPRule> rules;
+    private List<Hint> result = new LinkedList<Hint>();
 
-        List<PHPRule> allRules = new LinkedList<PHPRule>();
-        
-        for (List<PHPRule> ruleList : allHints.values()) {
-            for (PHPRule rule : ruleList) {
-                allRules.add(rule);
-            }
+    public PHPVerificationVisitor(PHPRuleContext context, Collection rules) {
+        this.context = context;
+        this.rules = rules;
+    }
+
+    public List<Hint> getResult() {
+        return result;
+    }
+
+    /*
+    private <T extends ASTNode> void handleRules(T node){
+        for (PHPRule rule : rules){
+            rule.setContext(context);
+            rule.visit(node);
+            result.addAll(rule.getResult());
+            rule.resetResult();
+        }
+    }*/
+
+    @Override
+    public void visit(IfStatement node) {
+        for (PHPRule rule : rules){
+            rule.setContext(context);
+            rule.visit(node);
+            result.addAll(rule.getResult());
+            rule.resetResult();
         }
         
-        for (PHPParseResult parseResult : ((List<PHPParseResult>) info.getEmbeddedResults(PHPLanguage.PHP_MIME_TYPE))) {
-            PHPVerificationVisitor visitor = new PHPVerificationVisitor((PHPRuleContext)context, allRules);
+        super.visit(node);
+    }
 
-            if (parseResult.getProgram() != null) {
-                parseResult.getProgram().accept(visitor);
-            }
-            
-            hints.addAll(visitor.getResult());
+    @Override
+    public void visit(DoStatement node) {
+        for (PHPRule rule : rules){
+            rule.setContext(context);
+            rule.visit(node);
+            result.addAll(rule.getResult());
+            rule.resetResult();
         }
-    }
-
-    public void computeSuggestions(HintsManager manager, RuleContext context, List<Hint> suggestions, int caretOffset) {
         
+        super.visit(node);
     }
 
-    public void computeSelectionHints(HintsManager manager, RuleContext context, List<Hint> suggestions, int start, int end) {
+    @Override
+    public void visit(ForStatement node) {
+        for (PHPRule rule : rules){
+            rule.setContext(context);
+            rule.visit(node);
+            result.addAll(rule.getResult());
+            rule.resetResult();
+        }
         
+        super.visit(node);
     }
 
-    public void computeErrors(HintsManager manager, RuleContext context, List<Hint> hints, List<Error> unhandled) {
+    @Override
+    public void visit(WhileStatement node) {
+        for (PHPRule rule : rules){
+            rule.setContext(context);
+            rule.visit(node);
+            result.addAll(rule.getResult());
+            rule.resetResult();
+        }
         
-    }
-
-    public void cancel() {
-        
-    }
-
-    public List<Rule> getBuiltinRules() {
-        return Collections.<Rule>emptyList();
-    }
-
-    public RuleContext createRuleContext() {
-        return new PHPRuleContext();
+        super.visit(node);
     }
 }

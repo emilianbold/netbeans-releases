@@ -36,25 +36,19 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.php.editor.verification;
 
 import java.util.Collections;
-import java.util.List;
 import java.util.Set;
-import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.Hint;
 import org.netbeans.modules.gsf.api.HintSeverity;
 import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.php.editor.PHPLanguage;
-import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 import org.netbeans.modules.php.editor.parser.astnodes.DoStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.ForStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.IfStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.WhileStatement;
-import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.openide.util.NbBundle;
 
 /**
@@ -76,70 +70,50 @@ public class AccidentalAssignementRule extends PHPRule {
     }
 
     @Override
-    public void run(PHPRuleContext context, List<Hint> result) {
-       CompilationInfo info = context.compilationInfo;
-       
-       for (PHPParseResult parseResult : ((List<PHPParseResult>)info.getEmbeddedResults(PHPLanguage.PHP_MIME_TYPE))){
-           AccidentalAssignementVisitor visitor = new AccidentalAssignementVisitor(result, info);
-           
-           if (parseResult.getProgram() != null) {
-               parseResult.getProgram().accept(visitor);
-               result.addAll(visitor.result);
-           }
-       }
+    public void visit(IfStatement node) {
+        check(node.getCondition());
+        super.visit(node);
     }
-    
-    class AccidentalAssignementVisitor extends DefaultVisitor{
-        private List<Hint> result;
-        private CompilationInfo info;
-        
-        AccidentalAssignementVisitor(List<Hint> result, CompilationInfo info){
-            this.result = result;
-            this.info = info;
-        }
-                
-        @Override
-        public void visit(IfStatement node) {
-            check(node.getCondition());
-            super.visit(node);
+
+    @Override
+    public void visit(DoStatement node) {
+        check(node.getCondition());
+        super.visit(node);
+    }
+
+    @Override
+    public void visit(ForStatement node) {
+        for (Expression expr : node.getConditions()) {
+            check(expr);
         }
 
-        @Override
-        public void visit(DoStatement node) {
-            check(node.getCondition());
-            super.visit(node);
+        super.visit(node);
+    }
+
+    @Override
+    public void visit(WhileStatement node) {
+        check(node.getCondition());
+        super.visit(node);
+    }
+
+    private void check(Expression expr) {
+        if (!(expr instanceof Assignment)) {
+            return;
         }
 
-        @Override
-        public void visit(ForStatement node) {
-            for (Expression expr : node.getConditions()){
-                check(expr);
-            }
-            
-            super.visit(node);
-        }
+        OffsetRange range = new OffsetRange(expr.getStartOffset(), expr.getEndOffset());
 
-        @Override
-        public void visit(WhileStatement node) {
-            check(node.getCondition());
-            super.visit(node);
-        }
-        
-        private void check(Expression expr){
-            if (!(expr instanceof Assignment)){
-                return;
-            }
-            
-            OffsetRange range = new OffsetRange(expr.getStartOffset(), expr.getEndOffset());
-            
-            Hint hint = new Hint(AccidentalAssignementRule.this, getDescription(),
-                    info.getFileObject(), range, null, 500);
-            
-            result.add(hint);
-        }
+        Hint hint = new Hint(AccidentalAssignementRule.this, getDescription(),
+                context.compilationInfo.getFileObject(), range, null, 500);
+
+        addResult(hint);
     }
 
     public Set<? extends Object> getKinds() {
         return Collections.singleton("general"); //todo: figure out what is it for
+    }
+
+    public String getDisplayName() {
+        return getDescription();
     }
 }
