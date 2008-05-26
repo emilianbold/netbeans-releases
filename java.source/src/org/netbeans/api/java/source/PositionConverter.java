@@ -102,7 +102,7 @@ public final class PositionConverter {
      * @since 0.21
      */
     public int getJavaSourcePosition(int originalPosition) {
-        return snapshot.getOriginalOffset(offset);
+        return snapshot.getOriginalOffset(originalPosition);
     }        
     // Nested classes ----------------------------------------------------------
 
