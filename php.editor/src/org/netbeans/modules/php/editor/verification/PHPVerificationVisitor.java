@@ -44,7 +44,9 @@ import java.util.List;
 import org.netbeans.modules.gsf.api.Hint;
 import org.netbeans.modules.php.editor.parser.astnodes.DoStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.ForStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.IfStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.WhileStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 
@@ -115,6 +117,30 @@ class PHPVerificationVisitor extends DefaultVisitor {
 
     @Override
     public void visit(WhileStatement node) {
+        for (PHPRule rule : rules){
+            rule.setContext(context);
+            rule.visit(node);
+            result.addAll(rule.getResult());
+            rule.resetResult();
+        }
+        
+        super.visit(node);
+    }
+
+    @Override
+    public void visit(FunctionDeclaration node) {
+        for (PHPRule rule : rules){
+            rule.setContext(context);
+            rule.visit(node);
+            result.addAll(rule.getResult());
+            rule.resetResult();
+        }
+        
+        super.visit(node);
+    }
+
+    @Override
+    public void visit(MethodDeclaration node) {
         for (PHPRule rule : rules){
             rule.setContext(context);
             rule.visit(node);

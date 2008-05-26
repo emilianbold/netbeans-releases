@@ -38,8 +38,10 @@
  */
 package org.netbeans.modules.php.editor.verification;
 
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import org.netbeans.modules.gsf.api.Hint;
@@ -137,6 +139,10 @@ public abstract class PHPRule implements AstRule, UserConfigurableRule, Visitor 
 
     public JComponent getCustomizer(Preferences node) {
         return null;
+    }
+    
+    public Set<? extends Object> getKinds() {
+        return Collections.singleton("general"); //todo: figure out what is it for
     }
 
     final void setContext(PHPRuleContext context) {

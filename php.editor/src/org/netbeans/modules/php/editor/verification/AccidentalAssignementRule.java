@@ -38,8 +38,6 @@
  */
 package org.netbeans.modules.php.editor.verification;
 
-import java.util.Collections;
-import java.util.Set;
 import org.netbeans.modules.gsf.api.Hint;
 import org.netbeans.modules.gsf.api.HintSeverity;
 import org.netbeans.modules.gsf.api.OffsetRange;
@@ -107,10 +105,6 @@ public class AccidentalAssignementRule extends PHPRule {
                 context.compilationInfo.getFileObject(), range, null, 500);
 
         addResult(hint);
-    }
-
-    public Set<? extends Object> getKinds() {
-        return Collections.singleton("general"); //todo: figure out what is it for
     }
 
     public String getDisplayName() {
