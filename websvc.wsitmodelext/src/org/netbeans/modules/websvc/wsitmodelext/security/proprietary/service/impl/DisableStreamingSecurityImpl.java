@@ -42,16 +42,14 @@
 package org.netbeans.modules.websvc.wsitmodelext.security.proprietary.service.impl;
 
 import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.service.DisableStreamingSecurity;
-import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.service.ProprietarySecurityPolicyServiceQName;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
 import org.w3c.dom.Element;
 
 /**
  *
  * @author Martin Grebac
  */
-public class DisableStreamingSecurityImpl extends ProprietaryTrustComponentServiceImpl implements DisableStreamingSecurity {
+public class DisableStreamingSecurityImpl extends ProprietarySecurityPolicyComponentImpl implements DisableStreamingSecurity {
     
     /**
      * Creates a new instance of DisableStreamingSecurityImpl
@@ -60,13 +58,4 @@ public class DisableStreamingSecurityImpl extends ProprietaryTrustComponentServi
         super(model, e);
     }
     
-    public DisableStreamingSecurityImpl(WSDLModel model){
-        this(model, createPrefixedElement(ProprietarySecurityPolicyServiceQName.DISABLESTREAMINGSECURITY.getQName(), model));
-    }
-
-    @Override
-    public void accept(WSDLVisitor visitor) {
-        visitor.visit(this);
-    }
-
 }

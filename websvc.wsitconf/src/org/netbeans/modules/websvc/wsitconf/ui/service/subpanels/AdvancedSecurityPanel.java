@@ -47,6 +47,7 @@ import javax.swing.text.NumberFormatter;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 
 import javax.swing.*;
+import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProprietarySecurityPolicyModelHelper;
 
 /**
@@ -61,8 +62,11 @@ public class AdvancedSecurityPanel extends JPanel {
     private DefaultFormatterFactory freshnessff = null;
     private DefaultFormatterFactory skewff = null;
     
-    public AdvancedSecurityPanel(Binding binding) {
+    private ConfigVersion cfgVersion = null;
+    
+    public AdvancedSecurityPanel(Binding binding, ConfigVersion cfgVersion) {
         this.binding = binding;
+        this.cfgVersion = cfgVersion;
         
         freshnessff = new DefaultFormatterFactory();
         NumberFormat freshnessFormat = NumberFormat.getIntegerInstance();

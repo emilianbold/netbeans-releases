@@ -55,6 +55,7 @@ import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import javax.swing.*;
+import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.PolicyModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProfilesModelHelper;
 import org.netbeans.modules.xml.xam.ComponentEvent;
 import org.netbeans.modules.xml.xam.ComponentListener;
@@ -192,14 +193,14 @@ public class OutputPanel extends SectionInnerPanel {
         Dialog dlg = DialogDisplayer.getDefault().createDialog(dlgDesc);
         
         dlg.setVisible(true); 
-        if (dlgDesc.getValue() == dlgDesc.CANCEL_OPTION) {
+        if (dlgDesc.getValue() == DialogDescriptor.CANCEL_OPTION) {
             for (int i=0; i<undoCounter.getCounter();i++) {
                 if (undoManager.canUndo()) {
                     undoManager.undo();
                 }
             }
         } else {
-            SecurityPolicyModelHelper.setTargets(output, targetsPanel.getTargetsModel());            
+            SecurityPolicyModelHelper.getInstance(PolicyModelHelper.getConfigVersion(binding)).setTargets(output, targetsPanel.getTargetsModel());            
         }
         
         model.removeUndoableEditListener(undoCounter);

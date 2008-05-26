@@ -172,43 +172,14 @@ public class MtomConfiguration  implements WSConfiguration{
     }
     
     public void set() {
-
-        final ProgressPanel progressPanel = new ProgressPanel(
-                NbBundle.getMessage(MtomConfiguration.class, "LBL_Wait")); //NOI18N
-        
-        final ProgressHandle progressHandle = ProgressHandleFactory.createHandle(null);
-        final JComponent progressComponent = ProgressHandleFactory.createProgressComponent(progressHandle);
-                
-        SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    progressHandle.start();
-                    progressHandle.switchToIndeterminate();
-                    progressPanel.open(progressComponent);
-                }
-        });
-
-        RequestProcessor.getDefault().post(new Runnable() {
-                public void run() {
-                    try {
-                        binding = WSITModelSupport.getBinding(service, implementationFile.getPrimaryFile(), project, true, createdFiles);
-                        if (binding == null) {
-                            return;
-                        }
-                        binding.getModel().addComponentListener(cl);
-                        if (!(TransportModelHelper.isMtomEnabled(binding))) {
-                            TransportModelHelper.enableMtom(binding);
-                            WSITModelSupport.save(binding);
-                        }
-                    } finally {
-                        progressHandle.finish();
-                        progressPanel.close();
-                    }
-                }
-        });
-        
+        switchIt(true);
     }
 
     public void unset() {
+        switchIt(false);
+    }
+
+    private void switchIt(final boolean enable) {
         final ProgressPanel progressPanel = new ProgressPanel(
                 NbBundle.getMessage(MtomConfiguration.class, "LBL_Wait")); //NOI18N
         
@@ -227,8 +198,8 @@ public class MtomConfiguration  implements WSConfiguration{
                 public void run() {
                     try {
                         if (binding == null) return;
-                        if (TransportModelHelper.isMtomEnabled(binding)) {
-                            TransportModelHelper.disableMtom(binding);
+                        if (!(TransportModelHelper.isMtomEnabled(binding) == enable)) {
+                            TransportModelHelper.enableMtom(binding, enable);
                             WSITModelSupport.save(binding);
                         }
                     } finally {
@@ -238,7 +209,7 @@ public class MtomConfiguration  implements WSConfiguration{
                 }
         });
     }
-
+    
     public void registerListener(PropertyChangeListener listener) {
         listeners.add(listener);
     }
