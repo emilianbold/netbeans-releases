@@ -92,18 +92,28 @@ public class PolicyModelHelper {
      * Returns 1.0 if 1.0 namespace is found, otherwise 1.1 is default.
      */
     public static ConfigVersion getConfigVersion(WSDLComponent c) {
+        ConfigVersion cfg = getWrittenConfigVersion(c);
+        return (cfg == null) ? ConfigVersion.getDefault() : cfg;
+    }
+
+    /** We need this one to find out if the value has been set already, or it's the default
+     * 
+     * @param c
+     * @return
+     */
+    private static ConfigVersion getWrittenConfigVersion(WSDLComponent c) {
         Policy p = getPolicyForElement(c);
         if (p != null) {
             return PolicyQName.getConfigVersion(p.getQName());
         }
-        return ConfigVersion.getDefault();
+        return null;
     }
-
+    
     /** 
      */
     public static void setConfigVersion(Binding b, ConfigVersion cfgVersion) {
-        ConfigVersion currentCfgVersion = getConfigVersion(b);                
-        if (!currentCfgVersion.equals(cfgVersion)) {
+        ConfigVersion currentCfgVersion = getWrittenConfigVersion(b);                
+        if (!cfgVersion.equals(currentCfgVersion)) {
             WSITModelSupport.moveCurrentConfig(b, currentCfgVersion, cfgVersion);
         }            
     }
