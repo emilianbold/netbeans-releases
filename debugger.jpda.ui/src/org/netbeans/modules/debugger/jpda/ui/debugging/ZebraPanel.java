@@ -54,10 +54,8 @@ public class ZebraPanel extends JPanel implements TreeExpansionListener {
     
     private DebugTreeView treeView;
     
-    ZebraPanel(DebugTreeView treeView, int width) {
+    ZebraPanel(DebugTreeView treeView) {
         this.treeView = treeView;
-        setLayout(new FlowLayout());
-        setPreferredSize(new Dimension(width, 0));
     }
     
     @Override

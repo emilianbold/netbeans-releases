@@ -45,6 +45,7 @@ import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.Iterator;
 import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.JTree;
@@ -52,9 +53,12 @@ import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
 import javax.swing.tree.TreePath;
 
+import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.spi.viewmodel.TreeExpansionModel;
 
 import org.openide.explorer.view.BeanTreeView;
+import org.openide.explorer.view.Visualizer;
+import org.openide.nodes.Node;
 
 /**
  *
@@ -150,16 +154,30 @@ public class DebugTreeView extends BeanTreeView implements TreeExpansionListener
         }
 
         Color origColor = g.getColor();
+        boolean isWhite = false;
+        Iterator<TreePath> iter = paths.iterator();
+        int firstGroupNumber = clipY / thickness;
+        for (int x = 0; x <= firstGroupNumber && iter.hasNext(); x++) {
+            Node node = Visualizer.findNode(iter.next().getLastPathComponent());
+            if(node.getLookup().lookup(JPDAThread.class) != null) {
+                isWhite = !isWhite;
+            }
+        }
+        
         int sy = (clipY / thickness) * thickness;
-        boolean isWhite = (clipY / thickness) % 2 == 0;
         int limit = Math.min(clipY + clipH - 1, zebraHeight);
         while (sy < limit) {
             int y1 = Math.max(sy, clipY);
             int y2 = Math.min(clipY + clipH, y1 + thickness) ;
             g.setColor(isWhite ? whiteColor : zebraColor);
-            isWhite = !isWhite;
             g.fillRect(clipX, y1, clipW, y2 - y1);
             sy += thickness;
+            if (iter.hasNext()) {
+                Node node = Visualizer.findNode(iter.next().getLastPathComponent());
+                if(node.getLookup().lookup(JPDAThread.class) != null) {
+                    isWhite = !isWhite;
+                }
+            }
         }
         if (sy < clipY + clipH - 1) {
             g.setColor(whiteColor);

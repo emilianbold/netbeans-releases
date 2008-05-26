@@ -131,9 +131,11 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
 
         mainPanel.add(treeView, BorderLayout.CENTER);
         
-        leftPanel = new ZebraPanel(treeView, 8);
+        leftPanel = new JPanel();
+        leftPanel.setPreferredSize(new Dimension(8, 0));
         leftPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 0, 0));
-        rightPanel = new ZebraPanel(treeView, 24);
+        rightPanel = new ZebraPanel(treeView);
+        rightPanel.setPreferredSize(new Dimension(24, 0));
         rightPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 0));
         
         mainPanel.add(leftPanel, BorderLayout.WEST);
