@@ -108,7 +108,7 @@ public class CustomizeDriverAction extends DatabaseAction {
                         err.append(bundle().getString("AddDriverDialog_MissingClass")); //NOI18N
                     }
                     if (err.length() > 0) {
-                        String message = MessageFormat.format(bundle().getString("AddDriverDialog_ErrorMessage"), new String[] {err.toString()}); //NOI18N
+                        String message = MessageFormat.format(bundle().getString("AddDriverDialog_ErrorMessage"), err.toString()); //NOI18N
                         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.INFORMATION_MESSAGE));
                         
                         return;
