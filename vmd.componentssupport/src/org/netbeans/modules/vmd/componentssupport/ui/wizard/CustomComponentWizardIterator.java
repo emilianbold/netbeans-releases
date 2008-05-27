@@ -249,6 +249,7 @@ public class CustomComponentWizardIterator implements
         wiz.putProperty(LIBRARIES, null );
         wiz.putProperty(LIB_NAMES, null);
         wiz.putProperty(LIB_DISPLAY_NAMES, null);
+        wiz.putProperty(CUSTOM_COMPONENTS, null);
         wiz = null;
         panels = null;
     }
