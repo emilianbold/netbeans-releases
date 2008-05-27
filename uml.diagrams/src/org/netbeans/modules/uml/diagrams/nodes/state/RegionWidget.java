@@ -292,7 +292,7 @@ public class RegionWidget extends Widget implements PropertyChangeListener
     protected void notifyStateChanged(ObjectState previousState, ObjectState state)
     {
         if (state.isSelected())
-            setBorder(BorderFactory.createLineBorder(0,new Color(0xFFA400)));
+            setBorder(BorderFactory.createLineBorder(0, UMLWidget.BORDER_HILIGHTED_COLOR));
         else
             setBorder(BorderFactory.createEmptyBorder());
     }

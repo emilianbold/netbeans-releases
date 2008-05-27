@@ -38,19 +38,13 @@
  */
 package org.netbeans.modules.uml.diagrams.nodes;
 
-import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Point;
 import org.netbeans.modules.uml.diagrams.nodes.activity.*;
 import java.awt.Rectangle;
 import java.util.ResourceBundle;
-import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.border.BorderFactory;
-import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
-import org.netbeans.modules.uml.drawingarea.actions.ResizeStrategyProvider;
-import org.netbeans.modules.uml.drawingarea.border.ResizeBorder;
 import org.netbeans.modules.uml.drawingarea.palette.context.DefaultContextPaletteModel;
 import org.netbeans.modules.uml.drawingarea.view.CustomizableWidget;
 import org.netbeans.modules.uml.drawingarea.view.ResourceType;

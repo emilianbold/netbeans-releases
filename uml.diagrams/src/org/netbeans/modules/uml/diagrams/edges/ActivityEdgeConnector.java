@@ -61,7 +61,7 @@ public class ActivityEdgeConnector extends AbstractUMLConnectionWidget
         setEndPointShape(PointShape.SQUARE_FILLED_BIG);
         setTargetAnchorShape(ARROW_END);
         
-        addToLookup(new ActivityEdgeContext(LabelManager.LabelType.EDGE) );
+        //addToLookup(new ActivityEdgeContext(LabelManager.LabelType.EDGE) );
     }
    
     @Override
@@ -70,26 +70,26 @@ public class ActivityEdgeConnector extends AbstractUMLConnectionWidget
         return new ActivityEdgeLabelManager(this);
     }
     
-    private class ActivityEdgeContext implements WidgetContext
-    {
-        private LabelManager.LabelType contextName = LabelManager.LabelType.EDGE;
-
-        public ActivityEdgeContext(LabelManager.LabelType context)
-        {
-            contextName = context;
-        }
-
-        public String getContextName()
-        {
-            return contextName.toString();
-        }
-
-        public Object[] getContextItems()
-        {
-            Object[] retVal = new Object[0];
-            return retVal;
-        }
-    }
+//    private class ActivityEdgeContext implements WidgetContext
+//    {
+//        private LabelManager.LabelType contextName = LabelManager.LabelType.EDGE;
+//
+//        public ActivityEdgeContext(LabelManager.LabelType context)
+//        {
+//            contextName = context;
+//        }
+//
+//        public String getContextName()
+//        {
+//            return contextName.toString();
+//        }
+//
+//        public Object[] getContextItems()
+//        {
+//            Object[] retVal = new Object[0];
+//            return retVal;
+//        }
+//    }
     
     public String getWidgetID()
     {

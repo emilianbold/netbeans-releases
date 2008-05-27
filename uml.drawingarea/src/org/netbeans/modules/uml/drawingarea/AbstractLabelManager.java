@@ -63,6 +63,7 @@ import org.netbeans.modules.uml.core.preferenceframework.PreferenceAccessor;
 import org.netbeans.modules.uml.drawingarea.persistence.EdgeWriter;
 import org.netbeans.modules.uml.drawingarea.persistence.api.DiagramEdgeWriter;
 import org.netbeans.modules.uml.drawingarea.view.DesignerTools;
+import org.netbeans.modules.uml.drawingarea.view.UMLWidget;
 
 /**
  * The AbstractLabelManger provides a basic implementation of the label manager.
@@ -75,7 +76,7 @@ import org.netbeans.modules.uml.drawingarea.view.DesignerTools;
 public abstract class AbstractLabelManager implements LabelManager
 {
     private final static Border NON_SELECTED_BORDER = BorderFactory.createOpaqueBorder(1, 1, 1, 1);
-    private final static Border SELECTED_BORDER = BorderFactory.createLineBorder(1, new Color(0xFFA400));
+    private final static Border SELECTED_BORDER = BorderFactory.createLineBorder(1, UMLWidget.BORDER_HILIGHTED_COLOR);
         
     private ConnectionWidget connector = null;
     private HashMap < String, Widget > labelMap = new HashMap < String, Widget >();
