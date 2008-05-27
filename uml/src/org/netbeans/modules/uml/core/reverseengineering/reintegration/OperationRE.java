@@ -108,6 +108,8 @@ import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.core.support.umlutils.ElementLocator;
 import org.netbeans.modules.uml.core.support.umlutils.IElementLocator;
 import org.netbeans.modules.uml.ui.support.ProductHelper;
+import org.dom4j.Node;
+import org.netbeans.modules.uml.core.support.umlsupport.XMLManip;
 
 /**
  * @author Aztec
@@ -207,24 +209,7 @@ public class OperationRE implements IOperationRE
       IInteractionFragment cpCurrentIF = null;
       if (m_stackInteractionFragments.size() > 0)
       {
-         //           if( kind == IMessageKind.MK_CREATE && IParsingState.OPS_TEST != getParsingState())
-         //           {
-         //              // Fix W6641:  Temporarily pop the top interaction fragment off the stack
-         //              // so we can get the one under it.
-         //                IInteractionFragment cpTempIF 
-         //                    = m_stackInteractionFragments.peek();
-         //
-         //                m_stackInteractionFragments.pop();
-         //                if( m_stackInteractionFragments.size() > 0)
-         //                {
-         //                    cpCurrentIF = m_stackInteractionFragments.peek();
-         //                }
-         //                m_stackInteractionFragments.push( cpTempIF );
-         //           }
-         //           else
-         {
             cpCurrentIF = m_stackInteractionFragments.peek();
-         }
       }
       IMessage cpMessage = null;
 
@@ -1253,7 +1238,35 @@ public class OperationRE implements IOperationRE
             // Determine the line number to be associated with the message
             int lineNumber = event.getLine();
 
-            insertMessage(getThisLifeline(), lifeline, operation, BaseElement.MK_CREATE, lineNumber);
+            IMessage msg=insertMessage(getThisLifeline(), lifeline, operation, BaseElement.MK_CREATE, lineNumber);
+//            if(operation!=null)msg.setOperationInvoked(operation);
+//            String methodName=event.getConstructor().getName();
+//            if(methodName!=null && methodName.length()>0)
+//            {
+//                 ETList<IREParameter> args=event.getConstructor().getParameters();
+//                 String argsStr="(";
+//                 if(args!=null)
+//                 {
+//                     for(int i=0;i<args.size();i++)
+//                     {
+//                         IREParameter arg=args.get(i);
+//                         Node node=arg.getEventData();
+//                         String value=XMLManip.getAttributeValue(node, "argumentValue");
+//                         if(i>0)argsStr+=", ";
+//                         else argsStr+=" ";
+//                         if(value!=null)
+//                         {
+//                             if(value.length()<20)
+//                             {
+//                                 argsStr+=value;
+//                             }
+//                             else argsStr+=value.substring(0, 19)+"...";
+//                         }
+//                     }
+//                 }
+//                 argsStr+=" )";
+//                 msg.setName(methodName+argsStr);
+//            }
          }
       }
    }
@@ -1585,7 +1598,34 @@ public class OperationRE implements IOperationRE
             // Determine the line number to be associated with the message
             int lineNumber = e.getLine();
 
-            insertMessage(getThisLifeline(), lifeline, op, BaseElement.MK_SYNCHRONOUS, lineNumber);
+            IMessage msg=insertMessage(getThisLifeline(), lifeline, op, BaseElement.MK_SYNCHRONOUS, lineNumber);
+            String methodName=e.getMethodName();
+            if(methodName!=null && methodName.length()>0)
+            {
+                 ETList<IREArgument> args=e.getArguments();
+                 String argsStr="(";
+                 if(args!=null)
+                 {
+                     for(int i=0;i<args.size();i++)
+                     {
+                         IREArgument arg=args.get(i);
+                         Node node=arg.getEventData();
+                         String value=XMLManip.getAttributeValue(node, "argumentValue");
+                         if(i>0)argsStr+=", ";
+                         else argsStr+=" ";
+                         if(value!=null)
+                         {
+                             if(value.length()<20)
+                             {
+                                 argsStr+=value;
+                             }
+                             else argsStr+=value.substring(0, 19)+"...";
+                         }
+                     }
+                 }
+                 argsStr+=" )";
+                 msg.setName(methodName+argsStr);
+            }
          }
       }
    }
