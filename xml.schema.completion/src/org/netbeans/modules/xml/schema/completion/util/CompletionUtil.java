@@ -629,9 +629,14 @@ public class CompletionUtil {
                             attributes.add(new DocRootAttribute(lastAttrName, value));
                             lastAttrName = null;
                         }
-                    }
+                    } //while loop
+                    
+                    //first start tag with a valid name is the root
+                    if(name != null)
+                        break;
                 }
-            }
+            } //while loop
+            
             return new DocRoot(name, attributes);
         } finally {
             ((AbstractDocument)document).readUnlock();
