@@ -148,9 +148,13 @@ public class NodeFactorySupport {
        
        private Collection<NodeListKeyWrapper> createKeys() {
            Collection<NodeListKeyWrapper> col = new ArrayList<NodeListKeyWrapper>();
-           synchronized (keys) {
+           assert !Thread.holdsLock(keys);
+           synchronized (this) {
                for (NodeList lst : nodeLists) {
-                   List<NodeListKeyWrapper> x = keys.get(lst);
+                   List<NodeListKeyWrapper> x;
+                   synchronized (keys) {
+                        x = keys.get(lst);
+                   }
                    if (x != null) {
                        col.addAll(x);
                    }
@@ -309,7 +313,7 @@ public class NodeFactorySupport {
             hash = 67 * hash + (this.object != null ? this.object.hashCode() : 0);
             return hash;
         }
+        
+        }
 
     }
-    
-}
