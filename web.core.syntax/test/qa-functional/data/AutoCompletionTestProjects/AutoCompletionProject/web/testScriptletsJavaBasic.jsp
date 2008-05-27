@@ -9,28 +9,31 @@
     <body>
 
     <h1>JSP Scriptlets Code Completion Page</h1>
+<%
+    application.getClass();
+%>
 
 <%-- Java completion for TestBean class --%>
 <%--CC
-<% appli|
+<% appl| %>
 ...
-<% application
+<% application %>
 --%>
 
 <% TESTBean tBean; %>
 
 <%-- Java completion for variables between more sriptlets --%>
 <%--CC
-<% tB|
+<% tB| %>
 ...
-<% tBean
+<% tBean %>
 --%>
 
 <%-- Java completion for variables methods and fields between more sriptlets --%>
 <%--CC
-<% tBean.setN|
+<% tBean.setN| %>
 ...
-<% tBean.setName(name)
+<% tBean.setName(name) %>
 --%>
 
 <%-- completion for String object inside scriptlets --%>
