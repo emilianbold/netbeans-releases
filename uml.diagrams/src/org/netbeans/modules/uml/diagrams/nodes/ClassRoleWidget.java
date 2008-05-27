@@ -69,7 +69,6 @@ public class ClassRoleWidget extends UMLClassWidget
         
         addToLookup(initializeContextPalette());
         addToLookup(new DefaultWidgetContext("Class"));
-        addToLookup(new ClassifierSelectAction());
         
     }
 

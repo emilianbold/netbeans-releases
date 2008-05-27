@@ -68,9 +68,7 @@ public class InterfaceRoleWidget extends InterfaceWidget
         actions.addAction(new SceneSelectAction());
         
         addToLookup(initializeContextPalette());
-        addToLookup(new DefaultWidgetContext("Class"));
-        addToLookup(new ClassifierSelectAction());
-        
+        addToLookup(new DefaultWidgetContext("Class"));        
     }
 
     public InterfaceRoleWidget(Scene scene, IPresentationElement pe)
