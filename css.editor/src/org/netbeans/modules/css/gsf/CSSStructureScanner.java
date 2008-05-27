@@ -45,15 +45,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.Element;
 import org.netbeans.modules.gsf.api.ElementHandle;
 import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.gsf.api.HtmlFormatter;
@@ -65,7 +61,6 @@ import org.netbeans.modules.gsf.api.StructureScanner;
 import org.netbeans.modules.gsf.api.TranslatedSource;
 import org.netbeans.modules.css.editor.Css;
 import org.netbeans.modules.css.parser.CSSParserTreeConstants;
-import org.netbeans.modules.css.parser.CssParserAccess;
 import org.netbeans.modules.css.parser.NodeVisitor;
 import org.netbeans.modules.css.parser.SimpleNode;
 import org.openide.util.Exceptions;
@@ -115,7 +110,7 @@ public class CSSStructureScanner implements StructureScanner {
                         int documentEO = AstUtils.documentPosition(node.endOffset(), source);
                         String nodeName = info.getText().substring(documentSO, documentEO);
 
-                        items.add(new CssRuleStructureItem(nodeName, new CssElementHandle(ruleNode, node, info), source));
+                        items.add(new CssRuleStructureItem(nodeName, CssAstElement.getElement(info, ruleNode)));
                     }
                 }
             }
@@ -172,14 +167,12 @@ public class CSSStructureScanner implements StructureScanner {
     
     private static class CssRuleStructureItem implements StructureItem {
 
-        private TranslatedSource source;
-        private CssElementHandle handle;
         private String name;
+        private CssAstElement element;
 
-        private CssRuleStructureItem(String name, CssElementHandle handle, TranslatedSource source) {
-            this.handle = handle;
-            this.source = source;
+        private CssRuleStructureItem(String name, CssAstElement element) {
             this.name = name;
+            this.element = element;
         }
 
         public String getName() {
@@ -195,11 +188,11 @@ public class CSSStructureScanner implements StructureScanner {
         }
 
         public ElementHandle getElementHandle() {
-            return handle;
+            return element;
         }
 
         public ElementKind getKind() {
-            return ElementKind.FIELD;
+            return ElementKind.RULE;
         }
 
         public Set<Modifier> getModifiers() {
@@ -216,11 +209,11 @@ public class CSSStructureScanner implements StructureScanner {
         }
 
         public long getPosition() {
-            return AstUtils.documentPosition(handle.elementAstStartOffset(), source);
+            return AstUtils.documentPosition(element.node().startOffset(), element.translatedSource());
         }
 
         public long getEndPosition() {
-            return AstUtils.documentPosition(handle.elementAstEndOffset(), source);
+            return AstUtils.documentPosition(element.node().endOffset(), element.translatedSource());
         }
 
         public ImageIcon getCustomIcon() {

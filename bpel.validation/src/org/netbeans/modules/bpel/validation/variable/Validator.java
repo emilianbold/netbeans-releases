@@ -49,6 +49,7 @@ import java.util.LinkedList;
 import org.netbeans.modules.bpel.model.api.Assign;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.Copy;
+import org.netbeans.modules.bpel.model.api.Pick;
 import org.netbeans.modules.bpel.model.api.Scope;
 import org.netbeans.modules.bpel.model.api.To;
 import org.netbeans.modules.bpel.model.api.From;
@@ -108,7 +109,7 @@ public final class Validator extends BpelValidator {
         VariablePart variablePart = getCommonVariable(list.get(i), list.get(j));
 
         if (variablePart != null) {
-          addError("FIX_Variable_in_Flow", flow, flow.getName(), variablePart.toString()); // NOI18N
+          addWarning("FIX_Variable_in_Flow", flow, flow.getName(), variablePart.toString()); // NOI18N
           break;
         }
       }
@@ -126,6 +127,9 @@ public final class Validator extends BpelValidator {
 
   private void findVariableParts(BpelEntity entity, List<VariablePart> variables) {
     if (entity instanceof Scope) {
+      return;
+    }
+    if (entity instanceof Pick) {
       return;
     }
     if (entity instanceof Assign) {
