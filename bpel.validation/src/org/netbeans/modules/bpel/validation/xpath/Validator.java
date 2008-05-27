@@ -242,7 +242,7 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
       return;
     }
     if ( !value.startsWith("$")) { // NOI18N
-      addError("FIX_To_Value", to, value); // NOI18N
+      addError("FIX_SA00033", to, value); // NOI18N
     }
   }
 
