@@ -73,11 +73,13 @@ import org.netbeans.modules.uml.core.metamodel.diagrams.IProxyDiagram;
 import org.netbeans.modules.uml.core.metamodel.diagrams.TSDiagramDetails;
 import org.netbeans.modules.uml.core.metamodel.dynamics.Lifeline;
 import org.netbeans.modules.uml.core.metamodel.dynamics.Message;
+import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IAssociation;
 import org.netbeans.modules.uml.core.metamodel.structure.IProject;
 import org.netbeans.modules.uml.core.support.umlsupport.FileExtensions;
 import org.netbeans.modules.uml.core.support.umlutils.ElementLocator;
 import org.netbeans.modules.uml.core.support.umlutils.IElementLocator;
 import org.netbeans.modules.uml.drawingarea.AbstractLabelManager;
+import org.netbeans.modules.uml.drawingarea.LabelManager;
 import org.netbeans.modules.uml.drawingarea.SQDDiagramTopComponent;
 import org.netbeans.modules.uml.drawingarea.UMLDiagramTopComponent;
 import org.netbeans.modules.uml.drawingarea.actions.ActionProvider;
@@ -190,9 +192,9 @@ public class TSDiagramConverter
         readXMLPres();
         releaseResources();
         //
-        handleLabelsInfo(peidToLabelMap);
         createNodesPresentationElements();
         findEdgesElements();
+        handleLabelsInfo(peidToLabelMap);
         if(diagramDetails.getDiagramType() == IDiagramKind.DK_SEQUENCE_DIAGRAM)
         {
             normalizeSQDDiagram();
@@ -417,14 +419,17 @@ public class TSDiagramConverter
         try
         {            
             IPresentationElement presEl = (IPresentationElement) nodeInfo.getProperty(PRESENTATIONELEMENT);
-            DiagramEngine engine = scene.getEngine();
-            Widget widget = null;
-            if(presEl!=null)widget=engine.addWidget(presEl, nodeInfo.getPosition());
-            postProcessNode(widget,presEl);
-            //add this PE to the presLIst
-            widgetsList.add(widget);
-            if (widget!=null && widget instanceof UMLNodeWidget)
-                ((UMLNodeWidget) widget).load(nodeInfo);
+            if(presEl!=null)
+            {
+                DiagramEngine engine = scene.getEngine();
+                Widget widget = null;
+                if(presEl!=null)widget=engine.addWidget(presEl, nodeInfo.getPosition());
+                postProcessNode(widget,presEl);
+                //add this PE to the presLIst
+                widgetsList.add(widget);
+                if (widget!=null && widget instanceof UMLNodeWidget)
+                    ((UMLNodeWidget) widget).load(nodeInfo);
+            }
         }
 
         catch (Exception e)
@@ -452,9 +457,12 @@ public class TSDiagramConverter
              IPresentationElement presEl = createPresentationElement(
              nodeInfo.getMEID(), nodeInfo.getPEID());
              good=presEl!=null;
-             mapEngineToView(presEl,nodeInfo);
-             nodeInfo.setProperty(PRESENTATIONELEMENT, presEl);
-             presEltList.add(presEl);
+             if(good)
+             {
+                mapEngineToView(presEl,nodeInfo);
+                nodeInfo.setProperty(PRESENTATIONELEMENT, presEl);
+                presEltList.add(presEl);
+             }
         }
         catch (Exception e)
         {
@@ -733,12 +741,7 @@ public class TSDiagramConverter
         for (EdgeInfo einfo : einfos)
         {
             IElement elt = getElement(project, einfo.getMEID());
-            einfo.setProperty( ELEMENT,elt);
-//            if(elt!=null && elt instanceof Message)
-//            {
-//                Message message=(Message) elt;
-//                if(message.get)
-//            }
+            if(elt!=null)einfo.setProperty( ELEMENT,elt);
         }
     }
    
@@ -1010,6 +1013,7 @@ public class TSDiagramConverter
             String typeInfo=null;
             EdgeInfo edgeInfo=(EdgeInfo) labelInfo.get("EDGE");
             boolean endLabel=false;
+            LabelManager.LabelType type=null;
             System.out.println("LABEL TS KIND: "+tsType);
             switch(tsType)
             {
@@ -1027,15 +1031,27 @@ public class TSDiagramConverter
                     break;
                 case 4:
                     //target association name
+                    endLabel=true;
+                    typeInfo=AbstractLabelManager.NAME;
+                    type=LabelManager.LabelType.TARGET;
                     break;
                 case 2:
                     //source association name
+                    endLabel=true;
+                    typeInfo=AbstractLabelManager.NAME;
+                    type=LabelManager.LabelType.SOURCE;
                     break;
                 case 5:
                     //some end multiplicity
+                    endLabel=true;
+                    typeInfo=AbstractLabelManager.MULTIPLICITY;
+                    type=LabelManager.LabelType.TARGET;
                     break;
                 case 3:
                     //other end multiplicity
+                    endLabel=true;
+                    typeInfo=AbstractLabelManager.MULTIPLICITY;
+                    type=LabelManager.LabelType.SOURCE;
                     break;
                 case 10:
                     //guard condition(activity)
@@ -1050,10 +1066,58 @@ public class TSDiagramConverter
                 default:
                     throw new UnsupportedOperationException("Converter can't handle label kind: "+tsType);
             }
+            System.out.println("LABEL: "+typeInfo+":"+type);
             if(typeInfo==null)continue;//unsupported yet
             if(endLabel)
             {
-                
+                EdgeInfo.EndDetails endDet = null;
+                //need source and target id for association
+                IElement elt=(IElement) edgeInfo.getProperty(ELEMENT);
+                String sourceID=null;
+                String targetID=null;
+                if(elt!=null && elt instanceof IAssociation)
+                {
+                    IAssociation ass=(IAssociation) elt;
+                    sourceID=ass.getEndAtIndex(0).getXMIID();
+                    targetID=ass.getEndAtIndex(1).getXMIID();
+                }
+                else
+                {
+                    continue;//support only associations (now?)
+                }
+                //
+                for(EdgeInfo.EndDetails tmp:edgeInfo.getEnds())
+                {
+                    if(tmp.getID().equals(sourceID))
+                    {
+                        endDet=tmp;
+                        break;
+                    }
+                    else if(tmp.getID().equals(targetID))
+                    {
+                        endDet=tmp;
+                        break;
+                    }
+                }
+                if(endDet==null)
+                {
+                    endDet = edgeInfo.new EndDetails();
+                    edgeInfo.getEnds().add(endDet);
+                }
+                if(type.equals(LabelManager.LabelType.TARGET))
+                {
+                    endDet.setID(targetID);
+                }
+                else if(type.equals(LabelManager.LabelType.SOURCE))
+                {
+                    endDet.setID(sourceID);
+                }
+                edgeInfo.setHasContainedElements(true);
+                EdgeInfo.EdgeLabel label=edgeInfo.new EdgeLabel();
+                label.setLabel(typeInfo);
+                label.setSize(size);
+                endDet.getEndEdgeLabels().add(label);
+                System.out.println("END LABEL: "+type+";"+typeInfo+";"+endDet.getID());
             }
             else
             {
