@@ -1086,14 +1086,19 @@ public class TSDiagramConverter
                     continue;//support only associations (now?)
                 }
                 //
+                String requiredID=null;
+                if(type.equals(LabelManager.LabelType.TARGET))
+                {
+                    requiredID=(targetID);
+                }
+                else if(type.equals(LabelManager.LabelType.SOURCE))
+                {
+                    requiredID=(sourceID);
+                }
+                //
                 for(EdgeInfo.EndDetails tmp:edgeInfo.getEnds())
                 {
-                    if(tmp.getID().equals(sourceID))
-                    {
-                        endDet=tmp;
-                        break;
-                    }
-                    else if(tmp.getID().equals(targetID))
+                    if(tmp.getID().equals(requiredID))
                     {
                         endDet=tmp;
                         break;
@@ -1104,14 +1109,7 @@ public class TSDiagramConverter
                     endDet = edgeInfo.new EndDetails();
                     edgeInfo.getEnds().add(endDet);
                 }
-                if(type.equals(LabelManager.LabelType.TARGET))
-                {
-                    endDet.setID(targetID);
-                }
-                else if(type.equals(LabelManager.LabelType.SOURCE))
-                {
-                    endDet.setID(sourceID);
-                }
+                endDet.setID(requiredID);
                 edgeInfo.setHasContainedElements(true);
                 EdgeInfo.EdgeLabel label=edgeInfo.new EdgeLabel();
                 label.setLabel(typeInfo);
