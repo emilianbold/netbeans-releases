@@ -40,7 +40,6 @@
  */
 
 package org.netbeans.modules.db.explorer.dlg;
-import java.awt.BorderLayout;
 import java.util.List;
 import java.util.ResourceBundle;
 import javax.swing.JComponent;
@@ -65,7 +64,6 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel implemen
     // private Vector templates;
     private DatabaseConnection connection;
     private ProgressHandle progressHandle;
-    private JComponent progressComponent;
 
     private static final String BUNDLE = "org.netbeans.modules.db.resources.Bundle"; //NOI18N
 
@@ -96,8 +94,6 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel implemen
         };
         mediator.addConnectionProgressListener(progressListener);
         
-        driverTextField.setText(connection.getDriver());
-        urlComboBox.setSelectedItem(connection.getDatabase());
         userTextField.setText(connection.getUser());
         passwordField.setText(connection.getPassword());
 
@@ -116,11 +112,13 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel implemen
             }
         }
 
-        driverTextField.getDocument().addDocumentListener(this);
+        databaseField.getDocument().addDocumentListener(this);
+        hostField.getDocument().addDocumentListener(this);
+        portField.getDocument().addDocumentListener(this);
+        urlField.getDocument().addDocumentListener(this);
         userTextField.getDocument().addDocumentListener(this);
         passwordField.getDocument().addDocumentListener(this);
         templateComboBox.getModel().addListDataListener(this);
-        urlComboBox.getModel().addListDataListener(this);
 
         checkValid();
     }
@@ -129,16 +127,12 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel implemen
         ResourceBundle b = NbBundle.getBundle(BUNDLE);
         templateLabel.getAccessibleContext().setAccessibleDescription(b.getString("ACS_NewConnectionDriverNameA11yDesc")); //NOI18N
         templateComboBox.getAccessibleContext().setAccessibleName(b.getString("ACS_NewConnectionDriverNameComboBoxA11yName")); //NOI18N
-        driverLabel.getAccessibleContext().setAccessibleDescription(b.getString("ACS_NewConnectionDriverClassA11yDesc")); //NOI18N
-        driverTextField.getAccessibleContext().setAccessibleName(b.getString("ACS_NewConnectionDriverClassComboBoxA11yName")); //NOI18N
         urlLabel.getAccessibleContext().setAccessibleDescription(b.getString("ACS_NewConnectionDatabaseURLA11yDesc")); //NOI18N
-        urlComboBox.getAccessibleContext().setAccessibleName(b.getString("ACS_NewConnectionDatabaseURLTextFieldA11yName")); //NOI18N
+        urlField.getAccessibleContext().setAccessibleName(b.getString("ACS_NewConnectionDatabaseURLTextFieldA11yName")); //NOI18N
         userLabel.getAccessibleContext().setAccessibleDescription(b.getString("ACS_NewConnectionUserNameA11yDesc")); //NOI18N
         userTextField.getAccessibleContext().setAccessibleName(b.getString("ACS_NewConnectionUserNameTextFieldA11yName")); //NOI18N
         passwordLabel.getAccessibleContext().setAccessibleDescription(b.getString("ACS_NewConnectionPasswordA11yDesc")); //NOI18N
         passwordField.getAccessibleContext().setAccessibleName(b.getString("ACS_NewConnectionPasswordTextFieldA11yName")); //NOI18N
-        connectProgressPanel.getAccessibleContext().setAccessibleName(b.getString("ACS_ConnectionProgressBarA11yName")); //NOI18N
-        connectProgressPanel.getAccessibleContext().setAccessibleDescription(b.getString("ACS_ConnectionProgressBarA11yDesc")); //NOI18N
     }
 
     public void initializeFocus() {
@@ -149,9 +143,6 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel implemen
         if (templateComboBox.getItemCount() <= 1) { // the first item is "Add Driver...""
             return templateComboBox;
         }
-        if (connection.getDatabase().length() == 0) {
-            return urlComboBox;
-        }
         if (userTextField.getText().length() == 0) {
             return userTextField;
         }
@@ -159,7 +150,7 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel implemen
             return passwordField;
         }
         // fall back to the URL field
-        return urlComboBox;
+        return hostField;
     }
 
     /** This method is called from within the constructor to
@@ -169,155 +160,159 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel implemen
      */
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
-        java.awt.GridBagConstraints gridBagConstraints;
 
         templateLabel = new javax.swing.JLabel();
         templateComboBox = new javax.swing.JComboBox();
-        driverLabel = new javax.swing.JLabel();
-        driverTextField = new javax.swing.JTextField();
         urlLabel = new javax.swing.JLabel();
-        urlComboBox = new javax.swing.JComboBox();
         userLabel = new javax.swing.JLabel();
         userTextField = new javax.swing.JTextField();
         passwordLabel = new javax.swing.JLabel();
         passwordField = new javax.swing.JPasswordField();
         passwordCheckBox = new javax.swing.JCheckBox();
-        jPanel1 = new javax.swing.JPanel();
-        connectProgressPanel = new javax.swing.JPanel();
-        progressMessageLabel = new javax.swing.JLabel();
-        progressContainerPanel = new javax.swing.JPanel();
+        hostField = new javax.swing.JTextField();
+        hostLabel = new javax.swing.JLabel();
+        portField = new javax.swing.JTextField();
+        jLabel1 = new javax.swing.JLabel();
+        toggleShowURLCheckbox = new javax.swing.JCheckBox();
+        databaseField = new javax.swing.JTextField();
+        jLabel2 = new javax.swing.JLabel();
+        urlField = new javax.swing.JTextField();
 
         FormListener formListener = new FormListener();
 
-        setLayout(new java.awt.GridBagLayout());
-
         templateLabel.setLabelFor(templateComboBox);
         org.openide.awt.Mnemonics.setLocalizedText(templateLabel, NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("NewConnectionDriverName")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
-        add(templateLabel, gridBagConstraints);
 
         templateComboBox.setToolTipText(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_NewConnectionDriverNameComboBoxA11yDesc")); // NOI18N
         templateComboBox.addItemListener(formListener);
         templateComboBox.addActionListener(formListener);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(12, 5, 0, 11);
-        add(templateComboBox, gridBagConstraints);
 
-        driverLabel.setLabelFor(driverTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(driverLabel, NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("NewConnectionDriverClass")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
-        add(driverLabel, gridBagConstraints);
-
-        driverTextField.setColumns(50);
-        driverTextField.setEditable(false);
-        driverTextField.setToolTipText(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_NewConnectionDriverClassComboBoxA11yDesc")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 11);
-        add(driverTextField, gridBagConstraints);
-
-        urlLabel.setLabelFor(urlComboBox);
+        urlLabel.setLabelFor(urlField);
         org.openide.awt.Mnemonics.setLocalizedText(urlLabel, NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("NewConnectionDatabaseURL")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
-        add(urlLabel, gridBagConstraints);
-
-        urlComboBox.setEditable(true);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 11);
-        add(urlComboBox, gridBagConstraints);
+        urlLabel.setFocusable(false);
 
         userLabel.setLabelFor(userTextField);
         org.openide.awt.Mnemonics.setLocalizedText(userLabel, NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("NewConnectionUserName")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
-        add(userLabel, gridBagConstraints);
 
         userTextField.setColumns(50);
         userTextField.setToolTipText(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_NewConnectionUserNameTextFieldA11yDesc")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 11);
-        add(userTextField, gridBagConstraints);
 
         passwordLabel.setLabelFor(passwordField);
         org.openide.awt.Mnemonics.setLocalizedText(passwordLabel, NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("NewConnectionPassword")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
-        add(passwordLabel, gridBagConstraints);
 
         passwordField.setColumns(50);
         passwordField.setToolTipText(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_NewConnectionPasswordTextFieldA11yDesc")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 11);
-        add(passwordField, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(passwordCheckBox, NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("NewConnectionRememberPassword")); // NOI18N
         passwordCheckBox.setToolTipText(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_NewConnectionRememberPasswordA11yDesc")); // NOI18N
         passwordCheckBox.setVerticalTextPosition(javax.swing.SwingConstants.TOP);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 11);
-        add(passwordCheckBox, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridy = 6;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        add(jPanel1, gridBagConstraints);
 
-        connectProgressPanel.setToolTipText(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_ConnectionProgressBarA11yDesc")); // NOI18N
-        connectProgressPanel.setLayout(new java.awt.BorderLayout(0, 5));
+        hostField.setText("localhost");
+        hostField.setToolTipText("Specify the host name for the server");
+        hostField.addActionListener(formListener);
 
-        org.openide.awt.Mnemonics.setLocalizedText(progressMessageLabel, " ");
-        connectProgressPanel.add(progressMessageLabel, java.awt.BorderLayout.NORTH);
+        hostLabel.setLabelFor(hostField);
+        org.openide.awt.Mnemonics.setLocalizedText(hostLabel, "&Host:");
 
-        progressContainerPanel.setMinimumSize(new java.awt.Dimension(20, 20));
-        progressContainerPanel.setPreferredSize(new java.awt.Dimension(20, 20));
-        progressContainerPanel.setLayout(new java.awt.BorderLayout());
-        connectProgressPanel.add(progressContainerPanel, java.awt.BorderLayout.CENTER);
+        portField.setToolTipText("Specify the port number for the server; you can leave blank if you want to use the default port");
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 7;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 11, 11);
-        add(connectProgressPanel, gridBagConstraints);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, "&Port:");
+
+        org.openide.awt.Mnemonics.setLocalizedText(toggleShowURLCheckbox, "&Show JDBC URL");
+        toggleShowURLCheckbox.setToolTipText("Check this to show or hide the JDBC URL");
+        toggleShowURLCheckbox.addActionListener(formListener);
+
+        databaseField.setToolTipText("Please specify the database name");
+
+        jLabel2.setLabelFor(databaseField);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, "&Database:");
+
+        urlField.setToolTipText("The JDBC URL for this connection");
+
+        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(layout.createSequentialGroup()
+                                .addContainerGap()
+                                .add(passwordLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 72, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                            .add(layout.createSequentialGroup()
+                                .add(12, 12, 12)
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    .add(hostLabel)
+                                    .add(userLabel)
+                                    .add(templateLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 54, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                    .add(jLabel1)))
+                            .add(layout.createSequentialGroup()
+                                .addContainerGap()
+                                .add(urlLabel))
+                            .add(layout.createSequentialGroup()
+                                .addContainerGap()
+                                .add(jLabel2)))
+                        .add(13, 13, 13)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(templateComboBox, 0, 362, Short.MAX_VALUE)
+                            .add(hostField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 362, Short.MAX_VALUE)
+                            .add(portField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 362, Short.MAX_VALUE)
+                            .add(databaseField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 362, Short.MAX_VALUE)
+                            .add(userTextField, 0, 0, Short.MAX_VALUE)
+                            .add(passwordField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 362, Short.MAX_VALUE)
+                            .add(layout.createSequentialGroup()
+                                .add(urlField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 362, Short.MAX_VALUE)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))))
+                    .add(layout.createSequentialGroup()
+                        .add(102, 102, 102)
+                        .add(passwordCheckBox, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 362, Short.MAX_VALUE)))
+                .add(12, 12, 12))
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(toggleShowURLCheckbox, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 452, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(templateLabel)
+                    .add(templateComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 27, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(hostField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(hostLabel))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(portField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabel1))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(databaseField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabel2))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(userTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(userLabel))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(passwordLabel)
+                    .add(passwordField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(passwordCheckBox)
+                .add(18, 18, 18)
+                .add(toggleShowURLCheckbox)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(urlLabel)
+                    .add(urlField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        layout.linkSize(new java.awt.Component[] {hostField, passwordField, portField, templateComboBox, userLabel, userTextField}, org.jdesktop.layout.GroupLayout.VERTICAL);
+
     }
 
     // Code for dispatching events from components to event handlers.
@@ -327,6 +322,12 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel implemen
         public void actionPerformed(java.awt.event.ActionEvent evt) {
             if (evt.getSource() == templateComboBox) {
                 NewConnectionPanel.this.templateComboBoxActionPerformed(evt);
+            }
+            else if (evt.getSource() == hostField) {
+                NewConnectionPanel.this.hostFieldActionPerformed(evt);
+            }
+            else if (evt.getSource() == toggleShowURLCheckbox) {
+                NewConnectionPanel.this.toggleShowURLCheckboxActionPerformed(evt);
             }
         }
 
@@ -346,39 +347,33 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel implemen
         if (!(item instanceof JDBCDriver)) {
             return;
         }
-        JDBCDriver drv = (JDBCDriver)item;
-        List urls = null;
-        String driver = null;
-        if (drv != null) {
-           driver = drv.getClassName();           
-           urls = DriverListUtil.getURLs(driver);
-        }
-        
-        urlComboBox.removeAllItems();
         if (!connection.getDatabase().equals("")) // NOI18N
-            urlComboBox.addItem(connection.getDatabase());
-        else if (urls != null)
-            for (int i = 0; i < urls.size(); i++)
-                urlComboBox.addItem((String) urls.get(i));
+            urlField.setText(connection.getDatabase());
         
-        if (driver != null)
-           driverTextField.setText(driver);
     }//GEN-LAST:event_templateComboBoxActionPerformed
+
+private void hostFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_hostFieldActionPerformed
+// TODO add your handling code here:
+}//GEN-LAST:event_hostFieldActionPerformed
+
+private void toggleShowURLCheckboxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_toggleShowURLCheckboxActionPerformed
+}//GEN-LAST:event_toggleShowURLCheckboxActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JPanel connectProgressPanel;
-    private javax.swing.JLabel driverLabel;
-    private javax.swing.JTextField driverTextField;
-    private javax.swing.JPanel jPanel1;
+    private javax.swing.JTextField databaseField;
+    private javax.swing.JTextField hostField;
+    private javax.swing.JLabel hostLabel;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
     private javax.swing.JCheckBox passwordCheckBox;
     private javax.swing.JPasswordField passwordField;
     private javax.swing.JLabel passwordLabel;
-    private javax.swing.JPanel progressContainerPanel;
-    private javax.swing.JLabel progressMessageLabel;
+    private javax.swing.JTextField portField;
     private javax.swing.JComboBox templateComboBox;
     private javax.swing.JLabel templateLabel;
-    private javax.swing.JComboBox urlComboBox;
+    private javax.swing.JCheckBox toggleShowURLCheckbox;
+    private javax.swing.JTextField urlField;
     private javax.swing.JLabel urlLabel;
     private javax.swing.JLabel userLabel;
     private javax.swing.JTextField userTextField;
@@ -398,9 +393,7 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel implemen
             connection.setDriverName(driver.getName());
             connection.setDriver(driver.getClassName());
         }
-        // issue 86967: using getEditor().getItem() instead of getSelectedItem()
-        // because the it may happen that the user hasn't pressed Enter yet when this method is called
-        connection.setDatabase(urlComboBox.getEditor().getItem().toString());
+        connection.setDatabase(urlField.getText());
         connection.setUser(userTextField.getText());
         connection.setPassword(getPassword());
         connection.setRememberPassword(passwordCheckBox.isSelected());
@@ -424,11 +417,9 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel implemen
     private void startProgress() {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                progressHandle = ProgressHandleFactory.createHandle(null);
-                progressComponent = ProgressHandleFactory.createProgressComponent(progressHandle);
-                progressContainerPanel.add(progressComponent, BorderLayout.CENTER);
+                progressHandle = ProgressHandleFactory.createHandle(
+                        NbBundle.getBundle(BUNDLE).getString("ConnectionProgress_Connecting"));
                 progressHandle.start();
-                progressMessageLabel.setText(NbBundle.getBundle(BUNDLE).getString("ConnectionProgress_Connecting"));
             }
         });
     }
@@ -436,7 +427,9 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel implemen
     private void setProgressMessage(final String message) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                progressMessageLabel.setText(message);
+                if  (progressHandle != null) {
+                    progressHandle.setDisplayName(message);
+                }
             }
         });
     }
@@ -444,21 +437,17 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel implemen
     private void stopProgress(final boolean connected) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                progressHandle.finish();
-                progressContainerPanel.remove(progressComponent);
-                // without this, the removed progress component remains painted on its parent... why?
-                progressContainerPanel.repaint();
-                if (connected) {
-                    progressMessageLabel.setText(NbBundle.getBundle(BUNDLE).getString("ConnectionProgress_Established"));
-                } else {
-                    progressMessageLabel.setText(NbBundle.getBundle(BUNDLE).getString("ConnectionProgress_Failed"));
+                if (progressHandle != null) {
+                    progressHandle.finish();
                 }
             }
         });
     }
     
     private void resetProgress() {
-        progressMessageLabel.setText(""); // NOI18N
+        if (progressHandle != null) {
+            progressHandle.setDisplayName(""); // NOI18N
+        }
     }
     
     public void changedUpdate(javax.swing.event.DocumentEvent e) {
@@ -486,8 +475,15 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel implemen
     }
 
     private void fireChange() {
+        if (urlField.isVisible()) {
+            updateURL();
+        }
         firePropertyChange("argumentChanged", null, null);
         resetProgress();
+    }
+    
+    private void updateURL() {
+        // Get the URL template for this driver
     }
     
     private void checkValid() {
