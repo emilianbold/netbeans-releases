@@ -103,18 +103,23 @@ class CustomComponentVisualPanel extends JPanel implements DocumentListener {
     void store(WizardDescriptor d) {
         String name = projectNameTextField.getText().trim();
         String folder = createdFolderTextField.getText().trim();
+        Boolean setAsMain = mainProject.isSelected();
 
         d.putProperty(CustomComponentWizardIterator.PROJECT_DIR, new File(folder));
         d.putProperty(CustomComponentWizardIterator.PROJECT_NAME, name);
+        d.putProperty(CustomComponentWizardIterator.SET_AS_MAIN, setAsMain);
     }
 
     void read(WizardDescriptor settings) {
         mySettings = settings;
 
+        if (getIsMainProject() != null){
+            this.mainProject.setSelected(getIsMainProject());
+        }
         this.projectLocationTextField.setText(
-                getProjectLocation(settings).getAbsolutePath());
+                getProjectLocation().getAbsolutePath());
         
-        this.projectNameTextField.setText(getProjectName(settings));
+        this.projectNameTextField.setText(getProjectName());
         this.projectNameTextField.selectAll();
     }
     
@@ -235,8 +240,8 @@ class CustomComponentVisualPanel extends JPanel implements DocumentListener {
      * @param settings WizardDescriptor
      * @return File Directory that will contain project folder
      */
-    File getProjectLocation(WizardDescriptor settings){
-        File projectLocation = (File) settings
+    File getProjectLocation(){
+        File projectLocation = (File) mySettings
                 .getProperty(CustomComponentWizardIterator.PROJECT_DIR);
         // project directory
         if (projectLocation == null 
@@ -257,14 +262,20 @@ class CustomComponentVisualPanel extends JPanel implements DocumentListener {
      * @return String project name loaded from WizardDescriptor or default 
      * name wich is not used as directory name in project location directory yet.
      */
-    String getProjectName(WizardDescriptor settings){
-        String projectName = (String) settings
+    String getProjectName(){
+        String projectName = (String) mySettings
                 .getProperty(CustomComponentWizardIterator.PROJECT_NAME);
         // project name
         if (projectName == null) {
-            projectName = getDefaultFreeName(getProjectLocation(settings));
+            projectName = getDefaultFreeName(getProjectLocation());
         }
         return projectName;
+    }
+    
+    Boolean getIsMainProject(){
+        Boolean isMain = (Boolean) mySettings
+                .getProperty(CustomComponentWizardIterator.SET_AS_MAIN);
+        return isMain;
     }
     
     /* 
@@ -290,6 +301,7 @@ class CustomComponentVisualPanel extends JPanel implements DocumentListener {
         browseButton = new javax.swing.JButton();
         createdFolderLabel = new javax.swing.JLabel();
         createdFolderTextField = new javax.swing.JTextField();
+        mainProject = new javax.swing.JCheckBox();
 
         projectNameLabel.setLabelFor(projectNameTextField);
         org.openide.awt.Mnemonics.setLocalizedText(projectNameLabel, org.openide.util.NbBundle.getMessage(CustomComponentVisualPanel.class, "LBL_ProjectName")); // NOI18N
@@ -310,42 +322,48 @@ class CustomComponentVisualPanel extends JPanel implements DocumentListener {
 
         createdFolderTextField.setEditable(false);
 
+        mainProject.setSelected(true);
+        org.openide.awt.Mnemonics.setLocalizedText(mainProject, org.openide.util.NbBundle.getMessage(CustomComponentVisualPanel.class, "LBL_SetAsMainProject")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(projectNameLabel)
                     .add(projectLocationLabel)
-                    .add(createdFolderLabel))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                    .add(createdFolderLabel)
+                    .add(projectNameLabel))
+                .add(19, 19, 19)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, projectNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 215, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, projectLocationTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 215, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, createdFolderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 215, Short.MAX_VALUE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                    .add(projectNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 314, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, projectLocationTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 314, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, createdFolderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 314, Short.MAX_VALUE))
+                .add(18, 18, 18)
                 .add(browseButton)
+                .add(0, 0, 0))
+            .add(layout.createSequentialGroup()
+                .add(mainProject, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 117, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(projectNameLabel)
                     .add(projectNameTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(projectLocationLabel)
                     .add(projectLocationTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(projectLocationLabel)
                     .add(browseButton))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(createdFolderLabel)
-                    .add(createdFolderTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(213, Short.MAX_VALUE))
+                    .add(createdFolderTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(createdFolderLabel))
+                .add(18, 18, 18)
+                .add(mainProject)
+                .addContainerGap(183, Short.MAX_VALUE))
         );
 
         projectNameLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomComponentVisualPanel.class, "ACSN_ProjectName")); // NOI18N
@@ -356,6 +374,8 @@ class CustomComponentVisualPanel extends JPanel implements DocumentListener {
         browseButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomComponentVisualPanel.class, "ACSN_Browse_Button")); // NOI18N
         createdFolderLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomComponentVisualPanel.class, "ACSN_ProjectFolder")); // NOI18N
         createdFolderLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomComponentVisualPanel.class, "ACSD_ProjectFolder")); // NOI18N
+        mainProject.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomComponentVisualPanel.class, "ACSN_SetAsMainProject")); // NOI18N
+        mainProject.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomComponentVisualPanel.class, "ACSD_SetAsMainProject")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
@@ -381,10 +401,12 @@ class CustomComponentVisualPanel extends JPanel implements DocumentListener {
         }
 
     }//GEN-LAST:event_browseButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton browseButton;
     private javax.swing.JLabel createdFolderLabel;
     private javax.swing.JTextField createdFolderTextField;
+    private javax.swing.JCheckBox mainProject;
     private javax.swing.JLabel projectLocationLabel;
     private javax.swing.JTextField projectLocationTextField;
     private javax.swing.JLabel projectNameLabel;

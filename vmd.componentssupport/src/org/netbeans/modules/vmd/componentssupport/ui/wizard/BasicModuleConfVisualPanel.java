@@ -405,7 +405,6 @@ final class BasicModuleConfVisualPanel extends JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 0, 4, 0);
         add(confPanel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
     

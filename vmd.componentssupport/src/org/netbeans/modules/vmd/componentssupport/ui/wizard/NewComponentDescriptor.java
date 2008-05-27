@@ -168,6 +168,10 @@ public final class NewComponentDescriptor implements WizardDescriptor.Instantiat
                 EXISTING_COMPONENTS, 
                 myMainWizard.getProperty(
                         CustomComponentWizardIterator.CUSTOM_COMPONENTS));
+        wizardDescriptor.putProperty( 
+                CustomComponentWizardIterator.PROJECT_NAME, 
+                myMainWizard.getProperty(
+                        CustomComponentWizardIterator.PROJECT_NAME) );
     }
 
     /* (non-Javadoc)

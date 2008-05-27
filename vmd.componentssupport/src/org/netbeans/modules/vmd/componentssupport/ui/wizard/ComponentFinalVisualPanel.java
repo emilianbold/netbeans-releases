@@ -72,6 +72,10 @@ final class ComponentFinalVisualPanel extends JPanel {
     
     void readData( WizardDescriptor descriptor) {
         mySettings = descriptor;
+        
+        projectNameValue.setText( (String)descriptor.getProperty( 
+                CustomComponentWizardIterator.PROJECT_NAME));
+        
         setFilesInfoIntoTextAreas();
     }
 
@@ -202,6 +206,8 @@ final class ComponentFinalVisualPanel extends JPanel {
         createdFilesValue = new javax.swing.JTextArea();
         modifiedFilesValueS = new javax.swing.JScrollPane();
         modifiedFilesValue = new javax.swing.JTextArea();
+        projectName = new javax.swing.JLabel();
+        projectNameValue = new javax.swing.JTextField();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -209,6 +215,7 @@ final class ComponentFinalVisualPanel extends JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(createdFiles, bundle.getString("LBL_F_CreatedFiles")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(36, 0, 6, 12);
@@ -219,6 +226,7 @@ final class ComponentFinalVisualPanel extends JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(modifiedFiles, bundle.getString("LBL_F_ModifiedFiles")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
@@ -236,6 +244,7 @@ final class ComponentFinalVisualPanel extends JPanel {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
@@ -252,9 +261,31 @@ final class ComponentFinalVisualPanel extends JPanel {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
         add(modifiedFilesValueS, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(projectName, bundle.getString("LBL_F_ProjectName")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 12);
+        add(projectName, gridBagConstraints);
+        projectName.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ComponentFinalVisualPanel.class, "ACSN_F_ProjectName")); // NOI18N
+        projectName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ComponentFinalVisualPanel.class, "ACSD_F_ProjectName")); // NOI18N
+
+        projectNameValue.setEditable(false);
+        projectNameValue.setToolTipText(org.openide.util.NbBundle.getMessage(ComponentFinalVisualPanel.class, "ACSD_F_ProjectName")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
+        add(projectNameValue, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -264,6 +295,8 @@ final class ComponentFinalVisualPanel extends JPanel {
     private javax.swing.JLabel modifiedFiles;
     private javax.swing.JTextArea modifiedFilesValue;
     private javax.swing.JScrollPane modifiedFilesValueS;
+    private javax.swing.JLabel projectName;
+    private javax.swing.JTextField projectNameValue;
     // End of variables declaration//GEN-END:variables
     
     private WizardDescriptor mySettings;

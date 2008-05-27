@@ -101,7 +101,6 @@ public class CustomComponentWizardIterator implements
                                             = "WizardPanel_errorMessage";        // NOI18N
     private static final String LBL_WIZARD_STEPS_COUNT 
                                             = "LBL_WizardStepsCount";            // NOI18N
-    
     public static final String CONTENT_DATA = "WizardPanel_contentData";         // NOI18N
     public static final String SELECTED_INDEX 
                                             = "WizardPanel_contentSelectedIndex";// NOI18N
@@ -118,6 +117,7 @@ public class CustomComponentWizardIterator implements
     // properties
     public static final String PROJECT_DIR  = "projDir";                         // NOI18N
     public static final String PROJECT_NAME = "projName";                        // NOI18N
+    public static final String SET_AS_MAIN  = "setAsMain";                       // NOI18N
     public static final String LAYER_PATH   = "layer";                           // NOI18N
     public static final String BUNDLE_PATH  = "bundle";                          // NOI18N
     public static final String CODE_BASE_NAME

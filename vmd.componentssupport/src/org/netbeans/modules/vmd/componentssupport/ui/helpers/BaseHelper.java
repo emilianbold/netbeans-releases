@@ -39,11 +39,8 @@
 
 package org.netbeans.modules.vmd.componentssupport.ui.helpers;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -72,10 +69,6 @@ import org.openide.loaders.CreateFromTemplateAttributesProvider;
 import org.openide.loaders.DataObject;
 import org.openide.text.IndentEngine;
 import org.openide.util.Lookup;
-import org.openide.xml.XMLUtil;
-import org.w3c.dom.Document;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 
 /**
  *
@@ -113,7 +106,7 @@ public class BaseHelper {
     private static final String TPL_TOKEN_ENCODING  = "encoding";               //NOI18N
 
     public static String getDefaultCodeNameBase(String projectName){
-            String dotName = EXAMPLE_BASE_NAME + projectName;
+            String dotName = EXAMPLE_BASE_NAME + normalizeCNB(projectName);
             return normalizeCNB(dotName);
     }
     
