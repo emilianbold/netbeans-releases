@@ -229,7 +229,8 @@ public class AddLabelsAction extends NodeAction
                 retVal++;
             }
             
-            return retVal;
+            // Include the reset label action, as a seperator
+            return retVal+2;
         }
 
         public String getLabel(int index)
@@ -239,7 +240,11 @@ public class AddLabelsAction extends NodeAction
             Action[] actionList = getActions();
             if((actionList != null) && (actionList.length > index))
             {
-                retVal = (String) actionList[index].getValue(Action.NAME);
+                // A null means seperator.
+                if(actionList[index] != null)
+                {
+                    retVal = (String) actionList[index].getValue(Action.NAME);
+                }
             }
             
             return retVal;
@@ -283,7 +288,19 @@ public class AddLabelsAction extends NodeAction
         {
             if(actions == null)
             {
-                actions = lastManager.getContextActions(type);
+                Action[] contextActions = lastManager.getContextActions(type);
+                actions = new Action[contextActions.length + 2];
+                
+                for(int index = 0; index < contextActions.length; index++)
+                {
+                    actions[index] = contextActions[index];
+                }
+                
+                // Since the array is 0 based, substract one from the length to add the 
+                // action to the last position.
+                // The second to last element is to be null to specify a seperator.
+                actions[actions.length - 2] = null;
+                actions[actions.length - 1] = new ResetLabelsAction(lastManager);
             }
             
             return actions;
