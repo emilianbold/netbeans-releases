@@ -49,6 +49,7 @@ import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.LinkedHashSet;
@@ -121,10 +122,26 @@ public class NbModuleSuite {
             return new Configuration(clazz, null, null, ClassLoader.getSystemClassLoader().getParent(), null, true);
         }
         
+        /** Regular expression to match clusters that shall be enabled.
+         * To enable all cluster, one can use <code>".*"</code>. To enable
+         * ide and java clusters, it is handy to pass in <code>"ide.*|java.*</code>.
+         * There is no need to requrest presence of <code>platform.*</code> cluster,
+         * as that is available all the time by default.
+         * 
+         * @param regExp regular expression to match cluster names
+         * @return clone of this configuration with cluster set to regExp value
+         */
         public Configuration clusters(String regExp) {
             return new Configuration(clazz, regExp, moduleRegExp, parentClassLoader, tests, gui);
         }
 
+        /** By default only modules on classpath of the test are enabled, 
+         * the rest are just autoloads. If you need to enable more, you can
+         * specify that with this method. To enable all available modules
+         * in all clusters pass in <code>".*"</code>.
+         * @param regExp regular expression to match code name base of modules
+         * @return clone of this configuration with enable modules set to regExp value
+         */
         public Configuration enableModules(String regExp) {
             return new Configuration(clazz, clusterRegExp, regExp, parentClassLoader, tests, gui);
         }
@@ -133,15 +150,35 @@ public class NbModuleSuite {
             return new Configuration(clazz, clusterRegExp, moduleRegExp, parent, tests, gui);
         }
 
-        public Configuration addTest(String name) {
+        /** Adds new test name, or array of names into the configuration. By 
+         * default the suite executes all <code>testXYZ</code> 
+         * methods present in the test class
+         * (the one passed into {@link Configuration#create(java.lang.Class)}
+         * method). However if there is a need to execute just some of them,
+         * one can use this method to explicitly enumerate them by subsequent
+         * calls to <code>addTest</code> method.
+         * @param testNames list names to add to the test execution
+         * @return clone of this configuration with testNames test added to the 
+         *    list of executed tests
+         */
+        public Configuration addTest(String... testNames) {
             LinkedHashSet<String> tmp = new LinkedHashSet<String>();
             if (tests != null) {
                 tmp.addAll(tests);
             }
-            tmp.add(name);
+            tmp.addAll(Arrays.asList(testNames));
             return new Configuration(clazz, clusterRegExp, moduleRegExp, parentClassLoader, tmp, gui);
         }
         
+        /** Should the system run with GUI or without? The default behaviour
+         * does not prevent any module to show UI. If <code>false</code> is 
+         * used, then the whole system is instructed with <code>--nogui</code>
+         * option that it shall run as much as possible in invisible mode. As
+         * a result, the main window is not shown after the start, for example.
+         * 
+         * @param gui true or false
+         * @return clone of this configuration with gui mode associated
+         */
         public Configuration gui(boolean gui) {
             return new Configuration(clazz, clusterRegExp, moduleRegExp, parentClassLoader, tests, gui);
         }
