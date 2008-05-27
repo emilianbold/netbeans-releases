@@ -83,7 +83,7 @@ import org.xml.sax.SAXException;
  */
 public class BaseHelper {
 
-    public static final String EXAMPLE_BASE_NAME     = "org.yourorghere.";         // NOI18N
+    public static final String EXAMPLE_BASE_NAME     = "org.<yourorghere>.";         // NOI18N
 
     public static final String SYSTEM_USER          = "user.name"; //NOI18N
 
