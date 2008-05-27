@@ -45,6 +45,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
@@ -67,6 +69,8 @@ final class ComponentProducerVisualPanel extends JPanel {
                                               = "MSG_CP_EmptyClassName";        // NOI18N 
     private static final String MSG_ERR_CLASS_NAME_INVALID 
                                               = "MSG_CP_InvalidClassName";      // NOI18N 
+    private static final String MSG_ERR_CLASS_NAME_EXISTS 
+                                              = "MSG_CP_ExistingClassName";          // NOI18N 
     private static final String MSG_ERR_PALETTE_DISP_NAME_EMPTY 
                                               = "MSG_CP_EmptyPaletteDispName";  // NOI18N 
     private static final String MSG_ERR_LIB_NAME_EMPTY 
@@ -242,6 +246,15 @@ final class ComponentProducerVisualPanel extends JPanel {
                 NewComponentDescriptor.CP_VALID_CUSTOM);
     }
     
+    private List<Map<String, Object>> getExistingComponents(){
+        Object value = mySettings.getProperty(
+                NewComponentDescriptor.EXISTING_COMPONENTS);
+        if (value == null || !(value instanceof List)){
+            return null;
+        }
+        return (List<Map<String, Object>>)value;
+    }
+    
     private boolean checkValidity(){
         if (!isCPClassNameValid()){
             return false;
@@ -304,6 +317,10 @@ final class ComponentProducerVisualPanel extends JPanel {
             setError(NbBundle.getMessage(ComponentProducerVisualPanel.class, 
                     MSG_ERR_CLASS_NAME_INVALID));
             return false;
+        } else if (isCPClassNameExist(name)){
+            setError(NbBundle.getMessage(ComponentProducerVisualPanel.class, 
+                    MSG_ERR_CLASS_NAME_EXISTS));
+            return false;
         }
         return true;
     }
@@ -329,6 +346,25 @@ final class ComponentProducerVisualPanel extends JPanel {
             return false;
         }
         return true;
+    }
+
+    private boolean isCPClassNameExist(String name){
+        return checkIfComponentValueExists(
+                NewComponentDescriptor.CP_CLASS_NAME, name);
+    }
+    
+    private boolean checkIfComponentValueExists(String key, Object value){
+        List<Map<String, Object>> list = getExistingComponents();
+        if (list == null){
+            return false;
+        }
+        for (Map<String, Object> comp : list){
+            Object testValue = comp.get(key);
+            if (testValue.equals(value)){
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -519,7 +555,7 @@ final class ComponentProducerVisualPanel extends JPanel {
         myLibNamePanelLayout.setHorizontalGroup(
             myLibNamePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(myLibNamePanelLayout.createSequentialGroup()
-                .add(30, 30, 30)
+                .add(40, 40, 40)
                 .add(myCPLibNameLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(myCPLibName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 287, Short.MAX_VALUE))
@@ -601,24 +637,24 @@ final class ComponentProducerVisualPanel extends JPanel {
                                     .add(myCPClassNameLabel))
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(myCompProducerPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(myCPClassName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 285, Short.MAX_VALUE)
-                                    .add(myCPPaletteTooltip, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 285, Short.MAX_VALUE)
-                                    .add(myCPPaletteDispName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 285, Short.MAX_VALUE)
+                                    .add(myCPClassName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 295, Short.MAX_VALUE)
+                                    .add(myCPPaletteTooltip, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 295, Short.MAX_VALUE)
+                                    .add(myCPPaletteDispName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 295, Short.MAX_VALUE)
                                     .add(myCPPaletteCategoryCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 182, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                                     .add(org.jdesktop.layout.GroupLayout.TRAILING, myCompProducerPanelLayout.createSequentialGroup()
                                         .add(myCompProducerPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                                            .add(myCPLargeIconPath, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 210, Short.MAX_VALUE)
-                                            .add(myCPSmallIconPath, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 210, Short.MAX_VALUE))
+                                            .add(myCPLargeIconPath, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 220, Short.MAX_VALUE)
+                                            .add(myCPSmallIconPath, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 220, Short.MAX_VALUE))
                                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                         .add(myCompProducerPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                                             .add(org.jdesktop.layout.GroupLayout.TRAILING, myCPSmallIconPathButton)
                                             .add(org.jdesktop.layout.GroupLayout.TRAILING, myCPLargeIconPathButton))))))
-                        .addContainerGap())))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)))
+                .addContainerGap())
         );
         myCompProducerPanelLayout.setVerticalGroup(
             myCompProducerPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(myCompProducerPanelLayout.createSequentialGroup()
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .add(myCompProducerPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(myCPClassNameLabel)
                     .add(myCPClassName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
@@ -634,7 +670,7 @@ final class ComponentProducerVisualPanel extends JPanel {
                 .add(myCompProducerPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(myCPPaletteCategoryLabel)
                     .add(myCPPaletteCategoryCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(myCompProducerPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(myCPSmallIconPathLabel)
                     .add(myCPSmallIconPathButton)
@@ -644,7 +680,7 @@ final class ComponentProducerVisualPanel extends JPanel {
                     .add(myCPLargeIconPathLabel)
                     .add(myCPLargeIconPathButton)
                     .add(myCPLargeIconPath, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(myCPAddLibDepChk)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(myLibNamePanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
