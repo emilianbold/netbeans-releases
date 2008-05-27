@@ -68,6 +68,11 @@ public class TemplateManager extends PerformanceTestCase {
         super(testName, performanceDataName);
         expectedTime = WINDOW_OPEN;
     }
+
+    
+    public void testTemplateManager() {
+        doMeasurement();
+    }
     
     public void prepare(){
         // do nothing

@@ -73,6 +73,10 @@ public class DeleteFileDialog extends PerformanceTestCase {
         expectedTime = WINDOW_OPEN;
     }
     
+    public void testDeleteFileDialog() {
+        doMeasurement();
+    }
+    
     @Override
     public void initialize() {
         TITLE = Bundle.getStringTrimmed("org.openide.explorer.Bundle","MSG_ConfirmDeleteObjectTitle"); //Confirm Object Deletion

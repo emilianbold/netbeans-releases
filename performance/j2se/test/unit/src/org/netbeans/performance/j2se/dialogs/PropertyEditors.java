@@ -81,6 +81,11 @@ public abstract class PropertyEditors extends PerformanceTestCase {
         expectedTime = WINDOW_OPEN;
     }
     
+    
+    public void testPropertyEditors() {
+        doMeasurement();
+    }
+    
     public void shutdown() {
         if(propertiesWindow!=null && propertiesWindow.isShowing())
             propertiesWindow.close();

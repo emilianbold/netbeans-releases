@@ -76,6 +76,10 @@ public class RefactorFindUsages extends PerformanceTestCase {
         expectedTime = 120000; // the action has progress indication and it is expected it will last
     }
     
+    public void testRefactorFindUsages(){
+        doMeasurement();
+    }    
+    
     @Override
     public void initialize() {
         String BUNDLE = "org.netbeans.modules.refactoring.ui.Bundle";

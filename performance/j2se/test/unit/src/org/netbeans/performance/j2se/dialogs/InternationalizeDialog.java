@@ -77,6 +77,10 @@ public class InternationalizeDialog extends PerformanceTestCase {
         WAIT_AFTER_OPEN = 1500;
     }
     
+    public void testInternationalizeDialog() {
+        doMeasurement();
+    }
+    
     @Override
     public void initialize() {
         BUNDLE = "org.netbeans.modules.i18n.Bundle";

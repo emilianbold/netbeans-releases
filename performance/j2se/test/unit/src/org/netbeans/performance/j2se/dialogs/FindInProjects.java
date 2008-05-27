@@ -72,6 +72,10 @@ public class FindInProjects extends PerformanceTestCase {
         expectedTime = WINDOW_OPEN;
     }
     
+    public void testFindInProjects() {
+        doMeasurement();
+    }     
+    
     @Override
     public void initialize(){
         MENU = Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Edit") + "|" + Bundle.getStringTrimmed("org.netbeans.modules.search.Bundle","LBL_Action_FindInProjects");

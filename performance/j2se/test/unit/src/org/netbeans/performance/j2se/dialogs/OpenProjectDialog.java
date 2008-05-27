@@ -72,6 +72,10 @@ public class OpenProjectDialog extends PerformanceTestCase {
         expectedTime = WINDOW_OPEN;
     }
     
+    public void testOpenProjectDialog() {
+        doMeasurement();
+    }
+        
     public void prepare() {
         // do nothing
     }

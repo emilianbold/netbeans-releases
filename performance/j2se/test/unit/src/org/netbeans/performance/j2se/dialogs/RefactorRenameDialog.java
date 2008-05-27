@@ -72,6 +72,10 @@ public class RefactorRenameDialog extends PerformanceTestCase {
         expectedTime = WINDOW_OPEN;
     }
     
+    public void testRefactorRenameDialog() {
+        doMeasurement();
+    }
+    
     @Override
     public void initialize() {
         String BUNDLE = "org.netbeans.modules.refactoring.ui.Bundle";

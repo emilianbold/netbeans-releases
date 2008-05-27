@@ -71,6 +71,10 @@ public class JavadocIndexSearch extends PerformanceTestCase {
         expectedTime = WINDOW_OPEN;
     }
     
+    public void testJavadocIndexSearch() {
+        doMeasurement();
+    }
+        
     @Override
     public void initialize() {
         BUNDLE = "org.netbeans.modules.javadoc.search.Bundle";

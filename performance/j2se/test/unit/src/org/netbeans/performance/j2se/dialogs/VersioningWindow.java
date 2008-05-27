@@ -74,6 +74,10 @@ public class VersioningWindow extends PerformanceTestCase {
         // do nothing
     }
     
+     public void testVersioningWindow() {
+        doMeasurement();
+    }
+    
     @Override
     protected void initialize() {
         MENU = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Window") + '|' + 

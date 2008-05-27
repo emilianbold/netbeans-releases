@@ -72,6 +72,10 @@ public class ToDoWindow extends PerformanceTestCase {
         expectedTime = WINDOW_OPEN;
     }
     
+    public void testToDoWindow() {
+        doMeasurement();
+    }    
+    
     @Override
     public void initialize() {
         MENU = Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Window") + "|" + Bundle.getStringTrimmed("org.netbeans.modules.tasklist.ui.Bundle","CTL_TaskListAction");

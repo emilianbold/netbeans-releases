@@ -86,6 +86,10 @@ public class CreateTestsDialog extends PerformanceTestCase {
         expectedTime = WINDOW_OPEN;
     }
     
+    public void testCreateTestsDialog() {
+        doMeasurement();
+    }
+    
     public void prepare() {
         createTestsNode = new Node(new SourcePackagesNode("PerformanceTestData"), "org.netbeans.test.performance|Main20kB.java");
     }

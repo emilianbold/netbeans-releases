@@ -78,6 +78,10 @@ public class ExpandNodesInComponentInspector extends PerformanceTestCase {
         expectedTime = WINDOW_OPEN;
     }
     
+    public void testExpandNodesInComponentInspector(){
+        doMeasurement();
+    }
+    
     @Override
     public void initialize(){
         CommonUtilities.openSmallFormFile();

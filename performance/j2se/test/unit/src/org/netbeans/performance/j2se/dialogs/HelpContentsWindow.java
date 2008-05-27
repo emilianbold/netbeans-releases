@@ -67,6 +67,10 @@ public class HelpContentsWindow extends PerformanceTestCase {
         expectedTime = 1000; // 4.1 : 5475, N/A, 8945, 8790, 5062, 6229
     }
     
+    public void testHelpContentsWindow() {
+        doMeasurement();
+    }    
+    
     public void prepare() {
         // do nothing
     }

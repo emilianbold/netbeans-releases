@@ -84,6 +84,10 @@ public class JavaCompletionInEditor extends PerformanceTestCase {
         expectedTime = WINDOW_OPEN;
     }
     
+    public void testJavaCompletionInEditor(){
+        doMeasurement();
+    }
+    
     @Override
     public void initialize() {
         // prepare editor/completion for measuring

@@ -67,6 +67,10 @@ public class RuntimeWindow extends PerformanceTestCase {
         expectedTime = WINDOW_OPEN;
     }
     
+    public void testRuntimeWindow() {
+        doMeasurement();
+    }    
+    
     public void prepare() {
         // do nothing
     }

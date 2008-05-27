@@ -71,6 +71,10 @@ public class PluginManager extends PerformanceTestCase {
         expectedTime = WINDOW_OPEN;
     }
     
+    public void testPluginManager() {
+        doMeasurement();
+    }
+    
     @Override
     public void initialize() {
         BUNDLE = "org.netbeans.modules.autoupdate.ui.actions.Bundle";

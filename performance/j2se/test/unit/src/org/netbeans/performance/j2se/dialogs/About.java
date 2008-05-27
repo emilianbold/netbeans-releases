@@ -81,6 +81,10 @@ public class About extends PerformanceTestCase {
         // do nothing
     }
     
+    public void testAbout() {
+        doMeasurement();
+    }
+    
     public ComponentOperator open(){
         // invoke Help / About from the main menu
         new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock(MENU,"|");

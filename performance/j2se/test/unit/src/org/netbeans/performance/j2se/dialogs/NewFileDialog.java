@@ -67,6 +67,10 @@ public class NewFileDialog extends PerformanceTestCase {
         expectedTime = 1000; // 4.1 : 1614, N/A, 1821, 1752, 1182, 1297
     }
     
+    public void testNewFileDialog() {
+        doMeasurement();
+    }
+    
     public void prepare() {
         // do nothing
     }

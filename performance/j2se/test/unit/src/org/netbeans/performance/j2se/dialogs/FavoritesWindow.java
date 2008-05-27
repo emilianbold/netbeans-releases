@@ -66,6 +66,10 @@ public class FavoritesWindow extends PerformanceTestCase {
         expectedTime = WINDOW_OPEN;
     }
 
+    public void testFavoritesWindow() {
+        doMeasurement();
+    }
+        
     @Override
     protected void initialize() {
 //        gui.Utilities.workarroundMainMenuRolledUp();

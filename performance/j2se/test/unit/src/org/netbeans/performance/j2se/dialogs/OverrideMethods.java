@@ -75,6 +75,11 @@ public class OverrideMethods extends PerformanceTestCase {
         expectedTime = WINDOW_OPEN;
     }
     
+    
+    public void testOverrideMethods() {
+        doMeasurement();
+    }
+    
     @Override
     public void initialize() {
         MENU = Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Source") + "|" + Bundle.getStringTrimmed("org.netbeans.modules.java.tools.Bundle","LAB_OverrideTool");

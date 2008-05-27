@@ -69,6 +69,10 @@ public class ServerManager extends PerformanceTestCase {
         expectedTime = WINDOW_OPEN;
     }
     
+    public void testServerManager() {
+        doMeasurement();
+    }
+    
     public void prepare(){
         // do nothing
     }

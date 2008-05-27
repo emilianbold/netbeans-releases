@@ -71,6 +71,11 @@ public class CompareMemorySnapshotsDialog  extends PerformanceTestCase {
         super(testName, performanceDataName);
         expectedTime = WINDOW_OPEN;        
     }
+    
+    public void testCompareMemorySnapshotsDialog() {
+        doMeasurement();
+    }
+    
     @Override
     public void initialize() {
         log(":: initialize");

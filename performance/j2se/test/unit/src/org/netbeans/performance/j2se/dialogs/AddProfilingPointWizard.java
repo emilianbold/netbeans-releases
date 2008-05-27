@@ -81,6 +81,11 @@ public class AddProfilingPointWizard  extends PerformanceTestCase {
         super(testName,performanceDataName);
         expectedTime = WINDOW_OPEN;        
     }
+    
+        public void testAddProfilingPointWizard() {
+        doMeasurement();
+    }
+        
     @Override
     public void initialize() {
         log(":: initialize");

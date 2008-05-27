@@ -76,6 +76,10 @@ public class FilesWindow extends PerformanceTestCase {
         return new FilesTabOperator();
     }
     
+    public void testFilesWindow() {
+        doMeasurement();
+    }    
+    
     @Override
     public void close() {
         if(testedComponentOperator!=null && testedComponentOperator.isShowing())

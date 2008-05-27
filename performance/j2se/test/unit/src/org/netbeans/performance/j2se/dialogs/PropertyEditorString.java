@@ -67,6 +67,11 @@ public class PropertyEditorString extends PropertyEditors {
     
     private Property property;
     
+    
+    public void testPropertyEditorString() {
+        doMeasurement();
+    }
+    
     public void prepare(){
         property = findProperty("String", propertiesWindow); //NOI18N impossible
     }

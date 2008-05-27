@@ -71,6 +71,11 @@ public class LibrariesManager extends PerformanceTestCase {
         expectedTime = WINDOW_OPEN;
     }
     
+    
+    public void testLibrariesManager() {
+        doMeasurement();
+    }
+        
     @Override
     public void initialize() {
         MENU = Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Tools") + "|" + Bundle.getStringTrimmed("org.netbeans.modules.project.libraries.ui.Bundle","CTL_LibrariesManager");

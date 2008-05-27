@@ -74,6 +74,10 @@ public class RefactorMoveClassDialog extends PerformanceTestCase {
         WAIT_AFTER_OPEN=60000;
     }
     
+    public void testRefactorMoveClassDialog() {
+        doMeasurement();
+    }
+    
     @Override
     public void initialize() {
         String BUNDLE = "org.netbeans.modules.refactoring.ui.Bundle";

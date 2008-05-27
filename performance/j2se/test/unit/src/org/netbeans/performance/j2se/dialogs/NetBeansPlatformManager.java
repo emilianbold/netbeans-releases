@@ -69,6 +69,11 @@ public class NetBeansPlatformManager extends PerformanceTestCase {
         expectedTime = WINDOW_OPEN;
     }
     
+    
+    public void testNetBeansPlatformManager() {
+        doMeasurement();
+    }
+        
     public void prepare(){
         // do nothing
     }

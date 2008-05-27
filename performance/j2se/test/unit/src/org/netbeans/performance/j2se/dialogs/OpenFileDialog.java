@@ -72,6 +72,10 @@ public class OpenFileDialog extends PerformanceTestCase {
         expectedTime = WINDOW_OPEN;
     }
     
+    public void testOpenFileDialog() {
+        doMeasurement();
+    }
+    
     public void prepare() {
         // do nothing
     }

@@ -71,6 +71,10 @@ public class Options extends PerformanceTestCase {
         WAIT_AFTER_OPEN = 10000;
     }
     
+    public void testOptions() {
+        doMeasurement();
+    }
+    
     public void prepare(){
         // do nothing
     }

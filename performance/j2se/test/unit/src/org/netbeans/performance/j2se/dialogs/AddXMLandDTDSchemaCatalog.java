@@ -77,6 +77,10 @@ public class AddXMLandDTDSchemaCatalog extends PerformanceTestCase {
         expectedTime = WINDOW_OPEN;
     }
     
+    public void testAddXMLandDTDSchemaCatalog() {
+        doMeasurement();
+    }
+        
     @Override
     public void initialize() {
         BUNDLE = "org.netbeans.modules.xml.catalog.Bundle";

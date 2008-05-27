@@ -70,6 +70,11 @@ public class ProfilerAboutDialog  extends PerformanceTestCase {
         super(testName,performanceDataName);
         expectedTime =  WINDOW_OPEN;        
     }
+    
+    public void testProfilerAboutDialog() {
+        doMeasurement();
+    }
+    
     /**
      *  initialize 
      */

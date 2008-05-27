@@ -59,9 +59,6 @@ public class MeasureJ2SEMenusTest extends NbTestCase {
 
         s.addTest(NbModuleSuite.create(MainMenu.class, ".*", ".*"));
         s.addTest(NbModuleSuite.create(MainSubMenus.class, ".*", ".*"));
-
-/* TBD        
-
         s.addTest(NbModuleSuite.create(EditorDownButtonPopupMenu.class, ".*", ".*"));
         s.addTest(NbModuleSuite.create(FilesViewPopupMenu.class, ".*", ".*"));
         s.addTest(NbModuleSuite.create(FormInspectorNodePopupMenu.class, ".*", ".*"));
@@ -70,9 +67,7 @@ public class MeasureJ2SEMenusTest extends NbTestCase {
         s.addTest(NbModuleSuite.create(RuntimeViewPopupMenu.class, ".*", ".*"));
         s.addTest(NbModuleSuite.create(SourceEditorPopupMenu.class, ".*", ".*"));
         s.addTest(NbModuleSuite.create(ToolsMenu.class, ".*", ".*"));
-        s.addTest(NbModuleSuite.create(ValidatePopupMenuOnNodes.class, ".*", ".*"));
 
-*/ 
         return s;
     }
 }

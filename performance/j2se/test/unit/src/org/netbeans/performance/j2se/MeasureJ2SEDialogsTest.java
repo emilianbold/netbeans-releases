@@ -61,9 +61,7 @@ public class MeasureJ2SEDialogsTest  extends NbTestCase {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite("UI Responsiveness J2SE Dialogs suite");
 
-     /* TBD
         suite.addTest(NbModuleSuite.create(About.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(About_2.class, ".*", ".*"));
         suite.addTest(NbModuleSuite.create(AddJDBCDriverDialog.class, ".*", ".*"));
         suite.addTest(NbModuleSuite.create(AddProfilingPointWizard.class, ".*", ".*"));
         suite.addTest(NbModuleSuite.create(AddServerInstanceDialog.class, ".*", ".*"));
@@ -114,12 +112,10 @@ public class MeasureJ2SEDialogsTest  extends NbTestCase {
         suite.addTest(NbModuleSuite.create(SelectProfilingTaskDialog.class, ".*", ".*"));
         suite.addTest(NbModuleSuite.create(ServerManager.class, ".*", ".*"));
         suite.addTest(NbModuleSuite.create(SetDefaultServerDialog.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(SomeDialogs.class, ".*", ".*"));
         suite.addTest(NbModuleSuite.create(TemplateManager.class, ".*", ".*"));
         suite.addTest(NbModuleSuite.create(ToDoWindow.class, ".*", ".*"));
         suite.addTest(NbModuleSuite.create(VersioningWindow.class, ".*", ".*"));
-
-*/       
+  
         return suite;
     }
     

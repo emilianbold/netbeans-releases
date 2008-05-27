@@ -71,6 +71,10 @@ public class NewWatchDialog extends PerformanceTestCase {
         expectedTime = WINDOW_OPEN;
     }
     
+    public void testNewWatchDialog() {
+        doMeasurement();
+    }    
+    
     @Override
     public void initialize() {
         MENU = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle","Menu/RunProject") + "|" + Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle","CTL_New_Watch");

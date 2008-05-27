@@ -84,6 +84,10 @@ public class SelectProfilingTaskDialog extends PerformanceTestCase {
         expectedTime = WINDOW_OPEN;
     }
     
+    public void testSelectProfilingTaskDialog() {
+        doMeasurement();
+    }    
+    
     public void prepare() {
         projectName = "PerformanceTestData";
         this.projectNode = new ProjectsTabOperator().getProjectRootNode(projectName);

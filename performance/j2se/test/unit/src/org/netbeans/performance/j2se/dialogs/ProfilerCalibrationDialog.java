@@ -72,6 +72,12 @@ public class ProfilerCalibrationDialog   extends PerformanceTestCase {
         super(testName,performanceDataName);
         expectedTime =  WINDOW_OPEN;        
     }
+    
+    public void testProfilerCalibrationDialog() {
+        doMeasurement();
+    }
+    
+    
     public void initialize() {
         log(":: initialize");
     }

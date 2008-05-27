@@ -66,6 +66,10 @@ public class ProjectsWindow extends PerformanceTestCase {
         expectedTime = WINDOW_OPEN;
     }
     
+    public void testProjectsWindow() {
+        doMeasurement();
+    }    
+    
     public void prepare() {
         // do nothing
     }

@@ -72,6 +72,10 @@ public class AutoCommentWindow extends PerformanceTestCase {
         super(testName,performanceDataName);
         expectedTime = WINDOW_OPEN;
     }
+
+    public void testAutoCommentWindow() {
+        doMeasurement();
+    }
     
     @Override
     public void initialize() {

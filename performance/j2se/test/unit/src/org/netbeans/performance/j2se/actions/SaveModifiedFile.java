@@ -80,6 +80,10 @@ public class SaveModifiedFile extends PerformanceTestCase {
         WAIT_AFTER_PREPARE=2000;
     }
     
+    public void testSaveModifiedFile(){
+        doMeasurement();
+    }    
+    
     @Override
     public void initialize(){
         EditorOperator.closeDiscardAll();

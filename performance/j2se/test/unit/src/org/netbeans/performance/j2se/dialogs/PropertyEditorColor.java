@@ -67,6 +67,10 @@ public class PropertyEditorColor extends PropertyEditors {
     
     private Property property;
     
+    public void testPropertyEditorColor() {
+        doMeasurement();
+    }    
+    
     public void prepare(){
         property = findProperty("Color", propertiesWindow); //NOI18N impossible
     }

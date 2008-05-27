@@ -76,6 +76,10 @@ public class FindInSourceEditor extends PerformanceTestCase {
         expectedTime = WINDOW_OPEN;
     }
     
+    public void testFindInSourceEditor() {
+        doMeasurement();
+    }    
+    
     @Override
     public void initialize() {
         MENU = Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Edit") + "|" + Bundle.getStringTrimmed("org.openide.actions.Bundle","Find"); //Edit|Find...

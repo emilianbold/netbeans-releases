@@ -72,6 +72,10 @@ public class RefactorFindUsagesDialog extends PerformanceTestCase {
         expectedTime = WINDOW_OPEN;
     }
     
+    public void testRefactorFindUsagesDialog() {
+        doMeasurement();
+    }
+    
     @Override
     public void initialize() {
         String BUNDLE = "org.netbeans.modules.refactoring.ui.Bundle";

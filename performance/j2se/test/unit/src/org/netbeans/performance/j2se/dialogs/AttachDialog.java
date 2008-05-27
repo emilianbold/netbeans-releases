@@ -70,6 +70,10 @@ public class AttachDialog extends PerformanceTestCase {
         super(testName,performanceDataName);
         expectedTime = WINDOW_OPEN;
     }
+  
+    public void testAttachDialog() {
+        doMeasurement();
+    }
     
     @Override
     public void initialize() {

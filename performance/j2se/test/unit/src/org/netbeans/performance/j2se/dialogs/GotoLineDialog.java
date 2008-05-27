@@ -76,6 +76,10 @@ public class GotoLineDialog extends PerformanceTestCase {
         expectedTime = WINDOW_OPEN;
     }
     
+    public void testGotoLineDialog() {
+        doMeasurement();
+    }
+    
     @Override
     public void initialize() {
         TITLE = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.editor.Bundle", "goto-title");

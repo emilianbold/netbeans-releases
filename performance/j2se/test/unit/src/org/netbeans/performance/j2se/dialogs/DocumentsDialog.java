@@ -68,6 +68,10 @@ public class DocumentsDialog extends PerformanceTestCase {
         expectedTime = WINDOW_OPEN;
     }
     
+    public void testDocumentsDialog() {
+        doMeasurement();
+    }
+    
     @Override
     public void initialize(){
         CommonUtilities.openFiles("jEdit", getTenSelectedFiles());

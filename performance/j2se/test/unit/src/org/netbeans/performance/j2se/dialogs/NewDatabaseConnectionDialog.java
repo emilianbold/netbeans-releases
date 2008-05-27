@@ -73,6 +73,10 @@ public class NewDatabaseConnectionDialog extends PerformanceTestCase {
         expectedTime = WINDOW_OPEN;
     }
     
+    public void testNewDatabaseConnectionDialog() {
+        doMeasurement();
+    }
+        
     @Override
     public void initialize() {
         BUNDLE = "org.netbeans.modules.db.resources.Bundle";

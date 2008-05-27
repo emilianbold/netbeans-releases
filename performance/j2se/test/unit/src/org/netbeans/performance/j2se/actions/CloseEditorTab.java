@@ -89,6 +89,10 @@ public class CloseEditorTab extends PerformanceTestCase {
         menuItem = OPEN;
     }
     
+    public void testCloseEditorTab(){
+        doMeasurement();
+    }    
+    
     @Override
     public void initialize(){
         EditorOperator.closeDiscardAll();

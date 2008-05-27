@@ -85,6 +85,10 @@ public class CloseEditorModified extends PerformanceTestCase {
         WAIT_AFTER_OPEN=1500;
     }
     
+    public void testCloseEditorModified(){
+        doMeasurement();
+    }    
+    
     @Override
     public void initialize(){
         EditorOperator.closeDiscardAll();

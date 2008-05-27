@@ -75,6 +75,10 @@ public class PasteInEditor extends PerformanceTestCase {
     
     private EditorOperator editorOperator1, editorOperator2;
     
+    public void testPasteInEditor(){
+        doMeasurement();
+    }    
+    
     @Override
     public void initialize() {
         EditorOperator.closeDiscardAll();

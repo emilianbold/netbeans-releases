@@ -73,6 +73,11 @@ public class ProxyConfiguration extends PluginManager {
         expectedTime = WINDOW_OPEN;
     }
     
+    
+    public void testProxyConfiguration() {
+        doMeasurement();
+    }
+    
     @Override
     public void initialize() {
         super.initialize();
