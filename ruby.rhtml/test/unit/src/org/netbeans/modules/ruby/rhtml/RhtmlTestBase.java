@@ -41,7 +41,6 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Formatter;
 import org.netbeans.editor.ext.ExtFormatter;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
-import org.netbeans.modules.gsf.DefaultLanguage;
 import org.netbeans.modules.gsf.GsfIndentTaskFactory;
 import org.netbeans.modules.gsf.Language;
 import org.netbeans.modules.gsf.LanguageRegistry;
@@ -100,7 +99,7 @@ public abstract class RhtmlTestBase extends RubyTestBase {
         LanguageRegistry registry = LanguageRegistry.getInstance();
         List<Action> actions = Collections.emptyList();
         if (!LanguageRegistry.getInstance().isSupported(RhtmlTokenId.MIME_TYPE)) {
-            Language dl = new DefaultLanguage("org/netbeans/modules/ruby/jrubydoc.png", RhtmlTokenId.MIME_TYPE, 
+            Language dl = new Language("org/netbeans/modules/ruby/jrubydoc.png", RhtmlTokenId.MIME_TYPE, 
                     actions, new RhtmlLanguage(), 
                     null, new RhtmlCompleter(), new RenameHandler(), new RhtmlFinder(), 
                     null, new BracketCompleter(), null, null, null, true);

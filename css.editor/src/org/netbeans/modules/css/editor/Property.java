@@ -62,7 +62,7 @@ public class Property {
         this.percentages = percentages;
         this.mediaGroups = mediaGroups;
     }
-    
+        
     public String name() {
         return name;
     }

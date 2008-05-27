@@ -125,4 +125,14 @@
             <file name="ExternalTablePollingStream.xml" url="nbresloc:/org/netbeans/modules/iep/editor/palette/items/external/ExternalTablePollingStream.xml"/>
         </folder>
     </folder>
+    
+    <folder name="Loaders">
+        <folder name="content">
+            <folder name="unknown">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-iep-editor-PlanDataLoader.instance"/>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
 </filesystem>

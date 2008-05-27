@@ -53,7 +53,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.RandomAccess;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.gsf.api.EmbeddingModel;
@@ -103,6 +102,7 @@ public class LanguageRegistry implements Iterable<Language> {
     /** Location in the system file system where languages are registered */
     private static final String FOLDER = "GsfPlugins";
     private List<Language> languages;
+    private Map<String,Language> mimeToLanguage;
     private boolean languagesInitialized;
     private Collection<? extends EmbeddingModel> embeddingModels;
 
@@ -120,6 +120,13 @@ public class LanguageRegistry implements Iterable<Language> {
         }
 
         this.languages = newLanguages;
+        
+        mimeToLanguage = new HashMap<String,Language>(2*languages.size());
+        for (Language language : languages) {
+            String mimeType = language.getMimeType();
+            assert mimeType.equals(mimeType.toLowerCase()) : mimeType;
+            mimeToLanguage.put( mimeType,language);
+        }
     }
 
     public static synchronized LanguageRegistry getInstance() {
@@ -135,21 +142,11 @@ public class LanguageRegistry implements Iterable<Language> {
      * or null if no such language is supported
      */
     public Language getLanguageByMimeType(@NonNull String mimeType) {
-        if (languages == null) {
+        if (mimeToLanguage == null) {
             return null;
         }
 
-        assert mimeType.equals(mimeType.toLowerCase()) : mimeType;
-        assert languages instanceof RandomAccess;
-
-        for (int i = 0, n = languages.size(); i < n; i++) {
-            Language language = languages.get(i);
-            if (language.getMimeType().equals(mimeType)) {
-                return language;
-            }
-        }
-
-        return null;
+        return mimeToLanguage.get(mimeType);
     }
 
     @CheckForNull
@@ -346,7 +343,7 @@ public class LanguageRegistry implements Iterable<Language> {
 
         String mimeType = (String) doc.getProperty("mimeType"); // NOI18N
         if (mimeType != null) {
-            Language language = LanguageRegistry.getInstance().getLanguageByMimeType(mimeType);
+            Language language = getLanguageByMimeType(mimeType);
             if (language != null && (result.size() == 0 || result.get(result.size()-1) != language))  {
                 result.add(language);
             }
@@ -363,13 +360,8 @@ public class LanguageRegistry implements Iterable<Language> {
         if (mimeType == null) {
             return false;
         }
-        for (Language language : this) {
-            if (mimeType.equals(language.getMimeType())) {
-                return true;
-            }
-        }
-
-        return false;
+        
+        return getLanguageByMimeType(mimeType) != null;
     }
     
     public String getLanguagesDisplayName() {
@@ -407,6 +399,15 @@ public class LanguageRegistry implements Iterable<Language> {
     private synchronized void initialize() {
         if (languages == null) {
             readSfs();
+            
+            if (languages != null) {
+                mimeToLanguage = new HashMap<String,Language>(2*languages.size());
+                for (Language language : languages) {
+                    String mimeType = language.getMimeType();
+                    assert mimeType.equals(mimeType.toLowerCase()) : mimeType;
+                    mimeToLanguage.put( mimeType,language);
+                }
+            }
 
             initializeLanguages();
         }
@@ -483,7 +484,7 @@ public class LanguageRegistry implements Iterable<Language> {
                 FileObject mimeFile = innerChildren[j];
 
                 String mime = mimePrefixFile.getName() + "/" + mimeFile.getName();
-                DefaultLanguage language = new DefaultLanguage(mime);
+                Language language = new Language(mime);
                 languages.add(language);
 
                 Boolean useCustomEditorKit = (Boolean)mimeFile.getAttribute("useCustomEditorKit"); // NOI18N
@@ -597,7 +598,7 @@ public class LanguageRegistry implements Iterable<Language> {
         // I can't call language.getStructure() here - it causes initialization
         // of the language objects too early (before registry is populated),
         // so just check if we potentially have a structure scanner
-        if (((DefaultLanguage)language).hasStructureScanner()) {
+        if (language.hasStructureScanner()) {
             String navFileName = "Navigator/Panels/" + language.getMimeType() + "/org-netbeans-modules-gsfret-navigation-ClassMemberPanel.instance";
 
             FileObject fo = fs.findResource(navFileName);
@@ -976,18 +977,20 @@ public class LanguageRegistry implements Iterable<Language> {
         }
         
         // Glyph gutter actions
-        if (((DefaultLanguage)l).hasHints()) {
-            FileObject gf = root.getFileObject("GlyphGutterActions/org-netbeans-modules-editor-hints-FixAction.instance");
-            if (gf == null) {
-                try {
-                    FileObject fo = FileUtil.createData(root, "GlyphGutterActions/org-netbeans-modules-editor-hints-FixAction.instance");
-                    fo.setAttribute("position", 200);
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
-        }
+        // No longer necessary as of changeset cb8074b378e9
+        //if (l.hasHints()) {
+        //    FileObject gf = root.getFileObject("GlyphGutterActions/org-netbeans-modules-editor-hints-FixAction.instance");
+        //    if (gf == null) {
+        //        try {
+        //            FileObject fo = FileUtil.createData(root, "GlyphGutterActions/org-netbeans-modules-editor-hints-FixAction.instance");
+        //            fo.setAttribute("position", 200);
+        //        } catch (IOException ex) {
+        //            Exceptions.printStackTrace(ex);
+        //        }
+        //    }
+        //}
 
+        
         // Temporarily disabled; each language does it instead
         //initializeColoring(l);
     }

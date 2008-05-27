@@ -44,6 +44,11 @@
     <folder name="Loaders">
         <folder name="application">
             <folder name="xslt+xml">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-xslt-core-XSLTDataLoader.instance">
+                        <attr name="position" intvalue="100"/>
+                    </file>
+                </folder>
                 <folder name="Actions">
                     <file name="org-openide-actions-EditAction.instance">
                         <attr name="position" intvalue="300"/>

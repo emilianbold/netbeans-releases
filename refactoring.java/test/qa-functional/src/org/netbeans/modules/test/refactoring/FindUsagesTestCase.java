@@ -71,6 +71,10 @@ public class FindUsagesTestCase extends RefactoringTestCase {
     public static final int SEARCH_FROM_BASECLASS = 1 << 6;
     public static final int SEARCH_IN_ALL_PROJ = 1 << 7;
     public static final int SEARCH_ACTUAL_PROJ = 1 << 8;
+    public static final int FIND_USAGES_METHOD = 1 << 9;
+    public static final int NOT_FIND_USAGES_METHOD = 1 << 10;
+    public static final int NOT_SEARCH_FROM_BASECLASS = 1 << 11;
+    
     
     private static boolean browseChild = true;
 
@@ -82,8 +86,8 @@ public class FindUsagesTestCase extends RefactoringTestCase {
         return projectName;
     }
         
-    protected void findUsages(String fileName, int row, int col, int modifiers) {
-        openSourceFile("fu", fileName);
+    protected void findUsages(String packName,String fileName, int row, int col, int modifiers) {
+        openSourceFile(packName, fileName);
         EditorOperator editor = new EditorOperator(fileName);
         editor.setCaretPosition(row, col);
         new FindUsagesAction().performPopup(editor);
@@ -95,6 +99,10 @@ public class FindUsagesTestCase extends RefactoringTestCase {
             findUsagesClassOperator.getSearchInComments().setSelected(false);
         if ((modifiers & FIND_USAGES) != 0)
             findUsagesClassOperator.getFindUsages().setSelected(true);
+        if ((modifiers & FIND_USAGES_METHOD) != 0)
+            findUsagesClassOperator.getFindMethodUsage().setSelected(true);
+        if ((modifiers & NOT_FIND_USAGES_METHOD) != 0)
+            findUsagesClassOperator.getFindMethodUsage().setSelected(false);
         if ((modifiers & FIND_ALL_SUBTYPES) != 0)
             findUsagesClassOperator.getFindAllSubtypes().setSelected(true);
         if ((modifiers & FIND_DIRECT_SUBTYPES) != 0)
@@ -103,6 +111,8 @@ public class FindUsagesTestCase extends RefactoringTestCase {
             findUsagesClassOperator.getFindOverridding().setSelected(true);
         if ((modifiers & SEARCH_FROM_BASECLASS) != 0)
             findUsagesClassOperator.getFindFromBaseClass().setSelected(true);
+        if ((modifiers & NOT_SEARCH_FROM_BASECLASS) != 0)
+            findUsagesClassOperator.getFindFromBaseClass().setSelected(false);
         if ((modifiers & SEARCH_IN_ALL_PROJ) != 0)
             findUsagesClassOperator.setScope(null);
         if ((modifiers & SEARCH_ACTUAL_PROJ) != 0)

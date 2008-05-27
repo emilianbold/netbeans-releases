@@ -134,7 +134,7 @@ final class TestMethodNode extends AbstractNode {
         String callstackFrameInfo =
                 ((trouble != null)
                         && (trouble.stackTrace != null)
-                        && (trouble.stackTrace.length >= 1))
+                        && (trouble.stackTrace.length >= 2))
                 // index 0 represents the error/failure message, 
                 // so using index 1 for navigating to the right line
                 ? trouble.stackTrace[1]

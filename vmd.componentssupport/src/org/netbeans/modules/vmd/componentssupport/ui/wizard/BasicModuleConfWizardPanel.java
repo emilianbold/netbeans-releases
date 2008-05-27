@@ -87,7 +87,7 @@ class BasicModuleConfWizardPanel implements Panel, ValidatingPanel,
      */
     public Component getComponent() {
         if (myComponent == null) {
-            myComponent = new BasicConfVisualPanel( this );
+            myComponent = new BasicModuleConfVisualPanel( this );
             myComponent.setName(
                     NbBundle.getMessage(BasicModuleConfWizardPanel.class, 
                     CustomComponentWizardIterator.FINAL_STEP));
@@ -162,7 +162,7 @@ class BasicModuleConfWizardPanel implements Panel, ValidatingPanel,
     
     private List<ChangeListener> myListeners; 
     private WizardDescriptor myWizardDescriptor;
-    private BasicConfVisualPanel myComponent;
+    private BasicModuleConfVisualPanel myComponent;
     private boolean myValid = true;
 
 }

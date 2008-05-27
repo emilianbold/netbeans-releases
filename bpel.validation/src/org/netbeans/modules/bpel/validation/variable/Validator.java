@@ -44,13 +44,17 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.LinkedList;
 
 import org.netbeans.modules.bpel.model.api.Assign;
+import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.Copy;
+import org.netbeans.modules.bpel.model.api.Pick;
+import org.netbeans.modules.bpel.model.api.Scope;
 import org.netbeans.modules.bpel.model.api.To;
 import org.netbeans.modules.bpel.model.api.From;
+import org.netbeans.modules.bpel.model.api.Flow;
 import org.netbeans.modules.bpel.model.api.ContentElement;
-import org.netbeans.modules.bpel.model.api.OnEvent;
 import org.netbeans.modules.bpel.model.api.OnMessage;
 import org.netbeans.modules.bpel.model.api.OperationReference;
 import org.netbeans.modules.bpel.model.api.PartReference;
@@ -63,14 +67,10 @@ import org.netbeans.modules.bpel.model.api.VariableReference;
 import org.netbeans.modules.bpel.model.api.references.BpelReference;
 import org.netbeans.modules.bpel.model.api.references.WSDLReference;
 
-import org.netbeans.modules.xml.wsdl.model.Input;
 import org.netbeans.modules.xml.wsdl.model.Message;
 import org.netbeans.modules.xml.wsdl.model.Operation;
 import org.netbeans.modules.xml.wsdl.model.OperationParameter;
 import org.netbeans.modules.xml.wsdl.model.Part;
-import org.netbeans.modules.xml.wsdl.model.PortType;
-import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
-import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PartnerLinkType;
 
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
@@ -86,7 +86,89 @@ import static org.netbeans.modules.xml.ui.UI.*;
 public final class Validator extends BpelValidator {
 
   @Override
-  protected final SimpleBpelModelVisitor getVisitor() { return new SimpleBpelModelVisitorAdaptor() {
+  protected SimpleBpelModelVisitor getVisitor() { return new SimpleBpelModelVisitorAdaptor() {
+
+  // # 83632
+  @Override
+  public void visit(Flow flow) {
+//out();
+//out("Flow: " + flow);
+    List<List<VariablePart>> list = new ArrayList<List<VariablePart>>();
+    Collection<BpelEntity> children = flow.getChildren();
+
+    for (BpelEntity child : children) {
+      List<VariablePart> variables = new LinkedList<VariablePart>();
+      findVariableParts(child, variables);
+
+      if ( !variables.isEmpty()) {
+        list.add(variables);
+      }
+    }
+    for (int i=0; i < list.size(); i++) {
+      for (int j=i+1; j < list.size(); j++) {
+        VariablePart variablePart = getCommonVariable(list.get(i), list.get(j));
+
+        if (variablePart != null) {
+          addWarning("FIX_Variable_in_Flow", flow, flow.getName(), variablePart.toString()); // NOI18N
+          break;
+        }
+      }
+    }
+  }
+
+  private VariablePart getCommonVariable(List<VariablePart> variables1, List<VariablePart> variables2) {
+    for (VariablePart variable : variables1) {
+      if (variables2.contains(variable)) {
+        return variable;
+      }
+    }
+    return null;
+  }
+
+  private void findVariableParts(BpelEntity entity, List<VariablePart> variables) {
+    if (entity instanceof Scope) {
+      return;
+    }
+    if (entity instanceof Pick) {
+      return;
+    }
+    if (entity instanceof Assign) {
+      findVariablePartsInAssign((Assign) entity, variables);
+    }
+    Collection<BpelEntity> children = entity.getChildren();
+
+    for (BpelEntity child : children) {
+      findVariableParts(child, variables);
+    }
+  }
+
+  private void findVariablePartsInAssign(Assign assign, List<VariablePart> variables) {
+    Collection<Copy> copies = assign.getChildren(Copy.class);
+
+    for (Copy copy : copies) {
+      To to = copy.getTo();
+      BpelReference<VariableDeclaration> ref = to.getVariable();
+
+      if (ref == null) {
+        continue;
+      }
+      VariableDeclaration variable = ref.get();
+
+      if (variable == null) {
+        continue;
+      }
+      variables.add(new VariablePart(variable, getPart(to)));
+    }
+  }
+
+  private Part getPart(To to) {
+    WSDLReference<Part> ref = to.getPart();
+
+    if (ref == null) {
+      return null;
+    }
+    return ref.get();
+  }
 
   // # 135160
   @Override
@@ -301,8 +383,48 @@ public final class Validator extends BpelValidator {
 //out("SIZE: " + parts.size());
 //out();
     if (parts.size() != 0) {
-      addError("FIX_WSDL_message_variable", (Component) variableReference);
+      addError("FIX_WSDL_message_variable", (Component) variableReference); // NOI18N
     }
-  }
+  }};}
 
-};}}
+  // -------------------------
+  private class VariablePart {
+    VariablePart(VariableDeclaration variable, Part part) {
+      myVariable = variable;
+      myPart = part;
+    }
+
+    @Override
+    public boolean equals(Object object) {
+      if ( !(object instanceof VariablePart)) {
+        return false;
+      }
+      VariablePart variablePart = (VariablePart) object;
+
+      return variablePart.myVariable == myVariable && variablePart.myPart == myPart;
+    }
+
+    @Override
+    public int hashCode() {
+      if (myPart == null) {
+        return myVariable.hashCode();
+      }
+      else {
+        return myVariable.hashCode() * myPart.hashCode();
+      }
+    }
+
+    @Override
+    public String toString() {
+      if (myPart == null) {
+        return getName(myVariable);
+      }
+      else {
+        return getName(myVariable) + "." + myPart.getName(); // NOI18N
+      }
+    }
+
+    private VariableDeclaration myVariable;
+    private Part myPart;
+  }
+}

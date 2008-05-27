@@ -124,11 +124,12 @@ public class NodeFactorySupport {
         private List<NodeList<?>> nodeLists = new ArrayList<NodeList<?>>();
         private List<NodeFactory> factories = new ArrayList<NodeFactory>();
         private Lookup.Result<NodeFactory> result;
-        private HashMap<NodeList<?>, List<NodeListKeyWrapper>> keys;
+        private final HashMap<NodeList<?>, List<NodeListKeyWrapper>> keys;
         
         public DelegateChildren(Project proj, String path) {
             folderPath = path;
             project = proj;
+            keys = new HashMap<NodeList<?>, List<NodeListKeyWrapper>>();
         }
         
         // protected for tests..
@@ -160,7 +161,6 @@ public class NodeFactorySupport {
       
         protected @Override void addNotify() {
             super.addNotify();
-            keys = new HashMap<NodeList<?>, List<NodeListKeyWrapper>>();
             synchronized (this) {
                 result = createLookup().lookupResult(NodeFactory.class);
                 for (NodeFactory factory : result.allInstances()) {
@@ -283,7 +283,7 @@ public class NodeFactorySupport {
             nodeList = list;
             object = obj;
         }
-        
+
         @Override
         public boolean equals(Object obj) {
             if (obj == null) {
@@ -304,12 +304,12 @@ public class NodeFactorySupport {
 
         @Override
         public int hashCode() {
-            int hash = 5;
-            hash = 79 * hash + (this.nodeList != null ? this.nodeList.hashCode() : 0);
-            hash = 79 * hash + (this.object != null ? this.object.hashCode() : 0);
+            int hash = 3;
+            hash = 67 * hash + (this.nodeList != null ? this.nodeList.hashCode() : 0);
+            hash = 67 * hash + (this.object != null ? this.object.hashCode() : 0);
             return hash;
         }
-        
+
     }
     
 }

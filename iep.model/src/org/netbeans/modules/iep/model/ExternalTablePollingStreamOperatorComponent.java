@@ -25,9 +25,9 @@ public interface ExternalTablePollingStreamOperatorComponent extends OperatorCom
     
     public String getPollingIntervalTimeUnit();
     
-    public void setPolllingIntervalRecordSize(String recordSize);
+    public void setPolllingRecordSize(String recordSize);
     
-    public void getPolllingIntervalRecordSize();
+    public String getPolllingRecordSize();
     
     public void setDatabaseJndiName(String databaseJndiName);
     

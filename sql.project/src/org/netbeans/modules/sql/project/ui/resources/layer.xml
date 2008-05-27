@@ -23,6 +23,9 @@
     <folder name="Loaders">
         <folder name="text">
             <folder name="x-sql">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-sql-project-ui-SQLDataLoader.instance"/>
+                </folder>
                 <folder name="Actions">
                     <file name="org-openide-actions-OpenAction.instance">
                         <attr name="position" intvalue="500"/>

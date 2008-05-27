@@ -328,6 +328,9 @@ made subject to such option by the copyright holder.
     <folder name="Loaders">
         <folder name="image">
             <folder name="svg+xml">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-mobility-svgcore-SVGDataLoader.instance"/>
+                </folder>
                 <folder name="Actions">
                     <file name="org-openide-actions-OpenAction.instance">
                         <attr name="position" intvalue="100"/>
@@ -388,6 +391,9 @@ made subject to such option by the copyright holder.
         </folder>
         <folder name="text">
             <folder name="x-svg-palette-item">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-mobility-svgcore-palette-SVGPaletteItemDataLoader.instance"/>
+                </folder>
                 <folder name="Actions">
                     <file name="org-openide-actions-CopyAction.instance">
                         <attr name="position" intvalue="500"/>

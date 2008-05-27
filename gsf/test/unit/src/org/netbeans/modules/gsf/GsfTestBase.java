@@ -62,9 +62,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.prefs.Preferences;
 import javax.swing.JTextArea;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
@@ -76,6 +78,8 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.lexer.LanguageManager;
 import org.netbeans.modules.gsf.api.CodeCompletionContext;
+import org.netbeans.modules.gsf.api.Error;
+import org.netbeans.modules.gsf.api.HintFix;
 import org.netbeans.modules.gsf.api.KeystrokeHandler;
 import org.netbeans.modules.gsf.api.ColoringAttributes;
 import org.netbeans.modules.gsf.api.CompilationInfo;
@@ -86,6 +90,8 @@ import org.netbeans.modules.gsf.api.CompletionProposal;
 import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.gsf.api.Formatter;
 import org.netbeans.modules.gsf.api.GsfLanguage;
+import org.netbeans.modules.gsf.api.Hint;
+import org.netbeans.modules.gsf.api.HintsProvider;
 import org.netbeans.modules.gsf.api.HtmlFormatter;
 import org.netbeans.modules.gsf.api.IndexDocument;
 import org.netbeans.modules.gsf.api.IndexDocumentFactory;
@@ -100,6 +106,15 @@ import org.netbeans.modules.gsf.api.SemanticAnalyzer;
 import org.netbeans.modules.gsf.api.StructureItem;
 import org.netbeans.modules.gsf.api.StructureScanner;
 import org.netbeans.modules.gsf.spi.DefaultParserFile;
+import org.netbeans.modules.gsf.api.HintSeverity;
+import org.netbeans.modules.gsf.api.Rule;
+import org.netbeans.modules.gsf.api.Rule.AstRule;
+import org.netbeans.modules.gsf.api.Rule.ErrorRule;
+import org.netbeans.modules.gsf.api.Rule.SelectionRule;
+import org.netbeans.modules.gsf.api.Rule.UserConfigurableRule;
+import org.netbeans.modules.gsf.api.RuleContext;
+import org.netbeans.modules.gsfret.hints.infrastructure.GsfHintsManager;
+import org.netbeans.modules.gsfret.hints.infrastructure.HintsSettings;
 import org.netbeans.napi.gsfret.source.Source;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -2373,4 +2388,386 @@ public abstract class GsfTestBase extends NbTestCase {
 
         return sb.toString();
     }
+    
+    
+    
+    
+    
+    ////////////////////////////////////////////////////////////////////////////
+    // Hints / Quickfix Tests
+    ////////////////////////////////////////////////////////////////////////////
+    protected HintsProvider getHintsProvider() {
+        throw new RuntimeException("You must override getHintsProvider before runnign hints tests!");
+    }
+
+    private GsfHintsManager getHintsManager(org.netbeans.modules.gsf.Language language) {
+        return new GsfHintsManager(getPreferredMimeType(), getHintsProvider(), language);
+    }
+    
+    protected String annotateHints(BaseDocument doc, List<Hint> result, int caretOffset) throws Exception {
+        Map<OffsetRange, List<Hint>> posToDesc = new HashMap<OffsetRange, List<Hint>>();
+        Set<OffsetRange> ranges = new HashSet<OffsetRange>();
+        for (Hint desc : result) {
+            int start = desc.getRange().getStart();
+            int end = desc.getRange().getEnd();
+            OffsetRange range = new OffsetRange(start, end);
+            List<Hint> l = posToDesc.get(range);
+            if (l == null) {
+                l = new ArrayList<Hint>();
+                posToDesc.put(range, l);
+            }
+            l.add(desc);
+            ranges.add(range);
+        }
+        StringBuilder sb = new StringBuilder();
+        String text = doc.getText(0, doc.getLength());
+        Map<Integer, OffsetRange> starts = new HashMap<Integer, OffsetRange>(100);
+        Map<Integer, OffsetRange> ends = new HashMap<Integer, OffsetRange>(100);
+        for (OffsetRange range : ranges) {
+            starts.put(range.getStart(), range);
+            ends.put(range.getEnd(), range);
+        }
+
+        int index = 0;
+        int length = text.length();
+        while (index < length) {
+            int lineStart = Utilities.getRowStart(doc, index);
+            int lineEnd = Utilities.getRowEnd(doc, index);
+            OffsetRange lineRange = new OffsetRange(lineStart, lineEnd);
+            boolean skipLine = true;
+            for (OffsetRange range : ranges) {
+                if (lineRange.containsInclusive(range.getStart()) || lineRange.containsInclusive(range.getEnd())) {
+                    skipLine = false;
+                }
+            }
+            if (!skipLine) {
+                List<Hint> descsOnLine = null;
+                int underlineStart = -1;
+                int underlineEnd = -1;
+                for (int i = lineStart; i <= lineEnd; i++) {
+                    if (i == caretOffset) {
+                        sb.append("^");
+                    }
+                    if (starts.containsKey(i)) {
+                        if (descsOnLine == null) {
+                            descsOnLine = new ArrayList<Hint>();
+                        }
+                        underlineStart = i-lineStart;
+                        OffsetRange range = starts.get(i);
+                        if (posToDesc.get(range) != null) {
+                            for (Hint desc : posToDesc.get(range)) {
+                                descsOnLine.add(desc);
+                            }
+                        }
+                    }
+                    if (ends.containsKey(i)) {
+                        underlineEnd = i-lineStart;
+                    }
+                    sb.append(text.charAt(i));
+                }
+                if (underlineStart != -1) {
+                    for (int i = 0; i < underlineStart; i++) {
+                        sb.append(" ");
+                    }
+                    for (int i = underlineStart; i < underlineEnd; i++) {
+                        sb.append("-");
+                    }
+                    sb.append("\n");
+                }
+                if (descsOnLine != null) {
+                    Collections.sort(descsOnLine, new Comparator<Hint>() {
+                        public int compare(Hint arg0, Hint arg1) {
+                            return arg0.getDescription().compareTo(arg1.getDescription());
+                        }
+                    });
+                    for (Hint desc : descsOnLine) {
+                        sb.append("HINT:");
+                        sb.append(desc.getDescription());
+                        sb.append("\n");
+                        List<HintFix> list = desc.getFixes();
+                        if (list != null) {
+                            for (HintFix fix : list) {
+                                sb.append("FIX:");
+                                sb.append(fix.getDescription());
+                                sb.append("\n");
+                            }
+                        }
+                    }
+                }
+            }
+            index = lineEnd + 1;
+        }
+
+        return sb.toString();
+    }
+ 
+    protected boolean parseErrorsOk;
+    
+    protected ComputedHints getHints(NbTestCase test, Rule hint, String relFilePath, FileObject fileObject, String caretLine) throws Exception {
+        assert relFilePath == null || fileObject == null;
+        UserConfigurableRule ucr = null;
+        if (hint instanceof UserConfigurableRule) {
+            ucr = (UserConfigurableRule)hint;
+        }
+
+        initializeRegistry();
+        org.netbeans.modules.gsf.Language language = LanguageRegistry.getInstance().getLanguageByMimeType(getPreferredMimeType());
+
+        HintsProvider provider = getHintsProvider();
+        GsfHintsManager manager = getHintsManager(language);
+
+        // Make sure the hint is enabled
+        if (ucr != null && !HintsSettings.isEnabled(manager, ucr)) {
+            Preferences p = HintsSettings.getPreferences(manager, ucr, HintsSettings.getCurrentProfileId());
+            HintsSettings.setEnabled(p, true);
+        }
+        
+        GsfTestCompilationInfo info = fileObject != null ? getInfo(fileObject) : getInfo(relFilePath);
+        ParserResult pr = info.getEmbeddedResult(info.getPreferredMimeType(), 0);
+        if (pr == null /*|| pr.hasErrors()*/ && !(hint instanceof ErrorRule)) { // only expect testcase source errors in error tests
+            if (parseErrorsOk) {
+                List<Hint> result = new ArrayList<Hint>();
+                int caretOffset = 0;
+                return new ComputedHints(info, result, caretOffset);
+            }
+            assertTrue("Unexpected parse error in test case " + 
+                    FileUtil.getFileDisplayName(info.getFileObject()) + "\nErrors = " + 
+                    info.getErrors(), pr != null && !pr.hasErrors());
+        }
+
+        String text = info.getText();
+
+        int caretOffset = -1;
+        if (caretLine != null) {
+            int caretDelta = caretLine.indexOf("^");
+            assertTrue(caretDelta != -1);
+            caretLine = caretLine.substring(0, caretDelta) + caretLine.substring(caretDelta + 1);
+            int lineOffset = text.indexOf(caretLine);
+            assertTrue("NOT FOUND: " + info.getFileObject().getName() + ":" + caretLine, lineOffset != -1);
+
+            caretOffset = lineOffset + caretDelta;
+        }
+
+        List<Hint> hints = new ArrayList<Hint>();
+        if (hint instanceof ErrorRule) {
+            RuleContext context = manager.createRuleContext(info, language, -1, -1, -1);
+            // It's an error!
+            // Create a hint registry which contains ONLY our hint (so other registered
+            // hints don't interfere with the test)
+            Map<Object, List<? extends ErrorRule>> testHints = new HashMap<Object, List<? extends ErrorRule>>();
+            if (hint.appliesTo(context)) {
+                ErrorRule ErrorRule = (ErrorRule)hint;
+                for (Object key : ErrorRule.getCodes()) {
+                    testHints.put(key, Collections.singletonList(ErrorRule));
+                }
+            }
+            manager.setTestingRules(testHints, null, null, null);
+            provider.computeErrors(manager, context, hints, new ArrayList<Error>());
+        } else if (hint instanceof SelectionRule) {
+            SelectionRule rule = (SelectionRule)hint;
+            List<SelectionRule> testHints = new ArrayList<SelectionRule>();
+            testHints.add(rule);
+            
+            manager.setTestingRules(null, null, null, testHints);
+            
+            if (caretLine != null) {
+                int start = text.indexOf(caretLine);
+                int end = start+caretLine.length();
+                RuleContext context = manager.createRuleContext(info, language, -1, start, end);
+                provider.computeSelectionHints(manager, context, hints, start, end);
+            }
+        } else {
+            assert hint instanceof AstRule && ucr != null;
+            AstRule AstRule = (AstRule)hint;
+            // Create a hint registry which contains ONLY our hint (so other registered
+            // hints don't interfere with the test)
+            Map<Object, List<? extends AstRule>> testHints = new HashMap<Object, List<? extends AstRule>>();
+            RuleContext context = manager.createRuleContext(info, language, caretOffset, -1, -1);
+            if (hint.appliesTo(context)) {
+                for (Object nodeId : AstRule.getKinds()) {
+                    testHints.put(nodeId, Collections.singletonList(AstRule));
+                }
+            }
+            if (HintsSettings.getSeverity(manager, ucr) == HintSeverity.CURRENT_LINE_WARNING) {
+                manager.setTestingRules(null, Collections.EMPTY_MAP, testHints, null);
+                provider.computeSuggestions(manager, context, hints, caretOffset);
+            } else {
+                manager.setTestingRules(null, testHints, null, null);
+                context.caretOffset = -1;
+                provider.computeHints(manager, context, hints);
+            }
+        }
+
+        return new ComputedHints(info, hints, caretOffset);
+    }
+    
+    protected void checkHints(NbTestCase test, Rule hint, String relFilePath, String caretLine) throws Exception {
+        findHints(test, hint, relFilePath, null, caretLine);
+    }
+    
+    protected void checkHints(Rule hint, String relFilePath,
+            String selStartLine, String selEndLine) throws Exception {
+        FileObject fo = getTestFile(relFilePath);
+        String text = read(fo);
+
+        assert selStartLine != null;
+        assert selEndLine != null;
+        
+        int selStartOffset = -1;
+        int lineDelta = selStartLine.indexOf("^");
+        assertTrue(lineDelta != -1);
+        selStartLine = selStartLine.substring(0, lineDelta) + selStartLine.substring(lineDelta + 1);
+        int lineOffset = text.indexOf(selStartLine);
+        assertTrue(lineOffset != -1);
+
+        selStartOffset = lineOffset + lineDelta;
+        
+        int selEndOffset = -1;
+        lineDelta = selEndLine.indexOf("^");
+        assertTrue(lineDelta != -1);
+        selEndLine = selEndLine.substring(0, lineDelta) + selEndLine.substring(lineDelta + 1);
+        lineOffset = text.indexOf(selEndLine);
+        assertTrue(lineOffset != -1);
+
+        selEndOffset = lineOffset + lineDelta;
+
+        String caretLine = text.substring(selStartOffset, selEndOffset) + "^";
+        
+        checkHints(this, hint, relFilePath, caretLine);
+    }
+
+    // TODO - rename to "checkHints"
+    protected void findHints(NbTestCase test, Rule hint, FileObject fileObject, String caretLine) throws Exception {
+        findHints(test, hint, null, fileObject, caretLine);
+    }
+    
+    protected String getGoldenFileSuffix() {
+        return "";
+    }
+    
+    // TODO - rename to "checkHints"
+    protected void findHints(NbTestCase test, Rule hint, String relFilePath, FileObject fileObject, String caretLine) throws Exception {
+        ComputedHints r = getHints(test, hint, relFilePath, fileObject, caretLine);
+        CompilationInfo info = r.info;
+        List<Hint> result = r.hints;
+        int caretOffset = r.caretOffset;
+        
+        String annotatedSource = annotateHints((BaseDocument)info.getDocument(), result, caretOffset);
+
+        if (fileObject != null) {
+            assertDescriptionMatches(fileObject, annotatedSource, true, getGoldenFileSuffix() + ".hints");
+        } else {
+            assertDescriptionMatches(relFilePath, annotatedSource, true, getGoldenFileSuffix() + ".hints");
+        }
+    }
+
+    protected void applyHint(NbTestCase test, Rule hint, String relFilePath,
+            String selStartLine, String selEndLine, String fixDesc) throws Exception {
+        FileObject fo = getTestFile(relFilePath);
+        String text = read(fo);
+
+        assert selStartLine != null;
+        assert selEndLine != null;
+        
+        int selStartOffset = -1;
+        int lineDelta = selStartLine.indexOf("^");
+        assertTrue(lineDelta != -1);
+        selStartLine = selStartLine.substring(0, lineDelta) + selStartLine.substring(lineDelta + 1);
+        int lineOffset = text.indexOf(selStartLine);
+        assertTrue(lineOffset != -1);
+
+        selStartOffset = lineOffset + lineDelta;
+        
+        int selEndOffset = -1;
+        lineDelta = selEndLine.indexOf("^");
+        assertTrue(lineDelta != -1);
+        selEndLine = selEndLine.substring(0, lineDelta) + selEndLine.substring(lineDelta + 1);
+        lineOffset = text.indexOf(selEndLine);
+        assertTrue(lineOffset != -1);
+
+        selEndOffset = lineOffset + lineDelta;
+
+        String caretLine = text.substring(selStartOffset, selEndOffset) + "^";
+        
+        applyHint(test, hint, relFilePath, caretLine, fixDesc);
+    }
+
+    protected void applyHint(NbTestCase test, Rule hint, String relFilePath,
+            String caretLine, String fixDesc) throws Exception {
+        ComputedHints r = getHints(test, hint, relFilePath, null, caretLine);
+        CompilationInfo info = r.info;
+        
+        HintFix fix = findApplicableFix(r, fixDesc);
+        assertNotNull(fix);
+        
+        fix.implement();
+        
+        Document doc = info.getDocument();
+        String fixed = doc.getText(0, doc.getLength());
+
+        assertDescriptionMatches(relFilePath, fixed, true, ".fixed");
+    }
+    
+//    public void ensureRegistered(AstRule hint) throws Exception {
+//        Map<Integer, List<AstRule>> hints = JsRulesManager.getInstance().getHints();
+//        Set<Integer> kinds = hint.getKinds();
+//        for (int nodeType : kinds) {
+//            List<AstRule> rules = hints.get(nodeType);
+//            assertNotNull(rules);
+//            boolean found = false;
+//            for (AstRule rule : rules) {
+//                if (rule instanceof BlockVarReuse) {
+//                    found  = true;
+//                    break;
+//                }
+//            }
+//            
+//            assertTrue(found);
+//        }
+//    }
+
+    private HintFix findApplicableFix(ComputedHints r, String text) {
+        boolean substringMatch = true;
+        if (text.endsWith("\n")) {
+            text = text.substring(0, text.length()-1);
+            substringMatch = false;
+        }
+        int caretOffset = r.caretOffset;
+        for (Hint desc : r.hints) {
+            int start = desc.getRange().getStart();
+            int end = desc.getRange().getEnd();
+            OffsetRange range = new OffsetRange(start, end);
+            if (range.containsInclusive(caretOffset) || caretOffset == range.getEnd()+1) { // special case for wrong JRuby offsets
+                // Optionally make sure the text is the one we're after such that
+                // tests can disambiguate among multiple fixes
+                // special case for wrong JRuby offsets
+                // Optionally make sure the text is the one we're after such that
+                // tests can disambiguate among multiple fixes
+                List<HintFix> list = desc.getFixes();
+                assertNotNull(list);
+                for (HintFix fix : list) {
+                    if (text == null ||
+                            (substringMatch && fix.getDescription().indexOf(text) != -1) ||
+                            (!substringMatch && fix.getDescription().equals(text))) {
+                        return fix;
+                    }
+                }
+            }
+        }
+        
+        return null;
+    }
+    
+    protected static class ComputedHints {
+        ComputedHints(CompilationInfo info, List<Hint> hints, int caretOffset) {
+            this.info = info;
+            this.hints = hints;
+            this.caretOffset = caretOffset;
+        }
+
+        public CompilationInfo info;
+        public List<Hint> hints;
+        public int caretOffset;
+    }
+    
 }
