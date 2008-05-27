@@ -11,48 +11,41 @@ Microsystems, Inc. All Rights Reserved.If you wish your version of this file to 
     <type>org.netbeans.modules.apisupport.project</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
-            <code-name-base>vwpackperftests</code-name-base>
-            <module-dependencies/>
+            <code-name-base>org.netbeans.performance.visualweb</code-name-base>
+            <standalone/>
+            <module-dependencies>
+                <dependency>
+                    <code-name-base>org.openide.util</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>7.12.0.1</specification-version>
+                    </run-dependency>
+                </dependency>
+            </module-dependencies>
             <test-dependencies>
                 <test-type>
                     <name>unit</name>
-                </test-type>
-                <test-type>
-                    <name>qa-functional</name>
                     <test-dependency>
-                        <code-name-base>org.openide.nodes</code-name-base>
-                        <recursive/>
+                        <code-name-base>org.netbeans.api.progress</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
-                        <code-name-base>org.openide.nodes</code-name-base>
-                        <recursive/>
+                        <code-name-base>org.netbeans.modules.jellytools</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
-                        <code-name-base>org.netbeans.modules.java.editor</code-name-base>
+                        <code-name-base>org.netbeans.modules.jemmy</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
-                        <code-name-base>org.netbeans.modules.editor</code-name-base>
+                        <code-name-base>org.netbeans.modules.nbjunit</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
-                        <code-name-base>org.netbeans.modules.editor.plain</code-name-base>
+                        <code-name-base>org.netbeans.modules.performance</code-name-base>
                         <compile-dependency/>
-                    </test-dependency>
-                    <test-dependency>
-                        <code-name-base>org.netbeans.modules.editor.lib</code-name-base>
-                        <compile-dependency/>
-                    </test-dependency>
-                    <test-dependency>
-                        <code-name-base>org.openide.options</code-name-base>
-                        <compile-dependency/>
-                    </test-dependency>
-                    <test-dependency>
-                        <code-name-base>org.netbeans.modules.web.core.syntax</code-name-base>
-                        <compile-dependency/>
-                    </test-dependency>
+                    </test-dependency>                   
                 </test-type>
             </test-dependencies>
             <public-packages/>
