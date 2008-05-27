@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -80,6 +81,12 @@ public final class Util {
     private static final String PROXY_AUTHENTICATION_PASSWORD = "proxyAuthenticationPassword"; // NOI18N
 
     private static final String FIRST_TIME_KEY = "platform-manager-called-first-time"; // NOI18N
+    
+    public static final Comparator<String> VERSION_COMPARATOR = new Comparator<String>() {
+        public int compare(String v1, String v2) {
+            return Util.compareVersions(v1, v2);
+        }
+    };
 
     private Util() {
     }

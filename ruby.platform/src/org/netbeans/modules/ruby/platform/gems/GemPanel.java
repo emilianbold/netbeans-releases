@@ -350,20 +350,13 @@ public final class GemPanel extends JPanel implements Runnable {
             newGems = new ArrayList<Gem>();
             for (Gem gem : availableGems) {
                 if (installedNames.contains(gem.getName())) {
-                    // We have this gem; let's see if we have the latest version
-                    String available = gem.getAvailableVersions();
+                    String latestAvailable = gem.getLatestAvailable();
                     Gem installedGem = nameMap.get(gem.getName());
-                    String installed = installedGem.getInstalledVersions();
-                    // Gem always lists the most recent version first...
-                    int firstVer = available.indexOf(',');
-                    if (firstVer == -1) {
-                        firstVer = available.indexOf(')');
-                        if (firstVer == -1) {
-                            firstVer = available.length();
-                        }
-                    }
-                    if (!installed.regionMatches(0, available, 0, firstVer)) {
-                        Gem update = new Gem(gem.getName(), installed, available.substring(0, firstVer));
+                    String latestInstalled = installedGem.getLatestInstalled();
+                    if (Util.compareVersions(latestAvailable, latestInstalled) > 0) {
+                        Gem update = new Gem(gem.getName(),
+                                installedGem.getInstalledVersions(),
+                                latestAvailable);
                         update.setDescription(installedGem.getDescription());
                         updatedGems.add(update);
                     }
