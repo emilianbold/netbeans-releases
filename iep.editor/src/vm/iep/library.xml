@@ -699,5 +699,31 @@ type CDATA #REQUIRED
                         
             <code type="xml" file="vm/iep/input/streamInput.xml"/>
         </component_type>
+        
+        <!-- save stream: saves stream -->
+        <component_type name="SaveStream" icon="streamInputx32.png" title="IEP.External.SaveStream.title" description="IEP.External.SaveStream.description" allowsChildren="false" visible="true" validator="org.netbeans.modules.iep.editor.model.DefaultOperatorValidator">
+            <property_group ref="/IEP/View/Node"/>
+            <property_group ref="/IEP/Model/Entity">
+                <property name="propertyEditor" editor="org.netbeans.modules.iep.editor.ps.DefaultCustomEditor"/>
+                <property name="inputSchemaIdList" access="" />
+                <property name="inputType" access="" />
+                <property name="inputMaxCount" access="" />
+                <property name="inputIdList" access="" />
+                <property name="staticInputMaxCount" access="" />
+    	        <property name="staticInputIdList" access="" />
+                <property name="type" default="i18n.IEP.Input.StreamInput.title"/>
+                <!--<property name="outputType" default="i18n.IEP.IOType.stream"/>
+                <property name="outputSchemaId" required="true"/>-->
+                <property name="isSchemaOwner" default="true"/>
+                <property name="wsInput" default="false"/>
+                <property name="palette" default="external"/>
+                <property name="helpID" default="iep_streaminput_prop"/>
+                <property transient="false" category="IEP.Category.main" name="tableName" title="IEP.Operator.StreamProjectionAndFilter.toColumnList.title" description="IEP.Operator.StreamProjectionAndFilter.toColumnList.description" required="true" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.TextAreaEditor" default="" renderer="string" access="" multiple="true" />
+                <property transient="false" category="IEP.Category.main" name="databaseJndiName" title="IEP.Operator.StreamProjectionAndFilter.toColumnList.title" description="IEP.Operator.StreamProjectionAndFilter.toColumnList.description" required="true" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.TextAreaEditor" default="" renderer="string" access="" multiple="false" />
+                
+            </property_group>
+            <code type="xml" file="vm/iep/input/streamInput.xml"/>
+        </component_type>
+        
       </component_type_group>
 </component_type_group>
