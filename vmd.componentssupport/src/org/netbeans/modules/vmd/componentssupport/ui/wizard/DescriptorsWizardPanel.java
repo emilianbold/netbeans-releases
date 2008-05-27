@@ -47,6 +47,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import javax.swing.event.ChangeListener;
 
 import org.openide.WizardDescriptor;
+import org.openide.WizardDescriptor.FinishablePanel;
 import org.openide.WizardValidationException;
 import org.openide.WizardDescriptor.Panel;
 import org.openide.WizardDescriptor.ValidatingPanel;
@@ -58,12 +59,16 @@ import org.openide.util.NbBundle;
  * @author ads
  *
  */
-class DescriptorsWizardPanel implements Panel, ValidatingPanel {
+class DescriptorsWizardPanel implements Panel, ValidatingPanel, FinishablePanel {
         
     DescriptorsWizardPanel() {
         myListeners = new CopyOnWriteArrayList<ChangeListener>();
     }
 
+    public boolean isFinishPanel() {
+        return true;
+    }
+    
     /* (non-Javadoc)
      * @see org.openide.WizardDescriptor.Panel#addChangeListener(javax.swing.event.ChangeListener)
      */

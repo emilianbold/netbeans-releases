@@ -158,10 +158,12 @@ public class CustomComponentWizardIterator implements
     }
 
     WizardDescriptor.Panel[] createPanels() {
-        return new WizardDescriptor.Panel[] { new CustomComponentWizardPanel(), 
+        return new WizardDescriptor.Panel[] { 
+              new CustomComponentWizardPanel(), 
+              new BasicModuleConfWizardPanel(),
               new JavaMELibsWizardPanel(),
-              new DescriptorsWizardPanel(),
-              new BasicModuleConfWizardPanel()};
+              new DescriptorsWizardPanel()
+        };
     }
 
     private String[] createSteps() {
@@ -169,11 +171,11 @@ public class CustomComponentWizardIterator implements
                 NbBundle.getMessage(
                         CustomComponentWizardIterator.class, STEP_BASIC_PARAMS) ,
                 NbBundle.getMessage(
+                        CustomComponentWizardIterator.class, FINAL_STEP),
+                NbBundle.getMessage(
                         CustomComponentWizardIterator.class, LBL_LIBRARIES),
                 NbBundle.getMessage(
-                        CustomComponentWizardIterator.class, LBL_COMPONENT_DESC),
-                NbBundle.getMessage(
-                        CustomComponentWizardIterator.class, FINAL_STEP)
+                        CustomComponentWizardIterator.class, LBL_COMPONENT_DESC)
                         };
     }
 
