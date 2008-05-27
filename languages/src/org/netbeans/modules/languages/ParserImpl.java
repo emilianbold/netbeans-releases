@@ -59,6 +59,7 @@ import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.Task;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.ParserFactory;
+import org.netbeans.modules.parsing.spi.SchedulerEvent;
 
 
 /**
@@ -70,7 +71,7 @@ public class ParserImpl extends Parser {
     private ParserResult parserResult;
     
     @Override
-    public void parse (Snapshot snapshot, Task task) {
+    public void parse (Snapshot snapshot, Task task, SchedulerEvent event) {
         try {
             String mimeType = snapshot.getMimeType ();
             if (!LanguagesManager.getDefault ().isSupported (mimeType)) {
@@ -162,7 +163,7 @@ public class ParserImpl extends Parser {
     }
 
     @Override
-    public Result getResult (Task task) {
+    public Result getResult (Task task, SchedulerEvent event) {
         return parserResult;
     }
 
