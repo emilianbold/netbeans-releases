@@ -309,7 +309,7 @@ public class JSplitPaneSupport extends AbstractLayoutSupport {
 	    }
 	}
 	
-        return false;
+        return super.removeComponentFromContainer(container, containerDelegate, component);
     }
 
     /** Removes all components from given real container.

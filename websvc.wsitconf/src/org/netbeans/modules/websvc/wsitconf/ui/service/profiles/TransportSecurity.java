@@ -41,9 +41,7 @@
 
 package org.netbeans.modules.websvc.wsitconf.ui.service.profiles;
 
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
+import org.netbeans.modules.websvc.wsitconf.spi.SecurityProfile;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.AlgoSuiteModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityPolicyModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityTokensModelHelper;
@@ -55,50 +53,23 @@ import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
  *
  * @author  Martin Grebac
  */
-public class TransportSecurity extends javax.swing.JPanel {
+public class TransportSecurity extends ProfileBaseForm {
 
-    private boolean inSync = false;
-
-    private WSDLComponent comp;
-    
     /**
      * Creates new form TransportSecurity
      */
-    public TransportSecurity(WSDLComponent comp) {
-        super();
+    public TransportSecurity(WSDLComponent comp, SecurityProfile secProfile) {
+        super(comp, secProfile);
         initComponents();
-        this.comp = comp;
 
         inSync = true;
-        layoutCombo.removeAllItems();
-        layoutCombo.addItem(ComboConstants.STRICT);
-        layoutCombo.addItem(ComboConstants.LAX);
-        layoutCombo.addItem(ComboConstants.LAXTSFIRST);
-        layoutCombo.addItem(ComboConstants.LAXTSLAST);
-        
-        algoSuiteCombo.removeAllItems();
-        algoSuiteCombo.addItem(ComboConstants.BASIC256);
-        algoSuiteCombo.addItem(ComboConstants.BASIC192);
-        algoSuiteCombo.addItem(ComboConstants.BASIC128);
-        algoSuiteCombo.addItem(ComboConstants.TRIPLEDES);
-        algoSuiteCombo.addItem(ComboConstants.BASIC256RSA15);
-        algoSuiteCombo.addItem(ComboConstants.BASIC192RSA15);
-        algoSuiteCombo.addItem(ComboConstants.BASIC128RSA15);
-        algoSuiteCombo.addItem(ComboConstants.TRIPLEDESRSA15);
-        algoSuiteCombo.addItem(ComboConstants.BASIC256SHA256);
-        algoSuiteCombo.addItem(ComboConstants.BASIC192SHA256);
-        algoSuiteCombo.addItem(ComboConstants.BASIC128SHA256);
-        algoSuiteCombo.addItem(ComboConstants.TRIPLEDESSHA256);
-        algoSuiteCombo.addItem(ComboConstants.BASIC256SHA256RSA15);
-        algoSuiteCombo.addItem(ComboConstants.BASIC192SHA256RSA15);
-        algoSuiteCombo.addItem(ComboConstants.BASIC128SHA256RSA15);
-        algoSuiteCombo.addItem(ComboConstants.TRIPLEDESSHA256RSA15);
-
+        fillLayoutCombo(layoutCombo);
+        fillAlgoSuiteCombo(algoSuiteCombo);
         inSync = false;
         sync();
     }
     
-    private void sync() {
+    protected void sync() {
         inSync = true;
 
         WSDLComponent secBinding = SecurityPolicyModelHelper.getSecurityBindingTypeElement(comp);        
@@ -115,7 +86,7 @@ public class TransportSecurity extends javax.swing.JPanel {
         inSync = false;
     }
 
-    public void setValue(javax.swing.JComponent source) {
+    protected void setValue(javax.swing.JComponent source) {
 
         if (inSync) return;
 
@@ -127,29 +98,13 @@ public class TransportSecurity extends javax.swing.JPanel {
             SecurityTokensModelHelper.setRequireClientCertificate(token, requireCertificateChBox.isSelected());
         }
         if (source.equals(layoutCombo)) {
-            SecurityPolicyModelHelper.setLayout(secBinding, (String) layoutCombo.getSelectedItem());
+            SecurityPolicyModelHelper.getInstance(cfgVersion).setLayout(secBinding, (String) layoutCombo.getSelectedItem());
         }
         if (source.equals(algoSuiteCombo)) {
-            AlgoSuiteModelHelper.setAlgorithmSuite(secBinding, (String) algoSuiteCombo.getSelectedItem());
+            AlgoSuiteModelHelper.getInstance(cfgVersion).setAlgorithmSuite(secBinding, (String) algoSuiteCombo.getSelectedItem());
         }
     }
 
-    private void setCombo(JComboBox combo, String item) {
-        if (item == null) {
-            combo.setSelectedIndex(0);
-        } else {
-            combo.setSelectedItem(item);
-        }
-    }
-
-    private void setChBox(JCheckBox chBox, Boolean enable) {
-        if (enable == null) {
-            chBox.setSelected(false);
-        } else {
-            chBox.setSelected(enable);
-        }
-    }
-    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -251,5 +206,10 @@ public class TransportSecurity extends javax.swing.JPanel {
     private javax.swing.JLabel layoutLabel;
     private javax.swing.JCheckBox requireCertificateChBox;
     // End of variables declaration//GEN-END:variables
+
+    @Override
+    protected void enableDisable() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
     
 }

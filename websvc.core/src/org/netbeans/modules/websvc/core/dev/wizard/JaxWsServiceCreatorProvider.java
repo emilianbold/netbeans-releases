@@ -69,15 +69,15 @@ public class JaxWsServiceCreatorProvider implements ServiceCreatorProvider {
             return new JaxWsServiceCreator(projectInfo, wiz, false);
         } else if (JaxWsUtils.isEjbJavaEE5orHigher(projectInfo)) {
             return new JaxWsServiceCreator(projectInfo, wiz, false);
-        }
-        else if (!Util.isJavaEE5orHigher(project) &&
+        } else if (!Util.isJavaEE5orHigher(project) &&
                    (projectType == ProjectInfo.WEB_PROJECT_TYPE)) {
-               if ((!projectInfo.isJsr109Supported() && !projectInfo.isJsr109oldSupported())) {
-                   return new JaxWsServiceCreator(projectInfo, wiz, true);
-               } 
-               if (projectInfo.isJaxWsInJ2ee14Supported()) {
-                   return new JaxWsServiceCreator(projectInfo, wiz, false);
-               }
+                   if (!(projectInfo.isJsr109Supported() || projectInfo.isJsr109oldSupported())) {                   
+                       boolean addLibraries = !projectInfo.isWsgenSupported() || !projectInfo.isWsimportSupported();
+                       return new JaxWsServiceCreator(projectInfo, wiz, addLibraries);
+                   } 
+                   if (projectInfo.isJaxWsInJ2ee14Supported()) {
+                       return new JaxWsServiceCreator(projectInfo, wiz, false);
+                   }
         }
         return null;
     }
