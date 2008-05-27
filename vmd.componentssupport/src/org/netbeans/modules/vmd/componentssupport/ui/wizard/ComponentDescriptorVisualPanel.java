@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.vmd.componentssupport.ui.wizard;
 
+import java.util.List;
+import java.util.Map;
 import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import org.openide.WizardDescriptor;
@@ -64,10 +66,14 @@ final class ComponentDescriptorVisualPanel extends JPanel {
                                               = "MSG_CD_DotInPrefix";          // NOI18N 
     private static final String MSG_ERR_PREFIX_INVALID 
                                               = "MSG_CD_InvalidPrefix";          // NOI18N 
+    private static final String MSG_ERR_PREFIX_EXISTS 
+                                              = "MSG_CD_ExistingPrefix";          // NOI18N 
     private static final String MSG_ERR_CLASS_NAME_EMPTY 
                                               = "MSG_CD_EmptyClassName";       // NOI18N 
     private static final String MSG_ERR_CLASS_NAME_INVALID 
                                               = "MSG_CD_InvalidClassName";          // NOI18N 
+    private static final String MSG_ERR_CLASS_NAME_EXISTS 
+                                              = "MSG_CD_ExistingClassName";          // NOI18N 
     private static final String MSG_ERR_TYPE_ID_EMPTY 
                                               = "MSG_CD_EmptyTypeID";       // NOI18N 
     private static final String MSG_ERR_SUPER_CLASS_EMPTY 
@@ -183,6 +189,7 @@ final class ComponentDescriptorVisualPanel extends JPanel {
         }
         return prefix;
     }
+
     private String getDefaultPrefix(){
         return NbBundle.getMessage(ComponentDescriptorVisualPanel.class,
                     TXT_DEFAULT_PREFIX);
@@ -195,6 +202,15 @@ final class ComponentDescriptorVisualPanel extends JPanel {
             return Version.MIDP;
         }
         return (Version)value;
+    }
+    
+    private List<Map<String, Object>> getExistingComponents(){
+        Object value = mySettings.getProperty(
+                NewComponentDescriptor.EXISTING_COMPONENTS);
+        if (value == null || !(value instanceof List)){
+            return null;
+        }
+        return (List<Map<String, Object>>)value;
     }
     
     private boolean checkValidity(){
@@ -253,6 +269,10 @@ final class ComponentDescriptorVisualPanel extends JPanel {
             setError(NbBundle.getMessage(ComponentDescriptorVisualPanel.class, 
                     MSG_ERR_CLASS_NAME_INVALID));
             return false;
+        } else if (isCDClassNameExist(name)){
+            setError(NbBundle.getMessage(ComponentDescriptorVisualPanel.class, 
+                    MSG_ERR_CLASS_NAME_EXISTS));
+            return false;
         }
         return true;
     }
@@ -295,8 +315,36 @@ final class ComponentDescriptorVisualPanel extends JPanel {
             setError(NbBundle.getMessage(ComponentDescriptorVisualPanel.class, 
                     MSG_ERR_PREFIX_INVALID));
             return false;
+        } else if (isCCPrefixExist(prefix)){
+            setError(NbBundle.getMessage(ComponentDescriptorVisualPanel.class, 
+                    MSG_ERR_PREFIX_EXISTS));
+            return false;
         }
         return true;
+    }
+    
+    private boolean isCCPrefixExist(String prefix){
+        return checkIfComponentValueExists(
+                NewComponentDescriptor.CC_PREFIX, prefix);
+    }
+    
+    private boolean isCDClassNameExist(String name){
+        return checkIfComponentValueExists(
+                NewComponentDescriptor.CD_CLASS_NAME, name);
+    }
+    
+    private boolean checkIfComponentValueExists(String key, Object value){
+        List<Map<String, Object>> list = getExistingComponents();
+        if (list == null){
+            return false;
+        }
+        for (Map<String, Object> comp : list){
+            Object testValue = comp.get(key);
+            if (testValue.equals(value)){
+                return true;
+            }
+        }
+        return false;
     }
     
     private String getPrefixValue(){

@@ -7,21 +7,29 @@
 package ${package};
 
 </#if>
+import org.netbeans.modules.vmd.api.model.DesignComponent;
+import org.netbeans.modules.vmd.api.model.DesignDocument;
+import org.netbeans.modules.vmd.api.model.PaletteDescriptor;
+import org.netbeans.modules.vmd.midp.palette.MidpPaletteProvider;
+import org.netbeans.modules.vmd.midp.producers.MidpComponentProducer;
+import ${cdPackage}.${cdName};
+
 /**
  *
  * @author ${user}
  */
-public class ${name}Producer extends MidpComponentProducer {
+public class ${producerName} extends MidpComponentProducer {
 
-    private static final String ICON_PATH_SMALL = "${icon_path_small}"; 
-    private static final String ICON_PATH_BIG = "${icon_path_large}"; 
+    // TODO process lack of icons
+    private static final String ICON_PATH_SMALL = "${iconPathSmall}"; 
+    private static final String ICON_PATH_BIG = "${iconPathLarge}"; 
     
 
-    public ${name}Producer() {
-        super(${name}CD.TYPEID, new PaletteDescriptor(
-                MidpPaletteProvider.${palette_category}, // Palette category
-                "${palette_display_name}", // Palette display name
-                "${palette_tooltip}", // Palette tooltip
+    public ${producerName}() {
+        super(${cdName}.TYPEID, new PaletteDescriptor(
+                ${paletteCategory}, // Palette category
+                "${paletteDisplayName}", // Palette display name
+                "${paletteTooltip}", // Palette tooltip
                 ICON_PATH_SMALL, // Small icon
                 ICON_PATH_BIG) // Large icon
                 );
@@ -40,11 +48,11 @@ public class ${name}Producer extends MidpComponentProducer {
     public Boolean checkValidity(DesignDocument document, boolean useCachedValue) {
 <#if validity == "always">
         return true;
-<#elseif validity == "depends">
+<#elseif validity == "platform">
         if (useCachedValue) {
-            return MidpJavaSupport.getCache(document).checkValidityCached(${name}CD.TYPEID);
+            return MidpJavaSupport.getCache(document).checkValidityCached(${cdName}.TYPEID);
         }
-        return MidpJavaSupport.checkValidity(document, ${name}CD.TYPEID);
+        return MidpJavaSupport.checkValidity(document, ${cdNme}.TYPEID);
 <#elseif validity == "custom">
        throw new UnsupportedOperationException("Custom code needed"); 
 </#if>
@@ -57,8 +65,8 @@ public class ${name}Producer extends MidpComponentProducer {
      */
     @Override
     protected DesignComponent createMainComponent(DesignDocument document) {
-<#if add_library?? && add_library == "true">
-        MidpProjectSupport.addLibraryToProject(document, "${library_name}"); // Library is added to the Mobility Project Resources
+<#if addLibrary?? && addLibrary == "true">
+        MidpProjectSupport.addLibraryToProject(document, "${libraryName}"); // Library is added to the Mobility Project Resources
 </#if>
         return super.createMainComponent(document);
     }

@@ -466,6 +466,7 @@ final class NameAndLocationVisualPanel extends JPanel {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
         add(modifiedFilesValueS, gridBagConstraints);
 
         getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(NameAndLocationVisualPanel.class, "ACS_NameLocationPanel")); // NOI18N
