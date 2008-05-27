@@ -1387,7 +1387,8 @@ class WebActionProvider implements ActionProvider {
         for (FileObject file : SourceForBinaryQuery.findSourceRoots(buildClassesURL).getRoots()) {
             try {
                 BuildArtifactMapper.map(file.getURL(), buildClasses, new ArtifactsUpdatedListenerImpl(buildClasses));
-            } catch (FileStateInvalidException ex) {
+                BuildArtifactMapper.ensureBuilt(file.getURL());
+            } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
         }
