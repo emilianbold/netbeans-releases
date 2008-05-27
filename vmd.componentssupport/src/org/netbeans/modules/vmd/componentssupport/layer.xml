@@ -14,10 +14,13 @@
                 </file>
             </folder>
         </folder>
-        <folder name="MobilityCustomComponent-files"> <!-- XXX later could be made visible (just need localized labels) -->
+        <folder name="MobilityCustomComponent-files">
             <attr name="position" intvalue="0"/>
             <attr name="simple" boolvalue="false"/>
-            <file name="libdescriptemplate.xml" url="ui/wizard/libdescriptemplate.xml"/>
+            <file name="libdescriptemplate.xml" url="templates/libdescriptemplate.xml"/>
+            <file name="CustomComponentCD.java" url="templates/CustomComponentCD.template"/>
+            <file name="CustomComponentProducer.java" url="templates/CustomComponentProducer.template"/>
+            
         </folder>
     </folder>
 </filesystem>

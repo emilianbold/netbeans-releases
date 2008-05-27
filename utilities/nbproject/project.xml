@@ -134,7 +134,7 @@ made subject to such option by the copyright holder.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>5.1</specification-version>
+                        <specification-version>7.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -166,7 +166,6 @@ made subject to such option by the copyright holder.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <!-- using Lookup.lookupResult(Class) -->
                         <specification-version>6.10</specification-version>
                     </run-dependency>
                 </dependency>

@@ -46,6 +46,8 @@ import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -123,7 +125,11 @@ public class WizardUtils {
 
         servicesModel.startTransaction();
         Service service = factory.createService();
-        service.setNameAttr(serviceFo.getName());
+        String serviceName = serviceFo.getName();
+        try {
+            serviceName = URLEncoder.encode(serviceName, "UTF-8"); //NOI18N
+        } catch (UnsupportedEncodingException ex) {}     
+        service.setNameAttr(serviceName);
         service.setScopeAttr("application"); //NOI18N
         service.setDescription(serviceFo.getName()+" service"); //NOI18N
         service.setMessageReceivers(receivers);
