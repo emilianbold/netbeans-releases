@@ -367,8 +367,11 @@ public abstract class CustomComponentHelper extends BaseHelper {
                     (String)myComponent.get(NewComponentDescriptor.CP_PALETTE_DISP_NAME));
             tokens.put("paletteTooltip", 
                     (String)myComponent.get(NewComponentDescriptor.CP_PALETTE_TIP));
-            tokens.put("libraryName", 
-                    (String)myComponent.get(NewComponentDescriptor.CP_LIB_NAME));
+            
+            if ((Boolean)myComponent.get(NewComponentDescriptor.CP_ADD_LIB)){
+                tokens.put("libraryName", 
+                        (String)myComponent.get(NewComponentDescriptor.CP_LIB_NAME));
+            }
             tokens.put("validity", getProducerValidityToken());
             return tokens;
         }
