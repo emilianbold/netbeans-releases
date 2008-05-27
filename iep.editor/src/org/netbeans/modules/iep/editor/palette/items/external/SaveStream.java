@@ -34,7 +34,7 @@ public class SaveStream extends TcgActiveEditorDrop {
      * Creates a new instance of StreamInput 
      */
     public SaveStream() {
-        mPath = "/IEP/Input/SaveStream";
+        mPath = "/IEP/External/SaveStream";
     }
     
 }
