@@ -150,6 +150,13 @@ made subject to such option by the copyright holder.
     </folder> <!-- Services -->          
     
     <folder name="Loaders">
+        <folder name="application">
+            <folder name="x-schema+xml">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-xml-schema-SchemaDataLoader.instance"/>
+                </folder>
+            </folder>
+        </folder>
         <folder name="text">
             <folder name="x-schema+xml">
                 <folder name="Factories">

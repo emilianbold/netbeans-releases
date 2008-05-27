@@ -47,6 +47,7 @@ import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.Error;
 import org.netbeans.modules.gsf.api.Hint;
 import org.netbeans.modules.gsf.api.HintsProvider;
+import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.gsf.api.Rule;
 import org.netbeans.modules.gsf.api.RuleContext;
 import org.netbeans.modules.php.editor.PHPLanguage;
@@ -90,7 +91,11 @@ public class PHPHintsProvider implements HintsProvider {
     }
 
     public void computeErrors(HintsManager manager, RuleContext context, List<Hint> hints, List<Error> unhandled) {
-        
+        ParserResult parserResult = context.parserResult;
+        if (parserResult != null) {
+            List<Error> errors = parserResult.getDiagnostics();
+            unhandled.addAll(errors);
+        }
     }
 
     public void cancel() {
