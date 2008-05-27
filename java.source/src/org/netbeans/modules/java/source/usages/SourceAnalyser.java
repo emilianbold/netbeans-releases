@@ -435,23 +435,6 @@ public class SourceAnalyser {
             return null;
         }
         
-        protected boolean shouldGenerate (final String binaryName, ClassSymbol sym) {
-            if (!signatureFiles || binaryName == null) {
-                return false;
-            }
-            if  (sym.getQualifiedName().isEmpty()) {
-                return true;
-            }        
-            Symbol enclosing = sym.getEnclosingElement();
-            while (enclosing != null && enclosing.getKind() != ElementKind.PACKAGE) {
-                if (!enclosing.getKind().isClass() && !enclosing.getKind().isInterface()) {
-                    return true;
-                }
-                enclosing = enclosing.getEnclosingElement();
-            }
-            return false;
-    }
-        
         public @Override Void visitClass (final ClassTree node, final Map<Pair<String,String>,Map<String, Set<ClassIndexImpl.UsageType>>> p) {
             final ClassSymbol sym = ((JCTree.JCClassDecl)node).sym;            
             boolean errorInDecl = false;
@@ -565,6 +548,10 @@ public class SourceAnalyser {
                 } finally {
                     enclosingElement = old;
                 }
+            }
+            if (!errorInDecl) {
+                if (this.rsList != null)
+                    this.rsList.add (className);
             }
             return null;
         }
