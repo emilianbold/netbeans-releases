@@ -39,30 +39,15 @@
 
 package org.netbeans.modules.php.project.connections;
 
-import org.openide.util.NbBundle;
+import org.netbeans.modules.php.project.connections.RemoteConnections.ConnectionType;
 
 /**
- * Class representing a remote connection.
+ * Class representing a remote configuration.
  * @author Tomas Mysik
  * @see RemoteConnections
- * @see RemoteConnections#getConnections()
+ * @see RemoteConnections#getRemoteConfigurations()
  */
-public final class RemoteConnection {
-
-    public static enum ConnectionType {
-        FTP ("LBL_Ftp"); // NOI18N
-
-        private final String label;
-
-        private ConnectionType(String labelKey) {
-            label = NbBundle.getMessage(RemoteConnection.class, labelKey);
-        }
-
-        public String getLabel() {
-            return label;
-        }
-    }
-
+public final class RemoteConfiguration {
     private final String displayName;
     private final String name;
     private final ConnectionType connectionType;
@@ -73,7 +58,7 @@ public final class RemoteConnection {
     private final String initialDirectory;
     private final int timeout;
 
-    public RemoteConnection(String displayName, String name, ConnectionType connectionType, String host, int port, String userName,
+    public RemoteConfiguration(String displayName, String name, ConnectionType connectionType, String host, int port, String userName,
             boolean anonymousLogin, String initialDirectory, int timeout) {
         this.displayName = displayName;
         this.name = name;
@@ -86,7 +71,7 @@ public final class RemoteConnection {
         this.timeout = timeout;
     }
 
-    RemoteConnection(final ConfigManager.Configuration cfg) {
+    RemoteConfiguration(final ConfigManager.Configuration cfg) {
         displayName = cfg.getDisplayName();
         name = cfg.getName();
         connectionType = ConnectionType.valueOf(cfg.getValue(RemoteConnections.TYPE));
