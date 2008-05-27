@@ -196,10 +196,15 @@ public abstract class Command {
         String runAs = getPropertyEvaluator().getProperty(PhpProjectProperties.RUN_AS);
         return PhpProjectProperties.RunAsType.SCRIPT.name().equals(runAs);
     }
-    
+
     protected String getPhpInterpreter() {
         String retval = PhpOptions.getInstance().getPhpInterpreter();
         return (retval != null && retval.length() >  0) ? retval.trim() : null;
+    }
+
+    protected boolean isRemoteConfigSelected() {
+        String runAs = getPropertyEvaluator().getProperty(PhpProjectProperties.RUN_AS);
+        return PhpProjectProperties.RunAsType.REMOTE.name().equals(runAs);
     }
 
     //or null

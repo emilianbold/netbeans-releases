@@ -50,10 +50,12 @@ import org.netbeans.modules.php.project.ui.actions.DebugCommand;
 import org.netbeans.modules.php.project.ui.actions.DebugSingleCommand;
 import org.netbeans.modules.php.project.ui.actions.DeleteCommand;
 import org.netbeans.modules.php.project.ui.actions.Displayable;
+import org.netbeans.modules.php.project.ui.actions.DownloadCommand;
 import org.netbeans.modules.php.project.ui.actions.MoveCommand;
 import org.netbeans.modules.php.project.ui.actions.RenameCommand;
 import org.netbeans.modules.php.project.ui.actions.RunCommand;
 import org.netbeans.modules.php.project.ui.actions.RunSingleCommand;
+import org.netbeans.modules.php.project.ui.actions.UploadCommand;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 import org.openide.LifecycleManager;
@@ -76,7 +78,9 @@ public class PhpActionProvider implements ActionProvider {
             new DeleteCommand(project),
             new CopyCommand(project),
             new MoveCommand(project),
-            new RenameCommand(project)
+            new RenameCommand(project),
+            new DownloadCommand(project),
+            new UploadCommand(project),
         };
         for (Command command : commandArray) {
             commands.put(command.getCommandId(), command);
@@ -117,7 +121,7 @@ public class PhpActionProvider implements ActionProvider {
 
     public Action getAction(String commandId) {
         Command command = getCommand(commandId);
-        assert command != null;
+        assert command != null : commandId;
         assert command instanceof Displayable;
         return ProjectSensitiveActions.projectCommandAction(command.getCommandId(),
                 ((Displayable) command).getDisplayName(), null);

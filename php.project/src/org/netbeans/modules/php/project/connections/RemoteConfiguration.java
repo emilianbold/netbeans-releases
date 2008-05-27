@@ -60,6 +60,8 @@ public final class RemoteConfiguration {
 
     public RemoteConfiguration(String displayName, String name, ConnectionType connectionType, String host, int port, String userName,
             boolean anonymousLogin, String initialDirectory, int timeout) {
+        assert name != null;
+
         this.displayName = displayName;
         this.name = name;
         this.connectionType = connectionType;
@@ -72,6 +74,8 @@ public final class RemoteConfiguration {
     }
 
     RemoteConfiguration(final ConfigManager.Configuration cfg) {
+        assert cfg.getName() != null;
+
         displayName = cfg.getDisplayName();
         name = cfg.getName();
         connectionType = ConnectionType.valueOf(cfg.getValue(RemoteConnections.TYPE));

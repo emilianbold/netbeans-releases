@@ -208,6 +208,21 @@ public final class RemoteConnections {
         return Collections.unmodifiableList(remoteConfigs);
     }
 
+    /**
+     * Get the {@link RemoteConfiguration remote configuration} for the given name (<b>NOT</b> the display name).
+     * @param name the name of the configuration.
+     * @return the {@link RemoteConfiguration remote configuration} for the given name or <code>null</code> if not found.
+     */
+    public RemoteConfiguration remoteConfigurationForName(String name) {
+        assert name != null;
+        for (RemoteConfiguration remoteConfig : getRemoteConfigurations()) {
+            if (remoteConfig.getName().equals(name)) {
+                return remoteConfig;
+            }
+        }
+        return null;
+    }
+
     private List<Configuration> getConfigurations() {
         Collection<String> cfgNames = configManager.configurationNames();
         List<Configuration> configs = new ArrayList<Configuration>(cfgNames.size() - 1); // without default config

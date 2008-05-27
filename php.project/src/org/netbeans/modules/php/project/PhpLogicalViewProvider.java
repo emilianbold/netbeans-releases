@@ -64,7 +64,9 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.php.project.ui.actions.DebugSingleCommand;
+import org.netbeans.modules.php.project.ui.actions.DownloadCommand;
 import org.netbeans.modules.php.project.ui.actions.RunSingleCommand;
+import org.netbeans.modules.php.project.ui.actions.UploadCommand;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -103,6 +105,7 @@ class PhpLogicalViewProvider implements LogicalViewProvider {
     final PhpProject project;
 
     PhpLogicalViewProvider(PhpProject project) {
+        assert project != null;
         this.project = project;
     }
 
@@ -455,8 +458,13 @@ class PhpLogicalViewProvider implements LogicalViewProvider {
 
         @Override
         public Action[] getActions(boolean context) {
+            PhpActionProvider provider = project.getLookup().lookup(PhpActionProvider.class);
+            assert provider != null;
             Action[] actions = new Action[] {
                 CommonProjectActions.newFileAction(),
+                null,
+                provider.getAction(DownloadCommand.ID),
+                provider.getAction(UploadCommand.ID),
                 null,
                 SystemAction.get(FileSystemAction.class),
                 null,
