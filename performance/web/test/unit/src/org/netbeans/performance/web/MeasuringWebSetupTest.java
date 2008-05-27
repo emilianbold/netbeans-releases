@@ -67,7 +67,7 @@ public class MeasuringWebSetupTest extends NbTestCase {
     public static Test suite() {
         TestSuite suite = new NbTestSuite("UI Responsiveness Web Setup suite");
 
-        // suite.addTest(NbModuleSuite.create(WebSetup.class, ".*", ".*"));
+        suite.addTest(NbModuleSuite.create(WebSetup.class, ".*", ".*"));
         
         return suite;
     }

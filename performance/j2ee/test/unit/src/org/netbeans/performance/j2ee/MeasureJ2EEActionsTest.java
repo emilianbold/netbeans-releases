@@ -58,7 +58,6 @@ public class MeasureJ2EEActionsTest  {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite("UI Responsiveness J2EE Actions suite");
         
-        /* TBD
         suite.addTest(NbModuleSuite.create(Deploy.class, ".*", ".*"));
         suite.addTest(NbModuleSuite.create(CreateJ2EEProject.class, ".*", ".*"));
         suite.addTest(NbModuleSuite.create(CreateNewFile.class, ".*", ".*"));
@@ -69,7 +68,7 @@ public class MeasureJ2EEActionsTest  {
         suite.addTest(NbModuleSuite.create(MeasureWebServiceAction.class, ".*", ".*"));
         suite.addTest(NbModuleSuite.create(OpenJ2EEFiles.class, ".*", ".*"));
         suite.addTest(NbModuleSuite.create(OpenJ2EEFilesWithOpenedEditor.class, ".*", ".*"));
-*/
+
         return suite;
     }
     

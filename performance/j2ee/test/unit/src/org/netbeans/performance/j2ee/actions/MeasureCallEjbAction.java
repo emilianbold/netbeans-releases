@@ -85,6 +85,10 @@ public class MeasureCallEjbAction extends PerformanceTestCase {
         expectedTime = WINDOW_OPEN;
         WAIT_AFTER_OPEN = 5000;
     }
+    
+    public void testCallEjbAction() {
+        doMeasurement();
+    }
      
     @Override
     public void initialize() {

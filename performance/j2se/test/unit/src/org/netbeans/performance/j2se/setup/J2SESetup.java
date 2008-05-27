@@ -40,13 +40,12 @@
  */
 package org.netbeans.performance.j2se.setup;
 
-import java.io.IOException;
 import org.netbeans.modules.performance.utilities.CommonUtilities;
 import org.netbeans.modules.project.ui.test.ProjectSupport;
 import org.netbeans.jellytools.JellyTestCase;
 
 import java.io.File;
-import org.openide.util.Exceptions;
+import java.io.IOException;
 
 /**
  * Test suite that actually does not perform any test but sets up user directory
@@ -64,7 +63,7 @@ public class J2SESetup extends JellyTestCase {
         try {
             workdir = new File(workdir + "/../../../../../../../nbextra/data/").getCanonicalPath();
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            System.err.println("Exception: "+ex);
         }
 
     }
@@ -81,7 +80,7 @@ public class J2SESetup extends JellyTestCase {
         CommonUtilities.closeMemoryToolbar();
     }
 
-        public void testAddAppServer() {
+        public void testAddTomcatServer() {
         
         CommonUtilities.addTomcatServer();
     }

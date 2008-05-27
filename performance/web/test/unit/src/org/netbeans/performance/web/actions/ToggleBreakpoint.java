@@ -86,6 +86,10 @@ public class ToggleBreakpoint extends PerformanceTestCase {
     }
     private EditorOperator editorOperator1;
     
+   public void testToggleBreakpoint() {
+        doMeasurement();
+    }    
+    
     protected void initialize() {
         EditorOperator.closeDiscardAll();
 //        jspOptions().setCaretBlinkRate(0);

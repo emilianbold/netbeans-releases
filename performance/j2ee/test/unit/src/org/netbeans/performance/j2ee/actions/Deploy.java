@@ -88,6 +88,9 @@ public class Deploy extends PerformanceTestCase {
         WAIT_AFTER_OPEN=240000;
     }
     
+    public void testDeploy() {
+        doMeasurement();
+    }
     
     @Override
     public void initialize(){

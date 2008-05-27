@@ -87,6 +87,10 @@ public class TypingInJspEditor extends PerformanceTestCase {
     
     private EditorOperator editorOperator;
     
+    public void testTypingInJspEditor() {
+        doMeasurement();
+    }
+    
     protected void initialize() {
         System.out.println("=== " + this.getClass().getName() + " ===");
 //        jspOptions().setCaretBlinkRate(0);

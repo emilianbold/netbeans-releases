@@ -79,6 +79,10 @@ public class SelectJ2EEModuleDialog extends PerformanceTestCase {
         WAIT_AFTER_OPEN = 2000;
     }
     
+    public void testJ2EEModuleDialog() {
+        doMeasurement();
+    }    
+    
     @Override
     public void initialize() {
         JTreeOperator tree = new ProjectsTabOperator().tree();

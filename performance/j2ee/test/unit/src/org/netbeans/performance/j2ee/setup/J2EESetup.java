@@ -41,125 +41,95 @@
 
 package org.netbeans.performance.j2ee.setup;
 
-import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.modules.performance.utilities.CommonUtilities;
 
-import org.netbeans.jellytools.*;
-import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jemmy.operators.*;
-import org.netbeans.jellytools.Bundle;
-import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.TopComponentOperator;
-import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
+import org.netbeans.jellytools.JellyTestCase;
 
+import org.netbeans.modules.project.ui.test.ProjectSupport;
+
+import java.io.IOException;
+import java.io.File;
 
 
-public class J2EESetup extends PerformanceTestCase {
+public class J2EESetup extends JellyTestCase {
     
+    private String workdir;
+
     public J2EESetup(java.lang.String testName) {
         super(testName);
-    }
-
-    public void testOpenEJBProject() {
-        
-        /*
-        ProjectSupport.openProject(System.getProperty("xtest.tmpdir")+"/perf/TestApplication");
-        ProjectSupport.waitScanFinished();
-        ProjectSupport.openProject(System.getProperty("xtest.tmpdir")+"/perf/TestApplication/TestApplication-ejb");
-        ProjectSupport.waitScanFinished();
-        ProjectSupport.openProject(System.getProperty("xtest.tmpdir")+"/perf/TestApplication/TestApplication-war");
-        ProjectSupport.waitScanFinished();*/
-/*        ProjectSupport.openProject(System.getProperty("xtest.tmpdir")+"/perf/DeployTest");
-        ProjectSupport.waitScanFinished();
-        ProjectSupport.openProject(System.getProperty("xtest.tmpdir")+"/perf/DeployTest/DeployTest-ejb");
-        ProjectSupport.waitScanFinished();
-        ProjectSupport.openProject(System.getProperty("xtest.tmpdir")+"/perf/DeployTest/DeployTest-war");
-        ProjectSupport.waitScanFinished();*/
-        //waitForScan();
-    }
-    
-    public void testAddAppServer() {
-        String path = System.getProperty("j2ee.appserver.path");
-        if (path == null) {
-            if (System.getProperty("os.name").toLowerCase().indexOf("windows") >= 0) {
-                path = "E:\\space\\AppServer";
-                //path =  "E:\\Sun\\AppServer-8.1_01_b04";
-            } else {
-                path = "/space/appserver";
-            }
+        workdir = System.getProperty("nbjunit.workdir");
+        try {
+            workdir = new File(workdir + "/../../../../../../../nbextra/data/j2eeApps").getCanonicalPath();
+        } catch (IOException ex) {
+            System.err.println("Exception: "+ex);
         }
-        String username = System.getProperty("j2ee.appserver.username","admin");
-        String password = System.getProperty("j2ee.appserver.password","adminadmin");
-                    
-        Node node = new Node(new RuntimeTabOperator().getRootNode(),"Servers");
-        node.performPopupActionNoBlock("Add Server...");
-        NbDialogOperator dialog = new NbDialogOperator("Add Server");
-        new JComboBoxOperator(dialog).selectItem("Glassfish V2");
-        new JButtonOperator(dialog,"Next").push();
+
+    }
+    
+    public void testCloseWelcome() {
+        CommonUtilities.closeWelcome();
+    }
+
+    public void testCloseAllDocuments() {
+        CommonUtilities.closeAllDocuments();
+    }
+
+    public void testCloseMemoryToolbar() {
+        CommonUtilities.closeMemoryToolbar();
+    }
+
+        public void testAddAppServer() {
         
-        //"Enter the Application Server location" or "Define Application Server Instance Properties"
-        if (new JLabelOperator(dialog,1).getText().equalsIgnoreCase("Enter the Application Server location")) {
-            new JTextFieldOperator(dialog).setText("");
-            new JTextFieldOperator(dialog).typeText(path);
-            new JButtonOperator(dialog,"Next").push();
-        }
-        new JTextFieldOperator(dialog,0).setText("");
-        new JTextFieldOperator(dialog,1).setText("");
-        new JTextFieldOperator(dialog,0).typeText(username);
-        new JTextFieldOperator(dialog,1).typeText(password);
-        new JButtonOperator(dialog,"Finish").push();
-        new ProjectsTabOperator();
-    }
-    
-        
-    public void closeAllDocuments(){
-        new CloseAllDocumentsAction().perform();
-    }    
-    
-    public void closeNavigator() {
-    	new TopComponentOperator("Navigator").close();
-    }
-    
-    public void testCloseMemoryToolbar(){
-        String MENU =
-            org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/View") + "|" +
-            org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.windows.actions.Bundle","CTL_ToolbarsListAction") + "|" +
-            org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.Bundle","Toolbars/Memory");
-                                                                                                      
-        MainWindowOperator mainWindow = MainWindowOperator.getDefault();
-        JMenuBarOperator menuBar = new JMenuBarOperator(mainWindow.getJMenuBar());
-        JMenuItemOperator menuItem = menuBar.showMenuItem(MENU,"|");
-                                                                                                      
-        if(menuItem.isSelected())
-            menuItem.push();
-        else {
-            menuItem.pushKey(java.awt.event.KeyEvent.VK_ESCAPE);
-            mainWindow.pushKey(java.awt.event.KeyEvent.VK_ESCAPE);
-        }
-                                                                                                      
+        CommonUtilities.addTomcatServer();
     }
 
-    public void testJAXRPC() {
-       new JButtonOperator(new NbDialogOperator("Warning")).push();
-       new JButtonOperator(new NbDialogOperator("Warning")).push();
-    }
-    
-    private void waitForScan() {
-        // "Scanning Project Classpaths"
-        String titleScanning = Bundle.getString("org.netbeans.modules.javacore.Bundle", "TXT_ApplyingPathsTitle");
-        NbDialogOperator scanningDialogOper = new NbDialogOperator(titleScanning);
-        // scanning can last for a long time => wait max. 5 minutes
-        scanningDialogOper.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 300000);
-        scanningDialogOper.waitClosed();
+    public void testOpenTestApplication() {
+
+        String projectsDir = workdir + File.separator+ "TestApplication";
+        Object prj=ProjectSupport.openProject(projectsDir);
+        assertNotNull(prj);
+        CommonUtilities.waitProjectTasksFinished();
     }
 
-    @Override
-    public void prepare() {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public void testOpenTestApplication_ejb() {
+
+        String projectsDir = workdir + File.separator+"TestApplication/TestApplication-ejb";
+        Object prj=ProjectSupport.openProject(projectsDir);
+        assertNotNull(prj);
+        CommonUtilities.waitProjectTasksFinished();
     }
 
-    @Override
-    public ComponentOperator open() {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public void testOpenTestApplication_war() {
+      
+        String projectsDir = workdir +File.separator+ "TestApplication/TestApplication-war";
+        Object prj=ProjectSupport.openProject(projectsDir);
+        assertNotNull(prj);
+        CommonUtilities.waitProjectTasksFinished();
     }
 
+    public void testOpenDeployTest() {
+
+        String projectsDir = workdir + File.separator+"DeployTest";
+        Object prj=ProjectSupport.openProject(projectsDir);
+        assertNotNull(prj);        
+        CommonUtilities.waitProjectTasksFinished();
+    }
+
+    public void testOpenDeployTest_ejb() {
+
+        String projectsDir = workdir + File.separator+"DeployTest/DeployTest-ejb";
+        Object prj=ProjectSupport.openProject(projectsDir);
+        assertNotNull(prj);        
+        CommonUtilities.waitProjectTasksFinished();
+    }
+
+    public void testOpenDeployTest_war() {
+
+        String projectsDir = workdir + File.separator+"DeployTest/DeployTest-war";
+        Object prj=ProjectSupport.openProject(projectsDir);
+        assertNotNull(prj);        
+        CommonUtilities.waitProjectTasksFinished();
+    }
+
+   
 }

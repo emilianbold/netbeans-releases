@@ -91,6 +91,10 @@ public class PageUpPageDownInJspEditor extends PerformanceTestCase {
     private int statusBarCaretDelay;
     private boolean codeFoldindEnabled;
     
+   public void testPageUpPageDownInJspEditor() {
+        doMeasurement();
+    }
+    
     protected void initialize() {
         EditorOperator.closeDiscardAll();
 //        jspOptions().setCaretBlinkRate(0);

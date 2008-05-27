@@ -75,6 +75,14 @@ public class OpenServletFileWithOpenedEditor extends OpenServletFile {
         expectedTime = WINDOW_OPEN;
     }
     
+    public void testOpeningServletFile(){
+        super.testOpeningServletFile();
+    }
+    
+    public void testOpeningJavaFile(){
+        super.testOpeningJavaFile();
+    }
+    
     /**
      * Initialize test - open Main.java file in the Source Editor.
      */

@@ -58,8 +58,8 @@ public class MeasureJ2EEMenusTest  {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite("UI Responsiveness J2EE Menus suite");
 
-       // suite.addTest(NbModuleSuite.create(AppServerPopupMenu.class, ".*", ".*"));
-       // suite.addTest(NbModuleSuite.create(J2EEProjectsViewPopupMenu.class, ".*", ".*"));
+        suite.addTest(NbModuleSuite.create(AppServerPopupMenu.class, ".*", ".*"));
+        suite.addTest(NbModuleSuite.create(J2EEProjectsViewPopupMenu.class, ".*", ".*"));
        
         return suite;
     }

@@ -65,8 +65,8 @@ public class MeasureWebMenusTest extends NbTestCase {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite("UI Responsiveness Web Menus suite"); 
    
-      //  suite.addTest(NbModuleSuite.create(WebProjectsViewPopupMenu.class, ".*", ".*"));
-      //  suite.addTest(NbModuleSuite.create(WebRuntimeViewPopupMenu.class, ".*", ".*"));
+        suite.addTest(NbModuleSuite.create(WebProjectsViewPopupMenu.class, ".*", ".*"));
+        suite.addTest(NbModuleSuite.create(WebRuntimeViewPopupMenu.class, ".*", ".*"));
         
         return suite;
     }

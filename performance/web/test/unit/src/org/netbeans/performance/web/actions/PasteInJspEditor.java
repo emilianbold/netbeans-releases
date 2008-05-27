@@ -85,6 +85,10 @@ public class PasteInJspEditor extends PerformanceTestCase {
         WAIT_AFTER_OPEN = 100;
     }
     
+   public void testPasteInJspEditor() {
+        doMeasurement();
+    }    
+    
     protected void initialize() {
         repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
         EditorOperator.closeDiscardAll();

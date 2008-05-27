@@ -39,10 +39,9 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.performance.j2se.menus;
+package org.netbeans.modules.performance.utilities;
 
 import org.netbeans.modules.performance.guitracker.ActionTracker;
-import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 
 import org.netbeans.jellytools.nodes.Node;
 

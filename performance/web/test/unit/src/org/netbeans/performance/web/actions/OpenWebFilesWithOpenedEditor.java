@@ -41,13 +41,11 @@
 
 package org.netbeans.performance.web.actions;
 
-import org.netbeans.jellytools.EditorOperator;
+
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.actions.OpenAction;
 
-import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.jemmy.operators.JPopupMenuOperator;
 
 /**
  * Test of opening files.
@@ -74,6 +72,35 @@ public class OpenWebFilesWithOpenedEditor extends OpenWebFiles {
         super(testName, performanceDataName);
         expectedTime = WINDOW_OPEN;
     }
+    
+    
+    public void testOpeningWebXmlFile(){
+        super.testOpeningWebXmlFile();
+    }
+
+    public void testOpeningContextXmlFile(){
+        super.testOpeningContextXmlFile();
+    }    
+
+    public void testOpeningJSPFile(){
+        super.testOpeningJSPFile();
+    }
+
+    public void testOpeningBigJSPFile(){
+        super.testOpeningBigJSPFile();
+    }
+    
+    public void testOpeningHTMLFile(){
+        super.testOpeningHTMLFile();
+    }
+
+    public void testOpeningTagFile(){
+        super.testOpeningTagFile();
+    }
+
+    public void testOpeningTldFile(){
+        super.testOpeningTldFile();
+    }    
     
     /**
      * Initialize test - open Main.java file in the Source Editor.

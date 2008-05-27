@@ -72,7 +72,33 @@ public class OpenJ2EEFilesWithOpenedEditor extends OpenJ2EEFiles {
         super(testName, performanceDataName);
     }
     
-  
+      public void testOpeningJava(){
+        super.testOpeningJava();
+    }
+    
+    public void testOpeningSessionBean(){
+        super.testOpeningSessionBean();
+    }
+
+    public void testOpeningEntityBean(){
+        super.testOpeningEntityBean();
+    }
+    
+    public void testOpeningEjbJarXml(){
+        super.testOpeningEjbJarXml();
+    }
+    
+    public void testOpeningSunEjbJarXml(){
+        super.testOpeningSunEjbJarXml();
+    }
+
+    public void testOpeningApplicationXml(){
+        super.testOpeningApplicationXml();
+    }
+    
+    public void testOpeningSunApplicationXml(){
+        super.testOpeningSunApplicationXml();
+    }
      /**
      * Initialize test - open Main.java file in the Source Editor.
      */

@@ -57,9 +57,9 @@ public class MeasureJ2EEDialogsTest {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite("UI Responsiveness J2EE Dialogs suite");
 
-        //suite.addTest(NbModuleSuite.create(InvokeEJBAction.class, ".*", ".*"));
-        //suite.addTest(NbModuleSuite.create(InvokeWSAction.class, ".*", ".*"));
-        //suite.addTest(NbModuleSuite.create(SelectJ2EEModuleDialog.class, ".*", ".*"));
+        suite.addTest(NbModuleSuite.create(InvokeEJBAction.class, ".*", ".*"));
+        suite.addTest(NbModuleSuite.create(InvokeWSAction.class, ".*", ".*"));
+        suite.addTest(NbModuleSuite.create(SelectJ2EEModuleDialog.class, ".*", ".*"));
 
         return suite;
     }

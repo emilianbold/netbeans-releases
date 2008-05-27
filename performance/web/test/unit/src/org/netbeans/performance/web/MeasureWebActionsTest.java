@@ -61,7 +61,7 @@ public class MeasureWebActionsTest extends NbTestCase {
     
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite("UI Responsiveness Web Actions suite");
-/*
+
         suite.addTest(NbModuleSuite.create(ExpandNodesWebProjectsView.class, ".*", ".*"));
         suite.addTest(NbModuleSuite.create(JavaCompletionInJspEditor.class, ".*", ".*"));
         suite.addTest(NbModuleSuite.create(OpenServletFile.class, ".*", ".*"));
@@ -72,7 +72,7 @@ public class MeasureWebActionsTest extends NbTestCase {
         suite.addTest(NbModuleSuite.create(PasteInJspEditor.class, ".*", ".*"));
         suite.addTest(NbModuleSuite.create(ToggleBreakpoint.class, ".*", ".*"));
         suite.addTest(NbModuleSuite.create(TypingInJspEditor.class, ".*", ".*"));
-  */      
+       
         return suite;
     }
     
