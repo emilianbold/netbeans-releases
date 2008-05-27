@@ -43,6 +43,7 @@ package org.netbeans.performance.j2se.menus;
 
 import org.netbeans.jellytools.FilesTabOperator;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.modules.performance.utilities.ValidatePopupMenuOnNodes;
 
 /**
  * Test of popup menu on nodes in Files View.

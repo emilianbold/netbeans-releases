@@ -41,6 +41,8 @@
 package org.netbeans.performance.j2se.menus;
 
 import org.netbeans.modules.performance.utilities.CommonUtilities;
+import org.netbeans.modules.performance.utilities.ValidatePopupMenuOnNodes;
+
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.modules.form.ComponentInspectorOperator;
 import org.netbeans.jellytools.nodes.Node;

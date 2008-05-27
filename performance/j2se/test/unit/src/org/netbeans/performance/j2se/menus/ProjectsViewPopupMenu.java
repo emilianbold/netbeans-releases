@@ -46,6 +46,8 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.performance.utilities.CommonUtilities;
+import org.netbeans.modules.performance.utilities.ValidatePopupMenuOnNodes;
+
 /**
  * Test of popup menu on nodes in Projects View.
  * @author  mmirilovic@netbeans.org

@@ -43,6 +43,8 @@ package org.netbeans.performance.j2se.menus;
 
 import org.netbeans.jellytools.RuntimeTabOperator;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.modules.performance.utilities.ValidatePopupMenuOnNodes;
+
 
 import org.netbeans.junit.NbTestSuite;
 

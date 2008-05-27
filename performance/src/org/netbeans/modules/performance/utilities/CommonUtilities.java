@@ -80,6 +80,7 @@ import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JListOperator;
+import org.netbeans.jemmy.operators.JLabelOperator;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
 import org.netbeans.jemmy.operators.JMenuItemOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
@@ -505,7 +506,7 @@ public class CommonUtilities {
         JTreeOperator runtimeTree = rto.tree();
         
         long oldTimeout = runtimeTree.getTimeouts().getTimeout("JTreeOperator.WaitNextNodeTimeout");
-        runtimeTree.getTimeouts().setTimeout("JTreeOperator.WaitNextNodeTimeout", 60000);
+        runtimeTree.getTimeouts().setTimeout("JTreeOperator.WaitNextNodeTimeout", 6000);
         
         TreePath path = runtimeTree.findPath("Servers");
         runtimeTree.selectPath(path);
@@ -576,6 +577,11 @@ public class CommonUtilities {
         public static void addTomcatServer() {
 
         String appServerPath = System.getProperty("tomcat.installRoot");
+        
+        if (appServerPath == null) {
+            throw new Error("Can't add tomcat server. tomcat.installRoot property is not set.");
+        }
+        
         String addServerMenuItem = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.actions.Bundle", "LBL_Add_Server_Instance"); // Add Server...
         String addServerInstanceDialogTitle = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.wizard.Bundle", "LBL_ASIW_Title"); //"Add Server Instance"
         String serverItem = "Tomcat 6.0";
@@ -599,7 +605,10 @@ public class CommonUtilities {
             NbDialogOperator addServerInstanceDialog = new NbDialogOperator(addServerInstanceDialogTitle);
             new JListOperator(addServerInstanceDialog,1).selectItem(serverItem);
             new JButtonOperator(addServerInstanceDialog,nextButtonCaption).push();
-            new JTextFieldOperator(addServerInstanceDialog).enterText(appServerPath);
+       
+            JTextFieldOperator tfo=new JTextFieldOperator(addServerInstanceDialog,1);
+            tfo.getFocus();
+            tfo.enterText(appServerPath);
             new JCheckBoxOperator(addServerInstanceDialog,1).changeSelection(false);
             new JButtonOperator(addServerInstanceDialog,finishButtonCaption).push();
         }
