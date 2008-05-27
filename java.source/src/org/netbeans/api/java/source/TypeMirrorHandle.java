@@ -216,7 +216,7 @@ public final class TypeMirrorHandle<T extends TypeMirror> {
      * resolved in this {@link javax.tools.CompilationTask}.
      */
     public T resolve(CompilationInfo info) {
-        return resolve(info);
+        return resolve(info, new HashMap<TypeMirrorHandle, PlaceholderType>());
     }
     
     private T resolve(CompilationInfo info, Map<TypeMirrorHandle, PlaceholderType> map) {
