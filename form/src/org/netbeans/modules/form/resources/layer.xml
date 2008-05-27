@@ -399,6 +399,7 @@ made subject to such option by the copyright holder.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
                 <attr name="position" intvalue="500"/>
                 <attr name="template" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/JApplet.html"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/form/resources/palette/applet.gif"/>
                 <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/javax/swing/beaninfo/images/JAppletColor32.gif"/>
@@ -413,6 +414,7 @@ made subject to such option by the copyright holder.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
                 <attr name="position" intvalue="100"/>
                 <attr name="template" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>                
                 <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/JDialog.html"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/form/resources/palette/dialog_16.png"/>
                 <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/org/netbeans/modules/form/resources/palette/dialog_32.png"/>
@@ -427,6 +429,7 @@ made subject to such option by the copyright holder.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
                 <attr name="position" intvalue="200"/>
                 <attr name="template" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>                
                 <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/JFrame.html"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/form/resources/palette/frame_16.png"/>
                 <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/org/netbeans/modules/form/resources/palette/frame_32.png"/>
@@ -441,6 +444,7 @@ made subject to such option by the copyright holder.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
                 <attr name="position" intvalue="300"/>
                 <attr name="template" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/JInternalFrame.html"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/form/resources/palette/internal_frame_16.png"/>
                 <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/org/netbeans/modules/form/resources/palette/internal_frame_32.png"/>
@@ -455,6 +459,7 @@ made subject to such option by the copyright holder.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
                 <attr name="position" intvalue="400"/>
                 <attr name="template" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/JPanel.html"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/form/resources/palette/panel_16.png"/>
                 <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/org/netbeans/modules/form/resources/palette/panel_32.png"/>
@@ -469,6 +474,7 @@ made subject to such option by the copyright holder.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
                 <attr name="position" intvalue="600"/>
                 <attr name="template" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/BeanForm.html"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/form/resources/palette/panel_16.png"/>
                 <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/org/netbeans/modules/form/resources/palette/panel_32.png"/>
@@ -483,6 +489,7 @@ made subject to such option by the copyright holder.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
                 <attr name="position" intvalue="700"/>
                 <attr name="template" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/Application.html"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/form/resources/palette/frame_16.png"/>
                 <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/org/netbeans/modules/form/resources/palette/frame_32.png"/>
@@ -497,6 +504,7 @@ made subject to such option by the copyright holder.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="position" intvalue="800"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/MDIApplication.html"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/form/resources/palette/frame_16.png"/>
                 <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/org/netbeans/modules/form/resources/palette/frame_32.png"/>
@@ -511,6 +519,7 @@ made subject to such option by the copyright holder.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
                 <attr name="position" intvalue="1000"/>
                 <attr name="template" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/OKCancelDialog.html"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/form/resources/palette/dialog_16.png"/>
                 <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/org/netbeans/modules/form/resources/palette/dialog_32.png"/>
@@ -535,6 +544,7 @@ made subject to such option by the copyright holder.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
                 <attr name="position" intvalue="100"/>
                 <attr name="template" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/Applet.html"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/form/resources/palette/applet.gif"/>
                 <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/javax/swing/beaninfo/images/JAppletColor32.gif"/>
@@ -549,6 +559,7 @@ made subject to such option by the copyright holder.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
                 <attr name="position" intvalue="200"/>
                 <attr name="template" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/Dialog.html"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/form/resources/palette/dialog_16.png"/>
                 <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/org/netbeans/modules/form/resources/palette/dialog_32.png"/>
@@ -563,6 +574,7 @@ made subject to such option by the copyright holder.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
                 <attr name="position" intvalue="300"/>
                 <attr name="template" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/Frame.html"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/form/resources/palette/frame_16.png"/>
                 <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/org/netbeans/modules/form/resources/palette/frame_32.png"/>
@@ -577,6 +589,7 @@ made subject to such option by the copyright holder.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
                 <attr name="position" intvalue="400"/>
                 <attr name="template" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/Panel.html"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/form/beaninfo/awt/panel.gif"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.form.wizard.TemplateWizardIterator.create"/>

@@ -4,6 +4,7 @@ OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/form/Bundle2.properties
 OpenIDE-Module-Specification-Version: 1.24
 OpenIDE-Module-Implementation-Version: 2
 OpenIDE-Module-Install: org/netbeans/modules/form/FormEditorModule.class
+OpenIDE-Module-Needs: javax.script.ScriptEngine.freemarker
 OpenIDE-Module-Requires: 
   org.netbeans.api.editor.guards.Java,
   org.openide.modules.InstalledFileLocator

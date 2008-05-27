@@ -1,19 +1,27 @@
+<#-- FreeMarker template (see http://freemarker.org/) -->
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt">
+
 /*
- * __NAME__.java
+ * ${name}.java
  *
- * Created on __DATE__, __TIME__
+ * Created on ${date}, ${time}
  */
 
-package Templates.GUIForms.AWTForms;
+<#if package?? && package != "">
+package ${package};
 
+</#if>
 /**
  *
- * @author  __USER__
+ * @author ${user}
  */
-public class Frame extends java.awt.Frame {
+public class ${name} extends java.awt.Frame {
 
-    /** Creates new form __NAME__ */
-    public Frame() {
+    /** Creates new form ${name} */
+    public ${name}() {
         initComponents();
     }
 
@@ -46,7 +54,7 @@ public class Frame extends java.awt.Frame {
     public static void main(String args[]) {
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new __NAME__().setVisible(true);
+                new ${name}().setVisible(true);
             }
         });
     }
