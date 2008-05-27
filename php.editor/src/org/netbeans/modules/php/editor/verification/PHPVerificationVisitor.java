@@ -49,7 +49,6 @@ import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 import org.netbeans.modules.php.editor.parser.astnodes.Block;
 import org.netbeans.modules.php.editor.parser.astnodes.DoStatement;
-import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.ForStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
@@ -213,6 +212,13 @@ class PHPVerificationVisitor extends DefaultVisitor {
         if (node.getLeftHandSide() instanceof Variable) {
             Variable var = (Variable) node.getLeftHandSide();
             varStack.addVariableDefinition(var);
+        }
+        
+        for (PHPRule rule : rules){
+            rule.setContext(context);
+            rule.visit(node);
+            result.addAll(rule.getResult());
+            rule.resetResult();
         }
         
         super.visit(node);
