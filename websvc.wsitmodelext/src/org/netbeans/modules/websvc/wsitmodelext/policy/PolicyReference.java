@@ -47,7 +47,7 @@ import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
  *
  * @author Martin Grebac
  */
-public interface PolicyReference extends ExtensibilityElement{
+public interface PolicyReference extends ExtensibilityElement {
     public static final String POLICY_URI_PROPERTY = "URI";     //NOI18N
     public static final String DIGEST_PROPERTY = "Digest";      //NOI18N
     public static final String DIGESTALGORITHM_PROPERTY = "DigestAlgorithm";    //NOI18N

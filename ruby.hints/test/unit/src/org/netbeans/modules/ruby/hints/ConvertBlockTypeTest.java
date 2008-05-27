@@ -51,43 +51,43 @@ public class ConvertBlockTypeTest extends HintTestBase {
     }
 
     public void testHint1() throws Exception {
-        findHints(this, new ConvertBlockType(), "testfiles/convertblocks.rb", null);
+        checkHints(this, new ConvertBlockType(), "testfiles/convertblocks.rb", null);
     }
 
     public void testHint2() throws Exception {
-        findHints(this, new ConvertBlockType(), "testfiles/convertblocks.rb", "x.each { ^|foo|");
+        checkHints(this, new ConvertBlockType(), "testfiles/convertblocks.rb", "x.each { ^|foo|");
     }
 
     public void testHint3() throws Exception {
-        findHints(this, new ConvertBlockType(), "testfiles/convertblocks.rb", "x.each do ^|foo|");
+        checkHints(this, new ConvertBlockType(), "testfiles/convertblocks.rb", "x.each do ^|foo|");
     }
 
     public void testHint4() throws Exception {
-        findHints(this, new ConvertBlockType(), "testfiles/convertblocks.rb", "for i in 1..^10");
+        checkHints(this, new ConvertBlockType(), "testfiles/convertblocks.rb", "for i in 1..^10");
     }
 
     public void testHint5() throws Exception {
-        findHints(this, new ConvertBlockType(), "testfiles/convertblocks.rb", "pu^ts foo1");
+        checkHints(this, new ConvertBlockType(), "testfiles/convertblocks.rb", "pu^ts foo1");
     }
     
     public void testHint7() throws Exception {
-        findHints(this, new ConvertBlockType(), "testfiles/convertblocks4.rb", "@scanner.set_prompt d^o");
+        checkHints(this, new ConvertBlockType(), "testfiles/convertblocks4.rb", "@scanner.set_prompt d^o");
     }
 
     public void testHint8() throws Exception {
-        findHints(this, new ConvertBlockType(), "testfiles/convertblocks4.rb", "@context1.instance_eval d^o");
+        checkHints(this, new ConvertBlockType(), "testfiles/convertblocks4.rb", "@context1.instance_eval d^o");
     }
 
     public void testHint9() throws Exception {
-        findHints(this, new ConvertBlockType(), "testfiles/convertblocks4.rb", "@context4.instance_eval d^o");
+        checkHints(this, new ConvertBlockType(), "testfiles/convertblocks4.rb", "@context4.instance_eval d^o");
     }
 
     public void testHint10() throws Exception {
-        findHints(this, new ConvertBlockType(), "testfiles/convertblocks4.rb", "@context2.instance_eval {^");
+        checkHints(this, new ConvertBlockType(), "testfiles/convertblocks4.rb", "@context2.instance_eval {^");
     }
     
     public void testHint11() throws Exception {
-        findHints(this, new ConvertBlockType(), "testfiles/convertblocks4.rb", "@context3.instance_eval {^");
+        checkHints(this, new ConvertBlockType(), "testfiles/convertblocks4.rb", "@context3.instance_eval {^");
     }
     
     public void testFix1() throws Exception {
@@ -99,7 +99,7 @@ public class ConvertBlockTypeTest extends HintTestBase {
     }
 
     public void testHint6() throws Exception {
-        findHints(this, new ConvertBlockType(), "testfiles/convertblocks2.rb", "x.each {^ |foo| ");
+        checkHints(this, new ConvertBlockType(), "testfiles/convertblocks2.rb", "x.each {^ |foo| ");
     }
 
     public void testFix3() throws Exception {
@@ -111,19 +111,19 @@ public class ConvertBlockTypeTest extends HintTestBase {
     }
 
     public void testOneLineHint1() throws Exception {
-        findHints(this, new ConvertBlockType(), "testfiles/convertblocks3.rb", null);
+        checkHints(this, new ConvertBlockType(), "testfiles/convertblocks3.rb", null);
     }
     public void testOneLineHint2() throws Exception {
-        findHints(this, new ConvertBlockType(), "testfiles/convertblocks3.rb", "self.gsub!(pattern) do^ |c| h[c] end");
+        checkHints(this, new ConvertBlockType(), "testfiles/convertblocks3.rb", "self.gsub!(pattern) do^ |c| h[c] end");
     }
     public void testOneLineHint3() throws Exception {
-        findHints(this, new ConvertBlockType(), "testfiles/convertblocks3.rb", "self.gsub!(pattern) {^ |c| h[c] }");
+        checkHints(this, new ConvertBlockType(), "testfiles/convertblocks3.rb", "self.gsub!(pattern) {^ |c| h[c] }");
     }
     public void testOneLineHint4() throws Exception {
-        findHints(this, new ConvertBlockType(), "testfiles/convertblocks3.rb", "sort{^|a1, a2| a1[0].id2name <=> a2[0].id2name}");
+        checkHints(this, new ConvertBlockType(), "testfiles/convertblocks3.rb", "sort{^|a1, a2| a1[0].id2name <=> a2[0].id2name}");
     }
     public void testOneLineHint5() throws Exception {
-        findHints(this, new ConvertBlockType(), "testfiles/convertblocks3.rb", "sort do^|a1, a2| a1[0].id2name <=> a2[0].id2name end");
+        checkHints(this, new ConvertBlockType(), "testfiles/convertblocks3.rb", "sort do^|a1, a2| a1[0].id2name <=> a2[0].id2name end");
     }
 
     public void testOneLineHintFix2() throws Exception {

@@ -41,11 +41,11 @@
 
 package org.netbeans.modules.websvc.wsitmodelext.security.algosuite;
 
-import org.netbeans.modules.websvc.wsitmodelext.policy.NestedPolicyAllowed;
+import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
 
 /**
  *
  * @author Martin Grebac
  */
-public interface AlgorithmSuite extends NestedPolicyAllowed {
+public interface AlgorithmSuite  extends ExtensibilityElement {
 }

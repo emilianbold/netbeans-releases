@@ -81,6 +81,16 @@ made subject to such option by the copyright holder.
             </file>
         </folder>
     </folder>
+    
+    <folder name="Loaders">
+        <folder name="text">
+          <folder name="x-casa+xml">
+            <folder name="Factories">
+                <file name="org-netbeans-modules-compapp-casaeditor-CasaDataLoader.instance"/>
+            </folder>
+          </folder>
+        </folder>
+    </folder>
 
     <!--
     <folder name="Editors">

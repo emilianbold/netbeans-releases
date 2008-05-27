@@ -40,13 +40,11 @@
  */
 package org.netbeans.modules.xslt.validation.transformmap;
 
-
 import org.netbeans.modules.xslt.tmap.TMapConstants;
 import org.netbeans.modules.xslt.tmap.model.api.TMapComponent;
 import org.netbeans.modules.xslt.tmap.model.api.TMapVisitor;
 import org.netbeans.modules.xslt.tmap.model.api.TMapVisitorAdapter;
 import org.netbeans.modules.xslt.tmap.model.api.TransformMap;
-
 import org.netbeans.modules.xslt.validation.core.TMapValidator;
 
 /**
@@ -59,7 +57,6 @@ public final class Validator extends TMapValidator {
 
   @Override
   public void visit(TransformMap transformMap) {
-      System.out.println("work transformmap validator");
     String namespace = transformMap.getPeer().getNamespaceURI();
 
     if (TMapConstants.OLD_TRANSFORM_MAP_NS_URI.equals(namespace)) {

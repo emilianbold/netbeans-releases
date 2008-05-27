@@ -43,9 +43,7 @@ package org.netbeans.modules.websvc.wsitmodelext.security.proprietary.service.im
 
 import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.ProprietarySecurityPolicyAttribute;
 import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.Validator;
-import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.service.ProprietarySecurityPolicyServiceQName;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
 import org.w3c.dom.Element;
 
 /**
@@ -61,14 +59,6 @@ public class ValidatorImpl extends ProprietarySecurityPolicyComponentImpl implem
         super(model, e);
     }
     
-    public ValidatorImpl(WSDLModel model){
-        this(model, createPrefixedElement(ProprietarySecurityPolicyServiceQName.VALIDATOR.getQName(), model));
-    }
-
-    public void accept(WSDLVisitor visitor) {
-        visitor.visit(this);
-    }
-
     public void setName(String name) {
         setAttribute(NAME, ProprietarySecurityPolicyAttribute.NAME, name);        
     }

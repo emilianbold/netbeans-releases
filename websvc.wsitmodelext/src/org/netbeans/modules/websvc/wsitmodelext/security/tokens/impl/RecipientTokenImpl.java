@@ -41,17 +41,16 @@
 
 package org.netbeans.modules.websvc.wsitmodelext.security.tokens.impl;
 
+import org.netbeans.modules.websvc.wsitmodelext.security.impl.SecurityPolicyComponentImpl;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.RecipientToken;
-import org.netbeans.modules.websvc.wsitmodelext.security.tokens.TokensQName;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
 import org.w3c.dom.Element;
 
 /**
  *
  * @author Martin Grebac
  */
-public class RecipientTokenImpl extends TokensComponentImpl implements RecipientToken {
+public class RecipientTokenImpl extends SecurityPolicyComponentImpl implements RecipientToken {
     
     /**
      * Creates a new instance of RecipientTokenImpl
@@ -60,13 +59,4 @@ public class RecipientTokenImpl extends TokensComponentImpl implements Recipient
         super(model, e);
     }
     
-    public RecipientTokenImpl(WSDLModel model){
-        this(model, createPrefixedElement(TokensQName.RECIPIENTTOKEN.getQName(), model));
-    }
-
-    @Override
-    public void accept(WSDLVisitor visitor) {
-        visitor.visit(this);
-    }
-
 }

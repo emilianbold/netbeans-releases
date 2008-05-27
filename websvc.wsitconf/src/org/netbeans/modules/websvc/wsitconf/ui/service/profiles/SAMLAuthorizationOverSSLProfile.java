@@ -89,14 +89,6 @@ public class SAMLAuthorizationOverSSLProfile extends ProfileBase
     public String getDescription() {
         return ComboConstants.PROF_SAMLSSL_INFO;
     }
-    
-    /**
-     * Called when the profile is selected in the combo box.
-     */
-    @Override
-    public void profileSelected(WSDLComponent component, boolean updateServiceUrl) {
-        ProfilesModelHelper.setSecurityProfile(component, getDisplayName(), updateServiceUrl);
-    }
 
     /**
      * Should return true if the profile is set on component, false otherwise
@@ -112,7 +104,7 @@ public class SAMLAuthorizationOverSSLProfile extends ProfileBase
         
         model.addUndoableEditListener(undoCounter);
 
-        JPanel profConfigPanel = new SAMLAuthorizationOverSSL(component);
+        JPanel profConfigPanel = new SAMLAuthorizationOverSSL(component, this);
         DialogDescriptor dlgDesc = new DialogDescriptor(profConfigPanel, getDisplayName());
         Dialog dlg = DialogDisplayer.getDefault().createDialog(dlgDesc);
 

@@ -42,7 +42,10 @@ package org.netbeans.modules.gsfret.hints.infrastructure;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.text.Document;
+import org.netbeans.modules.gsf.Language;
+import org.netbeans.modules.gsf.api.Hint;
 import org.netbeans.modules.gsf.api.HintsProvider;
+import org.netbeans.modules.gsf.api.RuleContext;
 import org.netbeans.napi.gsfret.source.CompilationInfo;
 import org.netbeans.modules.gsfret.editor.semantic.ScanningCancellableTask;
 import org.netbeans.napi.gsfret.source.support.SelectionAwareSourceTaskFactory;
@@ -75,16 +78,27 @@ public class SelectionHintsTask extends ScanningCancellableTask<CompilationInfo>
         int start = range[0];
         int end = range[1];
         
-        HintsProvider provider = SuggestionsTask.getHintsProvider(doc, start);
-
-        if (provider == null) {
+        Language language = SuggestionsTask.getHintsProviderLanguage(doc, start);
+        if (language == null) {
             return;
         }
-        
+
+        HintsProvider provider = language.getHintsProvider();
+        assert provider != null; // getHintsProviderLanguage will return null if there's no provider
+        GsfHintsManager manager = language.getHintsManager();
+
         List<ErrorDescription> result = new ArrayList<ErrorDescription>();
+        List<Hint> hints = new ArrayList<Hint>();
         
         if (start != end) {
-            provider.computeSelectionHints(info, result, Math.min(start,end), Math.max(start,end));
+            RuleContext ruleContext = manager.createRuleContext(info, language, -1, start, end);
+            if (ruleContext != null) {
+                provider.computeSelectionHints(manager, ruleContext, hints, Math.min(start,end), Math.max(start,end));
+                for (Hint hint : hints) {
+                    ErrorDescription desc = manager.createDescription(hint, ruleContext, false);
+                    result.add(desc);
+                }
+            }
         }
         
         if (isCancelled()) {

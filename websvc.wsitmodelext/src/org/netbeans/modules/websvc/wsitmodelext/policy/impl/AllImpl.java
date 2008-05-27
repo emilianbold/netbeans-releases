@@ -49,11 +49,9 @@ import org.netbeans.modules.websvc.wsitmodelext.security.Wss11;
 import org.netbeans.modules.websvc.wsitmodelext.policy.All;
 import org.netbeans.modules.websvc.wsitmodelext.policy.ExactlyOne;
 import org.netbeans.modules.websvc.wsitmodelext.policy.Policy;
-import org.netbeans.modules.websvc.wsitmodelext.policy.PolicyQName;
 import org.netbeans.modules.websvc.wsitmodelext.policy.PolicyReference;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
 import org.w3c.dom.Element;
 
 import java.util.Collections;
@@ -71,15 +69,6 @@ public class AllImpl extends PolicyComponentImpl implements All {
         super(model, e);
     }
     
-    public AllImpl(WSDLModel model){
-        this(model, createPrefixedElement(PolicyQName.ALL.getQName(), model));
-    }
-
-    @Override
-    public void accept(WSDLVisitor visitor) {
-        visitor.visit(this);
-    }
-
     public void setAll(All all) {
         java.util.List<Class<? extends WSDLComponent>> classes = Collections.emptyList();
         setChild(All.class, ALL_PROPERTY, all, classes);

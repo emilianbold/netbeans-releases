@@ -178,6 +178,9 @@ public final class Modifications {
                 if (diff.isExcluded())
                     continue;
                 int pos = diff.getStartPosition().getOffset();
+                if (pos < offset) {
+                    continue;
+                }
                 int toread = pos - offset;
                 char[] buff = new char[toread];
                 int length;

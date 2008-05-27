@@ -27,7 +27,6 @@
  */
 package org.netbeans.modules.ruby.hints;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -38,7 +37,6 @@ import javax.swing.JComponent;
 import javax.swing.text.BadLocationException;
 import org.jruby.ast.Node;
 import org.jruby.ast.NodeType;
-import org.jruby.ast.NodeType;
 import org.jruby.lexer.yacc.ISourcePosition;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.OffsetRange;
@@ -47,15 +45,17 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.gsf.api.Hint;
+import org.netbeans.modules.gsf.api.EditList;
+import org.netbeans.modules.gsf.api.HintFix;
+import org.netbeans.modules.gsf.api.HintSeverity;
+import org.netbeans.modules.gsf.api.PreviewableFix;
+import org.netbeans.modules.gsf.api.RuleContext;
 import org.netbeans.modules.ruby.AstPath;
 import org.netbeans.modules.ruby.AstUtilities;
-import org.netbeans.modules.ruby.hints.spi.AstRule;
-import org.netbeans.modules.ruby.hints.spi.Description;
-import org.netbeans.modules.ruby.hints.spi.EditList;
-import org.netbeans.modules.ruby.hints.spi.Fix;
-import org.netbeans.modules.ruby.hints.spi.HintSeverity;
-import org.netbeans.modules.ruby.hints.spi.PreviewableFix;
-import org.netbeans.modules.ruby.hints.spi.RuleContext;
+import org.netbeans.modules.ruby.Formatter;
+import org.netbeans.modules.ruby.hints.infrastructure.RubyAstRule;
+import org.netbeans.modules.ruby.hints.infrastructure.RubyRuleContext;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
 import org.openide.util.Exceptions;
@@ -86,11 +86,12 @@ import org.openide.util.NbBundle;
  * 
  * @author Tor Norbye
  */
-public class ExpandSameLineDef implements AstRule {
+public class ExpandSameLineDef extends RubyAstRule {
     public ExpandSameLineDef() {
     }
 
-    public boolean appliesTo(CompilationInfo info) {
+    public boolean appliesTo(RuleContext context) {
+        CompilationInfo info = context.compilationInfo;
         // Skip for RHTML files for now - isn't implemented properly
         return info.getFileObject().getMIMEType().equals("text/x-ruby");
     }
@@ -103,7 +104,7 @@ public class ExpandSameLineDef implements AstRule {
         return types;
     }
 
-    public void run(RuleContext context, List<Description> result) {
+    public void run(RubyRuleContext context, List<Hint> result) {
         Node node = context.node;
         AstPath path = context.path;
         CompilationInfo info = context.compilationInfo;
@@ -129,10 +130,10 @@ public class ExpandSameLineDef implements AstRule {
                     if (path.leaf() != node) {
                         path = new AstPath(root, node);
                     }
-                    List<Fix> fixList = Collections.<Fix>singletonList(new ExpandLineFix(info, path));
+                    List<HintFix> fixList = Collections.<HintFix>singletonList(new ExpandLineFix(info, path));
 
                     OffsetRange range = new OffsetRange(pos.getStartOffset(), pos.getEndOffset());
-                    Description desc = new Description(this, getDisplayName(), info.getFileObject(), range, fixList, 150);
+                    Hint desc = new Hint(this, getDisplayName(), info.getFileObject(), range, fixList, 150);
                     result.add(desc);
                     
                     // Exit; don't process children such that a def inside a class all
@@ -283,7 +284,7 @@ public class ExpandSameLineDef implements AstRule {
                         newlines.add(offset);
                     }
                     
-                    edits.format();
+                    edits.setFormatter(new Formatter(), true);
                 } catch (BadLocationException ble) {
                     Exceptions.printStackTrace(ble);
                 }

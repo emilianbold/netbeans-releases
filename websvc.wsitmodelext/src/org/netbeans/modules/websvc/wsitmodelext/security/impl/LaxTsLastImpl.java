@@ -42,9 +42,7 @@
 package org.netbeans.modules.websvc.wsitmodelext.security.impl;
 
 import org.netbeans.modules.websvc.wsitmodelext.security.LaxTsLast;
-import org.netbeans.modules.websvc.wsitmodelext.security.SecurityPolicyQName;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
 import org.w3c.dom.Element;
 
 /**
@@ -58,15 +56,6 @@ public class LaxTsLastImpl extends SecurityPolicyComponentImpl implements LaxTsL
      */
     public LaxTsLastImpl(WSDLModel model, Element e) {
         super(model, e);
-    }
-    
-    public LaxTsLastImpl(WSDLModel model){
-        this(model, createPrefixedElement(SecurityPolicyQName.LAXTSLAST.getQName(), model));
-    }
-
-    @Override
-    public void accept(WSDLVisitor visitor) {
-        visitor.visit(this);
     }
 
 }

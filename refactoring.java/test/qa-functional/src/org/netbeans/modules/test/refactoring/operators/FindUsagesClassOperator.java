@@ -59,7 +59,7 @@ public class FindUsagesClassOperator extends ParametersPanelOperator {
     private JButtonOperator cancel;
     private JLabelOperator label;
     private JCheckBoxOperator searchInComments;
-    private JRadioButtonOperator findUsages;
+    private JRadioButtonOperator findUsages;    
     private JRadioButtonOperator findDirectSubtypes;
     private JRadioButtonOperator findAllSubtypes;
     private JCheckBoxOperator findOverridding;
@@ -134,7 +134,7 @@ public class FindUsagesClassOperator extends ParametersPanelOperator {
 
     public JCheckBoxOperator getFindMethodUsage() {
         if (findMethodUsage == null) {
-            findMethodUsage = new JCheckBoxOperator(this,  getBungleText("org.netbeans.modules.refactoring.java.ui.Bundle","LBL_SearchInComents"));
+            findMethodUsage = new JCheckBoxOperator(this,  getBungleText("org.netbeans.modules.refactoring.java.ui.Bundle","LBL_FindUsages"));
         }
         return findMethodUsage;
     }
