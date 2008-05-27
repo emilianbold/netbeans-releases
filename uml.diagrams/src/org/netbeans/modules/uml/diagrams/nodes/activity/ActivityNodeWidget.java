@@ -222,7 +222,8 @@ public abstract class ActivityNodeWidget extends UMLNodeWidget
         if (element instanceof INamedElement)
         {
             INamedElement elemNode = (INamedElement) element;
-            if (propName.equals(ModelElementChangedKind.NAME_MODIFIED.toString()))
+            if (propName.equals(ModelElementChangedKind.NAME_MODIFIED.toString()) ||
+                propName.equals(ModelElementChangedKind.ALIAS_MODIFIED.toString()) )
             {
                 enableNameWidget(elemNode.getNameWithAlias());
             }
