@@ -39,12 +39,59 @@
 
 package org.netbeans.modules.php.editor.verification;
 
-import org.netbeans.modules.gsf.api.RuleContext;
+import org.netbeans.modules.gsf.api.Hint;
+import org.netbeans.modules.gsf.api.HintSeverity;
+import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.php.editor.parser.astnodes.Expression;
+import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
+import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
+import org.netbeans.modules.php.editor.parser.astnodes.Variable;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author Tomasz.Slota@Sun.COM
  */
-class PHPRuleContext extends RuleContext {
-    PHPVerificationVisitor.VariableStack variableStack;
+public class UninitializedVariableRule  extends PHPRule {
+    public HintSeverity getDefaultSeverity() {
+        return HintSeverity.WARNING;
+    }
+
+    public String getId() {
+        return "unitialized.variable"; //NOI18N
+    }
+
+    public String getDescription() {
+        return NbBundle.getMessage(UninitializedVariableRule.class, "UninitializedVariableDesc");
+    }
+
+    @Override
+    public void visit(FunctionInvocation functionInvocation) {
+        for (Expression expr : functionInvocation.getParameters()){
+            if (expr instanceof Variable) {
+                Variable var = (Variable) expr;
+                check(var);
+            }
+        }
+    }
+
+    private void check(Variable var) {
+        if (var.getName() instanceof Identifier) {
+            Identifier identifier = (Identifier) var.getName();
+            String varName = identifier.getName();
+            
+            if (varName != null && !context.variableStack.isVariableDefined(varName)) {
+                OffsetRange range = new OffsetRange(var.getStartOffset(), var.getEndOffset());
+
+                Hint hint = new Hint(UninitializedVariableRule.this, getDescription(),
+                        context.compilationInfo.getFileObject(), range, null, 500);
+
+                addResult(hint);
+            }
+        }
+    }
+
+    public String getDisplayName() {
+        return getDescription();
+    }
 }
