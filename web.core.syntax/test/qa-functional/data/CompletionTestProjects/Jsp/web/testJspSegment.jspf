@@ -10,7 +10,9 @@
       </jsp-property-group>
     </jsp-config>
 --%>
-
+<%
+    application.getClass();
+%>
 <%-- any content can be specified here e.g.: --%>
 <h2>This is the page header</h2>
 <%-- completion for HTML attributes -->

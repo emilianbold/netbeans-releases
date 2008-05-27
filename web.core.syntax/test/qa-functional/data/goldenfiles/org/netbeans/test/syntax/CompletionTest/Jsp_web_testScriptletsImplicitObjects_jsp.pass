@@ -42,6 +42,7 @@ RequestDispatcher
 End cursor position = 992
 [<% se| %>, HttpSession session, <% session %>, 1082]
 HttpSession session
+long serialVersionUID
 void service (HttpServletRequest arg0 , HttpSe 
 void service (ServletRequest arg0 , ServletRes 
 SecurityException

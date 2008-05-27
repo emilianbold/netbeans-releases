@@ -15,7 +15,6 @@ requestScope
 sessionScope
 End cursor position = 866
 [${d|, date Date, ${date, 891]
-date Date
 End cursor position = 898
 [${i|, initParam, ${initParam[], 933]
 integer Integer

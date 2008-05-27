@@ -17,7 +17,6 @@ http://java.sun.com/jsf/core
 http://java.sun.com/jsf/html
 End cursor position = 529
 [<%@include file="/META-INF/|"%>, context.xml, <%@include file="/META-INF/context.xml"%>, 624]
-context.xml
 End cursor position = 663
 [<c:v|, < c:view >, <c:view, 765]
 < c:validateDoubleRange >

@@ -121,8 +121,8 @@ public class CompletionTest extends JellyTestCase {
     private static boolean GENERATE_GOLDEN_FILES = false;//generate golden files, or test
     protected FileObject testFileObj;
     protected boolean debug = false;
-    protected final static List XML_EXTS = Arrays.asList(new String[]{"html", "tld", "jspx", "tagx", "xhtml"});
-    protected final static List JSP_EXTS = Arrays.asList(new String[]{"jsp", "tag", "jspf", "tagf"});
+    protected final static List XML_EXTS = Arrays.asList(new String[]{"html", "tld", "xhtml"});
+    protected final static List JSP_EXTS = Arrays.asList(new String[]{"jsp", "tag", "jspf", "tagf", "jspx", "tagx"});
     protected final static List JS_EXTS = Arrays.asList(new String[]{"js"/*,"java"*/});
 
     /** Need to be defined because of JUnit */

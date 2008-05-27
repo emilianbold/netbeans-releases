@@ -1,6 +1,8 @@
 <%@page contentType="text/html"%>
 <%@page pageEncoding="UTF-8"%>
-
+<%
+    application.getClass();
+%>
 <%-- completion for JSP elements --%>
 <%--CC
 <jsp:|

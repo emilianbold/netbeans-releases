@@ -70,6 +70,7 @@ RuntimePermission
 End cursor position = 865
 [<% se|, HttpSession session, <% session, 949]
 HttpSession session
+long serialVersionUID
 void service (HttpServletRequest arg0 , HttpSe 
 void service (ServletRequest arg0 , ServletRes 
 SecurityException
