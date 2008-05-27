@@ -40,10 +40,28 @@
  */
 package org.netbeans.modules.css.editor.test;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.nio.CharBuffer;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.LanguagePath;
+import org.netbeans.editor.ext.html.parser.AstNode;
+import org.netbeans.editor.ext.html.parser.AstNodeUtils;
+import org.netbeans.editor.ext.html.parser.AstNodeVisitor;
+import org.netbeans.editor.ext.html.parser.SyntaxElement;
+import org.netbeans.editor.ext.html.parser.SyntaxParser;
+import org.netbeans.editor.ext.html.parser.SyntaxTree;
 
 /**
  * @author Marek Fukala
@@ -61,8 +79,119 @@ public class CssTest extends TestBase {
         super.setUp();
     }
 
-    public void testDummy() throws BadLocationException {
-        assertEquals(1, 1);
+    public void testDummy() throws BadLocationException, FileNotFoundException, IOException {
+        
+        File f = new File("/marek/propidx.html");
+        
+        assertTrue(f.exists());
+        
+        Reader r = new InputStreamReader(new FileInputStream(f));
+        
+        char[] buff = new char[100000];
+        int read = r.read(buff);
+        r.close();
+        
+        String source = new String(buff, 0, read);
+        
+        SyntaxParser parser = SyntaxParser.create(source);
+        List<SyntaxElement> sels = parser.parseImmutableSource();
+        AstNode node = SyntaxTree.makeTree(sels);
+        
+//        System.out.println(node.toString());
+        
+        final StringBuffer buf = new StringBuffer();
+        
+        final Map<String, Collection<String>> props = new HashMap<String, Collection<String>>();
+        
+        AstNodeVisitor v = new AstNodeVisitor() {
+
+            public void visit(AstNode node) {
+                if(node.type() == AstNode.NodeType.TAG) {
+                    String name = node.name();
+                    if("table".equalsIgnoreCase(name)) {
+                        List<AstNode> children = node.children();
+                        for(int i = 0; i < children.size(); i++) { 
+                            AstNode child = children.get(i);
+                            if(child.type() == AstNode.NodeType.UNMATCHED_TAG && "tr".equalsIgnoreCase(child.name())) {
+                                
+                                AstNode td = children.get(++i);
+                                AstNode a = children.get(++i);
+                                AstNode aa = a.children().get(0);
+                                String t = aa.element().text();
+                                
+                                t = t.substring(9, t.indexOf('"', 9));
+                                
+                                int idx = t.indexOf('-');
+                                
+                                String propName = t.substring(idx + 1);
+                                
+                                buf.append(t + "=");
+                                
+                                System.out.println("Property " + propName + ": " + t);
+                                
+                                i++; //skip <td> for values
+                                
+                                Collection<String> vals = new ArrayList<String>();
+                                //loop until <td>
+                                AstNode val = children.get(++i);
+                                while(!"td".equals(val.name())) {
+                                    
+                                    
+                                    String v = val.element().text();
+//                                    System.out.println(v);
+                                    
+                                    v = v.substring(9, v.indexOf('"', 9));
+                                
+                                    if(v.contains("value-")) {
+                                        //value
+                                        vals.add(v);
+                                    } else {
+                                        //property
+                                        props.put(v, Collections.EMPTY_LIST);
+                                    }
+                                    
+                                    
+                                    int idx2 = v.indexOf('-');
+                                
+                                    String valName = v.substring(idx2 + 1);
+                                    
+                                    buf.append(v + ";");
+                                    
+                                    System.out.println("- " + valName + ": " + v);
+                                
+                                    val =  children.get(++i);
+                                }
+                                
+                                props.put(t, vals);
+                                
+                                buf.deleteCharAt(buf.length() - 1);
+                                buf.append('\n');
+                                
+                                
+                            }
+                        }
+                        
+                        
+                    }
+                }
+            }
+        };
+        
+        AstNodeUtils.visitChildren(node, v);
+        
+        StringBuffer buf2 = new StringBuffer();
+        
+        for(String name : props.keySet()) {
+            Collection<String> values = props.get(name);
+            buf2.append(name + "=");
+            for(String val : values) {
+                buf2.append(val + ";");
+            }
+            buf2.deleteCharAt(buf2.length() - 1);
+            buf2.append('\n');
+        }
+        
+        System.out.println(buf2);
     }
     
 }

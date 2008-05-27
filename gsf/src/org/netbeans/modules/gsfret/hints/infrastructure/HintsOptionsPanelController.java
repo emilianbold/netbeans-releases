@@ -85,7 +85,7 @@ final class HintsOptionsPanelController extends OptionsPanelController {
     
     public synchronized JComponent getComponent(Lookup masterLookup) {
         if ( panel == null ) {
-            panel = new HintsPanel(manager.getHintsTreeModel());
+            panel = new HintsPanel(manager.getHintsTreeModel(), manager);
         }
         return panel;
     }

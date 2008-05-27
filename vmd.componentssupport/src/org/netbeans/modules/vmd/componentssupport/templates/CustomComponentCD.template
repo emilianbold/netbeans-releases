@@ -1,0 +1,61 @@
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt">
+
+<#if package?? && package != "">
+package ${package};
+
+</#if>
+/**
+ *
+ * @author ${user}
+ */
+public class ${name}CD extends ComponentDescriptor {
+
+  public static final TypeID TYPEID = new TypeID( TypeID.Kind.COMPONENT, 
+          "${type_id}");
+
+       
+    /**
+     * Returns a type descriptor of this component descriptor.
+     * @return the type descriptor
+     */
+    @Override
+    public TypeDescriptor getTypeDescriptor() {
+        return new TypeDescriptor(${super_descriptor_class}.TYPEID, // This indicates that ${name} derives from component descriptor ${super_descriptor_class}.
+                TYPEID,                          // TypeID of this component descriptor.
+                ${can_instantiate},                            // Instantiate ability. Indicates if DesignComponent can be create based on this Component Descriptor.
+                ${can_derive});                           // Derive ability. Indicates if this DesignComponent could be used as a super type.
+
+    }
+
+    /**
+     * Returns a list of property descriptors that are newly declared in the component descriptor or override property descriptors from the super component descriptor.
+     * @return the list of property descriptors
+     */
+    @Override
+    public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
+        return null;
+    }
+
+    /**
+     * Returns a version descriptor of this component descriptor.
+     * @return the version descriptor
+     */
+    @Override
+    public VersionDescriptor getVersionDescriptor() {
+        // For which version of MIDP this ComponentDescriptor is valid
+        return MidpVersionDescriptor.${midp_version}; 
+    }
+
+    /**
+     * Returns a list of new instances of presenters that are declared in the component descriptor or override presenters
+     * from the super component descriptor.
+     * @return the list of presenters
+     */
+    @Override
+    protected List<? extends Presenter> createPresenters() {
+        return null;
+    }
+}

@@ -42,7 +42,6 @@
 package org.netbeans.modules.websvc.wsitconf.ui.service.profiles;
 
 import java.awt.Dialog;
-import java.io.File;
 import javax.swing.JPanel;
 import javax.swing.undo.UndoManager;
 import org.netbeans.api.project.Project;
@@ -53,6 +52,7 @@ import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
 import org.netbeans.modules.websvc.wsitconf.ui.service.subpanels.KeystorePanel;
 import org.netbeans.modules.websvc.wsitconf.util.UndoCounter;
 import org.netbeans.modules.websvc.wsitconf.util.Util;
+import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.PolicyModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProfilesModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProprietarySecurityPolicyModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityPolicyModelHelper;
@@ -64,7 +64,6 @@ import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.filesystems.FileObject;
 
 /**
  * Transport Security Profile definition
@@ -164,7 +163,7 @@ public class STSIssuedSupportingTokenProfile extends ProfileBase
     }
 
     public void enableSecureConversation(WSDLComponent component, boolean enable) {
-        ProfilesModelHelper.enableSecureConversation(component, enable);
+        ProfilesModelHelper.getInstance(PolicyModelHelper.getConfigVersion(component)).enableSecureConversation(component, enable);
     }
 
 }

@@ -56,7 +56,7 @@ final class DisableHintFix implements EnhancedFix {
     }
     
     public ChangeInfo implement() throws Exception {
-        HintsSettings.setEnabled(HintsSettings.getPreferences(rule, null), false);
+        HintsSettings.setEnabled(HintsSettings.getPreferences(manager, rule, null), false);
 
         manager.refreshHints(context);
 

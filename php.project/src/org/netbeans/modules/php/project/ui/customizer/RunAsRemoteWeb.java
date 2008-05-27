@@ -38,17 +38,25 @@
  */
 package org.netbeans.modules.php.project.ui.customizer;
 
-import org.netbeans.modules.php.project.connections.RemoteConnectionsPanel;
+import java.awt.Color;
+import java.util.List;
+import org.netbeans.modules.php.project.connections.ConfigManager;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Arrays;
+import java.util.Vector;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JTextField;
 import javax.swing.ListCellRenderer;
+import javax.swing.UIManager;
 import javax.swing.event.DocumentListener;
 import javax.swing.plaf.UIResource;
+import org.netbeans.modules.php.project.connections.RemoteConnection;
+import org.netbeans.modules.php.project.connections.RemoteConnections;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAsType;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.UploadFiles;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
@@ -61,6 +69,12 @@ import org.openide.util.NbBundle;
  */
 public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
     private static final long serialVersionUID = -559348988746891271L;
+    private static final RemoteConnection NO_REMOTE_CONNECTION = new RemoteConnection(
+            NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_NoRemoteConnection"), "", null, null, 0, null, false, null, 0); // NOI18N
+    private static final RemoteConnection MISSING_REMOTE_CONNECTION = new RemoteConnection(
+            NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_MissingRemoteConnection"), "", null, null, 0, null, false, null, 0); // NOI18N
+    private static final UploadFiles DEFAULT_UPLOAD_FILES = UploadFiles.ON_RUN;
+
     private final JLabel[] labels;
     private final JTextField[] textFields;
     private final String[] propertyNames;
@@ -96,6 +110,8 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         };
         assert labels.length == textFields.length && labels.length == propertyNames.length;
 
+        populateRemoteConnectionComboBox();
+        remoteConnectionComboBox.setRenderer(new RemoteConnectionRenderer());
         for (UploadFiles uploadFiles : UploadFiles.values()) {
             uploadFilesComboBox.addItem(uploadFiles);
         }
@@ -106,7 +122,16 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
             DocumentListener dl = new FieldUpdater(propertyNames[i], labels[i], textFields[i]);
             textFields[i].getDocument().addDocumentListener(dl);
         }
-        // XXX remote connection
+        // remote connection
+        ComboBoxSelectedItemConvertor remoteConnectionConvertor = new ComboBoxSelectedItemConvertor() {
+            public String convert(JComboBox comboBox) {
+                RemoteConnection remoteConnection = (RemoteConnection) comboBox.getSelectedItem();
+                assert remoteConnection != null;
+                return remoteConnection.getName();
+            }
+        };
+        remoteConnectionComboBox.addActionListener(new ComboBoxUpdater(PhpProjectProperties.REMOTE_CONNECTION, remoteConnectionLabel,
+                remoteConnectionComboBox, remoteConnectionConvertor));
         // remote upload
         ComboBoxSelectedItemConvertor remoteUploadConvertor = new ComboBoxSelectedItemConvertor() {
             public String convert(JComboBox comboBox) {
@@ -145,24 +170,21 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         for (int i = 0; i < textFields.length; i++) {
             textFields[i].setText(getValue(propertyNames[i]));
         }
-        // XXX remote connection
+        // remote connection
+        selectRemoteConnection();
         // remote upload
         UploadFiles uploadFiles = null;
         String remoteUpload = getValue(PhpProjectProperties.REMOTE_UPLOAD);
         if (remoteUpload == null) {
-            uploadFiles = getDefaultUploadFiles();
+            uploadFiles = DEFAULT_UPLOAD_FILES;
         } else {
             try {
                 uploadFiles = UploadFiles.valueOf(remoteUpload);
             } catch (IllegalArgumentException iae) {
-                uploadFiles = getDefaultUploadFiles();
+                uploadFiles = DEFAULT_UPLOAD_FILES;
             }
         }
         uploadFilesComboBox.setSelectedItem(uploadFiles);
-    }
-
-    private UploadFiles getDefaultUploadFiles() {
-        return UploadFiles.ON_RUN;
     }
 
     @Override
@@ -176,8 +198,13 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
             return;
         }
 
-        if (remoteConnectionComboBox.getSelectedItem() == null) {
+        RemoteConnection selected = (RemoteConnection) remoteConnectionComboBox.getSelectedItem();
+        assert selected != null;
+        if (selected == NO_REMOTE_CONNECTION) {
             validateCategory(NbBundle.getMessage(RunAsRemoteWeb.class, "MSG_NoConnectionSelected"));
+            return;
+        } else if (selected == MISSING_REMOTE_CONNECTION) {
+            validateCategory(NbBundle.getMessage(RunAsRemoteWeb.class, "MSG_NonExistingConnectionSelected"));
             return;
         }
         validateCategory(null);
@@ -186,6 +213,41 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
     private void validateCategory(String error) {
         getCategory().setErrorMessage(error);
         getCategory().setValid(error == null);
+    }
+
+    private void populateRemoteConnectionComboBox() {
+        if (!Boolean.getBoolean(RemoteConnections.DEBUG_PROPERTY)) {
+            remoteConnectionComboBox.addItem(NO_REMOTE_CONNECTION);
+            return;
+        }
+        List<RemoteConnection> connections = RemoteConnections.get().getConnections();
+        if (connections.isEmpty()) {
+            // no connections defined
+            connections = Arrays.asList(NO_REMOTE_CONNECTION);
+        }
+        DefaultComboBoxModel model = new DefaultComboBoxModel(new Vector<RemoteConnection>(connections));
+        remoteConnectionComboBox.setModel(model);
+    }
+
+    private void selectRemoteConnection() {
+        String remoteConnection = getValue(PhpProjectProperties.REMOTE_CONNECTION);
+        if (remoteConnection == null) {
+            remoteConnectionComboBox.setSelectedItem(NO_REMOTE_CONNECTION);
+            return;
+        }
+        int size = remoteConnectionComboBox.getModel().getSize();
+        for (int i = 0; i < size; ++i) {
+            RemoteConnection rc = (RemoteConnection) remoteConnectionComboBox.getItemAt(i);
+            if (remoteConnection.equals(rc.getName())
+                    || "".equals(remoteConnection)) { // NOI18N
+                // select existing or no connection formerly existed and now some were created => so select it
+                remoteConnectionComboBox.setSelectedItem(rc);
+                return;
+            }
+        }
+        // remote connection is missing (probably removed?)
+        remoteConnectionComboBox.addItem(MISSING_REMOTE_CONNECTION);
+        remoteConnectionComboBox.setSelectedItem(MISSING_REMOTE_CONNECTION);
     }
 
     /** This method is called from within the constructor to
@@ -323,14 +385,21 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void manageRemoteConnectionButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_manageRemoteConnectionButtonActionPerformed
-        NotifyDescriptor notifyDescriptor = new NotifyDescriptor(
-                "Not implemented yet.", // NOI18N
-                "TODO", // NOI18N
-                NotifyDescriptor.OK_CANCEL_OPTION,
-                NotifyDescriptor.INFORMATION_MESSAGE,
-                new Object[] {NotifyDescriptor.OK_OPTION},
-                NotifyDescriptor.OK_OPTION);
-        DialogDisplayer.getDefault().notify(notifyDescriptor);
+        if (!Boolean.getBoolean(RemoteConnections.DEBUG_PROPERTY)) {
+            NotifyDescriptor notifyDescriptor = new NotifyDescriptor(
+                    "Not implemented yet.", // NOI18N
+                    "TODO", // NOI18N
+                    NotifyDescriptor.OK_CANCEL_OPTION,
+                    NotifyDescriptor.INFORMATION_MESSAGE,
+                    new Object[] {NotifyDescriptor.OK_OPTION},
+                    NotifyDescriptor.OK_OPTION);
+            DialogDisplayer.getDefault().notify(notifyDescriptor);
+            return;
+        }
+        if (RemoteConnections.get().openManager()) {
+            populateRemoteConnectionComboBox();
+            selectRemoteConnection();
+        }
     }//GEN-LAST:event_manageRemoteConnectionButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -392,6 +461,43 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
             RunAsRemoteWeb.this.putValue(propName, value);
             RunAsRemoteWeb.this.markAsModified(label, propName, value);
             validateFields();
+        }
+    }
+
+    private static class RemoteConnectionRenderer extends JLabel implements ListCellRenderer, UIResource {
+        private static final long serialVersionUID = 93621381917558630L;
+
+        public RemoteConnectionRenderer() {
+            setOpaque(true);
+        }
+
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            assert value instanceof RemoteConnection;
+            setName("ComboBox.listRenderer"); // NOI18N
+            RemoteConnection remoteConnection = (RemoteConnection) value;
+            setText(remoteConnection.getDisplayName());
+            setIcon(null);
+            if (isSelected) {
+                setBackground(list.getSelectionBackground());
+            } else {
+                setBackground(list.getBackground());
+            }
+            setForeground(getForeground(remoteConnection, list, isSelected));
+            return this;
+        }
+
+        private Color getForeground(RemoteConnection remoteConnection, JList list, boolean isSelected) {
+            if (remoteConnection == MISSING_REMOTE_CONNECTION
+                    || remoteConnection == NO_REMOTE_CONNECTION) {
+                return UIManager.getColor("nb.errorForeground"); // NOI18N
+            }
+            return isSelected ? list.getSelectionForeground() : list.getForeground();
+        }
+
+        @Override
+        public String getName() {
+            String name = super.getName();
+            return name == null ? "ComboBox.renderer" : name; // NOI18N
         }
     }
 

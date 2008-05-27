@@ -165,6 +165,15 @@ made subject to such option by the copyright holder.
                 </folder>
             </folder>
         </folder>
+        <folder name="content">
+            <folder name="unknown">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-languages-dataobject-LanguagesDataLoader.instance">
+                        <attr name="position" intvalue="99999"/>
+                    </file>
+                </folder>
+            </folder>
+        </folder>
         <folder name="Languages">
             <folder name="Actions">
                 <file name="org-openide-actions-OpenAction.instance">
