@@ -621,22 +621,13 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
                 // either starts the processing of the queue immediatelly
                 // (if we are in AWT-Event thread) or uses 
                 // SwingUtilities.invokeLater to do so
-                // #126560 - queue all requests which come under Children.MUTEX write lock before running
-                if (Children.MUTEX.isWriteAccess()) {
-                    Children.MUTEX.postReadRequest(this);
-                } else {
-                    Mutex.EVENT.writeAccess(this);
-                }
+                Mutex.EVENT.writeAccess(this);
             }
         }
 
         /** Processes the queue.
          */
         public void run() {
-            if (!Mutex.EVENT.isWriteAccess()) {
-                Mutex.EVENT.writeAccess(this);
-                return;
-            }
             Enumeration<Runnable> en;
 
             synchronized (this) {
@@ -655,12 +646,6 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
                 LOG.log(Level.FINER, "Running {0}", r); // NOI18N
                 Children.MUTEX.readAccess(r); // run the update under Children.MUTEX
                 LOG.log(Level.FINER, "Finished {0}", r); // NOI18N
-                
-                // #126560 - remove subsequent element after structural change
-                if (r instanceof PropLeafChange && en.hasMoreElements()) {
-                    r = en.nextElement();
-                    LOG.log(Level.FINER, "Removing {0}", r); // NOI18N
-                }
             }
             LOG.log(Level.FINER, "Queue processing over"); // NOI18N
         }
