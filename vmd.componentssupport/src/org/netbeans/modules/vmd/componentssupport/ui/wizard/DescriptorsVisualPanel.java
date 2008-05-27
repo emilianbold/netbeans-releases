@@ -43,6 +43,9 @@
 package org.netbeans.modules.vmd.componentssupport.ui.wizard;
 
 import java.awt.Dialog;
+import java.util.List;
+import java.util.Map;
+import org.netbeans.modules.vmd.componentssupport.ui.helpers.CustomComponentHelper;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
 
@@ -68,7 +71,10 @@ public class DescriptorsVisualPanel extends javax.swing.JPanel {
 
         CompDescriptorsListModel model = 
                 (CompDescriptorsListModel)myCompDescrList.getModel();
-        model.updateModel();
+        List<Map<String, Object>> components 
+                = (List<Map<String, Object>>)myWizardDescriptor.getProperty(
+                        CustomComponentWizardIterator.CUSTOM_COMPONENTS);
+        model.updateModel(components);
     }
 
     
@@ -152,7 +158,7 @@ public class DescriptorsVisualPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
 private void addPressed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addPressed
-    WizardDescriptor.Iterator iterator = new NewComponentDescriptor( myWizardDescriptor );
+    WizardDescriptor.Iterator iterator = new NewComponentDescriptor(myWizardDescriptor);
     myInnerDescriptor = new WizardDescriptor( iterator );
     myInnerDescriptor.putProperty( AUTO_WIZARD_STYLE, true );
     myInnerDescriptor.putProperty( CONTENT_DISPLAYED, true );
@@ -168,13 +174,10 @@ private void removePressed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_re
     // remove in UI
     ((CompDescriptorsListModel)myCompDescrList.getModel()).remove(index);
     
-    // remove from WizardDescriptor
-    //List<String> libNames = (List<String>)myWizardDescriptor.getProperty( 
-    //            CustomComponentWizardIterator.LIB_NAMES);
-    //List<String> libDisplayNames = (List<String>)myWizardDescriptor.getProperty( 
-    //            CustomComponentWizardIterator.LIB_DISPLAY_NAMES);
-    //libNames.remove(index);
-    //libDisplayNames.remove(index);
+    //remove from WizardDescriptor
+    List<Map> components = (List<Map>)myWizardDescriptor.getProperty( 
+                CustomComponentWizardIterator.CUSTOM_COMPONENTS);
+    components.remove(index);
 }//GEN-LAST:event_removePressed
 
 
@@ -189,8 +192,25 @@ private void removePressed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_re
     
     private class CompDescriptorsListModel extends EditableListModel{
 
-        public void updateModel(){
+        public void updateModel(List<Map<String,Object>> components){
+            if (components == null){
+                return; 
+            }
             
+            // clean
+            removeAllElements();
+            
+            for (Map<String, Object> component : components){
+                String prefix = (String)component.get(
+                        NewComponentDescriptor.CC_PREFIX);
+                String typeID = (String)component.get(
+                        NewComponentDescriptor.CD_TYPE_ID);
+                
+                assert prefix != null && typeID != null
+                        : "Component data is not consistent";
+                
+                addElement(prefix + " [ " + typeID + " ]"); // NOI18N 
+            }
         }
     }
     

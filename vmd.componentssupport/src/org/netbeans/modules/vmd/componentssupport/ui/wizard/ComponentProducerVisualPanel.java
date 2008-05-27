@@ -45,6 +45,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
@@ -67,6 +69,8 @@ final class ComponentProducerVisualPanel extends JPanel {
                                               = "MSG_CP_EmptyClassName";        // NOI18N 
     private static final String MSG_ERR_CLASS_NAME_INVALID 
                                               = "MSG_CP_InvalidClassName";      // NOI18N 
+    private static final String MSG_ERR_CLASS_NAME_EXISTS 
+                                              = "MSG_CP_ExistingClassName";          // NOI18N 
     private static final String MSG_ERR_PALETTE_DISP_NAME_EMPTY 
                                               = "MSG_CP_EmptyPaletteDispName";  // NOI18N 
     private static final String MSG_ERR_LIB_NAME_EMPTY 
@@ -242,6 +246,15 @@ final class ComponentProducerVisualPanel extends JPanel {
                 NewComponentDescriptor.CP_VALID_CUSTOM);
     }
     
+    private List<Map<String, Object>> getExistingComponents(){
+        Object value = mySettings.getProperty(
+                NewComponentDescriptor.EXISTING_COMPONENTS);
+        if (value == null || !(value instanceof List)){
+            return null;
+        }
+        return (List<Map<String, Object>>)value;
+    }
+    
     private boolean checkValidity(){
         if (!isCPClassNameValid()){
             return false;
@@ -304,6 +317,10 @@ final class ComponentProducerVisualPanel extends JPanel {
             setError(NbBundle.getMessage(ComponentProducerVisualPanel.class, 
                     MSG_ERR_CLASS_NAME_INVALID));
             return false;
+        } else if (isCPClassNameExist(name)){
+            setError(NbBundle.getMessage(ComponentProducerVisualPanel.class, 
+                    MSG_ERR_CLASS_NAME_EXISTS));
+            return false;
         }
         return true;
     }
@@ -329,6 +346,25 @@ final class ComponentProducerVisualPanel extends JPanel {
             return false;
         }
         return true;
+    }
+
+    private boolean isCPClassNameExist(String name){
+        return checkIfComponentValueExists(
+                NewComponentDescriptor.CP_CLASS_NAME, name);
+    }
+    
+    private boolean checkIfComponentValueExists(String key, Object value){
+        List<Map<String, Object>> list = getExistingComponents();
+        if (list == null){
+            return false;
+        }
+        for (Map<String, Object> comp : list){
+            Object testValue = comp.get(key);
+            if (testValue.equals(value)){
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

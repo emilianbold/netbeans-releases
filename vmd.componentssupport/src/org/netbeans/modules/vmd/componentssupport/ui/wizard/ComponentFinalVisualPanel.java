@@ -130,6 +130,7 @@ final class ComponentFinalVisualPanel extends JPanel {
         
     }
 
+    // TODO get path from helper
     private void addCDToList(List<String> created, List<String> modified){
         String dotCodeNameBase = getCodeNameBase();
         String name = getCDClassName();
@@ -137,10 +138,10 @@ final class ComponentFinalVisualPanel extends JPanel {
         String codeNameBase = dotCodeNameBase.replace('.', '/'); // NOI18N
         
         created.add(
-                codeNameBase + "/" + BaseHelper.DESCRIPTORS + 
+                codeNameBase + "/" + BaseHelper.DESCRIPTORS + "/" + 
                 name + BaseHelper.JAVA_EXTENSION); // NOI18N
     }
-    
+    // TODO get path from helper
     private void addProducerToList(List<String> created, List<String> modified){
         String dotCodeNameBase = getCodeNameBase();
         String name = getProducerClassName();
@@ -148,7 +149,7 @@ final class ComponentFinalVisualPanel extends JPanel {
         String codeNameBase = dotCodeNameBase.replace('.', '/'); // NOI18N
         
         created.add(
-                codeNameBase + "/" + BaseHelper.PRODUCERS + 
+                codeNameBase + "/" + BaseHelper.PRODUCERS + "/" +
                 name + BaseHelper.JAVA_EXTENSION); // NOI18N
     }
     
@@ -179,7 +180,7 @@ final class ComponentFinalVisualPanel extends JPanel {
         File icon = new File(iconPath);
         String name = icon.getName();
         
-        return codeNameBase + "/" + BaseHelper.RESOURCES + name;
+        return codeNameBase + "/" + BaseHelper.RESOURCES + "/" + name;
     }
     
     private static String getMessage(String key, Object... args) {

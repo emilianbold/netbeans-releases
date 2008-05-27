@@ -49,8 +49,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.text.MessageFormat;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.zip.ZipEntry;
@@ -63,6 +66,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.vmd.componentssupport.ui.helpers.BaseHelper;
+import org.netbeans.modules.vmd.componentssupport.ui.helpers.CustomComponentHelper;
 import org.netbeans.modules.vmd.componentssupport.ui.helpers.JavaMELibsConfigurationHelper;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -124,6 +128,9 @@ public class CustomComponentWizardIterator implements
     public static final String LIB_DISPLAY_NAMES
                                             = "libDisplayNames";                 // NOI18N
     public static final String LIB_NAMES    = "libNames";                        // NOI18N
+    // added Custom components
+    public static final String CUSTOM_COMPONENTS  
+                                            = "customComponents";                // NOI18N
 
     // parameters for project
     private static final String CODE_NAME_PARAM 
@@ -170,6 +177,7 @@ public class CustomComponentWizardIterator implements
                         };
     }
 
+    // TODO add all created elements into result set.
     public Set/* <FileObject> */instantiate(/* ProgressHandle handle */)
             throws IOException
     {
@@ -200,9 +208,11 @@ public class CustomComponentWizardIterator implements
         }
         
         Project createdProject = FileOwnerQuery.getOwner(dir);
+        // store ME Libraries
         JavaMELibsConfigurationHelper
                 .configureJavaMELibs(createdProject, myWizard);
-
+        // store custom component descriptors
+        configureComponents(createdProject, myWizard);
         return resultSet;
     }
 
@@ -279,6 +289,26 @@ public class CustomComponentWizardIterator implements
     }
 
     public final void removeChangeListener( ChangeListener l ) {
+    }
+    
+    private static Set<FileObject> configureComponents(Project project, WizardDescriptor wizard)
+            throws IOException 
+    {
+            List<Map<String, Object>> components = 
+                    (List<Map<String, Object>>) wizard.getProperty(
+                    CustomComponentWizardIterator.CUSTOM_COMPONENTS);
+            if (components == null){
+                return Collections.EMPTY_SET;
+            }
+            
+            Set<FileObject> resultSet = new LinkedHashSet<FileObject>();
+            for(Map<String, Object> component : components){
+                CustomComponentHelper helper = new CustomComponentHelper.
+                        RealInstantiationHelper(project, component);
+                resultSet.addAll( helper.instantiate() );
+            }
+            
+            return Collections.EMPTY_SET;
     }
     
     private static void unZipFile( InputStream source, FileObject projectRoot ,

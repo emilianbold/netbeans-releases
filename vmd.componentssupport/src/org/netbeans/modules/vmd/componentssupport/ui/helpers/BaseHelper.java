@@ -39,14 +39,43 @@
 
 package org.netbeans.modules.vmd.componentssupport.ui.helpers;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Reader;
+import java.io.Writer;
+import java.nio.charset.Charset;
+import java.text.DateFormat;
+import java.util.Date;
+import java.util.Locale;
+import java.util.Map;
+import java.util.StringTokenizer;
+import javax.script.ScriptContext;
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
+import javax.swing.text.PlainDocument;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
+import org.openide.loaders.CreateFromTemplateAttributesProvider;
+import org.openide.loaders.DataObject;
+import org.openide.text.IndentEngine;
+import org.openide.util.Lookup;
+import org.openide.xml.XMLUtil;
+import org.w3c.dom.Document;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 /**
  *
@@ -54,14 +83,19 @@ import org.openide.filesystems.Repository;
  */
 public class BaseHelper {
 
+    public static final String EXAMPLE_BASE_NAME     = "org.yourorghere.";         // NOI18N
+
+    public static final String SYSTEM_USER          = "user.name"; //NOI18N
+
+    public static final String NULL             = "null";                        // NOI18N
     public static final String UTF_8            = "UTF-8";                       // NOI18N
     public static final String XML_EXTENSION    = ".xml";                        // NOI18N
     public static final String ZIP_EXTENSION    = ".zip";                        // NOI18N
     public static final String JAVA_EXTENSION   = ".java";                        // NOI18N
 
-    public static final String RESOURCES        = "src/";                        // NOI18N
-    public static final String DESCRIPTORS      = "descriptors/";                // NOI18N
-    public static final String PRODUCERS        = "producers/";                  // NOI18N
+    public static final String RESOURCES        = "resources";                        // NOI18N
+    public static final String DESCRIPTORS      = "descriptors";                // NOI18N
+    public static final String PRODUCERS        = "producers";                  // NOI18N
     public static final String SRC              = "src/";                        // NOI18N
     public static final String BUNDLE_PROPERTIES 
                                                 = "Bundle.properties";           // NOI18N
@@ -69,6 +103,19 @@ public class BaseHelper {
 
     private static final String TEMPLATES_LAYER_FOLDER        
                                     = "Templates/MobilityCustomComponent-files/";// NOI18N
+    
+    private static final String TPL_ENGINE          = "freemarker";             //NOI18N
+    private static final String TPL_TOKEN_NAME_LOWER = "name";                  //NOI18N
+    private static final String TPL_TOKEN_USER      = "user";                   //NOI18N
+    private static final String TPL_TOKEN_DATE      = "date";                   //NOI18N
+    private static final String TPL_TOKEN_TIME      = "time";                   //NOI18N
+    private static final String TPL_TOKEN_NAME_AND_EXT = "nameAndExt";          //NOI18N
+    private static final String TPL_TOKEN_ENCODING  = "encoding";               //NOI18N
+
+    public static String getDefaultCodeNameBase(String projectName){
+            String dotName = EXAMPLE_BASE_NAME + projectName;
+            return normalizeCNB(dotName);
+    }
     
     /**
      * Convenience method for loading {@link EditableProperties} from a {@link
@@ -126,8 +173,39 @@ public class BaseHelper {
     }
 
     
+    /**
+     * copies given FileObject to targetPath relative to project torectory.
+     * @param folder FileObject where given content FileObject should be copied
+     * @param targetPath path relative to Project directory 
+     * where given FileObject should be copied
+     * @param content FileObject to copy
+     * @param tokens tokens in Freemarker format to replace in copied content
+     * @throws java.io.IOException
+     */
+    public static FileObject doCopyFile(FileObject folder, String targetPath, 
+            FileObject content, Map<String, String> tokens) 
+            throws IOException
+    {
+        FileObject target = FileUtil.createData(folder, targetPath);
+        if (tokens == null) {
+            copyByteAfterByte(content, target);
+        } else {
+            copyAndSubstituteTokens(content, target, tokens);
+        }
+        return target;
+    }
+    
     public static void copyByteAfterByte(FileObject source, FileObject target) throws IOException {
             InputStream is = source.getInputStream();
+            try {
+                copyByteAfterByte(is, target);
+            } finally {
+                is.close();
+            }
+    }
+
+    public static void copyByteAfterByte(File source, FileObject target) throws IOException {
+            InputStream is = new FileInputStream(source);
             try {
                 copyByteAfterByte(is, target);
             } finally {
@@ -146,4 +224,88 @@ public class BaseHelper {
             out.close();
         }
     }
+
+    public static String normalizeCNB(String value) {
+        StringTokenizer tk = new StringTokenizer(
+                value.toLowerCase(Locale.ENGLISH), ".", true); // NOI18N
+        StringBuffer normalizedCNB = new StringBuffer();
+        boolean delimExpected = false;
+        while (tk.hasMoreTokens()) {
+            String namePart = tk.nextToken();
+            if (!delimExpected) {
+                if (namePart.equals(".")) { //NOI18N
+                    continue;
+                }
+                for (int i = 0; i < namePart.length(); i++) {
+                    char c = namePart.charAt(i);
+                    if (i == 0) {
+                        if (!Character.isJavaIdentifierStart(c)) {
+                            continue;
+                        }
+                    } else {
+                        if (!Character.isJavaIdentifierPart(c)) {
+                            continue;
+                        }
+                    }
+                    normalizedCNB.append(c);
+                }
+            } else {
+                if (namePart.equals(".")) { //NOI18N
+                    normalizedCNB.append(namePart);
+                }
+            }
+            delimExpected = !delimExpected;
+        }
+        // also be sure there is no '.' left at the end of the cnb
+        return normalizedCNB.toString().replaceAll("\\.$", ""); // NOI18N
+    }
+
+    private static void copyAndSubstituteTokens(FileObject content, FileObject target, Map<String,String> tokens) throws IOException {
+        ScriptEngineManager scriptEngineManager = new ScriptEngineManager();
+        ScriptEngine engine = scriptEngineManager.getEngineByName(TPL_ENGINE);
+        assert engine != null : scriptEngineManager.getEngineFactories();
+        Map<String,Object> bindings = engine.getContext().getBindings(ScriptContext.ENGINE_SCOPE);
+        String basename = target.getName();
+        for (CreateFromTemplateAttributesProvider provider : Lookup.getDefault().lookupAll(CreateFromTemplateAttributesProvider.class)) {
+            DataObject d = DataObject.find(content);
+            Map<String,?> map = provider.attributesFor(d, d.getFolder(), basename);
+            if (map != null) {
+                bindings.putAll(map);
+            }
+        }
+        bindings.put(TPL_TOKEN_NAME_LOWER, basename.replaceFirst("\\.[^./]+$", "")); // NOI18N
+        bindings.put(TPL_TOKEN_USER, System.getProperty(SYSTEM_USER)); 
+        Date d = new Date();
+        bindings.put(TPL_TOKEN_DATE, DateFormat.getDateInstance().format(d)); 
+        bindings.put(TPL_TOKEN_TIME, DateFormat.getTimeInstance().format(d)); 
+        bindings.put(TPL_TOKEN_NAME_AND_EXT, target.getNameExt()); 
+        bindings.putAll(tokens);
+        Charset targetEnc = FileEncodingQuery.getEncoding(target);
+        Charset sourceEnc = FileEncodingQuery.getEncoding(content);
+        bindings.put(TPL_TOKEN_ENCODING, targetEnc.name());
+        Writer w = new OutputStreamWriter(target.getOutputStream(), targetEnc);
+        try {
+            IndentEngine format = IndentEngine.find(content.getMIMEType());
+            if (format != null) {
+                PlainDocument doc = new PlainDocument();
+                doc.putProperty(PlainDocument.StreamDescriptionProperty, content);
+                w = format.createWriter(doc, 0, w);
+            }
+            engine.getContext().setWriter(w);
+            engine.getContext().setAttribute(FileObject.class.getName(), content, ScriptContext.ENGINE_SCOPE);
+            engine.getContext().setAttribute(ScriptEngine.FILENAME, content.getNameExt(), ScriptContext.ENGINE_SCOPE);
+            Reader is = new InputStreamReader(content.getInputStream(), sourceEnc);
+            try {
+                engine.eval(is);
+            } catch (ScriptException x) {
+                throw (IOException) new IOException(x.toString()).initCause(x);
+            } finally {
+                is.close();
+            }
+        } finally {
+            w.close();
+        }
+    }
+    
+
 }

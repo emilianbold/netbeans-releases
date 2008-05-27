@@ -391,6 +391,7 @@ class CustomComponentVisualPanel extends JPanel implements DocumentListener {
     private javax.swing.JTextField projectNameTextField;
     // End of variables declaration//GEN-END:variables
 
+    // TODO: use FileUtil.findFreeFolderName here
     private String getDefaultFreeName(File projectLocation) {
         int i = 1;
         String projectName;

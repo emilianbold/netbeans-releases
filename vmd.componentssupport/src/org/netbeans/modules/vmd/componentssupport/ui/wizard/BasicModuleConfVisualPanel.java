@@ -48,6 +48,7 @@ import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+import org.netbeans.modules.vmd.componentssupport.ui.helpers.BaseHelper;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -78,8 +79,6 @@ final class BasicModuleConfVisualPanel extends JPanel {
     private static final String ACS_DESC      = "ACS_BasicConfVisualPanel"; // NOI18N
 
     private static final long serialVersionUID = -7699370587627049750L;
-    
-    static final String EXAMPLE_BASE_NAME     = "org.yourorghere.";         // NOI18N
     
     // TODO should perform all checks together on any change. current code (copied)
     // allows incorrect behavior in some cases.
@@ -147,41 +146,6 @@ final class BasicModuleConfVisualPanel extends JPanel {
         return delimExpected;
     }
     
-    public static String normalizeCNB(String value) {
-        StringTokenizer tk = new StringTokenizer(
-                value.toLowerCase(Locale.ENGLISH), ".", true); // NOI18N
-        StringBuffer normalizedCNB = new StringBuffer();
-        boolean delimExpected = false;
-        while (tk.hasMoreTokens()) {
-            String namePart = tk.nextToken();
-            if (!delimExpected) {
-                if (namePart.equals(".")) { //NOI18N
-                    continue;
-                }
-                for (int i = 0; i < namePart.length(); i++) {
-                    char c = namePart.charAt(i);
-                    if (i == 0) {
-                        if (!Character.isJavaIdentifierStart(c)) {
-                            continue;
-                        }
-                    } else {
-                        if (!Character.isJavaIdentifierPart(c)) {
-                            continue;
-                        }
-                    }
-                    normalizedCNB.append(c);
-                }
-            } else {
-                if (namePart.equals(".")) { //NOI18N
-                    normalizedCNB.append(namePart);
-                }
-            }
-            delimExpected = !delimExpected;
-        }
-        // also be sure there is no '.' left at the end of the cnb
-        return normalizedCNB.toString().replaceAll("\\.$", ""); // NOI18N
-    }
-    
     private void checkCodeNameBase() {
         String dotName = getCodeNameBaseValue();
         if (!isValidJavaFQN(dotName)) {
@@ -235,8 +199,8 @@ final class BasicModuleConfVisualPanel extends JPanel {
         mySettings = settings;
         String cnb = getCodeNameBase();
         codeNameBaseValue.setText(cnb);
-        if (cnb.startsWith(EXAMPLE_BASE_NAME)) {
-            codeNameBaseValue.select(0, EXAMPLE_BASE_NAME.length() - 1);
+        if (cnb.startsWith(BaseHelper.EXAMPLE_BASE_NAME)) {
+            codeNameBaseValue.select(0, BaseHelper.EXAMPLE_BASE_NAME.length() - 1);
         }
         String dn = getProjectDisplayName();
         displayNameValue.setText(dn);
@@ -260,16 +224,11 @@ final class BasicModuleConfVisualPanel extends JPanel {
         String projectName = (String)mySettings.getProperty( 
                 CustomComponentWizardIterator.PROJECT_NAME);
         if ( codeBaseName == null ){
-            codeBaseName = getDefaultCodeNameBase(projectName);
+            codeBaseName = BaseHelper.getDefaultCodeNameBase(projectName);
         }
         return codeBaseName;
     }
 
-    public static String getDefaultCodeNameBase(String projectName){
-            String dotName = EXAMPLE_BASE_NAME + projectName;
-            return normalizeCNB(dotName);
-    }
-    
     /** Stores collected data into model. */
     void storeData( WizardDescriptor descriptor ) {
         descriptor.putProperty( CustomComponentWizardIterator.CODE_BASE_NAME, 
