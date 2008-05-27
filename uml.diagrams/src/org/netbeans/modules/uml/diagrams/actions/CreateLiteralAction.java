@@ -40,36 +40,53 @@
  */
 package org.netbeans.modules.uml.diagrams.actions;
 
-import org.netbeans.modules.uml.core.metamodel.core.constructs.IClass;
 import org.netbeans.modules.uml.core.metamodel.core.constructs.IEnumeration;
-import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IClassifier;
-import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IInterface;
-import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IOperation;
+import org.netbeans.modules.uml.core.metamodel.core.constructs.IEnumerationLiteral;
+import org.netbeans.modules.uml.core.preferenceframework.PreferenceAccessor;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CookieAction;
 
-public final class CreateOperationAction extends CookieAction
+public final class CreateLiteralAction extends CookieAction
 {
 
     protected void performAction(Node[] activatedNodes)
     {
-        IClassifier classifier = activatedNodes[0].getLookup().lookup(IClassifier.class);
-        if(classifier == null)
+        IEnumeration enumeration = activatedNodes[0].getLookup().lookup(IEnumeration.class);
+        if(enumeration == null)
         {
-            IOperation op = activatedNodes[0].getLookup().lookup(IOperation.class);
-            if(op != null)
+            IEnumerationLiteral literal = activatedNodes[0].getLookup().lookup(IEnumerationLiteral.class);
+            if(literal != null)
             {
-                classifier = op.getFeaturingClassifier();
+                if(literal.getOwner() instanceof IEnumeration)
+                {
+                    enumeration = (IEnumeration) literal.getOwner();
+                }
             }
         }
         
-        if(classifier != null)
+        if(enumeration != null)
         {
-            IOperation op = classifier.createOperation3();
-            classifier.addOperation(op);
+            IEnumerationLiteral literal = enumeration.createLiteral(retrieveDefaultName() );
+//            enumeration.addLiteral(literal);
         }
+    }
+    
+    /**
+     *
+     * Retrieves the default name for use for model elements that are just
+     * being created.
+     *
+     * @return the default name of the model element
+     *
+     */
+    protected String retrieveDefaultName() 
+    {
+            String name = "";
+            PreferenceAccessor pref = PreferenceAccessor.instance();
+            name = pref.getDefaultElementName();
+            return name;
     }
 
     protected int mode()
@@ -79,12 +96,12 @@ public final class CreateOperationAction extends CookieAction
 
     public String getName()
     {
-        return NbBundle.getMessage(CreateOperationAction.class, "CTL_CreateOperationsAction");
+        return NbBundle.getMessage(CreateLiteralAction.class, "CTL_CreateLiteralsAction");
     }
 
     protected Class[] cookieClasses()
     {
-        return new Class[]{IClass.class, IInterface.class, IEnumeration.class, IOperation.class};
+        return new Class[]{IEnumeration.class, IEnumerationLiteral.class};
     }
 
     @Override
