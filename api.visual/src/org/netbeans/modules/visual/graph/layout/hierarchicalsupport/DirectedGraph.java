@@ -110,7 +110,9 @@ public class DirectedGraph<N, E> {
 
         for (N node : nodes) {
             Vertex vertex = getVertex(node);
+
             Widget widget = scene.findWidget(node);
+            if (widget == null) continue ;  //why is it null
             Rectangle bounds = widget.getBounds();
 
             Dimension size = new Dimension(bounds.width, bounds.height);
