@@ -71,8 +71,8 @@ public class ChildrenKeysTest extends NbTestCase {
     }
     
     public static junit.framework.Test suite() {
-        return new ChildrenKeysTest("testGetNodesFromTwoThreads57769");
-        //return new NbTestSuite(ChildrenKeysTest.class);
+        //return new ChildrenKeysTest("testGetNodesFromTwoThreads57769");
+        return new NbTestSuite(ChildrenKeysTest.class);
     }
     
     @Override
@@ -80,12 +80,11 @@ public class ChildrenKeysTest extends NbTestCase {
         return Level.INFO;
     }
 
-    
-
-    protected void setUp () throws Exception {
+    @Override
+    protected void setUp() throws Exception {
         err = Log.enable("", Level.ALL);
         LOG = Logger.getLogger("test." + getName());
-    }    
+    }
 
     public void testGetNodesFromTwoThreads57769() throws Exception {
         final Ticker t1 = new Ticker();
