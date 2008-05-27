@@ -41,10 +41,16 @@
 
 package org.netbeans.modules.websvc.wsitconf.wsdlmodelext;
 
+import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
+import java.util.HashMap;
 import org.netbeans.modules.websvc.wsitmodelext.addressing.Addressing10WsdlQName;
 import org.netbeans.modules.websvc.wsitmodelext.addressing.Addressing10WsdlUsingAddressing;
+import org.netbeans.modules.websvc.wsitmodelext.addressing.Addressing13WsdlAddressing;
+import org.netbeans.modules.websvc.wsitmodelext.addressing.Addressing13WsdlAnonymousResponses;
+import org.netbeans.modules.websvc.wsitmodelext.addressing.Addressing13WsdlQName;
 import org.netbeans.modules.websvc.wsitmodelext.policy.All;
 import org.netbeans.modules.websvc.wsitmodelext.policy.Policy;
+import org.netbeans.modules.websvc.wsitmodelext.policy.PolicyQName;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 
 /**
@@ -53,14 +59,32 @@ import org.netbeans.modules.xml.wsdl.model.Binding;
  */
 public class AddressingModelHelper {
     
+    private static HashMap<ConfigVersion, AddressingModelHelper> instances =
+            new HashMap<ConfigVersion, AddressingModelHelper>();
+    private ConfigVersion configVersion = ConfigVersion.CONFIG_1_2;
+
     /**
      * Creates a new instance of AddressingModelHelper
      */
-    public AddressingModelHelper() {
+    private AddressingModelHelper(ConfigVersion configVersion) {
+        this.configVersion = configVersion;
+    }
+
+    public static final AddressingModelHelper getInstance(ConfigVersion configVersion) {
+        AddressingModelHelper instance = instances.get(configVersion);
+        if (instance == null) {
+            instance = new AddressingModelHelper(configVersion);
+            instances.put(configVersion, instance);
+        }
+        return instance;
     }
     
-    public static Addressing10WsdlUsingAddressing getUsingAddressing(Policy p) {
-        return (Addressing10WsdlUsingAddressing) PolicyModelHelper.getTopLevelElement(p, Addressing10WsdlUsingAddressing.class);        
+    private static Addressing10WsdlUsingAddressing getUsingAddressing(Policy p) {
+        return (Addressing10WsdlUsingAddressing) PolicyModelHelper.getTopLevelElement(p, Addressing10WsdlUsingAddressing.class,false);        
+    }
+
+    private static Addressing13WsdlAddressing getAddressing(Policy p) {
+        return (Addressing13WsdlAddressing) PolicyModelHelper.getTopLevelElement(p, Addressing13WsdlAddressing.class,false);        
     }
     
     // checks if Addressing is enabled in the config wsdl on specified binding
@@ -68,23 +92,38 @@ public class AddressingModelHelper {
         Policy p = PolicyModelHelper.getPolicyForElement(b);
         if (p != null) {
             Addressing10WsdlUsingAddressing addrAssertion = getUsingAddressing(p);
-            return (addrAssertion != null);
+            if (addrAssertion != null) return true;
+            Addressing13WsdlAddressing addr13Assertion = getAddressing(p);
+            if (addr13Assertion != null) return true;
         }
         return false;
     }
     
     // enables Addressing in the config wsdl on specified binding
-    public static void enableAddressing(Binding b) {
-        All a = PolicyModelHelper.createPolicy(b, false);
-        PolicyModelHelper.createElement(a, Addressing10WsdlQName.USINGADDRESSING.getQName(), Addressing10WsdlUsingAddressing.class, false);
+    public void enableAddressing(Binding b) {
+        if (configVersion == ConfigVersion.CONFIG_1_0) {
+            PolicyModelHelper pmh = PolicyModelHelper.getInstance(configVersion);
+            All a = pmh.createPolicy(b, false);
+            pmh.createElement(a, Addressing10WsdlQName.USINGADDRESSING.getQName(), Addressing10WsdlUsingAddressing.class, false);
+        } else {
+            PolicyModelHelper pmh = PolicyModelHelper.getInstance(configVersion);
+            All a = pmh.createPolicy(b, false);
+            Addressing13WsdlAddressing addressing = pmh.createElement(a, Addressing13WsdlQName.ADDRESSING.getQName(configVersion), Addressing13WsdlAddressing.class, false);
+            Policy p = pmh.createElement(addressing, PolicyQName.POLICY.getQName(configVersion), Policy.class, false);
+            pmh.createElement(p, Addressing13WsdlQName.ANONYMOUSRESPONSES.getQName(configVersion), Addressing13WsdlAnonymousResponses.class, false);
+        }
     }
 
     // disables Addressing in the config wsdl on specified binding
     public static void disableAddressing(Binding b) {
         Policy p = PolicyModelHelper.getPolicyForElement(b);
-        Addressing10WsdlUsingAddressing a = getUsingAddressing(p);
-        if (a != null) {
-            PolicyModelHelper.removeElement(a.getParent(), Addressing10WsdlUsingAddressing.class, false);
+        Addressing10WsdlUsingAddressing a10 = getUsingAddressing(p);
+        Addressing13WsdlAddressing a13 = getAddressing(p);
+        if (a10 != null) {
+            PolicyModelHelper.removeElement(a10.getParent(), Addressing10WsdlUsingAddressing.class, false);
+        }
+        if (a13 != null) {
+            PolicyModelHelper.removeElement(a13.getParent(), Addressing13WsdlAddressing.class, false);
         }
         PolicyModelHelper.cleanPolicies(b);
     }

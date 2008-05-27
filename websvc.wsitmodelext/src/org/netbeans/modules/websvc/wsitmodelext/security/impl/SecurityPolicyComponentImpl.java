@@ -41,40 +41,27 @@
 
 package org.netbeans.modules.websvc.wsitmodelext.security.impl;
 
+import org.netbeans.modules.websvc.wsitmodelext.GenericComponentImpl;
 import org.netbeans.modules.websvc.wsitmodelext.security.SecurityPolicyQName;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.wsdl.model.spi.GenericExtensibilityElement;
-import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
 import org.w3c.dom.Element;
 
 /**
  *
  * @author MartinGrebac
  */
-public abstract class SecurityPolicyComponentImpl extends GenericExtensibilityElement {
+public abstract class SecurityPolicyComponentImpl extends GenericComponentImpl {
     
     /**
      * Creates a new instance of SecurityPolicyComponentImpl
      */
     public SecurityPolicyComponentImpl(WSDLModel model, Element e) {
         super(model, e);
+        cfgVersion = SecurityPolicyQName.getConfigVersion(this.getQName());
     }
 
     @Override
-    public abstract void accept(WSDLVisitor visitor);
-    
-     @Override
-     protected String getNamespaceURI() {
-        return SecurityPolicyQName.SECPOLICY_UTILITY;
+    protected String getNamespaceURI() {
+        return SecurityPolicyQName.getNamespaceUri(cfgVersion);
     }
-
-    @Override
-    public String getAttribute(String attribute) {
-        throw new UnsupportedOperationException();
-    }
-    
-    @Override
-    public void setAttribute(String attribute, String value) {
-        throw new UnsupportedOperationException();
-    }    
 }

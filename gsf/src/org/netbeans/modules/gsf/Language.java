@@ -453,7 +453,7 @@ public final class Language {
                 // Don't keep trying
                 hintsProviderFile = null;
             } else {
-                hintsManager = new GsfHintsManager(getMimeType(), hintsProvider);
+                hintsManager = new GsfHintsManager(getMimeType(), hintsProvider, this);
             }
         }
         return hintsProvider;

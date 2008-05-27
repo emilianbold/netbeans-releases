@@ -55,6 +55,7 @@ import org.openide.util.NbBundle;
 
 import javax.swing.*;
 import java.util.Vector;
+import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.PolicyModelHelper;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.openide.NotifyDescriptor;
 
@@ -121,7 +122,8 @@ public class TargetsPanel extends javax.swing.JPanel {
     
     private void saveTargetsModel() {
         if (!inSync) {
-            SecurityPolicyModelHelper.setTargets(comp, getTargetsModel());
+            SecurityPolicyModelHelper.getInstance(
+                    PolicyModelHelper.getConfigVersion(comp)).setTargets(comp, getTargetsModel());
             jTable1.setModel(new MessagePartsModel(getTargetsModel(), columnNames));
         }
     }

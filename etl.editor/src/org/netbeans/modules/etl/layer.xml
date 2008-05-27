@@ -61,6 +61,9 @@ made subject to such option by the copyright holder.
     <folder name="Loaders">
         <folder name="text">
             <folder name="x-etl+xml">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-etl-ui-ETLDataLoader.instance"/>
+                </folder>
                 <folder name="Actions">
                     <file name="org-netbeans-modules-etl-ui-view-graph-actions-separatorBefore.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>

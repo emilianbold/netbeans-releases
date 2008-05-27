@@ -289,7 +289,20 @@ made subject to such option by the copyright holder.
     <!-- Adjusting the actions shown on jsp object from web/core/src/org/netbeans/modules/web/core/resources/layer.xml -->
     <folder name="Loaders">
         <folder name="text">
+            <folder name="x-java">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-visualweb-project-jsfloader-JsfJavaDataLoader.instance">
+                        <attr name="position" intvalue="74999"/>
+                    </file>
+                </folder>
+            </folder>
             <folder name="x-jsp">
+                <folder name="Factories">
+                     <file name="org-netbeans-modules-visualweb-project-jsfloader-JsfJspDataLoader.instance">
+                         <attr name="position" intvalue="2000"/>
+                     </file>
+                </folder>
+                
               <folder name="visual">
                 <folder name="Actions">
                   <!-- <RAVE> Add Set As Start Page action -->
