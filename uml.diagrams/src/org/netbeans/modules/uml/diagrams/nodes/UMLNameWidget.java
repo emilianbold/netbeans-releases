@@ -292,8 +292,9 @@ public class UMLNameWidget extends Widget implements PropertyChangeListener
     {
         IElement element = (IElement) event.getSource();
         String propName = event.getPropertyName();
-        if (propName.equals(ModelElementChangedKind.NAME_MODIFIED.toString()) &&
-                element instanceof INamedElement)
+        if (element instanceof INamedElement &&
+            (propName.equals(ModelElementChangedKind.NAME_MODIFIED.toString()) ||
+            propName.equals(ModelElementChangedKind.ALIAS_MODIFIED.toString()) ) )
         {
             INamedElement nameElement = (INamedElement) element;
             className.setLabel(nameElement.getNameWithAlias());

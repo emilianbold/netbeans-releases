@@ -40,10 +40,14 @@
 package org.netbeans.modules.uml.diagrams.nodes.activity;
 
 import java.awt.Dimension;
+import java.beans.PropertyChangeEvent;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IJoinForkNode;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.diagrams.nodes.JoinForkWidget;
+import org.netbeans.modules.uml.drawingarea.view.UMLLabelWidget;
 
 /**
  *
@@ -81,5 +85,22 @@ public class ActivityJoinForkWidget extends JoinForkWidget
              element.setOrientation( (byte)(orientation ^ 1));  // bitwise exclusive OR
              super.rotate(presentation);
           }
+    }
+    
+     @Override
+    public void propertyChange(PropertyChangeEvent event)
+    {
+        IElement element = getObject().getFirstSubject();
+        UMLLabelWidget labelWidget = getLabelWidget();
+        if (element instanceof INamedElement && labelWidget != null)
+        {
+            String label = ((INamedElement) element).getNameWithAlias();
+            labelWidget.setLabel(label);
+            if ( label != null && label.trim().length() > 0 && !labelWidget.isVisible())
+            {
+                labelWidget.setVisible(true);
+            }
+        }
+        super.propertyChange(event);
     }
 }

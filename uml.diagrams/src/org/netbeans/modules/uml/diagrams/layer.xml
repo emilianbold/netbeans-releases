@@ -1280,6 +1280,13 @@ made subject to such option by the copyright holder.
                     <attr name="position" intvalue="300"/>
                 </file>
             </folder>
+            <folder name="ActivityFinal">
+                <file name="LinkComment.shadow">
+                    <attr name="originalFile" stringvalue="modeling/relationships/LinkComment.context_palette_item"/>
+                    <attr name="default-node" stringvalue="Comment"/>
+                    <attr name="position" intvalue="100"/>
+                </file>
+            </folder>
              <folder name="ActivityControl">
                 <file name="ActivityEdge.shadow">
                     <attr name="originalFile" stringvalue="modeling/relationships/ActivityEdge.context_palette_item"/>
