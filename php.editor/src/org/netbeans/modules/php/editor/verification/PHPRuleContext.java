@@ -45,6 +45,6 @@ import org.netbeans.modules.gsf.api.RuleContext;
  *
  * @author Tomasz.Slota@Sun.COM
  */
-public class PHPRuleContext extends RuleContext {
-
+class PHPRuleContext extends RuleContext {
+    PHPVerificationVisitor.VariableStack variableStack;
 }

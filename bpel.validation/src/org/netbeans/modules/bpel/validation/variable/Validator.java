@@ -383,7 +383,7 @@ public final class Validator extends BpelValidator {
 //out("SIZE: " + parts.size());
 //out();
     if (parts.size() != 0) {
-      addError("FIX_WSDL_message_variable", (Component) variableReference); // NOI18N
+      addError("FIX_SA00047", (Component) variableReference); // NOI18N
     }
   }};}
 
