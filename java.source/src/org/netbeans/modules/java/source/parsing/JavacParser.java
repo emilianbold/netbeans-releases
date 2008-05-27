@@ -264,7 +264,20 @@ public class JavacParser extends Parser {
         try {            
             if (isSingleSource) {
                 init (snapshot, task, true);
-                ciImpl = createCurrentInfo (this, file, root,snapshot, null);
+                boolean needsFullReparse = true;
+                if (supportsReparse) {
+                    Pair<DocPositionRegion,MethodTree> _changedMethod;                    
+                    synchronized (this) {
+                        _changedMethod = this.changedMethod;
+                        this.changedMethod = null;
+                    }
+                    if (_changedMethod != null && ciImpl != null) {
+                        needsFullReparse = !reparseMethod(ciImpl, snapshot, _changedMethod.second, _changedMethod.first.getText());
+                    }
+                }
+                if (needsFullReparse) {
+                    ciImpl = createCurrentInfo (this, file, root,snapshot, null);
+                }
             } 
             else {
                 init (snapshot, task, false);
@@ -294,7 +307,7 @@ public class JavacParser extends Parser {
             final Phase requiredPhase = ((JavaParserResultTask)task).getPhase();
             Phase reachedPhase;
             try {
-                reachedPhase = moveToPhase(requiredPhase, ciImpl, true, false);
+                    reachedPhase = moveToPhase(requiredPhase, ciImpl, true, false);
             } catch (IOException ioe) {
                 throw new ParseException ("JavacParser failure", ioe);      //NOI18N
             }
