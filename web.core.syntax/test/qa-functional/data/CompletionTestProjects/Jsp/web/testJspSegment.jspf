@@ -29,6 +29,13 @@ rtl
 <p dir="rtl"
 --%>
 
+<%-- Java completion for out object --%>
+<%--CC
+<% ou|  %>
+JspWriter out
+<% out  %>
+--%>
+
 <%--CC
 <jsp:|
 < jsp:text >
@@ -40,13 +47,5 @@ ${p|
 pageContext
 ${pageContext
 --%>
-
-<%-- Java completion for out object --%>
-<%--CC
-<% ou|  %>
-JspWriter out
-<% out  %>
---%>
-
 
 <hr>

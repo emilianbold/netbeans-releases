@@ -25,19 +25,20 @@ String
 --%>
 
 <jsp:useBean id="myBean" scope="request" class="java.lang.String"/>
+<% myBean.charAt(0); %>
 
 <%-- completion for beans in scriptlets  #58437 --%>
-<%--CC
-<% m|
+<%--
+<%  |  %>
 String myBean
-<% myBean
+<% myBean %>
 --%>
 
 <%-- Java completion for beans in scriptlets #58437 --%>
-<%--CC
-<% myBean.c|
+<%--
+<% myBean.c| %>
 char charAt (int index )
-<% myBean.charAt(index)
+<% myBean.charAt(index) %>
 --%>
 
 <html>
