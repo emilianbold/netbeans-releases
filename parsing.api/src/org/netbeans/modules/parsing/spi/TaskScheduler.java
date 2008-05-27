@@ -126,6 +126,8 @@ public abstract class TaskScheduler {
      * 
      * @param sources       A collection of {@link Source}s.
      */
+    //tzezula: really unclear usages of sources field (synchronization, live cycle, may it be called twice with different set of sources?).
+    //tzezula: should set CHANGE_EXPECTED flag on the sources.
     protected final synchronized void scheduleTasks (
         Collection<Source>  sources,
         final SchedulerEvent

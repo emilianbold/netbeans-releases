@@ -71,7 +71,7 @@ public class Scheduler {
         taskSchedulers = Lookup.getDefault ().lookupAll (TaskScheduler.class);
     }
     
-    private static Map<TaskScheduler,Map<Source,Collection<SchedulerTask>>> tasks = new HashMap<TaskScheduler, Map<Source, Collection<SchedulerTask>>> (); 
+    private static final Map<TaskScheduler,Map<Source,Collection<SchedulerTask>>> tasks = new HashMap<TaskScheduler, Map<Source, Collection<SchedulerTask>>> (); 
     
     static void revalidate (final Source source) {
         assert source != null;
@@ -85,39 +85,40 @@ public class Scheduler {
         }
     }
     
-    //tzezula: Live fast, die young.
-    //Shouldn't the tasks be guarded? 
-    //Shouldn't the access to flags be guarded too?
-    //How the lock ordering is defined?
-    //Shouldn't it reset {@link SourceFlags.CHANGE+EXPECTED}?
     public static void schedule (
         TaskScheduler       taskScheduler,
         Collection<Source>  sources,
         SchedulerEvent      event
     ) {
-        Map<Source,Collection<SchedulerTask>> sourceToTasks = tasks.get (taskScheduler);
-        if (sourceToTasks == null) {
-            sourceToTasks = new HashMap<Source,Collection<SchedulerTask>> ();
-            tasks.put (taskScheduler, sourceToTasks);
-        }
-        Set<Source> oldSources = new HashSet<Source> (sourceToTasks.keySet ());
-        for (Source source : sources) {
-            SourceAccessor.getINSTANCE ().getFlags (source).add (SourceFlags.INVALID);
-            Collection<SchedulerTask> tasks = sourceToTasks.get (source);
-            if (tasks == null) {
-                tasks = createTasks (source, taskScheduler);
-                sourceToTasks.put (source, tasks);
+        synchronized (tasks) {
+            Map<Source,Collection<SchedulerTask>> sourceToTasks = tasks.get (taskScheduler);
+            if (sourceToTasks == null) {
+                sourceToTasks = new HashMap<Source,Collection<SchedulerTask>> ();
+                tasks.put (taskScheduler, sourceToTasks);
+            }
+            Set<Source> oldSources = new HashSet<Source> (sourceToTasks.keySet ());
+            for (Source source : sources) {
+                synchronized (source) {
+                    final Set<SourceFlags> flags = SourceAccessor.getINSTANCE ().getFlags (source);
+                    flags.add (SourceFlags.INVALID);
+                    flags.remove(SourceFlags.CHANGE_EXPECTED);
+                }
+                Collection<SchedulerTask> tasks = sourceToTasks.get (source);
+                if (tasks == null) {
+                    tasks = createTasks (source, taskScheduler);
+                    sourceToTasks.put (source, tasks);
+                    for (SchedulerTask task : tasks)
+                        TaskProcessor.addPhaseCompletionTask (task, source, event);
+                } else
+                    for (SchedulerTask task : tasks)
+                        TaskProcessor.rescheduleTask (task, source, event);
+                oldSources.remove (source);
+            }
+            for (Source source : oldSources) {
+                Collection<SchedulerTask> tasks = sourceToTasks.remove (source);
                 for (SchedulerTask task : tasks)
-                    TaskProcessor.addPhaseCompletionTask (task, source, event);
-            } else
-                for (SchedulerTask task : tasks)
-                    TaskProcessor.rescheduleTask (task, source, event);
-            oldSources.remove (source);
-        }
-        for (Source source : oldSources) {
-            Collection<SchedulerTask> tasks = sourceToTasks.remove (source);
-            for (SchedulerTask task : tasks)
-                TaskProcessor.removePhaseCompletionTask (task, source);
+                    TaskProcessor.removePhaseCompletionTask (task, source);
+            }
         }
     }
     
