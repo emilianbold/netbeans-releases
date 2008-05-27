@@ -43,6 +43,7 @@
 package org.netbeans.modules.glassfish.javaee;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.api.java.platform.JavaPlatform;
@@ -125,10 +126,10 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
         File wsLib = null;
         File jsr109lib = null;
         
-        File gfRoot = new File(properties.getGlassfishRoot());
-        if ((gfRoot != null) && (gfRoot.exists())) {
-            wsLib = new File(gfRoot, "/modules/webservices-rt.jar");
-            jsr109lib = new File(gfRoot, "/modules/jsr10-impl.jar");
+        String gfRootStr = properties.getGlassfishRoot();
+        if (gfRootStr != null) {
+            wsLib = ServerUtilities.getJarName(gfRootStr, "webservices-rt");
+            jsr109lib = new File(gfRootStr, "jsr109-impl");
         }
 
         // WEB SERVICES SUPPORT
@@ -184,13 +185,19 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
 
         String gfRootStr = properties.getGlassfishRoot();
         if (TOOL_WSGEN.equals(toolName) || TOOL_WSIMPORT.equals(toolName)) {
-            return new File[] {
-                ServerUtilities.getJarName(gfRootStr, "activation"),           //NOI18N
-                ServerUtilities.getJarName(gfRootStr, "webservices-api"),      //NOI18N
-                ServerUtilities.getJarName(gfRootStr, "webservices-rt"),       //NOI18N
-                ServerUtilities.getJarName(gfRootStr, "webservices-tools"),    //NOI18N
-                ServerUtilities.getJarName(gfRootStr, "jsr109-impl")
-            };
+            String[] entries = new String[] {"javax.javaee", 
+                                             "webservices-api", 
+                                             "webservices-rt", 
+                                             "webservices-tools", 
+                                             "jsr109-impl"};
+            ArrayList<File> cPath = new ArrayList<File>();
+            for (String entry : entries) {
+                File f = ServerUtilities.getJarName(gfRootStr, entry);
+                if ((f != null) && (f.exists())) {
+                    cPath.add(f);
+                }
+            }
+            return cPath.toArray(new File[cPath.size()]);
         }
 
         File domainDir = null;

@@ -147,6 +147,7 @@ public class Hk2PluginProperties {
         List<String> jars = new ArrayList();
         jars.add("javax.javaee-10.0");
         jars.add("webservices-api");        
+        jars.add("webservices-tools");
 
         List<URL> list = new ArrayList<URL>();
         File serverDir = new File(getGlassfishRoot());
