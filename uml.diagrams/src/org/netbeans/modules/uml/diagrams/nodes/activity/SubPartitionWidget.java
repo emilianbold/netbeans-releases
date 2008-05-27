@@ -192,6 +192,15 @@ public class SubPartitionWidget extends Widget implements PropertyChangeListener
         return nameWidget.getLabel();
     }
 
+    public void enableShowName(boolean enable)
+    {
+        if (nameWidget != null)
+        {
+            nameWidget.setEnabled(enable);
+        }
+    }
+
+    
     public String getWidgetID()
     {
         return UMLWidget.UMLWidgetIDString.SUBPARTITIONWIDGET.toString();
@@ -205,7 +214,8 @@ public class SubPartitionWidget extends Widget implements PropertyChangeListener
         if (element instanceof IActivityPartition)
         {
             IActivityPartition partitionElem = (IActivityPartition) element;
-            if (propName.equals(ModelElementChangedKind.NAME_MODIFIED.toString()))
+            if (propName.equals(ModelElementChangedKind.NAME_MODIFIED.toString()) ||
+               propName.equals(ModelElementChangedKind.ALIAS_MODIFIED.toString()) )
             {
                 nameWidget.setLabel(partitionElem.getNameWithAlias());
             }
@@ -332,7 +342,7 @@ public class SubPartitionWidget extends Widget implements PropertyChangeListener
         {
             if (widget != null)
             {
-                widget.setBorder(BorderFactory.createLineBorder(3, Color.YELLOW));
+                widget.setBorder(BorderFactory.createLineBorder(3, UMLWidget.BORDER_HILIGHTED_COLOR));
             }
 
         }

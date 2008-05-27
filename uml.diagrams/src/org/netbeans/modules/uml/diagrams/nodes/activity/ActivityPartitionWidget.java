@@ -345,6 +345,7 @@ public class ActivityPartitionWidget extends UMLNodeWidget
             else // there's no subPartition
             {
                 subPartWidget = new SubPartitionWidget(scene, null, this);
+                subPartWidget.enableShowName(false);
                 addSubPartition(subPartWidget);
             }
         }
