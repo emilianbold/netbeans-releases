@@ -42,6 +42,7 @@ package org.openide.explorer.view;
 
 import org.openide.nodes.*;
 import java.util.*;
+import java.util.logging.Logger;
 
 
 /** List of Visualizers. This is holded by parent visualizer by a
@@ -106,6 +107,11 @@ final class VisualizerChildren extends Object {
     }  
     
     public javax.swing.tree.TreeNode getChildAt(int pos) {
+        if (pos >= visNodes.size()) {
+            Logger.getLogger(VisualizerChildren.class.getName()).warning("Cannot get child at " + pos + " from " + visNodes + " for " + parent.node +
+                    " with children " + parent.node.getChildren() + ": " + Arrays.toString(parent.node.getChildren().getNodes()));
+            return VisualizerNode.EMPTY;
+        }
         VisualizerNode visNode = visNodes.get(pos);
         if (visNode == null) {
             Node node = parent.node.getChildren().getNodeAt(pos);
