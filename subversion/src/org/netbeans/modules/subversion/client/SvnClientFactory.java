@@ -93,8 +93,8 @@ public class SvnClientFactory {
     public synchronized static void init() {                        
         if(instance == null) {
             instance = new SvnClientFactory();
-            instance.setup();
         }
+        instance.setup();        
     }    
     
     /**
@@ -212,6 +212,13 @@ public class SvnClientFactory {
     
     public void setupCommandline () throws SVNClientException {
         exception = null;
+        CommandlineClient cc = new CommandlineClient();
+        try {
+            cc.checkSupportedVersion();
+        } catch (SVNClientException ex) {
+            exception = ex;
+            return;
+        }
         factory = new ClientAdapterFactory() {
             protected ISVNClientAdapter createAdapter() {
                 return new CommandlineClient(); //SVNClientAdapterFactory.createSVNClient(CmdLineClientAdapterFactory.COMMANDLINE_CLIENT);

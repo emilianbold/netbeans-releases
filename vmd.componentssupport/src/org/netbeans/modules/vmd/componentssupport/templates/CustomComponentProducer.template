@@ -65,7 +65,7 @@ public class ${producerName} extends MidpComponentProducer {
      */
     @Override
     protected DesignComponent createMainComponent(DesignDocument document) {
-<#if addLibrary?? && addLibrary == "true">
+<#if libraryName?? && libraryName != "" >
         MidpProjectSupport.addLibraryToProject(document, "${libraryName}"); // Library is added to the Mobility Project Resources
 </#if>
         return super.createMainComponent(document);

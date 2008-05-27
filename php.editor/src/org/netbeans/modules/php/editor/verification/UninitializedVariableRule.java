@@ -39,13 +39,18 @@
 
 package org.netbeans.modules.php.editor.verification;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import org.netbeans.modules.gsf.api.Hint;
 import org.netbeans.modules.gsf.api.HintSeverity;
 import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
+import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
+import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.openide.util.NbBundle;
 
 /**
@@ -66,12 +71,23 @@ public class UninitializedVariableRule  extends PHPRule {
     }
 
     @Override
+    public void visit(Assignment assignment) {
+        doAst(assignment.getRightHandSide());
+    }
+
+    @Override
     public void visit(FunctionInvocation functionInvocation) {
         for (Expression expr : functionInvocation.getParameters()){
-            if (expr instanceof Variable) {
-                Variable var = (Variable) expr;
-                check(var);
-            }
+            doAst(expr);
+        }
+    }
+    
+    private void doAst(ASTNode node) {
+        VariableExtractor extractor = new VariableExtractor();
+        node.accept(extractor);
+
+        for (Variable var : extractor.variables) {
+            check(var);
         }
     }
 
@@ -93,5 +109,14 @@ public class UninitializedVariableRule  extends PHPRule {
 
     public String getDisplayName() {
         return getDescription();
+    }
+    
+    private class VariableExtractor extends DefaultVisitor{
+        Collection<Variable> variables = new ArrayList<Variable>();
+
+        @Override
+        public void visit(Variable node) {
+            variables.add(node);
+        }
     }
 }
