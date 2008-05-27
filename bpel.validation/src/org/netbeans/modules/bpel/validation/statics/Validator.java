@@ -169,7 +169,7 @@ public final class Validator extends BpelValidator {
   @Override
   protected SimpleBpelModelVisitor getVisitor() { return new SimpleBpelModelVisitorAdaptor() {
 
-  // # 86958 SA00014
+  // # 86958
   private void checkDuplicate(Process process) {
     Import [] imports = process.getImports();
 
@@ -193,7 +193,7 @@ public final class Validator extends BpelValidator {
         continue;
       }
       if (schemas.contains(schema)) {
-        addWarning("FIX_Duplicate_Imports", imp); // NOI18N
+        addWarning("FIX_SA00014", imp); // NOI18N
       }
       else {
         schemas.add(schema);
@@ -412,43 +412,42 @@ public final class Validator extends BpelValidator {
 
   @Override 
   public void visit(PartnerLink p) {
-      // Rule: A partnerLink MUST specify the myRole or the partnerRole, or both.
+      // A partnerLink MUST specify the myRole or the partnerRole, or both.
       // This syntactic constraint MUST be statically enforced.
       if ((p.getMyRole() == null || p.getMyRole().equals("")) && (p.getPartnerRole() == null || p.getPartnerRole().equals(""))) {
-          addError(FIX_PARTNER_LINK_ERROR, p);
+          addError("FIX_SA00016", p); // NOI18N
       }
-      // Rule: The initializePartnerRole attribute MUST NOT be used on a partnerLink
+      // The initializePartnerRole attribute MUST NOT be used on a partnerLink
       // that does not have a partner role; this restriction MUST be statically enforced.
       if (p.getPartnerRole() == null || p.getPartnerRole().equals("")) {
           if ((p.getInitializePartnerRole() != null) && (!p.getInitializePartnerRole().equals(TBoolean.INVALID))) {
-              addError(FIX_INITIALISE_PARTNER_ROLE, p);
+              addError("FIX_SA00017", p); // NOI18N
           }
       }
   }
   
   @Override 
   public void visit(Invoke invoke) {
-      // Rule: Porttype should not be solicit-response or Notification.
+      // Porttype should not be solicit-response or Notification.
       checkSolicitResponsePortType(invoke, invoke.getPortType());
       checkNotificationPortType(invoke, invoke.getPortType());
       
-      // Rule: PortType should not contain overloaded operation names.
+      // PortType should not contain overloaded operation names.
       checkOverloadedPortTypeOperation(invoke, invoke.getPortType());
       
-      //Rule: Input variable and toPart should not be used in combinatation.
+      // Input variable and toPart should not be used in combinatation.
       checkInputVariableToPartCombination(invoke);
       
-      //Rule: Output variable and fromPart should not be used in combinatation.
+      // Output variable and fromPart should not be used in combinatation.
       checkOutputVariableFromPartCombination(invoke);       
       
-      // Rule: FromPart element should have a valid part attribute.
+      // FromPart element should have a valid part attribute.
       checkValidPartAttributeFromPartElement(invoke);
       
-      // Rule: toPart element should have a valid part attribute.
+      // toPart element should have a valid part attribute.
       checkValidPartAttributeToPartElement(invoke);   
       
-      /*
-       * Rule :If the portType attribute is included for readability, 
+      /* If the portType attribute is included for readability, 
        * in a <receive>, <reply>, <invoke>, <onEvent> or <onMessage>  
        * element, the value of the portType  attribute MUST match the 
        * portType value implied by the combination of the specified 
@@ -456,8 +455,7 @@ public final class Validator extends BpelValidator {
        */
       checkPortTypeCombinedPartnerLink(invoke);
       
-      /*
-       * Rule : For <invoke>, one-way invocation requires only the 
+      /* For <invoke>, one-way invocation requires only the 
        * inputVariable (or its equivalent <toPart>'s) since a response 
        * is not expected as part of the operation. Request-response 
        * invocation requires both an inputVariable 
@@ -469,7 +467,7 @@ public final class Validator extends BpelValidator {
        * equivalent <fromPart>'s) must be only specified for request-response 
        * invocations.
        * 
-       * Rule : When the optional inputVariable and outputVariable 
+       * When the optional inputVariable and outputVariable 
        * attributes are being used in an <invoke> activity, 
        * the variables referenced by inputVariable and outputVariable 
        * MUST be messageType variables whose QName matches the QName of the 
@@ -480,27 +478,26 @@ public final class Validator extends BpelValidator {
        * as used to define the part MAY be referenced by the inputVariable 
        * and outputVariable attributes respectively.
        */
-      checkInputOutputVariableOperation( invoke );
+      checkInputOutputVariableOperation(invoke);
       
-      // Rule: All the WSDL message parts must be completely initialised
+      // All the WSDL message parts must be completely initialised
       // when using <toPart> element.
       checkAnyMissingToPartElementInInvoke(invoke);
   }
   
   @Override 
   public void visit(Receive receive) {
-      // Rule: Porttype should not be solicit-response or Notification.
+      // Porttype should not be solicit-response or Notification.
       checkSolicitResponsePortType(receive, receive.getPortType());
       checkNotificationPortType(receive, receive.getPortType());
       
-      
-      // Rule: PortType should not contain overloaded operation names.
+      // PortType should not contain overloaded operation names.
       checkOverloadedPortTypeOperation(receive, receive.getPortType());
       
       /* 
-       * Rule: On <receive> variable and <fromPart> must not be used at the same time.
+       * On <receive> variable and <fromPart> must not be used at the same time.
        *
-       * Rule : One-way invocation requires only the inputVariable (or its
+       * One-way invocation requires only the inputVariable (or its
        * equivalent <toPart> elements) since a response is not
        * expected as part of the operation (see section 10.4. Providing
        * Web Service Operations Receive and Reply in spec). Requestresponse
@@ -515,7 +512,7 @@ public final class Validator extends BpelValidator {
       checkReceiveVariableFromPartCombination(receive);
       
       /*
-       * Rule :If the portType attribute is included for readability, 
+       * If the portType attribute is included for readability, 
        * in a <receive>, <reply>, <invoke>, <onEvent> or <onMessage>  
        * element, the value of the portType  attribute MUST match the 
        * portType value implied by the combination of the specified 
@@ -530,22 +527,21 @@ public final class Validator extends BpelValidator {
        * <flow>, <sequence>, and <empty> MUST NOT be performed prior to 
        * or simultaneously with start activities.
        */
-      checkOrderOfActivities( receive );
+      checkOrderOfActivities(receive);
   }
   
   @Override 
   public void visit(Reply reply) {
-      // Rule: Porttype should not be solicit-response or Notification.
+      // Porttype should not be solicit-response or Notification.
       checkSolicitResponsePortType(reply, reply.getPortType());
       checkNotificationPortType(reply, reply.getPortType());
       
-      
-      // Rule: PortType should not contain overloaded operation names.
+      // PortType should not contain overloaded operation names.
       checkOverloadedPortTypeOperation(reply, reply.getPortType());
       
-      /* Rule: On <reply> variable and <toPart> must not be used at the same time.
+      /* On <reply> variable and <toPart> must not be used at the same time.
        * 
-       * Rule : One-way invocation requires only the inputVariable (or its
+       * One-way invocation requires only the inputVariable (or its
        * equivalent <toPart> elements) since a response is not
        * expected as part of the operation (see section 10.4. Providing
        * Web Service Operations Receive and Reply in spec). Requestresponse
@@ -560,7 +556,7 @@ public final class Validator extends BpelValidator {
       checkReplyVariableToPartCombination(reply);
 
       /*
-       * Rule :If the portType attribute is included for readability, 
+       * If the portType attribute is included for readability, 
        * in a <receive>, <reply>, <invoke>, <onEvent> or <onMessage>  
        * element, the value of the portType  attribute MUST match the 
        * portType value implied by the combination of the specified 
@@ -568,22 +564,22 @@ public final class Validator extends BpelValidator {
        */
       checkPortTypeCombinedPartnerLink(reply);
       
-      // Rule: All the WSDL message parts must be completely initialised
+      // All the WSDL message parts must be completely initialised
       // when using <toPart> element.
       checkAnyMissingToPartElementInReply(reply);            
   }
   
   @Override
   public void visit(OnMessage onMessage) {
-      // Rule: Porttype should not be solicit-response or Notification.
+      // Porttype should not be solicit-response or Notification.
       checkSolicitResponsePortType(onMessage, onMessage.getPortType());
       checkNotificationPortType(onMessage, onMessage.getPortType());
       
-      // Rule: PortType should not contain overloaded operation names.
+      // PortType should not contain overloaded operation names.
       checkOverloadedPortTypeOperation(onMessage, onMessage.getPortType());
       
       /*
-       * Rule :If the portType attribute is included for readability, 
+       * If the portType attribute is included for readability, 
        * in a <receive>, <reply>, <invoke>, <onEvent> or <onMessage>  
        * element, the value of the portType  attribute MUST match the 
        * portType value implied by the combination of the specified 
@@ -596,56 +592,54 @@ public final class Validator extends BpelValidator {
   }
   
   @Override
-  public void visit( ReThrow reThrow ){
+  public void visit(ReThrow reThrow) {
       /* 
-       * Rule : The <rethrow> activity MUST only be used within a faultHandler 
+       * The <rethrow> activity MUST only be used within a faultHandler 
        * (i.e. <catch> and <catchAll> elements).
        */
       boolean isInsideFaultHandlers = Utils.hasAscendant(reThrow, FaultHandlers.class); 
 
-      if ( !isInsideFaultHandlers ){
-          addError( FIX_RETHROW_OCCURANCE, reThrow );
+      if ( !isInsideFaultHandlers) {
+          addError("FIX_SA00006", reThrow); // NOI18N
       }
   }
   
   @Override
-  public void visit( Compensate compensate ){
-      checkCompensateOccurance( compensate);
+  public void visit(Compensate compensate) {
+      checkCompensateOccurance(compensate);
   }
 
   @Override
-  public void visit( CompensateScope compensateScope ){
+  public void visit(CompensateScope compensateScope) {
       checkCompensateOccurance(compensateScope);
   }
   
   @Override 
-  public void visit( From from ) {
+  public void visit(From from) {
       Roles roles = from.getEndpointReference();
-      if ( Roles.MY_ROLE.equals(roles) ) {
+      if (Roles.MY_ROLE.equals(roles)) {
           BpelReference<PartnerLink> ref = from.getPartnerLink();
-          boolean referenceHasMyRole = (ref!= null) && ( ref.get() != null ) 
-              && ( ref.get().getMyRole() != null );
+          boolean referenceHasMyRole = (ref!= null) && (ref.get() != null) && (ref.get().getMyRole() != null);
           /*
-           *  Rule : In the from-spec of the partnerLink variant of <assign> 
-           *  the value "myRole" for attribute endpointReference is only 
-           *  permitted when the partnerLink specifies the attribute myRole.
+           * In the from-spec of the partnerLink variant of <assign> 
+           * the value "myRole" for attribute endpointReference is only 
+           * permitted when the partnerLink specifies the attribute myRole.
            */
-          if ( !referenceHasMyRole ) {
-              addError( FIX_ENDPOINT_REFRENCE, from, Roles.MY_ROLE.toString());
+          if ( !referenceHasMyRole) {
+              addError("FIX_SA00035_SA00036", from, Roles.MY_ROLE.toString()); // NOI18N
           }
       }
-      else if ( Roles.PARTNER_ROLE.equals(roles) ){
+      else if (Roles.PARTNER_ROLE.equals(roles)) {
           BpelReference<PartnerLink> ref = from.getPartnerLink();
-          boolean referenceHasPartnerRole = (ref!= null) && ( ref.get() != null ) 
-              && ( ref.get().getPartnerRole() != null );
+          boolean referenceHasPartnerRole = (ref!= null) && (ref.get() != null) && (ref.get().getPartnerRole() != null);
           /*
            * In the from-spec of the partnerLink variant of <assign> the 
            * value "partnerRole" for attribute endpointReference is only 
            * permitted when the partnerLink specifies the attribute 
            * partnerRole.
            */
-          if ( !referenceHasPartnerRole ) {
-              addError( FIX_ENDPOINT_REFRENCE, from, Roles.PARTNER_ROLE.toString() );
+          if ( !referenceHasPartnerRole) {
+              addError("FIX_SA00035_SA00036", from, Roles.PARTNER_ROLE.toString()); // NOI18N
           }
       }
   }
@@ -658,11 +652,11 @@ public final class Validator extends BpelValidator {
       visitBaseScope(process);
       
       /*
-       * Rule : To be instantiated, an executable business process MUST contain at 
+       * To be instantiated, an executable business process MUST contain at 
        * least one <receive> or <pick> activity annotated with a 
        * createInstance="yes" attribute.
        * 
-       * Rule : If a process has multiple start activities with 
+       * If a process has multiple start activities with 
        * correlation sets then all such activities MUST share at 
        * least one common correlationSet and all common correlationSets defined 
        * on all the activities MUST have the value of the initiate 
@@ -671,14 +665,13 @@ public final class Validator extends BpelValidator {
       checkInstantiableActivities(process);
       
       /*
-       * Rule : A WS-BPEL process definition MUST NOT be accepted for 
+       * A WS-BPEL process definition MUST NOT be accepted for 
        * processing if it defines two or more propertyAliases for the 
        * same property name and WS-BPEL variable type.
        */
       checkPropertyAliasMultiplicity(process);
       
       /*
-       * Rule : 
        * Determine which languages are referenced by queryLanguage or
        * expressionLanguage attributes either in the WS-BPEL process
        * definition itself or in any WS-BPEL property definitions in
@@ -690,145 +683,141 @@ public final class Validator extends BpelValidator {
       String expression = process.getExpressionLanguage();
 
       if ((query != null && !SUPPORTED_LANGAGE.equals(query)) || (expression != null && !SUPPORTED_LANGAGE.equals(expression))) {
-          addError(FIX_SUPPORTED_LANGUAGE, process, SUPPORTED_LANGAGE);
+          addError("FIX_SA00004", process, SUPPORTED_LANGAGE); // NOI18N
       }
   }
 
   @Override
-  public void visit( Scope scope ) {
-      visitBaseScope( scope );
+  public void visit(Scope scope) {
+      visitBaseScope(scope);
       
       /*
-       * Rule : A scope with the isolated  attribute set to "yes" is called 
+       * A scope with the isolated  attribute set to "yes" is called 
        * an isolated scope. Isolated scopes MUST NOT contain other isolated scopes.
        */
       TBoolean isolated = scope.getIsolated();
-      if ( TBoolean.YES.equals( isolated ) ) {
+      if (TBoolean.YES.equals(isolated)) {
           List<Component> collection = new LinkedList<Component>();
-          collectIsolatedScopes( scope , collection );
+          collectIsolatedScopes(scope, collection);
 
-          if ( collection.size() >0 ){
-              collection.add( scope );
+          if (collection.size() > 0) {
+              collection.add(scope);
 
-              for(Component component : collection) {
-                  addError(FIX_ISOLATED_SCOPES, component);
+              for (Component component : collection) {
+                  addError("FIX_SA00091", component); // NOI18N
               }
           }
       }
   }
   
   @Override
-  public void visit( LinkContainer container ) {
+  public void visit(LinkContainer container) {
       /*
-       * Rule : A links name MUST be unique amongst all link names 
+       * A links name MUST be unique amongst all link names 
        * defined within the same immediately enclosing flow. 
        * This requirement MUST be statically enforced.
        */
       Link[] links = container.getLinks();
-      if ( links== null ) {
+      if (links== null) {
           return;
       }
       Map<String,Collection<Component>> map = new HashMap<String, Collection<Component>>();
 
       for (Link link : links) {
-          addNamedToMap(link, map );
+          addNamedToMap(link, map);
       }
-      addErrorForNamed( map , FIX_MULTIPLE_NAMED_LINKS );
+      addErrorForNamed(map, "FIX_SA00064"); // NOI18N
   }
 
   @Override
-  public void visit( SourceContainer container ) {
+  public void visit(SourceContainer container) {
       /*
-       * Rule : An activity MAY declare itself to be the source 
+       * An activity MAY declare itself to be the source 
        * of one or more links by including one or more <source> elements. 
        * Each <source> element MUST use a distinct link name.
        */
       Source[] sources = container.getSources();
-      if ( sources == null ) {
+      if (sources == null) {
           return;
       }
       Map<String,Collection<Component>> map = new HashMap<String, Collection<Component>>();
 
       for (Source source : sources) {
-          addNamedToMap( source, map, LazyHolder.SOURCE_LINK_NAME_ACCESS );
+          addNamedToMap(source, map, LazyHolder.SOURCE_LINK_NAME_ACCESS);
       }
-      addErrorForNamed(map, FIX_MULTIPLE_SOURCE_LINK_REFERENCES );
+      addErrorForNamed(map, "FIX_SA00065"); // NOI18N
   }
   
   
   @Override
-  public void visit( TargetContainer container ) {
+  public void visit(TargetContainer container) {
       /*
-       * Rule : An activity MAY declare itself to be the target of one or more
+       * An activity MAY declare itself to be the target of one or more
        * links by including one or more <target> elements. Each <target> 
        * element associated with a given activity MUST use a link name distinct 
        * from all other <target>  elements at that activity.
        */
       Target[] targets = container.getTargets();
-      if ( targets == null ) {
+      if (targets == null) {
           return;
       }
       Map<String,Collection<Component>> map = new HashMap<String, Collection<Component>>();
 
       for (Target target : targets) {
-          addNamedToMap(target, map, LazyHolder.TARGET_LINK_NAME_ACCESS );
+          addNamedToMap(target, map, LazyHolder.TARGET_LINK_NAME_ACCESS);
       }
-      addErrorForNamed(map, FIX_MULTIPLE_TARGET_LINK_REFERENCES );
+      addErrorForNamed(map, "FIX_SA00068_SA00069"); // NOI18N
   }
   
   @Override
-  public void visit( ForEach forEach ) {
+  public void visit(ForEach forEach) {
       /*
-       * Rule : For <forEach> the enclosed scope MUST NOT declare a variable 
+       * For <forEach> the enclosed scope MUST NOT declare a variable 
        * with the same name as specified in the counterName  attribute of <forEach>.
        */
       String counterName = forEach.getCounterName();
-      if ( counterName == null ){
+      if (counterName == null) {
           return;
       }
       ContainerIterator<BaseScope> containerIterator = new ContainerIterator<BaseScope>(forEach, BaseScope.class);
       BaseScope scope = containerIterator.next();
       assert scope!=null;
       VariableContainer container = scope.getVariableContainer();
-      if ( container == null ){
+      if (container == null) {
           return;
       }
       Variable[] variables = container.getVariables();
-      if ( variables == null){
+      if (variables == null) {
           return;
       }
       for (Variable variable : variables) {
-          if ( counterName.equals( variable.getName()) ){
+          if (counterName.equals(variable.getName())) {
               Collection<Component> collection = new ArrayList<Component>(2);
-              collection.add( forEach );
-              collection.add( variable );
+              collection.add(forEach);
+              collection.add(variable);
 
               for (Component component : collection) {
-                addError(FIX_DUPLICATE_COUNTER_NAME, component, counterName);
+                addError("FIX_SA00076_SA00077_SA00078", component, counterName); // NOI18N
               }
               break;
           }
       }
-      
-      /*
-       * Check Variable name
-       */
-      checkVariableName( forEach );
+      // Check Variable name
+      checkVariableName(forEach);
   }
   
   @Override
-  public void visit( VariableContainer container ){
-      checkVariableContainer( container );
+  public void visit(VariableContainer container) {
+      checkVariableContainer(container);
   }
   
   @Override
-  public void visit( OnEvent onEvent ) {
+  public void visit(OnEvent onEvent) {
       if (onEvent.getVariable()!= null && onEvent.getMessageType() == null && onEvent.getElement() == null) {
-          addError(FIX_ON_EVENT_VARAIBLE, onEvent);
+          addError("FIX_SA00090", onEvent); // NOI18N
       }
-      
       /*
-       * Rule :If the portType attribute is included for readability, 
+       * the portType attribute is included for readability, 
        * in a <receive>, <reply>, <invoke>, <onEvent> or <onMessage>  
        * element, the value of the portType  attribute MUST match the 
        * portType value implied by the combination of the specified 
@@ -839,10 +828,10 @@ public final class Validator extends BpelValidator {
       /*
        * Check variable name.
        */
-      checkVariableName( onEvent );
+      checkVariableName(onEvent);
       
       /*
-       * Rule : For <onEvent>, the type of the variable (as specified by the 
+       * For <onEvent>, the type of the variable (as specified by the 
        * messageType attribute) MUST be the same as the type of the input 
        * message defined by operation referenced by the operation attribute. 
        * Optionally the messageType attribute may be omitted and instead the 
@@ -851,7 +840,7 @@ public final class Validator extends BpelValidator {
        * That element type MUST be an exact match of the element type 
        * referenced by the element attribute.
        */
-      checkMessageType( onEvent );
+      checkMessageType(onEvent);
       
       /*
        * For <onEvent>, variables referenced by the variable attribute of
@@ -873,20 +862,19 @@ public final class Validator extends BpelValidator {
   }
   
   @Override
-  public void visit( EventHandlers handlers ) {
+  public void visit(EventHandlers handlers) {
       /*
-       * Rule : An event handler MUST contain at least one <onEvent>  
-       * or <onAlarm>  element.
+       * An event handler MUST contain at least one <onEvent> or <onAlarm>  element.
        */
-      if ( handlers.sizeOfOnAlarms() == 0 && handlers.sizeOfOnEvents() == 0 ) {
-          addError( FIX_EVENT_HANDLERS , handlers );
+      if (handlers.sizeOfOnAlarms() == 0 && handlers.sizeOfOnEvents() == 0) {
+          addError("FIX_SA00083_SA00088", handlers); // NOI18N
       }
   }
 
   @Override
   public void visit(Catch catc) {
       /*
-       * Rule : For the <catch> construct; to have a defined type 
+       * For the <catch> construct; to have a defined type 
        * associated with the fault variable, the faultVariable 
        * attribute MUST only be used if either the faultMessageType or 
        * faultElement attributes, but not both, accompany it. 
@@ -898,32 +886,30 @@ public final class Validator extends BpelValidator {
       WSDLReference<Message> message = catc.getFaultMessageType();
 
       if (faultVariable != null && element == null && message == null) {
-          addError(FIX_FAULT_VARIABLE_TYPE, catc);
+          addError("FIX_SA00081", catc); // NOI18N
       }
       if (element != null && message != null) {
-          addError(FIX_FAULT_VARIABLE_TYPE, catc);
+          addError("FIX_SA00081", catc); // NOI18N
       }
-      if (faultVariable == null && ( element != null || message != null)) {
-          addError(FIX_ODD_FAULT_TYPE, catc);
+      if (faultVariable == null && (element != null || message != null)) {
+          addError("FIX_SA00081", catc); // NOI18N
       }
       // Check fault variable name
-      checkVariableName( catc);
+      checkVariableName(catc);
   }
   
   @Override
-  public void visit( FaultHandlers handlers ) {
+  public void visit(FaultHandlers handlers) {
       /*
-       * Rule : There MUST be at least one <catch> or <catchAll>  element 
+       * There MUST be at least one <catch> or <catchAll>  element 
        * within a <faultHandlers> element.
        */
-      if ( handlers.sizeOfCathes() == 0 && handlers.getCatchAll() == null ) {
-          addError( FIX_FAULT_HANDLERS, handlers );
+      if (handlers.sizeOfCathes() == 0 && handlers.getCatchAll() == null) {
+          addError("FIX_SA00080", handlers); // NOI18N
       }
       
-      /*
-       * Rule : The root scope inside a FCT-handler MUST not have a compensation handler.
-       */
-      checkFCTScope( handlers );
+      // The root scope inside a FCT-handler MUST not have a compensation handler.
+      checkFCTScope(handlers);
   }
 
   @Override
@@ -931,23 +917,23 @@ public final class Validator extends BpelValidator {
       final Model model = getImportModel(imp);
       
       /*
-       * If the model is null -- skip all other checks, but DO NOT generate
+       * If the model is null - skip all other checks, but DO NOT generate
        * a warning or an error, as it will be done by BPELImportsValidator.
        */
       if (model == null) {
           return;
       }
       final String namespace = imp.getNamespace();
-      final String ns = getTargetNamespace( imp );
+      final String ns = getTargetNamespace(imp);
       
-      if ( namespace == null ){
+      if (namespace == null) {
           /*
            * If no namespace is specified then the imported definitions MUST NOT 
            * contain a targetNamespace specification. 
            * This requirement MUST be statically enforced.
            */
-          if ( ns != null ){
-              addError( FIX_ABSENT_NAMESPACE_IN_IMPORT , imp );
+          if (ns != null) {
+              addError("FIX_SA00012", imp); // NOI18N
           }
       }
       else {
@@ -956,23 +942,23 @@ public final class Validator extends BpelValidator {
            * the imported definitions MUST be in that namespace. 
            * This requirement MUST be statically enforced.
            */
-          if ( !namespace.equals( ns ) ){
-              addError( FIX_BAD_NAMESPACE_IN_IMPORT , imp );
+          if ( !namespace.equals(ns)) {
+              addError("FIX_SA00011", imp); // NOI18N
           }
       }
       
       /*
-       * Rule: The value of the importType attribute of element <import>  
+       * The value of the importType attribute of element <import>  
        * MUST be set to http://www.w3.org/2001/XMLSchema when importing XML 
        * Schema 1.0 documents, and to http://schemas.xmlsoap.org/wsdl/ when 
        * importing WSDL 1.1 documents.
        */
-      checkImportType( imp );
+      checkImportType(imp);
   }
 
   @Override
-  public void visit( Variable variable ) {
-      checkVariableName( variable );
+  public void visit(Variable variable) {
+      checkVariableName(variable);
       
       /*
        * The messageType, type or element attributes are used to 
@@ -982,18 +968,18 @@ public final class Validator extends BpelValidator {
       int count = variable.getType()== null?0:1;
       count+=variable.getMessageType()==null?0:1;
       count+=variable.getElement()==null?0:1;
-      if ( count != 1) {
-          addError( FIX_VARIABLE_TYPES , variable );
+      if (count != 1) {
+          addError("FIX_SA00025", variable); // NOI18N
       }
   }
 
   @Override
-  public void visit( Pick pick ) {
-      if (TBoolean.YES.equals( pick.getCreateInstance()) && pick.sizeOfOnAlarms() != 0) {
-              Collection<Component> collection = Arrays.asList( (Component[])pick.getOnAlarms());
+  public void visit(Pick pick) {
+      if (TBoolean.YES.equals(pick.getCreateInstance()) && pick.sizeOfOnAlarms() != 0) {
+              Collection<Component> collection = Arrays.asList((Component[])pick.getOnAlarms());
               
               for (Component component : collection) {
-                addError(FIX_PICK_MESSAGES, component);
+                addError("FIX_SA00062", component); // NOI18N
               }
       }
       
@@ -1004,83 +990,82 @@ public final class Validator extends BpelValidator {
        * <flow>, <sequence>, and <empty> MUST NOT be performed prior to 
        * or simultaneously with start activities.
        */
-      checkOrderOfActivities( pick );
+      checkOrderOfActivities(pick);
   }
 
   @Override
-  public void visit( Flow flow ) {
+  public void visit(Flow flow) {
       /*
-       * Rule : Every link declared within a <flow> activity MUST have exactly 
+       * Every link declared within a <flow> activity MUST have exactly 
        * one activity within the <flow> as its source and exactly 
        * one activity within the <flow> as its target.
        * 
-       * and this method also peform one more rule :
+       * and this method also peform one more:
        * 
-       * Rule : Two different links MUST NOT share the same source 
+       * Two different links MUST NOT share the same source 
        * and target activities; that is, at most one link may be used 
        * to connect two activities.
-       * ( check for this rule will be started only when previous rule
+       * (check for this rule will be started only when previous rule
        * is succeeded). 
-       * 
-       *         
-       * Rule : A link that crosses a <faultHandlers> or <terminationHandler>  
+       *
+       * A link that crosses a <faultHandlers> or <terminationHandler>  
        * element boundary MUST be outbound only, that is, it MUST have its 
        * source activity within the <faultHandlers> or <terminationHandler>, 
        * and its target activity outside of the scope associated with the handler.
        * 
-       * Rule :A link MUST NOT cross the boundary of a repeatable construct or 
+       * A link MUST NOT cross the boundary of a repeatable construct or 
        * the <compensationHandler> element. This means, a link used within a 
        * repeatable construct (<while>, <repeatUntil>, <forEach>, <eventHandlers>) 
        * or a <compensationHandler>  MUST be declared in a <flow> that is itself 
        * nested inside the repeatable construct or <compensationHandler>.
        */
-      checkLinks( flow );
+      checkLinks(flow);
   }
 
   @Override
-  public void visit( CompensationHandler handler ) {
+  public void visit(CompensationHandler handler) {
       /*
-       * Rule : The root scope inside a FCT-handler MUST not have a compensation handler.
+       * The root scope inside a FCT-handler MUST not have a compensation handler.
        */
-      checkFCTScope( handler );
+      checkFCTScope(handler);
   }
 
   @Override
-  public void visit( TerminationHandler handler ) {
+  public void visit(TerminationHandler handler) {
       /*
-       * Rule : The root scope inside a FCT-handler MUST not have a compensation handler.
+       * The root scope inside a FCT-handler MUST not have a compensation handler.
        */
-      checkFCTScope( handler );
+      checkFCTScope(handler);
   }
 
   @Override
-  public void visit( CorrelationSet set ) {
+  public void visit(CorrelationSet set) {
       /*
-       * Rule : Properties used in a <correlationSet> MUST be defined 
+       * Properties used in a <correlationSet> MUST be defined 
        * using XML Schema simple types. This restriction MUST be statically 
        * enforced.
        */
       List<WSDLReference<CorrelationProperty>> list = set.getProperties();
-      if ( list == null ) {
+      if (list == null) {
           return;
       }
       for (WSDLReference<CorrelationProperty> reference : list) {
           CorrelationProperty property = reference.get();
           // if it null then reference validator will report about error
-          if ( property!= null ) {
+          if (property!= null) {
               NamedComponentReference<GlobalType> typeRef = property.getType();
 
               if (typeRef == null || !(typeRef.get() instanceof GlobalSimpleType)) {
-                  addError( FIX_BAD_CORRELATION_PROPERTY_TYPE , set );
+                  addError("FIX_SA00045", set); // NOI18N
               }
           }
       }
   }
 
   @Override
-  public void visit( PatternedCorrelation correlation ) {
+  public void visit(PatternedCorrelation correlation) {
       /*
-       * Rule : The pattern attribute used in <correlation>  within 
+       * The pattern attribute used in <correlation>  within 
        * <invoke> is required for request-response operations, and 
        * disallowed when a one-way operation is invoked.
        */
@@ -1093,28 +1078,27 @@ public final class Validator extends BpelValidator {
       // If operation is absent or broken then other validators said about this.
       
       WSDLReference<Operation> operationRef = invoke.getOperation();
-      if ( operationRef == null ) {
+      if (operationRef == null) {
           return;
       }
       Operation operation = operationRef.get();
-      if ( operation == null ) {
+      if (operation == null) {
           return;
       }
       // # 84129
-      boolean oneWayOperationPatternExist = 
-          pattern != null && operation instanceof OneWayOperation;
-      boolean twoWayOperationPatternAbsent = 
-          pattern == null && operation instanceof RequestResponseOperation;
+      boolean oneWayOperationPatternExist = pattern != null && operation instanceof OneWayOperation;
+      boolean twoWayOperationPatternAbsent = pattern == null && operation instanceof RequestResponseOperation;
       boolean flag = oneWayOperationPatternExist || twoWayOperationPatternAbsent;
-      if  ( flag ) {
-          addError( FIX_BAD_USAGE_PATTERN_ATTRIBUTE , invoke);
+
+      if  (flag) {
+          addError("FIX_SA00046", invoke); // NOI18N
       }
   }
 
   @Override
-  public void visit( CorrelationContainer container ) {
+  public void visit(CorrelationContainer container) {
       /*
-       * Rule : Static analysis MUST detect property usages where 
+       * Static analysis MUST detect property usages where 
        * propertyAliases for the associated variable's type are not found 
        * in any WSDL definitions directly imported by the WS-BPEL process.
        */
@@ -1129,9 +1113,9 @@ public final class Validator extends BpelValidator {
   }
   
   @Override
-  public void visit( PatternedCorrelationContainer container ) {
+  public void visit(PatternedCorrelationContainer container) {
       /*
-       * Rule : Static analysis MUST detect property usages where 
+       * Static analysis MUST detect property usages where 
        * propertyAliases for the associated variable's type are not found 
        * in any WSDL definitions directly imported by the WS-BPEL process.
        */
@@ -1148,20 +1132,20 @@ public final class Validator extends BpelValidator {
   @Override
   public void visit(CorrelationSetContainer container) {
       /*
-       *  The name of a <correlationSet> MUST be unique amongst the names of 
-       *  all <correlationSet> defined within the same immediately 
-       *  enclosing scope.
+       * The name of a <correlationSet> MUST be unique amongst the names of 
+       * all <correlationSet> defined within the same immediately 
+       * enclosing scope.
        */
       CorrelationSet[] correlations = container.getCorrelationSets();
-      if ( correlations == null ){
+      if (correlations == null) {
           return;
       }
       Map<String,Collection<Component>> map = new HashMap<String, Collection<Component>>();
 
       for (CorrelationSet correlation : correlations) {
-          addNamedToMap( correlation , map );
+          addNamedToMap(correlation, map);
       }
-      addErrorForNamed(  map , FIX_DUPLICATE_CORRELATION_SET_NAME );
+      addErrorForNamed(map, "FIX_SA00044"); // NOI18N
   }
   
   @Override
@@ -1179,15 +1163,15 @@ public final class Validator extends BpelValidator {
       Map<String,Collection<Component>> map = new HashMap<String, Collection<Component>>();
 
       for (PartnerLink link : links) {
-          addNamedToMap( link , map );
+          addNamedToMap(link, map);
       }
-      addErrorForNamed(  map , FIX_DUPLICATE_PARTNER_LINK_NAME );
+      addErrorForNamed(map, "FIX_SA00018"); // NOI18N
   }
   
   @Override
   public void visit(Extension extension) {
       /*
-       * Rule : In the case of mandatory extensions declared in the
+       * In the case of mandatory extensions declared in the
        * <extensions> element not supported by a WS-BPEL implementation, the
        * process definition MUST be rejected.
        */
@@ -1201,55 +1185,55 @@ public final class Validator extends BpelValidator {
               if (ns == null) {
                   ns = "";
               }
-              addError(FIX_UNSUPPORTED_EXTENSION, extension, ns);
+              addError("FIX_SA00009", extension, ns); // NOI18N
           }
       }
   }      
 
-  private void checkVariableName( VariableDeclaration declaration ) {
+  private void checkVariableName(VariableDeclaration declaration) {
       String name = declaration.getVariableName();
-      if ( name!= null && name.indexOf('.')!= -1 ){
-          addError( FIX_BAD_VARIABLE_NAME , declaration );
+      if (name!= null && name.indexOf('.') != -1) {
+          addError("FIX_SA00024", declaration); // NOI18N
       }
   }
   
   private Model getImportModel(Import imp) {
       if (Import.WSDL_IMPORT_TYPE.equals(imp.getImportType())) {
-          return ImportHelper.getWsdlModel(imp , false);
+          return ImportHelper.getWsdlModel(imp, false);
       }
       if (Import.SCHEMA_IMPORT_TYPE.equals(imp.getImportType())) {
-          return ImportHelper.getSchemaModel(imp , false);
+          return ImportHelper.getSchemaModel(imp, false);
       }
       return null;
   }
   
-  public void checkNotificationPortType( BpelEntity bpelEntity,
+  public void checkNotificationPortType(BpelEntity bpelEntity,
           WSDLReference<PortType> portType) {
-      if ( portType == null || portType.get() == null){
+      if (portType == null || portType.get() == null) {
           return;
       }
       Collection<Operation> operations = portType.get().getOperations();
-      for(Operation operation: operations) {
-          if(operation instanceof NotificationOperation) {
-              addError( FIX_WSDLOPERATION_SOLICIT_RESPONSE_NOTIFICATION, bpelEntity );
+      for (Operation operation: operations) {
+          if (operation instanceof NotificationOperation) {
+              addError("FIX_SA00001", bpelEntity); // NOI18N
           }
       }
   }
   
-  public void checkSolicitResponsePortType( BpelEntity bpelEntity,
+  public void checkSolicitResponsePortType(BpelEntity bpelEntity,
           WSDLReference<PortType> portType) {
-      if ( portType == null || portType.get() == null){
+      if (portType == null || portType.get() == null) {
           return;
       }
       Collection<Operation> operations = portType.get().getOperations();
-      for(Operation operation: operations) {
-          if(operation instanceof SolicitResponseOperation) {
-              addError( FIX_WSDLOPERATION_SOLICIT_RESPONSE_NOTIFICATION , bpelEntity );
+      for (Operation operation: operations) {
+          if (operation instanceof SolicitResponseOperation) {
+              addError("FIX_SA00001", bpelEntity); // NOI18N
           }
       }
   }
   
-  public void checkOverloadedPortTypeOperation( BpelEntity bpelEntity,
+  public void checkOverloadedPortTypeOperation(BpelEntity bpelEntity,
           WSDLReference<PortType> portType) {
       if (portType == null || portType.get() == null) {
           return;
@@ -1257,19 +1241,19 @@ public final class Validator extends BpelValidator {
       Collection<Operation> operations = portType.get().getOperations();
       Set<String> operationsSet = new HashSet<String>();
       
-      for(Operation operation: operations) {
+      for (Operation operation: operations) {
           operationsSet.add(operation.getName());
       }
       
-      if(operationsSet.size() != operations.size()) {
-          addError( FIX_PORT_TYPE_OVERLOADED_OPERATION_NAME, bpelEntity );
+      if (operationsSet.size() != operations.size()) {
+          addError("FIX_SA00002", bpelEntity); // NOI18N
       }
   }
   
   public void checkInputVariableToPartCombination(Invoke invoke) {
       if (invoke.getInputVariable() != null) {
           if (invoke.getToPartContaner() != null && invoke.getToPartContaner().sizeOfToParts() != 0) {
-              addError(FIX_INPUTVARIABLE_TOPART_COMBINATION, invoke);
+              addError("FIX_SA00051", invoke); // NOI18N
           }
       }
   }
@@ -1277,27 +1261,27 @@ public final class Validator extends BpelValidator {
   public void checkOutputVariableFromPartCombination(Invoke invoke) {
       if (invoke.getOutputVariable() != null) {
           if (invoke.getFromPartContaner() != null && invoke.getFromPartContaner().sizeOfFromParts() != 0) {
-              addError(FIX_OUTPUTVARIABLE_FROMPART_COMBINATION, invoke);
+              addError("FIX_SA00052", invoke); // NOI18N
           }
       }
   }
   
   public void checkValidPartAttributeFromPartElement(Invoke invoke) {
       // Only if one or more <fromPart> elements is defined.
-      if(invoke.getFromPartContaner()!=null && invoke.getFromPartContaner().sizeOfFromParts()!=0) {
+      if (invoke.getFromPartContaner()!=null && invoke.getFromPartContaner().sizeOfFromParts()!=0) {
           // For each <fromPart> element.
           FromPart[] fromParts = invoke.getFromPartContaner().getFromParts();
           for (FromPart fromPart : fromParts) {
               boolean valid = false;
               
-              if(fromPart==null || fromPart.getPart() == null) {
+              if (fromPart==null || fromPart.getPart() == null) {
                   return;
               }
               WSDLReference<Part> part = fromPart.getPart();
               
               Part partRef = part.get();
               
-              if(partRef != null) {
+              if (partRef != null) {
                   // This will be handled by another rule.
                   if (invoke.getOperation()==null || 
                           invoke.getOperation().get() ==null ||
@@ -1308,16 +1292,15 @@ public final class Validator extends BpelValidator {
                   ) {
                       return;
                   }
-                  for(Part wsdlPart: invoke.getOperation().get().getOutput().getMessage().get().getParts()) {
-                      if(wsdlPart.equals(partRef)) {
+                  for (Part wsdlPart: invoke.getOperation().get().getOutput().getMessage().get().getParts()) {
+                      if (wsdlPart.equals(partRef)) {
                           valid = true;
                           break;
                       }
                   }
               }
-              
-              if(!valid) {
-                  addError( FIX_INVALID_FROMPART_PARTATTR ,fromPart);
+              if ( !valid) {
+                  addError("FIX_SA00053", fromPart); // NOI18N
               }
           }
       }
@@ -1325,19 +1308,19 @@ public final class Validator extends BpelValidator {
   
   public void checkValidPartAttributeToPartElement(Invoke invoke) {
       // Only if one or more <toPart> elements is defined.
-      if(invoke.getToPartContaner()!=null && invoke.getToPartContaner().sizeOfToParts()!=0) {
+      if (invoke.getToPartContaner()!=null && invoke.getToPartContaner().sizeOfToParts() != 0) {
           // For each <toPart> element.
           ToPart[] toParts = invoke.getToPartContaner().getToParts();
           for (ToPart toPart : toParts) {
               boolean valid = false;
               
-              if(toPart==null || toPart.getPart() == null){
+              if (toPart==null || toPart.getPart() == null) {
                   return;
               }
               WSDLReference<Part> part = toPart.getPart();
               
               Part partRef = part.get();
-              if(partRef != null) {
+              if (partRef != null) {
                   // This will be handled by another rule.
                   if (invoke.getOperation()==null || invoke.getOperation().
                           get() ==null ||
@@ -1349,15 +1332,14 @@ public final class Validator extends BpelValidator {
                       return;
                   }
                   for (Part wsdlPart: invoke.getOperation().get().getInput().getMessage().get().getParts()) {
-                      if(wsdlPart.equals(partRef)) {
+                      if (wsdlPart.equals(partRef)) {
                           valid = true;
                           break;
                       }
                   }
               }
-              
-              if(!valid) {
-                  addError( FIX_INVALID_TOPART_PARTATTR ,toPart);
+              if ( !valid) {
+                  addError("FIX_SA00054", toPart); // NOI18N
               }
           }
       }
@@ -1390,17 +1372,17 @@ public final class Validator extends BpelValidator {
               for (ToPart toPart : toParts) {
                   // # 84147
                   WSDLReference<Part> partRef = toPart.getPart();
-                  if ( partRef == null ){
+                  if (partRef == null) {
                       continue;
                   }
                   Part part =  partRef.get();
-                  if( part != null && wsdlPart.equals(part)){
+                  if (part != null && wsdlPart.equals(part)) {
                       assigned = true;
                       break;
                   }
               }
-              if(!assigned) {
-                  addError( FIX_WSDL_MESSAGE_NOT_COMPLETELY_INITIALISED, invoke);
+              if ( !assigned) {
+                  addError("FIX_SA00050", invoke); // NOI18N
                   break;
               }
           }
@@ -1427,17 +1409,17 @@ public final class Validator extends BpelValidator {
 
               for (ToPart toPart : toParts) {
                   WSDLReference<Part> partRef = toPart.getPart();
-                  if ( partRef == null ){
+                  if (partRef == null) {
                       continue;
                   }
                   Part part =  partRef.get();
-                  if (part != null && wsdlPart.equals(part)){
+                  if (part != null && wsdlPart.equals(part)) {
                       assigned = true;
                       break;
                   }
               }
               if ( !assigned) {
-                  addError( FIX_WSDL_MESSAGE_NOT_COMPLETELY_INITIALISED, reply);
+                  addError("FIX_SA00050", reply); // NOI18N
                   break;
               }
           }
@@ -1450,10 +1432,10 @@ public final class Validator extends BpelValidator {
       }
       if (receive.getVariable() != null) {
           if (receive.getFromPartContaner() != null && receive.getFromPartContaner().sizeOfFromParts() != 0) {
-              addError(FIX_RECEIVE_VARIABLE_FROMPART_COMBINATION, receive);
+              addError("FIX_SA00055", receive); // NOI18N
           }
       }
-      // Rule SA00047
+      // SA00047
       WSDLReference<Operation> operationRef = receive.getOperation();
 
       if (operationRef == null) {
@@ -1465,7 +1447,7 @@ public final class Validator extends BpelValidator {
           return;
       }
       if (isAbsentOutputVaribale(receive, operation)) {
-          addError(FIX_ABSENT_OUTPUT_VARIABLE, receive);
+          addError("FIX_SA00047_4", receive); // NOI18N
       }
   }
   
@@ -1475,7 +1457,7 @@ public final class Validator extends BpelValidator {
       }
       if (onMessage.getVariable() != null) {
           if (onMessage.getFromPartContaner() != null && onMessage.getFromPartContaner().sizeOfFromParts() != 0) {
-              addError( FIX_ONMESSAGE_VARIABLE_FROMPART_COMBINATION, onMessage );
+              addError("FIX_SA00063", onMessage); // NOI18N
           }
       }
   }    
@@ -1486,23 +1468,22 @@ public final class Validator extends BpelValidator {
       }
       if (reply.getVariable() != null) {
           if (reply.getToPartContaner() != null && reply.getToPartContaner().sizeOfToParts() != 0) {
-              addError( FIX_REPLY_VARIABLE_TOPART_COMBINATION , reply );
+              addError("FIX_SA00059", reply); // NOI18N
           }
       }
-      
-      // Rule SA00047
+      // SA00047
       WSDLReference<Operation> operationRef = reply.getOperation();
 
-      if ( operationRef == null ) {
+      if (operationRef == null) {
           return;
       }
       Operation operation = operationRef.get();
       
-      if ( operation == null ) {
+      if (operation == null) {
           return;
       }
       if (isAbsentInputVaribale(reply, operation)) {
-          addError(FIX_ABSENT_INPUT_VARIABLE, reply);
+          addError("FIX_SA00047_6", reply); // NOI18N
       }
   }
   
@@ -1530,17 +1511,17 @@ public final class Validator extends BpelValidator {
 //out("    2: " + getName(portTypeDirectRef.get()));
   }
   
-  private void addNamedToMap( BpelEntity named, Map<String, Collection<Component>> map  ) {
+  private void addNamedToMap(BpelEntity named, Map<String, Collection<Component>> map) {
       addNamedToMap(named, map, DEFAULT_NAME_ACESS);
   }
   
-  private void addErrorForNamed( Map<String, Collection<Component>> map, String key) {
-      for( Entry<String, Collection<Component>> entry : map.entrySet()) {
+  private void addErrorForNamed(Map<String, Collection<Component>> map, String key) {
+      for (Entry<String, Collection<Component>> entry : map.entrySet()) {
           String name = entry.getKey();
           assert name != null;
           Collection<Component> collection = entry.getValue();
 
-          if (collection!= null && collection.size() > 1 ) {
+          if (collection!= null && collection.size() > 1) {
               for (Component component : collection) {
                   addError(key, component, getName(component));
               }
@@ -1548,265 +1529,254 @@ public final class Validator extends BpelValidator {
       }
   }
   
-  private void addNamedToMap( BpelEntity entity, Map<String, Collection<Component>> map, NameAccess access ) {
+  private void addNamedToMap(BpelEntity entity, Map<String, Collection<Component>> map, NameAccess access) {
       String name = access.getName(entity);
 
       if (name== null) {
           return;
       }
-      Collection<Component> collection =  map.get( name );
+      Collection<Component> collection =  map.get(name);
       
-      if ( collection == null ) {
+      if (collection == null) {
           collection = new LinkedList<Component>();
-          map.put( name, collection );
+          map.put(name, collection);
       }
-      collection.add( entity );
+      collection.add(entity);
   }
   
-  private void addCompensateError(  Activity compensate ) {
-      addError( FIX_COMPENSATE_OCCURANCE , compensate, compensate.getPeer().getLocalName());
-  }
-  
-  private void checkCompensateOccurance( Activity compensate ) {
+  private void checkCompensateOccurance(Activity compensate) {
       /*
-       *  Rule : The <compensate(Scope)> activity MUST only be used from within a faultHandler,
-       *  another compensationHandler, or a terminationHandler.
+       * The <compensate(Scope)> activity MUST only be used from within a faultHandler,
+       * another compensationHandler, or a terminationHandler.
        */
-      if ( Utils.hasAscendant( compensate , FaultHandlers.class ) ){
+      if (Utils.hasAscendant(compensate, FaultHandlers.class)) {
           return;
       }
-      if ( Utils.hasAscendant( compensate ,CompensationHandler.class )) {
+      if (Utils.hasAscendant(compensate, CompensationHandler.class)) {
           return;
       }
-      if ( Utils.hasAscendant( compensate , TerminationHandler.class ) ) {
+      if (Utils.hasAscendant(compensate, TerminationHandler.class)) {
           return;
       }
-      addCompensateError(  compensate );
+      addError("FIX_SA00007_SA00008", compensate, compensate.getPeer().getLocalName()); // NOI18N
   }
   
-  private void addNamedActivity( BpelEntity entity, Map<String, Collection<Component>> map ) {
-      if ( entity instanceof ExtendableActivity &&
-              entity instanceof NamedElement ) {
-          String name = ((NamedElement) entity ).getName();
-          if ( name == null ) {
+  private void addNamedActivity(BpelEntity entity, Map<String, Collection<Component>> map) {
+      if (entity instanceof ExtendableActivity && entity instanceof NamedElement) {
+          String name = ((NamedElement) entity).getName();
+          
+          if (name == null) {
               return;
           }
           Collection<Component> collection = map.get(name);
-          if ( collection == null ) {
+
+          if (collection == null) {
               collection = new LinkedList<Component>();
               map.put(name, collection);
           }
-          collection.add( (Component)entity );
+          collection.add((Component)entity);
       }
   }
   
-  private void collectIsolatedScopes( BpelContainer container, Collection<Component> collection ) {
+  private void collectIsolatedScopes(BpelContainer container, Collection<Component> collection) {
       List<BpelEntity> children = container.getChildren();
 
       for (BpelEntity entity : children) {
-          if ( entity instanceof Scope && TBoolean.YES.equals(
-                  ((Scope) entity).getIsolated() )) {
-              collection.add( entity );
+          if (entity instanceof Scope && TBoolean.YES.equals(
+                  ((Scope) entity).getIsolated())) {
+              collection.add(entity);
           }
-          if ( entity instanceof BpelContainer ) {
-              collectIsolatedScopes( (BpelContainer)entity, collection );
+          if (entity instanceof BpelContainer) {
+              collectIsolatedScopes((BpelContainer)entity, collection);
           }
       }
   }
 
-  private void checkOrderOfActivities( CreateInstanceActivity activity ) {
-      if ( TBoolean.YES.equals( activity.getCreateInstance())) {
+  private void checkOrderOfActivities(CreateInstanceActivity activity) {
+      if (TBoolean.YES.equals(activity.getCreateInstance())) {
           /* 
-           * I will put into this set visited container ( sequence and flow )
+           * I will put into this set visited container (sequence and flow)
            * for avoiding visiting them one more time while following up of tree.
            * 
            * This will fix bug #85727
            */
           Set<CompositeActivity> set = new HashSet<CompositeActivity>();
           ExtendableActivity beforeOrSimultaneously = 
-              findPreviouslyPerformedActivities( (Activity) activity , set );
-          if ( beforeOrSimultaneously != null ) {
-              Collection<Component> collection = new ArrayList<Component>( 2 );
-              collection.add( (Activity)activity );
-              collection.add( beforeOrSimultaneously );
-              addErrorCollection(FIX_START_ACTIVITY_IS_NOT_FIRST_EXECUTED, collection);
+              findPreviouslyPerformedActivities((Activity) activity, set);
+          if (beforeOrSimultaneously != null) {
+              Collection<Component> collection = new ArrayList<Component>(2);
+              collection.add((Activity)activity);
+              collection.add(beforeOrSimultaneously);
+              addErrorCollection("FIX_SA00056", collection); // NOI18N
           }
       }
   }
 
-  private void visitBaseScope( BaseScope baseScope ) {
+  private void visitBaseScope(BaseScope baseScope) {
       /*
-       * Rule : The name of a named activity MUST be unique amongst
+       * The name of a named activity MUST be unique amongst
        * all named activities present within the same immediately
        * enclosing scope. This requirement MUST be statically enforced.
        */
-      Map<String,Collection<Component>> map =
-              new HashMap<String, Collection<Component>>();
-      collectActivitiesInScope( baseScope , map );
-      addErrorForNamed( map, FIX_MULTIPLE_NAMED_ACTIVITIES);
+      Map<String,Collection<Component>> map = new HashMap<String, Collection<Component>>();
+      collectActivitiesInScope(baseScope, map);
+      addErrorForNamed(map, "FIX_SA00092"); // NOI18N
       
       /*
-       * Rule : If the value of exitOnStandardFault of a <scope> or <process>
+       * If the value of exitOnStandardFault of a <scope> or <process>
        * is set to "yes", then a fault handler that explicitly targets the
        * WS-BPEL standard faults MUST NOT be used in that scope.
        * A process definition that violates this condition MUST be
        * detected and rejected by static analysis.
        */
-      if ( TBoolean.YES.equals( baseScope.getExitOnStandardFault() ) &&
-              baseScope.getFaultHandlers()!= null ) {
+      if (TBoolean.YES.equals(baseScope.getExitOnStandardFault()) &&
+              baseScope.getFaultHandlers()!= null) {
           Catch[] catches = baseScope.getFaultHandlers().getCatches();
           Collection<Component> collection = new LinkedList<Component>();
           for (Catch catc : catches) {
               QName qName = catc.getFaultName();
-              if ( qName!= null && BpelEntity.BUSINESS_PROCESS_NS_URI.equals(
-                      qName.getNamespaceURI() ) ) {
+              if (qName!= null && BpelEntity.BUSINESS_PROCESS_NS_URI.equals(qName.getNamespaceURI())) {
                   /*
-                   *  suggest that all qnames in bpws namespace are standart
-                   *  faults ( may be this is wrong sugestion )
+                   * suggest that all qnames in bpws namespace are standart
+                   * faults (may be this is wrong sugestion)
                    */
-                  collection.add( catc );
+                  collection.add(catc);
               }
           }
-          if ( collection.size() >0 ){
-              addErrorCollection(FIX_EXIT_ON_STANDART_FAULT, collection);
+          if (collection.size() > 0) {
+              addErrorCollection("FIX_SA00003", collection); // NOI18N
           }
       }
   }
   
-  private void collectActivitiesInScope( BpelContainer container, Map<String,Collection<Component>> map ) {
+  private void collectActivitiesInScope(BpelContainer container, Map<String,Collection<Component>> map) {
       List<BpelEntity> children = container.getChildren();
 
       for (BpelEntity entity : children) {
-          addNamedActivity( entity, map );
-          if ( entity instanceof BaseScope ) {
+          addNamedActivity(entity, map);
+          if (entity instanceof BaseScope) {
               // we do not need to go further in scope for searching activities with duplicate names.
               continue;
           }
-          if ( entity instanceof BpelContainer ) {
-              collectActivitiesInScope( (BpelContainer)entity, map);
+          if (entity instanceof BpelContainer) {
+              collectActivitiesInScope((BpelContainer)entity, map);
           }
       }
   }
   
-  private void checkImportType( Import imp ) {
+  private void checkImportType(Import imp) {
       String importType = imp.getImportType();
-      if ( !Import.WSDL_IMPORT_TYPE.equals( importType) &&
-              !Import.SCHEMA_IMPORT_TYPE.equals( importType ) ) {
-          addError( FIX_BAD_IMPORT_TYPE , imp );
+
+      if ( !Import.WSDL_IMPORT_TYPE.equals(importType) && !Import.SCHEMA_IMPORT_TYPE.equals(importType)) {
+          addError("FIX_SA00013", imp); // NOI18N
       }
   }
   
-  private void checkInstantiableActivities( Process process ) {
-      Collection<Activity> collection = getInstantiableActivities( process );
-      if ( collection.size() ==0 ){
-              addError( FIX_NO_PICK_OR_RECEIVE_WITH_CREATE_INSTANCE , process );
+  private void checkInstantiableActivities(Process process) {
+      Collection<Activity> collection = getInstantiableActivities(process);
+      
+      if (collection.size() == 0) {
+          addError("FIX_SA00015", process); // NOI18N
       }
       
-      if ( collection.size() >0 ) {
-          checkCorellations( collection );
+      if (collection.size() > 0) {
+          checkCorellations(collection);
       }
   }
 
-  private void checkMessageType( OnEvent onEvent ) {
+  private void checkMessageType(OnEvent onEvent) {
       WSDLReference<Message> messageRef = onEvent.getMessageType();
       WSDLReference<Operation> operationRef = onEvent.getOperation();
-      if ( operationRef == null || operationRef.get()==null ){
+      if (operationRef == null || operationRef.get()==null) {
           return;
       }
       Operation operation = operationRef.get();
-      if ( messageRef!= null){
-          if ( !checkMessageTypeInOnEvent( messageRef, operation ) ){
-              addError( FIX_MESSAGE_TYPE_IN_ON_EVENT , onEvent );
+
+      if (messageRef != null) {
+          if ( !checkMessageTypeInOnEvent(messageRef, operation)) {
+              addError("FIX_SA00087", onEvent); // NOI18N
           }
-      } else {
+      }
+      else {
           SchemaReference<GlobalElement> elementRef = onEvent.getElement();
-          if ( elementRef == null ){
-              // do not need to do anything. Both messageType and element attributes could be absent.
+
+          if (elementRef == null) {
               return;
           }
-          if ( !checkElementInOnEvent( elementRef, operation) ){
-              addError( FIX_ELEMENT_IN_ON_EVENT , onEvent );
+          if ( !checkElementInOnEvent(elementRef, operation)) {
+              addError("FIX_SA00087", onEvent); // NOI18N
           }
       }
   }
   
-  private void checkLinks( Flow flow ) {
+  private void checkLinks(Flow flow) {
       LinkContainer linkContainer = flow.getLinkContainer();
-      if ( linkContainer == null ){
+
+      if (linkContainer == null) {
           return;
       }
       Link[] links = linkContainer.getLinks();
-      Set<Link> list = new HashSet<Link>( Arrays.asList( links) );
+      Set<Link> list = new HashSet<Link>(Arrays.asList(links));
       List<BpelEntity> children = flow.getChildren();
       
       Map<Link,Collection<Component>> sources = new HashMap<Link,Collection<Component>>();
       Map<Link,Collection<Component>> targets = new HashMap<Link,Collection<Component>>();
       
       for (BpelEntity child : children) {
-          collectLinks( child , list , sources , targets );
+          collectLinks(child, list, sources, targets);
       }
       Map<Pair<Component>,Collection<Link>> foundSourcesAndTargets = new HashMap<Pair<Component>,Collection<Link>>();
-      for( Link link : list ){
+      for (Link link : list) {
           boolean isUsed = false;
-          Collection<Component> collection = sources.get( link );
-          isUsed =  checkLink(link, collection , FIX_MILTIPLE_LINK_SOURCE );
+          Collection<Component> collection = sources.get(link);
+          isUsed =  checkLink(link, collection, "FIX_SA00066"); // NOI18N
           Component source = null;
-          if ( isUsed ) {
+
+          if (isUsed) {
               source = collection.iterator().next();
           }
-          
-          collection = targets.get( link );
-          if ( !isUsed ||
-                  !checkLink(link, collection , FIX_MILTIPLE_LINK_TARGET ) ) {
-              addError( FIX_LINK_IS_NOT_USED , link );
-          } else {
+          collection = targets.get(link);
+
+          if ( !isUsed || !checkLink(link, collection, "FIX_SA00066")) { // NOI18N
+              addError("FIX_SA00066", link); // NOI18N
+          }
+          else {
               Component target = collection.iterator().next();
               /*
                * Here we perform one more check. It will be started only when
-               * link appear between  source and target ( from previous check )
+               * link appear between  source and target (from previous check)
                * for just ONE activity as source and ONE activity as target.
                */
-              checkLinkSingleton( foundSourcesAndTargets, link, source, target);
-              
-              checkLinkBoundaries( link , (BpelEntity)source ,
-                      (BpelEntity)target );
+              checkLinkSingleton(foundSourcesAndTargets, link, source, target);
+              checkLinkBoundaries(link, (BpelEntity) source, (BpelEntity) target);
           }
       }
   }
 
-  private void checkInputOutputVariableOperation( Invoke invoke ) {
+  private void checkInputOutputVariableOperation(Invoke invoke) {
       WSDLReference<Operation> operationRef = invoke.getOperation();
-      if ( operationRef == null ) {
+      if (operationRef == null) {
           return;
       }
       Operation operation = operationRef.get();
 
       if (operation instanceof RequestResponseOperation) {
           if (isAbsentInputVaribale(invoke, operation) || isAbsentOutputVaribale(invoke, operation)) {
-              addError(FIX_ABSENT_INPUT_OUTPUT_VARIABLES, invoke);
+              addError("FIX_SA00047_2", invoke); // NOI18N
           }
           else {
-              /*
-               *  only if all is ok we start the next check - equality of
-               *  variable types and message type 
-               */ 
-              checkInputVariable( invoke , operation );
-              checkOutputVariable( invoke , operation );
+              // only if all is ok we start the next check - equality of variable types and message type 
+              checkInputVariable(invoke, operation);
+              checkOutputVariable(invoke, operation);
           }
       }
       else if (operation instanceof OneWayOperation) {
-          if (invoke.getOutputVariable() != null || (invoke.getFromPartContaner() != null && invoke.getFromPartContaner().sizeOfFromParts() > 0)) {
-              addError(FIX_OUTPUT_VARIABLE_FOR_ONE_WAY_OP, invoke);
-          }           
           if (isAbsentInputVaribale(invoke, operation)) {
-              addError(FIX_ABSENT_INPUT_VARIABLE_FOR_ONE_WAY_OP, invoke);
+              addError("FIX_SA00047", invoke); // NOI18N
           }
           else {
-              /*
-               *  only if all is ok we start the next check - equality of
-               *  variable types and message type 
-               */ 
-              checkInputVariable( invoke , operation );
+              // only if all is ok we start the next check - equality of variable types and message type 
+              checkInputVariable(invoke, operation);
           }
       }
   }
@@ -1817,106 +1787,102 @@ public final class Validator extends BpelValidator {
     }
   }
 
-  private void checkFCTScope( BpelContainer container ) {
-      Collection<Scope> scopes = getScopes( container );
+  private void checkFCTScope(BpelContainer container) {
+      Collection<Scope> scopes = getScopes(container);
       for (Scope scope : scopes) {
-          if ( scope.getCompensationHandler()!= null ){
+          if (scope.getCompensationHandler()!= null) {
               Collection<Component> collection =
-                      new ArrayList<Component>( 2 );
-              collection.add( container );
-              collection.add( scope );
-              addErrorCollection(FIX_SCOPE_INSIDE_FCT_CONTAINS_COMPENSATION_HANDLER, collection);
+                      new ArrayList<Component>(2);
+              collection.add(container);
+              collection.add(scope);
+              addErrorCollection("FIX_SA00079", collection); // NOI18N
           }
       }
   }
   
-  private void checkPropertyAliasMultiplicity( Process process ) {
+  private void checkPropertyAliasMultiplicity(Process process) {
       Collection<PropertyAlias> aliases = 
-          getPropertyAliases( null , null, process.getBpelModel() );
+          getPropertyAliases(null, null, process.getBpelModel());
       Set<Pair<QName>> qNames = new HashSet<Pair<QName>>(); // # 80412
       for (PropertyAlias alias : aliases) {
           NamedComponentReference<CorrelationProperty> propRef = 
               alias.getPropertyName();
           NamedComponentReference<Message> messageRef = alias.getMessageType();
-          if ( propRef!= null && messageRef != null ) {
+          if (propRef!= null && messageRef != null) {
               QName name = propRef.getQName();
-              QName forCheckName = new QName( name.getNamespaceURI() , 
-                      name.getLocalPart());
+              QName forCheckName = new QName(name.getNamespaceURI(), name.getLocalPart());
               QName message = messageRef.getQName();      // # 80412
-              QName forCheckMessage = new QName (message.getNamespaceURI(),
-                      message.getLocalPart() );
-              Pair<QName> pair = new Pair<QName>( forCheckName , 
-                      forCheckMessage);                   // # 80412
-              if ( qNames.contains( pair )) {
-                  addError( FIX_MULTIPLE_PROPERTY_ALIAS_FOR_PROPERTY , 
-                          process );
+              QName forCheckMessage = new QName (message.getNamespaceURI(), message.getLocalPart());
+              Pair<QName> pair = new Pair<QName>(forCheckName, forCheckMessage); // # 80412
+              if (qNames.contains(pair)) {
+                  addError("FIX_SA00022", process); // NOI18N
               }
               else {
-                  qNames.add( pair );
+                  qNames.add(pair);
               }
           }
       }
   }
   
-  private void checkPropertyUsageInInputMessage( OperationReference reference, BaseCorrelation[] correlations) {
-      if ( correlations.length == 0) {
+  private void checkPropertyUsageInInputMessage(OperationReference reference, BaseCorrelation[] correlations) {
+      if (correlations.length == 0) {
           return;
       }
       WSDLReference<Operation> operationRef = reference.getOperation();
-      if ( operationRef == null ) {
+      if (operationRef == null) {
           return;
       }
       Operation operation = operationRef.get();
-      if ( operation == null ) {
+      if (operation == null) {
           return;
       }
-      Message message = getInputMessage( operation );
-      if ( message == null ) {
+      Message message = getInputMessage(operation);
+      if (message == null) {
           return;
       }
       for (BaseCorrelation correlation : correlations) {
           boolean flag = true;
-          if ( correlation instanceof PatternedCorrelation ){
+          if (correlation instanceof PatternedCorrelation) {
               Pattern pattern = ((PatternedCorrelation)correlation).getPattern();
-              flag = Pattern.isRequestApplicable( pattern );
+              flag = Pattern.isRequestApplicable(pattern);
           }
-          if ( flag ) {
-              checkPropertyList(correlation, message );
+          if (flag) {
+              checkPropertyList(correlation, message);
           }
       }
   }
   
-  private void checkPropertyUsageInOutputMessage( OperationReference reference, BaseCorrelation[] correlations) {
-      if ( correlations.length == 0) {
+  private void checkPropertyUsageInOutputMessage(OperationReference reference, BaseCorrelation[] correlations) {
+      if (correlations.length == 0) {
           return;
       }
       WSDLReference<Operation> operationRef = reference.getOperation();
-      if ( operationRef == null ) {
+      if (operationRef == null) {
           return;
       }
       Operation operation = operationRef.get();
-      if ( operation == null ) {
+      if (operation == null) {
           return;
       }
-      Message message = getOutputMessage( operation );
-      if ( message == null ) {
+      Message message = getOutputMessage(operation);
+      if (message == null) {
           return;
       }
       for (BaseCorrelation correlation : correlations) {
           boolean flag = true;
-          if ( correlation instanceof PatternedCorrelation ){
+          if (correlation instanceof PatternedCorrelation) {
               Pattern pattern = ((PatternedCorrelation)correlation).getPattern();
-              flag = Pattern.isResponseApplicable( pattern );
+              flag = Pattern.isResponseApplicable(pattern);
           }
-          if ( flag ) { 
-              checkPropertyList(correlation, message );
+          if (flag) { 
+              checkPropertyList(correlation, message);
           }
       }
   }
   
-  private void checkVariableContainer( VariableContainer container ) {
+  private void checkVariableContainer(VariableContainer container) {
       /*
-       * Rule : The name of a variable MUST be unique amongst the names of all
+       * The name of a variable MUST be unique amongst the names of all
        * variables defined within the same immediately enclosing scope. This
        * requirement MUST be statically enforced.
        */
@@ -1929,12 +1895,13 @@ public final class Validator extends BpelValidator {
       for (Variable variable : variables) {
           addNamedToMap(variable, map);
       }
-      addErrorForNamed(map, FIX_DUPLICATE_VARIABLE_NAME);
+      addErrorForNamed(map, "FIX_SA00023"); // NOI18N
   }
 
-  private void checkImplicitlyDeclaredVars( OnEvent onEvent ) {
+  private void checkImplicitlyDeclaredVars(OnEvent onEvent) {
       FromPartContainer parts = onEvent.getFromPartContaner();
-      if (parts == null || parts.getFromParts()==null) {
+
+      if (parts == null || parts.getFromParts() == null) {
           return;
       }
       /*
@@ -1959,65 +1926,66 @@ public final class Validator extends BpelValidator {
       if (scope != null && scope.getVariableContainer() != null) {
           VariableContainer container = scope.getVariableContainer();
           Variable[] variables = container.getVariables();
+
           for (Variable variable : variables) {
               String name = variable.getName();
+
               if (mapVarsInScope.containsKey(name)) {
-                  addNamedToMap(variable, map,
-                          LazyHolder.VAR_DECL_NAME_ACCESS);
+                  addNamedToMap(variable, map, LazyHolder.VAR_DECL_NAME_ACCESS);
               }
           }
       }
-      addErrorForNamed(map, FIX_DUPLICATE_VARIABLE_NAME_ON_EVENT);
+      addErrorForNamed(map, "FIX_SA00084_SA00086_SA00089"); // NOI18N
   }
   
-  private void checkCorellations( Collection<Activity> collection ) {
+  private void checkCorellations(Collection<Activity> collection) {
       Set<CorrelationSet> sharedCorrelations = new HashSet<CorrelationSet>();
       boolean first = true;
-      Collection<Component> components = new ArrayList<Component>( 
-              collection.size() );
+      Collection<Component> components = new ArrayList<Component>(
+              collection.size());
       for (Activity activity : collection) {
-          components.add( activity );
+          components.add(activity);
           Collection<CorrelationSet> correlations = 
-              getJoinedCorrelationSets( activity );
-          if ( first ) {
+              getJoinedCorrelationSets(activity);
+          if (first) {
               first = false;
-              sharedCorrelations.addAll( correlations );
+              sharedCorrelations.addAll(correlations);
           }
           else {
-              sharedCorrelations.retainAll( correlations );
-              checEmptySet( sharedCorrelations , components );
+              sharedCorrelations.retainAll(correlations);
+              checEmptySet(sharedCorrelations, components);
           }
       }
   }
 
   private void checEmptySet(Set<CorrelationSet> sharedCorrelations, Collection<Component> components) {
-      if ( sharedCorrelations.size() ==0 ) {
-          addErrorCollection(FIX_ABSENT_SHARED_JOINED_CORRELATION_SET, components);
+      if (sharedCorrelations.size() ==0) {
+          addErrorCollection("FIX_SA00057", components); // NOI18N
       }
   }
 
   @SuppressWarnings("unchecked") // NOI18N
   private Collection<CorrelationSet> getJoinedCorrelationSets(Activity activity) {
-      if ( activity.getElementType().equals( Receive.class )) {
+      if (activity.getElementType().equals(Receive.class)) {
           Receive receive = (Receive)activity;
           return getJoinedCorrelationSets(receive.getCorrelationContainer());
       }
-      else if ( activity.getElementType().equals( Pick.class ) ) {
+      else if (activity.getElementType().equals(Pick.class)) {
           Pick pick = (Pick)activity;
           OnMessage[] onMessages = pick.getOnMessages();
           Collection<CorrelationSet> collection = null;
           for (OnMessage onMessage : onMessages) {
-              if ( collection == null ) {
+              if (collection == null) {
                   collection = getJoinedCorrelationSets(
                           onMessage.getCorrelationContainer());
               }
               else {
-                  collection.addAll( getJoinedCorrelationSets(
-                          onMessage.getCorrelationContainer() ));
+                  collection.addAll(getJoinedCorrelationSets(
+                          onMessage.getCorrelationContainer()));
               }
           }
           // # 83773
-          if ( collection == null ) {
+          if (collection == null) {
               collection = Collections.EMPTY_LIST;
           }
           return collection;
@@ -2025,7 +1993,7 @@ public final class Validator extends BpelValidator {
       return Collections.EMPTY_LIST;
   }
 
-  private void checkPropertyList( BaseCorrelation correlation , Message message) {
+  private void checkPropertyList(BaseCorrelation correlation, Message message) {
       BpelReference<CorrelationSet> setRef = correlation.getSet();
 
       if (setRef == null) {
@@ -2048,7 +2016,7 @@ public final class Validator extends BpelValidator {
           Collection<PropertyAlias> collection = getPropertyAliases(reference.getQName(), message, correlation.getBpelModel());
 
           if (collection.size() == 0 && reference != null && reference.get() != null) {
-            addError("FIX_AbsentPropertyAliasForMessage", correlation, reference.get().getName(), set.getName()); // NOI18N
+            addError("FIX_SA00021", correlation, reference.get().getName(), set.getName()); // NOI18N
           }
       }
   }
@@ -2056,39 +2024,39 @@ public final class Validator extends BpelValidator {
   @SuppressWarnings("unchecked") // NOI18N
   private Set<PropertyAlias> getPropertyAliases(QName name, Message message, BpelModel model) {
       Import[] imports = model.getProcess().getImports();
-      if ( imports.length == 0 ) {
+      if (imports.length == 0) {
           return Collections.EMPTY_SET;
       }
       else {
           Set<PropertyAlias> list = new HashSet<PropertyAlias>();
-          for ( Import imp : imports ) {
-              collectPropertyAliases( name , message , imp , list );
+          for (Import imp : imports) {
+              collectPropertyAliases(name, message, imp, list);
           }
           return list;
       }
   }
 
-  private void collectPropertyAliases( QName name, Message message, Import imp, Set<PropertyAlias> list) {
+  private void collectPropertyAliases(QName name, Message message, Import imp, Set<PropertyAlias> list) {
       WSDLModel model = ImportHelper.getWsdlModel(imp);
 
       if (model == null) {
           return;
       }
-      if ( model.getState() != State.VALID ) {
+      if (model.getState() != State.VALID) {
           return;
       }
       List<PropertyAlias> properties = 
-          model.getDefinitions().getExtensibilityElements( PropertyAlias.class );
+          model.getDefinitions().getExtensibilityElements(PropertyAlias.class);
       for (PropertyAlias alias : properties) {
           NamedComponentReference<CorrelationProperty> propRef = 
               alias.getPropertyName();
-          if ( propRef == null ) {
+          if (propRef == null) {
               continue;
           }
-          if ( name!= null && !Utils.equals( propRef.getQName() , name )){
+          if (name!= null && !Utils.equals(propRef.getQName(), name)) {
               continue;
           }
-          if ( message == null ) {
+          if (message == null) {
               list.add(alias);
               continue;
           }
@@ -2105,84 +2073,85 @@ public final class Validator extends BpelValidator {
   @SuppressWarnings("unchecked") // NOI18N
   private Collection<CorrelationSet> getJoinedCorrelationSets(CorrelationContainer container) {
       Collection<CorrelationSet> collection = new LinkedList<CorrelationSet>();
-      if ( container == null ) {
+      if (container == null) {
           return Collections.EMPTY_LIST;
       }
       Correlation[] correlations = container.getCorrelations();
       for (Correlation correlation : correlations) {
           if (Initiate.JOIN.equals(correlation.getInitiate())) {
               BpelReference<CorrelationSet> setRef = correlation.getSet();
-              if ( setRef!= null && setRef.get()!= null ) {
-                  collection.add( setRef.get() );
+              if (setRef!= null && setRef.get()!= null) {
+                  collection.add(setRef.get());
               }
           }
       }
       return collection;
   }
 
-  private Message getInputMessage( Operation operation  ) {
+  private Message getInputMessage(Operation operation) {
       Input input = operation.getInput();
-      if ( input == null ){
+      if (input == null) {
           return null;
       }
       NamedComponentReference<Message> messageRef = input.getMessage();
-      if ( messageRef == null ) {
+      if (messageRef == null) {
           return null;
       }
       return messageRef.get();
   }
   
-  private Message getOutputMessage( Operation operation  ) {
+  private Message getOutputMessage(Operation operation) {
       Output output = operation.getOutput();
-      if ( output == null ){
+
+      if (output == null) {
           return null;
       }
       NamedComponentReference<Message> messageRef = output.getMessage();
-      if ( messageRef == null ) {
+      if (messageRef == null) {
           return null;
       }
       return messageRef.get();
   }
 
-  private void checkInputVariable( Invoke invoke, Operation operation ) {
+  private void checkInputVariable(Invoke invoke, Operation operation) {
       BpelReference<VariableDeclaration> varRef = invoke.getInputVariable();
       Message message = getInputMessage(operation);
       checkVariable(invoke, varRef, message);
   }
   
-  private void checkOutputVariable( Invoke invoke, Operation operation ) {
+  private void checkOutputVariable(Invoke invoke, Operation operation) {
       BpelReference<VariableDeclaration> varRef = invoke.getOutputVariable();
       Message message = getOutputMessage(operation);
       checkVariable(invoke, varRef, message);
   }
   
   private void checkVariable(Invoke invoke, BpelReference<VariableDeclaration> varRef, Message message) {
-      if ( varRef == null ) {
+      if (varRef == null) {
           return;
       }
       VariableDeclaration variable = varRef.get();
-      if ( variable == null ) {
+      if (variable == null) {
           return;
       }
-      if ( message == null ) {
+      if (message == null) {
           return;
       }
       WSDLReference<Message> messageRef = variable.getMessageType();
-      if ( messageRef!= null) {
-          if ( !messageRef.references(message) ) {
-              addError( FIX_BAD_VARIABLE_MESSAGE_TYPE , invoke );
+      if (messageRef!= null) {
+          if ( !messageRef.references(message)) {
+              addError("FIX_SA00048_1", invoke); // NOI18N
           }
       }
-      else if ( variable.getElement()!= null) {
+      else if (variable.getElement() != null) {
           SchemaReference<GlobalElement> varElement = variable.getElement();
 
-          if ( !checkElementType(message, varElement) ) {
-              addError( FIX_BAD_VARIABLE_ELEMENT_TYPE , invoke );
+          if ( !checkElementType(message, varElement)) {
+              addError("FIX_SA00048_2", invoke); // NOI18N
           }
       }
   }
 
-  private boolean checkElementType( Message message, SchemaReference<GlobalElement> varElement) {
+  private boolean checkElementType(Message message, SchemaReference<GlobalElement> varElement) {
       if (message.getParts().size() != 1) {
           return false;
       }
@@ -2209,19 +2178,19 @@ public final class Validator extends BpelValidator {
       }
       // # 109292
       if (message.getParts().size() == 0 && invoke.getInputVariable() != null) {
-        addWarning("FIX_MentionedInputVariableForOneWayOp", invoke); // NOI18N
-        return false;
+          addWarning("FIX_SA00047_1", invoke); // NOI18N
+          return false;
       }
       if (message.getParts().size() != 0 && invoke.getInputVariable() == null && (invoke.getToPartContaner() == null || invoke.getToPartContaner().sizeOfToParts() == 0)) {
           return true;
       }
-      else if ( message.getParts().size() == 0 ) {
+      else if (message.getParts().size() == 0) {
           return invoke.getToPartContaner() == null || invoke.getToPartContaner().sizeOfToParts() == 0;
       }
       return false;
   }
   
-  private boolean isAbsentInputVaribale(Reply reply ,Operation operation) {
+  private boolean isAbsentInputVaribale(Reply reply,Operation operation) {
       Message message = getInputMessage(operation);
 
       if (message == null) {
@@ -2229,13 +2198,13 @@ public final class Validator extends BpelValidator {
       }
       // # 109292
       if (message.getParts().size() == 0 && reply.getVariable() != null) {
-        addWarning("FIX_MentionedInputVariable", reply); // NOI18N
+        addWarning("FIX_SA00047_7", reply); // NOI18N
         return false;
       }
       if (message.getParts().size() != 0 && reply.getVariable() == null && (reply.getToPartContaner() == null || reply.getToPartContaner().sizeOfToParts() == 0)) {
           return true;
       }
-      else if ( message.getParts().size() == 0 ) {
+      else if (message.getParts().size() == 0) {
           return reply.getToPartContaner() == null || reply.getToPartContaner().sizeOfToParts() == 0;
       }
       return false;
@@ -2249,13 +2218,13 @@ public final class Validator extends BpelValidator {
       }
       // # 109292
       if (message.getParts().size() == 0 && invoke.getOutputVariable() != null) {
-        addWarning("FIX_MentionedInputOutputVariables", invoke); // NOI18N
+        addWarning("FIX_SA00047_3", invoke); // NOI18N
         return false;
       }
       if (message.getParts().size() != 0 && invoke.getOutputVariable() == null && (invoke.getFromPartContaner() == null || invoke.getFromPartContaner().sizeOfFromParts() == 0)) {
           return true;
       }
-      else if ( message.getParts().size() == 0 ) {
+      else if (message.getParts().size() == 0) {
           return  invoke.getFromPartContaner() == null || invoke.getFromPartContaner().sizeOfFromParts() == 0;
       }
       return false;
@@ -2269,7 +2238,7 @@ public final class Validator extends BpelValidator {
       }
       // # 109292
       if (message.getParts().size() == 0 && receive.getVariable() != null) {
-        addWarning("FIX_MentionedOutputVariable", receive); // NOI18N
+        addWarning("FIX_SA00047_5", receive); // NOI18N
         return false;
       }
       if (message.getParts().size() != 0 && receive.getVariable() == null && (receive.getFromPartContaner() == null || receive.getFromPartContaner().sizeOfFromParts() == 0)) {
@@ -2281,10 +2250,10 @@ public final class Validator extends BpelValidator {
       return false;
   }
   
-  private boolean checkElementInOnEvent( SchemaReference<GlobalElement> ref,
-          Operation operation ) {
+  private boolean checkElementInOnEvent(SchemaReference<GlobalElement> ref,
+          Operation operation) {
       GlobalElement element = ref.get();
-      if ( element == null ){
+      if (element == null) {
           return false;
       }
       NamedComponentReference<Message>  messageOperation = getMessageRef(
@@ -2297,22 +2266,22 @@ public final class Validator extends BpelValidator {
           return false;
       }
       Collection<Part> parts = message.getParts();
-      if ( parts.size() != 1){
+      if (parts.size() != 1) {
           return false;
       }
       Part part = parts.iterator().next();
       NamedComponentReference<GlobalElement> elementOperationRef =
               part.getElement();
-      if ( elementOperationRef == null ){
+      if (elementOperationRef == null) {
           return false;
       }
-      return elementOperationRef.references( element );
+      return elementOperationRef.references(element);
   }
   
-  private boolean checkMessageTypeInOnEvent( WSDLReference<Message> messageRef,
-          Operation operation ) {
+  private boolean checkMessageTypeInOnEvent(WSDLReference<Message> messageRef,
+          Operation operation) {
       Message message = messageRef.get();
-      if ( message == null ){
+      if (message == null) {
           return false;
       }
       
@@ -2321,10 +2290,10 @@ public final class Validator extends BpelValidator {
       if (messageOperation == null) {
           return false;
       }
-      return messageOperation.references( message );
+      return messageOperation.references(message);
   }
   
-  private NamedComponentReference<Message> getMessageRef( Operation operation ){
+  private NamedComponentReference<Message> getMessageRef(Operation operation) {
       Input input = operation.getInput();
       if (input == null) {
           return null;
@@ -2332,47 +2301,46 @@ public final class Validator extends BpelValidator {
       return input.getMessage();
   }
   
-  private Collection<Scope> getScopes( BpelContainer container ) {
+  private Collection<Scope> getScopes(BpelContainer container) {
       Collection<Scope> collection = new LinkedList<Scope>();
-      collectScopes( container , collection );
+      collectScopes(container, collection);
       return collection;
   }
   
-  private void collectScopes( BpelEntity container,
-          Collection<Scope> collection ) {
-      if ( container instanceof Scope ){
-          collection.add( (Scope)container );
+  private void collectScopes(BpelEntity container,
+          Collection<Scope> collection) {
+      if (container instanceof Scope) {
+          collection.add((Scope)container);
       } else {
           List<BpelEntity> children = container.getChildren();
           for (BpelEntity child : children) {
-              collectScopes( child , collection );
+              collectScopes(child, collection);
           }
       }
   }
   
-  private void checkLinkSingleton( Map<Pair<Component>, Collection<Link>> map,
-          Link link, Component source, Component target ) {
-      Pair<Component> pair = new Pair<Component>( source , target);
-      Collection<Link> linkCollection = map.get( pair );
-      if ( linkCollection == null ) {
+  private void checkLinkSingleton(Map<Pair<Component>, Collection<Link>> map,
+          Link link, Component source, Component target) {
+      Pair<Component> pair = new Pair<Component>(source, target);
+      Collection<Link> linkCollection = map.get(pair);
+      if (linkCollection == null) {
           linkCollection = new HashSet<Link>();
-          map.put( pair, linkCollection);
+          map.put(pair, linkCollection);
       }
-      if ( linkCollection.size() > 0 ) {
-          Collection<Component> components =
-                  new LinkedList<Component>( linkCollection );
-          components.add( link );
-          components.add( source );
-          components.add( target );
-          addErrorCollection(FIX_MULTIPLE_LINKS_WITH_SAME_SOURCE_AND_TARGET, components);
+      if (linkCollection.size() > 0) {
+          Collection<Component> components = new LinkedList<Component>(linkCollection);
+          components.add(link);
+          components.add(source);
+          components.add(target);
+          addErrorCollection("FIX_SA00067", components); // NOI18N
       } else {
           linkCollection.add(link);
       }
   }
   
-  private boolean checkLink( Link link, Collection<Component> collection, String bundleKey) {
+  private boolean checkLink(Link link, Collection<Component> collection, String bundleKey) {
       if (collection != null && collection.size() > 1) {
-          collection.add( link );
+          collection.add(link);
           addErrorCollection(bundleKey, collection);
       }
       return collection!= null && collection.size()>0;
@@ -2400,68 +2368,67 @@ public final class Validator extends BpelValidator {
   }
   
   private void collectLinks(BpelEntity entity, Set<Link> set, Map<Link,Collection<Component>> sourcesMap, Map<Link,Collection<Component>> targetsMap) {
-      if ( entity instanceof Activity ){
-          collectLinkInTargets( (Activity) entity , set, targetsMap );
-          collectLinkInSources( (Activity) entity , set, sourcesMap );
+      if (entity instanceof Activity) {
+          collectLinkInTargets((Activity) entity, set, targetsMap);
+          collectLinkInSources((Activity) entity, set, sourcesMap);
       }
       List<BpelEntity> children = entity.getChildren();
 
       for (BpelEntity child : children) {
-          collectLinks( child , set , sourcesMap , targetsMap );
+          collectLinks(child, set, sourcesMap, targetsMap);
       }
   }
   
   private void collectLinkInTargets(Activity activity, Set<Link> set, Map<Link,Collection<Component>> targetsMap) {
       TargetContainer targetContainer = activity.getTargetContainer();
-      if ( targetContainer!= null ){
+      if (targetContainer!= null) {
           Target[] targets = targetContainer.getTargets();
           for (Target target : targets) {
               BpelReference<Link> ref = target.getLink();
-              collectLinks(activity, set, targetsMap, ref );
+              collectLinks(activity, set, targetsMap, ref);
           }
       }
   }
   
-  private void collectLinkInSources( Activity activity , Set<Link> set,
-          Map<Link,Collection<Component>> sourcesMap ) {
+  private void collectLinkInSources(Activity activity, Set<Link> set,
+          Map<Link,Collection<Component>> sourcesMap) {
       SourceContainer sourceContainer = activity.getSourceContainer();
-      if ( sourceContainer!= null ){
+      if (sourceContainer!= null) {
           Source[] sources = sourceContainer.getSources();
           for (Source source : sources) {
               BpelReference<Link> ref = source.getLink();
-              collectLinks(activity, set, sourcesMap, ref );
+              collectLinks(activity, set, sourcesMap, ref);
           }
       }
   }
   
-  private void collectLinks( Activity activity, Set<Link> set,
+  private void collectLinks(Activity activity, Set<Link> set,
           Map<Link, Collection<Component>> targetsMap,
-          BpelReference<Link> reference ) {
-      if ( reference == null ){
+          BpelReference<Link> reference) {
+      if (reference == null) {
           return;
       }
       Link link = reference.get();
-      if ( set.contains( link )) {
-          Collection<Component> collection = targetsMap.get( link );
+      if (set.contains(link)) {
+          Collection<Component> collection = targetsMap.get(link);
           if (collection == null) {
               collection = new LinkedList<Component>();
-              targetsMap.put( link, collection);
+              targetsMap.put(link, collection);
           }
           collection.add(activity);
       }
   }
   
-  private void checkLinkBoundaries( Link link, BpelEntity source,
-          BpelEntity target ) {
+  private void checkLinkBoundaries(Link link, BpelEntity source,
+          BpelEntity target) {
       checkFTBoundaries(link, source, target);
       
       checkRepeatableConstract(link, source, target);
   }
   
-  private void checkRepeatableConstract( Link link, BpelEntity source,
-          BpelEntity target ) {
+  private void checkRepeatableConstract(Link link, BpelEntity source, BpelEntity target) {
       /*
-       * Rule :A link MUST NOT cross the boundary of a repeatable construct or
+       * link MUST NOT cross the boundary of a repeatable construct or
        * the <compensationHandler> element. This means, a link used within a
        * repeatable construct (<while>, <repeatUntil>, <forEach>, <eventHandlers>)
        * or a <compensationHandler>  MUST be declared in a <flow> that is itself
@@ -2472,25 +2439,25 @@ public final class Validator extends BpelValidator {
           While.class, RepeatUntil.class,
           ForEach.class, EventHandlers.class, CompensationHandler.class
       };
-      boolean targetInside = getContainer( target , flow , containers ) != null;
-      boolean sourceInside = getContainer( source , flow, containers ) != null;
+      boolean targetInside = getContainer(target, flow, containers) != null;
+      boolean sourceInside = getContainer(source, flow, containers) != null;
       Collection<Component> collection = new ArrayList<Component>();
-      if ( targetInside ){
-          collection.add( target );
+      if (targetInside) {
+          collection.add(target);
       }
       if (sourceInside) {
           collection.add(source);
       }
       if (collection.size() > 0) {
           collection.add(link);
-          addErrorCollection(FIX_LINK_CROSS_BOUNDARY_REPEATABLE_CONSTRUCT, collection);
+          addErrorCollection("FIX_SA00070", collection); // NOI18N
       }
   }
   
   private void checkFTBoundaries(Link link, BpelEntity source, BpelEntity target) {
       BpelContainer flow = link.getParent().getParent();
       /*
-       * Rule : A link that crosses a <faultHandlers> or <terminationHandler>
+       * A link that crosses a <faultHandlers> or <terminationHandler>
        * element boundary MUST be outbound only, that is, it MUST have its
        * source activity within the <faultHandlers> or <terminationHandler>,
        * and its target activity outside of the scope associated with the handler.
@@ -2500,19 +2467,18 @@ public final class Validator extends BpelValidator {
       Class[] containers = new Class[]{ FaultHandlers.class, TerminationHandler.class };
       BpelContainer targetParentHandler = getContainer(target, flow, containers);
       
-      if ( targetParentHandler == null ||
-              hasParent( source , targetParentHandler , flow) ) {
+      if (targetParentHandler == null || hasParent(source, targetParentHandler, flow)) {
           // source should be inside the same FT container as target
           // otherwise link will be inbound
           badHandlersBoundaries = false;
       }
-      if ( !badHandlersBoundaries ){
-          BpelContainer sourceParentHandler = getContainer( source , flow ,
-                  containers );
-          if ( sourceParentHandler!= null ){
+      if ( !badHandlersBoundaries) {
+          BpelContainer sourceParentHandler = getContainer(source, flow,
+                  containers);
+          if (sourceParentHandler!= null) {
               BpelContainer scope = sourceParentHandler.getParent();
-              if ( hasParent( target , scope , flow) &&
-                      !hasParent( target, sourceParentHandler, flow )) {
+              if (hasParent(target, scope, flow) &&
+                      !hasParent(target, sourceParentHandler, flow)) {
                   badHandlersBoundaries = true;
               }
           }
@@ -2522,17 +2488,17 @@ public final class Validator extends BpelValidator {
           collection.add(target);
           collection.add(source);
           collection.add(link);
-          addErrorCollection(FIX_BAD_HANDLERS_LINK_BOUNDARIES, collection);
+          addErrorCollection("FIX_SA00071", collection); // NOI18N
       }
   }
   
   @SuppressWarnings("unchecked") // NOI18N
-  private BpelContainer getContainer( BpelEntity child, BpelContainer parent, Class...classes) {
+  private BpelContainer getContainer(BpelEntity child, BpelContainer parent, Class...classes) {
       BpelContainer container = child.getParent();
 
       while (container != null && !container.equals(parent)) {
           for (Class clazz : classes) {
-              if ( clazz.isAssignableFrom( container.getClass())){
+              if (clazz.isAssignableFrom(container.getClass())) {
                   return container;
               }
           }
@@ -2541,37 +2507,37 @@ public final class Validator extends BpelValidator {
       return null;
   }
   
-  private boolean hasParent( BpelEntity entity , BpelContainer container,
-          BpelContainer parent ) {
+  private boolean hasParent(BpelEntity entity, BpelContainer container, BpelContainer parent) {
       BpelEntity child = entity;
-      while( child!= null && child!=parent ){
-          if ( child == container ){
+
+      while (child != null && child != parent) {
+          if (child == container) {
               return true;
           }
-          child= child.getParent();
+          child = child.getParent();
       }
       return false;
   }
 
   private ExtendableActivity findPreviouslyPerformedActivities(ExtendableActivity activity, Set<CompositeActivity> set) {
-      if ( !isAcceptableActivity(activity) ) {
+      if ( !isAcceptableActivity(activity)) {
           return activity;
       }
       BpelContainer container = activity.getParent();
       if ( !(container instanceof ExtendableActivity)) {
           return null;
       }
-      if ( container instanceof ActivityHolder ) {
-          return findPreviouslyPerformedActivities( 
-                  (ExtendableActivity)container , set );
+      if (container instanceof ActivityHolder) {
+          return findPreviouslyPerformedActivities(
+                  (ExtendableActivity)container, set);
       }
-      if ( container instanceof CompositeActivity ) {
-          ExtendableActivity found = findExecutableActivity( 
-                  (CompositeActivity)container , activity , set );
+      if (container instanceof CompositeActivity) {
+          ExtendableActivity found = findExecutableActivity(
+                  (CompositeActivity)container, activity, set);
           
-          if ( found == null ){
-              found = findPreviouslyPerformedActivities( 
-                      (ExtendableActivity)container , set );
+          if (found == null) {
+              found = findPreviouslyPerformedActivities(
+                      (ExtendableActivity)container, set);
           }
           return found;
       }
@@ -2582,14 +2548,14 @@ public final class Validator extends BpelValidator {
       // # 85727
       set.add(container);
 
-      if ( container instanceof Sequence ) {
+      if (container instanceof Sequence) {
           Sequence sequence = (Sequence) container;
-          int i = sequence.indexOf( ExtendableActivity.class , activity);
-          return findExecutableActivityInSequence( sequence , i , set );
+          int i = sequence.indexOf(ExtendableActivity.class, activity);
+          return findExecutableActivityInSequence(sequence, i, set);
       }
-      else if ( container instanceof Flow ) {
-          return findExecutableActivityInFlow( (Flow) container ,
-                  activity , set );
+      else if (container instanceof Flow) {
+          return findExecutableActivityInFlow((Flow) container,
+                  activity, set);
       }
       else {
           assert false;
@@ -2598,12 +2564,12 @@ public final class Validator extends BpelValidator {
   }
 
   private ExtendableActivity findExecutableActivityInFlow(Flow flow, ExtendableActivity activity, Set<CompositeActivity> compositeActivities) {
-      Set<ExtendableActivity> set = getLogicallyPreceding( activity );
+      Set<ExtendableActivity> set = getLogicallyPreceding(activity);
       ExtendableActivity found = findDescendantActivity(set);
-      if ( found!= null ) {
+      if (found!= null) {
           return found;
       }
-      return getUntargetedUnacceptableActivity( flow , compositeActivities );
+      return getUntargetedUnacceptableActivity(flow, compositeActivities);
   }
 
   private ExtendableActivity getUntargetedUnacceptableActivity(Activity activity, Set<CompositeActivity> set) {
@@ -2611,26 +2577,26 @@ public final class Validator extends BpelValidator {
        * We are trying to find here unacceptable activity inside flow that 
        * do not have target at all.
        * If there is some activity with target then it precede some other
-       * activity ( may be situated inside ascendant flow, not this flow ),
+       * activity (may be situated inside ascendant flow, not this flow),
        * so when we appear in appropriate flow we find this preceding
        * activity. If it has "acceptable" activity then all ok, because
-       * all following ( by links order ) activity will be after
+       * all following (by links order) activity will be after
        * "acceptable". If it does not have acceptable activity then we will
        * find it on this step. 
        */
-      List<Activity> children = activity.getChildren( Activity.class );
+      List<Activity> children = activity.getChildren(Activity.class);
       for (Activity child : children) {
-          if ( set.contains(child) ){
+          if (set.contains(child)) {
               continue;
           }
           TargetContainer container = child.getTargetContainer();
-          if ( container == null || container.getTargets().length==0 ) {
-              if ( !isAcceptableActivity( child )) {
+          if (container == null || container.getTargets().length==0) {
+              if ( !isAcceptableActivity(child)) {
                   return child;
               }
               ExtendableActivity found = 
-                  getUntargetedUnacceptableActivity( child , set );
-              if ( found != null ) {
+                  getUntargetedUnacceptableActivity(child, set);
+              if (found != null) {
                   return found;
               }
           }
@@ -2640,8 +2606,8 @@ public final class Validator extends BpelValidator {
 
   private ExtendableActivity findDescendantActivity(Set<ExtendableActivity> set) {
       for (ExtendableActivity preceding : set) {
-          ExtendableActivity found = findDescendantActivity( preceding );
-          if ( found != null) {
+          ExtendableActivity found = findDescendantActivity(preceding);
+          if (found != null) {
               return found;
           }
       }
@@ -2661,47 +2627,47 @@ public final class Validator extends BpelValidator {
           return Collections.EMPTY_SET;
       }
       Set<ExtendableActivity> set = new HashSet<ExtendableActivity>();
-      collectPreceding( (Activity) activity , set );
+      collectPreceding((Activity) activity, set);
       return set;
   }
 
   private void collectPreceding(Activity activity, Set<ExtendableActivity> set) {
-      if ( set.contains(activity)) {
+      if (set.contains(activity)) {
           return;
       }
       TargetContainer container = activity.getTargetContainer();
-      if ( container == null ) {
+      if (container == null) {
           return;
       }
       Target[] targets = container.getTargets();
       for (Target target : targets) {
           BpelReference<Link> linkRef = target.getLink();
-          if ( linkRef == null ) {
+          if (linkRef == null) {
               continue;
           }
           Link link = linkRef.get();
-          if ( link == null ) {
+          if (link == null) {
               continue;
           }
           BpelContainer flow = link.getParent().getParent();
-          Activity source = findSource( flow, link );
-          if ( source!= null ) {
-              set.add( source );
-              collectPreceding( source , set);
+          Activity source = findSource(flow, link);
+          if (source!= null) {
+              set.add(source);
+              collectPreceding(source, set);
           }
       }
   }
 
-  private Activity findSource( BpelContainer container, Link link ) {
-      List<Activity> children = container.getChildren( Activity.class );
+  private Activity findSource(BpelContainer container, Link link) {
+      List<Activity> children = container.getChildren(Activity.class);
       for (Activity child : children) {
           SourceContainer sourceContainer = child.getSourceContainer();
-          if ( sourceContainer != null && checkSource(link, sourceContainer) ) {
+          if (sourceContainer != null && checkSource(link, sourceContainer)) {
                   return child;
           }
-          if ( child instanceof BpelContainer ) {
-              Activity found = findSource( (BpelContainer) child , link );
-              if ( found != null ) {
+          if (child instanceof BpelContainer) {
+              Activity found = findSource((BpelContainer) child, link);
+              if (found != null) {
                   return found;
               }
           }
@@ -2709,36 +2675,36 @@ public final class Validator extends BpelValidator {
       return null;
   }
 
-  private boolean checkSource( Link link, SourceContainer sourceContainer ) {
+  private boolean checkSource(Link link, SourceContainer sourceContainer) {
       Source[] sources = sourceContainer.getSources();
       for (Source source : sources) {
           BpelReference<Link> linkRef = source.getLink();
-          if ( linkRef != null && linkRef.references(link)) {
+          if (linkRef != null && linkRef.references(link)) {
               return true;
           }
       }
       return false;
   }
 
-  private ExtendableActivity findExecutableActivityInSequence( Sequence sequence, int i, Set<CompositeActivity> set) {
+  private ExtendableActivity findExecutableActivityInSequence(Sequence sequence, int i, Set<CompositeActivity> set) {
       ExtendableActivity[] children = sequence.getActivities();
       for  (int j=0; j<i; j++) {
-          if ( set.contains( children[j] ) ){
+          if (set.contains(children[j])) {
               continue;
           }
-          ExtendableActivity found = findDescendantActivity( children[j] );
-          if ( found != null ) {
+          ExtendableActivity found = findDescendantActivity(children[j]);
+          if (found != null) {
               return found;
           }
       }
       return null;
   }
 
-  private ExtendableActivity findDescendantActivity( ExtendableActivity activity){
+  private ExtendableActivity findDescendantActivity(ExtendableActivity activity) {
       if ( !isAcceptableActivity(activity)) {
           return activity;
       }
-      List<ExtendableActivity> children = activity.getChildren( ExtendableActivity.class );
+      List<ExtendableActivity> children = activity.getChildren(ExtendableActivity.class);
       for (ExtendableActivity child : children) {
           ExtendableActivity found = findDescendantActivity(child);
           if (found != null) {
@@ -2756,7 +2722,7 @@ public final class Validator extends BpelValidator {
       }
       Class clazz = activity.getElementType();
 
-      return clazz.equals( Scope.class ) || clazz.equals( Flow.class ) || clazz.equals( Sequence.class ) || clazz.equals( Empty.class );
+      return clazz.equals(Scope.class) || clazz.equals(Flow.class) || clazz.equals(Sequence.class) || clazz.equals(Empty.class);
   }
   
   };}
@@ -2764,8 +2730,8 @@ public final class Validator extends BpelValidator {
   // -----------------------------------------------------------
   private static class DefaultNameAccess implements NameAccess {
       
-      public String getName( BpelEntity entity ) {
-          if ( entity instanceof NamedElement ) {
+      public String getName(BpelEntity entity) {
+          if (entity instanceof NamedElement) {
               return ((NamedElement)entity).getName();
           }
           return null;
@@ -2775,10 +2741,10 @@ public final class Validator extends BpelValidator {
   private static final class LazyHolder {
       
       static final NameAccess SOURCE_LINK_NAME_ACCESS = new NameAccess() {
-          public String getName( BpelEntity entity ) {
-              if ( entity instanceof Source ) {
+          public String getName(BpelEntity entity) {
+              if (entity instanceof Source) {
                   BpelReference<Link> ref = ((Source)entity).getLink();
-                  if ( ref != null && ref.getRefString()!= null) {
+                  if (ref != null && ref.getRefString()!= null) {
                       return ref.getRefString();
                   }
               }
@@ -2787,10 +2753,10 @@ public final class Validator extends BpelValidator {
       };
       
       static final NameAccess TARGET_LINK_NAME_ACCESS = new NameAccess() {
-          public String getName( BpelEntity entity ) {
-              if ( entity instanceof Target ) {
+          public String getName(BpelEntity entity) {
+              if (entity instanceof Target) {
                   BpelReference<Link> ref = ((Target)entity).getLink();
-                  if ( ref != null && ref.getRefString()!= null) {
+                  if (ref != null && ref.getRefString()!= null) {
                       return ref.getRefString();
                   }
               }
@@ -2799,7 +2765,7 @@ public final class Validator extends BpelValidator {
       };
       
       static final NameAccess VAR_DECL_NAME_ACCESS = new NameAccess() {
-          public String getName( BpelEntity entity ) {
+          public String getName(BpelEntity entity) {
               if (entity instanceof VariableDeclaration) {
                   return ((VariableDeclaration) entity).getVariableName();
               }
@@ -2809,71 +2775,9 @@ public final class Validator extends BpelValidator {
   }
   
   private static interface NameAccess {
-      String getName( BpelEntity entity );
+      String getName(BpelEntity entity);
   }
   
   private static final DefaultNameAccess DEFAULT_NAME_ACESS = new DefaultNameAccess();
-
-  private static final String FIX_PORT_TYPE_OVERLOADED_OPERATION_NAME = "FIX_PortTypeOverloadedOperationName"; // NOI18N
-  private static final String FIX_WSDLOPERATION_SOLICIT_RESPONSE_NOTIFICATION = "FIX_WSDLOperationSolicitResponseNotification"; // NOI18N
-  private static final String FIX_INPUTVARIABLE_TOPART_COMBINATION = "FIX_InputVariableToPartCombination"; // NOI18N
-  private static final String FIX_OUTPUTVARIABLE_FROMPART_COMBINATION = "FIX_OutputVariableFromPartCombination"; // NOI18N
-  private static final String FIX_INVALID_FROMPART_PARTATTR = "FIX_InvalidFromPartPartAttribute"; // NOI18N
-  private static final String FIX_INVALID_TOPART_PARTATTR = "FIX_InvalidToPartPartAttribute"; // NOI18N
-  private static final String FIX_RECEIVE_VARIABLE_FROMPART_COMBINATION = "FIX_ReceiveVariableFromPartCombination"; // NOI18N
-  private static final String FIX_REPLY_VARIABLE_TOPART_COMBINATION = "FIX_ReplyVariableToPartCombination"; // NOI18N
-  private static final String FIX_COMPENSATE_OCCURANCE = "FIX_CompensateOccurance"; // NOI18N
-  private static final String FIX_MULTIPLE_NAMED_ACTIVITIES = "FIX_MultipleNamedActivities"; // NOI18N
-  private static final String FIX_EXIT_ON_STANDART_FAULT = "FIX_ExitOnStandartFault"; // NOI18N
-  private static final String FIX_BAD_IMPORT_TYPE = "FIX_BadImportType"; // NOI18N
-  private static final String FIX_NO_PICK_OR_RECEIVE_WITH_CREATE_INSTANCE = "FIX_NoPickReceiveWithCreateInstance"; // NOI18N
-  private static final String FIX_MILTIPLE_LINK_SOURCE = "FIX_MultipleLinkSource"; // NOI18N
-  private static final String FIX_MILTIPLE_LINK_TARGET = "FIX_MultipleLinkTarget"; // NOI18N
-  private static final String FIX_LINK_IS_NOT_USED = "FIX_LinkIsNotUsed"; // NOI18N
-  private static final String FIX_MULTIPLE_LINKS_WITH_SAME_SOURCE_AND_TARGET = "FIX_MultipleLinksWithSameSourceAndTarget"; // NOI18N
-  private static final String FIX_SCOPE_INSIDE_FCT_CONTAINS_COMPENSATION_HANDLER = "FIX_ScopeWithCompenstationHandlerInsideFCT"; // NOI18N
-  private static final String FIX_MESSAGE_TYPE_IN_ON_EVENT = "FIX_MessageTypeInOnEvent"; // NOI18N
-  private static final String FIX_ELEMENT_IN_ON_EVENT = "FIX_ElementInOnEvent"; // NOI18N
-  private static final String FIX_LINK_CROSS_BOUNDARY_REPEATABLE_CONSTRUCT = "FIX_LinkCrossBoundaryRepeatableConstract"; // NOI18N
-  private static final String FIX_BAD_HANDLERS_LINK_BOUNDARIES = "FIX_BadHandlersLinkBoundaries"; // NOI18N
-  private static final String FIX_WSDL_MESSAGE_NOT_COMPLETELY_INITIALISED = "FIX_WSDL_Message_Not_Completely_Initialised"; // NOI18N
-  private static final String FIX_ONMESSAGE_VARIABLE_FROMPART_COMBINATION = "FIX_OnMessage_Variable_FromPart_Combination"; // NOI18N
-  private static final String FIX_OUTPUT_VARIABLE_FOR_ONE_WAY_OP = "FIX_OutputVariableForOneWayOperation"; // NOI18N
-  private static final String FIX_ABSENT_INPUT_VARIABLE_FOR_ONE_WAY_OP = "FIX_AbsentInputVariableForOneWayOp"; // NOI18N
-  private static final String FIX_ABSENT_INPUT_OUTPUT_VARIABLES = "FIX_AbsentInputOutputVariables"; // NOI18N
-  private static final String FIX_BAD_VARIABLE_MESSAGE_TYPE = "FIX_BadVariableMessageType"; // NOI18N
-  private static final String FIX_BAD_VARIABLE_ELEMENT_TYPE = "FIX_BadVariableElementType"; // NOI18N
-  private static final String FIX_START_ACTIVITY_IS_NOT_FIRST_EXECUTED = "FIX_StartActivityHasPreceding"; // NOI18N
-  private static final String FIX_ABSENT_SHARED_JOINED_CORRELATION_SET = "FIX_AbsentSharedJoinedCorrelationSet"; // NOI18N
-  private static final String FIX_MULTIPLE_PROPERTY_ALIAS_FOR_PROPERTY = "FIX_MultiplePropertyAliasForProperty"; // NOI18N
-  private static final String FIX_ABSENT_OUTPUT_VARIABLE = "FIX_AbsentOutputVariable"; // NOI18N
-  private static final String FIX_ABSENT_INPUT_VARIABLE = "FIX_AbsentInputVariable"; // NOI18N
-  private static final String FIX_DUPLICATE_VARIABLE_NAME = "FIX_DUPLICATE_VARIABLE_NAME"; // NOI18N
-  private static final String FIX_DUPLICATE_VARIABLE_NAME_ON_EVENT = "FIX_DuplicateVariableNameOnEvent"; // NOI18N
   private static final String SUPPORTED_LANGAGE = "urn:oasis:names:tc:wsbpel:2.0:sublang:xpath1.0"; // NOI18N
-  private static final String FIX_INITIALISE_PARTNER_ROLE = "FIX_InitialisePartnerRole"; // NOI18N
-  private static final String FIX_PARTNER_LINK_ERROR = "FIX_PartnerLinkError"; // NOI18N
-  private static final String FIX_RETHROW_OCCURANCE = "FIX_RethrowOccurance"; // NOI18N
-  private static final String FIX_ENDPOINT_REFRENCE = "FIX_EndpointReference"; // NOI18N
-  private static final String FIX_MULTIPLE_NAMED_LINKS = "FIX_MultipleNamedLinks"; // NOI18N
-  private static final String FIX_MULTIPLE_SOURCE_LINK_REFERENCES = "FIX_MultipleSourceLinkReferences"; // NOI18N
-  private static final String FIX_MULTIPLE_TARGET_LINK_REFERENCES = "FIX_MultipleTargetLinkReferences"; // NOI18N
-  private static final String FIX_DUPLICATE_COUNTER_NAME = "FIX_DuplicateCounterName"; // NOI18N
-  private static final String FIX_ISOLATED_SCOPES = "FIX_IsolatedScopes"; // NOI18N
-  private static final String FIX_ON_EVENT_VARAIBLE = "FIX_OnEventVariable"; // NOI18N
-  private static final String FIX_EVENT_HANDLERS = "FIX_EventHandlers"; // NOI18N
-  private static final String FIX_FAULT_VARIABLE_TYPE = "FIX_FaultVariableType"; // NOI18N
-  private static final String FIX_ODD_FAULT_TYPE = "FIX_OddFaultType"; // NOI18N
-  private static final String FIX_FAULT_HANDLERS = "FIX_FaultHandlers"; // NOI18N
-  private static final String FIX_ABSENT_NAMESPACE_IN_IMPORT = "FIX_AbsentNamespaceInImport"; // NOI18N
-  private static final String FIX_BAD_NAMESPACE_IN_IMPORT = "FIX_BadNamespaceInImport"; // NOI18N
-  private static final String FIX_BAD_VARIABLE_NAME = "FIX_BadVariableName"; // NOI18N
-  private static final String FIX_PICK_MESSAGES = "FIX_PickMessages"; // NOI18N
-  private static final String FIX_BAD_CORRELATION_PROPERTY_TYPE = "FIX_BadCorrelationPropertyType"; // NOI18N
-  private static final String FIX_BAD_USAGE_PATTERN_ATTRIBUTE = "FIX_BadUsagePatternAttribute"; // NOI18N
-  private static final String FIX_DUPLICATE_CORRELATION_SET_NAME = "FIX_DuplicateCorrelationSetName"; // NOI18N
-  private static final String FIX_DUPLICATE_PARTNER_LINK_NAME = "FIX_DuplicatePartnerLinkName"; // NOI18N
-  private static final String FIX_VARIABLE_TYPES = "FIX_VariableTypes"; // NOI18N
-  private static final String FIX_SUPPORTED_LANGUAGE ="FIX_SupportedLanguage"; // NOI18N
-  private static final String FIX_UNSUPPORTED_EXTENSION = "FIX_UnsupportedExtension"; // NOI18N
 }

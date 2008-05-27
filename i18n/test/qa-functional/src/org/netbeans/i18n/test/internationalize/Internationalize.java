@@ -5,23 +5,15 @@
  */
 package org.netbeans.i18n.test.internationalize;
 
-import java.io.File;
-import java.util.Enumeration;
-import org.netbeans.i18n.jelly.InternationalizeOperator;
+import lib.InternationalizationTestCase;
 import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.jellytools.actions.Action;
-import org.netbeans.jellytools.nodes.FilesystemNode;
-import org.netbeans.jemmy.EventTool;
 import org.netbeans.junit.NbTestSuite;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
 
 /**
  *
  * @author  eh103527
  */
-public class Internationalize extends JellyTestCase {
+public class Internationalize extends InternationalizationTestCase {
 
     String TEST_PACKAGE = "data";
     String FILE_NAME = "TestFrame";
@@ -50,26 +42,27 @@ public class Internationalize extends JellyTestCase {
         System.out.println("=   See testspec of i18n module:                                                  =");
         System.out.println("=   http://beetle.czech/modules/i18n/                                             =");
         System.out.println("===================================================================================");
+        System.out.println("Pracovni adresar: " + getDataDir());
 
-        FileSystem[] fileSystems = Repository.getDefault().toArray();
-        String fileSystemName = null;
-
-        for (int ii = 0; ii < fileSystems.length; ii++) {
-            FileObject file = fileSystems[ii].findResource(TEST_PACKAGE);
-            if (file != null) {
-                System.out.println("> Used Filesystem = " + fileSystems[ii].getDisplayName());
-                fileSystemName = fileSystems[ii].getDisplayName();
-            }
-        }
-
-        if (fileSystemName == null) {
-            throw new Exception("Must be mounted .../" + TEST_PACKAGE + " repository in explorer !");
-        }
-
-        String path = fileSystemName.concat("|" + TEST_PACKAGE + "|" + FILE_NAME);
-        new Action("Tools", "Tools|Internationalization|Internationalize").performPopup(new FilesystemNode(path));
-        new EventTool().waitNoEvent(2500);
-        InternationalizeOperator io = new InternationalizeOperator();
+//        FileSystem[] fileSystems = Repository.getDefault().toArray();
+//        String fileSystemName = null;
+//
+//        for (int ii = 0; ii < fileSystems.length; ii++) {
+//            FileObject file = fileSystems[ii].findResource(TEST_PACKAGE);
+//            if (file != null) {
+//                System.out.println("> Used Filesystem = " + fileSystems[ii].getDisplayName());
+//                fileSystemName = fileSystems[ii].getDisplayName();
+//            }
+//        }
+//
+//        if (fileSystemName == null) {
+//            throw new Exception("Must be mounted .../" + TEST_PACKAGE + " repository in explorer !");
+//        }
+//
+//        String path = fileSystemName.concat("|" + TEST_PACKAGE + "|" + FILE_NAME);
+//        new Action("Tools", "Tools|Internationalization|Internationalize").performPopup(new FilesystemNode(path));
+//        new EventTool().waitNoEvent(2500);
+//        InternationalizeOperator io = new InternationalizeOperator();
 
     }
 
@@ -77,6 +70,6 @@ public class Internationalize extends JellyTestCase {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        junit.textui.TestRunner.run(suite);
+        junit.textui.TestRunner.run(suite());
     }
 }

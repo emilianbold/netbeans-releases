@@ -774,6 +774,8 @@ public class WSITModelSupport {
         
         // STS 
 //        ProprietarySecurityPolicyModelHelper.getInstance(targetCfgVersion).enableSTS(b, sts);
+
+        PolicyModelHelper.getInstance(targetCfgVersion).createPolicy(b, true); // this is needed so that the values are not lost
         
     }
     
