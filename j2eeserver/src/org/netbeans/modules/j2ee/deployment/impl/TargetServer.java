@@ -319,13 +319,13 @@ public class TargetServer {
         return (TargetModule[]) toRedeploy.toArray(new TargetModule[toRedeploy.size()]);
     }
 
-    private Map getAvailableTMIDsMap() {
+    private Map<String, TargetModuleID> getAvailableTMIDsMap() {
         if (availablesMap != null)
             return availablesMap;
         
         // existing TMID's
         DeploymentManager dm = instance.getDeploymentManager();
-        availablesMap = new HashMap();
+        availablesMap = new HashMap<String, TargetModuleID>();
         try {
             ModuleType type = (ModuleType) dtarget.getModule().getModuleType();
             TargetModuleID[] ids = dm.getAvailableModules(type, targets);

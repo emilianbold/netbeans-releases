@@ -356,7 +356,7 @@ class WebActionProvider implements ActionProvider {
 
         // RUN, REDEPLOY
         } else if (command.equals(COMMAND_RUN) || command.equals(WebProjectConstants.COMMAND_REDEPLOY)) {
-            startListeningOnCos();
+            //startListeningOnCos();
             setDirectoryDeploymentProperty(p);
             FileObject[] files = findTestSources(context, false);
             if (files != null) {

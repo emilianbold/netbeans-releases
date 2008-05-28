@@ -175,4 +175,8 @@ public abstract class IncrementalDeployment {
     public void notifyDeployment(TargetModuleID module) {
         //do nothing, override if needed
     }
+    
+    public void notifyArtifactsUpdated(TargetModuleID module, Iterable<File> artifacts) {
+        
+    }
 }

@@ -41,14 +41,27 @@
 
 package org.netbeans.modules.j2ee.deployment.devmodules.api;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
+import javax.enterprise.deploy.shared.ModuleType;
+import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.Target;
+import javax.enterprise.deploy.spi.TargetModuleID;
+import javax.enterprise.deploy.spi.exceptions.TargetException;
 import javax.enterprise.deploy.spi.status.ProgressObject;
+import org.netbeans.api.java.queries.BinaryForSourceQuery;
+import org.netbeans.api.java.source.BuildArtifactMapper;
+import org.netbeans.api.java.source.BuildArtifactMapper.ArtifactsUpdated;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.InstanceListener;
@@ -66,6 +79,10 @@ import org.netbeans.modules.j2ee.deployment.impl.ui.ProgressUI;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.JDBCDriverDeployer;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 
@@ -159,6 +176,7 @@ public final class Deployment {
             // inform the plugin about the deploy action, even if there was
             // really nothing needed to be deployed
             targetserver.notifyIncrementalDeployment(modules);
+            startListeningOnCos(jmp);
             
             if (modules != null && modules.length > 0) {
                 deploymentTarget.setTargetModules(modules);
@@ -444,4 +462,97 @@ public final class Deployment {
     public static interface Logger {
         public void log(String message);
     }
+    
+    private static TargetModule[] forJ2eeModuleProvider(J2eeModuleProvider provider) {
+        // TODO check if running
+        DeploymentTargetImpl deploymentTarget = new DeploymentTargetImpl(provider, null);
+        TargetModule[] modules = deploymentTarget.getTargetModules();
+        
+        ServerInstance serverInstance = deploymentTarget.getServer().getServerInstance();
+        Set<String> targetNames = new HashSet<String>();
+        Set<Target> targets = new HashSet<Target>();
+        for (TargetModule module : modules) {
+            Target target = module.findTarget();
+            if (serverInstance.getStartServer().isRunning(target)) {
+                targetNames.add(target.getName());
+                targets.add(target);
+            }
+        }
+        
+        Set<TargetModule> ret = new HashSet<TargetModule>();
+        for (TargetModule module : modules) {
+            // not my module
+            if (!module.getInstanceUrl().equals(serverInstance.getUrl())
+                    || ! targetNames.contains(module.getTargetName())) {
+                continue;
+            }
+            
+            TargetModuleID tmID = (TargetModuleID) getAvailableTMIDsMap(
+                    deploymentTarget, targets.toArray(new Target[targets.size()]), serverInstance).get(module.getId());
+            
+            // no longer a deployed module on server
+            if (tmID != null) {
+                module.initDelegate(tmID);
+                ret.add(module);
+            }
+        }
+        return ret.toArray(new TargetModule[ret.size()]);
+    }
+    
+    private static Map<String, TargetModuleID> getAvailableTMIDsMap(DeploymentTargetImpl dtarget,
+            Target[] targets, ServerInstance instance) {
+        
+        DeploymentManager dm = instance.getDeploymentManager();
+        Map<String, TargetModuleID> availablesMap = new HashMap<String, TargetModuleID>();
+        try {
+            ModuleType type = (ModuleType) dtarget.getModule().getModuleType();
+            TargetModuleID[] ids = dm.getAvailableModules(type, targets);
+            if (ids == null) {
+                return availablesMap;
+            }
+            for (int i=0; i<ids.length; i++) {
+                availablesMap.put(ids[i].toString(), ids[i]);
+            }
+        } catch (TargetException te) {
+            throw new IllegalArgumentException(te);
+        }
+        return availablesMap;
+    }
+    
+    private static void startListeningOnCos(J2eeModuleProvider provider) {
+        for (FileObject file : provider.getSourceFileMap().getSourceRoots()) {         
+            try {
+                URL[] binaries = BinaryForSourceQuery.findBinaryRoots(file.getURL()).getRoots();
+                for (URL binary : binaries) {
+                    FileObject object = URLMapper.findFileObject(binary);
+                    if (object != null) {
+                        BuildArtifactMapper.map(file.getURL(), FileUtil.toFile(object), new ArtifactsUpdatedListenerImpl(provider));
+                        BuildArtifactMapper.ensureBuilt(file.getURL());
+                    }
+                }
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+    }
+    
+    private static final class ArtifactsUpdatedListenerImpl implements ArtifactsUpdated {
+
+        private final J2eeModuleProvider provider;
+
+        public ArtifactsUpdatedListenerImpl(J2eeModuleProvider provider) {
+            this.provider = provider;
+        }
+        
+        public void artifactsUpdated(Iterable<File> artifacts) {
+            TargetModule[] modules = forJ2eeModuleProvider(provider);
+            ServerInstance instance = ServerRegistry.getInstance().getServerInstance(
+                    provider.getServerInstanceID());
+            IncrementalDeployment depl = instance.getIncrementalDeployment();
+            for (TargetModule module : modules) {
+                depl.notifyArtifactsUpdated(module.delegate(), artifacts);
+            }
+        }
+        
+    }    
 }
