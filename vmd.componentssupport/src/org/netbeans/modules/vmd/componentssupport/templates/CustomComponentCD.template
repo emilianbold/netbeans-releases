@@ -7,14 +7,23 @@
 package ${package};
 
 </#if>
+import java.util.List;
+import org.netbeans.modules.vmd.api.model.ComponentDescriptor;
+import org.netbeans.modules.vmd.api.model.Presenter;
+import org.netbeans.modules.vmd.api.model.PropertyDescriptor;
+import org.netbeans.modules.vmd.api.model.TypeDescriptor;
+import org.netbeans.modules.vmd.api.model.TypeID;
+import org.netbeans.modules.vmd.api.model.VersionDescriptor;
+import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
+
 /**
  *
  * @author ${user}
  */
-public class ${name}CD extends ComponentDescriptor {
+public class ${cdName} extends ComponentDescriptor {
 
   public static final TypeID TYPEID = new TypeID( TypeID.Kind.COMPONENT, 
-          "${type_id}");
+          "${typeId}");
 
        
     /**
@@ -23,10 +32,10 @@ public class ${name}CD extends ComponentDescriptor {
      */
     @Override
     public TypeDescriptor getTypeDescriptor() {
-        return new TypeDescriptor(${super_descriptor_class}.TYPEID, // This indicates that ${name} derives from component descriptor ${super_descriptor_class}.
+        return new TypeDescriptor(${superDescriptorClass}.TYPEID, // This indicates that ${prefix} derives from component descriptor ${superDescriptorClass}.
                 TYPEID,                          // TypeID of this component descriptor.
-                ${can_instantiate},                            // Instantiate ability. Indicates if DesignComponent can be create based on this Component Descriptor.
-                ${can_derive});                           // Derive ability. Indicates if this DesignComponent could be used as a super type.
+                ${canInstantiate},                            // Instantiate ability. Indicates if DesignComponent can be create based on this Component Descriptor.
+                ${canBeSuper});                           // Derive ability. Indicates if this DesignComponent could be used as a super type.
 
     }
 
@@ -46,7 +55,7 @@ public class ${name}CD extends ComponentDescriptor {
     @Override
     public VersionDescriptor getVersionDescriptor() {
         // For which version of MIDP this ComponentDescriptor is valid
-        return MidpVersionDescriptor.${midp_version}; 
+        return ${midpVersion}; 
     }
 
     /**

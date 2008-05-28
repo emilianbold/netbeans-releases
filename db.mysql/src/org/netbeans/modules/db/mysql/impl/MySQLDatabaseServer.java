@@ -129,34 +129,9 @@ public class MySQLDatabaseServer implements DatabaseServer {
     
     private MySQLDatabaseServer() {  
         updateDisplayName();
-        RequestProcessor.getDefault().post(connProcessor);        
-        startRefreshTask();
+        RequestProcessor.getDefault().post(connProcessor);
     }
-        
-    private synchronized void startRefreshTask() {        
-        // Start a background task that keeps the list of databases
-        // up-to-date
-        final long sleepInterval = OPTIONS.getRefreshThreadSleepInterval();
-        
-        refreshTask = RequestProcessor.getDefault().post(new Runnable() {
-            public void run() {
-                Thread.currentThread().setName("MySQL Server Refresh Thread");
                 
-                for ( ; ; ) {
-                    try {
-                        Thread.sleep(sleepInterval);
-                        
-                        if ( OPTIONS.isProviderRegistered() && isConnected() ) {
-                            refreshDatabaseList();
-                        }
-                    } catch ( InterruptedException ie ) {
-                        return;
-                    }
-                }
-            }
-        });
-    }
-        
     public String getHost() {
         return Utils.isEmpty(OPTIONS.getHost()) ?  
             MySQLOptions.getDefaultHost() : OPTIONS.getHost();
@@ -167,7 +142,12 @@ public class MySQLDatabaseServer implements DatabaseServer {
     }
  
     public String getPort() {
-        return OPTIONS.getPort();
+        String port = OPTIONS.getPort();
+        if (Utils.isEmpty(port)) {
+            return MySQLOptions.getDefaultPort();
+        } else {
+            return port;
+        }
     }
 
     public void setPort(String port) {
@@ -175,7 +155,12 @@ public class MySQLDatabaseServer implements DatabaseServer {
     }
 
     public String getUser() {
-        return OPTIONS.getAdminUser();
+        String user = OPTIONS.getAdminUser();
+        if (Utils.isEmpty(user)) {
+            return MySQLOptions.getDefaultAdminUser();
+        } else {
+            return user;
+        }
     }
 
     public void setUser(String adminUser) {
@@ -254,15 +239,7 @@ public class MySQLDatabaseServer implements DatabaseServer {
     public void setAdminArgs(String args) {
         OPTIONS.setAdminArgs(args);
     }
-    
-    public boolean isAdminCommandsConfirmed() {
-        return OPTIONS.isAdminCommandsConfirmed();
-    }
-    
-    public void setAdminCommandsConfirmed(boolean confirmed) {
-        OPTIONS.setAdminCommandsConfirmed(confirmed);
-    }
-    
+        
     public boolean isConnected() {
         return connProcessor.isConnected();
     }
@@ -556,9 +533,8 @@ public class MySQLDatabaseServer implements DatabaseServer {
      * @see #getStartWaitTime()
      */
     public void start() throws DatabaseException {        
-        if ( !Utils.isValidExecutable(getStopPath(), false)) {
-            throw new DatabaseException(Utils.getMessage(
-                    "MSG_InvalidStartCommand"));
+        if (!Utils.isValidExecutable(getStopPath(), false)) {
+            throw new DatabaseException(Utils.getMessage("MSG_InvalidStartCommand"));
         }
         
         try {
@@ -566,36 +542,27 @@ public class MySQLDatabaseServer implements DatabaseServer {
                     true, Utils.getMessage( 
                         "LBL_StartOutputTab"));
             
-            // Spawn off a thread to poll the server and attempt to 
-            // reconnect.  Give up after 5 minutes
+            // Spawn off a thread to try reconnecting to the server after
+            // a few seconds
             RequestProcessor.getDefault().post(
                 new Runnable() {
                     public void run() {
-                        long fiveMinutes = 1000 * 60 * 5;
-                        long runTime = 0;
+                        try {
+                            Thread.sleep(3000);
+                        } catch ( InterruptedException e ) {
+                            return;
+                        }
 
-                        while ( runTime < fiveMinutes ) {
-                            try {
-                                Thread.sleep(1000);
-                            } catch ( InterruptedException e ) {
-                                break;
-                            }
-
-                            try {
-                                reconnect();
-                                return;
-                            } catch ( DatabaseException e ) {
-                            }
-
-                            runTime += 1000;
-                        }                        
+                        try {
+                            reconnect();
+                        } catch ( DatabaseException e ) {
+                        }
                     }
             });
 
         } catch ( Exception e ) {
             throw new DatabaseException(e);
         }
-
     }
     
     public void stop() throws DatabaseException {
@@ -708,7 +675,7 @@ public class MySQLDatabaseServer implements DatabaseServer {
                 if ( outqueue != null ) {
                     this.throwable = e;
                 } else {
-                    LOGGER.log(Level.WARNING, null, e);
+                    LOGGER.log(Level.INFO, null, e);
                 }
             } finally {
                 if (outqueue != null) {

@@ -39,12 +39,15 @@
 
 package org.netbeans.modules.php.editor.verification;
 
+import java.util.List;
 import org.netbeans.modules.gsf.api.RuleContext;
+import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 
 /**
  *
  * @author Tomasz.Slota@Sun.COM
  */
-public class PHPRuleContext extends RuleContext {
-
+class PHPRuleContext extends RuleContext {
+    PHPVerificationVisitor.VariableStack variableStack;
+    List<ASTNode> path;
 }
