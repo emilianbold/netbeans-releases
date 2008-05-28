@@ -89,6 +89,7 @@ public class CPNameAndTypeInfo extends CPEntry {
 	return ConstantPool.CONSTANT_NameAndType;
     }
 
+    @Override
     public String toString() {
         return getClass().getName() + ": name=" + getName() + //NOI18N
             ", descriptor=" + getDescriptor(); //NOI18N

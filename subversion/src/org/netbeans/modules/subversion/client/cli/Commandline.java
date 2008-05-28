@@ -47,7 +47,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
+import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.SvnModuleConfig;
+import org.tigris.subversion.svnclientadapter.SVNClientException;
 
 /**
  * Encapsulates svn shell process. 
@@ -66,10 +68,13 @@ class Commandline {
      * Creates a new cleartool shell process.
      */
     Commandline() {
+        // XXX add path heuristics for mac, bubuntu & co.
         executable = SvnModuleConfig.getDefault().getExecutableBinaryPath();
         if(executable == null || executable.trim().equals("")) {
             executable = "svn";
-        }                        
+        } else {
+            executable = executable + "/svn";
+        }                      
     }
 
     /**
@@ -93,28 +98,25 @@ class Commandline {
         if (ctError != null) {
             ctError.close();
         }                
-        Logger.getLogger(Commandline.class.getName()).fine("cli: Process destroyed");
+        Subversion.LOG.fine("cli: Process destroyed");
     }
     
-    public void exec(SvnCommand command) throws IOException {        
+    void exec(SvnCommand command) throws IOException {        
 
         command.prepareCommand();        
         
         String cmd = executable + " " + command.getStringCommand();
-        Logger.getLogger(Commandline.class.getName()).fine("cli: Executing \"" + cmd + "\"");
+        Subversion.LOG.fine("cli: Executing \"" + cmd + "\"");
         
-        Logger.getLogger(Commandline.class.getName()).fine("cli: Creating process...");        
+        Subversion.LOG.fine("cli: Creating process...");        
         command.commandStarted();
         
-        try {
-            cli = Runtime.getRuntime().exec(command.getCliArguments(executable), getEnvVar());
-            ctOutput = new BufferedReader(new InputStreamReader(cli.getInputStream()));
-            ctError = new BufferedReader(new InputStreamReader(cli.getErrorStream()));
-        } catch (IOException ex) {
-            Logger.getLogger(Commandline.class.getName()).log(Level.WARNING, null, ex);
-            throw ex;
-        }
-        Logger.getLogger(Commandline.class.getName()).fine("cli: process created");
+        cli = Runtime.getRuntime().exec(command.getCliArguments(executable), getEnvVar());
+
+        ctOutput = new BufferedReader(new InputStreamReader(cli.getInputStream()));
+        ctError = new BufferedReader(new InputStreamReader(cli.getErrorStream()));
+
+        Subversion.LOG.fine("cli: process created");
 
         try {
             String line = null;                
@@ -127,23 +129,23 @@ class Commandline {
                 command.output(b.toByteArray());
             } else {                    
                 while ((line = ctOutput.readLine()) != null) {                                        
-                    Logger.getLogger(Commandline.class.getName()).fine("cli: OUTPUT \"" + line + "\"");
+                    Subversion.LOG.fine("cli: OUTPUT \"" + line + "\"");
                     command.outputText(line);
                 }    
             }
             while ((line = ctError.readLine()) != null) {                                    
-                Logger.getLogger(Commandline.class.getName()).fine("cli: ERROR \"" + line + "\"");
+                Subversion.LOG.info("cli: ERROR \"" + line + "\"");
                 command.errorText(line);
-            }
+            }                            
 
             try {
                 cli.waitFor();
             } catch (InterruptedException ex) {
-                Logger.getLogger(Commandline.class.getName()).log(Level.WARNING, null, ex);
-                throw new IOException(ex.getMessage());
+                // ignore
             }
-
+            
         } finally {
+            Subversion.LOG.fine("cli: process finnished");            
             command.commandFinished();
         }        
     }    

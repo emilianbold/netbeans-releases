@@ -94,6 +94,7 @@ made subject to such option by the copyright holder.
                 <project>../../cnd.api.model</project>
                 <project>../../cnd.api.project</project>
                 <project>../../cnd.apt</project>
+                <project>../../cnd.callgraph</project>
                 <project>../../cnd.classview</project>
                 <project>../../cnd.completion</project>
                 <project>../../cnd.debugger.gdb</project>
@@ -393,7 +394,6 @@ made subject to such option by the copyright holder.
                 <project>../../php.editor</project>
                 <project>../../php.kit</project>
                 <project>../../php.project</project>
-                <project>../../php.rt</project>
                 <project>../../php.samples</project>
                 <project>../../print</project>
                 <project>../../profiler</project>
@@ -574,6 +574,11 @@ made subject to such option by the copyright holder.
                 <project>../../vmd.properties</project>
                 <project>../../vmd.screen</project>
                 <project>../../vmd.structure</project>
+                <project>../../web.client.javascript.debugger.ant</project>
+                <project>../../web.client.javascript.debugger.api</project>
+                <project>../../web.client.javascript.debugger.firefox</project>
+                <project>../../web.client.javascript.debugger.firefox.extension</project>
+                <project>../../web.client.javascript.debugger.js.api</project>
                 <project>../../web.core</project>
                 <project>../../web.core.syntax</project>
                 <project>../../web.debug</project>
@@ -675,6 +680,7 @@ made subject to such option by the copyright holder.
                 <project>../../xslt.model</project>
                 <project>../../xslt.project</project>
                 <project>../../xslt.tmap</project>
+                <project>../../xslt.validation</project>
             </subprojects>
         </general-data>
     </configuration>

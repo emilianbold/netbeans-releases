@@ -93,8 +93,8 @@ public class ReferenceResolverImpl extends CsmReferenceResolver {
         if (cookie != null) {
             JEditorPane[] panes = CsmUtilities.getOpenedPanesInEQ(cookie);
             if (panes != null && panes.length>0) {
-                Caret caret = panes[0].getCaret();
-                int offset = Math.min(caret.getMark(), caret.getDot());
+                //System.err.printf("caret: %d, %d, %d\n",panes[0].getCaretPosition(), panes[0].getSelectionStart(), panes[0].getSelectionEnd());
+                int offset = panes[0].getSelectionStart();
                 CsmFile file = CsmUtilities.getCsmFile(activatedNode,false);
                 StyledDocument doc = null;
                 try {

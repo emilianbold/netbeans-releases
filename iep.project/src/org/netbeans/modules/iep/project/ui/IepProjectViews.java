@@ -64,24 +64,30 @@ import org.openide.loaders.DataObjectNotFoundException;
  *
  */
 class IepProjectViews {
+
     private static Logger logger = Logger.getLogger(IepProjectViews.class.getName());
     private static final DataFilter NO_FOLDERS_FILTER = new NoFoldersDataFilter();
+
     private IepProjectViews() {
     }
 
     static final class LogicalViewChildren extends Children.Keys implements FileChangeListener {
 
         private static final String KEY_SOURCE_DIR = "srcDir"; // NOI18N
+
         private static final String KEY_DOC_BASE = "docBase"; //NOI18N
+
         private static final String KEY_EJBS = "ejbKey"; //NOI18N
+
         private static final String WEBSERVICES_DIR = "webservicesDir"; // NOI18N
+
         private static final String KEY_SETUP_DIR = "setupDir"; //NOI18N
 
         private AntProjectHelper helper;
         private final PropertyEvaluator evaluator;
         private FileObject projectDir;
 
-        public LogicalViewChildren (AntProjectHelper helper, PropertyEvaluator evaluator) {
+        public LogicalViewChildren(AntProjectHelper helper, PropertyEvaluator evaluator) {
             assert helper != null;
             this.helper = helper;
             projectDir = helper.getProjectDirectory();
@@ -107,7 +113,7 @@ class IepProjectViews {
                 l.add(KEY_SETUP_DIR);
             }
             setKeys(l);
-            
+
         }
 
         private FileObject getSetupFolder() {
@@ -124,53 +130,53 @@ class IepProjectViews {
             /*
             Node n = null;
             if (key == KEY_SOURCE_DIR) {
-                FileObject srcRoot = helper.resolveFileObject(evaluator.getProperty (IcanproProjectProperties.SRC_DIR));
-                Project p = FileOwnerQuery.getOwner (srcRoot);
-                SourceGroup sgs [] = ProjectUtils.getSources (p).getSourceGroups (IepProject.SOURCES_TYPE_ICANPRO);
-                for (int i = 0; i < sgs.length; i++) {
-                    if (sgs [i].contains (srcRoot)) {
-                        n = PackageView.createPackageView (sgs [i]);
-                        break;
-                    }
-                }
+            FileObject srcRoot = helper.resolveFileObject(evaluator.getProperty (IcanproProjectProperties.SRC_DIR));
+            Project p = FileOwnerQuery.getOwner (srcRoot);
+            SourceGroup sgs [] = ProjectUtils.getSources (p).getSourceGroups (IepProject.SOURCES_TYPE_ICANPRO);
+            for (int i = 0; i < sgs.length; i++) {
+            if (sgs [i].contains (srcRoot)) {
+            n = PackageView.createPackageView (sgs [i]);
+            break;
             }
-
+            }
+            }
+            
             return n == null ? new Node[0] : new Node[] {n};
              */
             Node n = null;
             if (key == KEY_SOURCE_DIR) {
-                FileObject srcRoot = helper.resolveFileObject(evaluator.getProperty (IcanproProjectProperties.SRC_DIR));
-                Project p = FileOwnerQuery.getOwner (srcRoot);
+                FileObject srcRoot = helper.resolveFileObject(evaluator.getProperty(IcanproProjectProperties.SRC_DIR));
+                Project p = FileOwnerQuery.getOwner(srcRoot);
                 Sources s = ProjectUtils.getSources(p);
-                SourceGroup sgs [] = ProjectUtils.getSources (p).getSourceGroups (IepProject.SOURCES_TYPE_ICANPRO);
-		for (int i = 0; i < sgs.length; i++) {
-		    if (sgs [i].contains(srcRoot)) {
-			try {
+                SourceGroup sgs[] = ProjectUtils.getSources(p).getSourceGroups(IepProject.SOURCES_TYPE_ICANPRO);
+                for (int i = 0; i < sgs.length; i++) {
+                    if (sgs[i].contains(srcRoot)) {
+                        try {
                             FileObject folder = sgs[i].getRootFolder();
-			    DataObject dobj = DataObject.find(folder);
+                            DataObject dobj = DataObject.find(folder);
                             n = new RootNode(dobj.getNodeDelegate(), (DataFolder) dobj);
-			} catch (DataObjectNotFoundException ex) {
-			}
-			break;
-		    }
-		}
-                 }
-            return n == null ? new Node[0] : new Node[] {n};
+                        } catch (DataObjectNotFoundException ex) {
+                        }
+                        break;
+                    }
+                }
+            }
+            return n == null ? new Node[0] : new Node[]{n};
         }
 
         private DataFolder getFolder(String propName) {
             /*
             FileObject fo = helper.resolveFileObject(evaluator.getProperty (propName));
             if (fo != null) {
-                DataFolder df = DataFolder.findFolder(fo);
-                return df;
+            DataFolder df = DataFolder.findFolder(fo);
+            return df;
             }
             return null;
              */
-            String propertyValue = evaluator.getProperty (propName);
-            if (propertyValue != null ) {
-                FileObject fo = helper.resolveFileObject(evaluator.getProperty (propName));
-                if ( fo != null && fo.isValid()) {
+            String propertyValue = evaluator.getProperty(propName);
+            if (propertyValue != null) {
+                FileObject fo = helper.resolveFileObject(evaluator.getProperty(propName));
+                if (fo != null && fo.isValid()) {
                     try {
                         DataFolder df = DataFolder.findFolder(fo);
                         return df;
@@ -180,7 +186,7 @@ class IepProjectViews {
                 }
             }
             return null;
-           
+
         }
 
         // file change events in the project directory
@@ -195,7 +201,7 @@ class IepProjectViews {
 
         public void fileDeleted(org.openide.filesystems.FileEvent fe) {
             // setup folder deleted
-           //createNodes();
+            //createNodes();
         }
 
         public void fileFolderCreated(org.openide.filesystems.FileEvent fe) {
@@ -208,126 +214,122 @@ class IepProjectViews {
             createNodes();
         }
     }
-    
+
     private static final class RootNode extends FilterNode {
-	public RootNode(Node n, DataFolder dataFolder) {
-	    super(n,  dataFolder.createNodeChildren( NO_FOLDERS_FILTER));
-	    disableDelegation(DELEGATE_GET_DISPLAY_NAME|
-		DELEGATE_SET_DISPLAY_NAME|DELEGATE_GET_SHORT_DESCRIPTION|
-		DELEGATE_GET_ACTIONS);
-	    setDisplayName(
-			NbBundle.getMessage(RootNode.class, "LBL_Node_Sources"));
-	    		
-	}
-	
-	 
-	public Action[] getActions(boolean context) {
-	    return new Action[] {
-		CommonProjectActions.newFileAction(),
-                null,
-                org.openide.util.actions.SystemAction.get( org.openide.actions.FileSystemAction.class ),
-                null,
-                org.openide.util.actions.SystemAction.get( org.openide.actions.FindAction.class ),
-                null,
-                org.openide.util.actions.SystemAction.get( org.openide.actions.PasteAction.class ),
-                null,
-                org.openide.util.actions.SystemAction.get( org.openide.actions.ToolsAction.class ),
-	    };
-	}
+
+        public RootNode(Node n, DataFolder dataFolder) {
+            super(n, dataFolder.createNodeChildren(NO_FOLDERS_FILTER));
+            disableDelegation(DELEGATE_GET_DISPLAY_NAME |
+                    DELEGATE_SET_DISPLAY_NAME | DELEGATE_GET_SHORT_DESCRIPTION |
+                    DELEGATE_GET_ACTIONS);
+            setDisplayName(
+                    NbBundle.getMessage(RootNode.class, "LBL_Node_Sources"));
+
+        }
+
+        public Action[] getActions(boolean context) {
+            return new Action[]{
+                        CommonProjectActions.newFileAction(),
+                        null,
+                        org.openide.util.actions.SystemAction.get(org.openide.actions.FileSystemAction.class),
+                        null,
+                        org.openide.util.actions.SystemAction.get(org.openide.actions.FindAction.class),
+                        null,
+                        org.openide.util.actions.SystemAction.get(org.openide.actions.PasteAction.class),
+                        null,
+                        org.openide.util.actions.SystemAction.get(org.openide.actions.ToolsAction.class),
+                    };
+        }
 
         public boolean canDestroy() {
             return false;
         }
 
+        public boolean canRename() {
+            return false;
+        }
 
-	
+        public boolean canCopy() {
+            return false;
+        }
 
-	 
-	public boolean canRename() {
-	    return false;
-	}
-	
-	 
-	public boolean canCopy() {
-	    return false;
-	}
-	
-	 
-	public boolean canCut() {
-	    return false;
-	}
+        public boolean canCut() {
+            return false;
+        }
 
         public HelpCtx getHelpCtx() {
             return new HelpCtx("org.netbeans.modules.iep.project.ui.RootNode");
         }
-
-
     }
 
     private static final class DocBaseNode extends FilterNode {
-        private static Image CONFIGURATION_FILES_BADGE = Utilities.loadImage("org/netbeans/modules/compapp/projects/base/ui/resources/docjar.gif", true ); // NOI18N
 
-        DocBaseNode (Node orig) {
-            super (orig);
+        private static Image CONFIGURATION_FILES_BADGE = Utilities.loadImage("org/netbeans/modules/compapp/projects/base/ui/resources/docjar.gif", true); // NOI18N
+
+
+        DocBaseNode(Node orig) {
+            super(orig);
         }
 
-        public Image getIcon( int type ) {
-            return computeIcon( false, type );
+        public Image getIcon(int type) {
+            return computeIcon(false, type);
         }
 
-        public Image getOpenedIcon( int type ) {
-            return computeIcon( true, type );
+        public Image getOpenedIcon(int type) {
+            return computeIcon(true, type);
         }
 
-        private Image computeIcon( boolean opened, int type ) {
+        private Image computeIcon(boolean opened, int type) {
             Node folderNode = getOriginal();
-            Image image = opened ? folderNode.getOpenedIcon( type ) : folderNode.getIcon( type );
-            return Utilities.mergeImages( image, CONFIGURATION_FILES_BADGE, 7, 7 );
+            Image image = opened ? folderNode.getOpenedIcon(type) : folderNode.getIcon(type);
+            return Utilities.mergeImages(image, CONFIGURATION_FILES_BADGE, 7, 7);
         }
 
-        public String getDisplayName () {
+        public String getDisplayName() {
             return NbBundle.getMessage(IcanproLogicalViewProvider.class, "LBL_Node_DocBase"); //NOI18N
         }
+
         public HelpCtx getHelpCtx() {
             return new HelpCtx("org.netbeans.modules.iep.project.ui.DocBaseNode");
         }
     }
+
     static final class NoFoldersDataFilter implements ChangeListener, ChangeableDataFilter {
-        
-        EventListenerList ell = new EventListenerList();        
-        
+
+        EventListenerList ell = new EventListenerList();
+
         public NoFoldersDataFilter() {
-            VisibilityQuery.getDefault().addChangeListener( this );
+            VisibilityQuery.getDefault().addChangeListener(this);
         }
-                
-        public boolean acceptDataObject(DataObject obj) {                
-            FileObject fo = obj.getPrimaryFile();                
-            return  VisibilityQuery.getDefault().isVisible( fo );
+
+        public boolean acceptDataObject(DataObject obj) {
+            FileObject fo = obj.getPrimaryFile();
+            return VisibilityQuery.getDefault().isVisible(fo);
         }
-        
-        public void stateChanged( ChangeEvent e) {            
-            Object[] listeners = ell.getListenerList();     
+
+        public void stateChanged(ChangeEvent e) {
+            Object[] listeners = ell.getListenerList();
             ChangeEvent event = null;
-            for (int i = listeners.length-2; i>=0; i-=2) {
-                if (listeners[i] == ChangeListener.class) {             
-                    if ( event == null) {
-                        event = new ChangeEvent( this );
+            for (int i = listeners.length - 2; i >= 0; i -= 2) {
+                if (listeners[i] == ChangeListener.class) {
+                    if (event == null) {
+                        event = new ChangeEvent(this);
                     }
-                    ((ChangeListener)listeners[i+1]).stateChanged( event );
+                    ((ChangeListener) listeners[i + 1]).stateChanged(event);
                 }
             }
-        }        
-    
-        public void addChangeListener( ChangeListener listener ) {
-            ell.add( ChangeListener.class, listener );
-        }        
-                        
-        public void removeChangeListener( ChangeListener listener ) {
-            ell.remove( ChangeListener.class, listener );
         }
+
+        public void addChangeListener(ChangeListener listener) {
+            ell.add(ChangeListener.class, listener);
+        }
+
+        public void removeChangeListener(ChangeListener listener) {
+            ell.remove(ChangeListener.class, listener);
+        }
+
         public HelpCtx getHelpCtx() {
             return new HelpCtx("org.netbeans.modules.iep.project.ui.NoFoldersDataFilter");
         }
-        
     }
 }

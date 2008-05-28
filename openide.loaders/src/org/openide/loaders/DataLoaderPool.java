@@ -51,6 +51,7 @@ import org.openide.modules.ModuleInfo;
 import org.openide.nodes.*;
 import org.openide.util.*;
 import org.openide.util.actions.SystemAction;
+import org.openide.util.lookup.Lookups;
 
 /** Pool of data loaders.
  * Provides access to set of registered
@@ -94,6 +95,7 @@ implements java.io.Serializable {
     private transient DataLoader[] loaderArray;
     /** cache of loaders for allLoaders method */
     private transient List<DataLoader> allLoaders;
+    private transient List<DataLoader> prefLoaders;
     /** counts number of changes in the loaders pool */
     private transient int cntchanges;
     
@@ -155,6 +157,7 @@ implements java.io.Serializable {
             cntchanges++;
             loaderArray = null;
             allLoaders = null;
+            prefLoaders = null;
 
             if (listeners == null) return;            
             list = listeners.getListenerList();
@@ -256,10 +259,16 @@ implements java.io.Serializable {
      * @return enumeration of loaders
      */
     public final Enumeration<DataLoader> allLoaders () {
+        return computeLoaders(true);
+    }
+    
+    final Enumeration<DataLoader> computeLoaders(boolean computeAll) {
         List<DataLoader> all;
+        List<DataLoader> pref;
         int oldcnt;
         synchronized (this) {
             all = this.allLoaders;
+            pref = this.prefLoaders;
             oldcnt = this.cntchanges;
         }
         
@@ -273,16 +282,71 @@ implements java.io.Serializable {
             while(en.hasMoreElements()) {
                 all.add(en.nextElement());
             }
+            pref = new ArrayList<DataLoader>(all);
             all.addAll(Arrays.asList(getDefaultLoaders()));
             
             synchronized (this) {
                 if (oldcnt == this.cntchanges) {
                     this.allLoaders = all;
+                    this.prefLoaders = pref;
                 }
             }
         }
         
-        return Collections.enumeration(all);
+        return Collections.enumeration(computeAll ? all : pref);
+    }
+    
+    final Enumeration<DataObject.Factory> allLoaders(FileObject fo) {
+        class MimeEnum implements Enumeration<DataObject.Factory> {
+            final String mime;
+
+            public MimeEnum(String mime) {
+                this.mime = mime;
+            }
+            
+            Enumeration<? extends DataObject.Factory> delegate;
+            
+            private Enumeration<? extends DataObject.Factory> delegate() {
+                if (delegate == null) {
+                    String path = "Loaders/" + mime + "/Factories"; // NOI18N
+                    delegate = Collections.enumeration(Lookups.forPath(path).lookupAll(
+                        DataObject.Factory.class
+                    ));
+                }
+                return delegate;
+            }
+            
+            public boolean hasMoreElements() {
+                return delegate().hasMoreElements();
+            }
+
+            public DataObject.Factory nextElement() {
+                return delegate().nextElement();
+            }
+        }
+        String mime = fo.getMIMEType();
+        Enumeration<DataObject.Factory> mimeLoaders = new MimeEnum(mime);
+        mimeLoaders = Enumerations.concat(mimeLoaders, new MimeEnum("content/unknown")); // NOI18N
+        
+        Enumeration<DataLoader> first = computeLoaders(false);
+        try {
+            if (fo.getFileSystem().isDefault()) {
+                first = Enumerations.concat(
+                    first, 
+                    Enumerations.singleton(getFolderLoader())
+                );
+            }
+        } catch (FileStateInvalidException ex) {
+            // OK
+        }
+
+        return Enumerations.concat(
+            first,
+            Enumerations.concat(
+                mimeLoaders, 
+                Enumerations.array(getDefaultLoaders())
+            )
+        );
     }
     
     /** Get an array of loaders that are currently registered.
@@ -406,13 +470,19 @@ implements java.io.Serializable {
                 return obj;
             }
         }
-        
+
+        HashSet<FileObject> recognized = new HashSet<FileObject>();
         // scan through loaders
-        java.util.Enumeration en = allLoaders ();
+        Enumeration<? extends DataObject.Factory> en = allLoaders (fo);
         while (en.hasMoreElements ()) {
-            DataLoader l = (DataLoader)en.nextElement ();
-    
-            DataObject obj = l.findDataObject (fo, r);
+            DataObject.Factory l = en.nextElement ();
+            DataObject obj = l.findDataObject (fo, recognized);
+            if (!recognized.isEmpty()) {
+                for (FileObject f : recognized) {
+                    r.markRecognized(f);
+                }
+                recognized.clear();
+            }
             if (obj != null) {
                 return obj;
             }

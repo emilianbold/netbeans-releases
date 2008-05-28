@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,6 +39,11 @@
  * made subject to such option by the copyright holder.
  */
 package org.netbeans.modules.ruby.platform.gems;
+
+import java.util.SortedSet;
+import java.util.StringTokenizer;
+import java.util.TreeSet;
+import org.netbeans.modules.ruby.platform.Util;
 
 /**
  * A descriptor of a Ruby Gem.
@@ -57,7 +62,7 @@ public final class Gem implements Comparable<Gem> {
         this.installedVersions = installedVersions;
         this.availableVersions = availableVersions;
     }
-
+    
     public String getName() {
         return name;
     }
@@ -66,8 +71,21 @@ public final class Gem implements Comparable<Gem> {
         return installedVersions;
     }
 
+    String getLatestInstalled() {
+        return getLatestVersion(installedVersions);
+    }
+        
     public String getAvailableVersions() {
         return availableVersions;
+    }
+    
+    String getLatestAvailable() {
+        return getLatestVersion(availableVersions);
+    }
+        
+    boolean hasUpdateAvailable() {
+        String latestAvailable = getLatestAvailable();
+        return latestAvailable != null && Util.compareVersions(latestAvailable, getLatestInstalled()) > 0;
     }
 
     public String getDescription() {
@@ -118,5 +136,25 @@ public final class Gem implements Comparable<Gem> {
 
     public void setDescription(String description) {
         this.desc = description;
+    }
+
+    private static String getLatestVersion(final String commaVersions) {
+        SortedSet<? extends String> versions = getVersions(commaVersions);
+        if (versions == null || versions.isEmpty()) {
+            return null;
+        }
+        return versions.last();
+    }
+
+    private static SortedSet<? extends String> getVersions(final String commaVersions) {
+        if (commaVersions == null) {
+            return null;
+        }
+        StringTokenizer st = new StringTokenizer(commaVersions, " ,");
+        SortedSet<String> versions = new TreeSet<String>(Util.VERSION_COMPARATOR);
+        while (st.hasMoreTokens()) {
+            versions.add(st.nextToken());
+        }
+        return versions;
     }
 }

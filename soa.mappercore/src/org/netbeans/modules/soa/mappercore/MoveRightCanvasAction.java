@@ -57,10 +57,9 @@ import org.netbeans.modules.soa.mappercore.model.VertexItem;
  * @author alex
  */
 public class MoveRightCanvasAction extends MapperKeyboardAction {
-    private Canvas canvas;
-    
+        
     public MoveRightCanvasAction(Canvas canvas) {
-        this.canvas = canvas;
+        super(canvas);
     }
     
     

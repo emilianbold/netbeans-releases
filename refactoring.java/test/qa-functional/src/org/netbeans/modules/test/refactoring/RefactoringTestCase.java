@@ -39,6 +39,8 @@
 package org.netbeans.modules.test.refactoring;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -49,13 +51,16 @@ import java.util.List;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JTree;
 import javax.swing.tree.TreeModel;
+import javax.swing.tree.TreePath;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.JemmyProperties;
+import org.netbeans.jemmy.TestOut;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 import org.netbeans.junit.NbTestCase;
@@ -75,6 +80,8 @@ public abstract class RefactoringTestCase extends NbTestCase {
      * to ref file
      */
     public static int sortLevel = 2;
+    private PrintStream jemmyError;
+    private PrintStream jemmyOutput;
 
     public RefactoringTestCase(String name) {
         super(name);
@@ -99,13 +106,10 @@ public abstract class RefactoringTestCase extends NbTestCase {
         for (int i = 0; i < childs; i++) {
             Object child = model.getChild(parent, i);
             al.add(child);
-        }
-        System.out.println(al);
-        System.out.println(level+" "+sortLevel);
+        }        
         if ((level+1) <= sortLevel) {
             sortChilds(al);
-        }
-        System.out.println(al);
+        }        
 
         while(!al.isEmpty()) {            
             Object child = al.remove(0);
@@ -113,9 +117,7 @@ public abstract class RefactoringTestCase extends NbTestCase {
         }
         
     }
-
-    
-    
+        
     protected  void openFile(String treeSubPackagePathToFile, String fileName) {
         // debug info, to be removed
         //this.treeSubPackagePathToFile = treeSubPackagePathToFile;
@@ -144,6 +146,12 @@ public abstract class RefactoringTestCase extends NbTestCase {
         //node.performPopupAction("Open");
         new OpenAction().performAPI(node);  //should be more stable then performing open action from popup
 
+    }
+    
+    public String getFileForSelectedNode(JTree tree) {
+        TreePath selectionPath = tree.getSelectionPath();
+        Object pathComponent = selectionPath.getPathComponent(2);
+        return (String) getPreviewItemLabel(pathComponent);
     }
 
     private Object getPreviewItemLabel(Object parent)  {
@@ -210,13 +218,18 @@ public abstract class RefactoringTestCase extends NbTestCase {
     }
     
     @Override
-    protected void setUp() throws Exception {
-        System.out.println("Test "+getName()+" started");
+    protected void setUp() throws Exception {        
+        jemmyOutput = new PrintStream(new File(getWorkDir(), getName() + ".jemmy"));
+        jemmyError = new PrintStream(new File(getWorkDir(), getName() + ".error"));        
+        JemmyProperties.setCurrentOutput(new TestOut(System.in, jemmyOutput , jemmyError));
+        System.out.println("Test "+getName()+" started");        
     }
 
     @Override
     protected void tearDown() throws Exception {        
         getRef().close();
+        jemmyOutput.close();
+        jemmyError.close();
         System.out.println();
         assertFile("Golden file differs ", new File(getWorkDir(),getName()+".ref"), getGoldenFile(), getWorkDir(), new LineDiff());
         System.out.println("Test "+getName()+" finished");

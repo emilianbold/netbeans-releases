@@ -418,6 +418,8 @@ tokens {
             if (lastRecoveryPosition == inputState.input.index()) {
                 return;
             }
+
+            onError(e);
             
             if (Diagnostic.needStatistics()) Diagnostic.onParserError(e);
 
@@ -637,6 +639,9 @@ tokens {
 	protected void printf (String pattern, int i1, int i2, int i3, String s) { /*TODO: implement*/ throw new NotImplementedException(); }
 
 	protected void balanceBraces(int left, int right) throws RecognitionException, TokenStreamException { throw new NotImplementedException(); };
+
+        /** Is called when an error occurred */
+        protected void onError(RecognitionException e) {}
 }
 
 public translation_unit:

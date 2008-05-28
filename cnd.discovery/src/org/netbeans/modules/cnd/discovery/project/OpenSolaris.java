@@ -39,14 +39,21 @@
 
 package org.netbeans.modules.cnd.discovery.project;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 import org.netbeans.api.project.Project;
@@ -75,6 +82,7 @@ import org.openide.util.Exceptions;
  */
 public class OpenSolaris extends KnownProject {
     private static final boolean TRACE = true;
+    /*package-local*/ static final boolean READ_MAP_FILE_VERS = false;
     public static final String PROJECT_NAME = "OpenSolaris"; // NOI18N
     public static final String LOG_FILE = "NightlyLog"; // NOI18N
     public static final String BUILD_SCRIPT = "BuildScript"; // NOI18N
@@ -85,8 +93,27 @@ public class OpenSolaris extends KnownProject {
 
     private List<SourceFileProperties> sources;
     private List<InstallLine> copyHeader;
+    TreeMap<String,Set<String>> mapFiles;
+    TreeMap<String,Set<String>> libraries;
+    Map<String,String> secondLevel;
     
     public OpenSolaris(){
+        secondLevel = new HashMap<String,String>();
+        secondLevel.put("lib/gss_mechs/", "os.lib.gss_mechs.");
+        secondLevel.put("lib/fm/", "os.lib.fm.");
+        secondLevel.put("lib/hal/", "os.lib.hal.");
+        secondLevel.put("lib/lvm/", "os.lib.lvm.");
+        secondLevel.put("lib/libkfm/", "os.lib.libkfm.");
+        secondLevel.put("lib/openssl/", "os.lib.openssl.");
+        secondLevel.put("lib/policykit/", "os.lib.policykit.");
+        secondLevel.put("lib/print/", "os.lib.print.");
+        secondLevel.put("lib/scsi/", "os.lib.scsi.");
+        secondLevel.put("lib/smbsrv/", "os.lib.smbsrv.");
+        secondLevel.put("lib/udapl/", "os.lib.udapl.");
+        secondLevel.put("cmd/sgs/", "os.cmd.sgs.");
+        secondLevel.put("cmd/perl/", "os.cmd.perl.");
+        secondLevel.put("cmd/ssh/", "os.cmd.ssh.");
+        secondLevel.put("cmd/xntpd/", "os.cmd.xntpd.");
     }
 
     @Override
@@ -164,10 +191,19 @@ public class OpenSolaris extends KnownProject {
         }
     }
     
+    private String getSecondlevel(String path){
+        for(String s : secondLevel.keySet()){
+            if (path.startsWith(s)){
+                return s;
+            }
+        }
+        return null;
+    }
+    
     private boolean createImpl() throws IOException{
         File proto = new File(root+"/proto"); // NOI18N
         if (!proto.exists()) {
-            if (TRACE) System.out.println("Iinstalling proto..."); //NOI18N
+            if (TRACE) System.out.println("Installing proto..."); //NOI18N
             for(InstallLine il : copyHeader){
                 il.install();
             }
@@ -178,22 +214,22 @@ public class OpenSolaris extends KnownProject {
             String path = s.getCompilePath();
             if (path.startsWith(srcRoot)) {
                 path = path.substring(srcRoot.length());
-                if (path.startsWith("cmd/")){ // NOI18N
-                    String f = path.substring(4);
-                    int i = f.indexOf('/'); // NOI18N
-                    if (i > 0){
-                        addFolder(folders, "cmd/"+f.substring(0,i), f.substring(0,i), s); // NOI18N
-                    } else if (f.length() >0){
-                        addFolder(folders, "cmd/"+f, f, s); // NOI18N
-                    }
-                } else if (path.startsWith("lib/gss_mechs/")){ // NOI18N
-                    String g = "lib/gss_mechs/"; // NOI18N
+                if (getSecondlevel(path) != null){
+                    String g = getSecondlevel(path); // NOI18N
                     String f = path.substring(g.length());
                     int i = f.indexOf('/'); // NOI18N
                     if (i > 0){
                         addFolder(folders, g+f.substring(0,i), f.substring(0,i), s);
                     } else if (f.length() >0){
                         addFolder(folders, g+f, f, s);
+                    }
+                } else if (path.startsWith("cmd/")){ // NOI18N
+                    String f = path.substring(4);
+                    int i = f.indexOf('/'); // NOI18N
+                    if (i > 0){
+                        addFolder(folders, "cmd/"+f.substring(0,i), f.substring(0,i), s); // NOI18N
+                    } else if (f.length() >0){
+                        addFolder(folders, "cmd/"+f, f, s); // NOI18N
                     }
                 } else if (path.startsWith("lib/")){ // NOI18N
                     String f = path.substring(4);
@@ -215,34 +251,31 @@ public class OpenSolaris extends KnownProject {
         }
         createFolders(folders);
         Set<String> projectList = folders.keySet();
-        if (false) {
-            createImpl(srcRoot+"lib/libnisdb", "/tmp/libnisdb", "libnisdb", "os.libraries", projectList, sources); // NOI18N
-        } else {
-            for (Map.Entry<String,ProjectSources> entry:folders.entrySet()){
-                String r = srcRoot+entry.getKey();
-                String n = nb_root+"/"+entry.getKey(); // NOI18N
-                String name = entry.getValue().name;
-                String display = entry.getValue().name;
-                if (entry.getKey().startsWith("cmd/")){ // NOI18N
-                    display = "os.cmd."+display;
-                } else if (entry.getKey().startsWith("lib/gss_mechs/")){ // NOI18N
-                    display = "os.lib.gss_mechs."+display; // NOI18N
-                } else if (entry.getKey().startsWith("lib/")){ // NOI18N
-                    display = "os.lib."+display; // NOI18N
-                } else {
-                    display = "os."+display; // NOI18N
-                }
-                if (TRACE) System.out.println("Creating "+n+"..."); //NOI18N
-                createImpl(r, n, name, display, projectList, entry.getValue().myFileProperties);
+        for (Map.Entry<String,ProjectSources> entry:folders.entrySet()){
+            String r = srcRoot+entry.getKey();
+            String n = nb_root+"/"+entry.getKey(); // NOI18N
+            String name = entry.getValue().name;
+            String display = entry.getValue().name;
+            if (getSecondlevel(entry.getKey()) != null){
+                String g = getSecondlevel(entry.getKey());
+                display = secondLevel.get(g)+display;
+            } else if (entry.getKey().startsWith("cmd/")){ // NOI18N
+                display = "os.cmd."+display;
+            } else if (entry.getKey().startsWith("lib/")){ // NOI18N
+                display = "os.lib."+display; // NOI18N
+            } else {
+                display = "os."+display; // NOI18N
             }
-            // and super projects
-            if (TRACE) System.out.println("Creating "+nb_root+"/commands..."); //NOI18N
-            createImpl(srcRoot+"cmd", nb_root+"/commands", "commands", "os.commands", projectList, sources); // NOI18N
-            if (TRACE)  System.out.println("Creating "+nb_root+"/libraries..."); //NOI18N
-            createImpl(srcRoot+"lib", nb_root+"/libraries", "libraries", "os.libraries", projectList, sources); // NOI18N
-            if (TRACE)  System.out.println("Creating "+nb_root+"/sources..."); //NOI18N
-            createImpl(root+"/usr/src", nb_root+"/sources", "sources", "os.sources", projectList, sources); // NOI18N
+            if (TRACE) System.out.println("Creating "+n+"..."); //NOI18N
+            createImpl(r, n, name, display, projectList, entry.getValue().myFileProperties);
         }
+        // and super projects
+        if (TRACE) System.out.println("Creating "+nb_root+"/commands..."); //NOI18N
+        createImpl(srcRoot+"cmd", nb_root+"/commands", "commands", "os.commands", projectList, sources); // NOI18N
+        if (TRACE)  System.out.println("Creating "+nb_root+"/libraries..."); //NOI18N
+        createImpl(srcRoot+"lib", nb_root+"/libraries", "libraries", "os.libraries", projectList, sources); // NOI18N
+        if (TRACE)  System.out.println("Creating "+nb_root+"/sources..."); //NOI18N
+        createImpl(root+"/usr/src", nb_root+"/sources", "sources", "os.sources", projectList, sources); // NOI18N
         return true;
     }
 
@@ -262,7 +295,8 @@ public class OpenSolaris extends KnownProject {
         ProjectCreator creator = new ProjectCreator(discovery);
         creator.init(nbRoot, sourceRoot, sourceRoot+"/Makefile", buildScript); // NOI18N
         try {
-            creator.createProject(name, displayName, folders);
+            creator.createProject(name, displayName, folders, getLibraries(displayName, sourceRoot, nbRoot));
+            createGlobalList(sourceRoot, nbRoot, list);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
             return false;
@@ -270,10 +304,96 @@ public class OpenSolaris extends KnownProject {
         return true;
     }
 
+    private Set<String> getLibraries(String displayName, String sourceRoot, String nbRoot){
+        Set<String> res = new HashSet<String>();
+        if (displayName.indexOf(".sources")>0 ||
+            displayName.indexOf(".libraries")>0 ||
+            displayName.indexOf(".uts")>0 ||
+            displayName.indexOf(".commands")>0) {
+            return res;
+        }
+        SortedMap<String,Set<String>> map = libraries.subMap(sourceRoot, sourceRoot+"/z");
+        for(Map.Entry<String, Set<String>> entry : map.entrySet()){
+            for(String s: entry.getValue()) {
+                res.add(s);
+            }
+        }
+        if (res.size() > 0) {
+            if (TRACE) System.out.println("Project libraries "+res); //NOI18N
+        }
+        return res;
+    }
+    
+    private void createGlobalList(String sourceRoot, String nbRoot, List<SourceFileProperties> list){
+        if (mapFiles != null) {
+            Properties res = new Properties();
+            SortedMap<String,Set<String>> map = mapFiles.subMap(sourceRoot, sourceRoot+"/z");
+            for(Map.Entry<String, Set<String>> entry : map.entrySet()){
+                for(String s: entry.getValue()) {
+                    res.put(s, "");
+                }
+            }
+            if (res.size() == 0) {
+                return;
+            }
+            try {
+                if (TRACE) System.out.println("Write "+res.size()+" globals..."); //NOI18N
+                grepDefinitions(res, list);
+                OutputStream os = new FileOutputStream(nbRoot + "/nbproject/private/globals.xml");
+                res.storeToXML(os, "Globals");
+                os.close();
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+    }
+    
+    private void grepDefinitions(Properties res, List<SourceFileProperties> list){
+        for(SourceFileProperties source : list){
+            String path = source.getItemPath();
+            File file = new File(path);
+            if (file.exists() && file.canRead() && !file.isDirectory()){
+                try {
+                    BufferedReader in = new BufferedReader(new FileReader(file));
+                    int lineNo = 0;
+                    while(true){
+                        String line = in.readLine();
+                        if (line == null){
+                            break;
+                        }
+                        lineNo++;
+                        if (line.length()==0){
+                            continue;
+                        }
+                        char c = line.charAt(0);
+                        if (!(Character.isLetter(c)||c=='_')){
+                            continue;
+                        }
+                        int i = line.indexOf('(');
+                        if (i < 0) {
+                            continue;
+                        }
+                        String id = line.substring(0,i).trim();
+                        if (res.containsKey(id)){
+                            res.put(id, path+":"+lineNo);
+                        }
+                    }
+                    in.close();
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }
+    }
+
     private List<SourceFileProperties> scan(String log, String root){
         SolarisLogReader reader = new SolarisLogReader(log, root);
         List<SourceFileProperties> res = reader.getResults();
         copyHeader = reader.getInstalls();
+        if (READ_MAP_FILE_VERS) {
+            mapFiles = reader.readMapFile();
+        }
+        libraries = reader.getLibraries();
         return res;
     }
 
@@ -485,9 +605,15 @@ public class OpenSolaris extends KnownProject {
 
                 private List<SourceFileProperties> getSourceFileProperties() {
                     List<SourceFileProperties> res = new ArrayList<SourceFileProperties>();
+                    HashSet<String> set = new HashSet<String>();
                     for (SourceFileProperties s : sources){
                         if (s.getCompilePath().startsWith(root)) {
-                            res.add(s);
+                            File file = new File(s.getItemPath());
+                            String p = FileUtil.normalizeFile(file).getAbsolutePath();
+                            if (!set.contains(p)) {
+                                res.add(s);
+                                set.add(p);
+                            }
                         }
                     }
                     return res;

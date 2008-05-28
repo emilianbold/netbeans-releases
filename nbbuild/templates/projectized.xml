@@ -627,7 +627,6 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
         <javac srcdir="${test.qa-functional.src.dir}" destdir="${build.test.qa-functional.classes.dir}"
                debug="true" deprecation="${build.compiler.deprecation}" encoding="UTF-8"
                source="${javac.source}" target="${javac.target}" optimize="${build.compiler.optimize}" includeantruntime="false">
-               <exclude name="**/jars/**"/><!-- XXX for core only; fix in core, not here -->
                <exclude name="**/data/**"/><!-- XXX for openide/util and co. -->
             <classpath refid="test.qa-functional.cp"/>
             <compilerarg line="${javac.compilerargs}"/>
@@ -728,7 +727,6 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
         <javac srcdir="${test.qa-performance.src.dir}" destdir="${build.test.qa-performance.classes.dir}"
                debug="true" deprecation="${build.compiler.deprecation}" encoding="UTF-8"
                source="${javac.source}" target="${javac.target}" optimize="${build.compiler.optimize}" includeantruntime="false">
-               <exclude name="**/jars/**"/><!-- XXX for core only; fix in core, not here -->
                <exclude name="**/data/**"/><!-- XXX for openide/util and co. -->
             <classpath refid="test.qa-performance.cp"/>
             <compilerarg line="${javac.compilerargs}"/>

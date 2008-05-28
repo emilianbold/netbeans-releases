@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE fontscolors PUBLIC "-//NetBeans//DTD Editor Fonts and Colors settings 1.1//EN" "http://www.netbeans.org/dtds/EditorFontsColors-1_1.dtd">
+<fontscolors>
+    <fontcolor default="default" foreColor="ff969696" name="cc-highlighting-inactive">
+        <font style="plain"/>
+    </fontcolor>
+    <fontcolor bgColor="ffeceba3" default="default" name="cc-highlighting-mark-occurences"/>
+    <fontcolor default="whitespace" name="whitespace"/>
+    <fontcolor foreColor="ff009b00" name="preprocessor"/>
+    <fontcolor default="keyword" name="literal"/>
+    <fontcolor default="char" name="character"/>
+    <fontcolor default="comment" name="comment"/>
+    <fontcolor default="string" name="preprocessor-system-include-literal">
+        <font style="italic"/>
+    </fontcolor>
+    <fontcolor default="identifier" name="preprocessor-identifier"/>
+    <fontcolor default="keyword" name="keyword-directive"/>
+    <fontcolor default="keyword" name="keyword"/>
+    <fontcolor default="string" name="string"/>
+    <fontcolor default="comment" name="doxygen-tag">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor default="separator" name="separator"/>
+    <fontcolor default="comment" name="html-tag">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor default="default" foreColor="ff969600" name="cc-highlighting-macros-system">
+        <font style="plain"/>
+    </fontcolor>
+    <fontcolor default="number" name="number"/>
+    <fontcolor default="string" name="string-escape">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor default="preprocessor" foreColor="ffd1ceff" name="preprocessor-keyword-directive">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor default="operator" name="operator"/>
+    <fontcolor default="default" foreColor="ffafaf00" name="cc-highlighting-class-fields">
+        <font style="plain"/>
+    </fontcolor>
+    <fontcolor bgColor="ff2b2b2b" default="error" name="errors" waveUnderlined="red"/>
+    <fontcolor default="string" name="string-escape-invalid" waveUnderlined="ffce7b00">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor default="preprocessor-keyword-directive" foreColor="ffd1ceff" name="preprocessor-keyword"/>
+    <fontcolor default="identifier" name="identifier"/>
+    <fontcolor default="default" foreColor="ff006900" name="cc-highlighting-macros-user">
+        <font style="plain"/>
+    </fontcolor>
+    <fontcolor default="string" name="preprocessor-user-include-literal"/>
+</fontscolors>

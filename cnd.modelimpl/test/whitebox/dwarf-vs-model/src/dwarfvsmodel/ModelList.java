@@ -68,8 +68,8 @@ public class ModelList {
 	add(cls.getMembers());
     }
 
-    private void add(Iterable<CsmDeclaration> currDeclarations) {
-	for(CsmDeclaration decl : currDeclarations ) {
+    private void add(Collection currDeclarations) {
+	for(CsmDeclaration decl : (Collection<CsmDeclaration>)currDeclarations ) {
 	    CsmDeclaration.Kind kind = decl.getKind();
 	    if( kind == CsmDeclaration.Kind.CLASS ||  kind == CsmDeclaration.Kind.UNION ||  kind == CsmDeclaration.Kind.STRUCT) {
 		add((CsmClass) decl);
@@ -157,7 +157,7 @@ public class ModelList {
     }
 
     private void put(CsmFunction funct) {
-	List<CsmDeclaration> overloads = getList(funct.getQualifiedName());
+	List<CsmDeclaration> overloads = getList(funct.getQualifiedName().toString());
 	if( overloads.size() > 0 ) {
 	    if( CsmKindUtilities.isFunctionDefinition(funct) ) {
 		// if there is a declaration of this function in the list,

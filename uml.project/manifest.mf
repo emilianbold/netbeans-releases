@@ -5,6 +5,3 @@ OpenIDE-Module-Layer: org/netbeans/modules/uml/project/ui/resources/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/uml/project/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.4
 AutoUpdate-Show-In-Client: false
-
-Name: org/netbeans/modules/uml/project/UMLProjectDataObject$Loader.class
-OpenIDE-Module-Class: Loader

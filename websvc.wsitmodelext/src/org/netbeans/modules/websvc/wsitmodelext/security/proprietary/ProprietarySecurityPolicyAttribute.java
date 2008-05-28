@@ -51,10 +51,13 @@ public enum ProprietarySecurityPolicyAttribute implements Attribute {
         VISIBILITY("visibility"),                   //NOI18N
         TIMESTAMPTIMEOUT("timestampTimeout"),       //NOI18N
         MAXCLOCKSKEW("maxClockSkew"),               //NOI18N
-        TIMESTAMPFRESHNESS("timestampFreshnessLimit"),       //NOI18N
-//        MAXNONCEAGE("maxNonceAge"),                 //NOI18N
-        REVOCATION("revocationEnabled"),     //NOI18N
-        DEFAULT("default"),       //NOI18N
+        TIMESTAMPFRESHNESS("timestampFreshnessLimit"),  //NOI18N
+//        MAXNONCEAGE("maxNonceAge"),                   //NOI18N
+        REVOCATION("revocationEnabled"),                //NOI18N
+        LOGINMODULE("loginModule"),                     //NOI18N
+        SERVICEPRINCIPAL("servicePrincipal"),           //NOI18N
+        CREDENTIALDELEGATION("credentialDelegation"),   //NOI18N
+        DEFAULT("default"),                         //NOI18N
         ENCRYPTISSUEDKEY("encryptIssuedKey"),       //NOI18N
         ENCRYPTISSUEDTOKEN("encryptIssuedToken"),   //NOI18N
         ENDPOINT("endpoint"),                       //NOI18N
@@ -66,8 +69,8 @@ public enum ProprietarySecurityPolicyAttribute implements Attribute {
         TIMEOUT("timeout"),                         //NOI18N
         REQUIRECANCELSCT("requireCancelSCT"),       //NOI18N
         RENEWEXPIREDSCT("renewExpiredSCT"),         //NOI18N
-        LOCATION("location"),               //NOI18N
-        ALIASSELECTOR("aliasSelector"),               //NOI18N
+        LOCATION("location"),                       //NOI18N
+        ALIASSELECTOR("aliasSelector"),             //NOI18N
         CERTSELECTOR("certSelector"),               //NOI18N
         ALIAS("alias"),                     //NOI18N
         STSALIAS("stsalias"),               //NOI18N

@@ -381,7 +381,8 @@ public class Utilities {
                         runnableCode.run ();
                     } else {
                         assert estimatedTime > 0 : "Estimated time " + estimatedTime;
-                        handle.start ((int) estimatedTime * 10, estimatedTime); 
+                        final long friendlyEstimatedTime = estimatedTime + 2/*friendly constant*/;
+                        handle.start ((int) friendlyEstimatedTime * 10, friendlyEstimatedTime); 
                         handle.progress (progressDisplayName, 0);
                         final RequestProcessor.Task runnableTask = RequestProcessor.getDefault ().post (runnableCode);
                         RequestProcessor.getDefault ().post (new Runnable () {
@@ -389,7 +390,13 @@ public class Utilities {
                                 int i = 0;
                                 while (! runnableTask.isFinished ()) {
                                     try {
-                                        handle.progress (progressDisplayName, (int) (estimatedTime * 10 > i++ ? i : estimatedTime * 10));
+                                        if (friendlyEstimatedTime * 10 > i++) {
+                                            handle.progress (progressDisplayName, i);
+                                        } else {
+                                            handle.switchToIndeterminate ();
+                                            handle.progress (progressDisplayName);
+                                            return ;
+                                        }
                                         Thread.sleep (100);
                                     } catch (InterruptedException ex) {
                                         // no worries

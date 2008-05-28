@@ -41,15 +41,12 @@
 
 package org.netbeans.modules.websvc.wsitmodelext.addressing.impl;
 
-import org.netbeans.modules.websvc.wsitmodelext.addressing.AddressingQName;
 import org.netbeans.modules.websvc.wsitmodelext.addressing.EndpointReference;
 import org.netbeans.modules.websvc.wsitmodelext.addressing.ReferenceParameters;
 import org.netbeans.modules.websvc.wsitmodelext.addressing.ReferenceProperties;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
 import org.w3c.dom.Element;
-
 import java.util.Collections;
 import org.netbeans.modules.websvc.wsitmodelext.addressing.Address;
 import org.netbeans.modules.websvc.wsitmodelext.addressing.AddressingPortType;
@@ -68,15 +65,6 @@ public class EndpointReferenceImpl extends AddressingComponentImpl implements En
         super(model, e);
     }
     
-    public EndpointReferenceImpl(WSDLModel model){
-        this(model, createPrefixedElement(AddressingQName.ENDPOINTREFERENCE.getQName(), model));
-    }
-
-    @Override
-    public void accept(WSDLVisitor visitor) {
-        visitor.visit(this);
-    }
-
     public void setAddress(Address address) {
         java.util.List<Class<? extends WSDLComponent>> classes = Collections.emptyList();
         setChild(Address.class, ADDRESS_PROPERTY, address, classes);

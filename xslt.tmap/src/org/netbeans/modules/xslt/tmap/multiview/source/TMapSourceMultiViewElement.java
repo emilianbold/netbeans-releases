@@ -94,26 +94,28 @@ public class TMapSourceMultiViewElement extends CloneableEditor
     }
     
     private void initialize() {
-        Node delegate = myDataObject.getNodeDelegate();
-        SourceCookieProxyLookup lookup = new SourceCookieProxyLookup(new Lookup[] {
-            Lookups.fixed(new Object[] {
-                // Need ActionMap in lookup so editor actions work.
-                getActionMap(),
-                // Need the data object registered in the lookup so that the
-                // projectui code will close our open editor windows when the
-                // project is closed.
-                myDataObject
-            }),
-        },delegate);
-        associateLookup(lookup);
-        addPropertyChangeListener("activatedNodes", lookup);
+//        Node delegate = getDataObject().getNodeDelegate();
+//        SourceCookieProxyLookup lookup = new SourceCookieProxyLookup(new Lookup[] {
+//            Lookups.fixed(new Object[] {
+//                // Need ActionMap in lookup so editor actions work.
+//                getActionMap(),
+//                // Need the data object registered in the lookup so that the
+//                // projectui code will close our open editor windows when the
+//                // project is closed.
+////                myDataObject
+//                getDataObject(),
+//                getDataObject().getLookup()
+//            }),
+//        }, delegate);
+//        associateLookup(lookup);
+//        addPropertyChangeListener("activatedNodes", lookup);
 
-//      associateLookup(new ProxyLookup(new Lookup[] { // # 67257
-//        Lookups.fixed(new Object[] {
-//          getActionMap(), // # 85512
-//          getDataObject(),
-//          getDataObject().getNodeDelegate() }),
-//          getDataObject().getLookup() })); // # 117029
+      associateLookup(new ProxyLookup(new Lookup[] { // # 67257
+        Lookups.fixed(new Object[] {
+          getActionMap(), // # 85512
+          getDataObject(),
+          getDataObject().getNodeDelegate() }),
+          getDataObject().getLookup() })); // # 117029
     }
     
     public void writeExternal(ObjectOutput out) throws IOException {

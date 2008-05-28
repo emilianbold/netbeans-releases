@@ -153,11 +153,11 @@ public class SvnClientInvocationHandler implements InvocationHandler {
                     throw new SVNClientException(SvnClientExceptionHandler.ACTION_CANCELED_BY_USER);                     
                 } 
                 throw t;
-            } finally {
-                // whatever command was invoked, whatever the result is - 
-                // call refresh for all files notified by the client adapter
-                Subversion.getInstance().getRefreshHandler().refresh();
             }
+        } finally {
+            // whatever command was invoked, whatever the result is - 
+            // call refresh for all files notified by the client adapter
+            Subversion.getInstance().getRefreshHandler().refresh();
         }
     }
     

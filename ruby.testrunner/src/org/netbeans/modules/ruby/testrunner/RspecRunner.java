@@ -50,12 +50,10 @@ import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.platform.RubyExecution;
 import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.FileLocator;
-import org.netbeans.modules.ruby.rubyproject.rake.RakeRunner;
-import org.netbeans.modules.ruby.rubyproject.rake.RakeSupport;
-import org.netbeans.modules.ruby.rubyproject.rake.RakeTask;
 import org.netbeans.modules.ruby.rubyproject.spi.TestRunner;
 import org.netbeans.modules.ruby.testrunner.ui.Manager;
-import org.netbeans.modules.ruby.testrunner.ui.RspecRecognizer;
+import org.netbeans.modules.ruby.testrunner.ui.RspecHandlerFactory;
+import org.netbeans.modules.ruby.testrunner.ui.TestRecognizer;
 import org.netbeans.modules.ruby.testrunner.ui.TestSession;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -69,7 +67,7 @@ import org.openide.modules.InstalledFileLocator;
 public class RspecRunner implements TestRunner {
 
     private static final TestRunner INSTANCE = new RspecRunner();
-    private static final String RSPEC_MEDIATOR_SCRIPT = "nb_rspec_mediator.rb";
+    public static final String RSPEC_MEDIATOR_SCRIPT = "nb_rspec_mediator.rb"; //NOI18N
 
     public TestRunner getInstance() {
         return INSTANCE;
@@ -100,7 +98,9 @@ public class RspecRunner implements TestRunner {
         List<String> specs = new ArrayList<String>();
         while (children.hasMoreElements()) {
             FileObject each = children.nextElement();
-            if ("rb".equals(each.getExt())) {
+            if (!each.isFolder() 
+                    && "rb".equals(each.getExt()) 
+                    && each.getName().endsWith("spec")) { //NOI18N
                 specs.add(FileUtil.toFile(each).getAbsolutePath());
             }
         }
@@ -127,7 +127,11 @@ public class RspecRunner implements TestRunner {
         desc.allowInput();
         desc.fileLocator(locator);
         desc.addStandardRecognizers();
-        desc.addOutputRecognizer(new RspecRecognizer(Manager.getInstance(), new TestSession(locator)));
+        
+        TestRecognizer recognizer = new TestRecognizer(Manager.getInstance(), 
+                new TestSession(locator), 
+                RspecHandlerFactory.getHandlers());
+        desc.addOutputRecognizer(recognizer);
         desc.cmd(getSpec(platform));
         new RubyExecution(desc, charsetName).run();
     }

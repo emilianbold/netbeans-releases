@@ -1,3 +1,4 @@
+<<<<<<< /export/home/jyothi/uml-main/uml-main/uml.drawingarea/src/org/netbeans/modules/uml/drawingarea/layer.xml.orig.
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
@@ -146,3 +147,21 @@ made subject to such option by the copyright holder.
         </folder>
     </folder>
 </filesystem>
+||||||| /tmp/layer.xml~base.PfAK3j
+=======
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    <folder name="Loaders">
+        <folder name="content">
+            <folder name="unknown">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-uml-drawingarea-dataobject-DiagramDataLoader.instance">
+                        <attr name="position" intvalue="98834"/>
+                    </file>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+</filesystem>
+>>>>>>> /tmp/layer.xml~other.6foMaG

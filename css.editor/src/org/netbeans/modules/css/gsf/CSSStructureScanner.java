@@ -47,11 +47,9 @@ import java.util.Map;
 import java.util.Set;
 import javax.swing.ImageIcon;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.Element;
 import org.netbeans.modules.gsf.api.ElementHandle;
 import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.gsf.api.HtmlFormatter;
@@ -97,12 +95,22 @@ public class CSSStructureScanner implements StructureScanner {
 
             public void visit(SimpleNode node) {
                 if (node.kind() == CSSParserTreeConstants.JJTSELECTORLIST) {
-
-                    //do not create structure items for virtual selectors
-                    int so = AstUtils.documentPosition(node.startOffset(), source);
-                    int eo = AstUtils.documentPosition(node.endOffset(), source);
+                    //get parent - style rule
+                    SimpleNode ruleNode = (SimpleNode)node.jjtGetParent();
+                    
+                    assert ruleNode.kind() == CSSParserTreeConstants.JJTSTYLERULE;
+                    
+                    
+                    int so = AstUtils.documentPosition(ruleNode.startOffset(), source);
+                    int eo = AstUtils.documentPosition(ruleNode.endOffset(), source);
                     if (eo != so) {
-                        items.add(new CSSStructureItem(new CssElementHandle(node, info), source));
+                        //we need to get the text directly from the document otherwise
+                        //the GENERATED_xxx items may appear in the navigator
+                        int documentSO = AstUtils.documentPosition(node.startOffset(), source);
+                        int documentEO = AstUtils.documentPosition(node.endOffset(), source);
+                        String nodeName = info.getText().substring(documentSO, documentEO);
+
+                        items.add(new CssRuleStructureItem(nodeName, CssAstElement.getElement(info, ruleNode)));
                     }
                 }
             }
@@ -156,20 +164,19 @@ public class CSSStructureScanner implements StructureScanner {
         return Collections.emptyMap();
         
     }
+    
+    private static class CssRuleStructureItem implements StructureItem {
 
-    private static final class CSSStructureItem implements StructureItem {
-
-        private TranslatedSource source;
-        private CssElementHandle handle;
         private String name;
+        private CssAstElement element;
 
-        private CSSStructureItem(CssElementHandle handle, TranslatedSource source) {
-            this.handle = handle;
-            this.source = source;
+        private CssRuleStructureItem(String name, CssAstElement element) {
+            this.name = name;
+            this.element = element;
         }
 
         public String getName() {
-            return handle.getName();
+            return name;
         }
 
         public String getSortText() {
@@ -181,11 +188,11 @@ public class CSSStructureScanner implements StructureScanner {
         }
 
         public ElementHandle getElementHandle() {
-            return handle;
+            return element;
         }
 
         public ElementKind getKind() {
-            return ElementKind.FIELD;
+            return ElementKind.RULE;
         }
 
         public Set<Modifier> getModifiers() {
@@ -202,11 +209,11 @@ public class CSSStructureScanner implements StructureScanner {
         }
 
         public long getPosition() {
-            return AstUtils.documentPosition(handle.node().startOffset(), source);
+            return AstUtils.documentPosition(element.node().startOffset(), element.translatedSource());
         }
 
         public long getEndPosition() {
-            return AstUtils.documentPosition(handle.node().endOffset(), source);
+            return AstUtils.documentPosition(element.node().endOffset(), element.translatedSource());
         }
 
         public ImageIcon getCustomIcon() {

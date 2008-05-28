@@ -140,6 +140,10 @@ public abstract class Validator implements org.netbeans.modules.xml.xam.spi.Vali
     addMessage(i18n(getClass(), key, param1, param2), ResultType.WARNING, component);
   }
 
+  protected final void addWarning(String key, Component component, String param1, String param2, String param3) {
+    addMessage(i18n(getClass(), key, param1, param2, param3), ResultType.WARNING, component);
+  }
+
   protected final void addMessage(String message, ResultType type, Component component) {
     addQuickFixable(component, type, message, null);
   }
@@ -171,6 +175,7 @@ public abstract class Validator implements org.netbeans.modules.xml.xam.spi.Vali
       return null;
     }
     String name;
+
     if (component instanceof Named) {
       name = ((Named) component).getName();
 

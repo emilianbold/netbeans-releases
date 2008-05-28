@@ -55,15 +55,16 @@ import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.gsf.api.Hint;
+import org.netbeans.modules.gsf.api.HintFix;
+import org.netbeans.modules.gsf.api.HintSeverity;
+import org.netbeans.modules.gsf.api.RuleContext;
 import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.ruby.Formatter;
 import org.netbeans.modules.ruby.NbUtilities;
 import org.netbeans.modules.ruby.RubyUtils;
-import org.netbeans.modules.ruby.hints.spi.Description;
-import org.netbeans.modules.ruby.hints.spi.Fix;
-import org.netbeans.modules.ruby.hints.spi.HintSeverity;
-import org.netbeans.modules.ruby.hints.spi.RuleContext;
-import org.netbeans.modules.ruby.hints.spi.SelectionRule;
+import org.netbeans.modules.ruby.hints.infrastructure.RubySelectionRule;
+import org.netbeans.modules.ruby.hints.infrastructure.RubyRuleContext;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -90,11 +91,11 @@ import org.openide.util.NbBundle;
  * 
  * @author Tor Norbye
  */
-public class IntroduceHint implements SelectionRule {
+public class IntroduceHint extends RubySelectionRule {
     /** For test infrastructure only - a way to bypass the interactive name dialog */
     static String testName;
     
-    public void run(RuleContext context, List<Description> result) {
+    public void run(RubyRuleContext context, List<Hint> result) {
         CompilationInfo info = context.compilationInfo;
         int start = context.selectionStart;
         int end = context.selectionEnd;
@@ -183,10 +184,10 @@ public class IntroduceHint implements SelectionRule {
             
             for (IntroduceKind kind : kinds) {
                 IntroduceFix fix = new IntroduceFix(info, nodes, lexOffsets, astOffsets, kind);
-                List<Fix> fixList = new ArrayList<Fix>(1);
+                List<HintFix> fixList = new ArrayList<HintFix>(1);
                 fixList.add(fix);
                 String displayName = fix.getDescription();
-                Description desc = new Description(this, displayName, info.getFileObject(), range,
+                Hint desc = new Hint(this, displayName, info.getFileObject(), range,
                         fixList, 292);
                 result.add(desc);
             }
@@ -197,7 +198,7 @@ public class IntroduceHint implements SelectionRule {
         }
     }
 
-    public boolean appliesTo(CompilationInfo info) {
+    public boolean appliesTo(RuleContext context) {
         return true;
     }
 

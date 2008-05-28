@@ -59,13 +59,14 @@ import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.gsf.api.EditList;
+import org.netbeans.modules.gsf.api.PreviewableFix;
 import org.netbeans.modules.ruby.AstPath;
 import org.netbeans.modules.ruby.AstUtilities;
+import org.netbeans.modules.ruby.Formatter;
 import org.netbeans.modules.ruby.NbUtilities;
 import org.netbeans.modules.ruby.RubyIndex;
 import org.netbeans.modules.ruby.RubyMimeResolver;
-import org.netbeans.modules.ruby.hints.spi.EditList;
-import org.netbeans.modules.ruby.hints.spi.PreviewableFix;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -330,6 +331,8 @@ class IntroduceFix implements PreviewableFix {
         }
         
         EditList edits = new EditList(doc);
+        edits.setFormatter(new Formatter(), false);
+
         edits.replace(lexStart, lexEnd-lexStart, name, true, 1);
         edits.replace(begin, 0, sb.toString(), true, 2);
 
@@ -386,6 +389,7 @@ class IntroduceFix implements PreviewableFix {
 
         StringBuilder sb = new StringBuilder();
         EditList edits = new EditList(doc);
+        edits.setFormatter(new Formatter(), false);
         boolean isAbove = prevEnd < astRange.getStart();
         sb.append("\n");
         if (!isAbove) {

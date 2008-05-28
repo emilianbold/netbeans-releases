@@ -57,6 +57,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.gsf.api.EditorAction;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.ruby.platform.RubyExecution;
@@ -228,5 +229,10 @@ public class RunFocusedTest extends AbstractAction implements EditorAction {
             desc.addOutputRecognizer(new TestNotifier(true, true));
         }
         new RubyExecution(desc, charsetName).run();
+    }
+    
+    public boolean appliesTo(String mimeType) {
+        return RubyInstallation.RHTML_MIME_TYPE.equals(mimeType) ||
+                RubyInstallation.RUBY_MIME_TYPE.equals(mimeType);
     }
 }

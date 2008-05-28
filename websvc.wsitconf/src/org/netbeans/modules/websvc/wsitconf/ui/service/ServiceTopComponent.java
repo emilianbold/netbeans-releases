@@ -125,7 +125,7 @@ public class ServiceTopComponent extends TopComponent {
         ModelSource ms = wsdlModel.getModelSource();
         FileObject fo = org.netbeans.modules.xml.retriever.catalog.Utilities.getFileObject(ms);
         Project p = (fo != null) ? FileOwnerQuery.getOwner(fo) : null;
-        InnerPanelFactory panelFactory = new ServicePanelFactory(tb, node, undoManager, p, jaxWsModel);
+        InnerPanelFactory panelFactory = new PanelFactory(tb, node, undoManager, p, jaxWsModel);
         ServiceView mview = new ServiceView(panelFactory, wsdlModel, node, implClass, service, bindings, serviceOnly);
         tb.setContentView(mview);
         add(tb);
