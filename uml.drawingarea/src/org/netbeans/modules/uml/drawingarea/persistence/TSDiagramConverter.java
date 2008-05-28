@@ -66,6 +66,7 @@ import org.netbeans.modules.uml.common.generics.ETPairT;
 import org.netbeans.modules.uml.core.IApplication;
 import org.netbeans.modules.uml.core.eventframework.IEventPayload;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagramKind;
@@ -114,6 +115,7 @@ public class TSDiagramConverter
 {
     public static final String ELEMENT = "ELEMENT";
     private static final String PRESENTATIONELEMENT = "PRESENTATION";
+    private static final String SHOWMESSAGETYPE = "ShowMessageType";
     private static final String TSLABELTYPE = "TYPE";
     private static final String LIFELINESHIFTKEY = "LIFELINESHIFT";
     private static final String TSLABELPLACEMENT = "PLACEMENT";
@@ -423,7 +425,7 @@ public class TSDiagramConverter
             {
                 DiagramEngine engine = scene.getEngine();
                 Widget widget = null;
-                if(presEl!=null)widget=engine.addWidget(presEl, nodeInfo.getPosition());
+                if(presEl!=null && presEl.getFirstSubject() instanceof INamedElement)widget=engine.addWidget(presEl, nodeInfo.getPosition());
                 if(widget!=null)
                 {
                     postProcessNode(widget,presEl);
@@ -435,6 +437,7 @@ public class TSDiagramConverter
                 else
                 {
                     //most likely unsupported widgets and it wasn't created
+                    //or not named element (for example expression
                     presEl.getFirstSubject().removePresentationElement(presEl);
                     presEltList.remove(presEl);
                     nodeInfo.getProperties().remove(PRESENTATIONELEMENT);
@@ -895,7 +898,6 @@ public class TSDiagramConverter
                 //
                 presIdNodeInfoMap.put(PEID, ninfo);
             }
-            
             else
             {
                 EdgeInfo einfo = presIdEdgeInfoMap.get(PEID);
@@ -976,6 +978,8 @@ public class TSDiagramConverter
                 if(readerPres.isStartElement() && readerPres.getLocalName().equals("engine"))
                 {
                     einfo.setProperty(ENGINE, readerPres.getAttributeValue(null, "name"));
+                    String messageShowType=readerPres.getAttributeValue(null,SHOWMESSAGETYPE);
+                    if(messageShowType!=null)einfo.setProperty( SHOWMESSAGETYPE,messageShowType);
                     return            (String) einfo.getProperty(ENGINE);
                 }
                 readerPres.next();
@@ -989,25 +993,12 @@ public class TSDiagramConverter
     
     private void getLabelInfoFromPres(XMLStreamReader readerPres,HashMap<String,Object> labelInfo)
     {
-//        try {
-            String startWith = readerPres.getLocalName();
-            //we need to go deeper and exit on the same node, or can exit before on place we found necessary info
-//            while (readerPres.hasNext() && !(readerPres.isEndElement() && readerPres.getLocalName().equals(startWith))) {
-//                
-//                if(readerPres.isStartElement())
-//                {
-//                    
-//                }
-//                readerPres.next();
-//                
-//            }
-            String type=readerPres.getAttributeValue(null, "TSLabelKind");
-            String placement=readerPres.getAttributeValue(null, "TSLabelPlacementKind");
-            labelInfo.put( TSLABELTYPE,type);
-            labelInfo.put( TSLABELPLACEMENT,placement);
-//        } catch (XMLStreamException ex) {
-//            Exceptions.printStackTrace(ex);
-//        }
+        String startWith = readerPres.getLocalName();
+        //we need to go deeper and exit on the same node, or can exit before on place we found necessary info
+        String type=readerPres.getAttributeValue(null, "TSLabelKind");
+        String placement=readerPres.getAttributeValue(null, "TSLabelPlacementKind");
+        labelInfo.put( TSLABELTYPE,type);
+        labelInfo.put( TSLABELPLACEMENT,placement);
     }
     
     /**
@@ -1029,8 +1020,15 @@ public class TSDiagramConverter
             {
                 case 1://for names of smth on all diagrams
                 case 12://for names of smth on all diagrams
-                case 7://for sqd message
+                //case 7://for sqd message
                     typeInfo=AbstractLabelManager.NAME;
+                    break;
+                case 7://for sqd message operations
+                    String msgShowType=(String) edgeInfo.getProperty(SHOWMESSAGETYPE);
+                    if("0".equals(msgShowType))
+                        typeInfo=AbstractLabelManager.OPERATION;
+                    else if("1".equals(msgShowType))
+                        typeInfo=AbstractLabelManager.NAME;
                     break;
                 case 6:
                     typeInfo=AbstractLabelManager.STEREOTYPE;
