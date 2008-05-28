@@ -41,8 +41,6 @@
 
 package org.netbeans.modules.vmd.componentssupport.ui.wizard;
 
-import java.util.Locale;
-import java.util.StringTokenizer;
 
 import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
@@ -52,7 +50,6 @@ import org.netbeans.modules.vmd.componentssupport.ui.UIUtils;
 import org.netbeans.modules.vmd.componentssupport.ui.helpers.BaseHelper;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  *
