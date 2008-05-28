@@ -122,15 +122,15 @@ public final class Validator extends BpelValidator {
       isUsed = info.isUsed();
       Variable variable = info.getVariable();
       String name = variable.getName();
-
+//todo a
       if ( !isInitialized && !isUsed) {
-        addWarning("FIX_not_initialized_and_not_used", variable, name); // NOI18N
+//      addWarning("FIX_not_initialized_and_not_used", variable, name); // NOI18N
       }
       else if ( !isInitialized && isUsed) {
-        addError("FIX_not_initialized_but_used", variable, name); // NOI18N
+//      addError("FIX_not_initialized_but_used", variable, name); // NOI18N
       }
       else if (isInitialized && !isUsed) {
-        addWarning("FIX_initialized_and_not_used", variable, name); // NOI18N
+//      addWarning("FIX_initialized_and_not_used", variable, name); // NOI18N
       }
     }
   }
