@@ -66,7 +66,7 @@ public final class TestRecognizer extends OutputRecognizer {
     public RecognizedOutput processLine(String line) {
 
         for (TestRecognizerHandler handler : handlers) {
-            if (handler.match(line).matches()) {
+            if (handler.matches(line)) {
                 handler.updateUI(manager, session);
                 return handler.getRecognizedOutput();
             }

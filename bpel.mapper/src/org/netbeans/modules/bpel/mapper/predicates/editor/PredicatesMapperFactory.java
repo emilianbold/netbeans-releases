@@ -19,13 +19,10 @@
 
 package org.netbeans.modules.bpel.mapper.predicates.editor;
 
-import java.awt.event.KeyEvent;
 import javax.swing.ActionMap;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
-import javax.swing.KeyStroke;
 import org.netbeans.modules.bpel.mapper.tree.BpelMapperContext;
-import org.netbeans.modules.bpel.mapper.tree.actions.DeleteGraphSelectionAction;
 import org.netbeans.modules.soa.mappercore.Mapper;
 import org.netbeans.modules.soa.mappercore.model.MapperModel;
 
@@ -47,22 +44,6 @@ public class PredicatesMapperFactory {
                 JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
         ActionMap actionMap = newMapper.getActionMap();
         //
-        String deleteActionKey = "delete-something"; // NOI18N
-        inputMap1.put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0), 
-                deleteActionKey); // NOI18N
-        inputMap1.put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 
-                KeyEvent.SHIFT_DOWN_MASK), deleteActionKey); // NOI18N
-        inputMap1.put(KeyStroke.getKeyStroke(KeyEvent.VK_X, 
-                KeyEvent.CTRL_DOWN_MASK), deleteActionKey); // NOI18N
-        
-        inputMap2.put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0), 
-                deleteActionKey); // NOI18N
-        inputMap2.put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 
-                KeyEvent.SHIFT_DOWN_MASK), deleteActionKey); // NOI18N
-        inputMap2.put(KeyStroke.getKeyStroke(KeyEvent.VK_X, 
-                KeyEvent.CTRL_DOWN_MASK), deleteActionKey); // NOI18N
-        actionMap.put(deleteActionKey, 
-                new DeleteGraphSelectionAction(newMapper)); // NOI18N
         //
         return newMapper;
     }

@@ -510,6 +510,9 @@ private void jtFolderKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_
                 return false;
             }
             if (!webModule25Version) {
+                if (jsfLibraries.size() == 0) {
+                    return false;
+                }
                 int index = cbLibraries.getSelectedIndex();
                 JSFVersion libraryVersion = jsfLibraries.get(index).getVersion();
                 if (libraryVersion.compareTo(JSFVersion.JSF_1_1) > 0) {

@@ -55,7 +55,7 @@ public class CamelCaseNamesTest extends HintTestBase {
     }
 
     public void testHint1() throws Exception {
-        findHints(this, new CamelCaseNames(), "testfiles/camelcasenames.rb", null);
+        checkHints(this, new CamelCaseNames(), "testfiles/camelcasenames.rb", null);
     }
     
     public void testCamelCase() throws Exception {

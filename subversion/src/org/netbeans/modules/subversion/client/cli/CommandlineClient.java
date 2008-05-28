@@ -49,6 +49,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.cli.commands.AddCommand;
 import org.netbeans.modules.subversion.client.cli.commands.BlameCommand;
@@ -78,7 +79,6 @@ import org.netbeans.modules.subversion.client.cli.commands.UpdateCommand;
 import org.netbeans.modules.subversion.client.cli.commands.VersionCommand;
 import org.netbeans.modules.subversion.client.parser.LocalSubversionException;
 import org.netbeans.modules.subversion.client.parser.SvnWcParser;
-import org.openide.util.Exceptions;
 import org.tigris.subversion.svnclientadapter.AbstractClientAdapter;
 import org.tigris.subversion.svnclientadapter.Annotations;
 import org.tigris.subversion.svnclientadapter.Annotations.Annotation;
@@ -113,20 +113,21 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
     private NotificationHandler notificationHandler;
     private SvnWcParser wcParser;
     private Commandline cli;     
-        
+
+    public static String ERR_CLI_NOT_AVALABLE = "commandline is not available";
+    
     public CommandlineClient() {
         this.notificationHandler = new NotificationHandler();
         wcParser = new SvnWcParser();  
         cli = new Commandline();     
     }
 
-    public boolean isSupportedVersion() throws SVNClientException {
+    public void checkSupportedVersion() throws SVNClientException {
         VersionCommand cmd = new VersionCommand();        
         exec(cmd);
         if(!cmd.isSupported()) {
             throw new SVNClientException("Command line client adapter is not available " + "\n" + cmd.getOutput());               
         }   
-        return true;
     }
     
     public void addNotifyListener(ISVNNotifyListener l) {
@@ -180,11 +181,12 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
         return commit(files, message, false, recurse);
     }
 
-    public long commit(File[] files, String message, boolean keep, boolean recursive) throws SVNClientException {
-        CommitCommand cmd = new CommitCommand(files, keep, recursive, message);
+    public long commit(File[] files, String message, boolean keep, boolean recursive) throws SVNClientException {        
         int retry = 0;
+        CommitCommand cmd = null;
         while (true) {
             try {
+                cmd = new CommitCommand(files, keep, recursive, message); // prevent cmd reuse
                 exec(cmd);
                 break;
             } catch (SVNClientException e) {
@@ -196,13 +198,15 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
                             throw e;
                         }
                         Thread.sleep(retry * 50);
-                    } catch (InterruptedException ex) {
-                        // do nothing
+                    } catch (InterruptedException ex) {                        
+                        break;
                     }
+                } else {
+                    throw e;
                 }
             }                
         }               
-        return cmd.getRevision();
+        return cmd != null ? cmd.getRevision() : SVNRevision.SVN_INVALID_REVNUM;
     }
     
     public ISVNDirEntry[] getList(SVNUrl url, SVNRevision revision, boolean recursivelly) throws SVNClientException {
@@ -708,6 +712,11 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
             config(cmd);
             cli.exec(cmd);
         } catch (IOException ex) {
+            String msg = ex.getMessage();
+            if(msg != null && msg.trim().toLowerCase().indexOf("cannot run program") > -1) {
+                throw new SVNClientException(ERR_CLI_NOT_AVALABLE);
+            }            
+            Subversion.LOG.log(Level.WARNING, null, ex);
             throw new SVNClientException(ex);
         }
         checkErrors(cmd);
@@ -721,18 +730,18 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
     }
     
     private void checkErrors(SvnCommand cmd) throws SVNClientException {
-
         List<String> errors = cmd.getCmdError();
-        if (errors.size() > 0) {
-            StringBuffer sb = new StringBuffer();
-            for (int i = 0; i < errors.size(); i++) {
-                sb.append(errors.get(i));
-                if (i < errors.size() - 1) {
-                    sb.append('\n');
-                }
+        if(errors == null || errors.size() == 0) {
+            return;
+        }        
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < errors.size(); i++) {
+            sb.append(errors.get(i));
+            if (i < errors.size() - 1) {
+                sb.append('\n');
             }
-            throw new SVNClientException(sb.toString());
         }
+        throw new SVNClientException(sb.toString());
     }
 
     private List<SVNUrl> getAllNotExistingParents(SVNUrl url) throws SVNClientException {        

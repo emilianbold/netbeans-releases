@@ -866,6 +866,10 @@ public class FileStatusCache {
         listenerSupport.firePropertyChange(PROP_FILE_STATUS_CHANGED, null, new ChangedEvent(file, oldInfo, newInfo));
     }
     
+    public void notifyFileChanged(File file) {
+        fireFileStatusChanged(file, null, FILE_INFORMATION_UPTODATE);
+    }
+
     public void refreshDirtyFileSystems() {
         Set<FileSystem> filesystems = getFilesystemsToRefresh();
         FileSystem[]  filesystemsToRefresh = new FileSystem[filesystems.size()];

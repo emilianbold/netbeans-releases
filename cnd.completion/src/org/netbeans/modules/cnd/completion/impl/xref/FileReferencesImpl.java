@@ -99,7 +99,15 @@ public class FileReferencesImpl extends CsmFileReferences  {
         }
         
         BaseDocument doc = ReferencesSupport.getDocument(csmFile);
-        assert doc != null;
+        if (doc == null || !csmFile.isValid()) {
+            // This rarely can happen:
+            // 1. if file was put on reparse and scope we have here is already obsolete
+            // TODO: find new scope if API would allow that one day
+            // 2. renamed
+            // TODO: search by unique name
+            // 3. deleted
+            return;
+        }
         if (CsmKindUtilities.isFile(csmScope)) {
             start = 0;
             end = doc.getLength() - 1;

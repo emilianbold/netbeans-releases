@@ -123,6 +123,21 @@ public class PushAction extends ContextAction {
         
     }
                 
+    private static void notifyUpdatedFiles(File pushFile, List<String> list){
+        // When hg output -v is called the output is
+        // resolving manifests
+        // getting file
+        // ...
+        //  
+        for (String line : list) {
+            if (line.startsWith("getting ")) {
+                String name = line.substring(8);
+                File file = new File (pushFile, name);
+                Mercurial.getInstance().notifyFileChanged(file);
+            }
+        }
+    }
+
     static void getDefaultAndPerformPush(VCSContext ctx, File root, OutputLogger logger) {
         // If the repository has no default pull path then inform user
         String tmpPushPath = HgRepositoryContextCache.getPushDefault(ctx);
@@ -258,6 +273,8 @@ public class PushAction extends ContextAction {
                         boolean bOutStandingUncommittedMerges = HgCommand.isMergeAbortUncommittedMsg(list.get(list.size() - 1));
                         if (bOutStandingUncommittedMerges) {
                             bConfirmMerge = HgUtils.confirmDialog(PushAction.class, "MSG_PUSH_MERGE_CONFIRM_TITLE", "MSG_PUSH_MERGE_UNCOMMITTED_CONFIRM_QUERY"); // NOI18N 
+                        } else {
+                            notifyUpdatedFiles(pushFile, list);
                         }
                     }
                 } else {

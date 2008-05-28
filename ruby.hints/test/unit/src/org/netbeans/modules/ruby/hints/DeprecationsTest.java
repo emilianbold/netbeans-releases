@@ -53,11 +53,11 @@ public class DeprecationsTest extends HintTestBase {
     }            
 
     public void testHint1() throws Exception {
-        findHints(this, new Deprecations(), "testfiles/require_gem.rb", null);
+        checkHints(this, new Deprecations(), "testfiles/require_gem.rb", null);
     }
 
     public void testHint2() throws Exception {
-        findHints(this, new Deprecations(), "testfiles/deprecations.rb", null);
+        checkHints(this, new Deprecations(), "testfiles/deprecations.rb", null);
     }
 
     public void testFix1() throws Exception {

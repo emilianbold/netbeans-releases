@@ -72,6 +72,7 @@ import javax.net.ssl.X509TrustManager;
 import javax.swing.JButton;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.SvnModuleConfig;
+import org.netbeans.modules.subversion.client.cli.CommandlineClient;
 import org.netbeans.modules.subversion.config.CertificateFile;
 import org.netbeans.modules.subversion.config.SvnConfigFiles;
 import org.netbeans.modules.subversion.ui.repository.Repository;
@@ -647,7 +648,8 @@ public class SvnClientExceptionHandler {
     
     private static boolean isNoSvnClient(String msg) {
         msg = msg.toLowerCase();
-        return msg.indexOf("command line client adapter is not available") > -1;
+        return (msg.indexOf("command line client adapter is not available") > -1) || 
+               (msg.indexOf(CommandlineClient.ERR_CLI_NOT_AVALABLE) > -1);
     }
 
     public static boolean isMissingOrLocked(String msg) {  

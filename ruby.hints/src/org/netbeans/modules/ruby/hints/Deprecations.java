@@ -47,14 +47,16 @@ import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.gsf.api.Hint;
+import org.netbeans.modules.gsf.api.EditList;
+import org.netbeans.modules.gsf.api.HintFix;
+import org.netbeans.modules.gsf.api.HintSeverity;
+import org.netbeans.modules.gsf.api.PreviewableFix;
+import org.netbeans.modules.gsf.api.RuleContext;
 import org.netbeans.modules.ruby.AstUtilities;
-import org.netbeans.modules.ruby.hints.spi.AstRule;
-import org.netbeans.modules.ruby.hints.spi.Description;
-import org.netbeans.modules.ruby.hints.spi.EditList;
-import org.netbeans.modules.ruby.hints.spi.Fix;
-import org.netbeans.modules.ruby.hints.spi.HintSeverity;
-import org.netbeans.modules.ruby.hints.spi.PreviewableFix;
-import org.netbeans.modules.ruby.hints.spi.RuleContext;
+import org.netbeans.modules.ruby.Formatter;
+import org.netbeans.modules.ruby.hints.infrastructure.RubyAstRule;
+import org.netbeans.modules.ruby.hints.infrastructure.RubyRuleContext;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.NbBundle;
@@ -73,7 +75,7 @@ import org.openide.util.NbBundle;
  * 
  * @author Tor Norbye
  */
-public class Deprecations implements AstRule {
+public class Deprecations extends RubyAstRule {
     
     private static class Deprecation {
         private String oldName;
@@ -125,7 +127,7 @@ public class Deprecations implements AstRule {
     public Deprecations() {
     }
 
-    public boolean appliesTo(CompilationInfo info) {
+    public boolean appliesTo(RuleContext context) {
         return true;
     }
 
@@ -133,7 +135,7 @@ public class Deprecations implements AstRule {
         return kinds;
     }
 
-    public void run(RuleContext context, List<Description> result) {
+    public void run(RubyRuleContext context, List<Hint> result) {
         Node node = context.node;
         CompilationInfo info = context.compilationInfo;
 
@@ -168,7 +170,7 @@ public class Deprecations implements AstRule {
                     deprecation.descriptionKey : defaultKey, 
                     deprecation.oldName, deprecation.newName);
 
-                List<Fix> fixes = new ArrayList<Fix>();
+                List<HintFix> fixes = new ArrayList<HintFix>();
                 if (!isRequire) {
                     fixes.add(new DeprecationCallFix(info, node, deprecation, false));
                 }
@@ -176,7 +178,7 @@ public class Deprecations implements AstRule {
                     fixes.add(new DeprecationCallFix(info, node, deprecation, true));
                 }
                 
-                Description desc = new Description(this, message, info.getFileObject(), range, fixes, 100);
+                Hint desc = new Hint(this, message, info.getFileObject(), range, fixes, 100);
                 result.add(desc);
             }
         }
@@ -290,7 +292,7 @@ public class Deprecations implements AstRule {
                     if (gemName != null) {
                         list.replace(rowEnd, 0, "\nrequire \"" + gemName + "\"", false, 1); // NOI18N
                     }
-                    list.format();
+                    list.setFormatter(new Formatter(), true);
                 } else {
                     list.replace(range.getStart(), range.getLength(), deprecation.newName, false, 0);
                 }

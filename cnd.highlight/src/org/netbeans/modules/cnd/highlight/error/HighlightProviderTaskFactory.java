@@ -59,7 +59,7 @@ public class HighlightProviderTaskFactory extends EditorAwareCsmFileTaskFactory 
     protected PhaseRunner createTask(FileObject fo) {
         PhaseRunner pr = null;
         try {
-            DataObject dobj = DataObject.find(fo);
+            final DataObject dobj = DataObject.find(fo);
             EditorCookie ec = dobj.getCookie(EditorCookie.class);
             final CsmFile file = CsmUtilities.getCsmFile(dobj, false);
             final Document doc = ec.getDocument();
@@ -67,7 +67,7 @@ public class HighlightProviderTaskFactory extends EditorAwareCsmFileTaskFactory 
                 pr = new PhaseRunner() {
                     public void run(Phase phase) {
                         if (phase == Phase.PARSED || phase == Phase.INIT) {
-                            HighlightProvider.getInstance().update(file, doc);
+                            HighlightProvider.getInstance().update(file, doc, dobj);
                         } else if (phase == Phase.CLEANUP) {
                             HighlightProvider.getInstance().clear(doc);
                         }
