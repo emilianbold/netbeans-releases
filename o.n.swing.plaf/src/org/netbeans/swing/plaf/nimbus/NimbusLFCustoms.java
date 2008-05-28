@@ -42,6 +42,7 @@
 package org.netbeans.swing.plaf.nimbus;
 
 import java.awt.Font;
+import javax.swing.JScrollPane;
 import javax.swing.UIManager;
 import org.netbeans.swing.plaf.LFCustoms;
 
@@ -99,7 +100,8 @@ public final class NimbusLFCustoms extends LFCustoms {
             VIEW_TAB_DISPLAYER_UI, 
                 "org.netbeans.swing.tabcontrol.plaf.NimbusViewTabDisplayerUI", //NOI18N
             SLIDING_TAB_BUTTON_UI, "org.netbeans.swing.tabcontrol.plaf.SlidingTabDisplayerButtonUI", //NOI18N
-            SLIDING_BUTTON_UI, "org.netbeans.swing.tabcontrol.plaf.NimbusSlidingButtonUI" //NOI18N
+            SLIDING_BUTTON_UI, "org.netbeans.swing.tabcontrol.plaf.NimbusSlidingButtonUI", //NOI18N
+            SCROLLPANE_BORDER, new JScrollPane().getViewportBorder(),
         };
         /*Object[] result = {
             DESKTOP_BORDER, new EmptyBorder(1, 1, 1, 1),
