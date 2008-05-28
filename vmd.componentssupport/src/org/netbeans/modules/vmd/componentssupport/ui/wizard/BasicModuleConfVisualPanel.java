@@ -89,21 +89,34 @@ final class BasicModuleConfVisualPanel extends JPanel {
         initAccessibility();
         myCodeBaseNameListener = new DocumentAdapter() {
             public void insertUpdate(DocumentEvent e) { 
-                checkCodeNameBase(); 
+                updateValuesOnCNBUpdate();
+                checkValidity();
                 }
         };
         myLayerListener = new DocumentAdapter() {
             public void insertUpdate(DocumentEvent e) {
                 isLayerUpdated = true;
-                checkLayer();
+                checkValidity();
             }
         };
         myBundleListener = new DocumentAdapter() {
             public void insertUpdate(DocumentEvent e) { 
                 isBundleUpdated = true; 
-                checkBundle(); 
+                checkValidity();
                 }
         };
+    }
+    
+    private boolean checkValidity(){
+        if (!checkCodeNameBase()){
+            return false;
+        } else if (!checkLayer()){
+            return false;
+        } else if (!checkBundle()){
+            return false;
+        }
+        markValid();
+        return true;
     }
     
     private void initAccessibility() {
@@ -128,65 +141,71 @@ final class BasicModuleConfVisualPanel extends JPanel {
                 getMessage(ACS_LAYER_VALUE));
     }
     
-    private void checkCodeNameBase() {
+    private boolean checkCodeNameBase() {
         String dotName = getCodeNameBaseValue();
         if (!UIUtils.isValidJavaFQN(dotName)) {
             setError(getMessage(MSG_INVALID_CNB));
-        } else {
-            markValid();
-            // update layer and bundle from the cnb
-            String slashName = dotName.replace('.', '/');
-            if (!isBundleUpdated) {
-                bundleValue.setText(
-                        slashName + "/" + CustomComponentWizardIterator.BUNDLE_PROPERTIES); // NOI18N
-                isBundleUpdated = false;
-            }
-            if (!isLayerUpdated) {
-                layerValue.setText(
-                        slashName + "/" + CustomComponentWizardIterator.LAYER_XML); // NOI18N
-                isLayerUpdated = false;
-            }
+            return false;
+        }
+        return true;
+    }
+    
+    private void updateValuesOnCNBUpdate(){
+        String dotName = getCodeNameBaseValue();
+        // update layer and bundle from the cnb
+        String slashName = dotName.replace('.', '/');
+        if (!isBundleUpdated) {
+            bundleValue.setText(
+                slashName + "/" + CustomComponentWizardIterator.BUNDLE_PROPERTIES); // NOI18N
+            isBundleUpdated = false;
+        }
+        if (!isLayerUpdated) {
+            layerValue.setText(
+                slashName + "/" + CustomComponentWizardIterator.LAYER_XML); // NOI18N
+            isLayerUpdated = false;
         }
     }
     
-    private void checkBundle() {
-        checkEntry(getBundleValue(), BUNDLE, PROPS); // NOI18N
+    private boolean checkBundle() {
+        return checkEntry(getBundleValue(), BUNDLE, PROPS); // NOI18N
     }
     
-    private void checkLayer() {
-        checkEntry(getLayerValue(), LAYER, XML); // NOI18N
+    private boolean checkLayer() {
+        return checkEntry(getLayerValue(), LAYER, XML); // NOI18N
     }
     
     /** Used for Layer and Bundle entries. */
-    private void checkEntry(String path, String resName, String extension) {
+    private boolean checkEntry(String path, String resName, String extension) {
         if (path.length() == 0) {
             setError(NbBundle.getMessage(BasicModuleConfVisualPanel.class, 
                     BASIC_CONF_ERR_PREFIX + resName + "_empty"));
-            return;
+            return false;
         }
         if (path.indexOf('/') == -1) {
             setError(NbBundle.getMessage(BasicModuleConfVisualPanel.class, 
                     BASIC_CONF_ERR_PREFIX + resName + "_def_pkg"));
-            return;
+            return false;
         }
         if (!path.endsWith(extension)) {
             setError(NbBundle.getMessage(BasicModuleConfVisualPanel.class, 
                     BASIC_CONF_ERR_PREFIX + resName + "_ext", extension));
-            return;
+            return false;
         }
-        markValid();
+        return true;
     }
     
     void refreshData( WizardDescriptor settings) {
         mySettings = settings;
+        
         String cnb = getCodeNameBase();
         codeNameBaseValue.setText(cnb);
         if (cnb.startsWith(BaseHelper.EXAMPLE_BASE_NAME)) {
             codeNameBaseValue.select(0, BaseHelper.EXAMPLE_BASE_NAME.length() - 1);
         }
-        String dn = getProjectDisplayName();
-        displayNameValue.setText(dn);
-        checkCodeNameBase();
+        displayNameValue.setText(getProjectDisplayName());
+        
+        updateValuesOnCNBUpdate();
+        checkValidity();
     }
     
     private String getProjectDisplayName() {
