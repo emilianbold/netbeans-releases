@@ -41,70 +41,33 @@
 package org.netbeans.modules.jumpto.quicksearch;
 
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.List;
 import org.netbeans.spi.quicksearch.SearchProvider;
 import org.netbeans.spi.quicksearch.SearchResult;
-import org.netbeans.spi.quicksearch.SearchResultGroup;
 import org.netbeans.spi.jumpto.type.TypeDescriptor;
+import org.netbeans.spi.quicksearch.CategoryDescription;
 
 /**
  *
  * @author  Jan Becicka
  */
-public class JavaTypeSearchProvider implements SearchProvider {
+public class JavaTypeSearchProvider implements SearchProvider, CategoryDescription {
 
-    public String getCommandPrefix() {
-        return "t";
-    }
-
-    public SearchResultGroup evaluate(String pattern) {
+    public List<SearchResult> evaluate(String pattern) {
         GoToTypeWorker worker = new GoToTypeWorker(pattern);
         worker.run();
-        GoToTypeGroup r = new GoToTypeGroup(pattern);
-        for (TypeDescriptor ts:worker.getTypes()) {
-            r.addCommand(ts);
+        List<SearchResult> result = new ArrayList<SearchResult>();
+        for (TypeDescriptor td : worker.getTypes()) {
+            result.add(new GoToTypeCommand(td));
         }
-        return r;
-    }
-    
-    public boolean cancel() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-    
-    private static class GoToTypeGroup implements SearchResultGroup {
-
-        private String command;
-        private Collection<SearchResult> items;
-        public GoToTypeGroup(String command) {
-            this.command = command;
-            items = new ArrayList<SearchResult>();
-        }
-
-        public Iterable<? extends SearchResult> getItems() {
-            return items;
-        }
-
-        public String getCategory() {
-            return "Go To Type";
-        }
-
-        public int getSize() {
-            return items.size();
-        }
-        
-        public void addCommand(TypeDescriptor td) {
-            items.add(new GoToTypeCommand(td, this));
-        }
-
+        return result;
     }
     
     private static class GoToTypeCommand implements SearchResult {
         private TypeDescriptor command;
-        private SearchResultGroup group;
         
-        public GoToTypeCommand(TypeDescriptor command, SearchResultGroup group) {
+        public GoToTypeCommand(TypeDescriptor command) {
             this.command = command;
-            this.group = group;
         }
         
         
@@ -116,9 +79,26 @@ public class JavaTypeSearchProvider implements SearchProvider {
             return command.getSimpleName();
         }
 
-        public SearchResultGroup getResultGroup() {
-            return group;
-        }
+    }
+
+    public CategoryDescription getCategory() {
+        return this;
+    }
+
+    public String getDisplayName() {
+        return "Go To Type";
+    }
+    
+    public String getCommandPrefix() {
+        return "t";
+    }
+
+    public String getHint() {
+        return null;
+    }
+    
+    public boolean cancel() {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
 }

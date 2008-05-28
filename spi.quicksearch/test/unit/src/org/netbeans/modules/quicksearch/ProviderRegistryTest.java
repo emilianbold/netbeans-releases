@@ -133,6 +133,11 @@ public class ProviderRegistryTest extends NbTestCase {
         public CategoryDescription getCategory() {
             return null;
         }
+
+        public boolean cancel() {
+            // no operation
+            return true;
+        }
         
     }
     
@@ -157,6 +162,11 @@ public class ProviderRegistryTest extends NbTestCase {
 
         public String getHint() {
             return null;
+        }
+
+        public boolean cancel() {
+            // no operation
+            return true;
         }
         
     }
