@@ -115,8 +115,7 @@ final class Renamer extends Plugin {
   }
   
   public Problem fastCheckParameters() {
-    Referenceable reference =
-      myRequest.getRefactoringSource().lookup(Referenceable.class);
+    Referenceable reference = myRequest.getRefactoringSource().lookup(Referenceable.class);
     ErrorItem error = null;
 
     if (reference instanceof Model) {
@@ -132,8 +131,7 @@ final class Renamer extends Plugin {
   }
     
   public Problem checkParameters() {
-    Referenceable reference =
-      myRequest.getRefactoringSource().lookup(Referenceable.class);
+    Referenceable reference = myRequest.getRefactoringSource().lookup(Referenceable.class);
   
     if (reference == null) {
       return null;
@@ -160,8 +158,7 @@ final class Renamer extends Plugin {
   }
     
   public Problem prepare(RefactoringElementsBag refactoringElements) {
-    Referenceable reference =
-      myRequest.getRefactoringSource().lookup(Referenceable.class);
+    Referenceable reference = myRequest.getRefactoringSource().lookup(Referenceable.class);
 
     if (reference == null) {
       return null;
@@ -187,8 +184,7 @@ final class Renamer extends Plugin {
         return processErrors(errors);
       }
     }
-    XMLRefactoringTransaction transaction =
-      myRequest.getContext().lookup(XMLRefactoringTransaction.class);
+    XMLRefactoringTransaction transaction = myRequest.getContext().lookup(XMLRefactoringTransaction.class);
     transaction.register(this, elements);
     refactoringElements.registerTransaction(transaction);
 
@@ -202,8 +198,7 @@ final class Renamer extends Plugin {
   public void doRefactoring(List<RefactoringElementImplementation> elements) throws IOException {
     Map<Model, Set<RefactoringElementImplementation>> map = getModelMap(elements);
     Set<Model> models = map.keySet();
-    Referenceable reference =
-      myRequest.getRefactoringSource().lookup(Referenceable.class);
+    Referenceable reference = myRequest.getRefactoringSource().lookup(Referenceable.class);
     String oldName = myRequest.getContext().lookup(String.class);
 
     for (Model model : models) {
@@ -224,8 +219,7 @@ final class Renamer extends Plugin {
   }
 
   private Map<Model, Set<RefactoringElementImplementation>> getModelMap(List<RefactoringElementImplementation> elements) {
-    Map<Model, Set<RefactoringElementImplementation>> results =
-      new HashMap<Model, Set<RefactoringElementImplementation>>();
+    Map<Model, Set<RefactoringElementImplementation>> results = new HashMap<Model, Set<RefactoringElementImplementation>>();
   
     for (RefactoringElementImplementation element : elements) {
       Model model = (element.getLookup().lookup(Component.class)).getModel();
@@ -428,8 +422,7 @@ final class Renamer extends Plugin {
     NamedComponentReference<GlobalElement> element = property.getElement();
 
     if (element != null && target instanceof GlobalElement) {
-      property.setElement(((GlobalElement) target).createReferenceTo(
-        (GlobalElement) target, GlobalElement.class));
+      property.setElement(((GlobalElement) target).createReferenceTo((GlobalElement) target, GlobalElement.class));
     }
     NamedComponentReference<GlobalType> type = property.getType();
 
@@ -443,8 +436,7 @@ final class Renamer extends Plugin {
     NamedComponentReference<GlobalElement> element = alias.getElement();
 
     if (element != null && target instanceof GlobalElement) {
-      alias.setElement(((GlobalElement) target).createReferenceTo(
-        (GlobalElement) target, GlobalElement.class));
+      alias.setElement(((GlobalElement) target).createReferenceTo((GlobalElement) target, GlobalElement.class));
     }
     NamedComponentReference<GlobalType> type = alias.getType();
 
@@ -453,8 +445,7 @@ final class Renamer extends Plugin {
         (GlobalType) target, GlobalType.class));
     }
     if (target instanceof Message) {
-      alias.setMessageType(((Message) target).createReferenceTo(
-        (Message) target, Message.class));
+      alias.setMessageType(((Message) target).createReferenceTo((Message) target, Message.class));
     }
     else if (target instanceof Part) {
       alias.setPart(((Part) target).getName());
@@ -477,8 +468,7 @@ final class Renamer extends Plugin {
 
   private void rename(OnEvent event, Named target) throws IOException {
     if (target instanceof Message) {
-      event.setMessageType( 
-        event.createWSDLReference((Message) target, Message.class));
+      event.setMessageType(event.createWSDLReference((Message) target, Message.class));
     }
   }
 
@@ -488,8 +478,7 @@ final class Renamer extends Plugin {
         (PartnerLinkType) target, PartnerLinkType.class));
     }
     else if (target instanceof Role) {
-      WSDLReference<Role> reference =
-        partnerLink.createWSDLReference((Role) target, Role.class);
+      WSDLReference<Role> reference = partnerLink.createWSDLReference((Role) target, Role.class);
 
     if (isRenamedRole(partnerLink, PartnerLink.MY_ROLE)) {
         partnerLink.setMyRole(reference);
@@ -504,11 +493,8 @@ final class Renamer extends Plugin {
     if (target instanceof CorrelationProperty) {
 //out();
 //out("RENAME");
-      List<WSDLReference<CorrelationProperty>> references =
-        correlationSet.getProperties();
-
-      List<WSDLReference<CorrelationProperty>> list =
-        new ArrayList<WSDLReference<CorrelationProperty>>();
+      List<WSDLReference<CorrelationProperty>> references = correlationSet.getProperties();
+      List<WSDLReference<CorrelationProperty>> list = new ArrayList<WSDLReference<CorrelationProperty>>();
 
       if (references == null) {
         return;

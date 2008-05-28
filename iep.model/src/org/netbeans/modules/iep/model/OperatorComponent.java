@@ -86,6 +86,8 @@ public interface OperatorComponent extends Component {
 
     SchemaComponent getOutputSchemaId();
     
+    void setOutputSchemaId(SchemaComponent sc);
+    
     String getDescription();
     
     void setDescription(String description);

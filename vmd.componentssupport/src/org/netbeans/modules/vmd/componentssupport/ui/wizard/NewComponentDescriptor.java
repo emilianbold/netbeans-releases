@@ -44,12 +44,14 @@ package org.netbeans.modules.vmd.componentssupport.ui.wizard;
 import java.awt.Component;
 import java.io.IOException;
 import java.text.MessageFormat;
-import java.util.Collections;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.vmd.componentssupport.ui.helpers.CustomComponentHelper;
+import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
 import org.openide.util.NbBundle;
@@ -60,7 +62,7 @@ import org.openide.util.NbBundle;
  *
  * @author avk
  */
-final class NewComponentDescriptor implements WizardDescriptor.InstantiatingIterator {
+public final class NewComponentDescriptor implements WizardDescriptor.InstantiatingIterator {
     
     private static final String WIZARD_TITLE     = "LBL_ComponentWizardTitle";  // NOI18N
     private static final String LIB_STEPS_COUNT = "LBL_CompWizardStepsCount";   // NOI18N
@@ -80,7 +82,9 @@ final class NewComponentDescriptor implements WizardDescriptor.InstantiatingIter
                                                 = "DisplayableCD";              // NOI18N 
     
     // properties - common
-    public static final String CODE_NAME_BASE   = "codeNameBase";               // NOI18N 
+    public static final String HELPER           = "custCompHelper";             // NOI18N 
+    public static final String EXISTING_COMPONENTS   
+                                                = "existingComponents";         // NOI18N 
     
     public static final String CC_PREFIX        = "prefix";                     // NOI18N 
     // properties - component descriptor step
@@ -109,13 +113,19 @@ final class NewComponentDescriptor implements WizardDescriptor.InstantiatingIter
     public static final String CP_VALID_CUSTOM  = "compProdValidCustom";        // NOI18N 
     // properties - component presenters step
     // properties - final step
-    
-    
-    
-    NewComponentDescriptor( WizardDescriptor mainDesc ){
-        myMainWizard = mainDesc;
-    }
 
+    private NewComponentDescriptor() {
+    }
+    
+    NewComponentDescriptor(WizardDescriptor mainWizard){
+        myMainWizard = mainWizard;
+        assert myMainWizard != null;
+    }
+    
+    public static NewComponentDescriptor instanceForProject(){
+        return new NewComponentDescriptor();
+    }
+    
     /* (non-Javadoc)
      * @see org.openide.WizardDescriptor.InstantiatingIterator#initialize(org.openide.WizardDescriptor)
      */
@@ -148,52 +158,40 @@ final class NewComponentDescriptor implements WizardDescriptor.InstantiatingIter
         wizardDescriptor.setTitle(
                 NbBundle.getMessage(NewLibraryDescriptor.class, WIZARD_TITLE));
         
-        wizardDescriptor.putProperty(
-                CODE_NAME_BASE, 
-                getCodeNameBase() );
+        
+        
+        if (myMainWizard != null){
+            // this is child wizard
+            myCustCompHelper = new CustomComponentHelper.
+                    InstantiationToWizardHelper(myMainWizard, myWizard);
+            wizardDescriptor.putProperty( EXISTING_COMPONENTS, 
+                myMainWizard.getProperty(
+                        CustomComponentWizardIterator.CUSTOM_COMPONENTS));
+        } else {
+            Project project = Templates.getProject(wizardDescriptor);
+            assert project != null;
+            myCustCompHelper = new CustomComponentHelper.
+                    RealInstantiationHelper(project, wizardDescriptor.getProperties());
+        }
+        assert myCustCompHelper != null;
+        
+        wizardDescriptor.putProperty( HELPER, myCustCompHelper );
     }
 
     /* (non-Javadoc)
      * @see org.openide.WizardDescriptor.InstantiatingIterator#instantiate()
      */
     public Set<?> instantiate() throws IOException {
-        // TODO instantiate
-        /*
-        List libs = (List)myMainWizard.getProperty( 
-                CustomComponentWizardIterator.LIBRARIES);
-        if ( libs == null ){
-            libs = new LinkedList<Library>();
-            myMainWizard.putProperty( CustomComponentWizardIterator.LIBRARIES,
-                    libs);
-        }
-        List libNames = (List)myMainWizard.getProperty( 
-                CustomComponentWizardIterator.LIB_NAMES);
-        if ( libNames == null ) {
-            libNames = new LinkedList<String>();
-            myMainWizard.putProperty( CustomComponentWizardIterator.LIB_NAMES, 
-                    libNames );
-        }
-        List names = (List)myMainWizard.getProperty( 
-                CustomComponentWizardIterator.LIB_DISPLAY_NAMES);
-        if ( names == null ){
-            names = new LinkedList<String>();
-            myMainWizard.putProperty( CustomComponentWizardIterator.LIB_DISPLAY_NAMES, 
-                    names  );
-        }
-        
-        libs.add( myWizard.getProperty(LIBRARY));
-        libNames.add(myWizard.getProperty(LIB_NAME));
-        names.add(myWizard.getProperty(DISPLAY_NAME));
-        
-        */
-        return Collections.EMPTY_SET;
+        assert myCustCompHelper != null;
+        return myCustCompHelper.instantiate();
     }
 
     /* (non-Javadoc)
      * @see org.openide.WizardDescriptor.InstantiatingIterator#uninitialize(org.openide.WizardDescriptor)
      */
     public void uninitialize( WizardDescriptor arg0 ) {
-        myWizard.putProperty(CODE_NAME_BASE, null);
+        myWizard.putProperty(HELPER, null);
+        myWizard.putProperty(EXISTING_COMPONENTS, null);
         
         myWizard.putProperty(CC_PREFIX, null);
         myWizard.putProperty(CD_CLASS_NAME, null);
@@ -305,22 +303,10 @@ final class NewComponentDescriptor implements WizardDescriptor.InstantiatingIter
                         };
     }
     
-    // TODO creates code name base for wizard started from main wizard
-    // Move to special provider
-    private String getCodeNameBase(){
-        String codeNameBase = (String)myMainWizard.getProperty( 
-                CustomComponentWizardIterator.CODE_BASE_NAME);
-        String projectName = (String)myMainWizard.getProperty( 
-                CustomComponentWizardIterator.PROJECT_NAME);
-        if ( codeNameBase == null ){
-            codeNameBase = BasicModuleConfVisualPanel.getDefaultCodeNameBase(projectName);
-        }
-        return codeNameBase;
-    }
 
     private int myCurrentIndex;
     private WizardDescriptor.Panel[] myPanels;
     private WizardDescriptor myWizard;
     private WizardDescriptor myMainWizard;
-    
+    private CustomComponentHelper myCustCompHelper;
 }

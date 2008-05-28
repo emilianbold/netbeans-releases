@@ -38,27 +38,31 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.groovy.editor;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.codehaus.groovy.ast.ASTNode;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.gsf.api.KeystrokeHandler;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.EditorOptions;
-import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
 import org.netbeans.modules.groovy.editor.lexer.LexUtilities;
+import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.EditorOptions;
+import org.netbeans.modules.gsf.api.KeystrokeHandler;
+import org.netbeans.modules.gsf.api.OffsetRange;
+import org.openide.util.Exceptions;
 
 /** 
  * 
@@ -66,22 +70,21 @@ import org.netbeans.modules.groovy.editor.lexer.LexUtilities;
  * @author Martin Adamek
  */
 public class BracketCompleter implements KeystrokeHandler {
+
     /** When true, automatically reflows comments that are being edited according to the rdoc
      * conventions as well as the right hand side margin
      */
-    private static final boolean REFLOW_COMMENTS = Boolean.getBoolean("groovy.autowrap.comments"); // NOI18N
+    //private static final boolean REFLOW_COMMENTS = Boolean.getBoolean("groovy.autowrap.comments"); // NOI18N
 
     /** When true, continue comments if you press return in a line comment (that does not
      * also have code on the same line 
      */
-    //static final boolean CONTINUE_COMMENTS = !Boolean.getBoolean("groovy.no.cont.comment"); // NOI18N
     static final boolean CONTINUE_COMMENTS = Boolean.getBoolean("groovy.cont.comment"); // NOI18N
 
     /** Tokens which indicate that we're within a literal string */
     private final static TokenId[] STRING_TOKENS = // XXX What about GroovyTokenId.STRING_BEGIN or QUOTED_STRING_BEGIN?
         {
-            GroovyTokenId.STRING_LITERAL, GroovyTokenId.QUOTED_STRING_LITERAL, GroovyTokenId.CHAR_LITERAL,
-            GroovyTokenId.STRING_END, GroovyTokenId.QUOTED_STRING_END
+            GroovyTokenId.STRING_LITERAL, GroovyTokenId.STRING_END
         };
 
     /** Tokens which indicate that we're within a regexp string */
@@ -103,9 +106,6 @@ public class BracketCompleter implements KeystrokeHandler {
      */
     private int previousAdjustmentIndent;
 
-    public BracketCompleter() {
-    }
-    
     public boolean isInsertMatchingEnabled(BaseDocument doc) {
         // The editor options code is calling methods on BaseOptions instead of looking in the settings map :(
         //Boolean b = ((Boolean)Settings.getValue(doc.getKitClass(), SettingsNames.PAIR_CHARACTERS_COMPLETION));
@@ -135,77 +135,6 @@ public class BracketCompleter implements KeystrokeHandler {
             return -1;
         }
         
-        // Look for an unterminated heredoc string
-        if (lineBegin != -1 && lineEnd != -1) {
-            TokenSequence<?extends GroovyTokenId> lineTs = LexUtilities.getGroovyTokenSequence(doc, offset);
-            if (lineTs != null) {
-                lineTs.move(lineBegin);
-                StringBuilder sb = new StringBuilder();
-                while (lineTs.moveNext() && lineTs.offset() <= lineEnd) {
-                    Token<?extends GroovyTokenId> token = lineTs.token();
-                    TokenId id = token.id();
-                    
-                    if (id == GroovyTokenId.STRING_BEGIN) {
-                        String text = token.text().toString();
-                        if (text.startsWith("<<") && insertMatching) {
-                            StringBuilder markerBuilder = new StringBuilder();
-
-                            for (int i = 2, n = text.length(); i < n; i++) {
-                                char c = text.charAt(i);
-
-                                if ((c == '\n') || (c == '\r')) {
-                                    break;
-                                }
-
-                                markerBuilder.append(c);
-                            }
-
-                            String marker = markerBuilder.toString();
-
-                            // Handle indented heredoc
-                            if (marker.startsWith("-")) {
-                                marker = marker.substring(1);
-                            }
-                            
-                            if ((marker.startsWith("'") && marker.endsWith("'")) ||
-                                    ((marker.startsWith("\"") && marker.endsWith("\"")))){
-                                marker = marker.substring(1, marker.length()-2);
-                            }
-
-                            
-                            // Next token should be string contents or a string end marker
-                            //boolean addEndMarker = true;
-
-                            TokenSequence<?extends GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, offset);
-                            ts.move(offset);
-                            // XXX No, this is bogus, find a better way to detect whether the string is matched,
-                            // perhaps using "find matching?"
-                            
-                            OffsetRange range = LexUtilities.findHeredocEnd(ts, token);
-                            if (range == OffsetRange.NONE) {
-                                sb.append("\n");
-                                sb.append(marker);
-                                //sb.append("\n");
-                            }
-                        }
-                    }
-                }
-                
-                if (sb.length() > 0) {
-                    if (lineEnd == doc.getLength()) {
-                        // At the end of the buffer we need a newline after the end
-                        // marker. On other lines, we don't.
-                        sb.append("\n");
-                    }
-
-                    doc.insertString(lineEnd, sb.toString(), null);
-                    caret.setDot(lineEnd);
-
-                    return -1;
-                }
-            }
-        }
-        
         TokenSequence<?extends GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, offset);
 
         if (ts == null) {
@@ -221,27 +150,15 @@ public class BracketCompleter implements KeystrokeHandler {
         Token<?extends GroovyTokenId> token = ts.token();
         TokenId id = token.id();
 
-        // Is it an umatched =begin token?
-//        if (insertMatching && (((id == GroovyTokenId.ERROR) && (ts.offset() == (offset - 6)) && 
-//                token.text().toString().startsWith(EQ_BEGIN)) || 
-//                (id == GroovyTokenId.BEGIN && ts.offset() == Utilities.getRowStart(doc, offset) + 1 &&
-//                EQ_BEGIN.equals(doc.getText(ts.offset() - 1, EQ_BEGIN.length()))) || 
-//                (id == GroovyTokenId.NONUNARY_OP && ts.offset() + EQ_BEGIN.length() <= doc.getLength() &&
-//                EQ_BEGIN.equals(doc.getText(ts.offset(), EQ_BEGIN.length()))))) {
-//            // NOI18N
-//            doc.insertString(offset, "\n=end", null); // NOI18N
-//            caret.setDot(offset);
-//
-//            return -1;
-//        }
-
         // Insert an end statement? Insert a } marker?
+        boolean[] insertEndResult = new boolean[1];
         boolean[] insertRBraceResult = new boolean[1];
         int[] indentResult = new int[1];
         boolean insert = insertMatching &&
-            isEndMissing(doc, offset, false, insertRBraceResult, null, indentResult);
+            isEndMissing(doc, offset, false, insertEndResult, insertRBraceResult, null, indentResult);
 
         if (insert) {
+            boolean insertEnd = insertEndResult[0];
             boolean insertRBrace = insertRBraceResult[0];
             int indent = indentResult[0];
 
@@ -263,8 +180,12 @@ public class BracketCompleter implements KeystrokeHandler {
                 doc.remove(offset, restOfLine.length());
             }
             
-            assert insertRBrace;
-            sb.append("}"); // NOI18N
+            if (insertEnd) {
+                sb.append("end"); // NOI18N
+            } else {
+                assert insertRBrace;
+                sb.append("}"); // NOI18N
+            }
 
             int insertOffset = offset;
             doc.insertString(insertOffset, sb.toString(), null);
@@ -272,7 +193,59 @@ public class BracketCompleter implements KeystrokeHandler {
             
             return -1;
         }
+        
+        if (id == GroovyTokenId.ERROR) {
+            // See if it's a block comment opener
+            String text = token.text().toString();
+            if (text.startsWith("/*") && ts.offset() == Utilities.getRowFirstNonWhite(doc, offset)) {
+                int indent = LexUtilities.getLineIndent(doc, offset);
+                StringBuilder sb = new StringBuilder();
+                sb.append(LexUtilities.getIndentString(indent));
+                sb.append(" * "); // NOI18N
+                int offsetDelta = sb.length()+1;
+                sb.append("\n"); // NOI18N
+                sb.append(LexUtilities.getIndentString(indent));
+                sb.append(" */"); // NOI18N
+                // TODO - possibly populate associated types in JS-doc style!
+                //if (text.startsWith("/**")) {
+                //    
+                //}
+                doc.insertString(offset, sb.toString(), null);
+                caret.setDot(offset);
+                return offset+offsetDelta;
+            }
+        }
+        
+        if (id == GroovyTokenId.STRING_LITERAL || 
+                (id == GroovyTokenId.STRING_END) && offset < ts.offset()+ts.token().length()) {
+            // Instead of splitting a string "foobar" into "foo"+"bar", just insert a \ instead!
+            //int indent = LexUtilities.getLineIndent(doc, offset);
+            //int delimiterOffset = id == GroovyTokenId.STRING_END ? ts.offset() : ts.offset()-1;
+            //char delimiter = doc.getText(delimiterOffset,1).charAt(0);
+            //doc.insertString(offset, delimiter + " + " + delimiter, null);
+            //caret.setDot(offset+3);
+            //return offset + 5 + indent;
+            String str = (id != GroovyTokenId.STRING_LITERAL || offset > ts.offset()) ? "\\n\\"  : "\\";
+            doc.insertString(offset, str, null);
+            caret.setDot(offset+str.length());
+            return offset + 1 + str.length();
+        }
 
+        
+
+        if (id == GroovyTokenId.REGEXP_LITERAL || 
+                (id == GroovyTokenId.REGEXP_END) && offset < ts.offset()+ts.token().length()) {
+            // Instead of splitting a string "foobar" into "foo"+"bar", just insert a \ instead!
+            //int indent = LexUtilities.getLineIndent(doc, offset);
+            //doc.insertString(offset, "/ + /", null);
+            //caret.setDot(offset+3);
+            //return offset + 5 + indent;
+            String str = (id != GroovyTokenId.REGEXP_LITERAL || offset > ts.offset()) ? "\\n\\"  : "\\";
+            doc.insertString(offset, str, null);
+            caret.setDot(offset+str.length());
+            return offset + 1 + str.length();
+        }
+        
         // Special case: since I do hash completion, if you try to type
         //     y = Thread.start {
         //         code here
@@ -286,16 +259,23 @@ public class BracketCompleter implements KeystrokeHandler {
         // (in that case we'd notice the brace imbalance, and insert the closing
         // brace on the line below the insert position, and indent properly.
         // Catch this scenario and handle it properly.
-        if ((id == GroovyTokenId.RBRACE || id == GroovyTokenId.RBRACKET) && (Utilities.getRowLastNonWhite(doc, offset) == offset)) {
-            int indent = LexUtilities.getLineIndent(doc, offset);
-            StringBuilder sb = new StringBuilder();
-            // XXX On Windows, do \r\n?
-            sb.append("\n"); // NOI18N
-            LexUtilities.indent(sb, indent);
+        if ((id == GroovyTokenId.RBRACE || id == GroovyTokenId.RBRACKET) && offset > 0) {
+            Token<? extends GroovyTokenId> prevToken = LexUtilities.getToken(doc, offset - 1);
+            if (prevToken != null) {
+                GroovyTokenId prevTokenId = prevToken.id();
+                if (id == GroovyTokenId.RBRACE && prevTokenId == GroovyTokenId.LBRACE ||
+                        id == GroovyTokenId.RBRACKET && prevTokenId == GroovyTokenId.LBRACKET) {
+                    int indent = LexUtilities.getLineIndent(doc, offset);
+                    StringBuilder sb = new StringBuilder();
+                    // XXX On Windows, do \r\n?
+                    sb.append("\n"); // NOI18N
+                    LexUtilities.indent(sb, indent);
 
-            int insertOffset = offset; // offset < length ? offset+1 : offset;
-            doc.insertString(insertOffset, sb.toString(), null);
-            caret.setDot(insertOffset);
+                    int insertOffset = offset; // offset < length ? offset+1 : offset;
+                    doc.insertString(insertOffset, sb.toString(), null);
+                    caret.setDot(insertOffset);
+                }
+            }
         }
         
         if (id == GroovyTokenId.WHITESPACE) {
@@ -314,7 +294,55 @@ public class BracketCompleter implements KeystrokeHandler {
             }
         }
         
-        if (id == GroovyTokenId.LINE_COMMENT) {
+        if (id == GroovyTokenId.BLOCK_COMMENT && offset > ts.offset()) {
+            // Continue *'s
+            int begin = Utilities.getRowFirstNonWhite(doc, offset);
+            int end = Utilities.getRowEnd(doc, offset)+1;
+            String line = doc.getText(begin, end-begin);
+            boolean isBlockStart = line.startsWith("/*");
+            if (isBlockStart || line.startsWith("*")) {
+                int indent = LexUtilities.getLineIndent(doc, offset);
+                StringBuilder sb = new StringBuilder();
+                if (isBlockStart) {
+                    indent++;
+                }
+                LexUtilities.indent(sb, indent);
+                sb.append("*"); // NOI18N
+                // Copy existing indentation
+                int afterStar = isBlockStart ? begin+2 : begin+1;
+                line = doc.getText(afterStar, Utilities.getRowEnd(doc, afterStar)-afterStar);
+                for (int i = 0; i < line.length(); i++) {
+                    char c = line.charAt(i);
+                    if (c == ' ' || c == '\t') {
+                        sb.append(c);
+                    } else {
+                        break;
+                    }
+                }
+
+                int insertOffset = offset; // offset < length ? offset+1 : offset;
+                if (offset == begin && insertOffset > 0) {
+                    insertOffset = Utilities.getRowStart(doc, offset);                    
+                    int sp = Utilities.getRowStart(doc, offset)+sb.length();
+                    doc.insertString(insertOffset, sb.toString(), null);
+                    caret.setDot(sp);
+                    return sp;
+                }
+                doc.insertString(insertOffset, sb.toString(), null);
+                caret.setDot(insertOffset);
+                return insertOffset+sb.length()+1;
+            }
+        }
+        
+        boolean isComment = id == GroovyTokenId.LINE_COMMENT;
+        if (id == GroovyTokenId.EOL) {
+            if (ts.movePrevious() && ts.token().id() == GroovyTokenId.LINE_COMMENT) {
+                //ts.moveNext();
+                isComment = true;
+            }
+        }
+        
+        if (isComment) {
             // Only do this if the line only contains comments OR if there is content to the right on this line,
             // or if the next line is a comment!
 
@@ -324,13 +352,24 @@ public class BracketCompleter implements KeystrokeHandler {
             // We should only continue comments if the previous line had a comment
             // (and a comment from the beginning, not a trailing comment)
             boolean previousLineWasComment = false;
+            boolean nextLineIsComment = false;
             int rowStart = Utilities.getRowStart(doc, offset);
             if (rowStart > 0) {                
                 int prevBegin = Utilities.getRowFirstNonWhite(doc, rowStart-1);
                 if (prevBegin != -1) {
                     Token<? extends GroovyTokenId> firstToken = LexUtilities.getToken(doc, prevBegin);
-                    if (firstToken.id() == GroovyTokenId.LINE_COMMENT) {
+                    if (firstToken != null && firstToken.id() == GroovyTokenId.LINE_COMMENT) {
                         previousLineWasComment = true;
+                    }                
+                }
+            }
+            int rowEnd = Utilities.getRowEnd(doc, offset);
+            if (rowEnd < doc.getLength()) {
+                int nextBegin = Utilities.getRowFirstNonWhite(doc, rowEnd+1);
+                if (nextBegin != -1) {
+                    Token<? extends GroovyTokenId> firstToken = LexUtilities.getToken(doc, nextBegin);
+                    if (firstToken != null && firstToken.id() == GroovyTokenId.LINE_COMMENT) {
+                        nextLineIsComment = true;
                     }                
                 }
             }
@@ -338,7 +377,8 @@ public class BracketCompleter implements KeystrokeHandler {
             // See if we have more input on this comment line (to the right
             // of the inserted newline); if so it's a "split" operation on
             // the comment
-            if (previousLineWasComment || offset > begin) {
+            if (previousLineWasComment || nextLineIsComment || 
+                    (offset > ts.offset() && offset < ts.offset()+ts.token().length())) {
                 if (ts.offset()+token.length() > offset+1) {
                     // See if the remaining text is just whitespace
                     String trailing = doc.getText(offset,Utilities.getRowEnd(doc, offset)-offset);
@@ -376,8 +416,8 @@ public class BracketCompleter implements KeystrokeHandler {
                 LexUtilities.indent(sb, indent);
                 sb.append("//"); // NOI18N
                 // Copy existing indentation
-                int afterHash = begin+1;
-                String line = doc.getText(afterHash, Utilities.getRowEnd(doc, afterHash)-afterHash);
+                int afterSlash = begin+2;
+                String line = doc.getText(afterSlash, Utilities.getRowEnd(doc, afterSlash)-afterSlash);
                 for (int i = 0; i < line.length(); i++) {
                     char c = line.charAt(i);
                     if (c == ' ' || c == '\t') {
@@ -431,7 +471,7 @@ public class BracketCompleter implements KeystrokeHandler {
      *   first elements.
      */
     static boolean isEndMissing(BaseDocument doc, int offset, boolean skipJunk,
-        boolean[] insertRBraceResult, int[] startOffsetResult,
+        boolean[] insertEndResult, boolean[] insertRBraceResult, int[] startOffsetResult,
         int[] indentResult) throws BadLocationException {
         int length = doc.getLength();
 
@@ -458,6 +498,7 @@ public class BracketCompleter implements KeystrokeHandler {
             // Look for the next nonempty line, and if its indent is > indent,
             // or if its line balance is -1 (e.g. it's an end) we're done
             boolean insertEnd = beginEndBalance > 0;
+            boolean insertRBrace = braceBalance > 0;
             int next = Utilities.getRowEnd(doc, offset) + 1;
 
             for (; next < length; next = Utilities.getRowEnd(doc, next) + 1) {
@@ -470,6 +511,7 @@ public class BracketCompleter implements KeystrokeHandler {
 
                 if (nextIndent > indent) {
                     insertEnd = false;
+                    insertRBrace = false;
                 } else if (nextIndent == indent) {
                     if (insertEnd) {
                         if (LexUtilities.getBeginEndLineBalance(doc, next, false) < 0) {
@@ -488,25 +530,29 @@ public class BracketCompleter implements KeystrokeHandler {
                                 insertEnd = false;
                             }
                         }
-                    } else if (insertEnd &&
+                    } else if (insertRBrace &&
                             (LexUtilities.getLineBalance(doc, next, GroovyTokenId.LBRACE,
                                 GroovyTokenId.RBRACE) < 0)) {
-                        insertEnd = false;
+                        insertRBrace = false;
                     }
                 }
 
                 break;
             }
 
+            if (insertEndResult != null) {
+                insertEndResult[0] = insertEnd;
+            }
+
             if (insertRBraceResult != null) {
-                insertRBraceResult[0] = insertEnd;
+                insertRBraceResult[0] = insertRBrace;
             }
 
             if (indentResult != null) {
                 indentResult[0] = indent;
             }
 
-            return insertEnd;
+            return insertEnd || insertRBrace;
         }
 
         return false;
@@ -523,12 +569,6 @@ public class BracketCompleter implements KeystrokeHandler {
         }
         
         //dumpTokens(doc, caretOffset);
-
-        // Gotta look for the string begin pair in tokens since ANY character can
-        // be used in string like the %x!! form.
-        if (caretOffset == 0) {
-            return false;
-        }
 
         if (target.getSelectionStart() != -1) {
             if (NbUtilities.isCodeTemplateEditing(doc)) {
@@ -550,39 +590,29 @@ public class BracketCompleter implements KeystrokeHandler {
                     if (firstChar != ch) {
                         int start = target.getSelectionStart();
                         int end = target.getSelectionEnd();
-                        int lastChar = selection.charAt(selection.length()-1);
-                        // Replace the surround-with chars?
-                        if (selection.length() > 1 && 
-                                ((firstChar == '"' || firstChar == '\'' || firstChar == '(' || 
-                                firstChar == '{' || firstChar == '[' || firstChar == '/') &&
-                                lastChar == matching(firstChar))) {
-                            doc.remove(end-1, 1);
-                            doc.insertString(end-1, ""+matching(ch), null);
-                            doc.remove(start, 1);
-                            doc.insertString(start, ""+ch, null);
-                            target.getCaret().setDot(end);
-                        } else {
-                            // No, insert around
-                            doc.remove(start,end-start);
-                            doc.insertString(start, ch + selection + matching(ch), null);
-                            target.getCaret().setDot(start+selection.length()+2);
-                        }
+                        TokenSequence<? extends GroovyTokenId> ts = LexUtilities.getPositionedSequence(doc, start);
+                        if (ts != null && ts.token().id() != GroovyTokenId.STRING_LITERAL) { // Not inside strings!
+                            int lastChar = selection.charAt(selection.length()-1);
+                            // Replace the surround-with chars?
+                            if (selection.length() > 1 && 
+                                    ((firstChar == '"' || firstChar == '\'' || firstChar == '(' || 
+                                    firstChar == '{' || firstChar == '[' || firstChar == '/') &&
+                                    lastChar == matching(firstChar))) {
+                                doc.remove(end-1, 1);
+                                doc.insertString(end-1, ""+matching(ch), null);
+                                doc.remove(start, 1);
+                                doc.insertString(start, ""+ch, null);
+                                target.getCaret().setDot(end);
+                            } else {
+                                // No, insert around
+                                doc.remove(start,end-start);
+                                doc.insertString(start, ch + selection + matching(ch), null);
+                                target.getCaret().setDot(start+selection.length()+2);
+                            }
 
-                        return true;
+                            return true;
+                        }
                     }
-                }
-            } else if (ch == '$' && 
-                    (LexUtilities.isInsideQuotedString(doc, target.getSelectionStart()) &&
-                    LexUtilities.isInsideQuotedString(doc, target.getSelectionEnd())) ||
-                    (LexUtilities.isInsideRegexp(doc, target.getSelectionStart()) &&
-                    LexUtilities.isInsideRegexp(doc, target.getSelectionEnd()))) {
-                String selection = target.getSelectedText();
-                if (selection != null && selection.length() > 0 && selection.charAt(0) != ch) {
-                    int start = target.getSelectionStart();
-                    doc.remove(start, target.getSelectionEnd()-start);
-                    doc.insertString(start, "${" + selection + "}", null);
-                    target.getCaret().setDot(start+selection.length()+3);
-                    return true;
                 }
             }
         }
@@ -604,83 +634,26 @@ public class BracketCompleter implements KeystrokeHandler {
         TokenId[] stringTokens = null;
         TokenId beginTokenId = null;
         
-        if (id == GroovyTokenId.LINE_COMMENT && target.getSelectionStart() != -1) {
-            if (ch == '*' || ch == '+' || ch == '_') {
-                // See if it's a comment and if so surround the text with an rdoc modifier
-                // such as bold, teletype or italics
-                String selection = target.getSelectedText();
-                // Don't allow any spaces - you can't bracket multiple words in rdoc I think (TODO - check that)
-                if (selection != null && selection.length() > 0 && selection.charAt(0) != ch && selection.indexOf(' ') == -1) {
-                    int start = target.getSelectionStart();
-                    doc.remove(start, target.getSelectionEnd()-start);
-                    doc.insertString(start, ch + selection + matching(ch), null);
-                    target.getCaret().setDot(start+selection.length()+2);
-                
-                    return true;
-                }
-            }
-        }
-
         // "/" is handled AFTER the character has been inserted since we need the lexer's help
-        if (ch == '\"') {
-            stringTokens = STRING_TOKENS;
-            beginTokenId = GroovyTokenId.QUOTED_STRING_BEGIN;
-        } else if (ch == '\'') {
+        if (ch == '\"' || ch == '\'') {
             stringTokens = STRING_TOKENS;
             beginTokenId = GroovyTokenId.STRING_BEGIN;
         } else if (id == GroovyTokenId.ERROR) {
-            String text = token.text().toString();
+            //String text = token.text().toString();
 
-            if (text.equals("%")) {
-                // Depending on the character we're going to continue
-                if (!Character.isLetter(ch)) { // %q, %x, etc. Only %[], %!!, %<space> etc. is allowed
-                    stringTokens = STRING_TOKENS;
-                    beginTokenId = GroovyTokenId.QUOTED_STRING_BEGIN;
-                }
-            } else if ((text.length() == 2) && (text.charAt(0) == '%') &&
-                    Character.isLetter(text.charAt(1))) {
-                char c = text.charAt(1);
+            ts.movePrevious();
 
-                switch (c) {
-                case 'q':
-                    stringTokens = STRING_TOKENS;
-                    beginTokenId = GroovyTokenId.STRING_BEGIN;
+            TokenId prevId = ts.token().id();
 
-                    break;
-
-                case 'Q':
-                    stringTokens = STRING_TOKENS;
-                    beginTokenId = GroovyTokenId.QUOTED_STRING_BEGIN;
-
-                    break;
-
-                case 'r':
-                    stringTokens = REGEXP_TOKENS;
-                    beginTokenId = GroovyTokenId.REGEXP_BEGIN;
-
-                    break;
-
-                default:
-                    // ?
-                    stringTokens = STRING_TOKENS;
-                    beginTokenId = GroovyTokenId.QUOTED_STRING_BEGIN;
-                }
-            } else {
-                ts.movePrevious();
-
-                TokenId prevId = ts.token().id();
-
-                if ((prevId == GroovyTokenId.STRING_BEGIN) ||
-                        (prevId == GroovyTokenId.QUOTED_STRING_BEGIN)) {
-                    stringTokens = STRING_TOKENS;
-                    beginTokenId = prevId;
-                } else if (prevId == GroovyTokenId.REGEXP_BEGIN) {
-                    stringTokens = REGEXP_TOKENS;
-                    beginTokenId = GroovyTokenId.REGEXP_BEGIN;
-                }
+            if (prevId == GroovyTokenId.STRING_BEGIN) {
+                stringTokens = STRING_TOKENS;
+                beginTokenId = prevId;
+            } else if (prevId == GroovyTokenId.REGEXP_BEGIN) {
+                stringTokens = REGEXP_TOKENS;
+                beginTokenId = GroovyTokenId.REGEXP_BEGIN;
             }
-        } else if (((((id == GroovyTokenId.STRING_BEGIN) || (id == GroovyTokenId.QUOTED_STRING_BEGIN)) &&
-                (caretOffset == (ts.offset() + 1))))) {
+        } else if ((id == GroovyTokenId.STRING_BEGIN) &&
+                (caretOffset == (ts.offset() + 1))) {
             if (!Character.isLetter(ch)) { // %q, %x, etc. Only %[], %!!, %<space> etc. is allowed
                 stringTokens = STRING_TOKENS;
                 beginTokenId = id;
@@ -689,10 +662,6 @@ public class BracketCompleter implements KeystrokeHandler {
                 (id == GroovyTokenId.STRING_END)) {
             stringTokens = STRING_TOKENS;
             beginTokenId = GroovyTokenId.STRING_BEGIN;
-        } else if (((id == GroovyTokenId.QUOTED_STRING_BEGIN) && (caretOffset == (ts.offset() + 2))) ||
-                (id == GroovyTokenId.QUOTED_STRING_END)) {
-            stringTokens = STRING_TOKENS;
-            beginTokenId = GroovyTokenId.QUOTED_STRING_BEGIN;
         } else if (((id == GroovyTokenId.REGEXP_BEGIN) && (caretOffset == (ts.offset() + 2))) ||
                 (id == GroovyTokenId.REGEXP_END)) {
             stringTokens = REGEXP_TOKENS;
@@ -759,7 +728,7 @@ public class BracketCompleter implements KeystrokeHandler {
         Caret caret = target.getCaret();
         BaseDocument doc = (BaseDocument)document;
 
-        if (REFLOW_COMMENTS) {
+//        if (REFLOW_COMMENTS) {
 //            Token<?extends GroovyTokenId> token = LexUtilities.getToken(doc, dotPos);
 //            if (token != null) {
 //                TokenId id = token.id();
@@ -767,7 +736,7 @@ public class BracketCompleter implements KeystrokeHandler {
 //                    new ReflowParagraphAction().reflowEditedComment(target);
 //                }
 //            }
-        }
+//        }
         
         // See if our automatic adjustment of indentation when typing (for example) "end" was
         // premature - if you were typing a longer word beginning with one of my adjustment
@@ -793,21 +762,21 @@ public class BracketCompleter implements KeystrokeHandler {
 
         //dumpTokens(doc, dotPos);
         switch (ch) {
-        case '$': {
-            // Automatically insert ${^} when typing "$" in a quoted string or regexp
-            Token<?extends GroovyTokenId> token = LexUtilities.getToken(doc, dotPos);
-            if (token == null) {
-                return true;
-            }
-            TokenId id = token.id();
-
-            if (id == GroovyTokenId.QUOTED_STRING_LITERAL || id == GroovyTokenId.REGEXP_LITERAL) {
-                document.insertString(dotPos+1, "{}", null);
-                // Skip the "{" to place the caret between { and }
-                caret.setDot(dotPos+2);
-            }
-            break;
-        }
+//        case '#': {
+//            // Automatically insert #{^} when typing "#" in a quoted string or regexp
+//            Token<?extends GroovyTokenId> token = LexUtilities.getToken(doc, dotPos);
+//            if (token == null) {
+//                return true;
+//            }
+//            TokenId id = token.id();
+//
+//            if (id == GroovyTokenId.QUOTED_STRING_LITERAL || id == GroovyTokenId.REGEXP_LITERAL) {
+//                document.insertString(dotPos+1, "{}", null);
+//                // Skip the "{" to place the caret between { and }
+//                caret.setDot(dotPos+2);
+//            }
+//            break;
+//        }
         case '}':
         case '{':
         case ')':
@@ -825,55 +794,6 @@ public class BracketCompleter implements KeystrokeHandler {
                 return true;
             }
             TokenId id = token.id();
-
-            if ((ch == '{') && (id == GroovyTokenId.ERROR && dotPos > 0)) {
-                Token<? extends GroovyTokenId> prevToken = LexUtilities.getToken(doc, dotPos-1);
-                if (prevToken != null) {
-                    TokenId prevId = prevToken.id();
-                    if (prevId == GroovyTokenId.STRING_LITERAL || prevId == GroovyTokenId.REGEXP_LITERAL) {
-                        // Avoid case where typing "${" ends up as ${{ if user
-                        // isn't used to the ${^} auto-insertion
-                        if (dotPos > 1) {
-                            String s = doc.getText(dotPos-2, 2);
-                            if ("${".equals(s)) { // NOI18N
-                                doc.remove(dotPos, 1);
-                                caret.setDot(dotPos); // skip closing bracket
-                                return true;
-                            }
-                        }
-                    }
-                }
-            }
-             
-            if (ch == '}' && (id == GroovyTokenId.QUOTED_STRING_LITERAL || id == GroovyTokenId.REGEXP_LITERAL)) {
-                Token<? extends GroovyTokenId> prevToken = LexUtilities.getToken(doc, dotPos-1);
-                if (prevToken != null) {
-                    TokenId prevId = prevToken.id();
-                    if (prevId == GroovyTokenId.EMBEDDED_GROOVY) {
-                        if (dotPos < doc.getLength()-1) {
-                            char c = doc.getText(dotPos+1, 1).charAt(0);
-                            if (c == '}') {
-                                doc.remove(dotPos, 1);
-                                caret.setDot(dotPos+1); // skip closing bracket
-                                return true;
-                            }
-                        }
-                    }
-                }
-            }
-
-            // This only kicks in when ${} has no content
-            if ((ch == '}') && id == GroovyTokenId.EMBEDDED_GROOVY) {
-                // Support type-through of } when we have ${^}
-                if (dotPos < doc.getLength()-1) {
-                    char c = doc.getText(dotPos+1, 1).charAt(0);
-                    if (c == '}') {
-                        doc.remove(dotPos, 1);
-                        caret.setDot(dotPos+1); // skip closing bracket
-                        return true;
-                    }
-                }
-            }
 
             if (id == GroovyTokenId.ANY_OPERATOR) {
                 int length = token.length();
@@ -910,6 +830,30 @@ public class BracketCompleter implements KeystrokeHandler {
 
         break;
 
+//        case 'e':
+//            // See if it's the end of an "else" or an "ensure" - if so, reindent
+//            reindent(doc, dotPos, GroovyTokenId.ELSE, caret);
+//            reindent(doc, dotPos, GroovyTokenId.ENSURE, caret);
+//            reindent(doc, dotPos, GroovyTokenId.RESCUE, caret);
+//
+//            break;
+//
+//        case 'f':
+//            // See if it's the end of an "else" - if so, reindent
+//            reindent(doc, dotPos, GroovyTokenId.ELSIF, caret);
+//
+//            break;
+//
+//        case 'n':
+//            // See if it's the end of an "when" - if so, reindent
+//            reindent(doc, dotPos, GroovyTokenId.WHEN, caret);
+//            
+//            break;
+            
+        case ';':
+            moveSemicolon(doc, dotPos, caret);
+            break;
+        
         case '/': {
             if (!isInsertMatchingEnabled(doc)) {
                 return false;
@@ -918,10 +862,22 @@ public class BracketCompleter implements KeystrokeHandler {
             // Bracket matching for regular expressions has to be done AFTER the
             // character is inserted into the document such that I can use the lexer
             // to determine whether it's a division (e.g. x/y) or a regular expression (/foo/)
-            Token<?extends GroovyTokenId> token = LexUtilities.getToken(doc, dotPos);
-            if (token != null) {
+            TokenSequence<?extends GroovyTokenId> ts = LexUtilities.getPositionedSequence(doc, dotPos);
+            if (ts != null) {
+                Token token = ts.token();
                 TokenId id = token.id();
 
+                if (id == GroovyTokenId.LINE_COMMENT) {
+                    // Did you just type "//" - make sure this didn't turn into ///
+                    // where typing the first "/" inserted "//" and the second "/" appended
+                    // another "/" to make "///"
+                    if (dotPos == ts.offset()+1 && dotPos+1 < doc.getLength() &&
+                            doc.getText(dotPos+1,1).charAt(0) == '/') {
+                        doc.remove(dotPos, 1);
+                        caret.setDot(dotPos+1);
+                        return true;
+                    }
+                }
                 if (id == GroovyTokenId.REGEXP_BEGIN || id == GroovyTokenId.REGEXP_END) {
                     TokenId[] stringTokens = REGEXP_TOKENS;
                     TokenId beginTokenId = GroovyTokenId.REGEXP_BEGIN;
@@ -938,84 +894,11 @@ public class BracketCompleter implements KeystrokeHandler {
             }
             break;
         }
-        case '|': {
-            if (!isInsertMatchingEnabled(doc)) {
-                return false;
-            }
-
-            Token<?extends GroovyTokenId> token = LexUtilities.getToken(doc, dotPos);
-            if (token == null) {
-                return true;
-            }
-
-            TokenId id = token.id();
-
-            // Ensure that we're not in a comment, strings etc.
-            if (id == GroovyTokenId.NONUNARY_OP && token.length() == 2 && "||".equals(token.text().toString())) {
-                // Type through: |^| and type |
-                // See if we're in a do or { block
-                if (isBlockDefinition(doc, dotPos)) {
-                    // It's a block so this should be a variable declaration of the form { |foo| }
-                    // Did you type "|" in the middle? If so, should type through!
-                    // TODO - check that we were typing in the middle, not in the front!
-                    doc.remove(dotPos, 1);
-                    caret.setDot(dotPos+1);
-                        
-                    return true;
-                }
-                
-            } else if (id == GroovyTokenId.IDENTIFIER && token.length() == 1 && "|".equals(token.text().toString())) {
-                // Only insert a matching | if there aren't any others on this line AND we're in a block
-                if (isBlockDefinition(doc, dotPos)) {
-                    boolean found = false;
-                    int lineEnd = Utilities.getRowEnd(doc, dotPos);
-                    if (lineEnd > dotPos+1) {
-                        TokenSequence<? extends GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, dotPos+1);
-                        ts.move(dotPos+1);
-                        while (ts.moveNext() && ts.offset() < lineEnd) {
-                            Token<? extends GroovyTokenId> t = ts.token();
-                            if (t.id() == GroovyTokenId.IDENTIFIER && t.length() == 1 && "|".equals(t.text().toString())) {
-                                found = true;
-                                break;
-                            }
-                        }
-                    }
-
-                    if (!found) {
-                        doc.insertString(dotPos+1, "|", null);
-                        caret.setDot(dotPos + 1);
-                    }
-                }
-                
-                return true;
-            }
-            break;
-        }
         }
 
         return true;
     }
     
-    private boolean isBlockDefinition(BaseDocument doc, int dotPos) throws BadLocationException {
-        TokenSequence<? extends GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, dotPos);
-        int lineStart = Utilities.getRowStart(doc, dotPos);
-        ts.move(dotPos+1);
-        while (ts.movePrevious() && ts.offset() >= lineStart) {
-            TokenId tid = ts.token().id();
-            if (tid == GroovyTokenId.LBRACE) {
-                return true;
-//                    } else if (tid == GroovyTokenId.IDENTIFIER && ts.token().length() == 1 && "|".equals(ts.token().text().toString())) {
-//                        continue;
-//                    } else if (tid == GroovyTokenId.NONUNARY_OP && "||".equals(ts.token().text().toString())) {
-//                        continue;
-            } else if (tid == GroovyTokenId.RBRACE) {
-                break;
-            }
-        }
-        
-        return false;
-    }
-
     private void reindent(BaseDocument doc, int offset, TokenId id, Caret caret)
         throws BadLocationException {
         TokenSequence<?extends GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, offset);
@@ -1033,7 +916,7 @@ public class BracketCompleter implements KeystrokeHandler {
                 final int rowFirstNonWhite = Utilities.getRowFirstNonWhite(doc, offset);
                 // Ensure that this token is at the beginning of the line
                 if (ts.offset() > rowFirstNonWhite) {
-//                    if (GroovyUtils.isRhtmlDocument(doc)) {
+//                    if (RubyUtils.isRhtmlDocument(doc)) {
 //                        // Allow "<%[whitespace]*" to preceed
 //                        String s = doc.getText(rowFirstNonWhite, ts.offset()-rowFirstNonWhite);
 //                        if (!s.matches("<%\\s*")) {
@@ -1099,39 +982,9 @@ public class BracketCompleter implements KeystrokeHandler {
                 }
             }
 
-            if (id == GroovyTokenId.QUOTED_STRING_BEGIN) {
-                // Heredocs should be treated specially
-                if (token.text().toString().startsWith("<<")) {
-                    return LexUtilities.findHeredocEnd(ts, token);
-                }
-                return LexUtilities.findFwd(doc, ts, GroovyTokenId.QUOTED_STRING_BEGIN,
-                    GroovyTokenId.QUOTED_STRING_END);
-            } else if (id == GroovyTokenId.QUOTED_STRING_END) {
-                String s = token.text().toString();
-                if (!"\"".equals(s) && !"\'".equals(s) && !")".equals(s)) {
-                    OffsetRange r = LexUtilities.findHeredocBegin(ts, token);
-                    if (r != OffsetRange.NONE) {
-                        return r;
-                    }
-                    ts.move(offset);
-                }
-                return LexUtilities.findBwd(doc, ts, GroovyTokenId.QUOTED_STRING_BEGIN,
-                    GroovyTokenId.QUOTED_STRING_END);
-            } else if (id == GroovyTokenId.STRING_BEGIN) {
-                // Heredocs should be treated specially
-                if (token.text().toString().startsWith("<<")) {
-                    return LexUtilities.findHeredocEnd(ts, token);
-                }
+            if (id == GroovyTokenId.STRING_BEGIN) {
                 return LexUtilities.findFwd(doc, ts, GroovyTokenId.STRING_BEGIN, GroovyTokenId.STRING_END);
             } else if (id == GroovyTokenId.STRING_END) {
-                String s = token.text().toString();
-                if (!"\"".equals(s) && !"\'".equals(s) && !")".equals(s)) {
-                    OffsetRange r = LexUtilities.findHeredocBegin(ts, token);
-                    if (r != OffsetRange.NONE) {
-                        return r;
-                    }
-                    ts.move(offset);
-                }
                 return LexUtilities.findBwd(doc, ts, GroovyTokenId.STRING_BEGIN, GroovyTokenId.STRING_END);
             } else if (id == GroovyTokenId.REGEXP_BEGIN) {
                 return LexUtilities.findFwd(doc, ts, GroovyTokenId.REGEXP_BEGIN, GroovyTokenId.REGEXP_END);
@@ -1152,13 +1005,13 @@ public class BracketCompleter implements KeystrokeHandler {
 //                return OffsetRange.NONE;
             } else if (id == GroovyTokenId.RBRACKET) {
                 return LexUtilities.findBwd(doc, ts, GroovyTokenId.LBRACKET, GroovyTokenId.RBRACKET);
-            } else if (id.primaryCategory().equals("keyword")) {
-                if (LexUtilities.isBeginToken(id, doc, ts)) {
-                    return LexUtilities.findEnd(doc, ts);
+//            } else if (id.primaryCategory().equals("keyword")) {
+//                if (LexUtilities.isBeginToken(id, doc, ts)) {
+//                    return LexUtilities.findEnd(doc, ts);
 //                } else if ((id == GroovyTokenId.END) || LexUtilities.isIndentToken(id)) { // Find matching block
 //
 //                    return LexUtilities.findBegin(doc, ts);
-                }
+//                }
             }
         }
 
@@ -1181,35 +1034,20 @@ public class BracketCompleter implements KeystrokeHandler {
         
         switch (ch) {
         case ' ': {
-        // Backspacing over "$ " ? Delete the "$" too!
-            TokenSequence<?extends GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, dotPos);
-            if (ts != null) {
-                ts.move(dotPos);
-                if ((ts.moveNext() || ts.movePrevious()) && (ts.offset() == dotPos-1 && ts.token().id() == GroovyTokenId.LINE_COMMENT)) {
-                    doc.remove(dotPos-1, 1);
-                    target.getCaret().setDot(dotPos-1);
-
+            // Backspacing over "// " ? Delete the "//" too!
+            TokenSequence<?extends GroovyTokenId> ts = LexUtilities.getPositionedSequence(doc, dotPos);
+            if (ts != null && ts.token().id() == GroovyTokenId.LINE_COMMENT) {
+                if (ts.offset() == dotPos-2) {
+                    doc.remove(dotPos-2, 2);
+                    target.getCaret().setDot(dotPos-2);
+                
                     return true;
                 }
             }
             break;
         }
 
-        case '{': {
-            // Attempt to fix ${} in chars
-            Token<? extends GroovyTokenId> token = LexUtilities.getToken(doc, dotPos-1);
-            if (token != null && (token.id() == GroovyTokenId.QUOTED_STRING_LITERAL || token.id() == GroovyTokenId.REGEXP_LITERAL)) {
-                String s = document.getText(dotPos-1, 2);
-                if ("$}".equals(s)) {
-                    // We have just deleted a ${} segment
-                    doc.remove(dotPos, 1);
-                    target.getCaret().setDot(dotPos);
-                }
-            }
-            
-            // Fall through to handle '{' typethrough as well
-        }
-
+        case '{':
         case '(':
         case '[': { // and '{' via fallthrough
             char tokenAtDot = LexUtilities.getTokenChar(doc, dotPos);
@@ -1224,10 +1062,23 @@ public class BracketCompleter implements KeystrokeHandler {
             }
             break;
         }
+        
+        case '/': {
+            // Backspacing over "//" ? Delete the whole "//"
+            TokenSequence<?extends GroovyTokenId> ts = LexUtilities.getPositionedSequence(doc, dotPos);
+            if (ts != null && ts.token().id() == GroovyTokenId.REGEXP_BEGIN) {
+                if (ts.offset() == dotPos-1) {
+                    doc.remove(dotPos-1, 1);
+                    target.getCaret().setDot(dotPos-1);
+                
+                    return true;
+                }
+            }
+            // Fallthrough for match-deletion
+        }
         case '|':
         case '\"':
-        case '\'':
-        case '/': {
+        case '\'': {
             char[] match = doc.getChars(dotPos, 1);
 
             if ((match != null) && (match[0] == ch)) {
@@ -1465,6 +1316,7 @@ public class BracketCompleter implements KeystrokeHandler {
 
     // XXX TODO Use embedded string sequence here and see if it
     // really is escaped. I know where those are!
+    // TODO Adjust for JavaScript
     private boolean isEscapeSequence(BaseDocument doc, int dotPos)
         throws BadLocationException {
         if (dotPos <= 0) {
@@ -1520,8 +1372,7 @@ public class BracketCompleter implements KeystrokeHandler {
         // eol - true if the caret is at the end of line (ignoring whitespaces)
         boolean eol = lastNonWhite < dotPos;
 
-        if ((token.id() == GroovyTokenId.BLOCK_COMMENT) || (token.id() == GroovyTokenId.LINE_COMMENT) ||
-                (token.id() == GroovyTokenId.DOCUMENTATION)) { // 105419
+        if ((token.id() == GroovyTokenId.BLOCK_COMMENT) || (token.id() == GroovyTokenId.LINE_COMMENT)) {
             return false;
         } else if ((token.id() == GroovyTokenId.WHITESPACE) && eol && ((dotPos - 1) > 0)) {
             // check if the caret is at the very end of the line comment
@@ -1548,6 +1399,18 @@ public class BracketCompleter implements KeystrokeHandler {
                 (previousToken.id() == beginToken)) {
             insideString = true;
         }
+        
+        if (id == GroovyTokenId.EOL && previousToken != null) {
+            if (previousToken.id() == beginToken) {
+                insideString = true;
+            } else if (previousToken.id() == GroovyTokenId.ERROR) {
+                if (ts.movePrevious()) {
+                    if (ts.token().id() == beginToken) {
+                        insideString = true;
+                    }
+                }
+            }
+        }
 
         if (!insideString) {
             // check if the caret is at the very end of the line and there
@@ -1556,8 +1419,7 @@ public class BracketCompleter implements KeystrokeHandler {
                 if ((dotPos - 1) > 0) {
                     token = LexUtilities.getToken(doc, dotPos - 1);
                     // XXX TODO use language embedding to handle this
-                    insideString = (token.id() == GroovyTokenId.STRING_LITERAL) ||
-                        (token.id() == GroovyTokenId.CHAR_LITERAL);
+                    insideString = (token.id() == GroovyTokenId.STRING_LITERAL);
                 }
             }
         }
@@ -1636,6 +1498,9 @@ public class BracketCompleter implements KeystrokeHandler {
 
             char chr = doc.getChars(firstNonWhiteFwd, 1)[0];
 
+//            if (chr == '%' && RubyUtils.isRhtmlDocument(doc)) {
+//                return true;
+//            }
 
             return ((chr == ')') || (chr == ',') || (chr == '+') || (chr == '}') || (chr == ';') ||
                (chr == ']') || (chr == '/'));
@@ -1675,7 +1540,151 @@ public class BracketCompleter implements KeystrokeHandler {
     }
 
     public List<OffsetRange> findLogicalRanges(CompilationInfo info, int caretOffset) {
+        ASTNode root = AstUtilities.getRoot(info);
+
+        if (root == null) {
+            return Collections.emptyList();
+        }
+
+        int astOffset = AstUtilities.getAstOffset(info, caretOffset);
+        if (astOffset == -1) {
+            return Collections.emptyList();
+        }
+
         List<OffsetRange> ranges = new ArrayList<OffsetRange>();
+        
+        /** Furthest we can go back in the buffer (in RHTML documents, this
+         * may be limited to the surrounding &lt;% starting tag
+         */
+        int min = 0;
+        int max = Integer.MAX_VALUE;
+        int length;
+
+        // Check if the caret is within a comment, and if so insert a new
+        // leaf "node" which contains the comment line and then comment block
+        try {
+            BaseDocument doc = (BaseDocument) info.getDocument();
+            AstPath path = new AstPath(root, astOffset, doc);
+            length = doc.getLength();
+
+//            if (RubyUtils.isRhtmlDocument(doc)) {
+//                TokenHierarchy th = TokenHierarchy.get(doc);
+//                TokenSequence ts = th.tokenSequence();
+//                ts.move(caretOffset);
+//                if (ts.moveNext() || ts.movePrevious()) {
+//                    Token t = ts.token();
+//                    if (t.id().primaryCategory().startsWith("ruby")) { // NOI18N
+//                        min = ts.offset();
+//                        max = min+t.length();
+//                        // Try to extend with delimiters too
+//                        if (ts.movePrevious()) {
+//                            t = ts.token();
+//                            if ("ruby-delimiter".equals(t.id().primaryCategory())) { // NOI18N
+//                                min = ts.offset();
+//                                if (ts.moveNext() && ts.moveNext()) {
+//                                    t = ts.token();
+//                                    if ("ruby-delimiter".equals(t.id().primaryCategory())) { // NOI18N
+//                                        max = ts.offset()+t.length();
+//                                    }
+//                                }
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+
+            
+            TokenSequence<?extends GroovyTokenId> ts = LexUtilities.getPositionedSequence(doc, caretOffset);
+            if (ts != null) {
+                Token<?extends GroovyTokenId> token = ts.token();
+
+                if (token != null && token.id() == GroovyTokenId.BLOCK_COMMENT) {
+                    // First add a range for the current line
+                    int begin = ts.offset();
+                    int end = begin+token.length();
+                    ranges.add(new OffsetRange(begin, end));
+                } else if ((token != null) && (token.id() == GroovyTokenId.LINE_COMMENT)) {
+                    // First add a range for the current line
+                    int begin = Utilities.getRowStart(doc, caretOffset);
+                    int end = Utilities.getRowEnd(doc, caretOffset);
+
+                    if (LexUtilities.isCommentOnlyLine(doc, caretOffset)) {
+                        ranges.add(new OffsetRange(Utilities.getRowFirstNonWhite(doc, begin), 
+                                Utilities.getRowLastNonWhite(doc, end)+1));
+
+                        int lineBegin = begin;
+                        int lineEnd = end;
+
+                        while (begin > 0) {
+                            int newBegin = Utilities.getRowStart(doc, begin - 1);
+
+                            if ((newBegin < 0) || !LexUtilities.isCommentOnlyLine(doc, newBegin)) {
+                                begin = Utilities.getRowFirstNonWhite(doc, begin);
+                                break;
+                            }
+
+                            begin = newBegin;
+                        }
+
+                        while (true) {
+                            int newEnd = Utilities.getRowEnd(doc, end + 1);
+
+                            if ((newEnd >= length) || !LexUtilities.isCommentOnlyLine(doc, newEnd)) {
+                                end = Utilities.getRowLastNonWhite(doc, end)+1;
+                                break;
+                            }
+
+                            end = newEnd;
+                        }
+
+                        if ((lineBegin > begin) || (lineEnd < end)) {
+                            ranges.add(new OffsetRange(begin, end));
+                        }
+                    } else {
+                        // It's just a line comment next to some code; select the comment
+                        TokenHierarchy<Document> th = TokenHierarchy.get((Document)doc);
+                        int offset = token.offset(th);
+                        ranges.add(new OffsetRange(offset, offset + token.length()));
+                    }
+                }
+            }
+            Iterator<ASTNode> it = path.leafToRoot();
+
+            OffsetRange previous = OffsetRange.NONE;
+            while (it.hasNext()) {
+                ASTNode node = it.next();
+
+    //            // Filter out some uninteresting nodes
+    //            if (node instanceof NewlineNode) {
+    //                continue;
+    //            }
+
+                OffsetRange range = AstUtilities.getRange(node, (BaseDocument)info.getDocument());
+
+                // The contains check should be unnecessary, but I end up getting
+                // some weird positions for some Rhino AST nodes
+                if (range.containsInclusive(astOffset) && !range.equals(previous)) {
+                    range = LexUtilities.getLexerOffsets(info, range);
+                    if (range != OffsetRange.NONE) {
+                        if (range.getStart() < min) {
+                            ranges.add(new OffsetRange(min, max));
+                            ranges.add(new OffsetRange(0, length));
+                            break;
+                        }
+                        ranges.add(range);
+                        previous = range;
+                    }
+                }
+            }
+        } catch (BadLocationException ble) {
+            Exceptions.printStackTrace(ble);
+            return ranges;
+        } catch (IOException ioe) {
+            Exceptions.printStackTrace(ioe);
+            return ranges;
+        }
+
+
         return ranges;
     }
 
@@ -1728,9 +1737,7 @@ public class BracketCompleter implements KeystrokeHandler {
             
         }
 
-        if (id == GroovyTokenId.IDENTIFIER || id == GroovyTokenId.TYPE_SYMBOL ||
-                id == GroovyTokenId.CONSTANT ||
-                id == GroovyTokenId.GLOBAL_VAR || id == GroovyTokenId.INSTANCE_VAR) {
+        if (id == GroovyTokenId.IDENTIFIER || id == GroovyTokenId.CONSTANT || id == GroovyTokenId.GLOBAL_VAR) {
             String s = token.text().toString();
             int length = s.length();
             int wordOffset = offset-ts.offset();
@@ -1809,4 +1816,85 @@ public class BracketCompleter implements KeystrokeHandler {
         // Default handling in the IDE
         return -1;
     }
+
+    private static boolean moveSemicolon(BaseDocument doc, int dotPos, Caret caret) throws BadLocationException {
+        int eolPos = Utilities.getRowEnd(doc, dotPos);
+        TokenSequence<? extends GroovyTokenId> ts = LexUtilities.getPositionedSequence(doc, dotPos);
+        int lastParenPos = dotPos;
+
+        Token<? extends GroovyTokenId> token;
+        while (ts.moveNext() && ts.offset() < eolPos) {
+            token = ts.token();
+            GroovyTokenId tokenId = token.id();
+            if (tokenId == GroovyTokenId.RPAREN) {
+                lastParenPos = ts.offset();
+            } else if (tokenId != GroovyTokenId.WHITESPACE) {
+                return false;
+            }
+        }
+
+        if (isForLoopSemicolon(ts) || posWithinAnyQuote(doc, dotPos)) {
+            return false;
+        }
+        doc.remove(dotPos, 1);
+        doc.insertString(lastParenPos, ";", null); // NOI18N
+        caret.setDot(lastParenPos + 1);
+        return true;
+    }
+
+    private static boolean isForLoopSemicolon(TokenSequence<? extends GroovyTokenId> ts) {
+        Token<? extends GroovyTokenId> token = ts.token();
+        if (token == null || token.id() != GroovyTokenId.SEMI) {
+            return false;
+        }
+        int parDepth = 0; // parenthesis depth
+        int braceDepth = 0; // brace depth
+        boolean semicolonFound = false; // next semicolon
+        token = ts.movePrevious() ? ts.token() : null; // ignore this semicolon
+        while (token != null) {
+            if (token.id() == GroovyTokenId.LPAREN) {
+                if (parDepth == 0) { // could be a 'for ('
+                    token = ts.movePrevious() ? ts.token() : null; 
+                    while (token != null && (token.id() == GroovyTokenId.WHITESPACE || token.id() == GroovyTokenId.BLOCK_COMMENT || token.id() == GroovyTokenId.LINE_COMMENT)) {
+                        token = ts.movePrevious() ? ts.token() : null; 
+                    }
+                    if (token != null && token.id() == GroovyTokenId.LITERAL_for) {
+                        return true;
+                    }
+                    return false;
+                } else { // non-zero depth
+                    parDepth--;
+                }
+            } else if (token.id() == GroovyTokenId.RPAREN) {
+                parDepth++;
+            } else if (token.id() == GroovyTokenId.LBRACE) {
+                if (braceDepth == 0) { // unclosed left brace
+                    return false;
+                }
+                braceDepth--;
+            } else if (token.id() == GroovyTokenId.RBRACE) {
+                braceDepth++;
+
+            } else if (token.id() == GroovyTokenId.SEMI) {
+                if (semicolonFound) { // one semicolon already found
+                    return false;
+                }
+                semicolonFound = true;
+            }
+            token = ts.movePrevious() ? ts.token() : null; 
+        }
+        return false;
+    }
+
+    private static boolean posWithinAnyQuote(BaseDocument doc, int dotPos) {
+        TokenSequence<?extends GroovyTokenId> ts = LexUtilities.getPositionedSequence(doc, dotPos);
+        if (ts != null) {
+            Token<? extends GroovyTokenId> token = ts.token();
+            if (token != null && token.id() == GroovyTokenId.STRING_LITERAL) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 }

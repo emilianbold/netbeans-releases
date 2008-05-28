@@ -40,13 +40,18 @@
 package org.netbeans.modules.php.editor.verification;
 
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.Error;
 import org.netbeans.modules.gsf.api.Hint;
 import org.netbeans.modules.gsf.api.HintsProvider;
+import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.gsf.api.Rule;
 import org.netbeans.modules.gsf.api.RuleContext;
+import org.netbeans.modules.php.editor.PHPLanguage;
+import org.netbeans.modules.php.editor.parser.PHPParseResult;
 
 /**
  *
@@ -55,12 +60,25 @@ import org.netbeans.modules.gsf.api.RuleContext;
 public class PHPHintsProvider implements HintsProvider {
 
     public void computeHints(HintsManager manager, RuleContext context, List<Hint> hints) {
-        Map<Integer,List<PHPRule>> allHints = (Map)manager.getHints(false, context);
+        Map<Integer, List<PHPRule>> allHints = (Map) manager.getHints(false, context);
+        CompilationInfo info = context.compilationInfo;
+
+        List<PHPRule> allRules = new LinkedList<PHPRule>();
         
-        for (List<PHPRule> ruleList : allHints.values()){
-            for (PHPRule rule: ruleList){
-                rule.run((PHPRuleContext) context, hints);
+        for (List<PHPRule> ruleList : allHints.values()) {
+            for (PHPRule rule : ruleList) {
+                allRules.add(rule);
             }
+        }
+        
+        for (PHPParseResult parseResult : ((List<PHPParseResult>) info.getEmbeddedResults(PHPLanguage.PHP_MIME_TYPE))) {
+            PHPVerificationVisitor visitor = new PHPVerificationVisitor((PHPRuleContext)context, allRules);
+
+            if (parseResult.getProgram() != null) {
+                parseResult.getProgram().accept(visitor);
+            }
+            
+            hints.addAll(visitor.getResult());
         }
     }
 
@@ -73,7 +91,11 @@ public class PHPHintsProvider implements HintsProvider {
     }
 
     public void computeErrors(HintsManager manager, RuleContext context, List<Hint> hints, List<Error> unhandled) {
-        
+        ParserResult parserResult = context.parserResult;
+        if (parserResult != null) {
+            List<Error> errors = parserResult.getDiagnostics();
+            unhandled.addAll(errors);
+        }
     }
 
     public void cancel() {
@@ -87,5 +109,4 @@ public class PHPHintsProvider implements HintsProvider {
     public RuleContext createRuleContext() {
         return new PHPRuleContext();
     }
-
 }

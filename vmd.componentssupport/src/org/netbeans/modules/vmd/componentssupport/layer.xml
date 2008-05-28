@@ -14,6 +14,22 @@
                 </file>
             </folder>
         </folder>
+        <!--
+        <folder name="MIDP">
+            <file name="CustomComponent">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.project.ui.wizard.Bundle"/>
+                <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/project/ui/resources/descriptions/MIDP/MIDlet_java.html"/>
+                <attr name="position" intvalue="960"/>
+                <attr boolvalue="true" name="template"/>
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.vmd.componentssupport.ui.wizard.NewComponentDescriptor.instanceForProject"/>
+                <attr boolvalue="true" name="isMIDletTemplate"/>
+                <attr name="MIDP" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="MIDP"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/mobility/project/ui/resources/class.gif"/> 
+            </file>
+        </folder>
+        -->
         <folder name="MobilityCustomComponent-files">
             <attr name="position" intvalue="0"/>
             <attr name="simple" boolvalue="false"/>
