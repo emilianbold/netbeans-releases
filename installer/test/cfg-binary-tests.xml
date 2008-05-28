@@ -35,6 +35,9 @@
     
     <testbag testattribs="runtests or all" executor="binary-tests-executor" prio="2" name="run binary test">
         <testset dir=".">
+            <patternset>
+	        <include name="org/netbeans/test/installer/TestMoveResults.class"/>
+           </patternset>
         </testset>
     </testbag>
 
