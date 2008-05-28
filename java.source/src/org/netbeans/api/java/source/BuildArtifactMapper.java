@@ -50,16 +50,16 @@ import org.netbeans.modules.java.source.usages.BuildArtifactMapperImpl;
  */
 public class BuildArtifactMapper {
 
-    public static void map(URL sourceRoot, File targetRoot) {
-        map(sourceRoot, targetRoot, null);
-    }
-    
-    public static void map(URL sourceRoot, File targetRoot, ArtifactsUpdated listener) {
-        BuildArtifactMapperImpl.map(sourceRoot, targetRoot, listener);
-    }
-    
     public static boolean ensureBuilt(URL sourceRoot) throws IOException {
         return BuildArtifactMapperImpl.ensureBuilt(sourceRoot);
+    }
+    
+    public static void addArtifactsUpdatedListener(URL sourceRoot, ArtifactsUpdated listener) {
+        BuildArtifactMapperImpl.addArtifactsUpdatedListener(sourceRoot, listener);
+    }
+    
+    public static void removeArtifactsUpdatedListener(URL sourceRoot, ArtifactsUpdated listener) {
+        BuildArtifactMapperImpl.removeArtifactsUpdatedListener(sourceRoot, listener);
     }
     
     public static interface ArtifactsUpdated {

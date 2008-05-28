@@ -48,12 +48,16 @@ import java.io.OutputStream;
 import java.net.URI;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import org.netbeans.api.java.queries.BinaryForSourceQuery;
+import org.netbeans.api.java.queries.BinaryForSourceQuery.Result;
 import org.netbeans.api.java.source.BuildArtifactMapper.ArtifactsUpdated;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -67,28 +71,63 @@ public class BuildArtifactMapperImpl {
     private static final Logger LOG = Logger.getLogger(BuildArtifactMapperImpl.class.getName());
     
     private static final String TAG_FILE_NAME = ".netbeans_automatic_build";
-    private static final Map<URL, File> source2Target = new HashMap<URL, File>();
-    private static final Map<URL, ArtifactsUpdated> source2Listener = new HashMap<URL, ArtifactsUpdated>();
+//    private static final Map<URL, File> source2Target = new HashMap<URL, File>();
+    private static final Map<URL, Set<ArtifactsUpdated>> source2Listener = new HashMap<URL, Set<ArtifactsUpdated>>();
 
-    public static void map(URL sourceRoot, File targetRoot, ArtifactsUpdated listener) {
-        LOG.log(Level.FINE, "map({0}, {1}, ...)", new Object[] {sourceRoot.toExternalForm(), targetRoot.getAbsolutePath()});
+    public static synchronized void addArtifactsUpdatedListener(URL sourceRoot, ArtifactsUpdated listener) {
+        Set<ArtifactsUpdated> listeners = source2Listener.get(sourceRoot);
         
-        if (targetRoot == null) {
-            source2Target.remove(sourceRoot);
-            source2Listener.remove(sourceRoot);
+        if (listeners == null) {
+            source2Listener.put(sourceRoot, listeners = new HashSet<ArtifactsUpdated>());
+        }
+        
+        listeners.add(listener);
+    }
+
+    public static synchronized void removeArtifactsUpdatedListener(URL sourceRoot, ArtifactsUpdated listener) {
+        Set<ArtifactsUpdated> listeners = source2Listener.get(sourceRoot);
+        
+        if (listeners == null) {
             return ;
         }
         
-        source2Target.put(sourceRoot, targetRoot);
-        source2Listener.put(sourceRoot, listener);
+        listeners.remove(listener);
+        
+        if (listeners.isEmpty()) {
+            source2Listener.remove(sourceRoot);
+        }
+    }
+    
+    private static File getTarget(URL source) {
+        Result binaryRoots = BinaryForSourceQuery.findBinaryRoots(source);
+        
+        File result = null;
+        
+        for (URL u : binaryRoots.getRoots()) {
+            if (FileUtil.isArchiveFile(u)) {
+                continue;
+            }
+            
+            File f = FileUtil.archiveOrDirForURL(u);
+            
+            if (f != null && result != null) {
+                Logger.getLogger(BuildArtifactMapperImpl.class.getName()).log(Level.WARNING, "More than one binary directory for root: {0}", source.toExternalForm());
+                return null;
+            }
+            
+            result = f;
+        }
+        
+        return result;
     }
     
     public static boolean ensureBuilt(URL sourceRoot) throws IOException {
-        if (!source2Target.containsKey(sourceRoot)) {
+        File targetFolder = getTarget(sourceRoot);
+        
+        if (targetFolder == null) {
             return false;
         }
-
-        File targetFolder = source2Target.get(sourceRoot);
+        
         File tagFile = new File(targetFolder, TAG_FILE_NAME);
 
         if (tagFile.exists()) {
@@ -113,17 +152,16 @@ public class BuildArtifactMapperImpl {
     }
     
     public static void classCacheUpdated(URL sourceRoot, File cacheRoot, Iterable<File> deleted, Iterable<File> updated) {
-        if (!source2Target.containsKey(sourceRoot)) {
-            return;
+        File targetFolder = getTarget(sourceRoot);
+        
+        if (targetFolder == null) {
+            return ;
         }
-
-        File targetFolder = source2Target.get(sourceRoot);
         
         if (!new File(targetFolder, TAG_FILE_NAME).exists()) {
             return ;
         }
         
-        ArtifactsUpdated listener = source2Listener.get(sourceRoot);
         List<File> updatedFiles = new LinkedList<File>();
 
         assert targetFolder != null;
@@ -146,8 +184,20 @@ public class BuildArtifactMapperImpl {
             }
         }
         
-        if (listener != null) {
-            listener.artifactsUpdated(updatedFiles);
+        Set<ArtifactsUpdated> listeners;
+        
+        synchronized (BuildArtifactMapperImpl.class) {
+            listeners = source2Listener.get(sourceRoot);
+            
+            if (listeners != null) {
+                listeners = new HashSet<ArtifactsUpdated>(listeners);
+            }
+        }
+        
+        if (listeners != null) {
+            for (ArtifactsUpdated listener : listeners) {
+                listener.artifactsUpdated(updatedFiles);
+            }
         }
     }
 
