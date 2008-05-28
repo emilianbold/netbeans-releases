@@ -51,13 +51,15 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import org.netbeans.modules.bpel.model.api.references.BpelReference;
 import org.netbeans.modules.bpel.model.api.Activity;
 import org.netbeans.modules.bpel.model.api.Assign;
 import org.netbeans.modules.bpel.model.api.BpelContainer;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.Catch;
 import org.netbeans.modules.bpel.model.api.CatchAll;
+import org.netbeans.modules.bpel.model.api.Condition;
+import org.netbeans.modules.bpel.model.api.ConditionHolder;
+import org.netbeans.modules.bpel.model.api.ContentElement;
 import org.netbeans.modules.bpel.model.api.Compensate;
 import org.netbeans.modules.bpel.model.api.CompensationHandler;
 import org.netbeans.modules.bpel.model.api.Correlation;
@@ -68,11 +70,13 @@ import org.netbeans.modules.bpel.model.api.CorrelationsHolder;
 import org.netbeans.modules.bpel.model.api.CorrelationSet;
 import org.netbeans.modules.bpel.model.api.CreateInstanceActivity;
 import org.netbeans.modules.bpel.model.api.Documentation;
+import org.netbeans.modules.bpel.model.api.ElseIf;
 import org.netbeans.modules.bpel.model.api.ExtensibleAssign;
 import org.netbeans.modules.bpel.model.api.ExtensibleElements;
 import org.netbeans.modules.bpel.model.api.Flow;
 import org.netbeans.modules.bpel.model.api.ForEach;
 import org.netbeans.modules.bpel.model.api.From;
+import org.netbeans.modules.bpel.model.api.If;
 import org.netbeans.modules.bpel.model.api.Import;
 import org.netbeans.modules.bpel.model.api.Invoke;
 import org.netbeans.modules.bpel.model.api.LinkContainer;
@@ -85,6 +89,7 @@ import org.netbeans.modules.bpel.model.api.Process;
 import org.netbeans.modules.bpel.model.api.ReThrow;
 import org.netbeans.modules.bpel.model.api.Receive;
 import org.netbeans.modules.bpel.model.api.Reply;
+import org.netbeans.modules.bpel.model.api.RepeatUntil;
 import org.netbeans.modules.bpel.model.api.Scope;
 import org.netbeans.modules.bpel.model.api.SourceContainer;
 import org.netbeans.modules.bpel.model.api.TargetContainer;
@@ -92,6 +97,8 @@ import org.netbeans.modules.bpel.model.api.TerminationHandler;
 import org.netbeans.modules.bpel.model.api.To;
 import org.netbeans.modules.bpel.model.api.Validate;
 import org.netbeans.modules.bpel.model.api.Variable;
+import org.netbeans.modules.bpel.model.api.While;
+import org.netbeans.modules.bpel.model.api.references.BpelReference;
 import org.netbeans.modules.bpel.model.api.support.Initiate;
 import org.netbeans.modules.bpel.model.api.support.TBoolean;
 import org.netbeans.modules.xml.xam.Component;
@@ -105,6 +112,77 @@ import static org.netbeans.modules.soa.ui.util.UI.*;
  * @version 2007.05.03
  */
 public final class Validator extends BpelValidator {
+
+  @Override
+  public void visit(ElseIf elseIf) {
+    checkCondition(elseIf.getCondition());
+  }
+
+  @Override
+  public void visit(If _if) {
+    checkCondition(_if.getCondition());
+  }
+
+  @Override
+  public void visit(RepeatUntil repeatUntil) {
+    checkCondition(repeatUntil.getCondition());
+  }
+
+  @Override
+  public void visit(While _while) {
+    checkCondition(_while.getCondition());
+  }
+
+  // # 135079
+  private void checkCondition(Component condition) {
+    if ( !(condition instanceof ContentElement)) {
+      return;
+    }
+    String value = ((ContentElement) condition).getContent();
+
+    if (value == null) {
+      return;
+    }
+    if ( !value.contains("'P")) { // NOI18N
+      return;
+    }
+    if (
+      value.contains("<") || // NOI18N
+      value.contains(">") || // NOI18N
+      value.contains("<=") || // NOI18N
+      value.contains(">=") || // NOI18N
+      value.contains("=") || // NOI18N
+      value.contains("!=") // NOI18N
+    ) {
+      addError("FIX_Compare_Time", condition); // NOI18N
+    }
+  }
+
+  @Override
+  public void visit(Process process) {
+    String queryLang = process.getQueryLanguage();
+ 
+    if (queryLang != null) {
+        addWarning(FIX_ATTRIBUTE, process, Process.QUERY_LANGUAGE);
+    }
+    String expression = process.getExpressionLanguage();
+    
+    if (expression != null) {
+        addWarning(FIX_ATTRIBUTE, process, Process.EXPRESSION_LANGUAGE);
+    }
+    TBoolean value = process.getSuppressJoinFailure();
+    
+    if (value != null) {
+        addWarning(FIX_ATTRIBUTE, process, Process.SUPPRESS_JOIN_FAILURE);
+    }
+    value = process.getExitOnStandardFault();
+    
+    if (value != null) {
+        addWarning(FIX_ATTRIBUTE, process, Process.EXIT_ON_STANDART_FAULT);
+    }
+    checkValidURI(process, Process.QUERY_LANGUAGE, process.getQueryLanguage());
+    checkValidURI(process, Process.EXPRESSION_LANGUAGE, process.getExpressionLanguage());
+  }
     
     private void processCorrelationsHolder(CorrelationsHolder holder) {
 //out();
@@ -164,32 +242,6 @@ public final class Validator extends BpelValidator {
         }
       }
       addWarning("FIX_Correlating_Activity", container); // NOI18N
-    }
-
-    @Override
-    public void visit(Process process) {
-        String queryLang = process.getQueryLanguage();
-
-        if (queryLang != null) {
-            addWarning(FIX_ATTRIBUTE, process, Process.QUERY_LANGUAGE);
-        }
-        String expression = process.getExpressionLanguage();
-        
-        if (expression != null) {
-            addWarning(FIX_ATTRIBUTE, process, Process.EXPRESSION_LANGUAGE);
-        }
-        TBoolean value = process.getSuppressJoinFailure();
-        
-        if (value != null) {
-            addWarning(FIX_ATTRIBUTE, process, Process.SUPPRESS_JOIN_FAILURE);
-        }
-        value = process.getExitOnStandardFault();
-        
-        if (value != null) {
-            addWarning(FIX_ATTRIBUTE, process, Process.EXIT_ON_STANDART_FAULT);
-        }
-        checkValidURI(process, Process.QUERY_LANGUAGE, process.getQueryLanguage());
-        checkValidURI(process, Process.EXPRESSION_LANGUAGE, process.getExpressionLanguage());
     }
     
     @Override
