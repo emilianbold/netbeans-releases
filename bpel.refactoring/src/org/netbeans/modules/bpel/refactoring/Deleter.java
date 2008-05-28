@@ -139,7 +139,7 @@ final class Deleter extends Plugin {
       }
       ErrorItem error = new ErrorItem(
         object,
-        i18n(Deleter.class, "ERR_Cascade_Delete_For_PropertyAlias_Only"), // NOI18N
+        i18n(Deleter.class, "ERR_Can_not_delete"), // NOI18N
         ErrorItem.Level.FATAL);
 
       errors.add(error);

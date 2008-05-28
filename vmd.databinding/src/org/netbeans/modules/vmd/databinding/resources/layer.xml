@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
@@ -40,36 +40,20 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<project name="org.netbeans.modules.db.mysql/test-qa-functional" basedir="." default="all">
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
 
-    <!-- Imports default qa-functional-compiler and runidetest executor.
-        jemmy and jellytools jars are on classpath for both. -->
-    <import file="../../nbbuild/templates/xtest-qa-functional.xml"/>
+    <folder name="vmd-midp">
 
-    <!-- ========= -->
-    <!-- Compilers -->
-    <!-- ========= -->
+        <folder name="components">
+            <file name="org-netbeans-modules-vmd-databinding-components-DataSetCD.instance"/>
+            <file name="org-netbeans-modules-vmd-databinding-categories-DatabindingCategoryCD.instance"/>
+        </folder>
+        
+         <folder name="producers">
+            <file name="org-netbeans-modules-vmd-databinding-producers-DataSetProducer.instance"/>
+        </folder>
 
-    <!-- You can override default qa-functional-compiler if you need something special -->
-         <!--
-    <target name="qa-functional-compiler" depends="init-cp">
-        <buildTests srcdir="qa-functional/src" compileexcludes="**/data/**">
-            <classpath refid="test.qa-functional.compile.cp"/>
-        </buildTests>
-    </target>
-    -->
-    
-    <!-- ========= -->
-    <!-- Executors -->
-    <!-- ========= -->
-    
-    <!-- This target executes tests inside IDE. It is defined in default-build-qa-functional.xml.
-         If you need to customize it, you can uncomment the following and override it.
-    <target name="runidetest" depends="init-cp">
-        <executeTests pluginname="ide">
-            <classpath refid="test.qa-functional.run.cp"/>
-        </executeTests>
-    </target>
-    -->
-</project>
+    </folder>
 
+</filesystem>
