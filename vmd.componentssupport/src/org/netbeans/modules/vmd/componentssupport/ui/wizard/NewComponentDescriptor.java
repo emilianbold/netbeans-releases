@@ -44,13 +44,14 @@ package org.netbeans.modules.vmd.componentssupport.ui.wizard;
 import java.awt.Component;
 import java.io.IOException;
 import java.text.MessageFormat;
-import java.util.Collections;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.vmd.componentssupport.ui.helpers.CustomComponentHelper;
+import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
 import org.openide.util.NbBundle;
@@ -81,7 +82,7 @@ public final class NewComponentDescriptor implements WizardDescriptor.Instantiat
                                                 = "DisplayableCD";              // NOI18N 
     
     // properties - common
-    public static final String CODE_NAME_BASE   = "codeNameBase";               // NOI18N 
+    public static final String HELPER           = "custCompHelper";             // NOI18N 
     public static final String EXISTING_COMPONENTS   
                                                 = "existingComponents";         // NOI18N 
     
@@ -112,15 +113,17 @@ public final class NewComponentDescriptor implements WizardDescriptor.Instantiat
     public static final String CP_VALID_CUSTOM  = "compProdValidCustom";        // NOI18N 
     // properties - component presenters step
     // properties - final step
-    
-    
 
-    NewComponentDescriptor(WizardDescriptor mainWizard){
-        myMainWizard = mainWizard;
+    private NewComponentDescriptor() {
     }
     
-    void setCustomComponentHelper(CustomComponentHelper helper){
-        myCustCompHelper = helper;
+    NewComponentDescriptor(WizardDescriptor mainWizard){
+        myMainWizard = mainWizard;
+        assert myMainWizard != null;
+    }
+    
+    public static NewComponentDescriptor instanceForProject(){
+        return new NewComponentDescriptor();
     }
     
     /* (non-Javadoc)
@@ -156,22 +159,23 @@ public final class NewComponentDescriptor implements WizardDescriptor.Instantiat
                 NbBundle.getMessage(NewLibraryDescriptor.class, WIZARD_TITLE));
         
         
-        if (myCustCompHelper == null){
+        
+        if (myMainWizard != null){
+            // this is child wizard
             myCustCompHelper = new CustomComponentHelper.
                     InstantiationToWizardHelper(myMainWizard, myWizard);
-        }
-        
-        wizardDescriptor.putProperty(
-                CODE_NAME_BASE, 
-                myCustCompHelper.getCodeNameBase() );
-        wizardDescriptor.putProperty(
-                EXISTING_COMPONENTS, 
+            wizardDescriptor.putProperty( EXISTING_COMPONENTS, 
                 myMainWizard.getProperty(
                         CustomComponentWizardIterator.CUSTOM_COMPONENTS));
-        wizardDescriptor.putProperty( 
-                CustomComponentWizardIterator.PROJECT_NAME, 
-                myMainWizard.getProperty(
-                        CustomComponentWizardIterator.PROJECT_NAME) );
+        } else {
+            Project project = Templates.getProject(wizardDescriptor);
+            assert project != null;
+            myCustCompHelper = new CustomComponentHelper.
+                    RealInstantiationHelper(project, wizardDescriptor.getProperties());
+        }
+        assert myCustCompHelper != null;
+        
+        wizardDescriptor.putProperty( HELPER, myCustCompHelper );
     }
 
     /* (non-Javadoc)
@@ -186,7 +190,8 @@ public final class NewComponentDescriptor implements WizardDescriptor.Instantiat
      * @see org.openide.WizardDescriptor.InstantiatingIterator#uninitialize(org.openide.WizardDescriptor)
      */
     public void uninitialize( WizardDescriptor arg0 ) {
-        myWizard.putProperty(CODE_NAME_BASE, null);
+        myWizard.putProperty(HELPER, null);
+        myWizard.putProperty(EXISTING_COMPONENTS, null);
         
         myWizard.putProperty(CC_PREFIX, null);
         myWizard.putProperty(CD_CLASS_NAME, null);

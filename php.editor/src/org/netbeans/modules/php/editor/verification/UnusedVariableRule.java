@@ -39,65 +39,70 @@
 
 package org.netbeans.modules.php.editor.verification;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.prefs.Preferences;
+import javax.swing.JComponent;
 import org.netbeans.modules.gsf.api.Hint;
 import org.netbeans.modules.gsf.api.HintSeverity;
 import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.gsf.api.Rule.AstRule;
+import org.netbeans.modules.gsf.api.Rule.UserConfigurableRule;
+import org.netbeans.modules.gsf.api.RuleContext;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
-import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
-import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
-import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author Tomasz.Slota@Sun.COM
  */
-public class UninitializedVariableRule  extends PHPRule {
-    public HintSeverity getDefaultSeverity() {
-        return HintSeverity.WARNING;
+public class UnusedVariableRule implements AstRule, UserConfigurableRule {
+    public void check (PHPRuleContext context, List<Hint> hints){
+        for (ASTNode node : context.variableStack.getUnreferencedVars()){
+            OffsetRange range = new OffsetRange(node.getStartOffset(), node.getEndOffset());
+            
+            Hint hint = new Hint(UnusedVariableRule.this, getDescription(),
+                        context.compilationInfo.getFileObject(), range, null, 500);
+            
+            hints.add(hint);
+        }
+    }
+
+    public Set<?> getKinds() {
+        return Collections.singleton(PHPHintsProvider.SECOND_PASS_HINTS);
     }
 
     public String getId() {
-        return "unitialized.variable"; //NOI18N
+        return "unused.var"; //NOI18N
     }
 
     public String getDescription() {
-        return NbBundle.getMessage(UninitializedVariableRule.class, "UninitializedVariableDesc");
+        return NbBundle.getMessage(UnusedVariableRule.class, "UnusedVariableDesc");
     }
 
-    @Override
-    public void visit(Variable variable) {
-        ASTNode parent = context.path.get(0);
-        
-        if (parent instanceof Assignment) {
-            Assignment assignment = (Assignment) parent;
-            
-            if (assignment.getLeftHandSide() == variable){
-                // variable is just being initialized, do not check it 
-                return;
-            }
-        }
-        
-        check(variable);
+    public boolean getDefaultEnabled() {
+        return true;
     }
 
-    private void check(Variable var) {
-        if (var.getName() instanceof Identifier) {
-            Identifier identifier = (Identifier) var.getName();
-            String varName = identifier.getName();
-            
-            if (varName != null && !context.variableStack.isVariableDefined(varName)) {
-                OffsetRange range = new OffsetRange(var.getStartOffset(), var.getEndOffset());
+    public JComponent getCustomizer(Preferences node) {
+        return null;
+    }
 
-                Hint hint = new Hint(UninitializedVariableRule.this, getDescription(),
-                        context.compilationInfo.getFileObject(), range, null, 500);
-
-                addResult(hint);
-            }
-        }
+    public boolean appliesTo(RuleContext context) {
+        return true;
     }
 
     public String getDisplayName() {
         return getDescription();
     }
+
+    public boolean showInTasklist() {
+        return true;
+    }
+
+    public HintSeverity getDefaultSeverity() {
+        return HintSeverity.WARNING;
+    }
+
 }

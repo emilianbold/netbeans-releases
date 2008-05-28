@@ -47,6 +47,7 @@ import java.util.List;
 import javax.swing.JPanel;
 import org.netbeans.modules.vmd.componentssupport.ui.UIUtils;
 import org.netbeans.modules.vmd.componentssupport.ui.helpers.BaseHelper;
+import org.netbeans.modules.vmd.componentssupport.ui.helpers.CustomComponentHelper;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -73,19 +74,26 @@ final class ComponentFinalVisualPanel extends JPanel {
     void readData( WizardDescriptor descriptor) {
         mySettings = descriptor;
         
-        projectNameValue.setText( (String)descriptor.getProperty( 
-                CustomComponentWizardIterator.PROJECT_NAME));
+        projectNameValue.setText( getProjectName() );
         
         setFilesInfoIntoTextAreas();
     }
 
+    private String getProjectName(){
+        return getHelper().getProjectName();
+    }
+    
+    private CustomComponentHelper getHelper(){
+        return (CustomComponentHelper)mySettings.getProperty( 
+                NewComponentDescriptor.HELPER);
+    }
+    
     protected HelpCtx getHelp() {
         return new HelpCtx(ComponentFinalVisualPanel.class);
     }
     
     private String getCodeNameBase(){
-        return (String)mySettings.getProperty( 
-                NewComponentDescriptor.CODE_NAME_BASE);
+        return getHelper().getCodeNameBase();
     }
 
     private String getCDClassName() {
