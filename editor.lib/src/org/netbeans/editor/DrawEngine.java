@@ -161,7 +161,7 @@ import org.netbeans.api.editor.settings.FontColorNames;
 
         if (ctx.graphics != null) {
             if (ctx.editorUI.renderingHints != null) {
-                ((Graphics2D)ctx.graphics).setRenderingHints(ctx.editorUI.renderingHints.getHints());
+                ((Graphics2D)ctx.graphics).setRenderingHints(ctx.editorUI.renderingHints);
             }
         }
 

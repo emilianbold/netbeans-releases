@@ -79,14 +79,15 @@ import javax.swing.text.Document;
 import javax.swing.undo.UndoManager;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.api.editor.settings.FontColorNames;
+import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.editor.ext.ToolTipSupport;
 import org.netbeans.modules.editor.lib.ColoringMap;
 import org.netbeans.modules.editor.lib.EditorPreferencesDefaults;
 import org.netbeans.modules.editor.lib.EditorPreferencesKeys;
-import org.netbeans.modules.editor.lib.EditorRenderingHints;
 import org.netbeans.modules.editor.lib.KitsTracker;
 import org.netbeans.modules.editor.lib.SettingsConversions;
 import org.openide.util.WeakListeners;
@@ -247,7 +248,7 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
 
     private FocusAdapter focusL;
 
-    EditorRenderingHints renderingHints;
+    Map<?, ?> renderingHints;
 
     /** Glyph gutter used for drawing of annotation glyph icons. */
     private GlyphGutter glyphGutter = null;
@@ -362,7 +363,8 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
         this.coloringMap.addPropertyChangeListener(WeakListeners.propertyChange(this, coloringMap));
 
         // initialize rendering hints
-        renderingHints = EditorRenderingHints.get(mimePath);
+        FontColorSettings fcs = MimeLookup.getLookup(mimePath).lookup(FontColorSettings.class);
+        renderingHints = (Map<?, ?>) fcs.getFontColors(FontColorNames.DEFAULT_COLORING).getAttribute(EditorStyleConstants.RenderingHints);
         
         synchronized (getComponentLock()) {
             this.component = c;
@@ -761,6 +763,11 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
      */
     void updateComponentProperties() {
 
+        // Refresh rendering hints
+        String mimeType = org.netbeans.lib.editor.util.swing.DocumentUtilities.getMimeType(component);
+        FontColorSettings fcs = MimeLookup.getLookup(mimeType).lookup(FontColorSettings.class);
+        renderingHints = (Map<?, ?>) fcs.getFontColors(FontColorNames.DEFAULT_COLORING).getAttribute(EditorStyleConstants.RenderingHints);
+        
         // Set the margin
         String value = prefs.get(SimpleValueNames.MARGIN, null);
         Insets margin = value != null ? SettingsConversions.parseInsets(value) : null;
@@ -790,7 +797,7 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
     protected void update(Graphics g) {
         // Possibly apply the rendering hints
         if (renderingHints != null) {
-            ((Graphics2D)g).setRenderingHints(renderingHints.getHints());
+            ((Graphics2D)g).setRenderingHints(renderingHints);
         }
     }
 

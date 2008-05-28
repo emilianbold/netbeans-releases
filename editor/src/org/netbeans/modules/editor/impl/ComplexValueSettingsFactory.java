@@ -43,11 +43,13 @@ import java.util.prefs.Preferences;
 import javax.swing.text.EditorKit;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.settings.EditorStyleConstants;
+import org.netbeans.api.editor.settings.FontColorNames;
+import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.editor.AcceptorFactory;
 import org.netbeans.modules.editor.FormatterIndentEngine;
 import org.netbeans.modules.editor.IndentEngineFormatter;
 import org.netbeans.modules.editor.NbEditorDocument;
-import org.netbeans.modules.editor.lib.EditorRenderingHints;
 import org.netbeans.modules.editor.lib.SettingsConversions;
 import org.openide.text.IndentEngine;
 
@@ -71,7 +73,8 @@ public final class ComplexValueSettingsFactory {
     
     public static final Object getRenderingHintsValue(MimePath mimePath, String settingName) {
         assert settingName.equals("rendering-hints") : "The getRenderingHints factory called for '" + settingName + "'"; //NOI18N
-        return EditorRenderingHints.get(mimePath).getHints();
+        FontColorSettings fcs = MimeLookup.getLookup(mimePath).lookup(FontColorSettings.class);
+        return fcs.getFontColors(FontColorNames.DEFAULT_COLORING).getAttribute(EditorStyleConstants.RenderingHints);
     }
     
     // -----------------------------------------------------------------------

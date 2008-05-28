@@ -54,11 +54,10 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.View;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
-import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.api.editor.settings.FontColorNames;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.editor.view.spi.LockView;
-import org.netbeans.modules.editor.lib.EditorRenderingHints;
 
 /**
  *  Component for displaying folded part of code in tooltip
@@ -114,8 +113,9 @@ public class FoldingToolTip extends JPanel {
     private void updateRenderingHints(Graphics g){
         JTextComponent comp = editorUI.getComponent();
         if (comp != null) {
-            Map renderingHints = EditorRenderingHints.get(MimePath.parse(
-                org.netbeans.lib.editor.util.swing.DocumentUtilities.getMimeType(comp))).getHints();
+            String mimeType = org.netbeans.lib.editor.util.swing.DocumentUtilities.getMimeType(comp);
+            FontColorSettings fcs = MimeLookup.getLookup(mimeType).lookup(FontColorSettings.class);
+            Map renderingHints = (Map) fcs.getFontColors(FontColorNames.DEFAULT_COLORING).getAttribute(EditorStyleConstants.RenderingHints);
 
             // Possibly apply the rendering hints
             if (renderingHints != null) {

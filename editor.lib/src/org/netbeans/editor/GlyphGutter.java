@@ -74,10 +74,10 @@ import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.fold.FoldHierarchyEvent;
 import org.netbeans.api.editor.fold.FoldHierarchyListener;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
-import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.api.editor.settings.FontColorNames;
+import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.modules.editor.lib.ColoringMap;
-import org.netbeans.modules.editor.lib.EditorRenderingHints;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
@@ -484,9 +484,9 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
             return ;
 
         // Possibly apply the rendering hints
-        Map hints = EditorRenderingHints.get(MimePath.parse(
-            org.netbeans.lib.editor.util.swing.DocumentUtilities.getMimeType(editorUI.getComponent()))).getHints();
-        
+        String mimeType = org.netbeans.lib.editor.util.swing.DocumentUtilities.getMimeType(editorUI.getComponent());
+        FontColorSettings fcs = MimeLookup.getLookup(mimeType).lookup(FontColorSettings.class);
+        Map hints = (Map) fcs.getFontColors(FontColorNames.DEFAULT_COLORING).getAttribute(EditorStyleConstants.RenderingHints);
         if (!hints.isEmpty()) {
             ((java.awt.Graphics2D)g).setRenderingHints(hints);
         }
