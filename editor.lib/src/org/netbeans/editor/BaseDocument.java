@@ -478,6 +478,8 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
     }
     
     private void init(boolean addToRegistry) {
+//        System.out.println("~~~ " + s2s(this) + " created for '" + mimeType + "'");
+//        
         setDocumentProperties(createDocumentProperties(getDocumentProperties()));
 
         putProperty(GapStart.class, getDocumentContent());
@@ -493,6 +495,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         // Initialize preferences and document properties
         prefs = MimeLookup.getLookup(mimeType).lookup(Preferences.class);
         prefsListener.preferenceChange(null);
+//        System.out.println("~~~ init: '" + mimeType + "' -> " + s2s(prefs));
 
         // Additional initialization of the document through the kit
         EditorKit kit = getEditorKit();
@@ -521,6 +524,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
             // is called by some kits from initDocument()
             weakPrefsListener = WeakListeners.create(PreferenceChangeListener.class, prefsListener, prefs);
             prefs.addPreferenceChangeListener(weakPrefsListener);
+//            System.out.println("~~~ init: " + s2s(prefs) + " adding " + s2s(weakPrefsListener));
         }
     }
     
@@ -1515,23 +1519,44 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         return editorKit;
     }
 
+//    private static String s2s(Object o) {
+//        return o == null ? "null" : o.getClass().getSimpleName() + "@" + Integer.toHexString(System.identityHashCode(o));
+//    }
+//    
     private void setMimeType(String mimeType) {
         if (!this.mimeType.equals(mimeType)) {
+//            String oldMimeType = this.mimeType;
             this.mimeType = mimeType;
+
+//            new Throwable("~~~ setMimeType: '" + oldMimeType + "' -> '" + mimeType + "'").printStackTrace(System.out);
+//            
+            if (prefs != null && weakPrefsListener != null) {
+                try {
+                    prefs.removePreferenceChangeListener(weakPrefsListener);
+//                    System.out.println("~~~ setMimeType: " + s2s(prefs) + " removing " + s2s(weakPrefsListener));
+                } catch (IllegalArgumentException e) {
+//                    System.out.println("~~~ IAE: doc=" + s2s(this) + ", '" + oldMimeType + "' -> '" + this.mimeType + "', prefs=" + s2s(prefs) + ", wpl=" + s2s(weakPrefsListener));
+                }
+                weakPrefsListener = null;
+            }
+            prefs = MimeLookup.getLookup(this.mimeType).lookup(Preferences.class);
+            prefsListener.preferenceChange(null);
+//            System.out.println("~~~ setMimeType: '" + this.mimeType + "' -> " + s2s(prefs));
 
             // reinitialize the document
             EditorKit kit = getEditorKit();
             if (kit instanceof BaseKit) {
+                // careful here!! some kits set document's mime type from initDocument
+                // even worse, the new mime type can be different from the one passed to the constructor,
+                // which will result in recursive call to this method
                 ((BaseKit) kit).initDocument(this);
             }
-            
-            if (prefs != null && weakPrefsListener != null) {
-                prefs.removePreferenceChangeListener(weakPrefsListener);
+
+            if (weakPrefsListener == null) {
+                weakPrefsListener = WeakListeners.create(PreferenceChangeListener.class, prefsListener, prefs);
+                prefs.addPreferenceChangeListener(weakPrefsListener);
+//                System.out.println("~~~ setMimeType: " + s2s(prefs) + " adding " + s2s(weakPrefsListener));
             }
-            prefs = MimeLookup.getLookup(mimeType).lookup(Preferences.class);
-            prefsListener.preferenceChange(null);
-            weakPrefsListener = WeakListeners.create(PreferenceChangeListener.class, prefsListener, prefs);
-            prefs.addPreferenceChangeListener(prefsListener);
         }
     }
     
