@@ -41,69 +41,68 @@ package org.netbeans.modules.php.editor.verification;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.Error;
+import java.util.Set;
+import java.util.prefs.Preferences;
+import javax.swing.JComponent;
 import org.netbeans.modules.gsf.api.Hint;
-import org.netbeans.modules.gsf.api.HintsProvider;
-import org.netbeans.modules.gsf.api.ParserResult;
-import org.netbeans.modules.gsf.api.Rule;
+import org.netbeans.modules.gsf.api.HintSeverity;
+import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.gsf.api.Rule.AstRule;
+import org.netbeans.modules.gsf.api.Rule.UserConfigurableRule;
 import org.netbeans.modules.gsf.api.RuleContext;
-import org.netbeans.modules.php.editor.PHPLanguage;
-import org.netbeans.modules.php.editor.parser.PHPParseResult;
+import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author Tomasz.Slota@Sun.COM
  */
-public class PHPHintsProvider implements HintsProvider {
-    public static final String FIRST_PASS_HINTS = "1st pass"; //NOI18N
-    public static final String SECOND_PASS_HINTS = "2nd pass"; //NOI18N
-
-    public void computeHints(HintsManager manager, RuleContext context, List<Hint> hints) {
-        Map<String, List> allHints = (Map) manager.getHints(false, context);
-        CompilationInfo info = context.compilationInfo;
-
-        PHPVerificationVisitor visitor = new PHPVerificationVisitor((PHPRuleContext)context, allHints.get(FIRST_PASS_HINTS));
-        
-        for (PHPParseResult parseResult : ((List<PHPParseResult>) info.getEmbeddedResults(PHPLanguage.PHP_MIME_TYPE))) {
-            if (parseResult.getProgram() != null) {
-                parseResult.getProgram().accept(visitor);
-            }
+public class UnusedVariableRule implements AstRule, UserConfigurableRule {
+    public void check (PHPRuleContext context, List<Hint> hints){
+        for (ASTNode node : context.variableStack.getUnreferencedVars()){
+            OffsetRange range = new OffsetRange(node.getStartOffset(), node.getEndOffset());
             
-            hints.addAll(visitor.getResult());
-        }
-        
-        assert allHints.get(SECOND_PASS_HINTS).size() == 1;
-        UnusedVariableRule unusedVariableRule = (UnusedVariableRule) allHints.get(SECOND_PASS_HINTS).get(0);
-        unusedVariableRule.check((PHPRuleContext) context, hints);
-    }
-
-    public void computeSuggestions(HintsManager manager, RuleContext context, List<Hint> suggestions, int caretOffset) {
-        
-    }
-
-    public void computeSelectionHints(HintsManager manager, RuleContext context, List<Hint> suggestions, int start, int end) {
-        
-    }
-
-    public void computeErrors(HintsManager manager, RuleContext context, List<Hint> hints, List<Error> unhandled) {
-        ParserResult parserResult = context.parserResult;
-        if (parserResult != null) {
-            List<Error> errors = parserResult.getDiagnostics();
-            unhandled.addAll(errors);
+            Hint hint = new Hint(UnusedVariableRule.this, getDescription(),
+                        context.compilationInfo.getFileObject(), range, null, 500);
+            
+            hints.add(hint);
         }
     }
 
-    public void cancel() {
-        
+    public Set<?> getKinds() {
+        return Collections.singleton(PHPHintsProvider.SECOND_PASS_HINTS);
     }
 
-    public List<Rule> getBuiltinRules() {
-        return Collections.<Rule>emptyList();
+    public String getId() {
+        return "unused.var"; //NOI18N
     }
 
-    public RuleContext createRuleContext() {
-        return new PHPRuleContext();
+    public String getDescription() {
+        return NbBundle.getMessage(UnusedVariableRule.class, "UnusedVariableDesc");
     }
+
+    public boolean getDefaultEnabled() {
+        return true;
+    }
+
+    public JComponent getCustomizer(Preferences node) {
+        return null;
+    }
+
+    public boolean appliesTo(RuleContext context) {
+        return true;
+    }
+
+    public String getDisplayName() {
+        return getDescription();
+    }
+
+    public boolean showInTasklist() {
+        return true;
+    }
+
+    public HintSeverity getDefaultSeverity() {
+        return HintSeverity.WARNING;
+    }
+
 }
