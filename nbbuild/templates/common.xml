@@ -104,6 +104,13 @@ made subject to such option by the copyright holder.
     <target name="up-to-date" depends="init">
         <uptodate targetfile="${cluster}/${module.jar}" property="is.jar.uptodate">
             <srcfiles dir="${src.dir}"/>
+            <srcfiles dir="nbproject">
+                <include name="project.xml"/>
+                <include name="project.properties"/>
+            </srcfiles>
+            <srcfiles dir=".">
+                <include name="manifest.mf"/>
+            </srcfiles>
             <srcresources>
                 <path refid="cp"/>
             </srcresources>
