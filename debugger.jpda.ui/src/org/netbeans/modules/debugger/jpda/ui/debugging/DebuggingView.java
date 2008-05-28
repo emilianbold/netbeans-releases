@@ -70,7 +70,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
     
     static final Color hitsColor = new Color(255, 255, 178);
     static final Color hitsBarColor = new Color(230, 230, 130);
-    static final Color deadlockColor = UIManager.getDefaults().getColor("nb.errorForeground");
+    static final Color deadlockColor = new Color(252, 157, 159); // UIManager.getDefaults().getColor("nb.errorForeground");
     
     private transient Color greenBarColor = new Color(189, 230, 170);
     private transient Color treeBackgroundColor = UIManager.getDefaults().getColor("Tree.background"); // NOI18N
