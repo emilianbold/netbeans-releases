@@ -49,6 +49,7 @@ import org.netbeans.modules.gsf.api.annotations.NonNull;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 
 
 /**
@@ -101,6 +102,7 @@ public abstract class CompilationInfo {
         return fo;
     }
 
+    /** @todo Remove throws-clause */
     @CheckForNull
     public Document getDocument() throws IOException {
         if (doc == null) {
@@ -108,7 +110,12 @@ public abstract class CompilationInfo {
                 return null;
             }
 
-            DataObject od = DataObject.find(fo);
+            DataObject od = null;
+            try {
+                od = DataObject.find(fo);
+            } catch (DataObjectNotFoundException donfe) {
+                return null;
+            }
             EditorCookie ec = od.getCookie(EditorCookie.class);
 
             if (ec != null) {

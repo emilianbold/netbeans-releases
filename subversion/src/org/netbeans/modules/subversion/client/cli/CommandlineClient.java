@@ -49,6 +49,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.cli.commands.AddCommand;
 import org.netbeans.modules.subversion.client.cli.commands.BlameCommand;
@@ -78,7 +79,6 @@ import org.netbeans.modules.subversion.client.cli.commands.UpdateCommand;
 import org.netbeans.modules.subversion.client.cli.commands.VersionCommand;
 import org.netbeans.modules.subversion.client.parser.LocalSubversionException;
 import org.netbeans.modules.subversion.client.parser.SvnWcParser;
-import org.openide.util.Exceptions;
 import org.tigris.subversion.svnclientadapter.AbstractClientAdapter;
 import org.tigris.subversion.svnclientadapter.Annotations;
 import org.tigris.subversion.svnclientadapter.Annotations.Annotation;
@@ -113,20 +113,21 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
     private NotificationHandler notificationHandler;
     private SvnWcParser wcParser;
     private Commandline cli;     
-        
+
+    public static String ERR_CLI_NOT_AVALABLE = "commandline is not available";
+    
     public CommandlineClient() {
         this.notificationHandler = new NotificationHandler();
         wcParser = new SvnWcParser();  
         cli = new Commandline();     
     }
 
-    public boolean isSupportedVersion() throws SVNClientException {
+    public void checkSupportedVersion() throws SVNClientException {
         VersionCommand cmd = new VersionCommand();        
         exec(cmd);
         if(!cmd.isSupported()) {
             throw new SVNClientException("Command line client adapter is not available " + "\n" + cmd.getOutput());               
         }   
-        return true;
     }
     
     public void addNotifyListener(ISVNNotifyListener l) {
@@ -711,6 +712,11 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
             config(cmd);
             cli.exec(cmd);
         } catch (IOException ex) {
+            String msg = ex.getMessage();
+            if(msg != null && msg.trim().toLowerCase().indexOf("cannot run program") > -1) {
+                throw new SVNClientException(ERR_CLI_NOT_AVALABLE);
+            }            
+            Subversion.LOG.log(Level.WARNING, null, ex);
             throw new SVNClientException(ex);
         }
         checkErrors(cmd);

@@ -1,18 +1,26 @@
+<#-- FreeMarker template (see http://freemarker.org/) -->
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt">
+
 /*
- * __NAME__.java
+ * ${name}.java
  *
- * Created on __DATE__, __TIME__
+ * Created on ${date}, ${time}
  */
 
-package Templates.GUIForms.AWTForms;
+<#if package?? && package != "">
+package ${package};
 
+</#if>
 /**
  *
- * @author  __USER__
+ * @author ${user}
  */
-public class Applet extends java.applet.Applet {
+public class ${name} extends java.applet.Applet {
 
-    /** Initializes the applet __NAME__ */
+    /** Initializes the applet ${name} */
     public void init() {
         try {
             java.awt.EventQueue.invokeAndWait(new Runnable() {
