@@ -1,0 +1,4 @@
+Manifest-Version: 1.0
+OpenIDE-Module: org.netbeans.modules.projectimport.eclipse.web
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/projectimport/eclipse/web/Bundle.properties
+

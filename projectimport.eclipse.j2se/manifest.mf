@@ -1,0 +1,4 @@
+Manifest-Version: 1.0
+OpenIDE-Module: org.netbeans.modules.projectimport.eclipse.j2se
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/projectimport/eclipse/j2se/Bundle.properties
+
