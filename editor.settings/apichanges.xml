@@ -104,6 +104,19 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="added.EditorStyleConstants.RenderingHints">
+            <summary>Added EditorStyleConstants.RenderingHints constant</summary>
+            <version major="1" minor="20"/>
+            <date day="27" month="5" year="2008"/>
+            <author login="vstejskal"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes" deprecation="no" deletion="no" modification="no" />
+            <description>
+            <p>
+                Adding new constant <code>EditorStyleConstants.RenderingHints</code>.
+            </p>
+            </description>
+        </change>
+
         <change id="added.SimpleValueNames.CODE_FOLDING.constants">
             <summary>Added code folding related constants to SimpleValueNames</summary>
             <version major="1" minor="19"/>

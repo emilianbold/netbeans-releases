@@ -42,14 +42,18 @@
 package org.netbeans.modules.editor.settings.storage.fontscolors;
 
 import java.awt.Color;
+import java.awt.RenderingHints;
+import java.awt.Toolkit;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import javax.swing.UIManager;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.SimpleAttributeSet;
@@ -59,6 +63,7 @@ import org.netbeans.api.editor.settings.AttributesUtilities;
 import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -67,6 +72,8 @@ import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
 public final class CompositeFCS extends FontColorSettings {
 
     private static final Logger LOG = Logger.getLogger(CompositeFCS.class.getName());
+    
+    public static final String TEXT_ANTIALIASING_PROP = "textAntialiasing"; // NOI18N
     
     // A few words about the default coloring. It's special, it always contains
     // foreground, background and font related attributes. If they hadn't been
@@ -98,8 +105,10 @@ public final class CompositeFCS extends FontColorSettings {
     /* package */ final String profile;
     private final Map<String, AttributeSet> tokensCache = new HashMap<String, AttributeSet>();
     
+    private final Preferences preferences;
+    
     /** Creates a new instance of CompositeFCS */
-    public CompositeFCS(MimePath mimePath, String profile) {
+    public CompositeFCS(MimePath mimePath, String profile, Preferences preferences) {
         super();
         
         assert mimePath != null : "The parameter allPaths should not be null"; //NOI18N
@@ -126,6 +135,7 @@ public final class CompositeFCS extends FontColorSettings {
         }
         
         this.profile = profile;
+        this.preferences = preferences;
     }
 
     /**
@@ -192,6 +202,8 @@ public final class CompositeFCS extends FontColorSettings {
 
         if (tokenName.equals(DEFAULT)) {
             colorings.add(HARDCODED_DEFAULT_COLORING);
+            colorings.add(AttributesUtilities.createImmutable(
+                EditorStyleConstants.RenderingHints, getRenderingHints()));
         }
         
         if (colorings.size() > 0) {
@@ -291,4 +303,65 @@ public final class CompositeFCS extends FontColorSettings {
             return new MimePath [] { mimePath, MimePath.EMPTY };
         }
     }
+    
+    private Map<?, ?> getRenderingHints() {
+        Map<?, ?> desktopHints = (Map<?, ?>) Toolkit.getDefaultToolkit().getDesktopProperty("awt.font.desktophints"); //NOI18N
+        Boolean aaOn = null;
+        String reason = null;
+
+        String aaOnString = preferences.get(TEXT_ANTIALIASING_PROP, null);
+        if (aaOnString != null) {
+            aaOn = Boolean.valueOf(aaOnString);
+            reason = "editor preferences property '" + TEXT_ANTIALIASING_PROP + "'"; //NOI18N
+        } else {
+            String systemProperty = System.getProperty("javax.aatext"); //NOI18N
+            if (systemProperty == null) {
+                systemProperty = System.getProperty("swing.aatext"); //NOI18N
+            }
+
+            if (systemProperty != null) {
+                aaOn = Boolean.valueOf(systemProperty);
+                reason = "system property 'javax.aatext' or 'swing.aatext'"; //NOI18N
+            } else {
+                if (desktopHints != null) {
+                    Object value = desktopHints.get(RenderingHints.KEY_TEXT_ANTIALIASING);
+                    aaOn = Boolean.valueOf(
+                        value != null && 
+                        value != RenderingHints.VALUE_TEXT_ANTIALIAS_OFF &&  
+                        value != RenderingHints.VALUE_TEXT_ANTIALIAS_DEFAULT
+                    );
+                    reason = "desktop hints"; //NOI18N
+                } else {
+                    if (Utilities.isMac()) {
+                        aaOn = Boolean.TRUE;
+                        reason = "running on Mac OSX";//NOI18N
+                    }
+                }
+            }
+        }
+
+        Map<Object, Object> hints;
+        if (aaOn == null) {
+            LOG.fine("Text Antialiasing setting was not determined, using defaults."); //NOI18N
+            if (desktopHints != null) {
+                hints = new HashMap<Object, Object>(desktopHints);
+            } else {
+                hints = Collections.<Object, Object>singletonMap(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_DEFAULT);
+            }
+        } else {
+            LOG.fine("Text Antialiasing was set " + (aaOn.booleanValue() ? "ON" : "OFF") + " by " + reason + "."); //NOI18N
+            if (desktopHints != null) {
+                hints = new  HashMap<Object, Object>(desktopHints);
+            } else {
+                hints = new  HashMap<Object, Object>();
+            }
+            hints.put(
+                RenderingHints.KEY_TEXT_ANTIALIASING, 
+                aaOn.booleanValue() ? RenderingHints.VALUE_TEXT_ANTIALIAS_ON : RenderingHints.VALUE_TEXT_ANTIALIAS_OFF
+            );
+        }
+        
+        return hints;
+    }
+    
 }
