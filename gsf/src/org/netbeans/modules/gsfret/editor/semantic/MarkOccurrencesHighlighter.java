@@ -42,14 +42,15 @@ package org.netbeans.modules.gsfret.editor.semantic;
 
 import java.awt.Color;
 import java.io.IOException;
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.text.AttributeSet;
 import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.gsf.api.OffsetRange;
@@ -57,15 +58,18 @@ import org.netbeans.modules.gsf.api.CancellableTask;
 import org.netbeans.modules.gsf.api.ColoringAttributes;
 import org.netbeans.modules.gsf.api.OccurrencesFinder;
 import org.netbeans.napi.gsfret.source.CompilationInfo;
-import org.netbeans.modules.editor.highlights.spi.Highlight;
-import org.netbeans.modules.editor.highlights.spi.Highlighter;
 import org.netbeans.modules.gsf.Language;
 import org.netbeans.modules.gsf.LanguageRegistry;
+import org.netbeans.modules.gsf.api.ColoringAttributes.Coloring;
+import org.netbeans.modules.gsf.api.annotations.NonNull;
+import org.netbeans.modules.gsfret.hints.Pair;
+import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.util.NbBundle;
 
 /**
  * This file is originally from Retouche, the Java Support 
@@ -76,12 +80,13 @@ import org.openide.loaders.DataObject;
  *
  * @author Jan Lahoda
  */
-public class MarkOccurencesHighlighter implements CancellableTask<CompilationInfo> {
+public class MarkOccurrencesHighlighter implements CancellableTask<CompilationInfo> {
     
     private FileObject file;
+    static Coloring MO = ColoringAttributes.add(ColoringAttributes.empty(), ColoringAttributes.MARK_OCCURRENCES);
     
     /** Creates a new instance of SemanticHighlighter */
-    MarkOccurencesHighlighter(FileObject file) {
+    MarkOccurrencesHighlighter(FileObject file) {
         this.file = file;
     }
     
@@ -118,29 +123,50 @@ public class MarkOccurencesHighlighter implements CancellableTask<CompilationInf
         
         if (isCancelled())
             return;
-        
-        Set<Highlight> highlights = processImpl(info, doc, caretPosition);
-        
+
+        Pair<List<OffsetRange>,Language> pair = processImpl(info,/* node,*/ doc, caretPosition);
+
         if (isCancelled())
             return;
         
-        //TimesCollector.getDefault().reportTime(((DataObject) doc.getProperty(Document.StreamDescriptionProperty)).getPrimaryFile(), "occurrences", "Occurrences", (System.currentTimeMillis() - start));
+        List<OffsetRange> bag = pair.getA();
+        Language language = pair.getB();
         
-        Highlighter.getDefault().setHighlights(file, "occurrences", highlights);
-        OccurrencesMarkProvider.get(doc).setOccurrences(highlights);
-    }
-    
-//    private boolean isIn(CompilationUnitTree cu, SourcePositions sp, Tree tree, int position) {
-//        return sp.getStartPosition(cu, tree) <= position && position <= sp.getEndPosition(cu, tree);
-//    }
-//    
-    private boolean isIn(int caretPosition, int[] span) {
-        return span[0] <= caretPosition && caretPosition <= span[1];
-    }
-    
-    Set<Highlight> processImpl(CompilationInfo info, Document doc, int caretPosition) {
-        Set<Highlight> localUsages = null;
+        //Logger.getLogger("TIMER").log(Level.FINE, "Occurrences",
+        //    new Object[] {((DataObject) doc.getProperty(Document.StreamDescriptionProperty)).getPrimaryFile(), (System.currentTimeMillis() - start)});
+        //
+        
+// TODO: Support KEEP_MARKS!        
+//        if (bag == null) {
+//            if (node.getBoolean(MarkOccurencesSettings.KEEP_MARKS, true)) {
+//                return ;
+//            }
+//            
+//            bag = new ArrayList<int[]>();
+//        }
 
+        if (bag.size() > 0) {
+            Collections.sort(bag);
+        }
+        OffsetsBag obag = new OffsetsBag(doc);
+        obag.clear();
+        
+        if (bag.size() > 0) {
+            AttributeSet attributes = language.getColoringManager().getColoringImpl(MO);
+
+            for (OffsetRange range : bag) {
+                if (range != OffsetRange.NONE) {
+                    obag.addHighlight(range.getStart(), range.getEnd(), attributes);
+                }
+            }
+        }
+        
+        getHighlightsBag(doc).setHighlights(obag);
+        OccurrencesMarkProvider.get(doc).setOccurrences(OccurrencesMarkProvider.createMarks(doc, bag, ES_COLOR, NbBundle.getMessage(MarkOccurrencesHighlighter.class, "LBL_ES_TOOLTIP")));
+    }
+    
+    @NonNull
+    Pair<List<OffsetRange>,Language> processImpl(CompilationInfo info,/* node,*/ Document doc, int caretPosition) {
         List<Language> list = LanguageRegistry.getInstance().getEmbeddedLanguages((BaseDocument)doc, caretPosition);
         Language language = null;
         for (Language l : list) {
@@ -170,115 +196,18 @@ public class MarkOccurencesHighlighter implements CancellableTask<CompilationInf
                 
                 Map<OffsetRange,ColoringAttributes> highlights = task.getOccurrences();
                 if (highlights != null) {
-                    for (OffsetRange range : highlights.keySet()) {
-                        if (isCancelled())
-                            return Collections.EMPTY_SET;
-
-                        ColoringAttributes colors = highlights.get(range);
-                        //Collection<ColoringAttributes> c = EnumSet.copyOf(set);
-                        Collection<ColoringAttributes> c = Collections.singletonList(colors);
-                        Highlight h = Utilities.createHighlight(language, doc, range.getStart(), range.getEnd(), c, null);
-
-                        if (h != null) {
-                            if (localUsages == null) {
-                                localUsages = new HashSet<Highlight>();
-                            }
-                            localUsages.add(h);
-                        }
-                    }
+                    return new Pair(new ArrayList<OffsetRange>(highlights.keySet()), language);
                 }
             }
         }
         
-        //        CompilationUnitTree cu = info.getCompilationUnit();
-//        Tree lastTree = null;
-//        TreePath tp = info.getTreeUtilities().pathFor(caretPosition);
-//        while(tp != null) {
-//            if (isCancelled())
-//                return Collections.emptySet();
-//            
-//            Tree tree = tp.getLeaf();
-//            //detect caret inside the return type or throws clause:
-//            if (tree instanceof MethodTree && (lastTree instanceof IdentifierTree
-//                    || lastTree instanceof PrimitiveTypeTree
-//                    || lastTree instanceof MemberSelectTree)) {
-//                //hopefully found something, check:
-//                MethodTree decl = (MethodTree) tree;
-//                Tree type = decl.getReturnType();
-//                
-//                if (isIn(cu, info.getTrees().getSourcePositions(), type, caretPosition)) {
-//                    MethodExitDetector med = new MethodExitDetector();
-//                    
-//                    setExitDetector(med);
-//                    
-//                    try {
-//                        return med.process(info, doc, decl, null);
-//                    } finally {
-//                        setExitDetector(null);
-//                    }
-//                }
-//                
-//                for (Tree exc : decl.getThrows()) {
-//                    if (isIn(cu, info.getTrees().getSourcePositions(), exc, caretPosition)) {
-//                        MethodExitDetector med = new MethodExitDetector();
-//                        
-//                        setExitDetector(med);
-//                        
-//                        try {
-//                            return med.process(info, doc, decl, Collections.singletonList(exc));
-//                        } finally {
-//                            setExitDetector(null);
-//                        }
-//                    }
-//                }
-//            }
-//            
-//            if (localUsages != null)
-//                return localUsages;
-//            
-//            //variable declaration:
-//            Element el = info.getTrees().getElement(tp);
-//            if (   el != null
-//                    && (!(tree instanceof ClassTree) || isIn(caretPosition, Utilities.findIdentifierSpan(tp, cu, info.getTrees().getSourcePositions(), doc)))
-//                    && !Utilities.isKeyword(tree)
-//                    && (!(tree instanceof MethodTree) || lastTree == null)) {
-//                FindLocalUsagesQuery fluq = new FindLocalUsagesQuery();
-//                
-//                setLocalUsages(fluq);
-//                
-//                try {
-//                    localUsages = fluq.findUsages(el, info, doc);
-//                } finally {
-//                    setLocalUsages(null);
-//                }
-//            }
-//            lastTree = tree;
-//            tp = tp.getParentPath();
-//        }
-//        
-        if (localUsages != null)
-            return localUsages;
-        
-        return Collections.emptySet();
+        return new Pair(Collections.emptyList(), info.getLanguage());
     }
     
     private boolean canceled;
-    private MethodExitDetector exitDetector;
-//    private FindLocalUsagesQuery localUsages;
-//    
-//    private final synchronized void setExitDetector(MethodExitDetector detector) {
-//        this.exitDetector = detector;
-//    }
     
     public final synchronized void cancel() {
         canceled = true;
-        
-        if (exitDetector != null) {
-//            exitDetector.cancel();
-        }
-//        if (localUsages != null) {
-//            localUsages.cancel();
-//        }
     }
     
     protected final synchronized boolean isCancelled() {
@@ -289,4 +218,32 @@ public class MarkOccurencesHighlighter implements CancellableTask<CompilationInf
         canceled = false;
     }
     
+    static OffsetsBag getHighlightsBag(Document doc) {
+        OffsetsBag bag = (OffsetsBag) doc.getProperty(MarkOccurrencesHighlighter.class);
+        
+        if (bag == null) {
+            doc.putProperty(MarkOccurrencesHighlighter.class, bag = new OffsetsBag(doc, false));
+            
+            Object stream = doc.getProperty(Document.StreamDescriptionProperty);
+            final OffsetsBag bagFin = bag;
+            DocumentListener l = new DocumentListener() {
+                public void insertUpdate(DocumentEvent e) {
+                    bagFin.removeHighlights(e.getOffset(), e.getOffset(), false);
+                }
+                public void removeUpdate(DocumentEvent e) {
+                    bagFin.removeHighlights(e.getOffset(), e.getOffset(), false);
+                }
+                public void changedUpdate(DocumentEvent e) {}
+            };
+            
+            doc.addDocumentListener(l);
+            
+            if (stream instanceof DataObject) {
+                Logger.getLogger("TIMER").log(Level.FINE, "MarkOccurrences Highlights Bag", new Object[] {((DataObject) stream).getPrimaryFile(), bag}); //NOI18N
+                Logger.getLogger("TIMER").log(Level.FINE, "MarkOccurrences Highlights Bag Listener", new Object[] {((DataObject) stream).getPrimaryFile(), l}); //NOI18N
+            }
+        }
+        
+        return bag;
+    }
 }
