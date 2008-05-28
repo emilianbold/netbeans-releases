@@ -55,6 +55,8 @@ import org.netbeans.modules.bpel.model.api.To;
 import org.netbeans.modules.bpel.model.api.From;
 import org.netbeans.modules.bpel.model.api.Flow;
 import org.netbeans.modules.bpel.model.api.ContentElement;
+import org.netbeans.modules.bpel.model.api.Invoke;
+import org.netbeans.modules.bpel.model.api.OnEvent;
 import org.netbeans.modules.bpel.model.api.OnMessage;
 import org.netbeans.modules.bpel.model.api.OperationReference;
 import org.netbeans.modules.bpel.model.api.PartReference;
@@ -62,10 +64,13 @@ import org.netbeans.modules.bpel.model.api.PartnerLink;
 import org.netbeans.modules.bpel.model.api.PartnerLinkReference;
 import org.netbeans.modules.bpel.model.api.Receive;
 import org.netbeans.modules.bpel.model.api.Reply;
+import org.netbeans.modules.bpel.model.api.Variable;
+import org.netbeans.modules.bpel.model.api.VariableContainer;
 import org.netbeans.modules.bpel.model.api.VariableDeclaration;
 import org.netbeans.modules.bpel.model.api.VariableReference;
 import org.netbeans.modules.bpel.model.api.references.BpelReference;
 import org.netbeans.modules.bpel.model.api.references.WSDLReference;
+import org.netbeans.modules.bpel.model.api.support.ExpressionUpdater;
 
 import org.netbeans.modules.xml.wsdl.model.Message;
 import org.netbeans.modules.xml.wsdl.model.Operation;
@@ -87,6 +92,155 @@ public final class Validator extends BpelValidator {
 
   @Override
   protected SimpleBpelModelVisitor getVisitor() { return new SimpleBpelModelVisitorAdaptor() {
+
+  // # 94195
+  @Override
+  public void visit(VariableContainer container) {
+    Variable [] variables = container.getVariables();
+//out();
+//out("WE: " + container.getParent().getClass().getName());
+
+    if (variables == null) {
+      return;
+    }
+    List<VariableInfo> infos = new LinkedList<VariableInfo>();
+
+    for (Variable variable : variables) {
+      infos.add(new VariableInfo(variable));
+    }
+    findVariables(container.getParent(), infos);
+
+//out();
+    boolean isInitialized;
+    boolean isUsed;
+
+    for (VariableInfo info : infos) {
+//out("  " + info);
+      isInitialized = info.isInitialized();
+      isUsed = info.isUsed();
+      Variable variable = info.getVariable();
+      String name = variable.getName();
+
+      if ( !isInitialized && !isUsed) {
+        addError("FIX_not_initialized_and_not_used", variable, name); // warning // NOI18N
+      }
+      else if ( !isInitialized && isUsed) {
+        addError("FIX_not_initialized_but_used", variable, name); // NOI18N
+      }
+      else if (isInitialized && !isUsed) {
+        addError("FIX_initialized_and_not_used", variable, name); // warning // NOI18N
+      }
+    }
+  }
+
+  private void findVariables(BpelEntity entity, List<VariableInfo> infos) {
+//out("    see: " + entity);
+    checkInitialization(entity, infos);
+    checkUsages(entity, infos);
+    Collection<BpelEntity> children = entity.getChildren();
+
+    for (BpelEntity child : children) {
+      if (child instanceof Scope) {
+        continue;
+      }
+      findVariables(child, infos);
+    }
+  }
+
+  private void checkInitialization(BpelEntity entity, List<VariableInfo> infos) {
+    if (
+      entity instanceof To ||
+      entity instanceof Receive
+    ) {
+      checkInitializationVariableReference((VariableReference) entity, infos);
+
+      if (entity instanceof ContentElement) {
+        checkInitializationContent((ContentElement) entity, infos);
+      }
+    }
+  }
+
+  private void checkUsages(BpelEntity entity, List<VariableInfo> infos) {
+    if (
+      entity instanceof From ||
+      entity instanceof Invoke ||
+      entity instanceof OnEvent ||
+      entity instanceof OnMessage ||
+      entity instanceof Reply
+    ) {
+      checkUsagesVariableReference((VariableReference) entity, infos);
+
+      if (entity instanceof ContentElement) {
+        checkUsagesContent((ContentElement) entity, infos);
+      }
+    }
+  }
+
+  private void checkInitializationContent(ContentElement content, List<VariableInfo> infos) {
+    checkInfoContent(content, infos, false);
+  }
+
+  private void checkUsagesContent(ContentElement content, List<VariableInfo> infos) {
+    checkInfoContent(content, infos, true);
+  }
+
+  private void checkInfoContent(ContentElement content, List<VariableInfo> infos, boolean isUsed) {
+//out();
+    String expression = content.getContent();
+//out("        check content: " + expression);
+    Collection<String> variables = ExpressionUpdater.getInstance().getUsedVariables(expression);
+//out("        variables: " + variables);
+
+    if (variables == null) {
+      return;
+    }
+    for (String variable : variables) {
+      for (VariableInfo info : infos) {
+//out("            : " + info.getVariable().getName());
+//out("            : " + variable);
+        if (info.getVariable().getName().equals(variable)) {
+          if (isUsed) {
+//out(" set used content: " + info.getVariable().getName());
+            info.setUsed();
+          }
+          else {
+//out(" set init content: " + info.getVariable().getName());
+            info.setInitialized();
+          }
+        }
+      }
+    }
+  }
+
+  private void checkInitializationVariableReference(VariableReference reference, List<VariableInfo> infos) {
+    checkInfoVariableReference(reference, infos, false);
+  }
+
+  private void checkUsagesVariableReference(VariableReference reference, List<VariableInfo> infos) {
+    checkInfoVariableReference(reference, infos, true);
+  }
+
+  private void checkInfoVariableReference(VariableReference reference, List<VariableInfo> infos, boolean isUsed) {
+    BpelReference<VariableDeclaration> ref = reference.getVariable();
+
+    if (ref == null) {
+      return;
+    }
+    VariableDeclaration variable = ref.get();
+
+    for (VariableInfo info : infos) {
+      if (info.getVariable().equals(variable)) {
+        if (isUsed) {
+//out(" set used referen: " + info.getVariable().getName());
+          info.setUsed();
+        }
+        else {
+//out(" set init referen: " + info.getVariable().getName());
+          info.setInitialized();
+        }
+      }
+    }
+  }
 
   // # 83632
   @Override
@@ -424,7 +578,45 @@ public final class Validator extends BpelValidator {
       }
     }
 
-    private VariableDeclaration myVariable;
     private Part myPart;
+    private VariableDeclaration myVariable;
+  }
+
+  // -------------------------
+  private class VariableInfo {
+    VariableInfo(Variable variable) {
+      myVariable = variable;
+      myIsUsed = false;
+      myIsInitialized = false;
+    }
+
+    public Variable getVariable() {
+      return myVariable;
+    }
+    
+    public void setUsed() {
+      myIsUsed = true;
+    }
+
+    public boolean isUsed() {
+      return myIsUsed;
+    }
+
+    public void setInitialized() {
+      myIsInitialized = true;
+    }
+
+    public boolean isInitialized() {
+      return myIsInitialized;
+    }
+
+    @Override
+    public String toString() {
+      return myVariable.getName() + "\t " + myIsInitialized + "\t " + myIsUsed; // NOI18N
+    }
+
+    private boolean myIsUsed;
+    private boolean myIsInitialized;
+    private Variable myVariable;
   }
 }
