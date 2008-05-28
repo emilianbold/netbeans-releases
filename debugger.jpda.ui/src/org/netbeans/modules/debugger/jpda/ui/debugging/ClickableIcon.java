@@ -67,9 +67,11 @@ class ClickableIcon extends JLabel implements MouseListener {
     private int state;
     private boolean isThreadSupended;
     private JPDAThread jpdaThread;
+    private DebugTreeView tree;
     
     ClickableIcon(ImageIcon normalR, ImageIcon focusedR, ImageIcon pressedR,
-            ImageIcon normalS, ImageIcon focusedS, ImageIcon pressedS, JPDAThread jpdaThread) {
+            ImageIcon normalS, ImageIcon focusedS, ImageIcon pressedS, JPDAThread jpdaThread, DebugTreeView tree) {
+        this.tree = tree;
         this.resumeIcon = normalR;
         this.focusedResumeIcon = focusedR;
         this.pressedResumeIcon = pressedR;
@@ -86,8 +88,21 @@ class ClickableIcon extends JLabel implements MouseListener {
         Point point = getParent().getMousePosition(true);
         state = point != null && sx <= point.x && point.x < sx + width && sy <= point.y && point.y < sy + height
                 ? STATE_FOCUSED : STATE_NORMAL;
+        setFocusedThread();
         changeIcon();
         addMouseListener(this);
+    }
+    
+    private void setFocusedThread() {
+        if (state != STATE_NORMAL) {
+            if (tree.threadFocuseGained(jpdaThread)) {
+                getParent().repaint();
+            }
+        } else {
+            if (tree.threadFocuseLost(jpdaThread)) {
+                getParent().repaint();
+            }
+        }
     }
     
     private ImageIcon computeIcon() {
@@ -148,11 +163,13 @@ class ClickableIcon extends JLabel implements MouseListener {
         } else {
             state = STATE_FOCUSED;
         }
+        setFocusedThread();
         changeIcon();
     }
 
     public void mouseExited(MouseEvent e) {
         state = STATE_NORMAL;
+        setFocusedThread();
         changeIcon();
     }
 

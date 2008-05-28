@@ -480,7 +480,8 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
                 treeViewWidth = rect != null ? Math.max(treeViewWidth, (int) Math.round(rect.getX() + rect.getWidth())) : treeViewWidth;
                 leftBarHeight += height;
 
-                JComponent icon = jpdaThread != null ? new ClickableIcon(resumeIcon, focusedResumeIcon, pressedResumeIcon, suspendIcon, focusedSuspendIcon, pressedSuspendIcon, jpdaThread) : new JLabel();
+                JComponent icon = jpdaThread != null ? new ClickableIcon(resumeIcon, focusedResumeIcon, pressedResumeIcon,
+                        suspendIcon, focusedSuspendIcon, pressedSuspendIcon, jpdaThread, treeView) : new JLabel();
                 icon.setPreferredSize(new Dimension(CLICKABLE_ICON_WIDTH, height));
                 icon.setBackground(treeBackgroundColor);
                 icon.setOpaque(false);
@@ -524,12 +525,12 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
             JComponent label = new JPanel();
             String toolTipText = null;
             label.setPreferredSize(new Dimension(BAR_WIDTH, height));
-            if (isInDeadlock) { // [TODO] what to do when current thread is in deadlock?
-                label.setBackground(deadlockColor);
-                toolTipText = NbBundle.getMessage(DebuggingView.class, "LBL_DEADLOCKED_THREAD_TIP");
-            } else if (isCurrent) {
+            if (isCurrent) {
                 label.setBackground(greenBarColor);
                 toolTipText = NbBundle.getMessage(DebuggingView.class, "LBL_CURRENT_BAR_TIP");
+            } else if (isInDeadlock) {
+                label.setBackground(deadlockColor);
+                toolTipText = NbBundle.getMessage(DebuggingView.class, "LBL_DEADLOCKED_THREAD_TIP");
             } else if (isAtBreakpoint) {
                 label.setBackground(hitsBarColor);
                 toolTipText = NbBundle.getMessage(DebuggingView.class, "LBL_BREAKPOINT_HIT_TIP");
