@@ -41,12 +41,13 @@
 
 package org.netbeans.performance.visualweb;
 
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.performance.visualweb.menus.VWProjectsViewPopupMenu;
 
 import org.netbeans.junit.NbTestSuite;
 
 /**
- * Measure UI-RESPONSIVENES and WINDOW_OPENING.
+ * Measure POPUP MENU_OPENING.
  *
  * @author  mmirilovic@netbeans.org
  */
@@ -54,10 +55,7 @@ public class VWPMeasureMenus  {
 
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-
-        suite.addTest(new VWProjectsViewPopupMenu("testVWProjectNodePopupMenuProjects", "VW Project node popup in Projects View"));
-        suite.addTest(new VWProjectsViewPopupMenu("testVWApplicationBeanPopupMenuProjects", "Application Bean node popup in Projects View"));
-        
+        suite.addTest(NbModuleSuite.create(VWProjectsViewPopupMenu.class, ".*", ".*"));        
         return suite;
     }
     

@@ -94,7 +94,7 @@ public class CreateRubyProject  extends org.netbeans.modules.performance.utiliti
         wizard.next();
         wizard_location = new NewProjectNameLocationStepOperator();
         
-        String directory = System.getProperty("xtest.tmpdir");
+        String directory = System.getProperty("nbjunit.workdir")+ java.io.File.separator + "createdProjects";
         System.out.println(directory);
        
         wizard_location.txtProjectLocation().setText("");

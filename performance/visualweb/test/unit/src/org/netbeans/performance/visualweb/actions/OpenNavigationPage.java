@@ -77,6 +77,10 @@ public class OpenNavigationPage extends org.netbeans.modules.performance.utiliti
         WAIT_AFTER_OPEN=20000;
     }
     
+    public void testOpenNavigationPage() {
+        doMeasurement();
+    }
+    
     @Override
     protected void initialize() {
         log("::initialize::");

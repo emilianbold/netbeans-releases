@@ -128,12 +128,14 @@ public class ComponentStyleDialog extends JSFComponentOptionsDialog {
         return null;
     }
     
+    @Override
     public void close() {
         log(":: close");
         styleDialog.close();
         super.close();
     }
     
+    @Override
     protected void shutdown() {
         super.shutdown();
         try {

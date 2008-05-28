@@ -41,6 +41,8 @@
 
 package org.netbeans.performance.visualweb.scanclasspath;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.performance.visualweb.VWPUtilities;
@@ -62,6 +64,7 @@ public class VWPScanClasspath extends PerformanceTestCase {
     
     // measure whole classpath scan time together
     protected static long wholeClasspathScan = 0;
+    private String workdir;
     
     static {
         reportCPR.clear();
@@ -78,7 +81,13 @@ public class VWPScanClasspath extends PerformanceTestCase {
     public VWPScanClasspath(String testName) {
         super(testName);
         expectedTime = 10000;
-        WAIT_AFTER_OPEN=20000;        
+        WAIT_AFTER_OPEN=20000; 
+        workdir = System.getProperty("nbjunit.workdir");
+        try {
+            workdir = new File(workdir + "/../../../../../../../nbextra/data/").getCanonicalPath();
+        } catch (IOException ex) {
+            System.err.println("Exception: "+ex);
+        }          
     }
     
     /**
@@ -89,7 +98,13 @@ public class VWPScanClasspath extends PerformanceTestCase {
     public VWPScanClasspath(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         expectedTime = 10000;
-        WAIT_AFTER_OPEN=20000;        
+        WAIT_AFTER_OPEN=20000;
+        workdir = System.getProperty("nbjunit.workdir");
+        try {
+            workdir = new File(workdir + "/../../../../../../../nbextra/data/").getCanonicalPath();
+        } catch (IOException ex) {
+            System.err.println("Exception: "+ex);
+        }          
     }
     
     public static NbTestSuite suite() {
@@ -114,7 +129,7 @@ public class VWPScanClasspath extends PerformanceTestCase {
     }
     
     public void openHugeAppProject() {
-        VWPUtilities.waitProjectOpenedScanFinished(System.getProperty("xtest.tmpdir") + java.io.File.separator + "HugeApp");
+        VWPUtilities.waitProjectOpenedScanFinished(workdir + java.io.File.separator + "HugeApp");
         measureClassPathScan();
         reportPerformance("Scanning Visual Web Project Classpath", wholeClasspathScan, "ms", 1);
     }

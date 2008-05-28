@@ -68,6 +68,10 @@ public class PropertyBindingDialog extends JSFComponentOptionsDialog {
         componentName = "Table"; // NOI18N
         addPoint = new java.awt.Point(50,50);
     }
+        
+    public void testPropertyBindingDialog() {
+        doMeasurement();
+    }
     
     @Override
     public ComponentOperator open(){

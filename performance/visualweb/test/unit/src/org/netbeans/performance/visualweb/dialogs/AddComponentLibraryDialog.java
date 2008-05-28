@@ -68,6 +68,10 @@ public class AddComponentLibraryDialog extends org.netbeans.modules.performance.
         expectedTime = WINDOW_OPEN;
     }
     
+    public void testAddComponentLibraryDialog() {
+        doMeasurement();
+    }
+    
     @Override
     protected void initialize() {
         log("::initialize");

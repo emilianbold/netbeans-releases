@@ -69,6 +69,10 @@ public class DataBindingDialog extends JSFComponentOptionsDialog {
         addPoint = new java.awt.Point(50,50);
     }
     
+    public void testDataBindingDialog() {
+        doMeasurement();
+    }
+    
     @Override
     public ComponentOperator open(){
         log("::open");

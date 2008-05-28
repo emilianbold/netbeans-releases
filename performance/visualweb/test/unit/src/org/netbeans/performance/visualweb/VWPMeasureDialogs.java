@@ -42,6 +42,7 @@
 
 package org.netbeans.performance.visualweb;
 
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.performance.visualweb.dialogs.PropertyBindingDialog;
 import org.netbeans.performance.visualweb.dialogs.ManageComponentLibrariesDialog;
 import org.netbeans.performance.visualweb.dialogs.DataBindingDialog;
@@ -65,19 +66,17 @@ public class VWPMeasureDialogs {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
         
-        suite.addTest(new AddComponentLibraryDialog("measureTime","Add Component Library Dialog open"));
-        suite.addTest(new PageStyleSheetDialog("measureTime","Page Stylesheet Dialog open"));
-        suite.addTest(new PageFragmentBoxDialog("measureTime","Add Page Fragment Box Dialog open"));
+        suite.addTest(NbModuleSuite.create(AddComponentLibraryDialog.class, ".*", ".*"));
+        suite.addTest(NbModuleSuite.create(PageStyleSheetDialog.class, ".*", ".*"));
+        suite.addTest(NbModuleSuite.create(PageFragmentBoxDialog.class, ".*", ".*"));
         
-        suite.addTest(new VirtualFormsDialog("measureTime","Virtual Forms Dialog open"));
-        suite.addTest(new TableLayoutOptionsDialog("measureTime","Table Layout Options Dialog open"));
-        suite.addTest(new DataBindingDialog("measureTime","Data Binding Dialog open"));
-        suite.addTest(new ConfigureDefaultOptionsDialog("measureTime","List Default Options Dialog open"));
-        suite.addTest(new PropertyBindingDialog("measureTime","Property Binding Dialog open"));
-        suite.addTest(new ComponentStyleDialog("testButtonStyleDialog","Button Style Dialog Open test"));
-        suite.addTest(new ComponentStyleDialog("testTableStyleDialog","Table Style Dialog Open test"));
-        suite.addTest(new ComponentStyleDialog("testLisbBoxStyleDialog","Listbox Style Dialog Open test"));
-        suite.addTest(new ManageComponentLibrariesDialog("measureTime","Manage Component Libraries Dialog open"));
+        suite.addTest(NbModuleSuite.create(VirtualFormsDialog.class, ".*", ".*"));
+        suite.addTest(NbModuleSuite.create(TableLayoutOptionsDialog.class, ".*", ".*"));
+        suite.addTest(NbModuleSuite.create(DataBindingDialog.class, ".*", ".*"));
+        suite.addTest(NbModuleSuite.create(ConfigureDefaultOptionsDialog.class, ".*", ".*"));
+        suite.addTest(NbModuleSuite.create(PropertyBindingDialog.class, ".*", ".*"));
+        suite.addTest(NbModuleSuite.create(ComponentStyleDialog.class, ".*", ".*"));
+        suite.addTest(NbModuleSuite.create(ManageComponentLibrariesDialog.class, ".*", ".*"));
         
         return suite;
     }

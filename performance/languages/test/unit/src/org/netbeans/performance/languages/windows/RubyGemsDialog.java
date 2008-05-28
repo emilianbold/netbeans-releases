@@ -70,6 +70,10 @@ public class RubyGemsDialog extends org.netbeans.modules.performance.utilities.P
        
     }
     
+    public void testRubyGemsDialog() {
+        doMeasurement();
+    }
+    
     @Override
     public void initialize() {
         log("::initialize");

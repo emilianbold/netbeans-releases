@@ -41,9 +41,11 @@
 
 package org.netbeans.performance.languages;
 
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.performance.languages.actions.CreateRubyProject;
 import org.netbeans.performance.languages.actions.EditorMenuPopup;
+import org.netbeans.performance.languages.actions.OpenRubyProject;
 import org.netbeans.performance.languages.actions.PageUpPageDownScriptingEditor;
 import org.netbeans.performance.languages.actions.SaveModifiedScriptingFiles;
 import org.netbeans.performance.languages.actions.ScriptingExpandFolder;
@@ -57,60 +59,18 @@ public class ScriptingMeasureActions {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
 
-        suite.addTest(new CreateRubyProject("testCreateRubyProject","Create Ruby project"));
-        suite.addTest(new CreateRubyProject("testCreateRubyOnRailsProject","Create Ruby on Rails project"));
-        
-        
-        suite.addTest(new ScriptingExpandFolder("testExpandRubyProjectNode","testExpandRubyProjectNode"));
-        suite.addTest(new ScriptingExpandFolder("testExpandFolderWith100RubyFiles","testExpandFolderWith100RubyFiles"));        
-        suite.addTest(new ScriptingExpandFolder("testExpandRailsProjectNode","testExpandRailsProjectNode"));
-        suite.addTest(new ScriptingExpandFolder("testExpandFolderWith100RailsFiles","testExpandFolderWith100RailsFiles"));
-        suite.addTest(new ScriptingExpandFolder("testExpandFolderWith100JSFiles","testExpandFolderWith100JSFiles"));
-        suite.addTest(new ScriptingExpandFolder("testExpandFolderWith100CssFiles","testExpandFolderWith100CssFiles"));        
-        
-        suite.addTest(new EditorMenuPopup("test_RB_EditorPopup"," Ruby editor node popup test"));
-        suite.addTest(new EditorMenuPopup("test_RHTML_EditorPopup","RHTML editor node popup test"));
-        suite.addTest(new EditorMenuPopup("test_JS_EditorPopup","Java Script editor node popup test"));
-//        suite.addTest(new EditorMenuPopup("test_JSON_EditorPopup","JSON editor node popup test"));
-//        suite.addTest(new EditorMenuPopup("test_CSS_EditorPopup","CSS editor node popup test"));
-//        suite.addTest(new EditorMenuPopup("test_YML_EditorPopup","YML editor node popup test"));
-//        suite.addTest(new EditorMenuPopup("test_BAT_EditorPopup","BAT editor node popup test"));
-//        suite.addTest(new EditorMenuPopup("test_DIFF_EditorPopup"," editor node popup test"));
-//        suite.addTest(new EditorMenuPopup("test_MANIFEST_EditorPopup","MANIFEST editor node popup test"));
-//        suite.addTest(new EditorMenuPopup("test_SH_EditorPopup","Shell Script editor node popup test"));
-        
-        suite.addTest(new TypingInScriptingEditor("test_RB_EditorTyping","test_RB_EditorTyping"));
-        suite.addTest(new TypingInScriptingEditor("test_RHTML_EditorTyping","test_RHTML_EditorTyping"));
-        suite.addTest(new TypingInScriptingEditor("test_JScript_EditorTyping","test_JScript_EditorTyping"));        
-        
-        /*        
-        
-        suite.addTest(new OpenRubyProject("testOpenRubyProject","Open Ruby Project"));
-        suite.addTest(new OpenRubyProject("testOpenRailsProject","Open Ruby on Rails Project"));
-             
-        */
-        
+        suite.addTest(NbModuleSuite.create(CreateRubyProject.class, ".*", ".*"));                
+        suite.addTest(NbModuleSuite.create(ScriptingExpandFolder.class, ".*", ".*"));           
+        suite.addTest(NbModuleSuite.create(EditorMenuPopup.class, ".*", ".*"));      
+        suite.addTest(NbModuleSuite.create(TypingInScriptingEditor.class, ".*", ".*"));       
+        suite.addTest(NbModuleSuite.create(OpenRubyProject.class, ".*", ".*"));
+  
         // Saving modified document
-        suite.addTest(new SaveModifiedScriptingFiles("test_SaveRuby_File"," Save Ruby file test"));
-        suite.addTest(new SaveModifiedScriptingFiles("test_SaveRHTML_File"," Save RHTML file test"));
-        suite.addTest(new SaveModifiedScriptingFiles("test_SaveJS_File"," Save Java Script file test"));
-        suite.addTest(new SaveModifiedScriptingFiles("test_SaveJSON_File"," Save JSON file test"));
-        suite.addTest(new SaveModifiedScriptingFiles("test_SaveCSS_File"," Save CSS file test"));
-        suite.addTest(new SaveModifiedScriptingFiles("test_SaveYML_File"," Save YML file test"));
-        suite.addTest(new SaveModifiedScriptingFiles("test_SaveBAT_File"," Save BAT file test"));
-        suite.addTest(new SaveModifiedScriptingFiles("test_SaveDIFF_File"," Save DIFF file test"));
-        suite.addTest(new SaveModifiedScriptingFiles("test_SaveMANIFEST_File"," Save MANIFEST file test"));
-        suite.addTest(new SaveModifiedScriptingFiles("test_SaveSH_File"," Save SH file test"));
-        
+        suite.addTest(NbModuleSuite.create(SaveModifiedScriptingFiles.class, ".*", ".*"));
+       
         // Page Up and Down in scripting editor
-        suite.addTest(new PageUpPageDownScriptingEditor("testPgUp_In_RBEditor","test PgUp_In_RBEditor"));
-        suite.addTest(new PageUpPageDownScriptingEditor("testPgDn_In_RBEditor","test PgDn_In_RBEditor"));
-        suite.addTest(new PageUpPageDownScriptingEditor("testPgUp_In_RHTMLEditor","test PgUp_In_RHTMLEditor"));
-        suite.addTest(new PageUpPageDownScriptingEditor("testPgDn_In_RHTMLEditor","test PgDn_In_RHTMLEditor"));
-        suite.addTest(new PageUpPageDownScriptingEditor("testPgUp_In_JSEditor","test PgUp_In_JSEditor"));
-        suite.addTest(new PageUpPageDownScriptingEditor("testPgDn_In_JSEditor","test PgDn_In_JSEditor"));
-        suite.addTest(new PageUpPageDownScriptingEditor("testPgUp_In_CSSEditor","test PgUp_In_CSSEditor"));
-        suite.addTest(new PageUpPageDownScriptingEditor("testPgDn_In_CSSEditor","test PgDn_In_CSSEditor"));        
+        suite.addTest(NbModuleSuite.create(PageUpPageDownScriptingEditor.class, ".*", ".*"));
+     
         return suite;        
     }
 }

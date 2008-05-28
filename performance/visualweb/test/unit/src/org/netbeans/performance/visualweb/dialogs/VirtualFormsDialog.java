@@ -66,6 +66,10 @@ public class VirtualFormsDialog extends org.netbeans.modules.performance.utiliti
         expectedTime = WINDOW_OPEN;
     }
     
+    public void testVirtualFormsDialog() {
+        doMeasurement();
+    }
+    
     @Override
     public void initialize() {
         log("::initialize");

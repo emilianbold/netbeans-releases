@@ -88,6 +88,11 @@ public class CSSRuleAddTest  extends org.netbeans.modules.performance.utilities.
         expectedTime = WINDOW_OPEN;
         WAIT_AFTER_OPEN=4000;        
     }
+    
+    public void testCSSRuleAddTest() {
+        doMeasurement();
+    }
+    
     @Override
     public void initialize() {
         log("::initialize");

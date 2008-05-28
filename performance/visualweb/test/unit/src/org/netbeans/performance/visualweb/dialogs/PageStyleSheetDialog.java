@@ -79,6 +79,11 @@ public class PageStyleSheetDialog extends org.netbeans.modules.performance.utili
         expectedTime = WINDOW_OPEN;
         WAIT_AFTER_OPEN=2000;             
     }
+    
+    public void testPageStyleSheetDialog() {
+        doMeasurement();
+    }
+    
     @Override
     protected void initialize() {
         log(":: initialize");

@@ -41,6 +41,7 @@
 
 package org.netbeans.performance.visualweb;
 
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.performance.visualweb.setup.WebSetupTest;
 
 import org.netbeans.junit.NbTestSuite;
@@ -60,17 +61,18 @@ public class VWPMeasuringSetup extends NbTestSuite {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite("UI Responsiveness Setup suite for Visual Web Pack");
 
-        suite.addTest(new WebSetupTest("closeMemoryToolbar"));
-        
+        suite.addTest(NbModuleSuite.create(WebSetupTest.class, ".*", ".*"));
+
+/*
+        suite.addTest(new WebSetupTest("closeMemoryToolbar"));        
         suite.addTest(new WebSetupTest("closeWelcome"));
         
         // server is registered from command line
         //suite.addTest(new WebSetupTest("setupAppServer"));
         
-        suite.addTest(new WebSetupTest("openWebPackProject"));
-        
+        suite.addTest(new WebSetupTest("openWebPackProject"));        
         suite.addTest(new WebSetupTest("closeAllDocuments"));
-        
+*/        
         return suite;
     }
     

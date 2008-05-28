@@ -73,6 +73,10 @@ public class ManageComponentLibrariesDialog  extends org.netbeans.modules.perfor
         WAIT_AFTER_OPEN=2000;        
     }
     
+    public void testManageComponentLibrariesDialog() {
+        doMeasurement();
+    }
+    
     @Override
     protected void initialize() {
         log("::initialize");
@@ -115,7 +119,6 @@ public class ManageComponentLibrariesDialog  extends org.netbeans.modules.perfor
     }
     
     public static void main(String[] args) {
-        repeat = 2;
         junit.textui.TestRunner.run(new ManageComponentLibrariesDialog("measureTime","Measure Manage Component Libraries Dialog open time"));
     }
 

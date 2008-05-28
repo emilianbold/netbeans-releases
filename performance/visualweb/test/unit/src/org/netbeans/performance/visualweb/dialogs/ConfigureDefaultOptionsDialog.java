@@ -70,6 +70,11 @@ public class ConfigureDefaultOptionsDialog extends JSFComponentOptionsDialog {
         addPoint = new java.awt.Point(50,50);
     }
     
+    public void testConfigureDefaultOptionsDialog() {
+        doMeasurement();        
+    }
+    
+    @Override
     public ComponentOperator open(){
         log("::open");
 

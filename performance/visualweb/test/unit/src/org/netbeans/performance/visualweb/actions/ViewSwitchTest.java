@@ -77,6 +77,9 @@ public class ViewSwitchTest extends org.netbeans.modules.performance.utilities.P
         WAIT_AFTER_OPEN=4000;             
     }
     
+    public void testViewSwitchTest() {
+        doMeasurement();
+    }
     
     @Override
     public void initialize() {

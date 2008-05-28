@@ -41,6 +41,7 @@
 
 package org.netbeans.performance.languages;
 
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.performance.languages.setup.ScriptingSetupTest;
 
@@ -51,6 +52,8 @@ import org.netbeans.performance.languages.setup.ScriptingSetupTest;
 public class ScriptingMeasuringSetup extends NbTestSuite {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite("Scripting pack UI Responsiveness Setup suite");
+        suite.addTest(NbModuleSuite.create(ScriptingSetupTest.class, ".*", ".*"));
+/*        
         suite.addTest(new ScriptingSetupTest("closeMemoryToolbar"));
         
         suite.addTest(new ScriptingSetupTest("closeWelcome"));
@@ -63,6 +66,7 @@ public class ScriptingMeasuringSetup extends NbTestSuite {
         suite.addTest(new ScriptingSetupTest("OpenScriptingProject"));
         
         suite.addTest(new ScriptingSetupTest("closeAllDocuments"));        
+*/ 
         return suite;
     }
 }

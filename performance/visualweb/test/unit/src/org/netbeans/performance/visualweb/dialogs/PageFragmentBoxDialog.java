@@ -88,6 +88,10 @@ public class PageFragmentBoxDialog extends org.netbeans.modules.performance.util
         WAIT_AFTER_OPEN=5000;
     }
     
+    public void testPageFragmentBoxDialog() {
+        doMeasurement();
+    }
+    
     public void prepare() {
         log("::prepare");
         //surface.clickOnSurface(10,10);

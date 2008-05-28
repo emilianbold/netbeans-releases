@@ -42,8 +42,11 @@
 package org.netbeans.performance.languages.setup;
 
 
+import java.io.File;
+import java.io.IOException;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.junit.ide.ProjectSupport;
+import org.netbeans.modules.performance.utilities.CommonUtilities;
 import org.netbeans.performance.languages.Projects;
 import org.netbeans.performance.languages.ScriptingUtilities;
 
@@ -53,23 +56,31 @@ import org.netbeans.performance.languages.ScriptingUtilities;
  */
 public class ScriptingSetupTest extends JellyTestCase {
     
-
+	private String workdir;
     
     public ScriptingSetupTest(String testName) {
         super(testName);
+        workdir = System.getProperty("nbjunit.workdir");
+        try {
+            workdir = new File(workdir + "/../../../../../../../nbextra/data/").getCanonicalPath();
+        } catch (IOException ex) {
+            System.err.println("Exception: "+ex);
+        }        
     }
     
-    public void OpenRubyProject() {
-        ScriptingUtilities.waitProjectOpenedScanFinished(System.getProperty("xtest.tmpdir")+ java.io.File.separator +Projects.RUBY_PROJECT);
-        ScriptingUtilities.waitForPendingBackgroundTasks();   
+    public void testOpenRubyProject() {
+        //ScriptingUtilities.waitProjectOpenedScanFinished(System.getProperty("xtest.tmpdir")+ java.io.File.separator +Projects.RUBY_PROJECT);
+        //ScriptingUtilities.waitForPendingBackgroundTasks();   
+        openProject(Projects.RUBY_PROJECT);
     }
-    public void OpenRailsProject() {
-        ScriptingUtilities.waitProjectOpenedScanFinished(System.getProperty("xtest.tmpdir")+ java.io.File.separator +Projects.RAILS_PROJECT);
-        ScriptingUtilities.waitForPendingBackgroundTasks();        
+    public void testOpenRailsProject() {
+        //ScriptingUtilities.waitProjectOpenedScanFinished(System.getProperty("xtest.tmpdir")+ java.io.File.separator +Projects.RAILS_PROJECT);
+        //ScriptingUtilities.waitForPendingBackgroundTasks();
+        openProject(Projects.RAILS_PROJECT);
     }
     
-    public void OpenScriptingProject() {
-        String projectPath = System.getProperty("xtest.tmpdir")+ java.io.File.separator +Projects.SCRIPTING_PROJECT;
+    public void testOpenScriptingProject() {
+        String projectPath = workdir+ java.io.File.separator +Projects.SCRIPTING_PROJECT;
         ProjectSupport.openProject(projectPath);
         closeAllModal();
         ScriptingUtilities.waitScanFinished();
@@ -77,6 +88,13 @@ public class ScriptingSetupTest extends JellyTestCase {
         closeAllModal();
         ScriptingUtilities.verifyAndResolveMissingWebServer(Projects.SCRIPTING_PROJECT, "GlassFish V2");
         ScriptingUtilities.waitForPendingBackgroundTasks();        
+    }
+    
+    private void openProject(String projectName) {
+        String projectsDir = workdir + File.separator+projectName;
+        Object prj=ProjectSupport.openProject(projectsDir);
+        assertNotNull(prj);
+        CommonUtilities.waitProjectTasksFinished();        
     }
 
 }

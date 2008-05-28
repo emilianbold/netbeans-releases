@@ -74,6 +74,10 @@ public class TypingInCSSEditor extends  org.netbeans.modules.performance.utiliti
         expectedTime = UI_RESPONSE;  
         HEURISTIC_FACTOR = -1; // use default WaitAfterOpen for all iterations        
     }
+   
+    public void testTypingInCSSEditor() {
+        doMeasurement();
+    }
     
     @Override
     protected void initialize() {

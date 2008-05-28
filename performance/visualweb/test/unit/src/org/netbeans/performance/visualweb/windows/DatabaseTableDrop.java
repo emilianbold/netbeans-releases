@@ -101,6 +101,10 @@ public class DatabaseTableDrop extends org.netbeans.modules.performance.utilitie
         addPoint = new java.awt.Point(50,50);
     }
     
+    public void testDatabaseTableDrop() {
+        doMeasurement();
+    }
+    
     @Override
     protected void initialize() {
         log(":: initialize");

@@ -196,7 +196,7 @@ public class StyleBuilderMemTest extends org.netbeans.modules.performance.utilit
         wizard.next();
         wizard_location = new NewProjectNameLocationStepOperator();
         
-        String directory = System.getProperty("xtest.tmpdir");
+        String directory = System.getProperty("nbjunit.workdir")+ java.io.File.separator + "createdProjects";
         log("================= Destination directory={"+directory+"}");
         wizard_location.txtProjectLocation().setText("");
         waitNoEvent(1000);

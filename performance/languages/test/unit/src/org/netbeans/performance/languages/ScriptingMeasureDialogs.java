@@ -42,6 +42,7 @@
 package org.netbeans.performance.languages;
 
 
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.performance.languages.windows.RailsGeneratorDialog;
 import org.netbeans.performance.languages.windows.RubyGemsDialog;
@@ -54,10 +55,9 @@ import org.netbeans.performance.languages.windows.RubyPropertiesDialog;
 public class ScriptingMeasureDialogs {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new RubyPropertiesDialog("testRubyProjectProperties","test Ruby Project Properties dialog"));
-        suite.addTest(new RubyPropertiesDialog("testRailsProjectProperties","test ROR Project Properties dialog"));        
-        suite.addTest(new RailsGeneratorDialog("doMeasurement","test Rails generator dialog"));
-        suite.addTest(new RubyGemsDialog("doMeasurement","test Gems Dialog"));
+        suite.addTest(NbModuleSuite.create(RubyPropertiesDialog.class, ".*", ".*"));       
+        suite.addTest(NbModuleSuite.create(RailsGeneratorDialog.class, ".*", ".*"));
+        suite.addTest(NbModuleSuite.create(RubyGemsDialog.class, ".*", ".*"));
         return suite;
     }
 

@@ -41,6 +41,8 @@
 
 package org.netbeans.performance.languages.actions;
 
+import java.io.File;
+import java.io.IOException;
 import org.netbeans.jellytools.WizardOperator;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
@@ -57,20 +59,33 @@ public class OpenRubyProject extends org.netbeans.modules.performance.utilities.
 
     private static String projectName; 
     private JButtonOperator openButton;
+    private String workdir;    
     
     public OpenRubyProject(String testName)
     {
         super(testName);
         //projectName = "TestRubyApplication"; //NO18N
         expectedTime = 18000;
-        WAIT_AFTER_OPEN=20000;        
+        WAIT_AFTER_OPEN=20000;
+        workdir = System.getProperty("nbjunit.workdir");
+        try {
+            workdir = new File(workdir + "/../../../../../../../nbextra/data/").getCanonicalPath();
+        } catch (IOException ex) {
+            System.err.println("Exception: "+ex);
+        }        
     }
     public OpenRubyProject(String testName, String performanceDataName)
     {
         super(testName, performanceDataName);
         //projectName = "TestRubyApplication"; //NO18N
         expectedTime = 18000;
-        WAIT_AFTER_OPEN=20000;        
+        WAIT_AFTER_OPEN=20000; 
+        workdir = System.getProperty("nbjunit.workdir");
+        try {
+            workdir = new File(workdir + "/../../../../../../../nbextra/data/").getCanonicalPath();
+        } catch (IOException ex) {
+            System.err.println("Exception: "+ex);
+        }        
     }
     
     @Override
@@ -85,7 +100,7 @@ public class OpenRubyProject extends org.netbeans.modules.performance.utilities.
         WizardOperator opd = new WizardOperator("Open Project"); //NOI18N
         JTextComponentOperator path = new JTextComponentOperator(opd,1);
         openButton = new JButtonOperator(opd,"Open Project"); //NOI18N
-        String paths= (System.getProperty("xtest.tmpdir") + java.io.File.separator + projectName );
+        String paths= workdir + java.io.File.separator + projectName;
         path.setText(paths);        
     }
 

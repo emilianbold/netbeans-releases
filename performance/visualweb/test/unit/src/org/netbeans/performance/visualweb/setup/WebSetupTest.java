@@ -41,6 +41,8 @@
 
 package org.netbeans.performance.visualweb.setup;
 
+import java.io.File;
+import java.io.IOException;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.performance.visualweb.VWPUtilities;
 
@@ -55,6 +57,7 @@ import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.jemmy.operators.JTextComponentOperator;
+import org.netbeans.modules.performance.utilities.CommonUtilities;
 
 /**
  * Test suite that actually does not perform any test but sets up servers
@@ -65,25 +68,48 @@ import org.netbeans.jemmy.operators.JTextComponentOperator;
 public class WebSetupTest extends JellyTestCase  {
     
     private RuntimeTabOperator rto = null;
-    
+    private String workdir;
+
     public WebSetupTest(String testName) {
         super(testName);
+        workdir = System.getProperty("nbjunit.workdir");
+        try {
+            workdir = new File(workdir + "/../../../../../../../nbextra/data/").getCanonicalPath();
+        } catch (IOException ex) {
+            System.err.println("Exception: "+ex);
+        }        
     }
 
-    public void openWebPackProject() {
-        // we'll open this project, creating is expensive and not so stable
-        //createTestProject("VisualWebProject");
+    public void testCloseWelcome() {
+        CommonUtilities.closeWelcome();
+    }
+
+    public void testCloseAllDocuments() {
+        CommonUtilities.closeAllDocuments();
+    }
+
+    public void testCloseMemoryToolbar() {
+        CommonUtilities.closeMemoryToolbar();
+    }
         
-        VWPUtilities.waitProjectOpenedScanFinished(System.getProperty("xtest.tmpdir")+ java.io.File.separator +"VisualWebProject");
+    public void testOpenVisualWebProject() {
+        
+        VWPUtilities.waitProjectOpenedScanFinished(workdir+ java.io.File.separator +"VisualWebProject");
         VWPUtilities.waitForPendingBackgroundTasks();
         VWPUtilities.verifyAndResolveMissingWebServer("VisualWebProject", "GlassFish V2");
         VWPUtilities.waitForPendingBackgroundTasks();
-        
-        VWPUtilities.waitProjectOpenedScanFinished(System.getProperty("xtest.tmpdir")+ java.io.File.separator +"UltraLargeWA");
+   
+    }
+    
+    public void testOpenLargeVisualWebProject() {
+        VWPUtilities.waitProjectOpenedScanFinished(workdir+ java.io.File.separator +"UltraLargeWA");
         VWPUtilities.waitForPendingBackgroundTasks();
         VWPUtilities.verifyAndResolveMissingWebServer("UltraLargeWA", "GlassFish V2");
+        VWPUtilities.waitForPendingBackgroundTasks();        
+    }
+    public void testOpenHugeVisualWebProject() {
+        VWPUtilities.verifyAndResolveMissingWebServer("HugeApp", "GlassFish V2");
         VWPUtilities.waitForPendingBackgroundTasks();
-        
         VWPUtilities.verifyAndResolveMissingWebServer("HugeApp", "GlassFish V2");
         VWPUtilities.waitForPendingBackgroundTasks();        
     }

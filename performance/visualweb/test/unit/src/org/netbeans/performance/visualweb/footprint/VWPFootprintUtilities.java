@@ -41,6 +41,7 @@
 
 package org.netbeans.performance.visualweb.footprint;
 
+import java.io.File;
 import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
@@ -83,7 +84,10 @@ public class VWPFootprintUtilities extends org.netbeans.performance.visualweb.VW
 
         NewProjectNameLocationStepOperator wizard_location = new NewProjectNameLocationStepOperator();
         wizard_location.txtProjectLocation().clearText();
-        wizard_location.txtProjectLocation().typeText(System.getProperty("xtest.tmpdir"));
+        
+        String projectLoc = System.getProperty("nbjunit.workdir") + File.pathSeparator + "createdProjects";
+        wizard_location.txtProjectLocation().typeText(projectLoc);
+        
         String pname = wizard_location.txtProjectName().getText();
 
         // if the project exists, try to generate new name

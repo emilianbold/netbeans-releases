@@ -65,6 +65,11 @@ public class RailsGeneratorDialog extends org.netbeans.modules.performance.utili
         super(testName,performanceDataName);
         expectedTime = WINDOW_OPEN;          
     }
+    
+    public void testRailsGneratorDialog() {
+        doMeasurement();
+    }
+    
     @Override
     public void initialize() {
         log("::initialize");

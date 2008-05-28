@@ -42,17 +42,19 @@
 package org.netbeans.performance.visualweb;
 
 
-import org.netbeans.performance.visualweb.actions.PasteCSSText;
-import org.netbeans.performance.visualweb.actions.CSSRuleAddTest;
-import org.netbeans.performance.visualweb.actions.CreateWebPackFiles;
-import org.netbeans.performance.visualweb.actions.OpenProjectFirstPage;
-import org.netbeans.performance.visualweb.actions.ViewSwitchTest;
-import org.netbeans.performance.visualweb.actions.ComponentAddTest;
-import org.netbeans.performance.visualweb.actions.OpenBeanFiles;
-import org.netbeans.performance.visualweb.actions.CreateWebPackProject;
-import org.netbeans.performance.visualweb.actions.OpenNavigationPage;
-import org.netbeans.performance.visualweb.actions.PageSwitchTest;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.performance.visualweb.actions.CSSRuleAddTest;
+import org.netbeans.performance.visualweb.actions.ComponentAddTest;
+import org.netbeans.performance.visualweb.actions.CreateWebPackFiles;
+import org.netbeans.performance.visualweb.actions.CreateWebPackProject;
+import org.netbeans.performance.visualweb.actions.OpenBeanFiles;
+import org.netbeans.performance.visualweb.actions.OpenNavigationPage;
+import org.netbeans.performance.visualweb.actions.OpenProjectFirstPage;
+import org.netbeans.performance.visualweb.actions.PageSwitchTest;
+import org.netbeans.performance.visualweb.actions.PasteCSSText;
+import org.netbeans.performance.visualweb.actions.ViewSwitchTest;
+import org.netbeans.performance.visualweb.windows.DatabaseTableDrop;
 
 
 /**
@@ -67,45 +69,36 @@ public class VWPMeasureActions  {
 //TODO do Open project through UI	suite.addTest(new OpenWebPackProject("measureTime","Open Small Web Project"));
 //TODO do Open project through UI        suite.addTest(new OpenHugeWebPackProject("testOpenWebPackProject","Open Huge Web Project"));
         
-        suite.addTest(new OpenProjectFirstPage("testOpenSmallProjectFirstPage","Open Small Project First Page"));
-        suite.addTest(new OpenProjectFirstPage("testOpenLargeProjectFirstPage","Open Large Project First Page"));
+        suite.addTest(NbModuleSuite.create(OpenProjectFirstPage.class, ".*", ".*"));
 
-// manual results differ from automated        
-//        suite.addTest(new TypingInCSSEditor("measureTime","Type a character in CSS Editor"));
-
-        suite.addTest(new CSSRuleAddTest("measureTime","Measure time to add and modify CSS rule"));
-        suite.addTest(new PasteCSSText("measureTime","Measure time to Paste text into CSS editor"));
+        suite.addTest(NbModuleSuite.create(CSSRuleAddTest.class, ".*", ".*"));
+        suite.addTest(NbModuleSuite.create(PasteCSSText.class, ".*", ".*"));
         
-        suite.addTest(new OpenBeanFiles("testApplicationBean","Open Application Bean"));
-        suite.addTest(new OpenBeanFiles("testRequestBean","Open Request  Bean"));
-        suite.addTest(new OpenBeanFiles("testSessionBean","Open Session Bean"));
-        suite.addTest(new OpenNavigationPage("measureTime","Open Navigation Page"));
+        suite.addTest(NbModuleSuite.create(OpenBeanFiles.class, ".*", ".*"));
+        suite.addTest(NbModuleSuite.create(OpenNavigationPage.class, ".*", ".*"));
         
 
-        suite.addTest(new CreateWebPackFiles("testCreateCSSTable","Create CSS table"));	
-	suite.addTest(new CreateWebPackFiles("testCreateJSPFragment","Create JSP fragment for VWP project"));
-        suite.addTest(new CreateWebPackFiles("testCreateJSPPage","Create JSP page for VWP project"));
+        suite.addTest(NbModuleSuite.create(CreateWebPackFiles.class, ".*", ".*"));	
 
+     
+	suite.addTest(NbModuleSuite.create(ComponentAddTest.class, ".*", ".*"));        
+        suite.addTest(NbModuleSuite.create(DatabaseTableDrop.class, ".*", ".*"));         
 
-        //TODO Disabled because throws exception. See bugid #99202      
-	suite.addTest(new ComponentAddTest("testAddButtonComponent","Adding Button Component"));
-	suite.addTest(new ComponentAddTest("testAddListboxComponent","Adding Listbox Component"));
-        suite.addTest(new ComponentAddTest("testAddTableComponent","Adding Table Component"));
+        suite.addTest(NbModuleSuite.create(PageSwitchTest.class, ".*", ".*"));
+        suite.addTest(NbModuleSuite.create(ViewSwitchTest.class, ".*", ".*"));
+        suite.addTest(NbModuleSuite.create(CreateWebPackProject.class, ".*", ".*")); 
         
-        suite.addTest(new org.netbeans.performance.visualweb.windows.DatabaseTableDrop("measureTime","Database table drop on Table time"));         
+//      manual results differ from automated        
+//      suite.addTest(NbModuleSuite.create(TypingInCSSEditor.class, ".*", ".*"));
         
-        //suite.addTest(new CreateWebPackProjectSBS("testCreateWebPackProject","Create Visual Web Project SBS"));
+//      suite.addTest(NbModuleSuite.create(CreateWebPackProjectSBS.class, ".*", ".*"));
         
-//        suite.addTest(new WebProjectDeployment("testDeploySmallProject","Deployment Small Project"));     
-//        suite.addTest(new WebProjectDeployment("testDeployLargeProject","Deployment Huge Project"));
+//      suite.addTest(NbModuleSuite.create(WebProjectDeployment.class, ".*", ".*"));     
+//      suite.addTest(NbModuleSuite.create(WebProjectDeployment.class, ".*", ".*"));
 //        
-//        suite.addTest(new CleanAndBuildProject("testCleanAndBuildSingleOpenedPageProject","CnB project with single opened page"));
-//        suite.addTest(new CleanAndBuildProject("testCleanAndBuildMultipleOpenedPagesProject","CnB project with two opened pages"));
-        
-        suite.addTest(new PageSwitchTest("testPageSwitch"));
-        suite.addTest(new ViewSwitchTest("doMeasurement","Test view switch time"));
-        suite.addTest(new CreateWebPackProject("testCreateWebPackProject","Create Visual Web Project"));        
-        
+//      suite.addTest(NbModuleSuite.create(CleanAndBuildProject.class, ".*", ".*"));
+//      suite.addTest(NbModuleSuite.create(CleanAndBuildProject.class, ".*", ".*"));
+     
         return suite;
     }
 }

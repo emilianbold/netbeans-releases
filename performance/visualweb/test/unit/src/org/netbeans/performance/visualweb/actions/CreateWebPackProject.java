@@ -119,7 +119,7 @@ public class CreateWebPackProject extends org.netbeans.modules.performance.utili
         wizard.next();
         wizard_location = new NewProjectNameLocationStepOperator();
         
-        String directory = System.getProperty("xtest.tmpdir");
+        String directory = System.getProperty("nbjunit.workdir")+ java.io.File.separator + "createdProjects";
         log("================= Destination directory={"+directory+"}");
         wizard_location.txtProjectLocation().setText("");
         waitNoEvent(1000);
@@ -168,6 +168,7 @@ public class CreateWebPackProject extends org.netbeans.modules.performance.utili
        }
        
     }    
+    @Override
     public void close(){
         log("::close");
 
