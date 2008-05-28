@@ -446,12 +446,25 @@ public final class KitsTrackerImpl extends KitsTracker {
                 if (list == null) {
                     list = new ArrayList<String>();
                     kitClass2mimeTypes.put(kitClass, list);
-                    
-                    boolean kitClassFinal = (kitClass.getModifiers() & Modifier.FINAL) != 0;
-                    for(String mimeType : mimeType2kitClass.keySet()) {
-                        FileObject f = mimeType2kitClass.get(mimeType);
-                        if (isInstanceOf(f, kitClass, !kitClassFinal)) {
-                            list.add(mimeType);
+
+                    // If kitClass is not registered for any mime type, we have
+                    // to check its superclass, but only up to the well known kit class parents.
+                    // If a kit class is registered for some mime type we must not
+                    // check its superclass.
+                    for(Class clazz = kitClass; 
+                        clazz != null && !WELL_KNOWN_PARENTS.contains(clazz.getName()); 
+                        clazz = clazz.getSuperclass()
+                    ) {
+                        boolean kitClassFinal = (clazz.getModifiers() & Modifier.FINAL) != 0;
+                        for(String mimeType : mimeType2kitClass.keySet()) {
+                            FileObject f = mimeType2kitClass.get(mimeType);
+                            if (isInstanceOf(f, clazz, !kitClassFinal)) {
+                                list.add(mimeType);
+                            }
+                        }
+                        
+                        if (!list.isEmpty()) {
+                            break;
                         }
                     }
                 }
