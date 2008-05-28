@@ -322,5 +322,9 @@ class PHPVerificationVisitor extends DefaultTreePathVisitor {
             
             return false;
         }
+        
+        public List<ASTNode> getUnreferencedVars(){
+            return unreferencesVars;
+        }
     }
 }

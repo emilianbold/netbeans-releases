@@ -37,55 +37,72 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.vmd.componentssupport.ui;
+package org.netbeans.modules.php.editor.verification;
 
-import java.util.StringTokenizer;
-import org.openide.util.Utilities;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.prefs.Preferences;
+import javax.swing.JComponent;
+import org.netbeans.modules.gsf.api.Hint;
+import org.netbeans.modules.gsf.api.HintSeverity;
+import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.gsf.api.Rule.AstRule;
+import org.netbeans.modules.gsf.api.Rule.UserConfigurableRule;
+import org.netbeans.modules.gsf.api.RuleContext;
+import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
+import org.openide.util.NbBundle;
 
 /**
  *
- * @author avk
+ * @author Tomasz.Slota@Sun.COM
  */
-public class UIUtils {
+public class UnusedVariableRule implements AstRule, UserConfigurableRule {
+    public void check (PHPRuleContext context, List<Hint> hints){
+        for (ASTNode node : context.variableStack.getUnreferencedVars()){
+            OffsetRange range = new OffsetRange(node.getStartOffset(), node.getEndOffset());
+            
+            Hint hint = new Hint(UnusedVariableRule.this, getDescription(),
+                        context.compilationInfo.getFileObject(), range, null, 500);
+            
+            hints.add(hint);
+        }
+    }
 
-    /**
-     * Returns a string suitable for text areas respresenting content of {@link
-     * CreatedModifiedFiles} <em>paths</em>.
-     *
-     * @param relPaths should be either
-     *        {@link CreatedModifiedFiles#getCreatedPaths()} or
-     *        {@link CreatedModifiedFiles#getModifiedPaths()}.
-     */
-    public static String generateTextAreaContent(String[] relPaths) {
-        StringBuffer sb = new StringBuffer();
-        if (relPaths.length > 0) {
-            for (int i = 0; i < relPaths.length; i++) {
-                if (i > 0) {
-                    sb.append('\n'); // NOI18N
-                }
-                sb.append(relPaths[i]);
-            }
-        }
-        return sb.toString();
+    public Set<?> getKinds() {
+        return Collections.singleton(PHPHintsProvider.SECOND_PASS_HINTS);
     }
-    
-    public static boolean isValidJavaFQN(String name) {
-        if (name.length() == 0) {
-            return false;
-        }
-        StringTokenizer tk = new StringTokenizer(name,".",true); //NOI18N
-        boolean delimExpected = false;
-        while (tk.hasMoreTokens()) {
-            String namePart = tk.nextToken();
-            if (delimExpected ^ namePart.equals(".")) { // NOI18N
-                return false;
-            }
-            if (!delimExpected && !Utilities.isJavaIdentifier(namePart)) {
-                return false;
-            }
-            delimExpected = !delimExpected;
-        }
-        return delimExpected;
+
+    public String getId() {
+        return "unused.var"; //NOI18N
     }
-    
+
+    public String getDescription() {
+        return NbBundle.getMessage(UnusedVariableRule.class, "UnusedVariableDesc");
+    }
+
+    public boolean getDefaultEnabled() {
+        return true;
+    }
+
+    public JComponent getCustomizer(Preferences node) {
+        return null;
+    }
+
+    public boolean appliesTo(RuleContext context) {
+        return true;
+    }
+
+    public String getDisplayName() {
+        return getDescription();
+    }
+
+    public boolean showInTasklist() {
+        return true;
+    }
+
+    public HintSeverity getDefaultSeverity() {
+        return HintSeverity.WARNING;
+    }
+
 }

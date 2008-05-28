@@ -527,6 +527,10 @@ public final class Language {
         this.occurrencesFile = occurrencesFile;
     }
     
+    public boolean hasOccurrencesFinder() {
+        return occurrencesFile != null;
+    }
+    
     /**
      * Return the semantic analyzer for this language
      */
