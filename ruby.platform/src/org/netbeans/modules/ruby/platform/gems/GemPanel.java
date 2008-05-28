@@ -131,6 +131,7 @@ public final class GemPanel extends JPanel implements Runnable {
     public GemPanel(String availableFilter, RubyPlatform preselected) {
         updateTasksQueue = Executors.newSingleThreadExecutor();
         initComponents();
+        allVersionsCheckbox.setSelected(Util.shallFetchAllVersions());
         if (preselected == null) {
             Util.preselectPlatform(platforms, LAST_PLATFORM_ID);
         } else {
@@ -542,6 +543,7 @@ public final class GemPanel extends JPanel implements Runnable {
         installLocalButton = new javax.swing.JButton();
         settingsPanel = new javax.swing.JPanel();
         proxyButton = new javax.swing.JButton();
+        allVersionsCheckbox = new javax.swing.JCheckBox();
         rubyPlatformLabel = new javax.swing.JLabel();
         platforms = org.netbeans.modules.ruby.platform.PlatformComponentFactory.getRubyPlatformsComboxBox();
         manageButton = new javax.swing.JButton();
@@ -815,21 +817,28 @@ public final class GemPanel extends JPanel implements Runnable {
         org.openide.awt.Mnemonics.setLocalizedText(proxyButton, org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.proxyButton.text")); // NOI18N
         proxyButton.addActionListener(formListener);
 
+        org.openide.awt.Mnemonics.setLocalizedText(allVersionsCheckbox, org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.allVersionsCheckbox.text")); // NOI18N
+        allVersionsCheckbox.addActionListener(formListener);
+
         org.jdesktop.layout.GroupLayout settingsPanelLayout = new org.jdesktop.layout.GroupLayout(settingsPanel);
         settingsPanel.setLayout(settingsPanelLayout);
         settingsPanelLayout.setHorizontalGroup(
             settingsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(settingsPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(proxyButton)
-                .addContainerGap(616, Short.MAX_VALUE))
+                .add(settingsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(proxyButton)
+                    .add(allVersionsCheckbox))
+                .addContainerGap(526, Short.MAX_VALUE))
         );
         settingsPanelLayout.setVerticalGroup(
             settingsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(settingsPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(proxyButton)
-                .addContainerGap(328, Short.MAX_VALUE))
+                .add(18, 18, 18)
+                .add(allVersionsCheckbox)
+                .addContainerGap(287, Short.MAX_VALUE))
         );
 
         proxyButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.proxyButton.AccessibleContext.accessibleDescription")); // NOI18N
@@ -949,6 +958,9 @@ public final class GemPanel extends JPanel implements Runnable {
             }
             else if (evt.getSource() == proxyButton) {
                 GemPanel.this.proxyButtonActionPerformed(evt);
+            }
+            else if (evt.getSource() == allVersionsCheckbox) {
+                GemPanel.this.allVersionsCheckboxActionPerformed(evt);
             }
             else if (evt.getSource() == manageButton) {
                 GemPanel.this.manageButtonActionPerformed(evt);
@@ -1106,6 +1118,10 @@ public final class GemPanel extends JPanel implements Runnable {
             gemManager.installLocal(gem, this, false, false, true, completionTask);
         }
     }//GEN-LAST:event_installLocalButtonActionPerformed
+
+    private void allVersionsCheckboxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_allVersionsCheckboxActionPerformed
+        Util.setFetchAllVersions(allVersionsCheckbox.isSelected());
+}//GEN-LAST:event_allVersionsCheckboxActionPerformed
 
     public static File chooseGemRepository(final Component parent) {
         JFileChooser chooser = new JFileChooser();
@@ -1312,6 +1328,7 @@ public final class GemPanel extends JPanel implements Runnable {
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JCheckBox allVersionsCheckbox;
     private javax.swing.JButton browseGemHome;
     private javax.swing.JLabel gemHome;
     private javax.swing.JTextField gemHomeValue;

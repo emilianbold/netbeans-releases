@@ -81,6 +81,7 @@ public final class Util {
     private static final String PROXY_AUTHENTICATION_PASSWORD = "proxyAuthenticationPassword"; // NOI18N
 
     private static final String FIRST_TIME_KEY = "platform-manager-called-first-time"; // NOI18N
+    private static final String FETCH_ALL_VERSIONS = "gem-manager-fetch-all-versions"; // NOI18N
     
     public static final Comparator<String> VERSION_COMPARATOR = new Comparator<String>() {
         public int compare(String v1, String v2) {
@@ -258,7 +259,25 @@ public final class Util {
     static boolean isFirstPlatformTouch() {
         return Util.getPreferences().getBoolean(FIRST_TIME_KEY, true);
     }
-    
+
+    /**
+     * Retrieves stored setting whether to fetch all versions of Gems or not,
+     * i.e. whether <em>-a</em> or <em>--all</em> respectively should be used
+     * for operation like 'gem list'.
+     */
+    public static boolean shallFetchAllVersions() {
+        return Util.getPreferences().getBoolean(FETCH_ALL_VERSIONS, false);
+    }
+
+    /**
+     * Stores setting whether to fetch all versions of Gems or not, i.e. whether
+     * <em>-a</em> or <em>--all</em> respectively should be used for operation
+     * like 'gem list'.
+     */
+    public static void setFetchAllVersions(boolean fetchAll) {
+        Util.getPreferences().putBoolean(FETCH_ALL_VERSIONS, fetchAll);
+    }
+
     public static String readAsString(final InputStream is) throws IOException {
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
