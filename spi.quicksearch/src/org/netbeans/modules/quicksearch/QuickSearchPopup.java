@@ -68,7 +68,7 @@ public class QuickSearchPopup extends javax.swing.JPanel {
 
     void update(String text) {
         //should update existing, not create new
-        jList1.setModel(new SearchListModel(text));
+        jList1.setModel(new ResultsModel(text));
     }
     
 

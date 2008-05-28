@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -40,52 +40,66 @@
 package org.netbeans.modules.quicksearch;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.netbeans.spi.quicksearch.SearchProvider;
-import org.openide.util.Lookup;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.Repository;
+import org.openide.util.lookup.Lookups;
+
 
 /**
- * Command Evaluator. It evaluates commands from toolbar and creates results
- * @author Jan Becicka
+ *
+ * @author Dafe Simonek
  */
-public class CommandEvaluator {
+final class ProviderRegistry {
     
-    /**
-     * command pattern is:
-     * "command arguments"
-     */
-    private static Pattern COMMAND_PATTERN = Pattern.compile("(\\w+)(\\s+)(.+)");
+    /** folder in layer file system where provider of fast access content are searched for */
+    private static final String SEARCH_PROVIDERS_FOLDER = "/QuickSearch"; //NOI18N
     
-    /**
-     * if command is in form "command arguments" then only providers registered 
-     * for given command are called. Otherwise all providers are called.
-     * @param command
-     * @return 
-     */
-    public static Iterable<? extends CategoryResult> evaluate(String command) {
-        
-        List<CategoryResult> l = new ArrayList<CategoryResult>();
-        Matcher m = COMMAND_PATTERN.matcher(command);
-        boolean isCommand = m.matches();
-        
-        for (ProviderModel.Category cat : ProviderRegistry.getInstance().getProviders().getCategories()) {
-            CategoryResult curRes = new CategoryResult(cat);
-            for (SearchProvider provider : cat.getProviders()) {
-                if (isCommand) {
-                    String commandPrefix = provider.getCategory().getCommandPrefix();
-                    if (commandPrefix != null && commandPrefix.equalsIgnoreCase(m.group(1))) {
-                        curRes.addAll(provider.evaluate(m.group(3)));
-                    }
-                } else {
-                    curRes.addAll(provider.evaluate(command));
-                }
-            }
-            l.add(curRes);
+    private ProviderModel providers;
+    
+    private static ProviderRegistry instance;
+    
+    private ProviderRegistry () {
+    }
+    
+    public static ProviderRegistry getInstance () {
+        if (instance == null) {
+            instance = new ProviderRegistry();
         }
-
-        return l;
+        return instance;
+    }
+    
+    
+    public ProviderModel getProviders () {
+        if (providers == null) {
+            providers = new ProviderModel();
+            loadProviders(providers);
+        }
+        return providers;
     }
 
+    private void loadProviders (ProviderModel model) {
+        FileObject[] categoryFOs = Repository.getDefault().getDefaultFileSystem().
+                findResource(SEARCH_PROVIDERS_FOLDER).getChildren();
+
+        List<ProviderModel.Category> categories = new ArrayList<ProviderModel.Category>(categoryFOs.length);
+        
+        for (int i = 0; i < categoryFOs.length; i++) {
+            FileObject curFO = categoryFOs[i];
+            
+            FileObject[] children = curFO.getChildren();
+            
+            Collection<? extends SearchProvider> catProviders = 
+                    Lookups.forPath(curFO.getPath()).lookupAll(SearchProvider.class);
+            
+            categories.add(new ProviderModel.Category(
+                    curFO.getNameExt(),
+                    new ArrayList<SearchProvider>(catProviders)));
+        }
+
+        model.setCategories(categories);
+    }
+    
 }

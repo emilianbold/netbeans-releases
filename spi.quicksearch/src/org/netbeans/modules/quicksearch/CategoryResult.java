@@ -37,27 +37,52 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
+package org.netbeans.modules.quicksearch;
 
-package org.netbeans.spi.quicksearch;
-
-import org.openide.util.Cancellable;
+import java.util.ArrayList;
 import java.util.List;
-
+import org.netbeans.spi.quicksearch.*;
 
 /**
- * Search Provider.
- * Implement to provide new group of results for quick search
- * @author  Jan Becicka
+ *
+ * @author  Jan Becicka, Dafe Simonek
  */
-public interface SearchProvider extends Cancellable {
+final class  CategoryResult {
     
+    private ProviderModel.Category category;
+    
+    private List<SearchResult> items;
+
+    public CategoryResult (ProviderModel.Category category) {
+        this.category = category;
+        items = new ArrayList<SearchResult>();
+    }
+    
+    public void addItem (SearchResult item) {
+        items.add(item);
+    }
+    
+    public void addAll (List<SearchResult> newItems) {
+        items.addAll(newItems);
+    }
+
     /**
-     * find result matching given pattern
-     * @param pattern
-     * @return
+     * Get the value of item
+     *
+     * @return the value of item
      */
-    List<SearchResult> evaluate (String pattern);
+    public List<SearchResult> getItems() {
+        return items;
+    }
+
+    /**
+     * Get the value of Category
+     *
+     * @return the value of Category
+     */
+    public ProviderModel.Category getCategory() {
+        return category;
+    }
     
-    CategoryDescription getCategory ();
-    
+
 }

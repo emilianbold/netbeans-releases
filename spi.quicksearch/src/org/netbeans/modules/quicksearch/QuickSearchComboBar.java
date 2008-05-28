@@ -175,8 +175,10 @@ private void commandKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_c
     } else if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
         displayer.invoke();
         evt.consume();
-        popup.hide();
-        popup=null;
+        if (popup != null) {
+            popup.hide();
+            popup=null;
+        }
         command.setText("");
     } else if ((evt.getKeyCode()) == KeyEvent.VK_ESCAPE) {
     if (popup != null) {

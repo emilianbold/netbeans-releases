@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -41,28 +41,18 @@ package org.netbeans.spi.quicksearch;
 
 /**
  *
- * @author  Jan Becicka
+ * @author Dafe Simonek
  */
-public interface SearchResultGroup {
-
-    /**
-     * Get the value of item
-     *
-     * @return the value of item
-     */
-    public Iterable<? extends SearchResult> getItems();
-
-    /**
-     * Get the value of Category
-     *
-     * @return the value of Category
-     */
-    public String getCategory();
+public interface CategoryDescription {
     
-    /**
-     * Not sure if this method should be here
+    public String getDisplayName ();
+    
+    public String getHint ();
+    
+     /** 
+      * Prefix for this category
      * @return
      */
-    int getSize();
+    public String getCommandPrefix ();
 
 }
