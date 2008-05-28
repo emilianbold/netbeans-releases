@@ -36,41 +36,36 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.ruby.platform.gems;
+
+package org.netbeans.modules.ruby.platform;
 
 import org.netbeans.junit.NbTestCase;
 
-public final class GemTest extends NbTestCase {
-
-    public GemTest(String testName) {
+public class UtilTest extends NbTestCase {
+    
+    public UtilTest(String testName) {
         super(testName);
     }
-    
-    public void testGetLatestVersion() {
-        assertLatestInstalled("0.1.11, 0.1.10", "0.1.11");
-        assertLatestInstalled("0.1.10, 0.1.11", "0.1.11");
-        assertLatestInstalled("0.1.10", "0.1.10");
-        assertLatestInstalled(null, null);
-        assertLatestAvailable("0.1.11, 0.1.10", "0.1.11");
-        assertLatestAvailable("0.1.10, 0.1.11", "0.1.11");
-        assertLatestAvailable("0.1.10", "0.1.10");
-        assertLatestAvailable(null, null);
-    }
-    
-    public void testHasUpdateAvailable() {
-        Gem gem = new Gem("ruby-debug-ide", "0.1.11, 0.1.10", "0.1.11");
-        assertFalse(gem.hasUpdateAvailable());
-        gem = new Gem("ruby-debug-ide", "0.10.1, 0.10.0", "0.9");
-        assertFalse(gem.hasUpdateAvailable());
+
+    public void testCompareGemVersions() {
+        assertTrue(Util.compareVersions("1.0.0", "0.9.9") > 0);
+        assertTrue(Util.compareVersions("0.4.0", "0.3.0") > 0);
+        assertTrue(Util.compareVersions("0.4.0", "0.3.9") > 0);
+        assertTrue(Util.compareVersions("0.0.2", "0.0.1") > 0);
+        assertTrue(Util.compareVersions("0.10.0", "0.9.0") > 0);
+        assertTrue(Util.compareVersions("0.9.0", "0.10.0") < 0);
+        assertTrue(Util.compareVersions("1.0.0", "4.9.9") < 0);
+        assertTrue(Util.compareVersions("0.3.0", "0.4.0") < 0);
+        assertTrue(Util.compareVersions("0.3.9", "0.4.0") < 0);
+        assertTrue(Util.compareVersions("0.0.1", "0.0.2") < 0);
+        assertTrue(Util.compareVersions("4.4.4", "4.4.4") == 0);
+        assertTrue(Util.compareVersions("4.4.4-platform", "4.4.4") != 0);
+        assertTrue(Util.compareVersions("0.10.0-ruby", "0.9.0") > 0);
+        assertTrue(Util.compareVersions("0.9.0-ruby", "0.10.0") < 0);
+        assertTrue(Util.compareVersions("0.10.0", "0.9.0-ruby") > 0);
+        assertTrue(Util.compareVersions("0.9.0", "0.10.0-ruby") < 0);
+        assertTrue(Util.compareVersions("0.9", "0.10.1") < 0);
+        assertTrue(Util.compareVersions("0.10.1", "0.9") > 0);
     }
 
-    private void assertLatestInstalled(String versions, String latestExpected) {
-        Gem gem = new Gem("ruby-debug-ide", versions, null);
-        assertEquals("latest version", latestExpected, gem.getLatestInstalled());
-    }
-
-    private void assertLatestAvailable(String versions, String latestExpected) {
-        Gem gem = new Gem("ruby-debug-ide", null, versions);
-        assertEquals("latest version", latestExpected, gem.getLatestAvailable());
-    }
 }

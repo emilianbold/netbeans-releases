@@ -71,7 +71,7 @@ public final class Util {
      * Regexp for matching version number in gem packages:  name-x.y.z (we need
      * to pull out x,y,z such that we can do numeric comparisons on them)
      */
-    private static final Pattern VERSION_PATTERN = Pattern.compile("(\\d+)\\.(\\d+)\\.(\\d+)(-\\S+)?"); // NOI18N
+    private static final Pattern VERSION_PATTERN = Pattern.compile("(\\d+)\\.(\\d+)(\\.(\\d+)(-\\S+)?)?"); // NOI18N
     
     private static final Logger LOGGER = Logger.getLogger(Util.class.getName());
 
@@ -302,14 +302,14 @@ public final class Util {
         if (matcher1.matches()) {
             int major1 = Integer.parseInt(matcher1.group(1));
             int minor1 = Integer.parseInt(matcher1.group(2));
-            int micro1 = Integer.parseInt(matcher1.group(3));
+            int micro1 = matcher1.group(4) == null ? 0 : Integer.parseInt(matcher1.group(4));
 
             Matcher matcher2 = VERSION_PATTERN.matcher(version2);
 
             if (matcher2.matches()) {
                 int major2 = Integer.parseInt(matcher2.group(1));
                 int minor2 = Integer.parseInt(matcher2.group(2));
-                int micro2 = Integer.parseInt(matcher2.group(3));
+                int micro2 = matcher2.group(4) == null ? 0 : Integer.parseInt(matcher2.group(4));
 
                 if (major1 != major2) {
                     return major1 - major2;
