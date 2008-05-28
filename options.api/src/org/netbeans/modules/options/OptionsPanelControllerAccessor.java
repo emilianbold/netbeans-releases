@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,61 +31,40 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.options.advanced;
+package org.netbeans.modules.options;
 
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import org.netbeans.api.options.OptionsDisplayer;
-import org.netbeans.spi.options.OptionsCategory;
 import org.netbeans.spi.options.OptionsPanelController;
-import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
-
 
 /**
- * Contains information about Advanced Panel, and creates a new
- * instance of it.
- *
- * @author Jan Jancura
+ * Accessor for OptionsPanelController.setCurrentSubcategory
+ * (see http://openide.netbeans.org/tutorial/api-design.html#design.less.friend).
+ * @author Jiri Skrivanek
  */
-public final class Advanced extends OptionsCategory {
+public abstract class OptionsPanelControllerAccessor {
+    public static OptionsPanelControllerAccessor DEFAULT;
 
-    private OptionsPanelController controller;
-    
-    private static String loc (String key) {
-        return NbBundle.getMessage (Advanced.class, key);
-    }
-
-    private static Icon icon;
-    
-    @Override
-    public Icon getIcon () {
-        if (icon == null)
-            icon = new ImageIcon (
-                Utilities.loadImage 
-                    ("org/netbeans/modules/options/resources/advanced.png")
-            );
-        return icon;
-    }
-    
-    public String getCategoryName () {
-        return loc ("CTL_Advanced_Options");
-    }
-
-    public String getTitle () {
-        return loc ("CTL_Advanced_Options_Title");
-    }
-    
-    public String getDescription () {
-        return loc ("CTL_Advanced_Options_Description");
-    }
-
-    public OptionsPanelController create () {
-        if (controller == null) {
-            controller = new AdvancedPanelController(OptionsDisplayer.ADVANCED);
+    public static OptionsPanelControllerAccessor getDefault() {
+        if (DEFAULT != null) {
+            return DEFAULT;
         }
-        return controller;
-    }  
+        // invokes static initializer of OptionsPanelController.class
+        // that will assign value to the DEFAULT field above
+        Class c = OptionsPanelController.class;
+        try {
+            Class.forName(c.getName(), true, c.getClassLoader());
+        } catch (ClassNotFoundException ex) {
+            assert false : ex;
+        }
+        assert DEFAULT != null : "The DEFAULT field must be initialized";
+        return DEFAULT;
+    }
+
+    /** Accessor to setCurrentSubcategory */
+    public abstract void setCurrentSubcategory(OptionsPanelController controller, String subpath);
 }
