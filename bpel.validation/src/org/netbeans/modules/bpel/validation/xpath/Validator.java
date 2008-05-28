@@ -112,13 +112,37 @@ public final class Validator extends BpelValidator implements ValidationVisitor 
       return;
     }
     // # 135489
-    if (isPositive(fromName) && isNegative(toName)) {
-      addError("FIX_Positive_Negative_Copy", copy);
+    if (fromName.startsWith("nonNegative") && toName.startsWith("negative")) { // NOI18N
+      addError("FIX_NonNegative_Negative_Copy", copy); // NOI18N
+      return;
+    }
+    if (fromName.startsWith("positive") && toName.startsWith("negative")) { // NOI18N
+      addError("FIX_Positive_Negative_Copy", copy); // NOI18N
+      return;
+    }
+    if (fromName.startsWith("positive") && toName.startsWith("nonPositive")) { // NOI18N
+      addError("FIX_Positive_NonPositive_Copy", copy); // NOI18N
       return;
     }
     // # 135489
-    if (isNegative(fromName) && isPositive(toName)) {
-      addError("FIX_Negative_Positive_Copy", copy);
+    if (fromName.startsWith("negative") && toName.startsWith("nonNegative")) { // NOI18N
+      addError("FIX_Negative_NonNegative_Copy", copy); // NOI18N
+      return;
+    }
+    if (fromName.startsWith("negative") && toName.startsWith("positive")) { // NOI18N
+      addError("FIX_Negative_Positive_Copy", copy); // NOI18N
+      return;
+    }
+    if (fromName.startsWith("nonPositive") && toName.startsWith("positive")) { // NOI18N
+      addError("FIX_NonPositive_Positive_Copy", copy); // NOI18N
+      return;
+    }
+    if (fromName.startsWith("nonPositive") && toName.startsWith("nonNegative")) { // NOI18N
+      addWarning("FIX_NonPositive_NonNegative_Copy", copy); // NOI18N
+      return;
+    }
+    if (fromName.startsWith("nonNegative") && toName.startsWith("nonPositive")) { // NOI18N
+      addWarning("FIX_NonNegative_NonPositive_Copy", copy); // NOI18N
       return;
     }
     // # 135489
