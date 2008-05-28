@@ -124,13 +124,13 @@ public final class Validator extends BpelValidator {
       String name = variable.getName();
 
       if ( !isInitialized && !isUsed) {
-        addError("FIX_not_initialized_and_not_used", variable, name); // warning // NOI18N
+        addWarning("FIX_not_initialized_and_not_used", variable, name); // NOI18N
       }
       else if ( !isInitialized && isUsed) {
         addError("FIX_not_initialized_but_used", variable, name); // NOI18N
       }
       else if (isInitialized && !isUsed) {
-        addError("FIX_initialized_and_not_used", variable, name); // warning // NOI18N
+        addWarning("FIX_initialized_and_not_used", variable, name); // NOI18N
       }
     }
   }
@@ -142,9 +142,9 @@ public final class Validator extends BpelValidator {
     Collection<BpelEntity> children = entity.getChildren();
 
     for (BpelEntity child : children) {
-      if (child instanceof Scope) {
-        continue;
-      }
+//    if (child instanceof Scope) {
+//      continue;
+//    }
       findVariables(child, infos);
     }
   }
