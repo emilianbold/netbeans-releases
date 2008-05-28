@@ -98,6 +98,8 @@ public final class Validator extends BpelValidator {
   // # 94195
   @Override
   public void visit(VariableContainer container) {
+    if (true) return;// todo r
+
     Variable [] variables = container.getVariables();
 //out();
 //out("WE: " + container.getParent().getClass().getName());
@@ -122,15 +124,15 @@ public final class Validator extends BpelValidator {
       isUsed = info.isUsed();
       Variable variable = info.getVariable();
       String name = variable.getName();
-
+//todo a
       if ( !isInitialized && !isUsed) {
-        addError("FIX_not_initialized_and_not_used", variable, name); // warning // NOI18N
+//      addWarning("FIX_not_initialized_and_not_used", variable, name); // NOI18N
       }
       else if ( !isInitialized && isUsed) {
-        addError("FIX_not_initialized_but_used", variable, name); // NOI18N
+//      addError("FIX_not_initialized_but_used", variable, name); // NOI18N
       }
       else if (isInitialized && !isUsed) {
-        addError("FIX_initialized_and_not_used", variable, name); // warning // NOI18N
+//      addWarning("FIX_initialized_and_not_used", variable, name); // NOI18N
       }
     }
   }
@@ -142,9 +144,9 @@ public final class Validator extends BpelValidator {
     Collection<BpelEntity> children = entity.getChildren();
 
     for (BpelEntity child : children) {
-      if (child instanceof Scope) {
-        continue;
-      }
+//    if (child instanceof Scope) {
+//      continue;
+//    }
       findVariables(child, infos);
     }
   }
@@ -171,7 +173,7 @@ public final class Validator extends BpelValidator {
   }
 
   private void checkUsages(BpelEntity entity, List<VariableInfo> infos) {
-    if (isForUsed(entity)) {
+    if (isForUsed(entity)) {// todo here
       checkUsagesVariableReference((VariableReference) entity, infos);
     }
     if (entity instanceof Receive) {
