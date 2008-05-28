@@ -165,6 +165,16 @@ public class LoggingRepaintManager extends RepaintManager {
         }
     }
     /**
+     * Remove region filter
+     * @param filter
+     */
+    public void removeRegionFilter(RegionFilter filter) {
+        if(filter != null){
+            tr.add(ActionTracker.TRACK_CONFIG_APPLICATION_MESSAGE, "REMOVE FILTER: " + filter.getFilterName());
+            regionFilters.remove(filter);
+        }
+    }
+    /**
      * Reset region filters
      */
     public void  resetRegionFilters() {

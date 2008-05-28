@@ -42,13 +42,8 @@
 package org.netbeans.modules.performance.utilities;
 
 import java.io.PrintStream;
-import java.io.FileOutputStream;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.tree.TreePath;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -80,7 +75,6 @@ import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JListOperator;
-import org.netbeans.jemmy.operators.JLabelOperator;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
 import org.netbeans.jemmy.operators.JMenuItemOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
@@ -90,7 +84,6 @@ import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.jemmy.operators.Operator.StringComparator;
 //import org.netbeans.junit.ide.ProjectSupport;
-import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 
 /*
 import org.netbeans.progress.module.Controller;
@@ -336,7 +329,7 @@ public class CommonUtilities {
     
     protected static void waitForProjectCreation(int delay, boolean wait){
         try {
-            Thread.currentThread().sleep(delay);
+            Thread.sleep(delay);
         } catch (InterruptedException exc) {
             exc.printStackTrace(System.err);
         }

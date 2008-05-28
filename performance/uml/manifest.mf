@@ -1,6 +1,5 @@
 Manifest-Version: 1.0
-OpenIDE-Module: umlpackperftests
-OpenIDE-Module-Layer: umlpackperftests/layer.xml
-OpenIDE-Module-Localizing-Bundle: umlpackperftests/Bundle.properties
+OpenIDE-Module: org.netbeans.performance.uml
+OpenIDE-Module-Localizing-Bundle: org/netbeans/performance/uml/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.0
 

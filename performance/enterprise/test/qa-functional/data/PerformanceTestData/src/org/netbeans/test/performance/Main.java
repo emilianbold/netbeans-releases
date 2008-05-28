@@ -44,8 +44,8 @@ package org.netbeans.test.performance;
 public class Main {
 
     /** Creates a new instance of Main */
-    public Main(String text) {
-        System.out.println("Hello World " + text);
+    public Main() {
+        System.out.println("Hello World");
     }
 
     private void foo() {
@@ -56,8 +56,7 @@ public class Main {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        new Main("");
-
+        new Main();
     }
 
 }
