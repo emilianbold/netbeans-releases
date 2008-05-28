@@ -1040,14 +1040,31 @@ public abstract class GsfTestBase extends NbTestCase {
         assertNotNull(pr);
         
         analyzer.run(info);
-        Map<OffsetRange, ColoringAttributes> highlights = analyzer.getHighlights();
+        Map<OffsetRange, Set<ColoringAttributes>> highlights = analyzer.getHighlights();
 
+        checkNoOverlaps(highlights.keySet(), info.getDocument());
+        
         String annotatedSource = annotateSemanticResults(info.getDocument(), highlights);
 
         assertDescriptionMatches(relFilePath, annotatedSource, false, ".semantic");
     }
+    
+    private void checkNoOverlaps(Set<OffsetRange> ranges, Document doc) throws BadLocationException {
+        // Make sure there are no overlapping ranges
+        List<OffsetRange> sortedRanges = new ArrayList<OffsetRange>(ranges);
+        Collections.sort(sortedRanges);
+        OffsetRange prevRange = OffsetRange.NONE;
+        for (OffsetRange range : sortedRanges) {
+            if (range.getStart() < prevRange.getEnd()) {
+                fail("OffsetRanges should be non-overlapping! " + prevRange + 
+                        "(" + doc.getText(prevRange.getStart(), prevRange.getLength()) + ") and " + range + 
+                        "(" + doc.getText(range.getStart(), range.getLength()) + ")");
+            }
+            prevRange = range;
+        }
+    }
 
-    private String annotateSemanticResults(Document doc, Map<OffsetRange, ColoringAttributes> highlights) throws Exception {
+    private String annotateSemanticResults(Document doc, Map<OffsetRange, Set<ColoringAttributes>> highlights) throws Exception {
         StringBuilder sb = new StringBuilder();
         String text = doc.getText(0, doc.getLength());
         Map<Integer, OffsetRange> starts = new HashMap<Integer, OffsetRange>(100);
@@ -1061,9 +1078,23 @@ public abstract class GsfTestBase extends NbTestCase {
             if (starts.containsKey(i)) {
                 sb.append("|>");
                 OffsetRange range = starts.get(i);
-                ColoringAttributes ca = highlights.get(range);
-                if (ca != null) {
-                    sb.append(ca.name());
+                Set<ColoringAttributes> cas = highlights.get(range);
+                if (cas != null) {
+                    // Sort to ensure stable unit test golden files
+                    List<String> attrs = new ArrayList<String>(cas.size());
+                    for (ColoringAttributes c : cas) {
+                        attrs.add(c.name());
+                    }
+                    Collections.sort(attrs);
+                    boolean first = true;
+                    for (String name : attrs) {
+                        if (first) {
+                            first = false;
+                        } else {
+                            sb.append(",");
+                        }
+                        sb.append(name);
+                    }
                     sb.append(':');
                 }
             }
