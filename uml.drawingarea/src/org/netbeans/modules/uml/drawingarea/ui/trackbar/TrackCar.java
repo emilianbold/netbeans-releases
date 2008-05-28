@@ -321,35 +321,9 @@ public class TrackCar extends TrackItem implements ActionListener
       setPreviousItem(null);
       setNextItem(null);
       
-      printPreviousItems(prevItem);
-      printNextItems(nextItem);
-      
       getTrackBar().addCar(this, false);
+   }
       
-      printPreviousItems(getPreviousItem());
-      printNextItems(getNextItem());
-   }
-   
-   protected void printNextItems(TrackItem nextItem)
-   {
-      TrackItem curItem = nextItem;
-      while(curItem != null)
-      {
-         ETSystem.out.println(nextItem);
-         curItem = curItem.getNextItem();
-      }
-   }
-   
-   protected void printPreviousItems(TrackItem prevItem)
-   {
-      TrackItem curItem = prevItem;
-      while(curItem != null)
-      {
-         ETSystem.out.println(curItem);
-         curItem = curItem.getPreviousItem();
-      }
-   }
-   
    protected TrackItem readjustNieghbors(TrackItem prevItem,
            TrackItem nextItem)
    {

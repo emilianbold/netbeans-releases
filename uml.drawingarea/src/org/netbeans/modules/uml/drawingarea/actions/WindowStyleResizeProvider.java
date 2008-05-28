@@ -190,7 +190,6 @@ public class WindowStyleResizeProvider extends ResizeStrategyProvider {
             widget.setMinimumSize(minResSize);
         }
         else widget.setMinimumSize(new Dimension(10,10));
-        System.out.println("WIDGET STARTED, MIN: "+widget.getMinimumSize());
         if (widget.getScene() instanceof DesignerScene)
         {
             DesignerScene scene = (DesignerScene) widget.getScene();
@@ -230,7 +229,6 @@ public class WindowStyleResizeProvider extends ResizeStrategyProvider {
                                                 preferredBounds.height));
             widget.setPreferredBounds(null);
             widget.setPreferredSize(null);
-            System.out.println("END WITh MIN SIZE MODE");
         }
         else if(mode==UMLNodeWidget.RESIZEMODE.PREFERREDSIZE)
         {
@@ -238,11 +236,9 @@ public class WindowStyleResizeProvider extends ResizeStrategyProvider {
                                                 preferredBounds.height));
             widget.setPreferredBounds(null);
             //mimimum size should be set to some very small value in resize started
-            System.out.println("END WITh PREF SIZE MODE");
         }
         else
         {
-            System.out.println("END WITh PREF BOUNDS MODE");
         }
         startLocation = null;
         
@@ -264,7 +260,6 @@ public class WindowStyleResizeProvider extends ResizeStrategyProvider {
     
     public Point getInitialLocation()
     {
-        System.out.println("ASK POINT: "+startLocation);
         return new Point(startLocation);
     }
 

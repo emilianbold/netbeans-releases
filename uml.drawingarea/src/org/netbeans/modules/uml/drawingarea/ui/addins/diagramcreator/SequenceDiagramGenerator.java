@@ -445,7 +445,6 @@ public class SequenceDiagramGenerator implements ISequenceDiagramGenerator
                 {
                     IMessage message = messages.get(i);
                     int thisLineNumber=message.getLineNumber();
-                    System.out.println("DRAW MESSAGE WITH LINE: "+thisLineNumber);
                     ILifeline sendLifeline = message.getSendingLifeline();
                     ILifeline recLifeline = message.getReceivingLifeline();
                     //TBD check cases for absent sendingLifeline or/and receivingLifeline
@@ -632,7 +631,6 @@ public class SequenceDiagramGenerator implements ISequenceDiagramGenerator
                         }
                     }
                 }
-                System.out.println("CREATED MESSAGES");
                 layoutSequenceDiagram();//we have lifelines and messages now, may want to relayout lifelines based on message labels sizes
             }
         }
@@ -810,7 +808,6 @@ public class SequenceDiagramGenerator implements ISequenceDiagramGenerator
                     {
                         emptyCFs.put(cf.getOperands().get(0).getLineNumber(), cf);
                         emptyCFList.add(cf);
-                        System.out.println("EMPTY COMBINED FRAGMENT WITH LINE: "+cf.getLineNumber()+"; FIRST IO LINE NUMBER: "+cf.getOperands().get(0).getLineNumber()+"; GATES NUM: "+cf.getGates().size());
                     }
                     allCFs.put(cf.getOperands().get(0).getLineNumber(), cf);
                 }

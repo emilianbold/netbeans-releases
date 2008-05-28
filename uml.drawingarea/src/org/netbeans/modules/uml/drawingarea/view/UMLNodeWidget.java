@@ -288,7 +288,6 @@ public abstract class UMLNodeWidget extends Widget
             getActions().addAction(0, new ResizeAction(stratProv));
             //setBorder(BorderFactory.createResizeBorder(RESIZE_SIZE));
             setBorder(new ResizeBorder(RESIZE_SIZE, Color.BLACK, getResizeControlPoints()));
-            System.out.println("SELECT");
             if (getResizeMode()==RESIZEMODE.PREFERREDBOUNDS)
             {
                 Rectangle bnd = getPreferredBounds();
@@ -300,24 +299,21 @@ public abstract class UMLNodeWidget extends Widget
                 setPreferredLocation(loc);
                 setMinimumSize(new Dimension(getResizingMinimumSize().width + RESIZE_SIZE * 2,
                                              getResizingMinimumSize().height + RESIZE_SIZE * 2));
-                    System.out.println("SELECT IN PREF BOUNDS MODE");
             }
             else if(getResizeMode()==RESIZEMODE.PREFERREDSIZE)
             {
                 lastResMode=lastResMode.PREFERREDSIZE;
                 setPreferredSize(new Dimension(getPreferredSize().width + 2 * RESIZE_SIZE,
                                              getPreferredSize().height + 2 * RESIZE_SIZE));
-                     System.out.println("SELECT IN PREF SIZE MODE");
            }
             else if(getResizeMode()==RESIZEMODE.MINIMUMSIZE)
             {
                 if (getMinimumSize() == null)
                 {
-                    setMinimumSize(new Dimension(getBounds().width-2 * RESIZE_SIZE,getBounds().height-2 * RESIZE_SIZE));System.out.println("NEED TO SET AT LEAST MIN SIZE");
+                    setMinimumSize(new Dimension(getBounds().width-2 * RESIZE_SIZE,getBounds().height-2 * RESIZE_SIZE));
                 }
                 setMinimumSize(new Dimension(getMinimumSize().width + 2 * RESIZE_SIZE,
                                              getMinimumSize().height + 2 * RESIZE_SIZE));
-                System.out.println("SELECT IN MIN SIZE MODE");
             }
         }
         else if (!select && wasSelected)
@@ -328,7 +324,6 @@ public abstract class UMLNodeWidget extends Widget
             {
                 getActions().removeAction(0);
                 setBorder(BorderFactory.createEmptyBorder());
-                System.out.println("DESELECT");
                 if (lastResMode==lastResMode.PREFERREDBOUNDS)
                 {
                     Rectangle bnd = getPreferredBounds();
@@ -339,18 +334,15 @@ public abstract class UMLNodeWidget extends Widget
                     loc.translate(RESIZE_SIZE, RESIZE_SIZE);
                     setPreferredLocation(loc);
                     setMinimumSize(getResizingMinimumSize());
-                    System.out.println("DESELECT IN PREF BOUNDS MODE");
                 }
                 else if(lastResMode==lastResMode.PREFERREDSIZE)
                 {
                     setPreferredSize(new Dimension(getPreferredSize().width - 2 * RESIZE_SIZE,
                                                  getPreferredSize().height - 2 * RESIZE_SIZE));
-                    System.out.println("DESELECT IN PREF SIZE MODE");
                 }
                 else if (lastResMode==lastResMode.MINIMUMSIZE)
                 {
                     setMinimumSize(new Dimension(getMinimumSize().width - 2 * RESIZE_SIZE, getMinimumSize().height - 2 * RESIZE_SIZE));
-                    System.out.println("DESELECT IN MIN SIZE MODE");
                 }
             //
             }

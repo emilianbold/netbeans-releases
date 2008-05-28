@@ -460,56 +460,6 @@ public class DiagCreatorAddIn implements IDiagCreatorAddIn, IAcceleratorListener
       }
       return 0;
    }
-
-//    protected void printNodeLocations(String title, IDiagram pDiagram)
-//    {
-//        System.out.println("************************************");
-//        System.out.println("** " + title);
-//        System.out.println("************************************");
-//        
-//        IDrawingAreaControl control = ((IUIDiagram) pDiagram).getDrawingArea();
-//        if (control != null)
-//        {
-//            // Get all the container draw engines
-//            ETList < IPresentationElement > pPEs = control.getAllItems();
-//            if (pPEs != null)
-//            {
-//                int count = pPEs.size();
-//                boolean needRelayout = false;
-//                for (int i = 0; i < count; i++)
-//                {   
-//                    IPresentationElement pPE = pPEs.get(i);
-//                    com.tomsawyer.util.TSObject tsObject = TypeConversions.getTSObject(pPE);
-//                    if(tsObject instanceof com.tomsawyer.editor.TSENode)
-//                    {
-//                        System.out.println("====================================");                        
-//                        
-//                        IDrawEngine drawEngine = TypeConversions.getDrawEngine(pPE);
-//                        if (drawEngine instanceof IADContainerDrawEngine)
-//                        {                        
-//                            System.out.println("== Container                       =");
-//                        }
-//
-//                        com.tomsawyer.editor.TSENode node = (com.tomsawyer.editor.TSENode)tsObject;
-//                        System.out.println("Left = " + node.getLeft());
-//                        System.out.println("Top = " + node.getTop());
-//                        System.out.println("Right = " + node.getRight());
-//                        System.out.println("Bottom = " + node.getBottom());
-//                        
-//                        org.netbeans.modules.uml.core.support.umlsupport.IETRect rectCompartment = TypeConversions.getLogicalBoundingRect(drawEngine);
-//
-//                        System.out.println("------------------------------------");
-//
-//                        System.out.println("Left = " + rectCompartment.getLeft());
-//                        System.out.println("Top = " + rectCompartment.getTop());
-//                        System.out.println("Right = " + rectCompartment.getRight());
-//                        System.out.println("Bottom = " + rectCompartment.getBottom());
-//                        System.out.println("====================================");
-//                    }
-//                }
-//            }
-//        }
-//    }
    
    /**
     * Called when the addin is initialized.

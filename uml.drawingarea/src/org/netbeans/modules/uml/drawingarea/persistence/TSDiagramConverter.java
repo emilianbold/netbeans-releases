@@ -591,7 +591,6 @@ public class TSDiagramConverter
             Message message=(Message) elt;
             if(message.getKind()==Message.MK_RESULT)
             {
-                System.out.println("RESULT MESSAGE");
                 continue;//result is created with call message at the same time
             }
             IPresentationElement pE = Util.createNodePresentationElement();
@@ -622,7 +621,6 @@ public class TSDiagramConverter
                 int x=sourceWidget.getPreferredLocation().x+sourceWidget.getMinimumSize().width/2;
                 int y= y_level+sourceConnector.getY() - (Integer) sourceInfo.getProperty(LIFELINESHIFTKEY);//connector is relative to lifeline, also need to count on shift from initial different lvel locations
                 startingPoint=new Point(x,y);
-                System.out.println("START Y: "+y);
             }
             else
             {
@@ -630,7 +628,6 @@ public class TSDiagramConverter
                 int y=sourceWidget.getPreferredLocation().y+sourceConnector.getY();
                 int x=sourceWidget.getPreferredLocation().x+(sourceConnector.getProportionalOffetX()>0 ? sourceWidget.getBounds().width : 0);
                 startingPoint=new Point(x,y);
-                System.out.println("START Y: "+y);
             }
             if(edgeInfo.getTargetPE().getFirstSubject() instanceof Lifeline)
             {
@@ -654,14 +651,12 @@ public class TSDiagramConverter
             //
             if (message.getKind() == Message.MK_SYNCHRONOUS)
             {
-                System.out.println("SYNCH MESSAGE");
                 //now find the result message for this call message
                 for(EdgeInfo edgeInfo2:einfos)
                 {
                     Message resTmp= (Message) edgeInfo2.getProperty(ELEMENT);
                     if(resTmp.getKind()==Message.MK_RESULT)
                     {
-                        System.out.println("RESULT: "+resTmp+" for "+resTmp.getSendingMessage());
                         if(resTmp.getSendingMessage()==message)
                         {
                             returnMsg=resTmp;
@@ -686,7 +681,6 @@ public class TSDiagramConverter
                             int x=targetWidget.getPreferredLocation().x+targetWidget.getMinimumSize().width/2;
                             int y= y_level+sourceResultConnector.getY() - (Integer) targetInfo.getProperty(LIFELINESHIFTKEY);
                             resultStartingPoint=new Point(x,y);
-                            System.out.println("RESULT Y: "+y);
                         }
                         else
                         {
@@ -694,7 +688,6 @@ public class TSDiagramConverter
                             int y=targetWidget.getPreferredLocation().y+sourceResultConnector.getY();
                             int x=targetWidget.getPreferredLocation().x + (sourceResultConnector.getProportionalOffetX()>0 ? targetWidget.getBounds().width : 0);
                             resultStartingPoint=new Point(x,y);
-                            System.out.println("START Y: "+y);
                         }
                         if(resultInfo.getTargetPE().getFirstSubject() instanceof Lifeline)
                         {
@@ -724,12 +717,9 @@ public class TSDiagramConverter
             else if ((message.getKind() == Message.MK_ASYNCHRONOUS) 
                     || (message.getKind() == Message.MK_CREATE))
             {
-                if(message.getKind() == Message.MK_ASYNCHRONOUS)System.out.println("ASYNCH MESSAGE");
-                else System.out.println("CREATE MESSAGE");
                 provider = sqdengine.getConnectProvider(message, null);
                 retVal = provider.createConnection(sourceWidget, targetWidget, startingPoint, endingPoint);                    
             } 
-            System.out.println("*");
             scene.validate();
             for (int i = 0; i < retVal.size(); i++)
             {
@@ -778,13 +768,11 @@ public class TSDiagramConverter
      */
     private void normalizeSQDDiagram()
     {
-        System.out.println("NORMALIZE SQD");
         Collection<NodeInfo> ninfos = presIdNodeInfoMap.values();
         int topLifelineY=Integer.MAX_VALUE;
         for (NodeInfo ninfo : ninfos)//determine top Y
         {
             IPresentationElement pres=(IPresentationElement) ninfo.getProperty(PRESENTATIONELEMENT);
-            System.out.println("PRESENTATION: "+pres);
             if(pres!=null && pres.getFirstSubject() instanceof Lifeline)
             {
                 Lifeline ll=(Lifeline) pres.getFirstSubject();
@@ -1015,7 +1003,6 @@ public class TSDiagramConverter
             EdgeInfo edgeInfo=(EdgeInfo) labelInfo.get("EDGE");
             boolean endLabel=false;
             LabelManager.LabelType type=null;
-            System.out.println("LABEL TS KIND: "+tsType);
             switch(tsType)
             {
                 case 1://for names of smth on all diagrams
@@ -1067,9 +1054,11 @@ public class TSDiagramConverter
                     break;
                 case 16:
                     //pre consition(state)
+                    System.out.println("***WARNING: unsupported precondition label was skipped");
                     break;
                 case 17:
                     //post condition(state)
+                    System.out.println("***WARNING: unsupported postcondition label was skipped");
                     break;
                 default:
                     throw new UnsupportedOperationException("Converter can't handle label kind: "+tsType);
@@ -1123,7 +1112,6 @@ public class TSDiagramConverter
                 label.setLabel(typeInfo);
                 label.setSize(size);
                 endDet.getEndEdgeLabels().add(label);
-                System.out.println("END LABEL: "+type+";"+typeInfo+";"+endDet.getID());
             }
             else
             {
