@@ -153,6 +153,9 @@ public final class Validator extends BpelValidator {
     if (isForInitialized(entity)) {
       checkInitializationVariableReference((VariableReference) entity, infos);
     }
+    if (entity instanceof Receive) {
+      checkInitializationVariableReference((Receive) entity, infos);
+    }
     if (entity instanceof OnMessage) {
       checkInitializationVariableReference((OnMessage) entity, infos);
     }
@@ -171,6 +174,9 @@ public final class Validator extends BpelValidator {
     if (isForUsed(entity)) {
       checkUsagesVariableReference((VariableReference) entity, infos);
     }
+    if (entity instanceof Receive) {
+      checkUsagesVariableReference((Receive) entity, infos);
+    }
     if (entity instanceof OnMessage) {
       checkUsagesVariableReference((OnMessage) entity, infos);
     }
@@ -187,9 +193,7 @@ public final class Validator extends BpelValidator {
   }
 
   private boolean isForInitialized(BpelEntity entity) {
-    return
-      entity instanceof To ||
-      entity instanceof Receive;
+    return entity instanceof To;
   }
 
   private boolean isForUsed(BpelEntity entity) {
