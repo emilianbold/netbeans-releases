@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -76,8 +76,8 @@ import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
+import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
-import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
 /**
@@ -90,7 +90,6 @@ public class BalloonManager {
     private static Balloon currentBalloon;
     private static JLayeredPane currentPane;
     private static ComponentListener listener;
-    private static RequestProcessor.Task hideToolTipTask = null;
     
     /**
      * Show balloon-like tooltip pointing to the given component. The balloon stays
@@ -144,6 +143,33 @@ public class BalloonManager {
             currentBalloon = null;
             currentPane = null;
             listener = null;
+        }
+    }
+    
+    public static synchronized void dismissSlowly () {
+        if( null != currentBalloon ) {
+            if( currentBalloon.timeoutMillis > 0 ) {
+                SwingUtilities.invokeLater( new Runnable() {
+                    public void run() {
+                        currentBalloon.startDismissTimer();
+                    }
+                });
+            } else {
+                dismiss ();
+            }
+        }
+    }
+    
+    public static synchronized void stopDismissSlowly () {
+        if( null != currentBalloon ) {
+            if( currentBalloon.timeoutMillis > 0 ) {
+                currentBalloon.timeoutMillis = ToolTipManager.sharedInstance ().getDismissDelay (); // on MouseEnter cut timeout on 100ms
+                SwingUtilities.invokeLater( new Runnable() {
+                    public void run() {
+                        currentBalloon.stopDismissTimer ();
+                    }
+                });
+            }
         }
     }
     
