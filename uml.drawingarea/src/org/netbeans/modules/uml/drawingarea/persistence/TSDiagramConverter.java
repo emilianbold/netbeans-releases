@@ -1242,7 +1242,7 @@ public class TSDiagramConverter
                         nodeConnectors.put(connector.getId()+"", connector);
                     }
                     else if (readerData.getName().getLocalPart()
-                        .equalsIgnoreCase("center"))
+                        .equalsIgnoreCase("center") && position==null)//second position may be corresponding label position
                     {
                         int x = Float.valueOf(readerData
                             .getAttributeValue(null, "x")).intValue();
@@ -1257,7 +1257,7 @@ public class TSDiagramConverter
                     }
                     
                     else if (readerData.getName().getLocalPart()
-                        .equalsIgnoreCase("size"))
+                        .equalsIgnoreCase("size") && size==null)//second size may be corresponding label size
                     {
                         size = new Dimension(
                             Float.valueOf(readerData
@@ -1267,12 +1267,12 @@ public class TSDiagramConverter
                     }
 
                     else if (readerData.getName().getLocalPart()
-                        .equalsIgnoreCase("PEID"))
+                        .equalsIgnoreCase("PEID") && PEID==null)
                     {
                         PEID = readerData.getAttributeValue(null, "value");
                     }
                     else if (readerData.getName().getLocalPart()
-                        .equalsIgnoreCase("graphics"))
+                        .equalsIgnoreCase("graphics") && graphicsType==null)
                     {
                         graphicsType = readerData.getAttributeValue(null, "type");
                     }
