@@ -51,11 +51,12 @@ import java.util.logging.Level;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
 import javax.swing.text.StyledDocument;
-import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.groovy.editor.elements.IndexedClass;
+import org.netbeans.modules.groovy.editor.lexer.LexUtilities;
 import org.netbeans.modules.gsf.api.Index;
 import org.netbeans.modules.gsf.api.Index.SearchScope;
 import org.netbeans.modules.gsf.api.NameKind;
@@ -68,7 +69,7 @@ import org.openide.util.Exceptions;
 public class GroovyDeclarationFinder implements DeclarationFinder{
 
     private final Logger LOG = Logger.getLogger(GroovyDeclarationFinder.class.getName());
-    Token<GroovyTokenId> tok;
+    Token<? extends GroovyTokenId> tok;
     
     Document lastDoc = null;
     int lastOffset = -1;
@@ -172,8 +173,10 @@ public class GroovyDeclarationFinder implements DeclarationFinder{
             return OffsetRange.NONE;
         }
         
-        TokenSequence<GroovyTokenId> ts = getSequenceForDoc(doc);
-        tok = getTokenForPosition(ts, offset);
+        TokenSequence<? extends GroovyTokenId> ts = LexUtilities.getPositionedSequence((BaseDocument) doc, offset);
+        if (ts != null) {
+            tok = ts.token();
+        }
         
         if (tok != null) {
             LOG.log(Level.FINEST, "Token   : " + tok);
@@ -194,21 +197,4 @@ public class GroovyDeclarationFinder implements DeclarationFinder{
         return OffsetRange.NONE;
     }
 
-    private TokenSequence<GroovyTokenId> getSequenceForDoc(Document doc) {
-
-        TokenHierarchy<?> hi = TokenHierarchy.get(doc);
-        TokenSequence<GroovyTokenId> ts = hi.tokenSequence(GroovyTokenId.language());
-
-        return ts;
-    }
-
-    private Token<GroovyTokenId> getTokenForPosition(TokenSequence<GroovyTokenId> ts, int offset) {
-
-        ts.move(offset);
-        ts.moveNext();
-
-        return ts.token();
-    }
-    
-    
 }
