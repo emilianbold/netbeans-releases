@@ -48,6 +48,7 @@ import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+import org.netbeans.modules.vmd.componentssupport.ui.UIUtils;
 import org.netbeans.modules.vmd.componentssupport.ui.helpers.BaseHelper;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
@@ -127,28 +128,9 @@ final class BasicModuleConfVisualPanel extends JPanel {
                 getMessage(ACS_LAYER_VALUE));
     }
     
-    public static boolean isValidJavaFQN(String name) {
-        if (name.length() == 0) {
-            return false;
-        }
-        StringTokenizer tk = new StringTokenizer(name,".",true); //NOI18N
-        boolean delimExpected = false;
-        while (tk.hasMoreTokens()) {
-            String namePart = tk.nextToken();
-            if (delimExpected ^ namePart.equals(".")) { // NOI18N
-                return false;
-            }
-            if (!delimExpected && !Utilities.isJavaIdentifier(namePart)) {
-                return false;
-            }
-            delimExpected = !delimExpected;
-        }
-        return delimExpected;
-    }
-    
     private void checkCodeNameBase() {
         String dotName = getCodeNameBaseValue();
-        if (!isValidJavaFQN(dotName)) {
+        if (!UIUtils.isValidJavaFQN(dotName)) {
             setError(getMessage(MSG_INVALID_CNB));
         } else {
             markValid();

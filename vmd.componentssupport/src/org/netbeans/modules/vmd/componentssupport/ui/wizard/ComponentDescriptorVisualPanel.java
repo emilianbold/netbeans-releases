@@ -45,6 +45,7 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
+import org.netbeans.modules.vmd.componentssupport.ui.UIUtils;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -293,7 +294,7 @@ final class ComponentDescriptorVisualPanel extends JPanel {
             setError(NbBundle.getMessage(ComponentDescriptorVisualPanel.class, 
                     MSG_ERR_SUPER_CLASS_EMPTY));
             return false;
-        } else if (!Utilities.isJavaIdentifier(name)){
+        } else if (!UIUtils.isValidJavaFQN(name)){
             setError(NbBundle.getMessage(ComponentDescriptorVisualPanel.class, 
                     MSG_ERR_SUPER_CLASS_INVALID));
             return false;
