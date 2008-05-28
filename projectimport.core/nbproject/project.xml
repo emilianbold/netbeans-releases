@@ -44,7 +44,7 @@ made subject to such option by the copyright holder.
     <type>org.netbeans.modules.apisupport.project</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
-            <code-name-base>org.netbeans.modules.projectimport.core</code-name-base>
+            <code-name-base>org.netbeans.modules.projectimport.eclipse.core</code-name-base>
             <module-dependencies>
                 <dependency>
                     <code-name-base>org.netbeans.api.java</code-name-base>
@@ -187,9 +187,9 @@ made subject to such option by the copyright holder.
                 </dependency>
             </module-dependencies>
             <friend-packages>
-                <friend>org.netbeans.modules.projectimport.j2se</friend>
-                <friend>org.netbeans.modules.projectimport.web</friend>
-                <package>org.netbeans.modules.projectimport.spi</package>
+                <friend>org.netbeans.modules.projectimport.eclipse.j2se</friend>
+                <friend>org.netbeans.modules.projectimport.eclipse.web</friend>
+                <package>org.netbeans.modules.projectimport.eclipse.core.spi</package>
             </friend-packages>
         </data>
     </configuration>
