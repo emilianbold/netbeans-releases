@@ -98,6 +98,8 @@ public final class Validator extends BpelValidator {
   // # 94195
   @Override
   public void visit(VariableContainer container) {
+    if (true) return;// todo r
+
     Variable [] variables = container.getVariables();
 //out();
 //out("WE: " + container.getParent().getClass().getName());
@@ -171,7 +173,7 @@ public final class Validator extends BpelValidator {
   }
 
   private void checkUsages(BpelEntity entity, List<VariableInfo> infos) {
-    if (isForUsed(entity)) {
+    if (isForUsed(entity)) {// todo here
       checkUsagesVariableReference((VariableReference) entity, infos);
     }
     if (entity instanceof Receive) {
