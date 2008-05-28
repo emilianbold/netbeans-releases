@@ -242,7 +242,7 @@ public class StrutsConfigurationPanelVisual extends javax.swing.JPanel implement
         return false;
     }
     
-    private char[] INVALID_CHARS = {'<', '>', '*', '\\',  ':', '\"',  '/', '%', '|', '?'}; // NOI18N
+    private static final char[] INVALID_CHARS = {'<', '>', '*', '\\',  ':', '\"',  '/', '%', '|', '?'}; // NOI18N
     
     private boolean isResourceValid(String resource){
         for (char c : INVALID_CHARS) {
