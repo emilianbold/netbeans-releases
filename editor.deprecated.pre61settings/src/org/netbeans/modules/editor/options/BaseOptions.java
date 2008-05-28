@@ -43,6 +43,7 @@ package org.netbeans.modules.editor.options;
 
 import java.awt.Color;
 import java.awt.Insets;
+import java.awt.RenderingHints;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.util.Map;
@@ -76,9 +77,11 @@ import org.netbeans.modules.editor.NbEditorUtilities;
 import java.util.logging.Level;
 import java.util.prefs.Preferences;
 import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.settings.EditorStyleConstants;
+import org.netbeans.api.editor.settings.FontColorNames;
+import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.editor.lib.ColoringMap;
-import org.netbeans.modules.editor.lib.EditorRenderingHints;
 import org.netbeans.modules.editor.lib.KitsTracker;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
@@ -305,11 +308,10 @@ public class BaseOptions extends OptionSupport {
     // ------------------------------------------------------------------------
     
     public boolean isTextAntialiasing() {
-        if (null != getPreferences().get(TEXT_ANTIALIASING_PROP, null)) {
-            return getPreferences().getBoolean(TEXT_ANTIALIASING_PROP, false);
-        } else {
-            return EditorRenderingHints.isAAOnByDefault();
-        }
+        FontColorSettings fcs = MimeLookup.getLookup(getContentType()).lookup(FontColorSettings.class);
+        Map<?, ?> hints = (Map<?, ?>) fcs.getFontColors(FontColorNames.DEFAULT_COLORING).getAttribute(EditorStyleConstants.RenderingHints);
+        Object aa = hints.get(RenderingHints.KEY_TEXT_ANTIALIASING);
+        return aa == RenderingHints.VALUE_TEXT_ANTIALIAS_ON;
     }
 
     public void setTextAntialiasing(boolean textAntialiasing) {

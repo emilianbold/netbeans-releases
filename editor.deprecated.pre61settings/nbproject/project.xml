@@ -79,7 +79,7 @@ made subject to such option by the copyright holder.
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.14</specification-version>
+                        <specification-version>1.20</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -267,6 +267,7 @@ made subject to such option by the copyright holder.
                 <package>org.netbeans.editor.ext</package>
                 <package>org.netbeans.editor.ext.java</package>
                 <package>org.netbeans.modules.editor.options</package>
+                <package>org.netbeans.modules.xml.text.syntax</package>
             </public-packages>
         </data>
     </configuration>

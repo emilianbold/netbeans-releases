@@ -40,60 +40,25 @@
  */
 package org.netbeans.modules.xml.text.syntax;
 
-import java.util.MissingResourceException;
+import java.util.*;
 
-import org.openide.util.HelpCtx;
-
-import org.netbeans.modules.editor.options.BaseOptions;
-import org.netbeans.editor.LocaleSupport;
-import org.netbeans.editor.LocaleSupport.Localizer;
-
-import org.openide.util.NbBundle;
+import org.netbeans.editor.Settings;
 
 /**
- * @author  Libor Kramolis
- * @version 0.1
+ * Editor settings defaults.
+ * It shoudl be replaced by layer based "Defaults" to simplify
+ * {@link TextEditorModuleInstall}.
  */
-abstract class AbstractBaseOptions extends BaseOptions implements Localizer {
+public class XMLSettingsInitializer extends Settings.AbstractInitializer {
 
-    private static final long serialVersionUID =-1042044316100452977L;
+    /** Name assigned to initializer */
+    public static final String NAME = "xml-settings-initializer"; // NOI18N
 
-    //
-    // init
-    //
-
-    /** */
-    public AbstractBaseOptions (Class kitClass, String typeName) {
-        super (kitClass, typeName);
-        LocaleSupport.addLocalizer (this);
+    public XMLSettingsInitializer() {
+        super(NAME);
     }
 
-
-    //
-    // BaseOptions
-    //
-
-    /**
-     */
+    public void updateSettingsMap (Class kitClass, Map settingsMap) {
+    }
     
-
-
-    public HelpCtx getHelpCtx() {
-        return new HelpCtx (this.getClass());
-    }
-
-    //
-    // Localizer
-    //
-
-    /**
-     */
-    public String getString (String s) {
-        try {
-            return NbBundle.getMessage(AbstractBaseOptions.class, s);
-        } catch (MissingResourceException e) {
-            return super.getString (s);
-        }
-    }
-
 }

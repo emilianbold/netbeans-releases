@@ -38,48 +38,62 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.xml.text;
+package org.netbeans.modules.xml.text.syntax;
 
-import org.openide.modules.ModuleInstall;
-import org.openide.util.*;
-import org.netbeans.editor.Settings;
-import org.netbeans.modules.xml.text.syntax.XMLSettingsInitializer;
+import java.util.MissingResourceException;
+
+import org.openide.util.HelpCtx;
+
+import org.netbeans.modules.editor.options.BaseOptions;
+import org.netbeans.editor.LocaleSupport;
+import org.netbeans.editor.LocaleSupport.Localizer;
+
+import org.openide.util.NbBundle;
 
 /**
- * Module installation class for text-edit module.
- *
- * @author Libor Kramolis
+ * @author  Libor Kramolis
+ * @version 0.1
  */
-public class TextEditModuleInstall extends ModuleInstall {
+abstract class AbstractBaseOptions extends BaseOptions implements Localizer {
 
-    public void installed() {
-        restored();
-    }
-    
-    /**
-     */
-    public void restored () {
-        restoredTextEditor();
-    }
+    private static final long serialVersionUID =-1042044316100452977L;
 
-    /**
-     */
-    public void uninstalled () {
-        uninstalledTextEditor();
+    //
+    // init
+    //
+
+    /** */
+    public AbstractBaseOptions (Class kitClass, String typeName) {
+        super (kitClass, typeName);
+        LocaleSupport.addLocalizer (this);
     }
 
+
+    //
+    // BaseOptions
+    //
+
     /**
      */
-    public void restoredTextEditor () {
-        //layer based defaults still need it
-        Settings.addInitializer (new XMLSettingsInitializer());
-    }
     
+
+
+    public @Override HelpCtx getHelpCtx() {
+        return new HelpCtx (this.getClass());
+    }
+
+    //
+    // Localizer
+    //
+
     /**
      */
-    public void uninstalledTextEditor () {
-        //layer based defaults still need it
-        Settings.removeInitializer (XMLSettingsInitializer.NAME);                
+    public @Override String getString (String s) {
+        try {
+            return NbBundle.getMessage(AbstractBaseOptions.class, s);
+        } catch (MissingResourceException e) {
+            return super.getString (s);
+        }
     }
-    
+
 }

@@ -40,7 +40,7 @@
  */
 package org.netbeans.modules.xml.text.syntax;
 
-import org.netbeans.modules.xml.text.indent.DTDIndentEngine;
+import org.netbeans.editor.BaseKit;
 
 /**
  * Options for the dtd editor kit
@@ -54,16 +54,16 @@ public class DTDOptions extends AbstractBaseOptions {
 
       /** */
     public DTDOptions () {
-        super (DTDKit.class, "dtd"); // NOI18N
+        super (XMLOptions.gimeClass("org.netbeans.modules.xml.text.syntax.DTDKit", BaseKit.class), "dtd"); // NOI18N
     }
 
     protected @Override Class getDefaultIndentEngineClass () {
-        return DTDIndentEngine.class;
+        return XMLOptions.gimeClass("org.netbeans.modules.xml.text.indent.DTDIndentEngine", super.getDefaultIndentEngineClass()); //NOI18N
 
     }
 
     protected @Override String getContentType() {
-        return DTDKit.MIME_TYPE;
+        return "application/xml-dtd"; // NOI18N
     }
     
 }

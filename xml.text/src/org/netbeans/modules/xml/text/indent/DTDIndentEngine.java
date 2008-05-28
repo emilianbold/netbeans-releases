@@ -40,17 +40,12 @@
  */
 package org.netbeans.modules.xml.text.indent;
 
-import java.io.*;
-import javax.swing.text.Document;
 
 import org.netbeans.editor.ext.ExtFormatter;
-import org.netbeans.editor.BaseKit;
-import org.netbeans.modules.editor.EditorModule;
 import org.netbeans.modules.editor.FormatterIndentEngine;
-import org.openide.text.IndentEngine;
+import org.netbeans.modules.xml.text.syntax.DTDKit;
 import org.openide.util.HelpCtx;
 
-import org.netbeans.modules.xml.text.syntax.UniKit;
 
 /**
  * @author  Libor Kramolis
@@ -61,18 +56,18 @@ public class DTDIndentEngine extends FormatterIndentEngine {
     /**
      */
     protected ExtFormatter createFormatter () {
-        return new DTDFormatter (UniKit.class);
+        return new DTDFormatter (DTDKit.class);
     }
 
     /**
      */
-    public HelpCtx getHelpCtx () {
+    public @Override HelpCtx getHelpCtx () {
         return new HelpCtx (DTDIndentEngine.class);
     }
 
     /**
      */
-    protected boolean acceptMimeType (String mimeType) {
+    protected @Override boolean acceptMimeType (String mimeType) {
         return true;
     }
 

@@ -42,7 +42,6 @@ package org.netbeans.modules.xml.text.syntax;
 
 import javax.swing.text.Document;
 import org.netbeans.editor.Syntax;
-import org.netbeans.modules.editor.*;
 import org.netbeans.modules.xml.text.syntax.javacc.lib.*;
 import org.netbeans.modules.xml.text.syntax.javacc.*;
 
@@ -76,11 +75,6 @@ public class DTDKit extends UniKit {
             new DTDSyntaxTokenMapper(),
             DTDTokenContext.contextPath
         );
-    }
-
-    @Override
-    public Document createDefaultDocument() {
-        return new NbEditorDocument (this.getClass());
     }
 
     @Override
