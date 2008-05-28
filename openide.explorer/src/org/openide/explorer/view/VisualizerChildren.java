@@ -174,7 +174,7 @@ final class VisualizerChildren extends Object {
             while (current++ < indxs[inIndxs]) {
                 it.next();
             }
-            it.add(VisualizerNode.getVisualizer(this, nodes[inIndxs]));
+            it.add(null);
             inIndxs++;
         }
 
@@ -223,8 +223,9 @@ final class VisualizerChildren extends Object {
 
         // notify event about changed indexes
         ev.setRemovedIndicies(indx);
-        VisualizerNode parent = this.parent;
+        recomputeIndexes(null);
 
+        VisualizerNode parent = this.parent;
         while (parent != null) {
             Object[] listeners = parent.getListenerList();
             for (int i = listeners.length - 1; i >= 0; i -= 2) {
