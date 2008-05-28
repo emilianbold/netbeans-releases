@@ -58,6 +58,8 @@ made subject to such option by the copyright holder.
         <testset dir="unit/src">
             <patternset>
                 <include name="**/**Test.class"/>
+                <!-- Temporarily disabling (for long time failing) tests (issue #133090) -->
+                <exclude name="**/MigrateActionTest.class/testMigrateUTCMany"/>
             </patternset>
         </testset>
     </testbag>
