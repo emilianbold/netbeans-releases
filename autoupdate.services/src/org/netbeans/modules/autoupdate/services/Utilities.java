@@ -553,6 +553,19 @@ public class Utilities {
     }
     
     private static Set<UpdateElement> findAffectedModules (Set<UpdateElement> modulesForInstall) {
+        if (modulesForInstall.isEmpty ()) {
+            return modulesForInstall;
+        }
+        Set<UpdateElement> res = new HashSet<UpdateElement> (modulesForInstall);
+        Set<UpdateElement> forInstall = new HashSet<UpdateElement> (modulesForInstall);
+        Set<UpdateElement> tmp = Collections.emptySet ();
+        while (res.addAll (tmp = findAffectedModulesImpl (forInstall))) {
+            forInstall = tmp;
+        }
+        return res;
+    }
+    
+    private static Set<UpdateElement> findAffectedModulesImpl (Set<UpdateElement> modulesForInstall) {
         Collection<Module> updatedModules = new HashSet<Module> ();
         for (UpdateElement el : modulesForInstall) {
             UpdateElement installed = el.getUpdateUnit ().getInstalled ();
@@ -684,9 +697,9 @@ public class Utilities {
                 }
                 brokenDeps = DependencyChecker.findBrokenDependencies (newDeps, extendedModules);
                 retval.addAll (findRequiredModules (brokenDeps, extendedModules));
+                // go up and find affected modules again including new ones
+                retval = findAffectedModules (retval);
             }
-            // go up and find affected modules again
-            retval = findAffectedModules (retval);
             // end of #123871
             
             break;
