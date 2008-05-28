@@ -424,11 +424,21 @@ public class TSDiagramConverter
                 DiagramEngine engine = scene.getEngine();
                 Widget widget = null;
                 if(presEl!=null)widget=engine.addWidget(presEl, nodeInfo.getPosition());
-                postProcessNode(widget,presEl);
-                //add this PE to the presLIst
-                widgetsList.add(widget);
-                if (widget!=null && widget instanceof UMLNodeWidget)
-                    ((UMLNodeWidget) widget).load(nodeInfo);
+                if(widget!=null)
+                {
+                    postProcessNode(widget,presEl);
+                    //add this PE to the presLIst
+                    widgetsList.add(widget);
+                    if (widget!=null && widget instanceof UMLNodeWidget)
+                        ((UMLNodeWidget) widget).load(nodeInfo);
+                }
+                else
+                {
+                    //most likely unsupported widgets and it wasn't created
+                    presEl.getFirstSubject().removePresentationElement(presEl);
+                    presEltList.remove(presEl);
+                    nodeInfo.getProperties().remove(PRESENTATIONELEMENT);
+                }
             }
         }
 
