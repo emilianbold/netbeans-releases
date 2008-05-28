@@ -77,18 +77,13 @@ final class ResultDisplayHandler {
 
     /**
      */
-    Component getDisplayComponent() {
+    JSplitPane getDisplayComponent() {
         if (displayComp == null) {
             displayComp = createDisplayComp();
         }
         return displayComp;
     }
 
-    Component refreshDisplayComponent(int orientation) {
-        int location = TestRunnerSettings.getDefault().getDividerSettings(orientation).getLocation();
-        return createDisplayComp(left, right, orientation, location);
-    }
-    
     /**
      */
     private JSplitPane createDisplayComp() {

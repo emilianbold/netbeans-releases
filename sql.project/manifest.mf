@@ -4,6 +4,3 @@ OpenIDE-Module-Specification-Version: 1.2
 OpenIDE-Module: org.netbeans.modules.sql.project
 OpenIDE-Module-Layer: org/netbeans/modules/sql/project/ui/resources/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/sql/project/ui/resources/Bundle.properties
-
-Name: org/netbeans/modules/sql/project/ui/SQLDataLoader.class
-OpenIDE-Module-Class: Loader

@@ -55,7 +55,7 @@ public class Main {
 
     /**
      * Main function
-     * Collects definitions, declarations and usages and then dumps them as gol
+     * Collects definitions, declarations and usages and then dumps them as golden data
      * 
      * @param args the command line arguments. There should be work dir and elsa files
      */

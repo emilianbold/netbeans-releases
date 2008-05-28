@@ -78,16 +78,12 @@
 
     <variables>
         <variable name="purchaseOrderRequest" messageType="pos:POMessage"></variable>
-        <variable name="purchaseOrderReply" messageType="pos:POMessage"></variable>
         <variable name="purchaseOrderFault" messageType="pos:orderFaultType"></variable>
         <variable name="inventoryServiceRequest" messageType="invs:POMessage"></variable>
         <variable name="inventoryServiceReply" messageType="invs:InventoryMessage"></variable>
-        <variable name="inventoryServiceFault" messageType="invs:inventoryFault"></variable>
         <variable name="confirmPORequest" messageType="ns0:POConfirmMesg"></variable>
         <variable name="POStatusReply" messageType="ns0:POStatusMesg"></variable>
-        <variable name="confirmPO_Fault" messageType="pos:orderFaultType"></variable>
         <variable name="cancelPORequest" messageType="ns0:POCancelMesg"></variable>
-        <variable name="cancelPO_Fault" messageType="pos:orderFaultType"></variable>
     </variables>
 
     <correlationSets>
@@ -104,7 +100,7 @@
         </receive>
         <assign name="Assign_1">
             <copy>
-                <from>49.98</from>
+                <from>'49.98'</from>
                 <to>$purchaseOrderRequest.purchaseOrder/ns2:price</to>
             </copy>
             <copy>
@@ -124,12 +120,6 @@
         <if name="Decision">
                 <condition>$inventoryServiceReply.inventoryPart/ns1:inventoryStatus</condition>
                 <sequence>
-                    <assign name="Assign_3">
-                        <copy>
-                            <from variable="purchaseOrderRequest" part="purchaseOrder"/>
-                            <to variable="purchaseOrderReply" part="purchaseOrder"/>
-                        </copy>
-                    </assign>
                     <reply name="sendPurchaseOrder.Reply"
                            partnerLink="POServicePLink"
                            portType="pos:purchaseOrderPT"

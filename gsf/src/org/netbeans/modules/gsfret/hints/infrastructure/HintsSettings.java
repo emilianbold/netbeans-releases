@@ -42,6 +42,7 @@ package org.netbeans.modules.gsfret.hints.infrastructure;
 
 import java.util.prefs.Preferences;
 import org.netbeans.modules.gsf.api.HintSeverity;
+import org.netbeans.modules.gsf.api.HintsProvider.HintsManager;
 import org.netbeans.modules.gsf.api.Rule.UserConfigurableRule;
 import org.openide.util.NbPreferences;
 
@@ -76,31 +77,31 @@ public class HintsSettings {
      * @profile Profile to get the node for. May be null for current profile
      * @return Preferences node for given hint.
      */
-    public static Preferences getPreferences(UserConfigurableRule rule, String profile) { 
+    public static Preferences getPreferences(GsfHintsManager manager, UserConfigurableRule rule, String profile) { 
         profile = profile == null ? HintsSettings.getCurrentProfileId() : profile;
-        return NbPreferences.forModule(HintsSettings.class).node(profile).node(rule.getId());
+        return NbPreferences.forModule(HintsSettings.class).node(profile).node(manager.getId() + rule.getId());
     }
     
-    public static HintSeverity getSeverity(UserConfigurableRule rule) {
-        return getSeverity(rule, getPreferences(rule, getCurrentProfileId()));        
-    }
-    
-    /** For current profile
-     */ 
-    public static boolean isEnabled(UserConfigurableRule hint ) {
-        Preferences p = getPreferences(hint, HintsSettings.getCurrentProfileId());
-        return isEnabled(hint, p);
+    public static HintSeverity getSeverity(GsfHintsManager manager, UserConfigurableRule rule) {
+        return getSeverity(rule, getPreferences(manager, rule, getCurrentProfileId()));        
     }
     
     /** For current profile
      */ 
-    public static boolean isShowInTaskList( UserConfigurableRule hint ) {
-        Preferences p = getPreferences(hint, HintsSettings.getCurrentProfileId());
+    public static boolean isEnabled(GsfHintsManager manager, UserConfigurableRule hint ) {
+        Preferences p = getPreferences(manager, hint, HintsSettings.getCurrentProfileId());
+        return isEnabled(manager, hint, p);
+    }
+    
+    /** For current profile
+     */ 
+    public static boolean isShowInTaskList(GsfHintsManager manager, UserConfigurableRule hint ) {
+        Preferences p = getPreferences(manager, hint, HintsSettings.getCurrentProfileId());
         return isShowInTaskList(hint, p);
     }
     
       
-    public static boolean isEnabled(UserConfigurableRule hint, Preferences preferences ) {        
+    public static boolean isEnabled(HintsManager manager, UserConfigurableRule hint, Preferences preferences ) {        
         return preferences.getBoolean(ENABLED_KEY, hint.getDefaultEnabled());
     }
     

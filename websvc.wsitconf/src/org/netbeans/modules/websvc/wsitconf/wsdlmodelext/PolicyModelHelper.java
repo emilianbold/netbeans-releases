@@ -38,12 +38,15 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.websvc.wsitconf.wsdlmodelext;
 
+import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Logger;
+import javax.xml.namespace.QName;
+import javax.xml.namespace.QName;
 import javax.xml.namespace.QName;
 import org.netbeans.modules.websvc.wsitmodelext.policy.All;
 import org.netbeans.modules.websvc.wsitmodelext.policy.ExactlyOne;
@@ -64,15 +67,66 @@ public class PolicyModelHelper {
     private static final String POLICY = "Policy";
     private static final Logger logger = Logger.getLogger(PolicyModelHelper.class.getName());
     
+    private static HashMap<ConfigVersion, PolicyModelHelper> instances =
+            new HashMap<ConfigVersion, PolicyModelHelper>();
+    private ConfigVersion configVersion = ConfigVersion.getDefault();
+
+    /**
+     * Creates a new instance of PolicyModelHelper
+     */
+    private PolicyModelHelper(ConfigVersion configVersion) {
+        this.configVersion = configVersion;
+    }
+
+    public static final PolicyModelHelper getInstance(ConfigVersion configVersion) {
+        PolicyModelHelper instance = instances.get(configVersion);
+        if (instance == null) {
+            instance = new PolicyModelHelper(configVersion);
+            instances.put(configVersion, instance);
+        }
+        return instance;
+    }
+
+    /** 
+     * Checks for version of the configuration file. 
+     * Returns 1.0 if 1.0 namespace is found, otherwise 1.1 is default.
+     */
+    public static ConfigVersion getConfigVersion(WSDLComponent c) {
+        ConfigVersion cfg = getWrittenConfigVersion(c);
+        return (cfg == null) ? ConfigVersion.getDefault() : cfg;
+    }
+
+    /** We need this one to find out if the value has been set already, or it's the default
+     * 
+     * @param c
+     * @return
+     */
+    private static ConfigVersion getWrittenConfigVersion(WSDLComponent c) {
+        Policy p = getPolicyForElement(c);
+        if (p != null) {
+            return PolicyQName.getConfigVersion(p.getQName());
+        }
+        return null;
+    }
+    
+    /** 
+     */
+    public static void setConfigVersion(Binding b, ConfigVersion cfgVersion) {
+        ConfigVersion currentCfgVersion = getWrittenConfigVersion(b);                
+        if (!cfgVersion.equals(currentCfgVersion)) {
+            WSITModelSupport.moveCurrentConfig(b, currentCfgVersion, cfgVersion);
+        }            
+    }
+        
     /**
      * Creates top level policy (Policy/ExactlyOne/All) elements if they don't exist. Used for creating nested policies.
      * 
      * @param p - policy element, under which ExactlyOne/All gets created
      * @return the bottom-most All element
      */
-    public static All createTopExactlyOneAll(final Policy p) {
-        ExactlyOne eo = createElement(p, PolicyQName.EXACTLYONE.getQName(), ExactlyOne.class, false);
-        All all = createElement(eo, PolicyQName.ALL.getQName(), All.class, false);
+    All createTopExactlyOneAll(final Policy p) {
+        ExactlyOne eo = createElement(p, PolicyQName.EXACTLYONE.getQName(configVersion), ExactlyOne.class, false);
+        All all = createElement(eo, PolicyQName.ALL.getQName(configVersion), All.class, false);
         return all;
     }
 
@@ -81,7 +135,7 @@ public class PolicyModelHelper {
      * should be used in order to create a policy, or to access the All element
      * component c must not be null
      */
-    public static All createPolicy(final WSDLComponent c, boolean addressing) {
+    All createPolicy(final WSDLComponent c, boolean addressing) {
 
         WSDLModel model = c.getModel();
         WSDLComponentFactory wcf = model.getFactory();
@@ -143,7 +197,7 @@ public class PolicyModelHelper {
                         List<PolicyReference> policyRefs = c.getExtensibilityElements(PolicyReference.class);
                         PolicyReference policyRef;
                         if ((policyRefs == null) || (policyRefs.isEmpty())) {
-                            policyRef = (PolicyReference)wcf.create(c, PolicyQName.POLICYREFERENCE.getQName());
+                            policyRef = (PolicyReference) wcf.create(c, PolicyQName.POLICYREFERENCE.getQName(configVersion));
                         } else {
                             policyRef = policyRefs.get(0);
                         }
@@ -151,14 +205,15 @@ public class PolicyModelHelper {
                         c.addExtensibilityElement(policyRef);
                         All all = createTopExactlyOneAll(p);
                         if ((c instanceof Binding) && (addressing)) {
-                            PolicyModelHelper.createElement(all, Addressing10WsdlQName.USINGADDRESSING.getQName(), Addressing10WsdlUsingAddressing.class, false);
+                            createElement(all, Addressing10WsdlQName.USINGADDRESSING.getQName(), Addressing10WsdlUsingAddressing.class, false);
                         }
                         return all;
                     }
                 }
-                policy = (Policy)wcf.create(d, PolicyQName.POLICY.getQName());
+                policy = (Policy) wcf.create(d, PolicyQName.POLICY.getQName(configVersion));
                 policy.setID(policyName);
-                PolicyReference policyRef = (PolicyReference)wcf.create(c, PolicyQName.POLICYREFERENCE.getQName());
+                PolicyReference policyRef = null;
+                policyRef = (PolicyReference) wcf.create(c, PolicyQName.POLICYREFERENCE.getQName(configVersion));
                 policyRef.setPolicyURI("#".concat(policyName));                   //NOI18N
                 c.addExtensibilityElement(policyRef);
                 d.addExtensibilityElement(policy);
@@ -171,7 +226,7 @@ public class PolicyModelHelper {
 
         All all = createTopExactlyOneAll(policy);
         if ((c instanceof Binding) && (addressing)) {
-            PolicyModelHelper.createElement(all, Addressing10WsdlQName.USINGADDRESSING.getQName(), Addressing10WsdlUsingAddressing.class, false);
+            createElement(all, Addressing10WsdlQName.USINGADDRESSING.getQName(), Addressing10WsdlUsingAddressing.class, false);
         }
         return all;
     }
@@ -180,7 +235,7 @@ public class PolicyModelHelper {
      * Does not create any elements
      */
     public @SuppressWarnings("unchecked")
-    static <T extends ExtensibilityElement> T getTopLevelElement(WSDLComponent c, Class elementClass) {
+    static <T extends ExtensibilityElement> T getTopLevelElement(WSDLComponent c, Class elementClass, boolean underPolicy) {
         ExtensibilityElement e = null;
         if (c == null) {
             return null;
@@ -189,7 +244,7 @@ public class PolicyModelHelper {
             ExactlyOne eo = ((Policy) c).getExactlyOne();
             if (eo != null) {
                 All all = eo.getAll();
-                e = getTopLevelElement(all, elementClass);
+                e = getTopLevelElement(all, elementClass,false);
             } else {
                 List<ExtensibilityElement> l = c.getExtensibilityElements(elementClass);
                 if ((l != null) && !(l.isEmpty())) {
@@ -197,6 +252,14 @@ public class PolicyModelHelper {
                 }
             }
         } else {
+            if (underPolicy) {
+                Policy p = getTopLevelElement(c, Policy.class, false);
+                if (p != null) {
+                    c = p;
+                } else {
+                    return null;
+                }
+            }
             List<ExtensibilityElement> l = c.getExtensibilityElements(elementClass);
             if ((l != null) && !(l.isEmpty())) {
                 e = l.get(0);
@@ -232,7 +295,7 @@ public class PolicyModelHelper {
     }
 
     /* Returns policy with specific uri */
-    static void attachPolicyToElement(String policyURI, WSDLComponent c) {
+    void attachPolicyToElement(String policyURI, WSDLComponent c) {
         if (c == null) return;
 
         WSDLModel model = c.getModel();
@@ -249,7 +312,7 @@ public class PolicyModelHelper {
                 ref.getParent().removeExtensibilityElement(ref);
             }
             if (policyURI != null) {
-                ref = (PolicyReference) wcf.create(c, PolicyQName.POLICYREFERENCE.getQName());
+                ref = (PolicyReference) wcf.create(c, PolicyQName.POLICYREFERENCE.getQName(configVersion));
                 ref.setPolicyURI(policyURI);
                 c.addExtensibilityElement(ref);
             }
@@ -277,44 +340,6 @@ public class PolicyModelHelper {
         return null;
     }
 
-    public static boolean isSharedPolicy(WSDLComponent c) {
-        if ((c instanceof BindingOutput) || (c instanceof BindingInput) || (c instanceof BindingFault)) {
-            Policy p = getPolicyForElement(c);
-            String pUri = p.getID();
-            return isSharedPolicy(pUri,(Binding) c.getParent().getParent());
-        }
-        throw new IllegalArgumentException("Not allowed type: " + c);
-    }
-    
-    /* Returns policy attached to a wsdl component */
-    private static boolean isSharedPolicy(String policyName, Binding b) {
-        if (b == null) {
-            return false;
-        }
-        WSDLModel model = b.getModel();
-        if (model != null) {
-            Definitions d = model.getDefinitions();
-            if (d != null) {
-                Policy p = getPolicyForPolicyUri(policyName, d);
-                Collection<BindingOperation> bOps = b.getBindingOperations();
-                int counter = 0;
-                for (BindingOperation bO : bOps) {
-                    BindingInput bInput = bO.getBindingInput();
-                    BindingOutput bOutput = bO.getBindingOutput();
-                    String poliUriInput = getPolicyUriForElement(bInput);
-                    String poliUriOutput = getPolicyUriForElement(bOutput);
-                    if (policyName.equals(poliUriInput) || policyName.equals(poliUriOutput)) {
-                        counter += 1;
-                    }
-                    if (counter > 1) {  // there are 2 policy references referencing the same policy
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
-    }
-    
     static void removePolicyForElement(WSDLComponent c) {
         WSDLModel model = c.getModel();
         if (model != null) {
@@ -367,7 +392,7 @@ public class PolicyModelHelper {
      *  Creates element with QName qname, of type cl, under wsdlcomponent c and returns it; if such element already exists, 
      * returns the existing element
      */
-    public static @SuppressWarnings("unchecked")
+    public @SuppressWarnings("unchecked")
     <T extends WSDLComponent> T createElement(WSDLComponent c, QName qname, Class cl, boolean withPolicy) {
         if (c == null) {
             return null;
@@ -381,7 +406,7 @@ public class PolicyModelHelper {
         }
         try {
             if (withPolicy) {
-                c = createElement(c, PolicyQName.POLICY.getQName(), Policy.class, false);
+                c = createElement(c, PolicyQName.POLICY.getQName(configVersion), Policy.class, false);
             }
             List<T> ts = c.getExtensibilityElements(cl);
             T t = null;
@@ -461,7 +486,7 @@ public class PolicyModelHelper {
      * policy is empty if it contains only policy/all/exactlyone elements 
      * comp must be non-null
      */
-    private static boolean isEmpty(WSDLComponent comp) {
+    static boolean isEmpty(WSDLComponent comp) {
         List<WSDLComponent> children = comp.getChildren();
         for (WSDLComponent c : children) {
             if ((c instanceof Policy) ||

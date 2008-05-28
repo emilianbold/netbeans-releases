@@ -107,8 +107,10 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
     private JCheckBox tasklistCheckBox;
     private JPanel customizerPanel;
     private JEditorPane descriptionTextArea;
+    private GsfHintsManager manager;
     
-    HintsPanelLogic() {
+    HintsPanelLogic(GsfHintsManager manager) {
+        this.manager = manager;
         changes = new HashMap<UserConfigurableRule, ModifiedPreferences>();        
     }
     
@@ -148,7 +150,7 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
     synchronized void applyChanges() {
         for (UserConfigurableRule hint : changes.keySet()) {
             ModifiedPreferences mn = changes.get(hint);
-            mn.store(HintsSettings.getPreferences(hint, HintsSettings.getCurrentProfileId()));            
+            mn.store(HintsSettings.getPreferences(manager, hint, HintsSettings.getCurrentProfileId()));            
         }
     }
     
@@ -160,13 +162,13 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
     
     synchronized Preferences getCurrentPrefernces(UserConfigurableRule hint ) {
         Preferences node = changes.get(hint);
-        return node == null ? HintsSettings.getPreferences(hint, HintsSettings.getCurrentProfileId() ) : node;
+        return node == null ? HintsSettings.getPreferences(manager, hint, HintsSettings.getCurrentProfileId() ) : node;
     }
     
     synchronized Preferences getPreferences4Modification( UserConfigurableRule hint ) {        
         Preferences node = changes.get(hint);        
         if ( node == null ) {
-            node = new ModifiedPreferences( HintsSettings.getPreferences(hint, HintsSettings.getCurrentProfileId() ) );
+            node = new ModifiedPreferences( HintsSettings.getPreferences(manager, hint, HintsSettings.getCurrentProfileId() ) );
             changes.put( hint, (ModifiedPreferences)node);
         }        
         return node;                
@@ -192,7 +194,7 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
             Object o = ch.getUserObject();
             if ( o instanceof Rule ) {
                 UserConfigurableRule hint = (UserConfigurableRule) o;
-                if ( HintsSettings.isEnabled(hint, getCurrentPrefernces(hint)) ) {
+                if ( HintsSettings.isEnabled(manager, hint, getCurrentPrefernces(hint)) ) {
                     return true;
                 }
             }
@@ -341,7 +343,7 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
 
         if ( o instanceof UserConfigurableRule ) {
             UserConfigurableRule hint = (UserConfigurableRule)o;
-            boolean value = HintsSettings.isEnabled(hint,getCurrentPrefernces(hint));
+            boolean value = HintsSettings.isEnabled(manager, hint,getCurrentPrefernces(hint));
             Preferences mn = getPreferences4Modification(hint);
             HintsSettings.setEnabled(mn, !value);
             model.nodeChanged(node);
@@ -355,7 +357,7 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
                 Object cho = ch.getUserObject();
                 if ( cho instanceof UserConfigurableRule ) {
                     UserConfigurableRule hint = (UserConfigurableRule)cho;
-                    boolean cv = HintsSettings.isEnabled(hint,getCurrentPrefernces(hint));
+                    boolean cv = HintsSettings.isEnabled(manager, hint,getCurrentPrefernces(hint));
                     if ( cv != value ) {                    
                         Preferences mn = getPreferences4Modification(hint);
                         HintsSettings.setEnabled(mn, value);

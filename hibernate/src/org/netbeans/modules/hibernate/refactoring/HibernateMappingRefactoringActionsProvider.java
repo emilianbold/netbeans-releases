@@ -54,7 +54,8 @@ import org.openide.util.Lookup;
 import org.openide.util.datatransfer.PasteType;
 
 /**
- *
+ * Refactoring actions for Hibernate mapping files
+ * 
  * @author Dongmei Cao
  */
 public class HibernateMappingRefactoringActionsProvider extends ActionsImplementationProvider {

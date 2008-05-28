@@ -43,6 +43,11 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import javax.swing.JEditorPane;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import javax.swing.text.EditorKit;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.editor.filecreation.CndExtensionList;
 import org.netbeans.modules.cnd.editor.filecreation.CndHandlableExtensions;
 import org.netbeans.modules.cnd.editor.filecreation.ExtensionsSettings;
@@ -52,6 +57,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.ExtensionList;
 import org.openide.loaders.MultiDataObject;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -109,6 +115,9 @@ public abstract class CndAbstractDataLoaderExt extends CndAbstractDataLoader
 
             java.text.Format frm = createFormat(f, name, ext);
 
+            EditorKit kit = createEditorKit(getFile().getMIMEType());
+            Document doc = kit.createDefaultDocument();
+
             BufferedReader r = new BufferedReader(new InputStreamReader(getFile().getInputStream()));
             try {
                 FileLock lock = fo.lock();
@@ -117,11 +126,31 @@ public abstract class CndAbstractDataLoaderExt extends CndAbstractDataLoader
 
                     try {
                         String current;
+                        String line = null;
+                        int offset = 0;
                         while ((current = r.readLine()) != null) {
-                            w.write(frm.format(current));
-                            // Cf. #7061.
-                            w.newLine();
+                            if (line != null) {
+                                doc.insertString(offset, "\n", null); // NOI18N
+                                offset++;
+                            }
+                            line = frm.format(current);
+                            doc.insertString(offset, line, null);
+                            offset += line.length();
                         }
+                        doc.insertString(doc.getLength(), "\n", null); // NOI18N
+                        offset++;
+                        if (doc instanceof BaseDocument) {
+                            BaseDocument bd = (BaseDocument) doc;
+                            bd.getFormatter().reformatLock();
+                            try {
+                                bd.getFormatter().reformat(bd, 0, offset);
+                            } finally {
+                                bd.getFormatter().reformatUnlock();
+                            }
+                        }
+                        w.write(doc.getText(0, doc.getLength()));
+                    } catch (BadLocationException ex) {
+                        Exceptions.printStackTrace(ex);
                     } finally {
                         w.close();
                     }
@@ -155,6 +184,15 @@ public abstract class CndAbstractDataLoaderExt extends CndAbstractDataLoader
             fo.setAttribute(DataObject.PROP_TEMPLATE, (newTempl ? Boolean.TRUE : null));
 
             return true;
+        }
+
+        private EditorKit createEditorKit(String mimeType) {
+            EditorKit kit;
+            kit = JEditorPane.createEditorKitForContentType(mimeType);
+            if (kit == null) {
+                kit = new javax.swing.text.DefaultEditorKit();
+            }
+            return kit;
         }
     }
 }

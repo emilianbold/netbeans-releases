@@ -331,9 +331,9 @@
                           <Group type="102" alignment="1" attributes="0">
                               <Component id="reloadInstalledButton" min="-2" max="-2" attributes="0"/>
                               <EmptySpace pref="432" max="32767" attributes="0"/>
-                              <Component id="instSearchLbl" min="-2" max="-2" attributes="0"/>
+                              <Component id="searchInstLbl" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="instSearchText" min="-2" pref="156" max="-2" attributes="0"/>
+                              <Component id="searchInstText" min="-2" pref="156" max="-2" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="uninstallButton" min="-2" max="-2" attributes="0"/>
@@ -357,9 +357,9 @@
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
-                          <Component id="instSearchLbl" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="searchInstLbl" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="reloadInstalledButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="instSearchText" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="searchInstText" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="1" attributes="0">
@@ -378,7 +378,7 @@
             </DimensionLayout>
           </Layout>
           <SubComponents>
-            <Component class="javax.swing.JTextField" name="instSearchText">
+            <Component class="javax.swing.JTextField" name="searchInstText">
               <Properties>
                 <Property name="columns" type="int" value="14"/>
               </Properties>
@@ -388,16 +388,16 @@
                 </Property>
               </AccessibilityProperties>
               <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="instSearchTextActionPerformed"/>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="searchInstTextActionPerformed"/>
               </Events>
             </Component>
-            <Component class="javax.swing.JLabel" name="instSearchLbl">
+            <Component class="javax.swing.JLabel" name="searchInstLbl">
               <Properties>
                 <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-                  <ComponentRef name="instSearchText"/>
+                  <ComponentRef name="searchInstText"/>
                 </Property>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                  <ResourceString bundle="org/netbeans/modules/ruby/platform/gems/Bundle.properties" key="GemPanel.instSearchLbl.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                  <ResourceString bundle="org/netbeans/modules/ruby/platform/gems/Bundle.properties" key="GemPanel.searchInstLbl.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </Properties>
               <AccessibilityProperties>

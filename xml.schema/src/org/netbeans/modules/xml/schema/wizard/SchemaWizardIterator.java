@@ -107,7 +107,9 @@ public class SchemaWizardIterator extends AbstractSchemaWizardIterator {
         
     protected void fixTemplate(BaseDocument doc) {
         String tns = schemaGUI.getTargetNamespace();
-        if(tns.length() == 0) tns = SchemaAdditionalInfoGUI.DEFAULT_TARGET_NAMESPACE;
-        replaceInDocument(doc, "#TARGET_NAMESPACE", tns); //NOI18N
-    }        
+        if(tns.length() == 0) {
+            return;
+        }       
+        updateDocument(doc, tns);
+    }
 }
