@@ -63,7 +63,6 @@ import javax.swing.ImageIcon;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.java.source.BuildArtifactMapper;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -266,9 +265,6 @@ public final class NbModuleProject implements Project {
             new TemplateAttributesProvider(getHelper(), getModuleType() == NbModuleType.NETBEANS_ORG),
             new FileEncodingQueryImpl());
         lookup = LookupProviderSupport.createCompositeLookup(baseLookup, "Projects/org-netbeans-modules-apisupport-project/Lookup"); //NOI18N
-        
-        mapBuildArtifacts("src.dir", "build.classes.dir");
-        mapBuildArtifacts("test.unit.src.dir", "build.test.unit.classes.dir");
     }
     
     public @Override String toString() {
@@ -745,19 +741,6 @@ public final class NbModuleProject implements Project {
         eval.setRunInAtomicAction(runInAtomicAction);
     }
         
-    private void mapBuildArtifacts(String sourceProperty, String targetFolderProperty) {
-        String buildClassesDir = evaluator().getProperty(targetFolderProperty);
-        File buildClasses = helper.resolveFile(buildClassesDir);
-        String sourcesDir = evaluator().getProperty(sourceProperty);
-        File sources = helper.resolveFile(sourcesDir);
-        
-        try {
-            BuildArtifactMapper.map(sources.toURI().toURL(), buildClasses);
-        } catch (MalformedURLException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-    }
-    
     private final class Info implements ProjectInformation, PropertyChangeListener {
         
         private final PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
