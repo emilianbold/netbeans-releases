@@ -88,7 +88,9 @@ final class GemRunner {
     private String[] getOptions(final String... custom) {
         List<String> options = new ArrayList<String>();
         options.addAll(Arrays.asList(custom));
-        options.add("--details"); // NOI18N
+        if (Util.shallFetchGemDescriptions()) {
+            options.add("--details"); // NOI18N
+        }
         if (Util.shallFetchAllVersions()) {
             options.add("--all"); // NOI18N
         }

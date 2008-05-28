@@ -82,6 +82,7 @@ public final class Util {
 
     private static final String FIRST_TIME_KEY = "platform-manager-called-first-time"; // NOI18N
     private static final String FETCH_ALL_VERSIONS = "gem-manager-fetch-all-versions"; // NOI18N
+    private static final String FETCH_GEM_DESCRIPTIONS = "gem-manager-fetch-descriptions"; // NOI18N
     
     public static final Comparator<String> VERSION_COMPARATOR = new Comparator<String>() {
         public int compare(String v1, String v2) {
@@ -276,6 +277,24 @@ public final class Util {
      */
     public static void setFetchAllVersions(boolean fetchAll) {
         Util.getPreferences().putBoolean(FETCH_ALL_VERSIONS, fetchAll);
+    }
+
+    /**
+     * Retrieves stored setting whether to fetch detailed descriptions of Gems
+     * or not, i.e. whether <em>-d</em> or <em>--details</em> respectively should be
+     * used for operation like 'gem list'.
+     */
+    public static boolean shallFetchGemDescriptions() {
+        return Util.getPreferences().getBoolean(FETCH_GEM_DESCRIPTIONS, true);
+    }
+
+    /**
+     * Stores setting whether to fetch all detailed descriptions of Gems or not,
+     * i.e. whether <em>-d</em> or <em>--details</em> respectively should be
+     * used for operation like 'gem list'.
+     */
+    public static void setFetchGemDescriptions(boolean fetchDescriptions) {
+        Util.getPreferences().putBoolean(FETCH_GEM_DESCRIPTIONS, fetchDescriptions);
     }
 
     public static String readAsString(final InputStream is) throws IOException {
