@@ -66,6 +66,7 @@ import org.netbeans.modules.uml.common.generics.ETPairT;
 import org.netbeans.modules.uml.core.IApplication;
 import org.netbeans.modules.uml.core.eventframework.IEventPayload;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagramKind;
@@ -73,10 +74,13 @@ import org.netbeans.modules.uml.core.metamodel.diagrams.IProxyDiagram;
 import org.netbeans.modules.uml.core.metamodel.diagrams.TSDiagramDetails;
 import org.netbeans.modules.uml.core.metamodel.dynamics.Lifeline;
 import org.netbeans.modules.uml.core.metamodel.dynamics.Message;
+import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IAssociation;
 import org.netbeans.modules.uml.core.metamodel.structure.IProject;
 import org.netbeans.modules.uml.core.support.umlsupport.FileExtensions;
 import org.netbeans.modules.uml.core.support.umlutils.ElementLocator;
 import org.netbeans.modules.uml.core.support.umlutils.IElementLocator;
+import org.netbeans.modules.uml.drawingarea.AbstractLabelManager;
+import org.netbeans.modules.uml.drawingarea.LabelManager;
 import org.netbeans.modules.uml.drawingarea.SQDDiagramTopComponent;
 import org.netbeans.modules.uml.drawingarea.UMLDiagramTopComponent;
 import org.netbeans.modules.uml.drawingarea.actions.ActionProvider;
@@ -111,6 +115,7 @@ public class TSDiagramConverter
 {
     public static final String ELEMENT = "ELEMENT";
     private static final String PRESENTATIONELEMENT = "PRESENTATION";
+    private static final String SHOWMESSAGETYPE = "ShowMessageType";
     private static final String TSLABELTYPE = "TYPE";
     private static final String LIFELINESHIFTKEY = "LIFELINESHIFT";
     private static final String TSLABELPLACEMENT = "PLACEMENT";
@@ -189,9 +194,9 @@ public class TSDiagramConverter
         readXMLPres();
         releaseResources();
         //
-        handleLabelsInfo(peidToLabelMap);
         createNodesPresentationElements();
         findEdgesElements();
+        handleLabelsInfo(peidToLabelMap);
         if(diagramDetails.getDiagramType() == IDiagramKind.DK_SEQUENCE_DIAGRAM)
         {
             normalizeSQDDiagram();
@@ -416,14 +421,28 @@ public class TSDiagramConverter
         try
         {            
             IPresentationElement presEl = (IPresentationElement) nodeInfo.getProperty(PRESENTATIONELEMENT);
-            DiagramEngine engine = scene.getEngine();
-            Widget widget = null;
-            if(presEl!=null)widget=engine.addWidget(presEl, nodeInfo.getPosition());
-            postProcessNode(widget,presEl);
-            //add this PE to the presLIst
-            widgetsList.add(widget);
-            if (widget!=null && widget instanceof UMLNodeWidget)
-                ((UMLNodeWidget) widget).load(nodeInfo);
+            if(presEl!=null)
+            {
+                DiagramEngine engine = scene.getEngine();
+                Widget widget = null;
+                if(presEl!=null && presEl.getFirstSubject() instanceof INamedElement)widget=engine.addWidget(presEl, nodeInfo.getPosition());
+                if(widget!=null)
+                {
+                    postProcessNode(widget,presEl);
+                    //add this PE to the presLIst
+                    widgetsList.add(widget);
+                    if (widget!=null && widget instanceof UMLNodeWidget)
+                        ((UMLNodeWidget) widget).load(nodeInfo);
+                }
+                else
+                {
+                    //most likely unsupported widgets and it wasn't created
+                    //or not named element (for example expression
+                    presEl.getFirstSubject().removePresentationElement(presEl);
+                    presEltList.remove(presEl);
+                    nodeInfo.getProperties().remove(PRESENTATIONELEMENT);
+                }
+            }
         }
 
         catch (Exception e)
@@ -451,9 +470,12 @@ public class TSDiagramConverter
              IPresentationElement presEl = createPresentationElement(
              nodeInfo.getMEID(), nodeInfo.getPEID());
              good=presEl!=null;
-             mapEngineToView(presEl,nodeInfo);
-             nodeInfo.setProperty(PRESENTATIONELEMENT, presEl);
-             presEltList.add(presEl);
+             if(good)
+             {
+                mapEngineToView(presEl,nodeInfo);
+                nodeInfo.setProperty(PRESENTATIONELEMENT, presEl);
+                presEltList.add(presEl);
+             }
         }
         catch (Exception e)
         {
@@ -569,7 +591,6 @@ public class TSDiagramConverter
             Message message=(Message) elt;
             if(message.getKind()==Message.MK_RESULT)
             {
-                System.out.println("RESULT MESSAGE");
                 continue;//result is created with call message at the same time
             }
             IPresentationElement pE = Util.createNodePresentationElement();
@@ -600,7 +621,6 @@ public class TSDiagramConverter
                 int x=sourceWidget.getPreferredLocation().x+sourceWidget.getMinimumSize().width/2;
                 int y= y_level+sourceConnector.getY() - (Integer) sourceInfo.getProperty(LIFELINESHIFTKEY);//connector is relative to lifeline, also need to count on shift from initial different lvel locations
                 startingPoint=new Point(x,y);
-                System.out.println("START Y: "+y);
             }
             else
             {
@@ -608,7 +628,6 @@ public class TSDiagramConverter
                 int y=sourceWidget.getPreferredLocation().y+sourceConnector.getY();
                 int x=sourceWidget.getPreferredLocation().x+(sourceConnector.getProportionalOffetX()>0 ? sourceWidget.getBounds().width : 0);
                 startingPoint=new Point(x,y);
-                System.out.println("START Y: "+y);
             }
             if(edgeInfo.getTargetPE().getFirstSubject() instanceof Lifeline)
             {
@@ -632,14 +651,12 @@ public class TSDiagramConverter
             //
             if (message.getKind() == Message.MK_SYNCHRONOUS)
             {
-                System.out.println("SYNCH MESSAGE");
                 //now find the result message for this call message
                 for(EdgeInfo edgeInfo2:einfos)
                 {
                     Message resTmp= (Message) edgeInfo2.getProperty(ELEMENT);
                     if(resTmp.getKind()==Message.MK_RESULT)
                     {
-                        System.out.println("RESULT: "+resTmp+" for "+resTmp.getSendingMessage());
                         if(resTmp.getSendingMessage()==message)
                         {
                             returnMsg=resTmp;
@@ -664,7 +681,6 @@ public class TSDiagramConverter
                             int x=targetWidget.getPreferredLocation().x+targetWidget.getMinimumSize().width/2;
                             int y= y_level+sourceResultConnector.getY() - (Integer) targetInfo.getProperty(LIFELINESHIFTKEY);
                             resultStartingPoint=new Point(x,y);
-                            System.out.println("RESULT Y: "+y);
                         }
                         else
                         {
@@ -672,7 +688,6 @@ public class TSDiagramConverter
                             int y=targetWidget.getPreferredLocation().y+sourceResultConnector.getY();
                             int x=targetWidget.getPreferredLocation().x + (sourceResultConnector.getProportionalOffetX()>0 ? targetWidget.getBounds().width : 0);
                             resultStartingPoint=new Point(x,y);
-                            System.out.println("START Y: "+y);
                         }
                         if(resultInfo.getTargetPE().getFirstSubject() instanceof Lifeline)
                         {
@@ -702,12 +717,9 @@ public class TSDiagramConverter
             else if ((message.getKind() == Message.MK_ASYNCHRONOUS) 
                     || (message.getKind() == Message.MK_CREATE))
             {
-                if(message.getKind() == Message.MK_ASYNCHRONOUS)System.out.println("ASYNCH MESSAGE");
-                else System.out.println("CREATE MESSAGE");
                 provider = sqdengine.getConnectProvider(message, null);
                 retVal = provider.createConnection(sourceWidget, targetWidget, startingPoint, endingPoint);                    
             } 
-            System.out.println("*");
             scene.validate();
             for (int i = 0; i < retVal.size(); i++)
             {
@@ -732,12 +744,7 @@ public class TSDiagramConverter
         for (EdgeInfo einfo : einfos)
         {
             IElement elt = getElement(project, einfo.getMEID());
-            einfo.setProperty( ELEMENT,elt);
-//            if(elt!=null && elt instanceof Message)
-//            {
-//                Message message=(Message) elt;
-//                if(message.get)
-//            }
+            if(elt!=null)einfo.setProperty( ELEMENT,elt);
         }
     }
    
@@ -761,13 +768,11 @@ public class TSDiagramConverter
      */
     private void normalizeSQDDiagram()
     {
-        System.out.println("NORMALIZE SQD");
         Collection<NodeInfo> ninfos = presIdNodeInfoMap.values();
         int topLifelineY=Integer.MAX_VALUE;
         for (NodeInfo ninfo : ninfos)//determine top Y
         {
             IPresentationElement pres=(IPresentationElement) ninfo.getProperty(PRESENTATIONELEMENT);
-            System.out.println("PRESENTATION: "+pres);
             if(pres!=null && pres.getFirstSubject() instanceof Lifeline)
             {
                 Lifeline ll=(Lifeline) pres.getFirstSubject();
@@ -881,7 +886,6 @@ public class TSDiagramConverter
                 //
                 presIdNodeInfoMap.put(PEID, ninfo);
             }
-            
             else
             {
                 EdgeInfo einfo = presIdEdgeInfoMap.get(PEID);
@@ -962,6 +966,8 @@ public class TSDiagramConverter
                 if(readerPres.isStartElement() && readerPres.getLocalName().equals("engine"))
                 {
                     einfo.setProperty(ENGINE, readerPres.getAttributeValue(null, "name"));
+                    String messageShowType=readerPres.getAttributeValue(null,SHOWMESSAGETYPE);
+                    if(messageShowType!=null)einfo.setProperty( SHOWMESSAGETYPE,messageShowType);
                     return            (String) einfo.getProperty(ENGINE);
                 }
                 readerPres.next();
@@ -975,25 +981,12 @@ public class TSDiagramConverter
     
     private void getLabelInfoFromPres(XMLStreamReader readerPres,HashMap<String,Object> labelInfo)
     {
-//        try {
-            String startWith = readerPres.getLocalName();
-            //we need to go deeper and exit on the same node, or can exit before on place we found necessary info
-//            while (readerPres.hasNext() && !(readerPres.isEndElement() && readerPres.getLocalName().equals(startWith))) {
-//                
-//                if(readerPres.isStartElement())
-//                {
-//                    
-//                }
-//                readerPres.next();
-//                
-//            }
-            String type=readerPres.getAttributeValue(null, "TSLabelKind");
-            String placement=readerPres.getAttributeValue(null, "TSLabelPlacementKind");
-            labelInfo.put( TSLABELTYPE,type);
-            labelInfo.put( TSLABELPLACEMENT,placement);
-//        } catch (XMLStreamException ex) {
-//            Exceptions.printStackTrace(ex);
-//        }
+        String startWith = readerPres.getLocalName();
+        //we need to go deeper and exit on the same node, or can exit before on place we found necessary info
+        String type=readerPres.getAttributeValue(null, "TSLabelKind");
+        String placement=readerPres.getAttributeValue(null, "TSLabelPlacementKind");
+        labelInfo.put( TSLABELTYPE,type);
+        labelInfo.put( TSLABELPLACEMENT,placement);
     }
     
     /**
@@ -1009,48 +1002,116 @@ public class TSDiagramConverter
             String typeInfo=null;
             EdgeInfo edgeInfo=(EdgeInfo) labelInfo.get("EDGE");
             boolean endLabel=false;
-            System.out.println("LABEL TS KIND: "+tsType);
+            LabelManager.LabelType type=null;
             switch(tsType)
             {
-                case 1://for smth on all diagrams
-                case 12://for smth on all diagrams
-                case 7://for sqd message
-                    typeInfo="NAME";
+                case 1://for names of smth on all diagrams
+                case 12://for names of smth on all diagrams
+                //case 7://for sqd message
+                    typeInfo=AbstractLabelManager.NAME;
+                    break;
+                case 7://for sqd message operations
+                    String msgShowType=(String) edgeInfo.getProperty(SHOWMESSAGETYPE);
+                    if("0".equals(msgShowType))
+                        typeInfo=AbstractLabelManager.OPERATION;
+                    else if("1".equals(msgShowType))
+                        typeInfo=AbstractLabelManager.NAME;
                     break;
                 case 6:
-                    typeInfo="STEREOTYPE";
+                    typeInfo=AbstractLabelManager.STEREOTYPE;
                     break;
                 case 13:
                     //derivation specification
+                    typeInfo=AbstractLabelManager.BINDING;
                     break;
                 case 4:
                     //target association name
+                    endLabel=true;
+                    typeInfo=AbstractLabelManager.NAME;
+                    type=LabelManager.LabelType.TARGET;
                     break;
                 case 2:
                     //source association name
+                    endLabel=true;
+                    typeInfo=AbstractLabelManager.NAME;
+                    type=LabelManager.LabelType.SOURCE;
                     break;
                 case 5:
                     //some end multiplicity
+                    endLabel=true;
+                    typeInfo=AbstractLabelManager.MULTIPLICITY;
+                    type=LabelManager.LabelType.TARGET;
                     break;
                 case 3:
                     //other end multiplicity
+                    endLabel=true;
+                    typeInfo=AbstractLabelManager.MULTIPLICITY;
+                    type=LabelManager.LabelType.SOURCE;
                     break;
                 case 10:
                     //guard condition(activity)
+                    typeInfo=AbstractLabelManager.GUARD_CONDITION;
                     break;
                 case 16:
                     //pre consition(state)
+                    System.out.println("***WARNING: unsupported precondition label was skipped");
                     break;
                 case 17:
                     //post condition(state)
+                    System.out.println("***WARNING: unsupported postcondition label was skipped");
                     break;
                 default:
                     throw new UnsupportedOperationException("Converter can't handle label kind: "+tsType);
             }
+            System.out.println("LABEL: "+typeInfo+":"+type);
             if(typeInfo==null)continue;//unsupported yet
             if(endLabel)
             {
-                
+                EdgeInfo.EndDetails endDet = null;
+                //need source and target id for association
+                IElement elt=(IElement) edgeInfo.getProperty(ELEMENT);
+                String sourceID=null;
+                String targetID=null;
+                if(elt!=null && elt instanceof IAssociation)
+                {
+                    IAssociation ass=(IAssociation) elt;
+                    sourceID=ass.getEndAtIndex(0).getXMIID();
+                    targetID=ass.getEndAtIndex(1).getXMIID();
+                }
+                else
+                {
+                    continue;//support only associations (now?)
+                }
+                //
+                String requiredID=null;
+                if(type.equals(LabelManager.LabelType.TARGET))
+                {
+                    requiredID=(targetID);
+                }
+                else if(type.equals(LabelManager.LabelType.SOURCE))
+                {
+                    requiredID=(sourceID);
+                }
+                //
+                for(EdgeInfo.EndDetails tmp:edgeInfo.getEnds())
+                {
+                    if(tmp.getID().equals(requiredID))
+                    {
+                        endDet=tmp;
+                        break;
+                    }
+                }
+                if(endDet==null)
+                {
+                    endDet = edgeInfo.new EndDetails();
+                    edgeInfo.getEnds().add(endDet);
+                }
+                endDet.setID(requiredID);
+                edgeInfo.setHasContainedElements(true);
+                EdgeInfo.EdgeLabel label=edgeInfo.new EdgeLabel();
+                label.setLabel(typeInfo);
+                label.setSize(size);
+                endDet.getEndEdgeLabels().add(label);
             }
             else
             {
@@ -1167,7 +1228,7 @@ public class TSDiagramConverter
                         nodeConnectors.put(connector.getId()+"", connector);
                     }
                     else if (readerData.getName().getLocalPart()
-                        .equalsIgnoreCase("center"))
+                        .equalsIgnoreCase("center") && position==null)//second position may be corresponding label position
                     {
                         int x = Float.valueOf(readerData
                             .getAttributeValue(null, "x")).intValue();
@@ -1182,7 +1243,7 @@ public class TSDiagramConverter
                     }
                     
                     else if (readerData.getName().getLocalPart()
-                        .equalsIgnoreCase("size"))
+                        .equalsIgnoreCase("size") && size==null)//second size may be corresponding label size
                     {
                         size = new Dimension(
                             Float.valueOf(readerData
@@ -1192,12 +1253,12 @@ public class TSDiagramConverter
                     }
 
                     else if (readerData.getName().getLocalPart()
-                        .equalsIgnoreCase("PEID"))
+                        .equalsIgnoreCase("PEID") && PEID==null)
                     {
                         PEID = readerData.getAttributeValue(null, "value");
                     }
                     else if (readerData.getName().getLocalPart()
-                        .equalsIgnoreCase("graphics"))
+                        .equalsIgnoreCase("graphics") && graphicsType==null)
                     {
                         graphicsType = readerData.getAttributeValue(null, "type");
                     }

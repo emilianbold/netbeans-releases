@@ -93,7 +93,6 @@ public class MessageOperationsAction extends NodeAction
     @Override
     public Action createContextAwareInstance(Lookup actionContext)
     {
-        System.out.println("AWARE INSTANCE");
         context = actionContext.lookup(WidgetContext.class);
         type = LabelManager.LabelType.valueOf(context.getContextName());
         lastPresentationElement=actionContext.lookup(IPresentationElement.class);
@@ -135,11 +134,9 @@ public class MessageOperationsAction extends NodeAction
             Lookup lookup = activatedNodes[0].getLookup();
             IPresentationElement presentation = lookup.lookup(IPresentationElement.class);
             ObjectScene scene=activatedNodes[0].getLookup().lookup(ObjectScene.class);
-            System.out.println("ENABLE?");
             if(scene != null)
             {
                 Widget widget = scene.findWidget(presentation);
-                System.out.println("WIDGET: "+widget);
                 if((widget != null) && (widget.getLookup() != null))
                 {
                     Lookup widgetLookup = widget.getLookup();
@@ -171,7 +168,6 @@ public class MessageOperationsAction extends NodeAction
     @Override
     public JMenuItem getPopupPresenter()
     {   
-        System.out.println("POPUP PRESENTER");
         //JMenuItem item =  new Actions.SubMenu(this, new OperationsMenuModel());
         if(lastPresentationElement==null)return new JMenuItem(getName());
         JMenu item=new JMenu(getName());

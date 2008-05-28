@@ -55,7 +55,8 @@ import org.netbeans.modules.uml.core.metamodel.dynamics.IMessage;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IOperation;
 import org.netbeans.modules.uml.core.support.umlutils.DataFormatter;
 import org.netbeans.modules.uml.diagrams.engines.SequenceDiagramEngine;
-import org.netbeans.modules.uml.diagrams.nodes.sqd.NumberedNameLabelWidget;
+import org.netbeans.modules.uml.diagrams.nodes.EditableCompartmentWidget;
+//import org.netbeans.modules.uml.diagrams.nodes.sqd.NumberedNameLabelWidget;
 import org.netbeans.modules.uml.diagrams.nodes.sqd.OperationLabelWidget;
 import org.netbeans.modules.uml.drawingarea.AbstractLabelManager;
 import org.netbeans.modules.uml.drawingarea.LabelManager.LabelType;
@@ -72,10 +73,6 @@ import org.openide.util.NbBundle;
  */
 public class MessageLabelManager extends AbstractLabelManager
 {
-    public static final String NAME = "Name"; //NOI18N
-    public static final String OPERATION = "Operation"; //NOI18N
-    public static final String NUMBER = "Number"; //NOI18N
-    
     public MessageLabelManager(MessageWidget widget)
     {
         super(widget);
@@ -100,7 +97,6 @@ public class MessageLabelManager extends AbstractLabelManager
             {
                 createOperationMessageLabel(msgE, false);
             }
-            createNumberMessageLabel(msgE, false);
         }
     }
 
@@ -207,13 +203,14 @@ public class MessageLabelManager extends AbstractLabelManager
         if(name.equals(NAME))
         {
                 INamedElement namedElement = msgE;
+                boolean shownumbers=((DesignerScene) getScene()).getEngine().getSettingValue(SequenceDiagramEngine.SHOW_MESSAGE_NUMBERS)==Boolean.TRUE;
                 text = namedElement.getNameWithAlias();
-                if((text == null) || (text.length() == 0))
-                {
-                    text = retrieveDefaultName();
-                }
+                if(shownumbers && msgE.getAutoNumber()!=null)text=msgE.getAutoNumber()+": "+text;
+                if((text==null || text.length()<1))text=retrieveDefaultName();
                 element = namedElement;
-                retVal = new NumberedNameLabelWidget(getScene(), msgE,this);
+                //retVal = new NumberedNameLabelWidget(getScene(), msgE,this);
+                retVal = new EditableCompartmentWidget(getScene(),element ,"messageName","Message Name");
+                ((EditableCompartmentWidget)retVal).setLabel(text);
         }
         else if(name.equals(OPERATION))
         {
@@ -239,20 +236,8 @@ public class MessageLabelManager extends AbstractLabelManager
     
     protected Object createAttachedData(String name, LabelType type)
     {
-//        IElement element = getModelElement();
-//        Object retVal = new ModelElementBridge(element);
-//        
-//        if(((element instanceof IMessage)) && (name.equals(OPERATION) == true))
-//        {
-//            IMessage msgE = (IMessage)element;
-//            retVal = new ModelElementBridge(msgE.getOperationInvoked());
-//        }
-//        
-//        return retVal;
-        
-        // Somewhere an IPresentationElement is already being associated
-        // with the label.  Therefore nothing to do.  We may want to move 
-        // the association logic to this method.
+        Object retVal = new ModelElementBridge(getModelElement());
+        if(NAME.equals(name))return retVal;
         return null;
     }
     
@@ -291,18 +276,13 @@ public class MessageLabelManager extends AbstractLabelManager
             showLabel(OPERATION);
         }
     }
-    private void createNumberMessageLabel(IMessage msg, boolean assignDefaultName)
-    {
-        showLabel(NUMBER);
-    }
-
     
     @Override
     public void showLabel(String name, LabelType type)
     {
          super.showLabel(name, type);
-         if(!NAME.equals(name) && !NUMBER.equals(name))hideLabel(NAME);
-         if(!OPERATION.equals(name) && !NUMBER.equals(name))hideLabel(OPERATION);
+         if(!NAME.equals(name))hideLabel(NAME);
+         if(!OPERATION.equals(name))hideLabel(OPERATION);
     }
 
     
@@ -318,11 +298,14 @@ public class MessageLabelManager extends AbstractLabelManager
             {
                 if(name.equals(NAME))
                 {
-                    NumberedNameLabelWidget widget = (NumberedNameLabelWidget) getLabel(name, type);
+                    EditableCompartmentWidget widget = (EditableCompartmentWidget) getLabel(name, type);
                     if (widget != null)
                     {
-                        if(value==null || value.length()<1)value="";
-                        widget.setLabel(value);
+                        boolean shownumbers=((DesignerScene) getScene()).getEngine().getSettingValue(SequenceDiagramEngine.SHOW_MESSAGE_NUMBERS)==Boolean.TRUE;
+                        String text = ((IMessage)getModelElement()).getNameWithAlias();
+                        if(shownumbers && ((IMessage)getModelElement()).getAutoNumber()!=null)text=((IMessage)getModelElement()).getAutoNumber()+": "+name;
+                        if((text==null || text.length()<1))text=retrieveDefaultName();
+                        widget.setLabel(text);
                     }
                 }
                 else if(name.equals(OPERATION))

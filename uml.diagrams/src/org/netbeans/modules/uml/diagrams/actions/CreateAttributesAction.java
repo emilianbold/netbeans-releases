@@ -41,6 +41,7 @@
 package org.netbeans.modules.uml.diagrams.actions;
 
 import org.netbeans.modules.uml.core.metamodel.core.constructs.IClass;
+import org.netbeans.modules.uml.core.metamodel.core.constructs.IEnumeration;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IAttribute;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IClassifier;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IInterface;
@@ -83,7 +84,7 @@ public final class CreateAttributesAction extends CookieAction
 
     protected Class[] cookieClasses()
     {
-        return new Class[]{IClass.class, IInterface.class, IAttribute.class};
+        return new Class[]{IClass.class, IInterface.class, IEnumeration.class, IAttribute.class};
     }
 
     @Override

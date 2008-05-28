@@ -62,7 +62,6 @@ public class InteractionOperandConstraintWidget extends FeatureWidget implements
 
     @Override
     protected void updateUI() {
-        System.out.println("UPDATE UI IN OPCONST");
         if(expression==null)
         {
             removeChildren();

@@ -63,6 +63,7 @@ import org.netbeans.modules.uml.core.preferenceframework.PreferenceAccessor;
 import org.netbeans.modules.uml.drawingarea.persistence.EdgeWriter;
 import org.netbeans.modules.uml.drawingarea.persistence.api.DiagramEdgeWriter;
 import org.netbeans.modules.uml.drawingarea.view.DesignerTools;
+import org.netbeans.modules.uml.drawingarea.view.UMLWidget;
 
 /**
  * The AbstractLabelManger provides a basic implementation of the label manager.
@@ -75,10 +76,30 @@ import org.netbeans.modules.uml.drawingarea.view.DesignerTools;
 public abstract class AbstractLabelManager implements LabelManager
 {
     private final static Border NON_SELECTED_BORDER = BorderFactory.createOpaqueBorder(1, 1, 1, 1);
-    private final static Border SELECTED_BORDER = BorderFactory.createLineBorder(1, new Color(0xFFA400));
+    private final static Border SELECTED_BORDER = BorderFactory.createLineBorder(1, UMLWidget.BORDER_HILIGHTED_COLOR);
         
     private ConnectionWidget connector = null;
     private HashMap < String, Widget > labelMap = new HashMap < String, Widget >();
+    
+    /**
+     * The name of stereotype labels.
+     */
+    public static final String STEREOTYPE = "Stereotype"; //NOI18N
+    
+    /**
+     * The name of Name labels.
+     */
+    public static final String NAME = "Name"; //NOI18N
+    
+    public static final String OPERATION = "Operation"; //NOI18N
+    
+    public static final String BINDING = "Binding"; //NOI18N
+    
+    public static final String GUARD_CONDITION = "GuardCondition"; //NOI18N
+    
+    public static final String MULTIPLICITY = "Multiplicity"; //NOI18N
+    
+    public static final String END_NAME = "End Name"; //NOI18N
     
     /**
      * Creates an AbstractLabelManager and associates it to a connection 
@@ -109,6 +130,7 @@ public abstract class AbstractLabelManager implements LabelManager
             
             
             label = createLabel(name, type);
+            if(label==null)throw new IllegalArgumentException("Unsupported label name-type combination, can't create label. name=\""+name+"\"; type=\""+type+"\".");
             ConnectionLabelWidget child = new ConnectionLabelWidget(scene, label);
             Object data = createAttachedData(name, type);
             if(data == null)

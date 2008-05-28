@@ -87,12 +87,7 @@ public class SceneAcceptProvider implements AcceptProvider
 
     public SceneAcceptProvider(INamespace space)
     {
-        if (space instanceof IStateMachine)
-        {
-            sceneNamespace = ((IStateMachine)space).getFirstRegion();
-        }
-        else
-            sceneNamespace = space;
+        sceneNamespace = space;
     }
 
     public ConnectorState isAcceptable(Widget widget, Point point, Transferable transferable)

@@ -350,7 +350,7 @@ public class CombinedFragmentWidget extends ContainerNode implements PropertyCha
         
         if (operands.get(op) != null) {
             //it was already added, log to track possile perfomance
-            System.out.println("****WARNING: "+"Operand is already added, op:"+op.getConstraintsAsString()+"; ");
+            System.out.println("***WARNING: "+"Operand is already added, op:"+op.getConstraintsAsString()+"; ");
         } else {
             InteractionOperandWidget opW = new InteractionOperandWidget(getScene());
             ret=opW;
@@ -662,8 +662,6 @@ public class CombinedFragmentWidget extends ContainerNode implements PropertyCha
             //have no children, will look for neighbors
             int y=Integer.MIN_VALUE;
             int x=40;//???
-            System.out.println("WIDGETS BEFORE: "+messageBeforeW+"; "+cfBeforeW);
-            System.out.println("WIDGETS AFTER: "+messageAfterW+"; "+cfAfterW);
             if(messageBeforeW!=null)
             {
                 y=messageBeforeW.getSourceAnchor().getRelatedSceneLocation().y;

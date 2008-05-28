@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,59 +31,46 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.uml.drawingarea.actions;
 
 import java.awt.event.ActionEvent;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.Set;
 import javax.swing.AbstractAction;
-import javax.swing.Action;
 import org.netbeans.api.visual.widget.Widget;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
-import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
-import org.netbeans.modules.uml.drawingarea.view.UMLWidget;
-import org.netbeans.modules.uml.resources.images.ImageUtil;
+import org.netbeans.modules.uml.drawingarea.LabelManager;
 import org.openide.util.NbBundle;
 
 /**
  *
- * @author Sheryl Su
+ * @author treyspiva
  */
-public class SyncDiagramAction extends AbstractAction
+public class ResetLabelsAction extends AbstractAction
 {
-
-    private DesignerScene scene;
-
-    public SyncDiagramAction(DesignerScene scene)
+    private LabelManager manager = null;
+    
+    public ResetLabelsAction(LabelManager manager)
     {
-        this.scene = scene;
-        putValue(Action.SMALL_ICON, ImageUtil.instance().getIcon("sync-diagrams.png"));
-        putValue(Action.SHORT_DESCRIPTION, NbBundle.getMessage(SyncDiagramAction.class, "LBL_SyncDiagramAction"));
+        this.manager = manager;
+        putValue(NAME, NbBundle.getMessage(ResetLabelsAction.class, "LBL_RESET_LABELS"));
     }
-
+    
     public void actionPerformed(ActionEvent e)
     {
-        // Since an object seen is only concerned about objects, we use a light
-        // weight bridge class to map labels to the associated object.  
-        // Therefore we can not assume all objects are presentation elements.
-        Set<Object> elements = (Set<Object>) scene.getObjects();
-        
-        // You have to use the tempSet in order to avoid a Concurrent
-        // Modification Exception
-        Set < Object > tempSet = new HashSet < Object > (elements);
-        for (Object obj : tempSet)
+        HashMap < String, Widget > labels = manager.getLabelMap();
+        Set < String > keys = labels.keySet();
+        for(String key : keys)
         {
-            if (obj instanceof IPresentationElement)
-            {
-                IPresentationElement pe = (IPresentationElement) obj;
-                
-                Widget w = scene.findWidget(pe);
-                if (w instanceof UMLWidget)
-                {
-                    ((UMLWidget) w).refresh();
-                }
-            }
+            int index = key.indexOf("_");
+            String name = key.substring(0, index);
+            LabelManager.LabelType type = LabelManager.LabelType.valueOf(key.substring(index + 1));
+            manager.hideLabel(name, type);
+            manager.showLabel(name, type);
         }
     }
 }

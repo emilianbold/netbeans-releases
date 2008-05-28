@@ -38,12 +38,15 @@
  */
 package org.netbeans.modules.uml.drawingarea.view;
 
+import java.awt.Color;
+
 /**
  *
  * @author jyothi
  */
 public interface UMLWidget {
 
+    public static final Color BORDER_HILIGHTED_COLOR = new Color(0xFFA400);
     // Every WidgetType should have an ID
     // Also refer to UMLWidgetIDString.java
     public String getWidgetID();
@@ -115,7 +118,9 @@ public interface UMLWidget {
         EXTENDCONNECTOR,
         DESIGNPATTERNWIDGET,
         PARTFACADEEDGECONNECTIONWIDGET,
-        INTERACTIONOPERAND
+        INTERACTIONOPERAND,
+        ENUMERATION_WIDGET,
+        ENUMERATION_LITERAL_WIDGET
 
     }
     

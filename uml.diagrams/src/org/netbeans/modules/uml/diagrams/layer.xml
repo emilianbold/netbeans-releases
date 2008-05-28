@@ -49,6 +49,7 @@ made subject to such option by the copyright holder.
             <!--file name="org-netbeans-modules-uml-diagrams-actions-sqd-InsertOperandAction.instance"/-->
             <file name="org-netbeans-modules-uml-diagrams-actions-ColorAndFontAction.instance"/>
             <file name="org-netbeans-modules-uml-diagrams-actions-ToggleShowLabelAction.instance"/>
+            <file name="org-netbeans-modules-uml-diagrams-actions-CreateLiteralAction.instance"/>
         </folder>
     </folder>
     <folder name="Shortcuts">
@@ -281,6 +282,30 @@ made subject to such option by the copyright holder.
                     </file>
                 </folder>
             </folder>
+            <folder name="x-enumeration-element">
+                <folder name="Popup">
+                    <file name="SeparatorBeforeAttribute.instance">
+                        <attr name="position" intvalue="190"/>
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <file name="org-netbeans-modules-uml-diagrams-actions-CreateLiteralAction.shadow">
+                        <attr name="position" intvalue="200"/>
+                        <attr name="originalFile" stringvalue="Actions/UML/org-netbeans-modules-uml-diagrams-actions-CreateLiteralAction.instance"/>
+                        <attr name="context" stringvalue="Enumeration, EnumerationLiteral"/>
+                    </file>
+                    <file name="org-netbeans-modules-uml-diagrams-actions-CreateAttributesAction.shadow">
+                        <attr name="position" intvalue="300"/>
+                        <attr name="originalFile" stringvalue="Actions/UML/org-netbeans-modules-uml-diagrams-actions-CreateAttributesAction.instance"/>
+                        <attr name="context" stringvalue="Enumeration, Attribute"/>
+                    </file>
+                    <file name="org-netbeans-modules-uml-diagrams-actions-CreateOperationAction.shadow">
+                        <attr name="position" intvalue="350"/>
+                        <attr name="originalFile" stringvalue="Actions/UML/org-netbeans-modules-uml-diagrams-actions-CreateOperationAction.instance"/>
+                        <attr name="context" stringvalue="Enumeration, Operation"/>
+                    </file>
+                    
+                </folder>
+            </folder>
             <folder name="x-class-element">
                 <folder name="Popup">
                     <file name="SeparatorBeforeAttribute.instance">
@@ -292,29 +317,11 @@ made subject to such option by the copyright holder.
                         <attr name="originalFile" stringvalue="Actions/UML/org-netbeans-modules-uml-diagrams-actions-CreateAttributesAction.instance"/>
                         <attr name="context" stringvalue="Class, Attribute"/>
                     </file>
-                    <!-- Removing since it doest the same thing as the delete action
-                    <file name="org-netbeans-modules-uml-diagrams-actions-RemoveAttributesAction.instance">
-                        <attr name="position" intvalue="250"/>
-                        <attr name="context" stringvalue="Attribute"/>
-                    </file>
-                    -->
                     <file name="org-netbeans-modules-uml-diagrams-actions-CreateOperationAction.shadow">
                         <attr name="position" intvalue="300"/>
                         <attr name="originalFile" stringvalue="Actions/UML/org-netbeans-modules-uml-diagrams-actions-CreateOperationAction.instance"/>
                         <attr name="context" stringvalue="Class, Operation"/>
                     </file>
-                    <!-- Removing since it doest the same thing as the delete action
-                    
-                    <file name="org-netbeans-modules-uml-diagrams-actions-RemoveOperationAction.instance">
-                        <attr name="position" intvalue="350"/>
-                        <attr name="context" stringvalue="Operation"/>
-                    </file>
-                    -->
-                    <!--
-                    <file name="org.netbeans.modules.uml.ui.addins.reguiaddin.RedefineOperationsAction.instance">
-                        <attr name="position" intvalue="360"/>
-                    </file>
-                    -->
                 </folder>
             </folder>
             <folder name="x-partfacade_class-element">
@@ -347,6 +354,23 @@ made subject to such option by the copyright holder.
                         <attr name="context" stringvalue="Class, Attribute"/>
                     </file>
                     <file name="SeparatorAfterAttribute.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="300"/>
+                    </file>
+                </folder>
+            </folder>
+            <folder name="x-enumerationliteral-element">
+                <folder name="Popup">
+                    <file name="SeparatorBeforeLiteral.instance">
+                        <attr name="position" intvalue="190"/>
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <file name="org-netbeans-modules-uml-diagrams-actions-CreateLiteralAction.shadow">
+                        <attr name="position" intvalue="200"/>
+                        <attr name="originalFile" stringvalue="Actions/UML/org-netbeans-modules-uml-diagrams-actions-CreateLiteralAction.instance"/>
+                        <attr name="context" stringvalue="Enumeration EnumerationLiteral"/>
+                    </file>
+                    <file name="SeparatorAfterLiteral.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="300"/>
                     </file>
@@ -675,14 +699,17 @@ made subject to such option by the copyright holder.
                     <file name="Interface.modeling_palette_item" url="resources/palette/Interface.modeling_palette_item">
                         <attr name="position" intvalue="120"/>
                     </file>
-                    <file name="Package.modeling_palette_item" url="resources/palette/Package.modeling_palette_item">
+                    <file name="Enumeration.modeling_palette_item" url="resources/palette/Enumeration.modeling_palette_item">
                         <attr name="position" intvalue="130"/>
                     </file>
-                    <file name="Datatype.modeling_palette_item" url="resources/palette/Datatype.modeling_palette_item">
+                    <file name="Package.modeling_palette_item" url="resources/palette/Package.modeling_palette_item">
                         <attr name="position" intvalue="140"/>
                     </file>
-                    <file name="Comment.modeling_palette_item" url="resources/palette/Comment.modeling_palette_item">
+                    <file name="Datatype.modeling_palette_item" url="resources/palette/Datatype.modeling_palette_item">
                         <attr name="position" intvalue="150"/>
+                    </file>
+                    <file name="Comment.modeling_palette_item" url="resources/palette/Comment.modeling_palette_item">
+                        <attr name="position" intvalue="160"/>
                     </file>
                 </folder>
                 <folder name="Robustness">
@@ -1253,6 +1280,13 @@ made subject to such option by the copyright holder.
                     <attr name="position" intvalue="300"/>
                 </file>
             </folder>
+            <folder name="ActivityFinal">
+                <file name="LinkComment.shadow">
+                    <attr name="originalFile" stringvalue="modeling/relationships/LinkComment.context_palette_item"/>
+                    <attr name="default-node" stringvalue="Comment"/>
+                    <attr name="position" intvalue="100"/>
+                </file>
+            </folder>
              <folder name="ActivityControl">
                 <file name="ActivityEdge.shadow">
                     <attr name="originalFile" stringvalue="modeling/relationships/ActivityEdge.context_palette_item"/>
@@ -1645,6 +1679,9 @@ made subject to such option by the copyright holder.
             </folder>
             <folder name="Interface">
                 <file name="org-netbeans-modules-uml-diagrams-nodes-InterfaceWidget.instance"/>
+            </folder>
+            <folder name="Enumeration">
+                <file name="org-netbeans-modules-uml-diagrams-nodes-EnumerationWidget.instance"/>
             </folder>
             <folder name="Package">
                 <file name="org-netbeans-modules-uml-diagrams-nodes-PackageWidget.instance"/>

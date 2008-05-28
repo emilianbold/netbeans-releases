@@ -38,61 +38,74 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.uml.diagrams.edges;
+package org.netbeans.modules.uml.diagrams.nodes;
 
-import java.awt.Color;
-import org.netbeans.api.visual.anchor.PointShape;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import org.netbeans.api.visual.widget.Scene;
-import org.netbeans.modules.uml.drawingarea.LabelManager;
-import org.netbeans.modules.uml.drawingarea.actions.WidgetContext;
+import org.netbeans.modules.uml.diagrams.DefaultWidgetContext;
+import org.netbeans.modules.uml.drawingarea.ModelElementChangedKind;
+import org.netbeans.modules.uml.drawingarea.persistence.NodeWriter;
+import org.netbeans.modules.uml.drawingarea.persistence.PersistenceUtil;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 
 /**
  *
- * @author Thuy
+ * @author treyspiva
  */
-public class ActivityEdgeConnector extends AbstractUMLConnectionWidget
+public class EnumerationLiteralWidget extends FeatureWidget implements PropertyChangeListener
 {
-    public ActivityEdgeConnector(Scene scene)
+
+    private InstanceContent lookupContent = new InstanceContent();
+    private Lookup lookup = new AbstractLookup(lookupContent);
+
+    public EnumerationLiteralWidget(Scene scene)
     {
         super(scene);
-        setForeground(Color.BLACK);
-        //setSourceAnchorShape(AnchorShape.NONE);
-        setControlPointShape(PointShape.SQUARE_FILLED_BIG);
-        setEndPointShape(PointShape.SQUARE_FILLED_BIG);
-        setTargetAnchorShape(ARROW_END);
-        
-        //addToLookup(new ActivityEdgeContext(LabelManager.LabelType.EDGE) );
+
+        lookupContent.add(new DefaultWidgetContext("Literal"));
+//        createActions(DesignerTools.SELECT).addAction(new FeatureMoveAction());
     }
-   
+
     @Override
-    protected LabelManager createLabelManager()
+    public Lookup getLookup()
     {
-        return new ActivityEdgeLabelManager(this);
+        return lookup;
     }
-    
-//    private class ActivityEdgeContext implements WidgetContext
-//    {
-//        private LabelManager.LabelType contextName = LabelManager.LabelType.EDGE;
-//
-//        public ActivityEdgeContext(LabelManager.LabelType context)
-//        {
-//            contextName = context;
-//        }
-//
-//        public String getContextName()
-//        {
-//            return contextName.toString();
-//        }
-//
-//        public Object[] getContextItems()
-//        {
-//            Object[] retVal = new Object[0];
-//            return retVal;
-//        }
-//    }
-    
+
+    ///////////////////////////////////////////////////////////////
+    // PropertyChangeListener Implementation
+    /**
+     * The property change listener is used by the diagram to notify widgets of
+     * model element property change events.
+     */
+    public void propertyChange(PropertyChangeEvent event)
+    {
+        String eventName = event.getPropertyName();
+        if (eventName.equals(ModelElementChangedKind.ELEMENTMODIFIED.toString()) == false)
+        {
+            updateUI();
+        }
+    }
+
+    public void save(NodeWriter nodeWriter)
+    {
+        nodeWriter = PersistenceUtil.populateNodeWriter(nodeWriter, this);
+        nodeWriter.setHasPositionSize(false);
+        //clear all existing properties
+        PersistenceUtil.clearProperties(nodeWriter);
+        //populate properties key/val
+        PersistenceUtil.populateProperties(nodeWriter, this);
+        nodeWriter.beginGraphNodeWithModelBridge();
+        nodeWriter.beginContained();
+        nodeWriter.endContained();
+        nodeWriter.endGraphNode();
+    }
+
     public String getWidgetID()
     {
-        return UMLWidgetIDString.ACTIVITYEDGEWIDGET.toString();
+        return UMLWidgetIDString.ENUMERATION_LITERAL_WIDGET.toString();
     }
 }

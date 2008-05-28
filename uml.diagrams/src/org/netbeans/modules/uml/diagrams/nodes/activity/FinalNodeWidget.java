@@ -54,8 +54,7 @@ public class FinalNodeWidget extends ControlNodeWidget
 {
     public FinalNodeWidget(Scene scene)
     {
-        // context palette is off
-        super(scene, false);  
+        super(scene, "UML/context-palette/ActivityFinal");
     }
 
     @Override
@@ -67,7 +66,7 @@ public class FinalNodeWidget extends ControlNodeWidget
             //IFinalNode element = (IFinalNode) presentation.getFirstSubject();
 
             // create the outer circle
-             OvalWidget outerCircleWidget = new OvalWidget(scene, 
+            OvalWidget outerCircleWidget = new OvalWidget(scene, 
                     DEFAULT_OUTER_RADIUS, "", ""); 
             outerCircleWidget.setBackground(Color.WHITE);
             outerCircleWidget.setLayout(LayoutFactory.createAbsoluteLayout());

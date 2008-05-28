@@ -93,14 +93,11 @@ public class ActorSymbolWidget extends CustomizableWidget{
     @Override
     protected Rectangle calculateClientArea()
     {
-        Rectangle bounds = this.getBounds();
-        if (bounds == null)
+        if (getBounds() == null || !isPreferredBoundsSet())
         {
-            return new Rectangle(-width / 2, -height / 2, width, height);
+            return new Rectangle( -width/2, -height/2, width, height);
         }
-        int w = bounds.width < width ? width : bounds.width;
-        int h = bounds.height < height ? height : bounds.height;
-        return new Rectangle(bounds.x, bounds.y, w, h);
+        return super.calculateClientArea();
     }
 
 }

@@ -57,8 +57,7 @@ public class FlowFinalNodeWidget extends ControlNodeWidget
     
     public FlowFinalNodeWidget(Scene scene)
     {
-        // context palette is off
-        super(scene, false);
+        super(scene, "UML/context-palette/ActivityFinal");
     }
 
     @Override

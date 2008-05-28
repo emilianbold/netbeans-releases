@@ -969,22 +969,6 @@ public class JTrackBar extends JPanel implements ITrackBar, FocusListener
       }
 
       repaint();
-      
-      reportCars();
-   }
-
-   protected void reportCars()
-   {
-//      ETSystem.out.println("****************************************************");
-//      ETSystem.out.println("********************** Cars ************************");
-//      
-//      Component[] cars = getComponents();
-//      for (int index = 0; index < cars.length; index++)
-//      {
-//         ETSystem.out.println(cars[index].getClass().getName());
-//      }
-//      
-//      ETSystem.out.println("****************************************************");
    }
    
    /**

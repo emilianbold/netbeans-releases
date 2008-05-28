@@ -111,7 +111,7 @@ public abstract class FeatureWidget extends CustomizableWidget
                 label.setForeground(UIManager.getColor("List.selectionForeground"));
             }
             
-            setBorder(BorderFactory.createLineBorder(1, new Color(0xFFA400)));
+            setBorder(BorderFactory.createLineBorder(1, BORDER_HILIGHTED_COLOR));
             setParentSelectedState(true);
         }
         else if((previousState.isSelected() == true) && (state.isSelected() == false))

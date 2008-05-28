@@ -63,7 +63,7 @@ public class OrthogonalLayoutAction extends AbstractAction
         this.scene = scene;
         putValue(Action.SMALL_ICON, ImageUtil.instance().getIcon("orthogonal-layout.png")); // NOI18N
         putValue(Action.SHORT_DESCRIPTION, 
-                NbBundle.getMessage(OrthogonalLayoutAction.class, "LBL_ExportImageAction")); // NOI18N
+                NbBundle.getMessage(OrthogonalLayoutAction.class, "LBL_OrthogonalLayoutAction")); // NOI18N
     }
 
     public void actionPerformed(ActionEvent e)

@@ -46,6 +46,7 @@ import java.awt.datatransfer.Transferable;
 import java.util.HashMap;
 import org.netbeans.api.visual.action.AcceptProvider;
 import org.netbeans.api.visual.action.ConnectorState;
+import org.netbeans.modules.uml.core.metamodel.core.constructs.IEnumeration;
 import org.netbeans.modules.uml.core.metamodel.core.constructs.IPartFacade;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IFeature;
 import org.netbeans.modules.uml.drawingarea.view.SwitchableWidget;
@@ -65,6 +66,7 @@ import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.SeparatorWidget;
 import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.modules.uml.core.metamodel.core.constructs.IEnumerationLiteral;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.widgets.ListWidget;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
@@ -82,10 +84,11 @@ import org.netbeans.modules.uml.drawingarea.view.ResourceValue;
 import org.openide.util.NbBundle;
 
 
-public class UMLClassWidget  extends SwitchableWidget
+public class EnumerationWidget extends SwitchableWidget
 {
     private UMLNameWidget nameWidget = null;
     
+    private ElementListWidget literals;
     private ElementListWidget members;
     private ElementListWidget operations;
     private TemplateWidget parameterWidget = null;
@@ -98,25 +101,25 @@ public class UMLClassWidget  extends SwitchableWidget
     private HashMap <String, ElementListWidget > attributeRedefinedMap = 
             new HashMap <String, ElementListWidget >();
     
-    public UMLClassWidget(Scene scene)
+    public EnumerationWidget(Scene scene)
     {
         this(scene, "Class");
     }
     
-     public UMLClassWidget(Scene scene, IPresentationElement element)
+     public EnumerationWidget(Scene scene, IPresentationElement element)
     {
         this(scene, "Class");
         initializeNode(element);
     }
      
-    public UMLClassWidget(Scene scene, String metatype)
+    public EnumerationWidget(Scene scene, String metatype)
     {
         super(scene, metatype, true);
         
         WidgetAction.Chain actions = createActions(DesignerTools.SELECT);
         
         addToLookup(initializeContextPalette());
-        addToLookup(new DefaultWidgetContext("Class"));
+        addToLookup(new DefaultWidgetContext("Enumeration"));
 //        addToLookup(new ClassifierSelectAction());
     }
 
@@ -124,24 +127,46 @@ public class UMLClassWidget  extends SwitchableWidget
     public Widget createDefaultWidget(IPresentationElement element)
     {
         IClassifier clazz = (IClassifier) element.getFirstSubject();
-        return initializeContents(clazz);
+        Widget retVal = initializeContents(clazz);
+        
+        setOpaque(true);
+        ResourceValue.initResources(getResourcePath(), this);
+        
+        return retVal;
     }
     
     public void removingView()
     {
         if (members != null)
+        {
             members.removeFromParent();
+        }
+        
         if (operations != null)
+        {
             operations.removeFromParent();
+        }
+        
         if (parameterWidget != null)
+        {
             parameterWidget.removeFromParent();
+        }
+        
+        if(literals != null)
+        {
+            literals.removeFromParent();
+        }
+        
         if (classView != null)
+        {
             classView.removeFromParent();
+        }
         
         classView = null;
         members = null;
         operations = null;
         parameterWidget = null;
+        literals = null;
 
         getScene().validate();
     }
@@ -152,9 +177,9 @@ public class UMLClassWidget  extends SwitchableWidget
         setBackground(null);
         
         boolean viewRequireUpdate = initializeClassView(clazz);
-        boolean paramRequireUpdate = initializeParameterWidget(clazz);
+        boolean paramRequireUpate = initializeParameterWidget(clazz);
 
-        if ((viewRequireUpdate == true) || (paramRequireUpdate == true))
+        if ((viewRequireUpdate == true) || (paramRequireUpate == true))
         {
             if(classView.getParentWidget() != null)
             {
@@ -178,17 +203,6 @@ public class UMLClassWidget  extends SwitchableWidget
             {
                 retVal = classView;
             }
-        }
-        else if(parameterWidget != null)
-        {
-            classView.removeFromParent();
-            parameterWidget.removeFromParent();
-            
-            retVal = new Widget(getScene());
-            retVal.setForeground((Color)null);
-            retVal.setLayout(new TemplateWidgetLayout());
-            retVal.addChild(classView);
-            retVal.addChild(parameterWidget);
         }
         
         return retVal;
@@ -233,7 +247,6 @@ public class UMLClassWidget  extends SwitchableWidget
             retVal = true;
             ObjectScene scene = (ObjectScene) getScene();
 
-//            classView = new CustomizableWidget(scene, getResourcePath(), "Default", getResourceTable()); 
             classView = new Widget(scene){
                 @Override
                 protected void paintBackground()
@@ -277,17 +290,25 @@ public class UMLClassWidget  extends SwitchableWidget
             classView.addChild(nameWidget);
             classView.addChild(new SeparatorWidget(scene, SeparatorWidget.Orientation.HORIZONTAL));
 
+            String literalsTitle = NbBundle.getMessage(EnumerationWidget.class, 
+                                                    "LBL_LiteralsCompartment"); 
+            literals = new ElementListWidget(scene);
+            ((ListWidget) literals).setLabel(literalsTitle);
+            classView.addChild(literals);
+            initializeLiterals(element);
+            
             // It turns out that attributes can be redefined as well.  I do not
             // think that we have a UI to allow an attribute to be redefined,
             // but we had code to show redefined attributes before, so I am 
             // adding it here.  The attribute section allows the redefined
             // compartments to be grouped with the standard attributes 
             // compartment.
+            classView.addChild(new SeparatorWidget(scene, SeparatorWidget.Orientation.HORIZONTAL));
             attributeSection = new Widget(scene);
             attributeSection.setForeground((Color)null);
             attributeSection.setLayout(LayoutFactory.createVerticalFlowLayout());
             
-            String attrsTitle = NbBundle.getMessage(UMLClassWidget.class, 
+            String attrsTitle = NbBundle.getMessage(EnumerationWidget.class, 
                                                     "LBL_AttributesCompartment"); 
             members = new ElementListWidget(scene);
             members.createActions(DesignerTools.SELECT).addAction(ActionFactory.createAcceptAction(new AcceptFeatureProvider()));
@@ -298,7 +319,7 @@ public class UMLClassWidget  extends SwitchableWidget
 
             classView.addChild(new SeparatorWidget(scene, SeparatorWidget.Orientation.HORIZONTAL));
 
-            String opsTitle = NbBundle.getMessage(UMLClassWidget.class, 
+            String opsTitle = NbBundle.getMessage(EnumerationWidget.class, 
                                                     "LBL_OperationsCompartment");
             
             operations = new ElementListWidget(scene);
@@ -318,6 +339,18 @@ public class UMLClassWidget  extends SwitchableWidget
             for(IAttribute attr : clazz.getAttributes())
             {
                 addAttribute(attr);
+            }
+        }
+    }
+    
+    protected void initializeLiterals(IClassifier clazz)
+    {
+        if(clazz instanceof IEnumeration)
+        {
+            IEnumeration enumeration = (IEnumeration)clazz;
+            for(IEnumerationLiteral literal : enumeration.getLiterals())
+            {
+                addLiteral(literal);
             }
         }
     }
@@ -381,7 +414,7 @@ public class UMLClassWidget  extends SwitchableWidget
         ElementListWidget retVal = operationRedefinedMap.get(classifier.getXMIID());
         if(retVal == null)
         {
-            String title = NbBundle.getMessage(UMLClassWidget.class, 
+            String title = NbBundle.getMessage(EnumerationWidget.class, 
                                                "LBL_RedefinedOperations",
                                                classifier.getNameWithAlias());
 
@@ -403,7 +436,7 @@ public class UMLClassWidget  extends SwitchableWidget
         ElementListWidget retVal = attributeRedefinedMap.get(classifier.getXMIID());
         if(retVal == null)
         {
-            String title = NbBundle.getMessage(UMLClassWidget.class, 
+            String title = NbBundle.getMessage(EnumerationWidget.class, 
                                                "LBL_RedefinedAttributes",
                                                classifier.getNameWithAlias());
 
@@ -454,6 +487,17 @@ public class UMLClassWidget  extends SwitchableWidget
         {
            addRedefinedAttribute(attr);
         }
+        
+        
+    }
+    
+    protected void addLiteral(IEnumerationLiteral literal)
+    {
+        
+        EnumerationLiteralWidget widget = new EnumerationLiteralWidget(getScene());
+        ResourceValue.initResources(getWidgetID() + "." + DEFAULT, widget);
+        widget.initialize(literal);
+        literals.addChild(widget);
         
         
     }
@@ -550,6 +594,10 @@ public class UMLClassWidget  extends SwitchableWidget
                 {
                     addAttribute((IAttribute)event.getNewValue());
                 }
+                else if(event.getNewValue() instanceof IEnumerationLiteral)
+                {
+                    addLiteral((IEnumerationLiteral)event.getNewValue());
+                }
             }
             else if(propName.equals(ModelElementChangedKind.FEATUREMOVED.toString()) ||
                     propName.equals(ModelElementChangedKind.DELETE.toString()) ||
@@ -566,9 +614,7 @@ public class UMLClassWidget  extends SwitchableWidget
             }
             else if(propName.equals(ModelElementChangedKind.TEMPLATE_PARAMETER.toString()))
             {
-                Widget result = initializeContents((IClassifier)event.getSource());
-                result.removeFromParent();
-                setCurrentView(result);
+                initializeContents((IClassifier)event.getSource());
             }
             else if(propName.equals(ModelElementChangedKind.REDEFINED_OWNER_NAME_CHANGED.toString()))
             {
@@ -585,7 +631,7 @@ public class UMLClassWidget  extends SwitchableWidget
         
         if(opList != null)
         {
-            String title = NbBundle.getMessage(UMLClassWidget.class, 
+            String title = NbBundle.getMessage(EnumerationWidget.class, 
                                                "LBL_RedefinedOperations",
                                                redefinedOwner.getNameWithAlias());
             opList.setLabel(title);
@@ -593,7 +639,7 @@ public class UMLClassWidget  extends SwitchableWidget
         
         if(attrList != null)
         {
-            String title = NbBundle.getMessage(UMLClassWidget.class, 
+            String title = NbBundle.getMessage(EnumerationWidget.class, 
                                                "LBL_RedefinedAttributes",
                                                redefinedOwner.getNameWithAlias());
             attrList.setLabel(title);
@@ -605,7 +651,7 @@ public class UMLClassWidget  extends SwitchableWidget
     private DefaultContextPaletteModel initializeContextPalette()
     {
         DefaultContextPaletteModel paletteModel = new DefaultContextPaletteModel(this);
-        paletteModel.initialize("UML/context-palette/Class");
+        paletteModel.initialize("UML/context-palette/Enumeration");
         return paletteModel;
     }
     
@@ -663,7 +709,7 @@ public class UMLClassWidget  extends SwitchableWidget
     }
     
     public String getWidgetID() {
-        return UMLWidgetIDString.UMLCLASSWIDGET.toString();
+        return UMLWidgetIDString.ENUMERATION_WIDGET.toString();
     }
     
     
