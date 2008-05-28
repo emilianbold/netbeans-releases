@@ -41,9 +41,12 @@
 
 package org.netbeans.swing.plaf.nimbus;
 
+import java.awt.Color;
 import java.awt.Font;
+import javax.swing.BorderFactory;
 import javax.swing.JScrollPane;
 import javax.swing.UIManager;
+import javax.swing.border.MatteBorder;
 import org.netbeans.swing.plaf.LFCustoms;
 
 import org.netbeans.swing.plaf.util.UIUtils;
@@ -102,6 +105,16 @@ public final class NimbusLFCustoms extends LFCustoms {
             SLIDING_TAB_BUTTON_UI, "org.netbeans.swing.tabcontrol.plaf.SlidingTabDisplayerButtonUI", //NOI18N
             SLIDING_BUTTON_UI, "org.netbeans.swing.tabcontrol.plaf.NimbusSlidingButtonUI", //NOI18N
             SCROLLPANE_BORDER, new JScrollPane().getViewportBorder(),
+            //Borders for the tab control
+            EDITOR_TAB_OUTER_BORDER, BorderFactory.createEmptyBorder(),
+            EDITOR_TAB_CONTENT_BORDER,
+                new MatteBorder(0, 1, 1, 1, UIManager.getColor("nimbusBorder")), //NOI18N
+            EDITOR_TAB_TABS_BORDER, BorderFactory.createEmptyBorder(),
+
+            VIEW_TAB_OUTER_BORDER, BorderFactory.createEmptyBorder(),
+            VIEW_TAB_CONTENT_BORDER,
+                new MatteBorder(0, 1, 1, 1, UIManager.getColor("nimbusBorder")), //NOI18N
+            VIEW_TAB_TABS_BORDER, BorderFactory.createEmptyBorder(),
         };
         /*Object[] result = {
             DESKTOP_BORDER, new EmptyBorder(1, 1, 1, 1),
