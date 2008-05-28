@@ -212,7 +212,8 @@ public class AutoupdateCheckScheduler {
                         continue;
                     }
                     boolean skip = false;
-                    for (UpdateElement tmpEl : operationInfo.getRequiredElements ()) {
+                    Collection<UpdateElement> reqs = new HashSet<UpdateElement> (operationInfo.getRequiredElements ());
+                    for (UpdateElement tmpEl : reqs) {
                        if (tmpEl.getUpdateUnit ().isPending ()) {
                            err.log (Level.WARNING, "Plugin " + element + // NOI18N
                                    " depends on " + tmpEl + " in pending state.");                           
@@ -222,7 +223,7 @@ public class AutoupdateCheckScheduler {
                     if (skip) {
                         continue;
                     }
-                    oc.add (operationInfo.getRequiredElements ());
+                    oc.add (reqs);
                     Collection<String> brokenDeps = new HashSet<String> ();
                     for (OperationInfo<InstallSupport> info : oc.listAll ()) {
                         brokenDeps.addAll (info.getBrokenDependencies ());
@@ -233,7 +234,7 @@ public class AutoupdateCheckScheduler {
                         oc.removeAll ();
                         if (! brokenDeps.isEmpty ()) {
                             err.log (Level.WARNING, "Plugin " + element + // NOI18N
-                                    " cannot be installed, some dependencies can be satisfied: " + brokenDeps); // NOI18N
+                                    " cannot be installed because some dependencies cannot be satisfied: " + brokenDeps); // NOI18N
                         } else {
                             err.log (Level.WARNING, "Plugin " + element + // NOI18N
                                     " cannot be installed, Install Container contains invalid elements " + oc.listInvalid ()); // NOI18N
