@@ -65,10 +65,9 @@ public final class SingleProjectAnalysisTest extends ProjectImporterTestCase {
         File projectDir = extractToWorkDir("simpleAlone-3.1M6.zip");
         EclipseProject project = ProjectFactory.getInstance().load(projectDir);
         assertNotNull(project);
-        doBasicProjectTest(project);
-        Collection projects = project.getProjectsEntries();
+        doBasicProjectTest(project, 0);
+        Collection projects = project.getProjects();
         assertTrue("There are no required projects for the project.", projects.isEmpty());
-        printCollection("projects", projects);
     }
     
     public void testEmptyWithoutConAndSrc58033() throws Exception {
@@ -77,7 +76,7 @@ public final class SingleProjectAnalysisTest extends ProjectImporterTestCase {
         assertNotNull(project);
     }
     
-    static void doBasicProjectTest(EclipseProject project) {
+    static void doBasicProjectTest(EclipseProject project, int cpItemsCount) {
         /* usage (see printOtherProjects to see how to use them) */
         String name = project.getName();
         assertTrue("Name cannot be null or empty", (name != null && !name.equals("")));
@@ -92,29 +91,7 @@ public final class SingleProjectAnalysisTest extends ProjectImporterTestCase {
         assertFalse("Tere should be at least on source root",
                 srcRoots.isEmpty());
         
-        Collection extSrcRoots = project.getExternalSourceRoots();
-        assertTrue("There shouldn't be any external source roots for the project",
-                extSrcRoots.isEmpty());
-        
-        Collection libs = project.getLibraries();
-        assertTrue("There are no libraries for the project.", libs.isEmpty());
-        
-        Collection extLibs = project.getExternalLibraries();
-        assertTrue("There are no external libraries for the project",
-                extLibs.isEmpty());
-        
-        Collection variables = project.getVariables();
-        assertTrue("There are no variables for the project.", variables.isEmpty());
-        
-        /* print data (if verbose is true) */
-        printMessage("\n\n\nGathered info:");
-        printMessage("  name: " + name);
-        printMessage("  dir: " + directory);
-        printMessage("  jdkDir: " + jdkDir);
-        printCollection("sourceRoots", srcRoots);
-        printCollection("externalSourceRoots", extSrcRoots);
-        printCollection("libraries", libs);
-        printCollection("external libraries", extLibs);
-        printCollection("variables", variables);
+        Collection cp = project.getClassPathEntries();
+        assertEquals(cpItemsCount, cp.size());
     }
 }

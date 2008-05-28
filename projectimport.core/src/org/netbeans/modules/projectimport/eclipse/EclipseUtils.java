@@ -74,25 +74,8 @@ public class EclipseUtils {
         return projectDir != null
                 && FileUtil.toFileObject(FileUtil.normalizeFile(projectDir)) != null
                 && projectDir.isDirectory()
-                && new File(projectDir, EclipseProject.PROJECT_FILE).isFile();
-    }
-    
-    /**
-     * Returns whether there is a valid project in the given
-     * <code>projectDir</code> and if the project has java nature.
-     */
-    public static boolean isRegularJavaProject(File projectDir) {
-        return isRegularProject(projectDir) &&
-                new File(projectDir, EclipseProject.CLASSPATH_FILE).isFile();
-    }
-    
-    /**
-     * Returns whether there is a valid project in the given
-     * <code>projectDir</code> and if the project has java nature.
-     */
-    public static boolean isRegularJavaProject(String projectDir) {
-        return projectDir != null &&
-                isRegularJavaProject(new File(projectDir.trim()));
+                && new File(projectDir, EclipseProject.PROJECT_FILE).isFile()
+                && new File(projectDir, EclipseProject.CLASSPATH_FILE).isFile();
     }
     
     /**

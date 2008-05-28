@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,35 +31,61 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.projectimport.eclipse;
 
-import java.io.File;
-import java.util.Collections;
-import org.netbeans.junit.NbTestCase;
-
 /**
- * @author Martin Krauskopf
+ *
  */
-public class ClassPathParserTest extends NbTestCase {
+class Link {
     
-    public ClassPathParserTest(String testName) {
-        super(testName);
+    private String name;
+    private boolean file; // or folder?
+    private String location;
+
+    public Link(String name, boolean file, String location) {
+        this.name = name;
+        this.file = file;
+        this.location = location;
     }
     
-    public void testParse_71770() throws Exception {
-        DotClassPath cp = DotClassPathParser.parse(new File(getDataDir(), "71770.classpath"), Collections.<Link>emptyList());
-        assertEquals("17 classpath entries", 17, cp.getClassPathEntries().size());
-        assertEquals("1 sources entry", 1, cp.getSourceRoots().size());
-        assertNotNull("non empty output", cp.getOutput());
-        assertNotNull("non empty JDK", cp.getJREContainer());
+    String getName() {
+        return name;
     }
-    
-    public void testAccessrulesDoesNotCauseException() throws Exception { // #91669
-        DotClassPath cp = DotClassPathParser.parse(new File(getDataDir(), "91669.classpath"), Collections.<Link>emptyList());
-        assertEquals("one classpath entries", 0, cp.getClassPathEntries().size());
-        assertNotNull("non empty JDK", cp.getJREContainer());
+
+    boolean isFile() {
+        return file;
     }
-    
+
+    String getLocation() {
+        return location;
+    }
+
+    public String toString() {
+        return name + " = " + location + " (type type: " + file + ")"; // NOI18N
+    }
+
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof Link)) return false;
+        final Link link = (Link) obj;
+        if (file != link.file) return false;
+        if (name != null ? !name.equals(link.name) : link.name != null)
+            return false;
+        if (location != null ? !location.equals(link.location) : link.location != null)
+            return false;
+        return true;
+    }
+
+    public int hashCode() {
+        int result = 17;
+        result = 37 * result + System.identityHashCode(name);
+        result = 37 * result + System.identityHashCode(location);
+        return result;
+    }
 }

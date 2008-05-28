@@ -52,7 +52,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Logger;
-import org.netbeans.modules.projectimport.LoggerFactory;
 import org.netbeans.modules.projectimport.ProjectImporterException;
 
 /**
@@ -63,8 +62,7 @@ import org.netbeans.modules.projectimport.ProjectImporterException;
 final class WorkspaceParser {
     
     /** Logger for this class. */
-    private static final Logger logger =
-            LoggerFactory.getDefault().createLogger(WorkspaceParser.class);
+    private static final Logger logger = Logger.getLogger(WorkspaceParser.class.getName());
     
     private static final String VM_XML = "org.eclipse.jdt.launching.PREF_VM_XML"; // NOI18N
     private static final String IGNORED_CP_ENTRY = "##<cp entry ignore>##"; // NOI18N
@@ -74,13 +72,6 @@ final class WorkspaceParser {
     
     private static final String USER_LIBRARY_PREFIX = "org.eclipse.jdt.core.userLibrary."; // NOI18N
     private static final int USER_LIBRARY_PREFIX_LENGTH = USER_LIBRARY_PREFIX.length();
-    
-    //    private static final String CP_CONTAINER_PREFIX =
-    //            "org.eclipse.jdt.core.classpathContainer.";
-    //    private static final int CP_CONTAINER_PREFIX_LENGTH = CP_CONTAINER_PREFIX.length();
-    //    private static final String CP_CONTAINER_SUFFIX =
-    //            "|org.eclipse.jdt.launching.JRE_CONTAINER";
-    //    private static final int CP_CONTAINER_SUFFIX_LENGTH = CP_CONTAINER_SUFFIX.length();
     
     private final Workspace workspace;
     
@@ -131,16 +122,6 @@ final class WorkspaceParser {
             } // else we don't use other properties in the meantime
         }
     }
-    
-    //    private String parseJDKDir(ClassPath cp) {
-    //        for (Iterator it = cp.getEntries().iterator(); it.hasNext(); ) {
-    //            ClassPathEntry entry = (ClassPathEntry) it.next();
-    //            if (entry.getRawPath().endsWith("rt.jar")) {
-    //                return entry.getRawPath();
-    //            }
-    //        }
-    //        return null;
-    //    }
     
     private void parseWorkspaceProjects() throws ProjectImporterException {
         // directory filter
@@ -253,6 +234,9 @@ final class WorkspaceParser {
         String pathS = new String(path, "ISO-8859-1"); // NOI18N
         if (pathS.startsWith("URI//")) { // #89577 // NOI18N
             pathS = pathS.substring(pathS.indexOf(':') + 1);
+        }
+        if (pathS.length() == 0) {
+            return null;
         }
         return new File(pathS);
     }

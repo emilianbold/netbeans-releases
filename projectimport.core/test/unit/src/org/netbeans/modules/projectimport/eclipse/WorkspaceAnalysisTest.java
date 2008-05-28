@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.projectimport.eclipse;
 
+import org.netbeans.modules.projectimport.spi.DotClassPathEntry;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -63,9 +64,7 @@ public class WorkspaceAnalysisTest extends ProjectImporterTestCase {
         File workspaceDir = extractToWorkDir("workspace-test-3.1M6.zip");
         Workspace workspace = WorkspaceFactory.getInstance().load(workspaceDir);
         assertNotNull("Unable to load workspace", workspace);
-        printMessage("Checking " + workspace.getDirectory());
         assertFalse("Workspace shouldn't be emtpy", workspace.getProjects().isEmpty());
-        printMessage("Project in the workspace: " + workspace.getProjects());
         
         // Below information are just known. Get familiar with tested zips
         // (which could be created by the helper script createWorkspace.sh)
@@ -77,17 +76,16 @@ public class WorkspaceAnalysisTest extends ProjectImporterTestCase {
                 new ArrayList(Arrays.asList(p1RequiredProjects));
         Collection/*<String>*/ wsProjectNames =
                 new ArrayList(Arrays.asList(ws31M6ProjectNames));
-        Collection/*<EclipseProject>*/ gainedP1ReqProjects = null;
+        Collection<EclipseProject> gainedP1ReqProjects = null;
         
         for (Iterator it = workspace.getProjects().iterator(); it.hasNext(); ) {
             EclipseProject project = (EclipseProject) it.next();
             /* Test p1 project and its dependencies. */
             if ("p1".equals(project.getName())) {
-                SingleProjectAnalysisTest.doBasicProjectTest(project); // for p1
-                gainedP1ReqProjects = project.getProjectsEntries();
+                SingleProjectAnalysisTest.doBasicProjectTest(project, 2); // for p1
+                gainedP1ReqProjects = project.getProjects();
                 assertEquals("Incorrect project count for p1",
                         p1RequiredProjects.length, gainedP1ReqProjects.size());
-                printCollection("projects", gainedP1ReqProjects);
                 p1Tested = true;
             }
             wsProjectNames.remove(project.getName());
@@ -95,7 +93,7 @@ public class WorkspaceAnalysisTest extends ProjectImporterTestCase {
         assertTrue("\"p1\" project wasn't found in the workspace.", p1Tested);
         assertTrue("All project should be processed.", wsProjectNames.isEmpty());
         for (Iterator it = gainedP1ReqProjects.iterator(); it.hasNext(); ) {
-            p1ReqProjectsNames.remove(((ClassPathEntry)it.next()).getRawPath());
+            p1ReqProjectsNames.remove("/"+((EclipseProject)it.next()).getName());
         }
         assertTrue("\"p1\" project depends on unknown projects: " + p1ReqProjectsNames,
                 p1ReqProjectsNames.isEmpty());

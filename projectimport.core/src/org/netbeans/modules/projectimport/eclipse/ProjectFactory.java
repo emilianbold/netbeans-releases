@@ -42,9 +42,12 @@
 package org.netbeans.modules.projectimport.eclipse;
 
 import java.io.File;
-import java.util.Iterator;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.logging.Logger;
-import org.netbeans.modules.projectimport.LoggerFactory;
 import org.netbeans.modules.projectimport.ProjectImporterException;
 
 /**
@@ -57,8 +60,7 @@ import org.netbeans.modules.projectimport.ProjectImporterException;
 public final class ProjectFactory {
     
     /** Logger for this class. */
-    private static final Logger logger =
-            LoggerFactory.getDefault().createLogger(ProjectFactory.class);
+    private static final Logger logger = Logger.getLogger(ProjectFactory.class.getName());
     
     /** singleton */
     private static ProjectFactory instance = new ProjectFactory();
@@ -94,7 +96,7 @@ public final class ProjectFactory {
      * @throws ProjectImporterException if project in the given
      *     <code>projectDir</code> is not a valid Eclipse project.
      */
-    EclipseProject load(File projectDir, Workspace workspace) throws
+    private EclipseProject load(File projectDir, Workspace workspace) throws
             ProjectImporterException {
         
         EclipseProject project = EclipseProject.createProject(projectDir);
@@ -113,18 +115,17 @@ public final class ProjectFactory {
      */
     void load(EclipseProject project) throws ProjectImporterException {
         logger.finest("Loading project: " + project.getDirectory().getAbsolutePath()); // NOI18N
-        ProjectParser.parse(project);
-        File cpFile = project.getClassPathFile();
-        // non-java project doesn't need to have a classpath file
-        if (cpFile != null && cpFile.exists()) {
-            project.setClassPath(ClassPathParser.parse(cpFile));
-            for (Iterator it = project.getClassPath().getEntries().iterator(); it.hasNext(); ) {
-                project.setAbsolutePathForEntry((ClassPathEntry) it.next());
-            }
-        } else {
-            logger.finer("Project " + project.getName() + // NOI18N
-                    " doesn't have java nature."); // NOI18N
-            project.setJavaNature(false);
+        try {
+            Set<String> natures = new HashSet<String>();
+            List<Link> links = new ArrayList<Link>();
+            String projName = ProjectParser.parse(project.getProjectFile(), natures, links);
+            project.setNatures(natures);
+            project.setName(projName);
+
+            DotClassPath dotClassPath = DotClassPathParser.parse(project.getClassPathFile(), links);
+            project.setClassPath(dotClassPath);
+        } catch (IOException ex) {
+            throw new ProjectImporterException(ex);
         }
     }
 }

@@ -43,13 +43,13 @@ package org.netbeans.modules.projectimport.eclipse.wizard;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.projectimport.ProjectImporterException;
+import org.netbeans.modules.projectimport.eclipse.EclipseProject;
 import org.netbeans.modules.projectimport.eclipse.ProjectFactory;
 import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
@@ -84,20 +84,19 @@ final class EclipseWizardIterator implements
     }
     
     /** Returns projects selected by selection panel */
-    Set getProjects() {
+    List<EclipseProject> getProjects() {
         if (workspacePanel.isWorkspaceChosen()) {
             return projectPanel.getProjects();
         } else {
-            Set prjs = new HashSet();
             try {
                 File projectDirF = FileUtil.normalizeFile(new File(workspacePanel.getProjectDir()));
-                prjs.add(ProjectFactory.getInstance().load(projectDirF));
+                return Collections.<EclipseProject>singletonList(ProjectFactory.getInstance().load(projectDirF));
             } catch (ProjectImporterException e) {
                 ErrorManager.getDefault().log(ErrorManager.ERROR,
                         "ProjectImporterException catched: " + e); // NOI18N
                 e.printStackTrace();
+                return Collections.<EclipseProject>emptyList();
             }
-            return prjs;
         }
     }
     

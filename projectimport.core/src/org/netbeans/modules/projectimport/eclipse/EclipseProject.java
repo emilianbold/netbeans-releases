@@ -41,18 +41,20 @@
 
 package org.netbeans.modules.projectimport.eclipse;
 
+import org.netbeans.modules.projectimport.spi.DotClassPathEntry;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collection;
+import java.io.IOException;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Map;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
-import org.netbeans.modules.projectimport.LoggerFactory;
-import org.openide.filesystems.FileUtil;
+import org.netbeans.modules.projectimport.eclipse.Workspace.Variable;
+import org.netbeans.modules.projectimport.spi.ProjectTypeFactory;
+import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.util.Lookup;
 
 /**
  * Represents Eclipse project structure.
@@ -63,7 +65,14 @@ public final class EclipseProject implements Comparable {
 
     /** Logger for this class. */
     private static final Logger logger =
-            LoggerFactory.getDefault().createLogger(EclipseProject.class);
+            Logger.getLogger(EclipseProject.class.getName());
+    
+    private static final Lookup.Result<? extends ProjectTypeFactory> projectTypeFactories =
+        Lookup.getDefault().lookupResult (ProjectTypeFactory.class);
+    
+    private Boolean importSupported;
+    private ProjectTypeFactory projectFactory;
+    private Set<EclipseProject> projectsWeDependOn;
     
     static final String PROJECT_FILE = ".project"; // NOI18N
     static final String CLASSPATH_FILE = ".classpath"; // NOI18N
@@ -72,10 +81,8 @@ public final class EclipseProject implements Comparable {
     
     private String name;
     private boolean internal = true;
-    private boolean javaNature;
-    private ClassPath cp;
-    private Set links;
-    private Set otherNatures;
+    private DotClassPath cp;
+    private Set<String> natures;
     
     private final File projectDir;
     private final File cpFile;
@@ -104,6 +111,10 @@ public final class EclipseProject implements Comparable {
         this.cpFile = new File(projectDir, CLASSPATH_FILE);
         this.prjFile = new File(projectDir, PROJECT_FILE);
     }
+
+    void setNatures(Set<String> natures) {
+        this.natures = natures;
+    }
     
     void setWorkspace(Workspace workspace) {
         this.workspace = workspace;
@@ -113,12 +124,14 @@ public final class EclipseProject implements Comparable {
         return workspace;
     }
     
-    void setClassPath(ClassPath cp) {
+    void setClassPath(DotClassPath cp) {
         this.cp = cp;
+        calculateAbsolutePaths();
+        evaluateContainers();
     }
     
-    ClassPath getClassPath() {
-        return cp;
+    public List<DotClassPathEntry> getClassPathEntries() {
+        return cp.getClassPathEntries();
     }
     
     /**
@@ -162,25 +175,29 @@ public final class EclipseProject implements Comparable {
         return cpFile;
     }
     
-    public boolean hasJavaNature() {
-        return javaNature;
+    public Set<String> getNatures() {
+        return natures;
     }
     
-    void setJavaNature(boolean javaNature) {
-        this.javaNature = javaNature;
-    }
-    
-    public Set getOtherNatures() {
-        return otherNatures;
-    }
-    
-    void addOtherNature(String nature) {
-        if (otherNatures == null) {
-            otherNatures = new HashSet();
+    /**
+     * Can this Eclipse project be converted to NetBeans or not?
+     */
+    public boolean isImportSupported() {
+        if (importSupported == null) {
+            importSupported = Boolean.FALSE;
+            for (ProjectTypeFactory factory : projectTypeFactories.allInstances()) {
+                if (factory.canHandle(getNatures())) {
+                    this.projectFactory = factory;
+                    importSupported = Boolean.TRUE;
+                    break;
+                }
+            }
         }
-        logger.fine("Project " + getName() + " has another nature: " + // NOI18N
-                nature);
-        otherNatures.add(nature);
+        return importSupported.booleanValue();
+    }
+    
+    ProjectTypeFactory getProjectTypeFactory() {
+        return projectFactory;
     }
     
     /**
@@ -194,7 +211,7 @@ public final class EclipseProject implements Comparable {
     public String getJDKDirectory() {
         if (jdkDirectory == null && workspace != null) {
             logger.finest("Getting JDK directory for project " + this.getName()); // NOI18N
-            jdkDirectory = workspace.getJDKDirectory(cp.getJREContainer());
+            jdkDirectory = workspace.getJDKDirectory(cp.getJREContainer().getRawPath());
             logger.finest("Resolved JDK directory: " + jdkDirectory); // NOI18N
             // jdkDirectory = workspace.getJDKDirectory(projectDir.getName());
         }
@@ -202,106 +219,20 @@ public final class EclipseProject implements Comparable {
     }
     
     /** Convenient delegate to <code>ClassPath</code> */
-    public Collection getSourceRoots() {
+    public List<DotClassPathEntry> getSourceRoots() {
         return cp.getSourceRoots();
     }
     
     /**
-     * Returns map of file-label entries representing Eclipse project's source
-     * roots.
-     */
-    public Map/*<File, String>*/ getAllSourceRoots() {
-        Map rootsLabels = new HashMap();
-        
-        // internal sources
-        Collection srcRoots = cp.getSourceRoots();
-        for (Iterator it = srcRoots.iterator(); it.hasNext(); ) {
-            ClassPathEntry cpe = (ClassPathEntry) it.next();
-            File file = FileUtil.normalizeFile(new File(cpe.getAbsolutePath()));
-            rootsLabels.put(file, cpe.getRawPath());
-        }
-        // external sources
-        Collection extSrcRoots = cp.getExternalSourceRoots();
-        for (Iterator it = extSrcRoots.iterator(); it.hasNext(); ) {
-            ClassPathEntry cpe = (ClassPathEntry) it.next();
-            rootsLabels.put(
-                    FileUtil.normalizeFile(new File(cpe.getAbsolutePath())),
-                    cpe.getRawPath());
-        }
-        
-        return rootsLabels;
-    }
-    
-    /**
-     * Returns all libraries on the project classpath.
-     */
-    public Collection/*<File>*/ getAllLibrariesFiles() {
-        Collection files = new ArrayList();
-        // internal libraries
-        for (Iterator it = cp.getLibraries().iterator(); it.hasNext(); ) {
-            files.add(FileUtil.normalizeFile(new File(((ClassPathEntry)it.next()).getAbsolutePath())));
-            
-        }
-        // external libraries
-        for (Iterator it = cp.getExternalLibraries().iterator(); it.hasNext(); ) {
-            files.add(FileUtil.normalizeFile(new File(((ClassPathEntry)it.next()).getAbsolutePath())));
-        }
-        // jars in user libraries
-        for (Iterator it = getUserLibrariesJars().iterator(); it.hasNext(); ) {
-            files.add(FileUtil.normalizeFile(new File((String) it.next())));
-        }
-        // variables
-        for (Iterator it = cp.getVariables().iterator(); it.hasNext(); ) {
-            ClassPathEntry entry = (ClassPathEntry)it.next();
-            // in case a variable wasn't resolved
-            if (entry.getAbsolutePath() != null) {
-                files.add(FileUtil.normalizeFile(new File(entry.getAbsolutePath())));
-            }
-        }
-        return files;
-    }
-    
-    /** Convenient delegate to <code>ClassPath</code> */
-    public Collection getExternalSourceRoots() {
-        return cp.getExternalSourceRoots();
-    }
-    
-    /** Convenient delegate to <code>ClassPath</code> */
-    public Collection getLibraries() {
-        return cp.getLibraries();
-    }
-    
-    /** Convenient delegate to <code>ClassPath</code> */
-    public Collection getExternalLibraries() {
-        return cp.getExternalLibraries();
-    }
-    
-    public Collection getUserLibrariesJars() {
-        Collection userLibrariesJars = new HashSet();
-        if (workspace != null) {
-            for (Iterator it = cp.getUserLibraries().iterator(); it.hasNext(); ) {
-                userLibrariesJars.addAll(
-                        workspace.getJarsForUserLibrary((String) it.next()));
-            }
-        }
-        return userLibrariesJars;
-    }
-    
-    /** Convenient delegate to <code>ClassPath</code> */
-    public Collection getProjectsEntries() {
-        return cp.getProjects();
-    }
-    
-    private Set projectsWeDependOn;
-    
-    /**
      * Returns collection of <code>EclipseProject</code> this project requires.
      */
-    public Set getProjects() {
+    public Set<EclipseProject> getProjects() {
         if (workspace != null && projectsWeDependOn == null) {
             projectsWeDependOn = new HashSet();
-            for (Iterator it = cp.getProjects().iterator(); it.hasNext(); ) {
-                ClassPathEntry cp = (ClassPathEntry) it.next();
+            for (DotClassPathEntry cp : getClassPathEntries()) {
+                if (cp.getKind() != DotClassPathEntry.Kind.PROJECT) {
+                    continue;
+                }
                 EclipseProject prj = workspace.getProjectByRawPath(cp.getRawPath());
                 if (prj != null) {
                     projectsWeDependOn.add(prj);
@@ -311,17 +242,58 @@ public final class EclipseProject implements Comparable {
         return projectsWeDependOn == null ?
             Collections.EMPTY_SET : projectsWeDependOn;
     }
-    
-    /** Convenient delegate to <code>ClassPath</code> */
-    public Collection getVariables() {
-        return cp.getVariables();
+
+    private void evaluateContainers() {
+        for (DotClassPathEntry entry : cp.getClassPathEntries()) {
+            if (entry.getKind() != DotClassPathEntry.Kind.CONTAINER) {
+                continue;
+            }
+            ClassPathContainerResolver.resolve(entry);
+        }
     }
     
-    void addLink(ClassPath.Link link) {
-        if (links == null) {
-            links = new HashSet();
+    void setupEvaluatedContainers() throws IOException {
+        for (DotClassPathEntry entry : cp.getClassPathEntries()) {
+            if (entry.getKind() != DotClassPathEntry.Kind.CONTAINER) {
+                continue;
+            }
+            ClassPathContainerResolver.setup(workspace, entry);
         }
-        links.add(link);
+    }
+    
+    void setupEnvironmentVariables() throws IOException {
+        EditableProperties ep = PropertyUtils.getGlobalProperties();
+        boolean changed = false;
+        for (DotClassPathEntry entry : cp.getClassPathEntries()) {
+            if (entry.getKind() != DotClassPathEntry.Kind.VARIABLE) {
+                continue;
+            }
+            String s = entry.getRawPath();
+            int index = s.indexOf('/');
+            s = s.substring(0,index);
+            for (Variable v : workspace.getVariables()) {
+                if (v.getName().equals(s)) {
+                    if (ep.getProperty(s) == null) {
+                        ep.setProperty(s, v.getLocation());
+                        changed = true;
+                    }
+                    continue;
+                }
+            }
+        }
+        if (changed) {
+            PropertyUtils.putGlobalProperties(ep);
+        }
+    }
+    
+    private void calculateAbsolutePaths() {
+        for (DotClassPathEntry entry : cp.getClassPathEntries()) {
+            setAbsolutePathForEntry(entry);
+        }
+        for (DotClassPathEntry entry : cp.getSourceRoots()) {
+            setAbsolutePathForEntry(entry);
+        }
+        setAbsolutePathForEntry(cp.getOutput());
     }
     
     /**
@@ -330,19 +302,19 @@ public final class EclipseProject implements Comparable {
      * If it is not possible (e.g. workspace Varible is not found) sets abs.
      * path to null.
      */
-    void setAbsolutePathForEntry(ClassPathEntry entry) {
+    private void setAbsolutePathForEntry(DotClassPathEntry entry) {
         // set abs. path default (null)
         entry.setAbsolutePath(null);
         
         // try to resolve entry as a CONTAINER
-        if (entry.getType() == ClassPathEntry.TYPE_CONTAINER) {
+        if (entry.getKind() == DotClassPathEntry.Kind.CONTAINER) {
             // we don't support CONTAINERs so we don't care about them here
             // (we support JRE/JDK containers but those are solved elsewhere)
             return;
         }
         
         // try to resolve entry as a VARIABLE
-        if (entry.getType() == ClassPathEntry.TYPE_VARIABLE) {
+        if (entry.getKind() == DotClassPathEntry.Kind.VARIABLE) {
             String rawPath = entry.getRawPath();
             int slashIndex = rawPath.indexOf('/');
             if (slashIndex != -1) {
@@ -362,7 +334,7 @@ public final class EclipseProject implements Comparable {
         }
         
         // try to resolve entry as a PROJECT
-        if (entry.getType() == ClassPathEntry.TYPE_PROJECT) {
+        if (entry.getKind() == DotClassPathEntry.Kind.PROJECT) {
             if (workspace != null) {
                 entry.setAbsolutePath(workspace.getProjectAbsolutePath(
                         entry.getRawPath().substring(1)));
@@ -373,27 +345,8 @@ public final class EclipseProject implements Comparable {
             return;
         }
         
-        // try to resolve entry as a LINK
-        ClassPath.Link link = getLink(entry.getRawPath());
-        if (link != null) {
-            logger.finest("Found link for entry \"" + entry + "\": " + link); // NOI18N
-            if (FileUtil.normalizeFile(new File(link.getLocation())).exists()) {
-                // change type from source to source link
-                entry.setType(ClassPathEntry.TYPE_LINK);
-                entry.setAbsolutePath(link.getLocation());
-            } else {
-                logger.info("Not able to resolve absolute path for classpath" + // NOI18N
-                        " entry \"" + entry.getRawPath() + "\". This classpath" + // NOI18N
-                        " entry is external source which points to PATH VARIABLE" + // NOI18N
-                        " which points to final destination. This feature will be" + // NOI18N
-                        " supported in future version of Importer."); // NOI18N
-                entry.setType(ClassPathEntry.TYPE_UNKNOWN);
-            }
-            return;
-        }
-        
         // not VARIABLE, not PROJECT, not LINK -> either source root or library
-        if (entry.isRawPathRelative()) {
+        if (!(new File(entry.getRawPath()).isAbsolute())) {
             // internal src or lib
             entry.setAbsolutePath(projectDir.getAbsolutePath() + File.separator
                     + entry.getRawPath());
@@ -402,7 +355,7 @@ public final class EclipseProject implements Comparable {
             entry.setAbsolutePath(entry.getRawPath());
         }
     }
-    
+
     /**
      * Find variable for the given variable rawPath. Note that this method
      * returns <code>null</code> if workspace wasn't set for the project.
@@ -431,24 +384,8 @@ public final class EclipseProject implements Comparable {
      * it represents otherwise null. Note that this method returns null if
      * workspace wasn't set for this project.
      */
-    private Workspace.Variable getVariable(ClassPathEntry entry) {
+    private Workspace.Variable getVariable(DotClassPathEntry entry) {
         return getVariable(entry.getRawPath());
-    }
-    
-    /**
-     * Recongises if a given entry represents link. If yes returns link it
-     * represents otherwise null.
-     */
-    private ClassPath.Link getLink(String linkName) {
-        if (links != null) {
-            for (Iterator it = links.iterator(); it.hasNext(); ) {
-                ClassPath.Link link = (ClassPath.Link) it.next();
-                if (link.getName().equals(linkName)) {
-                    return link;
-                }
-            }
-        }
-        return null;
     }
     
     public String toString() {

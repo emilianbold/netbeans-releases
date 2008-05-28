@@ -114,7 +114,7 @@ final class SelectionWizardPanel extends ImporterWizardPanel implements
             if ((!new File(dest).isAbsolute()) || !EclipseUtils.isWritable(dest)) {
                 message = ProjectImporterWizard.getMessage(
                         "MSG_CannotCreateProjectInFolder", dest); // NOI18N
-            } else if (!EclipseUtils.isRegularJavaProject(getProjectDir())) {
+            } else if (!EclipseUtils.isRegularProject(getProjectDir())) {
                 message = ProjectImporterWizard.getMessage(
                         "MSG_CannotImportNonJavaProject"); // NOI18N
             }

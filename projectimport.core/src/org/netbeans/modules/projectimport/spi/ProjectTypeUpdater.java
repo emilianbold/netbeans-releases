@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,35 +31,43 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.projectimport.eclipse;
+package org.netbeans.modules.projectimport.spi;
 
-import java.io.File;
-import java.util.Collections;
-import org.netbeans.junit.NbTestCase;
+import java.io.IOException;
+import org.netbeans.api.project.Project;
 
 /**
- * @author Martin Krauskopf
  */
-public class ClassPathParserTest extends NbTestCase {
-    
-    public ClassPathParserTest(String testName) {
-        super(testName);
-    }
-    
-    public void testParse_71770() throws Exception {
-        DotClassPath cp = DotClassPathParser.parse(new File(getDataDir(), "71770.classpath"), Collections.<Link>emptyList());
-        assertEquals("17 classpath entries", 17, cp.getClassPathEntries().size());
-        assertEquals("1 sources entry", 1, cp.getSourceRoots().size());
-        assertNotNull("non empty output", cp.getOutput());
-        assertNotNull("non empty JDK", cp.getJREContainer());
-    }
-    
-    public void testAccessrulesDoesNotCauseException() throws Exception { // #91669
-        DotClassPath cp = DotClassPathParser.parse(new File(getDataDir(), "91669.classpath"), Collections.<Link>emptyList());
-        assertEquals("one classpath entries", 0, cp.getClassPathEntries().size());
-        assertNotNull("non empty JDK", cp.getJREContainer());
-    }
+public interface ProjectTypeUpdater extends ProjectTypeFactory {
+
+    /**
+     * Returns identifier uniquely identifying data in given ProjectImportModel 
+     * instance. Identifier will be used for comparison of different versions of
+     * ProjectImportModel data and equality of identifier will mean that project
+     * is up to data and does not require update. Identifier should also contain
+     * enough data to calculate difference between ProjectImportModel it represents
+     * and any given ProjectImportModel.
+     * 
+     * <p>Example of identifier could be: 
+     * "src=src;con=org.eclipse.jdt.launching.JRE_CONTAINER;var=MAVEN_REPO/commons-lang-2.3.jar;output=bin"
+     */
+    String calculateKey(ProjectImportModel model);
+
+    /**
+     * Update given project.
+     * 
+     * <p>This method is permited to show blocking UI.
+     * 
+     * @param project
+     * @param model
+     * @param oldKey
+     */
+    void update(Project project, ProjectImportModel model, String oldKey) throws IOException;
     
 }

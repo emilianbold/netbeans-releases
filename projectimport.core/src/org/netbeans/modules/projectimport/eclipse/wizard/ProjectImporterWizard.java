@@ -42,14 +42,12 @@
 package org.netbeans.modules.projectimport.eclipse.wizard;
 
 import java.awt.Dialog;
-import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.projectimport.eclipse.EclipseProject;
-import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 
@@ -60,7 +58,7 @@ import org.openide.util.NbBundle;
  */
 public final class ProjectImporterWizard {
     
-    private Set projects;
+    private List<EclipseProject> projects;
     private String destination;
     private boolean recursively;
     private boolean cancelled;
@@ -85,35 +83,35 @@ public final class ProjectImporterWizard {
         cancelled = wizardDescriptor.getValue() != WizardDescriptor.FINISH_OPTION;
         if (!cancelled) {
             projects = iterator.getProjects();
-            showAdditionalInfo(projects);
+            //showAdditionalInfo(projects);
             destination = iterator.getDestination();
             recursively = iterator.getRecursively();
             numberOfImportedProjects = iterator.getNumberOfImportedProject();
         }
     }
     
-    private void showAdditionalInfo(Set projects) {
-        StringBuffer messages = null;
-        for (Iterator it = projects.iterator(); it.hasNext(); ) {
-            EclipseProject prj = (EclipseProject) it.next();
-            Set natures = prj.getOtherNatures();
-            if (natures != null && !natures.isEmpty()) {
-                if (messages == null) {
-                    messages = new StringBuffer(
-                            getMessage("MSG_CreatedByPlugin") + "\n\n"); // NOI18N
-                }
-                messages.append(" - " + prj.getName()); // NOI18N
-            }
-        }
-        if (messages != null) {
-            NotifyDescriptor d = new DialogDescriptor.Message(
-                    messages.toString(), NotifyDescriptor.INFORMATION_MESSAGE);
-            DialogDisplayer.getDefault().notify(d);
-        }
-    }
+//    private void showAdditionalInfo(Set projects) {
+//        StringBuffer messages = null;
+//        for (Iterator it = projects.iterator(); it.hasNext(); ) {
+//            EclipseProject prj = (EclipseProject) it.next();
+//            Set natures = prj.getNatures();
+//            if (natures != null && !natures.isEmpty()) {
+//                if (messages == null) {
+//                    messages = new StringBuffer(
+//                            getMessage("MSG_CreatedByPlugin") + "\n\n"); // NOI18N
+//                }
+//                messages.append(" - " + prj.getName()); // NOI18N
+//            }
+//        }
+//        if (messages != null) {
+//            NotifyDescriptor d = new DialogDescriptor.Message(
+//                    messages.toString(), NotifyDescriptor.INFORMATION_MESSAGE);
+//            DialogDisplayer.getDefault().notify(d);
+//        }
+//    }
     
     /** Returns project selected by user with the help of the wizard. */
-    public Set getProjects() {
+    public List<EclipseProject> getProjects() {
         return projects;
     }
     

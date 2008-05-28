@@ -45,9 +45,11 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.Stack;
 import java.util.TreeSet;
@@ -65,7 +67,6 @@ import javax.swing.event.DocumentListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
-import org.netbeans.modules.projectimport.LoggerFactory;
 import org.netbeans.modules.projectimport.ProjectImporterException;
 import org.netbeans.modules.projectimport.eclipse.EclipseProject;
 import org.netbeans.modules.projectimport.eclipse.Workspace;
@@ -84,9 +85,8 @@ final class ProjectSelectionPanel extends JPanel {
     /**
      * Logger for this class
      */
-    private static final Logger logger =
-            LoggerFactory.getDefault().createLogger(ProjectSelectionPanel.class);
-    
+    private static final Logger logger = Logger.getLogger(ProjectSelectionPanel.class.getName());
+
     /** Renderer for projects */
     private class ProjectCellRenderer extends JCheckBox
             implements TableCellRenderer {
@@ -98,12 +98,12 @@ final class ProjectSelectionPanel extends JPanel {
             setSelected(selectedProjects.contains(project) ||
                     requiredProjects.contains(project));
             setToolTipText(null);
-            if (project.hasJavaNature() && !requiredProjects.contains(project)) {
+            if (project.isImportSupported() && !requiredProjects.contains(project)) {
                 setEnabled(true);
             } else {
                 // required and non-java project are disabled
                 setEnabled(false);
-                if (!project.hasJavaNature()) {
+                if (!project.isImportSupported()) {
                     setToolTipText(ProjectImporterWizard.getMessage(
                             "MSG_NonJavaProject", project.getName())); // NOI18N
                 }
@@ -157,7 +157,7 @@ final class ProjectSelectionPanel extends JPanel {
      * This all servers for remembering checked project when working with
      * project dependencies.
      */
-    private Set/*<EclipseProject>*/ selectedProjects;
+    private Set<EclipseProject> selectedProjects;
     
     /**
      * All projects we need to import (involving projects which selected
@@ -188,7 +188,7 @@ final class ProjectSelectionPanel extends JPanel {
         }
         
         public boolean isCellEditable(int rowIndex, int columnIndex) {
-            return (projects[rowIndex].hasJavaNature() &&
+            return (projects[rowIndex].isImportSupported() &&
                     !requiredProjects.contains(projects[rowIndex]));
         }
         
@@ -216,8 +216,7 @@ final class ProjectSelectionPanel extends JPanel {
             return;
         }
         String parent = destination.getText();
-        for (Iterator it = allProjects().iterator(); it.hasNext(); ) {
-            EclipseProject prj = (EclipseProject) it.next();
+        for (EclipseProject prj : allProjects()) {
             String destDir = parent + "/" + prj.getName(); // NOI18N
             if (new File(destDir).exists()) {
                 setErrorMessage(ProjectImporterWizard.getMessage(
@@ -229,8 +228,8 @@ final class ProjectSelectionPanel extends JPanel {
     }
     
     /** Returns both selected and required projects */
-    private Collection allProjects() {
-        Collection all = new HashSet(selectedProjects);
+    private Collection<EclipseProject> allProjects() {
+        Collection<EclipseProject> all = new HashSet<EclipseProject>(selectedProjects);
         all.addAll(requiredProjects);
         return all;
     }
@@ -248,8 +247,7 @@ final class ProjectSelectionPanel extends JPanel {
         if (selectedProjects == null || selectedProjects.isEmpty()) {
             return;
         }
-        for (Iterator it = selectedProjects.iterator(); it.hasNext(); ) {
-            EclipseProject selProject = (EclipseProject) it.next();
+        for (EclipseProject selProject : selectedProjects) {
             assert selProject != null;
             solved.push(selProject);
             currentRoot = selProject;
@@ -337,7 +335,7 @@ final class ProjectSelectionPanel extends JPanel {
         for (Iterator it = wsPrjs.iterator(); it.hasNext(); ) {
             projects[i++] = (EclipseProject) it.next();
         }
-        selectedProjects = new HashSet();
+        selectedProjects = new HashSet<EclipseProject>();
         requiredProjects = new HashSet();
         if (projects.length == 0) {
             setErrorMessage(ProjectImporterWizard.getMessage(
@@ -347,9 +345,28 @@ final class ProjectSelectionPanel extends JPanel {
         }
     }
     
-    /** Returns projects selected by selection panel */
-    Set getProjects() {
-        return selectedProjects;
+    /** Returns projects selected by selection panel and ordered so that required 
+     *  projects are created first.
+     */
+    List<EclipseProject> getProjects() {
+        List<EclipseProject> list = new ArrayList<EclipseProject>();
+        addProjects(selectedProjects, list);
+        return list;
+    }
+    
+    private void addProjects(Set<EclipseProject> projects, List<EclipseProject> list) {
+        for (EclipseProject p : projects) {
+            if (list.contains(p)) {
+                continue;
+            }
+            Set<EclipseProject> requiredProjs = p.getProjects();
+            if (requiredProjs.size() == 0) {
+                list.add(p);
+            } else {
+                addProjects(requiredProjs, list);
+                list.add(p);
+            }
+        }
     }
     
     /**

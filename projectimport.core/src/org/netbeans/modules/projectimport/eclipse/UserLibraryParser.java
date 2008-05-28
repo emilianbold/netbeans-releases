@@ -43,8 +43,8 @@ package org.netbeans.modules.projectimport.eclipse;
 
 import java.io.IOException;
 import java.io.StringReader;
-import java.util.Collection;
-import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.List;
 import org.openide.ErrorManager;
 import org.openide.xml.XMLUtil;
 import org.xml.sax.Attributes;
@@ -81,12 +81,12 @@ final class UserLibraryParser extends DefaultHandler {
     private int position = POSITION_NONE;
     private StringBuffer chars;
     
-    private Collection jars;
+    private List<String> jars;
     
     private UserLibraryParser() {/* emtpy constructor */}
     
     /** Returns jars contained in the given user library. */
-    static Collection getJars(String xmlDoc) throws ProjectImporterException {
+    static List<String> getJars(String xmlDoc) throws ProjectImporterException {
         UserLibraryParser parser = new UserLibraryParser();
         parser.load(new InputSource(new StringReader(xmlDoc)));
         return parser.jars;
@@ -120,7 +120,7 @@ final class UserLibraryParser extends DefaultHandler {
             case POSITION_NONE:
                 if (localName.equals(USER_LIBRARY)) {
                     position = POSITION_USER_LIBRARY;
-                    jars = new HashSet();
+                    jars = new ArrayList<String>();
                 } else {
                     throw (new SAXException("First element has to be " // NOI18N
                             + USER_LIBRARY + ", but is " + localName)); // NOI18N

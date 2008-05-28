@@ -46,7 +46,6 @@ import java.io.StringReader;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
-import org.netbeans.modules.projectimport.LoggerFactory;
 import org.openide.ErrorManager;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
@@ -65,8 +64,7 @@ import org.xml.sax.XMLReader;
 final class PreferredVMParser extends DefaultHandler {
     
     /** Logger for this class. */
-    private static final Logger logger =
-            LoggerFactory.getDefault().createLogger(PreferredVMParser.class);
+    private static final Logger logger = Logger.getLogger(PreferredVMParser.class.getName());
     
     // elements names
     private static final String VM_SETTINGS = "vmSettings"; // NOI18N

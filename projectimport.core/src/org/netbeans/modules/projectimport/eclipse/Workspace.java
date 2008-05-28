@@ -42,16 +42,20 @@
 package org.netbeans.modules.projectimport.eclipse;
 
 import java.io.File;
-import java.util.Collection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
-import org.netbeans.modules.projectimport.LoggerFactory;
 import org.openide.ErrorManager;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 /**
  * Provides access to an eclipse workspace.
@@ -61,8 +65,8 @@ import org.openide.ErrorManager;
 public final class Workspace {
 
     /** Logger for this class. */
-    private static final Logger logger =
-            LoggerFactory.getDefault().createLogger(Workspace.class);
+    private static final Logger logger = Logger.getLogger(Workspace.class.getName());
+    
     
     /** Represents variable in Eclipse project's classpath. */
     static class Variable {
@@ -126,10 +130,10 @@ public final class Workspace {
     private File resourceProjectsDir;
     private File workspaceDir;
     
-    private Set variables;
+    private Set<Variable> variables;
     private Set projects = new HashSet();
     private Map jreContainers;
-    private Map userLibraries;
+    private Map<String, List<String>> userLibraries;
     
     /**
      * Returns <code>Workspace</code> instance representing Eclipse Workspace
@@ -157,7 +161,7 @@ public final class Workspace {
         resourceProjectsDir = new File(workspaceDir, RESOURCE_PROJECTS_DIR);
     }
     
-    File getDirectory() {
+    public File getDirectory() {
         return workspaceDir;
     }
     
@@ -175,12 +179,12 @@ public final class Workspace {
     
     void addVariable(Variable var) {
         if (variables == null) {
-            variables = new HashSet();
+            variables = new HashSet<Variable>();
         }
         variables.add(var);
     }
     
-    Set getVariables() {
+    Set<Variable> getVariables() {
         return variables;
     }
     
@@ -192,19 +196,33 @@ public final class Workspace {
         projects.add(project);
     }
     
-    void addUserLibrary(String libName, Collection jars) {
+    void addUserLibrary(String libName, List<String> jars) {
         if (userLibraries == null) {
-            userLibraries = new HashMap();
+            userLibraries = new HashMap<String, List<String>>();
         }
         userLibraries.put(libName, jars);
     }
     
-    Collection getJarsForUserLibrary(String libRawPath) {
-        Collection retVal = Collections.EMPTY_LIST;
+    List<URL> getJarsForUserLibrary(String libRawPath) {
         if (userLibraries != null) {
-            retVal = (Collection) userLibraries.get(libRawPath);
+            List<String> jars = userLibraries.get(libRawPath);
+            List<URL> urls = new ArrayList<URL>();
+            for (String jar : jars) {
+                try {
+                    File f = new File(jar);
+                    URL url = f.toURI().toURL();
+                    if (f.isFile()) {
+                        url = FileUtil.getArchiveRoot(url);
+                    }
+                    urls.add(url);
+                } catch (MalformedURLException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+            return urls;
+        } else {
+            return Collections.<URL>emptyList();
         }
-        return retVal;
     }
     
     /**

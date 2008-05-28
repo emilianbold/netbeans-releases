@@ -41,50 +41,59 @@
 
 package org.netbeans.modules.projectimport.eclipse;
 
-import java.io.File;
-import java.util.Collection;
+import org.netbeans.modules.projectimport.spi.DotClassPathEntry;
+import java.util.List;
 
 /**
- * Tests importing of complex project (still without workspace provided). This
- * test should check all features if project analyzer.
+ * Represents classpath for an Eclipse project (.classpath file content)
  *
  * @author mkrauskopf
  */
-public class ComplexProjectAnalysisTest extends ProjectImporterTestCase {
+final class DotClassPath {
 
-    /**
-     * Creates a new instance of ComplexProjectAnalysisTest
-     */
-    public ComplexProjectAnalysisTest(String name) {
-        super(name);
-    }
-
-    public void testComplexAloneProjectForLatestMilestone() throws Exception {
-        File projectDir = extractToWorkDir("complexAlone-3.1M6.zip");
-        EclipseProject project = ProjectFactory.getInstance().load(projectDir);
-        assertNotNull(project);
-        doProjectTest(project);
+    private DotClassPathEntry output;
+    
+    private DotClassPathEntry jreContainer;
+    
+    private List<DotClassPathEntry> sourceRoots;
+    private List<DotClassPathEntry> classpath;
+    
+    
+    public DotClassPath(List<DotClassPathEntry> classpath, 
+            List<DotClassPathEntry> sources, 
+            DotClassPathEntry output,
+            DotClassPathEntry jre) {
+        this.sourceRoots = sources;
+        this.classpath = classpath;
+        this.output = output;
+        this.jreContainer = jre;
+        
     }
     
-    private void doProjectTest(EclipseProject project) {
-        /* usage (see printOtherProjects to see how to use them) */
-        String name = project.getName();
-        assertTrue("Name cannot be null or empty", (name != null && !name.equals("")));
-        
-        File directory = project.getDirectory();
-        assertNotNull(directory);
-        
-        String jdkDir = project.getJDKDirectory();
-        //        assertNotNull("Cannot resolve JDK directory \"" + jdkDir + "\"", jdkDir);
-        
-        Collection srcRoots = project.getSourceRoots();
-        assertFalse("Tere should be at least on source root",
-                srcRoots.isEmpty());
-        
-        Collection cp = project.getClassPathEntries();
-        assertFalse("There are some libraries for the project.", cp.isEmpty());
-        
-        Collection projects = project.getProjects();
-        assertTrue("There are no required projects for the project.", projects.isEmpty());
+    public DotClassPathEntry getOutput() {
+        return output;
     }
+    
+    List<DotClassPathEntry> getClassPathEntries() {
+        return classpath;
+    }
+    
+    /**
+     * Just provides more convenient access to source entries.
+     *
+     * @see #getEntries()
+     */
+    List<DotClassPathEntry> getSourceRoots() {
+        return sourceRoots;
+    }
+    
+    /**
+     * Returns container classpath entry for JRE.
+     *
+     * @see #getEntries()
+     */
+    public DotClassPathEntry getJREContainer() {
+        return jreContainer;
+    }
+    
 }

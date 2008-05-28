@@ -45,7 +45,8 @@ import java.awt.Component;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.util.Set;
+import java.util.List;
+import org.netbeans.modules.projectimport.eclipse.EclipseProject;
 import org.netbeans.modules.projectimport.eclipse.EclipseUtils;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
@@ -78,7 +79,7 @@ final class ProjectWizardPanel extends ImporterWizardPanel implements
     }
     
     // ==== delegate methods ==== //
-    Set getProjects() {
+    List<EclipseProject> getProjects() {
         return panel.getProjects();
     }
     

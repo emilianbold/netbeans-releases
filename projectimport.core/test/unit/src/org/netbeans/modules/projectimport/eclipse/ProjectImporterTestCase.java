@@ -41,14 +41,15 @@
 
 package org.netbeans.modules.projectimport.eclipse;
 
+import org.netbeans.modules.projectimport.spi.DotClassPathEntry;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import org.netbeans.junit.NbTestCase;
@@ -123,32 +124,4 @@ public class ProjectImporterTestCase extends NbTestCase {
         return new File(getWorkDir(), archiveFile.substring(0, archiveFile.length() - 4));
     }
     
-    protected static void printMessage(String message, boolean newLine) {
-        if (verbose) {
-            if (newLine) {
-                System.out.println(message);
-            } else {
-                System.out.print(message);
-            }
-        }
-    }
-    
-    protected static void printMessage(String message) {
-        printMessage(message, true);
-    }
-    
-    protected static void printCollection(String name, Collection col) {
-        if (col != null && !col.isEmpty()) {
-            printMessage("  " + name + ":");
-            for (Iterator it = col.iterator(); it.hasNext(); ) {
-                ClassPathEntry entry = (ClassPathEntry) it.next();
-                printMessage("    \"" + entry.getRawPath() + "\" ", false);
-                if (entry.getAbsolutePath() != null) {
-                    printMessage("converted to \"" + entry.getAbsolutePath() + "\"");
-                } else {
-                    printMessage("cannot be resolved !!!!");
-                }
-            }
-        }
-    }
 }

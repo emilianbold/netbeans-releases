@@ -50,8 +50,8 @@ import org.netbeans.junit.NbTestCase;
  */
 public class EqualityAndHashCodeTest extends NbTestCase {
 
-    ClassPath.Link link2;
-    ClassPath.Link theSameAsLink2;
+    Link link2;
+    Link theSameAsLink2;
 
     Workspace.Variable var2;
     Workspace.Variable theSameAsVar2;
@@ -61,15 +61,9 @@ public class EqualityAndHashCodeTest extends NbTestCase {
     }
 
     protected void setUp() throws java.lang.Exception {
-        link2 = new ClassPath.Link();
-        link2.setLocation("/link2");
-        link2.setName("link2");
-        link2.setType(ClassPath.Link.TYPE_FILE);
+        link2 = new Link("link2", true, "/link2");
         
-        theSameAsLink2 = new ClassPath.Link();
-        theSameAsLink2.setLocation("/link2");
-        theSameAsLink2.setName("link2");
-        theSameAsLink2.setType(ClassPath.Link.TYPE_FILE);
+        theSameAsLink2 = new Link("link2", true, "/link2");
         
         var2 = new Workspace.Variable();
         var2.setLocation("/var2");
@@ -86,18 +80,12 @@ public class EqualityAndHashCodeTest extends NbTestCase {
                 "(link2 == theSameAsLink2)", link2, theSameAsLink2);
         assertEquals("link2 should be equal to theSameAsLink2",
                 link2, theSameAsLink2);
-        theSameAsLink2.setType(ClassPath.Link.TYPE_FOLDER);
-        assertFalse("link2 should be not be equal to theSameAsLink2",
-                link2.equals(theSameAsLink2));
     }
     
     /** tests ClassPathContent.Link.hashCode() */
     public void testLinksHashCodes() {
         assertEquals("link2 and theSameAsLink2 should generate the same hashCode",
                 link2.hashCode(), theSameAsLink2.hashCode());
-        theSameAsLink2.setType(ClassPath.Link.TYPE_FOLDER);
-        assertFalse("link2 and theSameAsLink2 shouldn't generate the same hashCode",
-                link2.hashCode() == theSameAsLink2.hashCode());
     }
     /** tests ClassPathContent.Variable.equals() */
     public void testVariablesEquality() {

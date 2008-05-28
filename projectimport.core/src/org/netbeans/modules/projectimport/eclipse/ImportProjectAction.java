@@ -44,9 +44,7 @@ package org.netbeans.modules.projectimport.eclipse;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.List;
 import javax.swing.JDialog;
 import javax.swing.Timer;
 import javax.swing.WindowConstants;
@@ -75,14 +73,13 @@ public class ImportProjectAction extends CallableSystemAction {
     public void performAction() {
         ProjectImporterWizard wizard = new ProjectImporterWizard();
         wizard.start();
-        Set eclProjects = wizard.getProjects();
+        List<EclipseProject> eclProjects = wizard.getProjects();
         String destination = wizard.getDestination();
         if (wizard.isCancelled() || eclProjects == null || destination == null) {
             return;
         }
         
-        final Importer importer = new Importer(eclProjects, destination, 
-                wizard.getRecursively());
+        final Importer importer = new Importer(eclProjects, destination);
         
         // prepare progress dialog
         final ProgressPanel progressPanel = new ProgressPanel();
@@ -103,14 +100,13 @@ public class ImportProjectAction extends CallableSystemAction {
                     progressTimer.stop();
                     progressDialog.setVisible(false);
                     progressDialog.dispose();
-                    Collection warnings = importer.getWarnings();
-                    if (warnings != null) {
+                    List<String> warnings = importer.getWarnings();
+                    if (warnings.size() > 0) {
                         StringBuffer messages = new StringBuffer(
                                 NbBundle.getMessage(ImportProjectAction.class,
                                 "MSG_ProblemsOccured")); // NOI18N
                         messages.append("\n\n"); // NOI18N
-                        for (Iterator it = warnings.iterator(); it.hasNext(); ) {
-                            String message = (String) it.next();
+                        for (String message : warnings) {
                             messages.append(" - " + message + "\n"); // NOI18N
                         }
                         NotifyDescriptor d = new DialogDescriptor.Message(
