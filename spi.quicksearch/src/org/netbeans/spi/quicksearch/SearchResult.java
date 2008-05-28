@@ -57,9 +57,4 @@ public interface SearchResult {
      */
     public String getDisplayName();
     
-    /**
-     * Which group is this result member of 
-     * @return
-     */
-    public SearchResultGroup getResultGroup();
 }

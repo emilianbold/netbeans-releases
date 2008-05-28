@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.quicksearch;
 
-import org.netbeans.spi.quicksearch.SearchResultGroup;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -65,19 +64,25 @@ public class CommandEvaluator {
      * @param command
      * @return 
      */
-    public static Iterable<? extends SearchResultGroup> evaluate(String command) {
+    public static Iterable<? extends CategoryResult> evaluate(String command) {
         
-         List<SearchResultGroup> l = new ArrayList<SearchResultGroup>();
+        List<CategoryResult> l = new ArrayList<CategoryResult>();
         Matcher m = COMMAND_PATTERN.matcher(command);
         boolean isCommand = m.matches();
-        for (SearchProvider provider : Lookup.getDefault().lookupAll(SearchProvider.class)) {
-            if (isCommand) {
-                if (provider.getCommandPrefix().equalsIgnoreCase(m.group(1))) {
-                    l.add(provider.evaluate(m.group(3)));
+        
+        for (ProviderModel.Category cat : ProviderRegistry.getInstance().getProviders().getCategories()) {
+            CategoryResult curRes = new CategoryResult(cat);
+            for (SearchProvider provider : cat.getProviders()) {
+                if (isCommand) {
+                    String commandPrefix = provider.getCategory().getCommandPrefix();
+                    if (commandPrefix != null && commandPrefix.equalsIgnoreCase(m.group(1))) {
+                        curRes.addAll(provider.evaluate(m.group(3)));
+                    }
+                } else {
+                    curRes.addAll(provider.evaluate(command));
                 }
-            } else {
-                l.add(provider.evaluate(command));
             }
+            l.add(curRes);
         }
 
         return l;

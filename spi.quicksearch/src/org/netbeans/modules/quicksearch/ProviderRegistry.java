@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -37,63 +37,69 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-
-package org.netbeans.modules.jumpto.quicksearch;
+package org.netbeans.modules.quicksearch;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import org.netbeans.spi.quicksearch.SearchProvider;
-import org.netbeans.spi.quicksearch.SearchResult;
-import org.netbeans.spi.jumpto.type.TypeDescriptor;
-import org.netbeans.spi.quicksearch.CategoryDescription;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.Repository;
+import org.openide.util.lookup.Lookups;
+
 
 /**
  *
- * @author  Jan Becicka
+ * @author Dafe Simonek
  */
-public class JavaTypeSearchProvider implements SearchProvider, CategoryDescription {
-
-    public List<SearchResult> evaluate(String pattern) {
-        GoToTypeWorker worker = new GoToTypeWorker(pattern);
-        worker.run();
-        List<SearchResult> result = new ArrayList<SearchResult>();
-        for (TypeDescriptor td : worker.getTypes()) {
-            result.add(new GoToTypeCommand(td));
-        }
-        return result;
+final class ProviderRegistry {
+    
+    /** folder in layer file system where provider of fast access content are searched for */
+    private static final String SEARCH_PROVIDERS_FOLDER = "/QuickSearch"; //NOI18N
+    
+    private ProviderModel providers;
+    
+    private static ProviderRegistry instance;
+    
+    private ProviderRegistry () {
     }
     
-    private static class GoToTypeCommand implements SearchResult {
-        private TypeDescriptor command;
-        
-        public GoToTypeCommand(TypeDescriptor command) {
-            this.command = command;
+    public static ProviderRegistry getInstance () {
+        if (instance == null) {
+            instance = new ProviderRegistry();
         }
+        return instance;
+    }
+    
+    
+    public ProviderModel getProviders () {
+        if (providers == null) {
+            providers = new ProviderModel();
+            loadProviders(providers);
+        }
+        return providers;
+    }
+
+    private void loadProviders (ProviderModel model) {
+        FileObject[] categoryFOs = Repository.getDefault().getDefaultFileSystem().
+                findResource(SEARCH_PROVIDERS_FOLDER).getChildren();
+
+        List<ProviderModel.Category> categories = new ArrayList<ProviderModel.Category>(categoryFOs.length);
         
-        
-        public void invoke() {
-            command.open();
+        for (int i = 0; i < categoryFOs.length; i++) {
+            FileObject curFO = categoryFOs[i];
+            
+            FileObject[] children = curFO.getChildren();
+            
+            Collection<? extends SearchProvider> catProviders = 
+                    Lookups.forPath(curFO.getPath()).lookupAll(SearchProvider.class);
+            
+            categories.add(new ProviderModel.Category(
+                    curFO.getNameExt(),
+                    new ArrayList<SearchProvider>(catProviders)));
         }
 
-        public String getDisplayName() {
-            return command.getSimpleName();
-        }
-
+        model.setCategories(categories);
     }
-
-    public CategoryDescription getCategory() {
-        return this;
-    }
-
-    public String getDisplayName() {
-        return "Go To Type";
-    }
-
-    public String getCommandPrefix() {
-        return "t";
-    }
-
-    public String getHint() {
-        return null;
-    }
+    
 }

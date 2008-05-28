@@ -42,8 +42,8 @@ package org.netbeans.modules.jumpto.quicksearch;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 import javax.swing.Action;
@@ -51,7 +51,7 @@ import org.netbeans.core.options.keymap.api.ShortcutAction;
 import org.netbeans.core.options.keymap.spi.KeymapManager;
 import org.netbeans.spi.quicksearch.SearchProvider;
 import org.netbeans.spi.quicksearch.SearchResult;
-import org.netbeans.spi.quicksearch.SearchResultGroup;
+import org.netbeans.spi.quicksearch.CategoryDescription;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
@@ -59,11 +59,7 @@ import org.openide.util.Lookup;
  * SearchProvider for all actions. 
  * @author  Jan Becicka
  */
-public class ActionsSearchProvider implements SearchProvider {
-
-    public String getCommandPrefix() {
-        return "a";
-    }
+public class ActionsSearchProvider implements SearchProvider, CategoryDescription {
 
     /**
      * Returns List (ShortcutAction) of all global and editor actions.
@@ -80,50 +76,21 @@ public class ActionsSearchProvider implements SearchProvider {
         return actions;
     }
 
-    public SearchResultGroup evaluate(String pattern) {
-        ActionsResultGroup r = new ActionsResultGroup(pattern);
+    public List<SearchResult> evaluate (String pattern) {
+        List<SearchResult> result = new ArrayList<SearchResult>();
         for (ShortcutAction a:getActions()) {
             if (a.getDisplayName().toLowerCase().indexOf(pattern) != -1) {
-                r.addAction(a);
+                result.add(new ActionResult(a));
             }
         }
-        return r;
-    }
-    
-    private static class ActionsResultGroup implements SearchResultGroup {
-
-        private String command;
-        private Collection<SearchResult> items;
-        public ActionsResultGroup(String command) {
-            this.command = command;
-            items = new ArrayList<SearchResult>();
-        }
-
-        public Iterable<? extends SearchResult> getItems() {
-            return items;
-        }
-
-        public String getCategory() {
-            return "Actions";
-        }
-
-        public int getSize() {
-            return items.size();
-        }
-        
-        void addAction(ShortcutAction a) {
-            items.add(new ActionResult(a, this));
-        }
-
+        return result;
     }
     
     private static class ActionResult implements SearchResult {
         private ShortcutAction command;
-        private SearchResultGroup group;
         
-        public ActionResult(ShortcutAction command, SearchResultGroup group) {
+        public ActionResult(ShortcutAction command) {
             this.command = command;
-            this.group = group;
         }
         
         
@@ -150,8 +117,22 @@ public class ActionsSearchProvider implements SearchProvider {
             return command.getDisplayName();
         }
 
-        public SearchResultGroup getResultGroup() {
-            return group;
-        }
-    }    
+    }
+
+    public CategoryDescription getCategory() {
+        return this;
+    }
+
+    public String getDisplayName() {
+        return "Actions";
+    }
+
+    public String getCommandPrefix() {
+        return "a";
+    }
+
+    public String getHint() {
+        return null;
+    }
+
 }

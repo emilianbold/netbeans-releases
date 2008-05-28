@@ -48,7 +48,9 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.ListCellRenderer;
+import javax.swing.ListModel;
 import javax.swing.border.EmptyBorder;
+import org.netbeans.modules.quicksearch.ProviderModel;
 import org.netbeans.spi.quicksearch.SearchResult;
 
 /**
@@ -82,8 +84,11 @@ class SearchResultRender extends JLabel implements ListCellRenderer {
         } else if (value instanceof SearchResult) {
             JLabel p = new JLabel(((SearchResult) value).getDisplayName());
             p.setBorder(new EmptyBorder(0, 5, 0, 0));
-            if (isFirst((SearchResult) value)) {
-                jLabel1.setText(((SearchResult) value).getResultGroup().getCategory());
+            ListModel model = list.getModel();
+            if (model instanceof ResultsModel && 
+                    isFirstInCat((SearchResult) value, (ResultsModel)model, index)) {
+                ProviderModel.Category cat = ((ResultsModel)model).getCategory((SearchResult) value);
+                jLabel1.setText(cat.getDisplayName());
             } else {
                 jLabel1.setText("");
             }
@@ -108,7 +113,10 @@ class SearchResultRender extends JLabel implements ListCellRenderer {
         return panel;
     }
 
-    private boolean isFirst(SearchResult result) {
-        return result.equals(result.getResultGroup().getItems().iterator().next());
+    private boolean isFirstInCat (SearchResult result, ResultsModel model, int index) {
+        if (index == 0) {
+            return true;
+        }
+        return model.getElementAt(index - 1) == null;
     }
 }

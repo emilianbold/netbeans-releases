@@ -119,4 +119,12 @@ Contributor(s): Andrei Badea, Leon Chiver
         </folder>
     </folder>
     
+    <folder name="QuickSearch">
+        <folder name="Actions">
+            <file name="org-netbeans-modules-jumpto-quicksearch-ActionsSearchProvider.instance"/>
+        </folder>
+        <folder name="GoToType">
+            <file name="org-netbeans-modules-jumpto-quicksearch-JavaTypeSearchProvider.instance"/>
+        </folder>            
+    </folder>
 </filesystem>

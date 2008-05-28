@@ -37,63 +37,52 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-
-package org.netbeans.modules.jumpto.quicksearch;
+package org.netbeans.modules.quicksearch;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.spi.quicksearch.SearchProvider;
-import org.netbeans.spi.quicksearch.SearchResult;
-import org.netbeans.spi.jumpto.type.TypeDescriptor;
-import org.netbeans.spi.quicksearch.CategoryDescription;
+import org.netbeans.spi.quicksearch.*;
 
 /**
  *
- * @author  Jan Becicka
+ * @author  Jan Becicka, Dafe Simonek
  */
-public class JavaTypeSearchProvider implements SearchProvider, CategoryDescription {
+final class  CategoryResult {
+    
+    private ProviderModel.Category category;
+    
+    private List<SearchResult> items;
 
-    public List<SearchResult> evaluate(String pattern) {
-        GoToTypeWorker worker = new GoToTypeWorker(pattern);
-        worker.run();
-        List<SearchResult> result = new ArrayList<SearchResult>();
-        for (TypeDescriptor td : worker.getTypes()) {
-            result.add(new GoToTypeCommand(td));
-        }
-        return result;
+    public CategoryResult (ProviderModel.Category category) {
+        this.category = category;
+        items = new ArrayList<SearchResult>();
     }
     
-    private static class GoToTypeCommand implements SearchResult {
-        private TypeDescriptor command;
-        
-        public GoToTypeCommand(TypeDescriptor command) {
-            this.command = command;
-        }
-        
-        
-        public void invoke() {
-            command.open();
-        }
-
-        public String getDisplayName() {
-            return command.getSimpleName();
-        }
-
+    public void addItem (SearchResult item) {
+        items.add(item);
+    }
+    
+    public void addAll (List<SearchResult> newItems) {
+        items.addAll(newItems);
     }
 
-    public CategoryDescription getCategory() {
-        return this;
+    /**
+     * Get the value of item
+     *
+     * @return the value of item
+     */
+    public List<SearchResult> getItems() {
+        return items;
     }
 
-    public String getDisplayName() {
-        return "Go To Type";
+    /**
+     * Get the value of Category
+     *
+     * @return the value of Category
+     */
+    public ProviderModel.Category getCategory() {
+        return category;
     }
+    
 
-    public String getCommandPrefix() {
-        return "t";
-    }
-
-    public String getHint() {
-        return null;
-    }
 }

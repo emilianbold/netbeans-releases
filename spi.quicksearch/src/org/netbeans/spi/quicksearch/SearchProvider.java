@@ -40,6 +40,8 @@
 
 package org.netbeans.spi.quicksearch;
 
+import java.util.List;
+
 
 /**
  * Search Provider.
@@ -47,16 +49,14 @@ package org.netbeans.spi.quicksearch;
  * @author  Jan Becicka
  */
 public interface SearchProvider {
-    /**
-     * prefix for this group
-     * @return
-     */
-    String getCommandPrefix();
     
     /**
      * find result matching given pattern
      * @param pattern
      * @return
      */
-    SearchResultGroup evaluate(String pattern);
+    List<SearchResult> evaluate (String pattern);
+    
+    CategoryDescription getCategory ();
+    
 }
