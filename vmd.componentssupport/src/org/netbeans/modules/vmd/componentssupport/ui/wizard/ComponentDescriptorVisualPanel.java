@@ -46,6 +46,7 @@ import java.util.Map;
 import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import org.netbeans.modules.vmd.componentssupport.ui.UIUtils;
+import org.netbeans.modules.vmd.componentssupport.ui.helpers.CustomComponentHelper;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -255,10 +256,14 @@ final class ComponentDescriptorVisualPanel extends JPanel {
     }
     
     private String getCodeNameBase(){
-        return (String)mySettings.getProperty( 
-                NewComponentDescriptor.CODE_NAME_BASE);
+        return getHelper().getCodeNameBase();
     }
 
+    private CustomComponentHelper getHelper(){
+        return (CustomComponentHelper)mySettings.getProperty( 
+                NewComponentDescriptor.HELPER);
+    }
+    
     // TODO add unique validation
     private boolean isCCClassNameValid(){
         String name = getClassNameValue();
