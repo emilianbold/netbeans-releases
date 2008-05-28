@@ -140,21 +140,33 @@ final class ComponentDescriptorVisualPanel extends JPanel {
         mySettings = descriptor;
 
         myPrefix.setText(getPrefix());
-        myCDClassName.setText((String)mySettings.getProperty(
-                NewComponentDescriptor.CD_CLASS_NAME));
-        myCDTypeId.setText((String)mySettings.getProperty(
-                NewComponentDescriptor.CD_TYPE_ID));
+        if (getClassName() != null){
+            myCDClassName.setText(getClassName());
+        }
+        if (getTypeId() != null){
+            myCDTypeId.setText(getTypeId());
+        }
         myCDSuperClass.setText(getSuperDescriptor());
         myCDVersionCombo.setSelectedItem(getVersion());
         myCanInstantiateChk.setSelected(getCanInstantiate());
         myCanBeSuperChk.setSelected(getCanBeSuper());
 
-        isCDClassNameUpdated = false;
-        isCDTypeIdUpdated = false;
+        //isCDClassNameUpdated = false;
+        //isCDTypeIdUpdated = false;
         updateValuesOnPrefixUpdate();
         checkValidity();
     }
 
+    private String getTypeId(){
+        return (String)mySettings.getProperty(
+                NewComponentDescriptor.CD_TYPE_ID);
+    }
+    
+    private String getClassName(){
+        return (String)mySettings.getProperty(
+                NewComponentDescriptor.CD_CLASS_NAME);
+    }
+    
     private String getSuperDescriptor(){
         String superDescr = (String)mySettings.getProperty(
                 NewComponentDescriptor.CD_SUPER_DESCR_CLASS);
