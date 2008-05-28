@@ -749,7 +749,7 @@ public class ActionTracker {
         StringBuilder pathToXsl = new StringBuilder();
         
             String workdir=System.getProperty("nbjunit.workdir");
-            pathToXsl.append(workdir);
+            pathToXsl.append(workdir+java.io.File.separator);
             pathToXsl.append("../../../../../src/org/netbeans/modules/performance/resources");
         
         return pathToXsl.toString();

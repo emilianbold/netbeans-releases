@@ -53,6 +53,8 @@ import org.netbeans.jemmy.operators.ComponentOperator;
  */
 public class EditorDownButtonPopupMenu extends PerformanceTestCase {
 
+    public static final String suiteName="UI Responsiveness J2SE Menus";
+
     /** Test of popup menu on Editor's 'Down Button' */
     public EditorDownButtonPopupMenu(String testName) {
         super(testName);

@@ -45,10 +45,13 @@ import java.awt.Component;
 import java.awt.Window;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.Field;
 
 import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import junit.framework.AssertionFailedError;
 
 import org.netbeans.jellytools.JellyTestCase;
@@ -63,7 +66,7 @@ import org.netbeans.junit.NbPerformanceTest;
 import org.netbeans.modules.performance.guitracker.ActionTracker;
 import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
 
-
+import org.netbeans.junit.NbTestSuite;
 /**
  * Test case with implemented Performance Tests Validation support stuff.
  * This class provide methods for QA Performance measurement.
@@ -778,14 +781,27 @@ protected static int repeat = 4
             }
         }
 
+        String suiteName="Unknown Test Suite";
+        try {
+            Field f=null;
+            f=this.getClass().getDeclaredField("suiteName");
+            suiteName=f.get(null).toString();
+        } catch (NoSuchFieldException ex) {
+            ex.printStackTrace(getLog());
+        } catch (SecurityException ex) {
+            ex.printStackTrace(getLog());
+        }catch (IllegalAccessException ex) {
+            ex.printStackTrace(getLog());        
+        }
+
         if (numberOfFails > NUMBER_OF_FAILS_THRESHOLD || firstTimeUsageFail) {
-            CommonUtilities.xmlTestResults(this.getWorkDirPath(), performanceDataName, "ms", "failed", expectedTime ,measuredValues, repeat);
+            CommonUtilities.xmlTestResults(this.getWorkDirPath(), suiteName, performanceDataName, "ms", "failed", expectedTime ,measuredValues, repeat);
             captureScreen = false;
             fail(numberOfFails + " of the measuredTime(s) [" + measuredValuesString 
                     + " ] > expectedTime[" + expectedTime 
                     + "] - performance issue (it's ok if the first usage is in boundary of 0 to 2*expectedTime) .");
         } 
-        CommonUtilities.xmlTestResults(this.getWorkDirPath(), performanceDataName, "ms", "passed", expectedTime ,measuredValues, repeat);
+        CommonUtilities.xmlTestResults(this.getWorkDirPath(), suiteName, performanceDataName, "ms", "passed", expectedTime ,measuredValues, repeat);
     }
 
     /**

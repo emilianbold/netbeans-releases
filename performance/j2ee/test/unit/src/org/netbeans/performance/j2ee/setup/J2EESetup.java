@@ -80,7 +80,7 @@ public class J2EESetup extends JellyTestCase {
 
         public void testAddAppServer() {
         
-        CommonUtilities.addTomcatServer();
+        CommonUtilities.addApplicationServer();
     }
 
     public void testOpenTestApplication() {

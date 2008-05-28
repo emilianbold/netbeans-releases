@@ -41,9 +41,18 @@
 
 package org.netbeans.modules.performance.utilities;
 
+import java.io.FileNotFoundException;
 import java.io.PrintStream;
+import java.io.FileOutputStream;
+import java.io.FileInputStream;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.tree.TreePath;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -75,6 +84,7 @@ import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JListOperator;
+import org.netbeans.jemmy.operators.JLabelOperator;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
 import org.netbeans.jemmy.operators.JMenuItemOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
@@ -84,6 +94,7 @@ import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.jemmy.operators.Operator.StringComparator;
 //import org.netbeans.junit.ide.ProjectSupport;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 
 /*
 import org.netbeans.progress.module.Controller;
@@ -102,6 +113,10 @@ public class CommonUtilities {
     public static final String TEST_PACKAGES = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.Bundle", "NAME_test.src.dir");
     public static final String WEB_PAGES = Bundle.getStringTrimmed("org.netbeans.modules.web.project.ui.Bundle", "LBL_Node_DocBase");
     private static PerformanceTestCase test = null;
+    
+    private static int size=0;
+    private static String prev="";
+    
     /** Creates a new instance of Utilities */
     public CommonUtilities() {
     }
@@ -329,7 +344,7 @@ public class CommonUtilities {
     
     protected static void waitForProjectCreation(int delay, boolean wait){
         try {
-            Thread.sleep(delay);
+            Thread.currentThread().sleep(delay);
         } catch (InterruptedException exc) {
             exc.printStackTrace(System.err);
         }
@@ -756,7 +771,7 @@ public class CommonUtilities {
         node.performPopupAction("Terminate Process");
     }
     
-    public static void xmlTestResults(String path, String name, String unit, String pass, long threshold, long[] results, int repeat) {
+    public static void xmlTestResults(String path, String suite, String name, String unit, String pass, long threshold, long[] results, int repeat) {
     
         File resLocal=new File(path+File.separator+"performance.xml");
         PrintStream ps=null;
@@ -775,10 +790,56 @@ public class CommonUtilities {
             ps.close();
         }
         
+      File resGlobal=new File(path+File.separator+"../../allPerformance.xml");  
+      FileOutputStream fos=null;
+      FileInputStream fis=null;
+      if (!resGlobal.exists()) {
+          try {
+
+          fos = new FileOutputStream(resGlobal, true);           
+          fos.write("<TestResults>\n".getBytes());
+          fos.write("   </Suite>\n".getBytes());
+          fos.write("</TestResults>".getBytes());
+          fos.close();
+
+            } catch (IOException ex) {
+
+            }
+      }
       
+              
+        try {
+            fis= new FileInputStream(resGlobal);
+            size=(int)(resGlobal.length()-25);
+            
+            byte[] array=new byte[size];
+            fis.read(array, 0, size);
+            fis.close();
+            
+            fos= new FileOutputStream(resGlobal, false);
+          
+            fos.write(array);
+
+      
+            if (!new String(array).contains("<Suite name=\""+suite+"\">")) {
+                if (new String(array).contains("<Suite name=")) fos.write("   </Suite>\n".getBytes());
+                fos.write(("   <Suite name=\""+suite+"\">\n").getBytes());
+            }
+            
+            fos.write(("      <Test name=\""+name+"\" unit=\""+unit+"\""+" results=\""+pass+"\""+" threshold=\""+threshold+"\">\n").getBytes());
+            fos.write(("         <PerformanceData runOrder=\"1\" value=\""+results[1]+"\"/>\n").getBytes());
+            for (int i=2;i<=repeat;i++) 
+                fos.write(("         <PerformanceData runOrder=\"2\" value=\""+results[i]+"\"/>\n").getBytes());
+            fos.write(("      </Test>\n").getBytes());
+
+            fos.write("   </Suite>\n".getBytes());            
+            fos.write("</TestResults>".getBytes());
+            fos.close();  
+            
+        } catch (IOException ex) {
+            System.err.println("Exception:"+ex);
+        }
                
     }
-    
-
     
 }

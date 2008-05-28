@@ -64,6 +64,8 @@ public class MainMenu extends PerformanceTestCase {
     
     private JMenuOperator testedMenu;
     
+    public static final String suiteName="UI Responsiveness J2SE Menus";
+    
     
     /** Creates a new instance of MainMenu */
     public MainMenu(String testName) {

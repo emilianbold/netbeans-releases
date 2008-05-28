@@ -72,6 +72,7 @@ public class MainSubMenus extends PerformanceTestCase {
     private JMenuItemOperator mio;
     private MouseDriver mdriver;
     
+    public static final String suiteName="UI Responsiveness J2SE Menus";
     
     /** Creates a new instance of MainSubMenus */
     public MainSubMenus(String testName) {
