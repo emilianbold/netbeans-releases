@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.uml.diagrams.nodes;
 
+import org.netbeans.modules.uml.drawingarea.persistence.data.NodeInfo;
 import org.netbeans.modules.uml.drawingarea.view.LabelNode;
 import java.beans.PropertyChangeEvent;
 import org.netbeans.api.visual.widget.Scene;
@@ -120,5 +121,14 @@ public abstract class UMLLabelNodeWidget extends UMLNodeWidget implements LabelN
     private String loc(String key)
     {
         return NbBundle.getMessage(UMLLabelNodeWidget.class, key);
+    }
+
+    @Override
+    public void load(NodeInfo nodeReader) {
+        super.load(nodeReader);
+        if(nodeReader.getLabels().size()==1)
+        {
+            showLabel(true);
+        }
     }
 }

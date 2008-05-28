@@ -155,6 +155,11 @@ public class MovableLabelWidget extends EditableCompartmentWidget implements Wid
         Insets insets = nodeWidget.getBorder().getInsets();
         Rectangle labelBnd=getBounds();
         if(labelBnd==null)labelBnd=getPreferredBounds();
+        Rectangle nodeBnd=nodeWidget.getBounds();
+        //if(nodeBnd==null && )nodeBnd=nodeWidget.getPreferredBounds();
+        if(nodeBnd==null)return;
+        nodeBnd=nodeWidget.convertLocalToScene(nodeBnd);
+        nodeBnd=getParentWidget().convertSceneToLocal(nodeBnd);//in parent of label coordinates
         if (getPreferredLocation() == null)
         {
             if(x0!=null)
@@ -164,16 +169,12 @@ public class MovableLabelWidget extends EditableCompartmentWidget implements Wid
             else dx = 0;
             if(y0==null)
             {
-                dy = -labelBnd.height / 2 - nodeWidget.getPreferredBounds().height / 2;
+                dy = -labelBnd.height / 2 - nodeBnd.height / 2;
             }
             else dy=y0;
 
         }
         
-        Rectangle nodeBnd=nodeWidget.getBounds();
-        if(nodeBnd==null)nodeBnd=nodeWidget.getPreferredBounds();
-        nodeBnd=nodeWidget.convertLocalToScene(nodeBnd);
-        nodeBnd=getParentWidget().convertSceneToLocal(nodeBnd);//in parent of label coordinates
 
         double nodeCenterX = nodeBnd.x+ insets.left + (nodeBnd.width - insets.left - insets.right) / 2;
 

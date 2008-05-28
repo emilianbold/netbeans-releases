@@ -458,6 +458,12 @@ public class TSDiagramConverter
         for (NodeInfo ninfo : ninfos)
         {
             good=good&&createPE(ninfo);
+            System.out.println(ninfo.getProperty(PRESENTATIONELEMENT)!=null);
+            if(ninfo.getProperty(PRESENTATIONELEMENT)!=null)
+            {
+                IPresentationElement pe=(IPresentationElement) ninfo.getProperty(PRESENTATIONELEMENT);
+                System.out.println("ELEMENT: "+pe.getFirstSubjectsType()+"; SIZE: "+ninfo.getSize());
+            }
         }        
         return good;
     }
@@ -731,7 +737,14 @@ public class TSDiagramConverter
                         ((DiagramEdgeReader)object).load(resultInfo);
                     }
                     else {
-                        ((DiagramEdgeReader)object).load(edgeInfo);
+                        try
+                        {
+                            ((DiagramEdgeReader)object).load(edgeInfo);
+                        }
+                        catch(java.lang.IllegalArgumentException ex)
+                        {
+                            System.out.println("***WARNING: "+ex);
+                        }
                     }                        
                 }
 
@@ -938,6 +951,24 @@ public class TSDiagramConverter
             Exceptions.printStackTrace(ex);
         }
         return null;
+    }
+    
+    private void handleNodeLabels(XMLStreamReader readerData,ArrayList nodeLabels)
+    {
+        try {
+            String startWith = readerData.getLocalName();
+            //we need to go deeper and exit on the same node, or can exit before on place we found necessary info
+            while (readerData.hasNext() && !(readerData.isEndElement() && readerData.getLocalName().equals(startWith))) {
+                if(readerData.isStartElement() && readerData.getLocalName().equals("nodeLabel"))
+                {
+                    //node label here, need to handle and show later
+                    nodeLabels.add(new Object());
+                }
+                readerData.next();
+            }
+        } catch (XMLStreamException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 
     private String getEngineFromPres(XMLStreamReader readerPres,NodeInfo ninfo) {
@@ -1212,6 +1243,7 @@ public class TSDiagramConverter
         Dimension size = null;
         String PEID = null;
         String graphicsType=null;
+        ArrayList nodeLabels=new ArrayList();
         try
         {
             nodeId = readerData.getAttributeValue(null, "id");
@@ -1226,6 +1258,11 @@ public class TSDiagramConverter
                     {
                         ConnectorData connector=handleConnectorInNode(readerData,connectors);
                         nodeConnectors.put(connector.getId()+"", connector);
+                    }
+                    else if(readerData.getName().getLocalPart()
+                        .equalsIgnoreCase("nodeLabels"))
+                    {
+                        handleNodeLabels(readerData,nodeLabels);
                     }
                     else if (readerData.getName().getLocalPart()
                         .equalsIgnoreCase("center") && position==null)//second position may be corresponding label position
@@ -1298,6 +1335,11 @@ public class TSDiagramConverter
                     if(nodeConnectors.size()>0)
                     {
                         nodeInfo.setProperty(NODECONNECTORS, nodeConnectors);
+                    }
+                    
+                    if(nodeLabels.size()>0)
+                    {
+                        nodeInfo.addNodeLabels(nodeLabels);
                     }
                     
                     dataNodeIdMap.put(nodeId, PEID);
@@ -1460,52 +1502,19 @@ public class TSDiagramConverter
                     }
                     else if (readerData.getName().getLocalPart().equalsIgnoreCase("SimpleSemanticModelElement"))
                     {
-//                        String typeInfo = readerData.getAttributeValue(null, "typeinfo");
-//                        if (typeInfo.length() > 0)
-//                        {
-//
-//                            EdgeInfo.EdgeLabel eLabel = edgeReader.new EdgeLabel();
-//                            eLabel.setLabel(typeInfo);
-//                            eLabel.setPosition(pt);
-//                            eLabel.setSize(d);
-//                            if (mostRecentEnd == null)
-//                            {
-//                                edgeReader.getLabels().add(eLabel);
-//                            }
-//                            else
-//                            {
-//                                mostRecentEnd.getEndEdgeLabels().add(eLabel);
-//                            }
-//                        }
                     }
                     else if (readerData.getName().getLocalPart().equalsIgnoreCase("Uml2SemanticModelBridge.element"))
                     {
-//                        readerData.nextTag();
-//                        //get the  xmi.idref
-////                        nodeInfo.setMEID(reader.getAttributeValue(null, "xmi.idref"));
-////
-////                    }
-////                    else if (reader.getName().getLocalPart().equalsIgnoreCase("AssociationEnd"))
-////                    {
-//                        EdgeInfo.EndDetails assocEnd = edgeReader.new EndDetails();
-//                        //get the  xmi.idref
-//                        assocEnd.setID(readerData.getAttributeValue(null, "xmi.idref"));
-//                        edgeReader.getEnds().add(assocEnd);
-//                        mostRecentEnd = assocEnd;
                     }
                     else if (readerData.getName().getLocalPart().equalsIgnoreCase("GraphElement.contained"))
                     {
-//                        edgeContainedStack.push(CONTAINED);
                     }
                 }
                 else if (readerData.isEndElement() && readerData.getName().getLocalPart().equalsIgnoreCase("GraphElement.contained"))
                 {
-//                    edgeContainedStack.pop();
                 }
                 else if (readerData.isEndElement() && readerData.getName().getLocalPart().equalsIgnoreCase("edgeLabel"))
                 {
-                    //EdgeInfo.EdgeLabel eLabel = edgeReader.new EdgeLabel();
-                    //edgeReader.getLabels().add(eLabel);
                     peidToLabelMap.put((String) labelInfo.get("PEID"),labelInfo);
                     return;
                 }
