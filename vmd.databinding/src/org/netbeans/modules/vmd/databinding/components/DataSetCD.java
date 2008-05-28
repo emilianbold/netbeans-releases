@@ -36,9 +36,9 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.vmd.databinding.components;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.netbeans.modules.vmd.api.inspector.InspectorFolderComponentPresenter;
@@ -50,6 +50,9 @@ import org.netbeans.modules.vmd.api.model.TypeDescriptor;
 import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.api.model.VersionDescriptor;
 import org.netbeans.modules.vmd.databinding.categories.DatabindingCategoryCD;
+import org.netbeans.modules.vmd.databinding.presenters.DataSetBodyCodeGeneration;
+import org.netbeans.modules.vmd.midp.codegen.MidpCodePresenterSupport;
+import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.general.ClassCD;
 import org.netbeans.modules.vmd.midp.inspector.controllers.InspectorPositionControllerSupport;
@@ -59,11 +62,15 @@ import org.netbeans.modules.vmd.midp.inspector.controllers.InspectorPositionCont
  * @author Karol Harezlak
  */
 public class DataSetCD extends ComponentDescriptor {
-    
+
     public static final String ICON_PATH = "org/netbeans/modules/vmd/databinding/resources/components/dataset_16.gif"; // NOI18N
-    
     public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "org.netbeans.microedition.databinding.DataSet"); //NOI18N
     
+
+    static {
+        MidpTypes.registerIconResource(TYPEID, ICON_PATH);
+    }
+
     @Override
     public TypeDescriptor getTypeDescriptor() {
         return new TypeDescriptor(ClassCD.TYPEID, TYPEID, true, true);
@@ -80,12 +87,22 @@ public class DataSetCD extends ComponentDescriptor {
     }
 
     @Override
-    protected List<? extends Presenter> createPresenters() {
-        return Arrays.asList(
-                //inspector
-                new InspectorFolderComponentPresenter(true),
-                InspectorPositionPresenter.create(InspectorPositionControllerSupport.createHierarchical(DatabindingCategoryCD.TYPEID))
-        );
+    protected void gatherPresenters(ArrayList<Presenter> presenters) {
+        //DocumentSupport.removePresentersOfClass(presenters, CodeClassLevelPresenter.class);
+        super.gatherPresenters(presenters);
     }
 
+    @Override
+    protected List<? extends Presenter> createPresenters() {
+        
+        return Arrays.asList(
+                // code
+                MidpCodePresenterSupport.createAddImportPresenter("org.netbeans.microedition.databinding.DataBindingException"),
+                new DataSetBodyCodeGeneration(""),
+                //inspector
+                new InspectorFolderComponentPresenter(true),
+                InspectorPositionPresenter.create(InspectorPositionControllerSupport.createHierarchical(DatabindingCategoryCD.TYPEID)));
+    
+         
+    }
 }
