@@ -66,11 +66,9 @@
     
     <variables>
         <variable name="purchaseOrderRequest" messageType="pos:POMessage"></variable>
-        <variable name="purchaseOrderReply" messageType="pos:POMessage"></variable>
         <variable name="purchaseOrderFault" messageType="pos:orderFaultType"></variable>
         <variable name="inventoryServiceRequest" messageType="invs:POMessage"></variable>
         <variable name="inventoryServiceReply" messageType="invs:InventoryMessage"></variable>
-        <variable name="inventoryServiceFault" messageType="invs:inventoryFault"></variable>
     </variables>
 
     <sequence>
@@ -113,12 +111,6 @@
         <if name="Decision">
             <condition>$inventoryServiceReply.inventoryPart/inv:inventoryStatus</condition>
             <sequence name="Case2">
-                <assign name="Assign1">
-                    <copy>
-                        <from>$purchaseOrderRequest.purchaseOrder</from>
-                        <to>$purchaseOrderReply.purchaseOrder</to>
-                    </copy>
-                </assign>
                 <reply name="sendPurchaseOrder.Reply1" 
                        partnerLink="POServicePLink" 
                        operation="sendPurchaseOrder" 
