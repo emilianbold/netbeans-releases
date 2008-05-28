@@ -41,8 +41,13 @@
 
 package org.netbeans.modules.vmd.componentssupport.ui.wizard;
 
+import java.util.List;
+import java.util.Map;
 import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import org.netbeans.modules.vmd.componentssupport.ui.UIUtils;
+import org.netbeans.modules.vmd.componentssupport.ui.helpers.CustomComponentHelper;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -64,10 +69,14 @@ final class ComponentDescriptorVisualPanel extends JPanel {
                                               = "MSG_CD_DotInPrefix";          // NOI18N 
     private static final String MSG_ERR_PREFIX_INVALID 
                                               = "MSG_CD_InvalidPrefix";          // NOI18N 
+    private static final String MSG_ERR_PREFIX_EXISTS 
+                                              = "MSG_CD_ExistingPrefix";          // NOI18N 
     private static final String MSG_ERR_CLASS_NAME_EMPTY 
                                               = "MSG_CD_EmptyClassName";       // NOI18N 
     private static final String MSG_ERR_CLASS_NAME_INVALID 
                                               = "MSG_CD_InvalidClassName";          // NOI18N 
+    private static final String MSG_ERR_CLASS_NAME_EXISTS 
+                                              = "MSG_CD_ExistingClassName";          // NOI18N 
     private static final String MSG_ERR_TYPE_ID_EMPTY 
                                               = "MSG_CD_EmptyTypeID";       // NOI18N 
     private static final String MSG_ERR_SUPER_CLASS_EMPTY 
@@ -84,30 +93,32 @@ final class ComponentDescriptorVisualPanel extends JPanel {
         
         myCDVersionCombo.setModel(Version.getComboBoxModel());
         
-        myPrefix.getDocument().addDocumentListener(new DocumentAdapter() {
+        
+        myPrefixListener = new DocumentAdapter() {
             public void insertUpdate(DocumentEvent e) {
                 updateValuesOnPrefixUpdate();
                 checkValidity();
             }
-        });
-        myCDClassName.getDocument().addDocumentListener(new DocumentAdapter() {
+        };
+        myClassNAmeListener = new DocumentAdapter() {
             public void insertUpdate(DocumentEvent e) {
                 isCDClassNameUpdated = true;
                 updateValuesOnClassNameUpdate();
                 checkValidity();
             }
-        });
-        myCDTypeId.getDocument().addDocumentListener(new DocumentAdapter() {
+        };
+        myTypeIdListener = new DocumentAdapter() {
             public void insertUpdate(DocumentEvent e) {
                 isCDTypeIdUpdated = true;
                 checkValidity();
             }
-        });
-        myCDSuperClass.getDocument().addDocumentListener(new DocumentAdapter() {
+        };
+        
+        mySuperClassListener = new DocumentAdapter() {
             public void insertUpdate(DocumentEvent e) {
                 checkValidity();
             }
-        });
+        };
     }
     
 
@@ -132,21 +143,64 @@ final class ComponentDescriptorVisualPanel extends JPanel {
         mySettings = descriptor;
 
         myPrefix.setText(getPrefix());
-        myCDClassName.setText((String)mySettings.getProperty(
-                NewComponentDescriptor.CD_CLASS_NAME));
-        myCDTypeId.setText((String)mySettings.getProperty(
-                NewComponentDescriptor.CD_TYPE_ID));
+        if (getClassName() != null){
+            myCDClassName.setText(getClassName());
+        }
+        if (getTypeId() != null){
+            myCDTypeId.setText(getTypeId());
+        }
         myCDSuperClass.setText(getSuperDescriptor());
         myCDVersionCombo.setSelectedItem(getVersion());
         myCanInstantiateChk.setSelected(getCanInstantiate());
         myCanBeSuperChk.setSelected(getCanBeSuper());
 
-        isCDClassNameUpdated = false;
-        isCDTypeIdUpdated = false;
+        //isCDClassNameUpdated = false;
+        //isCDTypeIdUpdated = false;
         updateValuesOnPrefixUpdate();
         checkValidity();
     }
 
+    public @Override void addNotify() {
+        super.addNotify();
+        attachDocumentListeners();
+    }
+    
+    public @Override void removeNotify() {
+        // prevent checking when the panel is not "active"
+        removeDocumentListeners();
+        super.removeNotify();
+    }
+    
+    private void attachDocumentListeners() {
+        if (!listenersAttached) {
+            myPrefix.getDocument().addDocumentListener(myPrefixListener);
+            myCDClassName.getDocument().addDocumentListener(myClassNAmeListener);
+            myCDTypeId.getDocument().addDocumentListener(myTypeIdListener);
+            myCDSuperClass.getDocument().addDocumentListener(mySuperClassListener);
+            listenersAttached = true;
+        }
+    }
+
+    private void removeDocumentListeners() {
+        if (listenersAttached) {
+            myPrefix.getDocument().removeDocumentListener(myPrefixListener);
+            myCDClassName.getDocument().removeDocumentListener(myClassNAmeListener);
+            myCDTypeId.getDocument().removeDocumentListener(myTypeIdListener);
+            myCDSuperClass.getDocument().removeDocumentListener(mySuperClassListener);
+            listenersAttached = false;
+        }
+    }
+
+    private String getTypeId(){
+        return (String)mySettings.getProperty(
+                NewComponentDescriptor.CD_TYPE_ID);
+    }
+    
+    private String getClassName(){
+        return (String)mySettings.getProperty(
+                NewComponentDescriptor.CD_CLASS_NAME);
+    }
+    
     private String getSuperDescriptor(){
         String superDescr = (String)mySettings.getProperty(
                 NewComponentDescriptor.CD_SUPER_DESCR_CLASS);
@@ -183,6 +237,7 @@ final class ComponentDescriptorVisualPanel extends JPanel {
         }
         return prefix;
     }
+
     private String getDefaultPrefix(){
         return NbBundle.getMessage(ComponentDescriptorVisualPanel.class,
                     TXT_DEFAULT_PREFIX);
@@ -195,6 +250,15 @@ final class ComponentDescriptorVisualPanel extends JPanel {
             return Version.MIDP;
         }
         return (Version)value;
+    }
+    
+    private List<Map<String, Object>> getExistingComponents(){
+        Object value = mySettings.getProperty(
+                NewComponentDescriptor.EXISTING_COMPONENTS);
+        if (value == null || !(value instanceof List)){
+            return null;
+        }
+        return (List<Map<String, Object>>)value;
     }
     
     private boolean checkValidity(){
@@ -238,10 +302,14 @@ final class ComponentDescriptorVisualPanel extends JPanel {
     }
     
     private String getCodeNameBase(){
-        return (String)mySettings.getProperty( 
-                NewComponentDescriptor.CODE_NAME_BASE);
+        return getHelper().getCodeNameBase();
     }
 
+    private CustomComponentHelper getHelper(){
+        return (CustomComponentHelper)mySettings.getProperty( 
+                NewComponentDescriptor.HELPER);
+    }
+    
     // TODO add unique validation
     private boolean isCCClassNameValid(){
         String name = getClassNameValue();
@@ -252,6 +320,10 @@ final class ComponentDescriptorVisualPanel extends JPanel {
         } else if (!Utilities.isJavaIdentifier(name)){
             setError(NbBundle.getMessage(ComponentDescriptorVisualPanel.class, 
                     MSG_ERR_CLASS_NAME_INVALID));
+            return false;
+        } else if (isCDClassNameExist(name)){
+            setError(NbBundle.getMessage(ComponentDescriptorVisualPanel.class, 
+                    MSG_ERR_CLASS_NAME_EXISTS));
             return false;
         }
         return true;
@@ -273,7 +345,7 @@ final class ComponentDescriptorVisualPanel extends JPanel {
             setError(NbBundle.getMessage(ComponentDescriptorVisualPanel.class, 
                     MSG_ERR_SUPER_CLASS_EMPTY));
             return false;
-        } else if (!Utilities.isJavaIdentifier(name)){
+        } else if (!UIUtils.isValidJavaFQN(name)){
             setError(NbBundle.getMessage(ComponentDescriptorVisualPanel.class, 
                     MSG_ERR_SUPER_CLASS_INVALID));
             return false;
@@ -295,8 +367,36 @@ final class ComponentDescriptorVisualPanel extends JPanel {
             setError(NbBundle.getMessage(ComponentDescriptorVisualPanel.class, 
                     MSG_ERR_PREFIX_INVALID));
             return false;
+        } else if (isCCPrefixExist(prefix)){
+            setError(NbBundle.getMessage(ComponentDescriptorVisualPanel.class, 
+                    MSG_ERR_PREFIX_EXISTS));
+            return false;
         }
         return true;
+    }
+    
+    private boolean isCCPrefixExist(String prefix){
+        return checkIfComponentValueExists(
+                NewComponentDescriptor.CC_PREFIX, prefix);
+    }
+    
+    private boolean isCDClassNameExist(String name){
+        return checkIfComponentValueExists(
+                NewComponentDescriptor.CD_CLASS_NAME, name);
+    }
+    
+    private boolean checkIfComponentValueExists(String key, Object value){
+        List<Map<String, Object>> list = getExistingComponents();
+        if (list == null){
+            return false;
+        }
+        for (Map<String, Object> comp : list){
+            Object testValue = comp.get(key);
+            if (testValue.equals(value)){
+                return true;
+            }
+        }
+        return false;
     }
     
     private String getPrefixValue(){
@@ -360,11 +460,6 @@ final class ComponentDescriptorVisualPanel extends JPanel {
     
     private static String getMessage(String key, Object... args) {
         return NbBundle.getMessage(ComponentDescriptorVisualPanel.class, key, args);
-    }
-    
-    public void addNotify() {
-        super.addNotify();
-        checkValidity();
     }
     
     /** This method is called from within the constructor to
@@ -563,5 +658,10 @@ final class ComponentDescriptorVisualPanel extends JPanel {
     private ComponentDescriptorWizardPanel myPanel;
     private boolean isCDClassNameUpdated;
     private boolean isCDTypeIdUpdated;
-    
+    private boolean listenersAttached;
+
+    private DocumentListener myPrefixListener;
+    private DocumentListener myClassNAmeListener;
+    private DocumentListener myTypeIdListener;
+    private DocumentListener mySuperClassListener;
 }

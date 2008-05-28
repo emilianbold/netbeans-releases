@@ -120,7 +120,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.WhileStatement;
  *
  * @author Tomasz.Slota@Sun.COM
  */
-public abstract class PHPRule implements AstRule, UserConfigurableRule, Visitor {
+abstract class PHPRule implements AstRule, UserConfigurableRule, Visitor {
 
     protected PHPRuleContext context;
     protected List<Hint> result = new LinkedList<Hint>();
@@ -142,7 +142,7 @@ public abstract class PHPRule implements AstRule, UserConfigurableRule, Visitor 
     }
     
     public Set<? extends Object> getKinds() {
-        return Collections.singleton("general"); //todo: figure out what is it for
+        return Collections.singleton(PHPHintsProvider.FIRST_PASS_HINTS);
     }
 
     final void setContext(PHPRuleContext context) {

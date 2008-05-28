@@ -54,6 +54,7 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 
 import org.netbeans.api.project.libraries.Library;
+import org.netbeans.modules.vmd.componentssupport.ui.helpers.BaseHelper;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
 import org.openide.filesystems.FileSystem;
@@ -277,7 +278,7 @@ final class NewLibraryDescriptor implements WizardDescriptor.InstantiatingIterat
         String projectName = (String)myMainWizard.getProperty( 
                 CustomComponentWizardIterator.PROJECT_NAME);
         if ( codeNameBase == null ){
-            codeNameBase = BasicModuleConfVisualPanel.getDefaultCodeNameBase(projectName);
+            codeNameBase = BaseHelper.getDefaultCodeNameBase(projectName);
         }
         return codeNameBase;
     }

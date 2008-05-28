@@ -53,6 +53,8 @@ import javax.xml.namespace.QName;
 
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.TokenItem;
+import org.netbeans.modules.xml.axi.AbstractAttribute;
+import org.netbeans.modules.xml.axi.Element;
 import org.openide.filesystems.FileObject;
 import org.netbeans.modules.xml.text.syntax.dom.StartTag;
 import org.netbeans.modules.xml.text.syntax.SyntaxElement;
@@ -577,6 +579,23 @@ public class CompletionContextImpl extends CompletionContext {
     public boolean isPrefixBeingUsed(String prefix) {
         return getDeclaredNamespaces().
                 get(XMLConstants.XMLNS_ATTRIBUTE+":"+prefix) != null;
+    }
+    
+    public boolean canReplace() {
+        if(completionType == CompletionType.COMPLETION_TYPE_ELEMENT && element instanceof Tag) {
+            String name = ((Tag)element).getTagName();
+            if(name != null && name.equals(typedChars))
+                return false;
+        }
+        if(completionType == CompletionType.COMPLETION_TYPE_ATTRIBUTE) {
+            Element e = CompletionUtil.findAXIElementAtContext(this);
+            for(AbstractAttribute a : e.getAttributes()) {
+                if(a.getName().equals(typedChars))
+                    return false;
+            }
+        }
+        
+        return true;
     }
     
     /**

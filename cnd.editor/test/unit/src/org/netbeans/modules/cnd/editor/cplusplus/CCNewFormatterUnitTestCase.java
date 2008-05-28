@@ -4586,5 +4586,32 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                 "}\n"
                 );
     }
+
+    public void testTypecast() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.spaceWithinTypeCastParens, true);
+        setLoadDocumentText(
+                "int i = (int)'a';\n"+
+                "void *\n" +
+                "foo(void *ptr)\n" +
+                "{\n" +
+                "    ptr = *(long*)ptr +(int)ptr+ (struct A*)ptr;\n" +
+                "    return(int)(ptr);\n" +
+                "}\n"
+                );
+        reformat();
+        assertDocumentText("Wrong type cast fotmatting",
+                "int i = ( int ) 'a';\n"+
+                "\n" +
+                "void *\n" +
+                "foo(void *ptr)\n" +
+                "{\n" +
+                "    ptr = *( long* ) ptr + ( int ) ptr + ( struct A* ) ptr;\n" +
+                "    return ( int ) (ptr);\n" +
+                "}\n"
+                );
+    }
+
     
 }

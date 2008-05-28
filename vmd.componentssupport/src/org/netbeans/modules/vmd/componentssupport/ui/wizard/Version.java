@@ -77,7 +77,7 @@ public enum Version {
         return displayValue();
     }
     
-    String displayValue(){
+    public String displayValue(){
         switch(this) {
          case FOREVER: 
              return DISPLAY_FOREVER;
@@ -92,7 +92,7 @@ public enum Version {
        }
     }
 
-    String javaCodeValue(){
+    public String javaCodeValue(){
         switch(this) {
          case FOREVER: 
              return JAVA_FOREVER;

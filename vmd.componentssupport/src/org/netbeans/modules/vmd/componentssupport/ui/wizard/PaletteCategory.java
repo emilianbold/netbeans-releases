@@ -80,7 +80,7 @@ private static final String JAVA_CATEGORY_CUSTOM
         return displayValue();
     }
 
-    String displayValue() {
+    public String displayValue() {
         switch (this) {
             case CATEGORY_COMMANDS:
                 return MidpPaletteProvider.CATEGORY_COMMANDS;
@@ -101,7 +101,7 @@ private static final String JAVA_CATEGORY_CUSTOM
         }
     }
 
-    String javaCodeValue() {
+    public String javaCodeValue() {
         switch (this) {
             case CATEGORY_COMMANDS:
                 return JAVA_CATEGORY_COMMANDS;

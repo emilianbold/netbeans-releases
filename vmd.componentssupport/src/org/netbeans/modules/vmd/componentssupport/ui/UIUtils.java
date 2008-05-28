@@ -39,6 +39,9 @@
 
 package org.netbeans.modules.vmd.componentssupport.ui;
 
+import java.util.StringTokenizer;
+import org.openide.util.Utilities;
+
 /**
  *
  * @author avk
@@ -64,6 +67,25 @@ public class UIUtils {
             }
         }
         return sb.toString();
+    }
+    
+    public static boolean isValidJavaFQN(String name) {
+        if (name.length() == 0) {
+            return false;
+        }
+        StringTokenizer tk = new StringTokenizer(name,".",true); //NOI18N
+        boolean delimExpected = false;
+        while (tk.hasMoreTokens()) {
+            String namePart = tk.nextToken();
+            if (delimExpected ^ namePart.equals(".")) { // NOI18N
+                return false;
+            }
+            if (!delimExpected && !Utilities.isJavaIdentifier(namePart)) {
+                return false;
+            }
+            delimExpected = !delimExpected;
+        }
+        return delimExpected;
     }
     
 }

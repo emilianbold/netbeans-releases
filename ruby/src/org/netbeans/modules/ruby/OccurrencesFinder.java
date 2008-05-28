@@ -625,7 +625,7 @@ public class OccurrencesFinder implements org.netbeans.modules.gsf.api.Occurrenc
                                 }
                             } else if (arg2 instanceof LocalAsgnNode) {
                                 if (((LocalAsgnNode)arg2).getName().equals(name)) {
-                                    OffsetRange range = AstUtilities.getRange(arg2);
+                                    OffsetRange range = AstUtilities.getNameRange(arg2);
                                     highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
                                 }
                             }

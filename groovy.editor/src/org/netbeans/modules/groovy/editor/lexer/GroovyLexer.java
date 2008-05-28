@@ -640,12 +640,12 @@ public final class GroovyLexer implements Lexer<GroovyTokenId> {
 //                    return GroovyTokenId.SELECT_SLOT;
             case GroovyTokenTypes.SEMI:
                     return GroovyTokenId.SEMI;
-//            case GroovyTokenTypes.SH_COMMENT:
-//                    return GroovyTokenId.SH_COMMENT;
+            case GroovyTokenTypes.SH_COMMENT:
+                    return GroovyTokenId.LINE_COMMENT;
 //            case GroovyTokenTypes.SL_ASSIGN:
 //                    return GroovyTokenId.SL_ASSIGN;
-//            case GroovyTokenTypes.SL_COMMENT:
-//                    return GroovyTokenId.SL_COMMENT;
+            case GroovyTokenTypes.SL_COMMENT:
+                    return GroovyTokenId.LINE_COMMENT;
 //            case GroovyTokenTypes.SL:
 //                    return GroovyTokenId.SL;
 //            case GroovyTokenTypes.SLIST:
