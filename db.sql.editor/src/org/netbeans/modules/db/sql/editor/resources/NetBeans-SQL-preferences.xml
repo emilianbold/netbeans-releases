@@ -44,4 +44,5 @@ made subject to such option by the copyright holder.
 
 <editor-preferences>
     <entry name="token-context-list" value="org.netbeans.modules.db.sql.editor.SQLSettingsInitializer.getTokenContext" javaType="methodvalue" />
+    <entry name="indentEngine" value="org.netbeans.modules.db.sql.editor.SQLSettingsInitializer.getIndentEngine" javaType="methodvalue" />
 </editor-preferences>

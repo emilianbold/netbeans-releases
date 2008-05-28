@@ -43,6 +43,7 @@ package org.netbeans.modules.db.sql.editor;
 
 import java.util.Collections;
 import java.util.List;
+import org.openide.text.IndentEngine;
 
 /**
  * Initializes the SQL Settings
@@ -53,5 +54,9 @@ public class SQLSettingsInitializer {
 
     public static List getTokenContext() {
         return Collections.singletonList(SQLTokenContext.context);
+    }
+    
+    public static IndentEngine getIndentEngine() {
+        return new SQLIndentEngine();
     }
 }
