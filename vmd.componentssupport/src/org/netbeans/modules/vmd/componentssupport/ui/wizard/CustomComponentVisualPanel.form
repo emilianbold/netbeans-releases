@@ -23,9 +23,9 @@
               </Group>
               <EmptySpace min="-2" pref="19" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="projectNameTextField" pref="314" max="32767" attributes="0"/>
-                  <Component id="projectLocationTextField" alignment="1" pref="314" max="32767" attributes="0"/>
-                  <Component id="createdFolderTextField" alignment="1" pref="314" max="32767" attributes="0"/>
+                  <Component id="projectNameTextField" pref="420" max="32767" attributes="0"/>
+                  <Component id="projectLocationTextField" alignment="1" pref="420" max="32767" attributes="0"/>
+                  <Component id="createdFolderTextField" alignment="1" pref="420" max="32767" attributes="0"/>
               </Group>
               <EmptySpace type="separate" max="-2" attributes="0"/>
               <Component id="browseButton" min="-2" max="-2" attributes="0"/>
