@@ -1278,6 +1278,9 @@ public class Mapper extends JPanel {
     public static final Stroke DASHED_STROKE = new BasicStroke(1,
             BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL,
             1, new float[]{4, 4}, 0);
+    public static final Stroke DASHED_SELECTED_STROKE = new BasicStroke(2,
+            BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL,
+            1, new float[]{8, 4}, 0);
     public static final Color CANVAS_BACKGROUND_COLOR = new Color(0xFCFAF5);
     public static final Color CANVAS_GRID_COLOR = new Color(0xC0C0C0);
     public static final Color ROW_SEPARATOR_COLOR = new Color(0xBBD3E9); //new Color(0x99B7D3);
