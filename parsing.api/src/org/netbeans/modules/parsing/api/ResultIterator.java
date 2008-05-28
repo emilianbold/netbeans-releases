@@ -39,20 +39,20 @@
 
 package org.netbeans.modules.parsing.api;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 
+import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.modules.parsing.impl.ParserManagerImpl;
-import org.netbeans.modules.parsing.impl.SourceAccessor;
 import org.netbeans.modules.parsing.spi.EmbeddingProvider;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.Parser.Result;
+import org.netbeans.modules.parsing.spi.ParserFactory;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.netbeans.modules.parsing.spi.TaskFactory;
 import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
 
 
 /**
@@ -89,7 +89,22 @@ public final class ResultIterator {
      * @return              parse {@link Result} for current source.
      */
     public Result getParserResult () throws ParseException {
-        final Parser parser = ParserManagerImpl.getParser(snapshot);
+        String mimeType = snapshot.getMimeType ();
+        Parser parser = null;
+        if (mimeType.equals (snapshot.getSource ().getMimeType ()))
+            parser = ParserManagerImpl.getParser (snapshot.getSource ());
+        if (parser == null) {
+            Lookup lookup = MimeLookup.getLookup (mimeType);
+            final Collection <? extends ParserFactory> parserFactories = lookup.lookupAll(ParserFactory.class);
+            final Collection<Snapshot> _tmp = Collections.singleton (snapshot);
+            for (final ParserFactory parserFactory : parserFactories) {
+                parser = parserFactory.createParser (_tmp);
+                if (parser != null) {
+                    break;
+                }
+            }           
+        }
+        if (parser == null) throw new ParseException ();
         parser.parse (snapshot, task, null);
         return parser.getResult (task, null);
     }
@@ -104,9 +119,8 @@ public final class ResultIterator {
             public Iterator<Embedding> iterator () {
                 return new CompoundIterator<SchedulerTask,Embedding> (
                     new CompoundIterator<TaskFactory,SchedulerTask> (
-                            (Iterator<TaskFactory>) new ProxyLookup (
-                                Lookups.forPath ("Editors/text/base"),
-                                Lookups.forPath ("Editors" + snapshot.getMimeType ())
+                            (Iterator<TaskFactory>) MimeLookup.getLookup (
+                                snapshot.getMimeType ()
                             ).lookupAll (TaskFactory.class).iterator ()
                         ) {
                             @Override

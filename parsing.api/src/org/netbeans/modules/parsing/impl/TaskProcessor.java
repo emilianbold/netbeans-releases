@@ -499,20 +499,20 @@ public class TaskProcessor {
                                     parserLock.lock();                                    
                                     try {
                                         final Parser parser = ParserManagerImpl.getParser(source);
-                                        assert parser != null;
                                         Parser.Result currentResult = null;
                                         SchedulerEvent event = SourceAccessor.getINSTANCE().getEvent (source);
-                                        synchronized (source) { //tzezula: rough grained lock - may cause deadlock, but Hanz doesn't want the parsing API to do caching of results
-                                            final Set<SourceFlags> flags = SourceAccessor.getINSTANCE().getFlags(source);
-                                            if (!flags.contains(SourceFlags.INVALID)) {
-                                                currentResult = parser.getResult(r.task, event);
-                                            }                                        
-                                            if (currentResult == null) {
-                                                parser.parse(source.createSnapshot(), r.task, event);
-                                                currentResult = parser.getResult(r.task, event);
-                                                flags.remove(SourceFlags.INVALID);
+                                        if (parser != null)
+                                            synchronized (source) { //tzezula: rough grained lock - may cause deadlock, but Hanz doesn't want the parsing API to do caching of results
+                                                final Set<SourceFlags> flags = SourceAccessor.getINSTANCE().getFlags(source);
+                                                if (!flags.contains(SourceFlags.INVALID)) {
+                                                    currentResult = parser.getResult(r.task, event);
+                                                }                                        
+                                                if (currentResult == null) {
+                                                    parser.parse(source.createSnapshot(), r.task, event);
+                                                    currentResult = parser.getResult(r.task, event);
+                                                    flags.remove(SourceFlags.INVALID);
+                                                }
                                             }
-                                        }
                                         boolean shouldCall = currentResult != null;
                                         //tzezula: Ideally the parserLock should be aquired here, but it will call parse outside critical section
                                         if (shouldCall) { 

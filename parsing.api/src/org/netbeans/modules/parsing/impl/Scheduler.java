@@ -49,6 +49,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
@@ -128,7 +129,7 @@ public class Scheduler {
     ) {
         List<SchedulerTask> tasks = new ArrayList<SchedulerTask> ();
         String mimeType = source.getMimeType ();
-        Lookup lookup = getLookup (mimeType);
+        Lookup lookup = MimeLookup.getLookup (mimeType);
         for (TaskFactory factory : lookup.lookupAll (TaskFactory.class)) {
             Collection<SchedulerTask> newTasks = factory.create (source);
             if (newTasks != null)
@@ -137,15 +138,6 @@ public class Scheduler {
                         tasks.add (task);
         }
         return tasks;
-    }
-    
-    private static Lookup getLookup (String mimeType) {
-//        if (mimeType.equals ("content/unknown"))
-//            return Lookup.EMPTY;
-        return new ProxyLookup (
-            Lookups.forPath ("Editors/text/base"),
-            Lookups.forPath ("Editors" + mimeType)
-        );
     }
 }
 

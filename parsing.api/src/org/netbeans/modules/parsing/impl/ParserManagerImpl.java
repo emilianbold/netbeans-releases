@@ -70,53 +70,24 @@ public class ParserManagerImpl {
         }
         if (parser == null) {
             String mimeType = source.getMimeType ();
-            parser = lookupParser(mimeType, source.createSnapshot());
-            assert parser != null : "No parser found for: " + source;   //NOI18N
+            Lookup lookup = MimeLookup.getLookup (mimeType);
+            final Collection <? extends ParserFactory> parserFactories = lookup.lookupAll(ParserFactory.class);
+            final Collection<Snapshot> _tmp = Collections.singleton (source.createSnapshot());
+            for (final ParserFactory parserFactory : parserFactories) {
+                parser = parserFactory.createParser (_tmp);
+                if (parser != null) {
+                    break;
+                }
+            }           
         }
-        synchronized (source) {
-            if (SourceAccessor.getINSTANCE().getParser(source)==null) {
-                SourceAccessor.getINSTANCE().setParser(source, parser);
+        if (parser != null)
+            synchronized (source) {
+                if (SourceAccessor.getINSTANCE().getParser(source)==null) {
+                    SourceAccessor.getINSTANCE().setParser(source, parser);
+                }
             }
-        }
         return parser;
     }
-    
-    
-    public static Parser getParser (final Snapshot snapshot) {
-        assert snapshot != null;
-        final String mimeType = snapshot.getMimeType();
-        Parser parser;
-        if (mimeType.equals (snapshot.getSource ().getMimeType ())) {
-            parser = getParser (snapshot.getSource ());
-        }
-        else {
-            parser = lookupParser(mimeType, snapshot);
-            assert parser != null : "No parser found for: " + snapshot;   //NOI18N
-        }        
-        return parser;
-    }
-    
-    private static Parser lookupParser (final String mimeType, final Snapshot snapshot) {
-        Lookup lookup = getLookup (mimeType);
-        final Collection <? extends ParserFactory> parserFactories = lookup.lookupAll(ParserFactory.class);
-        final Collection<Snapshot> _tmp = Collections.singleton (snapshot);
-        for (final ParserFactory parserFactory : parserFactories) {
-            Parser parser = parserFactory.createParser (_tmp);
-            if (parser != null) {
-                return parser;
-            }
-        }
-        return null;
-    }
-    
-    private static Lookup getLookup (String mimeType) {
-        return MimeLookup.getLookup(mimeType);
-//        return new ProxyLookup (
-//            Lookups.forPath ("Editors" + mimeType),         
-//            Lookups.forPath ("Editors/text/base")            
-//        );
-    }
-    
 }
     
     
