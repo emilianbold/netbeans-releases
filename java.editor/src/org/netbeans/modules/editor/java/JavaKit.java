@@ -171,12 +171,7 @@ public class JavaKit extends NbEditorKit {
 
     @Override
     public Document createDefaultDocument() {
-        Document doc = new JavaDocument(this.getClass());
-        Object mimeType = doc.getProperty("mimeType"); //NOI18N
-        if (mimeType == null){
-            doc.putProperty("mimeType", getContentType()); //NOI18N
-        }
-        return doc;
+        return new JavaDocument(getContentType());
     }
     
     public String getSourceLevel(BaseDocument doc) {
