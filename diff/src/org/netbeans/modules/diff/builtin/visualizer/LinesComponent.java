@@ -46,6 +46,7 @@ import java.awt.Rectangle;
 import java.awt.Graphics;
 import java.awt.Color;
 import java.awt.Font;
+import java.beans.PropertyChangeEvent;
 import java.util.*;
 import javax.accessibility.AccessibleContext;
 import javax.accessibility.AccessibleRole;
@@ -54,16 +55,18 @@ import javax.swing.text.*;
 import java.awt.FontMetrics;
 import java.awt.Insets;
 
+import java.beans.PropertyChangeListener;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.settings.AttributesUtilities;
+import org.netbeans.api.editor.settings.FontColorNames;
+import org.netbeans.api.editor.settings.FontColorSettings;
 import org.openide.util.NbBundle;
 
 import org.netbeans.editor.Coloring;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.FontMetricsCache;
-import org.netbeans.editor.Settings;
-import org.netbeans.editor.SettingsChangeEvent;
-import org.netbeans.editor.SettingsChangeListener;
-import org.netbeans.editor.SettingsDefaults;
-import org.netbeans.editor.SettingsNames;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.openide.util.WeakListeners;
 
 /** GlyphGutter is component for displaying line numbers and annotation
  * glyph icons. Component also allow to "cycle" through the annotations. It
@@ -75,11 +78,13 @@ import org.netbeans.editor.SettingsNames;
  * @since 07/2001
  */
 
-public class LinesComponent extends JComponent implements javax.accessibility.Accessible, SettingsChangeListener {
+public class LinesComponent extends JComponent implements javax.accessibility.Accessible, PropertyChangeListener {
 
     
     /** Document to which this gutter is attached*/
     private JEditorPane editorPane;
+
+    private EditorUI editorUI;
     
     /** Backroung color of the gutter */
     private Color backgroundColor;
@@ -90,14 +95,6 @@ public class LinesComponent extends JComponent implements javax.accessibility.Ac
     /** Font used for drawing line numbers */
     private Font font;
     
-    /** Height of the line as it was calculated in EditorUI. */
-    private int lineHeight = 1;
-
-    private float lineHeightCorrection = 1.0f;
-
-    /** Map holding the [name, coloring] pairs */
-    private Map coloringMap;
-
     /** Flag whther the gutter was initialized or not. The painting is disabled till the
      * gutter is not initialized */
     private boolean init;
@@ -121,9 +118,6 @@ public class LinesComponent extends JComponent implements javax.accessibility.Ac
     /** Holds value of property lineNumberDigitWidth. */
     private int lineNumberDigitWidth;
     
-    /** Holds value of property lineAscent. */
-    private int lineAscent;
-    
     private LinkedList<String> linesList;
     
     /** Holds value of property activeLine. */
@@ -140,17 +134,18 @@ public class LinesComponent extends JComponent implements javax.accessibility.Ac
         backgroundColor = editorPane.getBackground();
         setLineNumberDigitWidth(10);
         setLineNumberMargin(new Insets(2, 2, 2, 4));
-        Settings.addSettingsChangeListener(this); // Is added weakly.
+        editorUI = org.netbeans.editor.Utilities.getEditorUI(editorPane);
+        editorUI.addPropertyChangeListener(WeakListeners.propertyChange(this, editorUI));
         init();
     }
 
     /* Read accessible context
      * @return - accessible context
      */
-    public AccessibleContext getAccessibleContext () {
+    public @Override AccessibleContext getAccessibleContext () {
         if (accessibleContext == null) {
             accessibleContext = new AccessibleJComponent() {
-                public AccessibleRole getAccessibleRole() {
+                public @Override AccessibleRole getAccessibleRole() {
                     return AccessibleRole.PANEL;
                 }
             };
@@ -258,37 +253,18 @@ public class LinesComponent extends JComponent implements javax.accessibility.Ac
     /** Update colors, fonts, sizes and invalidate itself. This method is
      * called from EditorUI.update() */
     private void updateState(Graphics g) {
-        Class kitClass = editorPane.getEditorKit().getClass();
-        Object value = Settings.getValue(kitClass, SettingsNames.LINE_HEIGHT_CORRECTION);
-        //System.out.println("Line height correction = "+value);
-        if (!(value instanceof Float) || ((Float)value).floatValue() < 0) {
-            value = SettingsDefaults.defaultLineHeightCorrection;
-        }
-        lineHeightCorrection = ((Float)value).floatValue();
         //System.out.println("  => correction = "+lineHeightCorrection);
-        Map cm = getColoringMap();
-        Object colValue = cm.get(SettingsNames.LINE_NUMBER_COLORING);
-        //System.out.println("Line number coloring = "+colValue);
-        Coloring col = null;
-        if (colValue != null && colValue instanceof Coloring) {
-            col = (Coloring)colValue;
-        } else {
-            col = SettingsDefaults.defaultLineNumberColoring;
-        }
+        String mimeType = DocumentUtilities.getMimeType(editorPane);
+        FontColorSettings fcs = MimeLookup.getLookup(mimeType).lookup(FontColorSettings.class);
+        Coloring col = Coloring.fromAttributeSet(AttributesUtilities.createComposite(
+                fcs.getFontColors(FontColorNames.LINE_NUMBER_COLORING),
+                fcs.getFontColors(FontColorNames.DEFAULT_COLORING)));
+        
         foreColor = col.getForeColor();
-        if (foreColor == null) {
-            foreColor = ((Coloring) cm.get(SettingsNames.DEFAULT_COLORING)).getForeColor();
-        }
         backgroundColor = col.getBackColor();
-        if (backgroundColor == null) {
-            backgroundColor = ((Coloring) cm.get(SettingsNames.DEFAULT_COLORING)).getBackColor();
-        }
         //System.out.println("  => foreground = "+foreColor+", background = "+backgroundColor);
         
         font = col.getFont();
-        if (font == null) {
-            font = ((Coloring) cm.get(SettingsNames.DEFAULT_COLORING)).getFont();
-        }
         FontMetrics fm = g.getFontMetrics(font);
         /*
         int maxHeight = 1;
@@ -302,7 +278,6 @@ public class LinesComponent extends JComponent implements javax.accessibility.Ac
         lineHeight = (int)(maxHeight * lineHeightCorrection);
         lineAscent = (int)(maxAscent * lineHeightCorrection);
          */
-        updateLineHeight(g);
         //System.out.println("lineheight=" + lineHeight);//+", fm height = "+fm.getHeight());
         //System.out.println("lineascent=" + lineAscent);//+", fm ascent = "+fm.getAscent());
         showLineNumbers = true;
@@ -337,59 +312,6 @@ public class LinesComponent extends JComponent implements javax.accessibility.Ac
         resize();
     }
     
-    private void updateLineHeight(Graphics g) {
-        //System.err.println("EditorUI.updateLineHeight(): Computing lineHeight ...");
-        Map cm = getColoringMap();
-        Iterator i = cm.entrySet().iterator();
-        int maxHeight = 1;
-        int maxAscent = 0;
-        while (i.hasNext()) {
-            Map.Entry me = (Map.Entry)i.next();
-            String coloringName = (String)me.getKey();
-            Coloring c = (Coloring)me.getValue();
-            if (c != null) {
-                Font font = c.getFont();
-                if (font != null && (c.getFontMode() & Coloring.FONT_MODE_APPLY_SIZE) != 0) {
-                    FontMetrics fm = g.getFontMetrics(font);
-                    if (fm != null) {
-                        /*if (debugUpdateLineHeight) {
-                            if (maxHeight < fm.getHeight()) {
-                                System.err.println("Updating maxHeight from "
-                                    + maxHeight + " to " + fm.getHeight()
-                                    + ", coloringName=" + coloringName
-                                    + ", font=" + font
-                                );
-                            }
-
-                            if (maxHeight < fm.getHeight()) {
-                                System.err.println("Updating maxAscent from "
-                                    + maxAscent + " to " + fm.getAscent()
-                                    + ", coloringName=" + coloringName
-                                    + ", font=" + font
-                                );
-                            }
-                        }
-                        */
-                        maxHeight = Math.max(maxHeight, fm.getHeight());
-                        maxAscent = Math.max(maxAscent, fm.getAscent());
-                    }
-                }
-            }
-        }
-
-        // Apply lineHeightCorrection
-        lineHeight = (int)(maxHeight * lineHeightCorrection);
-        lineAscent = (int)(maxAscent * lineHeightCorrection);
-
-    }
-    
-    private Map getColoringMap() {
-        if (coloringMap == null) {
-            coloringMap = EditorUIHelper.getSharedColoringMapFor(editorPane.getEditorKit().getClass());
-        }
-        return coloringMap;
-    }
-
     protected void resize() {
         Dimension dim = new Dimension();
 //        System.out.println("resizing...................");
@@ -397,7 +319,7 @@ public class LinesComponent extends JComponent implements javax.accessibility.Ac
         dim.height = getHeightDimension();
         // enlarge the gutter so that inserting new lines into 
         // document does not cause resizing too often
-        dim.height += ENLARGE_GUTTER_HEIGHT * lineHeight;
+        dim.height += ENLARGE_GUTTER_HEIGHT * editorUI.getLineHeight();
         
         numberWidth = getLineNumberWidth();
         setPreferredSize(dim);
@@ -437,11 +359,12 @@ public class LinesComponent extends JComponent implements javax.accessibility.Ac
     }
     
     protected int getHeightDimension() {
-        return highestLineNumber * lineHeight /*TEMP+ (int)editorPane.getSize().getHeight() */;
+        /*TEMP+ (int)editorPane.getSize().getHeight() */
+        return highestLineNumber * editorUI.getLineHeight();
     }
     
     /** Paint the gutter itself */
-    public void paintComponent(Graphics g) {
+    public @Override void paintComponent(Graphics g) {
 
         super.paintComponent(g);
         if (!init) {
@@ -464,6 +387,7 @@ public class LinesComponent extends JComponent implements javax.accessibility.Ac
         if (margin != null)
             rightMargin = margin.right;
         // calculate the first line which must be drawn
+        int lineHeight = editorUI.getLineHeight();
         int line = (int)( (float)drawHere.y / (float)lineHeight );
         if (line > 0)
             line--;
@@ -489,6 +413,7 @@ public class LinesComponent extends JComponent implements javax.accessibility.Ac
         
         // draw liune numbers and annotations while we are in visible area
         // "+(lineHeight/2)" means to don't draw less than half of the line number
+        int lineAscent = editorUI.getLineAscent();
         while ( (y+(lineHeight/2)) <= (drawHere.y + drawHere.height) )
         {
             // draw line numbers if they are turned on
@@ -507,7 +432,7 @@ public class LinesComponent extends JComponent implements javax.accessibility.Ac
                 } 
                 int activeSymbolWidth = fm.stringWidth(activeSymbol);
                 lineNumberWidth = lineNumberWidth + activeSymbolWidth;
-                g.drawString(lineStr, numberWidth-lineNumberWidth-rightMargin, y + getLineAscent());
+                g.drawString(lineStr, numberWidth-lineNumberWidth-rightMargin, y + lineAscent);
             }
             
             y += lineHeight;
@@ -522,6 +447,7 @@ public class LinesComponent extends JComponent implements javax.accessibility.Ac
             return;
         
         // redraw also lines around - three lines will be redrawn
+        int lineHeight = editorUI.getLineHeight();
         if (line > 0)
             line--;
         int y = line * lineHeight;
@@ -588,20 +514,6 @@ public class LinesComponent extends JComponent implements javax.accessibility.Ac
         this.lineNumberDigitWidth = lineNumberDigitWidth;
     }
     
-    /** Getter for property lineAscent.
-     * @return Value of property lineAscent.
-     */
-    public int getLineAscent() {
-        return this.lineAscent;
-    }
-    
-    /** Setter for property lineAscent.
-     * @param lineAscent New value of property lineAscent.
-     */
-    public void setLineAscent(int lineAscent) {
-        this.lineAscent = lineAscent;
-    }
-    
     /** Getter for property activeLine.
      * @return Value of property activeLine.
      */
@@ -615,23 +527,10 @@ public class LinesComponent extends JComponent implements javax.accessibility.Ac
     public void setActiveLine(int activeLine) {
         this.activeLine = activeLine;
     }
-    
-    public void settingsChange(SettingsChangeEvent evt) {
-        coloringMap = null;
+
+    public void propertyChange(PropertyChangeEvent evt) {
         init = false;
         repaint();
-    }
-    
-    private static class EditorUIHelper extends EditorUI {
-        public EditorUIHelper () {}
-        
-        /** Gets the coloring map that can be shared by the components
-          * with the same kit. Only the component coloring map is provided.
-          */
-        public static Map getSharedColoringMapFor(Class kitClass) {
-            return EditorUIHelper.getSharedColoringMap(kitClass);
-        }
-        
     }
 
 }
