@@ -45,6 +45,8 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Paint;
 import java.awt.Point;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Hashtable;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.drawingarea.view.ResourceValue;
@@ -65,6 +67,7 @@ public class NodeInfo
     private Paint background;
     private Color foreground;
     private Font font;
+    private ArrayList nodeLabels=new ArrayList();
 
     public NodeInfo()
     {
@@ -159,6 +162,22 @@ public class NodeInfo
         return size;
     }
     
+    public int addNodeLabel(Object label)
+    {
+        nodeLabels.add(label);
+        return nodeLabels.size();
+    }
+    
+    public int addNodeLabels(ArrayList labels)
+    {
+        nodeLabels.add(labels);
+        return nodeLabels.size();
+    }
+    
+    public ArrayList getLabels()
+    {
+        return nodeLabels;
+    }
     //it's not so simple as get(ResourceValue.BGCOLOR), keys are more complex then usual keys and need special handling
     //--
 //    //access background
