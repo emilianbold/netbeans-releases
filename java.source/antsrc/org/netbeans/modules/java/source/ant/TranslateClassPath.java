@@ -44,13 +44,12 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.logging.Level;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 import org.netbeans.api.java.queries.BinaryForSourceQuery;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
-import org.netbeans.api.java.source.BuildArtifactMapper;
+import org.netbeans.modules.java.source.usages.BuildArtifactMapperImpl;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -127,7 +126,7 @@ public class TranslateClassPath extends Task {
                 
                 for (FileObject source : r.getRoots()) {
                     File sourceFile = FileUtil.toFile(source);
-                    BuildArtifactMapper.ensureBuilt(sourceFile.toURI().toURL());
+                    BuildArtifactMapperImpl.ensureBuilt(sourceFile.toURI().toURL());
                     
                     for (URL binary : BinaryForSourceQuery.findBinaryRoots(source.getURL()).getRoots()) {
                         FileObject binaryFO = URLMapper.findFileObject(binary);
