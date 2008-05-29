@@ -41,11 +41,10 @@
 
 package org.netbeans.modules.editor.java;
 
-import javax.swing.text.BadLocationException;
-import org.netbeans.editor.Formatter;
-import org.netbeans.editor.Settings;
-import org.netbeans.editor.ext.java.JavaSettingsNames;
+import java.util.prefs.Preferences;
+import org.netbeans.api.java.source.CodeStyle;
 import org.netbeans.modules.editor.java.JavaFormatterUnitTestCase;
+import org.netbeans.modules.java.ui.FmtOptions;
 
 
 /**
@@ -365,13 +364,17 @@ public class JavaFormatterUnitTest extends JavaFormatterUnitTestCase {
      * @see http://www.netbeans.org/issues/show_bug.cgi?id=47069
      */
     public void testReformatArrayInitializerWithNewline() {
-        Settings.setValue(JavaKit.class, JavaSettingsNames.JAVA_FORMAT_NEWLINE_BEFORE_BRACE, Boolean.TRUE);
+//        Settings.setValue(JavaKit.class, JavaSettingsNames.JAVA_FORMAT_NEWLINE_BEFORE_BRACE, Boolean.TRUE);
+        Preferences prefs = FmtOptions.getPreferences(FmtOptions.getCurrentProfileId());
+        String originalPlacement = prefs.get(FmtOptions.methodDeclBracePlacement, CodeStyle.BracePlacement.SAME_LINE.toString());
+        assertTrue(!originalPlacement.equals(CodeStyle.BracePlacement.NEW_LINE.toString()));
+        prefs.put(FmtOptions.methodDeclBracePlacement, CodeStyle.BracePlacement.NEW_LINE.toString());
         setLoadDocumentText(
                 "int[] foo = new int[] {1, 2, 3};");
         reformat();
         assertDocumentText("Incorrect array initializer with newline reformatting",
                 "int[] foo = new int[] {1, 2, 3};");
-        Settings.setValue(JavaKit.class, JavaSettingsNames.JAVA_FORMAT_NEWLINE_BEFORE_BRACE, Boolean.FALSE);
+        prefs.put(FmtOptions.methodDeclBracePlacement, originalPlacement);
     }
     
     /**

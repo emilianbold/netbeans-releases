@@ -42,7 +42,9 @@
 package org.netbeans.modules.editor.java;
 
 import javax.swing.text.BadLocationException;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Formatter;
+import org.netbeans.modules.editor.indent.api.Reformat;
 
 /**
  * Java formatter tests.
@@ -61,6 +63,10 @@ public class JavaFormatterUnitTestCase extends JavaBaseDocumentUnitTestCase {
      * The caret position should be marked in the document text by '|'.
      */
     protected void indentNewLine() {
+        // this actually only inserts \n in the document, the indentation is
+        // hooked through the ExtKit.ExtDefaultKeyTypedAction.checkIndentHotChars(),
+        // which calls f.getReformatBlock and f.reformat
+        // IMO this should just be replaced by simple doc.insertString(getCaretOffset(), "\n", null)
         Formatter f = getDocument().getFormatter();
         int offset = f.indentNewLine(getDocument(), getCaretOffset());
         getCaret().setDot(offset);
@@ -70,12 +76,21 @@ public class JavaFormatterUnitTestCase extends JavaBaseDocumentUnitTestCase {
      * Perform reformatting of the whole document's text.
      */
     protected void reformat() {
-        Formatter f = getDocument().getFormatter();
+        BaseDocument doc = getDocument();
+        Reformat formatter = Reformat.get(getDocument());
+        formatter.lock();
         try {
-            f.reformat(getDocument(), 0, getDocument().getLength());
-        } catch (BadLocationException e) {
-            e.printStackTrace(getLog());
-            fail(e.getMessage());
+            doc.atomicLock();
+            try {
+                formatter.reformat(0, doc.getLength());
+            } catch (BadLocationException e) {
+                e.printStackTrace(getLog());
+                fail(e.getMessage());
+            } finally {
+                doc.atomicUnlock();
+            }
+        } finally {
+            formatter.unlock();
         }
     }
     

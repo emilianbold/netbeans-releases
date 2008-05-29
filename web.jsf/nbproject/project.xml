@@ -499,6 +499,14 @@ made subject to such option by the copyright holder.
                         <compile-dependency/>
                     </test-dependency>
                 </test-type>
+                <test-type>
+                    <name>qa-functional</name>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.web.jsf</code-name-base>
+                        <recursive/>
+                        <compile-dependency/>
+                    </test-dependency>
+                </test-type>
             </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.web.jsf.navigation</friend>

@@ -462,6 +462,7 @@ made subject to such option by the copyright holder.
                     <name>qa-functional</name>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.web.core</code-name-base>
+                        <recursive/>
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
