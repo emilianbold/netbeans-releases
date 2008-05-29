@@ -83,15 +83,19 @@ made subject to such option by the copyright holder.
         <folder name="MIMEResolver">
             <file name="ContextPaletteResolver.xml" url="resources/ContextPaletteResolver.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.drawingarea.Bundle"/>
+                <attr name="position" intvalue="9000"/>
             </file>
             <file name="UMLDiagramResolver.xml" url="resources/UMLDiagramResolver.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.drawingarea.dataobject.Bundle"/>
+                <attr name="position" intvalue="9010"/>
             </file>
             <file name="PaletteItemResolver.xml" url="resources/PaletteItemResolver.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.drawingarea.dataobject.Bundle"/>
+                <attr name="position" intvalue="9020"/>
             </file>
             <file name="TSDiagramResolver.xml" url="resources/TSDiagramResolver.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.drawingarea.Bundle"/>
+                <attr name="position" intvalue="9030"/>
             </file>
         </folder>
     </folder>
