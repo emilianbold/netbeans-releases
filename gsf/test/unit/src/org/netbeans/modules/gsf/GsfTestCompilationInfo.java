@@ -112,7 +112,7 @@ public abstract class GsfTestCompilationInfo extends CompilationInfo {
     }
     
     @Override
-    public Document getDocument() throws IOException {
+    public Document getDocument() {
         return this.doc;
     }
     

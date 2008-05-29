@@ -168,14 +168,14 @@ public class ConvertBlockType extends RubyAstRule {
                 
                 boolean sameLine = Utilities.getRowEnd(doc, lexOffset) == Utilities.getRowEnd(doc, endOffset);
                 if (sameLine && convertFromBrace) {
-                    fixList.add(new ConvertTypeFix(info, node, convertFromBrace, !convertFromBrace, true, false));
+                    fixList.add(new ConvertTypeFix(context, node, convertFromBrace, !convertFromBrace, true, false));
                 } else if (!sameLine && !convertFromBrace && offerCollapse) {
-                    fixList.add(new ConvertTypeFix(info, node, convertFromBrace, !convertFromBrace, false, true));
+                    fixList.add(new ConvertTypeFix(context, node, convertFromBrace, !convertFromBrace, false, true));
                 } // else: Should I let you expand a single line do-end to a multiline {}, or vice versa? Naeh,
                 // they can do this in two steps; it's not common
-                fixList.add(new ConvertTypeFix(info, node, convertFromBrace, !convertFromBrace, false, false));
+                fixList.add(new ConvertTypeFix(context, node, convertFromBrace, !convertFromBrace, false, false));
                 if (sameLine || (!sameLine && offerCollapse)) {
-                    fixList.add(new ConvertTypeFix(info, node, false, false, sameLine, !sameLine));
+                    fixList.add(new ConvertTypeFix(context, node, false, false, sameLine, !sameLine));
                 }
                 Hint desc = new Hint(this, getDisplayName(), info.getFileObject(), range, fixList, 500);
                 result.add(desc);
@@ -215,17 +215,17 @@ public class ConvertBlockType extends RubyAstRule {
 
     private static class ConvertTypeFix implements PreviewableFix {
 
-        private final CompilationInfo info;
+        private final RubyRuleContext context;
         private final boolean convertToDo;
         private final boolean convertToBrace;
         private final Node node;
         private final boolean expand;
         private final boolean collapse;
 
-        ConvertTypeFix(CompilationInfo info, Node node, 
+        ConvertTypeFix(RubyRuleContext context, Node node, 
                 boolean convertToDo, boolean convertToBrace,
                 boolean expand, boolean collapse) {
-            this.info = info;
+            this.context = context;
             this.node = node;
             this.convertToDo = convertToDo;
             this.convertToBrace = convertToBrace;
@@ -272,7 +272,7 @@ public class ConvertBlockType extends RubyAstRule {
         }
         
         public EditList getEditList() throws Exception {
-            BaseDocument doc = (BaseDocument) info.getDocument();
+            BaseDocument doc = context.doc;
             EditList edits = new EditList(doc);
 
             ISourcePosition pos = node.getPosition();
@@ -327,7 +327,7 @@ public class ConvertBlockType extends RubyAstRule {
                         doc.getText(endOffset, 3).equals("end")) { // NOI18N
                     // TODO - make sure there is whitespace next to these tokens!!!
                     // They are optional around {} but not around do/end!
-                    AstPath path = new AstPath(AstUtilities.getRoot(info), node);
+                    AstPath path = new AstPath(AstUtilities.getRoot(context.compilationInfo), node);
                     assert path.leaf() == node;
                     boolean parenIsNecessary = isArgParenNecessary(path, doc);
 

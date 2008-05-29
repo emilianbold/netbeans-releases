@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.ruby;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -179,14 +178,13 @@ public class OccurrencesFinder implements org.netbeans.modules.gsf.api.Occurrenc
         if (closest != null) {
             //ISourcePosition pos = closest.getPosition();
 
+            BaseDocument doc = (BaseDocument)info.getDocument();
+            if (doc == null) {
+                // Document was just closed
+                return;
+            }
             try {
-                BaseDocument doc = (BaseDocument)info.getDocument();
-                if (doc == null) {
-                    // Document was just closed
-                    return;
-                }
                 doc.readLock();
-                try {
                 int length = doc.getLength();
                 OffsetRange astRange = AstUtilities.getRange(closest);
                 OffsetRange lexRange = LexUtilities.getLexerOffsets(info, astRange);
@@ -232,13 +230,10 @@ public class OccurrencesFinder implements org.netbeans.modules.gsf.api.Occurrenc
                         closest = null;
                     }
                 }
-                } finally {
-                    doc.readUnlock();
-                }
             } catch (BadLocationException ble) {
                 Exceptions.printStackTrace(ble);
-            } catch (IOException ioe) {
-                Exceptions.printStackTrace(ioe);
+            } finally {
+                doc.readUnlock();
             }
         }
 
@@ -514,31 +509,31 @@ public class OccurrencesFinder implements org.netbeans.modules.gsf.api.Occurrenc
         }
 
         if (last != null) {
-            try {
-                BaseDocument doc = (BaseDocument)info.getDocument();
-                ISourcePosition pos = last.getPosition();
+            BaseDocument doc = (BaseDocument)info.getDocument();
+            if (doc != null) {
+                try {
+                    ISourcePosition pos = last.getPosition();
 
-                OffsetRange lexRange = LexUtilities.getLexerOffsets(info, new OffsetRange(pos.getStartOffset(), pos.getEndOffset()));
-                if (lexRange != OffsetRange.NONE) {
-                    if (Utilities.getRowStart(doc, lexRange.getStart()) != Utilities.getRowStart(doc,
-                                lexRange.getEnd())) {
-                        // Highlight the first line - where the nonwhitespace is
-                        int begin = Utilities.getRowFirstNonWhite(doc, lexRange.getStart());
-                        int end = Utilities.getRowLastNonWhite(doc, lexRange.getStart());
+                    OffsetRange lexRange = LexUtilities.getLexerOffsets(info, new OffsetRange(pos.getStartOffset(), pos.getEndOffset()));
+                    if (lexRange != OffsetRange.NONE) {
+                        if (Utilities.getRowStart(doc, lexRange.getStart()) != Utilities.getRowStart(doc,
+                                    lexRange.getEnd())) {
+                            // Highlight the first line - where the nonwhitespace is
+                            int begin = Utilities.getRowFirstNonWhite(doc, lexRange.getStart());
+                            int end = Utilities.getRowLastNonWhite(doc, lexRange.getStart());
 
-                        if ((begin != -1) && (end != -1)) {
-                            OffsetRange range = new OffsetRange(begin, end + 1);
+                            if ((begin != -1) && (end != -1)) {
+                                OffsetRange range = new OffsetRange(begin, end + 1);
+                                highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
+                            }
+                        } else {
+                            OffsetRange range = AstUtilities.getRange(last);
                             highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
                         }
-                    } else {
-                        OffsetRange range = AstUtilities.getRange(last);
-                        highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
                     }
+                } catch (BadLocationException ble) {
+                    Exceptions.printStackTrace(ble);
                 }
-            } catch (BadLocationException ble) {
-                Exceptions.printStackTrace(ble);
-            } catch (IOException ioe) {
-                Exceptions.printStackTrace(ioe);
             }
         }
     }
@@ -547,23 +542,23 @@ public class OccurrencesFinder implements org.netbeans.modules.gsf.api.Occurrenc
         CompilationInfo info) {
         if (node.nodeId == NodeType.RETURNNODE) {
             OffsetRange astRange = AstUtilities.getRange(node);
-            try {
-                BaseDocument doc = (BaseDocument)info.getDocument();
-                OffsetRange lexRange = LexUtilities.getLexerOffsets(info, astRange);
-                if (lexRange != OffsetRange.NONE) {
-                    int lineStart = Utilities.getRowStart(doc, lexRange.getStart());
-                    int endLineStart = Utilities.getRowStart(doc, lexRange.getEnd());
-                    if (lineStart != endLineStart) {
-                        lexRange = new OffsetRange(lexRange.getStart(), Utilities.getRowEnd(doc, lexRange.getStart()));
-                        astRange = AstUtilities.getAstOffsets(info, lexRange);
+            BaseDocument doc = (BaseDocument)info.getDocument();
+            if (doc != null) {
+                try {
+                    OffsetRange lexRange = LexUtilities.getLexerOffsets(info, astRange);
+                    if (lexRange != OffsetRange.NONE) {
+                        int lineStart = Utilities.getRowStart(doc, lexRange.getStart());
+                        int endLineStart = Utilities.getRowStart(doc, lexRange.getEnd());
+                        if (lineStart != endLineStart) {
+                            lexRange = new OffsetRange(lexRange.getStart(), Utilities.getRowEnd(doc, lexRange.getStart()));
+                            astRange = AstUtilities.getAstOffsets(info, lexRange);
+                        }
                     }
+                } catch (BadLocationException ble) {
+                    Exceptions.printStackTrace(ble);
                 }
-            } catch (BadLocationException ble) {
-                Exceptions.printStackTrace(ble);
-            } catch (IOException ioe) {
-                Exceptions.printStackTrace(ioe);
+                highlights.put(astRange, ColoringAttributes.MARK_OCCURRENCES);
             }
-            highlights.put(astRange, ColoringAttributes.MARK_OCCURRENCES);
         } else if (node.nodeId == NodeType.YIELDNODE) {
             // Workaround JRuby AST position error
             /* Yield in the following code has the wrong offsets in JRuby
